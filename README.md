@@ -74,11 +74,11 @@ def force_call_dialog_func(uc, address, size, ql):
         lpDialogFunc = ql.unpack32(uc.mem_read(uc.reg_read(UC_X86_REG_ESP) - 0x8, 4))
 
         # setup stack for DialogFunc()
-        ql.stack_push(uc, 0)
-        ql.stack_push(uc, 1001)
-        ql.stack_push(uc, 273)
-        ql.stack_push(uc, 0)
-        ql.stack_push(uc, 0x0401018)
+        ql.stack_push(0)
+        ql.stack_push(1001)
+        ql.stack_push(273)
+        ql.stack_push(0)
+        ql.stack_push(0x0401018)
 
         # point EIP to DialogFunc()
         ql.uc.reg_write(UC_X86_REG_EIP, lpDialogFunc)
