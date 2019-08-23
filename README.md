@@ -141,7 +141,7 @@ $ ./qltool shellcode --os linux --arch x86 --asm -f examples/shellcodes/lin32_ex
 
 Get the latest info from out webiste https://www.qiling.io.
 
-You can contact us at email address info@qiling.io, or via Twitter [https://twitter.com/qiling_io](qiling_io).
+Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.com/qiling_io).
 
 ---
 
