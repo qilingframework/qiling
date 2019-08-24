@@ -79,10 +79,10 @@ def force_call_dialog_func(uc, address, size, ql):
         ql.stack_push(0)
         ql.stack_push(0x0401018)
 
-        # point EIP to DialogFunc()
+        # force EIP to DialogFunc()
         ql.pc = lpDialogFunc
 
-# sandbox to emulate the EXE
+# sandbox to emulate Windows EXE
 def my_sandbox(path, rootfs):
     # setup Qiling engine
     ql = Qiling(path, rootfs)
@@ -94,7 +94,7 @@ def my_sandbox(path, rootfs):
     ql.patch(0x00401112, b'\x90\x90')
 
     # instrument every instruction with callback force_call_dialog_func
-    ql.hook_code(force_call_dialog_func, ql)
+    ql.hook_code(force_call_dialog_func)
 
     # now emulate the binary
     ql.run()
