@@ -84,9 +84,9 @@ def force_call_dialog_func(uc, address, size, ql):
         ql.uc.reg_write(UC_X86_REG_EIP, lpDialogFunc)
 
 # sandbox to emulate the EXE
-def my_sandbox(path, rootfs, ostype):
+def my_sandbox(path, rootfs):
     # setup Qiling engine
-    ql = Qiling(path, rootfs, ostype = ostype)
+    ql = Qiling(path, rootfs)
 
     # NOP out some code
     ql.patch(0x004010B5, b'\x90\x90')
@@ -101,7 +101,7 @@ def my_sandbox(path, rootfs, ostype):
     ql.run()
 
 if __name__ == "__main__":
-    my_sandbox(["examples/rootfs/x86_windows/bin/Easy_CrackMe.exe"], "examples/rootfs/x86_windows", "windows")
+    my_sandbox(["examples/rootfs/x86_windows/bin/Easy_CrackMe.exe"], "examples/rootfs/x86_windows")
 ```
 
 The below Youtube video shows how the above example works.
