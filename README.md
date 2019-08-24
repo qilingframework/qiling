@@ -147,7 +147,7 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 
 #### Core developers
 
-- kaijern (xwing)s Lau <kj@qiling.io>
+- kaijern (xwings) Lau <kj@qiling.io>
 - Nguyen Anh Quynh <aquynh@gmail.com>
 - tianze (Dliv3) Ding <dddliv3@gmail.com>
 - bowen (w1tcher) Sun <w1tcher.bupt@gmail.com>
