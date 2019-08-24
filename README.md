@@ -64,14 +64,13 @@ if __name__ == "__main__":
 - Below example shows how to use Qiling framework to dynamically patch a Windows crackme, make it always display "Congratulation" dialog.
 
 ```python
-from unicorn.x86_const import *
 from qiling import *
 
 # callback for code instrumentation
 def force_call_dialog_func(uc, address, size, ql):
     if address == 0x00401016:
         # get address of DialogFunc()
-        lpDialogFunc = ql.unpack32(uc.mem_read(uc.reg_read(UC_X86_REG_ESP) - 0x8, 4))
+        lpDialogFunc = ql.unpack32(ql.mem_read(ql.sp - 0x8, 4))
 
         # setup stack for DialogFunc()
         ql.stack_push(0)
@@ -81,7 +80,7 @@ def force_call_dialog_func(uc, address, size, ql):
         ql.stack_push(0x0401018)
 
         # point EIP to DialogFunc()
-        ql.uc.reg_write(UC_X86_REG_EIP, lpDialogFunc)
+        ql.pc = lpDialogFunc
 
 # sandbox to emulate the EXE
 def my_sandbox(path, rootfs):
