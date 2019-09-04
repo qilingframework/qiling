@@ -85,7 +85,7 @@ def my_sandbox(path, rootfs):
     ql.patch(0x004010CD, b'\x90\x90')
     ql.patch(0x0040110B, b'\x90\x90')
     ql.patch(0x00401112, b'\x90\x90')
-    ql.set_callback(0x00401016, force_call_dialog_func)
+    ql.hook_address(0x00401016, force_call_dialog_func)
     ql.run()
 
 
