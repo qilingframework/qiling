@@ -130,9 +130,11 @@ $ ./qltool shellcode --os linux --arch x86 --asm -f examples/shellcodes/lin32_ex
 
 #### Contact
 
-Get the latest info from out webiste https://www.qiling.io.
+Get the latest info from out webiste https://www.qiling.io
 
-Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.com/qiling_io).
+Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.com/qiling_io)
+
+任何疑问请联系[麒麟框架官方微博](https://www.weibo.com/sgniwx)
 
 ---
 
