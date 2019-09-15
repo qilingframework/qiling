@@ -33,7 +33,30 @@ Evaluation will be based on your open source participation.
 ---
 
 #### License
+
 This project is released and distributed under [free software license GPLv2](COPYING).
+
+---
+
+#### Qiling vs other Emulators
+
+There are many open source emulators, but two projects closest to Qiling are [Unicorn](http://www.unicorn-engine.org) & [Qemu usermode](https://qemu.org). This section explains the main differences of Qiling against them.
+
+##### Qiling vs Unicorn engine
+
+Built on top of Unicorn, but Qiling & Unicorn are two different animals.
+
+- Unicorn is just a CPU emulator, so it focuses on emulating CPU instructions, that can understand emulator memory. Beyond that, Unicorn is not aware of higher level concepts, such as dynamic libraries, system calls, I/O handling or executable formats like PE, MachO or ELF. As a result, Unicorn can only emulate raw machine instructions, without Operating System (OS) context.
+- Qiling is designed as a higher level framework, that leverages Unicorn to emulate CPU instructions, but can understand OS: it has executable format loaders (for PE, MachO & ELF at the moment), dynamic linkers (so we can load & relocate shared libraries), syscall & IO handlers. For this reason, Qiling can run excutable binaries that normally runs in native OS.
+
+##### Qiling vs Qemu usermode
+
+Qemu usermode does similar thing to our emulator, that is to emulate whole executable binaries in cross-architecture way. However, Qiling offers some important differences against Qemu usermode.
+
+- Qiling is a true analysis framework, that allows you to build your own dynamic analysis tools on top (in friendly Python language). Meanwhile, Qemu is just a tool, not a framework.
+- Qiling can perform dynamic instrumentation, and can even hotpatch code at runtime. Qemu does not do either.
+- Not only working cross-architecture, Qiling is also cross-platform, so for example you can run Linux ELF file on top of Windows. In contrast, Qemu usermode only run binary of the same OS, such as Linux on Linux, due to the way it forwards syscall from emulated code to native OS.
+- Qiling supports more platforms, including Windows, MacOS, Linux & BSD. Qemu usermode can only handles Linux & BSD.
 
 ---
 
