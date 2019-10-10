@@ -22,12 +22,15 @@ from qiling.os.windows.utils import *
 #   DLGPROC   lpDialogFunc,
 #   LPARAM    dwInitParam
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=5)
-def hook_DialogBoxParamA(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hInstance": HANDLE,
+    "lpTemplateName": POINTER,
+    "hWndParent": HANDLE,
+    "lpDialogFunc": POINTER,
+    "dwInitParam": POINTER
+})
+def hook_DialogBoxParamA(ql, address, params):
     ret = 0
-    hInstance, lpTemplateName, hWndParent, lpDialogFunc, dwInitParam = ql.get_params(5)
-    ql.nprint('0x%0.2x: DialogBoxParamA(0x%0.2x, 0x%0.2x, 0x%0.2x, 0x%0.2x, 0x%0.2x) = %d' %
-         (address, hInstance, lpTemplateName, hWndParent, lpDialogFunc, dwInitParam, ret))
     return ret
 
 
@@ -37,16 +40,24 @@ def hook_DialogBoxParamA(ql, address):
 # 	LPSTR lpString,
 # 	int   cchMax
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=4)
-def hook_GetDlgItemTextA(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hDlg": HANDLE,
+    "nIDDlgItem": INT,
+    "lpString": POINTER,
+    "cchMax": INT
+})
+def hook_GetDlgItemTextA(ql, address, params):
     ret = 0
-    hDlg, nIDDlgItem, lpString, cchMax = ql.get_params(4)
+    hDlg = params["hDlg"]
+    nIDDlgItem = params["nIDDlgItem"]
+    lpString = params["lpString"]
+    cchMax = params["cchMax"]
+
     ql.stdout.write(b"Input DlgItemText :\n")
     string = ql.stdin.readline().strip()[:cchMax]
     ret = len(string)
     ql.uc.mem_write(lpString, string)
-    ql.nprint('0x%0.2x: GetDlgItemTextA(0x%0.2x, 0x%0.2x, 0x%0.2x, 0x%0.2x) = %d' %
-        (address, hDlg, nIDDlgItem, lpString, cchMax, ret))
+
     return ret
 
 
@@ -56,14 +67,14 @@ def hook_GetDlgItemTextA(ql, address):
 #     LPCSTR lpCaption,
 #     UINT   uType
 #     );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=4)
-def hook_MessageBoxA(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hWnd": HANDLE,
+    "lpText": STRING,
+    "lpCaption": STRING,
+    "uType": UINT
+})
+def hook_MessageBoxA(ql, address, params):
     ret = 2
-    hWnd, lpText, lpCaption, uType = ql.get_params(4)
-    s_lpText = read_cstring(ql, lpText)
-    s_lpCaption = read_cstring(ql, lpCaption)
-    ql.nprint('0x%0.2x: MessageBoxA(0x%0.2x, "%s", "%s", 0x%0.2x) = %d' %
-         (address, hWnd, s_lpText, s_lpCaption, uType, ret))
     return ret
 
 
@@ -71,10 +82,10 @@ def hook_MessageBoxA(ql, address):
 #   HWND    hDlg,
 #   INT_PTR nResult
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=2)
-def hook_EndDialog(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hDlg": HANDLE,
+    "nResult": POINTER
+})
+def hook_EndDialog(ql, address, params):
     ret = 1
-    hDlg, nResult = ql.get_params(2)
-    ql.nprint('0x%0.2x: EndDialog(0x%0.2x, 0x%0.2x) = %d' %
-        (address, hDlg, nResult, ret))
     return ret

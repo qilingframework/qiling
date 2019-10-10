@@ -37,7 +37,7 @@ def set_pe64_gdt(ql):
 def hook_winapi(uc, address, size, ql):
     if address in ql.PE.import_symbols:
         try:
-            globals()['hook_' + ql.PE.import_symbols[address].decode()](ql, address)
+            globals()['hook_' + ql.PE.import_symbols[address].decode()](ql, address, {})
         except KeyError as e:
             print("[!]", e, "\t is not implemented")
 
@@ -145,3 +145,4 @@ def runner(ql):
             ql_hook_code_disasm(ql.uc, ql.pc, 64, ql)
         ql.errmsg = 1
         ql.nprint("%s" % e)
+    ql.registry_manager.save()

@@ -21,27 +21,99 @@ X86_STDCALL = 1
 X86_CDECL = 2
 X8664_FASTCALL = 3
 
+DWORD = 1
+UINT = 1
+INT = 1
+BOOL = 1
+SIZE_T = 1
+BYTE = 1
+ULONGLONG = 2
+HANDLE = 3
+POINTER = 3
+STRING = 4
+WSTRING = 5
 
-def x86_stdcall(ql, param_num, func, args, kwargs):
+
+def set_params(ql, in_params, out_params):
+    index = 0
+    for each in in_params:
+        if in_params[each] == DWORD or in_params[each] == POINTER:
+            out_params[each] = get_params_by_index(ql, index)
+        elif in_params[each] == ULONGLONG:
+            if ql.arch == QL_X86:
+                low = get_params_by_index(ql, index)
+                index += 1
+                high = get_params_by_index(ql, index)
+                out_params[each] = high << 8 + low
+            else:
+                out_params[each] = get_params_by_index(ql, index)
+        elif in_params[each] == STRING:
+            ptr = get_params_by_index(ql, index)
+            if ptr == 0:
+                out_params[each] = 0
+            else:
+                out_params[each] = read_cstring(ql, ptr)
+        elif in_params[each] == WSTRING:
+            ptr = get_params_by_index(ql, index)
+            if ptr == 0:
+                out_params[each] = 0
+            else:
+                out_params[each] = read_wstring(ql, ptr)
+        index += 1
+    return index
+
+
+def print_function(ql, address, function_name, params, ret):
+    function_name = function_name.replace('hook_', '')
+    if function_name == "__stdio_common_vfprintf" or function_name == "printf":
+        return
+    log = '0x%0.2x: %s(' % (address, function_name)
+    for each in params:
+        value = params[each]
+        if type(value) == str or type(value) == bytearray:
+            log += '%s = "%s", ' % (each, value)
+        else:
+            log += '%s = 0x%x, ' % (each, value)
+    log = log.strip(", ")
+    log += ')'
+    if ret is not None:
+        log += ' = 0x%x' % ret
+    ql.nprint(log)
+
+
+def x86_stdcall(ql, param_num, params, func, args, kwargs):
     # get ret addr
     ret_addr = ql.stack_read(0)
+    # read params
+    if params is not None:
+        param_num = set_params(ql, params, args[2])
+    # call function
     result = func(*args, **kwargs)
+    # set return value
+    if result is not None:
+        set_return_value(ql, result)
+    # print
+    print_function(ql, args[1], func.__name__, args[2], result)
     # add esp
     esp = ql.uc.reg_read(UC_X86_REG_ESP)
     ql.uc.reg_write(UC_X86_REG_ESP, esp + (param_num + 1) * 4)
-    # set ret
-    if result is not None:
-        ql.set_return_value(result)
     # ret => pop eip
     if ql.RUN:
         ql.uc.reg_write(UC_X86_REG_EIP, ret_addr)
     return result
 
 
-def x86_cdecl(ql, param_num, func, args, kwargs):
+def x86_cdecl(ql, param_num, params, func, args, kwargs):
+    # read params
+    if params is not None:
+        param_num = set_params(ql, params, args[2])
+    # call function
     result = func(*args, **kwargs)
+    # set return value
     if result is not None:
-        ql.set_return_value(result)
+        set_return_value(ql, result)
+    # print
+    print_function(ql, args[1], func.__name__, args[2], result)
     # ret => pop eip
     if ql.RUN:
         ret_addr = ql.stack_pop()
@@ -49,12 +121,19 @@ def x86_cdecl(ql, param_num, func, args, kwargs):
     return result
 
 
-def x8664_fastcall(ql, param_num, func, args, kwargs):
+def x8664_fastcall(ql, param_num, params, func, args, kwargs):
     # get ret addr
     ret_addr = ql.stack_read(0)
+    # read params
+    if params is not None:
+        param_num = set_params(ql, params, args[2])
+    # call function
     result = func(*args, **kwargs)
+    # set return value
     if result is not None:
-        ql.set_return_value(result)
+        set_return_value(ql, result)
+    # print
+    print_function(ql, args[1], func.__name__, args[2], result)
     # add rsp
     rsp = ql.uc.reg_read(UC_X86_REG_RSP)
     if param_num > 4:
@@ -68,23 +147,21 @@ def x8664_fastcall(ql, param_num, func, args, kwargs):
 
 
 # x86/x8664 PE should share Windows APIs
-def winapi(x86, x8664, param_num, raw=False):
+def winapi(x86, x8664, param_num=None, params=None):
     """
     @param_num: the number of function params
     """
     def decorator(func):
         def wrapper(*args, **kwargs):
-            if raw:
-                return func(*args, **kwargs)
             ql = args[0]
             if ql.arch == QL_X86:
                 if x86 == X86_STDCALL:
-                    return x86_stdcall(ql, param_num, func, args, kwargs)
+                    return x86_stdcall(ql, param_num, params, func, args, kwargs)
                 elif x86 == X86_CDECL:
-                    return x86_cdecl(ql, param_num, func, args, kwargs)
+                    return x86_cdecl(ql, param_num, params, func, args, kwargs)
             elif ql.arch == QL_X8664:
                 if x8664 == X8664_FASTCALL:
-                    return x8664_fastcall(ql, param_num, func, args, kwargs)
+                    return x8664_fastcall(ql, param_num, params, func, args, kwargs)
             else:
                 raise QlErrorArch("unknown ql.arch")
         return wrapper

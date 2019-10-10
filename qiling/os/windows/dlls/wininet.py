@@ -15,11 +15,22 @@ from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 
 
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=5)
-def hook_InternetOpenA(ql, address):
-    lpszAgent, dwAccessType, lpszProxy, lpszProxyBypass, dwFlags = ql.get_params(5)
-    ql.nprint('0x%0.2x: InternetOpenA(0x%x, 0x%x, 0x%x, 0x%x, 0x%x)' %
-        (address, lpszAgent, dwAccessType, lpszProxy, lpszProxyBypass, dwFlags))
+# void InternetOpenA(
+#   LPCSTR lpszAgent,
+#   DWORD  dwAccessType,
+#   LPCSTR lpszProxy,
+#   LPCSTR lpszProxyBypass,
+#   DWORD  dwFlags
+# );
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "lpszAgent": STRING,
+    "dwAccessType": DWORD,
+    "lpszProxy": STRING,
+    "lpszProxyBypass": STRING,
+    "dwFlags": DWORD
+})
+def hook_InternetOpenA(ql, address, params):
+    pass
 
 
 # void InternetOpenUrlA(
@@ -30,22 +41,24 @@ def hook_InternetOpenA(ql, address):
 #   DWORD     dwFlags,
 #   DWORD_PTR dwContext
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=6)
-def hook_InternetOpenUrlA(ql, address):
-    hInternet, lpszUrl, lpszHeaders, dwHeadersLength, \
-        dwFlags, dwContext = ql.get_params(6)
-    s_lpszUrl = read_cstring(ql, lpszUrl) if lpszUrl != 0 else ""
-    s_lpszHeaders = read_cstring(ql, lpszHeaders) if lpszHeaders != 0 else ""
-    ql.nprint('0x%0.2x: InternetOpenUrlA(0x%x, "%s", "%s", 0x%x, 0x%x, 0x%x)' %
-        (address, hInternet, s_lpszUrl, s_lpszHeaders, dwHeadersLength, dwFlags, dwContext))
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hInternet": POINTER,
+    "lpszUrl": STRING,
+    "lpszHeaders": STRING,
+    "dwHeadersLength": DWORD,
+    "dwFlags": DWORD,
+    "dwContext": POINTER
+})
+def hook_InternetOpenUrlA(ql, address, params):
+    pass
 
 
 # BOOLAPI InternetCloseHandle(
 #   HINTERNET hInternet
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=1)
-def hook_InternetCloseHandle(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hInternet": POINTER
+})
+def hook_InternetCloseHandle(ql, address, params):
     ret = 1
-    hInternet = ql.get_params(1)
-    ql.nprint('0x%0.2x: InternetCloseHandle(0x%x) = %d' % (address, hInternet, ret))
     return ret

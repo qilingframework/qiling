@@ -85,6 +85,29 @@ def string_unpack(string):
     return string.decode().split("\x00")[0]
 
 
+def x86_get_params_by_index(ql, index):
+    # index starts from 0
+    # skip ret_addr
+    return ql.stack_read((index + 1) * 4)
+
+
+def x8664_get_params_by_index(ql, index):
+    reg_list = [UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9]
+    if index < 4:
+        return ql.uc.reg_read(reg_list[index])
+
+    index -= 4
+    # skip ret_addr
+    return ql.stack_read((index + 1) * 8)
+
+
+def get_params_by_index(ql, index):
+    if ql.arch == QL_X86:
+        return x86_get_params_by_index(ql, index)
+    elif ql.arch == QL_X8664:
+        return x8664_get_params_by_index(ql, index)
+
+
 def _x86_get_args(ql, number):
     arg_list = []
     for i in range(number):

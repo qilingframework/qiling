@@ -50,18 +50,24 @@ class RegistryManager:
                 ql.reg_diff = "config.json"
 
             self.config = os.path.join(rootfs, ql.reg_dir, ql.reg_diff)
-            if not os.path.exists(self.config):
-                f = open(self.config, 'w')
-                f.write("{}")
-                f.close()
 
-        # read config
-        # use registry config first
-        self.f_config = open(self.config, "r+")
-        try:
-            self.registry_config = json.loads(self.f_config.read())
-        except json.decoder.JSONDecodeError:
-            raise QlErrorJsonDecode("Windows Registry JSON decode error")
+        if not os.path.exists(self.config):
+            self.registry_config = {}
+        else:
+            # read config
+            # use registry config first
+            self.f_config = open(self.config, "rb")
+            data = self.f_config.read()
+            if data == b"":
+                self.registry_config = {}
+                self.f_config.close()
+            else:
+                try:
+                    self.registry_config = json.loads(data)
+                except json.decoder.JSONDecodeError:
+                    raise QlErrorJsonDecode("Windows Registry JSON decode error")
+                finally:
+                    self.f_config.close()
 
         # hkey local system
         self.hklm = {}
@@ -164,17 +170,15 @@ class RegistryManager:
             length = len(data)
         elif reg_type == Registry.RegQWord:
             data = self.ql.pack64(reg_value)
-            self.ql.mem_write(address, data)    
+            self.ql.mem_write(address, data)
             length = len(data)
         else:
             raise QlErrorNotImplemented("Windows Registry Type write to memory %s not implemented" % (REG_TYPES[reg_type]))
 
         return length
 
-    def __del__(self):
+    def save(self):
         # write registry config to config file
-        if self.registry_config and self.registry_config != "":
-            self.f_config.seek(0)
-            self.f_config.truncate()
-            self.f_config.write(json.dumps(self.registry_config))
-            self.f_config.close()
+        if self.registry_config and len(self.registry_config) != 0:
+            with open(self.config, "wb") as f:
+                f.write(bytes(json.dumps(self.registry_config), "utf-8"))

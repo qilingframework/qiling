@@ -17,55 +17,6 @@ from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
 
 
-# SC_HANDLE OpenSCManagerA(
-#   LPCSTR lpMachineName,
-#   LPCSTR lpDatabaseName,
-#   DWORD  dwDesiredAccess
-# );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=3)
-def hook_OpenSCManagerA(ql, address):
-    lpMachineName, lpDatabaseName, dwDesiredAccess = ql.get_params(3)
-    ql.nprint('0x%0.2x: OpenSCManagerA(0x%0.2x, 0x%0.2x, 0x%0.2x)' %
-         (address, lpMachineName, lpDatabaseName, dwDesiredAccess))
-
-
-# SC_HANDLE OpenServiceA(
-#   SC_HANDLE hSCManager,
-#   LPCSTR    lpServiceName,
-#   DWORD     dwDesiredAccess
-# );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=3)
-def hook_OpenServiceA(ql, address):
-    hSCManager, lpServiceName, dwDesiredAccess = ql.get_params(3)
-    ql.nprint('0x%0.2x: OpenServiceA(0x%0.2x, 0x%0.2x, 0x%0.2x)' %
-         (address, hSCManager, lpServiceName, dwDesiredAccess))
-
-
-# BOOL ChangeServiceConfig2A(
-#   SC_HANDLE hService,
-#   DWORD     dwInfoLevel,
-#   LPVOID    lpInfo
-# );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=3)
-def hook_ChangeServiceConfig2A(ql, address):
-    ret = 1
-    hService, dwInfoLevel, lpInfo = ql.get_params(3)
-    ql.nprint('0x%0.2x: ChangeServiceConfig2A(0x%0.2x, 0x%0.2x, 0x%0.2x) = %d' %
-         (address, hService, dwInfoLevel, lpInfo, ret))
-    return ret
-
-
-# BOOL CloseServiceHandle(
-#   SC_HANDLE hSCObject
-# );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=1)
-def hook_CloseServiceHandle(ql, address):
-    ret = 1
-    hSCObject = ql.get_params(1)
-    ql.nprint('0x%0.2x: CloseServiceHandle(0x%0.2x) = %d' % (address, hSCObject, ret))
-    return ret
-
-
 # LSTATUS RegOpenKeyExA(
 #   HKEY   hKey,
 #   LPCSTR lpSubKey,
@@ -73,23 +24,28 @@ def hook_CloseServiceHandle(ql, address):
 #   REGSAM samDesired,
 #   PHKEY  phkResult
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=5)
-def hook_RegOpenKeyExA(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": STRING,
+    "ulOptions": DWORD,
+    "samDesired": POINTER,
+    "phkResult": POINTER
+})
+def hook_RegOpenKeyExA(ql, address, params):
     ret = ERROR_SUCCESS
-    hKey, lpSubKey, ulOptions, samDesired, phkResult = ql.get_params(5)
 
-    s_lpSubKey = read_cstring(ql, lpSubKey)
+    hKey = params["hKey"]
+    s_lpSubKey = params["lpSubKey"]
+    phkResult = params["phkResult"]
 
     if hKey not in REG_KEYS:
-        ret = 2
+        return 2
     else:
         s_hKey = REG_KEYS[hKey]
+        params["hKey"] = s_hKey
 
     if not ql.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
-        ret = 2
-
-    ql.nprint('0x%0.2x: RegOpenKeyExA(%s, "%s", 0x%0.2x, 0x%0.2x, 0x%0.2x) = %d' % \
-        (address, s_hKey, s_lpSubKey, ulOptions, samDesired, phkResult, ret))
+        return 2
 
     # new handle
     if ret == ERROR_SUCCESS:
@@ -108,23 +64,26 @@ def hook_RegOpenKeyExA(ql, address):
 #   LPCWSTR lpSubKey,
 #   PHKEY   phkResult
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=3)
-def hook_RegOpenKeyW(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": WSTRING,
+    "phkResult": POINTER
+})
+def hook_RegOpenKeyW(ql, address, params):
     ret = ERROR_SUCCESS
-    hKey, lpSubKey, phkResult = ql.get_params(3)
 
-    s_lpSubKey = w2cstring(read_wstring(ql, lpSubKey))
+    hKey = params["hKey"]
+    s_lpSubKey = w2cstring(params["lpSubKey"])
+    phkResult = params["phkResult"]
 
     if not (hKey in REG_KEYS):
-        ret = 2
+        return 2
     else:
         s_hKey = REG_KEYS[hKey]
+        params["hKey"] = s_hKey
 
     if not ql.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
-        ret = 2
-
-    ql.nprint('0x%0.2x: RegOpenKeyW(%s, "%s", 0x%0.2x) = %d' % \
-        (address, s_hKey, s_lpSubKey, phkResult, ret))
+        return 2
 
     # new handle
     if ret == ERROR_SUCCESS:
@@ -147,12 +106,25 @@ def hook_RegOpenKeyW(ql, address):
 #   LPBYTE  lpData,
 #   LPDWORD lpcbData
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=6)
-def hook_RegQueryValueExA(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hKey": HANDLE,
+    "lpValueName": STRING,
+    "lpReserved": POINTER,
+    "lpType": POINTER,
+    "lpData": POINTER,
+    "lpcbData": POINTER
+})
+def hook_RegQueryValueExA(ql, address, params):
     ret = ERROR_SUCCESS
-    hKey, lpValueName, lpReserved, lpType, lpData, lpcbData = ql.get_params(6)
+
+    hKey = params["hKey"]
+    s_lpValueName = params["lpValueName"]
+    lpType = params["lpType"]
+    lpData = params["lpData"]
+    lpcbData = params["lpcbData"]
+
     s_hKey = ql.handle_manager.get(hKey).regkey
-    s_lpValueName = read_cstring(ql, lpValueName)
+    params["hKey"] = s_hKey
 
     # read reg_type
     if lpType != 0:
@@ -165,27 +137,26 @@ def hook_RegQueryValueExA(ql, address):
 
     # error key
     if reg_type is None or value is None:
-        ret = 2
+        return 2
     else:
         # set lpData
         length = ql.registry_manager.write_reg_value_into_mem(value, reg_type, lpData)
         # set lpcbData
         ql.mem_write(lpcbData, ql.pack(length))
 
-    ql.nprint('0x%0.2x: RegQueryValueExA(%s, "%s", 0x%0.2x, 0x%0.2x, 0x%0.2x, 0x%0.2x) = %d' % \
-        (address, s_hKey, s_lpValueName, lpReserved, lpType, lpData, lpcbData, ret))
     return ret
 
 
 # LSTATUS RegCloseKey(
 #   HKEY hKey
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=1)
-def hook_RegCloseKey(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hKey": HANDLE
+})
+def hook_RegCloseKey(ql, address, params):
     ret = ERROR_SUCCESS
-    hKey = ql.get_params(1)
+    hKey = params["hKey"]
     ql.handle_manager.delete(hKey)
-    ql.nprint('0x%0.2x: RegCloseKey(0x%0.2x) = %d' % (address, hKey, ret))
     return ret
 
 
@@ -194,23 +165,26 @@ def hook_RegCloseKey(ql, address):
 #   LPCSTR lpSubKey,
 #   PHKEY  phkResult
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=3)
-def hook_RegCreateKeyA(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": STRING,
+    "phkResult": POINTER
+})
+def hook_RegCreateKeyA(ql, address, params):
     ret = ERROR_SUCCESS
-    hKey, lpSubKey, phkResult = ql.get_params(3)
 
-    s_lpSubKey = read_cstring(ql, lpSubKey)
+    hKey = params["hKey"]
+    s_lpSubKey = params["lpSubKey"]
+    phkResult = params["phkResult"]
 
     if not (hKey in REG_KEYS):
-        ret = 2
+        return 2
     else:
         s_hKey = REG_KEYS[hKey]
+        params["hKey"] = s_hKey
         if not ql.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
             ret = ERROR_SUCCESS
             ql.registry_manager.create(s_hKey + "\\" + s_lpSubKey)
-
-    ql.nprint('0x%0.2x: RegCreateKeyA(%s, "%s", 0x%0.2x) = %d' % \
-        (address, s_hKey, s_lpSubKey, phkResult, ret))
 
     # new handle
     if ret == ERROR_SUCCESS:
@@ -231,18 +205,27 @@ def hook_RegCreateKeyA(ql, address):
 #   LPCSTR lpData,
 #   DWORD  cbData
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=5)
-def hook_RegSetValueA(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": STRING,
+    "dwType": DWORD,
+    "lpData": STRING,
+    "cbData": DWORD
+})
+def hook_RegSetValueA(ql, address, params):
     ret = ERROR_SUCCESS
-    hKey, lpSubKey, dwType, lpData, cbData = ql.get_params(5)
+
+    hKey = params["hKey"]
+    s_lpSubKey = params["lpSubKey"]
+    dwType = params["dwType"]
+    s_lpData = params["lpData"]
+    cbData = params["cbData"]
+
     s_hKey = ql.handle_manager.get(hKey).regkey
-    s_lpSubKey = read_cstring(ql, lpSubKey)
-    s_lpData = read_cstring(ql, lpData)
+    params["hKey"] = s_hKey
 
     ql.registry_manager.write(s_hKey, s_lpSubKey, dwType, s_lpData)
 
-    ql.nprint('0x%0.2x: RegSetValueA(%s, "%s", 0x%0.2x, "%s", 0x%0.2x) = %d' % \
-        (address, s_hKey, s_lpSubKey, dwType, s_lpData, cbData, ret))
     return ret
 
 
@@ -254,18 +237,28 @@ def hook_RegSetValueA(ql, address):
 #   const BYTE *lpData,
 #   DWORD      cbData
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=6)
-def hook_RegSetValueExW(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hKey": HANDLE,
+    "lpValueName": WSTRING,
+    "Reserved": DWORD,
+    "dwType": DWORD,
+    "lpData": WSTRING,
+    "cbData": DWORD
+})
+def hook_RegSetValueExW(ql, address, params):
     ret = ERROR_SUCCESS
-    hKey, lpSubKey, Reserved, dwType, lpData, cbData = ql.get_params(6)
+
+    hKey = params["hKey"]
+    s_lpValueName = w2cstring(params["lpValueName"])
+    dwType = params["dwType"]
+    s_lpData = w2cstring(params["lpData"])
+    cbData = params["cbData"]
+
     s_hKey = ql.handle_manager.get(hKey).regkey
-    s_lpSubKey = w2cstring(read_wstring(ql, lpSubKey))
-    s_lpData = w2cstring(read_wstring(ql, lpData))
+    params["hKey"] = s_hKey
 
-    ql.registry_manager.write(s_hKey, s_lpSubKey, dwType, s_lpData)
+    ql.registry_manager.write(s_hKey, s_lpValueName, dwType, s_lpData)
 
-    ql.nprint('0x%0.2x: RegSetValueA(%s, "%s", 0x%0.2x, 0x%0.2x, "%s", 0x%0.2x) = %d' % \
-        (address, s_hKey, s_lpSubKey, Reserved, dwType, s_lpData, cbData, ret))
     return ret
 
 
@@ -273,33 +266,41 @@ def hook_RegSetValueExW(ql, address):
 #   HKEY   hKey,
 #   LPCSTR lpSubKey
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=2)
-def hook_RegDeleteKeyA(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": STRING,
+})
+def hook_RegDeleteKeyA(ql, address, params):
     ret = ERROR_SUCCESS
-    hKey, lpSubKey = ql.get_params(2)
+
+    hKey = params["hKey"]
+    s_lpSubKey = params["lpSubKey"]
+
     s_hKey = ql.handle_manager.get(hKey).regkey
-    s_lpSubKey = read_cstring(ql, lpSubKey)
+    params["hKey"] = s_hKey
 
     ql.registry_manager.delete(s_hKey, s_lpSubKey)
 
-    ql.nprint('0x%0.2x: RegDeleteKeyA(%s, "%s") = %d' % \
-        (address, s_hKey, s_lpSubKey, ret))
-    return ret    
+    return ret
 
 
 # LSTATUS RegDeleteValueW(
 #   HKEY    hKey,
 #   LPCWSTR lpValueName
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, param_num=2)
-def hook_RegDeleteValueW(ql, address):
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hKey": HANDLE,
+    "lpValueName": WSTRING,
+})
+def hook_RegDeleteValueW(ql, address, params):
     ret = ERROR_SUCCESS
-    hKey, lpSubKey = ql.get_params(2)
+
+    hKey = params["hKey"]
+    s_lpValueName = w2cstring(params["lpValueName"])
+
     s_hKey = ql.handle_manager.get(hKey).regkey
-    s_lpSubKey = w2cstring(read_wstring(ql, lpSubKey))
+    params["hKey"] = s_hKey
 
-    ql.registry_manager.delete(s_hKey, s_lpSubKey)
+    ql.registry_manager.delete(s_hKey, s_lpValueName)
 
-    ql.nprint('0x%0.2x: RegDeleteValueW(%s, "%s") = %d' % \
-        (address, s_hKey, s_lpSubKey, ret))
-    return ret    
+    return ret
