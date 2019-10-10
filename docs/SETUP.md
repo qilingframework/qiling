@@ -8,7 +8,7 @@ This will install required python2, python3, pip3, cmake, git tools, compiler an
 
 Once completed installation of dependencies, you can proceed to installation for [Capstone](https://github.com/aquynh/capstone/blob/master/COMPILE.TXT) and [Keystone](https://github.com/keystone-engine/keystone/blob/master/docs/COMPILE-NIX.md)
 ```
-sudo pip3 install wheel capstone keystone-engine python-registry lief==0.10.0.dev0 pefile>=2019.4.18
+sudo pip3 install wheel capstone keystone-engine python-registry pefile>=2019.4.18
 ```
 You can simply run commands below for installation via source, by cloning unicorn-engine source with git. For more information on Unicorn-Engine installation, please refer to [Unicorn Installation Instructions](https://github.com/unicorn-engine/unicorn/blob/master/docs/COMPILE-NIX.md) for more details
 ```

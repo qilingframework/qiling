@@ -23,7 +23,7 @@ FROM ubuntu:18.04
 RUN apt-get update \
   && apt-get -y upgrade \
   && apt-get install -y python3-pip python \
-  && pip3 install wheel capstone keystone-engine python-registry lief==0.10.0.dev0 pefile>=2019.4.18
+  && pip3 install wheel capstone keystone-engine python-registry pefile>=2019.4.18
 
 COPY --from=builder /usr/src/qiling /qiling
 COPY --from=builder /usr/src/unicorn /tmp/unicorn
