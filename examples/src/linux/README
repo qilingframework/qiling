@@ -1,0 +1,14 @@
+This is the source code of all the hello binaries.
+Makefile would build hello for all architectures.
+
+./rootfs/arm64_linux/bin/arm64_hello
+./rootfs/arm64_linux/bin/arm64_hello_static
+./rootfs/arm_linux/bin/arm_hello
+./rootfs/arm_linux/bin/arm_hello_static
+./rootfs/mips32el_linux/bin/mips32el_hello
+./rootfs/mips32el_linux/bin/mips32el_hello_static
+./rootfs/x8664_linux/bin/x8664_hello
+./rootfs/x8664_linux/bin/x8664_hello_static
+./rootfs/x86_linux/bin/x86_hello
+./rootfs/x86_linux/bin/x86_hello_static
+

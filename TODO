@@ -1,0 +1,17 @@
+*nix
+=====
+- More *nix based syscall
+
+MacOS
+=====
+- Dyld binaries
+
+
+FreeBSD
+=======
+- Dynamically compile binary
+
+
+Windows
+=======
+- More Windows API

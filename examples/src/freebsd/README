@@ -1,0 +1,5 @@
+This is the source code of all the hello binaries.
+Makefile would build hello for all architectures.
+
+./rootfs/x8664_freebsd/bin/x8664_hello
+./rootfs/x8664_freebsd/bin/x8664_hello_static

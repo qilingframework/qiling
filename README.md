@@ -22,16 +22,6 @@ Visit our website https://www.qiling.io for more information.
 
 ---
 
-#### Announcement
-
-We are currently in Alpha test phase, that will be followed by public beta release.
-
-This is a call for testers: please email your short instroduction, with github/gitlab ID to info@qiling.io for shortlisting.
-
-Evaluation will be based on your open source participation.
-
----
-
 #### License
 
 This project is released and distributed under [free software license GPLv2](COPYING).
@@ -62,7 +52,13 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 
 #### Install
 
-Run below command line to install Qiling (NOTE: you may need sudo on your platform to install to system directory).
+- Install newer version of Unicorn from Pypi (NOTE: you may need sudo on your platform to install to system directory).
+
+```
+pip3 install --pre unicorn
+```
+
+- Run below command line to install Qiling.
 
 ```
 python3 setup.py install

@@ -1,0 +1,3 @@
+gcc -m32 helloworld.c -o test
+
+gcc -m64 helloworld.c -o test64

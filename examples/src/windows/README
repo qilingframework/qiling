@@ -1,0 +1,5 @@
+This is the source code of all the hello binaries.
+Makefile would build hello for all architectures.
+
+./rootfs/x8664_windows/bin/x8664-windows-hello.exe
+./rootfs/x86_windows/bin/x86-windows-hello.exe

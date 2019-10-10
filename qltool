@@ -1,0 +1,182 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+#
+# LAU kaijern (xwings) <kj@qiling.io>
+# NGUYEN Anh Quynh <aquynh@gmail.com>
+# DING tianZe (D1iv3) <dddliv3@gmail.com>
+# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
+# CHEN huitao (null) <null@qiling.io>
+# YU tong (sp1ke) <spikeinhouse@gmail.com>
+
+import argparse, os, string, sys
+
+from keystone import *
+from qiling import *
+
+def parse_args(parser, commands):
+    # Divide argv by commands
+    split_argv = [[]]
+    for c in sys.argv[1:]:
+        if c in commands.choices:
+            split_argv.append([c])
+        else:
+            split_argv[-1].append(c)
+    # Initialize namespace
+    args = argparse.Namespace()
+    for c in commands.choices:
+        setattr(args, c, None)
+    # Parse each command
+    parser.parse_args(split_argv[0], namespace=args)  # Without command
+    for argv in split_argv[1:]:  # Commands
+        n = argparse.Namespace()
+        setattr(args, argv[0], n)
+        parser.parse_args(argv, namespace=n)
+    return args
+
+
+def compile_instructions(fname, archtype, archmode):
+    f = open(fname, 'rb')
+    assembly = f.read()
+    f.close()
+
+    ks = Ks(archtype, archmode)
+
+    shellcode = ''
+    try:
+        # Initialize engine in X86-32bit mode
+        encoding, count = ks.asm(assembly)
+        shellcode = [str(f"0x{i:02x}") for i in encoding]
+        shellcode = "".join(shellcode).replace('0x', '')
+        shellcode = bytes.fromhex(shellcode)
+    except KsError as e:
+        print("ERROR Keystone Compile Error: %s" % e)
+        exit
+
+    return shellcode
+
+
+# read shellcode from file
+def read_shellcode(fname):
+    with open(fname,"rb") as f:
+        shellcode = f.read()
+        f.close
+        return shellcode
+
+
+def run_shellcode(options):
+
+    if not options.os in ("linux", "windows", "freebsd", "macos"):
+            print("ERROR: -os required: either linux, windows, freebsd, macos")
+            exit(1)
+    
+    elif not options.arch in ("arm", "arm64", "x86", "x8664", "mips32el"):
+            print("ERROR: -arch required: either arm, arm64, x86, x8664, mips32el")
+            exit(1)     
+
+    
+    elif options.asm == True:
+        # convert arch to arch/mode that Keystone can consume
+        def ks_convert(arch):
+            adapter = {
+                'x86': (KS_ARCH_X86, KS_MODE_32),
+                'x8664': (KS_ARCH_X86, KS_MODE_64),
+                'mips32el': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
+                'arm': (KS_ARCH_ARM, KS_MODE_ARM),
+                'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
+            }
+
+            if arch in adapter:
+                return adapter[arch]
+
+            # invalid
+            return None, None
+
+        print (">>> Load ASM from FILE")
+        archtype, archmode = ks_convert(options.arch)
+        shellcoder = compile_instructions(options.filename, archtype, archmode)
+    elif options.hex == True:
+        if options.input is not None:
+            print (">>> Load HEX from ARGV")
+            shellcoder = str(options.input).strip("\\\\x").split("x")
+            shellcoder = "".join(shellcoder).strip()
+            shellcoder =  bytes.fromhex(shellcoder)
+        elif options.filename is not None:
+            print (">>> Load HEX from FILE")
+            shellcoder = str(read_shellcode(options.filename)).strip('b\'').strip('\\n')
+            shellcoder = shellcoder.strip('x').split("\\\\x")
+            shellcoder = "".join(shellcoder).strip()
+            shellcoder = bytes.fromhex(shellcoder)
+        else:
+            print("ERROR: File not found")
+            exit(1)
+       
+    else:
+        print (">>> Load BIN from FILE")
+        if options.filename is None:
+            print("ERROR: File not found")
+            exit(1)
+        shellcoder = read_shellcode(options.filename)
+
+    if options.strace:
+        options.output = "default"
+    elif options.trace:
+        options.output = "disasm"   
+
+    ql = Qiling(shellcoder = shellcoder, archtype = options.arch, ostype = options.os, rootfs = options.rootfs, output = options.output)
+    ql.run()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    commands = parser.add_subparsers(title='subcommands', description='valid subcommands', help='additional help', dest='subparser_name')
+
+    run_parser = commands.add_parser('run')
+    run_parser.add_argument('-f', '--filename', required=True, metavar="FILE", dest="filename", help="filename")
+    run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
+    run_parser.add_argument('--output', required=False, default='default', help='output mode, options are off, debug , disasm, dump')
+    run_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
+    run_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
+    
+
+    shellcode_parser = commands.add_parser('shellcode')
+    shellcode_parser.add_argument('-f', '--filename', required=False, metavar="FILE", dest="filename", help="filename")
+    shellcode_parser.add_argument('-i', '--input', required=False, metavar="INPUT", dest="input", help='input hex value')
+    shellcode_parser.add_argument('--arch', required=True, help='option are x86, x8664, arm, arm64, mipsel')
+    shellcode_parser.add_argument('--os', required=True, help='option are windows, linux, freebsd and macos')
+    shellcode_parser.add_argument('--rootfs', required=False, help='emulated rootfs, that is where all the so or dll sits')
+    shellcode_parser.add_argument('--asm', action='store_true', default=False, dest='asm', help='input file format, -asm')
+    shellcode_parser.add_argument('--hex', action='store_true', default=False, dest='hex', help='input file format, -hex')
+    shellcode_parser.add_argument('--bin', action='store_true', default=True, dest='bin', help='input file format, -bin')
+    shellcode_parser.add_argument('--output', required=False, default='default', help='output mode, options are off, debug , disasm, dump')
+    shellcode_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
+    shellcode_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')    
+
+
+    options = parser.parse_args()
+
+    if (options.subparser_name == 'run'):
+        if options.strace:
+            options.output = "default"
+        elif options.trace:
+            options.output = "disasm"
+
+        ql = Qiling(filename = [options.filename], rootfs = options.rootfs, output = options.output)
+        ql.run()
+        exit(ql.exit_code)
+    elif (options.subparser_name == 'shellcode'):
+        run_shellcode(options)
+    else:
+        print("ERROR: Unknown command")
+        print("\nUsage:")
+        print("\t ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex")
+        print("\t ./qltool shellcode --os linux --arch x86 --asm -f examples/shellcodes/lin32_execve.asm")
+        print("\t ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples/rootfs/x8664_linux/")
+        print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux")
+        print("\nWith Output:")
+        print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm")
+        print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace")
+        print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --trace")
+        print("\t ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex --strace")
+        exit(1)

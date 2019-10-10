@@ -1,0 +1,22 @@
+This file credits all the contributors of the Qiling project.
+
+
+Key developers
+==============
+LAU kaijern (xwings) <kj@qiling.io>
+NGUYEN Anh Quynh <aquynh@gmail.com>
+DING tianZe (D1iv3) <dddliv3@gmail.com>
+SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
+CHEN huitao (null) <null@qiling.io>
+YU tong (sp1ke) <spikeinhouse@gmail.com>
+
+
+Alpha testers (in no particular order)
+======================================
+
+
+
+Contributors (in no particular order)
+=====================================
+Kevin Foo
+
