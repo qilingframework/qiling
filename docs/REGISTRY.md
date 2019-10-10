@@ -1,5 +1,6 @@
 Windows Dump Registry HIVE
 ==========================
+
 ```
 ntuser hive : C:\Users\Default\NTUSER.DAT 
 reg save hklm\system SYSTEM

@@ -1,4 +1,5 @@
 #### Options for output
+
 ```
 output = ("off", "default", "disasm", "debug", "dump")
     off: no output, except fatal error
@@ -9,6 +10,7 @@ output = ("off", "default", "disasm", "debug", "dump")
 ```
 
 #### Options for Console Log
+
 ```
 consolelog = (True, False)
     Normally this option will be used with log_file
