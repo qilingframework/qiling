@@ -1,0 +1,25 @@
+.DS_Store
+.vscode
+.idea
+*.pyc
+*.cache
+.*.swp
+
+qiling.egg-info/
+__pycache__/
+*.py[cod]
+build
+dist
+
+# dont keep raw malware
+wannacry.bin
+*.no.py
+
+.gitkeep
+test.file
+*.file
+
+*.qlog
+
+*.d
+*.o
