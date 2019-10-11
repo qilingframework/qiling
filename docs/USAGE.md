@@ -68,7 +68,7 @@ from qiling import *
 
 def force_call_dialog_func(uc, address, size, ql):
     if address == 0x00401016:
-        lpDialogFunc = ql.unpack32(uc.mem_read(uc.reg_read(UC_X86_REG_ESP) - 0x8, 4))
+        lpDialogFunc = ql.unpack32(ql.mem_read(ql.sp - 0x8, 4))
         ql.x86_stack_push(uc, 0)
         ql.x86_stack_push(uc, 1001)
         ql.x86_stack_push(uc, 273)
