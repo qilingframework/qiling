@@ -63,30 +63,33 @@ if __name__ == "__main__":
 - How to dynamically patch a Windows binary to make sure always pwn3d
 
 ```python
-from unicorn.x86_const import *
 from qiling import *
 
-def force_call_dialog_func(uc, address, size, ql):
-    if address == 0x00401016:
-        lpDialogFunc = ql.unpack32(ql.mem_read(ql.sp - 0x8, 4))
-        ql.x86_stack_push(uc, 0)
-        ql.x86_stack_push(uc, 1001)
-        ql.x86_stack_push(uc, 273)
-        ql.x86_stack_push(uc, 0)
-        ql.x86_stack_push(uc, 0x0401018)
-        ql.uc.reg_write(UC_X86_REG_EIP, lpDialogFunc)
+def force_call_dialog_func(ql):
+    # get DialogFunc address
+    lpDialogFunc = ql.unpack32(ql.mem_read(ql.sp - 0x8, 4))
+    # setup stack for DialogFunc
+    ql.stack_push(0)
+    ql.stack_push(1001)
+    ql.stack_push(273)
+    ql.stack_push(0)
+    ql.stack_push(0x0401018)
+    # force EIP to DialogFunc
+    ql.pc = lpDialogFunc
 
-def my_sandbox(path, rootfs, ostype):
-    ql = Qiling(path, rootfs, ostype = ostype)
+
+def my_sandbox(path, rootfs):
+    ql = Qiling(path, rootfs)
     ql.patch(0x004010B5, b'\x90\x90')
     ql.patch(0x004010CD, b'\x90\x90')
     ql.patch(0x0040110B, b'\x90\x90')
     ql.patch(0x00401112, b'\x90\x90')
-    ql.hook_code(force_call_dialog_func, ql)
+    ql.hook_address(force_call_dialog_func, 0x00401016)
     ql.run()
 
+
 if __name__ == "__main__":
-    my_sandbox(["examples/rootfs/x86_windows/bin/Easy_CrackMe.exe"], "examples/rootfs/x86_windows", "windows")
+    my_sandbox(["rootfs/x86_windows/bin/Easy_CrackMe.exe"], "rootfs/x86_windows")
 ```
 
 #### Qltool
