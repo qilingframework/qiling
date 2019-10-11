@@ -4,14 +4,34 @@
 
 MacOS
 =====
+Current Status: only work with assembler compiled binary
+- gcc compiled static binary
 - Dyld binaries
 
 
 FreeBSD
 =======
+Current Status: only work with assembler compiled binary
+- gcc compiled static binary
 - Dynamically compile binary
 
 
 Windows
 =======
+- ARM64 Windows
 - More Windows API
+- API for PC name, WINS, WORKGOUP and Domains
+- API for fake installed application
+- API for process listing
+
+Linux / *nix
+============
+- ql.dev to emulate devices
+- ql.proc to emulate /proc
+
+
+Others
+======
+- Apple based, iOS and iPadOS
+- Linux based, more support for Android
+
