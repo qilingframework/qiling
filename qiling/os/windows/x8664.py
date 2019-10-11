@@ -65,8 +65,6 @@ def windows_setup64(ql):
     ql.CS_ADDR = 0
     ql.CS_SIZE = 0
 
-    # ql.func_ret_addr = 0
-
     ql.RUN = True
 
     ql.heap = Heap(ql, ql.HEAP_ADDR, ql.HEAP_ADDR + ql.HEAP_SIZE)
@@ -83,11 +81,6 @@ def windows_setup64(ql):
     ql.thread_manager = ThreadManager(ql, main_thread)
     new_handle = Handle(thread=main_thread)
     ql.handle_manager.append(new_handle)
-
-    # set ql functions for windows
-    ql.get_params = types.MethodType(get_params, ql)
-    ql.set_return_value = types.MethodType(set_return_value, ql)
-    ql.get_return_value = types.MethodType(get_return_value, ql)
 
 
 def loader_file(ql):

@@ -21,7 +21,6 @@ class Handle:
         else:
             self.id = id
         self.file = file
-        # self.fileobj = fileobj
         self.regkey = regkey
         self.thread = thread
         self.service = service

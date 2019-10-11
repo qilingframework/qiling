@@ -43,12 +43,16 @@ def hook___getmainargs(ql, address, params):
     return ret
 
 
+# int* __p__fmode(
+# );
 @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={})
 def hook___p__fmode(ql, address, params):
     addr = ql.heap.mem_alloc(ql.pointersize)
     return addr
 
 
+# int * __p__commode(
+#    );
 @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={})
 def hook___p__commode(ql, address, params):
     addr = ql.heap.mem_alloc(ql.pointersize)
@@ -79,6 +83,7 @@ def hook_atexit(ql, address, params):
     return ret
 
 
+# char*** __p__environ(void)
 @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={})
 def hook___p__environ(ql, address, params):
     ret = ql.heap.mem_alloc(ql.pointersize * len(ql.env))
@@ -107,6 +112,7 @@ def hook_puts(ql, address, params):
     return ret
 
 
+# void _cexit( void );
 @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={})
 def hook__cexit(ql, address, params):
     pass
@@ -224,7 +230,7 @@ def printf(ql, address, fmt, params_addr, name):
 @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, param_num=1)
 def hook_printf(ql, address, _):
     ret = 0
-    format_string = ql.get_params(1)
+    format_string = get_params(ql, 1)
 
     if format_string == 0:
         ql.nprint('0x%0.2x: printf(format = 0x0) = 0x%x' % (address, ret))
@@ -235,7 +241,7 @@ def hook_printf(ql, address, _):
     param_addr = ql.sp + ql.pointersize * 2
     ret = printf(ql, address, format_string, param_addr, "printf")
 
-    ql.set_return_value(ret)
+    set_return_value(ql, ret)
 
     count = format_string.count('%')
     # x8664 fastcall donnot known the real number of parameters
@@ -260,7 +266,7 @@ def hook___acrt_iob_func(ql, address, params):
 @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, param_num=2)
 def hook___stdio_common_vfprintf(ql, address, _):
     ret = 0
-    _, _, _, p_format, _, p_args = ql.get_params(6)
+    _, _, _, p_format, _, p_args = get_params(ql, 6)
     fmt = read_cstring(ql, p_format)
     printf(ql, address, fmt, p_args, '__stdio_common_vfprintf')
     return ret
@@ -326,6 +332,7 @@ def hook_strncmp(ql, address, params):
     return result
 
 
+# void* malloc（unsigned int size)
 @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
     "size": UINT
 })

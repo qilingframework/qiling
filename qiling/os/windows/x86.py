@@ -56,10 +56,6 @@ def setup_windows32(ql):
     ql.PE_IMAGE_SIZE = 0
     ql.entry_point = 0
 
-    ql.X86_PE_FUNCTION_ADDR_INIT = 0x800000
-    ql.X86_PE_FUNCTION_ADDR = 0x800000
-    ql.X86_PE_FUNCTION_SIZE = 0x4000
-
     ql.HEAP_ADDR = 0x50000000
     ql.HEAP_SIZE = 0x500000
 
@@ -76,8 +72,6 @@ def setup_windows32(ql):
     ql.DLL_ADDR = 0x1000000
     ql.DLL_SIZE = 0
     ql.DLL_LAST_ADDR = ql.DLL_ADDR
-
-    # ql.func_ret_addr = 0
 
     ql.heap = Heap(ql, ql.HEAP_ADDR, ql.HEAP_ADDR + ql.HEAP_SIZE)
     ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error, ql)
@@ -98,11 +92,6 @@ def setup_windows32(ql):
     ql.thread_manager = ThreadManager(ql, main_thread)
     new_handle = Handle(thread=main_thread)
     ql.handle_manager.append(new_handle)
-
-    # set ql functions for windows
-    ql.get_params = types.MethodType(get_params, ql)
-    ql.set_return_value = types.MethodType(set_return_value, ql)
-    ql.get_return_value = types.MethodType(get_return_value, ql)
 
 
 def loader_file(ql):
