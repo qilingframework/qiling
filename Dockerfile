@@ -1,39 +1,19 @@
-FROM ubuntu:18.04 AS builder
+FROM ubuntu:18.04
 
 MAINTAINER "Kevin Foo <chbsd64@gmail.com>"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-WORKDIR /usr/src
-
 RUN apt-get update \
   && apt-get -y upgrade \
-  && apt-get install -y python make cmake build-essential gcc git
+  && apt-get install -y python3-pip git cmake
 
-RUN git clone https://github.com/unicorn-engine/unicorn \
-  && cd unicorn \
-  && ./make.sh
-
-WORKDIR /usr/src
+WORKDIR /
 
 RUN git clone https://github.com/qilingframework/qiling
 
-FROM ubuntu:18.04
-
-RUN apt-get update \
-  && apt-get -y upgrade \
-  && apt-get install -y python3-pip python \
-  && pip3 install wheel capstone keystone-engine python-registry pefile>=2019.4.18
-
-COPY --from=builder /usr/src/qiling /qiling
-COPY --from=builder /usr/src/unicorn /tmp/unicorn
-
-RUN cd /tmp/unicorn \
-  && ./make.sh install \
-  && cd bindings/python \
-  && python3 setup.py install
-
 RUN cd /qiling \
+  && pip3 install -r requirements.txt \
   && python3 setup.py install
 
 RUN apt-get clean \
