@@ -15,7 +15,7 @@ import os
 import string
 
 from qiling.arch.filetype import *
-from qiling.exception improt *
+from qiling.exception import *
 
 PT_LOAD = 1
 PT_DYNAMIC = 2
