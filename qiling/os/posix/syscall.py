@@ -1279,7 +1279,10 @@ def ql_syscall_bind(ql, uc, bind_fd, bind_addr, bind_addrlen,  null0, null1, nul
 
         if ql.output == QL_OUT_DEBUG:
             raise
-        
+    
+    if ql.shellcoder:
+        regreturn = 0
+
     ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
     ql_definesyscall_return(ql, uc, regreturn)
 
