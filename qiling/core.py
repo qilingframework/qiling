@@ -233,7 +233,7 @@ class Qiling:
                 raise QlErrorArch('MACHO mismatch')
 
         else:
-            raise OSTYPEError("OSTYPE not found")
+            raise QlErrorOsType("OSTYPE not found")
         
         loader_file(self)
 
@@ -294,7 +294,10 @@ class Qiling:
         }
 
         if self.ostype not in shellcode_dict:
-            raise OSTYPEError('Shellcode Object Not Found')
+            raise QlErrorOsType(f"Shellcode Loader - Invalid OSType {self.ostype}")
+
+        if self.arch not in shellcode_dict[self.ostype]:
+            raise QlErrorArch(f"Shellcode Loader - Invalid Arch {self.arch}")
 
         self.runtype = shellcode_dict[self.ostype][self.arch]["runtype"]
         sc_mod = importlib.import_module(shellcode_dict[self.ostype][self.arch]["module"])
