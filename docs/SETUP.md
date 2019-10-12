@@ -9,7 +9,7 @@ This will install required python3, pip3, git tools and other essentials librari
 Once completed, you can clone Qiling Framework source and run setup to install it.
 ```
 git clone https://github.com/qilingframework/qiling
-cd qiling && sudo pip3 install -r requirements.txt
+cd qiling
 sudo python3 setup.py install 
 ```
 
