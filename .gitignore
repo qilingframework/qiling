@@ -11,6 +11,9 @@ __pycache__/
 build
 dist
 
+examples/**/dlls/
+examples/**/registry/
+
 # dont keep raw malware
 wannacry.bin
 *.no.py

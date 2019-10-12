@@ -11,6 +11,7 @@
 # YU tong (sp1ke) <spikeinhouse@gmail.com>
 import os
 import json
+import sys
 from Registry import Registry
 from qiling.os.windows.const import *
 from qiling.exception import *
@@ -79,9 +80,9 @@ class RegistryManager:
             # hkey current user
             self.hkcu = Registry.Registry(os.path.join(self.hive, 'NTUSER.DAT'))
         except FileNotFoundError:
-            print("WARNING: Registry files not found!")
+            QlPrintException("WARNING: Registry files not found!")
         except Exception:
-            print("WARNING: Registry files format error")
+            QlPrintException("WARNING: Registry files format error")
 
     def exists(self, key):
         if key in self.config:
