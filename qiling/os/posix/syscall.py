@@ -707,6 +707,7 @@ def ql_syscall_stat(ql, uc, stat_path, stat_buf_ptr, null0, null1, null2, null3)
 
 
 def ql_syscall_read(ql, uc, read_fd, read_buf, read_len, null0, null1, null2):
+    data = None
     if read_fd < 256 and ql.file_des[read_fd] != 0:
         try:
             data = ql.file_des[read_fd].read(read_len)
@@ -717,13 +718,16 @@ def ql_syscall_read(ql, uc, read_fd, read_buf, read_len, null0, null1, null2):
     else:
         regreturn = -1
     ql.nprint("read(%d, 0x%x, 0x%x) = %d" % (read_fd, read_buf, read_len, regreturn))
-    ql.dprint("|--->>> read() CONTENT:")
-    ql.dprint(data)
+
+    if data:
+        ql.dprint("|--->>> read() CONTENT:")
+        ql.dprint(data)
     ql_definesyscall_return(ql, uc, regreturn)
 
 
 def ql_syscall_write(ql, uc, write_fd, write_buf, write_count, null0, null1, null2):
     regreturn = 0
+    buf = None
     try:
         buf = uc.mem_read(write_buf, write_count)
         ql.file_des[write_fd].write(buf)
@@ -733,8 +737,9 @@ def ql_syscall_write(ql, uc, write_fd, write_buf, write_count, null0, null1, nul
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             raise
     ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
-    ql.dprint("|--->>> write() CONTENT:")
-    ql.dprint(buf)
+    if buf:
+        ql.dprint("|--->>> write() CONTENT:")
+        ql.dprint(buf)
     ql_definesyscall_return(ql, uc, regreturn)
 
 
@@ -1252,13 +1257,11 @@ def ql_syscall_bind(ql, uc, bind_fd, bind_addr, bind_addrlen,  null0, null1, nul
     
     sin_family, = struct.unpack("<h", data[:2])  
 
+    port, host = struct.unpack(">HI", data[2:8])
     if sin_family == 2: 
-        port, host = struct.unpack(">HI", data[2:8])
         host = ql_bin_to_ipv4(host)
-    elif sin_family == 10:
-        port, host = struct.unpack(">HI", data[2:8])  
+    elif sin_family == 10:  
         host = "::"
-    
     
     if ql.root == False and port <= 1024:
         port = port + 8000
