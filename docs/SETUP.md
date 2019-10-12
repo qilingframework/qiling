@@ -15,7 +15,7 @@ sudo python3 setup.py install
 
 ---
 
-#### Important note on Windows DLLs
+#### Important note on Windows DLLs and registry
 
 Due to distribution restriction, we do not bundle Microsoft Windows DLL files and registry. You need to copy respective DLLs and registry from Microsoft Windows System
 
