@@ -167,7 +167,7 @@ def ql_x86_setup_gdt_segment(ql, uc, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMEN
         return pack('<Q', to_ret)
 
     # map GDT table
-    if ql.ostype in (QL_LINUX, QL_FREEBSD) and GDTTYPE == "DS":
+    if ql.ostype in (QL_LINUX, QL_FREEBSD, QL_MACOS) and GDTTYPE == "DS":
             ql.dprint("OS Type:", ql.ostype)
             uc.mem_map(GDT_ADDR, GDT_LIMIT)
     
