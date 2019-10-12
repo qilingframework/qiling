@@ -286,7 +286,10 @@ def ql_transform_to_real_path(ql, uc, path):
     if from_path != None:
         real_path = os.path.abspath(to_path + relative_path[fm_l : ])
     else:
+        if rootfs == None:
+            rootfs = ""
         real_path = os.path.abspath(rootfs + '/' + relative_path)
+            
 
         if os.path.islink(real_path):
             link_path = os.readlink(real_path)
