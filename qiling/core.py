@@ -241,59 +241,66 @@ class Qiling:
     def shellcode(self):
         self.__enable_bin_patch()
 
-        if self.ostype == QL_LINUX:
+        #TODO, maybe import this from a json config
+        shellcode_dict = {
+            QL_LINUX: {
+                QL_X86: {
+                    "module": "qiling.os.linux.x86",
+                    "runtype": "ql_x86_run_linux"
+                },
+                QL_X8664: {
+                    "module": "qiling.os.linux.x8664",
+                    "runtype": "ql_x8664_run_linux"
+                },
+                QL_MIPS32EL: {
+                    "module": "qiling.os.linux.mips32el",
+                    "runtype": "ql_mips32el_run_linux"
+                },
+                QL_ARM: {
+                    "module": "qiling.os.linux.arm",
+                    "runtype": "ql_arm_run_linux"
+                },
+                QL_ARM64: {
+                    "module": "qiling.os.linux.arm64",
+                    "runtype": "ql_arm64_run_linux"
+                }
+            },
+            QL_FREEBSD: {
+                QL_X8664: {
+                    "module": "qiling.os.freebsd.x8664",
+                    "runtype": "ql_x8664_run_freebsd"
+                }
+            },
+            QL_MACOS: {
+                QL_X8664: {
+                    "module": "qiling.os.macos.x8664",
+                    "runtype": "ql_x8664_run_macos",
+                },
+                QL_X86: {
+                    "module": "qiling.os.macos.x86",
+                    "runtype": "ql_x86_run_macos"
+                }
+            },
+            QL_WINDOWS: {
+                QL_X86: {
+                    "module": "qiling.os.windows.x86",
+                    "runtype": "ql_x86_run_windows"
+                },
+                QL_X8664: {
+                    "module": "qiling.os.windows.x8664",
+                    "runtype": "ql_x8664_run_windows"
+                }
+            }
+        }
 
-            if self.arch == QL_X86:
-                from qiling.os.linux.x86 import loader_shellcode
-                self.runtype = "ql_x86_run_linux"
-
-            elif self.arch == QL_X8664:
-                from qiling.os.linux.x8664 import loader_shellcode
-                self.runtype = "ql_x8664_run_linux"
-
-            elif self.arch == QL_MIPS32EL:
-                from qiling.os.linux.mips32el import loader_shellcode
-                self.runtype = "ql_mips32el_run_linux"
-
-            elif self.arch == QL_ARM:
-                from qiling.os.linux.arm import loader_shellcode
-                self.runtype = "ql_arm_run_linux"
-
-            elif self.arch == QL_ARM64:
-                from qiling.os.linux.arm64 import loader_shellcode
-                self.runtype = "ql_arm64_run_linux"
-
-        elif self.ostype == QL_FREEBSD:
-
-            if self.arch == QL_X8664:
-                from qiling.os.freebsd.x8664 import loader_shellcode
-                self.runtype = "ql_x8664_run_freebsd"
- 
-        elif self.ostype == QL_MACOS:
-
-            if self.arch == QL_X8664:
-                from qiling.os.macos.x8664 import loader_shellcode
-                self.runtype = "ql_x8664_run_macos"
- 
-            if self.arch == QL_X86:
-                from qiling.os.macos.x86 import loader_shellcode
-                self.runtype = "ql_x86_run_macos"
-
-        elif self.ostype == QL_WINDOWS:    
-
-            if self.arch == QL_X86:
-                from qiling.os.windows.x86 import loader_shellcode
-                self.runtype = "ql_x86_run_windows"
-
-            elif self.arch == QL_X8664:
-                from qiling.os.windows.x8664 import loader_shellcode
-                self.runtype = "ql_x8664_run_windows"
-
-        else:
+        if self.ostype not in shellcode_dict:
             raise OSTYPEError('Shellcode Object Not Found')
 
-        loader_shellcode(self)
+        self.runtype = shellcode_dict[self.ostype][self.arch]["runtype"]
+        sc_mod = importlib.import_module(shellcode_dict[self.ostype][self.arch]["module"])
 
+        loader_shellcode = getattr(sc_mod, "loader_shellcode")
+        loader_shellcode(self)
 
     # TODO: We need to refactor this
     def run(self):
