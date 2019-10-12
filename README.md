@@ -52,13 +52,7 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 
 #### Install
 
-- Install newer version of Unicorn from Pypi (NOTE: you may need sudo on your platform to install to system directory).
-
-```
-pip3 install --pre unicorn
-```
-
-- Run below command line to install Qiling.
+Run below command line to install Qiling.
 
 ```
 python3 setup.py install
