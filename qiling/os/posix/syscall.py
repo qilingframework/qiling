@@ -727,6 +727,7 @@ def ql_syscall_read(ql, uc, read_fd, read_buf, read_len, null0, null1, null2):
 
 def ql_syscall_write(ql, uc, write_fd, write_buf, write_count, null0, null1, null2):
     regreturn = 0
+    buf = None
     try:
         buf = uc.mem_read(write_buf, write_count)
         ql.file_des[write_fd].write(buf)
@@ -736,8 +737,9 @@ def ql_syscall_write(ql, uc, write_fd, write_buf, write_count, null0, null1, nul
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             raise
     ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
-    ql.dprint("|--->>> write() CONTENT:")
-    ql.dprint(buf)
+    if buf:
+        ql.dprint("|--->>> write() CONTENT:")
+        ql.dprint(buf)
     ql_definesyscall_return(ql, uc, regreturn)
 
 
