@@ -10,7 +10,7 @@
 # CHEN huitao (null) <null@qiling.io>
 # YU tong (sp1ke) <spikeinhouse@gmail.com>
 
-import sys, struct, os, platform
+import sys, struct, os, platform, importlib
 from unicorn import *
 
 from qiling.arch.filetype import *
@@ -299,38 +299,23 @@ class Qiling:
     def run(self):
         self.__enable_bin_patch()
 
-        if self.runtype == "ql_x86_run_linux":
-            from qiling.os.linux.x86 import runner
+        runners = {
+            "ql_x86_run_linux"              : "qiling.os.linux.x86",
+            "ql_x8664_run_linux"            : "qiling.os.linux.x8664",
+            "ql_mips32el_run_linux"         : "qiling.os.linux.mips32el",
+            "ql_arm64_run_linux"            : "qiling.os.linux.arm64",
+            "ql_x8664_run_freebsd"          : "qiling.os.freebsd.x8664",
+            "ql_x86_run_macos"              : "qiling.os.macos.x86",
+            "ql_x8664_run_macos"            : "qiling.os.macos.x8664",
+            "ql_x86_run_windows"            : "qiling.os.windows.x86",
+            "ql_x8664_run_windows"          : "qiling.os.windows.x8664"
+        }
 
-        elif self.runtype == "ql_mips32el_run_linux":
-            from qiling.os.linux.mips32el import runner
-
-        elif self.runtype == "ql_arm_run_linux":
-            from qiling.os.linux.arm import runner
-
-        elif self.runtype == "ql_arm64_run_linux":
-            from qiling.os.linux.arm64 import runner
-
-        elif self.runtype == "ql_x8664_run_linux":
-            from qiling.os.linux.x8664 import runner
-
-        elif self.runtype == "ql_x8664_run_freebsd":
-            from qiling.os.freebsd.x8664 import runner
-
-        elif self.runtype == "ql_x8664_run_macos":
-            from qiling.os.macos.x8664 import runner
-
-        elif self.runtype == "ql_x86_run_macos":
-            from qiling.os.macos.x86 import runner
-
-        elif self.runtype == "ql_x86_run_windows":
-            from qiling.os.windows.x86 import runner
-
-        elif self.runtype == "ql_x8664_run_windows":
-            from qiling.os.windows.x8664 import runner
-
-        else:
+        if(self.runtype not in runners):
             raise QlErrorRuntype('Shellcode Object Not Found')
+
+        runner_mod = importlib.import_module(runners[self.runtype])
+        runner = getattr(runner_mod, "runner")
 
         runner(self)
 
