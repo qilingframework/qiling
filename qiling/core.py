@@ -66,7 +66,10 @@ class Qiling:
     exit_code = 0
     
 
-    def __init__(self, filename = None, rootfs = None, argv = [], env = {}, shellcoder = None, ostype = None, archtype = None, libcache = False, output = None, consolelog = True, stdin = 0, stdout = 0, stderr = 0, log_file = None, separate_log_file = False):
+    def __init__(self, filename = None, rootfs = None, argv = [], env = {}, 
+                 shellcoder = None, ostype = None, archtype = None, libcache = False,
+                 output = None, consolelog = True, stdin = 0, stdout = 0, stderr = 0,
+                 log_file = None, separate_log_file = False):
         self.output = None
         self.ostype = ostype
         self.archtype = archtype
@@ -126,34 +129,35 @@ class Qiling:
             self.file_des[1] = self.stdout
             self.file_des[2] = self.stderr
             
-            for i in range(256):
+            for _ in range(256):
                 self.sigaction_act.append(0)
 
-        if self.arch == QL_X86:
-            from qiling.arch.x86 import X86
-            self.arch = QL_X86
-            self.archbit = 32
-            self.archfunc = X86(self)
-        elif self.arch == QL_X8664:
-            from qiling.arch.x86 import X8664
-            self.arch = QL_X8664
-            self.archbit = 64
-            self.archfunc = X8664(self)
-        elif self.arch == QL_ARM:
-            from qiling.arch.arm import ARM
-            self.arch = QL_ARM
-            self.archbit = 32
-            self.archfunc = ARM(self)
-        elif self.arch == QL_ARM64:    
-            from qiling.arch.arm64 import ARM64 
-            self.arch = QL_ARM64
-            self.archbit = 64
-            self.archfunc = ARM64(self)
-        elif self.arch == QL_MIPS32EL:
-            from qiling.arch.mips32el import MIPS32EL
-            self.arch = QL_MIPS32EL
-            self.archbit = 32
-            self.archfunc = MIPS32EL(self)
+        arch_dict = {
+            QL_X86: {
+                "archbit": 32,
+                "archfunc": "X86"
+            },
+            QL_X8664: {
+                "archbit": 64,
+                "archfunc": "X8664"
+            },
+            QL_ARM: {
+                "archbit": 32,
+                "archfunc": "ARM"
+            },
+            QL_ARM64: {
+                "archbit": 32,
+                "archfunc": "ARM64"
+            },
+            QL_MIPS32EL: {
+                "archbit": 32,
+                "archfunc": "MIPS32EL"
+            }
+        }
+
+        arch_func = self.get_arch_module_function(arch_dict[self.arch]["archfunc"])
+        self.archbit = arch_dict[self.arch]["archbit"]
+        self.archfunc = arch_func(self) 
 
         if self.archbit:
             self.pointersize = (self.archbit // 8)
@@ -169,7 +173,34 @@ class Qiling:
         else:
             self.run_exec()  
 
-    def get_module_function(self, function_name):
+    def get_arch_module_function(self, function_name):
+        module_dict = {
+            QL_X86: {
+                "module": "qiling.arch.x86",
+            },
+            QL_X8664: {
+                "module": "qiling.arch.x86",
+            },
+            QL_ARM: {
+                "module": "qiling.arch.arm",
+            },
+            QL_ARM64: {
+                "module": "qiling.arch.arm64",
+            },
+            QL_MIPS32EL: {
+                "module": "qiling.arch.mips32el",
+            }
+        }
+
+        if self.arch not in module_dict:
+            raise QlErrorArch(f"Invalid Arch {self.arch}")
+
+        sc_mod = importlib.import_module(module_dict[self.arch]["module"])
+
+        module_function = getattr(sc_mod, function_name)
+        return module_function
+
+    def get_os_module_function(self, function_name):
         module_dict = {
             QL_LINUX: {
                 QL_X86: {
@@ -225,7 +256,7 @@ class Qiling:
             raise QlErrorOsType(f"Invalid OSType {self.ostype}")
 
         if self.arch not in module_dict[self.ostype]:
-            raise QlErrorArch(f"SInvalid Arch {self.arch}")
+            raise QlErrorArch(f"Invalid Arch {self.arch}")
 
         self.runtype = module_dict[self.ostype][self.arch]["runtype"]
         sc_mod = importlib.import_module(module_dict[self.ostype][self.arch]["module"])
@@ -235,21 +266,21 @@ class Qiling:
 
 
     def run_exec(self):
-        loader_file = self.get_module_function("loader_file")
+        loader_file = self.get_os_module_function("loader_file")
         loader_file(self)
 
  
     def shellcode(self):
         self.__enable_bin_patch()
 
-        loader_shellcode = self.get_module_function("loader_shellcode")
+        loader_shellcode = self.get_os_module_function("loader_shellcode")
         loader_shellcode(self)
 
-    # TODO: We need to refactor this
+
     def run(self):
         self.__enable_bin_patch()
 
-        runner = self.get_module_function("runner")
+        runner = self.get_os_module_function("runner")
         runner(self)
 
 
