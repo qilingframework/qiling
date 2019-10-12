@@ -155,6 +155,9 @@ class Qiling:
             }
         }
 
+        if self.arch not in arch_dict:
+            raise QlErrorArch(f"Invalid Arch {self.arch}")
+            
         arch_func = self.get_arch_module_function(arch_dict[self.arch]["archfunc"])
         self.archbit = arch_dict[self.arch]["archbit"]
         self.archfunc = arch_func(self) 
