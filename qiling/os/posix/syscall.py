@@ -1061,55 +1061,56 @@ def ql_syscall_execve(ql, uc, execve_pathname, execve_argv, execve_envp, null0, 
             execve_envp += 4
     
     ql.nprint("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
-
-    
     ql.uc.emu_stop()
-    
-    ql.stack_address = 0
-    ql.argv = argv
-    ql.env = env
-    ql.path = real_path
-    ql.map_info = []
 
-    if ql.ostype == QL_LINUX:
-        if ql.arch == QL_X8664:
-            from qiling.os.linux.x8664 import ql_x8664_load_linux
-            ql.runtype = "ql_x8664_run_linux"
-            ql_x8664_load_linux(ql)
-        elif ql.arch == QL_X86:
-            from qiling.os.linux.x86 import ql_x86_load_linux
-            ql.runtype = "ql_x86_run_linux"
-            ql_x86_load_linux(ql)
-        elif ql.arch == QL_MIPS32EL:
-            from qiling.os.linux.mips32el import ql_mips32el_load_linux
-            ql.runtype = "ql_mips32el_run_linux"
-            ql_mips32el_load_linux(ql)
-        elif ql.arch == QL_ARM:
-            from qiling.os.linux.arm import ql_arm_load_linux
-            ql.runtype = "ql_arm_run_linux"
-            ql_arm_load_linux(ql)    
-        elif ql.arch == QL_ARM64:
-            from qiling.os.linux.arm64 import ql_arm64_load_linux
-            ql.runtype = "ql_arm_run64_linux"
-            ql_arm64_load_linux(ql)
+    if ql.shellcode:
+        pass
+    else:
+        ql.stack_address = 0
+        ql.argv = argv
+        ql.env = env
+        ql.path = real_path
+        ql.map_info = []
 
-    elif ql.ostype == QL_MACOS:
-        if ql.arch == QL_X8664:
-            from qiling.os.macos.x8664 import ql_x8664_load_macos
-            ql.runtype = "ql_x8664_run_macos"
-            ql_x8664_load_macos(ql)
-        elif ql.arch == QL_X86:
-            from qiling.os.macos.x86 import ql_x86_load_macos
-            ql.runtype = "ql_x86_run_macos"
-            ql_x86_load_macos(ql)
-    
-    elif ql.ostype == QL_FREEBSD:
-        if ql.arch == QL_X8664:
-            from qiling.os.freebsd.x8664 import ql_x8664_load_freebsd
-            ql.runtype = "ql_x8664_run_freebsd"
-            ql_x8664_load_freebsd(ql)
-    
-    ql.run()
+        if ql.ostype == QL_LINUX:
+            if ql.arch == QL_X8664:
+                from qiling.os.linux.x8664 import ql_x8664_load_linux
+                ql.runtype = "ql_x8664_run_linux"
+                ql_x8664_load_linux(ql)
+            elif ql.arch == QL_X86:
+                from qiling.os.linux.x86 import ql_x86_load_linux
+                ql.runtype = "ql_x86_run_linux"
+                ql_x86_load_linux(ql)
+            elif ql.arch == QL_MIPS32EL:
+                from qiling.os.linux.mips32el import ql_mips32el_load_linux
+                ql.runtype = "ql_mips32el_run_linux"
+                ql_mips32el_load_linux(ql)
+            elif ql.arch == QL_ARM:
+                from qiling.os.linux.arm import ql_arm_load_linux
+                ql.runtype = "ql_arm_run_linux"
+                ql_arm_load_linux(ql)    
+            elif ql.arch == QL_ARM64:
+                from qiling.os.linux.arm64 import ql_arm64_load_linux
+                ql.runtype = "ql_arm_run64_linux"
+                ql_arm64_load_linux(ql)
+
+        elif ql.ostype == QL_MACOS:
+            if ql.arch == QL_X8664:
+                from qiling.os.macos.x8664 import ql_x8664_load_macos
+                ql.runtype = "ql_x8664_run_macos"
+                ql_x8664_load_macos(ql)
+            elif ql.arch == QL_X86:
+                from qiling.os.macos.x86 import ql_x86_load_macos
+                ql.runtype = "ql_x86_run_macos"
+                ql_x86_load_macos(ql)
+        
+        elif ql.ostype == QL_FREEBSD:
+            if ql.arch == QL_X8664:
+                from qiling.os.freebsd.x8664 import ql_x8664_load_freebsd
+                ql.runtype = "ql_x8664_run_freebsd"
+                ql_x8664_load_freebsd(ql)
+        
+        ql.run()
 
 
 def ql_syscall_socket(ql, uc, socket_domain, socket_type, socket_protocol, null0, null1, null2):
