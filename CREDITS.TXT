@@ -13,10 +13,11 @@ YU tong (sp1ke) <spikeinhouse@gmail.com>
 
 Alpha testers (in no particular order)
 ======================================
-
+Marcus KLKS
+ekso
 
 
 Contributors (in no particular order)
 =====================================
-Kevin Foo
+Kevin Foo - Dockerfile, documentation and website
 
