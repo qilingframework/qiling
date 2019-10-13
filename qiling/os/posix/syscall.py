@@ -1082,47 +1082,47 @@ def ql_syscall_execve(ql, uc, execve_pathname, execve_argv, execve_envp, null0, 
             QL_LINUX:{
                 QL_X8664: {
                     "module": "qiling.os.linux.x8664",
-                    "function": "ql_x8664_load_linux",
-                    "runtype": "ql_x8664_run_linux"
+                    "function": "loader_file",
+                    "runtype": "runner"
                 },
                 QL_X86: {
                     "module": "qiling.os.linux.x86",
-                    "function": "ql_x86_load_linux",
-                    "runtype": "ql_x86_run_linux"
+                    "function": "loader_file",
+                    "runtype": "runner"
                 },
                 QL_MIPS32EL: {
                     "module": "qiling.os.linux.mips32el",
-                    "function": "ql_mips32el_load_linux",
-                    "runtype": "ql_mips32el_run_linux"
+                    "function": "loader_file",
+                    "runtype": "runner"
                 },
                 QL_ARM: {
                     "module": "qiling.os.linux.arm",
-                    "function": "ql_arm_load_linux",
-                    "runtype": "ql_arm_run_linux"
+                    "function": "loader_file",
+                    "runtype": "runner"
                 },
                 QL_ARM64: {
                     "module": "qiling.os.linux.arm64",
-                    "function": "ql_arm64_load_linux",
-                    "runtype": "ql_arm_run64_linux"
+                    "function": "loader_file",
+                    "runtype": "runner"
                 }
             },
             QL_MACOS: {
                 QL_X8664: {
                     "module": "qiling.os.macos.x8664",
-                    "function": "ql_x8664_load_macos",
-                    "runtype": "ql_x8664_run_macos"
+                    "function": "loader_file",
+                    "runtype": "runner"
                 },
                 QL_X86: {
                     "module": "qiling.os.macos.x86",
-                    "function": "ql_x86_load_macos",
-                    "runtype": "ql_x86_run_macos"
+                    "function": "loader_file",
+                    "runtype": "runner"
                 }
             },
             QL_FREEBSD: {
                 QL_X8664: {
                     "module": "qiling.os.freebsd.x8664",
-                    "function": "ql_x8664_load_freebsd",
-                    "runtype": "ql_x8664_run_freebsd"
+                    "function": "loader_file",
+                    "runtype": "runner"
                 }
             }
         }
