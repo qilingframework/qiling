@@ -42,22 +42,23 @@ class ShellcodeTest(unittest.TestCase):
         ql = Qiling(shellcoder = ARM64_LIN, archtype = "arm64", ostype = "linux", output = "off")
         ql.run()
 
-    #This shellcode needs to be changed to something simpler
+    #This shellcode needs to be changed to something simpler not requiring rootfs
     #def test_windows_x86(self):
     #    print("Windows X86 32bit Shellcode")
     #    ql = Qiling(shellcoder = X86_WIN, archtype = "x86", ostype = "windows", rootfs="rootfs/x86_windows", output="off")
     #    ql.run()
 
-    #This shellcode needs to be changed to something simpler
+    #This shellcode needs to be changed to something simpler not requiring rootfs
     #def test_windows_x64(self):
     #   print("\nWindows X8664 64bit Shellcode")
     #   ql = Qiling(shellcoder = X8664_WIN, archtype = "x8664", ostype = "windows", rootfs="rootfs/x8664_windows", output=off)
     #   ql.run()
 
-    def test_freebsd_x64(self):
-        print("FreeBSD X86 64bit Shellcode")
-        ql = Qiling(shellcoder = X8664_FBSD, archtype = "x8664", ostype = "freebsd", output = "off")
-        ql.run()
+    #This shellcode needs to be changed to something simpler, listen is blocking
+    #def test_freebsd_x64(self):
+    #    print("FreeBSD X86 64bit Shellcode")
+    #    ql = Qiling(shellcoder = X8664_FBSD, archtype = "x8664", ostype = "freebsd", output = "off")
+    #    ql.run()
 
     def test_macos_x64(self):
         print("macos X86 64bit Shellcode")

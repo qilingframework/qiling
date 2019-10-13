@@ -34,6 +34,7 @@ from qiling.arch.filetype import *
 from qiling.os.linux.thread import *
 from qiling.arch.filetype import *
 from qiling.os.posix.filestruct import *
+from qiling.utils import *
 
 def ql_syscall_exit(ql, uc, null0, null1, null2, null3, null4, null5):
     ql.nprint("exit()")
@@ -1077,44 +1078,60 @@ def ql_syscall_execve(ql, uc, execve_pathname, execve_argv, execve_envp, null0, 
         ql.path = real_path
         ql.map_info = []
 
-        if ql.ostype == QL_LINUX:
-            if ql.arch == QL_X8664:
-                from qiling.os.linux.x8664 import ql_x8664_load_linux
-                ql.runtype = "ql_x8664_run_linux"
-                ql_x8664_load_linux(ql)
-            elif ql.arch == QL_X86:
-                from qiling.os.linux.x86 import ql_x86_load_linux
-                ql.runtype = "ql_x86_run_linux"
-                ql_x86_load_linux(ql)
-            elif ql.arch == QL_MIPS32EL:
-                from qiling.os.linux.mips32el import ql_mips32el_load_linux
-                ql.runtype = "ql_mips32el_run_linux"
-                ql_mips32el_load_linux(ql)
-            elif ql.arch == QL_ARM:
-                from qiling.os.linux.arm import ql_arm_load_linux
-                ql.runtype = "ql_arm_run_linux"
-                ql_arm_load_linux(ql)    
-            elif ql.arch == QL_ARM64:
-                from qiling.os.linux.arm64 import ql_arm64_load_linux
-                ql.runtype = "ql_arm_run64_linux"
-                ql_arm64_load_linux(ql)
+        loaders_dict = {
+            QL_LINUX:{
+                QL_X8664: {
+                    "module": "qiling.os.linux.x8664",
+                    "function": "ql_x8664_load_linux",
+                    "runtype": "ql_x8664_run_linux"
+                },
+                QL_X86: {
+                    "module": "qiling.os.linux.x86",
+                    "function": "ql_x86_load_linux",
+                    "runtype": "ql_x86_run_linux"
+                },
+                QL_MIPS32EL: {
+                    "module": "qiling.os.linux.mips32el",
+                    "function": "ql_mips32el_load_linux",
+                    "runtype": "ql_mips32el_run_linux"
+                },
+                QL_ARM: {
+                    "module": "qiling.os.linux.arm",
+                    "function": "ql_arm_load_linux",
+                    "runtype": "ql_arm_run_linux"
+                },
+                QL_ARM64: {
+                    "module": "qiling.os.linux.arm64",
+                    "function": "ql_arm64_load_linux",
+                    "runtype": "ql_arm_run64_linux"
+                }
+            },
+            QL_MACOS: {
+                QL_X8664: {
+                    "module": "qiling.os.macos.x8664",
+                    "function": "ql_x8664_load_macos",
+                    "runtype": "ql_x8664_run_macos"
+                },
+                QL_X86: {
+                    "module": "qiling.os.macos.x86",
+                    "function": "ql_x86_load_macos",
+                    "runtype": "ql_x86_run_macos"
+                }
+            },
+            QL_FREEBSD: {
+                QL_X8664: {
+                    "module": "qiling.os.freebsd.x8664",
+                    "function": "ql_x8664_load_freebsd",
+                    "runtype": "ql_x8664_run_freebsd"
+                }
+            }
+        }
 
-        elif ql.ostype == QL_MACOS:
-            if ql.arch == QL_X8664:
-                from qiling.os.macos.x8664 import ql_x8664_load_macos
-                ql.runtype = "ql_x8664_run_macos"
-                ql_x8664_load_macos(ql)
-            elif ql.arch == QL_X86:
-                from qiling.os.macos.x86 import ql_x86_load_macos
-                ql.runtype = "ql_x86_run_macos"
-                ql_x86_load_macos(ql)
-        
-        elif ql.ostype == QL_FREEBSD:
-            if ql.arch == QL_X8664:
-                from qiling.os.freebsd.x8664 import ql_x8664_load_freebsd
-                ql.runtype = "ql_x8664_run_freebsd"
-                ql_x8664_load_freebsd(ql)
-        
+        ql.runtype = loaders_dict[ql.ostype][ql.arch]["runtype"]
+        module_name = loaders_dict[ql.ostype][ql.arch]["module"]
+        function_name = loaders_dict[ql.ostype][ql.arch]["function"]
+        load_func = get_module_function(module_name, function_name)
+        load_func(ql)
         ql.run()
 
 
