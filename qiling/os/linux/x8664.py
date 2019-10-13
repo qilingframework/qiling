@@ -104,9 +104,10 @@ def runner(ql):
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql_setup(ql)
     ql.hook_insn(hook_syscall, ql, 1, 0, UC_X86_INS_SYSCALL)
-    ql_x8664_setup_gdt_segment_ds(ql, ql.uc)
-    ql_x8664_setup_gdt_segment_cs(ql, ql.uc)
-    ql_x8664_setup_gdt_segment_ss(ql, ql.uc)
+    if not ql.shellcoder: 
+        ql_x8664_setup_gdt_segment_ds(ql, ql.uc)
+        ql_x8664_setup_gdt_segment_cs(ql, ql.uc)
+        ql_x8664_setup_gdt_segment_ss(ql, ql.uc)
 
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_EMU_END

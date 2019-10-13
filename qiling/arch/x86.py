@@ -47,7 +47,7 @@ QL_X86_S_PRIV_0 = 0x0
 
 QL_X86_GDT_ADDR = 0x3000
 QL_X86_GDT_ADDR_PADDING = 0xe0000000
-QL_X86_GDT_ADDR_PADDING64 = 0x7effffff00000000
+QL_X8664_GDT_ADDR_PADDING = 0x7effffff00000000
 QL_X86_GDT_LIMIT = 0x1000
 QL_X86_GDT_ENTRY_SIZE = 0x8
 
@@ -171,8 +171,7 @@ def ql_x86_setup_gdt_segment(ql, uc, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMEN
             ql.dprint("OS Type:", ql.ostype)
             uc.mem_map(GDT_ADDR, GDT_LIMIT)
     
-    if ql.ostype == QL_WINDOWS:
-        if GDTTYPE == "FS":
+    if ql.ostype == QL_WINDOWS and GDTTYPE == "FS":
             uc.mem_map(GDT_ADDR, GDT_LIMIT)
             uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
 
@@ -180,7 +179,7 @@ def ql_x86_setup_gdt_segment(ql, uc, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMEN
         if ql.arch == QL_X86:
             GDT_ADDR = GDT_ADDR + QL_X86_GDT_ADDR_PADDING
         elif ql.arch == QL_X8664:
-            GDT_ADDR = GDT_ADDR + QL_X86_GDT_ADDR_PADDING64
+            GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
 
         ql.dprint ("GDT_ADDR is 0x%x" % GDT_ADDR)
         uc.mem_map(GDT_ADDR, GDT_LIMIT)
