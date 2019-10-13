@@ -16,6 +16,9 @@ from unicorn import *
 from qiling.arch.filetype import *
 from qiling.os.posix.filestruct import *
 from qiling.exception import *
+from qiling.utils import *
+from qiling.os.utils import *
+from qiling.arch.utils import *
 
 __version__ = "0.9"
 
@@ -157,8 +160,9 @@ class Qiling:
 
         if self.arch not in arch_dict:
             raise QlErrorArch(f"Invalid Arch {self.arch}")
-            
-        arch_func = self.get_arch_module_function(arch_dict[self.arch]["archfunc"])
+
+        arch_func = get_arch_module_function(self.arch, arch_dict[self.arch]["archfunc"])
+
         self.archbit = arch_dict[self.arch]["archbit"]
         self.archfunc = arch_func(self) 
 
@@ -176,80 +180,43 @@ class Qiling:
         else:
             self.run_exec()  
 
-    def get_arch_module_function(self, function_name):
-        module_dict = {
-            QL_X86: {
-                "module": "qiling.arch.x86",
-            },
-            QL_X8664: {
-                "module": "qiling.arch.x86",
-            },
-            QL_ARM: {
-                "module": "qiling.arch.arm",
-            },
-            QL_ARM64: {
-                "module": "qiling.arch.arm64",
-            },
-            QL_MIPS32EL: {
-                "module": "qiling.arch.mips32el",
-            }
-        }
-
-        if self.arch not in module_dict:
-            raise QlErrorArch(f"Invalid Arch {self.arch}")
-
-        sc_mod = importlib.import_module(module_dict[self.arch]["module"])
-
-        module_function = getattr(sc_mod, function_name)
-        return module_function
-
-    def get_os_module_function(self, function_name):
+    def build_os_execution(self, function_name):
         module_dict = {
             QL_LINUX: {
                 QL_X86: {
-                    "module": "qiling.os.linux.x86",
                     "runtype": "ql_x86_run_linux"
                 },
                 QL_X8664: {
-                    "module": "qiling.os.linux.x8664",
                     "runtype": "ql_x8664_run_linux"
                 },
                 QL_MIPS32EL: {
-                    "module": "qiling.os.linux.mips32el",
                     "runtype": "ql_mips32el_run_linux"
                 },
                 QL_ARM: {
-                    "module": "qiling.os.linux.arm",
                     "runtype": "ql_arm_run_linux"
                 },
                 QL_ARM64: {
-                    "module": "qiling.os.linux.arm64",
                     "runtype": "ql_arm64_run_linux"
                 }
             },
             QL_FREEBSD: {
                 QL_X8664: {
-                    "module": "qiling.os.freebsd.x8664",
                     "runtype": "ql_x8664_run_freebsd"
                 }
             },
             QL_MACOS: {
                 QL_X8664: {
-                    "module": "qiling.os.macos.x8664",
-                    "runtype": "ql_x8664_run_macos",
+                    "runtype": "ql_x8664_run_macos"
                 },
                 QL_X86: {
-                    "module": "qiling.os.macos.x86",
                     "runtype": "ql_x86_run_macos"
                 }
             },
             QL_WINDOWS: {
                 QL_X86: {
-                    "module": "qiling.os.windows.x86",
                     "runtype": "ql_x86_run_windows"
                 },
                 QL_X8664: {
-                    "module": "qiling.os.windows.x8664",
                     "runtype": "ql_x8664_run_windows"
                 }
             }
@@ -262,28 +229,24 @@ class Qiling:
             raise QlErrorArch(f"Invalid Arch {self.arch}")
 
         self.runtype = module_dict[self.ostype][self.arch]["runtype"]
-        sc_mod = importlib.import_module(module_dict[self.ostype][self.arch]["module"])
-
-        module_function = getattr(sc_mod, function_name)
-        return module_function
-
+        return get_os_module_function(self.ostype, self.arch, function_name)
 
     def run_exec(self):
-        loader_file = self.get_os_module_function("loader_file")
+        loader_file = self.build_os_execution("loader_file")
         loader_file(self)
 
  
     def shellcode(self):
         self.__enable_bin_patch()
 
-        loader_shellcode = self.get_os_module_function("loader_shellcode")
+        loader_shellcode = self.build_os_execution("loader_shellcode")
         loader_shellcode(self)
 
 
     def run(self):
         self.__enable_bin_patch()
 
-        runner = self.get_os_module_function("runner")
+        runner = self.build_os_execution("runner")
         runner(self)
 
 

@@ -10,6 +10,10 @@
 # CHEN huitao (null) <null@qiling.io>
 # YU tong (sp1ke) <spikeinhouse@gmail.com>
 
+"""
+This module is intended for general purpose functions that are only used in qiling.os
+"""
+
 from unicorn import *
 from unicorn.arm_const import *
 from unicorn.x86_const import *
@@ -26,6 +30,7 @@ from keystone import *
 
 from qiling.arch.filetype import *
 from qiling.exception import *
+from qiling.utils import *
 
 import struct
 import os
@@ -382,4 +387,52 @@ def open_flag_mapping(flags, ql):
     return flag_mapping(flags, open_flags_name, f, t)
     
     
-    
+def get_os_module_function(ostype, arch, function_name):
+    module_dict = {
+        QL_LINUX: {
+            QL_X86: {
+                "module": "qiling.os.linux.x86"
+            },
+            QL_X8664: {
+                "module": "qiling.os.linux.x8664"
+            },
+            QL_MIPS32EL: {
+                "module": "qiling.os.linux.mips32el"
+            },
+            QL_ARM: {
+                "module": "qiling.os.linux.arm"
+            },
+            QL_ARM64: {
+                "module": "qiling.os.linux.arm64"
+            }
+        },
+        QL_FREEBSD: {
+            QL_X8664: {
+                "module": "qiling.os.freebsd.x8664"
+            }
+        },
+        QL_MACOS: {
+            QL_X8664: {
+                "module": "qiling.os.macos.x8664"
+            },
+            QL_X86: {
+                "module": "qiling.os.macos.x86"
+            }
+        },
+        QL_WINDOWS: {
+            QL_X86: {
+                "module": "qiling.os.windows.x86"
+            },
+            QL_X8664: {
+                "module": "qiling.os.windows.x8664"
+            }
+        }
+    }
+
+    if ostype not in module_dict:
+        raise QlErrorOsType(f"Invalid OSType {ostype}")
+
+    if arch not in module_dict[ostype]:
+        raise QlErrorArch(f"Invalid Arch {arch}")
+
+    return get_module_function(module_dict[ostype][arch]["module"], function_name)
