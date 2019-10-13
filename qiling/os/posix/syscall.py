@@ -1068,7 +1068,7 @@ def ql_syscall_execve(ql, uc, execve_pathname, execve_argv, execve_envp, null0, 
     ql.nprint("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
     ql.uc.emu_stop()
 
-    if ql.shellcode:
+    if ql.shellcoder:
         pass
     else:
         ql.stack_address = 0
