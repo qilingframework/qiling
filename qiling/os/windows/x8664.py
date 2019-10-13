@@ -48,26 +48,21 @@ def windows_setup64(ql):
     ql.GS_SEGMENT_SIZE = 0x8000
     ql.STRUCTERS_LAST_ADDR = ql.GS_SEGMENT_ADDR
 
-    ql.DLL_ADDR = 0x7ffff0000000
-    ql.DLL_SIZE = 20 * 1024 * 1024
-    ql.DLL_LAST_ADDR = ql.DLL_ADDR
+    ql.DLL_BASE_ADDR = 0x7ffff0000000
+    ql.DLL_SIZE = 0
+    ql.DLL_LAST_ADDR = ql.DLL_BASE_ADDR
 
-    ql.HEAP_ADDR = 0x100000
-    ql.HEAP_SIZE = 4 * 1024 * 1024
+    ql.HEAP_BASE_ADDR = 0x500000000
+    ql.HEAP_SIZE = 0x5000000
 
     ql.PE_IMAGE_BASE = 0
     ql.PE_IMAGE_SIZE = 0
+    ql.DEFAULT_IMAGE_BASE = 0x140000000
     ql.entry_point = 0
-
-    ql.DS_ADDR = 0
-    ql.DS_SIZE = 0
-
-    ql.CS_ADDR = 0
-    ql.CS_SIZE = 0
 
     ql.RUN = True
 
-    ql.heap = Heap(ql, ql.HEAP_ADDR, ql.HEAP_ADDR + ql.HEAP_SIZE)
+    ql.heap = Heap(ql, ql.HEAP_BASE_ADDR, ql.HEAP_BASE_ADDR + ql.HEAP_SIZE)
 
     # setup gdt
     set_pe64_gdt(ql)
