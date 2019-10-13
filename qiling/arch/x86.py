@@ -176,10 +176,11 @@ def ql_x86_setup_gdt_segment(ql, uc, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMEN
             uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
 
     if ql.ostype == QL_MACOS and GDTTYPE == "DS":
-        if ql.arch == QL_X86:
-            GDT_ADDR = GDT_ADDR + QL_X86_GDT_ADDR_PADDING
-        elif ql.arch == QL_X8664:
-            GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
+        if not ql.shellcoder:
+            if ql.arch == QL_X86:
+                GDT_ADDR = GDT_ADDR + QL_X86_GDT_ADDR_PADDING
+            elif ql.arch == QL_X8664:
+                GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
 
         ql.dprint ("GDT_ADDR is 0x%x" % GDT_ADDR)
         uc.mem_map(GDT_ADDR, GDT_LIMIT)
