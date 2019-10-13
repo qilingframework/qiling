@@ -271,6 +271,12 @@ class PE(Process):
         # for simplicity, no image base relocation
         self.ql.PE_IMAGE_BASE = self.PE_IMAGE_BASE = self.pe.OPTIONAL_HEADER.ImageBase
         self.ql.PE_IMAGE_SIZE = self.PE_IMAGE_SIZE = self.pe.OPTIONAL_HEADER.SizeOfImage
+
+        if self.PE_IMAGE_BASE + self.PE_IMAGE_SIZE > self.ql.HEAP_BASE_ADDR:
+            # pe reloc
+            self.ql.PE_IMAGE_BASE = self.PE_IMAGE_BASE = self.ql.DEFAULT_IMAGE_BASE
+            self.pe.relocate_image(self.ql.DEFAULT_IMAGE_BASE)
+
         self.ql.entry_point = self.PE_ENTRY_POINT = self.PE_IMAGE_BASE + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
         self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
         self.ql.nprint(">>> Loading %s to 0x%x" % (self.path, self.PE_IMAGE_BASE))
