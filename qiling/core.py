@@ -135,35 +135,12 @@ class Qiling:
             for _ in range(256):
                 self.sigaction_act.append(0)
 
-        arch_dict = {
-            QL_X86: {
-                "archbit": 32,
-                "archfunc": "X86"
-            },
-            QL_X8664: {
-                "archbit": 64,
-                "archfunc": "X8664"
-            },
-            QL_ARM: {
-                "archbit": 32,
-                "archfunc": "ARM"
-            },
-            QL_ARM64: {
-                "archbit": 32,
-                "archfunc": "ARM64"
-            },
-            QL_MIPS32EL: {
-                "archbit": 32,
-                "archfunc": "MIPS32EL"
-            }
-        }
-
-        if self.arch not in arch_dict:
+        if not ql_is_valid_arch(self.arch):
             raise QlErrorArch(f"Invalid Arch {self.arch}")
 
-        arch_func = get_arch_module_function(self.arch, arch_dict[self.arch]["archfunc"])
+        arch_func = ql_get_arch_module_function( self.arch, ql_arch_convert_str(self.arch).upper() )
 
-        self.archbit = arch_dict[self.arch]["archbit"]
+        self.archbit = ql_get_arch_bits(self.arch)
         self.archfunc = arch_func(self) 
 
         if self.archbit:
@@ -181,55 +158,9 @@ class Qiling:
             self.run_exec()  
 
     def build_os_execution(self, function_name):
-        module_dict = {
-            QL_LINUX: {
-                QL_X86: {
-                    "runtype": "ql_x86_run_linux"
-                },
-                QL_X8664: {
-                    "runtype": "ql_x8664_run_linux"
-                },
-                QL_MIPS32EL: {
-                    "runtype": "ql_mips32el_run_linux"
-                },
-                QL_ARM: {
-                    "runtype": "ql_arm_run_linux"
-                },
-                QL_ARM64: {
-                    "runtype": "ql_arm64_run_linux"
-                }
-            },
-            QL_FREEBSD: {
-                QL_X8664: {
-                    "runtype": "ql_x8664_run_freebsd"
-                }
-            },
-            QL_MACOS: {
-                QL_X8664: {
-                    "runtype": "ql_x8664_run_macos"
-                },
-                QL_X86: {
-                    "runtype": "ql_x86_run_macos"
-                }
-            },
-            QL_WINDOWS: {
-                QL_X86: {
-                    "runtype": "ql_x86_run_windows"
-                },
-                QL_X8664: {
-                    "runtype": "ql_x8664_run_windows"
-                }
-            }
-        }
+        self.runtype = ql_get_os_module_function(self.ostype, self.arch, "runner")
+        return ql_get_os_module_function(self.ostype, self.arch, function_name)
 
-        if self.ostype not in module_dict:
-            raise QlErrorOsType(f"Invalid OSType {self.ostype}")
-
-        if self.arch not in module_dict[self.ostype]:
-            raise QlErrorArch(f"Invalid Arch {self.arch}")
-
-        self.runtype = module_dict[self.ostype][self.arch]["runtype"]
-        return get_os_module_function(self.ostype, self.arch, function_name)
 
     def run_exec(self):
         loader_file = self.build_os_execution("loader_file")

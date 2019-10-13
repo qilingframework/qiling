@@ -6,10 +6,10 @@ from qiling.utils import *
 
 class BasicTest(unittest.TestCase):
     def test_invalid_module(self):
-        self.assertRaises(QlErrorModuleNotFound, get_module_function, "InvalidModule", "InvalidFunction")
+        self.assertRaises(QlErrorModuleNotFound, ql_get_module_function, "InvalidModule", "InvalidFunction")
 
     def test_invalid_module_function(self):
-        self.assertRaises(QlErrorModuleFunctionNotFound, get_module_function, "qiling.arch.x86", "InvalidFunction")
+        self.assertRaises(QlErrorModuleFunctionNotFound, ql_get_module_function, "qiling.arch.x86", "InvalidFunction")
 
 if __name__ == "__main__":
     unittest.main()

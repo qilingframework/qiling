@@ -1078,60 +1078,9 @@ def ql_syscall_execve(ql, uc, execve_pathname, execve_argv, execve_envp, null0, 
         ql.path = real_path
         ql.map_info = []
 
-        loaders_dict = {
-            QL_LINUX:{
-                QL_X8664: {
-                    "module": "qiling.os.linux.x8664",
-                    "function": "loader_file",
-                    "runtype": "runner"
-                },
-                QL_X86: {
-                    "module": "qiling.os.linux.x86",
-                    "function": "loader_file",
-                    "runtype": "runner"
-                },
-                QL_MIPS32EL: {
-                    "module": "qiling.os.linux.mips32el",
-                    "function": "loader_file",
-                    "runtype": "runner"
-                },
-                QL_ARM: {
-                    "module": "qiling.os.linux.arm",
-                    "function": "loader_file",
-                    "runtype": "runner"
-                },
-                QL_ARM64: {
-                    "module": "qiling.os.linux.arm64",
-                    "function": "loader_file",
-                    "runtype": "runner"
-                }
-            },
-            QL_MACOS: {
-                QL_X8664: {
-                    "module": "qiling.os.macos.x8664",
-                    "function": "loader_file",
-                    "runtype": "runner"
-                },
-                QL_X86: {
-                    "module": "qiling.os.macos.x86",
-                    "function": "loader_file",
-                    "runtype": "runner"
-                }
-            },
-            QL_FREEBSD: {
-                QL_X8664: {
-                    "module": "qiling.os.freebsd.x8664",
-                    "function": "loader_file",
-                    "runtype": "runner"
-                }
-            }
-        }
-
-        ql.runtype = loaders_dict[ql.ostype][ql.arch]["runtype"]
-        module_name = loaders_dict[ql.ostype][ql.arch]["module"]
-        function_name = loaders_dict[ql.ostype][ql.arch]["function"]
-        load_func = get_module_function(module_name, function_name)
-        load_func(ql)
+        ql.runtype = ql_get_os_module_function(ql.ostype, ql.arch, "runner")
+        loader_file = ql_get_os_module_function(ql.ostype, ql.arch, "loader_file")
+        loader_file(ql)
         ql.run()
 
 
