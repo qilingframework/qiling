@@ -20,6 +20,9 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
+# LPTOP_LEVEL_EXCEPTION_FILTER SetUnhandledExceptionFilter(
+#   LPTOP_LEVEL_EXCEPTION_FILTER lpTopLevelExceptionFilter
+# );
 @winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
     "lpTopLevelExceptionFilter": DWORD
 })
@@ -28,6 +31,9 @@ def hook_SetUnhandledExceptionFilter(ql, address, params):
     return ret
 
 
+# void ExitProcess(
+#   UINT uExitCode
+# );
 @winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
     "uExitCode": DWORD
 })
@@ -102,7 +108,8 @@ def hook_WinExec(ql, address, params):
     return 33
 
 
-# GetVersion()
+# NOT_BUILD_WINDOWS_DEPRECATE DWORD GetVersion(
+# );
 @winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
 def hook_GetVersion(ql, address, params):
     ret = 0x0004

@@ -16,65 +16,6 @@ from qiling.os.utils import *
 from qiling.arch.filetype import *
 
 
-def ql_windows_setup32(ql): 
-    ql.PE_IMAGE_BASE = 0
-    ql.PE_IMAGE_SIZE = 0
-    ql.entry_point = 0
-
-    ql.X86_PE_FUNCTION_ADDR_INIT = 0x800000
-    ql.X86_PE_FUNCTION_ADDR = 0x800000
-    ql.X86_PE_FUNCTION_SIZE = 0x4000
-
-    ql.HEAP_ADDR = 0x50000000
-    ql.HEAP_SIZE = 0x500000
-
-    ql.PE = None
-    ql.RUN = True
-
-    ql.FS_SEGMENT_ADDR = 0x6000
-    ql.FS_SEGMENT_SIZE = 0x6000
-    ql.STRUCTERS_LAST_ADDR = ql.FS_SEGMENT_ADDR
-
-    ql.GS_SEGMENT_ADDR = 0x5000
-    ql.GS_SEGMENT_SIZE = 0x1000
-
-    ql.DLL_ADDR = 0x1000000
-    ql.DLL_SIZE = 0
-    ql.DLL_LAST_ADDR = ql.DLL_ADDR
-
-
-def ql_windows_setup64(ql):
-    ql.code_address = 0x555555554000
-    ql.code_size = 20 * 1024
-
-    ql.GDT_ADDR = 0x333333334000
-    ql.GDT_LIMIT = 0x1000
-    ql.GDT_ENTRY_SIZE = 0x8
-
-    ql.GS_SEGMENT_ADDR = 0x333333335000
-    ql.GS_SEGMENT_SIZE = 0x8000
-    ql.STRUCTERS_LAST_ADDR = ql.GS_SEGMENT_ADDR
-
-    ql.DLL_ADDR = 0x7ffff79e4000
-    ql.DLL_SIZE = 20 * 1024 * 1024
-    ql.DLL_LAST_ADDR = ql.DLL_ADDR
-
-    ql.HEAP_ADDR = 0x555557000000
-    ql.HEAP_SIZE = 4 * 1024 * 1024
-
-    ql.PE_IMAGE_BASE = 0
-    ql.PE_IMAGE_SIZE = 0
-    ql.entry_point = 0
-
-    ql.DS_ADDR = 0
-    ql.DS_SIZE = 0
-
-    ql.CS_ADDR = 0
-    ql.CS_SIZE = 0
-
-    ql.RUN = True
-
-
 # def ql_x86_windows_hook_mem_error(uc, type, addr, *args):
 def ql_x86_windows_hook_mem_error(uc, addr, size, dummy0, dummy1, ql):
     ql.nprint(">>> ERROR: unmapped memory access at 0x%x" % addr)

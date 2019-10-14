@@ -95,13 +95,13 @@ def loader_file(ql):
 def loader_shellcode(ql):
     uc = Uc(UC_ARCH_ARM64, UC_MODE_ARM)
     ql.uc = uc
+
     if (ql.stack_address == 0):
         ql.stack_address = 0x1000000
         ql.stack_size = 2 * 1024 * 1024
         uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.stack_address =  ql.stack_address  + 0x200000 - 0x1000    
     ql.uc.mem_write(ql.stack_address, ql.shellcoder) 
-    ql.stack_address =  ql.stack_address  + 0x200000 - 0x1000
-
 
 def runner(ql):
     ql.uc.reg_write(UC_ARM64_REG_SP, ql.stack_address)

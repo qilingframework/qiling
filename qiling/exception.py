@@ -9,6 +9,7 @@
 # SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
 # CHEN huitao (null) <null@qiling.io>
 # YU tong (sp1ke) <spikeinhouse@gmail.com>
+import sys, traceback
 
 class QlErrorBase(Exception):
     def __init__(self, msg):
@@ -44,3 +45,14 @@ class QlErrorELFFormat(QlErrorBase):
 
 class QlErrorMACHOFormat(QlErrorBase):
     pass
+
+class QlErrorModuleFunctionNotFound(QlErrorBase):
+    pass
+
+class QlErrorModuleNotFound(QlErrorBase):
+    pass
+
+def QlPrintException(msg):
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    print(msg + repr(traceback.format_tb(exc_traceback, limit=1) ) )
+    

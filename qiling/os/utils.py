@@ -10,6 +10,10 @@
 # CHEN huitao (null) <null@qiling.io>
 # YU tong (sp1ke) <spikeinhouse@gmail.com>
 
+"""
+This module is intended for general purpose functions that are only used in qiling.os
+"""
+
 from unicorn import *
 from unicorn.arm_const import *
 from unicorn.x86_const import *
@@ -26,6 +30,7 @@ from keystone import *
 
 from qiling.arch.filetype import *
 from qiling.exception import *
+from qiling.utils import *
 
 import struct
 import os
@@ -286,7 +291,10 @@ def ql_transform_to_real_path(ql, uc, path):
     if from_path != None:
         real_path = os.path.abspath(to_path + relative_path[fm_l : ])
     else:
+        if rootfs == None:
+            rootfs = ""
         real_path = os.path.abspath(rootfs + '/' + relative_path)
+            
 
         if os.path.islink(real_path):
             link_path = os.readlink(real_path)
@@ -377,6 +385,4 @@ def open_flag_mapping(flags, ql):
         f = mac_open_flags
         t = linux_open_flags
     return flag_mapping(flags, open_flags_name, f, t)
-    
-    
     

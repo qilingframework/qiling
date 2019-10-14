@@ -109,8 +109,8 @@ def loader_shellcode(ql):
         ql.stack_address = 0x1000000
         ql.stack_size = 2 * 1024 * 1024
         uc.mem_map(ql.stack_address,  ql.stack_size)
+    ql.stack_address= ql.stack_address  + 0x200000 - 0x1000
     ql.uc.mem_write(ql.stack_address, ql.shellcoder)
-    ql.stack_address= (ql.stack_address + 0x200000)
     
 
 def runner(ql):

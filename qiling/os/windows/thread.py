@@ -17,9 +17,8 @@ from qiling.exception import *
 
 def thread_scheduler(uc, address, size, ql):
     if ql.pc == ql.thread_manager.THREAD_RET_ADDR:
-        # print("force do_schedule")
         ql.thread_manager.current_thread.stop()
-        ql.thread_manager.do_schedule() #force=True)
+        ql.thread_manager.do_schedule()
     else:
         ql.thread_manager.ins_count += 1
         ql.thread_manager.do_schedule()
@@ -30,7 +29,6 @@ class Context:
         self.ql = ql
 
     def save(self):
-        # self.func_ret_addr = self.ql.func_ret_addr
         if self.ql.arch == QL_X86:
             self.edi = self.ql.uc.reg_read(UC_X86_REG_EDI)
             self.esi = self.ql.uc.reg_read(UC_X86_REG_ESI)
@@ -65,7 +63,6 @@ class Context:
             raise QlErrorArch("unknown ql.arch")
 
     def restore(self):
-        # self.ql.func_ret_addr = self.func_ret_addr
         if self.ql.arch == QL_X86:
             self.ql.uc.reg_write(UC_X86_REG_EDI, self.edi)
             self.ql.uc.reg_write(UC_X86_REG_ESI, self.esi)
@@ -121,7 +118,7 @@ class ThreadManager:
     def need_schedule(self):
         return self.current_thread.is_stop() or self.ins_count % ThreadManager.TIME_SLICE == 0
 
-    def do_schedule(self): #, force=False):
+    def do_schedule(self):
         if self.current_thread.is_stop() or self.ins_count % ThreadManager.TIME_SLICE == 0:
             if len(self.threads) <= 1:
                 return
@@ -132,7 +129,6 @@ class ThreadManager:
                     # find next thread
                     if next_thread.status == Thread.RUNNING and (not next_thread.has_waitfor()):
                         if self.current_thread.is_stop():
-                            # self.current_thread.stop()
                             pass
                         else:
                             self.current_thread.suspend()

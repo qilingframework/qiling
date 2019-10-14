@@ -73,7 +73,7 @@ def hook_syscall(uc, ql):
                 uc.emu_stop()
                 raise
     else:
-        ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
+        ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num,  (syscall_num -  0x2000000)))
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             uc.emu_stop()
 
@@ -100,8 +100,8 @@ def loader_shellcode(ql):
         ql.stack_address = 0x1000000
         ql.stack_size = 2 * 1024 * 1024
         uc.mem_map(ql.stack_address,  ql.stack_size)
+    ql.stack_address = ql.stack_address  + 0x200000 - 0x1000
     ql.uc.mem_write(ql.stack_address, ql.shellcoder)
-    ql.stack_address = (ql.stack_address + 0x200000)
     
 
 def runner(ql):

@@ -52,20 +52,6 @@ def hook_winapi(uc, address, size, ql):
 
 
 def setup_windows32(ql):
-    ql.PE_IMAGE_BASE = 0
-    ql.PE_IMAGE_SIZE = 0
-    ql.entry_point = 0
-
-    ql.X86_PE_FUNCTION_ADDR_INIT = 0x800000
-    ql.X86_PE_FUNCTION_ADDR = 0x800000
-    ql.X86_PE_FUNCTION_SIZE = 0x4000
-
-    ql.HEAP_ADDR = 0x50000000
-    ql.HEAP_SIZE = 0x500000
-
-    ql.PE = None
-    ql.RUN = True
-
     ql.FS_SEGMENT_ADDR = 0x6000
     ql.FS_SEGMENT_SIZE = 0x6000
     ql.STRUCTERS_LAST_ADDR = ql.FS_SEGMENT_ADDR
@@ -73,14 +59,22 @@ def setup_windows32(ql):
     ql.GS_SEGMENT_ADDR = 0x5000
     ql.GS_SEGMENT_SIZE = 0x1000
 
-    ql.DLL_ADDR = 0x1000000
+    ql.PE_IMAGE_BASE = 0
+    ql.PE_IMAGE_SIZE = 0
+    ql.DEFAULT_IMAGE_BASE = 0x400000
+    ql.entry_point = 0
+
+    ql.HEAP_BASE_ADDR = 0x5000000
+    ql.HEAP_SIZE = 0x5000000
+
+    ql.DLL_BASE_ADDR = 0x10000000
     ql.DLL_SIZE = 0
-    ql.DLL_LAST_ADDR = ql.DLL_ADDR
+    ql.DLL_LAST_ADDR = ql.DLL_BASE_ADDR
 
-    # ql.func_ret_addr = 0
-
-    ql.heap = Heap(ql, ql.HEAP_ADDR, ql.HEAP_ADDR + ql.HEAP_SIZE)
+    ql.heap = Heap(ql, ql.HEAP_BASE_ADDR, ql.HEAP_BASE_ADDR + ql.HEAP_SIZE)
     ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error, ql)
+
+    ql.RUN = True
 
     # New set GDT Share with Linux
     ql_x86_setup_gdt_segment_fs(ql, ql.uc, ql.FS_SEGMENT_ADDR, ql.FS_SEGMENT_SIZE)
@@ -98,11 +92,6 @@ def setup_windows32(ql):
     ql.thread_manager = ThreadManager(ql, main_thread)
     new_handle = Handle(thread=main_thread)
     ql.handle_manager.append(new_handle)
-
-    # set ql functions for windows
-    ql.get_params = types.MethodType(get_params, ql)
-    ql.set_return_value = types.MethodType(set_return_value, ql)
-    ql.get_return_value = types.MethodType(get_return_value, ql)
 
 
 def loader_file(ql):

@@ -34,6 +34,7 @@ from qiling.arch.filetype import *
 from qiling.os.linux.thread import *
 from qiling.arch.filetype import *
 from qiling.os.posix.filestruct import *
+from qiling.utils import *
 
 def ql_syscall_exit(ql, uc, null0, null1, null2, null3, null4, null5):
     ql.nprint("exit()")
@@ -707,6 +708,7 @@ def ql_syscall_stat(ql, uc, stat_path, stat_buf_ptr, null0, null1, null2, null3)
 
 
 def ql_syscall_read(ql, uc, read_fd, read_buf, read_len, null0, null1, null2):
+    data = None
     if read_fd < 256 and ql.file_des[read_fd] != 0:
         try:
             data = ql.file_des[read_fd].read(read_len)
@@ -717,13 +719,16 @@ def ql_syscall_read(ql, uc, read_fd, read_buf, read_len, null0, null1, null2):
     else:
         regreturn = -1
     ql.nprint("read(%d, 0x%x, 0x%x) = %d" % (read_fd, read_buf, read_len, regreturn))
-    ql.dprint("|--->>> read() CONTENT:")
-    ql.dprint(data)
+
+    if data:
+        ql.dprint("|--->>> read() CONTENT:")
+        ql.dprint(data)
     ql_definesyscall_return(ql, uc, regreturn)
 
 
 def ql_syscall_write(ql, uc, write_fd, write_buf, write_count, null0, null1, null2):
     regreturn = 0
+    buf = None
     try:
         buf = uc.mem_read(write_buf, write_count)
         ql.file_des[write_fd].write(buf)
@@ -733,8 +738,9 @@ def ql_syscall_write(ql, uc, write_fd, write_buf, write_count, null0, null1, nul
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             raise
     ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
-    ql.dprint("|--->>> write() CONTENT:")
-    ql.dprint(buf)
+    if buf:
+        ql.dprint("|--->>> write() CONTENT:")
+        ql.dprint(buf)
     ql_definesyscall_return(ql, uc, regreturn)
 
 
@@ -1062,55 +1068,21 @@ def ql_syscall_execve(ql, uc, execve_pathname, execve_argv, execve_envp, null0, 
             execve_envp += 4
     
     ql.nprint("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
-
-    
     ql.uc.emu_stop()
-    
-    ql.stack_address = 0
-    ql.argv = argv
-    ql.env = env
-    ql.path = real_path
-    ql.map_info = []
 
-    if ql.ostype == QL_LINUX:
-        if ql.arch == QL_X8664:
-            from qiling.os.linux.x8664 import ql_x8664_load_linux
-            ql.runtype = "ql_x8664_run_linux"
-            ql_x8664_load_linux(ql)
-        elif ql.arch == QL_X86:
-            from qiling.os.linux.x86 import ql_x86_load_linux
-            ql.runtype = "ql_x86_run_linux"
-            ql_x86_load_linux(ql)
-        elif ql.arch == QL_MIPS32EL:
-            from qiling.os.linux.mips32el import ql_mips32el_load_linux
-            ql.runtype = "ql_mips32el_run_linux"
-            ql_mips32el_load_linux(ql)
-        elif ql.arch == QL_ARM:
-            from qiling.os.linux.arm import ql_arm_load_linux
-            ql.runtype = "ql_arm_run_linux"
-            ql_arm_load_linux(ql)    
-        elif ql.arch == QL_ARM64:
-            from qiling.os.linux.arm64 import ql_arm64_load_linux
-            ql.runtype = "ql_arm_run64_linux"
-            ql_arm64_load_linux(ql)
+    if ql.shellcoder:
+        pass
+    else:
+        ql.stack_address = 0
+        ql.argv = argv
+        ql.env = env
+        ql.path = real_path
+        ql.map_info = []
 
-    elif ql.ostype == QL_MACOS:
-        if ql.arch == QL_X8664:
-            from qiling.os.macos.x8664 import ql_x8664_load_macos
-            ql.runtype = "ql_x8664_run_macos"
-            ql_x8664_load_macos(ql)
-        elif ql.arch == QL_X86:
-            from qiling.os.macos.x86 import ql_x86_load_macos
-            ql.runtype = "ql_x86_run_macos"
-            ql_x86_load_macos(ql)
-    
-    elif ql.ostype == QL_FREEBSD:
-        if ql.arch == QL_X8664:
-            from qiling.os.freebsd.x8664 import ql_x8664_load_freebsd
-            ql.runtype = "ql_x8664_run_freebsd"
-            ql_x8664_load_freebsd(ql)
-    
-    ql.run()
+        ql.runtype = ql_get_os_module_function(ql.ostype, ql.arch, "runner")
+        loader_file = ql_get_os_module_function(ql.ostype, ql.arch, "loader_file")
+        loader_file(ql)
+        ql.run()
 
 
 def ql_syscall_socket(ql, uc, socket_domain, socket_type, socket_protocol, null0, null1, null2):
@@ -1252,13 +1224,11 @@ def ql_syscall_bind(ql, uc, bind_fd, bind_addr, bind_addrlen,  null0, null1, nul
     
     sin_family, = struct.unpack("<h", data[:2])  
 
+    port, host = struct.unpack(">HI", data[2:8])
     if sin_family == 2: 
-        port, host = struct.unpack(">HI", data[2:8])
         host = ql_bin_to_ipv4(host)
-    elif sin_family == 10:
-        port, host = struct.unpack(">HI", data[2:8])  
+    elif sin_family == 10:  
         host = "::"
-    
     
     if ql.root == False and port <= 1024:
         port = port + 8000
@@ -1276,7 +1246,10 @@ def ql_syscall_bind(ql, uc, bind_fd, bind_addr, bind_addrlen,  null0, null1, nul
 
         if ql.output == QL_OUT_DEBUG:
             raise
-        
+    
+    if ql.shellcoder:
+        regreturn = 0
+
     ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
     ql_definesyscall_return(ql, uc, regreturn)
 

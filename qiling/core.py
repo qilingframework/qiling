@@ -10,12 +10,15 @@
 # CHEN huitao (null) <null@qiling.io>
 # YU tong (sp1ke) <spikeinhouse@gmail.com>
 
-import sys, struct, os, platform
+import sys, struct, os, platform, importlib
 from unicorn import *
 
 from qiling.arch.filetype import *
 from qiling.os.posix.filestruct import *
 from qiling.exception import *
+from qiling.utils import *
+from qiling.os.utils import *
+from qiling.arch.utils import *
 
 __version__ = "0.9"
 
@@ -66,7 +69,10 @@ class Qiling:
     exit_code = 0
     
 
-    def __init__(self, filename = None, rootfs = None, argv = [], env = {}, shellcoder = None, ostype = None, archtype = None, libcache = False, output = None, consolelog = True, stdin = 0, stdout = 0, stderr = 0, log_file = None, separate_log_file = False):
+    def __init__(self, filename = None, rootfs = None, argv = [], env = {}, 
+                 shellcoder = None, ostype = None, archtype = None, libcache = False,
+                 output = None, consolelog = True, stdin = 0, stdout = 0, stderr = 0,
+                 log_file = None, separate_log_file = False):
         self.output = None
         self.ostype = ostype
         self.archtype = archtype
@@ -126,34 +132,16 @@ class Qiling:
             self.file_des[1] = self.stdout
             self.file_des[2] = self.stderr
             
-            for i in range(256):
+            for _ in range(256):
                 self.sigaction_act.append(0)
 
-        if self.arch == QL_X86:
-            from qiling.arch.x86 import X86
-            self.arch = QL_X86
-            self.archbit = 32
-            self.archfunc = X86(self)
-        elif self.arch == QL_X8664:
-            from qiling.arch.x86 import X8664
-            self.arch = QL_X8664
-            self.archbit = 64
-            self.archfunc = X8664(self)
-        elif self.arch == QL_ARM:
-            from qiling.arch.arm import ARM
-            self.arch = QL_ARM
-            self.archbit = 32
-            self.archfunc = ARM(self)
-        elif self.arch == QL_ARM64:    
-            from qiling.arch.arm64 import ARM64 
-            self.arch = QL_ARM64
-            self.archbit = 64
-            self.archfunc = ARM64(self)
-        elif self.arch == QL_MIPS32EL:
-            from qiling.arch.mips32el import MIPS32EL
-            self.arch = QL_MIPS32EL
-            self.archbit = 32
-            self.archfunc = MIPS32EL(self)
+        if not ql_is_valid_arch(self.arch):
+            raise QlErrorArch(f"Invalid Arch {self.arch}")
+
+        arch_func = ql_get_arch_module_function( self.arch, ql_arch_convert_str(self.arch).upper() )
+
+        self.archbit = ql_get_arch_bits(self.arch)
+        self.archfunc = arch_func(self) 
 
         if self.archbit:
             self.pointersize = (self.archbit // 8)
@@ -169,169 +157,27 @@ class Qiling:
         else:
             self.run_exec()  
 
+    def build_os_execution(self, function_name):
+        self.runtype = ql_get_os_module_function(self.ostype, self.arch, "runner")
+        return ql_get_os_module_function(self.ostype, self.arch, function_name)
+
 
     def run_exec(self):
-                
-        if self.ostype == QL_LINUX:
-
-            if self.arch == QL_X86:
-                from qiling.os.linux.x86 import loader_file
-                self.runtype = "ql_x86_run_linux"
-
-            elif self.arch == QL_X8664:
-                from qiling.os.linux.x8664 import loader_file
-                self.runtype = "ql_x8664_run_linux"
-
-            elif self.arch == QL_MIPS32EL:
-                from qiling.os.linux.mips32el import loader_file
-                self.runtype = "ql_mips32el_run_linux"
-            
-            elif self.arch == QL_ARM:
-                from qiling.os.linux.arm import loader_file
-                self.runtype = "ql_arm_run_linux"
-            
-            elif self.arch == QL_ARM64:
-                from qiling.os.linux.arm64 import loader_file
-                self.runtype = "ql_arm64_run_linux"
-            
-            else: 
-                raise QlErrorArch('Linux ELF mismatch')
-
-        elif self.ostype == QL_FREEBSD:                
-
-            if self.arch == QL_X8664:
-                from qiling.os.freebsd.x8664 import loader_file
-                self.runtype = "ql_x8664_run_freebsd"
-
-            else:
-                raise QlErrorArch('FreeBSD ELF mismatch')
-        
-        elif self.ostype == QL_WINDOWS:
-
-            if self.arch == QL_X86:
-                from qiling.os.windows.x86 import loader_file
-                self.runtype = "ql_x86_run_windows"
-
-            elif self.arch == QL_X8664:
-                from qiling.os.windows.x8664 import loader_file
-                self.runtype = "ql_x8664_run_windows"
-
-            else:
-                raise QlErrorArch('PE mismatch')
-
-        elif self.ostype == QL_MACOS:
-
-            if self.arch == QL_X8664:
-                from qiling.os.macos.x8664 import loader_file
-                self.runtype = "ql_x8664_run_macos"
-
-            elif self.arch == QL_X86:
-                from qiling.os.macos.x86 import loader_file
-                self.runtype = "ql_x86_run_macos"
-
-            else:
-                raise QlErrorArch('MACHO mismatch')
-
-        else:
-            raise OSTYPEError("OSTYPE not found")
-        
+        loader_file = self.build_os_execution("loader_file")
         loader_file(self)
 
  
     def shellcode(self):
         self.__enable_bin_patch()
 
-        if self.ostype == QL_LINUX:
-
-            if self.arch == QL_X86:
-                from qiling.os.linux.x86 import loader_shellcode
-                self.runtype = "ql_x86_run_linux"
-
-            elif self.arch == QL_X8664:
-                from qiling.os.linux.x8664 import loader_shellcode
-                self.runtype = "ql_x8664_run_linux"
-
-            elif self.arch == QL_MIPS32EL:
-                from qiling.os.linux.mips32el import loader_shellcode
-                self.runtype = "ql_mips32el_run_linux"
-
-            elif self.arch == QL_ARM:
-                from qiling.os.linux.arm import loader_shellcode
-                self.runtype = "ql_arm_run_linux"
-
-            elif self.arch == QL_ARM64:
-                from qiling.os.linux.arm64 import loader_shellcode
-                self.runtype = "ql_arm64_run_linux"
-
-        elif self.ostype == QL_FREEBSD:
-
-            if self.arch == QL_X8664:
-                from qiling.os.freebsd.x8664 import loader_shellcode
-                self.runtype = "ql_x8664_run_freebsd"
- 
-        elif self.ostype == QL_MACOS:
-
-            if self.arch == QL_X8664:
-                from qiling.os.macos.x8664 import loader_shellcode
-                self.runtype = "ql_x8664_run_macos"
- 
-            if self.arch == QL_X86:
-                from qiling.os.macos.x86 import loader_shellcode
-                self.runtype = "ql_x86_run_macos"
-
-        elif self.ostype == QL_WINDOWS:    
-
-            if self.arch == QL_X86:
-                from qiling.os.windows.x86 import loader_shellcode
-                self.runtype = "ql_x86_run_windows"
-
-            elif self.arch == QL_X8664:
-                from qiling.os.windows.x8664 import loader_shellcode
-                self.runtype = "ql_x8664_run_windows"
-
-        else:
-            raise OSTYPEError('Shellcode Object Not Found')
-
+        loader_shellcode = self.build_os_execution("loader_shellcode")
         loader_shellcode(self)
 
 
-    # TODO: We need to refactor this
     def run(self):
         self.__enable_bin_patch()
 
-        if self.runtype == "ql_x86_run_linux":
-            from qiling.os.linux.x86 import runner
-
-        elif self.runtype == "ql_mips32el_run_linux":
-            from qiling.os.linux.mips32el import runner
-
-        elif self.runtype == "ql_arm_run_linux":
-            from qiling.os.linux.arm import runner
-
-        elif self.runtype == "ql_arm64_run_linux":
-            from qiling.os.linux.arm64 import runner
-
-        elif self.runtype == "ql_x8664_run_linux":
-            from qiling.os.linux.x8664 import runner
-
-        elif self.runtype == "ql_x8664_run_freebsd":
-            from qiling.os.freebsd.x8664 import runner
-
-        elif self.runtype == "ql_x8664_run_macos":
-            from qiling.os.macos.x8664 import runner
-
-        elif self.runtype == "ql_x86_run_macos":
-            from qiling.os.macos.x86 import runner
-
-        elif self.runtype == "ql_x86_run_windows":
-            from qiling.os.windows.x86 import runner
-
-        elif self.runtype == "ql_x8664_run_windows":
-            from qiling.os.windows.x8664 import runner
-
-        else:
-            raise QlErrorRuntype('Shellcode Object Not Found')
-
+        runner = self.build_os_execution("runner")
         runner(self)
 
 
