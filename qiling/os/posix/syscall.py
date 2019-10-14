@@ -740,11 +740,12 @@ def ql_syscall_write(ql, uc, write_fd, write_buf, write_count, null0, null1, nul
 
 def ql_syscall_writev(ql, uc, writev_fd, writev_vec, writev_vien, null0, null1, null2):
     regreturn = 0
-    iov = uc.mem_read(writev_vec, writev_vien * 8)
+    size_t_len = ql.archbit // 8
+    iov = uc.mem_read(writev_vec, writev_vien * size_t_len * 2)
     ql.nprint("writev(0x%x, 0x%x, 0x%x)" % (writev_fd, writev_vec, writev_vien))
     for i in range(writev_vien):
-        addr = ql.unpack32(iov[i * 8 : i * 8 + 4])
-        l = ql.unpack32(iov[i * 8 + 4 : i * 8 + 8])
+        addr = ql.unpack(iov[i * size_t_len * 2 : i * size_t_len * 2 + size_t_len])
+        l = ql.unpack(iov[i * size_t_len * 2 + size_t_len : i * size_t_len * 2 + size_t_len * 2])
         ql.nprint("|--->>> writev() CONTENT : %s" % str(uc.mem_read(addr, l)))
     ql_definesyscall_return(ql, uc, regreturn)    
     
