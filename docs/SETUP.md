@@ -38,7 +38,7 @@ reg save hklm\SAM SAM
 
 #### Installation notes on macOS >= 10.14
 
-Keystone-engine compilation from py-pip fails (on Mojave at least). Because i386 architecture is deprecated for macOS. 
+Keystone-engine compilation from py-pip fails (on Mojave at least) because i386 architecture is deprecated for macOS. 
 
 ```
 CMake Error at /usr/local/Cellar/cmake/3.15.4/share/cmake/Modules/CMakeTestCCompiler.cmake:60 (message):
@@ -56,10 +56,12 @@ A temporary workaround is to install keystone-engine from source:
 * Install keystone-engine Python binding from source:
 ```
 git clone https://github.com/keystone-engine/keystone
-cd keystone; mkdir build; ../make-share.sh
-cd ../bindings/python; make install
+cd keystone
+mkdir build
+cd build
+../make-share.sh
+cd ../bindings/python
+sudo make install
 ```
-* Install qiling:
-```
-python3 setup.py install 
-```
+
+Once completed workaround installation, run Qiling Framework setup.
