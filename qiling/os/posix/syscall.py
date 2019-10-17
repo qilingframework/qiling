@@ -1001,7 +1001,7 @@ def ql_syscall_rt_sigprocmask(ql, uc, rt_sigprocmask_how, rt_sigprocmask_nset, r
 
 def ql_syscall_vfork(ql, uc, null0, null1, null2, null3, null4, null5):
     pid = os.fork()
-    
+
     if pid == 0:
         ql.child_processes = True
         regreturn = 0
@@ -1012,10 +1012,10 @@ def ql_syscall_vfork(ql, uc, null0, null1, null2, null3, null4, null5):
                 ql.log_file_fd = open(ql.log_file_name + "_" + str(os.getpid()) + ".qlog", 'w+')
     else:
         regreturn = pid
-    
+
     if ql.thread_management != None:
         uc.emu_stop()
-        
+
     ql.nprint("vfork() = %d" % regreturn)
     ql_definesyscall_return(ql, uc, regreturn)
 
@@ -1054,7 +1054,7 @@ def ql_syscall_execve(ql, uc, execve_pathname, execve_argv, execve_envp, null0, 
                 break
             argv.append(ql_read_string(ql, uc, argv_addr))
             execve_argv += 4
-    
+
     env = {}
     if execve_envp != 0:
         while True:
@@ -1067,7 +1067,7 @@ def ql_syscall_execve(ql, uc, execve_pathname, execve_argv, execve_envp, null0, 
             val = env_str[idx + 1 : ]
             env[key] = val
             execve_envp += 4
-    
+
     ql.nprint("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
     ql.uc.emu_stop()
 
@@ -1215,14 +1215,13 @@ def ql_syscall_shutdown(ql, uc, shutdown_fd, shutdown_how, null0, null1, null2, 
 
 
 def ql_syscall_bind(ql, uc, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
-    
     regreturn = 0
-    
+
     if ql.arch == QL_X8664:
         data = uc.mem_read(bind_addr, 8)
     else:
         data = uc.mem_read(bind_addr, bind_addrlen) 
-    
+
     sin_family, = struct.unpack("<h", data[:2])  
 
     port, host = struct.unpack(">HI", data[2:8])
@@ -1230,7 +1229,7 @@ def ql_syscall_bind(ql, uc, bind_fd, bind_addr, bind_addrlen,  null0, null1, nul
         host = ql_bin_to_ipv4(host)
     elif sin_family == 10:  
         host = "::"
-    
+
     if ql.root == False and port <= 1024:
         port = port + 8000
 
@@ -1247,7 +1246,7 @@ def ql_syscall_bind(ql, uc, bind_fd, bind_addr, bind_addrlen,  null0, null1, nul
 
         if ql.output == QL_OUT_DEBUG:
             raise
-    
+
     if ql.shellcoder:
         regreturn = 0
 
@@ -1321,11 +1320,11 @@ def ql_syscall__newselect(ql, uc, _newselect_nfds, _newselect_readfds, _newselec
             tmp = tmp >> 1
             idx += 1
         return fd_list, fd_map
-    
+
     def set_fd_set(buf, idx):
         buf = buf[ : idx // 8] + bytes([buf[idx // 8] | (0x1 << (idx % 8))]) + buf[idx // 8 + 1 : ]
         return buf
-    
+
     tmp_r_fd, tmp_r_map = parse_fd_set(ql, uc, _newselect_nfds, _newselect_readfds)
     tmp_w_fd, tmp_w_map = parse_fd_set(ql, uc, _newselect_nfds, _newselect_writefds)
     tmp_e_fd, tmp_e_map = parse_fd_set(ql, uc, _newselect_nfds, _newselect_exceptfds)
@@ -1556,7 +1555,7 @@ def ql_syscall_clone(ql, uc, clone_flags, clone_child_stack, clone_parent_tidptr
                 else:
                     newtls = clone_newtls
                 f_th.set_special_settings_arg(newtls)
-                
+
             if clone_flags & CLONE_CHILD_CLEARTID == CLONE_CHILD_CLEARTID:
                 f_th.set_clear_child_tid_addr(clone_child_tidptr)
 
@@ -1568,8 +1567,6 @@ def ql_syscall_clone(ql, uc, clone_flags, clone_child_stack, clone_parent_tidptr
         uc.emu_stop()
         return
 
-
-    
     if clone_flags & CLONE_PARENT_SETTID == CLONE_PARENT_SETTID:
         set_child_tid_addr = clone_parent_tidptr
 
@@ -1587,7 +1584,7 @@ def ql_syscall_clone(ql, uc, clone_flags, clone_child_stack, clone_parent_tidptr
 
     if clone_flags & CLONE_CHILD_CLEARTID == CLONE_CHILD_CLEARTID:
         th.set_clear_child_tid_addr(clone_child_tidptr)
-    
+
     # Set the stack and return value of the new thread
     # (the return value of the child thread is 0, and the return value of the parent thread is the tid of the child thread)
     # and save the current context.
@@ -1597,7 +1594,7 @@ def ql_syscall_clone(ql, uc, clone_flags, clone_child_stack, clone_parent_tidptr
     ql_definesyscall_return(ql, uc, regreturn)
     ql.archfunc.set_sp(clone_child_stack)
     th.save()
-    
+
     ql.thread_management.cur_thread = th
     ql.nprint("[+] Currently running pid is: %d; tid is: %d " % (os.getpid() ,ql.thread_management.cur_thread.get_thread_id()))
     ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
@@ -1669,7 +1666,7 @@ def ql_syscall_futex(ql, uc, futex_uaddr, futex_op, futex_val, futex_timeout, fu
         ql.thread_management.cur_thread.stop()
         ql.thread_management.cur_thread.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
         regreturn = 0
-        
+
     ql_definesyscall_return(ql, uc, regreturn)
 
 
@@ -1707,7 +1704,7 @@ def ql_syscall_pipe(ql, uc, pipe_pipefd, null0, null1, null2, null3, null4):
             else:
                 uc.mem_write(pipe_pipefd, ql.pack32(idx1) + ql.pack32(idx2))
                 regreturn = 0
-    
+
     ql.nprint("pipe(%x, [%d, %d]) = %d" % (pipe_pipefd, idx1, idx2, regreturn))
     ql_definesyscall_return(ql, uc, regreturn)
 
@@ -1732,7 +1729,6 @@ def ql_syscall_sendfile64(ql, uc, sendfile64_out_fd, sendfile64_in_fd, sendfile6
         regreturn = ql.file_des[sendfile64_out_fd].write(buf)
     else:
         regreturn = -1
-    
+
     ql.nprint("sendfile64(%d, %d, %x, %d) = %d" % (sendfile64_out_fd, sendfile64_in_fd, sendfile64_offest, sendfile64_count, regreturn))
     ql_definesyscall_return(ql, uc, regreturn)
-        
