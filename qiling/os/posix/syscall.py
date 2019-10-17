@@ -37,7 +37,8 @@ from qiling.os.posix.filestruct import *
 from qiling.utils import *
 
 def ql_syscall_exit(ql, uc, null0, null1, null2, null3, null4, null5):
-    ql.nprint("exit()")
+    ql.exit_code = null0
+    ql.nprint("exit(%u)" %null0)
 
     if ql.child_processes == True:
         os._exit(0)
