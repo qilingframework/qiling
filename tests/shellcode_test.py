@@ -1,5 +1,6 @@
-import unittest
+import sys,unittest
 from binascii import unhexlify
+sys.path.append("..")
 from qiling import *
 from qiling.exception import *
 
