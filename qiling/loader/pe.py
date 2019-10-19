@@ -180,46 +180,41 @@ class Process:
                     EntryPoint=0,
                     FullDllName=path,
                     BaseDllName=dll_name)
+
+        #Flink
         if len(self.ldr_list) == 0:
             flink = self.LDR
-            blink = self.LDR
             ldr_table_entry.InLoadOrderLinks['Flink'] = flink.InLoadOrderModuleList['Flink']
-            ldr_table_entry.InLoadOrderLinks['Blink'] = blink.InLoadOrderModuleList['Blink']
             ldr_table_entry.InMemoryOrderLinks['Flink'] = flink.InMemoryOrderModuleList['Flink']
-            ldr_table_entry.InMemoryOrderLinks['Blink'] = blink.InMemoryOrderModuleList['Blink']
             ldr_table_entry.InInitializationOrderLinks['Flink'] = flink.InInitializationOrderModuleList['Flink']
-            ldr_table_entry.InInitializationOrderLinks['Blink'] = blink.InInitializationOrderModuleList['Blink']
 
             flink.InLoadOrderModuleList['Flink'] = ldr_table_entry.base
-            blink.InLoadOrderModuleList['Blink'] = ldr_table_entry.base
             flink.InMemoryOrderModuleList['Flink'] = ldr_table_entry.base + 2 * self.ql.pointersize
-            blink.InMemoryOrderModuleList['Blink'] = ldr_table_entry.base + 2 * self.ql.pointersize
             flink.InInitializationOrderModuleList['Flink'] = ldr_table_entry.base + 4 * self.ql.pointersize
-            blink.InInitializationOrderModuleList['Blink'] = ldr_table_entry.base + 4 * self.ql.pointersize
-
-            self.ql.uc.mem_write(flink.base, flink.bytes())
-            self.ql.uc.mem_write(blink.base, blink.bytes())
-            self.ql.uc.mem_write(ldr_table_entry.base, ldr_table_entry.bytes())
+            
         else:
             flink = self.ldr_list[-1]
-            blink = self.LDR
             ldr_table_entry.InLoadOrderLinks['Flink'] = flink.InLoadOrderLinks['Flink']
-            ldr_table_entry.InLoadOrderLinks['Blink'] = blink.InLoadOrderModuleList['Blink']
             ldr_table_entry.InMemoryOrderLinks['Flink'] = flink.InMemoryOrderLinks['Flink']
-            ldr_table_entry.InMemoryOrderLinks['Blink'] = blink.InMemoryOrderModuleList['Blink']
             ldr_table_entry.InInitializationOrderLinks['Flink'] = flink.InInitializationOrderLinks['Flink']
-            ldr_table_entry.InInitializationOrderLinks['Blink'] = blink.InInitializationOrderModuleList['Blink']
 
             flink.InLoadOrderLinks['Flink'] = ldr_table_entry.base
-            blink.InLoadOrderModuleList['Blink'] = ldr_table_entry.base
             flink.InMemoryOrderLinks['Flink'] = ldr_table_entry.base + 2 * self.ql.pointersize
-            blink.InMemoryOrderModuleList['Blink'] = ldr_table_entry.base + 2 * self.ql.pointersize
             flink.InInitializationOrderLinks['Flink'] = ldr_table_entry.base + 4 * self.ql.pointersize
-            blink.InInitializationOrderModuleList['Blink'] = ldr_table_entry.base + 4 * self.ql.pointersize
 
-            self.ql.uc.mem_write(flink.base, flink.bytes())
-            self.ql.uc.mem_write(blink.base, blink.bytes())
-            self.ql.uc.mem_write(ldr_table_entry.base, ldr_table_entry.bytes())
+        #Blink
+        blink = self.LDR
+        ldr_table_entry.InLoadOrderLinks['Blink'] = blink.InLoadOrderModuleList['Blink']
+        ldr_table_entry.InMemoryOrderLinks['Blink'] = blink.InMemoryOrderModuleList['Blink']
+        ldr_table_entry.InInitializationOrderLinks['Blink'] = blink.InInitializationOrderModuleList['Blink']
+
+        blink.InLoadOrderModuleList['Blink'] = ldr_table_entry.base
+        blink.InMemoryOrderModuleList['Blink'] = ldr_table_entry.base + 2 * self.ql.pointersize
+        blink.InInitializationOrderModuleList['Blink'] = ldr_table_entry.base + 4 * self.ql.pointersize
+
+        self.ql.uc.mem_write(flink.base, flink.bytes())
+        self.ql.uc.mem_write(blink.base, blink.bytes())
+        self.ql.uc.mem_write(ldr_table_entry.base, ldr_table_entry.bytes())
 
         self.ldr_list.append(ldr_table_entry)
 

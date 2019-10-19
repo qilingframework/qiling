@@ -13,12 +13,10 @@ import struct
 import sys
 import os
 import string
-import fcntl
 import resource
 import socket
 import time
 import io
-import fcntl
 import select
 
 from unicorn import *

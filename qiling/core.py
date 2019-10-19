@@ -220,7 +220,6 @@ class Qiling:
 
 
     def asm2bytes(self, runasm, arm_thumb = None):
-        from qiling.os.utils import ql_asm2bytes
         return ql_asm2bytes(self,  self.arch, runasm, arm_thumb)
 
 
