@@ -13,41 +13,29 @@ class LoadCommand:
         pass
 
     def get_complete(self):
-        
-        if self.cmd_id == LC_SEGMENT_64:
-            return LoadSegment64(self.data)
-        if self.cmd_id == LC_SEGMENT:
-            return LoadSegment32(self.data)
-        if self.cmd_id == LC_SYMTAB:
-            return LoadSymtab(self.data)
-        if self.cmd_id == LC_DYSYMTAB:
-            return LoadDysymtab(self.data)
-        if self.cmd_id == LC_ID_DYLINKER:
-            return LoadIdDylinker(self.data)
-        if self.cmd_id == LC_UUID:
-            return LoadUuid(self.data)
-        if self.cmd_id == LC_VERSION_MIN_MACOSX:
-            return LoadVersionMinMacosx(self.data)
-        if self.cmd_id == LC_SOURCE_VERSION:
-            return LoadSourceVersion(self.data)
-        if self.cmd_id == LC_UNIXTHREAD:
-            return LoadUnixThread(self.data)
-        if self.cmd_id == LC_SEGMENT_SPLIT_INFO:
-            return LoadSegmentSplitInfo(self.data)
-        if self.cmd_id == LC_FUNCTION_STARTS:
-            return LoadFunctionStarts(self.data)
-        if self.cmd_id == LC_DATA_IN_CODE:
-            return LoadDataInCode(self.data)
-        if self.cmd_id == LC_CODE_SIGNATURE:
-            return LoadCodeSignature(self.data)
-        if self.cmd_id == LC_DYLD_INFO_ONLY:
-            return LoadDyldInfoOnly(self.data)
-        if self.cmd_id == LC_LOAD_DYLINKER:
-            return LoadDylinker(self.data)
-        if self.cmd_id == LC_MAIN:
-            return LoadMain(self.data)
-        if self.cmd_id == LC_LOAD_DYLIB:
-            return LoadDyLib(self.data)
+        cmd_map = {
+            LC_SEGMENT_64           :   LoadSegment64,
+            LC_SEGMENT              :   LoadSegment32,
+            LC_SYMTAB               :   LoadSymtab,
+            LC_DYSYMTAB             :   LoadDysymtab,
+            LC_ID_DYLINKER          :   LoadIdDylinker,
+            LC_UUID                 :   LoadUuid,
+            LC_VERSION_MIN_MACOSX   :   LoadVersionMinMacosx,
+            LC_SOURCE_VERSION       :   LoadSourceVersion,
+            LC_UNIXTHREAD           :   LoadUnixThread,
+            LC_SEGMENT_SPLIT_INFO   :   LoadSegmentSplitInfo,
+            LC_FUNCTION_STARTS      :   LoadFunctionStarts,
+            LC_DATA_IN_CODE         :   LoadDataInCode,
+            LC_CODE_SIGNATURE       :   LoadCodeSignature,
+            LC_DYLD_INFO_ONLY       :   LoadDyldInfoOnly,
+            LC_LOAD_DYLINKER        :   LoadDylinker,
+            LC_MAIN                 :   LoadMain,
+            LC_LOAD_DYLIB           :   LoadDyLib
+        }
+
+        exec_func = cmd_map.get(self.cmd_id)
+        if exec_func:
+            return exec_func(self.data)
     
 
 class LoadSegment(LoadCommand):
