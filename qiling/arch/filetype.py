@@ -188,7 +188,6 @@ def ql_macho_check_archtype(path):
     return arch, ostype
 
 def ql_pe_check_archtype(path):
-    print("ql_pe_check_archtype")
     import pefile
     pe = pefile.PE(path, fast_load=True)
     ostype = None
