@@ -14,7 +14,6 @@ import struct
 import sys
 import os
 import string
-import fcntl
 import resource
 import socket
 import time
