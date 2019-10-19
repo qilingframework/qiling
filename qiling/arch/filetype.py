@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
 #
 # LAU kaijern (xwings) <kj@qiling.io>
 # NGUYEN Anh Quynh <aquynh@gmail.com>
@@ -9,6 +9,8 @@
 # SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
 # CHEN huitao (null) <null@qiling.io>
 # YU tong (sp1ke) <spikeinhouse@gmail.com>
+
+import lief
 
 from qiling.exception import *
 
@@ -58,7 +60,7 @@ def ql_ostype_convert_str(ostype):
         QL_MACOS        : "macos",
         QL_FREEBSD      : "freebsd",
         QL_WINDOWS      : "windows",
-        }
+    }
     if ostype in adapter:
         return adapter[ostype]
     # invalid
@@ -74,7 +76,7 @@ def ostype_convert(ostype):
     if ostype in adapter:
         return adapter[ostype]
     # invalid
-    return None, None 
+    return None, None
 
 def ql_arch_convert_str(arch):
     adapter = {
@@ -100,7 +102,7 @@ def arch_convert(arch):
     if arch in adapter:
         return adapter[arch]
     # invalid
-    return None, None 
+    return None, None
 
 def output_convert(output):
     adapter = {
@@ -117,110 +119,70 @@ def output_convert(output):
     return None, None
 
 def ql_elf_check_archtype(path):
-    def getident():
-        return elfdata
+    if not lief.is_elf(path):
+        return None, None
 
-    with open(path, "rb") as f:
-        elfdata = f.read()[:-19]
+    arch, ostype = None, None
+    elf = lief.parse(path)
 
-    ident = getident()
-    ostype = None
-    arch = None
+    ei_osabi = elf.header.identity_os_abi
+    if ei_osabi == lief.ELF.OS_ABI.SYSTEMV:     ostype = QL_LINUX
+    elif ei_osabi == lief.ELF.OS_ABI.FREEBSD:   ostype = QL_FREEBSD
 
-    if ident[ : 4] == b'\x7fELF':
-        elfbit = ident[0x4]
-        endian = ident[0x5]
-        osabi = ident[0x7]
-        e_machine = ident[0x12]
-
-        if osabi == 0x11 or osabi == 0x03 or osabi == 0x0:
-            ostype = QL_LINUX
-        elif osabi == 0x09:
-            ostype = QL_FREEBSD
-        else:
-            ostype = None
-
-        if e_machine == 0x03:
-            arch = QL_X86
-        elif e_machine == 0x08 and endian == 1 and elfbit == 1:
-            arch = QL_MIPS32EL
-        elif e_machine == 0x28:
-            arch = QL_ARM
-        elif e_machine == 0xB7:
-            arch = QL_ARM64
-        elif e_machine == 0x3E:
-            arch = QL_X8664
-        else:
-            arch = None    
+    e_machine = elf.header.machine_type
+    if e_machine == lief.ELF.ARCH.i386:             arch = QL_X86
+    elif e_machine == lief.ELF.ARCH.x86_64:         arch = QL_X8664
+    elif e_machine == lief.ELF.ARCH.ARM:            arch = QL_ARM
+    elif e_machine == lief.ELF.ARCH.AARCH64:        arch = QL_ARM64
+    elif e_machine == lief.ELF.ARCH.MIPS_RS3_LE:    arch = QL_MIPS32EL
 
     return arch, ostype
+
 
 def ql_macho_check_archtype(path):
-    def getident():
-        return machodata  
-    
-    with open(path, "rb") as f:
-        machodata = f.read()[:-32]
-        
-    ident = getident()
+    if not lief.is_macho(path):
+        return None, None
 
-    macho_sig64 =  b'\xcf\xfa\xed\xfe'
-    macho_sig32 =  b'\xce\xfa\xed\xfe'
-   
-    ostype = None
-    arch = None
+    arch, ostype = None, None
+    macho = lief.parse(path)
 
-    if ident[ : 4] == macho_sig32 or ident[ : 4] == macho_sig64:
-        ostype = QL_MACOS
-        
-        if ident[0x7] == 0: # 32 bit
-            arch = QL_X86
-        elif ident[0x7] == 1: # 64 bit
-            arch = QL_X8664
-        else:
-            arch = None
-
-    if arch:
-        ostype = QL_MACOS
-    else:
-        ostype = None        
+    cpu_type = macho.header.cpu_type
+    if cpu_type == lief.MachO.CPU_TYPES.x86:
+        arch, ostype = QL_X86, QL_MACOS
+    elif cpu_type == lief.MachO.CPU_TYPES.x86_64:
+        arch, ostype = QL_X8664, QL_MACOS
 
     return arch, ostype
+
 
 def ql_pe_check_archtype(path):
-    import pefile
-    pe = pefile.PE(path, fast_load=True)
-    ostype = None
-    arch = None
+    if not lief.is_pe(path):
+        return None, None
+
+    arch, ostype = None, None
+    pe = lief.parse(path)
 
     machine_map = {
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_I386']      :   QL_X86,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_AMD64']     :   QL_X8664,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM']       :   QL_ARM,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_THUMB']     :   QL_ARM,
-        #pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM64']     :   QL_ARM64       #pefile does not have the definition for IMAGE_FILE_MACHINE_ARM64
-        0xAA64                                              :   QL_ARM64        #Temporary workaround for Issues #21 till pefile gets updated
+        lief.PE.MACHINE_TYPES.I386                          :   QL_X86,
+        lief.PE.MACHINE_TYPES.AMD64                         :   QL_X8664,
+        lief.PE.MACHINE_TYPES.ARM                           :   QL_ARM,
+        lief.PE.MACHINE_TYPES.ARM64                         :   QL_ARM64,
+        lief.PE.MACHINE_TYPES.THUMB                         :   QL_ARM,
     }
-    # get arch
-    if pe.FILE_HEADER.Machine in machine_map:
-        arch = machine_map[pe.FILE_HEADER.Machine]
-    else:
-        arch = None
 
-    if arch:
+    machine = pe.header.machine
+    if machine in machine_map:
+        arch = machine_map[machine]
         ostype = QL_WINDOWS
-    else:
-        ostype = None        
 
     return arch, ostype
-
 
 
 def ql_checkostype(path):
 
     arch = None
     ostype = None
-    
+
     arch, ostype = ql_elf_check_archtype(path)
 
     if ostype not in (QL_LINUX, QL_FREEBSD):
@@ -228,9 +190,9 @@ def ql_checkostype(path):
 
     if ostype not in (QL_LINUX, QL_FREEBSD, QL_MACOS):
         arch, ostype = ql_pe_check_archtype(path)
-       
-    if ostype not in (QL_OS):        
+
+    if ostype not in (QL_OS):
         raise QlErrorOsType("ERROR: File does not belong to either 'linux', 'windows', 'freebsd', 'macos'")
 
-      
+
     return arch, ostype
