@@ -193,17 +193,17 @@ def ql_pe_check_archtype(path):
     ostype = None
     arch = None
 
+    machine_map = {
+        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_I386']      :   QL_X86,
+        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_AMD64']     :   QL_X8664,
+        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM']       :   QL_ARM,
+        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_THUMB']     :   QL_ARM,
+        #pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM64']     :   QL_ARM64       #pefile does not have the definition for IMAGE_FILE_MACHINE_ARM64
+        0xAA64                                              :   QL_ARM64        #Temporary workaround for Issues #21 till pefile gets updated
+    }
     # get arch
-    if pe.FILE_HEADER.Machine == pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_I386']:
-        arch = QL_X86
-    elif pe.FILE_HEADER.Machine == pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_AMD64']:
-        arch = QL_X8664
-    elif pe.FILE_HEADER.Machine == pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM']:
-        arch = QL_ARM
-    elif pe.FILE_HEADER.Machine == pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_THUMB']:
-        arch = QL_ARM
-    elif pe.FILE_HEADER.Machine == pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM64']:
-        arch = QL_ARM64
+    if pe.FILE_HEADER.Machine in machine_map:
+        arch = machine_map[pe.FILE_HEADER.Machine]
     else:
         arch = None
 
