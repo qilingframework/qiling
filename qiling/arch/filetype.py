@@ -10,6 +10,7 @@
 # CHEN huitao (null) <null@qiling.io>
 # YU tong (sp1ke) <spikeinhouse@gmail.com>
 
+import pefile
 from qiling.exception import *
 
 QL_X86          = 1
@@ -59,10 +60,9 @@ def ql_ostype_convert_str(ostype):
         QL_FREEBSD      : "freebsd",
         QL_WINDOWS      : "windows",
         }
-    if ostype in adapter:
-        return adapter[ostype]
-    # invalid
-    return None
+
+    return adapter.get(ostype)
+
 
 def ostype_convert(ostype):
     adapter = {
@@ -76,6 +76,7 @@ def ostype_convert(ostype):
     # invalid
     return None, None 
 
+
 def ql_arch_convert_str(arch):
     adapter = {
         QL_X86          : "x86",
@@ -84,10 +85,8 @@ def ql_arch_convert_str(arch):
         QL_ARM          : "arm",
         QL_ARM64        : "arm64",
         }
-    if arch in adapter:
-        return adapter[arch]
-    # invalid
-    return None
+    return adapter.get(arch)
+
 
 def arch_convert(arch):
     adapter = {
@@ -188,7 +187,6 @@ def ql_macho_check_archtype(path):
     return arch, ostype
 
 def ql_pe_check_archtype(path):
-    import pefile
     pe = pefile.PE(path, fast_load=True)
     ostype = None
     arch = None
@@ -202,10 +200,7 @@ def ql_pe_check_archtype(path):
         0xAA64                                              :   QL_ARM64        #Temporary workaround for Issues #21 till pefile gets updated
     }
     # get arch
-    if pe.FILE_HEADER.Machine in machine_map:
-        arch = machine_map[pe.FILE_HEADER.Machine]
-    else:
-        arch = None
+    arch = machine_map.get(pe.FILE_HEADER.Machine)
 
     if arch:
         ostype = QL_WINDOWS

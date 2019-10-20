@@ -21,23 +21,23 @@ class MachoX86:
     def __init__(self, ql, file_path, stack_esp, argvs, envs, apples, argc, dyld_path=None):
 
         # parse macho file 
-        self.macho_file = MachoParser(ql, file_path, "x86")
-        self.slide = 0x0000000
-        self.dyld_slide = 0x30000000
-        self.string_align = 4
-        self.ptr_align = 4
-        self.ql = ql
-        self.uc = ql.uc
-        self.binary_entry = 0x0
-        self.proc_entry = 0x0
-        self.stack_esp = stack_esp
-        self.stack_ebp = stack_esp
-        self.argvs = argvs
-        self.envs = envs
-        self.apples = apples
-        self.argc = argc
-        self.dyld_path = dyld_path
-        self.using_dyld = False
+        self.macho_file     = MachoParser(ql, file_path, "x86")
+        self.slide          = 0x0000000
+        self.dyld_slide     = 0x30000000
+        self.string_align   = 4
+        self.ptr_align      = 4
+        self.ql             = ql
+        self.uc             = ql.uc
+        self.binary_entry   = 0x0
+        self.proc_entry     = 0x0
+        self.stack_esp      = stack_esp
+        self.stack_ebp      = stack_esp
+        self.argvs          = argvs
+        self.envs           = envs
+        self.apples         = apples
+        self.argc           = argc
+        self.dyld_path      = dyld_path
+        self.using_dyld     = False
         # self.dyld_slide = 0x1
         # todo: dyld loader
 
@@ -237,23 +237,23 @@ class MachoX8664:
     # macho x8664 loader 
     def __init__(self, ql, file_path, stack_esp, argvs, envs, apples, argc, dyld_path=None):
 
-        self.macho_file = MachoParser(ql, file_path)
-        self.slide = 0x0000000
-        self.dyld_slide = 0x30000000
-        self.string_align = 8
-        self.ptr_align = 8
-        self.ql = ql
-        self.uc = ql.uc
-        self.binary_entry = 0x0
-        self.proc_entry = 0x0
-        self.stack_esp = stack_esp
-        self.stack_ebp = stack_esp
-        self.argvs = argvs
-        self.envs = envs
-        self.apples = apples
-        self.argc = argc
-        self.dyld_path = dyld_path
-        self.using_dyld = False
+        self.macho_file     = MachoParser(ql, file_path)
+        self.slide          = 0x0000000
+        self.dyld_slide     = 0x30000000
+        self.string_align   = 8
+        self.ptr_align      = 8
+        self.ql             = ql
+        self.uc             = ql.uc
+        self.binary_entry   = 0x0
+        self.proc_entry     = 0x0
+        self.stack_esp      = stack_esp
+        self.stack_ebp      = stack_esp
+        self.argvs          = argvs
+        self.envs           = envs
+        self.apples         = apples
+        self.argc           = argc
+        self.dyld_path      = dyld_path
+        self.using_dyld     = False
         # self.dyld_slide = 0x1
         # todo: dyld loader
 
