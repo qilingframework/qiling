@@ -102,34 +102,20 @@ class ELFParse:
         data = self.elfdata
         index = 0
         head = {}
-        head['e_ident'] = data[index : index + 16]
-        index += 16
-        head['e_type'] = self.ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_machine'] = self.ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_version'] = self.ql.unpack32(data[index : index + 4])
-        index += 4
-        head['e_entry'] = self.ql.unpack32(data[index : index + 4])
-        index += 4
-        head['e_phoff'] = self.ql.unpack32(data[index : index + 4])
-        index += 4
-        head['e_shoff'] = self.ql.unpack32(data[index : index + 4])
-        index += 4
-        head['e_flags'] = self.ql.unpack32(data[index : index + 4])
-        index += 4
-        head['e_ehsize'] = self.ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_phentsize'] = self.ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_phnum'] = self.ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_shentsize'] = self.ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_shnum'] = self.ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_shstrndx'] = self.ql.unpack16(data[index : index + 2])
-        index += 2
+        head['e_ident']         = data[index : index + 16];                     index += 16
+        head['e_type']          = self.ql.unpack16(data[index : index + 2]);    index += 2
+        head['e_machine']       = self.ql.unpack16(data[index : index + 2]);    index += 2
+        head['e_version']       = self.ql.unpack32(data[index : index + 4]);    index += 4
+        head['e_entry']         = self.ql.unpack32(data[index : index + 4]);    index += 4
+        head['e_phoff']         = self.ql.unpack32(data[index : index + 4]);    index += 4
+        head['e_shoff']         = self.ql.unpack32(data[index : index + 4]);    index += 4
+        head['e_flags']         = self.ql.unpack32(data[index : index + 4]);    index += 4
+        head['e_ehsize']        = self.ql.unpack16(data[index : index + 2]);    index += 2
+        head['e_phentsize']     = self.ql.unpack16(data[index : index + 2]);    index += 2
+        head['e_phnum']         = self.ql.unpack16(data[index : index + 2]);    index += 2
+        head['e_shentsize']     = self.ql.unpack16(data[index : index + 2]);    index += 2
+        head['e_shnum']         = self.ql.unpack16(data[index : index + 2]);    index += 2
+        head['e_shstrndx']      = self.ql.unpack16(data[index : index + 2]);    index += 2
         return head
 
     def parse_header64(self, ql):
@@ -163,34 +149,20 @@ class ELFParse:
         data = self.elfdata
         index = 0
         head = {}
-        head['e_ident'] = data[index : index + 16]
-        index += 16
-        head['e_type'] = ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_machine'] = ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_version'] = ql.unpack32(data[index : index + 4])
-        index += 4
-        head['e_entry'] = ql.unpack64(data[index : index + 8])
-        index += 8
-        head['e_phoff'] = ql.unpack64(data[index : index + 8])
-        index += 8
-        head['e_shoff'] = ql.unpack64(data[index : index + 8])
-        index += 8
-        head['e_flags'] = ql.unpack32(data[index : index + 4])
-        index += 4
-        head['e_ehsize'] = ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_phentsize'] = ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_phnum'] = ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_shentsize'] = ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_shnum'] = ql.unpack16(data[index : index + 2])
-        index += 2
-        head['e_shstrndx'] = ql.unpack16(data[index : index + 2])
-        index += 2
+        head['e_ident']         = data[index : index + 16];                 index += 16
+        head['e_type']          = ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_machine']       = ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_version']       = ql.unpack32(data[index : index + 4]);     index += 4
+        head['e_entry']         = ql.unpack64(data[index : index + 8]);     index += 8
+        head['e_phoff']         = ql.unpack64(data[index : index + 8]);     index += 8
+        head['e_shoff']         = ql.unpack64(data[index : index + 8]);     index += 8
+        head['e_flags']         = ql.unpack32(data[index : index + 4]);     index += 4
+        head['e_ehsize']        = ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_phentsize']     = ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_phnum']         = ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_shentsize']     = ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_shnum']         = ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_shstrndx']      = ql.unpack16(data[index : index + 2]);     index += 2
         return head
 
     def parse_header(self, ql):
@@ -226,17 +198,17 @@ class ELFParse:
 
         for i in range(Snum):
             S = {}
-            S['sh_name'] = ql.unpack32(Sdata[i * Ssize : i * Ssize + 4])
-            S['sh_type'] = ql.unpack32(Sdata[i * Ssize + 4 : i * Ssize + 8])
-            S['sh_flags'] = ql.unpack32(Sdata[i * Ssize + 8 : i * Ssize + 12])
-            S['sh_addr'] = ql.unpack32(Sdata[i * Ssize + 12 : i * Ssize + 16])
-            S['sh_offset'] = ql.unpack32(Sdata[i * Ssize + 16 : i * Ssize + 20])
-            S['sh_size'] = ql.unpack32(Sdata[i * Ssize + 20 : i * Ssize + 24])
-            S['sh_link'] = ql.unpack32(Sdata[i * Ssize + 24 : i * Ssize + 28])
-            S['sh_info'] = ql.unpack32(Sdata[i * Ssize + 28 : i * Ssize + 32])
-            S['sh_addralign'] = ql.unpack32(Sdata[i * Ssize + 32 : i * Ssize + 36])
-            S['sh_entsize'] = ql.unpack32(Sdata[i * Ssize + 36 : i * Ssize + 40])
-            S['data'] = self.elfdata[S['sh_offset'] : S['sh_offset'] + S['sh_size']]
+            S['sh_name']        = ql.unpack32(Sdata[i * Ssize : i * Ssize + 4])
+            S['sh_type']        = ql.unpack32(Sdata[i * Ssize + 4 : i * Ssize + 8])
+            S['sh_flags']       = ql.unpack32(Sdata[i * Ssize + 8 : i * Ssize + 12])
+            S['sh_addr']        = ql.unpack32(Sdata[i * Ssize + 12 : i * Ssize + 16])
+            S['sh_offset']      = ql.unpack32(Sdata[i * Ssize + 16 : i * Ssize + 20])
+            S['sh_size']        = ql.unpack32(Sdata[i * Ssize + 20 : i * Ssize + 24])
+            S['sh_link']        = ql.unpack32(Sdata[i * Ssize + 24 : i * Ssize + 28])
+            S['sh_info']        = ql.unpack32(Sdata[i * Ssize + 28 : i * Ssize + 32])
+            S['sh_addralign']   = ql.unpack32(Sdata[i * Ssize + 32 : i * Ssize + 36])
+            S['sh_entsize']     = ql.unpack32(Sdata[i * Ssize + 36 : i * Ssize + 40])
+            S['data']           = self.elfdata[S['sh_offset'] : S['sh_offset'] + S['sh_size']]
             yield S
         return
 
@@ -270,17 +242,17 @@ class ELFParse:
 
         for i in range(Snum):
             S = {}
-            S['sh_name'] = ql.unpack32(Sdata[i * Ssize : i * Ssize + 4])
-            S['sh_type'] = ql.unpack32(Sdata[i * Ssize + 4 : i * Ssize + 8])
-            S['sh_flags'] = ql.unpack64(Sdata[i * Ssize + 8 : i * Ssize + 16])
-            S['sh_addr'] = ql.unpack64(Sdata[i * Ssize + 16 : i * Ssize + 24])
-            S['sh_offset'] = ql.unpack64(Sdata[i * Ssize + 24 : i * Ssize + 32])
-            S['sh_size'] = ql.unpack64(Sdata[i * Ssize + 32 : i * Ssize + 40])
-            S['sh_link'] = ql.unpack32(Sdata[i * Ssize + 40 : i * Ssize + 44])
-            S['sh_info'] = ql.unpack32(Sdata[i * Ssize + 44 : i * Ssize + 48])
-            S['sh_addralign'] = ql.unpack64(Sdata[i * Ssize + 48 : i * Ssize + 56])
-            S['sh_entsize'] = ql.unpack64(Sdata[i * Ssize + 56 : i * Ssize + 64])
-            S['data'] = self.elfdata[S['sh_offset'] : S['sh_offset'] + S['sh_size']]
+            S['sh_name']        = ql.unpack32(Sdata[i * Ssize : i * Ssize + 4])
+            S['sh_type']        = ql.unpack32(Sdata[i * Ssize + 4 : i * Ssize + 8])
+            S['sh_flags']       = ql.unpack64(Sdata[i * Ssize + 8 : i * Ssize + 16])
+            S['sh_addr']        = ql.unpack64(Sdata[i * Ssize + 16 : i * Ssize + 24])
+            S['sh_offset']      = ql.unpack64(Sdata[i * Ssize + 24 : i * Ssize + 32])
+            S['sh_size']        = ql.unpack64(Sdata[i * Ssize + 32 : i * Ssize + 40])
+            S['sh_link']        = ql.unpack32(Sdata[i * Ssize + 40 : i * Ssize + 44])
+            S['sh_info']        = ql.unpack32(Sdata[i * Ssize + 44 : i * Ssize + 48])
+            S['sh_addralign']   = ql.unpack64(Sdata[i * Ssize + 48 : i * Ssize + 56])
+            S['sh_entsize']     = ql.unpack64(Sdata[i * Ssize + 56 : i * Ssize + 64])
+            S['data']           = self.elfdata[S['sh_offset'] : S['sh_offset'] + S['sh_size']]
             yield S
         return
 
@@ -315,14 +287,14 @@ class ELFParse:
 
         for i in range(Pnum):
             P = {}
-            P['p_type'] = ql.unpack32(Pdata[i * Psize : i * Psize + 4 ])
-            P['p_offset'] = ql.unpack32(Pdata[i * Psize + 4 : i * Psize + 8 ])
-            P['p_vaddr'] = ql.unpack32(Pdata[i * Psize + 8 : i * Psize + 12 ])
-            P['p_paddr'] = ql.unpack32(Pdata[i * Psize + 12 : i * Psize + 16 ])
-            P['p_filesz'] = ql.unpack32(Pdata[i * Psize + 16 : i * Psize + 20 ])
-            P['p_memsz'] = ql.unpack32(Pdata[i * Psize + 20 : i * Psize + 24 ])
-            P['p_flags'] = ql.unpack32(Pdata[i * Psize + 24 : i * Psize + 28 ])
-            P['p_align'] = ql.unpack32(Pdata[i * Psize + 28 : i * Psize + 32])
+            P['p_type']     = ql.unpack32(Pdata[i * Psize : i * Psize + 4 ])
+            P['p_offset']   = ql.unpack32(Pdata[i * Psize + 4 : i * Psize + 8 ])
+            P['p_vaddr']    = ql.unpack32(Pdata[i * Psize + 8 : i * Psize + 12 ])
+            P['p_paddr']    = ql.unpack32(Pdata[i * Psize + 12 : i * Psize + 16 ])
+            P['p_filesz']   = ql.unpack32(Pdata[i * Psize + 16 : i * Psize + 20 ])
+            P['p_memsz']    = ql.unpack32(Pdata[i * Psize + 20 : i * Psize + 24 ])
+            P['p_flags']    = ql.unpack32(Pdata[i * Psize + 24 : i * Psize + 28 ])
+            P['p_align']    = ql.unpack32(Pdata[i * Psize + 28 : i * Psize + 32])
             yield P
         return
 
@@ -354,14 +326,14 @@ class ELFParse:
 
         for i in range(Pnum):
             P = {}
-            P['p_type'] = ql.unpack32(Pdata[i * Psize : i * Psize + 4 ])
-            P['p_flags'] = ql.unpack32(Pdata[i * Psize + 4 : i * Psize + 8 ])
-            P['p_offset'] = ql.unpack64(Pdata[i * Psize + 8 : i * Psize + 16 ])
-            P['p_vaddr'] = ql.unpack64(Pdata[i * Psize + 16 : i * Psize + 24 ])
-            P['p_paddr'] = ql.unpack64(Pdata[i * Psize + 24 : i * Psize + 32 ])
-            P['p_filesz'] = ql.unpack64(Pdata[i * Psize + 32 : i * Psize + 40 ])
-            P['p_memsz'] = ql.unpack64(Pdata[i * Psize + 40 : i * Psize + 48 ])
-            P['p_align'] = ql.unpack64(Pdata[i * Psize + 48 : i * Psize + 56])
+            P['p_type']     = ql.unpack32(Pdata[i * Psize : i * Psize + 4 ])
+            P['p_flags']    = ql.unpack32(Pdata[i * Psize + 4 : i * Psize + 8 ])
+            P['p_offset']   = ql.unpack64(Pdata[i * Psize + 8 : i * Psize + 16 ])
+            P['p_vaddr']    = ql.unpack64(Pdata[i * Psize + 16 : i * Psize + 24 ])
+            P['p_paddr']    = ql.unpack64(Pdata[i * Psize + 24 : i * Psize + 32 ])
+            P['p_filesz']   = ql.unpack64(Pdata[i * Psize + 32 : i * Psize + 40 ])
+            P['p_memsz']    = ql.unpack64(Pdata[i * Psize + 40 : i * Psize + 48 ])
+            P['p_align']    = ql.unpack64(Pdata[i * Psize + 48 : i * Psize + 56])
             yield P
         return
 
