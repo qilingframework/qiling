@@ -41,7 +41,7 @@ class Process:
         path = os.path.join(self.ql.rootfs, "dlls", dll_name)
 
         if not os.path.exists(path):
-            raise QlErrorFileNotFound("Cannot find dll in %s" % path)
+            raise QlErrorFileNotFound("[!] Cannot find dll in %s" % path)
 
         # If the dll is already loaded
         if dll_name in self.dlls:
@@ -49,7 +49,7 @@ class Process:
         else:
             self.dlls[dll_name] = self.ql.DLL_LAST_ADDR
 
-        self.ql.nprint(">>> Loading %s to 0x%x" % (path, self.ql.DLL_LAST_ADDR))
+        self.ql.nprint("[+] Loading %s to 0x%x" % (path, self.ql.DLL_LAST_ADDR))
 
         # cache depends on address base
         fcache = path + ".%x.cache" % self.ql.DLL_LAST_ADDR
@@ -69,7 +69,7 @@ class Process:
                     self.import_symbols,
                     self.import_address_table),
                     open(fcache, "wb"))
-                self.ql.nprint(">>> Cached %s" % path)
+                self.ql.nprint("[+] Cached %s" % path)
         else:
             (data, self.import_symbols, self.import_address_table) = \
                 pickle.load(open(fcache, "rb"))
@@ -84,7 +84,7 @@ class Process:
         # add dll to ldr data
         self.add_ldr_data_table_entry(dll_name)
 
-        self.ql.nprint(">>> Done with loading %s" % path)
+        self.ql.nprint("[+] Done with loading %s" % path)
         return dll_base
 
     def set_cmdline(self, entry, memory):
@@ -110,7 +110,7 @@ class Process:
             self.ql.STRUCTERS_LAST_ADDR += 0x30
             teb_addr = self.ql.STRUCTERS_LAST_ADDR
 
-        self.ql.nprint(">>> TEB addr is " + hex(teb_addr))
+        self.ql.nprint("[+] TEB addr is " + hex(teb_addr))
 
         teb_size = len(TEB(self.ql).bytes())
         teb_data = TEB(
@@ -135,7 +135,7 @@ class Process:
     def init_peb(self):
         peb_addr = self.ql.STRUCTERS_LAST_ADDR
 
-        self.ql.nprint(">>> PEB addr is " + hex(peb_addr))
+        self.ql.nprint("[+] PEB addr is " + hex(peb_addr))
 
         peb_size = len(PEB(self.ql).bytes())
         peb_data = PEB(self.ql, base=peb_addr, LdrAddress=peb_addr + peb_size)
@@ -274,11 +274,11 @@ class PE(Process):
 
         self.ql.entry_point = self.PE_ENTRY_POINT = self.PE_IMAGE_BASE + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
         self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
-        self.ql.nprint(">>> Loading %s to 0x%x" % (self.path, self.PE_IMAGE_BASE))
-        self.ql.nprint(">>> PE entry point at 0x%x" % self.ql.entry_point)
+        self.ql.nprint("[+] Loading %s to 0x%x" % (self.path, self.PE_IMAGE_BASE))
+        self.ql.nprint("[+] PE entry point at 0x%x" % self.ql.entry_point)
 
         # set stack pointer
-        self.ql.nprint(">>> Initiate stack address at 0x%x " % self.ql.stack_address)
+        self.ql.nprint("[+] Initiate stack address at 0x%x " % self.ql.stack_address)
         self.ql.uc.mem_map(self.ql.stack_address, self.ql.stack_size)
         sp = self.ql.stack_address + self.ql.stack_size
 
@@ -315,5 +315,5 @@ class PE(Process):
                     address = self.ql.pack64(self.import_address_table[imp.name])
                 self.ql.uc.mem_write(imp.address, address)
 
-        self.ql.nprint(">>> Done with loading %s" % self.path)
+        self.ql.nprint("[+] Done with loading %s" % self.path)
         self.filepath = b"D:\\" + bytes(self.path.replace("/", "\\"), "utf-8")

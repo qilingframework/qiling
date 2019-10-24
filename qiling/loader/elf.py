@@ -64,7 +64,7 @@ class ELFParse:
         self.ident = self.getident()
 
         if self.ident[ : 4] != b'\x7fELF':
-            raise QlErrorELFFormat("ERROR: NOT a ELF")
+            raise QlErrorELFFormat("[!] ERROR: NOT a ELF")
 
         self.elfhead = self.parse_header(ql)
 
@@ -421,7 +421,7 @@ class ELFLoader(ELFParse):
         if elfhead['e_type'] == ET_EXEC:
             loadbase = 0
         elif elfhead['e_type'] != ET_DYN:
-            ql.nprint(">>> Some error in head e_type!")
+            ql.nprint("[+] Some error in head e_type!")
             return -1
 
         uc.mem_map(loadbase + mem_start, mem_end - mem_start)
@@ -430,12 +430,12 @@ class ELFLoader(ELFParse):
         for i in super().parse_program_header(ql):
             if i['p_type'] == PT_LOAD:
                 uc.mem_write(loadbase + i['p_vaddr'], super().getelfdata(i['p_offset'], i['p_filesz']))
-                ql.dprint(">>> load 0x%x - 0x%x"%(loadbase + i['p_vaddr'], loadbase + i['p_vaddr'] + i['p_filesz']))
+                ql.dprint("[+] load 0x%x - 0x%x"%(loadbase + i['p_vaddr'], loadbase + i['p_vaddr'] + i['p_filesz']))
 
 
         entry_point = elfhead['e_entry'] + loadbase
         
-        ql.dprint(">>> mem_start: " + hex(mem_start) + " mem_end: " + hex(mem_end))
+        ql.dprint("[+] mem_start: " + hex(mem_start) + " mem_end: " + hex(mem_end))
 
 
         ql.brk_address = mem_end + loadbase
@@ -448,7 +448,7 @@ class ELFLoader(ELFParse):
            
             interp = ELFParse(ql.rootfs + interp_path, ql)
             interphead = interp.parse_header(ql)
-            ql.dprint(">>> interp is : %s" % (ql.rootfs + interp_path))
+            ql.dprint("[+] interp is : %s" % (ql.rootfs + interp_path))
 
             interp_mem_size = -1
             for i in interp.parse_program_header(ql):
@@ -456,7 +456,7 @@ class ELFLoader(ELFParse):
                     if interp_mem_size < i['p_vaddr'] + i['p_memsz'] or interp_mem_size == -1:
                         interp_mem_size = i['p_vaddr'] + i['p_memsz']
             interp_mem_size = (interp_mem_size // 0x1000 + 1) * 0x1000
-            ql.dprint(">>> interp_mem_size is : %x" % int(interp_mem_size))
+            ql.dprint("[+] interp_mem_size is : %x" % int(interp_mem_size))
 
             if ql.archbit == 64:
                 interp_base = 0x7ffff7dd5000

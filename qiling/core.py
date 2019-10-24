@@ -147,7 +147,7 @@ class Qiling:
             self.pointersize = (self.archbit // 8)
 
         if not self.ostype in (QL_OS):
-            raise QlErrorOsType("OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos'")
+            raise QlErrorOsType("OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos','ios'")
 
         if not self.output in (QL_OUTPUT):
             raise QlErrorOutput("OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
