@@ -207,10 +207,10 @@ def ql_syscall_faccessat(ql, uc, faccessat_dfd, faccessat_filename, faccessat_mo
     regreturn = -1
     ql.nprint("facccessat (%d, 0x%x, 0x%x) = %d" %(faccessat_dfd, faccessat_filename, faccessat_mode, regreturn))
     if os.path.exists(real_path) == False:
-        ql.nprint("|---!!! File Not Found: %s"  % relative_path)
+        ql.dprint("|---!!! File Not Found: %s"  % relative_path)
         regreturn = -1
     else:
-        ql.nprint("|--->>> Found and Skip, return -1: %s"  % relative_path)
+        ql.dprint("|--->>> Found and Skip, return -1: %s"  % relative_path)
         regreturn = -1
     ql_definesyscall_return(ql, uc, regreturn)
 
