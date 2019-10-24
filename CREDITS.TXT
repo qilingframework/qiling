@@ -1,4 +1,4 @@
-This file credits all the contributors of the Qiling project.
+This file credits all the contributors of the Qiling Freamework project
 
 
 Key developers
@@ -11,13 +11,19 @@ CHEN huitao (null) <null@qiling.io>
 YU tong (sp1ke) <spikeinhouse@gmail.com>
 
 
-Alpha testers (in no particular order)
-======================================
-KLKS
+Alpha testers (in no particular order, named by github id)
+==========================================================
+klks
 ekso
-
+bannsec
+ChrisTheCoolHut
+domenukk
+droberson
+hugsy
+Masrepus
+phdphuc
+sashs
 
 Contributors (in no particular order)
 =====================================
-Kevin Foo - Dockerfile, documentation and website
-
+Kevin (chfl4gs) Foo - Dockerfile, documentation and website
