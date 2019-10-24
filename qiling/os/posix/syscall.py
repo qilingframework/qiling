@@ -256,11 +256,8 @@ def ql_syscall_openat(ql, uc, openat_fd, openat_path, openat_flags, openat_mode,
     relative_path = ql_transform_to_relative_path(ql, uc, openat_path)
 
     if os.path.exists(real_path) == False:
-        ql.nprint("|---!!! File Not Found: %s"  % relative_path)
         regreturn = -1
     else:
-        ql.nprint("|--->>> File Found: %s"  % relative_path)
-
         idx = -1
         for i in range(256):
             if ql.file_des[i] == 0:
@@ -272,6 +269,10 @@ def ql_syscall_openat(ql, uc, openat_fd, openat_path, openat_flags, openat_mode,
             ql.file_des[idx] = ql_file.open(real_path, openat_flags, openat_mode)
             regreturn = (idx)
     ql.nprint("openat(%d, %s, 0x%x, 0x%x) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
+    if regreturn == -1:
+        ql.dprint("|---!!! File Not Found: %s"  % relative_path)
+    else:
+        ql.dprint("|--->>> File Found: %s"  % relative_path)
     ql_definesyscall_return(ql, uc, regreturn)
 
 
