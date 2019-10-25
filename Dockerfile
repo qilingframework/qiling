@@ -10,6 +10,16 @@ RUN apt-get update \
 
 WORKDIR /
 
+RUN git clone https://github.com/keystone-engine/keystone.git
+
+RUN cd /keystone \
+   && mkdir build \
+   && cd build \
+   && ../make-share.sh \
+   && make install \
+   && echo "/usr/local/lib" >> /etc/ld.so.conf \
+   && ldconfig
+
 RUN git clone https://github.com/qilingframework/qiling
 
 RUN cd /qiling \
