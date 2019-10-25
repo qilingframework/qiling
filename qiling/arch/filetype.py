@@ -228,7 +228,7 @@ def ql_checkostype(path):
     if ostype not in (QL_LINUX, QL_FREEBSD):
         arch, ostype = ql_macho_check_archtype(path)
 
-    if ostype not in (QL_LINUX, QL_FREEBSD, QL_MACOS):
+    if ostype not in (QL_LINUX, QL_FREEBSD, QL_MACOS, QL_IOS):
         arch, ostype = ql_pe_check_archtype(path)
        
     if ostype not in (QL_OS):        
