@@ -67,6 +67,7 @@ class Qiling:
     reg_dir = None
     reg_diff = None
     exit_code = 0
+    debug_stop = False
     
 
     def __init__(self, filename = None, rootfs = None, argv = [], env = {}, 

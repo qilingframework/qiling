@@ -84,7 +84,8 @@ def hook_syscall(uc, intno, ql):
                 td = ql.thread_management.cur_thread
                 td.stop()
                 td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-                uc.emu_stop()
+                if ql.debug_stop:
+                    uc.emu_stop()
                 raise
     else:
         ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
@@ -92,7 +93,8 @@ def hook_syscall(uc, intno, ql):
             td = ql.thread_management.cur_thread
             td.stop()
             td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-            uc.emu_stop()
+            if ql.debug_stop:
+                uc.emu_stop()
             
 
 def exec_shellcode(ql, uc, start, shellcode):

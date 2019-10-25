@@ -74,11 +74,12 @@ def hook_syscall(uc, intno, ql):
             td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
 
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                uc.emu_stop()
+                if ql.debug_stop:
+                    uc.emu_stop()
                 raise
     else:
         ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+        if ql.debug_stop:
             uc.emu_stop()
 
         td = ql.thread_management.cur_thread

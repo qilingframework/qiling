@@ -77,13 +77,14 @@ def hook_syscall(uc, intno, ql):
             MACOS_SYSCALL_FUNC(ql, uc, param0, param1, param2, param3, param4, param5)
         except:
             ql.errmsg = 1
-            ql.nprint("SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
+            ql.nprint("SYSCALL: ", macos_syscall_func_list[macos_syscall_index])
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                uc.emu_stop()
+                if ql.debug_stop:
+                    uc.emu_stop()
                 raise
     else:
         ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+        if ql.debug_stop:
             uc.emu_stop()
 
 

@@ -67,11 +67,14 @@ def hook_syscall(uc, ql):
         except:
             ql.errmsg = 1
             ql.nprint("SYSCALL: ", freebsd_syscall_func_list[freebsd_syscall_index])
-            uc.emu_stop()
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+                if ql.debug_stop:
+                    uc.emu_stop()
                 raise
     else:
         ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
+        if ql.debug_stop:
+            uc.emu_stop()
 
 
 def loader_file(ql):

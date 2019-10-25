@@ -70,11 +70,12 @@ def hook_syscall(uc, ql):
             ql.errmsg = 1
             ql.nprint("SYSCALL: ", ios_syscall_func_list[ios_syscall_index])
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                uc.emu_stop()
+                if ql.debug_stop:
+                    uc.emu_stop()
                 raise
     else:
         ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num,  (syscall_num -  0x2000000)))
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+        if ql.debug_stop:
             uc.emu_stop()
 
 

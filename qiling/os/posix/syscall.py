@@ -813,8 +813,7 @@ def ql_syscall_write(ql, uc, write_fd, write_buf, write_count, null0, null1, nul
             raise
     ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
     if buf:
-        ql.dprint("[+] write() CONTENT:")
-        ql.dprint(buf)
+        ql.nprint(buf.decode())
     ql_definesyscall_return(ql, uc, regreturn)
 
 

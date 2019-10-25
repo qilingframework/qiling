@@ -30,4 +30,5 @@ WanderingGlitch
 
 Contributors (in no particular order)
 =====================================
+klks - The Code Refectorer
 Kevin (chfl4gs) Foo - Dockerfile, documentation and website
