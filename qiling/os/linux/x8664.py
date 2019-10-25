@@ -118,11 +118,11 @@ def runner(ql):
             ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
     except UcError as e:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            ql.nprint(">>> PC= " + hex(ql.pc))
+            ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
 
             buf = ql.uc.mem_read(ql.pc, 8)
-            ql.nprint(">>> ", [hex(_) for _ in buf])
+            ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql.uc, ql.pc, 64, ql)
         ql.errmsg = 1
         ql.nprint("%s" % e)    

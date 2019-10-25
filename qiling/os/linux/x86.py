@@ -102,7 +102,7 @@ def ql_x86_syscall_set_thread_area(ql, uc, u_info_addr, null0, null1, null2, nul
 
     base = ql.unpack32(u_info[4 : 8])
     limit = ql.unpack32(u_info[8 : 12])
-    ql.nprint("|-->>> set_thread_area base : 0x%x limit is : 0x%x" % (base, limit))
+    ql.nprint("[+] set_thread_area base : 0x%x limit is : 0x%x" % (base, limit))
     ql_x86_setup_syscall_set_thread_area(ql, uc, base, limit)
     uc.mem_write(u_info_addr, ql.pack32(12))
     regreturn = 0
@@ -158,11 +158,11 @@ def runner(ql):
 
     except UcError as e:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            ql.nprint(">>> PC= " + hex(ql.pc))
+            ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
 
             buf = ql.uc.mem_read(ql.pc, 8)
-            ql.nprint(">>> ", [hex(_) for _ in buf])
+            ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql.uc, ql.pc, 64, ql)
         ql.errmsg = 1
         ql.nprint("%s" % e)  

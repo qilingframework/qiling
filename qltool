@@ -93,17 +93,17 @@ def run_shellcode(options):
             # invalid
             return None, None
 
-        print (">>> Load ASM from FILE")
+        print ("[+] Load ASM from FILE")
         archtype, archmode = ks_convert(options.arch)
         shellcoder = compile_instructions(options.filename, archtype, archmode)
     elif options.hex == True:
         if options.input is not None:
-            print (">>> Load HEX from ARGV")
+            print ("[+] Load HEX from ARGV")
             shellcoder = str(options.input).strip("\\\\x").split("x")
             shellcoder = "".join(shellcoder).strip()
             shellcoder =  bytes.fromhex(shellcoder)
         elif options.filename is not None:
-            print (">>> Load HEX from FILE")
+            print ("[+] Load HEX from FILE")
             shellcoder = str(read_shellcode(options.filename)).strip('b\'').strip('\\n')
             shellcoder = shellcoder.strip('x').split("\\\\x")
             shellcoder = "".join(shellcoder).strip()
@@ -113,7 +113,7 @@ def run_shellcode(options):
             exit(1)
        
     else:
-        print (">>> Load BIN from FILE")
+        print ("[+] Load BIN from FILE")
         if options.filename is None:
             print("ERROR: File not found")
             exit(1)

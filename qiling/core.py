@@ -193,21 +193,21 @@ class Qiling:
             print(*args, **kw, file = fd)
             if self.errmsg == 1:
                 printerrmsg = ''.join(args) 
-                print("!!! ERROR " + printerrmsg, file = fd)
+                print("[!] " + printerrmsg, file = fd)
                 self.errmsg = 0
         elif (self.log_file_name and self.consolelog):
             print(*args, **kw, file = fd)
             print(*args, **kw)
             if self.errmsg == 1:
                 printerrmsg = ''.join(args) 
-                print("!!! ERROR " + printerrmsg, file = fd)
-                print("!!! ERROR " + printerrmsg)
+                print("[!] " + printerrmsg, file = fd)
+                print("[!] " + printerrmsg)
                 self.errmsg = 0
         else:
             print(*args, **kw)
             if self.errmsg == 1:
                 printerrmsg = ''.join(args) 
-                print("!!! ERROR " + printerrmsg)
+                print("[!] " + printerrmsg)
                 self.errmsg = 0                    
         
         if fd != None:
@@ -523,7 +523,7 @@ class Qiling:
 
     def show_map_info(self):
         for s, e, info in self.map_info:
-            self.nprint(">>> %08x - %08x      %s" % (s, e, info))
+            self.nprint("[+] %08x - %08x      %s" % (s, e, info))
     
 
     def __get_lib_base(self, filename):

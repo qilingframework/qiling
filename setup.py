@@ -24,7 +24,7 @@ setup(
     description = 'Qiling is an advanced binary emulation framework that cross-platform-architecture.',
     url = 'http://qiling.io',
 
-    maintainer = 'Nguyen Anh Quynh, KaiJernLau, Tianze Ding, BoWen Sun, Huitao Chen, TongYu',
+    maintainer = 'Nguyen Anh Quynh, KaiJern Lau, Tianze Ding, BoWen Sun, Huitao Chen, TongYu',
     maintainer_email = 'info@qiling.io',
 
     license = 'GPLv2',

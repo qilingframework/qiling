@@ -18,7 +18,7 @@ from qiling.arch.filetype import *
 
 # def ql_x86_windows_hook_mem_error(uc, type, addr, *args):
 def ql_x86_windows_hook_mem_error(uc, addr, size, dummy0, dummy1, ql):
-    ql.nprint(">>> ERROR: unmapped memory access at 0x%x" % addr)
+    ql.nprint("[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
 

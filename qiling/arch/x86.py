@@ -195,7 +195,7 @@ def ql_x86_setup_gdt_segment(ql, uc, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMEN
 
     # create segment index, point segment register to this selector
     selector = create_selector(index, RPORT)
-    ql.dprint(">>> SET_THREAD_AREA selector : 0x%x" % selector)
+    ql.dprint("[+] SET_THREAD_AREA selector : 0x%x" % selector)
     uc.reg_write(seg_reg, selector)
 
 

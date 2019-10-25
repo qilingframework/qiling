@@ -39,7 +39,7 @@ import os
 def ql_definesyscall_return(ql, uc, regreturn):
     if (ql.arch == QL_ARM): # QL_ARM
         uc.reg_write(UC_ARM_REG_R0, regreturn)
-        #ql.nprint("|--->>> Write %i to UC_ARM_REG_R0" % regreturn)
+        #ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
 
     elif (ql.arch == QL_ARM64): # QL_ARM64
         uc.reg_write(UC_ARM64_REG_X0, regreturn)
@@ -59,7 +59,7 @@ def ql_definesyscall_return(ql, uc, regreturn):
         else:    
             a3return = 0
         #if ql.output == QL_OUT_DEBUG:    
-        #    print(">>> A3 is %d" % a3return)
+        #    print("[+] A3 is %d" % a3return)
         uc.reg_write(UC_MIPS_REG_V0, regreturn)
         uc.reg_write(UC_MIPS_REG_A3, a3return)
 
@@ -103,7 +103,7 @@ def ql_hook_code(uc, address, size, user_data):
 
 def ql_hook_block_disasm(uc, address, size, ql):
     if ql.output == QL_OUT_DUMP:
-        ql.nprint(">>> Tracing basic block at 0x%x" %(address))
+        ql.nprint("[+] Tracing basic block at 0x%x" %(address))
 
 
 def ql_hook_code_disasm(uc, address, size, ql):
@@ -178,12 +178,12 @@ def ql_hook_code_disasm(uc, address, size, ql):
     else:
         raise QlErrorArch("Unknown arch defined in utils.py (debug output mode)")
 
-    ql.nprint("|--->>> %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x" % \
+    ql.nprint("-[+] %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x" % \
             (syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1], arg_3[0], arg_4[1], arg_4[0], arg_5[1], arg_5[0]))
 
     insn = md.disasm(tmp, address)
     opsize = int(size)
-    ql.nprint(">>> 0x%x\t " %(address), end = "")
+    ql.nprint("[+] 0x%x\t " %(address), end = "")
 
     for i in tmp:
         ql.nprint(" %02x" %i, end = "")
