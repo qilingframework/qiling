@@ -23,6 +23,10 @@ hugsy
 Masrepus
 phdphuc
 sashs
+knownsec
+hwiosec
+WanderingGlitch
+
 
 Contributors (in no particular order)
 =====================================
