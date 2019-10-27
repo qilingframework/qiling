@@ -13,7 +13,6 @@ WORKDIR /
 RUN git clone https://github.com/qilingframework/qiling
 
 RUN cd /qiling \
-  && pip3 install -r requirements.txt \
   && python3 setup.py install
 
 RUN apt-get clean \
