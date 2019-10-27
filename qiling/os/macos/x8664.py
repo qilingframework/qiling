@@ -106,6 +106,7 @@ def loader_shellcode(ql):
     
 
 def runner(ql):
+    ql.debug_stop = True
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql_setup(ql)
     ql.hook_insn(hook_syscall, ql, 1, 0, UC_X86_INS_SYSCALL)

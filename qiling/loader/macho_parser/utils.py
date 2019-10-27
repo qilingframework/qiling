@@ -28,5 +28,5 @@ class FileReader:
         else:
             self.offset += str_size
 
-        return result
+        return result.strip(b'\x00'.decode())
         
