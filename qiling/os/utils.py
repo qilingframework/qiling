@@ -319,6 +319,37 @@ def ql_transform_to_relative_path(ql, uc, path):
 
     return relative_path
 
+def ql_vm_to_vm_abspath(ql, uc, relative_path):
+    if path[0] == '/':
+        # abspath input
+        abspath = relative_path
+        return os.path.abspath(abspath)
+    else:
+        # relative path input
+        cur_path = ql_get_vm_current_path(ql, uc)
+        return os.path.abspath(cur_path + '/' + relative_path)
+
+def ql_vm_to_real_abspath(ql, uc, path):
+    # TODO:// check Directory traversal, we have the vul
+    if path[0] != '/':
+        # relative path input
+        cur_path = ql_get_vm_current_path(ql, uc)
+        path = cur_path + '/' + path
+    return os.path.abspath(ql.rootfs + path)
+
+def ql_real_to_vm_abspath(ql, uc, path):
+    # rm ".." in path
+    abs_path = os.path.abspath(path)
+    abs_rootfs = os.path.abspath(ql.rootfs)
+
+    return '/' + abs_path.lstrip(abs_rootfs)
+
+def ql_get_vm_current_path(ql, uc):
+    if ql.thread_management != None:
+        return ql.thread_management.cur_thread.get_current_path()
+    else:
+        return ql.current_path
+
 def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
     ret = 0
     for n in mapping_name:

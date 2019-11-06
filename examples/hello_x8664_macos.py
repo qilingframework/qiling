@@ -20,7 +20,11 @@ sys.path.append("..")
 
 md = Cs(CS_ARCH_X86, CS_MODE_64)
 
+
+breakOn = False
+
 def dump_everything(uc, address, size, user_data):
+    global breakOn
     flag = False
     buf = ql.uc.mem_read(address, size)
     for i in md.disasm(buf, address):
@@ -40,19 +44,25 @@ def dump_everything(uc, address, size, user_data):
     ss = uc.reg_read(UC_X86_REG_SS)
     cs = uc.reg_read(UC_X86_REG_CS)
 
-    stack_info = uc.mem_read(esp, 20)
-    print(">>> RAX= 0x%lx, RBX= 0x%lx, RCX= 0x%lx, RDX= 0x%lx, RDI= 0x%lx, RSI= 0x%lx, RBP= 0x%lx, RSP= 0x%lx, DS= 0x%lx, GS= 0x%lx, SS= 0x%lx, CS= 0x%lx " % (eax, ebx, ecx, edx, edi, esi, ebp, esp,ds,gs,ss,cs))
-    # print(stack_info)
-    print ("")
     if flag:
-        input()
+        breakOn = True
+
+    if breakOn:
+        print(">>> RAX= 0x%lx, RBX= 0x%lx, RCX= 0x%lx, RDX= 0x%lx, RDI= 0x%lx, RSI= 0x%lx, RBP= 0x%lx, RSP= 0x%lx, DS= 0x%lx, GS= 0x%lx, SS= 0x%lx, CS= 0x%lx " % (eax, ebx, ecx, edx, edi, esi, ebp, esp,ds,gs,ss,cs))
+        stack_info = uc.mem_read(esp, 20)
+        # print(stack_info)
+        print ("")
+        c = input()
+        if c == 'c':
+            breakOn = False
 
 if __name__ == "__main__":
     ql = Qiling(["rootfs/x8664_macos/bin/x8664_hello"], "rootfs/x8664_macos", output = "debug")
     break_point = [
         # 0x1276,
         # 0x4320
-        0x0027E3F
+        # 0x0182A,
+        0x5B7B,
     ]
     # ql.hook_code(dump_everything, break_point)
     ql.run()

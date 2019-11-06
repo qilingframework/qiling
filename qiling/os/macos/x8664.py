@@ -89,7 +89,9 @@ def loader_file(ql):
         uc.mem_map(ql.stack_address, ql.stack_size)
         stack_esp = QL_X8664_MACOS_PREDEFINE_STACKADDRESS + QL_X8664_MACOS_PREDEFINE_STACKSIZE
     envs = env_dict_to_array(ql.env)
-    loader = MachoX8664(ql, ql.path, stack_esp, [ql.path], envs, [ql.path], 1)
+    # loader = MachoX8664(ql, ql.path, stack_esp, [ql.path], envs, "/bin/x8664_hello", 1)
+    apples = ql_real_to_vm_abspath(ql, uc, ql.path)
+    loader = MachoX8664(ql, ql.path, stack_esp, [ql.path], envs, apples, 1)
     loader.loadMachoX8664()
     ql.stack_address = (int(ql.stack_esp))
     

@@ -6,6 +6,12 @@ MacOS
 =====
 - Current Status: only work with assembler compiled binary
 - Dyld binaries
+    - finish syscall
+    - parse more lc command
+    - add thread/task manager
+    - add cpu data manager
+    - add mach port manager
+    - find a better way to load binary
 
 
 FreeBSD
