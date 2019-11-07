@@ -6,13 +6,16 @@ MacOS
 =====
 - Current Status: only work with assembler compiled binary
 - Dyld binaries
-    - finish syscall
+    - finish syscall integration (MacOS specific)
     - parse more lc command
     - add thread/task manager
     - add cpu data manager
     - add mach port manager
     - find a better way to load binary
 
+iOS
+===
+- Partial complete. Did not test againts any actual iOS binary yet
 
 FreeBSD
 =======
@@ -34,6 +37,11 @@ Linux / *nix
 - ql.dev to emulate devices
 - ql.proc to emulate /proc
 
+Testing
+=======
+- Unit testing
+
+-------------------- FUTURE --------------------
 
 MCU
 ===
@@ -43,11 +51,6 @@ Blockchain
 ==========
 - Smart contract emulator?
 
-Others
+Android
 ======
-- Apple based, iOS and iPadOS
-- Linux based, more support for Android
-
-Testing
-=======
-- Unit testing
+- Its linux, but a bit more specific support ?
