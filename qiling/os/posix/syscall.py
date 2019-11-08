@@ -13,6 +13,7 @@
 import struct
 import sys
 import os
+import stat
 import string
 import resource
 import socket
@@ -199,16 +200,26 @@ def ql_syscall_setuid(ql, uc, null0, null1, null2, null3, null4, null5):
 
 
 def ql_syscall_faccessat(ql, uc, faccessat_dfd, faccessat_filename, faccessat_mode, null0, null1, null2):
-    access_path = ql_read_string(ql, uc, faccessat_filename)
 
+    access_path = ql_read_string(ql, uc, faccessat_filename)
     real_path = ql_transform_to_real_path(ql, uc, access_path)
     relative_path = ql_transform_to_relative_path(ql, uc, access_path)
 
+    ## fixing
+    #print (real_path)
+    #print (relative_path)
+    #exit
+    #print (stat.S_ISFIFO(os.stat(real_path).st_mode))
+
     regreturn = -1
+
     ql.nprint("facccessat (%d, 0x%x, 0x%x) = %d" %(faccessat_dfd, faccessat_filename, faccessat_mode, regreturn))
     if os.path.exists(real_path) == False:
         ql.dprint("[!] File Not Found: %s"  % relative_path)
         regreturn = -1
+    elif stat.S_ISFIFO(os.stat(real_path).st_mode):
+        ql.dprint("[+] File FIFO Found: %s"  % relative_path)
+        regreturn = 0
     else:
         ql.dprint("[+] Found and Skip, return -1: %s"  % relative_path)
         regreturn = -1
