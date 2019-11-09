@@ -36,7 +36,10 @@ ARM64_LINUX_SYSCALL_RT_SIGACTION        = [0x86, "ql_syscall_rt_sigaction"]
 ARM64_LINUX_SYSCALL_RT_SIGPROCMASK      = [0x87, "ql_syscall_rt_sigprocmask"]
 ARM64_LINUX_SYSCALL_GETPID              = [0xAC, "ql_syscall_getpid"]
 ARM64_LINUX_SYSCALL_GETTIMEOFDAY        = [0xA9, "ql_syscall_gettimeofday"]
-ARM64_LINUX_SYSCALL_FUTEX        = [0x62, "ql_syscall_futex"]
+ARM64_LINUX_SYSCALL_FUTEX               = [0x62, "ql_syscall_futex"]
+ARM64_LINUX_SYSCALL_CLONE               = [0xDC, "ql_syscall_clone"]
+ARM64_LINUX_SYSCALL_BIND                = [0xC8, "ql_syscall_bind"]
+ARM64_LINUX_SYSCALL_LISTEN              = [0xC9, "ql_syscall_listen"]
 
 
 ARM64_LINUX_SYSCALL = [
@@ -66,5 +69,8 @@ ARM64_LINUX_SYSCALL = [
     ARM64_LINUX_SYSCALL_RT_SIGPROCMASK,
     ARM64_LINUX_SYSCALL_GETPID,
     ARM64_LINUX_SYSCALL_GETTIMEOFDAY,
-    ARM64_LINUX_SYSCALL_FUTEX
+    ARM64_LINUX_SYSCALL_FUTEX,
+    ARM64_LINUX_SYSCALL_CLONE,
+    ARM64_LINUX_SYSCALL_BIND,
+    ARM64_LINUX_SYSCALL_LISTEN,
     ]
