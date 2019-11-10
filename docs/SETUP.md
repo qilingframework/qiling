@@ -11,6 +11,7 @@ Once completed, clone a copy of Qiling Framework source from github and run setu
 ```
 git clone https://github.com/qilingframework/qiling
 cd qiling
+sudo pip3 install -r requirements.txt
 sudo python3 setup.py install 
 ```
 
