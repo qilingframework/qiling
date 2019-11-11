@@ -27,7 +27,7 @@ def force_call_dialog_func(ql):
     ql.pc = lpDialogFunc
 
 
-def hook_memread(ql):
+def hook_memread(ql, addr, size, value):
     print("demo for ql.hook_mem_read")
 
 
