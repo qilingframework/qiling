@@ -19,7 +19,7 @@ from qiling import *
 
 md = Cs(CS_ARCH_X86, CS_MODE_64)
 
-def instruction_count(uc, address, size, user_data):
+def print_asm(ql, address, size):
     buf = ql.uc.mem_read(address, size)
     for i in md.disasm(buf, address):
         print(":: 0x%x:\t%s\t%s" %(i.address, i.mnemonic, i.op_str))
@@ -27,5 +27,5 @@ def instruction_count(uc, address, size, user_data):
 
 if __name__ == "__main__":
     ql = Qiling(["rootfs/x8664_linux/bin/x8664_hello"], "rootfs/x8664_linux")
-    ql.hook_code(instruction_count)
+    ql.hook_code(print_asm)
     ql.run()

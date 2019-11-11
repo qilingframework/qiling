@@ -23,7 +23,7 @@ md = Cs(CS_ARCH_X86, CS_MODE_64)
 
 breakOn = False
 
-def dump_everything(uc, address, size, user_data):
+def dump_everything(ql, address, size, user_data):
     global breakOn
     flag = False
     buf = ql.uc.mem_read(address, size)

@@ -17,7 +17,7 @@ from unicorn.x86_const import *
 sys.path.append("..")
 from qiling import *
 
-def force_register_value(uc, address, size, ql):
+def force_register_value(ql, address, size):
     rdi = ql.uc.reg_read(UC_X86_REG_RDI)
     r15 = ql.uc.reg_read(UC_X86_REG_R15)
     rax = ql.uc.reg_read(UC_X86_REG_RAX)

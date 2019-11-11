@@ -50,7 +50,7 @@ class MyPipe():
         self.outpipe.close()
 
 
-def instruction_count(uc, address, size, user_data):
+def instruction_count(ql, address, size, user_data):
     user_data[0] += 1
 
 

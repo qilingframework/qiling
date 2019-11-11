@@ -225,9 +225,17 @@ class Qiling:
 
 
     def hook_code(self, callback, user_data = None, begin = 1, end = 0):
-        if user_data is None:
-            user_data = self
-        self.uc.hook_add(UC_HOOK_CODE, callback, user_data, begin, end)
+        def _callback(uc, addr, size, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, addr, size, user_data)
+            else:
+                # callback does not require user_data
+                callback(self, addr, size)
+
+        # pack user_data & callback for wrapper _callback
+        self.uc.hook_add(UC_HOOK_CODE, _callback, (user_data, callback), begin, end)
 
 
     def hook_intr(self, callback, user_data = None, begin = 1, end = 0):
