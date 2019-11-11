@@ -286,6 +286,63 @@ class Qiling:
         self.uc.hook_add(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
 
     
+    # a convenient API to set callback for a single address
+    def hook_address(self, callback, address, user_data = None):
+        def _callback(uc, _addr, _size, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, user_data)
+            else:
+                # callback does not require user_data
+                callback(self)
+
+        # pack user_data & callback for wrapper _callback
+        self.uc.hook_add(UC_HOOK_CODE, _callback, (user_data, callback), address, address)
+
+
+    def hook_mem_read(self, callback, user_data=None, begin=1, end=0):
+        def _callback(uc, access, addr, size, value, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, addr, size, value, user_data)
+            else:
+                # callback does not require user_data
+                callback(self, addr, size, value)
+
+        # pack user_data & callback for wrapper _callback
+        self.uc.hook_add(UC_HOOK_MEM_READ, _callback, (user_data, callback), begin, end)
+
+
+    def hook_mem_write(self, callback, user_data=None, begin=1, end=0):
+        def _callback(uc, access, addr, size, value, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, addr, size, value, user_data)
+            else:
+                # callback does not require user_data
+                callback(self, addr, size, value)
+
+        # pack user_data & callback for wrapper _callback
+        self.uc.hook_add(UC_HOOK_MEM_WRITE, _callback, (user_data, callback), begin, end)
+
+
+    def hook_mem_fetch(self, callback, user_data=None, begin=1, end=0):
+        def _callback(uc, access, addr, size, value, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, addr, size, value, user_data)
+            else:
+                # callback does not require user_data
+                callback(self, addr, size, value)
+
+        # pack user_data & callback for wrapper _callback
+        self.uc.hook_add(UC_HOOK_MEM_FETCH, _callback, (user_data, callback), begin, end)
+
+
     def stack_push(self, data):
         self.archfunc.stack_push(data)
 
@@ -437,63 +494,6 @@ class Qiling:
     def enable_lib_patch(self):
         for addr, code, filename in self.patch_lib:
             self.uc.mem_write(self.__get_lib_base(filename) + addr, code)
-
-
-    # a convenient API to set callback for a single address
-    def hook_address(self, callback, address, user_data = None):
-        def _callback(uc, _addr, _size, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, user_data)
-            else:
-                # callback does not require user_data
-                callback(self)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_CODE, _callback, (user_data, callback), address, address)
-
-
-    def hook_mem_read(self, callback, user_data=None, begin=1, end=0):
-        def _callback(uc, access, addr, size, value, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, addr, size, value, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, addr, size, value)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_MEM_READ, _callback, (user_data, callback), begin, end)
-
-
-    def hook_mem_write(self, callback, user_data=None, begin=1, end=0):
-        def _callback(uc, access, addr, size, value, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, addr, size, value, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, addr, size, value)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_MEM_WRITE, _callback, (user_data, callback), begin, end)
-
-
-    def hook_mem_fetch(self, callback, user_data=None, begin=1, end=0):
-        def _callback(uc, access, addr, size, value, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, addr, size, value, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, addr, size, value)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_MEM_FETCH, _callback, (user_data, callback), begin, end)
 
 
     def set_timeout(self, microseconds):
