@@ -439,16 +439,19 @@ class Qiling:
             self.uc.mem_write(self.__get_lib_base(filename) + addr, code)
 
 
-    def hook_address(self, callback, *addr):
-        def _ql_callback_instruction(uc, addr, size, self):
-            if (addr in callback_instruction):
-                callback_func(self)
-        callback_instruction = []
-        for i in addr:
-            if isinstance(i, int):
-                callback_instruction.append(i)
-        callback_func = callback
-        self.uc.hook_add(UC_HOOK_CODE, _ql_callback_instruction, self)
+    # a convenient API to set callback for a single address
+    def hook_address(self, callback, address, user_data = None):
+        def _callback(uc, _addr, _size, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, user_data)
+            else:
+                # callback does not require user_data
+                callback(self)
+
+        # pack user_data & callback for wrapper _callback
+        self.uc.hook_add(UC_HOOK_CODE, _callback, (user_data, callback), address, address)
 
 
     def hook_mem_read(self, callback, addr = None):
