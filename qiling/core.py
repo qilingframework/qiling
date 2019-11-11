@@ -251,41 +251,76 @@ class Qiling:
 
 
     def hook_mem_unmapped(self, callback, user_data = None, begin = 1, end = 0):
-        if user_data is None:
-            user_data = self
-        self.uc.hook_add(UC_HOOK_MEM_UNMAPPED, callback, user_data, begin, end)
+        def _callback(uc, access, addr, size, value, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, addr, size, value, user_data)
+            else:
+                # callback does not require user_data
+                callback(self, addr, size, value)
+
+        # pack user_data & callback for wrapper _callback
+        self.uc.hook_add(UC_HOOK_MEM_UNMAPPED, _callback, (user_data, callback), begin, end)
 
 
     def hook_mem_read_invalid(self, callback, user_data = None, begin = 1, end = 0):
-        if user_data is None:
-            user_data = self
-        self.uc.hook_add(UC_HOOK_MEM_READ_INVALID, callback, user_data, begin, end)
+        def _callback(uc, access, addr, size, value, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, addr, size, value, user_data)
+            else:
+                # callback does not require user_data
+                callback(self, addr, size, value)
+
+        # pack user_data & callback for wrapper _callback
+        self.uc.hook_add(UC_HOOK_MEM_READ_INVALID, _callback, (user_data, callback), begin, end)
 
 
     def hook_mem_write_invalid(self, callback, user_data = None, begin = 1, end = 0):
-        if user_data is None:
-            user_data = self
-        self.uc.hook_add(UC_HOOK_MEM_WRITE_INVALID, callback, user_data, begin, end)
+        def _callback(uc, access, addr, size, value, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, addr, size, value, user_data)
+            else:
+                # callback does not require user_data
+                callback(self, addr, size, value)
+
+        # pack user_data & callback for wrapper _callback
+        self.uc.hook_add(UC_HOOK_MEM_WRITE_INVALID, _callback, (user_data, callback), begin, end)
 
 
     def hook_mem_fetch_invalid(self, callback, user_data = None, begin = 1, end = 0):
-        if user_data is None:
-            user_data = self
-        self.uc.hook_add(UC_HOOK_MEM_FETCH_INVALID, callback, user_data, begin, end)
+        def _callback(uc, access, addr, size, value, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, addr, size, value, user_data)
+            else:
+                # callback does not require user_data
+                callback(self, addr, size, value)
+
+        # pack user_data & callback for wrapper _callback
+        self.uc.hook_add(UC_HOOK_MEM_FETCH_INVALID, _callback, (user_data, callback), begin, end)
+
 
 
     def hook_mem_invalid(self, callback, user_data = None, begin = 1, end = 0):
-        if user_data is None:
-            user_data = self
-        self.uc.hook_add(UC_HOOK_MEM_VALID, callback, user_data, begin, end)
+        def _callback(uc, access, addr, size, value, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, addr, size, value, user_data)
+            else:
+                # callback does not require user_data
+                callback(self, addr, size, value)
+
+        # pack user_data & callback for wrapper _callback
+        self.uc.hook_add(UC_HOOK_MEM_VALID, _callback, (user_data, callback), begin, end)
 
 
-    def hook_insn(self, callback, user_data = None, begin = 1, end = 0, arg1 = 0):
-        if user_data is None:
-            user_data = self
-        self.uc.hook_add(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
-
-    
     # a convenient API to set callback for a single address
     def hook_address(self, callback, address, user_data = None):
         def _callback(uc, _addr, _size, pack_data):
