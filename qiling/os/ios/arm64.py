@@ -44,15 +44,15 @@ QL_ARM64_IOS_PREDEFINE_MMAPADDRESS = 0x7fffff000000
 QL_ARM64_EMU_END = 0xffffffffffffffff
 
 
-def hook_syscall(uc, ql):
-    syscall_num  = uc.reg_read(UC_ARM64_REG_X8)
-    param0 = uc.reg_read(UC_ARM64_REG_X0)
-    param1 = uc.reg_read(UC_ARM64_REG_X1)
-    param2 = uc.reg_read(UC_ARM64_REG_X2)
-    param3 = uc.reg_read(UC_ARM64_REG_X3)
-    param4 = uc.reg_read(UC_ARM64_REG_X4)
-    param5 = uc.reg_read(UC_ARM64_REG_X5)
-    pc = uc.reg_read(UC_ARM64_REG_PC)
+def hook_syscall(ql):
+    syscall_num  = ql.uc.reg_read(UC_ARM64_REG_X8)
+    param0 = ql.uc.reg_read(UC_ARM64_REG_X0)
+    param1 = ql.uc.reg_read(UC_ARM64_REG_X1)
+    param2 = ql.uc.reg_read(UC_ARM64_REG_X2)
+    param3 = ql.uc.reg_read(UC_ARM64_REG_X3)
+    param4 = ql.uc.reg_read(UC_ARM64_REG_X4)
+    param5 = ql.uc.reg_read(UC_ARM64_REG_X5)
+    pc = ql.uc.reg_read(UC_ARM64_REG_PC)
 
     ios_syscall_numb_list = []
     ios_syscall_func_list = []
@@ -65,18 +65,18 @@ def hook_syscall(uc, ql):
         ios_syscall_index = ios_syscall_numb_list.index(syscall_num)
         IOS_SYSCALL_FUNC = eval(ios_syscall_func_list[ios_syscall_index])
         try:
-            IOS_SYSCALL_FUNC(ql, uc, param0, param1, param2, param3, param4, param5)
+            IOS_SYSCALL_FUNC(ql, ql.uc, param0, param1, param2, param3, param4, param5)
         except:
             ql.errmsg = 1
             ql.nprint("SYSCALL: ", ios_syscall_func_list[ios_syscall_index])
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 if ql.debug_stop:
-                    uc.emu_stop()
+                    ql.uc.emu_stop()
                 raise
     else:
         ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num,  (syscall_num -  0x2000000)))
         if ql.debug_stop:
-            uc.emu_stop()
+            ql.uc.emu_stop()
 
 
 def loader_file(ql):
@@ -108,7 +108,7 @@ def loader_shellcode(ql):
 def runner(ql):
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql_setup(ql)
-    ql.hook_insn(hook_syscall, ql, 1, 0, UC_X86_INS_SYSCALL)
+    ql.hook_insn(hook_syscall, XXX_SYSCALL_INSN_FIXME)
     ql_x8664_setup_gdt_segment_ds(ql, ql.uc)
     ql_x8664_setup_gdt_segment_cs(ql, ql.uc)
     ql_x8664_setup_gdt_segment_ss(ql, ql.uc)

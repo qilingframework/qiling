@@ -393,11 +393,22 @@ class Qiling:
         # pack user_data & callback for wrapper _callback
         self.uc.hook_add(UC_HOOK_MEM_FETCH, _callback, (user_data, callback), begin, end)
 
-    def hook_insn(self, callback, user_data = None, begin = 1, end = 0, arg1 = 0):
-        if user_data is None:
-            user_data = self
+    def hook_insn(self, callback, arg1, user_data = None, begin = 1, end = 0):
+        def _callback_x86_syscall(uc, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, user_data)
+            else:
+                # callback does not require user_data
+                callback(self)
 
-        self.uc.hook_add(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
+        if arg1 == UC_X86_INS_SYSCALL:
+            # pack user_data & callback for wrapper _callback
+            self.uc.hook_add(UC_HOOK_INSN, _callback_x86_syscall, (user_data, callback), begin, end, arg1)
+        else:
+            self.uc.hook_add(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
+
 
 
     def stack_push(self, data):

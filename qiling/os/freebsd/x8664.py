@@ -42,15 +42,15 @@ QL_X8664_FREEBSD_PREDEFINE_STACKSIZE = 0x21000
 QL_X8664_EMU_END = 0xffffffffffffffff
 
 
-def hook_syscall(uc, ql):
-    syscall_num  = uc.reg_read(UC_X86_REG_RAX)
-    param0 = uc.reg_read(UC_X86_REG_RDI)
-    param1 = uc.reg_read(UC_X86_REG_RSI)
-    param2 = uc.reg_read(UC_X86_REG_RDX)
-    param3 = uc.reg_read(UC_X86_REG_R10)
-    param4 = uc.reg_read(UC_X86_REG_R8)
-    param5 = uc.reg_read(UC_X86_REG_R9)
-    pc = uc.reg_read(UC_X86_REG_RIP)
+def hook_syscall(ql):
+    syscall_num  = ql.uc.reg_read(UC_X86_REG_RAX)
+    param0 = ql.uc.reg_read(UC_X86_REG_RDI)
+    param1 = ql.uc.reg_read(UC_X86_REG_RSI)
+    param2 = ql.uc.reg_read(UC_X86_REG_RDX)
+    param3 = ql.uc.reg_read(UC_X86_REG_R10)
+    param4 = ql.uc.reg_read(UC_X86_REG_R8)
+    param5 = ql.uc.reg_read(UC_X86_REG_R9)
+    pc = ql.uc.reg_read(UC_X86_REG_RIP)
 
     freebsd_syscall_numb_list = []
     freebsd_syscall_func_list = []
@@ -63,18 +63,18 @@ def hook_syscall(uc, ql):
         freebsd_syscall_index = freebsd_syscall_numb_list.index(syscall_num)
         FREEBSD_SYSCALL_FUNC= eval(freebsd_syscall_func_list[freebsd_syscall_index])
         try:
-            FREEBSD_SYSCALL_FUNC(ql, uc, param0, param1, param2, param3, param4, param5)
+            FREEBSD_SYSCALL_FUNC(ql, ql.uc, param0, param1, param2, param3, param4, param5)
         except:
             ql.errmsg = 1
             ql.nprint("SYSCALL: ", freebsd_syscall_func_list[freebsd_syscall_index])
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 if ql.debug_stop:
-                    uc.emu_stop()
+                    ql.uc.emu_stop()
                 raise
     else:
         ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
-            uc.emu_stop()
+            ql.uc.emu_stop()
 
 
 def loader_file(ql):
@@ -104,7 +104,7 @@ def runner(ql):
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql.uc.reg_write(UC_X86_REG_RDI, ql.stack_address + 8)
     ql_setup(ql)
-    ql.hook_insn(hook_syscall, ql, 1, 0, UC_X86_INS_SYSCALL)
+    ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
     ql_x8664_setup_gdt_segment_ds(ql, ql.uc)
     ql_x8664_setup_gdt_segment_cs(ql, ql.uc)
     ql_x8664_setup_gdt_segment_ss(ql, ql.uc)
