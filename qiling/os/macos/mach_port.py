@@ -10,17 +10,16 @@
 # CHEN huitao (null) <null@qiling.io>
 # YU tong (sp1ke) <spikeinhouse@gmail.com>
 
-import time
-import os
+# TODO: Finish mach port to simulate this part of kernel
+# reference to 《Mac OS X and IOS Internals: To the Apple's Core》 chapter 10
+# The purpose of this part is to support the mach syscall
 
-class Thread:
-    
-    def __init__(self):
-        # a thread
+class MachPort():
+
+    def __init__():
         pass
 
-class ThreadManagement:
+class MachPortManager():
 
-    def __init__(self):
-        # manage thread
-        pass        
+    def __init__():
+        pass

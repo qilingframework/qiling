@@ -31,6 +31,10 @@ from qiling.os.macos.define_values import *
 from qiling.arch.filetype import *
 from qiling.arch.x86 import *
 
+# TODO: We need to finish these syscall
+# there are three kinds of syscall, we often use posix syscall, mach syscall is used by handle mach msg
+# Unfortunately we dont have enough doc about mach syscall 
+
 ################
 # mach syscall #
 ################
@@ -75,19 +79,9 @@ def ql_syscall_csrctl(ql, uc, op, useraddr, usersize, null0, null1, null2):
 
 # 0x1f4
 def ql_syscall_getentropy(ql, uc, buffer, size, null0, null1, null2, null3):
-    # return 0 now 
     ql.nprint("syscall >> getentropy(buffer: 0x%X, size: %d)" % (buffer, size))
-    random_int = []
-    if size <= 256:
-        random_bytes = bytes()
-        for i in range(size):
-            random_bytes += bytes(random.randint(0, 256))
-        uc.mem_write(buffer, random_bytes)
-        ql_definesyscall_return(ql, uc, 0)
-        # print("syscall >> return 0")
-    else:
-        ql.dprint("size {}".format(size))
-        raise
+    ql_definesyscall_return(ql, uc, 0)
+
 
 # 0x208
 def ql_syscall_terminate_with_payload(ql, uc, pid, reason_namespace, reason_code, payload, payload_size, reason_string):

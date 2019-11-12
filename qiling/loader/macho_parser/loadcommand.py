@@ -2,6 +2,7 @@ from .define_value import *
 from .utils import *
 from struct import unpack
 
+# TODO: We need support more LC command to load more kinds of binary
 
 class LoadCommand:
 

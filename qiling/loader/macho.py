@@ -15,6 +15,9 @@ from qiling.loader.macho_parser.parser import *
 from qiling.loader.macho_parser.define_value import *
 from qiling.exception import *
 
+# TODO: we maybe we should use a better way to load
+# reference to xnu source code /bsd/kern/mach_loader.c
+
 class MachoX86:
 
     # macho x86 parser
