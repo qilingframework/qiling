@@ -72,7 +72,7 @@ def setup_windows32(ql):
     ql.DLL_LAST_ADDR = ql.DLL_BASE_ADDR
 
     ql.heap = Heap(ql, ql.HEAP_BASE_ADDR, ql.HEAP_BASE_ADDR + ql.HEAP_SIZE)
-    ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error, ql)
+    ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
 
     ql.RUN = True
 
