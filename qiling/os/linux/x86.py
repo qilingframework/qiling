@@ -42,16 +42,15 @@ QL_X86_LINUX_PREDEFINE_STACKSIZE = 0x21000
 QL_X86_EMU_END = 0x8fffffff
 
 
-def hook_syscall(uc, intno, ql):
-    syscall_num  = uc.reg_read(UC_X86_REG_EAX)
-    param0 = uc.reg_read(UC_X86_REG_EBX)
-    param1 = uc.reg_read(UC_X86_REG_ECX)
-    param2 = uc.reg_read(UC_X86_REG_EDX)
-    param3 = uc.reg_read(UC_X86_REG_ESI)
-    param4 = uc.reg_read(UC_X86_REG_EDI)
-    param5 = uc.reg_read(UC_X86_REG_EBP)
-    pc = uc.reg_read(UC_X86_REG_EIP)
-
+def hook_syscall(ql, intno):
+    syscall_num  = ql.uc.reg_read(UC_X86_REG_EAX)
+    param0 = ql.uc.reg_read(UC_X86_REG_EBX)
+    param1 = ql.uc.reg_read(UC_X86_REG_ECX)
+    param2 = ql.uc.reg_read(UC_X86_REG_EDX)
+    param3 = ql.uc.reg_read(UC_X86_REG_ESI)
+    param4 = ql.uc.reg_read(UC_X86_REG_EDI)
+    param5 = ql.uc.reg_read(UC_X86_REG_EBP)
+    pc = ql.uc.reg_read(UC_X86_REG_EIP)
 
     linux_syscall_numb_list = []
     linux_syscall_func_list = []
@@ -64,7 +63,7 @@ def hook_syscall(uc, intno, ql):
         linux_syscall_index = linux_syscall_numb_list.index(syscall_num)
         LINUX_SYSCALL_FUNC= eval(linux_syscall_func_list[linux_syscall_index])
         try:
-            LINUX_SYSCALL_FUNC(ql, uc, param0, param1, param2, param3, param4, param5)
+            LINUX_SYSCALL_FUNC(ql, ql.uc, param0, param1, param2, param3, param4, param5)
         except:
             ql.errmsg = 1
             ql.nprint("SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
@@ -75,12 +74,12 @@ def hook_syscall(uc, intno, ql):
 
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 if ql.debug_stop:
-                    uc.emu_stop()
+                    ql.uc.emu_stop()
                 raise
     else:
         ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
-            uc.emu_stop()
+            ql.uc.emu_stop()
 
         td = ql.thread_management.cur_thread
         td.stop()
@@ -136,7 +135,7 @@ def loader_shellcode(ql):
 def runner(ql):
     ql.uc.reg_write(UC_X86_REG_ESP, ql.stack_address)
     ql_setup(ql)
-    ql.hook_intr(hook_syscall, ql)
+    ql.hook_intr(hook_syscall)
     ql_x86_setup_gdt_segment_ds(ql, ql.uc)
     ql_x86_setup_gdt_segment_cs(ql, ql.uc)
     ql_x86_setup_gdt_segment_ss(ql, ql.uc)

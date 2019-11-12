@@ -51,18 +51,18 @@ def ql_arm_check_thumb(uc, reg_cpsr):
         mode = UC_MODE_THUMB
         return mode
 
-def hook_syscall(uc, intno, ql):
-    syscall_num = uc.reg_read(UC_ARM_REG_R7)
-    param0 = uc.reg_read(UC_ARM_REG_R0)
-    param1 = uc.reg_read(UC_ARM_REG_R1)
-    param2 = uc.reg_read(UC_ARM_REG_R2)
-    param3 = uc.reg_read(UC_ARM_REG_R3)
-    param4 = uc.reg_read(UC_ARM_REG_R4)
-    param5 = uc.reg_read(UC_ARM_REG_R5)
-    reg_cpsr = uc.reg_read(UC_ARM_REG_CPSR)
-    pc = uc.reg_read(UC_ARM_REG_PC)
+def hook_syscall(ql, intno):
+    syscall_num = ql.uc.reg_read(UC_ARM_REG_R7)
+    param0 = ql.uc.reg_read(UC_ARM_REG_R0)
+    param1 = ql.uc.reg_read(UC_ARM_REG_R1)
+    param2 = ql.uc.reg_read(UC_ARM_REG_R2)
+    param3 = ql.uc.reg_read(UC_ARM_REG_R3)
+    param4 = ql.uc.reg_read(UC_ARM_REG_R4)
+    param5 = ql.uc.reg_read(UC_ARM_REG_R5)
+    reg_cpsr = ql.uc.reg_read(UC_ARM_REG_CPSR)
+    pc = ql.uc.reg_read(UC_ARM_REG_PC)
 
-    ql_arm_check_thumb(uc, reg_cpsr)
+    ql_arm_check_thumb(ql.uc, reg_cpsr)
 
     linux_syscall_numb_list = []
     linux_syscall_func_list = []
@@ -75,7 +75,7 @@ def hook_syscall(uc, intno, ql):
         linux_syscall_index = linux_syscall_numb_list.index(syscall_num)
         LINUX_SYSCALL_FUNC= eval(linux_syscall_func_list[linux_syscall_index])
         try:
-            LINUX_SYSCALL_FUNC(ql, uc, param0, param1, param2, param3, param4, param5)
+            LINUX_SYSCALL_FUNC(ql, ql.uc, param0, param1, param2, param3, param4, param5)
         except:
             ql.errmsg = 1
             ql.nprint("SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
@@ -85,7 +85,7 @@ def hook_syscall(uc, intno, ql):
                 td.stop()
                 td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
                 if ql.debug_stop:
-                    uc.emu_stop()
+                    ql.uc.emu_stop()
                 raise
     else:
         ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
@@ -94,7 +94,7 @@ def hook_syscall(uc, intno, ql):
             td.stop()
             td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
             if ql.debug_stop:
-                uc.emu_stop()
+                ql.uc.emu_stop()
             
 
 def exec_shellcode(ql, uc, start, shellcode):
@@ -239,7 +239,7 @@ def loader_shellcode(ql):
 def runner(ql):
     ql.uc.reg_write(UC_ARM_REG_SP, ql.stack_address)
     ql_setup(ql)
-    ql.hook_intr(hook_syscall, ql)
+    ql.hook_intr(hook_syscall)
     ql_arm_enable_vfp(ql.uc)
     ql_arm_init_kernel_get_tls(ql.uc)
 

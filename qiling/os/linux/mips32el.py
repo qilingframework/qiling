@@ -45,21 +45,21 @@ QL_SHELLCODE_INIT = 0
 QL_MIPSEL_EMU_END = 0x8fffffff
 
 
-def hook_syscall(uc, intno, ql):
-    syscall_num = uc.reg_read(UC_MIPS_REG_V0)
-    param0 = uc.reg_read(UC_MIPS_REG_A0)
-    param1 = uc.reg_read(UC_MIPS_REG_A1)
-    param2 = uc.reg_read(UC_MIPS_REG_A2)
-    param3 = uc.reg_read(UC_MIPS_REG_A3)
-    param4 = uc.reg_read(UC_MIPS_REG_SP)
+def hook_syscall(ql, intno):
+    syscall_num = ql.uc.reg_read(UC_MIPS_REG_V0)
+    param0 = ql.uc.reg_read(UC_MIPS_REG_A0)
+    param1 = ql.uc.reg_read(UC_MIPS_REG_A1)
+    param2 = ql.uc.reg_read(UC_MIPS_REG_A2)
+    param3 = ql.uc.reg_read(UC_MIPS_REG_A3)
+    param4 = ql.uc.reg_read(UC_MIPS_REG_SP)
     param4 = param4 + 0x10
-    param5 = uc.reg_read(UC_MIPS_REG_SP)
+    param5 = ql.uc.reg_read(UC_MIPS_REG_SP)
     param5 = param5 + 0x14
-    pc = uc.reg_read(UC_MIPS_REG_PC)
+    pc = ql.uc.reg_read(UC_MIPS_REG_PC)
 
     if intno != 0x11:
         ql.nprint("got interrupt 0x%x ???" %intno)
-        uc.emu_stop()
+        ql.uc.emu_stop()
         return
 
     linux_syscall_numb_list = []
@@ -73,18 +73,18 @@ def hook_syscall(uc, intno, ql):
         linux_syscall_index = linux_syscall_numb_list.index(syscall_num)
         LINUX_SYSCALL_FUNC= eval(linux_syscall_func_list[linux_syscall_index])
         try:
-            LINUX_SYSCALL_FUNC(ql, uc, param0, param1, param2, param3, param4, param5)
+            LINUX_SYSCALL_FUNC(ql, ql.uc, param0, param1, param2, param3, param4, param5)
         except:
             ql.errmsg = 1
             ql.nprint("SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 if ql.debug_stop:
-                    uc.emu_stop()
+                    ql.uc.emu_stop()
                 raise    
     else:
         ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
-            uc.emu_stop()
+            ql.uc.emu_stop()
 
 
 def hook_shellcode(uc, addr, shellcode, ql):
@@ -226,7 +226,7 @@ def loader_shellcode(ql):
 def runner(ql):
     ql.uc.reg_write(UC_MIPS_REG_SP, ql.new_stack)
     ql_setup(ql)
-    ql.hook_intr(hook_syscall, ql)
+    ql.hook_intr(hook_syscall)
     if (ql.until_addr == 0):
         ql.until_addr = QL_MIPSEL_EMU_END
     try:

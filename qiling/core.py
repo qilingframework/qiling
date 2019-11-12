@@ -239,15 +239,31 @@ class Qiling:
 
 
     def hook_intr(self, callback, user_data = None, begin = 1, end = 0):
-        if user_data is None:
-            user_data = self
-        self.uc.hook_add(UC_HOOK_INTR, callback, user_data, begin, end)
+        def _callback(uc, intno, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, intno, user_data)
+            else:
+                # callback does not require user_data
+                callback(self, intno)
+
+        # pack user_data & callback for wrapper _callback
+        self.uc.hook_add(UC_HOOK_INTR, _callback, (user_data, callback), begin, end)
 
 
     def hook_block(self, callback, user_data = None, begin = 1, end = 0):
-        if user_data is None:
-            user_data = self
-        self.uc.hook_add(UC_HOOK_BLOCK, callback, user_data, begin, end)
+        def _callback(uc, addr, size, pack_data):
+            # unpack what we packed for hook_add()
+            user_data, callback = pack_data
+            if user_data:
+                callback(self, addr, size, user_data)
+            else:
+                # callback does not require user_data
+                callback(self, addr, size)
+
+        # pack user_data & callback for wrapper _callback
+        self.uc.hook_add(UC_HOOK_BLOCK, _callback, (user_data, callback), begin, end)
 
 
     def hook_mem_unmapped(self, callback, user_data = None, begin = 1, end = 0):
@@ -380,6 +396,7 @@ class Qiling:
     def hook_insn(self, callback, user_data = None, begin = 1, end = 0, arg1 = 0):
         if user_data is None:
             user_data = self
+
         self.uc.hook_add(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
 
 
