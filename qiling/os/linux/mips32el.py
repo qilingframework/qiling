@@ -241,6 +241,6 @@ def runner(ql):
 
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
-            ql_hook_code_disasm(ql.uc, ql.pc, 64, ql)
+            ql_hook_code_disasm(ql, ql.pc, 64)
         ql.errmsg = 1
         ql.nprint("%s" % e)  

@@ -101,12 +101,13 @@ def ql_hook_code(uc, address, size, user_data):
     pass
 
 
-def ql_hook_block_disasm(uc, address, size, ql):
+def ql_hook_block_disasm(ql, address, size):
     if ql.output == QL_OUT_DUMP:
         ql.nprint("[+] Tracing basic block at 0x%x" %(address))
 
 
-def ql_hook_code_disasm(uc, address, size, ql):
+def ql_hook_code_disasm(ql, address, size):
+    uc = ql.uc
     tmp = uc.mem_read(address, size)
 
     if (ql.arch == QL_ARM): # QL_ARM
@@ -195,8 +196,8 @@ def ql_hook_code_disasm(uc, address, size, ql):
 def ql_setup(ql):
     if ql.output in (QL_OUT_DISASM, QL_OUT_DUMP):
         if ql.ostype != QL_WINDOWS:
-            ql.hook_block(ql_hook_block_disasm, ql)
-        ql.hook_code(ql_hook_code_disasm, ql)
+            ql.hook_block(ql_hook_block_disasm)
+        ql.hook_code(ql_hook_code_disasm)
 
 
 def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
