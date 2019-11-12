@@ -17,15 +17,7 @@ from unicorn.x86_const import *
 sys.path.append("..")
 from qiling import *
 
-def force_register_value(ql, address, size):
-    rdi = ql.uc.reg_read(UC_X86_REG_RDI)
-    r15 = ql.uc.reg_read(UC_X86_REG_R15)
-    rax = ql.uc.reg_read(UC_X86_REG_RAX)
-    rcx = ql.uc.reg_read(UC_X86_REG_RCX)
-    #print (">>> rax: 0x%x, rcx: 0x%x, rdi: 0x%x, r15: 0x%x" % (rax, rcx, rdi, r15))
-
     
 if __name__ == "__main__":
     ql = Qiling(["rootfs/x8664_freebsd/bin/x8664_hello_asm"], "rootfs/x8664_freebsd", output = "default")
-    ql.hook_code(force_register_value)
     ql.run()
