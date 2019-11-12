@@ -15,7 +15,7 @@ from qiling.os.windows.utils import *
 from qiling.exception import *
 
 
-def thread_scheduler(uc, address, size, ql):
+def thread_scheduler(ql, address, size):
     if ql.pc == ql.thread_manager.THREAD_RET_ADDR:
         ql.thread_manager.current_thread.stop()
         ql.thread_manager.do_schedule()
@@ -110,7 +110,7 @@ class ThreadManager:
         self.THREAD_RET_ADDR = self.ql.heap.mem_alloc(8)
         # write nop to THREAD_RET_ADDR
         self.ql.mem_write(self.THREAD_RET_ADDR, b"\x90"*8)
-        self.ql.hook_code(thread_scheduler, ql)
+        self.ql.hook_code(thread_scheduler)
 
     def append(self, thread):
         self.threads.append(thread)
