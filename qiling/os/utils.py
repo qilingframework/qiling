@@ -93,14 +93,6 @@ def ql_parse_sock_address(sock_addr):
         return ""
 
 
-def ql_hook_block(uc, address, size, user_data):
-    pass
-
-
-def ql_hook_code(uc, address, size, user_data):
-    pass
-
-
 def ql_hook_block_disasm(ql, address, size):
     if ql.output == QL_OUT_DUMP:
         ql.nprint("[+] Tracing basic block at 0x%x" %(address))
