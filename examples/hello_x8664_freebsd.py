@@ -12,8 +12,6 @@
 
 import sys
 
-from unicorn.x86_const import *
-
 sys.path.append("..")
 from qiling import *
 
