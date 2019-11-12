@@ -34,7 +34,7 @@ def set_pe64_gdt(ql):
 
 
 # hook WinAPI in PE EMU
-def hook_winapi(uc, address, size, ql):
+def hook_winapi(ql, address, size):
     if address in ql.PE.import_symbols:
         try:
             globals()['hook_' + ql.PE.import_symbols[address].decode()](ql, address, {})
@@ -91,7 +91,7 @@ def loader_file(ql):
     ql.PE = PE(ql, ql.path)
     ql.PE.load()
 
-    ql.hook_code(hook_winapi, ql)
+    ql.hook_code(hook_winapi)
 
 def loader_shellcode(ql):
     uc = Uc(UC_ARCH_X86, UC_MODE_64)
@@ -111,7 +111,7 @@ def loader_shellcode(ql):
     ql.PE.load()
 
     # hook win api
-    ql.hook_code(hook_winapi, ql)
+    ql.hook_code(hook_winapi)
 
 
 def runner(ql):

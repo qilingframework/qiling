@@ -42,7 +42,7 @@ QL_X86_WINDOWS_EMU_END = 0x0
 
 
 # hook WinAPI in PE EMU
-def hook_winapi(uc, address, size, ql):
+def hook_winapi(ql, address, size):
     # call win32 api
     if address in ql.PE.import_symbols:
         try:
@@ -109,7 +109,7 @@ def loader_file(ql):
     ql.PE.load()
 
     # hook win api
-    ql.hook_code(hook_winapi, ql)
+    ql.hook_code(hook_winapi)
 
 
 def loader_shellcode(ql):
@@ -130,7 +130,7 @@ def loader_shellcode(ql):
     ql.PE.load()
 
     # hook win api
-    ql.hook_code(hook_winapi, ql)
+    ql.hook_code(hook_winapi)
 
 
 def runner(ql):
