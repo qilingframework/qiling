@@ -129,3 +129,5 @@ def runner(ql):
         ql.errmsg = 1
         ql.nprint("%s" % e)  
 
+    if ql.internal_exception != None:
+        raise ql.internal_exception

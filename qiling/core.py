@@ -28,13 +28,14 @@ def catch_KeyboardInterrupt(ql):
         def wrapper(*args, **kw):
             try:
                 return func(*args, **kw)
-            except KeyboardInterrupt:
-                ql.nprint("Received a request from the user to stop!")
+            except BaseException as e:
+                # ql.nprint("Received a request from the user to stop!")
                 if ql.thread_management != None:
                     td = ql.thread_management.cur_thread
                     td.stop()
                     td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
                 ql.uc.emu_stop()
+                ql.internal_exception = e
         return wrapper
     return decorator
 
@@ -83,6 +84,7 @@ class Qiling:
     reg_diff = None
     exit_code = 0
     debug_stop = False
+    internal_exception = None
     
 
     def __init__(self, filename = None, rootfs = None, argv = [], env = {}, 
