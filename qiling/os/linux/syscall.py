@@ -26,7 +26,6 @@ from unicorn.x86_const import *
 from unicorn.arm64_const import *
 from unicorn.mips_const import *
 
-# impport read_string and other commom utils.
+# impport read_string and other common utils.
 from qiling.os.utils import *
 from qiling.arch.filetype import *
-
