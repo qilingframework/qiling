@@ -19,9 +19,24 @@ from qiling.exception import *
 from qiling.utils import *
 from qiling.os.utils import *
 from qiling.arch.utils import *
+from qiling.os.linux.thread import *
 
 __version__ = "0.9"
 
+def catch_KeyboardInterrupt(ql):
+    def decorator(func):
+        def wrapper(*args, **kw):
+            try:
+                return func(*args, **kw)
+            except KeyboardInterrupt:
+                ql.nprint("Received a request from the user to stop!")
+                if ql.thread_management != None:
+                    td = ql.thread_management.cur_thread
+                    td.stop()
+                    td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+                ql.uc.emu_stop()
+        return wrapper
+    return decorator
 
 class Qiling:
     arch = ''
@@ -225,6 +240,7 @@ class Qiling:
 
 
     def hook_code(self, callback, user_data = None, begin = 1, end = 0):
+        @catch_KeyboardInterrupt(self)
         def _callback(uc, addr, size, pack_data):
             # unpack what we packed for hook_add()
             user_data, callback = pack_data
@@ -239,6 +255,7 @@ class Qiling:
 
 
     def hook_intr(self, callback, user_data = None, begin = 1, end = 0):
+        @catch_KeyboardInterrupt(self)
         def _callback(uc, intno, pack_data):
             # unpack what we packed for hook_add()
             user_data, callback = pack_data
@@ -253,6 +270,7 @@ class Qiling:
 
 
     def hook_block(self, callback, user_data = None, begin = 1, end = 0):
+        @catch_KeyboardInterrupt(self)
         def _callback(uc, addr, size, pack_data):
             # unpack what we packed for hook_add()
             user_data, callback = pack_data
@@ -267,6 +285,7 @@ class Qiling:
 
 
     def hook_mem_unmapped(self, callback, user_data = None, begin = 1, end = 0):
+        @catch_KeyboardInterrupt(self)
         def _callback(uc, access, addr, size, value, pack_data):
             # unpack what we packed for hook_add()
             user_data, callback = pack_data
@@ -281,6 +300,7 @@ class Qiling:
 
 
     def hook_mem_read_invalid(self, callback, user_data = None, begin = 1, end = 0):
+        @catch_KeyboardInterrupt(self)
         def _callback(uc, access, addr, size, value, pack_data):
             # unpack what we packed for hook_add()
             user_data, callback = pack_data
@@ -295,6 +315,7 @@ class Qiling:
 
 
     def hook_mem_write_invalid(self, callback, user_data = None, begin = 1, end = 0):
+        @catch_KeyboardInterrupt(self)
         def _callback(uc, access, addr, size, value, pack_data):
             # unpack what we packed for hook_add()
             user_data, callback = pack_data
@@ -309,6 +330,7 @@ class Qiling:
 
 
     def hook_mem_fetch_invalid(self, callback, user_data = None, begin = 1, end = 0):
+        @catch_KeyboardInterrupt(self)
         def _callback(uc, access, addr, size, value, pack_data):
             # unpack what we packed for hook_add()
             user_data, callback = pack_data
@@ -324,6 +346,7 @@ class Qiling:
 
 
     def hook_mem_invalid(self, callback, user_data = None, begin = 1, end = 0):
+        @catch_KeyboardInterrupt(self)
         def _callback(uc, access, addr, size, value, pack_data):
             # unpack what we packed for hook_add()
             user_data, callback = pack_data
@@ -339,6 +362,7 @@ class Qiling:
 
     # a convenient API to set callback for a single address
     def hook_address(self, callback, address, user_data = None):
+        @catch_KeyboardInterrupt(self)
         def _callback(uc, _addr, _size, pack_data):
             # unpack what we packed for hook_add()
             user_data, callback = pack_data
@@ -353,6 +377,7 @@ class Qiling:
 
 
     def hook_mem_read(self, callback, user_data=None, begin=1, end=0):
+        @catch_KeyboardInterrupt(self)
         def _callback(uc, access, addr, size, value, pack_data):
             # unpack what we packed for hook_add()
             user_data, callback = pack_data
@@ -367,6 +392,7 @@ class Qiling:
 
 
     def hook_mem_write(self, callback, user_data=None, begin=1, end=0):
+        @catch_KeyboardInterrupt(self)
         def _callback(uc, access, addr, size, value, pack_data):
             # unpack what we packed for hook_add()
             user_data, callback = pack_data
@@ -381,6 +407,7 @@ class Qiling:
 
 
     def hook_mem_fetch(self, callback, user_data=None, begin=1, end=0):
+        @catch_KeyboardInterrupt(self)
         def _callback(uc, access, addr, size, value, pack_data):
             # unpack what we packed for hook_add()
             user_data, callback = pack_data
@@ -394,6 +421,7 @@ class Qiling:
         self.uc.hook_add(UC_HOOK_MEM_FETCH, _callback, (user_data, callback), begin, end)
 
     def hook_insn(self, callback, arg1, user_data = None, begin = 1, end = 0):
+        @catch_KeyboardInterrupt(self)
         def _callback_x86_syscall(uc, pack_data):
             # unpack what we packed for hook_add()
             user_data, callback = pack_data

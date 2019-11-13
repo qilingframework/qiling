@@ -64,6 +64,8 @@ def hook_syscall(ql):
         LINUX_SYSCALL_FUNC= eval(linux_syscall_func_list[linux_syscall_index])
         try:
             LINUX_SYSCALL_FUNC(ql, ql.uc, param0, param1, param2, param3, param4, param5)
+        except KeyboardInterrupt:
+            raise
         except:
             ql.errmsg = 1
             ql.nprint("SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
