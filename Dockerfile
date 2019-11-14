@@ -10,7 +10,7 @@ RUN apt-get update \
 
 WORKDIR /
 
-RUN git clone https://github.com/qilingframework/qiling
+RUN git clone https://github.com/t14g0p/qiling
 
 RUN cd /qiling \
   && pip3 install -r requirements.txt \
@@ -18,6 +18,9 @@ RUN cd /qiling \
 
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+#Fix keystone pip3 install of the lib in the wrong dir 
+RUN cp /usr/local/lib/python3.6/dist-packages/usr/lib/python3/dist-packages/keystone/libkeystone.so /usr/local/lib/python3.6/dist-packages/keystone/
 
 ENV HOME /qiling
 
