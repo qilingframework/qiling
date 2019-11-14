@@ -36,19 +36,19 @@ import struct
 import os
 
 
-def ql_definesyscall_return(ql, uc, regreturn):
+def ql_definesyscall_return(ql, regreturn):
     if (ql.arch == QL_ARM): # QL_ARM
-        uc.reg_write(UC_ARM_REG_R0, regreturn)
+        ql.uc.reg_write(UC_ARM_REG_R0, regreturn)
         #ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
 
     elif (ql.arch == QL_ARM64): # QL_ARM64
-        uc.reg_write(UC_ARM64_REG_X0, regreturn)
+        ql.uc.reg_write(UC_ARM64_REG_X0, regreturn)
 
     elif (ql.arch == QL_X86): # QL_X86
-        uc.reg_write(UC_X86_REG_EAX, regreturn)
+        ql.uc.reg_write(UC_X86_REG_EAX, regreturn)
 
     elif (ql.arch == QL_X8664): # QL_X86_64
-        uc.reg_write(UC_X86_REG_RAX, regreturn)
+        ql.uc.reg_write(UC_X86_REG_RAX, regreturn)
 
     elif (ql.arch == QL_MIPS32EL): # QL_MIPSE32EL
         if regreturn == -1:
@@ -60,8 +60,8 @@ def ql_definesyscall_return(ql, uc, regreturn):
             a3return = 0
         #if ql.output == QL_OUT_DEBUG:    
         #    print("[+] A3 is %d" % a3return)
-        uc.reg_write(UC_MIPS_REG_V0, regreturn)
-        uc.reg_write(UC_MIPS_REG_A3, a3return)
+        ql.uc.reg_write(UC_MIPS_REG_V0, regreturn)
+        ql.uc.reg_write(UC_MIPS_REG_A3, a3return)
 
 def ql_bin_to_ipv4(ip):
     return "%d.%d.%d.%d" % (
@@ -71,14 +71,14 @@ def ql_bin_to_ipv4(ip):
         (ip & 0xff))
 
 
-def ql_read_string(ql, uc, address):
+def ql_read_string(ql, address):
     ret = ""
-    c = uc.mem_read(address, 1)[0]
+    c = ql.uc.mem_read(address, 1)[0]
     read_bytes = 1
 
     while c != 0x0:
         ret += chr(c)
-        c = uc.mem_read(address + read_bytes, 1)[0]
+        c = ql.uc.mem_read(address + read_bytes, 1)[0]
         read_bytes += 1
     return ret
 
@@ -230,7 +230,7 @@ def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
     archtype, archmode = ks_convert(archtype)
     return compile_instructions(runcode, archtype, archmode)
 
-def ql_transform_to_link_path(ql, uc, path):
+def ql_transform_to_link_path(ql, path):
     if ql.thread_management != None:
         cur_path = ql.thread_management.cur_thread.get_current_path()
     else:
@@ -259,7 +259,7 @@ def ql_transform_to_link_path(ql, uc, path):
 
     return real_path
 
-def ql_transform_to_real_path(ql, uc, path):
+def ql_transform_to_real_path(ql, path):
     if ql.thread_management != None:
         cur_path = ql.thread_management.cur_thread.get_current_path()
     else:
@@ -292,14 +292,14 @@ def ql_transform_to_real_path(ql, uc, path):
         if os.path.islink(real_path):
             link_path = os.readlink(real_path)
             if link_path[0] == '/':
-                real_path = ql_transform_to_real_path(ql, uc, link_path)
+                real_path = ql_transform_to_real_path(ql, link_path)
             else:
-                real_path = ql_transform_to_real_path(ql, uc, os.path.dirname(relative_path) + '/' + link_path)
+                real_path = ql_transform_to_real_path(ql, os.path.dirname(relative_path) + '/' + link_path)
 
     return real_path
 
 
-def ql_transform_to_relative_path(ql, uc, path):
+def ql_transform_to_relative_path(ql, path):
     if ql.thread_management != None:
         cur_path = ql.thread_management.cur_thread.get_current_path()
     else:
@@ -312,32 +312,32 @@ def ql_transform_to_relative_path(ql, uc, path):
 
     return relative_path
 
-def ql_vm_to_vm_abspath(ql, uc, relative_path):
+def ql_vm_to_vm_abspath(ql, relative_path):
     if path[0] == '/':
         # abspath input
         abspath = relative_path
         return os.path.abspath(abspath)
     else:
         # relative path input
-        cur_path = ql_get_vm_current_path(ql, uc)
+        cur_path = ql_get_vm_current_path(ql)
         return os.path.abspath(cur_path + '/' + relative_path)
 
-def ql_vm_to_real_abspath(ql, uc, path):
+def ql_vm_to_real_abspath(ql, path):
     # TODO:// check Directory traversal, we have the vul
     if path[0] != '/':
         # relative path input
-        cur_path = ql_get_vm_current_path(ql, uc)
+        cur_path = ql_get_vm_current_path(ql)
         path = cur_path + '/' + path
     return os.path.abspath(ql.rootfs + path)
 
-def ql_real_to_vm_abspath(ql, uc, path):
+def ql_real_to_vm_abspath(ql, path):
     # rm ".." in path
     abs_path = os.path.abspath(path)
     abs_rootfs = os.path.abspath(ql.rootfs)
 
     return '/' + abs_path.lstrip(abs_rootfs)
 
-def ql_get_vm_current_path(ql, uc):
+def ql_get_vm_current_path(ql):
     if ql.thread_management != None:
         return ql.thread_management.cur_thread.get_current_path()
     else:

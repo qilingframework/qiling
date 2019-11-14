@@ -65,7 +65,7 @@ def hook_syscall(ql):
         macos_syscall_index = macos_syscall_numb_list.index(syscall_num)
         MACOS_SYSCALL_FUNC = eval(macos_syscall_func_list[macos_syscall_index])
         try:
-            MACOS_SYSCALL_FUNC(ql, ql.uc, param0, param1, param2, param3, param4, param5)
+            MACOS_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except:
             ql.errmsg = 1
             ql.nprint("SYSCALL: ", macos_syscall_func_list[macos_syscall_index])
@@ -90,7 +90,7 @@ def loader_file(ql):
         stack_esp = QL_X8664_MACOS_PREDEFINE_STACKADDRESS + QL_X8664_MACOS_PREDEFINE_STACKSIZE
     envs = env_dict_to_array(ql.env)
     # loader = MachoX8664(ql, ql.path, stack_esp, [ql.path], envs, "/bin/x8664_hello", 1)
-    apples = ql_real_to_vm_abspath(ql, uc, ql.path)
+    apples = ql_real_to_vm_abspath(ql, ql.path)
     loader = MachoX8664(ql, ql.path, stack_esp, [ql.path], envs, apples, 1)
     loader.loadMachoX8664()
     ql.stack_address = (int(ql.stack_esp))
@@ -112,9 +112,9 @@ def runner(ql):
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql_setup(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
-    ql_x8664_setup_gdt_segment_ds(ql, ql.uc)
-    ql_x8664_setup_gdt_segment_cs(ql, ql.uc)
-    ql_x8664_setup_gdt_segment_ss(ql, ql.uc)
+    ql_x8664_setup_gdt_segment_ds(ql)
+    ql_x8664_setup_gdt_segment_cs(ql)
+    ql_x8664_setup_gdt_segment_ss(ql)
 
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_EMU_END

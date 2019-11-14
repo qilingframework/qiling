@@ -73,7 +73,7 @@ def hook_syscall(ql, intno):
         linux_syscall_index = linux_syscall_numb_list.index(syscall_num)
         LINUX_SYSCALL_FUNC= eval(linux_syscall_func_list[linux_syscall_index])
         try:
-            LINUX_SYSCALL_FUNC(ql, ql.uc, param0, param1, param2, param3, param4, param5)
+            LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
         except:
@@ -193,8 +193,9 @@ lab1:
     uc.mem_write(sp - 4, ql.pack32(addr))
 
 
-def ql_syscall_mips32el_set_thread_area(ql, uc, sta_area, null0, null1, null2, null3, null4):
+def ql_syscall_mips32el_set_thread_area(ql, sta_area, null0, null1, null2, null3, null4):
     ql.nprint ("set_thread_area(0x%x)" % sta_area)
+    uc = ql.uc 
     pc = uc.reg_read(UC_MIPS_REG_PC)
     CONFIG3_ULR = (1 << 13)
     uc.reg_write(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
@@ -210,7 +211,7 @@ def loader_file(ql):
         ql.stack_size = QL_MIPSEL_LINUX_PREDEFINE_STACKSIZE
         uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
-    loader.load_with_ld(ql, uc, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env)
+    loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env)
     ql.stack_address = (int(ql.new_stack))
     
 

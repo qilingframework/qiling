@@ -74,7 +74,7 @@ def hook_syscall(ql, intno):
         macos_syscall_index = macos_syscall_numb_list.index(syscall_num)
         MACOS_SYSCALL_FUNC = eval(macos_syscall_func_list[macos_syscall_index])
         try:
-            MACOS_SYSCALL_FUNC(ql, ql.uc, param0, param1, param2, param3, param4, param5)
+            MACOS_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except:
             ql.errmsg = 1
             ql.nprint("SYSCALL: ", macos_syscall_func_list[macos_syscall_index])
@@ -118,9 +118,9 @@ def runner(ql):
     ql.uc.reg_write(UC_X86_REG_ESP, ql.stack_address) 
     ql_setup(ql)
     ql.hook_intr(hook_syscall)
-    ql_x86_setup_gdt_segment_ds(ql, ql.uc)
-    ql_x86_setup_gdt_segment_cs(ql, ql.uc)
-    ql_x86_setup_gdt_segment_ss(ql, ql.uc)
+    ql_x86_setup_gdt_segment_ds(ql)
+    ql_x86_setup_gdt_segment_cs(ql)
+    ql_x86_setup_gdt_segment_ss(ql)
 
     if (ql.until_addr == 0):
         ql.until_addr = QL_X86_EMU_END

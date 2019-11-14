@@ -65,7 +65,7 @@ def hook_syscall(ql):
         ios_syscall_index = ios_syscall_numb_list.index(syscall_num)
         IOS_SYSCALL_FUNC = eval(ios_syscall_func_list[ios_syscall_index])
         try:
-            IOS_SYSCALL_FUNC(ql, ql.uc, param0, param1, param2, param3, param4, param5)
+            IOS_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except:
             ql.errmsg = 1
             ql.nprint("SYSCALL: ", ios_syscall_func_list[ios_syscall_index])
@@ -109,9 +109,9 @@ def runner(ql):
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql_setup(ql)
     ql.hook_insn(hook_syscall, XXX_SYSCALL_INSN_FIXME)
-    ql_x8664_setup_gdt_segment_ds(ql, ql.uc)
-    ql_x8664_setup_gdt_segment_cs(ql, ql.uc)
-    ql_x8664_setup_gdt_segment_ss(ql, ql.uc)
+    ql_x8664_setup_gdt_segment_ds(ql)
+    ql_x8664_setup_gdt_segment_cs(ql)
+    ql_x8664_setup_gdt_segment_ss(ql)
 
     if (ql.until_addr == 0):
         ql.until_addr = QL_ARM64_EMU_END
