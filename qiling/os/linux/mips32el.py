@@ -195,6 +195,7 @@ lab1:
 
 def ql_syscall_mips32el_set_thread_area(ql, sta_area, null0, null1, null2, null3, null4):
     ql.nprint ("set_thread_area(0x%x)" % sta_area)
+    uc = ql.uc 
     pc = uc.reg_read(UC_MIPS_REG_PC)
     CONFIG3_ULR = (1 << 13)
     uc.reg_write(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
