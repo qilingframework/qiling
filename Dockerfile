@@ -10,7 +10,7 @@ RUN apt-get update \
 
 WORKDIR /
 
-RUN git clone https://github.com/t14g0p/qiling
+RUN git clone https://github.com/qilingframework/qiling
 
 RUN cd /qiling \
   && pip3 install -r requirements.txt \
