@@ -63,7 +63,7 @@ def hook_syscall(ql, intno):
         linux_syscall_index = linux_syscall_numb_list.index(syscall_num)
         LINUX_SYSCALL_FUNC= eval(linux_syscall_func_list[linux_syscall_index])
         try:
-            LINUX_SYSCALL_FUNC(ql, ql.uc, param0, param1, param2, param3, param4, param5)
+            LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
         except:
@@ -90,25 +90,25 @@ def hook_syscall(ql, intno):
 
 def ql_x86_thread_set_tls(ql, th, arg):
     u_info = arg
-    # u_info = uc.mem_read(u_info_addr, 4 * 3)
+    # u_info = ql.uc.mem_read(u_info_addr, 4 * 3)
     base = ql.unpack32(u_info[4 : 8])
     limit = ql.unpack32(u_info[8 : 12])
-    ql_x86_setup_syscall_set_thread_area(ql, ql.uc, base, limit)
+    ql_x86_setup_syscall_set_thread_area(ql, base, limit)
     
 
-def ql_x86_syscall_set_thread_area(ql, uc, u_info_addr, null0, null1, null2, null3, null4):
+def ql_x86_syscall_set_thread_area(ql, u_info_addr, null0, null1, null2, null3, null4):
     ql.nprint("set_thread_area(u_info_addr= 0x%x)" % u_info_addr)
-    u_info = uc.mem_read(u_info_addr, 4 * 3)
+    u_info = ql.uc.mem_read(u_info_addr, 4 * 3)
 
     ql.thread_management.cur_thread.set_special_settings_arg(u_info)
 
     base = ql.unpack32(u_info[4 : 8])
     limit = ql.unpack32(u_info[8 : 12])
     ql.nprint("[+] set_thread_area base : 0x%x limit is : 0x%x" % (base, limit))
-    ql_x86_setup_syscall_set_thread_area(ql, uc, base, limit)
-    uc.mem_write(u_info_addr, ql.pack32(12))
+    ql_x86_setup_syscall_set_thread_area(ql, base, limit)
+    ql.uc.mem_write(u_info_addr, ql.pack32(12))
     regreturn = 0
-    ql_definesyscall_return(ql, uc, regreturn)
+    ql_definesyscall_return(ql, regreturn)
 
 
 def loader_file(ql):
@@ -119,7 +119,7 @@ def loader_file(ql):
         ql.stack_size = QL_X86_LINUX_PREDEFINE_STACKSIZE
         uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
-    loader.load_with_ld(ql, ql.uc, ql.stack_address + ql.stack_size, argv = ql.argv,  env = ql.env)    
+    loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv,  env = ql.env)    
     ql.stack_address = (int(ql.new_stack))
     
 
@@ -138,9 +138,9 @@ def runner(ql):
     ql.uc.reg_write(UC_X86_REG_ESP, ql.stack_address)
     ql_setup(ql)
     ql.hook_intr(hook_syscall)
-    ql_x86_setup_gdt_segment_ds(ql, ql.uc)
-    ql_x86_setup_gdt_segment_cs(ql, ql.uc)
-    ql_x86_setup_gdt_segment_ss(ql, ql.uc)
+    ql_x86_setup_gdt_segment_ds(ql)
+    ql_x86_setup_gdt_segment_cs(ql)
+    ql_x86_setup_gdt_segment_ss(ql)
 
     if (ql.until_addr == 0):
         ql.until_addr = QL_X86_EMU_END

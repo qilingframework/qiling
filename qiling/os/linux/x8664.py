@@ -63,7 +63,7 @@ def hook_syscall(ql):
         linux_syscall_index = linux_syscall_numb_list.index(syscall_num)
         LINUX_SYSCALL_FUNC= eval(linux_syscall_func_list[linux_syscall_index])
         try:
-            LINUX_SYSCALL_FUNC(ql, ql.uc, param0, param1, param2, param3, param4, param5)
+            LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
         except:
@@ -88,7 +88,7 @@ def loader_file(ql):
         ql.stack_size = QL_X8664_LINUX_PREDEFINE_STACKSIZE
         uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
-    loader.load_with_ld(ql, ql.uc, ql.stack_address + ql.stack_size, argv = ql.argv,  env = ql.env)
+    loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv,  env = ql.env)
     ql.stack_address = (int(ql.new_stack))
     
 
@@ -108,9 +108,9 @@ def runner(ql):
     ql_setup(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
     if not ql.shellcoder: 
-        ql_x8664_setup_gdt_segment_ds(ql, ql.uc)
-        ql_x8664_setup_gdt_segment_cs(ql, ql.uc)
-        ql_x8664_setup_gdt_segment_ss(ql, ql.uc)
+        ql_x8664_setup_gdt_segment_ds(ql)
+        ql_x8664_setup_gdt_segment_cs(ql)
+        ql_x8664_setup_gdt_segment_ss(ql)
 
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_EMU_END

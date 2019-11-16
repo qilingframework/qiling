@@ -75,7 +75,7 @@ def hook_syscall(ql, intno):
         linux_syscall_index = linux_syscall_numb_list.index(syscall_num)
         LINUX_SYSCALL_FUNC= eval(linux_syscall_func_list[linux_syscall_index])
         try:
-            LINUX_SYSCALL_FUNC(ql, ql.uc, param0, param1, param2, param3, param4, param5)
+            LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
         except:
@@ -99,11 +99,11 @@ def hook_syscall(ql, intno):
                 ql.uc.emu_stop()
             
 
-def exec_shellcode(ql, uc, start, shellcode):
+def exec_shellcode(ql, start, shellcode):
     if ql.shellcode_init == 0:
-        uc.mem_map(QL_SHELLCODE_ADDR, QL_SHELLCODE_LEN)
+        ql.uc.mem_map(QL_SHELLCODE_ADDR, QL_SHELLCODE_LEN)
         ql.shellcode_init = 1
-    uc.mem_write(QL_SHELLCODE_ADDR + start, shellcode)
+    ql.uc.mem_write(QL_SHELLCODE_ADDR + start, shellcode)
 
 
 def ql_arm_enable_vfp(uc):
@@ -121,15 +121,15 @@ def ql_arm_init_kernel_get_tls(uc):
     uc.mem_write(QL_KERNEL_GET_TLS_ADDR, sc)
 
 
-def ql_syscall_arm_settls(ql, uc, address, null0, null1, null2, null3, null4):
+def ql_syscall_arm_settls(ql, address, null0, null1, null2, null3, null4):
     ql.nprint("settls(0x%x)" % address)
     if ql.thread_management != None:
         ql.thread_management.cur_thread.special_settings_arg = address
 
-    reg_cpsr = uc.reg_read(UC_ARM_REG_CPSR)
-    PC = uc.reg_read(UC_ARM_REG_PC)
-    SP = uc.reg_read(UC_ARM_REG_SP)
-    mode = ql_arm_check_thumb(uc, reg_cpsr)
+    reg_cpsr = ql.uc.reg_read(UC_ARM_REG_CPSR)
+    PC = ql.uc.reg_read(UC_ARM_REG_PC)
+    SP = ql.uc.reg_read(UC_ARM_REG_SP)
+    mode = ql_arm_check_thumb(ql.uc, reg_cpsr)
 
     if mode == UC_MODE_THUMB:
         sc = '''
@@ -155,16 +155,16 @@ def ql_syscall_arm_settls(ql, uc, address, null0, null1, null2, null3, null4):
         sc = b'p\x0f\r\xee\x04\xf0\x9d\xe4'
 
     codestart = 4
-    exec_shellcode(ql, uc, codestart, sc)
+    exec_shellcode(ql, codestart, sc)
     codelen = 0
     if mode == UC_MODE_THUMB:
         codelen = 1
-    uc.mem_write(SP - 4, ql.pack32(PC + codelen))
-    uc.reg_write(UC_ARM_REG_SP, SP - 4)
-    uc.reg_write(UC_ARM_REG_PC, QL_SHELLCODE_ADDR + codestart + codelen)
+    ql.uc.mem_write(SP - 4, ql.pack32(PC + codelen))
+    ql.uc.reg_write(UC_ARM_REG_SP, SP - 4)
+    ql.uc.reg_write(UC_ARM_REG_PC, QL_SHELLCODE_ADDR + codestart + codelen)
 
-    uc.mem_write(QL_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
-    uc.reg_write(UC_ARM_REG_R0, address)
+    ql.uc.mem_write(QL_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
+    ql.uc.reg_write(UC_ARM_REG_R0, address)
 
 
 def ql_arm_thread_set_tls(ql, th, arg):
@@ -202,7 +202,7 @@ def ql_arm_thread_set_tls(ql, th, arg):
         sc = b'p\x0f\r\xee\x04\x00\x9d\xe4\x04\xf0\x9d\xe4'
 
     codestart = 4
-    exec_shellcode(ql, uc, codestart, sc)
+    exec_shellcode(ql, codestart, sc)
     codelen = 0
     if mode == UC_MODE_THUMB:
         codelen = 1
@@ -223,7 +223,7 @@ def loader_file(ql):
         ql.stack_size = QL_ARM_LINUX_PREDEFINE_STACKSIZE
         uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
-    loader.load_with_ld(ql, ql.uc, ql.stack_address + ql.stack_size, argv = ql.argv,  env = ql.env)
+    loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv,  env = ql.env)
     ql.stack_address  = (int(ql.new_stack))
 
 

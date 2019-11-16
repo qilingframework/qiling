@@ -77,11 +77,11 @@ def setup_windows32(ql):
     ql.RUN = True
 
     # New set GDT Share with Linux
-    ql_x86_setup_gdt_segment_fs(ql, ql.uc, ql.FS_SEGMENT_ADDR, ql.FS_SEGMENT_SIZE)
-    ql_x86_setup_gdt_segment_gs(ql, ql.uc, ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
-    ql_x86_setup_gdt_segment_ds(ql, ql.uc)
-    ql_x86_setup_gdt_segment_cs(ql, ql.uc)
-    ql_x86_setup_gdt_segment_ss(ql, ql.uc)
+    ql_x86_setup_gdt_segment_fs(ql, ql.FS_SEGMENT_ADDR, ql.FS_SEGMENT_SIZE)
+    ql_x86_setup_gdt_segment_gs(ql, ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
+    ql_x86_setup_gdt_segment_ds(ql)
+    ql_x86_setup_gdt_segment_cs(ql)
+    ql_x86_setup_gdt_segment_ss(ql)
 
     # handle manager
     ql.handle_manager = HandleManager()

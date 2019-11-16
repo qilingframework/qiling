@@ -355,7 +355,6 @@ class ELFLoader(ELFParse):
         else:
             return ql.pack32(data)
 
-
     def copy_str(self, uc, addr, l):
         l_addr = []
         s_addr = addr
@@ -389,7 +388,7 @@ class ELFLoader(ELFParse):
     def NullStr(self, s):
         return s[ : s.find(b'\x00')]
 
-    def load_with_ld(self, ql, uc, stack_addr, loadbase = -1, argv = [], env = {}):
+    def load_with_ld(self, ql, stack_addr, loadbase = -1, argv = [], env = {}):
         if loadbase <= 0:
             if ql.archbit == 64:
                 loadbase = 0x555555554000
@@ -413,10 +412,8 @@ class ELFLoader(ELFParse):
             if i['p_type'] == PT_INTERP:
                 interp_path = self.NullStr(super().getelfdata(i['p_offset'], i['p_filesz']))
 
-
         mem_start = int(mem_start // 0x1000) * 0x1000
         mem_end = int(mem_end // 0x1000 + 1) * 0x1000
-
 
         if elfhead['e_type'] == ET_EXEC:
             loadbase = 0
@@ -424,19 +421,18 @@ class ELFLoader(ELFParse):
             ql.nprint("[+] Some error in head e_type!")
             return -1
 
-        uc.mem_map(loadbase + mem_start, mem_end - mem_start)
+        ql.uc.mem_map(loadbase + mem_start, mem_end - mem_start)
         ql.insert_map_info(loadbase + mem_start, loadbase + mem_end, self.path)
 
         for i in super().parse_program_header(ql):
             if i['p_type'] == PT_LOAD:
-                uc.mem_write(loadbase + i['p_vaddr'], super().getelfdata(i['p_offset'], i['p_filesz']))
+                ql.uc.mem_write(loadbase + i['p_vaddr'], super().getelfdata(i['p_offset'], i['p_filesz']))
                 ql.dprint("[+] load 0x%x - 0x%x"%(loadbase + i['p_vaddr'], loadbase + i['p_vaddr'] + i['p_filesz']))
 
 
         entry_point = elfhead['e_entry'] + loadbase
         
         ql.dprint("[+] mem_start: " + hex(mem_start) + " mem_end: " + hex(mem_end))
-
 
         ql.brk_address = mem_end + loadbase
 
@@ -467,12 +463,12 @@ class ELFLoader(ELFParse):
             else:
                 interp_base = 0xff7d5000
 
-            uc.mem_map(interp_base, int(interp_mem_size))
+            ql.uc.mem_map(interp_base, int(interp_mem_size))
             ql.insert_map_info(interp_base, interp_base + int(interp_mem_size), os.path.abspath(interp_path))
 
             for i in interp.parse_program_header(ql):
                 if i['p_type'] == PT_LOAD:
-                    uc.mem_write(interp_base + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
+                    ql.uc.mem_write(interp_base + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
             entry_point = interphead['e_entry'] + interp_base
 
         # Set MMAP addr
@@ -495,7 +491,7 @@ class ELFLoader(ELFParse):
 
         # Set argv
         if len(argv) != 0:
-            argv_addr, new_stack = self.copy_str(uc, stack_addr, argv)
+            argv_addr, new_stack = self.copy_str(ql.uc, stack_addr, argv)
 
             if ql.archbit == 32:
                 elf_table += b''.join([ql.pack32(_) for _ in argv_addr])
@@ -507,10 +503,9 @@ class ELFLoader(ELFParse):
         elif ql.archbit == 64:
             elf_table += ql.pack64(0)
 
-
         # Set env
         if len(env) != 0:
-            env_addr, new_stack = self.copy_str(uc, new_stack, [key + '=' + value for key, value in env.items()])
+            env_addr, new_stack = self.copy_str(ql.uc, new_stack, [key + '=' + value for key, value in env.items()])
             if ql.archbit == 32:
                 elf_table += b''.join([ql.pack32(_) for _ in env_addr])
             elif ql.archbit == 64:
@@ -525,7 +520,7 @@ class ELFLoader(ELFParse):
 
         randstr = 'a' * 0x10
         cpustr = 'i686'
-        (addr, new_stack) = self.copy_str(uc, new_stack, [randstr, cpustr])
+        (addr, new_stack) = self.copy_str(ql.uc, new_stack, [randstr, cpustr])
         new_stack = self.alignment(new_stack, ql)
         randstraddr = addr[0]
         cpustraddr = addr[1]
@@ -535,10 +530,9 @@ class ELFLoader(ELFParse):
         if ql.arch == QL_MIPS32EL:
             new_stack = new_stack - 4
         
-        # uc.mem_write(int(new_stack) - 4, ql.pack32(0x11111111))
+        # ql.uc.mem_write(int(new_stack) - 4, ql.pack32(0x11111111))
         # new_stack = new_stack - 4
         # rand_addr = new_stack - 4
-
 
         elf_table += self.NEW_AUX_ENT(AT_PHDR, loadbase + mem_start + elfhead['e_phoff'], ql)
         elf_table += self.NEW_AUX_ENT(AT_PHENT, elfhead['e_phentsize'], ql)
@@ -557,30 +551,25 @@ class ELFLoader(ELFParse):
         elif ql.archbit == 32:
             hwcap = 0x1fb8d7
 
-
         elf_table += self.NEW_AUX_ENT(AT_HWCAP, hwcap, ql)
         elf_table += self.NEW_AUX_ENT(AT_CLKTCK, 100, ql)
         elf_table += self.NEW_AUX_ENT(AT_RANDOM, randstraddr, ql)
         elf_table += self.NEW_AUX_ENT(AT_PLATFORM, cpustraddr, ql)
         elf_table += self.NEW_AUX_ENT(AT_NULL, 0, ql)
 
-        uc.mem_write(int(new_stack - len(elf_table)), elf_table)
+        ql.uc.mem_write(int(new_stack - len(elf_table)), elf_table)
         new_stack = new_stack - len(elf_table)
 
         if ql.ostype == QL_FREEBSD:
             new_stack = new_stack - 8
-            # print("rdi is : " + hex(uc.reg_read(UC_X86_REG_RDI)))
-            # uc.reg_write(UC_X86_REG_RDI, new_stack + 8)
+            # print("rdi is : " + hex(ql.uc.reg_read(UC_X86_REG_RDI)))
+            # ql.uc.reg_write(UC_X86_REG_RDI, new_stack + 8)
 
         # for i in range(120):
-        #     buf = uc.mem_read(new_stack + i * 0x8, 8)
+        #     buf = ql.uc.mem_read(new_stack + i * 0x8, 8)
         #     ql.nprint("0x%08x : 0x%08x " % (new_stack + i * 0x4, ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
 
         ql.entry_point = entry_point
         ql.elf_entry = loadbase + elfhead['e_entry']
         ql.new_stack = new_stack
         ql.loadbase = loadbase
-
-
-
-
