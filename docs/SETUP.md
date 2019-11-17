@@ -80,7 +80,7 @@ docker build -t qiling:1.0 .
 ```
 
 ##### Running Qiling Framework docker with a bind mount
-Required DLLs can be bind mount to Qiling Framework container. Presuming DLLs located in /analysis/win.
+Required DLLs can be bind-mounted to Qiling Framework container. Presuming DLLs located in /analysis/win.
 
 ```
 docker run -dt --name qiling \
