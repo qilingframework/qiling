@@ -88,3 +88,7 @@ docker run -dt --name qiling \
  -v /analysis/win/x8664dlls:/qiling/examples/rootfs/x8664_windows/dlls \
  qiling:1.0
 ```
+
+```
+docker exec -it qiling bash
+```
