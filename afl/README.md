@@ -47,10 +47,10 @@ Read through [the whole script](fuzz_x8664_linux.py), it should be documented we
 
 ## Testemonials
 
-"same effects of qemu-user with less speed" - Andrea Fioraldi
+"same effects of qemu-user with less speed" - [Andrea Fioraldi](https://twitter.com/andreafioraldi)
 
 ## Conclusion
 
-Enjoy Fuzzing in Qiling :) 
+Enjoy Fuzzing in Qiling.
 
-Feel free to reach out to me at any time :)
+Feel free to reach out [to me](https://twitter.com/domenuk) at any time :)
