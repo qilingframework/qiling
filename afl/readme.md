@@ -1,6 +1,8 @@
 # Quling Unicornafl
 
-Fuzz pretty much anything... at some point.
+"Load the cake and fuzz it too"
+
+Fuzz pretty much anything...
 
 ![Qilingfuzz Screenshopt, Around 160 execs per second and 13 crashes found..](qilingfzz.png)
 
