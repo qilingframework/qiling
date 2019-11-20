@@ -17,15 +17,17 @@ It has been tested with the recent Qiling framework (the one you cloned),
 [afl++](https://github.com/vanhauser-thc/AFLplusplus)
 and the [unicorn afl for (WIP)](https://github.com/domenukk/unicorn/tree/0cd188142f52afce9f240eff92041947190e1174).
 
-The unicorn fork adds methods to kick off the unicorn forkserver at any time.
-That means you can fuzz any unicorn projects with one line of code-ish.
+This unicorn fork adds methods to kick off the afl forkserver at any time.
+*That means you can fuzz _any unicorn project_ (even c/rust/...) with a few lines of code.*
 
 in this case, we make use of `afl_start_forkserver(..)`, although `afl_fuzz(..)` is even more powerful/faster 
 (it can do persistent mode, so no more forking),
-yet more work to implement.
+yet more work to implement. Blogpost or something else on this will follow.
 
-The forkserver is added as a callback on the `main()` method of the target binary.
-On top, we add additional "crashes" on `stack-check fail`.
+For this script, the forkserver is added as a qiling callback on the `main()` method of the target binary.
+On top, we add additional "crashes" (`os.abort`) as callback to the address where `stack-check fail` gets called.
+
+Just look at the script, it is documented. ;)
 
 ## Try Out
 
