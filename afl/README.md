@@ -2,9 +2,14 @@
 
 "Load the cake and fuzz it too"
 
-Fuzz pretty much anything...
+## Fuzz pretty much anything...
+
+Just read on [the frontpage](../README.md) what qiling can do, then think you can fuzz all of this with code coverage.
+
 
 ![Qilingfuzz Screenshopt, Around 160 execs per second and 13 crashes found..](qilingfzz.png)
+
+## But How
 
 [fuzz_x8664_linux.py](./fuzz_x8664_linux.py) is a simple example of how to use Qiling together with AFL.
 
@@ -12,8 +17,17 @@ It has been tested with the recent Qiling framework (the one you cloned),
 [afl++](https://github.com/vanhauser-thc/AFLplusplus)
 and the [unicorn afl for (WIP)](https://github.com/domenukk/unicorn/tree/0cd188142f52afce9f240eff92041947190e1174).
 
-My unicorn fork adds methods (in this case we use `afl_start_forkserver`, although `afl_fuzz` is even more powerful) to kick off the unicorn forkserver at any time.
+The unicorn fork adds methods to kick off the unicorn forkserver at any time.
 That means you can fuzz any unicorn projects with one line of code-ish.
+
+in this case, we make use of `afl_start_forkserver(..)`, although `afl_fuzz(..)` is even more powerful/faster 
+(it can do persistent mode, so no more forking),
+yet more work to implement.
+
+The forkserver is added as a callback on the `main()` method of the target binary.
+On top, we add additional "crashes" on `stack-check fail`.
+
+## Try Out
 
 This will be, at some point, upstreamed to afl++ once it's ready, but for now, install afl++ and qiling, then
 ```bash
@@ -28,6 +42,12 @@ cd ./bindings/python
 Then come back to this folder, and run `./fuzz.sh`.
 
 Read through [the whole script](fuzz_x8664_linux.py), it should be documented well enough.
+
+## Testemonials
+
+"same effects of qemu-user with less speed" - Andrea Fioraldi
+
+## Conclusion
 
 Enjoy Fuzzing in Qiling :) 
 
