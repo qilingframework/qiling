@@ -15,7 +15,7 @@ Just read on [the frontpage](../README.md) what qiling can do, then think you ca
 
 It has been tested with the recent Qiling framework (the one you cloned),
 [afl++](https://github.com/vanhauser-thc/AFLplusplus)
-and the [unicorn afl for (WIP)](https://github.com/domenukk/unicorn/tree/0cd188142f52afce9f240eff92041947190e1174).
+and the [unicorn afl fork (WIP)](https://github.com/domenukk/unicorn/tree/0cd188142f52afce9f240eff92041947190e1174).
 
 This unicorn fork adds methods to kick off the afl forkserver at any time.
 *That means you can fuzz _any unicorn project_ (even c/rust/...) with a few lines of code.*
