@@ -9,6 +9,7 @@
 # SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
 # CHEN huitao (null) <null@qiling.io>
 # YU tong (sp1ke) <spikeinhouse@gmail.com>
+# NGUYEN Hong Quang <quangnh89@gmail.com>
 
 import struct
 from qiling.os.windows.const import *
@@ -81,18 +82,22 @@ def hook_GetModuleHandleA(ql, address, params):
     return ret
 
 
-# HMODULE GetModuleHandleA(
-#   LPCSTR lpModuleName
+# HMODULE GetModuleHandleW(
+#   LPCWSTR lpModuleName
 # );
 @winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
-    "lpModuleName": STRING
+    "lpModuleName": WSTRING
 })
 def hook_GetModuleHandleW(ql, address, params):
     lpModuleName = params["lpModuleName"]
     if lpModuleName == 0:
         ret = ql.PE.PE_IMAGE_BASE
     else:
-        raise QlErrorNotImplemented("not implemented")
+        lpModuleName = bytes(lpModuleName, "ascii").decode('utf-16le')
+        if lpModuleName.lower() in ql.PE.dlls:
+            ret = ql.PE.dlls[lpModuleName.lower()]
+        else:
+            ret = 0
     return ret
 
 
@@ -843,3 +848,79 @@ def hook_TerminateProcess(ql, address, params):
 def hook_GetCurrentProcess(ql, address, params):
     ret = 1
     return ret
+
+
+# HMODULE LoadLibraryA(
+#   LPCSTR lpLibFileName
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "lpLibFileName": STRING
+})
+def hook_LoadLibraryA(ql, address, params):
+    lpLibFileName = params["lpLibFileName"]
+    dll_base = ql.PE.load_dll(lpLibFileName.encode())
+    return dll_base
+
+
+# HMODULE LoadLibraryExA(
+#   LPCSTR lpLibFileName,
+#   HANDLE hFile,
+#   DWORD  dwFlags
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "lpLibFileName": STRING,
+    "hFile": POINTER,
+    "dwFlags": DWORD
+})
+def hook_LoadLibraryExA(ql, address, params):
+    lpLibFileName = params["lpLibFileName"]
+    dll_base = ql.PE.load_dll(lpLibFileName.encode())
+    return dll_base
+
+
+# HMODULE LoadLibraryW(
+#   LPCWSTR lpLibFileName
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "lpLibFileName": WSTRING
+})
+def hook_LoadLibraryW(ql, address, params):
+    lpLibFileName = params["lpLibFileName"]
+    lpLibFileName = bytes(lpLibFileName,'ascii').decode('utf-16le').encode()
+    dll_base = ql.PE.load_dll(lpLibFileName)
+    return dll_base
+
+
+# HMODULE LoadLibraryExW(
+#   LPCSTR lpLibFileName,
+#   HANDLE hFile,
+#   DWORD  dwFlags
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "lpLibFileName": WSTRING,
+    "hFile": POINTER,
+    "dwFlags": DWORD
+})
+def hook_LoadLibraryExW(ql, address, params):
+    lpLibFileName = params["lpLibFileName"]
+    lpLibFileName = bytes(lpLibFileName,'ascii').decode('utf-16le').encode()
+    dll_base = ql.PE.load_dll(lpLibFileName)
+    return dll_base
+
+
+# FARPROC GetProcAddress(
+#   HMODULE hModule,
+#   LPCSTR  lpProcName
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hModule": POINTER,
+    "lpProcName": STRING
+})
+def hook_GetProcAddress(ql, address, params):
+    lpProcName = bytes(params["lpProcName"], 'ascii')
+    if lpProcName in ql.PE.import_address_table:
+        ret = ql.PE.import_address_table[lpProcName]
+    else:
+        ret = 0
+    return ret
+

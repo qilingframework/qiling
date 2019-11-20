@@ -9,6 +9,7 @@
 # SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
 # CHEN huitao (null) <null@qiling.io>
 # YU tong (sp1ke) <spikeinhouse@gmail.com>
+# NGUYEN Hong Quang <quangnh89@gmail.com>
 
 import struct
 from qiling.os.windows.fncc import *
@@ -89,3 +90,10 @@ def hook_MessageBoxA(ql, address, params):
 def hook_EndDialog(ql, address, params):
     ret = 1
     return ret
+
+
+# HWND GetDesktopWindow((
+# );
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+def hook_GetDesktopWindow(ql, address, params):
+    pass
