@@ -17,13 +17,8 @@ cd ./bindings/python
 ```
 should do the trick.
 
-Source code of the crashing x8664_fuzz.c is:
-```c
-
-```
-
 Run using afl++ unicorn mode with
-./afl-fuzz -i ./afl_inputs -o ./afl_outputs -U -- python3 ./fuzz_x8664_linux.py @@
+afl-fuzz -i ./afl_inputs -o ./afl_outputs -m none -U -- python3 ./fuzz_x8664_linux.py @@
 """
 
 # This is new. Instead of unicorn, we import unicornafl. It's the same Uc with some new `afl_` functions
