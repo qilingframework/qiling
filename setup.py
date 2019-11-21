@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
 #
 # Python setup for Qiling framework
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
+
 
 
 from setuptools import setup, find_packages

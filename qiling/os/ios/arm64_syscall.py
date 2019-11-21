@@ -3,13 +3,7 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
+
 
 ARM64_IOS_SYSCALL_EXIT    =   [0x2000001, "ql_syscall_exit"]
 ARM64_IOS_SYSCALL_READ    =   [0x2000003, "ql_syscall_read"]
