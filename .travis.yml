@@ -5,6 +5,6 @@ install:
   - pip install -r requirements.txt
 before_script:
   # fix keystone lib
-  - cp /home/travis/virtualenv/python3.6.7/lib/python3.6/site-packages//usr/lib/python3/dist-packages/keystone/libkeystone.so /home/travis/virtualenv/python3.6.7/lib/python3.6/site-packages/keystone/
+  - cp /home/travis/virtualenv/python3.6.7/lib/python3.6/site-packages/home/travis/virtualenv/python3.6.7/lib/python3.6/site-packages/keystone/libkeystone.so /home/travis/virtualenv/python3.6.7/lib/python3.6/site-packages/keystone/
 script:
   - cd tests && python3 shellcode_test.py
