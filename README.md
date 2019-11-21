@@ -1,4 +1,5 @@
 Qiling - Advanced Binary Emulation framework
+[![Build Status](https://travis-ci.com/qilingframework/qiling.svg?branch=master)](https://travis-ci.com/qilingframework/qiling)
 ---
 
 <p align="center">
