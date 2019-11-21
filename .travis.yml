@@ -4,4 +4,4 @@ python:
 install:
   - pip install -r requirements.txt
 script:
-  - python3 tests/shellcode_test.py
+  - cd test && python3 shellcode_test.py
