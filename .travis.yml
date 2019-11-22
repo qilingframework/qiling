@@ -9,3 +9,6 @@ before_script:
 script:
   - cd tests
   - python3 shellcode_test.py
+  - python3 ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs examples/rootfs/x8664_linux
+  - python3 ./qltool run -f examples/rootfs/x86_linux/bin/x86_hello --rootfs examples/rootfs/x86_linux
+  - python3 ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux
