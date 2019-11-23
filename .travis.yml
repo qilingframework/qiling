@@ -10,5 +10,7 @@ script:
   - python3 ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs examples/rootfs/x8664_linux
   - python3 ./qltool run -f examples/rootfs/x86_linux/bin/x86_hello --rootfs examples/rootfs/x86_linux
   - python3 ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux
+  - python3 ./qltool run -f examples/rootfs/x86_reactos/bin/x86_hello.exe --rootfs examples/rootfs/x86_reactos
+  - python3 ./qltool run -f examples/rootfs/x8664_reactos/bin/x8664_hello.exe --rootfs examples/rootfs/x8664_reactos
   - cd tests    
   - python3 shellcode_test.py
