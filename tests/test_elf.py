@@ -26,6 +26,7 @@ class ELFTest(unittest.TestCase):
 
     def test_elf_linux_arm64(self):     
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_hello"], "../examples/rootfs/arm64_linux", output = "default")
+        ql.set_exit(0x555555566260)
         ql.run()
 
 
@@ -37,7 +38,3 @@ class ELFTest(unittest.TestCase):
     def test_elf_freebsd_x8664(self):     
         ql = Qiling(["../examples/rootfs/x8664_freebsd/bin/x8664_hello_asm"], "../examples/rootfs/x8664_freebsd", output = "default")
         ql.run()  
-
-
-if __name__ == "__main__":
-    unittest.main()

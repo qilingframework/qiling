@@ -3,15 +3,19 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-
-import sys
+import sys,unittest
 sys.path.append("..")
 from qiling import *
+from qiling.exception import *
+from test_elf import *
+from test_pe import *
+from test_macho import *
 
-def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, output = "debug")
-    ql.run()
+class TestAll(unittest.TestCase):
+    ELFTest()
+    PETest()
+    MACHOTest()
 
 
 if __name__ == "__main__":
-    my_sandbox(["rootfs/x86_windows/bin/x86_hello.exe"], "rootfs/x86_windows")
+    unittest.main()
