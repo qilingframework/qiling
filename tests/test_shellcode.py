@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 import sys,unittest
 from binascii import unhexlify
 sys.path.append("..")
@@ -44,16 +49,16 @@ class ShellcodeTest(unittest.TestCase):
         ql.run()
 
     #This shellcode needs to be changed to something simpler not requiring rootfs
-    #def test_windows_x86(self):
-    #    print("Windows X86 32bit Shellcode")
-    #    ql = Qiling(shellcoder = X86_WIN, archtype = "x86", ostype = "windows", rootfs="rootfs/x86_windows", output="off")
-    #    ql.run()
+    def test_windows_x86(self):
+        print("Windows X86 32bit Shellcode")
+        ql = Qiling(shellcoder = X86_WIN, archtype = "x86", ostype = "windows", rootfs="../examples/rootfs/x86_reactos", output="off")
+        ql.run()
 
     #This shellcode needs to be changed to something simpler not requiring rootfs
-    #def test_windows_x64(self):
-    #   print("\nWindows X8664 64bit Shellcode")
-    #   ql = Qiling(shellcoder = X8664_WIN, archtype = "x8664", ostype = "windows", rootfs="rootfs/x8664_windows", output=off)
-    #   ql.run()
+    def test_windows_x64(self):
+       print("\nWindows X8664 64bit Shellcode")
+       ql = Qiling(shellcoder = X8664_WIN, archtype = "x8664", ostype = "windows", rootfs="../examples/rootfs/x86_reactos", output="off")
+       ql.run()
 
     #This shellcode needs to be changed to something simpler, listen is blocking
     #def test_freebsd_x64(self):

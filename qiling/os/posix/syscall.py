@@ -270,7 +270,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
         else:
             ql.file_des[idx] = ql_file.open(real_path, openat_flags, openat_mode)
             regreturn = (idx)
-    ql.nprint("openat(%d, %s, 0x%x, 0x%x) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
+    ql.nprint("\nopenat(%d, %s, 0x%x, 0x%x) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
     if regreturn == -1:
         ql.dprint("[!] File Not Found: %s"  % relative_path)
     else:
@@ -808,7 +808,7 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
     
     try:
         buf = ql.uc.mem_read(write_buf, write_count)
-        ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
+        ql.nprint("\nwrite(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         ql.file_des[write_fd].write(buf)
         regreturn = write_count
     except:
