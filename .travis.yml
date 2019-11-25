@@ -2,7 +2,7 @@ language: python
 os:
   - linux
   - osx
-  osx_image: xcode11.2
+osx_image: xcode11.2
 python:
   - "3.6"
   - "3.5"
