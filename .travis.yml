@@ -15,7 +15,8 @@ matrix:
         - python3 test_all.py
     - name: "Python 3.5 on Linux"
       os: linux
-      python: 3.5
+      language: python
+      python: "3.5"
       install:
         - pip3 install -r requirements.txt
       before_script:
@@ -25,7 +26,8 @@ matrix:
         - python3 test_all.py
     - name: "Python 3.6 on Linux"
       os: linux
-      python: 3.6
+      language: python
+      python: "3.6"
       install:
         - pip3 install -r requirements.txt
       before_script:
@@ -40,4 +42,4 @@ matrix:
       before_script:
         - cd tests
       script:
-        - python test_all.py
+        - python3 test_all.py
