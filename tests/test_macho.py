@@ -19,5 +19,3 @@ class MACHOTest(unittest.TestCase):
         ql.run()
 
  
-if __name__ == "__main__":
-    unittest.main()
