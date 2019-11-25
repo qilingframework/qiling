@@ -7,12 +7,12 @@ matrix:
         - choco install python --version 3.6.0
         - python -m pip install --upgrade pip
       env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
+      before_install:
+        - pip3 install --upgrade pip
       install:
-        - pip install -r requirements.txt
+        - pip3 install -r requirements.txt
       before_script:
         - cd tests
-      script:
-        - python3 test_all.py
     - name: "Python 3.5 on Linux"
       os: linux
       language: python
@@ -22,8 +22,6 @@ matrix:
       before_script:
         - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
         - cd tests
-      script:
-        - python3 test_all.py
     - name: "Python 3.6 on Linux"
       os: linux
       language: python
@@ -33,15 +31,15 @@ matrix:
       before_script:
         - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
         - cd tests
-      script:
-        - python3 test_all.py
     - name: "Python 3 on osx"
       os: osx
+      osx_image: xcode11.2
       language: shell
-      install:
+      before_install:
         - pip3 install --upgrade pip
+      install:
         - pip3 install -r requirements.txt
       before_script:
         - cd tests
-      script:
-        - python3 test_all.py
+script:
+  - python3 test_all.py
