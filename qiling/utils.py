@@ -19,14 +19,14 @@ def ql_get_os_module_function(ostype, arch, function_name):
         raise QlErrorOsType(f"Invalid OSType {ostype}")
 
     if not ql_is_valid_arch(arch):
-        raise QlErrorArch(f"Invalid Arch {arch}")
+        raise QlErrorArch("Invalid Arch")
 
     module_name = ql_build_module_import_name("os", ostype, arch)
     return ql_get_module_function(module_name, function_name)
 
 def ql_get_arch_module_function(arch, function_name):
     if not ql_is_valid_arch(arch):
-        raise QlErrorArch(f"Invalid Arch {arch}")
+        raise QlErrorArch("Invalid Arch")
 
     module_name = ql_build_module_import_name("arch", None, arch)
     return ql_get_module_function(module_name, function_name)
