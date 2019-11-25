@@ -10,7 +10,7 @@ matrix:
         - choco install python --version=3.6.8
         - choco install cmake
         - python -m pip install --upgrade pip
-        - "/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/vcvarsall.bat" amd64
+        - /c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/vcvarsall.bat amd64
         - eval "${MATRIX_EVAL}"
       install:
         - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
