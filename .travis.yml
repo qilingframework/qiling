@@ -13,7 +13,8 @@ matrix:
         - eval "${MATRIX_EVAL}"
       install:
         - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
-        - mkdir build && cd build && ../nmake-dll.bat && ../nmake-lib.bat
+        - git clone https://github.com/keystone-engine/keystone
+        - cd keystone && mkdir build && cd build && ../nmake-dll.bat && ../nmake-lib.bat
         - python setup.py install
       before_script:
         - cd tests
@@ -30,7 +31,8 @@ matrix:
         - eval "${MATRIX_EVAL}"
       install:
         - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
-        - mkdir build && cd build && ../nmake-dll.bat && ../nmake-lib.bat
+        - git clone https://github.com/keystone-engine/keystone
+        - cd keystone && mkdir build && cd build && ../nmake-dll.bat && ../nmake-lib.bat
         - python setup.py install
       before_script:
         - cd tests
@@ -65,7 +67,7 @@ matrix:
         - git clone https://github.com/keystone-engine/keystone
         - cd keystone && mkdir build && cd build && ../make-share.sh && make -j8 && sudo make install
         - cd ../bindings/python && sudo make install && python3 setup.py install
-        - cd $TRAVIS_HOME/build/qilingframework/qiling && python3 setup.py install
+        - cd $TRAVIS_HOME/build/chfl4gs/qiling && python3 setup.py install
       before_script:
         - cd tests
 script:
