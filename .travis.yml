@@ -1,11 +1,19 @@
 language: python
+os:
+  - linux
+  - osx
 python:
   - "3.6"
   - "3.5"
 install:
   - pip install -r requirements.txt
 before_script:
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update          ; fi
   - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
   - cd tests
 script:
   - python3 test_all.py
+jobs:
+  allow_failures:
+    - os: osx
+    - python: "3.5"
