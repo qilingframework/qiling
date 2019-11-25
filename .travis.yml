@@ -24,6 +24,9 @@ matrix:
       os: osx
       osx_image: xcode11.2
       language: shell
+      addons:
+        homebrew:
+          packages: python3
       before_install:
         - pip3 install --upgrade pip
       install:
@@ -34,5 +37,6 @@ matrix:
         - cd $TRAVIS_HOME/build/qilingframework/qiling && python3 setup.py install
       before_script:
         - cd tests
+        - ls /usr/local/lib/python3.7/site-packages/keystone
 script:
   - python3 test_all.py
