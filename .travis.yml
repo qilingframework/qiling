@@ -1,21 +1,5 @@
 matrix:
   include:
-    - name: "Python 3.6 on Windows"
-      os: windows
-      language: shell
-      before_install:
-        - choco install python --version 3.6.0
-        - choco install cmake
-        - python -m pip install --upgrade pip
-      env:
-        - NMAKE_PATH="/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin/amd64/"
-        - RC_PATH="/c/Program Files (x86)/Windows Kits/10/bin/x64/"
-        - PATH="/c/Python36:/c/Python36/Scripts:$NMAKE_PATH:$RC_PATH:$PATH"
-      install:
-        - pip install -r requirements.txt
-        - python setup.py install
-      before_script:
-        - cd tests
     - name: "Python 3.5 on Linux"
       os: linux
       language: python
@@ -47,8 +31,8 @@ matrix:
         - brew update && brew install --HEAD unicorn
         - git clone https://github.com/keystone-engine/keystone
         - cd keystone && mkdir build && cd build && ../make-share.sh && cd ../bindings/python && sudo make install
-        - cd $TRAVIS_HOME/qilingframework/qiling && python3 setup.py install
+        - cd ../../../ && python3 setup.py install
       before_script:
         - cd tests
 script:
-  - python3 test_all.py || python test_all.py
+  - python3 test_all.py
