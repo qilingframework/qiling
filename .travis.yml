@@ -4,7 +4,9 @@ matrix:
       os: windows
       language: sh
       env:
-        - PATH="/c/Python36:/c/Python36/Scripts:$PATH"
+        - NMAKE_PATH="/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin/amd64/"
+        - RC_PATH="/c/Program Files (x86)/Windows Kits/10/bin/x64/"
+        - PATH="/c/Python36:/c/Python36/Scripts:$NMAKE_PATH:$RC_PATH:$PATH"
         - MATRIX_EVAL="CC=CL.exe && CXX=CL.exe"
       before_install:
         - choco install python --version 3.6.8
@@ -18,57 +20,5 @@ matrix:
         - python setup.py install
       before_script:
         - cd tests
-    - name: "Python 3.5 on Windows"
-      os: windows
-      language: sh
-      env:
-        - PATH="/c/Python35:/c/Python35/Scripts:$PATH"
-        - MATRIX_EVAL="CC=CL.exe && CXX=CL.exe"
-      before_install:
-        - choco install python --version 3.5.4
-        - choco install cmake
-        - python -m pip install --upgrade pip
-        - eval "${MATRIX_EVAL}"
-      install:
-        - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
-        - git clone https://github.com/keystone-engine/keystone
-        - cd keystone && mkdir build && cd build && ../nmake-dll.bat && ../nmake-lib.bat
-        - python setup.py install
-      before_script:
-        - cd tests
-    - name: "Python 3.5 on Linux"
-      os: linux
-      language: python
-      python: "3.5"
-      install:
-        - pip3 install -r requirements.txt
-        - python3 setup.py install
-      before_script:
-        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
-        - cd tests
-    - name: "Python 3.6 on Linux"
-      os: linux
-      language: python
-      python: "3.6"
-      install:
-        - pip3 install -r requirements.txt
-        - python3 setup.py install
-      before_script:
-        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
-        - cd tests
-    - name: "Python 3 on osx"
-      os: osx
-      osx_image: xcode11.2
-      language: shell
-      before_install:
-        - pip3 install --upgrade pip
-      install:
-        - travis_wait pip3 install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
-        - git clone https://github.com/keystone-engine/keystone
-        - cd keystone && mkdir build && cd build && ../make-share.sh && make -j8 && sudo make install
-        - cd ../bindings/python && sudo make install && python3 setup.py install
-        - cd $TRAVIS_HOME/build/chfl4gs/qiling && python3 setup.py install
-      before_script:
-        - cd tests
 script:
-  - python3 test_all.py || python test_all.py
+  - python test_all.py
