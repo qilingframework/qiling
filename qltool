@@ -3,9 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-
 import argparse, os, string, sys
-
+from binascii import unhexlify
 from keystone import *
 from qiling import *
 
@@ -41,9 +40,9 @@ def compile_instructions(fname, archtype, archmode):
     try:
         # Initialize engine in X86-32bit mode
         encoding, count = ks.asm(assembly)
-        shellcode = [str(f"0x{i:02x}") for i in encoding]
-        shellcode = "".join(shellcode).replace('0x', '')
-        shellcode = bytes.fromhex(shellcode)
+        shellcode = ''.join('%02x'%i for i in encoding)
+        shellcode = unhexlify(shellcode)
+
     except KsError as e:
         print("ERROR Keystone Compile Error: %s" % e)
         exit

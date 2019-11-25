@@ -36,7 +36,7 @@ def ql_get_arch_bits(arch):
 
     if arch in arch_32b: return 32
     if arch in arch_64b: return 64
-    raise QlErrorArch(f"Invalid Arch {arch}")
+    raise QlErrorArch("Invalid Arch")
 
 def ql_is_valid_ostype(ostype):
     if ostype not in QL_OS:
