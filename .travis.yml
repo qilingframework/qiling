@@ -3,10 +3,24 @@ os:
   - linux
   - freebsd
   - osx
-osx_image: xcode11.2
-python:
-  - "3.6"
-  - "3.5"
+  - windows
+jobs:
+  include:
+    - name: "Python 3.6 on Linux"
+      python: 3.6
+    - name: "Python 3.5 on Linux"
+      python: 3.5
+    - name: "Python 3.7.4 on macOS"
+      os: osx
+      osx_image: xcode11.2
+      language: shell
+    - name: "Python 3.6 on Windows"
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version 3.6.0
+        - python -m pip install --upgrade pip
+      env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
 install:
   - pip install -r requirements.txt
 before_script:
