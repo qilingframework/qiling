@@ -20,7 +20,7 @@ ARM64_LIN = unhexlify('420002ca210080d2400080d2c81880d2010000d4e60300aa010200100
 X8664_FBSD = unhexlify('6a61586a025f6a015e990f054897baff02aaaa80f2ff524889e699046680c2100f05046a0f05041e4831f6990f0548976a035852488d7424f080c2100f0548b8523243427730637257488d3e48af74084831c048ffc00f055f4889d04889fe48ffceb05a0f0575f799043b48bb2f62696e2f2f73685253545f5257545e0f05')
 X8664_macos = unhexlify('4831f65648bf2f2f62696e2f7368574889e74831d24831c0b00248c1c828b03b0f05')
 
-class ShellcodeTest(unittest.TestCase):
+class TestShellcode(unittest.TestCase):
     def test_linux_x86(self):
         print("Linux X86 32bit Shellcode")
         ql = Qiling(shellcoder = X86_LIN, archtype = "x86", ostype = "linux", output = "off")

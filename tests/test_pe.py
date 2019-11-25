@@ -18,3 +18,6 @@ class PETest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/x86_reactos/bin/x86_hello.exe"], "../examples/rootfs/x86_reactos", output = "debug")
         ql.run()
 
+
+if __name__ == "__main__":
+    unittest.main()

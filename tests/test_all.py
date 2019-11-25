@@ -10,11 +10,13 @@ from qiling.exception import *
 from test_elf import *
 from test_pe import *
 from test_macho import *
+from test_qltool import *
 
-class TestAll(unittest.TestCase):
+class AllTest(unittest.TestCase):
     ELFTest()
     PETest()
     MACHOTest()
+    QltoolTest()
 
 
 if __name__ == "__main__":
