@@ -5,7 +5,7 @@ python:
 install:
   - pip install -r requirements.txt
 before_script:
-  - if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then cp /home/travis/virtualenv/python*/lib/python3.5/site-packages/home/travis/virtualenv/python3*/lib/python3.6/site-packages/keystone/libkeystone.so /home/travis/virtualenv/python3.*/lib/python3.6/site-packages/keystone/; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then cp /home/travis/virtualenv/python3.5.6/lib/python3.5/site-packages/home/travis/virtualenv/python3.5.6/lib/python3.6/site-packages/keystone/libkeystone.so /home/travis/virtualenv/python3.5.6/lib/python3.6/site-packages/keystone/; fi
   - if [[ $TRAVIS_PYTHON_VERSION == 3.6 ]]; then cp /home/travis/virtualenv/python3.6.7/lib/python3.6/site-packages/home/travis/virtualenv/python3.6.7/lib/python3.6/site-packages/keystone/libkeystone.so /home/travis/virtualenv/python3.6.7/lib/python3.6/site-packages/keystone/; fi
 script:
   - cd tests    
