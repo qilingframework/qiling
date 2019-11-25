@@ -1,7 +1,5 @@
-language: python
 os:
   - linux
-  - freebsd
   - osx
   - windows
 jobs:
