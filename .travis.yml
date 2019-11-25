@@ -1,9 +1,9 @@
 language: python
 os:
   - linux
+  - osx
 arch:
   - amd64
-  - arm64
 python:
   - "3.6"
   - "3.5"
