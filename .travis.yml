@@ -1,18 +1,5 @@
 matrix:
   include:
-    - name: "Python 3.5 on Windows"
-      os: windows
-      language: shell
-      before_install:
-        - choco install python --version 3.5.0
-        - python -m pip install --upgrade pip
-      env: PATH=/c/Python35:/c/Python35/Scripts:$PATH
-      install:
-        - pip install -r requirements.txt
-      before_script:
-        - cd tests
-      script:
-        - python3 test_all.py
     - name: "Python 3.6 on Windows"
       os: windows
       language: shell
@@ -48,12 +35,12 @@ matrix:
         - cd tests
       script:
         - python3 test_all.py
-    - name: "Python 3.7 on osx"
+    - name: "Python 3 on osx"
       os: osx
       language: shell
       install:
-        - pip install --upgrade pip
-        - pip install -r requirements.txt
+        - pip3 install --upgrade pip
+        - pip3 install -r requirements.txt
       before_script:
         - cd tests
       script:
