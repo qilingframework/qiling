@@ -203,20 +203,25 @@ def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
         # invalid
         return None, None
 
-    def compile_instructions(runcode, archtype, archmode):
-    
+    def compile_instructions(fname, archtype, archmode):
+        f = open(fname, 'rb')
+        assembly = f.read()
+        f.close()
+
         ks = Ks(archtype, archmode)
 
         shellcode = ''
         try:
-            encoding, count = ks.asm(runcode)
-            shellcode = [str(f"0x{i:02x}") for i in encoding]
-            shellcode = "".join(shellcode).replace('0x', '')
-            shellcode = bytes.fromhex(shellcode)
-        except KsError as e:
-            ql.print("ERROR Keystone Compile Error: %s" % e)
+            # Initialize engine in X86-32bit mode
+            encoding, count = ks.asm(assembly)
+            shellcode = ''.join('%02x'%i for i in encoding)
+            shellcode = unhexlify(shellcode)
 
-        return shellcode    
+        except KsError as e:
+            print("ERROR Keystone Compile Error: %s" % e)
+            exit
+
+        return shellcode   
 
     if arm_thumb == 1 and archtype == QL_ARM:
         archtype = QL_ARM_THUMB
