@@ -2,8 +2,8 @@ language: python
 os:
   - linux
   - freebsd
-arch:
-  - amd64
+  - osx
+osx_image: xcode11.2
 python:
   - "3.6"
   - "3.5"
