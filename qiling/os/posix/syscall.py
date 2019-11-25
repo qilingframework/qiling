@@ -13,8 +13,10 @@ import resource
 import socket
 import time
 import io
-import fcntl
 import select
+
+# Remove import fcntl due to Windows Limitation
+#import fcntl
 
 from unicorn import *
 from unicorn.arm_const import *
@@ -1265,13 +1267,19 @@ def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, null0, null1, null2, null3):
 
 
 def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, null1, null2, null3):
-    if fcntl_cmd == fcntl.F_GETFL:
+    
+    F_GETFD = 1
+    F_SETFD = 2
+    F_GETFL = 3
+    F_SETFL = 4
+
+    if fcntl_cmd == F_GETFL:
         regreturn = 2
-    elif fcntl_cmd == fcntl.F_SETFL:
+    elif fcntl_cmd == F_SETFL:
         regreturn = 0
-    elif fcntl_cmd == fcntl.F_GETFD:
+    elif fcntl_cmd == F_GETFD:
         regreturn = 2
-    elif fcntl_cmd == fcntl.F_SETFD:
+    elif fcntl_cmd == F_SETFD:
         regreturn = 0
     else:
         regreturn = 0    
