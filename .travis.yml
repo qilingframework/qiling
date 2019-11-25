@@ -1,17 +1,5 @@
-os:
-  - linux
-  - osx
-  - windows
-jobs:
+matrix:
   include:
-    - name: "Python 3.6 on Linux"
-      python: 3.6
-    - name: "Python 3.5 on Linux"
-      python: 3.5
-    - name: "Python 3.7.4 on macOS"
-      os: osx
-      osx_image: xcode11.2
-      language: shell
     - name: "Python 3.6 on Windows"
       os: windows
       language: shell
@@ -19,10 +7,37 @@ jobs:
         - choco install python --version 3.6.0
         - python -m pip install --upgrade pip
       env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
-install:
-  - pip install -r requirements.txt
-before_script:
-  - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
-  - cd tests
-script:
-  - python3 test_all.py
+      install:
+        - pip install -r requirements.txt
+      before_script:
+        - cd tests
+      script:
+        - python3 test_all.py
+    - name: "Python 3.5 on Linux"
+      os: linux
+      python: 3.5
+      install:
+        - pip3 install -r requirements.txt
+      before_script:
+        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
+        - cd tests
+      script:
+        - python3 test_all.py
+    - name: "Python 3.6 on Linux"
+      os: linux
+      python: 3.6
+      install:
+        - pip3 install -r requirements.txt
+      before_script:
+        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
+        - cd tests
+      script:
+        - python3 test_all.py
+    - name: "Python 3.7 on osx"
+      os: osx
+      install:
+        - pip install -r requirements.txt
+      before_script:
+        - cd tests
+      script:
+        - python test_all.py
