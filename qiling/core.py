@@ -148,7 +148,7 @@ class Qiling:
                 self.sigaction_act.append(0)
 
         if not ql_is_valid_arch(self.arch):
-            raise QlErrorArch(f"Invalid Arch {self.arch}")
+            raise QlErrorArch("Invalid Arch")
 
         arch_func = ql_get_arch_module_function( self.arch, ql_arch_convert_str(self.arch).upper() )
 
