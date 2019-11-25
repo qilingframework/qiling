@@ -20,13 +20,10 @@ matrix:
       before_script:
         - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
         - cd tests
-    - name: "Python 3 on osx"
+    - name: "Python 3.7 on osx"
       os: osx
       osx_image: xcode11.2
       language: shell
-      addons:
-        homebrew:
-          packages: python3
       before_install:
         - pip3 install --upgrade pip
       install:
