@@ -27,11 +27,11 @@ matrix:
       before_install:
         - pip3 install --upgrade pip
       install:
-        - pip3 install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1'
-        - brew update && brew install --HEAD unicorn
+        - pip3 install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
         - git clone https://github.com/keystone-engine/keystone
-        - cd keystone && mkdir build && cd build && ../make-share.sh && cd ../bindings/python && sudo make install && python3 setup.py install
-        - cd ../../../ && python3 setup.py install
+        - cd keystone && mkdir build && cd build && ../make-lib.sh && make -j8 && sudo make install
+        - cd ../bindings/python && sudo make install && python3 setup.py install
+        - cd $TRAVIS_HOME/build/qilingframework/qiling && python3 setup.py install
       before_script:
         - cd tests
 script:
