@@ -69,4 +69,4 @@ matrix:
       before_script:
         - cd tests
 script:
-  - python test_all.py
+  - python3 test_all.py || python test_all.py
