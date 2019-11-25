@@ -5,6 +5,8 @@ matrix:
       language: shell
       before_install:
         - choco install python --version 3.6.0
+        - choco upgrade cmake
+        - choco install vcredist-all
         - python -m pip install --upgrade pip
       env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
       install:
@@ -36,10 +38,8 @@ matrix:
       before_install:
         - pip3 install --upgrade pip
       install:
-        - pip3 install 'capstone>=4.0.1' 'unicorn>=1.0.2rc1' 'pefile>=2019.4.18' 'python-registry>=1.3.1'
-        - git clone https://github.com/keystone-engine/keystone
-        - cd keystone && mkdir build && cd build && ../make-share.sh
-        - cd ../bindings/python && make install
+        - pip3 install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1'
+        - brew update && brew install --HEAD keystone unicorn
       before_script:
         - cd tests
 script:
