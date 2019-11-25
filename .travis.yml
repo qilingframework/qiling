@@ -1,10 +1,9 @@
 language: python
 os:
   - linux
-  - osx
-    osx_image: xcode11.2
-    language: generic
-    env: TOXENV=py36
+arch:
+  - amd64
+  - arm64
 python:
   - "3.6"
   - "3.5"
@@ -17,5 +16,4 @@ script:
   - python3 test_all.py
 jobs:
   allow_failures:
-    - os: osx
     - python: "3.5"
