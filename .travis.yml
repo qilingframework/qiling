@@ -4,7 +4,9 @@ matrix:
       os: windows
       language: sh
       env:
-        - PATH="/c/Python36:/c/Python36/Scripts:$PATH"
+        - NMAKE_PATH="/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin/amd64/"
+        - RC_PATH="/c/Program Files (x86)/Windows Kits/10/bin/x64/"
+        - PATH="/c/Python36:/c/Python36/Scripts:$NMAKE_PATH:$RC_PATH:$PATH"
       before_install:
         - choco install python --version=3.6.8
         - choco install cmake
