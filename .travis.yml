@@ -9,18 +9,6 @@ matrix:
         - choco install python --version=3.6.8
         - choco install cmake
         - python -m pip install --upgrade pip
-        - eval "$(python2 -c 
-          'import sys, os, subprocess
-           import distutils.msvc9compiler as msvc
-           msvc.find_vcvarsall=lambda _: sys.argv[1]
-           envs=msvc.query_vcvarsall(sys.argv[2])
-           for k,v in envs.items():
-            k = k.upper()
-            v = ":".join(subprocess.check_output(["cygpath","-u",p]).rstrip() for p in v.split(";"))
-            v = v.replace("'\''",r"'\'\\\'\''")
-            print "export %(k)s='\''%(v)s'\''" % locals()
-          ' 'c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\Tools\VsDevCmd.bat' '-arch=amd64'
-          )"
       install:
         - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
         - git clone https://github.com/keystone-engine/keystone
