@@ -2,13 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
 
 import pefile
 from qiling.exception import *
@@ -42,7 +35,7 @@ def ql_get_arch_bits(arch):
 
     if arch in arch_32b: return 32
     if arch in arch_64b: return 64
-    raise QlErrorArch(f"Invalid Arch {arch}")
+    raise QlErrorArch("[!] Invalid Arch")
 
 def ql_is_valid_ostype(ostype):
     if ostype not in QL_OS:
@@ -232,7 +225,7 @@ def ql_checkostype(path):
         arch, ostype = ql_pe_check_archtype(path)
        
     if ostype not in (QL_OS):        
-        raise QlErrorOsType("ERROR: File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios'")
+        raise QlErrorOsType("[!] File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios'")
 
       
     return arch, ostype

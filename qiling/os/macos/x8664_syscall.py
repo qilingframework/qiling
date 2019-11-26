@@ -2,14 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
-
 X8664_MACOS_MACH_SYSCALL_TASK_SELF_TRAP         =   [0x100001c, "ql_x86_syscall_task_self_trap"]
 X8664_MACOS_MACH_SYSCALL_MACH_REPLY_PORT        =   [0x100001a, "ql_x86_syscall_mach_reply_port"]
 X8664_MACOS_MACH_SYSCALL_HOST_SELF_TRAP         =   [0x100001d, "ql_x86_syscall_host_self_trap"]

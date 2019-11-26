@@ -2,13 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
 
 import struct
 import sys
@@ -91,7 +84,8 @@ def loader_file(ql):
         ql.stack_size = QL_ARM64_LINUX_PREDEFINE_STACKSIZE
         uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
-    loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv,  env = ql.env)
+    if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv,  env = ql.env):
+        raise QlErrorFileType("Unsupported FileType")
     ql.stack_address = (int(ql.new_stack))
 
 
@@ -127,7 +121,8 @@ def runner(ql):
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
         ql.errmsg = 1
-        ql.nprint("%s" % e)  
+        ql.nprint("%s" % e)
+        raise QlErrorExecutionStop('[!] Emulation Stopped')
 
     if ql.internal_exception != None:
         raise ql.internal_exception

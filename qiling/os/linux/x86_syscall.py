@@ -2,18 +2,13 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
+
 
 X86_LINUX_SYSCALL_EXIT                      = [0x01, "ql_syscall_exit"]
 X86_LINUX_SYSCALL_WRITE                     = [0x04, "ql_syscall_write"]
 X86_LINUX_SYSCALL_OPEN                      = [0x05, "ql_syscall_open"]
 X86_LINUX_SYSCALL_EXECVE                    = [0x0B, "ql_syscall_execve"]
+X86_LINUX_SYSCALL_GETPID                    = [0x14, "ql_syscall_getpid"]
 X86_LINUX_SYSCALL_OPENAT                    = [0x127, "ql_syscall_openat"]
 X86_LINUX_SYSCALL_CLOSE                     = [0x06, "ql_syscall_close"]
 X86_LINUX_SYSCALL_READ                      = [0x03, "ql_syscall_read"]
@@ -44,6 +39,7 @@ X86_LINUX_SYSCALL = [
     X86_LINUX_SYSCALL_WRITE,
     X86_LINUX_SYSCALL_OPEN,
     X86_LINUX_SYSCALL_EXECVE,
+    X86_LINUX_SYSCALL_GETPID,
     X86_LINUX_SYSCALL_OPENAT,
     X86_LINUX_SYSCALL_CLOSE,
     X86_LINUX_SYSCALL_READ,

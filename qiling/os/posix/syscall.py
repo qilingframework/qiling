@@ -2,14 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
-
 import struct
 import sys
 import os
@@ -19,8 +11,10 @@ import resource
 import socket
 import time
 import io
-import fcntl
 import select
+
+# Remove import fcntl due to Windows Limitation
+#import fcntl
 
 from unicorn import *
 from unicorn.arm_const import *
@@ -276,7 +270,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
         else:
             ql.file_des[idx] = ql_file.open(real_path, openat_flags, openat_mode)
             regreturn = (idx)
-    ql.nprint("openat(%d, %s, 0x%x, 0x%x) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
+    ql.nprint("\nopenat(%d, %s, 0x%x, 0x%x) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
     if regreturn == -1:
         ql.dprint("[!] File Not Found: %s"  % relative_path)
     else:
@@ -811,18 +805,20 @@ def ql_syscall_read(ql, read_fd, read_buf, read_len, null0, null1, null2):
 def ql_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
     regreturn = 0
     buf = None
-    # ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
+    
     try:
         buf = ql.uc.mem_read(write_buf, write_count)
+        ql.nprint("\nwrite(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         ql.file_des[write_fd].write(buf)
         regreturn = write_count
     except:
         regreturn = -1
+        ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             raise
-    ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
-    if buf:
-        ql.nprint(buf.decode(errors='ignore'))
+    #ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
+    #if buf:
+    #    ql.nprint(buf.decode(errors='ignore'))
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -1269,13 +1265,19 @@ def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, null0, null1, null2, null3):
 
 
 def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, null1, null2, null3):
-    if fcntl_cmd == fcntl.F_GETFL:
+    
+    F_GETFD = 1
+    F_SETFD = 2
+    F_GETFL = 3
+    F_SETFL = 4
+
+    if fcntl_cmd == F_GETFL:
         regreturn = 2
-    elif fcntl_cmd == fcntl.F_SETFL:
+    elif fcntl_cmd == F_SETFL:
         regreturn = 0
-    elif fcntl_cmd == fcntl.F_GETFD:
+    elif fcntl_cmd == F_GETFD:
         regreturn = 2
-    elif fcntl_cmd == fcntl.F_SETFD:
+    elif fcntl_cmd == F_SETFD:
         regreturn = 0
     else:
         regreturn = 0    

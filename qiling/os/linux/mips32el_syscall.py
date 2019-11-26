@@ -2,14 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
-
 MIPS32EL_LINUX_SYSCALL_SETTHREADAREA            = [4283, "ql_syscall_mips32el_set_thread_area"]
 MIPS32EL_LINUX_SYSCALL_EXIT                     = [4001, "ql_syscall_exit"]
 MIPS32EL_LINUX_SYSCALL_WRITE                    = [4004, "ql_syscall_write"]
