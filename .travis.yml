@@ -11,7 +11,7 @@ matrix:
       before_install:
         - choco install python --version=3.6.8
         - choco install cmake
-        - choco install microsoft-visual-cpp-build-tools
+        - choco install visualstudio2019community
         - python -m pip install --upgrade pip
       install:
         - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
@@ -20,7 +20,7 @@ matrix:
         - cd keystone
         - mkdir build
         - cd build
-        - cmd.exe //c "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat amd64 & ..\nmake-dll.bat"
+        - cmd.exe //c "..\nmake-dll.bat"
         - cmd.exe //c "..\nmake-lib.bat"
         - python setup.py install
       before_script:
