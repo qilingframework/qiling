@@ -1,28 +1,38 @@
-os:
-  - linux
-  - osx
-  - windows
-jobs:
+matrix:
   include:
-    - name: "Python 3.6 on Linux"
-      python: 3.6
     - name: "Python 3.5 on Linux"
-      python: 3.5
-    - name: "Python 3.7.4 on macOS"
+      os: linux
+      language: python
+      python: "3.5"
+      install:
+        - pip3 install -r requirements.txt
+        - python3 setup.py install
+      before_script:
+        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
+        - cd tests
+    - name: "Python 3.6 on Linux"
+      os: linux
+      language: python
+      python: "3.6"
+      install:
+        - pip3 install -r requirements.txt
+        - python3 setup.py install
+      before_script:
+        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
+        - cd tests
+    - name: "Python 3.7 on osx"
       os: osx
       osx_image: xcode11.2
       language: shell
-    - name: "Python 3.6 on Windows"
-      os: windows
-      language: shell
       before_install:
-        - choco install python --version 3.6.0
-        - python -m pip install --upgrade pip
-      env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
-install:
-  - pip install -r requirements.txt
-before_script:
-  - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
-  - cd tests
+        - pip3 install --upgrade pip
+      install:
+        - travis_wait pip3 install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
+        - git clone https://github.com/keystone-engine/keystone
+        - cd keystone && mkdir build && cd build && ../make-share.sh && make -j8 && sudo make install
+        - cd ../bindings/python && sudo make install && python3 setup.py install
+        - cd $TRAVIS_HOME/build/qilingframework/qiling && python3 setup.py install
+      before_script:
+        - cd tests
 script:
   - python3 test_all.py
