@@ -53,10 +53,9 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 
 #### Install
 
-Run below command line to install Qiling.
+Run below command line to install Qiling (Python3 is required).
 
 ```
-pip3 install -r requirements.txt
 python3 setup.py install
 ```
 
