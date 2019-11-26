@@ -149,4 +149,6 @@ def runner(ql):
             ql_hook_code_disasm(ql, ql.pc, 64)
         ql.errmsg = 1
         ql.nprint("%s" % e)
+        raise QlErrorExecutionStop('[!] Emulation Stopped')
+    
     ql.registry_manager.save()

@@ -19,6 +19,11 @@ class ELFTest(unittest.TestCase):
         ql.run()
 
 
+    # Not Stable, not suitable to use it as test
+    def test_multithread_elf_linux_x86(self):
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", output="debug")
+        ql.run()
+
     def test_elf_linux_arm(self):     
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "default")
         ql.run()
@@ -36,7 +41,7 @@ class ELFTest(unittest.TestCase):
         
 
     def test_elf_freebsd_x8664(self):     
-        ql = Qiling(["../examples/rootfs/x8664_freebsd/bin/x8664_hello_asm"], "../examples/rootfs/x8664_freebsd", output = "default")
+        ql = Qiling(["../examples/rootfs/x8664_freebsd/bin/x8664_hello_asm"], "../examples/rootfs/x8664_freebsd", output = "disasm")
         ql.run()  
 
 

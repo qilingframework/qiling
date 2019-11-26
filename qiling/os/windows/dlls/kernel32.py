@@ -86,7 +86,7 @@ def hook_GetModuleHandleW(ql, address, params):
     if lpModuleName == 0:
         ret = ql.PE.PE_IMAGE_BASE
     else:
-        raise QlErrorNotImplemented("not implemented")
+        raise QlErrorNotImplemented("[!] Module not implemented")
     return ret
 
 
@@ -226,7 +226,7 @@ def hook_GetFileType(ql, address, params):
     if hFile == STD_INPUT_HANDLE or hFile == STD_OUTPUT_HANDLE or hFile == STD_ERROR_HANDLE:
         ret = FILE_TYPE_CHAR
     else:
-        raise QlErrorNotImplemented("not implemented")
+        raise QlErrorNotImplemented("[!] API not implemented")
     return ret
 
 
@@ -445,7 +445,7 @@ def hook_GetModuleFileNameA(ql, address, params):
             ret = filename_len
         ql.uc.mem_write(lpFilename, filename + b"\x00")
     else:
-        raise QlErrorNotImplemented("not implemented")
+        raise QlErrorNotImplemented("[!] API not implemented")
     return ret
 
 

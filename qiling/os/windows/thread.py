@@ -54,7 +54,7 @@ class Context:
             self.r15 = self.ql.uc.reg_read(UC_X86_REG_R15)
             self.eflags = self.ql.uc.reg_read(UC_X86_REG_EFLAGS)
         else:
-            raise QlErrorArch("unknown ql.arch")
+            raise QlErrorArch("[!] unknown ql.arch")
 
     def restore(self):
         if self.ql.arch == QL_X86:
@@ -88,7 +88,7 @@ class Context:
             self.ql.uc.reg_write(UC_X86_REG_R15, self.r15)
             self.ql.uc.reg_write(UC_X86_REG_EFLAGS, self.eflags)
         else:
-            raise QlErrorArch("unknown ql.arch")
+            raise QlErrorArch("[!] unknown ql.arch")
 
 
 # A Simple Thread Manager

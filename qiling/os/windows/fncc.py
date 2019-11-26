@@ -163,6 +163,6 @@ def winapi(x86, x8664, param_num=None, params=None):
                 if x8664 == X8664_FASTCALL:
                     return x8664_fastcall(ql, param_num, params, func, args, kwargs)
             else:
-                raise QlErrorArch("unknown ql.arch")
+                raise QlErrorArch("[!] Unknown ql.arch")
         return wrapper
     return decorator

@@ -60,7 +60,7 @@ class RegistryManager:
                 try:
                     self.registry_config = json.loads(data)
                 except json.decoder.JSONDecodeError:
-                    raise QlErrorJsonDecode("Windows Registry JSON decode error")
+                    raise QlErrorJsonDecode("[!] Windows Registry JSON decode error")
                 finally:
                     self.f_config.close()
 
@@ -90,7 +90,7 @@ class RegistryManager:
                 reg = self.hkcu
                 data = reg.open("\\".join(keys[1:]))
             else:
-                raise QlErrorNotImplemented("Windows Registry %s not implemented" % (keys[0]))
+                raise QlErrorNotImplemented("[!] Windows Registry %s not implemented" % (keys[0]))
         except Exception:
             return False
         return True
@@ -101,7 +101,7 @@ class RegistryManager:
             if self.config[key][subkey].type in REG_TYPES:
                 return REG_TYPES[self.config[key][subkey].type], self.config[key][subkey].value
             else:
-                raise QlErrorNotImplemented("Windows Registry Type %s not implemented" % (self.config[key][subkey].type))
+                raise QlErrorNotImplemented("[!] Windows Registry Type %s not implemented" % (self.config[key][subkey].type))
 
         # read hive
         reg = None
@@ -115,7 +115,7 @@ class RegistryManager:
                 reg = self.hkcu
                 data = reg.open("\\".join(keys[1:]))
             else:
-                raise QlErrorNotImplemented("Windows Registry %s not implemented" % (keys[0]))
+                raise QlErrorNotImplemented("[!] Windows Registry %s not implemented" % (keys[0]))
 
             for value in data.values():
                 if value.name() == subkey and (reg_type == Registry.RegNone or \
@@ -158,7 +158,7 @@ class RegistryManager:
                 self.ql.mem_write(address, bytes(reg_value))
                 length = len(reg_value)
             else:
-                raise QlErrorNotImplemented("Windows Registry Type not implemented")
+                raise QlErrorNotImplemented("[!] Windows Registry Type not implemented")
         elif reg_type == Registry.RegDWord:
             data = self.ql.pack32(reg_value)
             self.ql.mem_write(address, data)
@@ -168,7 +168,7 @@ class RegistryManager:
             self.ql.mem_write(address, data)
             length = len(data)
         else:
-            raise QlErrorNotImplemented("Windows Registry Type write to memory %s not implemented" % (REG_TYPES[reg_type]))
+            raise QlErrorNotImplemented("[!] Windows Registry Type write to memory %s not implemented" % (REG_TYPES[reg_type]))
 
         return length
 

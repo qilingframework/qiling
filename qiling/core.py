@@ -127,7 +127,7 @@ class Qiling:
                 self.argv = self.filename
       
             elif  (not os.path.exists(str(self.filename[0])) or not os.path.exists(self.rootfs)):       
-                raise QlErrorFileNotFound("Target binary or rootfs not found")
+                raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
 
         if self.ostype in (QL_LINUX, QL_FREEBSD, QL_MACOS):
             if stdin != 0:
@@ -148,7 +148,7 @@ class Qiling:
                 self.sigaction_act.append(0)
 
         if not ql_is_valid_arch(self.arch):
-            raise QlErrorArch("Invalid Arch")
+            raise QlErrorArch("[!] Invalid Arch")
 
         arch_func = ql_get_arch_module_function( self.arch, ql_arch_convert_str(self.arch).upper() )
 
@@ -159,10 +159,10 @@ class Qiling:
             self.pointersize = (self.archbit // 8)
 
         if not self.ostype in (QL_OS):
-            raise QlErrorOsType("OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos','ios'")
+            raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos','ios'")
 
         if not self.output in (QL_OUTPUT):
-            raise QlErrorOutput("OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
+            raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
  
         if self.shellcoder and self.arch and self.ostype:
             self.shellcode()

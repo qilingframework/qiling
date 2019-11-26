@@ -42,7 +42,7 @@ class Heap:
         elif self.ql.arch == QL_X8664:
             size = align(size, 8)
         else:
-            raise QlErrorArch("unknown ql.arch")
+            raise QlErrorArch("[!] Unknown ql.arch")
 
         # Find the heap chunks that best matches size 
         self.chunks.sort(key=Chunk.compare)

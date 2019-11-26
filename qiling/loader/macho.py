@@ -80,7 +80,7 @@ class MachoX86:
                     if cmd.cmd_id == LC_LOAD_DYLINKER:
                         if not isdyld:
                             if not self.dyld_path:
-                                raise QlErrorMACHOFormat("Error No Dyld path")
+                                raise QlErrorMACHOFormat("[!] Error No Dyld path")
                             self.dyld_file = MachoParser(self.ql, self.dyld_path, "x86")
                             self.loadMachoX86(depth + 1, True)
                             self.using_dyld = True
@@ -299,7 +299,7 @@ class MachoX8664:
                         self.using_dyld = True
                         if not isdyld:
                             if not self.dyld_path:
-                                raise QlErrorMACHOFormat("Error No Dyld path")
+                                raise QlErrorMACHOFormat("[!] Error No Dyld path")
                             self.dyld_file = MachoParser(self.ql, self.dyld_path)
                             self.loading_file = self.dyld_file
                             self.proc_entry = self.loadMachoX8664(depth + 1, True)
@@ -531,7 +531,7 @@ class MachoARM64:
                     if cmd.cmd_id == LC_LOAD_DYLINKER:
                         if not isdyld:
                             if not self.dyld_path:
-                                raise QlErrorMACHOFormat("Error No Dyld path")
+                                raise QlErrorMACHOFormat("[!] Error No Dyld path")
                             self.dyld_file = MachoParser(self.ql, self.dyld_path)
                             self.loadMachoX86(depth + 1, True)
                             self.using_dyld = True
