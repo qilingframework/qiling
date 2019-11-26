@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-
 """
 This module is intended for general purpose functions that can be used
 thoughout the qiling framework
@@ -16,17 +15,17 @@ from qiling.arch.filetype import *
 
 def ql_get_os_module_function(ostype, arch, function_name):
     if not ql_is_valid_ostype(ostype):
-        raise QlErrorOsType("Invalid OSType")
+        raise QlErrorOsType("[!] Invalid OSType")
 
     if not ql_is_valid_arch(arch):
-        raise QlErrorArch("Invalid Arch")
+        raise QlErrorArch("[!] Invalid Arch")
 
     module_name = ql_build_module_import_name("os", ostype, arch)
     return ql_get_module_function(module_name, function_name)
 
 def ql_get_arch_module_function(arch, function_name):
     if not ql_is_valid_arch(arch):
-        raise QlErrorArch("Invalid Arch")
+        raise QlErrorArch("[!] Invalid Arch")
 
     module_name = ql_build_module_import_name("arch", None, arch)
     return ql_get_module_function(module_name, function_name)
@@ -51,11 +50,11 @@ def ql_get_module_function(module_name, function_name):
     try:
         imp_module = importlib.import_module(module_name)
     except:
-        raise QlErrorModuleNotFound("Unable to import module")
+        raise QlErrorModuleNotFound("[!] Unable to import module")
 
     try:
         module_function = getattr(imp_module, function_name)
     except:
-        raise QlErrorModuleFunctionNotFound("Unable to function from modules")
+        raise QlErrorModuleFunctionNotFound("[!] Unable to import %s from %s" % (function_name, imp_module))
 
     return module_function

@@ -4,6 +4,10 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 
+"""
+Example on how to run a Netgear firmware, firmware image not included
+"""
+
 import sys
 sys.path.append("..")
 from qiling import *
@@ -31,7 +35,7 @@ def dump_everything(uc, address, size, ql):
     
     
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, output="debug", stdin = sys.stdin, stdout = sys.stdout, stderr = sys.stderr, log_file = 'logfile', separate_log_file = True, consolelog = True)
+    ql = Qiling(path, rootfs, output="debug", log_file = 'logfile', separate_log_file = True, consolelog = True)
     ql.root = False
     ql.add_fs_mapper('/proc', '/proc')
     #ql.hook_code(dump_everything)

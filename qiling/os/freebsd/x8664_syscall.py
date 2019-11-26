@@ -2,8 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-
-
 X8664_FREEBSD_SYSCALL_EXIT              = [0x1, "ql_syscall_exit"]
 X8664_FREEBSD_SYSCALL_WRITE             = [0x04, "ql_syscall_write"]
 X8664_FREEBSD_SYSCALL_SOCKET            = [0x61, "ql_syscall_socket"]

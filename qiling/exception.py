@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+
 import sys, traceback
 
 class QlErrorBase(Exception):
@@ -47,6 +48,9 @@ class QlErrorModuleFunctionNotFound(QlErrorBase):
     pass
 
 class QlErrorModuleNotFound(QlErrorBase):
+    pass
+
+class QlErrorExecutionStop(QlErrorBase):
     pass
 
 def QlPrintException(msg):

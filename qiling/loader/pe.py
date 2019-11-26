@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-
 import struct
 import sys
 import os
@@ -283,7 +282,7 @@ class PE(Process):
             self.ql.uc.reg_write(UC_X86_REG_RSP, sp)
             self.ql.uc.reg_write(UC_X86_REG_RBP, sp)
         else:
-            raise QlErrorArch("unknown ql.arch")
+            raise QlErrorArch("[!] Unknown ql.arch")
 
         super().init_tib()
         super().init_peb()

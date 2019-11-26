@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-
 import struct
 import sys
 
@@ -149,4 +148,6 @@ def runner(ql):
             ql_hook_code_disasm(ql, ql.pc, 64)
         ql.errmsg = 1
         ql.nprint("%s" % e)
+        raise QlErrorExecutionStop('[!] Emulation Stopped')
+
     ql.registry_manager.save()

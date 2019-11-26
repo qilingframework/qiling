@@ -2,8 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-
-
 X86_MACOS_SYSCALL_EXIT                      = [1, "ql_syscall_exit"]
 X86_MACOS_SYSCALL_READ                      = [3, "ql_syscall_read"]
 X86_MACOS_SYSCALL_WRITE                     = [4, "ql_syscall_write"]

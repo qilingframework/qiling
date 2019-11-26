@@ -2,8 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-
-
 # A Simple Windows Handle Simulation
 class Handle:
     ID = 0xa0000000
