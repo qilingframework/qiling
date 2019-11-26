@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-
 X8664_LINUX_SYSCALL_EXIT                = [0x3C, "ql_syscall_exit"]
 X8664_LINUX_SYSCALL_WRITE               = [0x01, "ql_syscall_write"]
 X8664_LINUX_SYSCALL_OPEN                = [0x02, "ql_syscall_open"]

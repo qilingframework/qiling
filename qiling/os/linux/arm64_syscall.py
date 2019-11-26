@@ -2,8 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-
-
 ARM64_LINUX_SYSCALL_EXIT                = [0x5D, "ql_syscall_exit"]
 ARM64_LINUX_SYSCALL_WRITE               = [0x40, "ql_syscall_write"]
 ARM64_LINUX_SYSCALL_OPEN                = [0x400, "ql_syscall_open"]
