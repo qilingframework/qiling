@@ -21,9 +21,9 @@ class ELFTest(unittest.TestCase):
 
 
     # Not Stable, not suitable to use it as test
-    def test_multithread_elf_linux_x86(self):
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", output="debug")
-        ql.run()
+    #def test_multithread_elf_linux_x86(self):
+    #    ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", output="debug")
+    #    ql.run()
 
     def test_elf_linux_arm(self):     
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "default")
