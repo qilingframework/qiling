@@ -412,7 +412,7 @@ class ELFLoader(ELFParse):
         if elfhead['e_type'] == ET_EXEC:
             loadbase = 0
         elif elfhead['e_type'] != ET_DYN:
-            ql.nprint("[+] Some error in head e_type!")
+            ql.nprint("[+] Some error in head e_type: %u!" %elfhead['e_type'])
             return -1
 
         ql.uc.mem_map(loadbase + mem_start, mem_end - mem_start)

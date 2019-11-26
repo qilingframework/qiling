@@ -205,7 +205,8 @@ def loader_file(ql):
         ql.stack_size = QL_MIPSEL_LINUX_PREDEFINE_STACKSIZE
         uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
-    loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env)
+    if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env):
+        raise QlErrorFileType("Unsupported FileType")
     ql.stack_address = (int(ql.new_stack))
     
 

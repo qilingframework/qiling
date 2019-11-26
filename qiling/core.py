@@ -167,14 +167,14 @@ class Qiling:
         if self.shellcoder and self.arch and self.ostype:
             self.shellcode()
         else:
-            self.run_exec()  
+            self.load_exec()  
 
     def build_os_execution(self, function_name):
         self.runtype = ql_get_os_module_function(self.ostype, self.arch, "runner")
         return ql_get_os_module_function(self.ostype, self.arch, function_name)
 
 
-    def run_exec(self):
+    def load_exec(self):
         loader_file = self.build_os_execution("loader_file")
         loader_file(self)
 
