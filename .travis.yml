@@ -9,8 +9,9 @@ matrix:
         - PATH="/c/Python36:/c/Python36/Scripts:$NMAKE_PATH:$RC_PATH:$PATH"
       before_install:
         - choco install python --version=3.6.8
-        - choco install cmake
+        - choco install cmake npm
         - python -m pip install --upgrade pip
+        - npm install --global windows-build-tools --vs2015
       install:
         - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
         #- pip install -r requirements.txt
