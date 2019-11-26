@@ -289,13 +289,13 @@ class PE(Process):
             self.ql.uc.reg_write(UC_X86_REG_EBP, sp)
 
             if self.pe.is_dll():
-                self.ql.nprint('[+] Setting up DllMain args')
+                self.ql.dprint('[+] Setting up DllMain args')
                 load_addr_bytes = self.PE_IMAGE_BASE.to_bytes(length=4, byteorder='little')
 
-                self.ql.nprint('[+] Writing {:08X} (IMAGE_BASE) to [ESP+4](0x{:08X})'.format(self.PE_IMAGE_BASE, sp+0x4))
+                self.ql.dprint('[+] Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.PE_IMAGE_BASE, sp+0x4))
                 self.ql.uc.mem_write(sp+0x4, load_addr_bytes)
 
-                self.ql.nprint('[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x{:08X})'.format(sp+0x8))
+                self.ql.dprint('[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp+0x8))
                 self.ql.uc.mem_write(sp+0x8, int(1).to_bytes(length=4, byteorder='little'))
 
         elif self.ql.arch == QL_X8664:
@@ -303,13 +303,13 @@ class PE(Process):
             self.ql.uc.reg_write(UC_X86_REG_RBP, sp)
 
             if self.pe.is_dll():
-                self.ql.nprint('[+] Setting up DllMain args')
+                self.ql.dprint('[+] Setting up DllMain args')
                 load_addr_bytes = self.PE_IMAGE_BASE.to_bytes(length=8, byteorder='little')
 
-                self.ql.nprint('[+] Setting RCX (arg1) to {:16X} (IMAGE_BASE)'.format(self.PE_IMAGE_BASE))
+                self.ql.dprint('[+] Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.PE_IMAGE_BASE))
                 self.ql.uc.reg_write(UC_X86_REG_RCX, load_addr_bytes)
 
-                self.ql.nprint('[+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
+                self.ql.dprint('[+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
                 self.ql.uc.reg_write(UC_X86_REG_RDX, int(1).to_bytes(length=8, byteorder='little'))
         else:
             raise QlErrorArch("[!] Unknown ql.arch")
