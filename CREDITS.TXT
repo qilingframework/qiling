@@ -23,6 +23,7 @@ Contributors (in no particular order)
 =====================================
 klks - The Code Refectorer, Advisor
 Kevin (chfl4gs) Foo - Travis, Dockerfile, Documentation and Website
+jhumble - Dll Ordinal Imports
 
 
 Alpha testers (in no particular order, named by github id)
