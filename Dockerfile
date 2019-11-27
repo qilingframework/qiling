@@ -20,7 +20,7 @@ RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 #Fix keystone pip3 install of the lib in the wrong dir 
-RUN cp /usr/local/lib/python3.6/dist-packages/usr/lib/python3/dist-packages/keystone/libkeystone.so /usr/local/lib/python3.6/dist-packages/keystone/
+RUN pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
 
 ENV HOME /qiling
 
