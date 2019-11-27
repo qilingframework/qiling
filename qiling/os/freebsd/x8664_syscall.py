@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
+
 X8664_FREEBSD_SYSCALL_EXIT              = [0x1, "ql_syscall_exit"]
 X8664_FREEBSD_SYSCALL_WRITE             = [0x04, "ql_syscall_write"]
 X8664_FREEBSD_SYSCALL_SOCKET            = [0x61, "ql_syscall_socket"]
@@ -18,6 +19,7 @@ X8664_FREEBSD_SYSCALL_MMAP              = [0x1dd, "ql_syscall_mmap2"]
 X8664_FREEBSD_SYSCALL_MADVISE           = [0x4b, "ql_syscall_madvise"]
 X8664_FREEBSD_SYSCALL_MUNMAP            = [0x49, "ql_syscall_munmap"]
 X8664_FREEBSD_SYSCALL_CLOCKGETTIME      = [0xe8, "ql_syscall_clock_gettime"]
+X8664_FREEBSD_SYSCALL_GETCWD            = [0x146, "ql_syscall_getcwd"]
 
 X8664_FREEBSD_SYSCALL = [
     X8664_FREEBSD_SYSCALL_EXIT,
@@ -35,5 +37,6 @@ X8664_FREEBSD_SYSCALL = [
     X8664_FREEBSD_SYSCALL_MMAP,
     X8664_FREEBSD_SYSCALL_MADVISE,
     X8664_FREEBSD_SYSCALL_MUNMAP,
-    X8664_FREEBSD_SYSCALL_CLOCKGETTIME
+    X8664_FREEBSD_SYSCALL_CLOCKGETTIME,
+    X8664_FREEBSD_SYSCALL_GETCWD
     ]

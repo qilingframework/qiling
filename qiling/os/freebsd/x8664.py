@@ -96,11 +96,15 @@ def loader_shellcode(ql):
 def runner(ql):
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql.uc.reg_write(UC_X86_REG_RDI, ql.stack_address + 8)
+    ql.uc.reg_write(UC_X86_REG_R14D, 0xfffffffffffff000)
+    ql.uc.reg_write(UC_X86_REG_R15D, 0xfffffffffffff000)
+
     ql_setup(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
     ql_x8664_setup_gdt_segment_ds(ql)
     ql_x8664_setup_gdt_segment_cs(ql)
     ql_x8664_setup_gdt_segment_ss(ql)
+
 
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_EMU_END

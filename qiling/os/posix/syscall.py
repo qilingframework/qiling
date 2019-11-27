@@ -100,12 +100,6 @@ def ql_syscall_sysinfo(ql, sysinfo_info, null0, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn)    
 
 
-def ql_syscall_sysctl(ql, sysctl_name, sysctl_namelen, sysctl_bytes_oldlenp, sysctl_size_oldlenp, sysctl_bytes_newlen, sysctl_size_newlen):
-    ql.nprint("sysctl(%s)" % sysctl_name)
-    regreturn = 0
-    ql_definesyscall_return(ql, regreturn)
-
-
 def ql_syscall_alarm(ql, alarm_seconds, null0, null1, null2, null3, null4):
     regreturn = 0
     ql.nprint("alarm(%d) = %d" % (alarm_seconds, regreturn))
