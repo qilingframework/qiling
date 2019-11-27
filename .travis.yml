@@ -20,9 +20,9 @@ matrix:
         - cd keystone
         - mkdir build
         - cd build
-        - cmd.exe //c "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat amd64 & ..\nmake-dll.bat"
+        - cmd.exe /C "call C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat amd64 & ..\nmake-dll.bat"
         #- cmd.exe /C 'call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\Tools\VsDevCmd.bat" amd64'
-        - cmd.exe //c "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat amd64 & ..\nmake-lib.bat"
+        - cmd.exe /C "call C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat amd64 & ..\nmake-lib.bat"
         #- pip install -r requirements.txt
         - python setup.py install
       before_script:
