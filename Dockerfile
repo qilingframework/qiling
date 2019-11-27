@@ -4,7 +4,7 @@ MAINTAINER "Kevin Foo <chbsd64@gmail.com>"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-COPY fix.sh /
+COPY dockerfix /fix.sh
 
 RUN apt-get update \
   && apt-get -y upgrade \
