@@ -21,7 +21,7 @@ sudo python3 setup.py install
 
 Due to distribution restriction, Qiling Framework will not bundle Microsoft Windows DLL files and registry. Please copy respective DLLs and registry from Microsoft Windows System, usually found in C:\Windows\system32 and place them in $rootfs/dlls
 
-Reactos DLLs are in included. As of now we are only able to make it work with the helloworld example. Example will be in examples/cachedlls_x8664_windows.py
+Reactos DLLs are included. As of now we are only able to make it work with the helloworld example. Example will be in examples/cachedlls_x8664_windows.py
 
 For 32bit Windows, please refer to [DLLX86.txt](https://github.com/qilingframework/qiling/blob/master/docs/DLLX86.txt) for Windows 32bit DLLs hashes and file version
 
