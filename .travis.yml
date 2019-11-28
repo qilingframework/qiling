@@ -30,4 +30,4 @@ matrix:
 before_script:
         - cd tests
 script:
-  - python test_all.py
+  - ./qltool
