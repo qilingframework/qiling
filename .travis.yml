@@ -4,10 +4,8 @@ matrix:
       os: windows
       language: shell
       env:
-        #- NMAKE_PATH="/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin/amd64/"
-        #- RC_PATH="/c/Program Files (x86)/Windows Kits/10/bin/x64/"
-        #- PATH="/c/Python36:/c/Python36/Scripts:$NMAKE_PATH:$RC_PATH:$PATH"
         - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files (x86)/keystone/bin/:$PATH"
+        # export PS1="[\[$(tput sgr0)\]\[\033[38;5;249m\]\t\[$(tput sgr0)\]\[\033[38;5;15m\]] \[$(tput sgr0)\]\[\033[38;5;11m\]\u\[$(tput sgr0)\]\[\033[38;5;202m\]@\[$(tput sgr0)\]\[\033[38;5;43m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;33m\]\w\[$(tput sgr0)\]\[\033[38;5;6m\]:\[$(tput sgr0)\]\[\033[38;5;15m\] \[$(tput sgr0)\]\[\033[38;5;118m\]\\$\[$(tput sgr0)\]"
       before_install:
         - choco install python --version=3.6.8
         #- choco install cmake
@@ -22,12 +20,11 @@ matrix:
         - cd build
         - cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 & ..\nmake-dll.bat'
         - cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 & ..\nmake-lib.bat && nmake install'
-        #- cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 & pip install -r requirements.txt'
         - cd ../bindings/python
         - python setup.py install
         - cd $TRAVIS_HOME/build/chfl4gs/qiling
         - python setup.py install
-#before_script:
-        #- cd tests
+before_script:
+        - cd tests
 script:
   - python test_all.py
