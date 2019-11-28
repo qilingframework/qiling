@@ -31,4 +31,4 @@ matrix:
         - cd tests
        script:
         - python test_all.py
-       allow_failures: true
+       allow_failures: "Python 3.6 on Windows"
