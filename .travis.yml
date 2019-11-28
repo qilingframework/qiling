@@ -1,4 +1,6 @@
+language: shell
 matrix:
+  fast_finish: true
   include:
     - name: "Python 3.5 on Linux"
       os: linux
@@ -50,7 +52,7 @@ matrix:
         - python3 test_all.py
     - name: "Python 3.6 on Windows"
       os: windows
-      language: sh
+      language: shell
       env:
         - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files (x86)/keystone/bin/:$PATH"
       before_install:
@@ -72,5 +74,5 @@ matrix:
         - cd tests
       script:
         - python test_all.py
-  allow_failures:
+  allow_failure:
     - windows
