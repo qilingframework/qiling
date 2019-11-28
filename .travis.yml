@@ -2,7 +2,7 @@ matrix:
   include:
     - name: "Python 3.6 on Windows"
       os: windows
-      language: sh
+      language: shell
       env:
         #- NMAKE_PATH="/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin/amd64/"
         #- RC_PATH="/c/Program Files (x86)/Windows Kits/10/bin/x64/"
@@ -31,4 +31,4 @@ matrix:
         - cd tests
        script:
         - python test_all.py
-       allow_failure: true
+       allow_failures: windows
