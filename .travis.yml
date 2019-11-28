@@ -7,7 +7,7 @@ matrix:
         #- NMAKE_PATH="/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin/amd64/"
         #- RC_PATH="/c/Program Files (x86)/Windows Kits/10/bin/x64/"
         #- PATH="/c/Python36:/c/Python36/Scripts:$NMAKE_PATH:$RC_PATH:$PATH"
-        - PATH="/c/Python36:/c/Python36/Scripts:$PATH"
+        - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files (x86)/keystone/bin/:$PATH"
       before_install:
         - choco install python --version=3.6.8
         #- choco install cmake
@@ -24,9 +24,9 @@ matrix:
         - cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 & ..\nmake-lib.bat && nmake install'
         #- cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 & pip install -r requirements.txt'
         #- python setup.py install
-        - cd $TRAVIS_HOME/build/qilingframework/qiling
+        - cd $TRAVIS_HOME/build/chfl4gs/qiling
         - python setup.py install
 before_script:
         - cd tests
 script:
-  #- python test_all.py
+  - python test_all.py
