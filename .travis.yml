@@ -10,6 +10,8 @@ matrix:
       before_script:
         - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
         - cd tests
+      script:
+        - python3 test_all.py
     - name: "Python 3.6 on Linux"
       os: linux
       language: python
@@ -20,6 +22,8 @@ matrix:
       before_script:
         - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
         - cd tests
+      script:
+        - python3 test_all.py
     - name: "Python 3.7 on osx"
       os: osx
       osx_image: xcode11.2
@@ -42,6 +46,8 @@ matrix:
         - python3 setup.py install
       before_script:
         cd tests
+      script:
+        - python3 test_all.py
     - name: "Python 3.6 on Windows"
       os: windows
       language: sh
@@ -64,8 +70,11 @@ matrix:
         - python setup.py install
       before_script:
         - cd tests
-script:
-  - python3 test_all.py || python test_all.py
+      script:
+        - python test_all.py
+# script piping seems to cause problem on travis-ci.com
+#script:
+#  - python3 test_all.py || python test_all.py
 jobs:
   allow_failures:
   - windows
