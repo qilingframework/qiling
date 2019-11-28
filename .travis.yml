@@ -32,4 +32,4 @@ matrix:
        script:
         - python test_all.py
    allow_failures: 
-     - "windows"
+     - windows
