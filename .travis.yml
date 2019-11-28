@@ -40,6 +40,8 @@ matrix:
         - python3 setup.py install
         - cd $TRAVIS_HOME/build/qilingframework/qiling
         - python3 setup.py install
+      before_script:
+        cd tests
     - name: "Python 3.6 on Windows"
       os: windows
       language: sh
