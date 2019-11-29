@@ -86,7 +86,7 @@ matrix:
       before_install:
         - docker build -t qiling:1.0 .
         #- docker run -dt --name qiling qiling:1.0
-        - docker run qiling:1.0 /bin/sh -c "python3 test_all.py"
+        - docker run qiling:1.0 /bin/sh -c "cd tests && python3 test_all.py"
       script:
        - python3 test_all.py
   allow_failures:
