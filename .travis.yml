@@ -4,6 +4,7 @@ matrix:
   include:
     - name: "Python 3.5 on Linux"
       os: linux
+      dist: bionic
       language: python
       python: "3.5"
       install:
@@ -14,8 +15,10 @@ matrix:
         - cd tests
       script:
         - python3 test_all.py
+        
     - name: "Python 3.6 on Linux"
       os: linux
+      dist: bionic
       language: python
       python: "3.6"
       install:
@@ -26,6 +29,7 @@ matrix:
         - cd tests
       script:
         - python3 test_all.py
+        
     - name: "Python 3.7 on osx"
       os: osx
       osx_image: xcode11.2
@@ -50,6 +54,7 @@ matrix:
         cd tests
       script:
         - python3 test_all.py
+        
     - name: "Python 3.6 on Windows"
       os: windows
       language: shell
@@ -74,5 +79,14 @@ matrix:
         - cd tests
       script:
         - python test_all.py
+        
+    - name: "Qiling Docker"
+      services:
+        - docker
+      before_install:
+        - docker build -t qiling:1.0 .
+      script:
+       - docker run qiling:1.0 /bin/sh -c "cd tests && python3 test_all.py"
+       
   allow_failures:
     - os: windows
