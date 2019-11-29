@@ -10,7 +10,7 @@ matrix:
         - pip3 install -r requirements.txt
         - python3 setup.py install
       before_script:
-        - pysite=$(python3 -c "import site; print(site.getsitepackages()[0])") && cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
+        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); && cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
         - cd tests
       script:
         - python3 test_all.py
@@ -22,7 +22,7 @@ matrix:
         - pip3 install -r requirements.txt
         - python3 setup.py install
       before_script:
-        - pysite=$(python3 -c "import site; print(site.getsitepackages()[0])") && cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
+        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); && cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
         - cd tests
       script:
         - python3 test_all.py
