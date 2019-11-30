@@ -17,7 +17,7 @@ matrix:
         - wsl.exe pip3 install -r requirements.txt
         - wsl.exe python3 setup.py install
       before_script:
-        - wsl.exe -c "pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/"
+        - wsl.exe /bin/sh -c "pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/"
         - wsl.exe cd tests
       script:
         - wsl.exe python3 test_all.py
