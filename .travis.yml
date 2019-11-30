@@ -21,4 +21,4 @@ matrix:
         #- pysite1=$(wsl.exe python3 -c "import site; print(site.getsitepackages()[0])"); pysite2=$(wsl.exe python3 -c "import site; print(site.getsitepackages()[1])") && wsl.exe cp ${pysite1}${pysite2}/keystone/libkeystone.so $pysite1/keystone/
         #- wsl.exe cd tests
       script:
-        - wsl.exe cd tests && python3 test_all.py
+        - wsl.exe -c 'cd tests && python3 test_all.py'
