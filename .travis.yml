@@ -10,6 +10,8 @@ matrix:
         - powershell.exe -NoProfile -Command "Expand-Archive -Path ubuntu-1804.zip -DestinationPath Ubuntu"
         - Ubuntu/ubuntu1804.exe install --root
         - wsl.exe apt update
+        - wsl.exe apt -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" dist-upgrade
+        - wsl.exe apt autoremove -y
         - wsl.exe apt install -y python3-pip
         - wsl.exe pip3 install --upgrade pip
       install:
