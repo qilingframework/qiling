@@ -21,7 +21,7 @@ matrix:
         #- wsl.exe /bin/bash -c "pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/"
         #- wsl.exe cp $(wsl.exe python3 -c "import site; print(site.getsitepackages()[0])")$(wsl.exe python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so $(wsl.exe python3 -c "import site; print(site.getsitepackages()[0])")/keystone/
         #- wsl.exe python3 -c "import site; print(site.getsitepackages()[0])"
-        # -wsl.exe ls -lah /usr/local/lib/python3.6/dist-packages
+         -wsl.exe ls -lah /usr/local/lib/python3.6/dist-packages
         - cd tests
       script:
         - wsl.exe python3 test_all.py
