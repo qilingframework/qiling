@@ -6,7 +6,6 @@ matrix:
       os: windows
       language: shell
       before_install:
-        - pwd
         - curl -L -o ubuntu-1804.zip https://aka.ms/wsl-ubuntu-1804
         - powershell.exe -NoProfile -Command "Expand-Archive -Path ubuntu-1804.zip -DestinationPath Ubuntu"
         - Ubuntu/ubuntu1804.exe install --root
@@ -20,7 +19,8 @@ matrix:
       before_script:
         - wsl.exe pwd
         #- wsl.exe /bin/bash -c "pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/"
-        - wsl.exe cp ${python3 -c "import site; print(site.getsitepackages()[0])")}${python3 -c "import site; print(site.getsitepackages()[1])")}/keystone/libkeystone.so ${python3 -c "import site; print(site.getsitepackages()[0])")}/keystone/
+        #- wsl.exe cp ${python3 -c "import site; print(site.getsitepackages()[0])")}${python3 -c "import site; print(site.getsitepackages()[1])")}/keystone/libkeystone.so ${python3 -c "import site; print(site.getsitepackages()[0])")}/keystone/
+        - wsl.exe python3 -c "import site; print(site.getsitepackages()[0])")
         - cd tests
       script:
         - wsl.exe python3 test_all.py
