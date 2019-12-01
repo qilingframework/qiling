@@ -2,13 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
 
 """
 This module is intended for general purpose functions that are only used in qiling.os
@@ -169,7 +162,7 @@ def ql_hook_code_disasm(ql, address, size):
         arg_5 = [arg_5 + 0x14, "SP+0x14"]
 
     else:
-        raise QlErrorArch("Unknown arch defined in utils.py (debug output mode)")
+        raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
 
     ql.nprint("[+] %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x" % \
             (syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1], arg_3[0], arg_4[1], arg_4[0], arg_5[1], arg_5[0]))
@@ -209,20 +202,25 @@ def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
         # invalid
         return None, None
 
-    def compile_instructions(runcode, archtype, archmode):
-    
+    def compile_instructions(fname, archtype, archmode):
+        f = open(fname, 'rb')
+        assembly = f.read()
+        f.close()
+
         ks = Ks(archtype, archmode)
 
         shellcode = ''
         try:
-            encoding, count = ks.asm(runcode)
-            shellcode = [str(f"0x{i:02x}") for i in encoding]
-            shellcode = "".join(shellcode).replace('0x', '')
-            shellcode = bytes.fromhex(shellcode)
-        except KsError as e:
-            ql.print("ERROR Keystone Compile Error: %s" % e)
+            # Initialize engine in X86-32bit mode
+            encoding, count = ks.asm(assembly)
+            shellcode = ''.join('%02x'%i for i in encoding)
+            shellcode = unhexlify(shellcode)
 
-        return shellcode    
+        except KsError as e:
+            print("ERROR Keystone Compile Error: %s" % e)
+            exit
+
+        return shellcode   
 
     if arm_thumb == 1 and archtype == QL_ARM:
         archtype = QL_ARM_THUMB

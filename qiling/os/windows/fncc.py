@@ -2,6 +2,7 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 #
 # LAU kaijern (xwings) <kj@qiling.io>
 # NGUYEN Anh Quynh <aquynh@gmail.com>
@@ -163,6 +164,6 @@ def winapi(x86, x8664, param_num=None, params=None):
                 if x8664 == X8664_FASTCALL:
                     return x8664_fastcall(ql, param_num, params, func, args, kwargs)
             else:
-                raise QlErrorArch("unknown ql.arch")
+                raise QlErrorArch("[!] Unknown ql.arch")
         return wrapper
     return decorator

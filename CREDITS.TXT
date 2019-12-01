@@ -1,14 +1,28 @@
 This file credits all the contributors of the Qiling Freamework project
 
 
-Key developers
+Project Leader
 ==============
 LAU kaijern (xwings) <kj@qiling.io>
+
+
+Lead Advisor
+============
 NGUYEN Anh Quynh <aquynh@gmail.com>
+
+
+Core Developers
+===============
 DING tianZe (D1iv3) <dddliv3@gmail.com>
 SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
 CHEN huitao (null) <null@qiling.io>
 YU tong (sp1ke) <spikeinhouse@gmail.com>
+
+
+Contributors (in no particular order)
+=====================================
+klks - The Code Refectorer, Advisor
+Kevin (chfl4gs) Foo - Travis, Dockerfile, Documentation and Website
 
 
 Alpha testers (in no particular order, named by github id)
@@ -25,11 +39,11 @@ phdphuc
 sashs
 knownsec
 hwiosec
-WanderingGlitch
 
 
 Contributors (in no particular order)
 =====================================
 klks - The Code Refectorer
 Kevin (chfl4gs) Foo - Dockerfile, documentation and website
+WanderingGlitch
 Nguyen Hong Quang (quangnh89), APIs emul
