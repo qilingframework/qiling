@@ -23,6 +23,9 @@ Contributors (in no particular order)
 =====================================
 klks - The Code Refectorer, Advisor
 Kevin (chfl4gs) Foo - Travis, Dockerfile, Documentation and Website
+jhumble - Dll Ordinal Imports
+WanderingGlitch
+Nguyen Hong Quang (quangnh89), APIs emul
 
 
 Alpha testers (in no particular order, named by github id)
@@ -40,10 +43,3 @@ sashs
 knownsec
 hwiosec
 
-
-Contributors (in no particular order)
-=====================================
-klks - The Code Refectorer
-Kevin (chfl4gs) Foo - Dockerfile, documentation and website
-WanderingGlitch
-Nguyen Hong Quang (quangnh89), APIs emul

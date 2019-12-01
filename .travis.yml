@@ -1,7 +1,10 @@
+language: shell
 matrix:
+  fast_finish: true
   include:
     - name: "Python 3.5 on Linux"
       os: linux
+      dist: bionic
       language: python
       python: "3.5"
       install:
@@ -10,8 +13,12 @@ matrix:
       before_script:
         - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
         - cd tests
+      script:
+        - python3 test_all.py
+        
     - name: "Python 3.6 on Linux"
       os: linux
+      dist: bionic
       language: python
       python: "3.6"
       install:
@@ -20,6 +27,9 @@ matrix:
       before_script:
         - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
         - cd tests
+      script:
+        - python3 test_all.py
+        
     - name: "Python 3.7 on osx"
       os: osx
       osx_image: xcode11.2
@@ -29,10 +39,54 @@ matrix:
       install:
         - travis_wait pip3 install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
         - git clone https://github.com/keystone-engine/keystone
-        - cd keystone && mkdir build && cd build && ../make-share.sh && make -j8 && sudo make install
-        - cd ../bindings/python && sudo make install && python3 setup.py install
-        - cd $TRAVIS_HOME/build/qilingframework/qiling && python3 setup.py install
+        - cd keystone
+        - mkdir build
+        - cd build
+        - ../make-share.sh
+        - make -j8
+        - sudo make install
+        - cd ../bindings/python
+        - sudo make install
+        - python3 setup.py install
+        - cd $TRAVIS_HOME/build/qilingframework/qiling
+        - python3 setup.py install
+      before_script:
+        cd tests
+      script:
+        - python3 test_all.py
+        
+    - name: "Python 3.6 on Windows"
+      os: windows
+      language: shell
+      env:
+        - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files (x86)/keystone/bin/:$PATH"
+      before_install:
+        - choco install python --version=3.6.8
+        - python -m pip install --upgrade pip
+      install:
+        - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
+        - git clone https://github.com/keystone-engine/keystone
+        - cd keystone
+        - mkdir build
+        - cd build
+        - cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 & ..\nmake-dll.bat'
+        - cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 & ..\nmake-lib.bat && nmake install'
+        - cd ../bindings/python
+        - python setup.py install
+        - cd $TRAVIS_HOME/build/qilingframework/qiling
+        - python setup.py install
       before_script:
         - cd tests
-script:
-  - python3 test_all.py
+      script:
+        - python test_all.py
+        
+    - name: "Qiling Docker"
+      services:
+        - docker
+      before_install:
+        - docker build -t qiling:1.0 .
+      script:
+       - docker run qiling:1.0 /bin/sh -c "cd tests && python3 test_all.py"
+       
+  allow_failures:
+    - os: windows

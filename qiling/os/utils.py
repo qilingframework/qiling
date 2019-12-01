@@ -164,9 +164,6 @@ def ql_hook_code_disasm(ql, address, size):
     else:
         raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
 
-    ql.nprint("[+] %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x" % \
-            (syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1], arg_3[0], arg_4[1], arg_4[0], arg_5[1], arg_5[0]))
-
     insn = md.disasm(tmp, address)
     opsize = int(size)
     ql.nprint("[+] 0x%x\t " %(address), end = "")
@@ -177,6 +174,10 @@ def ql_hook_code_disasm(ql, address, size):
         ql.nprint("\t  ", end ="")
     for i in insn:
         ql.nprint('\t%s \t%s' %(i.mnemonic, i.op_str))
+
+    ql.nprint("[-] %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x" % \
+            (syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1], arg_3[0], arg_4[1], arg_4[0], arg_5[1], arg_5[0]))
+
 
 def ql_setup(ql):
     if ql.output in (QL_OUT_DISASM, QL_OUT_DUMP):

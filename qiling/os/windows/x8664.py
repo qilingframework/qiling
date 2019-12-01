@@ -32,7 +32,8 @@ def set_pe64_gdt(ql):
 def hook_winapi(ql, address, size):
     if address in ql.PE.import_symbols:
         try:
-            globals()['hook_' + ql.PE.import_symbols[address].decode()](ql, address, {})
+            ql.dprint('Hooking 0x{:08x}: {}'.format(address, ql.PE.import_symbols[address]))
+            globals()['hook_' + ql.PE.import_symbols[address]['name'].decode()](ql, address, {})
         except KeyError as e:
             print("[!]", e, "\t is not implemented")
 

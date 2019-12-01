@@ -160,7 +160,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
     # map GDT table
     if ql.ostype in (QL_LINUX, QL_FREEBSD) and GDTTYPE == "DS":
-            ql.dprint("OS Type:", ql.ostype)
+            ql.dprint("[+] OS Type:", ql.ostype)
             ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
     
     if ql.ostype == QL_WINDOWS and GDTTYPE == "FS":
@@ -203,18 +203,6 @@ def ql_x86_setup_gdt_segment_ss(ql):
     ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_SS, 18, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0, "SS")
 
 
-def ql_x8664_setup_gdt_segment_ds(ql):
-    ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_DS, 16, 0, 0xfffffffffffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3, "DS")
-
-
-def ql_x8664_setup_gdt_segment_cs(ql):
-    ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_CS, 17, 0, 0xfffffffffffff000, QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3, "CS")
-
-
-def ql_x8664_setup_gdt_segment_ss(ql):
-    ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_SS, 18, 0, 0xfffffffffffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0, "SS")
-
-
 def ql_x86_setup_syscall_set_thread_area(ql, base, limit):
     ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_GS, 12, base, limit, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3, "STA")
 
@@ -227,4 +215,13 @@ def ql_x86_setup_gdt_segment_gs(ql, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE):
     ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_GS, 15, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT |  QL_X86_S_PRIV_3, "GS")
 
 
+def ql_x8664_setup_gdt_segment_ds(ql):
+    ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_DS, 16, 0, 0xfffffffffffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3, "DS")
 
+
+def ql_x8664_setup_gdt_segment_cs(ql):
+    ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_CS, 17, 0, 0xfffffffffffff000, QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3, "CS")
+
+
+def ql_x8664_setup_gdt_segment_ss(ql):
+    ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_SS, 18, 0, 0xfffffffffffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0, "SS")
