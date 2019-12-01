@@ -32,3 +32,4 @@ Contributors (in no particular order)
 =====================================
 klks - The Code Refectorer
 Kevin (chfl4gs) Foo - Dockerfile, documentation and website
+Nguyen Hong Quang (quangnh89), APIs emul
