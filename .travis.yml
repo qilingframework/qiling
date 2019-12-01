@@ -23,7 +23,8 @@ matrix:
         #- wsl.exe python3 -c "import site; print(site.getsitepackages()[0])"
         #- wsl.exe ls /usr/local/lib/python3.6/dist-packages
         - wsl.exe pip3 --version
-        - wsl.exe ls /
+        - wsl.exe df -h
+        - wsl.exe pwd
         - wsl.exe /bin/bash -c "echo $PATH"
         - cd tests
       script:
