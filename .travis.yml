@@ -10,8 +10,8 @@ matrix:
         - powershell.exe -NoProfile -Command "Expand-Archive -Path ubuntu-1804.zip -DestinationPath Ubuntu"
         - Ubuntu/ubuntu1804.exe install --root
         - wsl sudo apt update
-        - wsl env DEBIAN_FRONTEND=noninteractive sudo apt dist-upgrade -y
-        - wsl env DEBIAN_FRONTEND=noninteractive sudo apt install -y python3-pip cmake
+        - wsl sudo DEBIAN_FRONTEND=noninteractive apt dist-upgrade -y
+        - wsl sudo DEBIAN_FRONTEND=noninteractive apt install -y python3-pip cmake
         - wsl sudo pip3 install --upgrade pip
       install:
         - wsl sudo pip3 install -r requirements.txt
