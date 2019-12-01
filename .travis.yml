@@ -23,10 +23,7 @@ matrix:
         #- wsl.exe python3 -c "import site; print(site.getsitepackages()[0])"
         #- wsl.exe ls /usr/local/lib/python3.6/dist-packages
         #- wsl.exe pip3 --version
-        #- wsl.exe df -h
-        - bash -c "df -h && pwd && ls -lah /usr/local/lib"
-        - bash -c "ls"
-        #- wslconfig /u legacy
+        - wsl.exe -e "cd /usr/local"
         #- wsl.exe /bin/bash -c "echo $PATH"
         #- cd tests
       script:
