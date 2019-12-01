@@ -18,13 +18,13 @@ matrix:
         - wsl.exe python3 setup.py install
       before_script:
         #- wsl.exe pwd
-        - wsl.exe /bin/bash -- "pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so ${pysite}/keystone/"
+        #- wsl.exe /bin/bash -- "pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so ${pysite}/keystone/"
         #- wsl.exe cp $(wsl.exe python3 -c "import site; print(site.getsitepackages()[0])")$(wsl.exe python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so $(wsl.exe python3 -c "import site; print(site.getsitepackages()[0])")/keystone/
         #- wsl.exe python3 -c "import site; print(site.getsitepackages()[0])"
         #- wsl.exe ls /usr/local/lib/python3.6/dist-packages
         #- wsl.exe pip3 --version
         #- wsl.exe df -h
-        #- wsl.exe pwd
+        - wsl.exe cd /
         #- wsl.exe /bin/bash -c "echo $PATH"
         - cd tests
       script:
