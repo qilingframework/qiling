@@ -24,7 +24,7 @@ matrix:
         #- wsl.exe ls /usr/local/lib/python3.6/dist-packages
         #- wsl.exe pip3 --version
         #- wsl.exe df -h
-        - wslconfig /l
+        - wslconfig /l /all
         - wslconfig /u legacy
         #- wsl.exe /bin/bash -c "echo $PATH"
         - cd tests
