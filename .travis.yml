@@ -9,13 +9,13 @@ matrix:
         - curl -L -o ubuntu-1804.zip https://aka.ms/wsl-ubuntu-1804
         - powershell.exe -NoProfile -Command "Expand-Archive -Path ubuntu-1804.zip -DestinationPath Ubuntu"
         - Ubuntu/ubuntu1804.exe install --root
-        - wsl apt update
-        - wsl DEBIAN_FRONTEND=noninteractive apt dist-upgrade -y
-        - wsl DEBIAN_FRONTEND=noninteractive apt install -y python3-pip cmake
-        - wsl pip3 install --upgrade pip
+        - wsl sudo apt update
+        - wsl DEBIAN_FRONTEND=noninteractive sudo apt dist-upgrade -y
+        - wsl DEBIAN_FRONTEND=noninteractive sudo apt install -y python3-pip cmake
+        - wsl sudo pip3 install --upgrade pip
       install:
-        - wsl pip3 install -r requirements.txt
-        - wsl python3 setup.py install
+        - wsl sudo pip3 install -r requirements.txt
+        - wsl sudo python3 setup.py install
       before_script:
         #- wsl.exe pwd
         #- wsl.exe /bin/bash -- "pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so ${pysite}/keystone/"
@@ -23,7 +23,7 @@ matrix:
         #- wsl.exe python3 -c "import site; print(site.getsitepackages()[0])"
         #- wsl.exe ls /usr/local/lib/python3.6/dist-packages
         #- wsl.exe pip3 --version
-        - wsl ls Ubuntu/rootfs/
+        - wsl sudo ls Ubuntu/rootfs/
         #- wsl.exe /bin/bash -c "echo $PATH"
         #- cd tests
       script:
