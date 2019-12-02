@@ -15,7 +15,7 @@ matrix:
         - wsl pip3 install -r requirements.txt
         - wsl python3 setup.py install
       before_script:
-        - MSYS_NO_PATHCONV=1 wsl -e "cp $(python3 -c "import site; print(site.getsitepackages()[0])")$python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so $(python3 -c "import site; print(site.getsitepackages()[0])")/keystone/"
+        - MSYS_NO_PATHCONV=1 wsl -e 'cp $(python3 -c "import site; print(site.getsitepackages()[0])")$python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so $(python3 -c "import site; print(site.getsitepackages()[0])")/keystone/'
         - cd tests
       script:
         - wsl python3 test_all.py
