@@ -6,9 +6,7 @@ matrix:
       os: windows
       language: shell
       before_install:
-        - curl -L -o ubuntu-1804.zip https://aka.ms/wsl-ubuntu-1804
-        - powershell.exe -NoProfile -Command "Expand-Archive -Path ubuntu-1804.zip -DestinationPath Ubuntu"
-        - Ubuntu/ubuntu1804.exe install --root
+        - choco install wsl-ubuntu-1804
         - wsl sudo apt update
         - wsl sudo DEBIAN_FRONTEND=noninteractive apt dist-upgrade -y
         - wsl sudo DEBIAN_FRONTEND=noninteractive apt install -y python3-pip cmake
@@ -18,8 +16,8 @@ matrix:
         - wsl sudo python3 setup.py install
       before_script:
         #- wsl "pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so ${pysite}/keystone/"
-        #- wsl 'cp $(python3 -c "import site; print(site.getsitepackages()[0])")$(python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so $(python3 -c "import site; print(site.getsitepackages()[0])")/keystone/'
         - wsl ls -lah //usr/local/lib/python3.6/site-packages/
+        - wsl cp $(wsl python3 -c "import site; print(/site.getsitepackages()[0])")$(wsl python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so $(python3 -c "import site; print(/site.getsitepackages()[0])")/keystone/
         - cd tests
       script:
         - wsl python3 test_all.py
