@@ -7,15 +7,15 @@ matrix:
       language: shell
       before_install:
         - choco install wsl-ubuntu-1804
-        - wsl sudo apt update
-        - wsl sudo DEBIAN_FRONTEND=noninteractive apt dist-upgrade -y
-        - wsl sudo DEBIAN_FRONTEND=noninteractive apt install -y python3-pip cmake
-        - wsl sudo pip3 install --upgrade pip
+        - wsl apt update
+        - wsl DEBIAN_FRONTEND=noninteractive apt dist-upgrade -y
+        - wsl DEBIAN_FRONTEND=noninteractive apt install -y python3-pip cmake
+        - wsl pip3 install --upgrade pip
       install:
-        - wsl sudo pip3 install -r requirements.txt
-        - wsl sudo python3 setup.py install
+        - wsl pip3 install -r requirements.txt
+        - wsl python3 setup.py install
       before_script:
-        - MSYS_NO_PATHCONV=1 wsl cp $(wsl python3 -c "import site; print(site.getsitepackages()[0])")$(wsl python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so $(wsl python3 -c "import site; print(site.getsitepackages()[0])")/keystone/
+        - MSYS_NO_PATHCONV=1 wsl -e "cp $(python3 -c "import site; print(site.getsitepackages()[0])")$python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so $(python3 -c "import site; print(site.getsitepackages()[0])")/keystone/"
         - cd tests
       script:
         - wsl python3 test_all.py
