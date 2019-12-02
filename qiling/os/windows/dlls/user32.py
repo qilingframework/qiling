@@ -2,6 +2,7 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 import struct
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
@@ -81,3 +82,10 @@ def hook_MessageBoxA(ql, address, params):
 def hook_EndDialog(ql, address, params):
     ret = 1
     return ret
+
+
+# HWND GetDesktopWindow((
+# );
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+def hook_GetDesktopWindow(ql, address, params):
+    pass
