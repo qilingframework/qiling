@@ -16,8 +16,8 @@ matrix:
         - wsl sudo python3 setup.py install
       before_script:
         #- wsl "pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so ${pysite}/keystone/"
-        - wsl ls -lah //usr/local/lib/python3.6/dist-packages/
-        - wsl cp /$(wsl python3 -c "import site; print(site.getsitepackages()[0])")$(wsl python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so /$(python3 -c "import site; print(site.getsitepackages()[0])")/keystone/
+        - wsl ls -laR //usr/local/lib/python3.6/dist-packages/
+        - wsl cp /$(wsl python3 -c "import site; print(site.getsitepackages()[0])")$(wsl python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so /$(wsl python3 -c "import site; print(site.getsitepackages()[0])")/keystone/
         - cd tests
       script:
         - wsl python3 test_all.py
