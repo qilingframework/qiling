@@ -21,11 +21,11 @@ YU tong (sp1ke) <spikeinhouse@gmail.com>
 
 Contributors (in no particular order)
 =====================================
-klks - The Code Refectorer, Advisor
-Kevin (chfl4gs) Foo - Travis, Dockerfile, Documentation and Website
-jhumble - Dll Ordinal Imports
+klks
+Kevin (chfl4gs) Foo
+jhumble
 WanderingGlitch
-Nguyen Hong Quang (quangnh89), APIs emul
+Nguyen Hong Quang (quangnh89)
 
 
 Alpha testers (in no particular order, named by github id)
