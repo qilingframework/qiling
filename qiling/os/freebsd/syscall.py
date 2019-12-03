@@ -33,5 +33,9 @@ def ql_syscall___sysctl(ql, sysctl_name, sysctl_namelen, sysctl_bytes_oldlenp, s
     regreturn = 1
     ql.nprint("__sysctl(0x%x) = %i" % (sysctl_name, regreturn)) 
     ql_definesyscall_return(ql, regreturn)
-    #ql.uc.emu_stop()
 
+
+def ql_syscall_sysarch(ql, op, parms, null2, null3, null4, null5):
+    regreturn = 2
+    ql.nprint("sysarch() = %i" % (regreturn))
+    ql_definesyscall_return(ql, regreturn)
