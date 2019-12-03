@@ -35,7 +35,7 @@ import sys
 from qiling import *
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, output="debug", stdin = sys.stdin, stdout = sys.stdout, stderr = sys.stderr, log_file = 'logfile', separate_log_file = True, consolelog = True)
+    ql = Qiling(path, rootfs, output="debug", log_file = 'logfile', separate_log_file = True, consolelog = True)
     ql.root = False
     ql.add_fs_mapper('/proc', '/proc')
     ql.run()
