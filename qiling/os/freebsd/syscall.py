@@ -28,10 +28,10 @@ def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec,
     regreturn = 0
     ql_definesyscall_return(ql, regreturn)
 
-def ql_syscall_sysctl(ql, sysctl_name, sysctl_namelen, sysctl_bytes_oldlenp, sysctl_size_oldlenp, sysctl_bytes_newlen, sysctl_size_newlen):
+def ql_syscall___sysctl(ql, sysctl_name, sysctl_namelen, sysctl_bytes_oldlenp, sysctl_size_oldlenp, sysctl_bytes_newlen, sysctl_size_newlen):
     #path = (ql_read_string(ql, sysctl_namelen))
     regreturn = 1
-    ql.nprint("sysctl(0x%x) = %i" % (sysctl_name, regreturn)) 
+    ql.nprint("__sysctl(0x%x) = %i" % (sysctl_name, regreturn)) 
     ql_definesyscall_return(ql, regreturn)
     #ql.uc.emu_stop()
 

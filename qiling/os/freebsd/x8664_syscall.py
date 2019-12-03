@@ -14,7 +14,7 @@ X8664_FREEBSD_SYSCALL_DUP2              = [0x5a, "ql_syscall_dup2"]
 X8664_FREEBSD_SYSCALL_EXECVE            = [0x3b, "ql_syscall_execve"]
 X8664_FREEBSD_SYSCALL_READLINK          = [0x3a, "ql_syscall_readlink"]
 X8664_FREEBSD_SYSCALL_ISSETUGID         = [0xfd, "ql_syscall_issetugid"]
-X8664_FREEBSD_SYSCALL_SYSCTL            = [0xca, "ql_syscall_sysctl"]
+X8664_FREEBSD_SYSCALL___SYSCTL          = [0xca, "ql_syscall___sysctl"]
 X8664_FREEBSD_SYSCALL_MMAP              = [0x1dd, "ql_syscall_mmap2"]
 X8664_FREEBSD_SYSCALL_MADVISE           = [0x4b, "ql_syscall_madvise"]
 X8664_FREEBSD_SYSCALL_MUNMAP            = [0x49, "ql_syscall_munmap"]
@@ -33,7 +33,7 @@ X8664_FREEBSD_SYSCALL = [
     X8664_FREEBSD_SYSCALL_EXECVE,
     X8664_FREEBSD_SYSCALL_READLINK,
     X8664_FREEBSD_SYSCALL_ISSETUGID,
-    X8664_FREEBSD_SYSCALL_SYSCTL,
+    X8664_FREEBSD_SYSCALL___SYSCTL,
     X8664_FREEBSD_SYSCALL_MMAP,
     X8664_FREEBSD_SYSCALL_MADVISE,
     X8664_FREEBSD_SYSCALL_MUNMAP,
