@@ -87,7 +87,7 @@ matrix:
         - choco install wsl-ubuntu-1804
         - wsl apt update -q
         - wsl DEBIAN_FRONTEND=noninteractive apt dist-upgrade -yq
-        - wsl DEBIAN_FRONTEND=noninteractive apt install -yq --no-install-recommends python3-pip cmake
+        - wsl DEBIAN_FRONTEND=noninteractive apt install -yq python3-pip cmake
         - wsl pip3 install --upgrade pip
       install:
         - wsl pip3 install -r requirements.txt
