@@ -909,14 +909,15 @@ def hook_LoadLibraryExW(ql, address, params):
     "lpProcName": STRING
 })
 def hook_GetProcAddress(ql, address, params):
+    lpProcName = bytes(params["lpProcName"], 'ascii')
+
     #Check if dll is loaded
     try:
         dll_name = [key for key, value in ql.PE.dlls.items() if value == params['hModule']][0]
     except IndexError as ie:
-        ql.nprint('[!] Failed to import function "%s" with handle 0x%X')
+        ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
         return 0
 
-    lpProcName = bytes(params["lpProcName"], 'ascii')
     if lpProcName in ql.PE.import_address_table[dll_name]:
         return ql.PE.import_address_table[dll_name][lpProcName]
 
