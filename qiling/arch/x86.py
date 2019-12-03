@@ -159,11 +159,11 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
         return pack('<Q', to_ret)
 
     # map GDT table
-    if ql.ostype in (QL_LINUX, QL_FREEBSD) and GDTTYPE == "DS":
+    if ql.ostype == QL_LINUX and GDTTYPE == "DS":
             ql.dprint("[+] OS Type:", ql.ostype)
             ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
     
-    if ql.ostype == QL_WINDOWS and GDTTYPE == "FS":
+    if ql.ostype in (QL_WINDOWS, QL_FREEBSD) and GDTTYPE == "FS":
             ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
             ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
 
@@ -225,3 +225,7 @@ def ql_x8664_setup_gdt_segment_cs(ql):
 
 def ql_x8664_setup_gdt_segment_ss(ql):
     ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_SS, 18, 0, 0xfffffffffffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0, "SS")
+
+
+def ql_x8664_setup_gdt_segment_fs(ql, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE):
+    ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_FS, 14, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT |  QL_X86_S_PRIV_3, "FS")

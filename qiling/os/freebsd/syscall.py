@@ -30,12 +30,14 @@ def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec,
 
 def ql_syscall___sysctl(ql, sysctl_name, sysctl_namelen, sysctl_bytes_oldlenp, sysctl_size_oldlenp, sysctl_bytes_newlen, sysctl_size_newlen):
     #path = (ql_read_string(ql, sysctl_namelen))
-    regreturn = 1
+    regreturn = 0
     ql.nprint("__sysctl(0x%x) = %i" % (sysctl_name, regreturn)) 
     ql_definesyscall_return(ql, regreturn)
 
 
 def ql_syscall_sysarch(ql, op, parms, null2, null3, null4, null5):
-    regreturn = 2
-    ql.nprint("sysarch() = %i" % (regreturn))
+    regreturn = 0
+    op_buf = ql.pack32(op)
+    ql.uc.mem_write(parms, op_buf)
+    ql.nprint("sysarch(%i,0x%x) = %i" % (op,parms,regreturn))
     ql_definesyscall_return(ql, regreturn)

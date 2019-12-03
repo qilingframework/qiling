@@ -91,8 +91,7 @@ def ql_hook_block_disasm(ql, address, size):
         ql.nprint("[+] Tracing basic block at 0x%x" %(address))
 
 
-def ql_hook_code_disasm(ql, size):
-    address = ql.pc
+def ql_hook_code_disasm(ql, address, size):
     uc = ql.uc
     tmp = uc.mem_read(address, size)
 

@@ -94,6 +94,11 @@ def loader_shellcode(ql):
     
 
 def runner(ql):
+
+    ql.FS_SEGMENT_ADDR = 0x1000
+    ql.FS_SEGMENT_SIZE = 0x1000
+    ql.STRUCTERS_LAST_ADDR = ql.FS_SEGMENT_ADDR
+
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql.uc.reg_write(UC_X86_REG_RDI, ql.stack_address + 8)
     ql.uc.reg_write(UC_X86_REG_R14D, 0xfffffffffffff000)
@@ -101,9 +106,12 @@ def runner(ql):
 
     ql_setup(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
+    
+    ql_x8664_setup_gdt_segment_fs(ql, ql.FS_SEGMENT_ADDR, ql.FS_SEGMENT_SIZE)
     ql_x8664_setup_gdt_segment_ds(ql)
     ql_x8664_setup_gdt_segment_cs(ql)
     ql_x8664_setup_gdt_segment_ss(ql)
+    
 
 
     if (ql.until_addr == 0):
@@ -119,7 +127,7 @@ def runner(ql):
             ql.show_map_info()
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
-            ql_hook_code_disasm(ql, 64)
+            ql_hook_code_disasm(ql, ql.pc, 64)
         ql.errmsg = 1
         ql.nprint("%s" % e)  
 

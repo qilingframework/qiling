@@ -159,7 +159,7 @@ def runner(ql):
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql.nprint("\n")
-            ql_hook_code_disasm(ql, 64)
+            ql_hook_code_disasm(ql, ql.pc, 64)
         ql.errmsg = 1
         ql.nprint("%s" % e)
         raise QlErrorExecutionStop('[!] Emulation Stopped')
