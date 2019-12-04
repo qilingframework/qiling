@@ -23,7 +23,6 @@ from qiling.exception import *
     "count": UINT
 })
 def hook_memcpy(ql, address, params):
-    print('memcpy 0x{:x} bytes from 0x{:08X} to 0x{:08X}'.format(params['count'], params['src'], params['dest']))
     try:
         data = bytes(ql.uc.mem_read(params['src'], params['count']))
         ql.uc.mem_write(params['dest'], data)
