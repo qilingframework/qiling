@@ -64,7 +64,7 @@ def hook_syscall(ql):
                     ql.uc.emu_stop()
                 raise
     else:
-        ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
+        ql.nprint("0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
             ql.uc.emu_stop()
 
