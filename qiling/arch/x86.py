@@ -38,10 +38,11 @@ QL_X86_S_PRIV_1 = 0x1
 QL_X86_S_PRIV_0 = 0x0
 
 QL_X86_GDT_ADDR = 0x3000
-QL_X86_GDT_ADDR_PADDING = 0xe0000000
-QL_X8664_GDT_ADDR_PADDING = 0x7effffff00000000
 QL_X86_GDT_LIMIT = 0x1000
 QL_X86_GDT_ENTRY_SIZE = 0x8
+
+QL_X86_GDT_ADDR_PADDING = 0xe0000000
+QL_X8664_GDT_ADDR_PADDING = 0x7effffff00000000
 
 
 class X86(Arch):
@@ -163,10 +164,19 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
             ql.dprint("[+] OS Type:", ql.ostype)
             ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
     
-    if ql.ostype in (QL_WINDOWS, QL_FREEBSD) and GDTTYPE == "FS":
+    if ql.ostype == QL_WINDOWS and GDTTYPE == "FS":
             ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
             ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
 
+    if ql.ostype == QL_FREEBSD and GDTTYPE == "FS":
+        if not ql.shellcoder:
+            if ql.arch == QL_X86:
+                GDT_ADDR = GDT_ADDR + QL_X86_GDT_ADDR_PADDING
+            elif ql.arch == QL_X8664:
+                GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
+        ql.dprint ("[+] GDT_ADDR is 0x%x" % GDT_ADDR)
+        ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
+    
     if ql.ostype == QL_MACOS and GDTTYPE == "DS":
         if not ql.shellcoder:
             if ql.arch == QL_X86:
@@ -174,7 +184,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
             elif ql.arch == QL_X8664:
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
 
-        ql.dprint ("GDT_ADDR is 0x%x" % GDT_ADDR)
+        ql.dprint ("[+] GDT_ADDR is 0x%x" % GDT_ADDR)
         ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
     
     # create GDT entry, then write GDT entry into GDT table

@@ -95,9 +95,6 @@ def loader_shellcode(ql):
 
 def runner(ql):
 
-    ql.FS_SEGMENT_ADDR = 0x1000
-    ql.FS_SEGMENT_SIZE = 0x1000
-    ql.STRUCTERS_LAST_ADDR = ql.FS_SEGMENT_ADDR
 
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql.uc.reg_write(UC_X86_REG_RDI, ql.stack_address + 8)
@@ -106,13 +103,53 @@ def runner(ql):
 
     ql_setup(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
-    
-    ql_x8664_setup_gdt_segment_fs(ql, ql.FS_SEGMENT_ADDR, ql.FS_SEGMENT_SIZE)
-    ql_x8664_setup_gdt_segment_ds(ql)
-    ql_x8664_setup_gdt_segment_cs(ql)
-    ql_x8664_setup_gdt_segment_ss(ql)
-    
 
+    FSMSR = 0xC0000100
+    GSMSR = 0xC0000101
+
+    SCRATCH_ADDR = 0x80000
+    SCRATCH_SIZE = 0x1000
+
+    SEGMENT_ADDR = 0x5000
+    SEGMENT_SIZE = 0x1000
+
+    def set_msr(uc, msr, value, scratch=SCRATCH_ADDR):
+        '''
+        set the given model-specific register (MSR) to the given value.
+        this will clobber some memory at the given scratch address, as it emits some code.
+        '''
+
+        #uc = ql.uc
+        # save clobbered registers
+        orax = uc.reg_read(UC_X86_REG_RAX)
+        ordx = uc.reg_read(UC_X86_REG_RDX)
+        orcx = uc.reg_read(UC_X86_REG_RCX)
+        orip = uc.reg_read(UC_X86_REG_RIP)
+
+        # x86: wrmsr
+        buf = b'\x0f\x30'
+        uc.mem_write(scratch, buf)
+        uc.reg_write(UC_X86_REG_RAX, value & 0xFFFFFFFF)
+        uc.reg_write(UC_X86_REG_RDX, (value >> 32) & 0xFFFFFFFF)
+        uc.reg_write(UC_X86_REG_RCX, msr & 0xFFFFFFFF)
+        uc.emu_start(scratch, scratch+len(buf), count=1)
+
+        # restore clobbered registers
+        uc.reg_write(UC_X86_REG_RAX, orax)
+        uc.reg_write(UC_X86_REG_RDX, ordx)
+        uc.reg_write(UC_X86_REG_RCX, orcx)
+        uc.reg_write(UC_X86_REG_RIP, orip)
+    
+    def set_fs(uc, addr):
+        '''
+        set the FS.base hidden descriptor-register field to the given address.
+        this enables referencing the fs segment on x86-64.
+        '''
+        return set_msr(uc, FSMSR, addr)
+    
+    ql.uc.mem_map(SCRATCH_ADDR, SCRATCH_SIZE)
+    ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
+    set_fs(ql.uc, SEGMENT_ADDR)
 
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_EMU_END
