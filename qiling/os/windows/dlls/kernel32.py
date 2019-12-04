@@ -64,6 +64,8 @@ def hook_GetStartupInfoA(ql, address, params):
 })
 def hook_GetModuleHandleA(ql, address, params):
     lpModuleName = params["lpModuleName"]
+    if not lpModuleName.lower().endswith('.dll'):
+        lpModuleName += '.dll'
     if lpModuleName == 0:
         ret = ql.PE.PE_IMAGE_BASE
     else:
@@ -86,6 +88,8 @@ def hook_GetModuleHandleW(ql, address, params):
         ret = ql.PE.PE_IMAGE_BASE
     else:
         lpModuleName = bytes(lpModuleName, "ascii").decode('utf-16le')
+        if not lpModuleName.lower().endswith('.dll'):
+            lpModuleName += '.dll'
         if lpModuleName.lower() in ql.PE.dlls:
             ret = ql.PE.dlls[lpModuleName.lower()]
         else:
@@ -877,8 +881,7 @@ def hook_LoadLibraryExA(ql, address, params):
     "lpLibFileName": WSTRING
 })
 def hook_LoadLibraryW(ql, address, params):
-    lpLibFileName = params["lpLibFileName"]
-    lpLibFileName = bytes(lpLibFileName,'ascii').decode('utf-16le').encode()
+    lpLibFileName = bytes(params["lpLibFileName"], 'ascii')
     dll_base = ql.PE.load_dll(lpLibFileName)
     return dll_base
 
@@ -894,8 +897,7 @@ def hook_LoadLibraryW(ql, address, params):
     "dwFlags": DWORD
 })
 def hook_LoadLibraryExW(ql, address, params):
-    lpLibFileName = params["lpLibFileName"]
-    lpLibFileName = bytes(lpLibFileName,'ascii').decode('utf-16le').encode()
+    lpLibFileName = bytes(params["lpLibFileName"], 'ascii')
     dll_base = ql.PE.load_dll(lpLibFileName)
     return dll_base
 
@@ -921,4 +923,115 @@ def hook_GetProcAddress(ql, address, params):
     if lpProcName in ql.PE.import_address_table[dll_name]:
         return ql.PE.import_address_table[dll_name][lpProcName]
 
+    return 0
+
+#LPVOID GlobalLock(
+#  HGLOBAL hMem
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hMem": POINTER
+})
+def hook_GlobalLock(ql, address, params):
+    return params['hMem']
+
+#LPVOID GlobalUnlock(
+#  HGLOBAL hMem
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hMem": POINTER
+})
+def hook_GlobalUnlock(ql, address, params):
+    return 1
+
+#BOOL InitializeCriticalSectionAndSpinCount(
+#  LPCRITICAL_SECTION lpCriticalSection,
+#  DWORD              dwSpinCount
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "lpCriticalSection": POINTER,
+    "dwSpinCount": UINT
+})
+def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
+    return 1
+
+#DWORD TlsAlloc();
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+def hook_TlsAlloc(ql, address, params):
+    idx = ql.thread_manager.current_thread.tls_index 
+    ql.thread_manager.current_thread.tls_index += 1
+    ql.thread_manager.current_thread.tls[idx] = 0
+    return idx
+
+#DWORD TlsFree(
+#  DWORD dwTlsIndex
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "dwTlsIndex": UINT
+})
+def hook_TlsFree(ql, address, params):
+    idx = params['dwTlsIndex']
+    if idx not in ql.thread_manager.current_thread.tls:
+        ql.last_error = 0x57 #(ERROR_INVALID_PARAMETER)
+        return 0
+    else:
+        del(ql.thread_manager.current_thread.tls[idx])
+        return 1
+
+#LPVOID TlsGetValue(
+#  DWORD dwTlsIndex
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "dwTlsIndex": UINT})
+def hook_TlsGetValue(ql, address, params):
+    idx = params['dwTlsIndex']
+    if idx not in ql.thread_manager.current_thread.tls:
+        ql.last_error = 0x57 #(ERROR_INVALID_PARAMETER)
+        return 0
+    else:   
+        # api explicity clears last error on success:
+        # https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-tlsgetvalue
+        ql.last_error = 0 
+        return ql.thread_manager.current_thread.tls[idx]
+
+#LPVOID TlsSetValue(
+#  DWORD dwTlsIndex
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "dwTlsIndex": UINT,
+    "lpTlsValue": POINTER
+})
+def hook_TlsSetValue(ql, address, params):
+    idx = params['dwTlsIndex']
+    if idx not in ql.thread_manager.current_thread.tls:
+        ql.last_error = 0x57 #(ERROR_INVALID_PARAMETER)
+        return 0
+    else:   
+        ql.thread_manager.current_thread.tls[idx] = params['lpTlsValue']
+        return 1
+
+#BOOL VirtualProtect(
+#  LPVOID lpAddress,
+#  SIZE_T dwSize,
+#  DWORD  flNewProtect,
+#  PDWORD lpflOldProtect
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "lpAddress": POINTER,
+    "dwSize": UINT,
+    "flNewProtect": UINT,
+    "lpflOldProtect": POINTER
+})
+def hook_VirtualProtect(ql, address, params):
+    return 1
+
+#_Post_equals_last_error_ DWORD GetLastError();
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+def hook_GetLastError(ql, address, params):
+    return ql.last_error
+
+#void EnterCriticalSection(
+#  LPCRITICAL_SECTION lpCriticalSection
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+def hook_EnterCriticalSection(ql, address, params):
     return 0
