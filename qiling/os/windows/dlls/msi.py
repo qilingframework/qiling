@@ -32,5 +32,4 @@ from qiling.exception import *
     "piAction": POINTER
 })
 def hook_MsiGetComponentStateA(ql, address, params):
-    print("hook_MsiGetComponentStateA")
     return 6 #INVALID_HANDLE
