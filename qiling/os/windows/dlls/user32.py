@@ -110,10 +110,10 @@ def hook_CloseClipboard(ql, address, params):
 #);
 @winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
     "uFormat": UINT,
-    "hMem": HANDLE
+    "hMem": STRING
 })
 def hook_SetClipboardData(ql, address, params):
-    return ql.clipboard.set_data(params['uFormat'], params['hMem'])
+    return ql.clipboard.set_data(params['uFormat'], bytes(params['hMem'], 'ascii'))
 
 #HANDLE GetClipboardData(
 #  UINT uFormat
@@ -123,9 +123,13 @@ def hook_SetClipboardData(ql, address, params):
 })
 def hook_GetClipboardData(ql, address, params):
     data = ql.clipboard.get_data(params['uFormat'])
-    addr = ql.heap.mem_alloc(len(data))
-    ql.uc.mem_write(addr, data)
-    return addr
+    if data:
+        addr = ql.heap.mem_alloc(len(data))
+        ql.uc.mem_write(addr, data)
+        return addr
+    else:
+        ql.dprint('Failed to get clipboard data')
+        return 0
 
 #BOOL IsClipboardFormatAvailable(
 #  UINT format

@@ -943,6 +943,17 @@ def hook_GlobalLock(ql, address, params):
 def hook_GlobalUnlock(ql, address, params):
     return 1
 
+#DECLSPEC_ALLOCATOR HGLOBAL GlobalAlloc(
+#  UINT   uFlags,
+#  SIZE_T dwBytes
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "uFlags": UINT,
+    "dwBytes": UINT
+})
+def hook_GlobalAlloc(ql, address, params):
+    return ql.heap.mem_alloc(params['dwBytes'])
+
 #BOOL InitializeCriticalSectionAndSpinCount(
 #  LPCRITICAL_SECTION lpCriticalSection,
 #  DWORD              dwSpinCount
