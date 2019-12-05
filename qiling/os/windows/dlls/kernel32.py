@@ -1046,3 +1046,25 @@ def hook_GetLastError(ql, address, params):
 @winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
 def hook_EnterCriticalSection(ql, address, params):
     return 0
+
+#int MultiByteToWideChar(
+#  UINT                              CodePage,
+#  DWORD                             dwFlags,
+#  _In_NLS_string_(cbMultiByte)LPCCH lpMultiByteStr,
+#  int                               cbMultiByte,
+#  LPWSTR                            lpWideCharStr,
+#  int                               cchWideChar
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "CodePage": UINT,
+    "dwFlags": UINT,
+    "lpMultiByteStr": STRING,
+    "cbMultiByte": INT,
+    "lpWideCharStr": POINTER,
+    "cchWideChar": INT
+})
+def hook_MultiByteToWideChar(ql, address, params):
+    wide_str = params['lpMultiByteStr'].encode('utf-16le')
+    if params['cchWideChar'] != 0:
+        ql.uc.mem_write(params['lpWideCharStr'], wide_str) 
+    return len(wide_str)
