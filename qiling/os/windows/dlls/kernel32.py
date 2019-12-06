@@ -520,7 +520,12 @@ def hook_WriteFile(ql, address, params):
         ql.stdout.write(s)
         ql.uc.mem_write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
     else:
-        f = ql.handle_manager.get(hFile).file
+        try:
+            f = ql.handle_manager.get(hFile).file
+        except KeyError as ke:
+            #Invalid handle
+            ql.last_error = 0x6 #ERROR_INVALID_HANDLE
+            return 0
         buffer = ql.uc.mem_read(lpBuffer, nNumberOfBytesToWrite)
         f.write(bytes(buffer))
         ql.uc.mem_write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
