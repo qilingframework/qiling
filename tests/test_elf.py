@@ -69,7 +69,7 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_mips32el_static(self): 
-        create = [sys.executable, 'hello_mips32el_linux_debug.py']
+        create = [sys.executable, 'test_mips32el_linux_debug.py']
         try:
             subprocess.check_output(create,stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:    
