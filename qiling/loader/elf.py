@@ -456,6 +456,7 @@ class ELFLoader(ELFParse):
                 else:
                     ql.interp_base = 0xff7d5000
 
+            ql.dprint("[+] interp_base is : 0x%x" % (ql.interp_base))
             ql.uc.mem_map(ql.interp_base, int(interp_mem_size))
             ql.insert_map_info(ql.interp_base, ql.interp_base + int(interp_mem_size), os.path.abspath(interp_path))
 
@@ -472,6 +473,8 @@ class ELFLoader(ELFParse):
                 ql.mmap_start = 0x7ffef000 - 0x400000
             else:
                 ql.mmap_start = 0xf7fd6000 - 0x400000
+
+        ql.dprint("[+] mmap_start is : 0x%x" % (ql.mmap_start))
 
         # Set elf table
         elf_table = b''
