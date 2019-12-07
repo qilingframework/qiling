@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-
+import string
+import random
 import sys,unittest
 sys.path.append("..")
 from qiling import *
@@ -20,10 +21,10 @@ class ELFTest(unittest.TestCase):
         ql.run()
 
 
-    # Not Stable, not suitable to use it as test
-    #def test_multithread_elf_linux_x86(self):
-    #    ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", output="debug")
-    #    ql.run()
+    # # Not Stable, not suitable to use it as test
+    # #def test_multithread_elf_linux_x86(self):
+    # #    ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", output="debug")
+    # #    ql.run()
 
     def test_elf_linux_arm(self):     
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "default")
@@ -36,8 +37,11 @@ class ELFTest(unittest.TestCase):
         ql.run()
 
 
-    def test_elf_linux_mips32el(self):     
-        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello"], "../examples/rootfs/mips32el_linux")
+    def test_elf_linux_mips32el(self):  
+        def random_generator(size=6, chars=string.ascii_uppercase + string.digits):
+            return ''.join(random.choice(chars) for x in range(size))
+
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello",random_generator(random.randint(1,99))], "../examples/rootfs/mips32el_linux")
         ql.run()  
         
 

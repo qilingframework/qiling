@@ -51,9 +51,8 @@ def hook_syscall(ql, intno):
     pc = ql.uc.reg_read(UC_MIPS_REG_PC)
 
     if intno != 0x11:
-        ql.nprint("got interrupt 0x%x ???" %intno)
-        ql.uc.emu_stop()
-        return
+        raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)
+
 
     linux_syscall_numb_list = []
     linux_syscall_func_list = []
