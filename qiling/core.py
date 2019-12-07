@@ -45,6 +45,7 @@ class Qiling:
     elf_entry = 0
     new_stack = 0
     brk_address = 0
+    interp_base = 0
     mmap_start = 0
     shellcode_init = 0
     output = ''

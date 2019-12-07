@@ -203,7 +203,6 @@ def ql_arm_thread_set_tls(ql, th, arg):
     uc.mem_write(SP - 8, ql.pack32(old_r0))
     uc.reg_write(UC_ARM_REG_SP, SP - 8)
     uc.reg_write(UC_ARM_REG_PC, QL_SHELLCODE_ADDR + codestart + codelen)
-
     uc.mem_write(QL_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
     uc.reg_write(UC_ARM_REG_R0, address)
 
@@ -226,7 +225,7 @@ def loader_shellcode(ql):
     uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)
     ql.uc = uc
     if (ql.stack_address == 0):
-        ql.stack_address =0x1000000
+        ql.stack_address = 0x1000000
     if (ql.stack_size == 0): 
         ql.stack_size = 2 * 1024 * 1024
     ql.uc.mem_map(ql.stack_address, ql.stack_size)

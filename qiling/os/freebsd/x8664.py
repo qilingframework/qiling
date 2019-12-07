@@ -80,7 +80,7 @@ def loader_file(ql):
     loader = ELFLoader(ql.path, ql)
     if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env):
         raise QlErrorFileType("Unsupported FileType")
-    ql.stack_address =(int(ql.new_stack))
+    ql.stack_address =(int(ql.new_stack-8))
     
 
 def loader_shellcode(ql):
