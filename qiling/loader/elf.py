@@ -518,10 +518,6 @@ class ELFLoader(ELFParse):
         cpustraddr = addr[1]
 
         # Set AUX
-        # This part of the code is a myth for MIPS32_EL
-        if ql.arch == QL_MIPS32EL:
-            if len(ql.argv[0]) % 8 // 4 == 0:
-                new_stack = new_stack - 4
         
         # ql.uc.mem_write(int(new_stack) - 4, ql.pack32(0x11111111))
         # new_stack = new_stack - 4
@@ -549,6 +545,8 @@ class ELFLoader(ELFParse):
         elf_table += self.NEW_AUX_ENT(AT_RANDOM, randstraddr, ql)
         elf_table += self.NEW_AUX_ENT(AT_PLATFORM, cpustraddr, ql)
         elf_table += self.NEW_AUX_ENT(AT_NULL, 0, ql)
+
+        elf_table += b'\x00' * (0x10 - (new_stack - len(elf_table)) & 0xf)
 
         ql.uc.mem_write(int(new_stack - len(elf_table)), elf_table)
         new_stack = new_stack - len(elf_table)
