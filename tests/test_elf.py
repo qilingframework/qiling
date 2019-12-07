@@ -20,6 +20,7 @@ class ELFTest(unittest.TestCase):
     #    ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", output="debug")
     #    ql.run()
 
+
     def test_elf_linux_x8664(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/tester","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
         ql.run()
