@@ -7,6 +7,12 @@ from unicorn.arm_const import *
 from struct import pack
 from .arch import Arch
 
+def ql_arm_check_thumb(uc, reg_cpsr):
+    mode = UC_MODE_ARM
+    if reg_cpsr & 0b100000 != 0:
+        mode = UC_MODE_THUMB
+        return mode
+
 class ARM(Arch):
     def __init__(self, ql):
         super(ARM, self).__init__(ql)
@@ -44,7 +50,13 @@ class ARM(Arch):
 
     # get PC
     def get_pc(self):
-        return self.ql.uc.reg_read(UC_ARM_REG_PC)
+        reg_cpsr = self.ql.uc.reg_read(UC_ARM_REG_CPSR)
+        mode = ql_arm_check_thumb(self.ql.uc, reg_cpsr)
+        if mode == UC_MODE_THUMB:
+            append = 1
+        else:
+            append = 0
+        return self.ql.uc.reg_read(UC_ARM_REG_PC) + append
 
 
     # set stack pointer
