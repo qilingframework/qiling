@@ -96,8 +96,10 @@ def loader_shellcode(ql):
     ql.uc = uc
 
     # init ql pe
-    ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
-    ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
+    if (ql.stack_address == 0): 
+        ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
+    if (ql.stack_size == 0):
+        ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
 
     ql.code_address = 0x140000000
     ql.code_size = 10 * 1024 * 1024

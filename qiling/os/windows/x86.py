@@ -98,6 +98,7 @@ def loader_file(ql):
     if (ql.stack_size == 0): 
         ql.stack_size = QL_X86_WINDOWS_STACK_SIZE
 
+
     setup_windows32(ql)
 
     # load pe
@@ -113,8 +114,10 @@ def loader_shellcode(ql):
     ql.uc = uc
 
     # MAPPED Vars for loadPE32
-    ql.stack_address = QL_X86_WINDOWS_STACK_ADDRESS
-    ql.stack_size = QL_X86_WINDOWS_STACK_SIZE
+    if (ql.stack_address == 0):
+        ql.stack_address = QL_X86_WINDOWS_STACK_ADDRESS
+    if (ql.stack_size == 0): 
+        ql.stack_size = QL_X86_WINDOWS_STACK_SIZE
 
     ql.code_address = 0x40000
     ql.code_size = 10 * 1024 * 1024
