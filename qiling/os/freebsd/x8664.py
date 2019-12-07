@@ -74,8 +74,9 @@ def loader_file(ql):
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = QL_X8664_FREEBSD_PREDEFINE_STACKADDRESS
+    if (ql.stack_size == 0):
         ql.stack_size = QL_X8664_FREEBSD_PREDEFINE_STACKSIZE
-        uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
     if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env):
         raise QlErrorFileType("Unsupported FileType")
@@ -87,8 +88,9 @@ def loader_shellcode(ql):
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = 0x1000000
+    if (ql.stack_size == 0):    
         ql.stack_size = 2 * 1024 * 1024
-        uc.mem_map(ql.stack_address,  ql.stack_size)
+    ql.uc.mem_map(ql.stack_address,  ql.stack_size)
     ql.stack_address = ql.stack_address  + 0x200000 - 0x1000
     ql.uc.mem_write(ql.stack_address, ql.shellcoder)
     
@@ -97,7 +99,7 @@ def runner(ql):
 
 
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
-    ql.uc.reg_write(UC_X86_REG_RDI, ql.stack_address + 8)
+    ql.uc.reg_write(UC_X86_REG_RDI, ql.stack_address)
     ql.uc.reg_write(UC_X86_REG_R14D, 0xfffffffffffff000)
     ql.uc.reg_write(UC_X86_REG_R15D, 0xfffffffffffff000)
 

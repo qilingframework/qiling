@@ -72,7 +72,7 @@ def hook_syscall(ql, intno):
                     ql.uc.emu_stop()
                 raise
     else:
-        ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
+        ql.nprint("0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
             ql.uc.emu_stop()
 
@@ -109,8 +109,9 @@ def loader_file(ql):
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = QL_X86_LINUX_PREDEFINE_STACKADDRESS
+    if (ql.stack_size == 0):        
         ql.stack_size = QL_X86_LINUX_PREDEFINE_STACKSIZE
-        uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
     if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv,  env = ql.env):
         raise QlErrorFileType("Unsupported FileType")
@@ -122,8 +123,9 @@ def loader_shellcode(ql):
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = 0x1000000
+    if (ql.stack_size == 0): 
         ql.stack_size = 2 * 1024 * 1024
-        uc.mem_map(ql.stack_address,  ql.stack_size)
+    ql.uc.mem_map(ql.stack_address,  ql.stack_size)
     ql.stack_address =  ql.stack_address  + 0x100000
     ql.uc.mem_write(ql.stack_address, ql.shellcoder)
 

@@ -78,8 +78,10 @@ def loader_file(ql):
     uc = Uc(UC_ARCH_X86, UC_MODE_64)
     ql.uc = uc
     # init ql pe
-    ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
-    ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
+    if (ql.stack_address == 0): 
+        ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
+    if (ql.stack_size == 0): 
+        ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
 
     windows_setup64(ql)
 
