@@ -930,6 +930,17 @@ def ql_syscall_setrlimit(ql, setrlimit_resource, setrlimit_rlim, null0, null1, n
     ql.nprint("setrlimit(%d, 0x%x) = %d" % (setrlimit_resource, setrlimit_rlim, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
+def ql_syscall_prlimit64(ql, pid, resource, new_limit, old_limit, null0, null1):
+    # setrlimit() and getrlimit()
+    if pid == 0:
+        ql_syscall_setrlimit(ql, resource, new_limit, 0, 0, 0, 0);
+        ql_syscall_ugetrlimit(ql, resource, old_limit, 0, 0, 0, 0);
+        regreturn = 0;
+    else:
+        # set other process which pid != 0
+        regreturn = 0
+    ql.nprint("prlimit64(%d, %d, 0x%x, 0x%x) = %d" % (pid, resource, new_limit, old_limit, regreturn))
+    ql_definesyscall_return(ql, regreturn)
 
 def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, null0, null1, null2):
     if rt_sigaction_oldact != 0:
@@ -1692,15 +1703,21 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
 
 
 def ql_syscall_set_tid_address(ql, set_tid_address_tidptr, null0, null1, null2, null3, null4):
-    ql.thread_management.cur_thread.set_clear_child_tid_addr(set_tid_address_tidptr)
-    regreturn = ql.thread_management.cur_thread.get_thread_id()
+    if ql.thread_management == None:
+        regreturn = os.getpid()
+    else:
+        ql.thread_management.cur_thread.set_clear_child_tid_addr(set_tid_address_tidptr)
+        regreturn = ql.thread_management.cur_thread.get_thread_id()
     ql.nprint("set_tid_address(%x) = %d" % (set_tid_address_tidptr, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
 def ql_syscall_set_robust_list(ql, set_robust_list_head_ptr, set_robust_list_head_len, null0, null1, null2, null3):
-    ql.thread_management.cur_thread.robust_list_head_ptr = set_robust_list_head_ptr
-    ql.thread_management.cur_thread.robust_list_head_len = set_robust_list_head_len
+    if ql.thread_management == None:
+        regreturn = 0
+    else:
+        ql.thread_management.cur_thread.robust_list_head_ptr = set_robust_list_head_ptr
+        ql.thread_management.cur_thread.robust_list_head_len = set_robust_list_head_len
     regreturn = 0
     ql.nprint("set_robust_list(%x, %x) = %d"%(set_robust_list_head_ptr, set_robust_list_head_len, regreturn))
     ql_definesyscall_return(ql, regreturn)

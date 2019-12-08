@@ -32,6 +32,9 @@ ARM64_LINUX_SYSCALL_FUTEX               = [0x62, "ql_syscall_futex"]
 ARM64_LINUX_SYSCALL_CLONE               = [0xDC, "ql_syscall_clone"]
 ARM64_LINUX_SYSCALL_BIND                = [0xC8, "ql_syscall_bind"]
 ARM64_LINUX_SYSCALL_LISTEN              = [0xC9, "ql_syscall_listen"]
+ARM64_LINUX_SYSCALL_SET_TID_ADDRESS     = [0x60, "ql_syscall_set_tid_address"]
+ARM64_LINUX_SYSCALL_SET_ROBUST_LIST     = [0x63, "ql_syscall_set_robust_list"]
+ARM64_LINUX_SYSCALL_PRLIMIT64           = [0x105, "ql_syscall_prlimit64"]
 
 
 ARM64_LINUX_SYSCALL = [
@@ -65,4 +68,7 @@ ARM64_LINUX_SYSCALL = [
     ARM64_LINUX_SYSCALL_CLONE,
     ARM64_LINUX_SYSCALL_BIND,
     ARM64_LINUX_SYSCALL_LISTEN,
+    ARM64_LINUX_SYSCALL_SET_TID_ADDRESS,
+    ARM64_LINUX_SYSCALL_SET_ROBUST_LIST,
+    ARM64_LINUX_SYSCALL_PRLIMIT64,
     ]
