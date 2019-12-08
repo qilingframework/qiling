@@ -51,9 +51,8 @@ def hook_syscall(ql, intno):
     pc = ql.uc.reg_read(UC_MIPS_REG_PC)
 
     if intno != 0x11:
-        ql.nprint("got interrupt 0x%x ???" %intno)
-        ql.uc.emu_stop()
-        return
+        raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)
+
 
     linux_syscall_numb_list = []
     linux_syscall_func_list = []
@@ -69,18 +68,18 @@ def hook_syscall(ql, intno):
             LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
-        except:
-            ql.errmsg = 1
-            ql.nprint("SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
+        except Exception as e:
+            ql.nprint("[!] SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
+            ql.nprint("[-] ERROR: %s" % (e))
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 if ql.debug_stop:
-                    ql.uc.emu_stop()
-                raise    
+                    ql.nprint("[-] Stopped due to ql.debug_stop is True")
+                    raise QlErrorSyscallError("[!] Syscall Implenetation Error")
     else:
-        ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num,  syscall_num))
         if ql.debug_stop:
+            ql.nprint("[-] Stopped due to ql.debug_stop is True")
             ql.uc.emu_stop()
-
 
 def hook_shellcode(uc, addr, shellcode, ql):
     '''
@@ -201,8 +200,9 @@ def loader_file(ql):
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = QL_MIPSEL_LINUX_PREDEFINE_STACKADDRESS
+    if (ql.stack_size == 0): 
         ql.stack_size = QL_MIPSEL_LINUX_PREDEFINE_STACKSIZE
-        uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
     if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env):
         raise QlErrorFileType("Unsupported FileType")
@@ -214,8 +214,9 @@ def loader_shellcode(ql):
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = 0x1000000
+    if (ql.stack_size == 0): 
         ql.stack_size = 2 * 1024 * 1024
-        uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.uc.mem_map(ql.stack_address, ql.stack_size)
     ql.stack_address =  ql.stack_address  + 0x200000 - 0x1000
     ql.uc.mem_write(ql.stack_address, ql.shellcoder) 
 
@@ -238,8 +239,6 @@ def runner(ql):
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
-        ql.errmsg = 1
-        ql.nprint("%s" % e)
         raise QlErrorExecutionStop('[!] Emulation Stopped')
 
     if ql.internal_exception != None:

@@ -58,16 +58,19 @@ def hook_syscall(ql):
         IOS_SYSCALL_FUNC = eval(ios_syscall_func_list[ios_syscall_index])
         try:
             IOS_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
-        except:
-            ql.errmsg = 1
-            ql.nprint("SYSCALL: ", ios_syscall_func_list[ios_syscall_index])
+        except KeyboardInterrupt:
+            raise            
+        except Exception as e:
+            ql.nprint("[!] SYSCALL: ", ios_syscall_func_list[ios_syscall_index])
+            ql.nprint("[-] ERROR: %s" % (e))
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 if ql.debug_stop:
-                    ql.uc.emu_stop()
-                raise
+                    ql.nprint("[-] Stopped due to ql.debug_stop is True")
+                    raise QlErrorSyscallError("[!] Syscall Implenetation Error")
     else:
-        ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num,  (syscall_num -  0x2000000)))
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num,  (syscall_num -  0x2000000)))
         if ql.debug_stop:
+            ql.nprint("[-] Stopped due to ql.debug_stop is True")
             ql.uc.emu_stop()
 
 
@@ -77,9 +80,10 @@ def loader_file(ql):
     ql.mmap_start = QL_ARM64_IOS_PREDEFINE_MMAPADDRESS
     if (ql.stack_address == 0):
         ql.stack_address = QL_ARM64_IOS_PREDEFINE_STACKADDRESS
+    if (ql.stack_size == 0):
         ql.stack_size = QL_ARM64_IOS_PREDEFINE_STACKSIZE
-        uc.mem_map(ql.stack_address, ql.stack_size)
-        stack_esp = QL_ARM64_IOS_PREDEFINE_STACKADDRESS + QL_ARM64_IOS_PREDEFINE_STACKSIZE
+    ql.uc.mem_map(ql.stack_address, ql.stack_size)
+    stack_esp = QL_ARM64_IOS_PREDEFINE_STACKADDRESS + QL_ARM64_IOS_PREDEFINE_STACKSIZE
     envs = env_dict_to_array(ql.env)
     loader = MachoARM64(ql, ql.path, stack_esp, [ql.path], envs, [ql.path], 1)
     loader.MachoARM64()
@@ -91,8 +95,9 @@ def loader_shellcode(ql):
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = 0x1000000
+    if (ql.stack_size == 0):
         ql.stack_size = 2 * 1024 * 1024
-        uc.mem_map(ql.stack_address,  ql.stack_size)
+    ql.uc.mem_map(ql.stack_address,  ql.stack_size)
     ql.stack_address = ql.stack_address  + 0x200000 - 0x1000
     ql.uc.mem_write(ql.stack_address, ql.shellcoder)
     
@@ -119,5 +124,4 @@ def runner(ql):
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
-        ql.errmsg = 1
-        ql.nprint("%s" % e)  
+        raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))

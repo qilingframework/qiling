@@ -59,22 +59,23 @@ def hook_syscall(ql, intno):
             LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
-        except:
-            ql.errmsg = 1
-            ql.nprint("SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
-
-            td = ql.thread_management.cur_thread
-            td.stop()
-            td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-
+        except Exception as e:
+            ql.nprint("[!] SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
+            ql.nprint("[-] ERROR: %s" % (e))
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+                td = ql.thread_management.cur_thread
+                td.stop()
+                td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
                 if ql.debug_stop:
-                    ql.uc.emu_stop()
-                raise
+                    ql.nprint("[-] Stopped due to ql.debug_stop is True")
+                    raise QlErrorSyscallError("[!] Syscall Implenetation Error")
+
     else:
-        ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num,  syscall_num))
         if ql.debug_stop:
+            ql.nprint("[-] Stopped due to ql.debug_stop is True")
             ql.uc.emu_stop()
+
 
         td = ql.thread_management.cur_thread
         td.stop()
@@ -109,8 +110,9 @@ def loader_file(ql):
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = QL_X86_LINUX_PREDEFINE_STACKADDRESS
+    if (ql.stack_size == 0):        
         ql.stack_size = QL_X86_LINUX_PREDEFINE_STACKSIZE
-        uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
     if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv,  env = ql.env):
         raise QlErrorFileType("Unsupported FileType")
@@ -122,8 +124,9 @@ def loader_shellcode(ql):
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = 0x1000000
+    if (ql.stack_size == 0): 
         ql.stack_size = 2 * 1024 * 1024
-        uc.mem_map(ql.stack_address,  ql.stack_size)
+    ql.uc.mem_map(ql.stack_address,  ql.stack_size)
     ql.stack_address =  ql.stack_address  + 0x100000
     ql.uc.mem_write(ql.stack_address, ql.shellcoder)
 
@@ -160,9 +163,7 @@ def runner(ql):
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql.nprint("\n")
             ql_hook_code_disasm(ql, ql.pc, 64)
-        ql.errmsg = 1
-        ql.nprint("%s" % e)
-        raise QlErrorExecutionStop('[!] Emulation Stopped')
+        raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
 
     if ql.internal_exception != None:
         raise ql.internal_exception

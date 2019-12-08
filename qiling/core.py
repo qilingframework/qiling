@@ -45,6 +45,7 @@ class Qiling:
     elf_entry = 0
     new_stack = 0
     brk_address = 0
+    interp_base = 0
     mmap_start = 0
     shellcode_init = 0
     output = ''
@@ -63,7 +64,7 @@ class Qiling:
     timeout = 0
     until_addr = 0
     byte = 0
-    errmsg = 0
+    # errmsg = 0
     thread_management = None
     root = True
     port = 0
@@ -202,24 +203,24 @@ class Qiling:
             pass
         elif self.consolelog == False and self.log_file_name:
             print(*args, **kw, file = fd)
-            if self.errmsg == 1:
-                printerrmsg = ''.join(args) 
-                print("[!] " + printerrmsg, file = fd)
-                self.errmsg = 0
+            # if self.errmsg == 1:
+            #     printerrmsg = ''.join(args) 
+            #     print("[!] " + printerrmsg, file = fd)
+            #     self.errmsg = 0
         elif (self.log_file_name and self.consolelog):
             print(*args, **kw, file = fd)
             print(*args, **kw)
-            if self.errmsg == 1:
-                printerrmsg = ''.join(args) 
-                print("[!] " + printerrmsg, file = fd)
-                print("[!] " + printerrmsg)
-                self.errmsg = 0
+            # if self.errmsg == 1:
+            #     printerrmsg = ''.join(args) 
+            #     print("[!] " + printerrmsg, file = fd)
+            #     print("[!] " + printerrmsg)
+            #     self.errmsg = 0
         else:
             print(*args, **kw)
-            if self.errmsg == 1:
-                printerrmsg = ''.join(args) 
-                print("[!] " + printerrmsg)
-                self.errmsg = 0                    
+            # if self.errmsg == 1:
+            #     printerrmsg = ''.join(args) 
+            #     print("[!] " + printerrmsg)
+            #     self.errmsg = 0                    
         
         if fd != None:
             fd.flush()

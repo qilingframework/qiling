@@ -78,8 +78,10 @@ def loader_file(ql):
     uc = Uc(UC_ARCH_X86, UC_MODE_64)
     ql.uc = uc
     # init ql pe
-    ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
-    ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
+    if (ql.stack_address == 0): 
+        ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
+    if (ql.stack_size == 0): 
+        ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
 
     windows_setup64(ql)
 
@@ -94,8 +96,10 @@ def loader_shellcode(ql):
     ql.uc = uc
 
     # init ql pe
-    ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
-    ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
+    if (ql.stack_address == 0): 
+        ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
+    if (ql.stack_size == 0):
+        ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
 
     ql.code_address = 0x140000000
     ql.code_size = 10 * 1024 * 1024
@@ -126,8 +130,6 @@ def runner(ql):
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
-        ql.errmsg = 1
-        ql.nprint("%s" % e)
-        raise QlErrorExecutionStop('[!] Emulation Stopped')
+        raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
 
     ql.registry_manager.save()
