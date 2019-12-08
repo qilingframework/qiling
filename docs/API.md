@@ -21,14 +21,16 @@ interp_base = 0xhexaddress
 mmap_start = 0xhexaddress
 output = ["debug","off","disasm","dump"] // dump=(disam + debug)
 consolelog
-root = True || False // Enabled virtual root, add 8000 to open port below 1024
 reg_dir = /dir/path/to/clean_registery // must within rootfs
 reg_diff = /file/path/to/registry_dump // must within rootfs
-debug_stop = True || False // stop and exit if there is debug related error  
 ```
 #### Pre-Execution Settings
 APIs allow users to instuments a executeable file/shellcode before executions
 ```
+ql.set_callback
+ql.patch
+ql.root
+ql.debug
 ```
 
 
