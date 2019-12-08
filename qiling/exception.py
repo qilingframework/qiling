@@ -53,6 +53,12 @@ class QlErrorModuleNotFound(QlErrorBase):
 class QlErrorExecutionStop(QlErrorBase):
     pass
 
+class QlErrorSyscallError(QlErrorBase):
+    pass
+
+class QlErrorSyscallNotFound(QlErrorBase):
+    pass
+
 
 def QlPrintException(msg):
     exc_type, exc_value, exc_traceback = sys.exc_info()

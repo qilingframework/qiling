@@ -57,16 +57,18 @@ def hook_syscall(ql, intno):
             LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
-        except:
-            ql.errmsg = 1
-            ql.nprint("SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
+        except Exception as e:
+            ql.nprint("[!] SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
+            ql.nprint("[-] ERROR: %s" % (e))
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 if ql.debug_stop:
-                    ql.uc.emu_stop()
-                raise    
+                    ql.nprint("[-] Stopped due to ql.debug_stop is True")
+                    raise QlErrorSyscallError("[!] Syscall Implenetation Error")
+
     else:
-        ql.nprint("0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num,  syscall_num))
         if ql.debug_stop:
+            ql.nprint("[-] Stopped due to ql.debug_stop is True")
             ql.uc.emu_stop()
 
 
@@ -121,9 +123,7 @@ def runner(ql):
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
-        ql.errmsg = 1
-        ql.nprint("%s" % e)
-        raise QlErrorExecutionStop('[!] Emulation Stopped')
+        raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
 
     if ql.internal_exception != None:
         raise ql.internal_exception

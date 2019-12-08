@@ -56,16 +56,19 @@ def hook_syscall(ql):
         FREEBSD_SYSCALL_FUNC= eval(freebsd_syscall_func_list[freebsd_syscall_index])
         try:
             FREEBSD_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
-        except:
-            ql.errmsg = 1
-            ql.nprint("SYSCALL: ", freebsd_syscall_func_list[freebsd_syscall_index])
+        except KeyboardInterrupt:
+            raise            
+        except Exception as e:
+            ql.nprint("[!] SYSCALL ERROR: ", freebsd_syscall_func_list[freebsd_syscall_index])
+            ql.nprint("[-] ERROR: %s" % (e))
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 if ql.debug_stop:
-                    ql.uc.emu_stop()
-                raise
+                    ql.nprint("[-] Stopped due to ql.debug_stop is True")
+                    raise QlErrorSyscallError("[!] Syscall Implenetation Error")
     else:
-        ql.nprint("0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num,  syscall_num))
         if ql.debug_stop:
+            ql.nprint("[-] Stopped due to ql.debug_stop is True")
             ql.uc.emu_stop()
 
 
@@ -97,61 +100,61 @@ def loader_shellcode(ql):
 
 def runner(ql):
 
-
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql.uc.reg_write(UC_X86_REG_RDI, ql.stack_address)
-    ql.uc.reg_write(UC_X86_REG_R14D, 0xfffffffffffff000)
-    ql.uc.reg_write(UC_X86_REG_R15D, 0xfffffffffffff000)
+    ql.uc.reg_write(UC_X86_REG_RAX, 0x0)
+    #ql.uc.reg_write(UC_X86_REG_R14D, 0xfffffffffffff000)
+    #ql.uc.reg_write(UC_X86_REG_R15D, 0xfffffffffffff000)
 
     ql_setup(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
 
-    FSMSR = 0xC0000100
-    GSMSR = 0xC0000101
+    # FSMSR = 0xC0000100
+    # GSMSR = 0xC0000101
 
-    SCRATCH_ADDR = 0x80000
-    SCRATCH_SIZE = 0x1000
+    # SCRATCH_ADDR = 0x80000
+    # SCRATCH_SIZE = 0x1000
 
-    SEGMENT_ADDR = 0x5000
-    SEGMENT_SIZE = 0x1000
+    # SEGMENT_ADDR = 0x5000
+    # SEGMENT_SIZE = 0x1000
 
-    def set_msr(uc, msr, value, scratch=SCRATCH_ADDR):
-        '''
-        set the given model-specific register (MSR) to the given value.
-        this will clobber some memory at the given scratch address, as it emits some code.
-        '''
+    # def set_msr(uc, msr, value, scratch=SCRATCH_ADDR):
+    #     '''
+    #     set the given model-specific register (MSR) to the given value.
+    #     this will clobber some memory at the given scratch address, as it emits some code.
+    #     '''
 
-        #uc = ql.uc
-        # save clobbered registers
-        orax = uc.reg_read(UC_X86_REG_RAX)
-        ordx = uc.reg_read(UC_X86_REG_RDX)
-        orcx = uc.reg_read(UC_X86_REG_RCX)
-        orip = uc.reg_read(UC_X86_REG_RIP)
+    #     #uc = ql.uc
+    #     # save clobbered registers
+    #     orax = uc.reg_read(UC_X86_REG_RAX)
+    #     ordx = uc.reg_read(UC_X86_REG_RDX)
+    #     orcx = uc.reg_read(UC_X86_REG_RCX)
+    #     orip = uc.reg_read(UC_X86_REG_RIP)
 
-        # x86: wrmsr
-        buf = b'\x0f\x30'
-        uc.mem_write(scratch, buf)
-        uc.reg_write(UC_X86_REG_RAX, value & 0xFFFFFFFF)
-        uc.reg_write(UC_X86_REG_RDX, (value >> 32) & 0xFFFFFFFF)
-        uc.reg_write(UC_X86_REG_RCX, msr & 0xFFFFFFFF)
-        uc.emu_start(scratch, scratch+len(buf), count=1)
+    #     # x86: wrmsr
+    #     buf = b'\x0f\x30'
+    #     uc.mem_write(scratch, buf)
+    #     uc.reg_write(UC_X86_REG_RAX, value & 0xFFFFFFFF)
+    #     uc.reg_write(UC_X86_REG_RDX, (value >> 32) & 0xFFFFFFFF)
+    #     uc.reg_write(UC_X86_REG_RCX, msr & 0xFFFFFFFF)
+    #     uc.emu_start(scratch, scratch+len(buf), count=1)
 
-        # restore clobbered registers
-        uc.reg_write(UC_X86_REG_RAX, orax)
-        uc.reg_write(UC_X86_REG_RDX, ordx)
-        uc.reg_write(UC_X86_REG_RCX, orcx)
-        uc.reg_write(UC_X86_REG_RIP, orip)
+    #     # restore clobbered registers
+    #     uc.reg_write(UC_X86_REG_RAX, orax)
+    #     uc.reg_write(UC_X86_REG_RDX, ordx)
+    #     uc.reg_write(UC_X86_REG_RCX, orcx)
+    #     uc.reg_write(UC_X86_REG_RIP, orip)
     
-    def set_fs(uc, addr):
-        '''
-        set the FS.base hidden descriptor-register field to the given address.
-        this enables referencing the fs segment on x86-64.
-        '''
-        return set_msr(uc, FSMSR, addr)
+    # def set_fs(uc, addr):
+    #     '''
+    #     set the FS.base hidden descriptor-register field to the given address.
+    #     this enables referencing the fs segment on x86-64.
+    #     '''
+    #     return set_msr(uc, FSMSR, addr)
     
-    ql.uc.mem_map(SCRATCH_ADDR, SCRATCH_SIZE)
-    ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
-    set_fs(ql.uc, SEGMENT_ADDR)
+    # ql.uc.mem_map(SCRATCH_ADDR, SCRATCH_SIZE)
+    # ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
+    # set_fs(ql.uc, SEGMENT_ADDR)
 
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_EMU_END
@@ -161,13 +164,13 @@ def runner(ql):
         else:
             ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
     except UcError as e:
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM):
             ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
-        ql.errmsg = 1
-        ql.nprint("%s" % e)  
+        
+        raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
 
 

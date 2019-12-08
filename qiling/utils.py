@@ -50,7 +50,7 @@ def ql_get_module_function(module_name, function_name):
     try:
         imp_module = importlib.import_module(module_name)
     except:
-        raise QlErrorModuleNotFound("[!] Unable to import module")
+        raise QlErrorModuleNotFound("[!] Unable to import module %s" %(module_name))
 
     try:
         module_function = getattr(imp_module, function_name)
