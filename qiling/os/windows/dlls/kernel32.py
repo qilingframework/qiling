@@ -64,11 +64,11 @@ def hook_GetStartupInfoA(ql, address, params):
 })
 def hook_GetModuleHandleA(ql, address, params):
     lpModuleName = params["lpModuleName"]
-    if not lpModuleName.lower().endswith('.dll'):
-        lpModuleName += '.dll'
     if lpModuleName == 0:
         ret = ql.PE.PE_IMAGE_BASE
     else:
+        if not lpModuleName.lower().endswith('.dll'):
+            lpModuleName += '.dll'
         if lpModuleName.lower() in ql.PE.dlls:
             ret = ql.PE.dlls[lpModuleName.lower()]
         else:
