@@ -90,6 +90,7 @@ matrix:
         - grep -E Filename docs/DLLX8664.txt | awk {'print $2'} > list64.txt
         - cd /c/Windows/SysWOW64/ && xargs -a $TRAVIS_HOME/build/qilingframework/qiling/list32.txt cp -t $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/dlls
         - cp msvcr120_clr0400.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/dlls/msvcr110.dll
+        - cp downlevel/api-ms-win-crt-stdio-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/dlls/
         - cd /c/Windows/System32/ && xargs -a $TRAVIS_HOME/build/qilingframework/qiling/list64.txt cp -t $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls
         - cp vcruntime140d.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/
         - cd $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/bin
