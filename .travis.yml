@@ -2,58 +2,58 @@ language: shell
 matrix:
   fast_finish: true
   include:
-    - name: "Python 3.5 on Linux"
-      os: linux
-      dist: bionic
-      language: python
-      python: "3.5"
-      install:
-        - pip3 install -r requirements.txt
-        - python3 setup.py install
-      before_script:
-        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
-        - cd tests
-      script:
-        - python3 test_all.py
+#    - name: "Python 3.5 on Linux"
+#      os: linux
+#      dist: bionic
+#      language: python
+#      python: "3.5"
+#      install:
+#        - pip3 install -r requirements.txt
+#        - python3 setup.py install
+#      before_script:
+#        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
+#        - cd tests
+#      script:
+#        - python3 test_all.py
         
-    - name: "Python 3.6 on Linux"
-      os: linux
-      dist: bionic
-      language: python
-      python: "3.6"
-      install:
-        - pip3 install -r requirements.txt
-        - python3 setup.py install
-      before_script:
-        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
-        - cd tests
-      script:
-        - python3 test_all.py
+#    - name: "Python 3.6 on Linux"
+#      os: linux
+#      dist: bionic
+#      language: python
+#      python: "3.6"
+#      install:
+#        - pip3 install -r requirements.txt
+#        - python3 setup.py install
+#      before_script:
+#        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
+#        - cd tests
+#      script:
+#        - python3 test_all.py
         
-    - name: "Python 3.7 on OSX"
-      os: osx
-      osx_image: xcode11.2
-      language: shell
-      before_install:
-        - pip3 install --upgrade pip
-      install:
-        - travis_wait pip3 install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
-        - git clone https://github.com/keystone-engine/keystone
-        - cd keystone
-        - mkdir build
-        - cd build
-        - ../make-share.sh
-        - make -j8
-        - sudo make install
-        - cd ../bindings/python
-        - sudo make install
-        - python3 setup.py install
-        - cd $TRAVIS_HOME/build/chfl4gs/qiling
-        - python3 setup.py install
-      before_script:
-        cd tests
-      script:
-        - python3 test_all.py
+#    - name: "Python 3.7 on OSX"
+#      os: osx
+#      osx_image: xcode11.2
+#      language: shell
+#      before_install:
+#        - pip3 install --upgrade pip
+#      install:
+#        - travis_wait pip3 install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
+#        - git clone https://github.com/keystone-engine/keystone
+#        - cd keystone
+#        - mkdir build
+#        - cd build
+#        - ../make-share.sh
+#        - make -j8
+#        - sudo make install
+#        - cd ../bindings/python
+#        - sudo make install
+#        - python3 setup.py install
+#        - cd $TRAVIS_HOME/build/chfl4gs/qiling
+#        - python3 setup.py install
+#      before_script:
+#        cd tests
+#      script:
+#        - python3 test_all.py
         
     - name: "Python 3.6 on Windows"
       os: windows
@@ -76,36 +76,52 @@ matrix:
         - cd $TRAVIS_HOME/build/chfl4gs/qiling
         - python setup.py install
       before_script:
-        - cd tests
+        - mkdir -p rootfs/x8664_windows/dlls
+        - mkdir -p rootfs/x86_windows/dlls
+        - mkdir registry
+        - cp /c/Users/Default/NTUSER.DAT registry/NTUSER.DAT
+        - cmd.exe //c "reg save hklm\system registry/SYSTEM"
+        - cmd.exe //c "reg save hklm\security registry/SECURITY"
+        - cmd.exe //c "reg save hklm\software registry/SOFTWARE"
+        - cmd.exe //c "reg save hklm\SAM registry/SAM"
+        - cp -r registry rootfs/x8664_windows/
+        - cp -r registry rootfs/x86_windows/
+        - cat docs/DLLX86.txt | grep -E Filename | grep -v "msvcr110.dll" | awk {'print $2'} > list32.txt
+        - grep -E Filename docs/DLLX8664.txt | awk {'print $2'} > list64.txt
+        - cd /c/Windows/SysWOW64/ && xargs -a $TRAVIS_HOME/build/chfl4gs/qiling/list32.txt cp -t $TRAVIS_HOME/build/chfl4gs/qiling/rootfs/x86_windows/dlls
+        - cp msvcr120_clr0400.dll $TRAVIS_HOME/build/chfl4gs/qiling/rootfs/x86_windows/dlls/msvcr110.dll
+        - cd /c/Windows/System32/ && xargs -a $TRAVIS_HOME/build/chfl4gs/qiling/list64.txt cp -t $TRAVIS_HOME/build/chfl4gs/qiling/rootfs/x8664_windows/dlls
+        - cd $TRAVIS_HOME/build/chfl4gs/qiling/tests
       script:
-        - python test_all.py
+        - ls -laR /c/Python36/Lib/site-packages/keystone
+#        - python test_all.py
       
-    - name: "Python 3.6 on WSL1 Ubuntu"
-      os: windows
-      language: shell
-      before_install:
-        - choco install wsl-ubuntu-1804
-        - wsl apt update -q
-        - wsl DEBIAN_FRONTEND=noninteractive apt dist-upgrade -yq
-        - wsl DEBIAN_FRONTEND=noninteractive apt install -yq python3-pip cmake
-        - wsl pip3 install --upgrade pip
-      install:
-        - wsl pip3 install -r requirements.txt
-        - wsl python3 setup.py install
-      before_script:
-        - MSYS_NO_PATHCONV=1 wsl cp $(wsl python3 -c "import site; print(site.getsitepackages()[0])")$(wsl python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so $(wsl python3 -c "import site; print(site.getsitepackages()[0])")/keystone/
-        - cd tests
-      script:
-        - wsl python3 test_all.py
+#    - name: "Python 3.6 on WSL1 Ubuntu"
+#      os: windows
+#      language: shell
+#      before_install:
+#        - choco install wsl-ubuntu-1804
+#        - wsl apt update -q
+#        - wsl DEBIAN_FRONTEND=noninteractive apt dist-upgrade -yq
+#        - wsl DEBIAN_FRONTEND=noninteractive apt install -yq python3-pip cmake
+#        - wsl pip3 install --upgrade pip
+#      install:
+#        - wsl pip3 install -r requirements.txt
+#        - wsl python3 setup.py install
+#      before_script:
+#        - MSYS_NO_PATHCONV=1 wsl cp $(wsl python3 -c "import site; print(site.getsitepackages()[0])")$(wsl python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so $(wsl python3 -c "import site; print(site.getsitepackages()[0])")/keystone/
+#        - cd tests
+#      script:
+#        - wsl python3 test_all.py
         
-    - name: "Python 3.6 on Docker"
-      services:
-        - docker
-      before_install:
-        - docker build -t qiling:1.0 .
-      script:
-       - docker run qiling:1.0 /bin/sh -c "cd tests && python3 test_all.py"
+#    - name: "Python 3.6 on Docker"
+#      services:
+#        - docker
+#      before_install:
+#       - docker build -t qiling:1.0 .
+#      script:
+#       - docker run qiling:1.0 /bin/sh -c "cd tests && python3 test_all.py"
        
-  allow_failures:
-    - os: windows
-    - os: osx
+#  allow_failures:
+#    - os: windows
+#    - os: osx
