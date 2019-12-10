@@ -32,6 +32,21 @@ class PETest(unittest.TestCase):
         ql.run()
 
 
+    def test_pe_win_x86_clipboard(self):
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin//x8664_clipboard_test.exe"], "../examples/rootfs/x8664_windows")
+        ql.run()
+
+
+    def test_pe_win_x86_tls(self):
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows")
+        ql.run()
+
+
+    def test_pe_win_x86_getlasterror(self):
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/GetLastError.exe"], "../examples/rootfs/x86_windows")
+        ql.run()                
+
+
     def test_pe_win_x86_regdemo(self):
         ql = Qiling(["../examples/rootfs/x86_windows/bin/RegDemo.exe"], "../examples/rootfs/x86_windows")
         ql.reg_dir = "registry"
@@ -93,7 +108,7 @@ class PETest(unittest.TestCase):
             ql.hook_address(force_call_dialog_func, 0x00401016)
             ql.run()
 
-        our_sandbox(["rootfs/x86_windows/bin/Easy_CrackMe.exe"], "../jexamples/rootfs/x86_windows")
+        our_sandbox(["../examples/rootfs/x86_windows/bin/Easy_CrackMe.exe"], "../examples/rootfs/x86_windows")
 
   
 if __name__ == "__main__":
