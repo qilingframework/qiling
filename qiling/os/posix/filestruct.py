@@ -3,7 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 import os
-import fcntl
+try:
+    import fcntl
+except ImportError:
+    pass
 import socket
 
 class ql_file:
@@ -35,7 +38,10 @@ class ql_file:
         return os.fstat(self.__fd)
     
     def ioctl(self, ioctl_cmd, ioctl_arg):
-        return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
+        try:
+            return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
+        except ImportError:
+            pass    
     
     def dup(self):
         new_fd = os.dup(self.__fd)
@@ -79,7 +85,10 @@ class ql_socket:
         return os.close(self.__fd)
     
     def ioctl(self, ioctl_cmd, ioctl_arg):
-        return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
+        try:
+            return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
+        except ImportError:
+            pass    
     
     def dup(self):
         new_s = self.__socket.dup()
@@ -144,7 +153,10 @@ class ql_pipe:
         return os.close(self.__fd)
     
     def ioctl(self, ioctl_cmd, ioctl_arg):
-        return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
+        try:
+            return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
+        except ImportError:
+            pass    
     
     def dup(self):
         new_fd = os.dup(self.__fd)
