@@ -93,7 +93,7 @@ matrix:
         - cd /c/Windows/System32/ && xargs -a $TRAVIS_HOME/build/chfl4gs/qiling/list64.txt cp -t $TRAVIS_HOME/build/chfl4gs/qiling/rootfs/x8664_windows/dlls
         - cd $TRAVIS_HOME/build/chfl4gs/qiling/tests
       script:
-        - ls -laR /c/Python36/Lib/site-packages/keystone
+        - kstool
 #        - python test_all.py
       
 #    - name: "Python 3.6 on WSL1 Ubuntu"
