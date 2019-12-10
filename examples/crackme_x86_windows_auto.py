@@ -49,7 +49,6 @@ def our_sandbox(path, rootfs):
     ql = Qiling(path, rootfs)
     ql.stdin = StringBuffer()
     ql.stdin.write(b"Ea5yR3versing\n")
-    print(ql.stdin)
     ql.hook_address(force_call_dialog_func, 0x00401016)
     ql.run()
 
