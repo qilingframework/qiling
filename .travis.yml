@@ -86,7 +86,7 @@ matrix:
         - cmd.exe //c "reg save hklm\SAM registry/SAM"
         - cp -r registry rootfs/x8664_windows/
         - cp -r registry rootfs/x86_windows/
-        - grep -E Filename docs/DLLX86.txt | awk {'print $2'} > list32.txt
+        - cat docs/DLLX86.txt | grep -E Filename | grep -v "msvcr110.dll" | awk {'print $2'} > list32.txt
         - grep -E Filename docs/DLLX8664.txt | awk {'print $2'} > list64.txt
         - cd /c/Windows/SysWOW64/ && xargs -a $TRAVIS_HOME/build/qilingframework/qiling/list32.txt cp -t $TRAVIS_HOME/build/qilingframework/qiling/rootfs/x86_windows/dlls
         - cp msvcr120_clr0400.dll $TRAVIS_HOME/build/qilingframework/qiling/rootfs/x86_windows/dlls/msvcr110.dll
@@ -95,23 +95,23 @@ matrix:
       script:
         - python test_pe.py
       
-    - name: "Python 3.6 on WSL1 Ubuntu"
-      os: windows
-      language: shell
-      before_install:
-        - choco install wsl-ubuntu-1804
-        - wsl apt update
-        - wsl DEBIAN_FRONTEND=noninteractive apt dist-upgrade -y
-        - wsl DEBIAN_FRONTEND=noninteractive apt install -y python3-pip cmake
-        - wsl pip3 install --upgrade pip
-      install:
-        - wsl pip3 install -r requirements.txt
-        - wsl python3 setup.py install
-      before_script:
-        - MSYS_NO_PATHCONV=1 wsl cp $(wsl python3 -c "import site; print(site.getsitepackages()[0])")$(wsl python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so $(wsl python3 -c "import site; print(site.getsitepackages()[0])")/keystone/
-        - cd tests
-      script:
-        - wsl python3 test_all.py
+#    - name: "Python 3.6 on WSL1 Ubuntu"
+#      os: windows
+#      language: shell
+#      before_install:
+#        - choco install wsl-ubuntu-1804
+#        - wsl apt update
+#        - wsl DEBIAN_FRONTEND=noninteractive apt dist-upgrade -y
+#        - wsl DEBIAN_FRONTEND=noninteractive apt install -y python3-pip cmake
+#        - wsl pip3 install --upgrade pip
+#      install:
+#        - wsl pip3 install -r requirements.txt
+#        - wsl python3 setup.py install
+#      before_script:
+#        - MSYS_NO_PATHCONV=1 wsl cp $(wsl python3 -c "import site; print(site.getsitepackages()[0])")$(wsl python3 -c "import site; print(site.getsitepackages()[1])")/keystone/libkeystone.so $(wsl python3 -c "import site; print(site.getsitepackages()[0])")/keystone/
+#        - cd tests
+#      script:
+#        - wsl python3 test_all.py
         
     - name: "Python 3.6 on Docker"
       services:
