@@ -12,6 +12,7 @@ build
 dist
 
 examples/**/registry/
+examples/**/dlls/
 
 jexamples/
 
