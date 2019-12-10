@@ -55,4 +55,4 @@ def our_sandbox(path, rootfs):
 
 if __name__ == "__main__":
     # Flag is : Ea5yR3versing
-    our_sandbox(["rootfs/x86_windows/bin/Easy_CrackMe.exe"], "../jexamples/rootfs/x86_windows")
+    our_sandbox(["rootfs/x86_windows/bin/Easy_CrackMe.exe"], "rootfs/x86_windows")
