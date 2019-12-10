@@ -75,8 +75,8 @@ matrix:
         - python setup.py install
         - cd $TRAVIS_HOME/build/qilingframework/qiling
         - python setup.py install
-        - cmd.exe /C "copy C:\Program Files (x86)\keystone\lib\keystone.dll C:\Python36\Lib\site-packages\keystone"
-        - cmd.exe /C "copy C:\Program Files (x86)\keystone\lib\keystone.lib C:\Python36\Lib\site-packages\keystone"
+        - cmd.exe /C 'copy "C:\Program Files (x86)\keystone\lib\keystone.dll" C:\Python36\Lib\site-packages\keystone'
+        - cmd.exe /C 'copy "C:\Program Files (x86)\keystone\lib\keystone.lib" C:\Python36\Lib\site-packages\keystone'
       before_script:
         - mkdir -p rootfs/x8664_windows/dlls
         - mkdir -p rootfs/x86_windows/dlls
