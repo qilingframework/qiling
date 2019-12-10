@@ -32,19 +32,19 @@ class PETest(unittest.TestCase):
         ql.run()
 
 
-    def test_pe_win_x86_clipboard(self):
-        ql = Qiling(["../examples/rootfs/x8664_windows/bin//x8664_clipboard_test.exe"], "../examples/rootfs/x8664_windows")
-        ql.run()
+    # def test_pe_win_x86_clipboard(self):
+    #     ql = Qiling(["../examples/rootfs/x8664_windows/bin//x8664_clipboard_test.exe"], "../examples/rootfs/x8664_windows")
+    #     ql.run()
 
 
-    def test_pe_win_x86_tls(self):
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows")
-        ql.run()
+    # def test_pe_win_x86_tls(self):
+    #     ql = Qiling(["../examples/rootfs/x86_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows")
+    #     ql.run()
 
 
-    def test_pe_win_x86_getlasterror(self):
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/GetLastError.exe"], "../examples/rootfs/x86_windows")
-        ql.run()                
+    # def test_pe_win_x86_getlasterror(self):
+    #     ql = Qiling(["../examples/rootfs/x86_windows/bin/GetLastError.exe"], "../examples/rootfs/x86_windows")
+    #     ql.run()                
 
 
     def test_pe_win_x86_regdemo(self):
