@@ -7,36 +7,6 @@ MD5: 9f55e7a647a793a4d8c89a32b9543799
 SHA1: bc67eeb898d741bb7ea03e7e9c3b302b696f5377
 SHA256: 9ae27610cbe3e6927c6b7aef9df1a8e7062de90a2c848b0b2320bdf75be7cb62
 
-Filename: api-ms-win-crt-heap-l1-1-0.dll
-Version: 10.0.10586.9 (th2_release.151110-1756)
-MD5: db9feff915f895be960e9d1d47639324
-SHA1: 8a46259d75f077b55c3e02eea4fff350a1ae31bf
-SHA256: b3515498bd44eb4b4587776768af7febd4bc54f50b6e1ff2946fa8d7fdc3cd1b
-
-Filename: api-ms-win-crt-locale-l1-1-0.dll
-Version: 10.0.10586.9 (th2_release.151110-1756)
-MD5: b05d416f3162d1686914606e9c794997
-SHA1: 3b79e6ec36baf9973352eb774e5a6ad73d738925
-SHA256: a0b9227b6c9ef44e3738c9e47aff5516f7f556fbc7476f848e399cf0f68d3ce2
-
-Filename: api-ms-win-crt-math-l1-1-0.dll
-Version: 10.0.10586.9 (th2_release.151110-1756)
-MD5: 924e2f51de0177d08aabab725421d70c
-SHA1: b7e759fc6cd7bcb41649960b742f40de7576d11a
-SHA256: 0ef13a28de5fc6032aed80272c05641e1a38516fc54d3dbc1641d0e6b4cf3d4c
-
-Filename: api-ms-win-crt-runtime-l1-1-0.dll
-Version: 10.0.10586.9 (th2_release.151110-1756)
-MD5: d07f2e1ff3ca24a06adde429a0130e50
-SHA1: fcea1fa4334488460834ad279efba222a722e385
-SHA256: adb0e883642fe6bb4aaf98ac81c4b157486819496ca8f7ad31c68bfa142d59f8
-
-Filename: api-ms-win-crt-stdio-l1-1-0.dll
-Version: 10.0.10586.9 (th2_release.151110-1756)
-MD5: 1d96a0d2ef83c6c1176806c02f96384a
-SHA1: 643e09d74913d00b24f77f6e8c80a6bf76b56eeb
-SHA256: a7adba66ba14cf68830f756e775e1a863f7ec7f3570d879693d801158b32ab45
-
 Filename: crypt32.dll
 Version: 6.1.7601.17514 (win7sp1_rtm.101119-1850)
 MD5: 454e292861a4ef1d72f43f42bbaf6917
