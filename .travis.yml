@@ -76,9 +76,24 @@ matrix:
         - cd $TRAVIS_HOME/build/qilingframework/qiling
         - python setup.py install
       before_script:
-        - cd tests
+        - mkdir -p rootfs/x8664_windows/dlls
+        - mkdir -p rootfs/x86_windows/dlls
+        - mkdir registry
+        - cp /c/Users/Default/NTUSER.DAT registry/NTUSER.DAT
+        - cmd.exe //c "reg save hklm\system registry/SYSTEM"
+        - cmd.exe //c "reg save hklm\security registry/SECURITY"
+        - cmd.exe //c "reg save hklm\software registry/SOFTWARE"
+        - cmd.exe //c "reg save hklm\SAM registry/SAM"
+        - cp -r registry rootfs/x8664_windows/
+        - cp -r registry rootfs/x86_windows/
+        - grep -E Filename docs/DLLX86.txt | awk {'print $2'} > list32.txt
+        - grep -E Filename docs/DLLX8664.txt | awk {'print $2'} > list64.txt
+        - cd /c/Windows/SysWOW64/ && xargs -a $TRAVIS_HOME/build/qilingframework/qiling/list32.txt cp -t $TRAVIS_HOME/build/qilingframework/qiling/rootfs/x86_windows/dlls
+        - cp msvcr120_clr0400.dll $TRAVIS_HOME/build/qilingframework/qiling/rootfs/x86_windows/dlls/msvcr110.dll
+        - cd /c/Windows/System32/ && xargs -a $TRAVIS_HOME/build/qilingframework/qiling/list64.txt cp -t $TRAVIS_HOME/build/qilingframework/qiling/rootfs/x8664_windows/dlls
+        - cd $TRAVIS_HOME/build/qilingframework/qiling/tests
       script:
-        - python test_all.py
+        - python test_pe.py
       
     - name: "Python 3.6 on WSL1 Ubuntu"
       os: windows
