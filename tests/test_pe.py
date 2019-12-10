@@ -48,6 +48,53 @@ class PETest(unittest.TestCase):
         ql.hook_address(stopatkillerswtich, 0x40819a)    
         ql.run
 
+    def test_pe_win_x86_crackme(self):
+        class StringBuffer:
+            def __init__(self):
+                self.buffer = b''
 
+            def read(self, n):
+                ret = self.buffer[:n]
+                self.buffer = self.buffer[n:]
+                return ret
+
+            def readline(self, end = b'\n'):
+                ret = b''
+                while True:
+                    c = self.read(1)
+                    ret += c
+                    if c == end:
+                        break
+                return ret
+
+            def write(self, string):
+                self.buffer += string
+                return len(string)
+
+
+        def force_call_dialog_func(ql):
+            # get DialogFunc address
+            lpDialogFunc = ql.unpack32(ql.mem_read(ql.sp - 0x8, 4))
+            # setup stack for DialogFunc
+            ql.stack_push(0)
+            ql.stack_push(1001)
+            ql.stack_push(273)
+            ql.stack_push(0)
+            ql.stack_push(0x0401018)
+            # force EIP to DialogFunc
+            ql.pc = lpDialogFunc
+
+
+        def our_sandbox(path, rootfs):
+            ql = Qiling(path, rootfs)
+            ql.stdin = StringBuffer()
+            ql.stdin.write(b"Ea5yR3versing\n")
+            print(ql.stdin)
+            ql.hook_address(force_call_dialog_func, 0x00401016)
+            ql.run()
+
+        our_sandbox(["rootfs/x86_windows/bin/Easy_CrackMe.exe"], "../jexamples/rootfs/x86_windows")
+
+  
 if __name__ == "__main__":
     unittest.main()
