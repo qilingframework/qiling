@@ -7,3 +7,6 @@ from .kernel32 import *
 from .msvcrt import *
 from .user32 import *
 from .wininet import *
+from .msi import *
+from .ntdll import *
+from .ucrtbased import *

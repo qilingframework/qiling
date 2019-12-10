@@ -89,3 +89,54 @@ def hook_EndDialog(ql, address, params):
 @winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
 def hook_GetDesktopWindow(ql, address, params):
     pass
+
+#BOOL OpenClipboard(
+#  HWND hWndNewOwner
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hWndNewOwner": HANDLE
+})
+def hook_OpenClipboard(ql, address, params):
+    return ql.clipboard.open(params['hWndNewOwner'])
+
+#BOOL CloseClipboard();
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+def hook_CloseClipboard(ql, address, params):
+    return ql.clipboard.close()
+
+#HANDLE SetClipboardData(
+#  UINT   uFormat,
+#  HANDLE hMem
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "uFormat": UINT,
+    "hMem": STRING
+})
+def hook_SetClipboardData(ql, address, params):
+    return ql.clipboard.set_data(params['uFormat'], bytes(params['hMem'], 'ascii'))
+
+#HANDLE GetClipboardData(
+#  UINT uFormat
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "uFormat": UINT
+})
+def hook_GetClipboardData(ql, address, params):
+    data = ql.clipboard.get_data(params['uFormat'])
+    if data:
+        addr = ql.heap.mem_alloc(len(data))
+        ql.uc.mem_write(addr, data)
+        return addr
+    else:
+        ql.dprint('Failed to get clipboard data')
+        return 0
+
+#BOOL IsClipboardFormatAvailable(
+#  UINT format
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "uFormat": UINT
+})
+def hook_IsClipboardFormatAvailable(ql, address, params):
+    rtn = ql.clipboard.format_available(params['uFormat'])
+    return rtn

@@ -258,7 +258,10 @@ def hook___acrt_iob_func(ql, address, params):
 @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, param_num=2)
 def hook___stdio_common_vfprintf(ql, address, _):
     ret = 0
-    _, _, _, p_format, _, p_args = get_params(ql, 6)
+    if ql.pointersize == 8:
+        _, _, p_format, _, p_args = get_params(ql, 5)
+    else:
+        _, _, _, p_format, _, p_args = get_params(ql, 6)
     fmt = read_cstring(ql, p_format)
     printf(ql, address, fmt, p_args, '__stdio_common_vfprintf')
     return ret
