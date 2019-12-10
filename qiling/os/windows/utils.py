@@ -62,8 +62,8 @@ def _x8664_get_args(ql, number):
     for i in reg_list[:reg_num]:
         arg_list.append(ql.uc.reg_read(i))
     for i in range(number):
-        # skip ret_addr
-        arg_list.append(ql.stack_read((i + 1) * 8))
+        # skip ret_addr and 32 byte home space
+        arg_list.append(ql.stack_read((i + 5) * 8))
     if reg_num == 1:
         return arg_list[0]
     else:
