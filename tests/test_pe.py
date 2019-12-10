@@ -102,6 +102,10 @@ class PETest(unittest.TestCase):
 
         def our_sandbox(path, rootfs):
             ql = Qiling(path, rootfs)
+            ql.patch(0x004010B5, b'\x90\x90')
+            ql.patch(0x004010CD, b'\x90\x90')
+            ql.patch(0x0040110B, b'\x90\x90')
+            ql.patch(0x00401112, b'\x90\x90')
             ql.stdin = StringBuffer()
             ql.stdin.write(b"Ea5yR3versing\n")
             print(ql.stdin)
