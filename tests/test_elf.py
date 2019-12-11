@@ -143,6 +143,7 @@ class ELFTest(unittest.TestCase):
 
             print(flag)
 
+        print("\n\nSolving Linux Simple Crackme....")
         solve()
 
 
