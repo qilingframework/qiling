@@ -16,7 +16,7 @@ class PETestOne(unittest.TestCase):
         ql = Qiling(shellcoder = X86_WIN, archtype = "x86", ostype = "windows", rootfs="../examples/rootfs/x86_windows", output="debug")
         ql.run()
 
-class PETestTwo(unittest.TestCase):
+#class PETestTwo(unittest.TestCase):
     def test_pe_win_x8664_hello(self):
         ql = Qiling(["../examples/rootfs/x8664_reactos/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows", output = "default")
         ql.run()
@@ -26,12 +26,12 @@ class PETestTwo(unittest.TestCase):
 #         ql = Qiling(["../examples/rootfs/x86_reactos/bin/x86_hello.exe"], "../examples/rootfs/x86_windows", output = "debug")
 #         ql.run()
 
-class PETestFour(unittest.TestCase):
+#class PETestFour(unittest.TestCase):
     def test_pe_win_x86_multithread(self):
         ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
         ql.run()
 
-class PETestFive(unittest.TestCase):
+#class PETestFive(unittest.TestCase):
     def test_pe_win_x86_clipboard(self):
         ql = Qiling(["../examples/rootfs/x8664_windows/bin//x8664_clipboard_test.exe"], "../examples/rootfs/x8664_windows")
         ql.run()
@@ -41,19 +41,19 @@ class PETestFive(unittest.TestCase):
 #         ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows")
 #         ql.run()
 
-class PETestSeven(unittest.TestCase):
+#class PETestSeven(unittest.TestCase):
     def test_pe_win_x86_getlasterror(self):
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GetLastError.exe"], "../examples/rootfs/x86_windows")
         ql.run()                
 
-class PETestEight(unittest.TestCase):
+#class PETestEight(unittest.TestCase):
     def test_pe_win_x86_regdemo(self):
         ql = Qiling(["../examples/rootfs/x86_windows/bin/RegDemo.exe"], "../examples/rootfs/x86_windows")
         ql.reg_dir = "registry"
         ql.reg_diff = "reg_diff.json"
         ql.run()
 
-class PETestNine(unittest.TestCase):
+#class PETestNine(unittest.TestCase):
     def test_pe_win_x86_wannacry(self):
         def stopatkillerswtich(ql):
             print("killerswtch found")
@@ -64,7 +64,7 @@ class PETestNine(unittest.TestCase):
         ql.run
 
 
-class PETestTen(unittest.TestCase):
+#class PETestTen(unittest.TestCase):
     def test_pe_win_x86_crackme(self):
         class StringBuffer:
             def __init__(self):
