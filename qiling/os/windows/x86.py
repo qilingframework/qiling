@@ -20,6 +20,7 @@ import os
 import types
 
 import string
+import traceback
 
 # impport read_string and other commom utils.
 from qiling.loader.pe import PE, Shellcode
@@ -39,11 +40,20 @@ QL_X86_WINDOWS_EMU_END = 0x0
 def hook_winapi(ql, address, size):
     # call win32 api
     if address in ql.PE.import_symbols:
-        try:
-            #ql.dprint('[+] Hooking 0x{:08x}: {}'.format(address, ql.PE.import_symbols[address]))
-            globals()['hook_' + ql.PE.import_symbols[address]['name'].decode()](ql, address, {})
-        except KeyError as e:
-            print("[!]", e, "\t is not implemented")
+        truewinapi = (ql.PE.import_symbols[address]['name'].decode())
+        #customwinapi = ql.winapi[2]
+        #if customwinapi == truewinapi:
+        hook = globals().get('hook_' + truewinapi, None)
+        #ql.dprint("we hooked %s"% (truewinapi))
+        if hook:
+            try:
+                #ql.dprint('[+] Hooking 0x%x at %s' % (address, ql.PE.import_symbols[address]['name'].decode()))
+                globals()['hook_' + ql.PE.import_symbols[address]['name'].decode()](ql, address, {})
+            except Exception as e:
+                ql.nprint('[!] Exception running hook %s: %s' % (hook, e))
+                ql.nprint(traceback.format_exc())
+        else:
+            ql.nprint("[!]", truewinapi, " is not implemented")
 
 
 def setup_windows32(ql):
