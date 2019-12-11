@@ -49,8 +49,8 @@ class PETest(unittest.TestCase):
 
 #class PETestSeven(unittest.TestCase):
     def test_pe_win_x86_getlasterror(self):
-         ql = Qiling(["../examples/rootfs/x86_windows/bin/GetLastError.exe"], "../examples/rootfs/x86_windows")
-         ql.run()                
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/GetLastError.exe"], "../examples/rootfs/x86_windows")
+        ql.run()                
         del ql
 
 #class PETestEight(unittest.TestCase):
