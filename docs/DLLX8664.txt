@@ -50,3 +50,5 @@ SHA1: 5d8508ba30453c7ecfdd47e29fd36210f1e3bb3c
 SHA256: e52b017d1475bf07cb9652418e4c8cecc739c06abc446ed7e0e5d9831d225b85
 
 Filename: vcruntime140.dll
+
+Filename: api-ms-win-crt-stdio-l1-1-0.dll
