@@ -64,9 +64,9 @@ def test_elf_linux_mips32el():
 
 
 def test_elf_linux_mips32el_static(): 
-    ql_mips_static = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello_static"], "../examples/rootfs/mips32el_linux")
-    ql_mips_static.run()
-    del ql_mips_static    
+    ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello_static"], "../examples/rootfs/mips32el_linux")
+    ql.run()
+  
 
 def test_elf_linux_x86_crackme():
     class MyPipe():
@@ -139,6 +139,7 @@ def test_elf_linux_x86_crackme():
 
 
 if __name__ == "__main__":
+    test_elf_linux_mips32el_static()
     test_elf_freebsd_x8664()
     test_elf_linux_x8664()
     test_elf_linux_x8664_static()
@@ -148,8 +149,7 @@ if __name__ == "__main__":
     test_elf_linux_arm_static()
     test_elf_linux_arm64()
     test_elf_linux_arm64_static()
-    test_elf_linux_mips32el()
-    #test_elf_linux_mips32el_static()
     test_elf_linux_x86_crackme()
+    test_elf_linux_mips32el()
 
 
