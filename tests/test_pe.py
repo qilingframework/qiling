@@ -62,7 +62,7 @@ class PETest(unittest.TestCase):
         del ql
 
 #class PETestNine(unittest.TestCase):
-     def test_pe_win_x86_wannacry(self):
+    def test_pe_win_x86_wannacry(self):
          def stopatkillerswtich(ql):
              print("killerswtch found")
              ql.uc.emu_stop()
