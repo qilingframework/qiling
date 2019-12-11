@@ -21,10 +21,10 @@ class PETestTwo(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/x8664_reactos/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows", output = "default")
         ql.run()
 
-class PETestThree(unittest.TestCase):
-    def test_pe_win_x86_hello(self):
-        ql = Qiling(["../examples/rootfs/x86_reactos/bin/x86_hello.exe"], "../examples/rootfs/x86_windows", output = "debug")
-        ql.run()
+# class PETestThree(unittest.TestCase):
+#     def test_pe_win_x86_hello(self):
+#         ql = Qiling(["../examples/rootfs/x86_reactos/bin/x86_hello.exe"], "../examples/rootfs/x86_windows", output = "debug")
+#         ql.run()
 
 class PETestFour(unittest.TestCase):
     def test_pe_win_x86_multithread(self):
