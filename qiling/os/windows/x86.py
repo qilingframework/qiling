@@ -28,6 +28,7 @@ from qiling.os.windows.dlls import *
 from qiling.os.utils import *
 from qiling.os.windows.memory import Heap
 from qiling.os.windows.registry import RegistryManager
+from qiling.os.windows.clipboard import Clipboard
 
 QL_X86_WINDOWS_STACK_ADDRESS = 0xfffdd000
 QL_X86_WINDOWS_STACK_SIZE = 0x21000
@@ -39,7 +40,7 @@ def hook_winapi(ql, address, size):
     # call win32 api
     if address in ql.PE.import_symbols:
         try:
-            ql.dprint('[+] Hooking 0x{:08x}: {}'.format(address, ql.PE.import_symbols[address]))
+            #ql.dprint('[+] Hooking 0x{:08x}: {}'.format(address, ql.PE.import_symbols[address]))
             globals()['hook_' + ql.PE.import_symbols[address]['name'].decode()](ql, address, {})
         except KeyError as e:
             print("[!]", e, "\t is not implemented")
@@ -81,6 +82,10 @@ def setup_windows32(ql):
     ql.handle_manager = HandleManager()
     # registry manger
     ql.registry_manager = RegistryManager(ql)
+    # clipboard
+    ql.clipboard = Clipboard(ql)
+    # Place to set errors for retrieval by GetLastError()
+    ql.last_error = 0
     # thread manager
     main_thread = Thread(ql)
     ql.thread_manager = ThreadManager(ql, main_thread)
