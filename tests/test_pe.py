@@ -42,84 +42,89 @@ class PETest(unittest.TestCase):
         del ql
 
 #class PETestSix(unittest.TestCase):
-#    def test_pe_win_x86_tls(self):
-#        ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows")
-#        ql.run()
+    def test_pe_win_x86_tls(self):
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows")
+        ql.run()
+        del ql
 
 #class PETestSeven(unittest.TestCase):
-    # def test_pe_win_x86_getlasterror(self):
-    #     ql = Qiling(["../examples/rootfs/x86_windows/bin/GetLastError.exe"], "../examples/rootfs/x86_windows")
-    #     ql.run()                
+    def test_pe_win_x86_getlasterror(self):
+         ql = Qiling(["../examples/rootfs/x86_windows/bin/GetLastError.exe"], "../examples/rootfs/x86_windows")
+         ql.run()                
+        del ql
 
 #class PETestEight(unittest.TestCase):
-    # def test_pe_win_x86_regdemo(self):
-    #     ql = Qiling(["../examples/rootfs/x86_windows/bin/RegDemo.exe"], "../examples/rootfs/x86_windows")
-    #     ql.reg_dir = "registry"
-    #     ql.reg_diff = "reg_diff.json"
-    #     ql.run()
+    def test_pe_win_x86_regdemo(self):
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/RegDemo.exe"], "../examples/rootfs/x86_windows")
+        ql.reg_dir = "registry"
+        ql.reg_diff = "reg_diff.json"
+        ql.run()
+        del ql
 
 #class PETestNine(unittest.TestCase):
-#     def test_pe_win_x86_wannacry(self):
-#         def stopatkillerswtich(ql):
-#             print("killerswtch found")
-#             ql.uc.emu_stop()
+     def test_pe_win_x86_wannacry(self):
+         def stopatkillerswtich(ql):
+             print("killerswtch found")
+             ql.uc.emu_stop()
 
-#         ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows", output = "debug")    
-#         ql.hook_address(stopatkillerswtich, 0x40819a)    
-#         ql.run
-
-
-# #class PETestTen(unittest.TestCase):
-#     def test_pe_win_x86_crackme(self):
-#         class StringBuffer:
-#             def __init__(self):
-#                 self.buffer = b''
-
-#             def read(self, n):
-#                 ret = self.buffer[:n]
-#                 self.buffer = self.buffer[n:]
-#                 return ret
-
-#             def readline(self, end = b'\n'):
-#                 ret = b''
-#                 while True:
-#                     c = self.read(1)
-#                     ret += c
-#                     if c == end:
-#                         break
-#                 return ret
-
-#             def write(self, string):
-#                 self.buffer += string
-#                 return len(string)
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows", output = "debug")    
+        ql.hook_address(stopatkillerswtich, 0x40819a)    
+        ql.run
+        del ql
 
 
-#         def force_call_dialog_func(ql):
-#             # get DialogFunc address
-#             lpDialogFunc = ql.unpack32(ql.mem_read(ql.sp - 0x8, 4))
-#             # setup stack for DialogFunc
-#             ql.stack_push(0)
-#             ql.stack_push(1001)
-#             ql.stack_push(273)
-#             ql.stack_push(0)
-#             ql.stack_push(0x0401018)
-#             # force EIP to DialogFunc
-#             ql.pc = lpDialogFunc
+#class PETestTen(unittest.TestCase):
+    def test_pe_win_x86_crackme(self):
+        class StringBuffer:
+            def __init__(self):
+                self.buffer = b''
+
+            def read(self, n):
+                ret = self.buffer[:n]
+                self.buffer = self.buffer[n:]
+                return ret
+
+            def readline(self, end = b'\n'):
+                ret = b''
+                while True:
+                    c = self.read(1)
+                    ret += c
+                    if c == end:
+                        break
+                return ret
+
+            def write(self, string):
+                self.buffer += string
+                return len(string)
 
 
-#         def our_sandbox(path, rootfs):
-#             ql = Qiling(path, rootfs)
-#             ql.patch(0x004010B5, b'\x90\x90')
-#             ql.patch(0x004010CD, b'\x90\x90')
-#             ql.patch(0x0040110B, b'\x90\x90')
-#             ql.patch(0x00401112, b'\x90\x90')
-#             ql.stdin = StringBuffer()
-#             ql.stdin.write(b"Ea5yR3versing\n")
-#             print(ql.stdin)
-#             ql.hook_address(force_call_dialog_func, 0x00401016)
-#             ql.run()
+        def force_call_dialog_func(ql):
+            # get DialogFunc address
+            lpDialogFunc = ql.unpack32(ql.mem_read(ql.sp - 0x8, 4))
+            # setup stack for DialogFunc
+            ql.stack_push(0)
+            ql.stack_push(1001)
+            ql.stack_push(273)
+            ql.stack_push(0)
+            ql.stack_push(0x0401018)
+            # force EIP to DialogFunc
+            ql.pc = lpDialogFunc
 
-#         our_sandbox(["../examples/rootfs/x86_windows/bin/Easy_CrackMe.exe"], "../examples/rootfs/x86_windows")
+
+        def our_sandbox(path, rootfs):
+            ql = Qiling(path, rootfs)
+            ql.patch(0x004010B5, b'\x90\x90')
+            ql.patch(0x004010CD, b'\x90\x90')
+            ql.patch(0x0040110B, b'\x90\x90')
+            ql.patch(0x00401112, b'\x90\x90')
+            ql.stdin = StringBuffer()
+            ql.stdin.write(b"Ea5yR3versing\n")
+            print(ql.stdin)
+            ql.hook_address(force_call_dialog_func, 0x00401016)
+            ql.run()
+
+        our_sandbox(["../examples/rootfs/x86_windows/bin/Easy_CrackMe.exe"], "../examples/rootfs/x86_windows")
+        del ql
 
   
 if __name__ == "__main__":
