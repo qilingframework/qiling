@@ -56,6 +56,7 @@ def hook_winapi(ql, address, size):
             ql.nprint("[!]", truewinapi, " is not implemented")
 
 
+
 def setup_windows32(ql):
     ql.FS_SEGMENT_ADDR = 0x6000
     ql.FS_SEGMENT_SIZE = 0x6000

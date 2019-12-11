@@ -53,20 +53,21 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_exit_group(ql, null0, null1, null2, null3, null4, null5):
-    ql.exit_code = null0
+def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
+    ql.exit_code = exit_code
 
-    ql.nprint("exit_group(%u)" %null0)
+    ql.nprint("exit_group(%u)" % ql.exit_code)
 
     if ql.child_processes == True:
         os._exit(0)
 
-    ql.uc.emu_stop()
     if ql.thread_management != None:
         td = ql.thread_management.cur_thread
         td.stop()
         td.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
-
+    
+    ql.uc.emu_stop()
+    
 
 def ql_syscall_madvise(ql, null0, null1, null2, null3, null4, null5):
     regreturn = 0
@@ -833,6 +834,12 @@ def ql_syscall_archprctl(ql, null0, ARCH_SET_FS, null1, null2, null3, null4):
     ql.uc.msr_write(FSMSR, ARCH_SET_FS)
     regreturn = 0
     ql.nprint("archprctl(0x%x) = %d" % (ARCH_SET_FS, regreturn))
+    ql_definesyscall_return(ql, regreturn)
+
+
+def ql_syscall_prctl(ql, null0, null1, null2, null3, null4, null5):
+    regreturn = 0
+    ql.nprint("prctl() = %d" % (regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 

@@ -35,6 +35,13 @@ QL_ARM64_IOS_PREDEFINE_MMAPADDRESS = 0x7fffff000000
 
 QL_ARM64_EMU_END = 0xffffffffffffffff
 
+ios_syscall_numb_list = []
+ios_syscall_func_list = []
+
+def init_syscall_table(ql):
+    for i in ARM64_IOS_SYSCALL:
+        ios_syscall_numb_list.append(i[0])
+        ios_syscall_func_list.append(i[1])
 
 def hook_syscall(ql):
     syscall_num  = ql.uc.reg_read(UC_ARM64_REG_X8)
@@ -46,22 +53,26 @@ def hook_syscall(ql):
     param5 = ql.uc.reg_read(UC_ARM64_REG_X5)
     pc = ql.uc.reg_read(UC_ARM64_REG_PC)
 
-    ios_syscall_numb_list = []
-    ios_syscall_func_list = []
 
-    for i in ARM64_IOS_SYSCALL:
-        ios_syscall_numb_list.append(i[0])
-        ios_syscall_func_list.append(i[1])
-
-    if any(ios_syscall_numb == syscall_num for ios_syscall_numb in ios_syscall_numb_list):
+    if any(ios_syscall_numb == syscall_num for ios_syscall_numb in ql.posix_syscall_numb_list):
+        ios_syscall_index = ql.posix_syscall_numb_list.index(syscall_num)
+        IOS_SYSCALL_FUNC_NAME = ql.posix_syscall_func_list[ios_syscall_index].__name__
+        IOS_SYSCALL_FUNC = ql.posix_syscall_func_list[ios_syscall_index]
+    elif any(ios_syscall_numb == syscall_num for ios_syscall_numb in ios_syscall_numb_list):
         ios_syscall_index = ios_syscall_numb_list.index(syscall_num)
+        IOS_SYSCALL_FUNC_NAME = ios_syscall_func_list[ios_syscall_index]
         IOS_SYSCALL_FUNC = eval(ios_syscall_func_list[ios_syscall_index])
+    else:
+        IOS_SYSCALL_FUNC_NAME = None
+        IOS_SYSCALL_FUNC = None
+
+    if IOS_SYSCALL_FUNC != None:
         try:
             IOS_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise            
         except Exception as e:
-            ql.nprint("[!] SYSCALL: ", ios_syscall_func_list[ios_syscall_index])
+            ql.nprint("[!] SYSCALL: ", IOS_SYSCALL_FUNC_NAME)
             ql.nprint("[-] ERROR: %s" % (e))
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 if ql.debug_stop:
@@ -105,6 +116,7 @@ def loader_shellcode(ql):
 def runner(ql):
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql_setup(ql)
+    init_syscall_table(ql)
     ql.hook_insn(hook_syscall, XXX_SYSCALL_INSN_FIXME)
     ql_x8664_setup_gdt_segment_ds(ql)
     ql_x8664_setup_gdt_segment_cs(ql)
