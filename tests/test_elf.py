@@ -69,12 +69,12 @@ class ELFTest(unittest.TestCase):
         ql.run()  
 
 
-    def test_elf_linux_mips32el_static(self): 
-        create = [sys.executable, 'test_mips32el_linux_debug.py']
-        try:
-            subprocess.check_output(create,stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as e:    
-            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))    
+    # def test_elf_linux_mips32el_static(self): 
+    #     create = [sys.executable, 'test_mips32el_linux_debug.py']
+    #     try:
+    #         subprocess.check_output(create,stderr=subprocess.STDOUT)
+    #     except subprocess.CalledProcessError as e:    
+    #         raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))    
 
     def test_elf_linux_x86_crackme(self):
         class MyPipe():
