@@ -38,7 +38,7 @@ class PETestFive(unittest.TestCase):
 
 class PETestSix(unittest.TestCase):
     def test_pe_win_x86_tls(self):
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows")
+        ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows")
         ql.run()
 
 class PETestSeven(unittest.TestCase):
