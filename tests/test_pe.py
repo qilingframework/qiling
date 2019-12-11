@@ -25,7 +25,7 @@ class PETestTwo(unittest.TestCase):
 
 class PETestThree(unittest.TestCase):
     def test_pe_win_x86_hello(self):
-        ql = Qiling(["../examples/rootfs/x86_reactos/bin/x86_hello.exe"], "../examples/rootfs/x86_windows", output = "debug")
+        ql = Qiling(["../examples/rootfs/x86_reactos/bin/x86_hello.exe"], "../examples/rootfs/x86_windows", output = "default")
         ql.run()
         del ql        
 
