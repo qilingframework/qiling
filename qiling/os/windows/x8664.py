@@ -7,6 +7,7 @@
 from unicorn import *
 from unicorn.x86_const import *
 import types
+import traceback
 
 # impport read_string and other commom utils.
 from qiling.loader.pe import PE, Shellcode
