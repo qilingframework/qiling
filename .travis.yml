@@ -108,7 +108,7 @@ matrix:
         - unzip -Pinfected wannacry.bin.zip
         - cd $TRAVIS_HOME/build/qilingframework/qiling/tests
       script:
-        - python test_pe.py
+        - python test_pe_nu.py
       
 #    - name: "Python 3.6 on WSL1 Ubuntu"
 #      os: windows

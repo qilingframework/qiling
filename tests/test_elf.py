@@ -143,7 +143,6 @@ class ELFTest(unittest.TestCase):
 
             print(flag)
 
-
         solve()
 
 
