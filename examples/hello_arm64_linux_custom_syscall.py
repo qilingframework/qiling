@@ -24,6 +24,6 @@ def my_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
 
 
 if __name__ == "__main__":
-    ql = Qiling(["rootfs/x8664_linux/bin/x8664_hello"], "rootfs/x8664_linux")
-    ql.set_syscall(0x01, my_syscall_write)
+    ql = Qiling(["rootfs/arm64_linux/bin/arm64_hello"], "rootfs/arm64_linux")
+    ql.set_syscall(0x40, my_syscall_write)
     ql.run()

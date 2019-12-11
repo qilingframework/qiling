@@ -114,7 +114,7 @@ def loader_shellcode(ql):
 def runner(ql):
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql_setup(ql)
-    init_syscall_table(ql);
+    init_syscall_table(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
     if not ql.shellcoder: 
         ql_x8664_setup_gdt_segment_ds(ql)
