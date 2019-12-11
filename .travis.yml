@@ -62,7 +62,7 @@ matrix:
         - PATH="/c/Python36:/c/Python36/Scripts:$PATH"
       before_install:
         - choco install python --version=3.6.8
-        - choco install kb2999226
+        #- choco install kb2999226
         - python -m pip install --upgrade pip
       install:
         - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
@@ -97,6 +97,7 @@ matrix:
         - cp downlevel/api-ms-win-crt-locale-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/dlls/
         - cp downlevel/api-ms-win-crt-heap-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/dlls/
         - cd /c/Windows/System32/ && xargs -a $TRAVIS_HOME/build/qilingframework/qiling/list64.txt cp -t $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls
+        - cp downlevel/api-ms-win-crt-stdio-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/        
         - cp vcruntime140d.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/
         - cp ucrtbased.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/
         - cd $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/bin
