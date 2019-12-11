@@ -34,6 +34,13 @@ QL_X86_MACOS_PREDEFINE_STACKSIZE = 0x21000
 
 QL_X86_EMU_END = 0x8fffffff
 
+macos_syscall_numb_list = []
+macos_syscall_func_list = []
+
+def init_syscall_table(ql):
+    for i in X86_MACOS_SYSCALL:
+        macos_syscall_numb_list.append(i[0])
+        macos_syscall_func_list.append(i[1])
 
 def hook_syscall(ql, intno):
     syscall_num  = ql.uc.reg_read(UC_X86_REG_EAX)
@@ -56,22 +63,25 @@ def hook_syscall(ql, intno):
     elif intno == 0x82:
         syscall_num = syscall_num + 0x8200
 
-    macos_syscall_numb_list = []
-    macos_syscall_func_list = []
-
-    for i in X86_MACOS_SYSCALL:
-        macos_syscall_numb_list.append(i[0])
-        macos_syscall_func_list.append(i[1])
-
-    if any(macos_syscall_numb == syscall_num for macos_syscall_numb in macos_syscall_numb_list):
+    if any(macos_syscall_numb == syscall_num for macos_syscall_numb in ql.posix_syscall_numb_list):
+        macos_syscall_index = ql.posix_syscall_numb_list.index(syscall_num)
+        MACOS_SYSCALL_FUNC_NAME = ql.posix_syscall_func_list[macos_syscall_index].__name__
+        MACOS_SYSCALL_FUNC = ql.posix_syscall_func_list[macos_syscall_index]
+    elif any(macos_syscall_numb == syscall_num for macos_syscall_numb in macos_syscall_numb_list):
         macos_syscall_index = macos_syscall_numb_list.index(syscall_num)
+        MACOS_SYSCALL_FUNC_NAME = macos_syscall_func_list[macos_syscall_index]
         MACOS_SYSCALL_FUNC = eval(macos_syscall_func_list[macos_syscall_index])
+    else:
+        MACOS_SYSCALL_FUNC_NAME = None
+        MACOS_SYSCALL_FUNC = None
+
+    if MACOS_SYSCALL_FUNC != None:
         try:
             MACOS_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise            
         except Exception as e:
-            ql.nprint("[!] SYSCALL: ", macos_syscall_func_list[macos_syscall_index])
+            ql.nprint("[!] SYSCALL: ", MACOS_SYSCALL_FUNC_NAME)
             ql.nprint("[-] ERROR: %s" % (e))
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 if ql.debug_stop:
@@ -115,6 +125,7 @@ def loader_shellcode(ql):
 def runner(ql):
     ql.uc.reg_write(UC_X86_REG_ESP, ql.stack_address) 
     ql_setup(ql)
+    init_syscall_table(ql)
     ql.hook_intr(hook_syscall)
     ql_x86_setup_gdt_segment_ds(ql)
     ql_x86_setup_gdt_segment_cs(ql)
