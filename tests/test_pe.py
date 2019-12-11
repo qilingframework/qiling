@@ -63,7 +63,7 @@ class PETest(unittest.TestCase):
 
 #class PETestNine(unittest.TestCase):
     def test_pe_win_x86_wannacry(self):
-         def stopatkillerswtich(ql):
+        def stopatkillerswtich(ql):
              print("killerswtch found")
              ql.uc.emu_stop()
 
@@ -122,10 +122,10 @@ class PETest(unittest.TestCase):
             print(ql.stdin)
             ql.hook_address(force_call_dialog_func, 0x00401016)
             ql.run()
+            del ql
 
         our_sandbox(["../examples/rootfs/x86_windows/bin/Easy_CrackMe.exe"], "../examples/rootfs/x86_windows")
-        del ql
-
-  
+        
+ 
 if __name__ == "__main__":
     unittest.main()
