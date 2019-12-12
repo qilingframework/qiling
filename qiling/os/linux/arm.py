@@ -102,7 +102,7 @@ def hook_syscall(ql, intno):
             td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
             if ql.debug_stop:
                 ql.nprint("[-] Stopped due to ql.debug_stop is True")
-                ql.uc.emu_stop()            
+                raise QlErrorSyscallNotFound("[!] Syscall Not Found")           
 
 def exec_shellcode(ql, start, shellcode):
     if ql.shellcode_init == 0:
