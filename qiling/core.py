@@ -188,8 +188,9 @@ class Qiling:
         loader_shellcode(self)
 
     def set_syscall(self, syscall_num, syscall_func):
-        self.posix_syscall_numb_list.append(syscall_num)
-        self.posix_syscall_func_list.append(syscall_func)
+        if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD, QL_IOS):
+            self.posix_syscall_numb_list.append(syscall_num)
+            self.posix_syscall_func_list.append(syscall_func)
 
     def run(self):
         self.__enable_bin_patch()
