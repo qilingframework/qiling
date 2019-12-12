@@ -82,7 +82,7 @@ def hook_syscall(ql):
         ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num,  (syscall_num -  0x2000000)))
         if ql.debug_stop:
             ql.nprint("[-] Stopped due to ql.debug_stop is True")
-            ql.uc.emu_stop()
+            raise QlErrorSyscallNotFound("[!] Syscall Not Found")
 
 
 def loader_file(ql):

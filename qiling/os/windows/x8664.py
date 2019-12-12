@@ -34,7 +34,8 @@ def hook_winapi(ql, address, size):
     if address in ql.PE.import_symbols:
         try:
             #ql.dprint('Hooking 0x{:08x}: {}'.format(address, ql.PE.import_symbols[address]))
-            globals()['hook_' + ql.PE.import_symbols[address]['name'].decode()](ql, address, {})
+            HOOKWINAPI = eval('hook_' + ql.PE.import_symbols[address]['name'].decode())
+            HOOKWINAPI(ql, address, {})
         except KeyError as e:
             print("[!]", e, "\t is not implemented")
 

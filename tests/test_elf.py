@@ -68,13 +68,13 @@ class ELFTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello", random_generator(random.randint(1,99))], "../examples/rootfs/mips32el_linux")
         ql.run()  
 
+    def test_elf_linux_mips32el_static(self):
+        def random_generator(size=6, chars=string.ascii_uppercase + string.digits):
+            return ''.join(random.choice(chars) for x in range(size))
 
-    # def test_elf_linux_mips32el_static(self): 
-    #     create = [sys.executable, 'test_mips32el_linux_debug.py']
-    #     try:
-    #         subprocess.check_output(create,stderr=subprocess.STDOUT)
-    #     except subprocess.CalledProcessError as e:    
-    #         raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))    
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello_static", random_generator(random.randint(1,99))], "../examples/rootfs/mips32el_linux")
+        ql.run()  
+
 
     def test_elf_linux_x86_crackme(self):
         class MyPipe():
@@ -143,7 +143,7 @@ class ELFTest(unittest.TestCase):
 
             print(flag)
 
-        print("\n\nSolving Linux Simple Crackme....")
+        print("\n\n Linux Simple Crackme Brute Force, This Will Take Some Time ...")
         solve()
 
 

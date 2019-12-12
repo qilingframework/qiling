@@ -39,15 +39,16 @@ QL_X86_WINDOWS_EMU_END = 0x0
 def hook_winapi(ql, address, size):
     # call win32 api
     if address in ql.PE.import_symbols:
-        truewinapi = (ql.PE.import_symbols[address]['name'].decode())
+        ## Keeping this for overwrite
+        #truewinapi = (ql.PE.import_symbols[address]['name'].decode())
         #customwinapi = ql.winapi[2]
         #if customwinapi == truewinapi:
-        ql.dprint("we hooked %s"% (truewinapi))
-         
-
+        #ql.dprint("we hooked %s"% (truewinapi))
+        
         try:
             #ql.dprint('[+] Hooking 0x%x at %s' % (address, ql.PE.import_symbols[address]['name'].decode()))
-            globals()['hook_' + ql.PE.import_symbols[address]['name'].decode()](ql, address, {})
+            HOOKWINAPI = eval('hook_' + ql.PE.import_symbols[address]['name'].decode())
+            HOOKWINAPI(ql, address, {})
         except KeyError as e:
             print("[!]", e, "\t is not implemented")
 
