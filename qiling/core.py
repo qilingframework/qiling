@@ -183,18 +183,18 @@ class Qiling:
  
     def shellcode(self):
         self.__enable_bin_patch()
-
         loader_shellcode = self.build_os_execution("loader_shellcode")
         loader_shellcode(self)
+
 
     def set_syscall(self, syscall_num, syscall_func):
         if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD, QL_IOS):
             self.posix_syscall_numb_list.append(syscall_num)
             self.posix_syscall_func_list.append(syscall_func)
 
+
     def run(self):
         self.__enable_bin_patch()
-
         runner = self.build_os_execution("runner")
         runner(self)
 
@@ -346,7 +346,6 @@ class Qiling:
         self.uc.hook_add(UC_HOOK_MEM_FETCH_INVALID, _callback, (user_data, callback), begin, end)
 
 
-
     def hook_mem_invalid(self, callback, user_data = None, begin = 1, end = 0):
         @catch_KeyboardInterrupt(self)
         def _callback(uc, access, addr, size, value, pack_data):
@@ -438,7 +437,6 @@ class Qiling:
             self.uc.hook_add(UC_HOOK_INSN, _callback_x86_syscall, (user_data, callback), begin, end, arg1)
         else:
             self.uc.hook_add(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
-
 
 
     def stack_push(self, data):
@@ -571,9 +569,11 @@ class Qiling:
     def output(self, output):
         self._output = output_convert(output)
 
+
     @property
     def platform(self):
         return self._platform
+
 
     @platform.setter
     def platform(self, value):
@@ -583,6 +583,7 @@ class Qiling:
             self._platform = QL_MACOS
         else:
             self._platform = None
+
 
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:
