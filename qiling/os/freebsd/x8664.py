@@ -33,14 +33,6 @@ QL_X8664_FREEBSD_PREDEFINE_STACKSIZE = 0x21000
 
 QL_X8664_EMU_END = 0xffffffffffffffff
 
-freebsd_syscall_numb_list = []
-freebsd_syscall_func_list = []
-
-def init_syscall_table(ql):
-    for i in X8664_FREEBSD_SYSCALL:
-        freebsd_syscall_numb_list.append(i[0])
-        freebsd_syscall_func_list.append(i[1])
-
 def hook_syscall(ql):
     syscall_num  = ql.uc.reg_read(UC_X86_REG_RAX)
     param0 = ql.uc.reg_read(UC_X86_REG_RDI)
@@ -51,18 +43,18 @@ def hook_syscall(ql):
     param5 = ql.uc.reg_read(UC_X86_REG_R9)
     pc = ql.uc.reg_read(UC_X86_REG_RIP)
 
-
-    if any(freebsd_syscall_numb == syscall_num for freebsd_syscall_numb in ql.posix_syscall_numb_list):
-        freebsd_syscall_index = ql.posix_syscall_numb_list.index(syscall_num)
-        FREEBSD_SYSCALL_FUNC_NAME = ql.posix_syscall_func_list[freebsd_syscall_index].__name__
-        FREEBSD_SYSCALL_FUNC = ql.posix_syscall_func_list[freebsd_syscall_index]
-    elif any(freebsd_syscall_numb == syscall_num for freebsd_syscall_numb in freebsd_syscall_numb_list):
-        freebsd_syscall_index = freebsd_syscall_numb_list.index(syscall_num)
-        FREEBSD_SYSCALL_FUNC_NAME = freebsd_syscall_func_list[freebsd_syscall_index]
-        FREEBSD_SYSCALL_FUNC = eval(freebsd_syscall_func_list[freebsd_syscall_index])
-    else:
-        FREEBSD_SYSCALL_FUNC_NAME = None
+    while 1:
+        FREEBSD_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
+        if FREEBSD_SYSCALL_FUNC != None:
+            FREEBSD_SYSCALL_FUNC_NAME = FREEBSD_SYSCALL_FUNC.__name__
+            break
+        FREEBSD_SYSCALL_FUNC_NAME = dict_x8664_freebsd_syscall.get(syscall_num, None)
+        if FREEBSD_SYSCALL_FUNC_NAME != None:
+            FREEBSD_SYSCALL_FUNC = eval(FREEBSD_SYSCALL_FUNC_NAME)
+            break
         FREEBSD_SYSCALL_FUNC = None
+        FREEBSD_SYSCALL_FUNC_NAME = None
+        break
 
     if FREEBSD_SYSCALL_FUNC != None:
         try:
@@ -118,7 +110,6 @@ def runner(ql):
     #ql.uc.reg_write(UC_X86_REG_R15D, 0xfffffffffffff000)
 
     ql_setup(ql)
-    init_syscall_table(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
 
     # FSMSR = 0xC0000100

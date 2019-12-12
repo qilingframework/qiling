@@ -96,8 +96,7 @@ class Qiling:
         self.libcache = libcache
         self.consolelog = consolelog
         self.platform = platform.system()
-        self.posix_syscall_numb_list = []
-        self.posix_syscall_func_list = []
+        self.dict_posix_syscall = dict()
 
         if log_file != None and type(log_file) == str:
             if log_file[0] != '/':
@@ -189,9 +188,7 @@ class Qiling:
 
     def set_syscall(self, syscall_num, syscall_func):
         if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD, QL_IOS):
-            self.posix_syscall_numb_list.append(syscall_num)
-            self.posix_syscall_func_list.append(syscall_func)
-
+            self.dict_posix_syscall[syscall_num] = syscall_func
 
     def run(self):
         self.__enable_bin_patch()

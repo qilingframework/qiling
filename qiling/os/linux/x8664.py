@@ -34,14 +34,6 @@ QL_X8664_LINUX_PREDEFINE_STACKSIZE = 0x21000
 
 QL_X8664_EMU_END = 0xffffffffffffffff
 
-linux_syscall_numb_list = []
-linux_syscall_func_list = []
-
-def init_syscall_table(ql):
-    for i in X8664_LINUX_SYSCALL:
-        linux_syscall_numb_list.append(i[0])
-        linux_syscall_func_list.append(i[1])
-
 def hook_syscall(ql):
     syscall_num  = ql.uc.reg_read(UC_X86_REG_RAX)
     param0 = ql.uc.reg_read(UC_X86_REG_RDI)
@@ -52,17 +44,18 @@ def hook_syscall(ql):
     param5 = ql.uc.reg_read(UC_X86_REG_R9)
     pc = ql.uc.reg_read(UC_X86_REG_RIP)
 
-    if any(linux_syscall_numb == syscall_num for linux_syscall_numb in ql.posix_syscall_numb_list):
-        linux_syscall_index = ql.posix_syscall_numb_list.index(syscall_num)
-        LINUX_SYSCALL_FUNC_NAME = ql.posix_syscall_func_list[linux_syscall_index].__name__
-        LINUX_SYSCALL_FUNC = ql.posix_syscall_func_list[linux_syscall_index]
-    elif any(linux_syscall_numb == syscall_num for linux_syscall_numb in linux_syscall_numb_list):
-        linux_syscall_index = linux_syscall_numb_list.index(syscall_num)
-        LINUX_SYSCALL_FUNC_NAME = linux_syscall_func_list[linux_syscall_index]
-        LINUX_SYSCALL_FUNC = eval(linux_syscall_func_list[linux_syscall_index])
-    else:
-        LINUX_SYSCALL_FUNC_NAME = None
+    while 1:
+        LINUX_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
+        if LINUX_SYSCALL_FUNC != None:
+            LINUX_SYSCALL_FUNC_NAME = LINUX_SYSCALL_FUNC.__name__
+            break
+        LINUX_SYSCALL_FUNC_NAME = dict_x8664_linux_syscall.get(syscall_num, None)
+        if LINUX_SYSCALL_FUNC_NAME != None:
+            LINUX_SYSCALL_FUNC = eval(LINUX_SYSCALL_FUNC_NAME)
+            break
         LINUX_SYSCALL_FUNC = None
+        LINUX_SYSCALL_FUNC_NAME = None
+        break
 
     if LINUX_SYSCALL_FUNC != None:
         try:
@@ -114,7 +107,6 @@ def loader_shellcode(ql):
 def runner(ql):
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql_setup(ql)
-    init_syscall_table(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
     if not ql.shellcoder: 
         ql_x8664_setup_gdt_segment_ds(ql)

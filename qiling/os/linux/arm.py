@@ -38,14 +38,6 @@ QL_SHELLCODE_INIT = 0
 QL_KERNEL_GET_TLS_ADDR = 0xFFFF0FE0
 QL_ARM_EMU_END = 0x8fffffff
 
-linux_syscall_numb_list = []
-linux_syscall_func_list = []
-
-def init_syscall_table(ql):
-    for i in ARM_LINUX_SYSCALL:
-        linux_syscall_numb_list.append(i[0])
-        linux_syscall_func_list.append(i[1])
-
 def ql_arm_check_thumb(uc, reg_cpsr):
     mode = UC_MODE_ARM
     if reg_cpsr & 0b100000 != 0:
@@ -65,17 +57,18 @@ def hook_syscall(ql, intno):
 
     ql_arm_check_thumb(ql.uc, reg_cpsr)
 
-    if any(linux_syscall_numb == syscall_num for linux_syscall_numb in ql.posix_syscall_numb_list):
-        linux_syscall_index = ql.posix_syscall_numb_list.index(syscall_num)
-        LINUX_SYSCALL_FUNC_NAME = ql.posix_syscall_func_list[linux_syscall_index].__name__
-        LINUX_SYSCALL_FUNC = ql.posix_syscall_func_list[linux_syscall_index]
-    elif any(linux_syscall_numb == syscall_num for linux_syscall_numb in linux_syscall_numb_list):
-        linux_syscall_index = linux_syscall_numb_list.index(syscall_num)
-        LINUX_SYSCALL_FUNC_NAME = linux_syscall_func_list[linux_syscall_index]
-        LINUX_SYSCALL_FUNC = eval(linux_syscall_func_list[linux_syscall_index])
-    else:
-        LINUX_SYSCALL_FUNC_NAME = None
+    while 1:
+        LINUX_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
+        if LINUX_SYSCALL_FUNC != None:
+            LINUX_SYSCALL_FUNC_NAME = LINUX_SYSCALL_FUNC.__name__
+            break
+        LINUX_SYSCALL_FUNC_NAME = dict_arm_linux_syscall.get(syscall_num, None)
+        if LINUX_SYSCALL_FUNC_NAME != None:
+            LINUX_SYSCALL_FUNC = eval(LINUX_SYSCALL_FUNC_NAME)
+            break
         LINUX_SYSCALL_FUNC = None
+        LINUX_SYSCALL_FUNC_NAME = None
+        break
 
     if LINUX_SYSCALL_FUNC != None:
         try:
@@ -248,7 +241,6 @@ def loader_shellcode(ql):
 def runner(ql):
     ql.uc.reg_write(UC_ARM_REG_SP, ql.stack_address)
     ql_setup(ql)
-    init_syscall_table(ql)
     ql.hook_intr(hook_syscall)
     ql_arm_enable_vfp(ql.uc)
     ql_arm_init_kernel_get_tls(ql.uc)
