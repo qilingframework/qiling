@@ -83,7 +83,6 @@ def hook_syscall(ql, intno):
                 td.stop()
                 td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
                 if ql.debug_stop:
-                    ql.nprint("[-] ERROR: %s" % (e))
                     ql.nprint("[-] Stopped due to ql.debug_stop is True")
                     raise QlErrorSyscallError("[!] Syscall Implenetation Error")
 
