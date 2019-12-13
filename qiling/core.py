@@ -21,7 +21,7 @@ def catch_KeyboardInterrupt(ql):
         def wrapper(*args, **kw):
             try:
                 return func(*args, **kw)
-            except BaseException as e:
+            except KeyboardInterrupt as e:
                 # ql.nprint("Received a request from the user to stop!")
                 if ql.thread_management != None:
                     td = ql.thread_management.cur_thread
