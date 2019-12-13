@@ -8,6 +8,8 @@ from binascii import unhexlify
 sys.path.append("..")
 from qiling import *
 from qiling.exception import *
+from qiling.os.windows.fncc import *
+from qiling.os.windows.utils import *
 
 def test_pe_win_x8664_hello():
     ql = Qiling(["../examples/rootfs/x8664_reactos/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows", output = "default")
@@ -45,6 +47,43 @@ def test_pe_win_x86_regdemo():
     ql.reg_diff = "reg_diff.json"
     ql.run()
 
+def test_pe_win_x86_customapi():
+    @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+        "str": STRING
+    })
+    def my_puts32(ql, address, params):
+        ret = 0
+        ql.nprint("\n+++++++++\nmy 32bit random Windows API\n+++++++++\n")
+        string = params["str"]
+        ret = len(string)
+        return ret
+
+
+    def my_sandbox(path, rootfs):
+        ql = Qiling(path, rootfs, output = "debug")
+        ql.set_syscall("puts", my_puts32)
+        ql.run()
+
+    my_sandbox(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows")
+
+def test_pe_win_x8664_customapi():
+    @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+        "str": STRING
+    })
+    def my_puts64(ql, address, params):
+        ret = 0
+        ql.nprint("\n+++++++++\nmy 32bit random Windows API\n+++++++++\n")
+        string = params["str"]
+        ret = len(string)
+        return ret
+
+
+    def my_sandbox(path, rootfs):
+        ql = Qiling(path, rootfs, output = "debug")
+        ql.set_syscall("puts", my_puts64)
+        ql.run()
+
+    my_sandbox(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows")
 
 def test_pe_win_x86_crackme():
     class StringBuffer:
@@ -108,3 +147,5 @@ if __name__ == "__main__":
     test_pe_win_x86_getlasterror()
     test_pe_win_x86_regdemo()
     test_pe_win_x86_crackme()
+    test_pe_win_x86_customapi()
+    test_pe_win_x8664_customapi

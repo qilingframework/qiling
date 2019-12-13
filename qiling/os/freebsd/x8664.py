@@ -2,22 +2,11 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-import struct
-import sys
+
+import traceback
 
 from unicorn import *
 from unicorn.x86_const import *
-
-from capstone import *
-from capstone.x86_const import *
-
-from keystone import *
-from keystone.x86_const import *
-
-from struct import pack
-import os
-
-import string
 
 from qiling.loader.elf import *
 from qiling.arch.x86 import *
@@ -27,10 +16,8 @@ from qiling.os.freebsd.syscall import *
 from qiling.os.utils import *
 from qiling.arch.filetype import *
 
-
 QL_X8664_FREEBSD_PREDEFINE_STACKADDRESS = 0x7ffffffde000
 QL_X8664_FREEBSD_PREDEFINE_STACKSIZE = 0x21000
-
 QL_X8664_EMU_END = 0xffffffffffffffff
 
 def hook_syscall(ql):
@@ -67,6 +54,7 @@ def hook_syscall(ql):
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 if ql.debug_stop:
                     ql.nprint("[-] Stopped due to ql.debug_stop is True")
+                    ql.nprint(traceback.format_exc())
                     raise QlErrorSyscallError("[!] Syscall Implenetation Error")
     else:
         ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num,  syscall_num))

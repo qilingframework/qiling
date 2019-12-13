@@ -4,9 +4,10 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 
+import traceback
+
 from unicorn import *
 from unicorn.x86_const import *
-import types
 
 # impport read_string and other commom utils.
 from qiling.loader.pe import PE, Shellcode
@@ -31,13 +32,23 @@ def set_pe64_gdt(ql):
 
 # hook WinAPI in PE EMU
 def hook_winapi(ql, address, size):
-    if address in ql.PE.import_symbols:
-        try:
-            #ql.dprint('Hooking 0x{:08x}: {}'.format(address, ql.PE.import_symbols[address]))
+    # call win64 api
+    if address in ql.PE.import_symbols:    
+        CURRENTWINAPI =  ql.PE.import_symbols[address]['name'].decode()
+
+        if CURRENTWINAPI == ql.set_curwinapi:
+            if ql.set_newwinapi:
+                ql.dprint("[+] Custom Windows API found %s" %(ql.set_newwinapi))
+                HOOKWINAPI = ql.set_newwinapi
+        else:    
             HOOKWINAPI = eval('hook_' + ql.PE.import_symbols[address]['name'].decode())
-            HOOKWINAPI(ql, address, {})
-        except KeyError as e:
-            print("[!]", e, "\t is not implemented")
+
+        if HOOKWINAPI:   
+            try:
+                HOOKWINAPI(ql, address, {})
+            except Exception as e:
+                ql.dprint("[!]", e, "\t is not implemented or Exception Found")
+                ql.nprint(traceback.format_exc()) 
 
 
 def windows_setup64(ql):
