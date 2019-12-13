@@ -3,23 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import struct
-import sys
+import traceback
 
 from unicorn import *
 from unicorn.x86_const import *
-
-from capstone import *
-from capstone.x86_const import *
-
-from keystone import *
-from keystone.x86_const import *
-
-from struct import pack
-import os
-import types
-
-import string
 
 # impport read_string and other commom utils.
 from qiling.loader.pe import PE, Shellcode
@@ -38,19 +25,23 @@ QL_X86_WINDOWS_EMU_END = 0x0
 # hook WinAPI in PE EMU
 def hook_winapi(ql, address, size):
     # call win32 api
-    if address in ql.PE.import_symbols:
-        ## Keeping this for overwrite
-        #truewinapi = (ql.PE.import_symbols[address]['name'].decode())
-        #customwinapi = ql.winapi[2]
-        #if customwinapi == truewinapi:
-        #ql.dprint("we hooked %s"% (truewinapi))
-        
-        try:
-            #ql.dprint('[+] Hooking 0x%x at %s' % (address, ql.PE.import_symbols[address]['name'].decode()))
+    if address in ql.PE.import_symbols:    
+        CURRENTWINAPI =  ql.PE.import_symbols[address]['name'].decode()
+
+        if CURRENTWINAPI == ql.set_curwinapi:
+            if ql.set_newwinapi:
+                ql.dprint("[+] Custom Windows API found %s" %(ql.set_newwinapi))
+                HOOKWINAPI = ql.set_newwinapi
+        else:    
             HOOKWINAPI = eval('hook_' + ql.PE.import_symbols[address]['name'].decode())
-            HOOKWINAPI(ql, address, {})
-        except KeyError as e:
-            print("[!]", e, "\t is not implemented")
+
+        if HOOKWINAPI:   
+            try:
+                HOOKWINAPI(ql, address, {})
+            except Exception as e:
+                ql.dprint("[!]", e, "\t is not implemented or Exception Found")
+                ql.nprint(traceback.format_exc())    
+        
 
 
 def setup_windows32(ql):

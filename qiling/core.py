@@ -79,6 +79,7 @@ class Qiling:
     exit_code = 0
     debug_stop = False
     internal_exception = None
+
     
 
     def __init__(self, filename = None, rootfs = None, argv = [], env = {}, 
@@ -97,6 +98,9 @@ class Qiling:
         self.consolelog = consolelog
         self.platform = platform.system()
         self.dict_posix_syscall = dict()
+        self.set_curwinapi = 0
+        self.set_newwinapi = 0  
+ 
 
         if log_file != None and type(log_file) == str:
             if log_file[0] != '/':
@@ -186,9 +190,13 @@ class Qiling:
         loader_shellcode(self)
 
 
-    def set_syscall(self, syscall_num, syscall_func):
+    def set_syscall(self, syscall_cur, syscall_new):
         if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD, QL_IOS):
-            self.dict_posix_syscall[syscall_num] = syscall_func
+            self.dict_posix_syscall[syscall_cur] = syscall_new
+        elif self.ostype == QL_WINDOWS:
+            self.set_curwinapi = syscall_cur
+            self.set_newwinapi = syscall_new   
+
 
     def run(self):
         self.__enable_bin_patch()
