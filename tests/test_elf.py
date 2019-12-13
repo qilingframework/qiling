@@ -76,6 +76,27 @@ class ELFTest(unittest.TestCase):
         ql.run()  
 
 
+    def test_elf_linux_arm_custom_syscall(self):
+        def my_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
+            regreturn = 0
+            buf = None
+            
+            try:
+                buf = ql.uc.mem_read(write_buf, write_count)
+                ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
+                ql.file_des[write_fd].write(buf)
+                regreturn = write_count
+            except:
+                regreturn = -1
+                ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
+                if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+                    raise
+            ql_definesyscall_return(ql, regreturn)
+
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux")
+        ql.set_syscall(0x04, my_syscall_write)
+        ql.run()
+
     def test_elf_linux_x86_crackme(self):
         class MyPipe():
             def __init__(self):
@@ -132,7 +153,7 @@ class ELFTest(unittest.TestCase):
 
             old_count = run_one_round(flag)
             for idx in idx_list:
-                for i in b'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ ':
+                for i in b'L1NUX\\n':
                     flag = flag[ : idx] + chr(i).encode() + flag[idx + 1 : ]
                     tmp = run_one_round(flag)
                     if tmp > old_count:
