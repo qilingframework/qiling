@@ -54,7 +54,7 @@ def test_pe_win_x8664_customapi():
     })
     def my_puts64(ql, address, params):
         ret = 0
-        ql.nprint("\n+++++++++\nmy 32bit random Windows API\n+++++++++\n")
+        ql.nprint("\n+++++++++\nMy Windows 64bit Windows API\n+++++++++\n")
         string = params["str"]
         ret = len(string)
         return ret
