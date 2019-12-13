@@ -122,19 +122,36 @@ def run_shellcode(options):
     ql.run()
 
 
+def usage():
+    print("\nUsage:")
+    print("\t ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex")
+    print("\t ./qltool shellcode --os linux --arch x86 --asm -f examples/shellcodes/lin32_execve.asm")
+    print("\t ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples/rootfs/x8664_linux/")
+    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux")
+    print("\t ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_args --rootfs examples/rootfs/x8664_linux --args test1 test2 test3")
+    print("\t ./qltool run --rootfs examples/rootfs/x8664_linux examples/rootfs/x8664_linux/bin/x8664_args test1 test2 test3")
+    print("\nWith Output:")
+    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm")
+    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace")
+    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --trace")
+    print("\t ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex --strace")
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(title='subcommands', description='valid subcommands', help='additional help', dest='subparser_name')
 
-    run_parser = commands.add_parser('run')
-    run_parser.add_argument('-f', '--filename', required=True, metavar="FILE", dest="filename", help="filename")
+    run_parser = commands.add_parser('run', help = 'run')
+    run_parser.add_argument('-f', '--filename', required=False, default='', metavar="FILE", dest="filename", help="filename")
     run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
     run_parser.add_argument('--output', required=False, default='default', help='output mode, options are off, debug , disasm, dump')
     run_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
     run_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
+    run_parser.add_argument('--args', required=False, default=[], nargs=argparse.REMAINDER, dest="args", help="args")
+    run_parser.add_argument('run_args', default=[], nargs=argparse.REMAINDER)
     
 
-    shellcode_parser = commands.add_parser('shellcode')
+    shellcode_parser = commands.add_parser('shellcode', help = 'shellcode')
     shellcode_parser.add_argument('-f', '--filename', required=False, metavar="FILE", dest="filename", help="filename")
     shellcode_parser.add_argument('-i', '--input', required=False, metavar="INPUT", dest="input", help='input hex value')
     shellcode_parser.add_argument('--arch', required=True, help='option are x86, x8664, arm, arm64, mipsel')
@@ -155,22 +172,19 @@ if __name__ == '__main__':
             options.output = "default"
         elif options.trace:
             options.output = "disasm"
-
-        ql = Qiling(filename = [options.filename], rootfs = options.rootfs, output = options.output)
+        if options.filename != '' and options.run_args == []:
+            ql = Qiling(filename = [options.filename] + options.args, rootfs = options.rootfs, output = options.output)
+        elif options.filename == '' and options.args == [] and options.run_args != []:
+            ql = Qiling(filename = options.run_args, rootfs = options.rootfs, output = options.output)
+        else:
+            print("ERROR: Command error!")
+            usage()
+            exit(1)
         ql.run()
         exit(ql.exit_code)
     elif (options.subparser_name == 'shellcode'):
         run_shellcode(options)
     else:
         print("ERROR: Unknown command")
-        print("\nUsage:")
-        print("\t ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex")
-        print("\t ./qltool shellcode --os linux --arch x86 --asm -f examples/shellcodes/lin32_execve.asm")
-        print("\t ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples/rootfs/x8664_linux/")
-        print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux")
-        print("\nWith Output:")
-        print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm")
-        print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace")
-        print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --trace")
-        print("\t ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex --strace")
+        usage()
         exit(1)

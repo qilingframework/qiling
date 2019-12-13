@@ -3,10 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+import types
 
 from unicorn import *
 from unicorn.x86_const import *
-import types
 
 # impport read_string and other commom utils.
 from qiling.loader.pe import PE, Shellcode
@@ -32,12 +32,30 @@ def set_pe64_gdt(ql):
 
 # hook WinAPI in PE EMU
 def hook_winapi(ql, address, size):
+    # call win api
     if address in ql.PE.import_symbols:
-        try:
-            #ql.dprint('Hooking 0x{:08x}: {}'.format(address, ql.PE.import_symbols[address]))
-            globals()['hook_' + ql.PE.import_symbols[address]['name'].decode()](ql, address, {})
-        except KeyError as e:
-            print("[!]", e, "\t is not implemented")
+        winapi_name = ql.PE.import_symbols[address]['name'].decode()
+        winapi_func = None
+
+        if winapi_name in ql.user_defined_winapi:
+            if isinstance(ql.user_defined_winapi[winapi_name], types.FunctionType):
+                winapi_func = ql.user_defined_winapi[winapi_name]
+        else:
+            try:
+                winapi_func = globals()['hook_' + winapi_name]
+            except KeyError:
+                winapi_func = None
+
+        if winapi_func:
+            try:
+                winapi_func(ql, address, {})
+            except Exception:
+                ql.dprint("[!] %s Exception Found" % winapi_name)
+                raise QlErrorSyscallError("[!] Windows API Implementation Error")
+        else:
+            ql.nprint("[!] %s is not implemented" % winapi_name)
+            if ql.debug_stop:
+                raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
 
 def windows_setup64(ql):
@@ -131,13 +149,16 @@ def runner(ql):
             ql.uc.emu_start(ql.code_address, ql.code_address + len(ql.shellcoder))
         else:
             ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
-    except UcError as e:
+    except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
-        raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
-
+        #raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
+    
     ql.registry_manager.save()
+    
+    if ql.internal_exception != None:
+        raise ql.internal_exception   

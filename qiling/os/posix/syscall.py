@@ -53,20 +53,21 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_exit_group(ql, null0, null1, null2, null3, null4, null5):
-    ql.exit_code = null0
+def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
+    ql.exit_code = exit_code
 
-    ql.nprint("exit_group(%u)" %null0)
+    ql.nprint("exit_group(%u)" % ql.exit_code)
 
     if ql.child_processes == True:
         os._exit(0)
 
-    ql.uc.emu_stop()
     if ql.thread_management != None:
         td = ql.thread_management.cur_thread
         td.stop()
         td.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
-
+    
+    ql.uc.emu_stop()
+    
 
 def ql_syscall_madvise(ql, null0, null1, null2, null3, null4, null5):
     regreturn = 0
@@ -836,6 +837,12 @@ def ql_syscall_archprctl(ql, null0, ARCH_SET_FS, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn)
 
 
+def ql_syscall_prctl(ql, null0, null1, null2, null3, null4, null5):
+    regreturn = 0
+    ql.nprint("prctl() = %d" % (regreturn))
+    ql_definesyscall_return(ql, regreturn)
+
+
 def ql_syscall_readlink(ql, path_name, path_buff, path_buffsize, null0, null1, null2):
     pathname = (ql.uc.mem_read(path_name, 0x100).split(b'\x00'))[0]
     pathname = str(pathname, 'utf-8', errors="ignore")
@@ -1392,6 +1399,9 @@ def ql_syscall_setitimer(ql, setitimer_which, setitimer_new_value, setitimer_old
 
 
 def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, null0):
+    
+    regreturn = 0
+    
     def parse_fd_set(ql, max_fd, struct_addr):
         fd_list = []
         fd_map = {}
@@ -1524,6 +1534,7 @@ def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, null0, null
 
 
 def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, null0, null1):
+    regreturn = 0
     if send_sockfd < 256 and ql.file_des[send_sockfd] != 0:
         try:
             ql.dprint("debug send start")

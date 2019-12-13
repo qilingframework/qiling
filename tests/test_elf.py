@@ -42,7 +42,7 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_arm(self):     
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "default")
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug")
         ql.run()
 
 
@@ -68,83 +68,104 @@ class ELFTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello", random_generator(random.randint(1,99))], "../examples/rootfs/mips32el_linux")
         ql.run()  
 
+    def test_elf_linux_mips32el_static(self):
+        def random_generator(size=6, chars=string.ascii_uppercase + string.digits):
+            return ''.join(random.choice(chars) for x in range(size))
 
-    def test_elf_linux_mips32el_static(self): 
-        create = [sys.executable, 'test_mips32el_linux_debug.py']
-        try:
-            subprocess.check_output(create,stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as e:    
-            raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))    
-
-    def test_elf_linux_x86_crackme(self):
-        class MyPipe():
-            def __init__(self):
-                self.buf = b''
-
-            def write(self, s):
-                self.buf += s
-
-            def read(self, l):
-                if l <= len(self.buf):
-                    ret = self.buf[ : l]
-                    self.buf = self.buf[l : ]
-                else:
-                    ret = self.buf
-                    self.buf = ''
-                return ret
-
-            def fileno(self):
-                return 0
-
-            def show(self):
-                pass
-
-            def clear(self):
-                pass
-
-            def flush(self):
-                pass
-
-            def close(self):
-                self.outpipe.close()
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello_static", random_generator(random.randint(1,99))], "../examples/rootfs/mips32el_linux")
+        ql.run()  
 
 
-        def instruction_count(ql, address, size, user_data):
-            user_data[0] += 1
+    def test_elf_linux_arm_custom_syscall(self):
+        def my_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
+            regreturn = 0
+            buf = None
+            
+            try:
+                buf = ql.uc.mem_read(write_buf, write_count)
+                ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
+                ql.file_des[write_fd].write(buf)
+                regreturn = write_count
+            except:
+                regreturn = -1
+                ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
+                if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+                    raise
+            ql_definesyscall_return(ql, regreturn)
+
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux")
+        ql.set_syscall(0x04, my_syscall_write)
+        ql.run()
+
+    # def test_elf_linux_x86_crackme(self):
+    #     class MyPipe():
+    #         def __init__(self):
+    #             self.buf = b''
+
+    #         def write(self, s):
+    #             self.buf += s
+
+    #         def read(self, l):
+    #             if l <= len(self.buf):
+    #                 ret = self.buf[ : l]
+    #                 self.buf = self.buf[l : ]
+    #             else:
+    #                 ret = self.buf
+    #                 self.buf = ''
+    #             return ret
+
+    #         def fileno(self):
+    #             return 0
+
+    #         def show(self):
+    #             pass
+
+    #         def clear(self):
+    #             pass
+
+    #         def flush(self):
+    #             pass
+
+    #         def close(self):
+    #             self.outpipe.close()
 
 
-        def run_one_round(payload):
-            stdin = MyPipe()
-            ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", output = "off", stdin = stdin, stdout = sys.stdout, stderr = sys.stderr)
-            ins_count = [0]
-            ql.hook_code(instruction_count, ins_count)
-            stdin.write(payload)
-            ql.run()
-            del stdin
-            del ql
-            return ins_count[0]
+    #     def instruction_count(ql, address, size, user_data):
+    #         user_data[0] += 1
 
 
-        def solve():
-            idx_list = [1, 4, 2, 0, 3]
-
-            flag = b'\x00\x00\x00\x00\x00\n'
-
-            old_count = run_one_round(flag)
-            for idx in idx_list:
-                for i in b'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ ':
-                    flag = flag[ : idx] + chr(i).encode() + flag[idx + 1 : ]
-                    tmp = run_one_round(flag)
-                    if tmp > old_count:
-                        old_count = tmp
-                        break
-                # if idx == 2:
-                #     break
-
-            print(flag)
+    #     def run_one_round(payload):
+    #         stdin = MyPipe()
+    #         ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", output = "off", stdin = stdin)
+    #         ins_count = [0]
+    #         ql.hook_code(instruction_count, ins_count)
+    #         stdin.write(payload)
+    #         ql.run()
+    #         del stdin
+    #         del ql
+    #         return ins_count[0]
 
 
-        solve()
+    #     def solve():
+    #         idx_list = [1, 4, 2, 0, 3]
+
+    #         flag = b'\x00\x00\x00\x00\x00\n'
+
+    #         old_count = run_one_round(flag)
+    #         for idx in idx_list:
+    #             for i in b'L1NUX\\n':
+    #                 flag = flag[ : idx] + chr(i).encode() + flag[idx + 1 : ]
+    #                 tmp = run_one_round(flag)
+    #                 if tmp > old_count:
+    #                     old_count = tmp
+    #                     break
+    #             # if idx == 2:
+    #             #     break
+
+    #         print(flag)
+
+    #     print("\n\n Linux Simple Crackme Brute Force, This Will Take Some Time ...")
+    #     solve()
 
 
 if __name__ == "__main__":

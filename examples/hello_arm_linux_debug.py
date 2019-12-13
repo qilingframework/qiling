@@ -8,6 +8,7 @@ from qiling import *
 
 def run_sandbox(path, rootfs, output):
     ql = Qiling(path, rootfs, output = output)
+    ql.debug_stop = True
     ql.run()
 
 

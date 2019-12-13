@@ -3,22 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import struct
-import sys
-
 from unicorn import *
 from unicorn.arm64_const import *
-
-from capstone import *
-from capstone.arm64_const import *
-
-from keystone import *
-from keystone.arm64_const import *
-
-from struct import pack
-import os
-
-import string
 
 from qiling.loader.elf import *
 from qiling.os.linux.arm64_syscall import *
@@ -29,9 +15,7 @@ from qiling.arch.filetype import *
 
 QL_ARM64_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
 QL_ARM64_LINUX_PREDEFINE_STACKSIZE = 0x21000
-
 QL_ARM64_EMU_END = 0xffffffffffffffff
-
 
 def hook_syscall(ql, intno):
     syscall_num  = ql.uc.reg_read(UC_ARM64_REG_X8)
@@ -43,33 +27,37 @@ def hook_syscall(ql, intno):
     param5 = ql.uc.reg_read(UC_ARM64_REG_X5)
     pc = ql.uc.reg_read(UC_ARM64_REG_PC)
 
-    linux_syscall_numb_list = []
-    linux_syscall_func_list = []
+    while 1:
+        LINUX_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
+        if LINUX_SYSCALL_FUNC != None:
+            LINUX_SYSCALL_FUNC_NAME = LINUX_SYSCALL_FUNC.__name__
+            break
+        LINUX_SYSCALL_FUNC_NAME = dict_arm64_linux_syscall.get(syscall_num, None)
+        if LINUX_SYSCALL_FUNC_NAME != None:
+            LINUX_SYSCALL_FUNC = eval(LINUX_SYSCALL_FUNC_NAME)
+            break
+        LINUX_SYSCALL_FUNC = None
+        LINUX_SYSCALL_FUNC_NAME = None
+        break
 
-    for i in ARM64_LINUX_SYSCALL:
-        linux_syscall_numb_list.append(i[0])
-        linux_syscall_func_list.append(i[1])
-
-    if any(linux_syscall_numb == syscall_num for linux_syscall_numb in linux_syscall_numb_list):
-        linux_syscall_index = linux_syscall_numb_list.index(syscall_num)
-        LINUX_SYSCALL_FUNC= eval(linux_syscall_func_list[linux_syscall_index])
+    if LINUX_SYSCALL_FUNC != None:
         try:
             LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
-        except Exception as e:
-            ql.nprint("[!] SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
-            ql.nprint("[-] ERROR: %s" % (e))
-            if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                if ql.debug_stop:
-                    ql.nprint("[-] Stopped due to ql.debug_stop is True")
-                    raise QlErrorSyscallError("[!] Syscall Implenetation Error")
-
+        except Exception:
+            ql.nprint("[!] SYSCALL ERROR: ", LINUX_SYSCALL_FUNC_NAME)
+            #td = ql.thread_management.cur_thread
+            #td.stop()
+            #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+            raise QlErrorSyscallError("[!] Syscall Implementation Error")
     else:
-        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num,  syscall_num))
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
-            ql.nprint("[-] Stopped due to ql.debug_stop is True")
-            ql.uc.emu_stop()
+            #td = ql.thread_management.cur_thread
+            #td.stop()
+            #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+            raise QlErrorSyscallNotFound("[!] Syscall Not Found")    
 
 
 def ql_arm64_enable_vfp(uc):
@@ -116,14 +104,14 @@ def runner(ql):
             ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
         else:    
             ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
-    except UcError as e:
+    except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
-        raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
+        #raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
 
     if ql.internal_exception != None:
         raise ql.internal_exception
