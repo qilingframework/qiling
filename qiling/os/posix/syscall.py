@@ -1399,6 +1399,9 @@ def ql_syscall_setitimer(ql, setitimer_which, setitimer_new_value, setitimer_old
 
 
 def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, null0):
+    
+    regreturn = 0
+    
     def parse_fd_set(ql, max_fd, struct_addr):
         fd_list = []
         fd_map = {}
@@ -1531,6 +1534,7 @@ def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, null0, null
 
 
 def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, null0, null1):
+    regreturn = 0
     if send_sockfd < 256 and ql.file_des[send_sockfd] != 0:
         try:
             ql.dprint("debug send start")
