@@ -141,7 +141,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(title='subcommands', description='valid subcommands', help='additional help', dest='subparser_name')
 
-    run_parser = commands.add_parser('run')
+    run_parser = commands.add_parser('run', help = 'run')
     run_parser.add_argument('-f', '--filename', required=False, default='', metavar="FILE", dest="filename", help="filename")
     run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
     run_parser.add_argument('--output', required=False, default='default', help='output mode, options are off, debug , disasm, dump')
@@ -151,7 +151,7 @@ if __name__ == '__main__':
     run_parser.add_argument('run_args', default=[], nargs=argparse.REMAINDER)
     
 
-    shellcode_parser = commands.add_parser('shellcode')
+    shellcode_parser = commands.add_parser('shellcode', help = 'shellcode')
     shellcode_parser.add_argument('-f', '--filename', required=False, metavar="FILE", dest="filename", help="filename")
     shellcode_parser.add_argument('-i', '--input', required=False, metavar="INPUT", dest="input", help='input hex value')
     shellcode_parser.add_argument('--arch', required=True, help='option are x86, x8664, arm, arm64, mipsel')
@@ -167,7 +167,6 @@ if __name__ == '__main__':
 
     options = parser.parse_args()
 
-    print(options)
     if (options.subparser_name == 'run'):
         if options.strace:
             options.output = "default"
