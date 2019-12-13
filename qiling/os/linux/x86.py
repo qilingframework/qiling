@@ -3,8 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import traceback
-
 from unicorn import *
 from unicorn.x86_const import *
 
@@ -49,29 +47,19 @@ def hook_syscall(ql, intno):
             LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
-        except Exception as e:
-            ql.nprint("[!] SYSCALL: ", LINUX_SYSCALL_FUNC_NAME)
-            ql.nprint("[-] ERROR: %s" % (e))
-            if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                td = ql.thread_management.cur_thread
-                td.stop()
-                td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-                if ql.debug_stop:
-                    ql.nprint("[-] Stopped due to ql.debug_stop is True")
-                    ql.nprint(traceback.format_exc())
-                    raise QlErrorSyscallError("[!] Syscall Implenetation Error")
-
+        except Exception:
+            ql.nprint("[!] SYSCALL ERROR: ", LINUX_SYSCALL_FUNC_NAME)
+            td = ql.thread_management.cur_thread
+            td.stop()
+            td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+            raise QlErrorSyscallError("[!] Syscall Implementation Error")
     else:
-        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num,  syscall_num))
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
-            ql.nprint("[-] Stopped due to ql.debug_stop is True")
-            ql.nprint(traceback.format_exc())
+            td = ql.thread_management.cur_thread
+            td.stop()
+            td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
             raise QlErrorSyscallNotFound("[!] Syscall Not Found")
-
-
-        td = ql.thread_management.cur_thread
-        td.stop()
-        td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
 
 
 def ql_x86_thread_set_tls(ql, th, arg):
@@ -147,7 +135,7 @@ def runner(ql):
             thread_management.set_main_thread(main_thread)
             thread_management.run()
 
-    except UcError as e:
+    except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
@@ -155,7 +143,7 @@ def runner(ql):
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql.nprint("\n")
             ql_hook_code_disasm(ql, ql.pc, 64)
-        raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
+        #raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
 
     if ql.internal_exception != None:
         raise ql.internal_exception

@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import sys
-from binascii import unhexlify
+
 sys.path.append("..")
 from qiling import *
 from qiling.exception import *
@@ -115,7 +115,6 @@ def test_pe_win_x86_crackme():
         print(ql.stdin)
         ql.hook_address(force_call_dialog_func, 0x00401016)
         ql.run()
-        del ql
 
     our_sandbox(["../examples/rootfs/x86_windows/bin/Easy_CrackMe.exe"], "../examples/rootfs/x86_windows")
 

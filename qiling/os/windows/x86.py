@@ -42,11 +42,12 @@ def hook_winapi(ql, address, size):
         if winapi_func:
             try:
                 winapi_func(ql, address, {})
-            except Exception as e:
-                ql.dprint("[!]", e, "\t %s Exception Found" % winapi_name)
-                ql.nprint(traceback.format_exc())
+            except Exception:
+                ql.dprint("[!] %s Exception Found" % winapi_name)
+                raise QlErrorSyscallError("[!] Windows API Implementation Error")
         else:
-            ql.dprint("[!] %s is not implemented" % winapi_name)
+            ql.nprint("[!] %s is not implemented" % winapi_name)
+            raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
 
 def setup_windows32(ql):
@@ -152,13 +153,16 @@ def runner(ql):
             ql.uc.emu_start(ql.code_address, ql.code_address + len(ql.shellcoder))
         else:
             ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
-    except UcError as e:
+    except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
-        raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
+        #raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
 
     ql.registry_manager.save()
+
+    if ql.internal_exception != None:
+        raise ql.internal_exception   

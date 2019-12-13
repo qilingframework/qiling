@@ -3,8 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import traceback
-
 from unicorn import *
 from unicorn.x86_const import *
 
@@ -50,19 +48,17 @@ def hook_syscall(ql):
             raise            
         except Exception:
             ql.nprint("[!] SYSCALL ERROR: ", FREEBSD_SYSCALL_FUNC_NAME)
-            if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                if ql.debug_stop:
-                    #td = ql.thread_management.cur_thread
-                    #td.stop()
-                    #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-                    ql.nprint("[-] Stopped due to ql.debug_stop is True")
-                    ql.nprint(traceback.format_exc())
-                    sys.exit(1)
+            #td = ql.thread_management.cur_thread
+            #td.stop()
+            #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+            raise QlErrorSyscallError("[!] Syscall Implementation Error")
     else:
-        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num,  syscall_num))
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
-            ql.nprint("[-] Stopped due to ql.debug_stop is True")
-            raise QlErrorSyscallNotFound("[!] Syscall Not Found")
+            #td = ql.thread_management.cur_thread
+            #td.stop()
+            #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+            raise QlErrorSyscallNotFound("[!] Syscall Not Found")    
 
 
 def loader_file(ql):
@@ -151,21 +147,19 @@ def runner(ql):
 
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_EMU_END
-    #try:
-    if ql.shellcoder:
-        ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
-    else:
-        ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
-    # except UcError as e:
-    #     if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM):
-    #         ql.nprint("[+] PC= " + hex(ql.pc))
-    #         ql.show_map_info()
-    #         buf = ql.uc.mem_read(ql.pc, 8)
-    #         ql.nprint("[+] ", [hex(_) for _ in buf])
-    #         ql_hook_code_disasm(ql, ql.pc, 64)
-        
-    #     raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
-
+    try:
+        if ql.shellcoder:
+            ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
+        else:
+            ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
+    except UcError:
+        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM):
+            ql.nprint("[+] PC= " + hex(ql.pc))
+            ql.show_map_info()
+            buf = ql.uc.mem_read(ql.pc, 8)
+            ql.nprint("[+] ", [hex(_) for _ in buf])
+            ql_hook_code_disasm(ql, ql.pc, 64)
+    
     if ql.internal_exception != None:
         raise ql.internal_exception
 
