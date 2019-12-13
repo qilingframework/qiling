@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import struct
+import time
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
@@ -12,6 +13,15 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
+#void Sleep(
+#  DWORD dwMilliseconds
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "dwMilliseconds": DWORD
+})
+def hook_Sleep(ql, address, params):
+    #time.sleep(params["dwMilliseconds"] * 10**(-3))
+    pass
 
 # LPTOP_LEVEL_EXCEPTION_FILTER SetUnhandledExceptionFilter(
 #   LPTOP_LEVEL_EXCEPTION_FILTER lpTopLevelExceptionFilter
