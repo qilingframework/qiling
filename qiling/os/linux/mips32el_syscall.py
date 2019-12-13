@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-dict_mips32el_linux_syscall = dict({
+dict_mips32el_linux_syscall = {
     4001 : "ql_syscall_exit",
     4002 : "ql_syscall_vfork",
     4003 : "ql_syscall_read",
@@ -59,4 +59,4 @@ dict_mips32el_linux_syscall = dict({
     4237 : "ql_syscall_sendfile64",
     4246 : "ql_syscall_exit_group",
     4283 : "ql_syscall_mips32el_set_thread_area",
-})
+}

@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-dict_arm_linux_syscall = dict({
+dict_arm_linux_syscall = {
     0x01 : "ql_syscall_exit",
     0x03 : "ql_syscall_read",
     0x04 : "ql_syscall_write",
@@ -59,4 +59,4 @@ dict_arm_linux_syscall = dict({
     0x014E : "ql_syscall_faccessat",
     0x0152 : "ql_syscall_set_robust_list",
     0x0F0005 : "ql_syscall_arm_settls",
-})
+}

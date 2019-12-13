@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-dict_arm64_ios_syscall = dict({
+dict_arm64_ios_syscall = {
     0x2000001 : "ql_syscall_exit",
     0x2000003 : "ql_syscall_read",
     0x2000004 : "ql_syscall_write",
@@ -13,4 +13,4 @@ dict_arm64_ios_syscall = dict({
     0x2000049 : "ql_syscall_munmap",
     0x20000C5 : "ql_syscall_mmap2",
     0x20000C7 : "ql_syscall_lseek",
-})
+}

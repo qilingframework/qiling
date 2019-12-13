@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-dict_x8664_macos_syscall = dict({
+dict_x8664_macos_syscall = {
     0x100001a : "ql_x86_syscall_mach_reply_port",
     0x100001c : "ql_x86_syscall_task_self_trap",
     0x100001d : "ql_x86_syscall_host_self_trap",
@@ -30,4 +30,4 @@ dict_x8664_macos_syscall = dict({
     0x2000208 : "ql_syscall_terminate_with_payload",
     0x2000209 : "ql_syscall_abort_with_payload",
     0x3000003 : "ql_x86_syscall_thread_set_tsd_base",
-})
+}
