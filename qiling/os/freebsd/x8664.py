@@ -164,4 +164,6 @@ def runner(ql):
         
         raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
 
+    if ql.internal_exception != None:
+        raise ql.internal_exception
 
