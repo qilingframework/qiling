@@ -14,7 +14,7 @@ from test_qltool import *
 
 class AllTest(unittest.TestCase):
     ELFTest()
-    REACTOSPETest()
+    #REACTOSPETest()
     MACHOTest()
     QltoolTest()
 
