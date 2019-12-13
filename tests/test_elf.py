@@ -42,7 +42,8 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_arm(self):     
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "default")
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug")
+        ql.debug_stop = True
         ql.run()
 
 

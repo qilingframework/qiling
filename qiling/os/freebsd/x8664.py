@@ -48,14 +48,16 @@ def hook_syscall(ql):
             FREEBSD_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise            
-        except Exception as e:
+        except Exception:
             ql.nprint("[!] SYSCALL ERROR: ", FREEBSD_SYSCALL_FUNC_NAME)
-            ql.nprint("[-] ERROR: %s" % (e))
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 if ql.debug_stop:
+                    #td = ql.thread_management.cur_thread
+                    #td.stop()
+                    #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
                     ql.nprint("[-] Stopped due to ql.debug_stop is True")
                     ql.nprint(traceback.format_exc())
-                    raise QlErrorSyscallError("[!] Syscall Implenetation Error")
+                    sys.exit(1)
     else:
         ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num,  syscall_num))
         if ql.debug_stop:
@@ -149,20 +151,20 @@ def runner(ql):
 
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_EMU_END
-    try:
-        if ql.shellcoder:
-            ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
-        else:
-            ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
-    except UcError as e:
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM):
-            ql.nprint("[+] PC= " + hex(ql.pc))
-            ql.show_map_info()
-            buf = ql.uc.mem_read(ql.pc, 8)
-            ql.nprint("[+] ", [hex(_) for _ in buf])
-            ql_hook_code_disasm(ql, ql.pc, 64)
+    #try:
+    if ql.shellcoder:
+        ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
+    else:
+        ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
+    # except UcError as e:
+    #     if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM):
+    #         ql.nprint("[+] PC= " + hex(ql.pc))
+    #         ql.show_map_info()
+    #         buf = ql.uc.mem_read(ql.pc, 8)
+    #         ql.nprint("[+] ", [hex(_) for _ in buf])
+    #         ql_hook_code_disasm(ql, ql.pc, 64)
         
-        raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
+    #     raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
 
     if ql.internal_exception != None:
         raise ql.internal_exception

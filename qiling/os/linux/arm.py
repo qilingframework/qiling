@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import traceback
+import traceback, sys
 
 from unicorn import *
 from unicorn.arm_const import *
@@ -64,17 +64,16 @@ def hook_syscall(ql, intno):
             LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
-        except Exception as e:
+        except Exception:
             ql.nprint("[!] SYSCALL: ", LINUX_SYSCALL_FUNC_NAME)
-            ql.nprint("[-] ERROR: %s" % (e))
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                td = ql.thread_management.cur_thread
-                td.stop()
-                td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
                 if ql.debug_stop:
+                    td = ql.thread_management.cur_thread
+                    td.stop()
+                    td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
                     ql.nprint("[-] Stopped due to ql.debug_stop is True")
                     ql.nprint(traceback.format_exc())
-                    raise QlErrorSyscallError("[!] Syscall Implenetation Error")
+                    raise QlErrorSyscallError("[!] Syscall Error")
 
     else:
         ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))

@@ -40,7 +40,7 @@ class ql_file:
     def ioctl(self, ioctl_cmd, ioctl_arg):
         try:
             return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
-        except ImportError:
+        except Exception:
             pass    
     
     def dup(self):
@@ -87,7 +87,7 @@ class ql_socket:
     def ioctl(self, ioctl_cmd, ioctl_arg):
         try:
             return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
-        except ImportError:
+        except Exception:
             pass    
     
     def dup(self):
@@ -155,7 +155,7 @@ class ql_pipe:
     def ioctl(self, ioctl_cmd, ioctl_arg):
         try:
             return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
-        except ImportError:
+        except Exception:
             pass    
     
     def dup(self):
