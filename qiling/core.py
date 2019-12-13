@@ -98,9 +98,7 @@ class Qiling:
         self.consolelog = consolelog
         self.platform = platform.system()
         self.dict_posix_syscall = dict()
-        self.set_curwinapi = 0
-        self.set_newwinapi = 0  
- 
+        self.user_defined_winapi = {}
 
         if log_file != None and type(log_file) == str:
             if log_file[0] != '/':
@@ -194,9 +192,11 @@ class Qiling:
         if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD, QL_IOS):
             self.dict_posix_syscall[syscall_cur] = syscall_new
         elif self.ostype == QL_WINDOWS:
-            self.set_curwinapi = syscall_cur
-            self.set_newwinapi = syscall_new   
+            self.set_winapi(syscall_cur, syscall_new)
 
+    def set_winapi(self, winapi_name, winapi_func):
+        if self.ostype == QL_WINDOWS:
+            self.user_defined_winapi[winapi_name] = winapi_func
 
     def run(self):
         self.__enable_bin_patch()

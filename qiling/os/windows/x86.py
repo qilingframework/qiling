@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import traceback
+import types
 
 from unicorn import *
 from unicorn.x86_const import *
@@ -25,23 +26,27 @@ QL_X86_WINDOWS_EMU_END = 0x0
 # hook WinAPI in PE EMU
 def hook_winapi(ql, address, size):
     # call win32 api
-    if address in ql.PE.import_symbols:    
-        CURRENTWINAPI =  ql.PE.import_symbols[address]['name'].decode()
+    if address in ql.PE.import_symbols:
+        winapi_name = ql.PE.import_symbols[address]['name'].decode()
+        winapi_func = None
 
-        if CURRENTWINAPI == ql.set_curwinapi:
-            if ql.set_newwinapi:
-                ql.dprint("[+] Custom Windows API found %s" %(ql.set_newwinapi))
-                HOOKWINAPI = ql.set_newwinapi
-        else:    
-            HOOKWINAPI = eval('hook_' + ql.PE.import_symbols[address]['name'].decode())
-
-        if HOOKWINAPI:   
+        if winapi_name in ql.user_defined_winapi:
+            if isinstance(ql.user_defined_winapi[winapi_name], types.FunctionType):
+                winapi_func = ql.user_defined_winapi[winapi_name]
+        else:
             try:
-                HOOKWINAPI(ql, address, {})
+                winapi_func = globals()['hook_' + winapi_name]
+            except KeyError:
+                winapi_func = None
+
+        if winapi_func:
+            try:
+                winapi_func(ql, address, {})
             except Exception as e:
-                ql.dprint("[!]", e, "\t is not implemented or Exception Found")
-                ql.nprint(traceback.format_exc())    
-        
+                ql.dprint("[!]", e, "\t %s Exception Found" % winapi_name)
+                ql.nprint(traceback.format_exc())
+        else:
+            ql.dprint("[!] %s is not implemented" % winapi_name)
 
 
 def setup_windows32(ql):

@@ -22,7 +22,7 @@ def my_puts(ql, address, params):
 
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, output = "debug")
-    ql.set_syscall("puts", my_puts)
+    ql.set_winapi("puts", my_puts)
     ql.run()
 
 if __name__ == "__main__":
