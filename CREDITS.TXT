@@ -27,7 +27,11 @@ jhumble
 WanderingGlitch
 Nguyen Hong Quang (quangnh89)
 ucgJhe
-
+re-fox
+t14g0p
+Hcamael
+hugsy
+danielhenrymantilla
 
 Alpha testers (in no particular order, named by github id)
 ==========================================================
