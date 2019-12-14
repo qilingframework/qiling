@@ -123,7 +123,7 @@ def hook_InterlockedExchange(ql, address, params):
 })
 def hook_InterlockedIncrement(ql, address, params):
     val = int.from_bytes(ql.uc.mem_read(params['Target'], ql.pointersize), byteorder='little')
-    val += 1 & (2^ql.pointersize*8) # increment and overflow back to 0 if applicable
+    val += 1 & (2**ql.pointersize*8) # increment and overflow back to 0 if applicable
     ql.uc.mem_write(params['Target'], val.to_bytes(length=ql.pointersize, byteorder='little'))
     return val
 
