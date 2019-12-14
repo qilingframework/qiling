@@ -85,7 +85,7 @@ class Qiling:
     def __init__(self, filename = None, rootfs = None, argv = [], env = {}, 
                  shellcoder = None, ostype = None, archtype = None, libcache = False,
                  output = None, consolelog = True, stdin = 0, stdout = 0, stderr = 0,
-                 log_file = None, separate_log_file = False):
+                 log_file = None, separate_log_file = False, mmap_start = 0):
         self.output = None
         self.ostype = ostype
         self.archtype = archtype
@@ -99,6 +99,7 @@ class Qiling:
         self.platform = platform.system()
         self.dict_posix_syscall = dict()
         self.user_defined_winapi = {}
+        self.mmap_start = mmap_start
 
         if log_file != None and type(log_file) == str:
             if log_file[0] != '/':
