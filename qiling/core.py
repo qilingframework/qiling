@@ -225,25 +225,12 @@ class Qiling:
             pass
         elif self.log_console == False and self.log_file_name:
             print(*args, **kw, file = fd)
-            # if self.errmsg == 1:
-            #     printerrmsg = ''.join(args) 
-            #     print("[!] " + printerrmsg, file = fd)
-            #     self.errmsg = 0
         elif (self.log_file_name and self.log_console):
             print(*args, **kw, file = fd)
             print(*args, **kw)
-            # if self.errmsg == 1:
-            #     printerrmsg = ''.join(args) 
-            #     print("[!] " + printerrmsg, file = fd)
-            #     print("[!] " + printerrmsg)
-            #     self.errmsg = 0
         else:
             print(*args, **kw)
-            # if self.errmsg == 1:
-            #     printerrmsg = ''.join(args) 
-            #     print("[!] " + printerrmsg)
-            #     self.errmsg = 0                    
-        
+                          
         if fd != None:
             fd.flush()
 
