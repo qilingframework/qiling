@@ -33,60 +33,64 @@ def catch_KeyboardInterrupt(ql):
     return decorator
 
 class Qiling:
-    arch = ''
-    archbit = ''
-    uc = ''
-    path = ''
-    rootfs = ''
-    ostype = ''
-    stack_address = 0
-    stack_size = 0
-    entry_point = 0
-    elf_entry = 0
-    new_stack = 0
-    brk_address = 0
-    interp_base = 0
-    mmap_start = 0
-    shellcode_init = 0
-    output = ''
-    consolelog = True
-    file_des = []
-    stdin = ql_file('stdin', sys.stdin.fileno())
-    stdout = ql_file('stdout', sys.stdout.fileno())
-    stderr = ql_file('stderr', sys.stderr.fileno())
-    sigaction_act = []
-    child_processes = False
-    patch_bin = []
-    patch_lib = []
-    patched_lib = []
-    loadbase = 0
-    map_info = []
-    timeout = 0
-    until_addr = 0
-    byte = 0
-    # errmsg = 0
-    thread_management = None
-    root = True
-    port = 0
-    currentpath = os.getcwd()
-    log_file_fd = None
-    log_file_name = None
-    separate_log_file = False
-    current_path = '/'
-    fs_mapper = []
-    reg_dir = None
-    reg_diff = None
-    exit_code = 0
-    debug_stop = False
-    internal_exception = None
+    arch                = ''
+    archbit             = ''
+    uc                  = ''
+    path                = ''
+    entry_point         = 0
+    elf_entry           = 0
+    new_stack           = 0
+    brk_address         = 0
+    shellcode_init      = 0
+    file_des            = []
+    stdin               = ql_file('stdin', sys.stdin.fileno())
+    stdout              = ql_file('stdout', sys.stdout.fileno())
+    stderr              = ql_file('stderr', sys.stderr.fileno())
+    sigaction_act       = []
+    child_processes     = False
+    patch_bin           = []
+    patch_lib           = []
+    patched_lib         = []
+    loadbase            = 0
+    map_info            = []
+    timeout             = 0
+    until_addr          = 0
+    byte                = 0
+    thread_management   = None
+    root                = True
+    port                = 0
+    currentpath         = os.getcwd()
+    log_file_fd         = None
+    log_file_name       = None
+    current_path        = '/'
+    fs_mapper           = []
+    reg_dir             = None
+    reg_diff            = None
+    exit_code           = 0
+    debug_stop          = False
+    internal_exception  = None
 
-    
 
-    def __init__(self, filename = None, rootfs = None, argv = [], env = {}, 
-                 shellcoder = None, ostype = None, archtype = None, libcache = False,
-                 output = None, consolelog = True, stdin = 0, stdout = 0, stderr = 0,
-                 log_file = None, separate_log_file = False, 
-                 mmap_start = 0, stack_address = 0, stack_size = 0):
+    def __init__(self, 
+                    filename        = None, 
+                    rootfs          = None, 
+                    argv            = [], 
+                    env             = {}, 
+                    shellcoder      = None, 
+                    ostype          = None, 
+                    archtype        = None, 
+                    libcache        = False,
+                    stdin           = 0, 
+                    stdout          = 0, 
+                    stderr          = 0,
+                    output          = None, 
+                    log_console     = True,                     
+                    log_file        = None, 
+                    log_split       = False, 
+                    mmap_start      = 0, 
+                    stack_address   = 0, 
+                    stack_size      = 0,
+                    interp_base     =0):
 
         self.output                 = output
         self.ostype                 = ostype
@@ -97,22 +101,24 @@ class Qiling:
         self.argv                   = argv
         self.env                    = env
         self.libcache               = libcache
-        self.consolelog             = consolelog
+        self.log_console            = log_console
+        self.log_split              = log_split
         self.platform               = platform.system()
-        self.dict_posix_syscall     = dict()
-        self.user_defined_winapi    = {}
         self.mmap_start             = mmap_start
         self.stack_address          = stack_address
         self.stack_size             = stack_size
+        self.interp_base            = interp_base
+        self.dict_posix_syscall     = dict()
+        self.user_defined_winapi    = {}
 
         if log_file != None and type(log_file) == str:
             if log_file[0] != '/':
                 log_file = os.getcwd() + '/' + log_file
             self.log_file_name = log_file
-            if type(separate_log_file) != bool or not separate_log_file:
+            if type(log_split) != bool or not log_split:
                 self.log_file_fd = open(log_file + ".qlog", 'w+')
             else:
-                self.separate_log_file = separate_log_file
+                self.log_split = log_split
                 self.log_file_fd = open(log_file + "_" + str(os.getpid()) + ".qlog", 'w+')
 
         if self.ostype and type(self.ostype) == str:
@@ -215,15 +221,15 @@ class Qiling:
         else:
             fd = self.log_file_fd
 
-        if (self.consolelog == False or self.output == QL_OUT_OFF):
+        if (self.log_console == False or self.output == QL_OUT_OFF):
             pass
-        elif self.consolelog == False and self.log_file_name:
+        elif self.log_console == False and self.log_file_name:
             print(*args, **kw, file = fd)
             # if self.errmsg == 1:
             #     printerrmsg = ''.join(args) 
             #     print("[!] " + printerrmsg, file = fd)
             #     self.errmsg = 0
-        elif (self.log_file_name and self.consolelog):
+        elif (self.log_file_name and self.log_console):
             print(*args, **kw, file = fd)
             print(*args, **kw)
             # if self.errmsg == 1:

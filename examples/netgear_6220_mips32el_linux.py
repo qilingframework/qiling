@@ -9,7 +9,7 @@ sys.path.append("..")
 from qiling import *
     
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, output="debug", log_file = 'logfile', separate_log_file = True, consolelog = True, mmap_start = 0x7ffef000 - 0x800000)
+    ql = Qiling(path, rootfs, output="debug", log_file = 'logfile', log_split= True, log_console = True, mmap_start = 0x7ffef000 - 0x800000)
     ql.root = False
     ql.add_fs_mapper('/proc', '/proc')
     ql.run()

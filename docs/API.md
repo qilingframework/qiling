@@ -20,7 +20,7 @@ stack_size = 0xhexaddress
 interp_base = 0xhexaddress
 mmap_start = 0xhexaddress
 output = ["debug","off","disasm","dump"] // dump=(disam + debug)
-consolelog
+log_console
 reg_dir = /dir/path/to/clean_registery // must within rootfs
 reg_diff = /file/path/to/registry_dump // must within rootfs
 ```

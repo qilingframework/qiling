@@ -12,11 +12,11 @@ output = ("off", "default", "disasm", "debug", "dump")
 #### Options for Console Log
 
 ```
-consolelog = (True, False)
+log_console = (True, False)
     Normally this option will be used with log_file
-        case 1: log_file defined and consolelog is False
+        case 1: log_file defined and log_console is False
             - No stdio output
-        case 2: log_file defined and consolelog is True
+        case 2: log_file defined and log_console is True
             - Log dump to file and also print stdio
 ```
 
@@ -27,7 +27,7 @@ consolelog = (True, False)
 - How to run Netgear R6220 Firmware with
     - ql.add_fs_mapper, "host File System Mapping"
     - log_file redirect
-    - consolelog stdio display
+    - log_console stdio display
     - ql.root, avoid host root privillage requirement and return to userland
 
 ```python
@@ -35,7 +35,7 @@ import sys
 from qiling import *
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, output="debug", log_file = 'logfile', separate_log_file = True, consolelog = True)
+    ql = Qiling(path, rootfs, output="debug", log_file = 'logfile', log_split= True, log_console = True)
     ql.root = False
     ql.add_fs_mapper('/proc', '/proc')
     ql.run()
