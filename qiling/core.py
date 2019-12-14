@@ -85,21 +85,25 @@ class Qiling:
     def __init__(self, filename = None, rootfs = None, argv = [], env = {}, 
                  shellcoder = None, ostype = None, archtype = None, libcache = False,
                  output = None, consolelog = True, stdin = 0, stdout = 0, stderr = 0,
-                 log_file = None, separate_log_file = False, mmap_start = 0):
-        self.output = None
-        self.ostype = ostype
-        self.archtype = archtype
-        self.shellcoder  = shellcoder
-        self.filename = filename
-        self.rootfs = rootfs
-        self.argv = argv
-        self.env = env
-        self.libcache = libcache
-        self.consolelog = consolelog
-        self.platform = platform.system()
-        self.dict_posix_syscall = dict()
-        self.user_defined_winapi = {}
-        self.mmap_start = mmap_start
+                 log_file = None, separate_log_file = False, 
+                 mmap_start = 0, stack_address = 0, stack_size = 0):
+
+        self.output                 = output
+        self.ostype                 = ostype
+        self.archtype               = archtype
+        self.shellcoder             = shellcoder
+        self.filename               = filename
+        self.rootfs                 = rootfs
+        self.argv                   = argv
+        self.env                    = env
+        self.libcache               = libcache
+        self.consolelog             = consolelog
+        self.platform               = platform.system()
+        self.dict_posix_syscall     = dict()
+        self.user_defined_winapi    = {}
+        self.mmap_start             = mmap_start
+        self.stack_address          = stack_address
+        self.stack_size             = stack_size
 
         if log_file != None and type(log_file) == str:
             if log_file[0] != '/':
@@ -119,8 +123,8 @@ class Qiling:
             self.arch = self.arch.lower()
             self.arch = arch_convert(self.archtype)
        
-        if output and type(output) == str:
-            self.output = output.lower()
+        if self.output and type(self.output) == str:
+            self.output = self.output.lower()
         
         if self.rootfs and self.shellcoder == None:
             if (os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs)):
