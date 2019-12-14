@@ -71,7 +71,8 @@ class Qiling:
     internal_exception  = None
 
 
-    def __init__(self, 
+    def __init__(
+                    self, 
                     filename        = None, 
                     rootfs          = None, 
                     argv            = [], 
@@ -90,7 +91,7 @@ class Qiling:
                     mmap_start      = 0, 
                     stack_address   = 0, 
                     stack_size      = 0,
-                    interp_base     =0):
+                    interp_base     = 0):
 
         self.output                 = output
         self.ostype                 = ostype
