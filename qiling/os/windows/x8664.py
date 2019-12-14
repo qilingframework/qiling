@@ -154,8 +154,8 @@ def runner(ql):
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
         #raise QlErrorExecutionStop('[!] Emulation Stopped due to %s' %(e))
-    
+
     ql.registry_manager.save()
-    
+
     if ql.internal_exception != None:
-        raise ql.internal_exception   
+        raise ql.internal_exception
