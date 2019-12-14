@@ -40,6 +40,9 @@ class MyPipe():
 
     def close(self):
         self.outpipe.close()
+    
+    def fstat(self):
+        return os.fstat(sys.stdin.fileno())
 
 
 def instruction_count(ql, address, size, user_data):
