@@ -55,14 +55,14 @@ matrix:
       script:
         - python3 test_all.py
         
-    - name: "Python 3 on Windows"
+    - name: "Python 3.6.8 on Windows"
       os: windows
       language: shell
       env:
         - PATH="/c/Python36:/c/Python36/Scripts:$PATH"
       before_install:
-        #- choco install python --version=3.6.8
-        - choco install python
+        - choco install python --version=3.6.8
+        #- choco install python
         #- choco install kb2999226
         - python -m pip install --upgrade pip
       install:
