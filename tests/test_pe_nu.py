@@ -116,7 +116,6 @@ def test_pe_win_x86_crackme():
         ql.patch(0x00401112, b'\x90\x90')
         ql.stdin = StringBuffer()
         ql.stdin.write(b"Ea5yR3versing\n")
-        print(ql.stdin)
         ql.hook_address(force_call_dialog_func, 0x00401016)
         ql.run()
 
