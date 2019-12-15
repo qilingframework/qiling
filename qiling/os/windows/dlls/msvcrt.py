@@ -381,3 +381,19 @@ def hook_calloc(ql, address, params):
     size = params['size']
     ret = ql.heap.mem_alloc(num * size)
     return ret
+
+
+# void * memmove(
+#   void *dest,
+#   const void *src,
+#   size_t num
+# );
+@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+    "dest": POINTER,
+    "src": POINTER,
+    "num": SIZE_T
+})
+def hook_memmove(ql, address, params):
+    data = ql.mem_read(params['src'], params['num'])
+    ql.mem_write(params['dest'], bytes(data))
+    return params['dest']

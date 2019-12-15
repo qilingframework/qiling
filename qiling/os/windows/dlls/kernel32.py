@@ -59,11 +59,91 @@ def hook_FatalExit(ql, address, params):
 # VOID WINAPI GetStartupInfo(
 #   _Out_ LPSTARTUPINFO lpStartupInfo
 # );
+"""
+typedef struct _STARTUPINFO {
+  DWORD  cb;
+  LPTSTR lpReserved;
+  LPTSTR lpDesktop;
+  LPTSTR lpTitle;
+  DWORD  dwX;
+  DWORD  dwY;
+  DWORD  dwXSize;
+  DWORD  dwYSize;
+  DWORD  dwXCountChars;
+  DWORD  dwYCountChars;
+  DWORD  dwFillAttribute;
+  DWORD  dwFlags;
+  WORD   wShowWindow;
+  WORD   cbReserved2;
+  LPBYTE lpReserved2;
+  HANDLE hStdInput;
+  HANDLE hStdOutput;
+  HANDLE hStdError;
+} STARTUPINFO, *LPSTARTUPINFO;
+"""
 @winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
     "lpStartupInfo": POINTER
 })
 def hook_GetStartupInfoA(ql, address, params):
-    pass
+    # TODO fill in std output handles.
+    # Seems to work fine without them so far though
+    size = 52 + 4*ql.pointersize
+    addr = ql.heap.mem_alloc(size)
+    return addr
+
+# VOID WINAPI GetStartupInfoW(
+#   _Out_ LPSTARTUPINFO lpStartupInfo
+# );
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "lpStartupInfo": POINTER
+})
+def hook_GetStartupInfoW(ql, address, params):
+    size = 52 + 4*ql.pointersize
+    addr = ql.heap.mem_alloc(size)
+    return addr
+
+#LONG InterlockedExchange(
+#  LONG volatile *Target,
+#  LONG          Value
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "Target": POINTER,
+    "Value": UINT
+})
+def hook_InterlockedExchange(ql, address, params):
+    old = int.from_bytes(ql.uc.mem_read(params['Target'], ql.pointersize), byteorder='little')
+    ql.uc.mem_write(params['Target'], params['Value'].to_bytes(length=ql.pointersize, byteorder='little'))
+    return old
+
+#LONG InterlockedIncrement(
+#  LONG volatile *Target,
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "Target": POINTER
+})
+def hook_InterlockedIncrement(ql, address, params):
+    val = int.from_bytes(ql.uc.mem_read(params['Target'], ql.pointersize), byteorder='little')
+    val += 1 & (2**ql.pointersize*8) # increment and overflow back to 0 if applicable
+    ql.uc.mem_write(params['Target'], val.to_bytes(length=ql.pointersize, byteorder='little'))
+    return val
+
+#PVOID EncodePointer(
+#  _In_ PVOID Ptr
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "Ptr": POINTER
+})
+def hook_EncodePointer(ql, address, params):
+    return params['Ptr']
+
+#PVOID DecodePointer(
+#  _In_ PVOID Ptr
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "Ptr": POINTER
+})
+def hook_DecodePointer(ql, address, params):
+    return params['Ptr']
 
 
 # HMODULE GetModuleHandleA(
@@ -185,6 +265,19 @@ def hook_HeapAlloc(ql, address, params):
     ret = ql.heap.mem_alloc(params["dwBytes"])
     return ret
 
+#BOOL HeapFree(
+#  HANDLE                 hHeap,
+#  DWORD                  dwFlags,
+#  _Frees_ptr_opt_ LPVOID lpMem
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hHeap": HANDLE,
+    "dwFlags": DWORD,
+    "lpMem": POINTER
+})
+def hook_HeapFree(ql, address, params):
+    return ql.heap.mem_free(params['lpMem'])
+
 
 # LPVOID VirtualAlloc(
 #   LPVOID lpAddress,
@@ -263,6 +356,15 @@ def hook_SetHandleCount(ql, address, params):
 @winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
 def hook_GetCommandLineA(ql, address, params):
     cmdline = ql.PE.cmdline + b"\x00"
+    addr = ql.heap.mem_alloc(len(cmdline))
+    ql.uc.mem_write(addr, cmdline)
+    return addr
+
+# LPSTR GetCommandLineW(
+# );
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+def hook_GetCommandLineW(ql, address, params):
+    cmdline = ql.PE.cmdline.decode('ascii').encode('utf-16le')
     addr = ql.heap.mem_alloc(len(cmdline))
     ql.uc.mem_write(addr, cmdline)
     return addr
@@ -454,6 +556,35 @@ def hook_GetModuleFileNameA(ql, address, params):
     nSize = params["nSize"]
     if hModule == 0:
         filename = ql.PE.filepath
+        filename_len = len(filename)
+        if filename_len > nSize-1:
+            filename = ql.PE.filepath[:nSize-1]
+            ret = nSize
+        else:
+            ret = filename_len
+        ql.uc.mem_write(lpFilename, filename + b"\x00")
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")
+    return ret
+
+# DWORD GetModuleFileNameW(
+#   HMODULE hModule,
+#   LPSTR   lpFilename,
+#   DWORD   nSize
+# );
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hModule": HANDLE,
+    "lpFilename": POINTER,
+    "nSize": DWORD
+})
+def hook_GetModuleFileNameW(ql, address, params):
+    
+    ret = 0
+    hModule = params["hModule"]
+    lpFilename = params["lpFilename"]
+    nSize = params["nSize"]
+    if hModule == 0:
+        filename = ql.PE.filepath.decode('ascii').encode('utf-16le')
         filename_len = len(filename)
         if filename_len > nSize-1:
             filename = ql.PE.filepath[:nSize-1]
@@ -1035,6 +1166,62 @@ def hook_TlsSetValue(ql, address, params):
         ql.thread_manager.current_thread.tls[idx] = params['lpTlsValue']
         return 1
 
+#DWORD FlsAlloc(
+#  PFLS_CALLBACK_FUNCTION lpCallback
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "lpCallback": POINTER
+})
+def hook_FlsAlloc(ql, address, params):
+    #global cb = params['lpCallback']
+    cb = params['lpCallback']
+    if cb:
+        return ql.fiber_manager.alloc(cb)
+    else:
+        return ql.fiber_manager.alloc()
+
+#DWORD FlsFree(
+#  DWORD dwFlsIndex
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "dwFlsIndex": UINT
+})
+def hook_FlsFree(ql, address, params):
+    return ql.fiber_manager.free(params['dwFlsIndex'])
+
+#LPVOID FlsGetValue(
+#  DWORD dwFlsIndex
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "dwFlsIndex": UINT})
+def hook_FlsGetValue(ql, address, params):
+    return ql.fiber_manager.get(params['dwFlsIndex'])
+
+#LPVOID FlsSetValue(
+#  DWORD dwFlsIndex
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "dwFlsIndex": UINT,
+    "lpFlsValue": POINTER
+})
+def hook_FlsSetValue(ql, address, params):
+    return ql.fiber_manager.set(params['dwFlsIndex'], params['lpFlsValue'])
+
+#BOOL HeapSetInformation(
+#  HANDLE                 HeapHandle,
+#  HEAP_INFORMATION_CLASS HeapInformationClass,
+#  PVOID                  HeapInformation,
+#  SIZE_T                 HeapInformationLength
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "HeapHandle": HANDLE,
+    "HeapInformationClass": UINT,
+    "HeapInformation": POINTER,
+    "HeapInformationLength": UINT
+})
+def hook_HeapSetInformation(ql, address, params):
+    return 1
+
 #BOOL VirtualProtect(
 #  LPVOID lpAddress,
 #  SIZE_T dwSize,
@@ -1055,11 +1242,41 @@ def hook_VirtualProtect(ql, address, params):
 def hook_GetLastError(ql, address, params):
     return ql.last_error
 
+#void SetLastError(
+#  DWORD dwErrCode
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "dwErrCode": UINT
+})
+def hook_SetLastError(ql, address, params):
+    ql.last_error = params['dwErrCode']
+    return 0
+
+#BOOL IsValidCodePage(
+#  UINT CodePage
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "CodePage": UINT
+})
+def hook_IsValidCodePage(ql, address, params):
+    return 1
+
 #void EnterCriticalSection(
 #  LPCRITICAL_SECTION lpCriticalSection
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "lpCriticalSection": POINTER
+})
 def hook_EnterCriticalSection(ql, address, params):
+    return 0
+
+#void LeaveCriticalSection(
+#  LPCRITICAL_SECTION lpCriticalSection
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "lpCriticalSection": POINTER
+})
+def hook_LeaveCriticalSection(ql, address, params):
     return 0
 
 #int MultiByteToWideChar(
