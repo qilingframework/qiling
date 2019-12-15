@@ -55,14 +55,14 @@ matrix:
       script:
         - python3 test_all.py
         
-    - name: "Python 3 on Windows"
+    - name: "Python 3.6.8 on Windows"
       os: windows
       language: shell
       env:
         - PATH="/c/Python36:/c/Python36/Scripts:$PATH"
       before_install:
-        #- choco install python --version=3.6.8
-        - choco install python
+        - choco install python --version=3.6.8
+        #- choco install python
         #- choco install kb2999226
         - python -m pip install --upgrade pip
       install:
@@ -105,8 +105,8 @@ matrix:
         - cp downlevel/api-ms-win-crt-heap-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/                
         - cp vcruntime140d.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/
         - cp ucrtbased.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/
-        #- cd $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/bin
-        #- unzip -Pinfected wannacry.bin.zip
+        - cd $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/bin
+        - unzip -Pinfected wannacry.bin.zip
         - cd $TRAVIS_HOME/build/qilingframework/qiling/tests
       script:
         - python test_pe_nu.py

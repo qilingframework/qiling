@@ -14,31 +14,37 @@ from qiling.os.windows.utils import *
 def test_pe_win_x8664_hello():
     ql = Qiling(["../examples/rootfs/x8664_reactos/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows", output = "default")
     ql.run()
+    del ql
 
 
 def test_pe_win_x86_hello():
     ql = Qiling(["../examples/rootfs/x86_reactos/bin/x86_hello.exe"], "../examples/rootfs/x86_windows", output = "default")
     ql.run()
+    del ql
 
 
 def test_pe_win_x86_multithread():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
     ql.run()
+    del ql
 
 
 def test_pe_win_x86_clipboard():
     ql = Qiling(["../examples/rootfs/x8664_windows/bin//x8664_clipboard_test.exe"], "../examples/rootfs/x8664_windows")
     ql.run()
+    del ql
 
 
 def test_pe_win_x86_tls():
     ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_tls.exe"], "../examples/rootfs/x8664_windows")
     ql.run()
+    del ql
 
 
 def test_pe_win_x86_getlasterror():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/GetLastError.exe"], "../examples/rootfs/x86_windows")
-    ql.run()                
+    ql.run()
+    del ql
 
 
 def test_pe_win_x86_regdemo():
@@ -46,11 +52,22 @@ def test_pe_win_x86_regdemo():
     ql.reg_dir = "registry"
     ql.reg_diff = "reg_diff.json"
     ql.run()
+    del ql
 
 def test_pe_win_x8664_fls():
     ql = Qiling(["../examples/rootfs/x8664_windows/bin/Fls.exe"], "../examples/rootfs/x8664_windows", output = "default")
     ql.run()
+    del ql
 
+
+def test_pe_win_x86_wannacry():
+    def stop(ql):
+        print("killerswtichfound")
+        ql.uc.emu_stop()
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows")
+    ql.hook_address(stop, 0x40819a)
+    ql.run()
+    del ql
 
 def test_pe_win_x8664_customapi():
     @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
@@ -68,6 +85,7 @@ def test_pe_win_x8664_customapi():
         ql = Qiling(path, rootfs, output = "debug")
         ql.set_syscall("puts", my_puts64)
         ql.run()
+        del ql
 
     my_sandbox(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows")
 
@@ -118,6 +136,7 @@ def test_pe_win_x86_crackme():
         ql.stdin.write(b"Ea5yR3versing\n")
         ql.hook_address(force_call_dialog_func, 0x00401016)
         ql.run()
+        del ql
 
     our_sandbox(["../examples/rootfs/x86_windows/bin/Easy_CrackMe.exe"], "../examples/rootfs/x86_windows")
 
@@ -128,6 +147,7 @@ if __name__ == "__main__":
     test_pe_win_x86_multithread()
     test_pe_win_x86_clipboard()
     test_pe_win_x86_tls()
+    test_pe_win_x86_wannacry()
     test_pe_win_x8664_fls()
     test_pe_win_x86_getlasterror()
     test_pe_win_x86_regdemo()
