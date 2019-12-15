@@ -71,7 +71,8 @@ class Qiling:
     internal_exception  = None
 
 
-    def __init__(self, 
+    def __init__(
+                    self, 
                     filename        = None, 
                     rootfs          = None, 
                     argv            = [], 
@@ -90,7 +91,8 @@ class Qiling:
                     mmap_start      = 0, 
                     stack_address   = 0, 
                     stack_size      = 0,
-                    interp_base     =0):
+                    interp_base     = 0
+                ):
 
         self.output                 = output
         self.ostype                 = ostype
@@ -102,6 +104,7 @@ class Qiling:
         self.env                    = env
         self.libcache               = libcache
         self.log_console            = log_console
+        self.log_file               = log_file
         self.log_split              = log_split
         self.platform               = platform.system()
         self.mmap_start             = mmap_start
@@ -111,14 +114,14 @@ class Qiling:
         self.dict_posix_syscall     = dict()
         self.user_defined_winapi    = {}
 
-        if log_file != None and type(log_file) == str:
-            if log_file[0] != '/':
-                log_file = os.getcwd() + '/' + log_file
-            self.log_file_name = log_file
-            if type(log_split) != bool or not log_split:
+        if self.log_file != None and type(self.log_file) == str:
+            if self.log_file[0] != '/':
+                self.log_file = os.getcwd() + '/' + self.log_file
+            self.log_file_name = self.log_file
+            if type(self.log_split) != bool or not self.log_split:
                 self.log_file_fd = open(log_file + ".qlog", 'w+')
             else:
-                self.log_split = log_split
+                #self.log_split = log_split
                 self.log_file_fd = open(log_file + "_" + str(os.getpid()) + ".qlog", 'w+')
 
         if self.ostype and type(self.ostype) == str:
@@ -128,10 +131,7 @@ class Qiling:
         if self.shellcode and self.archtype and type(self.archtype) == str:
             self.arch = self.arch.lower()
             self.arch = arch_convert(self.archtype)
-       
-        if self.output and type(self.output) == str:
-            self.output = self.output.lower()
-        
+           
         if self.rootfs and self.shellcoder == None:
             if (os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs)):
                 self.path = (str(self.filename[0]))
@@ -174,9 +174,11 @@ class Qiling:
 
         if not self.ostype in (QL_OS):
             raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos','ios'")
-
-        if not self.output in (QL_OUTPUT):
-            raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
+        
+        if self.output and type(self.output) == str:
+            self.output = self.output.lower()
+            if not self.output in (QL_OUTPUT):
+                raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
  
         if self.shellcoder and self.arch and self.ostype:
             self.shellcode()
@@ -198,16 +200,6 @@ class Qiling:
         loader_shellcode = self.build_os_execution("loader_shellcode")
         loader_shellcode(self)
 
-
-    def set_syscall(self, syscall_cur, syscall_new):
-        if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD, QL_IOS):
-            self.dict_posix_syscall[syscall_cur] = syscall_new
-        elif self.ostype == QL_WINDOWS:
-            self.set_winapi(syscall_cur, syscall_new)
-
-    def set_winapi(self, winapi_name, winapi_func):
-        if self.ostype == QL_WINDOWS:
-            self.user_defined_winapi[winapi_name] = winapi_func
 
     def run(self):
         self.__enable_bin_patch()
@@ -242,6 +234,18 @@ class Qiling:
 
     def asm2bytes(self, runasm, arm_thumb = None):
         return ql_asm2bytes(self,  self.arch, runasm, arm_thumb)
+
+
+    def set_syscall(self, syscall_cur, syscall_new):
+        if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD, QL_IOS):
+            self.dict_posix_syscall[syscall_cur] = syscall_new
+        elif self.ostype == QL_WINDOWS:
+            self.set_winapi(syscall_cur, syscall_new)
+
+
+    def set_winapi(self, winapi_name, winapi_func):
+        if self.ostype == QL_WINDOWS:
+            self.user_defined_winapi[winapi_name] = winapi_func
 
 
     def hook_code(self, callback, user_data = None, begin = 1, end = 0):
