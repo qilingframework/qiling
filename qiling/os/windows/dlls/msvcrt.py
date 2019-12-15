@@ -100,7 +100,8 @@ def hook___p__environ(ql, address, params):
 def hook_puts(ql, address, params):
     ret = 0
     string = params["str"]
-    ret = len(string)
+    ql.stdout.write(bytes(string + "\n", "utf-8"))
+    ret = len(string) + 1
     return ret
 
 
