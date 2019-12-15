@@ -60,6 +60,11 @@ def test_pe_win_x8664_fls():
     del ql
 
 
+def test_pe_win_x86_wannacry():
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows")
+    ql.run()
+    del ql
+
 def test_pe_win_x8664_customapi():
     @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
         "str": STRING
@@ -138,6 +143,7 @@ if __name__ == "__main__":
     test_pe_win_x86_multithread()
     test_pe_win_x86_clipboard()
     test_pe_win_x86_tls()
+    test_pe_win_x86_wannacry()
     test_pe_win_x8664_fls()
     test_pe_win_x86_getlasterror()
     test_pe_win_x86_regdemo()
