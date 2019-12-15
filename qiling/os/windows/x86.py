@@ -17,6 +17,7 @@ from qiling.os.utils import *
 from qiling.os.windows.memory import Heap
 from qiling.os.windows.registry import RegistryManager
 from qiling.os.windows.clipboard import Clipboard
+from qiling.os.windows.fiber import FiberManager
 
 QL_X86_WINDOWS_STACK_ADDRESS = 0xfffdd000
 QL_X86_WINDOWS_STACK_SIZE = 0x21000
@@ -89,6 +90,8 @@ def setup_windows32(ql):
     ql.registry_manager = RegistryManager(ql)
     # clipboard
     ql.clipboard = Clipboard(ql)
+    # fibers
+    ql.fiber_manager = FiberManager(ql)
     # Place to set errors for retrieval by GetLastError()
     ql.last_error = 0
     # thread manager

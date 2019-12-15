@@ -5,7 +5,7 @@
 
 import sys
 
-sys.path.append("..")
+sys.path.insert(0, "..")
 from qiling import *
 from qiling.exception import *
 from qiling.os.windows.fncc import *
@@ -45,6 +45,10 @@ def test_pe_win_x86_regdemo():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/RegDemo.exe"], "../examples/rootfs/x86_windows")
     ql.reg_dir = "registry"
     ql.reg_diff = "reg_diff.json"
+    ql.run()
+
+def test_pe_win_x8664_fls():
+    ql = Qiling(["../examples/rootfs/x8664_windows/bin/Fls.exe"], "../examples/rootfs/x8664_windows", output = "default")
     ql.run()
 
 
@@ -125,6 +129,7 @@ if __name__ == "__main__":
     test_pe_win_x86_multithread()
     test_pe_win_x86_clipboard()
     test_pe_win_x86_tls()
+    test_pe_win_x8664_fls()
     test_pe_win_x86_getlasterror()
     test_pe_win_x86_regdemo()
     test_pe_win_x86_crackme()
