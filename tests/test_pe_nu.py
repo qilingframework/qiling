@@ -61,7 +61,11 @@ def test_pe_win_x8664_fls():
 
 
 def test_pe_win_x86_wannacry():
+    def stop(ql):
+        print("killerswtichfound")
+        ql.uc.emu_stop()
     ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows")
+    ql.hook_address(stop, 0x40819a)
     ql.run()
     del ql
 
