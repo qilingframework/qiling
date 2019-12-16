@@ -38,6 +38,7 @@ dict_mips32el_linux_syscall = {
     4116 : "ql_syscall_sysinfo",
     4122 : "ql_syscall_uname",
     4125 : "ql_syscall_mprotect",
+    4140 : "ql_syscall__llseek",
     4142 : "ql_syscall__newselect",
     4146 : "ql_syscall_writev",
     4166 : "ql_syscall_nanosleep",

@@ -289,7 +289,6 @@ def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, null0):
     ql_definesyscall_return(ql, regreturn)
 
 
-
 def ql_syscall_brk(ql, brk_input, null0, null1, null2, null3, null4):
     ql.nprint("brk(0x%x)" % brk_input)
     if brk_input != 0:
