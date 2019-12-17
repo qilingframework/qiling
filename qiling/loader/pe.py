@@ -324,6 +324,11 @@ class PE(Process):
         data = bytearray(self.pe.get_memory_mapped_image())
         self.ql.uc.mem_write(self.PE_IMAGE_BASE, bytes(data))
 
+        #Add main PE to ldr_data_table
+        mod_name = os.path.basename(self.path)
+        self.dlls[mod_name] = self.PE_IMAGE_BASE
+        super().add_ldr_data_table_entry(mod_name)
+        
         # parse directory entry import
         for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
             dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')

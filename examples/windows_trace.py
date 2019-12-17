@@ -68,9 +68,6 @@ def spaced_hex(data):
 
 def disasm(count, ql, address, size):
     buf = ql.uc.mem_read(address, size)
-    if address == 0x0500049A:
-        print(hexlify(ql.uc.mem_read(ql.uc.reg_read(UC_X86_REG_ECX)+4, 0x04)))
-        
     try:
         for i in md.disasm(buf, address):
             return "{:08X}\t{:08X}: {:24s} {:10s} {:16s}".format(count[0], i.address, spaced_hex(buf), i.mnemonic, i.op_str)
