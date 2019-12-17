@@ -1864,3 +1864,25 @@ def ql_syscall_sendfile64(ql, sendfile64_out_fd, sendfile64_in_fd, sendfile64_of
 
     ql.nprint("sendfile64(%d, %d, %x, %d) = %d" % (sendfile64_out_fd, sendfile64_in_fd, sendfile64_offest, sendfile64_count, regreturn))
     ql_definesyscall_return(ql, regreturn)
+
+def ql_syscall_truncate(ql, path, length, null0, null1, null2, null3):
+    st_size = os.stat(path).st_size
+    
+    try:
+        if st_size >= length:
+            os.truncate(path, length)
+        else:
+            padding = (length - st_size)
+            with open(path, 'a') as fd:
+                fd.write(b'\x00' * padding)
+
+        regreturn = 0
+    except:
+        regreturn = -1
+    
+    ql.nprint("truncate(%s, 0x%x) = %d" % (path, legnth, regreturn))
+    ql_definesyscall_return(ql, regreturn)
+
+def ql_syscall_ftruncate(ql, fd, length, null0, null1, null2, null3):
+    path = ql.file_des[fd].name
+    ql_sycall_truncate(ql, path, length, null0, null1, null2, null3)
