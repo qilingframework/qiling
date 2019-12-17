@@ -289,6 +289,7 @@ def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, null0):
     origin = ql.uc.mem_read(whence, 1)[0]
     regreturn = ql.file_des[fd].lseek(offset, origin)
     buff = ql.pack32s(regreturn)
+    ql.uc.mem_write(result, buff)
     regreturn = 0 if regreturn else -1
     ql.nprint("_llseek(%d, 0x%x, 0x%x, 0x%x = %d)" % (fd, offset_high, offset_low, origin, regreturn))
     ql_definesyscall_return(ql, regreturn)
