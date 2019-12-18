@@ -68,12 +68,18 @@ class ELFTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello", random_generator(random.randint(1,99))], "../examples/rootfs/mips32el_linux")
         ql.run()  
 
+
     def test_elf_linux_mips32el_static(self):
         def random_generator(size=6, chars=string.ascii_uppercase + string.digits):
             return ''.join(random.choice(chars) for x in range(size))
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello_static", random_generator(random.randint(1,99))], "../examples/rootfs/mips32el_linux")
         ql.run()  
+
+
+    def test_elf_linux_mips32el_syscall(self):
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_syscall"], "../examples/rootfs/mips32el_linux", output="debug", mmap_start=0x7ffef000 - 0x800000)
+        ql.run()
 
 
     def test_elf_linux_arm_custom_syscall(self):
