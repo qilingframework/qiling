@@ -116,7 +116,7 @@ def hook_SetClipboardData(ql, address, params):
     try:
         data = bytes(params['hMem'], 'ascii')
     except:
-        data = ""
+        data = b""
     return ql.clipboard.set_data(params['uFormat'], data)
 
 #HANDLE GetClipboardData(
