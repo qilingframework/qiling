@@ -213,14 +213,7 @@ def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, 
 
 def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
 
-    path = bytearray()
-    index = 0
-    for byte in iter(lambda: ql.uc.mem_read(filename+index, 1), b'\x00'):
-        path.append(byte[0])
-        index += 1
-
-    path = str(path, 'utf-8', errors="ignore")
-
+    path = ql_read_string(ql, filename)
     real_path = ql_transform_to_real_path(ql, path)
     relative_path = ql_transform_to_relative_path(ql, path)
 
@@ -1870,7 +1863,6 @@ def ql_syscall_truncate(ql, path, length, null0, null1, null2, null3):
 
     if not isinstance(path, str):
         real_path = ql_read_string(ql, path)
-        real_path = str(real_path, 'utf-8', errors="ignore")
         real_path = ql_transform_to_real_path(ql, real_path)
 
     else:
