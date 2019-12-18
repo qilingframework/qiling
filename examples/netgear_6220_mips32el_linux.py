@@ -3,11 +3,20 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+# After mapping /proc there will be a /dev/mtdblock11 missing and crash
+# To fix this,
+#   - cd $yourfirmware_rootfs/dev
+#   - dd if=/dev/zero of=mtdblock11 bs=1 size=12345
+#   - mkfs.ext4 mtdblock11
+# 
+# This firmware will more or less alive now.
+
+
 import sys
 sys.path.append("..")
 from qiling import *
     
-def my_sandbox(path, rootfs):
+def my_netgear(path, rootfs):
     ql = Qiling(
                 path, 
                 rootfs, 
@@ -23,11 +32,9 @@ def my_sandbox(path, rootfs):
 
 
 if __name__ == "__main__":
-    my_sandbox(
-        ["rootfs/netgear_r6220/bin/mini_httpd",
-        "-d","/www",
-        "-r","NETGEAR R6220",
-        "-c","**.cgi",
-        "-t","300"], 
-        "rootfs/netgear_r6220"
-        )
+    my_netgear(["rootfs/netgear_r6220/bin/mini_httpd",
+                "-d","/www",
+                "-r","NETGEAR R6220",
+                "-c","**.cgi",
+                "-t","300"], 
+                "rootfs/netgear_r6220")
