@@ -285,13 +285,12 @@ def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, null0, null1, null
 
 
 def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, null0):
-    # xwings: blind patch not too sure if offset = offset_high 
-    offset = offset_high
-    offset = offset << 32 | offset_low
-    origin = ql.uc.mem_read(whence, 1)[0]
-    regreturn = ql.file_des[fd].lseek(offset, origin)
-    buff = ql.pack32s(regreturn)
-    regreturn = 0 if regreturn else -1
+    offset = offset_high << 32 | offset_low
+    origin = whence
+    ret = ql.file_des[fd].lseek(offset, origin)
+    regreturn = 0 if ret >= 0 else -1
+    if regreturn == 0:
+        ql.mem_write(result, ql.pack64(ret))
     ql.nprint("_llseek(%d, 0x%x, 0x%x, 0x%x = %d)" % (fd, offset_high, offset_low, origin, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
