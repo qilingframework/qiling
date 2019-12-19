@@ -349,9 +349,8 @@ def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
             ret = ret | mapping_to[n]
     return ret
 
+
 def open_flag_mapping(flags, ql):
-    if ql.platform == None or ql.platform == ql.ostype:
-        return flags
         
     open_flags_name = [
         "O_RDONLY",
@@ -401,11 +400,31 @@ def open_flag_mapping(flags, ql):
         'O_DIRECTORY' : 65536
     }
 
+    mips32el_open_flags = {
+        'O_RDONLY'   : 0x0,
+        'O_WRONLY'   : 0x1,
+        'O_RDWR'     : 0x2,
+        'O_NONBLOCK' : 0x80,
+        'O_APPEND'   : 0x8,
+        'O_ASYNC'    : 0x1000,
+        'O_SYNC'     : 0x4000,
+        'O_NOFOLLOW' : 0x20000,
+        'O_CREAT'    : 0x100,
+        'O_TRUNC'    : 0x200,
+        'O_EXCL'     : 0x400,
+        'O_NOCTTY'   : 0x800,
+        'O_DIRECTORY': 0x100000,
+    }
+
     if ql.platform == QL_MACOS:
         f = linux_open_flags
         t = mac_open_flags
     else:
-        f = mac_open_flags
-        t = linux_open_flags
+        if ql.arch == QL_MIPS32EL:
+            f = mips32el_open_flags
+            t = linux_open_flags
+        else:
+            f = mac_open_flags
+            t = linux_open_flags
+
     return flag_mapping(flags, open_flags_name, f, t)
-    
