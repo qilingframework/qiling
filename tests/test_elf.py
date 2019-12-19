@@ -77,8 +77,8 @@ class ELFTest(unittest.TestCase):
         ql.run()  
 
 
-    def test_elf_linux_mips32el_syscall(self):
-        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_syscall"], "../examples/rootfs/mips32el_linux", output="debug", mmap_start=0x7ffef000 - 0x800000)
+    def test_elf_linux_mips32el_posix_syscall(self):
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_posix_syscall"], "../examples/rootfs/mips32el_linux", output="debug", mmap_start=0x7ffef000 - 0x800000)
         ql.run()
 
 

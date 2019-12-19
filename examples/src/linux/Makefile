@@ -46,7 +46,7 @@ mips32el_hello: hello.c
 mips32el_hello_static: hello.c
 	mipsel-linux-gnu-gcc -Wall -O2 -s -static $< -o $@
 
-mips32el_syscall: mips32el_syscall.c
+mips32el_posix_syscall: posix_syscall.c
 	mipsel-linux-gnu-gcc -Wall -O2 -s $< -o $@ 
 
 x86_hello: hello.c
