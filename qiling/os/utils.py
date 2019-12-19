@@ -423,6 +423,8 @@ def open_flag_mapping(flags, ql):
         if ql.arch == QL_MIPS32EL:
             f = mips32el_open_flags
             t = linux_open_flags
+        elif ql.platform == None or ql.platform == ql.ostype:
+            return flags
         else:
             f = mac_open_flags
             t = linux_open_flags
