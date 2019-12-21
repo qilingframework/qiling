@@ -31,6 +31,8 @@ dict_mips32el_linux_syscall = {
     4085 : "ql_syscall_readlink",
     4090 : "ql_syscall_mmap",
     4091 : "ql_syscall_munmap",
+    4092 : "ql_syscall_truncate",
+    4093 : "ql_syscall_ftruncate",
     4096 : "ql_syscall_getpriority",
     4106 : "ql_syscall_stat",
     4108 : "ql_syscall_fstat",

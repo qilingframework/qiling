@@ -7,6 +7,7 @@ import sys,unittest, subprocess, string, random
 sys.path.append("..")
 from qiling import *
 from qiling.exception import *
+from qiling.os.posix import syscall
 
 class ELFTest(unittest.TestCase):
 
@@ -34,7 +35,6 @@ class ELFTest(unittest.TestCase):
     def test_elf_linux_x86(self):
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", output="debug")
         ql.run()
-
 
     def test_elf_linux_x86_static(self):
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello_static"], "../examples/rootfs/x86_linux", output="debug")
@@ -68,12 +68,67 @@ class ELFTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello", random_generator(random.randint(1,99))], "../examples/rootfs/mips32el_linux")
         ql.run()  
 
+
     def test_elf_linux_mips32el_static(self):
         def random_generator(size=6, chars=string.ascii_uppercase + string.digits):
             return ''.join(random.choice(chars) for x in range(size))
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello_static", random_generator(random.randint(1,99))], "../examples/rootfs/mips32el_linux")
         ql.run()  
+
+
+    def test_elf_linux_mips32el_posix_syscall(self):
+
+        def test_syscall_open(ql, open_pathname, open_flags, open_mode, *args):
+            target = False
+            pathname = ql_read_string(ql, open_pathname)
+
+            if pathname == "test_syscall_open.txt":
+                print("test => open(%s, 0x%x, 0%o)" % (pathname, open_flags, open_mode))
+                target = True
+
+            syscall.ql_syscall_open(ql, open_pathname, open_flags, open_mode, *args)
+
+            if target:
+                real_path = ql_transform_to_real_path(ql, pathname)
+                assert os.path.isfile(real_path) == True
+                os.remove(real_path)
+
+        def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
+            target = False
+            pathname = ql_read_string(ql, trunc_pathname)
+
+            if pathname == "test_syscall_truncate.txt":
+                print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
+                target = True
+
+            syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
+
+            if target:
+                real_path = ql_transform_to_real_path(ql, pathname)
+                assert os.stat(real_path).st_size == 0
+                os.remove(real_path)
+
+        def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
+            target = False
+            pathname = ql.file_des[ftrunc_fd].name.split('/')[-1]
+
+            if pathname == "test_syscall_ftruncate.txt":
+                print("test => ftruncate(%d, 0x%x)" % (ftrunc_fd, ftrunc_length))
+                target = True
+
+            syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
+
+            if target:
+                real_path = ql_transform_to_real_path(ql, pathname)
+                assert os.stat(real_path).st_size == 0x10
+                os.remove(real_path)
+
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_posix_syscall"], "../examples/rootfs/mips32el_linux", output="debug")
+        ql.set_syscall(4005, test_syscall_open)
+        ql.set_syscall(4092, test_syscall_truncate)
+        ql.set_syscall(4093, test_syscall_ftruncate)
+        ql.run()
 
 
     def test_elf_linux_arm_custom_syscall(self):

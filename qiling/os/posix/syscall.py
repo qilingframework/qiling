@@ -213,14 +213,7 @@ def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, 
 
 def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
 
-    path = bytearray()
-    index = 0
-    for byte in iter(lambda: ql.uc.mem_read(filename+index, 1), b'\x00'):
-        path.append(byte[0])
-        index += 1
-
-    path = str(path, 'utf-8', errors="ignore")
-
+    path = ql_read_string(ql, filename)
     real_path = ql_transform_to_real_path(ql, path)
     relative_path = ql_transform_to_relative_path(ql, path)
 
@@ -291,6 +284,7 @@ def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, null0):
     regreturn = 0 if ret >= 0 else -1
     if regreturn == 0:
         ql.mem_write(result, ql.pack64(ret))
+
     ql.nprint("_llseek(%d, 0x%x, 0x%x, 0x%x = %d)" % (fd, offset_high, offset_low, origin, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
@@ -1864,3 +1858,35 @@ def ql_syscall_sendfile64(ql, sendfile64_out_fd, sendfile64_in_fd, sendfile64_of
 
     ql.nprint("sendfile64(%d, %d, %x, %d) = %d" % (sendfile64_out_fd, sendfile64_in_fd, sendfile64_offest, sendfile64_count, regreturn))
     ql_definesyscall_return(ql, regreturn)
+
+
+def ql_syscall_truncate(ql, path, length, null0, null1, null2, null3):
+
+    if not isinstance(path, str):
+        real_path = ql_read_string(ql, path)
+        real_path = ql_transform_to_real_path(ql, real_path)
+
+    else:
+        real_path = path
+
+    st_size = os.stat(real_path).st_size
+
+    try:
+        if st_size >= length:
+            os.truncate(real_path, length)
+
+        else:
+            padding = (length - st_size) 
+            with open(real_path, 'a+b') as fd:
+                fd.write(b'\x00'*padding)
+
+        regreturn = 0
+    except:
+        regreturn = -1
+
+    ql.dprint('truncate(%s, 0x%x) = %d' % (real_path, length, regreturn))
+    ql_definesyscall_return(ql, regreturn)
+
+def ql_syscall_ftruncate(ql, fd, length, null0, null1, null2, null3):
+    path = ql.file_des[fd].name
+    ql_syscall_truncate(ql, path, length, null0, null1, null2, null3)
