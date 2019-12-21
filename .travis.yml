@@ -137,5 +137,5 @@ matrix:
       script:
        - docker run qiling:1.0 /bin/sh -c "cd tests && python3 test_all.py"
 
-    - allow_failures:
+    allow_failures:
       - os: osx
