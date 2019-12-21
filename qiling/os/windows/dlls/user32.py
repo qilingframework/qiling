@@ -113,7 +113,11 @@ def hook_CloseClipboard(ql, address, params):
     "hMem": STRING
 })
 def hook_SetClipboardData(ql, address, params):
-    return ql.clipboard.set_data(params['uFormat'], bytes(params['hMem'], 'ascii'))
+    try:
+        data = bytes(params['hMem'], 'ascii')
+    except:
+        data = b""
+    return ql.clipboard.set_data(params['uFormat'], data)
 
 #HANDLE GetClipboardData(
 #  UINT uFormat
