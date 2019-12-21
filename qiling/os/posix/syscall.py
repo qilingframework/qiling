@@ -12,6 +12,7 @@ import socket
 import time
 import io
 import select
+import pathlib
 
 # Remove import fcntl due to Windows Limitation
 #import fcntl
@@ -1887,6 +1888,24 @@ def ql_syscall_truncate(ql, path, length, null0, null1, null2, null3):
     ql.dprint('truncate(%s, 0x%x) = %d' % (real_path, length, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
+
 def ql_syscall_ftruncate(ql, fd, length, null0, null1, null2, null3):
     path = ql.file_des[fd].name
     ql_syscall_truncate(ql, path, length, null0, null1, null2, null3)
+
+
+def ql_syscall_unlink(ql, unlink_pathname, null0, null1, null2, null3, null4):
+    pathname = ql_read_string(ql, unlink_pathname)
+    real_path = ql_transform_to_real_path(ql, pathname)
+    opened_fds = [ql.file_des[i].name for i in range(256) if ql.file_des[i] != 0]
+
+    path = pathlib.Path(real_path)
+
+    if any((real_path not in opened_fds, path.is_block_device(), path.is_fifo(), path.is_socket(), path.is_symlink())):
+        os.unlink(real_path)
+        regreturn = 0
+    else:
+        regreturn = -1
+
+    ql.dprint('unlink(%s) = %d' % (pathname, regreturn))
+    ql_definesyscall_return(ql, regreturn)
