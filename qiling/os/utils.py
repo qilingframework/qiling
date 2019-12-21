@@ -415,15 +415,21 @@ def open_flag_mapping(flags, ql):
         'O_NOCTTY'   : 0x800,
         'O_DIRECTORY': 0x100000,
     }
+    
+    
+    if ql.platform == None or ql.platform == ql.ostype:
+        return flags
 
     if ql.platform == QL_MACOS:
         f = linux_open_flags
         t = mac_open_flags
-    else:
+    elif ql.platform == QL_MACOS and ql.ostype == QL_LINUX:
         f = mac_open_flags
         t = linux_open_flags
 
-    if ql.platform == None or ql.platform == ql.ostype
-        return flags
+    if ql.arch = QL_MIPS32EL:
+        f = mips32el_open_flags
+        t = linix_open_flags
+
         
     return flag_mapping(flags, open_flags_name, f, t)
