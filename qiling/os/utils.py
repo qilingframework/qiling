@@ -420,14 +420,14 @@ def open_flag_mapping(flags, ql):
     if ql.platform == None or ql.platform == ql.ostype:
         return flags
 
-    if ql.platform == QL_MACOS:
+    elif ql.platform == QL_MACOS and ql.ostype ==  QL_LINUX:
         f = linux_open_flags
         t = mac_open_flags
-    elif ql.platform == QL_MACOS and ql.ostype == QL_LINUX:
+    elif ql.platform == QL_LINUX and ql.ostype == QL_MACOS:
         f = mac_open_flags
         t = linux_open_flags
 
-    if ql.arch = QL_MIPS32EL:
+    elif ql.arch == QL_MIPS32EL:
         f = mips32el_open_flags
         t = linix_open_flags
 
