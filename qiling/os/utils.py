@@ -417,7 +417,7 @@ def open_flag_mapping(flags, ql):
     }
     
     
-    if ql.platform == None or ql.platform == ql.ostype:
+    if (ql.platform == None or ql.platform == ql.ostype) and ql.arch != QL_MIPS32EL:
         return flags
 
     elif ql.platform == QL_MACOS and ql.ostype ==  QL_LINUX:
