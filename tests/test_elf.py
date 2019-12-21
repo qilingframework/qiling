@@ -125,11 +125,9 @@ class ELFTest(unittest.TestCase):
                 os.remove(real_path)
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_posix_syscall"], "../examples/rootfs/mips32el_linux", output="debug")
-
-        #ql.set_syscall(4005, test_syscall_open)
-        #ql.set_syscall(4092, test_syscall_truncate)
-        #ql.set_syscall(4093, test_syscall_ftruncate)
-
+        ql.set_syscall(4005, test_syscall_open)
+        ql.set_syscall(4092, test_syscall_truncate)
+        ql.set_syscall(4093, test_syscall_ftruncate)
         ql.run()
 
 
