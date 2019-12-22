@@ -959,14 +959,15 @@ def ql_syscall_setrlimit(ql, setrlimit_resource, setrlimit_rlim, null0, null1, n
 
 def ql_syscall_prlimit64(ql, pid, resource, new_limit, old_limit, null0, null1):
     # setrlimit() and getrlimit()
-    if pid == 0:
-        ql_syscall_setrlimit(ql, resource, new_limit, 0, 0, 0, 0);
-        ql_syscall_ugetrlimit(ql, resource, old_limit, 0, 0, 0, 0);
-        regreturn = 0;
-    else:
+    #if pid == 0:
+    #    ql_syscall_setrlimit(ql, resource, new_limit, 0, 0, 0, 0);
+    #    ql_syscall_ugetrlimit(ql, resource, old_limit, 0, 0, 0, 0);
+    #    regreturn = 0;
+    #else:
         # set other process which pid != 0
-        regreturn = 0
-    ql.nprint("prlimit64(%d, %d, 0x%x, 0x%x) = %d" % (pid, resource, new_limit, old_limit, regreturn))
+    #    regreturn = 0
+    regreturn = 0
+    #ql.nprint("prlimit64(%d, %d, 0x%x, 0x%x) = %d" % (pid, resource, new_limit, old_limit, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, null0, null1, null2):
@@ -1890,3 +1891,18 @@ def ql_syscall_truncate(ql, path, length, null0, null1, null2, null3):
 def ql_syscall_ftruncate(ql, fd, length, null0, null1, null2, null3):
     path = ql.file_des[fd].name
     ql_syscall_truncate(ql, path, length, null0, null1, null2, null3)
+
+
+def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, null0, null1):
+    # fix me. dirfd(relative path) not implement.
+    nodepath = ql_read_string(ql, pathname)
+    os.mknod(nodepath, mode, dev)
+    # no return value, as always successfully.
+    regreturn = 0
+    ql_definesyscall_return(ql, regreturn)
+
+def ql_syscall_umask(ql, mode, null0, null1, null2, null3, null4):
+    oldmask = os.umask(mode)
+    ql.nprint("umask(0%o) return oldmask 0%o" % (mode, oldmask))
+    regreturn = oldmask
+    ql_definesyscall_return(ql, regreturn)
