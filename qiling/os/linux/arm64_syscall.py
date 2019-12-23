@@ -5,6 +5,7 @@
 
 dict_arm64_linux_syscall = {
     0x18 : "ql_syscall_dup3",
+    0x21 : "ql_syscall_mknodat",
     0x30 : "ql_syscall_faccessat",
     0x38 : "ql_syscall_openat",
     0x39 : "ql_syscall_close",
@@ -22,6 +23,7 @@ dict_arm64_linux_syscall = {
     0x86 : "ql_syscall_rt_sigaction",
     0x87 : "ql_syscall_rt_sigprocmask",
     0xA0 : "ql_syscall_uname",
+    0xA6 : "ql_syscall_umask",
     0xA9 : "ql_syscall_gettimeofday",
     0xAC : "ql_syscall_getpid",
     0xC6 : "ql_syscall_socket",
