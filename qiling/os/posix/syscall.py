@@ -1909,12 +1909,18 @@ def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, null0, null1, null2, null
 def ql_syscall_unlink(ql, unlink_pathname, null0, null1, null2, null3, null4):
     pathname = ql_read_string(ql, unlink_pathname)
     real_path = ql_transform_to_real_path(ql, pathname)
-    opened_fds = [ql.file_des[i].name for i in range(256) if ql.file_des[i] != 0]
+    opened_fds = [getattr(ql.file_des[i], 'name', None) for i in range(256) if ql.file_des[i] != 0]
     path = pathlib.Path(real_path)
 
     if any((real_path not in opened_fds, path.is_block_device(), path.is_fifo(), path.is_socket(), path.is_symlink())):
-        os.unlink(real_path)
-        regreturn = 0
+        try:
+            os.unlink(real_path)
+            regreturn = 0
+        except FileNotFoundError:
+            ql.dprint('[!] No such file or directory')
+            regreturn = -1
+        except:
+            regreturn = -1
     else:
         regreturn = -1
 
