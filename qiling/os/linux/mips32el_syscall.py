@@ -4,13 +4,13 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 dict_mips32el_linux_syscall = {
-    4010 : "ql_syscall_unlink",
     4001 : "ql_syscall_exit",
     4002 : "ql_syscall_vfork",
     4003 : "ql_syscall_read",
     4004 : "ql_syscall_write",
     4005 : "ql_syscall_open",
     4006 : "ql_syscall_close",
+    4010 : "ql_syscall_unlink",
     4011 : "ql_syscall_execve",
     4012 : "ql_syscall_chdir",
     4013 : "ql_syscall_time",
