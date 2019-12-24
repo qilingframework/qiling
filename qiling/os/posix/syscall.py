@@ -12,6 +12,7 @@ import socket
 import time
 import io
 import select
+import pathlib
 
 # Remove import fcntl due to Windows Limitation
 #import fcntl
@@ -1862,14 +1863,8 @@ def ql_syscall_sendfile64(ql, sendfile64_out_fd, sendfile64_in_fd, sendfile64_of
 
 
 def ql_syscall_truncate(ql, path, length, null0, null1, null2, null3):
-
-    if not isinstance(path, str):
-        real_path = ql_read_string(ql, path)
-        real_path = ql_transform_to_real_path(ql, real_path)
-
-    else:
-        real_path = path
-
+    path = ql_read_string(ql, path)
+    real_path = ql_transform_to_real_path(ql, path)
     st_size = os.stat(real_path).st_size
 
     try:
@@ -1885,12 +1880,52 @@ def ql_syscall_truncate(ql, path, length, null0, null1, null2, null3):
     except:
         regreturn = -1
 
-    ql.dprint('truncate(%s, 0x%x) = %d' % (real_path, length, regreturn))
+    ql.nprint('truncate(%s, 0x%x) = %d' % (path, length, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
-def ql_syscall_ftruncate(ql, fd, length, null0, null1, null2, null3):
-    path = ql.file_des[fd].name
-    ql_syscall_truncate(ql, path, length, null0, null1, null2, null3)
+
+def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, null0, null1, null2, null3):
+    real_path = ql.file_des[ftrunc_fd].name
+    path = real_path.split('/')[-1]
+    st_size = os.stat(real_path).st_size
+
+    try:
+        if st_size >= ftrunc_length:
+            os.truncate(real_path, ftrunc_length)
+
+        else:
+            padding = (ftrunc_length - st_size) 
+            with open(real_path, 'a+b') as fd:
+                fd.write(b'\x00'*padding)
+
+        regreturn = 0
+    except:
+        regreturn = -1
+
+    ql.nprint('ftruncate(%d, 0x%x) = %d' % (ftrunc_fd, ftrunc_length, regreturn))
+    ql_definesyscall_return(ql, regreturn)
+
+
+def ql_syscall_unlink(ql, unlink_pathname, null0, null1, null2, null3, null4):
+    pathname = ql_read_string(ql, unlink_pathname)
+    real_path = ql_transform_to_real_path(ql, pathname)
+    opened_fds = [getattr(ql.file_des[i], 'name', None) for i in range(256) if ql.file_des[i] != 0]
+    path = pathlib.Path(real_path)
+
+    if any((real_path not in opened_fds, path.is_block_device(), path.is_fifo(), path.is_socket(), path.is_symlink())):
+        try:
+            os.unlink(real_path)
+            regreturn = 0
+        except FileNotFoundError:
+            ql.dprint('[!] No such file or directory')
+            regreturn = -1
+        except:
+            regreturn = -1
+    else:
+        regreturn = -1
+
+    ql.nprint('unlink(%s) = %d' % (pathname, regreturn))
+    ql_definesyscall_return(ql, regreturn)
 
 
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, null0, null1):
@@ -1900,6 +1935,7 @@ def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, null0, null1):
     # no return value, as always successfully.
     regreturn = 0
     ql_definesyscall_return(ql, regreturn)
+
 
 def ql_syscall_umask(ql, mode, null0, null1, null2, null3, null4):
     oldmask = os.umask(mode)

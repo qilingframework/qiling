@@ -94,6 +94,20 @@ class ELFTest(unittest.TestCase):
                 assert os.path.isfile(real_path) == True
                 os.remove(real_path)
 
+        def test_syscall_unlink(ql, unlink_pathname, *args):
+            target = False
+            pathname = ql_read_string(ql, unlink_pathname)
+
+            if pathname == "test_syscall_unlink.txt":
+                print("test => unlink(%s)" % (pathname))
+                target = True
+
+            syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
+
+            if target:
+                real_path = ql_transform_to_real_path(ql, pathname)
+                assert os.path.isfile(real_path) == False
+
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
             pathname = ql_read_string(ql, trunc_pathname)
@@ -126,6 +140,7 @@ class ELFTest(unittest.TestCase):
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_posix_syscall"], "../examples/rootfs/mips32el_linux", output="debug")
         ql.set_syscall(4005, test_syscall_open)
+        ql.set_syscall(4010, test_syscall_unlink)
         ql.set_syscall(4092, test_syscall_truncate)
         ql.set_syscall(4093, test_syscall_ftruncate)
         ql.run()

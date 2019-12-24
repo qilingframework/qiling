@@ -10,6 +10,7 @@ dict_mips32el_linux_syscall = {
     4004 : "ql_syscall_write",
     4005 : "ql_syscall_open",
     4006 : "ql_syscall_close",
+    4010 : "ql_syscall_unlink",
     4011 : "ql_syscall_execve",
     4012 : "ql_syscall_chdir",
     4013 : "ql_syscall_time",

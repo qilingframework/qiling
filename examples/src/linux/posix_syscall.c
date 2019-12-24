@@ -20,7 +20,7 @@ static void syscall_open() {
     printf("test: open(%s, 0x%x, 0%o) return %d.\n", TEST_FILENAME, flags, mode, fd);
 
     if (fd == -1) {
-	print_error();
+        print_error();
         exit(1);
     }
 
@@ -41,7 +41,7 @@ static void syscall_truncate() {
     mode = 0644;
     fd = open(TEST_FILENAME, flags, mode);
     if (fd == -1) {
-	print_error();
+        print_error();
         exit(1);
     }
     len = sizeof(buffer);
@@ -56,7 +56,7 @@ static void syscall_truncate() {
     ret = truncate(TEST_FILENAME, off);
     printf("test: truncate(%s, 0x%x) return %d.\n", TEST_FILENAME, off, ret);
     if (ret == -1) {
-	print_error();
+        print_error();
         exit(1);
     }
 
@@ -78,7 +78,7 @@ static void syscall_ftruncate() {
     fd = open(TEST_FILENAME, flags, mode);
 
     if (fd == -1) {
-	print_error();
+        print_error();
         exit(1);
     }
 
@@ -87,12 +87,38 @@ static void syscall_ftruncate() {
     close(fd);
 
     if (ret == -1) {
-	print_error();
+        print_error();
         exit(1);
     }
 
     /* check the file has been trucated or not. */
     /* stat(), check the st_size. should be 0x10*/
+}
+
+static void syscall_unlink() {
+    char *TEST_FILENAME = "test_syscall_unlink.txt";
+    int ret;
+    int fd;
+    int flags;
+    mode_t mode;
+
+    flags = O_CREAT | O_WRONLY;
+    mode = 0644;
+    fd = open(TEST_FILENAME, flags, mode);
+
+    if (fd == -1) {
+        print_error();
+        exit(1);
+    }
+
+    close(fd);
+    ret = unlink(TEST_FILENAME);
+    printf("test: unlink(%s) return %d.\n", TEST_FILENAME, ret);
+    
+    if (ret == -1) {
+        print_error();
+        exit(1);
+    }
 }
 
 int main(int argc, const char **argv) {
@@ -102,6 +128,8 @@ int main(int argc, const char **argv) {
     syscall_truncate();
     
     syscall_ftruncate();
+
+    syscall_unlink();
 
     return 0;
 }
