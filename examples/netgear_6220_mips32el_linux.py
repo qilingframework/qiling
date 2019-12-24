@@ -6,7 +6,7 @@
 # After mapping /proc there will be a /dev/mtdblock11 missing and crash
 # To fix this,
 #   - cd $yourfirmware_rootfs/dev
-#   - dd if=/dev/zero of=mtdblock11 bs=1 size=12345
+#   - dd if=/dev/zero of=mtdblock11 bs=1024 count=129030
 #   - mkfs.ext4 mtdblock11
 # 
 # This firmware will more or less alive now.
