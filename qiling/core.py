@@ -113,7 +113,7 @@ class Qiling:
         self.interp_base            = interp_base
         self.dict_posix_syscall     = dict()
         self.user_defined_winapi    = {}
-        self.GLOBAL_THREAD_ID       = 0
+        self.global_thread_id       = 0
 
         if self.log_file != None and type(self.log_file) == str:
             if self.log_file[0] != '/':

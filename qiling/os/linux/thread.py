@@ -23,8 +23,8 @@ THREAD_STATUS_TIMEOUT = 3
 class Thread:
     def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, special_settings_arg = None, special_settings_fuc = None, set_child_tid_addr = None):
         #global GLOBAL_THREAD_ID
-        if ql.GLOBAL_THREAD_ID == 0:
-            ql.GLOBAL_THREAD_ID = os.getpid() + 1000
+        if ql.global_thread_id == 0:
+            ql.global_thread_id = os.getpid() + 1000
 
         self.total_time = total_time
         self.runing_time = 0
@@ -40,8 +40,7 @@ class Thread:
         self.return_val = 0
         self.blocking_condition_fuc = None
         self.blocking_condition_arg = None
-        self.thread_id = ql.GLOBAL_THREAD_ID
-        self.global_thread_id = ql.GLOBAL_THREAD_ID
+        self.thread_id = ql.global_thread_id
         self.thread_management = None
         self.current_path = ql.current_path
 
@@ -89,7 +88,7 @@ class Thread:
         if self.set_child_tid_address != None:
             self.ql.uc.mem_write(self.set_child_tid_address, ql.pack32(self.thread_id))
 
-        self.global_thread_id += 1
+        ql.global_thread_id += 1
     
     def run(self, timeout = 0):
         # Set the time of the current run
@@ -217,12 +216,12 @@ class Thread:
     
     def new_thread_id(self):
         #global GLOBAL_THREAD_ID
-        self.thread_id = self.global_thread_id
-        self.global_thread_id += 1
+        self.thread_id = ql.global_thread_id
+        ql.global_thread_id += 1
     
     def update_global_thread_id(self):
         #global GLOBAL_THREAD_ID
-        self.global_thread_id = os.getpid()
+        ql.global_thread_id = os.getpid()
     
     def set_thread_log_file(self, log_file):
         if self.ql.log_split and log_file != None:
