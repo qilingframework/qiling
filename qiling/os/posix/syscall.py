@@ -1948,12 +1948,32 @@ def ql_syscall_unlink(ql, unlink_pathname, null0, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn)
 
 
+def ql_syscall_unlinkat(ql, dirfd, pathname, flag, null0, null1, null2):
+    # fix me. dirfd(relative path) not implement.
+    file_path = ql_read_string(ql, pathname)
+    real_path = ql_transform_to_real_path(ql, file_path)
+    ql.nprint("unlinkat(%d, %s, 0%o)" % (dirfd, real_path, flag))
+    try:
+        os.unlink(real_path)
+        regreturn = 0
+    except FileNotFoundError:
+        ql.dprint("[!] No such file or directory")
+        regreturn = -1
+    except:
+        regreturn = -1
+    ql_definesyscall_return(ql, regreturn)
+
+
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, null0, null1):
     # fix me. dirfd(relative path) not implement.
-    nodepath = ql_read_string(ql, pathname)
-    os.mknod(nodepath, mode, dev)
-    # no return value, as always successfully.
-    regreturn = 0
+    file_path = ql_read_string(ql, pathname)
+    real_path = ql_transform_to_real_path(ql, file_path)
+    ql.nprint("mknodat(%d, %s, 0%o, %d)" % (dirfd, real_path, mode, dev))
+    try:
+        os.mknod(real_path, mode, dev)
+        regreturn = 0
+    except:
+        regreturn = -1
     ql_definesyscall_return(ql, regreturn)
 
 

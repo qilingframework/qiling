@@ -103,7 +103,31 @@ def runner(ql):
         if ql.shellcoder:
             ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
         else:    
-            ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
+            # start multithreading
+            thread_management = ThreadManagement(ql)
+            ql.thread_management = thread_management
+
+            main_thread = Thread(ql, thread_management, total_time = ql.timeout)
+            main_thread.save()
+            main_thread.set_start_address(ql.entry_point)
+
+            thread_management.set_main_thread(main_thread)
+
+            # enable lib patch
+            if ql.elf_entry != ql.entry_point:
+                main_thread.set_until_addr(ql.elf_entry)
+                thread_management.run()
+                ql.enable_lib_patch()
+
+                main_thread.set_start_address(ql.elf_entry)
+                main_thread.set_until_addr(ql.until_addr)
+                main_thread.running()
+
+                thread_management.clean_world()
+                thread_management.set_main_thread(main_thread)
+
+
+            thread_management.run()
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC= " + hex(ql.pc))
