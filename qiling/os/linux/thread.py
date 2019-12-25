@@ -43,8 +43,8 @@ class Thread:
         self.thread_id = ql.global_thread_id
         self.thread_management = None
         self.current_path = ql.current_path
-
         self.log_file_fd = None
+
         if ql.log_split and ql.log_file_name != None:
             self.log_file_fd = open(ql.log_file_name + "_" + str(os.getpid()) + '.' + str(self.thread_id) + ".qlog", 'w+')
             #logging.basicConfig(filename=ql.log_file_name + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
@@ -79,6 +79,7 @@ class Thread:
         # The effect of this operation is to wake a single thread that is
         # performing a futex wait on the memory location.  Errors from the
         # futex wake operation are ignored.
+
         self.set_child_tid_address = set_child_tid_addr
         self.clear_child_tid_address = None
         
@@ -216,12 +217,12 @@ class Thread:
     
     def new_thread_id(self):
         #global GLOBAL_THREAD_ID
-        self.thread_id = ql.global_thread_id
-        ql.global_thread_id += 1
+        self.thread_id = self.ql.global_thread_id
+        self.ql.global_thread_id += 1
     
     def update_global_thread_id(self):
         #global GLOBAL_THREAD_ID
-        ql.global_thread_id = os.getpid()
+        self.ql.global_thread_id = os.getpid()
     
     def set_thread_log_file(self, log_file):
         if self.ql.log_split and log_file != None:
@@ -249,11 +250,11 @@ class ThreadManagement:
 
     def run(self):
         if len(self.running_thread_list) == 0:
-            self.ql.nprint('[!] No executable thread!')
+            self.ql.dprint('[!] No executable thread!')
             return
         
         if self.main_thread not in self.running_thread_list:
-            self.ql.nprint('[!] No main thread!')
+            self.ql.dprint('[!] No main thread!')
             return
         
         while True:
@@ -267,7 +268,7 @@ class ThreadManagement:
             if running_thread_num != 0:
                 for i in range(running_thread_num):
                     self.cur_thread = self.running_thread_list[i]
-                    self.ql.nprint("[+] Currently running pid is: %d; tid is: %d " % (os.getpid() ,self.cur_thread.get_thread_id()))
+                    self.ql.dprint("[+] Currently running pid is: %d; tid is: %d " % (os.getpid() ,self.cur_thread.get_thread_id()))
                     
                     self.runing_time += self.running_thread_list[i].run(time_slice)
 
