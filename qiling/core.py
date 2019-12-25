@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys, struct, os, platform, importlib
+import sys, struct, os, platform, importlib, logging
 from unicorn import *
 
 from qiling.arch.filetype import *
@@ -113,6 +113,7 @@ class Qiling:
         self.interp_base            = interp_base
         self.dict_posix_syscall     = dict()
         self.user_defined_winapi    = {}
+        self.GLOBAL_THREAD_ID       = 0
 
         if self.log_file != None and type(self.log_file) == str:
             if self.log_file[0] != '/':
@@ -120,9 +121,10 @@ class Qiling:
             self.log_file_name = self.log_file
             if type(self.log_split) != bool or not self.log_split:
                 self.log_file_fd = open(log_file + ".qlog", 'w+')
+                #logging.basicConfig(filename=log_file + '.qlog', filemode='w+', level=logging.DEBUG, format='%(message)s')
             else:
-                #self.log_split = log_split
                 self.log_file_fd = open(log_file + "_" + str(os.getpid()) + ".qlog", 'w+')
+                #self.log_file_fd = logging.basicConfig(filename=log_file + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -217,8 +219,10 @@ class Qiling:
             pass
         elif self.log_console == False and self.log_file_name:
             print(*args, **kw, file = fd)
+            #logging.debug(*args, **kw)
         elif (self.log_file_name and self.log_console):
             print(*args, **kw, file = fd)
+            #logging.debug(*args, **kw)
             print(*args, **kw)
         else:
             print(*args, **kw)
