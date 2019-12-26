@@ -16,6 +16,9 @@ class ql_file:
 
     @classmethod
     def open(self, open_path, open_flags, open_mode):
+        if (open_flags & os.O_CREAT) == 0:
+            open_mode = 0
+
         fd = os.open(open_path, open_flags, open_mode)
         return self(open_path, fd)
 

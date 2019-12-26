@@ -232,9 +232,6 @@ def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
                 mode = 0
 
             flags = open_flag_mapping(flags, ql)
-            if (flags & os.O_CREAT) == 0:
-                mode = 0
-
             ql.file_des[idx] = ql_file.open(real_path, flags, mode)
             regreturn = idx
         except:
@@ -267,9 +264,6 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
             regreturn = -1
         else:
             openat_flags = open_flag_mapping(openat_flags, ql)
-            if (openat_flags & os.O_CREAT) == 0:
-                openat_mode = 0
-
             ql.file_des[idx] = ql_file.open(real_path, openat_flags, openat_mode)
             regreturn = (idx)
     ql.nprint("\nopenat(%d, %s, 0x%x, 0x%x) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
