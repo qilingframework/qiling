@@ -32,6 +32,7 @@ t14g0p
 Hcamael
 hugsy
 danielhenrymantilla
+iamyeh
 
 Alpha testers (in no particular order, named by github id)
 ==========================================================
@@ -47,4 +48,4 @@ phdphuc
 sashs
 knownsec
 hwiosec
-
+iamyeh
