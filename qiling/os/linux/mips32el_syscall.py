@@ -28,6 +28,7 @@ dict_mips32el_linux_syscall = {
     4055 : "ql_syscall_fcntl",
     4063 : "ql_syscall_dup2",
     4066 : "ql_syscall_setsid",
+    4078 : "ql_syscall_gettimeofday",
     4081 : "ql_syscall_setgroups",
     4085 : "ql_syscall_readlink",
     4090 : "ql_syscall_mmap",
@@ -39,6 +40,7 @@ dict_mips32el_linux_syscall = {
     4108 : "ql_syscall_fstat",
     4114 : "ql_syscall_wait4",
     4116 : "ql_syscall_sysinfo",
+    4120 : "ql_syscall_clone",
     4122 : "ql_syscall_uname",
     4125 : "ql_syscall_mprotect",
     4140 : "ql_syscall__llseek",
@@ -62,5 +64,6 @@ dict_mips32el_linux_syscall = {
     4220 : "ql_syscall_fcntl64",
     4237 : "ql_syscall_sendfile64",
     4246 : "ql_syscall_exit_group",
+    4252 : "ql_syscall_set_tid_address",
     4283 : "ql_syscall_mips32el_set_thread_area",
 }
