@@ -1389,7 +1389,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
         regreturn = 0
 
     ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
-    ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ipv4(host),port,sin_family ) )
+    ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %i" % (host, port,sin_family ) )
     ql_definesyscall_return(ql, regreturn)
 
 
