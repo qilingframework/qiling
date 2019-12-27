@@ -30,6 +30,7 @@ from qiling.arch.filetype import *
 from qiling.os.linux.thread import *
 from qiling.arch.filetype import *
 from qiling.os.posix.filestruct import *
+from qiling.os.posix.constant import *
 from qiling.utils import *
 
 def ql_syscall_exit(ql, null0, null1, null2, null3, null4, null5):
@@ -1239,6 +1240,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, nu
         regreturn = -1
 
     ql.nprint("socket(%d, %d, %d) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
+    ql.dprint("[+] scoket(%d, %s, %s) = %d" % (socket_domain, socket_const[socket_type], socket_const[socket_protocol], regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -1261,10 +1263,10 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, null0,
             elif s.family == AF_INET:
                 port, host = struct.unpack(">HI", sock_addr[2:8])
                 ip = ql_bin_to_ipv4(host)
-                s.connect((ip, port)) 
+                s.connect((ip, port))
                 regreturn = 0 
             else:
-                regreturn = -1       
+                regreturn = -1
         else:
             regreturn = -1
     except:
@@ -1358,15 +1360,15 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
     if ql.arch == QL_X8664:
         data = ql.uc.mem_read(bind_addr, 8)
     else:
-        data = ql.uc.mem_read(bind_addr, bind_addrlen) 
+        data = ql.uc.mem_read(bind_addr, bind_addrlen)
 
-    sin_family, = struct.unpack("<h", data[:2])  
+    sin_family, = struct.unpack("<h", data[:2])
 
     port, host = struct.unpack(">HI", data[2:8])
-    if sin_family == 2: 
+    if sin_family == 2:
         host = ql_bin_to_ipv4(host)
-    elif sin_family == 10:  
-        host = "::"
+    elif sin_family == 10:
+        host = "::1"
 
     if ql.root == False and port <= 1024:
         port = port + 8000
@@ -1388,8 +1390,8 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
     if ql.shellcoder:
         regreturn = 0
 
-    ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
-    ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %i" % (host, port,sin_family ) )
+    ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen, regreturn))
+    ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %s" % (host, port, socket_const[sin_family]))
     ql_definesyscall_return(ql, regreturn)
 
 
