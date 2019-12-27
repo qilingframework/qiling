@@ -1177,19 +1177,22 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, null0, null
     real_path = ql_transform_to_real_path(ql, pathname)
     relative_path = ql_transform_to_relative_path(ql, pathname)
 
+    word_size = 8 if (ql.arch == QL_ARM64) or (ql.arch == QL_X8664) else 4
+    unpack = ql.unpack64 if (ql.arch == QL_ARM64) or (ql.arch == QL_X8664) else ql.unpack32
+
     argv = []
     if execve_argv != 0:
         while True:
-            argv_addr = ql.unpack32(ql.uc.mem_read(execve_argv, 4))
+            argv_addr = unpack(ql.uc.mem_read(execve_argv, word_size))
             if argv_addr == 0:
                 break
             argv.append(ql_read_string(ql, argv_addr))
-            execve_argv += 4
+            execve_argv += word_size
 
     env = {}
     if execve_envp != 0:
         while True:
-            env_addr = ql.unpack32(ql.uc.mem_read(execve_envp, 4))
+            env_addr = unpack(ql.uc.mem_read(execve_envp, word_size))
             if env_addr == 0:
                 break
             env_str = ql_read_string(ql, env_addr)
@@ -1197,7 +1200,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, null0, null
             key = env_str[ : idx]
             val = env_str[idx + 1 : ]
             env[key] = val
-            execve_envp += 4
+            execve_envp += word_size
 
     ql.nprint("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
     ql.uc.emu_stop()
