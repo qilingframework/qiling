@@ -2,13 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
 
 from struct import pack
 from qiling.loader.macho_parser.parser import *
@@ -86,7 +79,7 @@ class MachoX86:
                     if cmd.cmd_id == LC_LOAD_DYLINKER:
                         if not isdyld:
                             if not self.dyld_path:
-                                raise QlErrorMACHOFormat("Error No Dyld path")
+                                raise QlErrorMACHOFormat("[!] Error No Dyld path")
                             self.dyld_file = MachoParser(self.ql, self.dyld_path, "x86")
                             self.loadMachoX86(depth + 1, True)
                             self.using_dyld = True
@@ -305,7 +298,7 @@ class MachoX8664:
                         self.using_dyld = True
                         if not isdyld:
                             if not self.dyld_path:
-                                raise QlErrorMACHOFormat("Error No Dyld path")
+                                raise QlErrorMACHOFormat("[!] Error No Dyld path")
                             self.dyld_file = MachoParser(self.ql, self.dyld_path)
                             self.loading_file = self.dyld_file
                             self.proc_entry = self.loadMachoX8664(depth + 1, True)
@@ -537,7 +530,7 @@ class MachoARM64:
                     if cmd.cmd_id == LC_LOAD_DYLINKER:
                         if not isdyld:
                             if not self.dyld_path:
-                                raise QlErrorMACHOFormat("Error No Dyld path")
+                                raise QlErrorMACHOFormat("[!] Error No Dyld path")
                             self.dyld_file = MachoParser(self.ql, self.dyld_path)
                             self.loadMachoX86(depth + 1, True)
                             self.using_dyld = True

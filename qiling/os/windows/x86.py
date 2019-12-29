@@ -2,31 +2,12 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
 
-import struct
-import sys
+import traceback
+import types
 
 from unicorn import *
 from unicorn.x86_const import *
-
-from capstone import *
-from capstone.x86_const import *
-
-from keystone import *
-from keystone.x86_const import *
-
-from struct import pack
-import os
-import types
-
-import string
 
 # impport read_string and other commom utils.
 from qiling.loader.pe import PE, Shellcode
@@ -35,6 +16,8 @@ from qiling.os.windows.dlls import *
 from qiling.os.utils import *
 from qiling.os.windows.memory import Heap
 from qiling.os.windows.registry import RegistryManager
+from qiling.os.windows.clipboard import Clipboard
+from qiling.os.windows.fiber import FiberManager
 
 QL_X86_WINDOWS_STACK_ADDRESS = 0xfffdd000
 QL_X86_WINDOWS_STACK_SIZE = 0x21000
@@ -45,10 +28,28 @@ QL_X86_WINDOWS_EMU_END = 0x0
 def hook_winapi(ql, address, size):
     # call win32 api
     if address in ql.PE.import_symbols:
-        try:
-            globals()['hook_' + ql.PE.import_symbols[address].decode()](ql, address, {})
-        except KeyError as e:
-            print("[!]", e, "\t is not implemented")
+        winapi_name = ql.PE.import_symbols[address]['name'].decode()
+        winapi_func = None
+
+        if winapi_name in ql.user_defined_winapi:
+            if isinstance(ql.user_defined_winapi[winapi_name], types.FunctionType):
+                winapi_func = ql.user_defined_winapi[winapi_name]
+        else:
+            try:
+                winapi_func = globals()['hook_' + winapi_name]
+            except KeyError:
+                winapi_func = None
+
+        if winapi_func:
+            try:
+                winapi_func(ql, address, {})
+            except Exception:
+                ql.dprint("[!] %s Exception Found" % winapi_name)
+                raise QlErrorSyscallError("[!] Windows API Implementation Error")
+        else:
+            ql.nprint("[!] %s is not implemented" % winapi_name)
+            if ql.debug_stop:
+                raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
 
 def setup_windows32(ql):
@@ -87,6 +88,12 @@ def setup_windows32(ql):
     ql.handle_manager = HandleManager()
     # registry manger
     ql.registry_manager = RegistryManager(ql)
+    # clipboard
+    ql.clipboard = Clipboard(ql)
+    # fibers
+    ql.fiber_manager = FiberManager(ql)
+    # Place to set errors for retrieval by GetLastError()
+    ql.last_error = 0
     # thread manager
     main_thread = Thread(ql)
     ql.thread_manager = ThreadManager(ql, main_thread)
@@ -99,8 +106,11 @@ def loader_file(ql):
     ql.uc = uc
 
     # MAPPED Vars for loadPE32
-    ql.stack_address = QL_X86_WINDOWS_STACK_ADDRESS
-    ql.stack_size = QL_X86_WINDOWS_STACK_SIZE
+    if (ql.stack_address == 0): 
+        ql.stack_address = QL_X86_WINDOWS_STACK_ADDRESS
+    if (ql.stack_size == 0): 
+        ql.stack_size = QL_X86_WINDOWS_STACK_SIZE
+
 
     setup_windows32(ql)
 
@@ -117,8 +127,10 @@ def loader_shellcode(ql):
     ql.uc = uc
 
     # MAPPED Vars for loadPE32
-    ql.stack_address = QL_X86_WINDOWS_STACK_ADDRESS
-    ql.stack_size = QL_X86_WINDOWS_STACK_SIZE
+    if (ql.stack_address == 0):
+        ql.stack_address = QL_X86_WINDOWS_STACK_ADDRESS
+    if (ql.stack_size == 0): 
+        ql.stack_size = QL_X86_WINDOWS_STACK_SIZE
 
     ql.code_address = 0x40000
     ql.code_size = 10 * 1024 * 1024
@@ -135,8 +147,6 @@ def loader_shellcode(ql):
 
 def runner(ql):
     ql_setup(ql)
-    # registry manger
-    ql.registry_manager = RegistryManager(ql)
 
     if (ql.until_addr == 0):
         ql.until_addr = QL_X86_WINDOWS_EMU_END
@@ -145,14 +155,15 @@ def runner(ql):
             ql.uc.emu_start(ql.code_address, ql.code_address + len(ql.shellcoder))
         else:
             ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
-    except UcError as e:
+    except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
-
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
-        ql.errmsg = 1
-        ql.nprint("%s" % e)
+
     ql.registry_manager.save()
+
+    if ql.internal_exception != None:
+        raise ql.internal_exception   

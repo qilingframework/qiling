@@ -2,14 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
-
 import struct
 import sys
 import os
@@ -36,4 +28,16 @@ def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec,
     regreturn = 0
     ql_definesyscall_return(ql, regreturn)
 
+def ql_syscall___sysctl(ql, sysctl_name, sysctl_namelen, sysctl_bytes_oldlenp, sysctl_size_oldlenp, sysctl_bytes_newlen, sysctl_size_newlen):
+    #path = (ql_read_string(ql, sysctl_namelen))
+    regreturn = 1
+    ql.nprint("__sysctl(0x%x) = %i" % (sysctl_name, regreturn)) 
+    ql_definesyscall_return(ql, regreturn)
 
+
+def ql_syscall_sysarch(ql, op, parms, null2, null3, null4, null5):
+    regreturn = 0
+    op_buf = ql.pack32(op)
+    ql.uc.mem_write(parms, op_buf)
+    ql.nprint("sysarch(%i,0x%x) = %i" % (op,parms,regreturn))
+    ql_definesyscall_return(ql, regreturn)

@@ -2,13 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
 
 import struct
 from qiling.os.windows.fncc import *
@@ -89,3 +82,65 @@ def hook_MessageBoxA(ql, address, params):
 def hook_EndDialog(ql, address, params):
     ret = 1
     return ret
+
+
+# HWND GetDesktopWindow((
+# );
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+def hook_GetDesktopWindow(ql, address, params):
+    pass
+
+#BOOL OpenClipboard(
+#  HWND hWndNewOwner
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "hWndNewOwner": HANDLE
+})
+def hook_OpenClipboard(ql, address, params):
+    return ql.clipboard.open(params['hWndNewOwner'])
+
+#BOOL CloseClipboard();
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+def hook_CloseClipboard(ql, address, params):
+    return ql.clipboard.close()
+
+#HANDLE SetClipboardData(
+#  UINT   uFormat,
+#  HANDLE hMem
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "uFormat": UINT,
+    "hMem": STRING
+})
+def hook_SetClipboardData(ql, address, params):
+    try:
+        data = bytes(params['hMem'], 'ascii')
+    except:
+        data = b""
+    return ql.clipboard.set_data(params['uFormat'], data)
+
+#HANDLE GetClipboardData(
+#  UINT uFormat
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "uFormat": UINT
+})
+def hook_GetClipboardData(ql, address, params):
+    data = ql.clipboard.get_data(params['uFormat'])
+    if data:
+        addr = ql.heap.mem_alloc(len(data))
+        ql.uc.mem_write(addr, data)
+        return addr
+    else:
+        ql.dprint('Failed to get clipboard data')
+        return 0
+
+#BOOL IsClipboardFormatAvailable(
+#  UINT format
+#);
+@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+    "uFormat": UINT
+})
+def hook_IsClipboardFormatAvailable(ql, address, params):
+    rtn = ql.clipboard.format_available(params['uFormat'])
+    return rtn

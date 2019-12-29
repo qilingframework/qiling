@@ -2,30 +2,9 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
-
-import struct
-import sys
 
 from unicorn import *
 from unicorn.mips_const import *
-
-from capstone import *
-from capstone.mips_const import *
-
-from keystone import *
-from keystone.mips_const import *
-
-from struct import pack
-import os
-
-import string
 
 from qiling.loader.elf import *
 from qiling.os.linux.mips32el_syscall import *
@@ -44,7 +23,6 @@ QL_SHELLCODE_INIT = 0
 
 QL_MIPSEL_EMU_END = 0x8fffffff
 
-
 def hook_syscall(ql, intno):
     syscall_num = ql.uc.reg_read(UC_MIPS_REG_V0)
     param0 = ql.uc.reg_read(UC_MIPS_REG_A0)
@@ -58,36 +36,39 @@ def hook_syscall(ql, intno):
     pc = ql.uc.reg_read(UC_MIPS_REG_PC)
 
     if intno != 0x11:
-        ql.nprint("got interrupt 0x%x ???" %intno)
-        ql.uc.emu_stop()
-        return
+        raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)
 
-    linux_syscall_numb_list = []
-    linux_syscall_func_list = []
+    while 1:
+        LINUX_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
+        if LINUX_SYSCALL_FUNC != None:
+            LINUX_SYSCALL_FUNC_NAME = LINUX_SYSCALL_FUNC.__name__
+            break
+        LINUX_SYSCALL_FUNC_NAME = dict_mips32el_linux_syscall.get(syscall_num, None)
+        if LINUX_SYSCALL_FUNC_NAME != None:
+            LINUX_SYSCALL_FUNC = eval(LINUX_SYSCALL_FUNC_NAME)
+            break
+        LINUX_SYSCALL_FUNC = None
+        LINUX_SYSCALL_FUNC_NAME = None
+        break
 
-    for i in MIPS32EL_LINUX_SYSCALL:
-        linux_syscall_numb_list.append(i[0])
-        linux_syscall_func_list.append(i[1])
-
-    if any(linux_syscall_numb == syscall_num for linux_syscall_numb in linux_syscall_numb_list):
-        linux_syscall_index = linux_syscall_numb_list.index(syscall_num)
-        LINUX_SYSCALL_FUNC= eval(linux_syscall_func_list[linux_syscall_index])
+    if LINUX_SYSCALL_FUNC != None:
         try:
             LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
-        except:
-            ql.errmsg = 1
-            ql.nprint("SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
-            if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                if ql.debug_stop:
-                    ql.uc.emu_stop()
-                raise    
+        except Exception:
+            ql.nprint("[!] SYSCALL ERROR: ", LINUX_SYSCALL_FUNC_NAME)
+            td = ql.thread_management.cur_thread
+            td.stop()
+            td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+            raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (LINUX_SYSCALL_FUNC_NAME))
     else:
-        ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
-            ql.uc.emu_stop()
-
+            td = ql.thread_management.cur_thread
+            td.stop()
+            td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+            raise QlErrorSyscallNotFound("[!] Syscall Not Found")
 
 def hook_shellcode(uc, addr, shellcode, ql):
     '''
@@ -178,7 +159,7 @@ lab1:
  store_code:
 	nop
     '''
-    global QL_SHELLCODE_INIT
+    QL_SHELLCODE_INIT = 0
     if QL_SHELLCODE_INIT == 0:
         uc.mem_map(QL_SHELLCODE_ADDR, QL_SHELLCODE_LEN)
         QL_SHELLCODE_INIT = 1
@@ -208,10 +189,12 @@ def loader_file(ql):
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = QL_MIPSEL_LINUX_PREDEFINE_STACKADDRESS
+    if (ql.stack_size == 0): 
         ql.stack_size = QL_MIPSEL_LINUX_PREDEFINE_STACKSIZE
-        uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
-    loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env)
+    if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env):
+        raise QlErrorFileType("Unsupported FileType")
     ql.stack_address = (int(ql.new_stack))
     
 
@@ -220,8 +203,9 @@ def loader_shellcode(ql):
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = 0x1000000
+    if (ql.stack_size == 0): 
         ql.stack_size = 2 * 1024 * 1024
-        uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.uc.mem_map(ql.stack_address, ql.stack_size)
     ql.stack_address =  ql.stack_address  + 0x200000 - 0x1000
     ql.uc.mem_write(ql.stack_address, ql.shellcoder) 
 
@@ -236,17 +220,39 @@ def runner(ql):
         if ql.shellcoder:
             ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
         else:
-            ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
-    except UcError as e:
+            # start multithreading
+            thread_management = ThreadManagement(ql)
+            ql.thread_management = thread_management
+
+            main_thread = Thread(ql, thread_management, total_time = ql.timeout)
+            main_thread.save()
+            main_thread.set_start_address(ql.entry_point)
+
+            thread_management.set_main_thread(main_thread)
+
+            # enable lib patch
+            if ql.elf_entry != ql.entry_point:
+                main_thread.set_until_addr(ql.elf_entry)
+                thread_management.run()
+                ql.enable_lib_patch()
+
+                main_thread.set_start_address(ql.elf_entry)
+                main_thread.set_until_addr(ql.until_addr)
+                main_thread.running()
+
+                thread_management.clean_world()
+                thread_management.set_main_thread(main_thread)
+            
+            #ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
+            
+            thread_management.run()
+    except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
-
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
-        ql.errmsg = 1
-        ql.nprint("%s" % e)  
 
     if ql.internal_exception != None:
         raise ql.internal_exception

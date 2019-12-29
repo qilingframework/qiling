@@ -2,15 +2,8 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
 
-import sys, struct, os, platform, importlib
+import sys, struct, os, platform, importlib, logging
 from unicorn import *
 
 from qiling.arch.filetype import *
@@ -40,78 +33,98 @@ def catch_KeyboardInterrupt(ql):
     return decorator
 
 class Qiling:
-    arch = ''
-    archbit = ''
-    uc = ''
-    path = ''
-    rootfs = ''
-    ostype = ''
-    stack_address = 0
-    stack_size = 0
-    entry_point = 0
-    elf_entry = 0
-    new_stack = 0
-    brk_address = 0
-    mmap_start = 0
-    shellcode_init = 0
-    output = ''
-    consolelog = True
-    file_des = []
-    stdin = ql_file('stdin', sys.stdin.fileno())
-    stdout = ql_file('stdout', sys.stdout.fileno())
-    stderr = ql_file('stderr', sys.stderr.fileno())
-    sigaction_act = []
-    child_processes = False
-    patch_bin = []
-    patch_lib = []
-    patched_lib = []
-    loadbase = 0
-    map_info = []
-    timeout = 0
-    until_addr = 0
-    byte = 0
-    errmsg = 0
-    thread_management = None
-    root = True
-    port = 0
-    currentpath = os.getcwd()
-    log_file_fd = None
-    log_file_name = None
-    separate_log_file = False
-    current_path = '/'
-    fs_mapper = []
-    reg_dir = None
-    reg_diff = None
-    exit_code = 0
-    debug_stop = False
-    internal_exception = None
-    
+    arch                = ''
+    archbit             = ''
+    uc                  = ''
+    path                = ''
+    entry_point         = 0
+    elf_entry           = 0
+    new_stack           = 0
+    brk_address         = 0
+    shellcode_init      = 0
+    file_des            = []
+    stdin               = ql_file('stdin', sys.stdin.fileno())
+    stdout              = ql_file('stdout', sys.stdout.fileno())
+    stderr              = ql_file('stderr', sys.stderr.fileno())
+    sigaction_act       = []
+    child_processes     = False
+    patch_bin           = []
+    patch_lib           = []
+    patched_lib         = []
+    loadbase            = 0
+    map_info            = []
+    timeout             = 0
+    until_addr          = 0
+    byte                = 0
+    thread_management   = None
+    root                = True
+    port                = 0
+    currentpath         = os.getcwd()
+    log_file_fd         = None
+    log_file_name       = None
+    current_path        = '/'
+    fs_mapper           = []
+    reg_dir             = None
+    reg_diff            = None
+    exit_code           = 0
+    debug_stop          = False
+    internal_exception  = None
 
-    def __init__(self, filename = None, rootfs = None, argv = [], env = {}, 
-                 shellcoder = None, ostype = None, archtype = None, libcache = False,
-                 output = None, consolelog = True, stdin = 0, stdout = 0, stderr = 0,
-                 log_file = None, separate_log_file = False):
-        self.output = None
-        self.ostype = ostype
-        self.archtype = archtype
-        self.shellcoder  = shellcoder
-        self.filename = filename
-        self.rootfs = rootfs
-        self.argv = argv
-        self.env = env
-        self.libcache = libcache
-        self.consolelog = consolelog
-        self.platform = platform.system()
 
-        if log_file != None and type(log_file) == str:
-            if log_file[0] != '/':
-                log_file = os.getcwd() + '/' + log_file
-            self.log_file_name = log_file
-            if type(separate_log_file) != bool or not separate_log_file:
+    def __init__(
+                    self, 
+                    filename        = None, 
+                    rootfs          = None, 
+                    argv            = [], 
+                    env             = {}, 
+                    shellcoder      = None, 
+                    ostype          = None, 
+                    archtype        = None, 
+                    libcache        = False,
+                    stdin           = 0, 
+                    stdout          = 0, 
+                    stderr          = 0,
+                    output          = None, 
+                    log_console     = True,                     
+                    log_file        = None, 
+                    log_split       = False, 
+                    mmap_start      = 0, 
+                    stack_address   = 0, 
+                    stack_size      = 0,
+                    interp_base     = 0
+                ):
+
+        self.output                 = output
+        self.ostype                 = ostype
+        self.archtype               = archtype
+        self.shellcoder             = shellcoder
+        self.filename               = filename
+        self.rootfs                 = rootfs
+        self.argv                   = argv
+        self.env                    = env
+        self.libcache               = libcache
+        self.log_console            = log_console
+        self.log_file               = log_file
+        self.log_split              = log_split
+        self.platform               = platform.system()
+        self.mmap_start             = mmap_start
+        self.stack_address          = stack_address
+        self.stack_size             = stack_size
+        self.interp_base            = interp_base
+        self.dict_posix_syscall     = dict()
+        self.user_defined_winapi    = {}
+        self.global_thread_id       = 0
+
+        if self.log_file != None and type(self.log_file) == str:
+            if self.log_file[0] != '/':
+                self.log_file = os.getcwd() + '/' + self.log_file
+            self.log_file_name = self.log_file
+            if type(self.log_split) != bool or not self.log_split:
                 self.log_file_fd = open(log_file + ".qlog", 'w+')
+                #logging.basicConfig(filename=log_file + '.qlog', filemode='w+', level=logging.DEBUG, format='%(message)s')
             else:
-                self.separate_log_file = separate_log_file
                 self.log_file_fd = open(log_file + "_" + str(os.getpid()) + ".qlog", 'w+')
+                #self.log_file_fd = logging.basicConfig(filename=log_file + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -120,10 +133,7 @@ class Qiling:
         if self.shellcode and self.archtype and type(self.archtype) == str:
             self.arch = self.arch.lower()
             self.arch = arch_convert(self.archtype)
-       
-        if output and type(output) == str:
-            self.output = output.lower()
-        
+           
         if self.rootfs and self.shellcoder == None:
             if (os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs)):
                 self.path = (str(self.filename[0]))
@@ -133,7 +143,7 @@ class Qiling:
                 self.argv = self.filename
       
             elif  (not os.path.exists(str(self.filename[0])) or not os.path.exists(self.rootfs)):       
-                raise QlErrorFileNotFound("Target binary or rootfs not found")
+                raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
 
         if self.ostype in (QL_LINUX, QL_FREEBSD, QL_MACOS):
             if stdin != 0:
@@ -154,7 +164,7 @@ class Qiling:
                 self.sigaction_act.append(0)
 
         if not ql_is_valid_arch(self.arch):
-            raise QlErrorArch(f"Invalid Arch {self.arch}")
+            raise QlErrorArch("[!] Invalid Arch")
 
         arch_func = ql_get_arch_module_function( self.arch, ql_arch_convert_str(self.arch).upper() )
 
@@ -165,36 +175,36 @@ class Qiling:
             self.pointersize = (self.archbit // 8)
 
         if not self.ostype in (QL_OS):
-            raise QlErrorOsType("OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos','ios'")
-
-        if not self.output in (QL_OUTPUT):
-            raise QlErrorOutput("OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
+            raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos','ios'")
+        
+        if self.output and type(self.output) == str:
+            self.output = self.output.lower()
+            if not self.output in (QL_OUTPUT):
+                raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
  
         if self.shellcoder and self.arch and self.ostype:
             self.shellcode()
         else:
-            self.run_exec()  
+            self.load_exec()  
 
     def build_os_execution(self, function_name):
         self.runtype = ql_get_os_module_function(self.ostype, self.arch, "runner")
         return ql_get_os_module_function(self.ostype, self.arch, function_name)
 
 
-    def run_exec(self):
+    def load_exec(self):
         loader_file = self.build_os_execution("loader_file")
         loader_file(self)
 
  
     def shellcode(self):
         self.__enable_bin_patch()
-
         loader_shellcode = self.build_os_execution("loader_shellcode")
         loader_shellcode(self)
 
 
     def run(self):
         self.__enable_bin_patch()
-
         runner = self.build_os_execution("runner")
         runner(self)
 
@@ -205,29 +215,18 @@ class Qiling:
         else:
             fd = self.log_file_fd
 
-        if (self.consolelog == False or self.output == QL_OUT_OFF):
+        if (self.log_console == False or self.output == QL_OUT_OFF):
             pass
-        elif self.consolelog == False and self.log_file_name:
+        elif self.log_console == False and self.log_file_name:
             print(*args, **kw, file = fd)
-            if self.errmsg == 1:
-                printerrmsg = ''.join(args) 
-                print("[!] " + printerrmsg, file = fd)
-                self.errmsg = 0
-        elif (self.log_file_name and self.consolelog):
+            #logging.debug(*args, **kw)
+        elif (self.log_file_name and self.log_console):
             print(*args, **kw, file = fd)
+            #logging.debug(*args, **kw)
             print(*args, **kw)
-            if self.errmsg == 1:
-                printerrmsg = ''.join(args) 
-                print("[!] " + printerrmsg, file = fd)
-                print("[!] " + printerrmsg)
-                self.errmsg = 0
         else:
             print(*args, **kw)
-            if self.errmsg == 1:
-                printerrmsg = ''.join(args) 
-                print("[!] " + printerrmsg)
-                self.errmsg = 0                    
-        
+                          
         if fd != None:
             fd.flush()
 
@@ -239,6 +238,18 @@ class Qiling:
 
     def asm2bytes(self, runasm, arm_thumb = None):
         return ql_asm2bytes(self,  self.arch, runasm, arm_thumb)
+
+
+    def set_syscall(self, syscall_cur, syscall_new):
+        if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD, QL_IOS):
+            self.dict_posix_syscall[syscall_cur] = syscall_new
+        elif self.ostype == QL_WINDOWS:
+            self.set_winapi(syscall_cur, syscall_new)
+
+
+    def set_winapi(self, winapi_name, winapi_func):
+        if self.ostype == QL_WINDOWS:
+            self.user_defined_winapi[winapi_name] = winapi_func
 
 
     def hook_code(self, callback, user_data = None, begin = 1, end = 0):
@@ -346,7 +357,6 @@ class Qiling:
         self.uc.hook_add(UC_HOOK_MEM_FETCH_INVALID, _callback, (user_data, callback), begin, end)
 
 
-
     def hook_mem_invalid(self, callback, user_data = None, begin = 1, end = 0):
         @catch_KeyboardInterrupt(self)
         def _callback(uc, access, addr, size, value, pack_data):
@@ -438,7 +448,6 @@ class Qiling:
             self.uc.hook_add(UC_HOOK_INSN, _callback_x86_syscall, (user_data, callback), begin, end, arg1)
         else:
             self.uc.hook_add(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
-
 
 
     def stack_push(self, data):
@@ -571,9 +580,11 @@ class Qiling:
     def output(self, output):
         self._output = output_convert(output)
 
+
     @property
     def platform(self):
         return self._platform
+
 
     @platform.setter
     def platform(self, value):
@@ -583,6 +594,7 @@ class Qiling:
             self._platform = QL_MACOS
         else:
             self._platform = None
+
 
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:

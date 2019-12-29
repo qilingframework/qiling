@@ -2,14 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
-
 import struct
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
@@ -108,7 +100,8 @@ def hook___p__environ(ql, address, params):
 def hook_puts(ql, address, params):
     ret = 0
     string = params["str"]
-    ret = len(string)
+    ql.stdout.write(bytes(string + "\n", "utf-8"))
+    ret = len(string) + 1
     return ret
 
 
@@ -266,7 +259,10 @@ def hook___acrt_iob_func(ql, address, params):
 @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, param_num=2)
 def hook___stdio_common_vfprintf(ql, address, _):
     ret = 0
-    _, _, _, p_format, _, p_args = get_params(ql, 6)
+    if ql.pointersize == 8:
+        _, _, p_format, _, p_args = get_params(ql, 5)
+    else:
+        _, _, _, p_format, _, p_args = get_params(ql, 6)
     fmt = read_cstring(ql, p_format)
     printf(ql, address, fmt, p_args, '__stdio_common_vfprintf')
     return ret
@@ -386,3 +382,19 @@ def hook_calloc(ql, address, params):
     size = params['size']
     ret = ql.heap.mem_alloc(num * size)
     return ret
+
+
+# void * memmove(
+#   void *dest,
+#   const void *src,
+#   size_t num
+# );
+@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+    "dest": POINTER,
+    "src": POINTER,
+    "num": SIZE_T
+})
+def hook_memmove(ql, address, params):
+    data = ql.mem_read(params['src'], params['num'])
+    ql.mem_write(params['dest'], bytes(data))
+    return params['dest']

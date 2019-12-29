@@ -2,16 +2,8 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
 
-import time
-import os
+import os, time, logging
 
 THREAD_EVENT_INIT_VAL = 0
 THREAD_EVENT_EXIT_EVENT = 1
@@ -26,13 +18,13 @@ THREAD_STATUS_BLOCKING = 1
 THREAD_STATUS_TERMINATED = 2
 THREAD_STATUS_TIMEOUT = 3
 
-GLOBAL_THREAD_ID = 0
+#GLOBAL_THREAD_ID = 0
 
 class Thread:
     def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, special_settings_arg = None, special_settings_fuc = None, set_child_tid_addr = None):
-        global GLOBAL_THREAD_ID
-        if GLOBAL_THREAD_ID == 0:
-            GLOBAL_THREAD_ID = os.getpid() + 1000
+        #global GLOBAL_THREAD_ID
+        if ql.global_thread_id == 0:
+            ql.global_thread_id = os.getpid() + 1000
 
         self.total_time = total_time
         self.runing_time = 0
@@ -48,13 +40,14 @@ class Thread:
         self.return_val = 0
         self.blocking_condition_fuc = None
         self.blocking_condition_arg = None
-        self.thread_id = GLOBAL_THREAD_ID
+        self.thread_id = ql.global_thread_id
         self.thread_management = None
         self.current_path = ql.current_path
-
         self.log_file_fd = None
-        if ql.separate_log_file and ql.log_file_name != None:
+
+        if ql.log_split and ql.log_file_name != None:
             self.log_file_fd = open(ql.log_file_name + "_" + str(os.getpid()) + '.' + str(self.thread_id) + ".qlog", 'w+')
+            #logging.basicConfig(filename=ql.log_file_name + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
             
         # For each thread, the kernel maintains two attributes (addresses)
         # called set_child_tid and clear_child_tid.  These two attributes
@@ -86,6 +79,7 @@ class Thread:
         # The effect of this operation is to wake a single thread that is
         # performing a futex wait on the memory location.  Errors from the
         # futex wake operation are ignored.
+
         self.set_child_tid_address = set_child_tid_addr
         self.clear_child_tid_address = None
         
@@ -95,7 +89,7 @@ class Thread:
         if self.set_child_tid_address != None:
             self.ql.uc.mem_write(self.set_child_tid_address, ql.pack32(self.thread_id))
 
-        GLOBAL_THREAD_ID += 1
+        ql.global_thread_id += 1
     
     def run(self, timeout = 0):
         # Set the time of the current run
@@ -222,17 +216,18 @@ class Thread:
         self.until_addr = until_addr
     
     def new_thread_id(self):
-        global GLOBAL_THREAD_ID
-        self.thread_id = GLOBAL_THREAD_ID
-        GLOBAL_THREAD_ID += 1
+        #global GLOBAL_THREAD_ID
+        self.thread_id = self.ql.global_thread_id
+        self.ql.global_thread_id += 1
     
     def update_global_thread_id(self):
-        global GLOBAL_THREAD_ID
-        GLOBAL_THREAD_ID = os.getpid()
+        #global GLOBAL_THREAD_ID
+        self.ql.global_thread_id = os.getpid()
     
     def set_thread_log_file(self, log_file):
-        if self.ql.separate_log_file and log_file != None:
+        if self.ql.log_split and log_file != None:
             self.log_file_fd = open(log_file + "_" +str(os.getpid()) + '.' + str(self.thread_id) + ".qlog", 'w+')
+            #logging.basicConfig(filename= log_file + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
     
     def get_current_path(self):
         return self.current_path
@@ -255,11 +250,11 @@ class ThreadManagement:
 
     def run(self):
         if len(self.running_thread_list) == 0:
-            self.ql.nprint('[!] No executable thread!')
+            self.ql.dprint('[!] No executable thread!')
             return
         
         if self.main_thread not in self.running_thread_list:
-            self.ql.nprint('[!] No main thread!')
+            self.ql.dprint('[!] No main thread!')
             return
         
         while True:
@@ -273,7 +268,7 @@ class ThreadManagement:
             if running_thread_num != 0:
                 for i in range(running_thread_num):
                     self.cur_thread = self.running_thread_list[i]
-                    self.ql.nprint("[+] Currently running pid is: %d; tid is: %d " % (os.getpid() ,self.cur_thread.get_thread_id()))
+                    self.ql.dprint("[+] Currently running pid is: %d; tid is: %d " % (os.getpid() ,self.cur_thread.get_thread_id()))
                     
                     self.runing_time += self.running_thread_list[i].run(time_slice)
 

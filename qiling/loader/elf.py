@@ -2,14 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
-
 import sys
 import os
 import string
@@ -49,7 +41,7 @@ AT_HWCAP2 = 26
 AT_EXECFN = 31
 
 FILE_DES = []
-MMAP_START = 0
+#MMAP_START = 0
 
 class ELFParse:
     def __init__(self, path, ql):
@@ -389,6 +381,7 @@ class ELFLoader(ELFParse):
         return s[ : s.find(b'\x00')]
 
     def load_with_ld(self, ql, stack_addr, loadbase = -1, argv = [], env = {}):
+
         if loadbase <= 0:
             if ql.archbit == 64:
                 loadbase = 0x555555554000
@@ -418,7 +411,7 @@ class ELFLoader(ELFParse):
         if elfhead['e_type'] == ET_EXEC:
             loadbase = 0
         elif elfhead['e_type'] != ET_DYN:
-            ql.nprint("[+] Some error in head e_type!")
+            ql.nprint("[+] Some error in head e_type: %u!" %elfhead['e_type'])
             return -1
 
         ql.uc.mem_map(loadbase + mem_start, mem_end - mem_start)
@@ -437,7 +430,7 @@ class ELFLoader(ELFParse):
         ql.brk_address = mem_end + loadbase
 
         # Load interpreter if there is an interpreter
-        interp_base = 0
+
         if interp_path != '':
             if sys.version_info >= (3, 0):
                 interp_path = str(interp_path, 'utf-8', errors="ignore")
@@ -454,30 +447,35 @@ class ELFLoader(ELFParse):
             interp_mem_size = (interp_mem_size // 0x1000 + 1) * 0x1000
             ql.dprint("[+] interp_mem_size is : %x" % int(interp_mem_size))
 
-            if ql.archbit == 64:
-                interp_base = 0x7ffff7dd5000
-            elif ql.archbit == 32 and ql.arch != QL_MIPS32EL:
-                interp_base = 0xfb7d3000
-            elif ql.arch == QL_MIPS32EL:
-                interp_base = 0x00000047ba000
-            else:
-                interp_base = 0xff7d5000
+            if ql.interp_base == 0:
+                if ql.archbit == 64:
+                    ql.interp_base = 0x7ffff7dd5000
+                elif ql.archbit == 32 and ql.arch != QL_MIPS32EL:
+                    ql.interp_base = 0xfb7d3000
+                elif ql.arch == QL_MIPS32EL:
+                    ql.interp_base = 0x00000047ba000
+                else:
+                    ql.interp_base = 0xff7d5000
 
-            ql.uc.mem_map(interp_base, int(interp_mem_size))
-            ql.insert_map_info(interp_base, interp_base + int(interp_mem_size), os.path.abspath(interp_path))
+            ql.dprint("[+] interp_base is : 0x%x" % (ql.interp_base))
+            ql.uc.mem_map(ql.interp_base, int(interp_mem_size))
+            ql.insert_map_info(ql.interp_base, ql.interp_base + int(interp_mem_size), os.path.abspath(interp_path))
 
             for i in interp.parse_program_header(ql):
                 if i['p_type'] == PT_LOAD:
-                    ql.uc.mem_write(interp_base + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
-            entry_point = interphead['e_entry'] + interp_base
+                    ql.uc.mem_write(ql.interp_base + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
+            entry_point = interphead['e_entry'] + ql.interp_base
 
         # Set MMAP addr
-        if ql.archbit == 64:
-            ql.mmap_start = 0x7ffff7dd6000 - 0x4000000
-        elif ql.arch == QL_MIPS32EL:
-            ql.mmap_start = 0x7ffef000 - 0x400000
-        else:
-            ql.mmap_start = 0xf7fd6000 - 0x400000
+        if ql.mmap_start == 0:
+            if ql.archbit == 64:
+                ql.mmap_start = 0x7ffff7dd6000 - 0x4000000
+            elif ql.arch == QL_MIPS32EL:
+                ql.mmap_start = 0x7ffef000 - 0x400000
+            else:
+                ql.mmap_start = 0xf7fd6000 - 0x400000
+
+        ql.dprint("[+] mmap_start is : 0x%x" % (ql.mmap_start))
 
         # Set elf table
         elf_table = b''
@@ -526,9 +524,6 @@ class ELFLoader(ELFParse):
         cpustraddr = addr[1]
 
         # Set AUX
-        # This part of the code is a myth for MIPS32_EL
-        if ql.arch == QL_MIPS32EL:
-            new_stack = new_stack - 4
         
         # ql.uc.mem_write(int(new_stack) - 4, ql.pack32(0x11111111))
         # new_stack = new_stack - 4
@@ -538,7 +533,7 @@ class ELFLoader(ELFParse):
         elf_table += self.NEW_AUX_ENT(AT_PHENT, elfhead['e_phentsize'], ql)
         elf_table += self.NEW_AUX_ENT(AT_PHNUM, elfhead['e_phnum'], ql)
         elf_table += self.NEW_AUX_ENT(AT_PAGESZ, 0x1000, ql)
-        elf_table += self.NEW_AUX_ENT(AT_BASE, interp_base, ql)
+        elf_table += self.NEW_AUX_ENT(AT_BASE, ql.interp_base, ql)
         elf_table += self.NEW_AUX_ENT(AT_FLAGS, 0, ql)
         elf_table += self.NEW_AUX_ENT(AT_ENTRY, loadbase + elfhead['e_entry'], ql)
         elf_table += self.NEW_AUX_ENT(AT_UID, 1000, ql)
@@ -557,11 +552,11 @@ class ELFLoader(ELFParse):
         elf_table += self.NEW_AUX_ENT(AT_PLATFORM, cpustraddr, ql)
         elf_table += self.NEW_AUX_ENT(AT_NULL, 0, ql)
 
+        elf_table += b'\x00' * (0x10 - (new_stack - len(elf_table)) & 0xf)
+
         ql.uc.mem_write(int(new_stack - len(elf_table)), elf_table)
         new_stack = new_stack - len(elf_table)
 
-        if ql.ostype == QL_FREEBSD:
-            new_stack = new_stack - 8
             # print("rdi is : " + hex(ql.uc.reg_read(UC_X86_REG_RDI)))
             # ql.uc.reg_write(UC_X86_REG_RDI, new_stack + 8)
 

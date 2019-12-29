@@ -2,70 +2,32 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
 
-X8664_MACOS_MACH_SYSCALL_TASK_SELF_TRAP         =   [0x100001c, "ql_x86_syscall_task_self_trap"]
-X8664_MACOS_MACH_SYSCALL_MACH_REPLY_PORT        =   [0x100001a, "ql_x86_syscall_mach_reply_port"]
-X8664_MACOS_MACH_SYSCALL_HOST_SELF_TRAP         =   [0x100001d, "ql_x86_syscall_host_self_trap"]
-X8664_MACOS_MACH_SYSCALL_MACH_MSG_TRAP          =   [0x100001f, "ql_x86_syscall_mach_msg_trap"]
-
-X8664_MACOS_POSIX_SYSCALL_EXIT                  =   [0x2000001, "ql_syscall_exit"]
-X8664_MACOS_POSIX_SYSCALL_READ                  =   [0x2000003, "ql_syscall_read"]
-X8664_MACOS_POSIX_SYSCALL_WRITE                 =   [0x2000004, "ql_syscall_write"]
-X8664_MACOS_POSIX_SYSCALL_OPEN                  =   [0x2000005, "ql_syscall_open"]
-X8664_MACOS_POSIX_SYSCALL_CLOSE                 =   [0x2000006, "ql_syscall_close"]
-X8664_MACOS_POSIX_SYSCALL_GETPID                =   [0x2000014, "ql_syscall_getpid"]
-X8664_MACOS_POSIX_SYSCALL_SIGPROCMASK           =   [0x2000030, "ql_syscall_sigprocmask"]
-X8664_MACOS_POSIX_SYSCALL_MUNMAP                =   [0x2000049, "ql_syscall_munmap"]
-X8664_MACOS_POSIX_SYSCALL_FCNTL64               =   [0x200005c, "ql_syscall_fcntl64"]
-X8664_MACOS_POSIX_SYSCALL_CSOPS                 =   [0x20000a9, "ql_syscall_csops"]
-X8664_MACOS_POSIX_SYSCALL_MMAP                  =   [0x20000c5, "ql_syscall_mmap2"]
-X8664_MACOS_POSIX_SYSCALL_LSEEK                 =   [0x20000c7, "ql_syscall_lseek"]
-X8664_MACOS_POSIX_SYSCALL_EXECVE                =   [0x200003b, "ql_syscall_execve"]
-X8664_MACOS_POSIX_SYSCALL_ISSETUGID             =   [0x2000147, "ql_syscall_issetugid"]
-X8664_MACOS_POSIX_SYSCALL_STAT64                =   [0x2000152, "ql_syscall_stat64"]
-X8664_MACOS_POSIX_SYSCALL_FSTAT64               =   [0x2000153, "ql_syscall_fstat64"]
-X8664_MACOS_POSIX_SYSCALL_THREAD_SELFID         =   [0x2000174, "ql_syscall_thread_selfid"]
-X8664_MACOS_POSIX_SYSCALL_CSRCTL                =   [0x20001e3, "ql_syscall_csrctl"]
-X8664_MACOS_POSIX_SYSCALL_GETENTROPY            =   [0x20001f4, "ql_syscall_getentropy"]
-X8664_MACOS_POSIX_SYSCALL_TERMINATE_WITH_PAYLOAD=   [0x2000208, "ql_syscall_terminate_with_payload"]
-X8664_MACOS_POSIX_SYSCALL_ABORT_WITH_PAYLOAD    =   [0x2000209, "ql_syscall_abort_with_payload"]
-
-X8664_MACOS_MDEP_SYSCALL_THREAD_SET_TSD_BASE    =   [0x3000003, "ql_x86_syscall_thread_set_tsd_base"]
-
-X8664_MACOS_SYSCALL = [
-    X8664_MACOS_MACH_SYSCALL_TASK_SELF_TRAP,
-    X8664_MACOS_MACH_SYSCALL_MACH_REPLY_PORT,
-    X8664_MACOS_MACH_SYSCALL_HOST_SELF_TRAP,
-    X8664_MACOS_MACH_SYSCALL_MACH_MSG_TRAP,
-
-    X8664_MACOS_POSIX_SYSCALL_EXIT,
-    X8664_MACOS_POSIX_SYSCALL_READ,
-    X8664_MACOS_POSIX_SYSCALL_WRITE,
-    X8664_MACOS_POSIX_SYSCALL_OPEN,
-    X8664_MACOS_POSIX_SYSCALL_CLOSE,
-    X8664_MACOS_POSIX_SYSCALL_GETPID,
-    X8664_MACOS_POSIX_SYSCALL_SIGPROCMASK,
-    X8664_MACOS_POSIX_SYSCALL_MUNMAP,
-    X8664_MACOS_POSIX_SYSCALL_CSOPS,
-    X8664_MACOS_POSIX_SYSCALL_FCNTL64,
-    X8664_MACOS_POSIX_SYSCALL_MMAP,
-    X8664_MACOS_POSIX_SYSCALL_LSEEK,
-    X8664_MACOS_POSIX_SYSCALL_EXECVE,
-    X8664_MACOS_POSIX_SYSCALL_ISSETUGID,
-    X8664_MACOS_POSIX_SYSCALL_STAT64,
-    X8664_MACOS_POSIX_SYSCALL_FSTAT64,
-    X8664_MACOS_POSIX_SYSCALL_THREAD_SELFID,
-    X8664_MACOS_POSIX_SYSCALL_CSRCTL,
-    X8664_MACOS_POSIX_SYSCALL_GETENTROPY,
-    X8664_MACOS_POSIX_SYSCALL_TERMINATE_WITH_PAYLOAD,
-    X8664_MACOS_POSIX_SYSCALL_ABORT_WITH_PAYLOAD,
-
-    X8664_MACOS_MDEP_SYSCALL_THREAD_SET_TSD_BASE,
-    ]
+dict_x8664_macos_syscall = {
+    0x100001a : "ql_x86_syscall_mach_reply_port",
+    0x100001c : "ql_x86_syscall_task_self_trap",
+    0x100001d : "ql_x86_syscall_host_self_trap",
+    0x100001f : "ql_x86_syscall_mach_msg_trap",
+    0x2000001 : "ql_syscall_exit",
+    0x2000003 : "ql_syscall_read",
+    0x2000004 : "ql_syscall_write",
+    0x2000005 : "ql_syscall_open",
+    0x2000006 : "ql_syscall_close",
+    0x2000014 : "ql_syscall_getpid",
+    0x2000030 : "ql_syscall_sigprocmask",
+    0x200003b : "ql_syscall_execve",
+    0x2000049 : "ql_syscall_munmap",
+    0x200005c : "ql_syscall_fcntl64",
+    0x20000a9 : "ql_syscall_csops",
+    0x20000c5 : "ql_syscall_mmap2",
+    0x20000c7 : "ql_syscall_lseek",
+    0x2000147 : "ql_syscall_issetugid",
+    0x2000152 : "ql_syscall_stat64",
+    0x2000153 : "ql_syscall_fstat64",
+    0x2000174 : "ql_syscall_thread_selfid",
+    0x20001e3 : "ql_syscall_csrctl",
+    0x20001f4 : "ql_syscall_getentropy",
+    0x2000208 : "ql_syscall_terminate_with_payload",
+    0x2000209 : "ql_syscall_abort_with_payload",
+    0x3000003 : "ql_x86_syscall_thread_set_tsd_base",
+}

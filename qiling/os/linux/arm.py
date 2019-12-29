@@ -2,31 +2,9 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
-
-
-import struct
-import sys
 
 from unicorn import *
 from unicorn.arm_const import *
-
-from capstone import *
-from capstone.arm_const import *
-
-from keystone import *
-from keystone.arm_const import *
-
-from struct import pack
-import os
-
-import string
 
 from qiling.loader.elf import *
 from qiling.os.linux.arm_syscall import *
@@ -45,7 +23,7 @@ QL_SHELLCODE_INIT = 0
 QL_KERNEL_GET_TLS_ADDR = 0xFFFF0FE0
 QL_ARM_EMU_END = 0x8fffffff
 
-def ql_arm_check_thumb(uc, reg_cpsr):
+def ql_arm_check_thumb(reg_cpsr):
     mode = UC_MODE_ARM
     if reg_cpsr & 0b100000 != 0:
         mode = UC_MODE_THUMB
@@ -62,42 +40,41 @@ def hook_syscall(ql, intno):
     reg_cpsr = ql.uc.reg_read(UC_ARM_REG_CPSR)
     pc = ql.uc.reg_read(UC_ARM_REG_PC)
 
-    ql_arm_check_thumb(ql.uc, reg_cpsr)
+    ql_arm_check_thumb(reg_cpsr)
 
-    linux_syscall_numb_list = []
-    linux_syscall_func_list = []
+    while 1:
+        LINUX_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
+        if LINUX_SYSCALL_FUNC != None:
+            LINUX_SYSCALL_FUNC_NAME = LINUX_SYSCALL_FUNC.__name__
+            break
+        
+        LINUX_SYSCALL_FUNC_NAME = dict_arm_linux_syscall.get(syscall_num, None)
+        if LINUX_SYSCALL_FUNC_NAME != None:
+            LINUX_SYSCALL_FUNC = eval(LINUX_SYSCALL_FUNC_NAME)
+            break
+        
+        LINUX_SYSCALL_FUNC = None
+        LINUX_SYSCALL_FUNC_NAME = None
+        break
 
-    for i in ARM_LINUX_SYSCALL:
-        linux_syscall_numb_list.append(i[0])
-        linux_syscall_func_list.append(i[1])
-
-    if any(linux_syscall_numb == syscall_num for linux_syscall_numb in linux_syscall_numb_list):
-        linux_syscall_index = linux_syscall_numb_list.index(syscall_num)
-        LINUX_SYSCALL_FUNC= eval(linux_syscall_func_list[linux_syscall_index])
+    if LINUX_SYSCALL_FUNC != None:
         try:
             LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
-        except:
-            ql.errmsg = 1
-            ql.nprint("SYSCALL: ", linux_syscall_func_list[linux_syscall_index])
-            
-            if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                td = ql.thread_management.cur_thread
-                td.stop()
-                td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-                if ql.debug_stop:
-                    ql.uc.emu_stop()
-                raise
-    else:
-        ql.nprint("0x%x: syscall number = 0x%x(%d) not implement." %(pc, syscall_num, syscall_num))
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+        except Exception:
+            ql.nprint("[!] SYSCALL ERROR: ", LINUX_SYSCALL_FUNC_NAME)
             td = ql.thread_management.cur_thread
             td.stop()
             td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-            if ql.debug_stop:
-                ql.uc.emu_stop()
-            
+            raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (LINUX_SYSCALL_FUNC_NAME))
+    else:
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
+        if ql.debug_stop:
+            td = ql.thread_management.cur_thread
+            td.stop()
+            td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+            raise QlErrorSyscallNotFound("[!] Syscall Not Found")           
 
 def exec_shellcode(ql, start, shellcode):
     if ql.shellcode_init == 0:
@@ -120,7 +97,6 @@ def ql_arm_init_kernel_get_tls(uc):
     sc = b'\x04\x00\x8f\xe2\x00\x00\x90\xe5\x0e\xf0\xa0\xe1\x00\x00\x00\x00'
     uc.mem_write(QL_KERNEL_GET_TLS_ADDR, sc)
 
-
 def ql_syscall_arm_settls(ql, address, null0, null1, null2, null3, null4):
     ql.nprint("settls(0x%x)" % address)
     if ql.thread_management != None:
@@ -129,7 +105,7 @@ def ql_syscall_arm_settls(ql, address, null0, null1, null2, null3, null4):
     reg_cpsr = ql.uc.reg_read(UC_ARM_REG_CPSR)
     PC = ql.uc.reg_read(UC_ARM_REG_PC)
     SP = ql.uc.reg_read(UC_ARM_REG_SP)
-    mode = ql_arm_check_thumb(ql.uc, reg_cpsr)
+    mode = ql_arm_check_thumb(reg_cpsr)
 
     if mode == UC_MODE_THUMB:
         sc = '''
@@ -166,15 +142,13 @@ def ql_syscall_arm_settls(ql, address, null0, null1, null2, null3, null4):
     ql.uc.mem_write(QL_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
     ql.uc.reg_write(UC_ARM_REG_R0, address)
 
-
 def ql_arm_thread_set_tls(ql, th, arg):
     address = arg
-
     uc = ql.uc
     reg_cpsr = uc.reg_read(UC_ARM_REG_CPSR)
     PC = uc.reg_read(UC_ARM_REG_PC)
     SP = uc.reg_read(UC_ARM_REG_SP)
-    mode = ql_arm_check_thumb(uc, reg_cpsr)
+    mode = ql_arm_check_thumb(reg_cpsr)
     old_r0 = uc.reg_read(UC_ARM_REG_R0)
 
     if mode == UC_MODE_THUMB:
@@ -210,7 +184,6 @@ def ql_arm_thread_set_tls(ql, th, arg):
     uc.mem_write(SP - 8, ql.pack32(old_r0))
     uc.reg_write(UC_ARM_REG_SP, SP - 8)
     uc.reg_write(UC_ARM_REG_PC, QL_SHELLCODE_ADDR + codestart + codelen)
-
     uc.mem_write(QL_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
     uc.reg_write(UC_ARM_REG_R0, address)
 
@@ -220,10 +193,12 @@ def loader_file(ql):
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = QL_ARM_LINUX_PREDEFINE_STACKADDRESS
+    if (ql.stack_size == 0):  
         ql.stack_size = QL_ARM_LINUX_PREDEFINE_STACKSIZE
-        uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
-    loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv,  env = ql.env)
+    if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv,  env = ql.env):
+        raise QlErrorFileType("Unsupported FileType")
     ql.stack_address  = (int(ql.new_stack))
 
 
@@ -231,9 +206,10 @@ def loader_shellcode(ql):
     uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)
     ql.uc = uc
     if (ql.stack_address == 0):
-        ql.stack_address =0x1000000
+        ql.stack_address = 0x1000000
+    if (ql.stack_size == 0): 
         ql.stack_size = 2 * 1024 * 1024
-        uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.uc.mem_map(ql.stack_address, ql.stack_size)
     ql.stack_address  = (ql.stack_address + 0x200000 - 0x1000)
     ql.uc.mem_write(ql.stack_address, ql.shellcoder) 
 
@@ -276,16 +252,13 @@ def runner(ql):
 
 
             thread_management.run()
-    except UcError as e:
+    except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
-
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
-        ql.errmsg = 1
-        ql.nprint("%s" % e)  
     
     if ql.internal_exception != None:
         raise ql.internal_exception

@@ -2,13 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
 
 from unicorn.x86_const import *
 from qiling.os.windows.utils import *
@@ -60,7 +53,7 @@ class Context:
             self.r15 = self.ql.uc.reg_read(UC_X86_REG_R15)
             self.eflags = self.ql.uc.reg_read(UC_X86_REG_EFLAGS)
         else:
-            raise QlErrorArch("unknown ql.arch")
+            raise QlErrorArch("[!] unknown ql.arch")
 
     def restore(self):
         if self.ql.arch == QL_X86:
@@ -94,7 +87,7 @@ class Context:
             self.ql.uc.reg_write(UC_X86_REG_R15, self.r15)
             self.ql.uc.reg_write(UC_X86_REG_EFLAGS, self.eflags)
         else:
-            raise QlErrorArch("unknown ql.arch")
+            raise QlErrorArch("[!] unknown ql.arch")
 
 
 # A Simple Thread Manager
@@ -151,6 +144,9 @@ class Thread:
         self.context = Context(ql)
         self.status = status
         self.waitforthreads = []
+        self.tls = {}
+        self.tls_index = 0
+        
 
     # create new thread
     def create(self, func_addr, func_params, status):

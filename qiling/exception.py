@@ -2,13 +2,8 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
+
+
 import sys, traceback
 
 class QlErrorBase(Exception):
@@ -20,6 +15,9 @@ class QlErrorBase(Exception):
         return self.msg
 
 class QlErrorFileNotFound(QlErrorBase):
+    pass
+
+class QlErrorFileType(QlErrorBase):
     pass
 
 class QlErrorOsType(QlErrorBase):
@@ -51,6 +49,16 @@ class QlErrorModuleFunctionNotFound(QlErrorBase):
 
 class QlErrorModuleNotFound(QlErrorBase):
     pass
+
+class QlErrorExecutionStop(QlErrorBase):
+    pass
+
+class QlErrorSyscallError(QlErrorBase):
+    pass
+
+class QlErrorSyscallNotFound(QlErrorBase):
+    pass
+
 
 def QlPrintException(msg):
     exc_type, exc_value, exc_traceback = sys.exc_info()

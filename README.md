@@ -1,4 +1,5 @@
 Qiling - Advanced Binary Emulation framework
+[![Build Status](https://travis-ci.com/qilingframework/qiling.svg?branch=master)](https://travis-ci.com/qilingframework/qiling)
 ---
 
 <p align="center">
@@ -52,10 +53,9 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 
 #### Install
 
-Run below command line to install Qiling.
+Run below command line to install Qiling (Python3 is required).
 
 ```
-pip3 install -r requirements.txt
 python3 setup.py install
 ```
 

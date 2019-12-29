@@ -2,16 +2,11 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
-
 import os
-import fcntl
+try:
+    import fcntl
+except ImportError:
+    pass
 import socket
 
 class ql_file:
@@ -43,7 +38,10 @@ class ql_file:
         return os.fstat(self.__fd)
     
     def ioctl(self, ioctl_cmd, ioctl_arg):
-        return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
+        try:
+            return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
+        except Exception:
+            pass    
     
     def dup(self):
         new_fd = os.dup(self.__fd)
@@ -87,7 +85,10 @@ class ql_socket:
         return os.close(self.__fd)
     
     def ioctl(self, ioctl_cmd, ioctl_arg):
-        return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
+        try:
+            return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
+        except Exception:
+            pass    
     
     def dup(self):
         new_s = self.__socket.dup()
@@ -152,7 +153,10 @@ class ql_pipe:
         return os.close(self.__fd)
     
     def ioctl(self, ioctl_cmd, ioctl_arg):
-        return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
+        try:
+            return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
+        except Exception:
+            pass    
     
     def dup(self):
         new_fd = os.dup(self.__fd)

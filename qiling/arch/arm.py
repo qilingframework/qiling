@@ -2,18 +2,16 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
-
 from unicorn import *
 from unicorn.arm_const import *
 from struct import pack
 from .arch import Arch
+
+def ql_arm_check_thumb(uc, reg_cpsr):
+    mode = UC_MODE_ARM
+    if reg_cpsr & 0b100000 != 0:
+        mode = UC_MODE_THUMB
+        return mode
 
 class ARM(Arch):
     def __init__(self, ql):
@@ -52,7 +50,13 @@ class ARM(Arch):
 
     # get PC
     def get_pc(self):
-        return self.ql.uc.reg_read(UC_ARM_REG_PC)
+        reg_cpsr = self.ql.uc.reg_read(UC_ARM_REG_CPSR)
+        mode = ql_arm_check_thumb(self.ql.uc, reg_cpsr)
+        if mode == UC_MODE_THUMB:
+            append = 1
+        else:
+            append = 0
+        return self.ql.uc.reg_read(UC_ARM_REG_PC) + append
 
 
     # set stack pointer

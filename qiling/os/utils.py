@@ -2,13 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null) <null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
 
 """
 This module is intended for general purpose functions that are only used in qiling.os
@@ -169,10 +162,7 @@ def ql_hook_code_disasm(ql, address, size):
         arg_5 = [arg_5 + 0x14, "SP+0x14"]
 
     else:
-        raise QlErrorArch("Unknown arch defined in utils.py (debug output mode)")
-
-    ql.nprint("[+] %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x" % \
-            (syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1], arg_3[0], arg_4[1], arg_4[0], arg_5[1], arg_5[0]))
+        raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
 
     insn = md.disasm(tmp, address)
     opsize = int(size)
@@ -184,6 +174,10 @@ def ql_hook_code_disasm(ql, address, size):
         ql.nprint("\t  ", end ="")
     for i in insn:
         ql.nprint('\t%s \t%s' %(i.mnemonic, i.op_str))
+
+    ql.nprint("[-] %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x" % \
+            (syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1], arg_3[0], arg_4[1], arg_4[0], arg_5[1], arg_5[0]))
+
 
 def ql_setup(ql):
     if ql.output in (QL_OUT_DISASM, QL_OUT_DUMP):
@@ -209,20 +203,25 @@ def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
         # invalid
         return None, None
 
-    def compile_instructions(runcode, archtype, archmode):
-    
+    def compile_instructions(fname, archtype, archmode):
+        f = open(fname, 'rb')
+        assembly = f.read()
+        f.close()
+
         ks = Ks(archtype, archmode)
 
         shellcode = ''
         try:
-            encoding, count = ks.asm(runcode)
-            shellcode = [str(f"0x{i:02x}") for i in encoding]
-            shellcode = "".join(shellcode).replace('0x', '')
-            shellcode = bytes.fromhex(shellcode)
-        except KsError as e:
-            ql.print("ERROR Keystone Compile Error: %s" % e)
+            # Initialize engine in X86-32bit mode
+            encoding, count = ks.asm(assembly)
+            shellcode = ''.join('%02x'%i for i in encoding)
+            shellcode = unhexlify(shellcode)
 
-        return shellcode    
+        except KsError as e:
+            print("ERROR Keystone Compile Error: %s" % e)
+            exit
+
+        return shellcode   
 
     if arm_thumb == 1 and archtype == QL_ARM:
         archtype = QL_ARM_THUMB
@@ -350,9 +349,8 @@ def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
             ret = ret | mapping_to[n]
     return ret
 
+
 def open_flag_mapping(flags, ql):
-    if ql.platform == None or ql.platform == ql.ostype:
-        return flags
         
     open_flags_name = [
         "O_RDONLY",
@@ -402,11 +400,42 @@ def open_flag_mapping(flags, ql):
         'O_DIRECTORY' : 65536
     }
 
-    if ql.platform == QL_MACOS:
-        f = linux_open_flags
-        t = mac_open_flags
-    else:
-        f = mac_open_flags
-        t = linux_open_flags
-    return flag_mapping(flags, open_flags_name, f, t)
+    mips32el_open_flags = {
+        'O_RDONLY'   : 0x0,
+        'O_WRONLY'   : 0x1,
+        'O_RDWR'     : 0x2,
+        'O_NONBLOCK' : 0x80,
+        'O_APPEND'   : 0x8,
+        'O_ASYNC'    : 0x1000,
+        'O_SYNC'     : 0x4000,
+        'O_NOFOLLOW' : 0x20000,
+        'O_CREAT'    : 0x100,
+        'O_TRUNC'    : 0x200,
+        'O_EXCL'     : 0x400,
+        'O_NOCTTY'   : 0x800,
+        'O_DIRECTORY': 0x100000,
+    }
     
+    if ql.arch != QL_MIPS32EL:
+        if ql.platform == None or ql.platform == ql.ostype:
+            return flags
+
+        if ql.platform == QL_MACOS and ql.ostype == QL_LINUX:
+            f = linux_open_flags
+            t = mac_open_flags
+    
+        elif ql.platform == QL_LINUX and ql.ostype == QL_MACOS:
+            f = mac_open_flags
+            t = linux_open_flags
+
+    elif ql.arch == QL_MIPS32EL and ql.platform == QL_LINUX:
+        f = mips32el_open_flags
+        t = linux_open_flags
+
+    elif ql.arch == QL_MIPS32EL and ql.platform == QL_MACOS:
+        f = mips32el_open_flags
+        t = mac_open_flags
+
+
+        
+    return flag_mapping(flags, open_flags_name, f, t)

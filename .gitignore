@@ -11,8 +11,10 @@ __pycache__/
 build
 dist
 
-examples/**/dlls/
 examples/**/registry/
+examples/**/dlls/
+
+test_syscall_*.txt
 
 jexamples/
 
