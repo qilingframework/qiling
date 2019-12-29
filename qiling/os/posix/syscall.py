@@ -1173,7 +1173,6 @@ def ql_syscall_wait4(ql, wait4_pid, wait4_wstatus, wait4_options, wait4_rusage, 
 
 def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, null0, null1, null2):
     pathname = ql_read_string(ql, execve_pathname)
-
     real_path = ql_transform_to_real_path(ql, pathname)
     relative_path = ql_transform_to_relative_path(ql, pathname)
 
