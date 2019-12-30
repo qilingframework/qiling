@@ -6,7 +6,7 @@ md registry
 REM 
 REM  Registry
 REM 
-xcopy /f /y C:\Users\Default\NTUSER.DAT registry\NTUSER.DAT
+echo f | xcopy /f /y C:\Users\Default\NTUSER.DAT registry\NTUSER.DAT
 reg save hklm\system registry\SYSTEM
 reg save hklm\security registry\SECURITY
 reg save hklm\software registry\SOFTWARE
