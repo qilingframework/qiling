@@ -8,5 +8,4 @@ from qiling import *
 
 if __name__ == "__main__":
     ql = Qiling(["rootfs/x8664_windows/bin/x8664_hello.exe"], "rootfs/x8664_reactos", output ="default")
-    ql.CACHE_DLLS = 1
     ql.run()
