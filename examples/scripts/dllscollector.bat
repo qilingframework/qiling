@@ -3,9 +3,9 @@ REM
 REM Example batch script to copy windows required DLLs and registry
 REM 
 
-md examples\rootfs\x86_windows\dlls
-md examples\rootfs\x8664_windows\dlls
-md registry
+mkdir examples\rootfs\x86_windows\dlls
+mkdir examples\rootfs\x8664_windows\dlls
+mkdir registry
 
 REM 
 REM  Registry
