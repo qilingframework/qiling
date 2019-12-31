@@ -23,11 +23,7 @@ def catch_KeyboardInterrupt(ql):
                 return func(*args, **kw)
             except BaseException as e:
                 # ql.nprint("Received a request from the user to stop!")
-                if ql.thread_management != None:
-                    td = ql.thread_management.cur_thread
-                    td.stop()
-                    td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-                ql.uc.emu_stop()
+                ql.stop()
                 ql.internal_exception = e
         return wrapper
     return decorator
@@ -672,4 +668,12 @@ class Qiling:
 
     def add_fs_mapper(self, fm, to):
         self.fs_mapper.append([fm, to])
+    
+    def stop(self):
+        if self.thread_management != None:
+            td = self.thread_management.cur_thread
+            td.stop()
+            td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+        self.uc.emu_stop()
+
 

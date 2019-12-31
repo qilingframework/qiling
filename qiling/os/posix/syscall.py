@@ -39,12 +39,7 @@ def ql_syscall_exit(ql, null0, null1, null2, null3, null4, null5):
     if ql.child_processes == True:
         os._exit(0)
 
-    ql.uc.emu_stop()
-
-    if ql.thread_management != None:
-        td = ql.thread_management.cur_thread
-        td.stop()
-        td.stop_event = THREAD_EVENT_EXIT_EVENT
+    ql.stop()
 
 
 def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
@@ -63,12 +58,7 @@ def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
     if ql.child_processes == True:
         os._exit(0)
 
-    if ql.thread_management != None:
-        td = ql.thread_management.cur_thread
-        td.stop()
-        td.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
-    
-    ql.uc.emu_stop()
+    ql.stop()
     
 
 def ql_syscall_madvise(ql, null0, null1, null2, null3, null4, null5):
@@ -1646,7 +1636,7 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, null0, null1, nu
         ql_syscall_recv(ql, socketcall_sockfd, socketcall_buf, socketcall_len, socketcall_flags, 0, 0)
     else:
         ql.dprint("[!] error call %d" % socketcall_call)
-        ql.uc.emu_stop()
+        ql.stop()
 
 
 def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_newtls, clone_child_tidptr, null0):
