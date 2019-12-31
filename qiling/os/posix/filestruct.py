@@ -16,6 +16,7 @@ class ql_file:
 
     @classmethod
     def open(self, open_path, open_flags, open_mode):
+        open_mode &= 0x7fffffff
         fd = os.open(open_path, open_flags, open_mode)
         return self(open_path, fd)
 
