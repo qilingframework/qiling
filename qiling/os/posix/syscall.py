@@ -1361,34 +1361,42 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
 
     sin_family, = struct.unpack("<h", data[:2])  
 
-    port, host = struct.unpack(">HI", data[2:8])
-    if sin_family == 2: 
+    if sin_family == 1:
+        path = data[2 : ].split(b'\x00')[0]
+        path = ql_transform_to_real_path(ql, path.decode())
+        ql.nprint(path)
+        ql.file_des[bind_fd].bind(path)
+    elif sin_family == 2:
+        port, host = struct.unpack(">HI", data[2:8])
         host = ql_bin_to_ipv4(host)
-    elif sin_family == 10:  
-        host = "::"
+        if ql.root == False and port <= 1024:
+            port = port + 8000
 
-    if ql.root == False and port <= 1024:
-        port = port + 8000
-
-    try:
-        if port and sin_family == 2:
+        if ql.port != port:
             ql.file_des[bind_fd].bind(('127.0.0.1', port))
-            ql.port = port
-        elif ql.port and sin_family == 10 and ql.port != port:
-            ql.file_des[bind_fd].bind(('::1', port))
-        else:
-            regreturn = -1        
-    except:
-        regreturn = -1
 
-        if ql.output == QL_OUT_DEBUG:
-            raise
+        ql.port = port
+
+    elif sin_family == 10:
+        port, host = struct.unpack(">HI", data[2:8])
+        host = "::"
+        if ql.root == False and port <= 1024:
+            port = port + 8000
+
+        if ql.port != port:
+            ql.file_des[bind_fd].bind(('::1', port))
+
+    else:
+        regreturn = -1       
 
     if ql.shellcoder:
         regreturn = 0
 
-    ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
-    ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ipv4(host),port,sin_family ) )
+    if sin_family == 1:
+        ql.nprint("bind(%d, %s, %d) = %d" % (bind_fd, path, bind_addrlen, regreturn))
+    else:
+        ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
+        ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ipv4(host),port,sin_family ) )
     ql_definesyscall_return(ql, regreturn)
 
 
