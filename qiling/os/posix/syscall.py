@@ -209,6 +209,9 @@ def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
     real_path = ql_transform_to_real_path(ql, path)
     relative_path = ql_transform_to_relative_path(ql, path)
 
+    flags = flags & 0xffffffff
+    mode = mode & 0xffffffff
+
     for i in range(256):
         if ql.file_des[i] == 0:
             idx = i
@@ -241,6 +244,9 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
 
     real_path = ql_transform_to_real_path(ql, openat_path)
     relative_path = ql_transform_to_relative_path(ql, openat_path)
+
+    openat_flags = openat_flags & 0xffffffff
+    openat_mode = openat_mode & 0xffffffff
 
     if os.path.exists(real_path) == False:
         regreturn = -1
