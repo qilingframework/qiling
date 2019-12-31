@@ -1253,7 +1253,7 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, null0,
         if s.family == family:
             if s.family == AF_UNIX:                
                 sun_path = sock_addr[2 : ].split(b"\x00")[0]
-                sun_path = ql.rootfs.encode() + sun_path
+                sun_path = ql_transform_to_real_path(ql, sun_path.decode())
                 s.connect(sun_path) 
                 regreturn = 0
             elif s.family == AF_INET:
@@ -1267,8 +1267,9 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, null0,
             regreturn = -1
     except:
         regreturn = -1
+    
     if s.family == AF_UNIX:
-        ql.nprint("connect(%s) = %d" % (sun_path.decode(), regreturn))
+        ql.nprint("connect(%s) = %d" % (sun_path, regreturn))
     elif s.family == AF_INET:
         ql.nprint("connect(%s, %d) = %d" % (ip, port, regreturn))
     else:
