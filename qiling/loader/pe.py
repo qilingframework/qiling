@@ -29,9 +29,15 @@ class Process:
     def load_dll(self, dll_name):
         dll_name = dll_name.lower().decode()
 
+        if self.ql.arch == QL_X86 and self.ql.dlls == None:
+            self.ql.dlls = "SysWOW64"
+        elif self.ql.arch == QL_X8664 and self.ql.dlls == None:
+            self.ql.dlls = "System32"
+
         if not dll_name.endswith(".dll"):
             dll_name = dll_name + '.dll'
-        path = os.path.join(self.ql.rootfs, "dlls", dll_name)
+        
+        path = os.path.join(self.ql.rootfs, self.ql.dlls, dll_name)
 
         if not os.path.exists(path):
             raise QlErrorFileNotFound("[!] Cannot find dll in %s" % path)

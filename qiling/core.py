@@ -62,10 +62,10 @@ class Qiling:
     fs_mapper           = []
     reg_dir             = None
     reg_diff            = None
+    dlls                = None
     exit_code           = 0
     debug_stop          = False
     internal_exception  = None
-
 
     def __init__(
                     self, 
