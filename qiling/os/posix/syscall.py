@@ -270,7 +270,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
 
 
 def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, null0, null1, null2):
-    lseek_ofset = ql.unpack64s(ql.pack(lseek_ofset))
+    lseek_ofset = ql.unpacks(ql.pack(lseek_ofset))
     try:
         regreturn = ql.file_des[lseek_fd].lseek(lseek_ofset, lseek_origin)
     except OSError:
