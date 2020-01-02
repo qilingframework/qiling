@@ -30,6 +30,7 @@ from qiling.arch.filetype import *
 from qiling.os.linux.thread import *
 from qiling.arch.filetype import *
 from qiling.os.posix.filestruct import *
+from qiling.os.posix.constant import *
 from qiling.utils import *
 
 def ql_syscall_exit(ql, null0, null1, null2, null3, null4, null5):
@@ -1241,6 +1242,9 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, nu
         regreturn = -1
 
     ql.nprint("socket(%d, %d, %d) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
+    socket_type = socket_type_mapping(socket_type, ql.arch)
+    socket_domain = socket_domain_mapping(socket_domain, ql.arch)
+    ql.dprint("[+] scoket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -1262,11 +1266,11 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, null0,
                 regreturn = 0
             elif s.family == AF_INET:
                 port, host = struct.unpack(">HI", sock_addr[2:8])
-                ip = ql_bin_to_ipv4(host)
-                s.connect((ip, port)) 
+                ip = ql_bin_to_ip(host)
+                s.connect((ip, port))
                 regreturn = 0 
             else:
-                regreturn = -1       
+                regreturn = -1
         else:
             regreturn = -1
     except:
@@ -1361,9 +1365,9 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
     if ql.arch == QL_X8664:
         data = ql.uc.mem_read(bind_addr, 8)
     else:
-        data = ql.uc.mem_read(bind_addr, bind_addrlen) 
+        data = ql.uc.mem_read(bind_addr, bind_addrlen)
 
-    sin_family, = struct.unpack("<h", data[:2])  
+    sin_family, = struct.unpack("<h", data[:2])
 
     if sin_family == 1:
         path = data[2 : ].split(b'\x00')[0]
@@ -1372,7 +1376,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
         ql.file_des[bind_fd].bind(path)
     elif sin_family == 2:
         port, host = struct.unpack(">HI", data[2:8])
-        host = ql_bin_to_ipv4(host)
+        host = ql_bin_to_ip(host)
         if ql.root == False and port <= 1024:
             port = port + 8000
 
@@ -1383,7 +1387,10 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
 
     elif sin_family == 10:
         port, host = struct.unpack(">HI", data[2:8])
-        host = "::"
+
+        if host == 0:
+            host = '::1'
+
         if ql.root == False and port <= 1024:
             port = port + 8000
 
@@ -1400,7 +1407,8 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
         ql.nprint("bind(%d, %s, %d) = %d" % (bind_fd, path, bind_addrlen, regreturn))
     else:
         ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
-        ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ipv4(host),port,sin_family ) )
+        ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ip(host), port, sin_family))
+
     ql_definesyscall_return(ql, regreturn)
 
 
