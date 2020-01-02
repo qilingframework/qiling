@@ -25,6 +25,7 @@ from qiling.arch.filetype import *
 from qiling.exception import *
 from qiling.utils import *
 
+import ipaddress
 import struct
 import os
 
@@ -64,6 +65,10 @@ def ql_bin_to_ipv4(ip):
         (ip & 0xff))
 
 
+def ql_bin_to_ip(ip):
+    return ipaddress.ip_address(ip).compressed
+
+
 def ql_read_string(ql, address):
     ret = ""
     c = ql.uc.mem_read(address, 1)[0]
@@ -81,7 +86,7 @@ def ql_parse_sock_address(sock_addr):
 
     if sin_family == 2:  # AF_INET
         port, host = struct.unpack(">HI", sock_addr[2:8])
-        return "%s:%d" % (ql_bin_to_ipv4(host), port)
+        return "%s:%d" % (ql_bin_to_ip(host), port)
     elif sin_family == 6:  # AF_INET6
         return ""
 
