@@ -29,9 +29,15 @@ class Process:
     def load_dll(self, dll_name):
         dll_name = dll_name.lower().decode()
 
+        if self.ql.arch == QL_X86 and self.ql.dlls == None:
+            self.ql.dlls = "SysWOW64"
+        elif self.ql.arch == QL_X8664 and self.ql.dlls == None:
+            self.ql.dlls = "System32"
+
         if not dll_name.endswith(".dll"):
             dll_name = dll_name + '.dll'
-        path = os.path.join(self.ql.rootfs, "dlls", dll_name)
+        
+        path = os.path.join(self.ql.rootfs, self.ql.dlls, dll_name)
 
         if not os.path.exists(path):
             raise QlErrorFileNotFound("[!] Cannot find dll in %s" % path)
@@ -53,26 +59,32 @@ class Process:
         except KeyError as ke:
             pass
 
-        if not os.path.exists(fcache):
+        if self.ql.libcache and os.path.exists(fcache):
+            (data, cmdlines, self.import_symbols, self.import_address_table) = \
+                pickle.load(open(fcache, "rb"))
+            for entry in cmdlines:
+                self.set_cmdline(entry['name'], entry['address'], data)
+        else:
             dll = pefile.PE(path, fast_load=True)
             dll.parse_data_directories()
             data = bytearray(dll.get_memory_mapped_image())
+            cmdlines = []
 
             for entry in dll.DIRECTORY_ENTRY_EXPORT.symbols:
                 self.import_symbols[self.ql.DLL_LAST_ADDR + entry.address] = {'name': entry.name, 'ordinal': entry.ordinal}
                 self.import_address_table[dll_name][entry.name] = self.ql.DLL_LAST_ADDR + entry.address
                 self.import_address_table[dll_name][entry.ordinal] = self.ql.DLL_LAST_ADDR + entry.address
-                self.set_cmdline(entry, data)
+                cmdline_entry = self.set_cmdline(entry.name, entry.address, data)
+                if cmdline_entry:
+                    cmdlines.append(cmdline_entry)
+
             if self.ql.libcache:
                 # cache this dll file
-                pickle.dump((data,
+                pickle.dump((data, cmdlines,
                     self.import_symbols,
                     self.import_address_table),
                     open(fcache, "wb"))
                 self.ql.nprint("[+] Cached %s" % path)
-        else:
-            (data, self.import_symbols, self.import_address_table) = \
-                pickle.load(open(fcache, "rb"))
 
         dll_base = self.ql.DLL_LAST_ADDR
         dll_len = align(len(bytes(data)), 0x1000)
@@ -87,7 +99,7 @@ class Process:
         self.ql.nprint("[+] Done with loading %s" % path)
         return dll_base
 
-    def set_cmdline(self, entry, memory):
+    def set_cmdline(self, name, address, memory):
         if self.ql.arch == QL_X86:
             addr = self.ql.heap.mem_alloc(len(self.cmdline))
             packed_addr = self.ql.pack32(addr)
@@ -95,12 +107,17 @@ class Process:
             addr = self.ql.heap.mem_alloc(2 * len(self.cmdline))
             packed_addr = self.ql.pack64(addr)
 
-        if entry.name == b"_acmdln":
-            memory[entry.address:entry.address + self.ql.pointersize] = packed_addr
+        cmdline_entry = None
+        if name == b"_acmdln":
+            cmdline_entry = {"name": name, "address": address}
+            memory[address:address + self.ql.pointersize] = packed_addr
             self.ql.uc.mem_write(addr, self.cmdline)
-        elif entry.name == b"_wcmdln":
-            memory[entry.address:entry.address + self.ql.pointersize] = packed_addr
+        elif name == b"_wcmdln":
+            cmdline_entry = {"name": name, "address": address}
+            memory[address:address + self.ql.pointersize] = packed_addr
             self.ql.uc.mem_write(addr, str(self.cmdline).encode("utf-16le"))
+
+        return cmdline_entry
 
     def init_tib(self):
         if self.ql.arch == QL_X86:

@@ -40,12 +40,7 @@ def ql_syscall_exit(ql, null0, null1, null2, null3, null4, null5):
     if ql.child_processes == True:
         os._exit(0)
 
-    ql.uc.emu_stop()
-
-    if ql.thread_management != None:
-        td = ql.thread_management.cur_thread
-        td.stop()
-        td.stop_event = THREAD_EVENT_EXIT_EVENT
+    ql.stop(stop_event = THREAD_EVENT_EXIT_EVENT)
 
 
 def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
@@ -64,12 +59,7 @@ def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
     if ql.child_processes == True:
         os._exit(0)
 
-    if ql.thread_management != None:
-        td = ql.thread_management.cur_thread
-        td.stop()
-        td.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
-    
-    ql.uc.emu_stop()
+    ql.stop()
     
 
 def ql_syscall_madvise(ql, null0, null1, null2, null3, null4, null5):
@@ -220,6 +210,9 @@ def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
     real_path = ql_transform_to_real_path(ql, path)
     relative_path = ql_transform_to_relative_path(ql, path)
 
+    flags = flags & 0xffffffff
+    mode = mode & 0xffffffff
+
     for i in range(256):
         if ql.file_des[i] == 0:
             idx = i
@@ -253,6 +246,9 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
     real_path = ql_transform_to_real_path(ql, openat_path)
     relative_path = ql_transform_to_relative_path(ql, openat_path)
 
+    openat_flags = openat_flags & 0xffffffff
+    openat_mode = openat_mode & 0xffffffff
+
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
@@ -275,7 +271,11 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
 
 
 def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, null0, null1, null2):
-    regreturn = ql.file_des[lseek_fd].lseek(lseek_ofset, lseek_origin)
+    lseek_ofset = ql.unpacks(ql.pack(lseek_ofset))
+    try:
+        regreturn = ql.file_des[lseek_fd].lseek(lseek_ofset, lseek_origin)
+    except OSError:
+        regreturn = -1
     ql.nprint("lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
@@ -1108,13 +1108,13 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, null0, null1, null2):
 
 def ql_syscall_getpid(ql, null0, null1, null2, null3, null4, null5):
     regreturn= 0x512
-    ql.nprint("getpid() = %d)", regreturn)
+    ql.nprint("getpid() = ", regreturn)
     ql_definesyscall_return(ql, regreturn)
 
 
 def ql_syscall_getppid(ql, null0, null1, null2, null3, null4, null5):
     regreturn= 0x1024
-    ql.nprint("getpid() = %d)", regreturn)
+    ql.nprint("getpid() = ", regreturn)
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -1174,23 +1174,25 @@ def ql_syscall_wait4(ql, wait4_pid, wait4_wstatus, wait4_options, wait4_rusage, 
 
 def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, null0, null1, null2):
     pathname = ql_read_string(ql, execve_pathname)
-
     real_path = ql_transform_to_real_path(ql, pathname)
     relative_path = ql_transform_to_relative_path(ql, pathname)
+
+    word_size = 8 if (ql.arch == QL_ARM64) or (ql.arch == QL_X8664) else 4
+    unpack = ql.unpack64 if (ql.arch == QL_ARM64) or (ql.arch == QL_X8664) else ql.unpack32
 
     argv = []
     if execve_argv != 0:
         while True:
-            argv_addr = ql.unpack32(ql.uc.mem_read(execve_argv, 4))
+            argv_addr = unpack(ql.uc.mem_read(execve_argv, word_size))
             if argv_addr == 0:
                 break
             argv.append(ql_read_string(ql, argv_addr))
-            execve_argv += 4
+            execve_argv += word_size
 
     env = {}
     if execve_envp != 0:
         while True:
-            env_addr = ql.unpack32(ql.uc.mem_read(execve_envp, 4))
+            env_addr = unpack(ql.uc.mem_read(execve_envp, word_size))
             if env_addr == 0:
                 break
             env_str = ql_read_string(ql, env_addr)
@@ -1198,7 +1200,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, null0, null
             key = env_str[ : idx]
             val = env_str[idx + 1 : ]
             env[key] = val
-            execve_envp += 4
+            execve_envp += word_size
 
     ql.nprint("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
     ql.uc.emu_stop()
@@ -1259,7 +1261,7 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, null0,
         if s.family == family:
             if s.family == AF_UNIX:                
                 sun_path = sock_addr[2 : ].split(b"\x00")[0]
-                sun_path = ql.rootfs.encode() + sun_path
+                sun_path = ql_transform_to_real_path(ql, sun_path.decode())
                 s.connect(sun_path) 
                 regreturn = 0
             elif s.family == AF_INET:
@@ -1273,8 +1275,9 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, null0,
             regreturn = -1
     except:
         regreturn = -1
+    
     if s.family == AF_UNIX:
-        ql.nprint("connect(%s) = %d" % (sun_path.decode(), regreturn))
+        ql.nprint("connect(%s) = %d" % (sun_path, regreturn))
     elif s.family == AF_INET:
         ql.nprint("connect(%s, %d) = %d" % (ip, port, regreturn))
     else:
@@ -1366,34 +1369,43 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
 
     sin_family, = struct.unpack("<h", data[:2])
 
-    port, host = struct.unpack(">HI", data[2:8])
-    if sin_family == 2:
+    if sin_family == 1:
+        path = data[2 : ].split(b'\x00')[0]
+        path = ql_transform_to_real_path(ql, path.decode())
+        ql.nprint(path)
+        ql.file_des[bind_fd].bind(path)
+    elif sin_family == 2:
+        port, host = struct.unpack(">HI", data[2:8])
         host = ql_bin_to_ipv4(host)
-    elif sin_family == 10:
-        host = "::1"
+        if ql.root == False and port <= 1024:
+            port = port + 8000
 
-    if ql.root == False and port <= 1024:
-        port = port + 8000
-
-    try:
-        if port and sin_family == 2:
+        if ql.port != port:
             ql.file_des[bind_fd].bind(('127.0.0.1', port))
-            ql.port = port
-        elif ql.port and sin_family == 10 and ql.port != port:
-            ql.file_des[bind_fd].bind(('::1', port))
-        else:
-            regreturn = -1        
-    except:
-        regreturn = -1
 
-        if ql.output == QL_OUT_DEBUG:
-            raise
+        ql.port = port
+
+    elif sin_family == 10:
+        port, host = struct.unpack(">HI", data[2:8])
+        host = "::"
+        if ql.root == False and port <= 1024:
+            port = port + 8000
+
+        if ql.port != port:
+            ql.file_des[bind_fd].bind(('::1', port))
+
+    else:
+        regreturn = -1       
 
     if ql.shellcoder:
         regreturn = 0
 
-    ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen, regreturn))
-    ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %s" % (host, port, socket_family_mapping(sin_family, ql.arch)))
+    if sin_family == 1:
+        ql.nprint("bind(%d, %s, %d) = %d" % (bind_fd, path, bind_addrlen, regreturn))
+    else:
+        ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
+        ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ipv4(host),port,sin_family ) )
+
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -1648,7 +1660,7 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, null0, null1, nu
         ql_syscall_recv(ql, socketcall_sockfd, socketcall_buf, socketcall_len, socketcall_flags, 0, 0)
     else:
         ql.dprint("[!] error call %d" % socketcall_call)
-        ql.uc.emu_stop()
+        ql.stop(stop_event = THREAD_EVENT_UNEXECPT_EVENT)
 
 
 def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_newtls, clone_child_tidptr, null0):

@@ -10,6 +10,7 @@ dict_x8664_linux_syscall = {
     0x03 : "ql_syscall_close",
     0x04 : "ql_syscall_stat",
     0x05 : "ql_syscall_fstat",
+    0x08 : "ql_syscall_lseek",
     0x09 : "ql_syscall_mmap2",
     0x0A : "ql_syscall_mprotect",
     0x0A : "ql_syscall_mprotect",
