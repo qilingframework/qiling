@@ -19,46 +19,53 @@ class ELFTest(unittest.TestCase):
 
     def test_elf_freebsd_x8664(self):     
         ql = Qiling(["../examples/rootfs/x8664_freebsd/bin/x8664_hello_asm"], "../examples/rootfs/x8664_freebsd", output = "disasm")
-        ql.run()  
+        ql.run()
+        del ql
 
 
     def test_elf_linux_x8664(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/tester","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
         ql.run()
-
+        del ql
 
     def test_elf_linux_x8664_static(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x86_linux", output="debug")
         ql.run()
+        del ql
 
 
     def test_elf_linux_x86(self):
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", output="debug")
         ql.run()
+        del ql
 
     def test_elf_linux_x86_static(self):
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello_static"], "../examples/rootfs/x86_linux", output="debug")
         ql.run()
-
+        del ql
 
     def test_elf_linux_arm(self):     
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug")
         ql.run()
+        del ql
 
 
     def test_elf_linux_arm_static(self):     
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello_static"], "../examples/rootfs/arm_linux", output = "default")
-        ql.run()    
+        ql.run()
+        del ql
 
 
     def test_elf_linux_arm64(self):
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_hello"], "../examples/rootfs/arm64_linux", output = "debug")
         ql.run()
+        del ql
 
 
     def test_elf_linux_arm64_static(self):    
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_hello_static"], "../examples/rootfs/arm64_linux", output = "default")
         ql.run()
+        del ql
 
 
     def test_elf_linux_mips32el(self):
@@ -66,7 +73,8 @@ class ELFTest(unittest.TestCase):
             return ''.join(random.choice(chars) for x in range(size))
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello", random_generator(random.randint(1,99))], "../examples/rootfs/mips32el_linux")
-        ql.run()  
+        ql.run()
+        del ql
 
 
     def test_elf_linux_mips32el_static(self):
@@ -74,7 +82,8 @@ class ELFTest(unittest.TestCase):
             return ''.join(random.choice(chars) for x in range(size))
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_hello_static", random_generator(random.randint(1,99))], "../examples/rootfs/mips32el_linux")
-        ql.run()  
+        ql.run()
+        del ql 
 
 
     def test_elf_linux_mips32el_posix_syscall(self):
@@ -166,6 +175,7 @@ class ELFTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux")
         ql.set_syscall(0x04, my_syscall_write)
         ql.run()
+        del ql
 
     def test_elf_linux_x86_crackme(self):
         class MyPipe():
@@ -238,6 +248,12 @@ class ELFTest(unittest.TestCase):
 
         print("\n\n Linux Simple Crackme Brute Force, This Will Take Some Time ...")
         solve()
+
+
+    def test_elf_linux_execve_x8664(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", output="debug")
+        ql.run()
+        del ql
 
 
 if __name__ == "__main__":
