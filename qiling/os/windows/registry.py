@@ -43,7 +43,7 @@ class RegistryManager:
             self.config = config
         else:
             if not ql.reg_diff:
-                ql.reg_diff = "config.json"
+                ql.reg_diff = "reg_diff.json"
 
             self.config = os.path.join(rootfs, ql.reg_dir, ql.reg_diff)
 
