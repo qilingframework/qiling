@@ -1241,8 +1241,8 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, nu
 
     ql.nprint("socket(%d, %d, %d) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
     socket_type = socket_type_mapping(socket_type, ql.arch)
-    socket_protocol = socket_family_mapping(socket_protocol, ql.arch)
-    ql.dprint("[+] scoket(%d, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
+    socket_domain = socket_domain_mapping(socket_domain, ql.arch)
+    ql.dprint("[+] scoket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -1393,7 +1393,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
         regreturn = 0
 
     ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen, regreturn))
-    ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %s" % (host, port, socket_family_mapping(sin_family, ql.arch)))
+    ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %s" % (host, port, socket_domain_mapping(sin_family, ql.arch)))
     ql_definesyscall_return(ql, regreturn)
 
 

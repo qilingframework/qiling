@@ -13,9 +13,9 @@ def linux_socket_type_mapping(n):
     return d.get(n)
 
 
-def linux_socket_family_mapping(n):
+def linux_socket_domain_mapping(n):
 
-    linux_socket_family = {
+    linux_socket_domain = {
             'AF_UNSPEC'    : 0x0,
             'AF_INET'      : 0x2,
             'AF_AX25'      : 0x3,
@@ -29,7 +29,7 @@ def linux_socket_family_mapping(n):
             'AF_MAX'       : 0xc,
             }
 
-    d = { v:k for k, v in linux_socket_family.items() }
+    d = { v:k for k, v in linux_socket_domain.items() }
     return d.get(n)
 
 
@@ -51,9 +51,9 @@ def mipsel_socket_type_mapping(n):
     return d.get(n)
 
 
-def mipsel_socket_family_mapping(n):
+def mipsel_socket_domain_mapping(n):
 
-    mipsel_socket_family = {
+    mipsel_socket_domain = {
             'AF_UNSPEC'     : 0x0,
             'AF_FILE'       : 0x1,
             'AF_UNIX'       : 0x1,
@@ -104,7 +104,7 @@ def mipsel_socket_family_mapping(n):
             'AF_MAX'        : 0x2c,
             }
 
-    d = { v:k for k, v in mipsel_socket_family.items() }
+    d = { v:k for k, v in mipsel_socket_domain.items() }
     return d.get(n)
 
 
@@ -116,9 +116,9 @@ def socket_type_mapping(t, arch):
             }.get(arch)(t)
 
 
-def socket_family_mapping(p, arch):
+def socket_domain_mapping(p, arch):
     return {
-            1: linux_socket_family_mapping,
-            2: linux_socket_family_mapping,
-            6: mipsel_socket_family_mapping,
+            1: linux_socket_domain_mapping,
+            2: linux_socket_domain_mapping,
+            6: mipsel_socket_domain_mapping,
             }.get(arch)(p)
