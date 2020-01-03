@@ -49,8 +49,6 @@ def test_pe_win_x86_getlasterror():
 
 def test_pe_win_x86_regdemo():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/RegDemo.exe"], "../examples/rootfs/x86_windows")
-    ql.reg_dir = "registry"
-    ql.reg_diff = "reg_diff.json"
     ql.run()
     del ql
 
