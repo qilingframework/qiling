@@ -41,11 +41,13 @@ class RegistryManager:
         # config path
         if config:
             self.config = config
-        else:
-            if not ql.reg_diff:
-                ql.reg_diff = "reg_diff.json"
 
-            self.config = os.path.join(rootfs, ql.reg_dir, ql.reg_diff)
+        try:
+            os.makedirs((rootfs + "/" + ql.reg_dir + "/" +"diff"), 0o755)
+        except:
+            pass    
+        self.config = os.path.join(rootfs, ql.reg_dir,"diff", "registry_diff.json")
+
 
         if not os.path.exists(self.config):
             self.registry_config = {}
