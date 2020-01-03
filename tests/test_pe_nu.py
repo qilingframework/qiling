@@ -12,13 +12,13 @@ from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 
 def test_pe_win_x8664_hello():
-    ql = Qiling(["../examples/rootfs/x8664_reactos/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows", output = "default")
+    ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows", output = "default")
     ql.run()
     del ql
 
 
 def test_pe_win_x86_hello():
-    ql = Qiling(["../examples/rootfs/x86_reactos/bin/x86_hello.exe"], "../examples/rootfs/x86_windows", output = "default")
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows", output = "default")
     ql.run()
     del ql
 
