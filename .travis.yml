@@ -48,7 +48,7 @@ matrix:
         - cd ../bindings/python
         - sudo make install
         - python3 setup.py install
-        - cd $TRAVIS_HOME/build/qilingframework/qiling
+        - cd $TRAVIS_BUILD_DIR
         - python3 setup.py install
       before_script:
         cd tests
@@ -74,41 +74,14 @@ matrix:
         - cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 & ..\nmake-dll.bat && nmake install'
         - cd ../bindings/python
         - python setup.py install
-        - cd $TRAVIS_HOME/build/qilingframework/qiling
+        - cd $TRAVIS_BUILD_DIR
         - python setup.py install
         - cmd.exe /C 'copy "C:\Program Files (x86)\keystone\lib\keystone.dll" C:\Python36\Lib\site-packages\keystone'
       before_script:
         - cmd.exe //c "examples\scripts\dllscollector.bat"
-#        - mkdir -p examples/rootfs/x8664_windows/dlls
-#        - mkdir -p examples/rootfs/x86_windows/dlls
-#        - mkdir registry
-#        - cp /c/Users/Default/NTUSER.DAT registry/NTUSER.DAT
-#        - cmd.exe //c "reg save hklm\system registry/SYSTEM"
-#        - cmd.exe //c "reg save hklm\security registry/SECURITY"
-#        - cmd.exe //c "reg save hklm\software registry/SOFTWARE"
-#        - cmd.exe //c "reg save hklm\SAM registry/SAM"
-#        - cp -r registry examples/rootfs/x8664_windows/
-#        - cp -r registry examples/rootfs/x86_windows/
-#        - cat docs/DLLX86.txt | grep -E Filename | grep -v "msvcr110.dll" | awk {'print $2'} > list32.txt
-#        - grep -E Filename docs/DLLX8664.txt | awk {'print $2'} > list64.txt
-#        - cd /c/Windows/SysWOW64/ && xargs -a $TRAVIS_HOME/build/qilingframework/qiling/list32.txt cp -t $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/dlls
-#        - cp msvcr120_clr0400.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/dlls/msvcr110.dll
-#        - cp downlevel/api-ms-win-crt-stdio-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/dlls/
-#        - cp downlevel/api-ms-win-crt-runtime-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/dlls/
-#        - cp downlevel/api-ms-win-crt-math-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/dlls/
-#        - cp downlevel/api-ms-win-crt-locale-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/dlls/
-#        - cp downlevel/api-ms-win-crt-heap-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/dlls/
-#        - cd /c/Windows/System32/ && xargs -a $TRAVIS_HOME/build/qilingframework/qiling/list64.txt cp -t $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls
-#        - cp downlevel/api-ms-win-crt-stdio-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/
-#        - cp downlevel/api-ms-win-crt-runtime-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/
-#        - cp downlevel/api-ms-win-crt-math-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/
-#        - cp downlevel/api-ms-win-crt-locale-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/
-#        - cp downlevel/api-ms-win-crt-heap-l1-1-0.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/                
-#        - cp vcruntime140d.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/
-#        - cp ucrtbased.dll $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x8664_windows/dlls/
-        - cd $TRAVIS_HOME/build/qilingframework/qiling/examples/rootfs/x86_windows/bin
+        - cd $TRAVIS_BUILD_DIR/examples/rootfs/x86_windows/bin
         - unzip -Pinfected wannacry.bin.zip
-        - cd $TRAVIS_HOME/build/qilingframework/qiling/tests
+        - cd $TRAVIS_BUILD_DIR/tests
       script:
         - python test_pe_nu.py
       
