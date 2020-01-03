@@ -33,7 +33,7 @@ class RegistryManager:
             self.hive = hive
         else:
             #if not ql.reg_dir:
-            ql.reg_dir = "Windows/registry"
+            ql.reg_dir = os.path.join("Windows", "registry")
             self.hive = os.path.join(rootfs, ql.reg_dir)
             if not os.path.exists(self.hive):
                 return
@@ -48,7 +48,7 @@ class RegistryManager:
         if not os.path.exists(self.config):
             self.registry_config = {}
             try:
-                os.makedirs((rootfs + "/" + ql.reg_dir + "/" +"diff"), 0o755)
+                os.makedirs(os.path.joib(rootfs,ql.reg_dir,"diff"), 0o755)
             except:
                 pass
         else:

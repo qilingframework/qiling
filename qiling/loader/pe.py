@@ -30,9 +30,9 @@ class Process:
         dll_name = dll_name.lower().decode()
 
         if self.ql.arch == QL_X86:
-            self.ql.dlls = "Windows/SysWOW64"
+            self.ql.dlls = os.path.join("Windows","SysWOW64")
         elif self.ql.arch == QL_X8664:
-            self.ql.dlls = "Windows/System32"
+            self.ql.dlls = os.path.join("Windows","System32")
 
         if not dll_name.endswith(".dll"):
             dll_name = dll_name + '.dll'
