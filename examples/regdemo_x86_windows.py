@@ -8,7 +8,6 @@ from qiling import *
 
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, output = "debug")
-    ql.reg_dir = "registry"
     ql.run()
 
 

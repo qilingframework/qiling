@@ -60,9 +60,9 @@ class Qiling:
     log_file_name       = None
     current_path        = '/'
     fs_mapper           = []
-    reg_dir             = None
-    reg_diff            = None
-    dlls                = None
+    #reg_dir             = None
+    #reg_diff            = None
+    #dlls                = None
     exit_code           = 0
     debug_stop          = False
     internal_exception  = None
