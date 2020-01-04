@@ -45,8 +45,8 @@ class Thread:
         self.current_path = ql.current_path
         self.log_file_fd = None
 
-        if ql.log_split and ql.log_file_name != None:
-            self.log_file_fd = open(ql.log_file_name + "_" + str(os.getpid()) + '.' + str(self.thread_id) + ".qlog", 'w+')
+        if ql.log_split and ql.log_file != None:
+            self.log_file_fd = open(self.ql.log_file + "_" + str(os.getpid()), 'w+')
             #logging.basicConfig(filename=ql.log_file_name + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
             
         # For each thread, the kernel maintains two attributes (addresses)
@@ -226,7 +226,7 @@ class Thread:
     
     def set_thread_log_file(self, log_file):
         if self.ql.log_split and log_file != None:
-            self.log_file_fd = open(log_file + "_" +str(os.getpid()) + '.' + str(self.thread_id) + ".qlog", 'w+')
+            self.log_file_fd = open(log_file + "_" + str(os.getpid()) + '.' + str(self.thread_id), 'w+')
             #logging.basicConfig(filename= log_file + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
     
     def get_current_path(self):

@@ -1137,10 +1137,10 @@ def ql_syscall_vfork(ql, null0, null1, null2, null3, null4, null5):
         ql.child_processes = True
         regreturn = 0
         if ql.thread_management != None:
-            ql.thread_management.cur_thread.set_thread_log_file(ql.log_file_name)
+            ql.thread_management.cur_thread.set_thread_log_file(ql.log_file)
         else:
-            if ql.log_file_name != None:
-                ql.log_file_fd = open(ql.log_file_name + "_" + str(os.getpid()) + ".qlog", 'w+')
+            if ql.log_file != None:
+                ql.log_file_fd = open(ql.log_file + "_" + str(os.getpid()), 'w+')
                 #ql.log_file_fd = logging.basicConfig(filename=ql.log_file_name + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
     else:
         regreturn = pid
@@ -1361,6 +1361,7 @@ def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, null0, null1, null2, null
 
 def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
     regreturn = 0
+    bind_port = 0
 
     if ql.arch == QL_X8664:
         data = ql.uc.mem_read(bind_addr, 8)
@@ -1380,10 +1381,10 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
         if ql.root == False and port <= 1024:
             port = port + 8000
 
-        if ql.port != port:
+        if bind_port != port:
             ql.file_des[bind_fd].bind(('127.0.0.1', port))
 
-        ql.port = port
+        bind_port = port
 
     elif sin_family == 10:
         port, host = struct.unpack(">HI", data[2:8])
@@ -1394,7 +1395,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
         if ql.root == False and port <= 1024:
             port = port + 8000
 
-        if ql.port != port:
+        if bind_port != port:
             ql.file_des[bind_fd].bind(('::1', port))
 
     else:
@@ -1709,7 +1710,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
 
             f_th.update_global_thread_id()
             f_th.new_thread_id()
-            f_th.set_thread_log_file(ql.log_file_name)
+            f_th.set_thread_log_file(ql.log_file)
 
             if clone_flags & CLONE_SETTLS == CLONE_SETTLS:
                 if ql.arch == QL_X86:

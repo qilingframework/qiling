@@ -40,12 +40,16 @@ class RegistryManager:
                 raise QlPrintException("Error: Registry files not found!")
                 #return
 
-        self.config = os.path.join(rootfs, ql.reg_dir,"diff", "registry_diff.json")
+        if ql.log_dir == None:       
+            ql.log_dir = os.path.join(ql.rootfs, "qlog")
+        else:
+        
+        self.config = os.path.join(ql.log_dir, "registry", "registry_diff.json")
         
         if not os.path.exists(self.config):
             self.registry_config = {}
             try:
-                os.makedirs(os.path.joib(rootfs,ql.reg_dir,"diff"), 0o755)
+                os.makedirs(os.path.join(ql.log_dir, "registry"), 0o755)
             except:
                 pass
         else:
