@@ -6,6 +6,7 @@ REM
 mkdir examples\rootfs\x86_windows\Windows\SysWOW64
 mkdir examples\rootfs\x8664_windows\Windows\System32
 mkdir Windows\registry
+mkdir examples\rootfs\x86_windows\Windows
 
 REM 
 REM  Registry
