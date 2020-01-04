@@ -27,6 +27,7 @@ class RegistryManager:
         self.ql = ql
         rootfs = ql.rootfs
         self.registry_config = None
+        self.config = config
 
         # hive dir
         if hive:
@@ -37,10 +38,6 @@ class RegistryManager:
             self.hive = os.path.join(rootfs, ql.reg_dir)
             if not os.path.exists(self.hive):
                 return
-
-        # config path
-        if config:
-            self.config = config
 
         self.config = os.path.join(rootfs, ql.reg_dir,"diff", "registry_diff.json")
         
