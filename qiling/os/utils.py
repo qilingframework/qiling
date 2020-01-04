@@ -87,8 +87,7 @@ def ql_parse_sock_address(sock_addr):
 
 
 def ql_hook_block_disasm(ql, address, size):
-    if ql.output == QL_OUT_DUMP:
-        ql.nprint("[+] Tracing basic block at 0x%x" %(address))
+    ql.nprint("[+] Tracing basic block at 0x%x" %(address))
 
 
 def ql_hook_code_disasm(ql, address, size):
@@ -181,7 +180,7 @@ def ql_hook_code_disasm(ql, address, size):
 
 def ql_setup(ql):
     if ql.output in (QL_OUT_DISASM, QL_OUT_DUMP):
-        if ql.ostype != QL_WINDOWS:
+        if ql.output == QL_OUT_DUMP:
             ql.hook_block(ql_hook_block_disasm)
         ql.hook_code(ql_hook_code_disasm)
 
