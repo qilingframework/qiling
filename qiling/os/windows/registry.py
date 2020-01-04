@@ -37,7 +37,7 @@ class RegistryManager:
             ql.reg_dir = os.path.join("Windows", "registry")
             self.hive = os.path.join(rootfs, ql.reg_dir)
             if not os.path.exists(self.hive):
-                os.makedirs(self.hive, 0o755)
+                raise QlPrintException("Error: Registry files not found!")
                 #return
 
         self.config = os.path.join(rootfs, ql.reg_dir,"diff", "registry_diff.json")
