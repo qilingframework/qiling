@@ -42,7 +42,6 @@ class RegistryManager:
 
         if ql.log_dir == None:       
             ql.log_dir = os.path.join(ql.rootfs, "qlog")
-        else:
         
         self.config = os.path.join(ql.log_dir, "registry", "registry_diff.json")
         
