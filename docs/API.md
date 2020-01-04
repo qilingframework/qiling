@@ -22,7 +22,6 @@ mmap_start = 0xhexaddress
 output = ["debug","off","disasm","dump"] // dump=(disam + debug)
 log_console
 reg_dir = /dir/path/to/clean_registery // must within rootfs
-reg_diff = /file/path/to/registry_dump // must within rootfs
 ```
 #### Pre-Execution Settings
 APIs allow users to instuments a executeable file/shellcode before executions
