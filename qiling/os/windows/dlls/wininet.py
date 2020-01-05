@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import struct
-from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
 from qiling.os.windows.utils import *
 
 

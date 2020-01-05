@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, "..")
 from qiling import *
 from qiling.exception import *
-from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
 from qiling.os.windows.utils import *
 
 def test_pe_win_x8664_hello():
