@@ -117,7 +117,7 @@ def x8664_fastcall(ql, param_num, params, func, args, kwargs):
     ret_addr = ql.stack_read(0)
     result, param_num = __x86_cc(ql, params, func, args, kwargs)
 
-    # add rsp
+    # update stack pointer
     rsp = ql.sp
     if param_num > 4:
         ql.sp = rsp + ((param_num - 4 + 1) * 8)
