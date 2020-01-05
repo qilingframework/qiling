@@ -82,9 +82,7 @@ def print_function(ql, address, function_name, params, ret):
     ql.nprint(log)
 
 
-def x86_stdcall(ql, param_num, params, func, args, kwargs):
-    # get ret addr
-    ret_addr = ql.stack_read(0)
+def __x86_cc(ql, params, func, args, kwargs):
     # read params
     if params is not None:
         param_num = set_params(ql, params, args[2])
@@ -95,55 +93,48 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
         set_return_value(ql, result)
     # print
     print_function(ql, args[1], func.__name__, args[2], result)
-    # add esp
-    esp = ql.uc.reg_read(UC_X86_REG_ESP)
-    ql.uc.reg_write(UC_X86_REG_ESP, esp + (param_num + 1) * 4)
-    # ret => pop eip
+    return result, param_num
+
+
+def x86_stdcall(ql, param_num, params, func, args, kwargs):
+    # get ret addr
+    ret_addr = ql.stack_read(0)
+    result, param_num = __x86_cc(ql, params, func, args, kwargs)
+    # update stack pointer
+    esp = ql.sp
+    ql.sp = esp + ((param_num + 1) * 4)
+
     if ql.RUN:
-        ql.uc.reg_write(UC_X86_REG_EIP, ret_addr)
+        ql.pc = ret_addr
+
     return result
 
 
 def x86_cdecl(ql, param_num, params, func, args, kwargs):
-    # read params
-    if params is not None:
-        param_num = set_params(ql, params, args[2])
-    # call function
-    result = func(*args, **kwargs)
-    # set return value
-    if result is not None:
-        set_return_value(ql, result)
-    # print
-    print_function(ql, args[1], func.__name__, args[2], result)
-    # ret => pop eip
+    result, param_num = __x86_cc(ql, params, func, args, kwargs)
+
     if ql.RUN:
         ret_addr = ql.stack_pop()
-        ql.uc.reg_write(UC_X86_REG_EIP, ret_addr)
+        ql.pc = ret_addr
+
     return result
 
 
 def x8664_fastcall(ql, param_num, params, func, args, kwargs):
     # get ret addr
     ret_addr = ql.stack_read(0)
-    # read params
-    if params is not None:
-        param_num = set_params(ql, params, args[2])
-    # call function
-    result = func(*args, **kwargs)
-    # set return value
-    if result is not None:
-        set_return_value(ql, result)
-    # print
-    print_function(ql, args[1], func.__name__, args[2], result)
+    result, param_num = __x86_cc(ql, params, func, args, kwargs)
+
     # add rsp
-    rsp = ql.uc.reg_read(UC_X86_REG_RSP)
+    rsp = ql.sp
     if param_num > 4:
-        ql.uc.reg_write(UC_X86_REG_RSP, rsp + (param_num - 4 + 1) * 8)
+        ql.sp = rsp + ((param_num - 4 + 1) * 8)
     else:
-        ql.uc.reg_write(UC_X86_REG_RSP, rsp + 8)
-    # ret => pop rip
+        ql.sp = rsp + 8
+
     if ql.RUN:
-        ql.uc.reg_write(UC_X86_REG_RIP, ret_addr)
+        ql.pc = ret_addr
+
     return result
 
 
