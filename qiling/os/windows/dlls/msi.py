@@ -18,7 +18,7 @@ from qiling.exception import *
 #		INSTALLSTATE *  	piInstalled,
 #		INSTALLSTATE *  	piAction 
 #	); 	
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "package": POINTER,
     "szComponent": STRING,
     "piInstalled": POINTER,

@@ -68,7 +68,7 @@ def test_pe_win_x86_wannacry():
     del ql
 
 def test_pe_win_x8664_customapi():
-    @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+    @winapi(cc=CDECL, params={
         "str": STRING
     })
     def my_puts64(ql, address, params):

@@ -10,9 +10,12 @@ from qiling.os.windows.utils import *
 from qiling.exception import *
 
 
-X86_STDCALL = 1
-X86_CDECL = 2
-X8664_FASTCALL = 3
+# X86_STDCALL = 1
+# X86_CDECL = 2
+# X8664_FASTCALL = 3
+
+STDCALL = 1
+CDECL = 2
 
 DWORD = 1
 UINT = 1
@@ -131,7 +134,7 @@ def x8664_fastcall(ql, param_num, params, func, args, kwargs):
 
 
 # x86/x8664 PE should share Windows APIs
-def winapi(x86, x8664, param_num=None, params=None):
+def winapi(cc, param_num=None, params=None):
     """
     @param_num: the number of function params
     """
@@ -139,13 +142,13 @@ def winapi(x86, x8664, param_num=None, params=None):
         def wrapper(*args, **kwargs):
             ql = args[0]
             if ql.arch == QL_X86:
-                if x86 == X86_STDCALL:
+                if cc == X86_STDCALL:
                     return x86_stdcall(ql, param_num, params, func, args, kwargs)
-                elif x86 == X86_CDECL:
+                elif cc == X86_CDECL:
                     return x86_cdecl(ql, param_num, params, func, args, kwargs)
             elif ql.arch == QL_X8664:
-                if x8664 == X8664_FASTCALL:
-                    return x8664_fastcall(ql, param_num, params, func, args, kwargs)
+                # if x8664 == X8664_FASTCALL:
+                return x8664_fastcall(ql, param_num, params, func, args, kwargs)
             else:
                 raise QlErrorArch("[!] Unknown ql.arch")
         return wrapper

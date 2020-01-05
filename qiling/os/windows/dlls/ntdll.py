@@ -17,7 +17,7 @@ from qiling.exception import *
 #   const void *src,
 #   size_t count
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "dest": POINTER,
     "src": POINTER,
     "count": UINT

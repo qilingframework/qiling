@@ -15,7 +15,7 @@ from qiling.os.windows.utils import *
 #   DLGPROC   lpDialogFunc,
 #   LPARAM    dwInitParam
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hInstance": HANDLE,
     "lpTemplateName": POINTER,
     "hWndParent": HANDLE,
@@ -33,7 +33,7 @@ def hook_DialogBoxParamA(ql, address, params):
 # 	LPSTR lpString,
 # 	int   cchMax
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hDlg": HANDLE,
     "nIDDlgItem": INT,
     "lpString": POINTER,
@@ -60,7 +60,7 @@ def hook_GetDlgItemTextA(ql, address, params):
 #     LPCSTR lpCaption,
 #     UINT   uType
 #     );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hWnd": HANDLE,
     "lpText": STRING,
     "lpCaption": STRING,
@@ -75,7 +75,7 @@ def hook_MessageBoxA(ql, address, params):
 #   HWND    hDlg,
 #   INT_PTR nResult
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hDlg": HANDLE,
     "nResult": POINTER
 })
@@ -86,21 +86,21 @@ def hook_EndDialog(ql, address, params):
 
 # HWND GetDesktopWindow((
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_GetDesktopWindow(ql, address, params):
     pass
 
 #BOOL OpenClipboard(
 #  HWND hWndNewOwner
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hWndNewOwner": HANDLE
 })
 def hook_OpenClipboard(ql, address, params):
     return ql.clipboard.open(params['hWndNewOwner'])
 
 #BOOL CloseClipboard();
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_CloseClipboard(ql, address, params):
     return ql.clipboard.close()
 
@@ -108,7 +108,7 @@ def hook_CloseClipboard(ql, address, params):
 #  UINT   uFormat,
 #  HANDLE hMem
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "uFormat": UINT,
     "hMem": STRING
 })
@@ -122,7 +122,7 @@ def hook_SetClipboardData(ql, address, params):
 #HANDLE GetClipboardData(
 #  UINT uFormat
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "uFormat": UINT
 })
 def hook_GetClipboardData(ql, address, params):
@@ -138,7 +138,7 @@ def hook_GetClipboardData(ql, address, params):
 #BOOL IsClipboardFormatAvailable(
 #  UINT format
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "uFormat": UINT
 })
 def hook_IsClipboardFormatAvailable(ql, address, params):

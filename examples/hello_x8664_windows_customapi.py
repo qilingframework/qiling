@@ -9,7 +9,7 @@ from qiling import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "str": STRING
 })
 def my_puts(ql, address, params):
