@@ -76,21 +76,23 @@ def print_function(ql, address, function_name, params, ret):
 def __x86_cc(ql, param_num, params, func, args, kwargs):
     # read params
     if params is not None:
-        param_num = set_params(ql, params, args[1])
+        param_num = set_params(ql, params, args[2])
     # call function
     result = func(*args, **kwargs)
     # set return value
     if result is not None:
         set_return_value(ql, result)
     # print
-    print_function(ql, args[1], func.__name__, args[1], result)
+    print_function(ql, args[1], func.__name__, args[2], result)
     return result, param_num
 
 
 def x86_stdcall(ql, param_num, params, func, args, kwargs):
     # get ret addr
     ret_addr = ql.stack_read(0)
+
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
+
     # update stack pointer
     esp = ql.sp
     ql.sp = esp + ((param_num + 1) * 4)
@@ -114,6 +116,7 @@ def x86_cdecl(ql, param_num, params, func, args, kwargs):
 def x8664_fastcall(ql, param_num, params, func, args, kwargs):
     # get ret addr
     ret_addr = ql.stack_read(0)
+
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
 
     # update stack pointer
