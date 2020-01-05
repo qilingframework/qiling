@@ -141,7 +141,7 @@ def loader_shellcode(ql):
 
 
 def runner(ql):
-    ql_setup(ql)
+    ql_setup_output(ql)
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_WINSOWS_EMU_END
     try:

@@ -183,7 +183,7 @@ def ql_hook_code_disasm(ql, address, size):
             (syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1], arg_3[0], arg_4[1], arg_4[0], arg_5[1], arg_5[0]))
 
 
-def ql_setup(ql):
+def ql_setup_output(ql):
     if ql.output in (QL_OUT_DISASM, QL_OUT_DUMP):
         if ql.output == QL_OUT_DUMP:
             ql.hook_block(ql_hook_block_disasm)

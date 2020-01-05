@@ -216,7 +216,7 @@ def loader_shellcode(ql):
 
 def runner(ql):
     ql.uc.reg_write(UC_ARM_REG_SP, ql.stack_address)
-    ql_setup(ql)
+    ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
     ql_arm_enable_vfp(ql.uc)
     ql_arm_init_kernel_get_tls(ql.uc)

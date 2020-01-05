@@ -212,7 +212,7 @@ def loader_shellcode(ql):
 
 def runner(ql):
     ql.uc.reg_write(UC_MIPS_REG_SP, ql.new_stack)
-    ql_setup(ql)
+    ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
     if (ql.until_addr == 0):
         ql.until_addr = QL_MIPSEL_EMU_END

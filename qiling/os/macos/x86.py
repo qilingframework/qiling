@@ -104,7 +104,7 @@ def loader_shellcode(ql):
 
 def runner(ql):
     ql.uc.reg_write(UC_X86_REG_ESP, ql.stack_address) 
-    ql_setup(ql)
+    ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
     ql_x86_setup_gdt_segment_ds(ql)
     ql_x86_setup_gdt_segment_cs(ql)

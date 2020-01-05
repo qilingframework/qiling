@@ -94,7 +94,7 @@ def loader_shellcode(ql):
 
 def runner(ql):
     ql.uc.reg_write(UC_ARM64_REG_SP, ql.stack_address)
-    ql_setup(ql)
+    ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
     ql_arm64_enable_vfp(ql.uc)
     if (ql.until_addr == 0):

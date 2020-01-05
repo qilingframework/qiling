@@ -95,7 +95,7 @@ def runner(ql):
     #ql.uc.reg_write(UC_X86_REG_R14D, 0xfffffffffffff000)
     #ql.uc.reg_write(UC_X86_REG_R15D, 0xfffffffffffff000)
 
-    ql_setup(ql)
+    ql_setup_output(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
 
     # https://github.com/unicorn-engine/unicorn/blob/master/tests/regress/x86_64_msr.py

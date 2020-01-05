@@ -78,7 +78,7 @@ def loader_file(ql):
     ql.stack_address = (int(ql.new_stack))
 
     ql.sp = ql.stack_address
-    ql_setup(ql)
+    ql_setup_output(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
 
     ql_x8664_setup_gdt_segment_ds(ql)
@@ -98,7 +98,7 @@ def loader_shellcode(ql):
     ql.uc.mem_write(ql.stack_address, ql.shellcoder)
     
     ql.sp = ql.stack_address
-    ql_setup(ql)
+    ql_setup_output(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
 
 
