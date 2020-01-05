@@ -1,4 +1,4 @@
-This file credits all the contributors of the Qiling Freamework project
+This file credits all the contributors of the Qiling Framework project.
 
 Project Leader
 ==============
