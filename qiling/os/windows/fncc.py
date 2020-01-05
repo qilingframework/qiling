@@ -10,10 +10,6 @@ from qiling.os.windows.utils import *
 from qiling.exception import *
 
 
-# X86_STDCALL = 1
-# X86_CDECL = 2
-# X8664_FASTCALL = 3
-
 STDCALL = 1
 CDECL = 2
 
@@ -80,14 +76,14 @@ def print_function(ql, address, function_name, params, ret):
 def __x86_cc(ql, param_num, params, func, args, kwargs):
     # read params
     if params is not None:
-        param_num = set_params(ql, params, args[2])
+        param_num = set_params(ql, params, args[1])
     # call function
     result = func(*args, **kwargs)
     # set return value
     if result is not None:
         set_return_value(ql, result)
     # print
-    print_function(ql, args[1], func.__name__, args[2], result)
+    print_function(ql, args[1], func.__name__, args[1], result)
     return result, param_num
 
 
