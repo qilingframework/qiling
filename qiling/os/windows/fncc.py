@@ -142,12 +142,11 @@ def winapi(cc, param_num=None, params=None):
         def wrapper(*args, **kwargs):
             ql = args[0]
             if ql.arch == QL_X86:
-                if cc == X86_STDCALL:
+                if cc == STDCALL:
                     return x86_stdcall(ql, param_num, params, func, args, kwargs)
-                elif cc == X86_CDECL:
+                elif cc == CDECL:
                     return x86_cdecl(ql, param_num, params, func, args, kwargs)
             elif ql.arch == QL_X8664:
-                # if x8664 == X8664_FASTCALL:
                 return x8664_fastcall(ql, param_num, params, func, args, kwargs)
             else:
                 raise QlErrorArch("[!] Unknown ql.arch")
