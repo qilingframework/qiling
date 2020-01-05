@@ -57,7 +57,7 @@ def set_params(ql, in_params, out_params):
 
 def print_function(ql, address, function_name, params, ret):
     function_name = function_name.replace('hook_', '')
-    if function_name == "__stdio_common_vfprintf" or function_name == "printf":
+    if function_name in ("__stdio_common_vfprintf", "printf"):
         return
     log = '0x%0.2x: %s(' % (address, function_name)
     for each in params:
