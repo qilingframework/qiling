@@ -26,35 +26,6 @@ STRING = 4
 WSTRING = 5
 
 
-def set_params(ql, in_params, out_params):
-    index = 0
-    for each in in_params:
-        if in_params[each] == DWORD or in_params[each] == POINTER:
-            out_params[each] = get_params_by_index(ql, index)
-        elif in_params[each] == ULONGLONG:
-            if ql.arch == QL_X86:
-                low = get_params_by_index(ql, index)
-                index += 1
-                high = get_params_by_index(ql, index)
-                out_params[each] = high << 8 + low
-            else:
-                out_params[each] = get_params_by_index(ql, index)
-        elif in_params[each] == STRING:
-            ptr = get_params_by_index(ql, index)
-            if ptr == 0:
-                out_params[each] = 0
-            else:
-                out_params[each] = read_cstring(ql, ptr)
-        elif in_params[each] == WSTRING:
-            ptr = get_params_by_index(ql, index)
-            if ptr == 0:
-                out_params[each] = 0
-            else:
-                out_params[each] = read_wstring(ql, ptr)
-        index += 1
-    return index
-
-
 def print_function(ql, address, function_name, params, ret):
     function_name = function_name.replace('hook_', '')
     if function_name in ("__stdio_common_vfprintf", "printf"):
@@ -76,7 +47,7 @@ def print_function(ql, address, function_name, params, ret):
 def __x86_cc(ql, param_num, params, func, args, kwargs):
     # read params
     if params is not None:
-        param_num = set_params(ql, params, args[2])
+        param_num = set_function_params(ql, params, args[2])
     # call function
     result = func(*args, **kwargs)
     # set return value

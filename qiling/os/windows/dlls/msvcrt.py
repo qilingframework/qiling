@@ -223,7 +223,7 @@ def printf(ql, address, fmt, params_addr, name):
 @winapi(cc=CDECL, param_num=1)
 def hook_printf(ql, address, _):
     ret = 0
-    format_string = get_params(ql, 1)
+    format_string = get_function_param(ql, 1)
 
     if format_string == 0:
         ql.nprint('0x%0.2x: printf(format = 0x0) = 0x%x' % (address, ret))
@@ -260,9 +260,9 @@ def hook___acrt_iob_func(ql, address, params):
 def hook___stdio_common_vfprintf(ql, address, _):
     ret = 0
     if ql.pointersize == 8:
-        _, _, p_format, _, p_args = get_params(ql, 5)
+        _, _, p_format, _, p_args = get_function_param(ql, 5)
     else:
-        _, _, _, p_format, _, p_args = get_params(ql, 6)
+        _, _, _, p_format, _, p_args = get_function_param(ql, 6)
     fmt = read_cstring(ql, p_format)
     printf(ql, address, fmt, p_args, '__stdio_common_vfprintf')
     return ret
