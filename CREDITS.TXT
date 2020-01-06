@@ -33,6 +33,7 @@ Hcamael
 hugsy
 danielhenrymantilla
 iamyeh
+bambu
 
 Alpha testers (in no particular order, named by github id)
 ==========================================================
