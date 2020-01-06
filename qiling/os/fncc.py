@@ -6,7 +6,7 @@
 # function calling convention
 
 from unicorn.x86_const import *
-from qiling.os.windows.utils import *
+from qiling.os.windows.fncc import *
 from qiling.exception import *
 
 
