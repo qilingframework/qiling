@@ -94,8 +94,7 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
 
     # update stack pointer
-    esp = ql.sp
-    ql.sp = esp + ((param_num + 1) * 4)
+    ql.sp = ql.sp + ((param_num + 1) * 4)
 
     if ql.RUN:
         ql.pc = ret_addr
@@ -107,27 +106,16 @@ def x86_cdecl(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
 
     if ql.RUN:
-        ret_addr = ql.stack_pop()
-        ql.pc = ret_addr
+        ql.pc = ql.stack_pop()
 
     return result
 
 
 def x8664_fastcall(ql, param_num, params, func, args, kwargs):
-    # get ret addr
-    ret_addr = ql.stack_read(0)
-
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
 
-    # update stack pointer
-    rsp = ql.sp
-    if param_num > 4:
-        ql.sp = rsp + ((param_num - 4 + 1) * 8)
-    else:
-        ql.sp = rsp + 8
-
     if ql.RUN:
-        ql.pc = ret_addr
+        ql.pc = ql.stack_pop()
 
     return result
 
@@ -135,7 +123,9 @@ def x8664_fastcall(ql, param_num, params, func, args, kwargs):
 # x86/x8664 PE should share Windows APIs
 def winapi(cc, param_num=None, params=None):
     """
-    @param_num: the number of function params
+    @cc: windows api calling convention, only x86 needs this, x64 is always fastcall
+    @params: params dict
+    @param_num: the number of function params, used by variadic functions, e.g printf
     """
     def decorator(func):
         def wrapper(*args, **kwargs):
