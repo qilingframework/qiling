@@ -27,12 +27,13 @@ def my_netgear(path, rootfs):
                 path, 
                 rootfs, 
                 output      = "debug", 
-                log_file    = 'logfile', 
+                log_dir     = "qlog",
                 log_split   = True, 
-                log_console = True, 
+                log_console = True,
                 mmap_start  = 0x7ffef000 - 0x800000
                 )
     ql.root = False
+    ql.bindtolocalhost = True
     ql.add_fs_mapper('/proc', '/proc')
     ql.set_syscall(4140, my_syscall__llseek)
     ql.run()

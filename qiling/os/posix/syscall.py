@@ -1373,6 +1373,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
 
     sin_family, = struct.unpack("<h", data[:2])
     port, host = struct.unpack(">HI", data[2:8])
+    host = ql_bin_to_ip(host)
     
     if ql.root == False and port <= 1024:
         port = port + 8000    
@@ -1384,14 +1385,16 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
         ql.file_des[bind_fd].bind(path)
 
     # need a proper fix, for now ipv4 comes first
-    elif sin_family == 2:
-        host = ql_bin_to_ip(host)
+    elif sin_family == 2 and ql.bindtolocalhost == True:
         ql.file_des[bind_fd].bind(('127.0.0.1', port))
-
+ 
     # IPv4 should comes first
-    elif ql.ipv6 == True and sin_family == 10:
+    elif ql.ipv6 == True and sin_family == 10 and ql.bindtolocalhost == True:
         ql.file_des[bind_fd].bind(('::1', port))
-
+    
+    elif ql.bindtolocalhost == False:
+         ql.file_des[bind_fd].bind((host, port))
+    
     else:
         regreturn = -1       
 
