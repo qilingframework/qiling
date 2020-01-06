@@ -13,6 +13,7 @@ PT_LOAD = 1
 PT_DYNAMIC = 2
 PT_INTERP = 3
 
+ET_REL = 1
 ET_EXEC = 2
 ET_DYN = 3
 
