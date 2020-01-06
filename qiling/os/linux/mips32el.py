@@ -58,7 +58,7 @@ def hook_syscall(ql, intno):
             raise
         except:
             ql.nprint("[!] SYSCALL ERROR: ", LINUX_SYSCALL_FUNC_NAME)
-            if ql.multithreading == True:
+            if ql.multithread == True:
                 td = ql.thread_management.cur_thread
                 td.stop()
                 td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
@@ -226,7 +226,7 @@ def runner(ql):
         if ql.shellcoder:
             ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
         else:
-            if ql.multithreading == True:
+            if ql.multithread == True:
                 # start multithreading
                 thread_management = ThreadManagement(ql)
                 ql.thread_management = thread_management

@@ -1206,23 +1206,23 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, null0, null
             env[key] = val
             execve_envp += word_size
 
-    ql.nprint("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
     ql.uc.emu_stop()
 
     if ql.shellcoder:
         pass
     else:
-        ql.stack_address = 0
-        ql.argv = argv
-        ql.env = env
-        ql.path = real_path
-        ql.map_info = []
-
-
-        ql.runtype = ql_get_os_module_function(ql.ostype, ql.arch, "runner")
-        loader_file = ql_get_os_module_function(ql.ostype, ql.arch, "loader_file")
+        ql.stack_address    = 0
+        ql.argv             = argv
+        ql.env              = env
+        ql.path             = real_path
+        ql.map_info         = []
+        ql.runtype          = ql_get_os_module_function(ql.ostype, ql.arch, "runner")
+        loader_file         = ql_get_os_module_function(ql.ostype, ql.arch, "loader_file")
+        
         loader_file(ql)
         ql.run()
+    
+    ql.nprint("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))    
 
 
 def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, null1, null2):
@@ -1387,10 +1387,12 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
     # need a proper fix, for now ipv4 comes first
     elif sin_family == 2 and ql.bindtolocalhost == True:
         ql.file_des[bind_fd].bind(('127.0.0.1', port))
+        host = "127.0.0.1"
  
     # IPv4 should comes first
     elif ql.ipv6 == True and sin_family == 10 and ql.bindtolocalhost == True:
         ql.file_des[bind_fd].bind(('::1', port))
+        host = "::1"
     
     elif ql.bindtolocalhost == False:
          ql.file_des[bind_fd].bind((host, port))

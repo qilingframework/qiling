@@ -53,7 +53,7 @@ class Qiling:
     until_addr          = 0
     byte                = 0
     # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
-    multithreading      = False
+    multithread         = False
     thread_management   = None
     # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
     ipv6                = False
