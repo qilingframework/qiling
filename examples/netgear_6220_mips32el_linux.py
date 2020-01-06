@@ -11,12 +11,11 @@
 # 
 # This firmware will more or less alive now.
 
-
 import sys
 sys.path.append("..")
 from qiling import *
 
-# due to mtdblock11 causing llseek to crash. we implement our own llseek
+# due to fake mtdblock11 causing llseek to crash. we implement our own llseek
 def my_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, null0):
     regreturn = 0 
     ql.nprint("_llseek(%d, 0x%x, 0x%x, 0x%x = %d)" % (fd, offset_high, offset_low, result, regreturn))
@@ -32,8 +31,10 @@ def my_netgear(path, rootfs):
                 log_console = True,
                 mmap_start  = 0x7ffef000 - 0x800000
                 )
-    ql.root = False
-    ql.bindtolocalhost = True
+
+    ql.root             = False
+    ql.bindtolocalhost  = True
+    ql.multithread      = False
     ql.add_fs_mapper('/proc', '/proc')
     ql.set_syscall(4140, my_syscall__llseek)
     ql.run()

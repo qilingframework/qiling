@@ -41,14 +41,16 @@ class RegistryManager:
                 #return
 
         if ql.log_dir == None:       
-            ql.log_dir = os.path.join(ql.rootfs, "qlog")
+            ql.log_reg_dir = os.path.join(ql.rootfs, "qlog")
+        else:
+            ql.log_reg_dir = ql.log_dir     
         
-        self.config = os.path.join(ql.log_dir, "registry", "registry_diff.json")
+        self.config = os.path.join(ql.log_reg_dir, "registry", "registry_diff.json")
         
         if not os.path.exists(self.config):
             self.registry_config = {}
             try:
-                os.makedirs(os.path.join(ql.log_dir, "registry"), 0o755)
+                os.makedirs(os.path.join(ql.log_reg_dir, "registry"), 0o755)
             except:
                 pass
         else:
