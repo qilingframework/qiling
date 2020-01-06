@@ -52,6 +52,8 @@ class Qiling:
     timeout             = 0
     until_addr          = 0
     byte                = 0
+    # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
+    multithreading      = False
     thread_management   = None
     root                = True
     currentpath         = os.getcwd()
