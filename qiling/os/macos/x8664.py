@@ -84,7 +84,15 @@ def loader_file(ql):
     loader = MachoX8664(ql, ql.path, stack_esp, [ql.path], envs, apples, 1)
     loader.loadMachoX8664()
     ql.stack_address = (int(ql.stack_esp))
-    
+
+    ql.debug_stop = True
+    ql.sp = ql.stack_address
+    ql_setup_output(ql)
+    ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
+    ql_x8664_setup_gdt_segment_ds(ql)
+    ql_x8664_setup_gdt_segment_cs(ql)
+    ql_x8664_setup_gdt_segment_ss(ql)
+
 
 def loader_shellcode(ql):
     uc = Uc(UC_ARCH_X86, UC_MODE_64)
@@ -96,17 +104,17 @@ def loader_shellcode(ql):
     ql.uc.mem_map(ql.stack_address,  ql.stack_size)
     ql.stack_address = ql.stack_address  + 0x200000 - 0x1000
     ql.uc.mem_write(ql.stack_address, ql.shellcoder)
-    
 
-def runner(ql):
     ql.debug_stop = True
-    ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
+    ql.sp = ql.stack_address
     ql_setup_output(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
     ql_x8664_setup_gdt_segment_ds(ql)
     ql_x8664_setup_gdt_segment_cs(ql)
     ql_x8664_setup_gdt_segment_ss(ql)
 
+
+def runner(ql):
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_EMU_END
     try:

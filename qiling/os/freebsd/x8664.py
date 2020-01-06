@@ -72,22 +72,8 @@ def loader_file(ql):
     loader = ELFLoader(ql.path, ql)
     if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env):
         raise QlErrorFileType("Unsupported FileType")
-    ql.stack_address =(int(ql.new_stack-8))
-    
 
-def loader_shellcode(ql):
-    uc = Uc(UC_ARCH_X86, UC_MODE_64)
-    ql.uc = uc
-    if (ql.stack_address == 0):
-        ql.stack_address = 0x1000000
-    if (ql.stack_size == 0):    
-        ql.stack_size = 2 * 1024 * 1024
-    ql.uc.mem_map(ql.stack_address,  ql.stack_size)
-    ql.stack_address = ql.stack_address  + 0x200000 - 0x1000
-    ql.uc.mem_write(ql.stack_address, ql.shellcoder)
-    
-
-def runner(ql):
+    ql.stack_address = (int(ql.new_stack-8))
 
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql.uc.reg_write(UC_X86_REG_RDI, ql.stack_address)
@@ -136,27 +122,109 @@ def runner(ql):
     #     uc.reg_write(UC_X86_REG_RDX, ordx)
     #     uc.reg_write(UC_X86_REG_RCX, orcx)
     #     uc.reg_write(UC_X86_REG_RIP, orip)
-    
+
     # def set_fs(uc, addr):
     #     '''
     #     set the FS.base hidden descriptor-register field to the given address.
     #     this enables referencing the fs segment on x86-64.
     #     '''
     #     return set_msr(uc, FSMSR, addr)
-    
+
     # def set_gs(uc, addr):
     #     '''
     #     set the GS.base hidden descriptor-register field to the given address.
     #     this enables referencing the gs segment on x86-64.
     #     '''
     #     return set_msr(uc, GSMSR, addr)        
-    
+
     # ql.uc.mem_map(SCRATCH_ADDR, SCRATCH_SIZE)
     # ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
     # set_msr(ql.uc, FSMSR, 0x1000)
     # set_gs(ql.uc, SEGMENT_ADDR)
     # set_fs(ql.uc, SEGMENT_ADDR)
 
+
+def loader_shellcode(ql):
+    uc = Uc(UC_ARCH_X86, UC_MODE_64)
+    ql.uc = uc
+    if (ql.stack_address == 0):
+        ql.stack_address = 0x1000000
+    if (ql.stack_size == 0):    
+        ql.stack_size = 2 * 1024 * 1024
+    ql.uc.mem_map(ql.stack_address,  ql.stack_size)
+    ql.stack_address = ql.stack_address  + 0x200000 - 0x1000
+    ql.uc.mem_write(ql.stack_address, ql.shellcoder)
+
+    ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
+    ql.uc.reg_write(UC_X86_REG_RDI, ql.stack_address)
+    #ql.uc.reg_write(UC_X86_REG_RAX, 0x0)
+    #ql.uc.reg_write(UC_X86_REG_R14D, 0xfffffffffffff000)
+    #ql.uc.reg_write(UC_X86_REG_R15D, 0xfffffffffffff000)
+
+    ql_setup_output(ql)
+    ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
+
+    # https://github.com/unicorn-engine/unicorn/blob/master/tests/regress/x86_64_msr.py
+    # some ref from unicorn.
+
+    # FSMSR = 0xC0000100
+    # GSMSR = 0xC0000101
+
+    # SCRATCH_ADDR = 0x80000
+    # SCRATCH_SIZE = 0x1000
+
+    # SEGMENT_ADDR = 0x5000
+    # SEGMENT_SIZE = 0x1000
+
+    # def set_msr(uc, msr, value, scratch=SCRATCH_ADDR):
+    #     '''
+    #     set the given model-specific register (MSR) to the given value.
+    #     this will clobber some memory at the given scratch address, as it emits some code.
+    #     '''
+
+    #     #uc = ql.uc
+    #     # save clobbered registers
+    #     orax = uc.reg_read(UC_X86_REG_RAX)
+    #     ordx = uc.reg_read(UC_X86_REG_RDX)
+    #     orcx = uc.reg_read(UC_X86_REG_RCX)
+    #     orip = uc.reg_read(UC_X86_REG_RIP)
+
+    #     # x86: wrmsr
+    #     buf = b'\x0f\x30'
+    #     uc.mem_write(scratch, buf)
+    #     uc.reg_write(UC_X86_REG_RAX, value & 0xFFFFFFFF)
+    #     uc.reg_write(UC_X86_REG_RDX, (value >> 32) & 0xFFFFFFFF)
+    #     uc.reg_write(UC_X86_REG_RCX, msr & 0xFFFFFFFF)
+    #     uc.emu_start(scratch, scratch+len(buf), count=1)
+
+    #     # restore clobbered registers
+    #     uc.reg_write(UC_X86_REG_RAX, orax)
+    #     uc.reg_write(UC_X86_REG_RDX, ordx)
+    #     uc.reg_write(UC_X86_REG_RCX, orcx)
+    #     uc.reg_write(UC_X86_REG_RIP, orip)
+
+    # def set_fs(uc, addr):
+    #     '''
+    #     set the FS.base hidden descriptor-register field to the given address.
+    #     this enables referencing the fs segment on x86-64.
+    #     '''
+    #     return set_msr(uc, FSMSR, addr)
+
+    # def set_gs(uc, addr):
+    #     '''
+    #     set the GS.base hidden descriptor-register field to the given address.
+    #     this enables referencing the gs segment on x86-64.
+    #     '''
+    #     return set_msr(uc, GSMSR, addr)        
+
+    # ql.uc.mem_map(SCRATCH_ADDR, SCRATCH_SIZE)
+    # ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
+    # set_msr(ql.uc, FSMSR, 0x1000)
+    # set_gs(ql.uc, SEGMENT_ADDR)
+    # set_fs(ql.uc, SEGMENT_ADDR)
+
+
+def runner(ql):
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_EMU_END
     try:

@@ -59,7 +59,6 @@ def hook_winapi(ql, address, size):
 
 
 def windows_setup64(ql):
-
     ql.GS_SEGMENT_ADDR = 0x6000
     ql.GS_SEGMENT_SIZE = 0x8000
     ql.STRUCTERS_LAST_ADDR = ql.GS_SEGMENT_ADDR
@@ -117,6 +116,9 @@ def loader_file(ql):
 
     ql.hook_code(hook_winapi)
 
+    ql_setup_output(ql)
+
+
 def loader_shellcode(ql):
     uc = Uc(UC_ARCH_X86, UC_MODE_64)
     ql.uc = uc
@@ -139,9 +141,10 @@ def loader_shellcode(ql):
     # hook win api
     ql.hook_code(hook_winapi)
 
+    ql_setup_output(ql)
+
 
 def runner(ql):
-    ql_setup_output(ql)
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_WINSOWS_EMU_END
     try:

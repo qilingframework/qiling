@@ -197,6 +197,10 @@ def loader_file(ql):
         raise QlErrorFileType("Unsupported FileType")
     ql.stack_address = (int(ql.new_stack))
     
+    ql.uc.reg_write(UC_MIPS_REG_SP, ql.new_stack)
+    ql_setup_output(ql)
+    ql.hook_intr(hook_syscall)
+
 
 def loader_shellcode(ql):
     uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)
@@ -209,11 +213,12 @@ def loader_shellcode(ql):
     ql.stack_address =  ql.stack_address  + 0x200000 - 0x1000
     ql.uc.mem_write(ql.stack_address, ql.shellcoder) 
 
-
-def runner(ql):
     ql.uc.reg_write(UC_MIPS_REG_SP, ql.new_stack)
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
+
+
+def runner(ql):
     if (ql.until_addr == 0):
         ql.until_addr = QL_MIPSEL_EMU_END
     try:

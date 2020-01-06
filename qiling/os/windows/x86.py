@@ -121,6 +121,8 @@ def loader_file(ql):
     # hook win api
     ql.hook_code(hook_winapi)
 
+    ql_setup_output(ql)
+
 
 def loader_shellcode(ql):
     uc = Uc(UC_ARCH_X86, UC_MODE_32)
@@ -144,10 +146,10 @@ def loader_shellcode(ql):
     # hook win api
     ql.hook_code(hook_winapi)
 
-
-def runner(ql):
     ql_setup_output(ql)
 
+
+def runner(ql):
     if (ql.until_addr == 0):
         ql.until_addr = QL_X86_WINDOWS_EMU_END
     try:
