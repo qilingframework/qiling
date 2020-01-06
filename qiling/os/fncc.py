@@ -5,10 +5,5 @@
 
 # function calling convention
 
-from unicorn.x86_const import *
-from qiling.os.windows.fncc import *
-from qiling.exception import *
-
-
 STDCALL = 1
 CDECL = 2

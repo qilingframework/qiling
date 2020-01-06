@@ -464,12 +464,12 @@ class Qiling:
         return self.archfunc.stack_pop()
 
 
-    def stack_read(self, value):
-        return self.archfunc.stack_read(value)
+    def stack_read(self, index):
+        return self.archfunc.stack_read(index)
 
 
-    def stack_write(self,value, data):
-        self.archfunc.stack_write(value, data)       
+    def stack_write(self, index, data):
+        self.archfunc.stack_write(index, data)
 
 
     def unpack64(self, x):
