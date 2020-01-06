@@ -22,23 +22,23 @@ def set_function_params(ql, in_params, out_params):
     index = 0
     for each in in_params:
         if in_params[each] == DWORD or in_params[each] == POINTER:
-            out_params[each] = get_params_by_index(ql, index)
+            out_params[each] = _get_param_by_index(ql, index)
         elif in_params[each] == ULONGLONG:
             if ql.arch == QL_X86:
-                low = get_params_by_index(ql, index)
+                low = _get_param_by_index(ql, index)
                 index += 1
-                high = get_params_by_index(ql, index)
+                high = _get_param_by_index(ql, index)
                 out_params[each] = high << 8 + low
             else:
-                out_params[each] = get_params_by_index(ql, index)
+                out_params[each] = _get_param_by_index(ql, index)
         elif in_params[each] == STRING:
-            ptr = get_params_by_index(ql, index)
+            ptr = _get_param_by_index(ql, index)
             if ptr == 0:
                 out_params[each] = 0
             else:
                 out_params[each] = read_cstring(ql, ptr)
         elif in_params[each] == WSTRING:
-            ptr = get_params_by_index(ql, index)
+            ptr = _get_param_by_index(ql, index)
             if ptr == 0:
                 out_params[each] = 0
             else:
@@ -47,13 +47,13 @@ def set_function_params(ql, in_params, out_params):
     return index
 
 
-def x86_get_params_by_index(ql, index):
+def _x86_get_params_by_index(ql, index):
     # index starts from 0
     # skip ret_addr
     return ql.stack_read((index + 1) * 4)
 
 
-def x8664_get_params_by_index(ql, index):
+def _x8664_get_params_by_index(ql, index):
     reg_list = [UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9]
     if index < 4:
         return ql.uc.reg_read(reg_list[index])
@@ -63,11 +63,11 @@ def x8664_get_params_by_index(ql, index):
     return ql.stack_read((index + 1) * 8)
 
 
-def get_params_by_index(ql, index):
+def _get_param_by_index(ql, index):
     if ql.arch == QL_X86:
-        return x86_get_params_by_index(ql, index)
+        return _x86_get_params_by_index(ql, index)
     elif ql.arch == QL_X8664:
-        return x8664_get_params_by_index(ql, index)
+        return _x8664_get_params_by_index(ql, index)
 
 
 def _x86_get_args(ql, number):
