@@ -72,8 +72,8 @@ class RegistryManager:
         # hkey local system
         self.hklm = {}
         try:
-            self.hklm['SAM'] = Registry.Registry(os.path.join(self.hive, 'SAM'))
             self.hklm['SECURITY'] = Registry.Registry(os.path.join(self.hive, 'SECURITY'))
+            self.hklm['SAM'] = Registry.Registry(os.path.join(self.hive, 'SAM'))
             self.hklm['SOFTWARE'] = Registry.Registry(os.path.join(self.hive, 'SOFTWARE'))
             self.hklm['SYSTEM'] = Registry.Registry(os.path.join(self.hive, 'SYSTEM'))
             # hkey current user
