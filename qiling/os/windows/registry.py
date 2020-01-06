@@ -25,7 +25,6 @@ from qiling.exception import *
 class RegistryManager:
     def __init__(self, ql, hive=None, config=None):
         self.ql = ql
-        rootfs = ql.rootfs
         self.registry_config = None
         self.config = config
 
@@ -33,9 +32,8 @@ class RegistryManager:
         if hive:
             self.hive = hive
         else:
-            #if not ql.reg_dir:
-            ql.reg_dir = os.path.join("Windows", "registry")
-            self.hive = os.path.join(rootfs, ql.reg_dir)
+            self.hive = os.path.join(ql.rootfs, "Windows", "registry")
+            ql.dprint("[+] Windows Registry PATH: ", self.hive)
             if not os.path.exists(self.hive):
                 raise QlPrintException("Error: Registry files not found!")
                 #return
@@ -72,10 +70,10 @@ class RegistryManager:
         # hkey local system
         self.hklm = {}
         try:
-            self.hklm['SECURITY'] = Registry.Registry(os.path.join(self.hive, 'SECURITY'))
-            self.hklm['SAM'] = Registry.Registry(os.path.join(self.hive, 'SAM'))
-            self.hklm['SOFTWARE'] = Registry.Registry(os.path.join(self.hive, 'SOFTWARE'))
-            self.hklm['SYSTEM'] = Registry.Registry(os.path.join(self.hive, 'SYSTEM'))
+            self.hklm['SECURITY']   = Registry.Registry(os.path.join(self.hive, 'SECURITY'))
+            self.hklm['SAM']        = Registry.Registry(os.path.join(self.hive, 'SAM'))
+            self.hklm['SOFTWARE']   = Registry.Registry(os.path.join(self.hive, 'SOFTWARE'))
+            self.hklm['SYSTEM']     = Registry.Registry(os.path.join(self.hive, 'SYSTEM'))
             # hkey current user
             self.hkcu = Registry.Registry(os.path.join(self.hive, 'NTUSER.DAT'))
         except FileNotFoundError:
