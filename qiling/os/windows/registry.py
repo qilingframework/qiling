@@ -27,28 +27,30 @@ class RegistryManager:
         self.ql = ql
         rootfs = ql.rootfs
         self.registry_config = None
+        self.config = config
 
         # hive dir
         if hive:
             self.hive = hive
         else:
-            if not ql.reg_dir:
-                ql.reg_dir = "registry"
+            #if not ql.reg_dir:
+            ql.reg_dir = os.path.join("Windows", "registry")
             self.hive = os.path.join(rootfs, ql.reg_dir)
             if not os.path.exists(self.hive):
-                return
+                raise QlPrintException("Error: Registry files not found!")
+                #return
 
-        # config path
-        if config:
-            self.config = config
-        else:
-            if not ql.reg_diff:
-                ql.reg_diff = "config.json"
-
-            self.config = os.path.join(rootfs, ql.reg_dir, ql.reg_diff)
-
+        if ql.log_dir == None:       
+            ql.log_dir = os.path.join(ql.rootfs, "qlog")
+        
+        self.config = os.path.join(ql.log_dir, "registry", "registry_diff.json")
+        
         if not os.path.exists(self.config):
             self.registry_config = {}
+            try:
+                os.makedirs(os.path.join(ql.log_dir, "registry"), 0o755)
+            except:
+                pass
         else:
             # read config
             # use registry config first

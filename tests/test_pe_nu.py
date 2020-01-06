@@ -8,17 +8,17 @@ import sys
 sys.path.insert(0, "..")
 from qiling import *
 from qiling.exception import *
-from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
 from qiling.os.windows.utils import *
 
 def test_pe_win_x8664_hello():
-    ql = Qiling(["../examples/rootfs/x8664_reactos/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows", output = "default")
+    ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows", output = "default")
     ql.run()
     del ql
 
 
 def test_pe_win_x86_hello():
-    ql = Qiling(["../examples/rootfs/x86_reactos/bin/x86_hello.exe"], "../examples/rootfs/x86_windows", output = "default")
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows", output = "default")
     ql.run()
     del ql
 
@@ -49,8 +49,6 @@ def test_pe_win_x86_getlasterror():
 
 def test_pe_win_x86_regdemo():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/RegDemo.exe"], "../examples/rootfs/x86_windows")
-    ql.reg_dir = "registry"
-    ql.reg_diff = "reg_diff.json"
     ql.run()
     del ql
 
@@ -70,7 +68,7 @@ def test_pe_win_x86_wannacry():
     del ql
 
 def test_pe_win_x8664_customapi():
-    @winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+    @winapi(cc=CDECL, params={
         "str": STRING
     })
     def my_puts64(ql, address, params):

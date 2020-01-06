@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import struct
-from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
 from qiling.os.windows.utils import *
 
 
@@ -15,7 +15,7 @@ from qiling.os.windows.utils import *
 #   LPCSTR lpszProxyBypass,
 #   DWORD  dwFlags
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpszAgent": STRING,
     "dwAccessType": DWORD,
     "lpszProxy": STRING,
@@ -33,7 +33,7 @@ def hook_InternetOpenA(ql, address, params):
 #   LPCWSTR lpszProxyBypass,
 #   DWORD   dwFlags
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpszAgent": WSTRING,
     "dwAccessType": DWORD,
     "lpszProxy": WSTRING,
@@ -52,7 +52,7 @@ def hook_InternetOpenW(ql, address, params):
 #   DWORD     dwFlags,
 #   DWORD_PTR dwContext
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hInternet": POINTER,
     "lpszUrl": STRING,
     "lpszHeaders": STRING,
@@ -72,7 +72,7 @@ def hook_InternetOpenUrlA(ql, address, params):
 #   DWORD     dwFlags,
 #   DWORD_PTR dwContext
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hInternet": POINTER,
     "lpszUrl": WSTRING,
     "lpszHeaders": WSTRING,
@@ -87,7 +87,7 @@ def hook_InternetOpenUrlW(ql, address, params):
 # BOOLAPI InternetCloseHandle(
 #   HINTERNET hInternet
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hInternet": POINTER
 })
 def hook_InternetCloseHandle(ql, address, params):
@@ -105,7 +105,7 @@ def hook_InternetCloseHandle(ql, address, params):
 #   DWORD         dwFlags,
 #   DWORD_PTR     dwContext
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hInternet": POINTER,
     "lpszServerName": STRING,
     "nServerPort": DWORD,
@@ -129,7 +129,7 @@ def hook_InternetConnectA(ql, address, params):
 #   DWORD         dwFlags,
 #   DWORD_PTR     dwContext
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hInternet": POINTER,
     "lpszServerName": WSTRING,
     "nServerPort": DWORD,
@@ -153,7 +153,7 @@ def hook_InternetConnectW(ql, address, params):
 #   DWORD     dwFlags,
 #   DWORD_PTR dwContext
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hConnect": POINTER,
     "lpszVerb": STRING,
     "lpszObjectName": STRING,
@@ -177,7 +177,7 @@ def hook_HttpOpenRequestA(ql, address, params):
 #   DWORD     dwFlags,
 #   DWORD_PTR dwContext
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hConnect": POINTER,
     "lpszVerb": WSTRING,
     "lpszObjectName": WSTRING,
@@ -197,7 +197,7 @@ def hook_HttpOpenRequestW(ql, address, params):
 #   LPVOID    lpBuffer,
 #   DWORD     dwBufferLength
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hInternet": POINTER,
     "dwOption": DWORD,
     "lpBuffer": POINTER,
@@ -213,7 +213,7 @@ def hook_InternetSetOptionA(ql, address, params):
 #   LPVOID    lpBuffer,
 #   DWORD     dwBufferLength
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hInternet": POINTER,
     "dwOption": DWORD,
     "lpBuffer": POINTER,
@@ -230,7 +230,7 @@ def hook_InternetSetOptionW(ql, address, params):
 #  LPVOID    lpOptional,
 #  DWORD     dwOptionalLength
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hRequest": POINTER,
     "lpszHeaders": STRING,
     "dwHeadersLength": DWORD,
@@ -248,7 +248,7 @@ def hook_HttpSendRequestA(ql, address, params):
 #  LPVOID    lpOptional,
 #  DWORD     dwOptionalLength
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hRequest": POINTER,
     "lpszHeaders": WSTRING,
     "dwHeadersLength": DWORD,
@@ -266,7 +266,7 @@ def hook_HttpSendRequestW(ql, address, params):
 #   DWORD     dwFlags,
 #   LPVOID    *lppvData
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hWnd": POINTER,
     "hRequest": POINTER,
     "dwError": DWORD,
@@ -283,7 +283,7 @@ def hook_InternetErrorDlg(ql, address, params):
 #   DWORD     dwNumberOfBytesToRead,
 #   LPDWORD   lpdwNumberOfBytesRead
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hFile": POINTER,
     "lpBuffer": POINTER,
     "dwNumberOfBytesToRead": DWORD,

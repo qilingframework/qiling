@@ -6,7 +6,7 @@
 import struct
 import time
 from qiling.os.windows.const import *
-from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.memory import align
 from qiling.os.windows.thread import *
@@ -16,7 +16,7 @@ from qiling.exception import *
 #void Sleep(
 #  DWORD dwMilliseconds
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "dwMilliseconds": DWORD
 })
 def hook_Sleep(ql, address, params):
@@ -26,7 +26,7 @@ def hook_Sleep(ql, address, params):
 # LPTOP_LEVEL_EXCEPTION_FILTER SetUnhandledExceptionFilter(
 #   LPTOP_LEVEL_EXCEPTION_FILTER lpTopLevelExceptionFilter
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpTopLevelExceptionFilter": DWORD
 })
 def hook_SetUnhandledExceptionFilter(ql, address, params):
@@ -37,7 +37,7 @@ def hook_SetUnhandledExceptionFilter(ql, address, params):
 # void ExitProcess(
 #   UINT uExitCode
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "uExitCode": DWORD
 })
 def hook_ExitProcess(ql, address, params):
@@ -48,7 +48,7 @@ def hook_ExitProcess(ql, address, params):
 # __analysis_noreturn VOID FatalExit(
 #   int ExitCode
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "ExitCode": INT
 })
 def hook_FatalExit(ql, address, params):
@@ -81,7 +81,7 @@ typedef struct _STARTUPINFO {
   HANDLE hStdError;
 } STARTUPINFO, *LPSTARTUPINFO;
 """
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpStartupInfo": POINTER
 })
 def hook_GetStartupInfoA(ql, address, params):
@@ -94,7 +94,7 @@ def hook_GetStartupInfoA(ql, address, params):
 # VOID WINAPI GetStartupInfoW(
 #   _Out_ LPSTARTUPINFO lpStartupInfo
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpStartupInfo": POINTER
 })
 def hook_GetStartupInfoW(ql, address, params):
@@ -106,7 +106,7 @@ def hook_GetStartupInfoW(ql, address, params):
 #  LONG volatile *Target,
 #  LONG          Value
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "Target": POINTER,
     "Value": UINT
 })
@@ -118,7 +118,7 @@ def hook_InterlockedExchange(ql, address, params):
 #LONG InterlockedIncrement(
 #  LONG volatile *Target,
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "Target": POINTER
 })
 def hook_InterlockedIncrement(ql, address, params):
@@ -130,7 +130,7 @@ def hook_InterlockedIncrement(ql, address, params):
 #PVOID EncodePointer(
 #  _In_ PVOID Ptr
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "Ptr": POINTER
 })
 def hook_EncodePointer(ql, address, params):
@@ -139,7 +139,7 @@ def hook_EncodePointer(ql, address, params):
 #PVOID DecodePointer(
 #  _In_ PVOID Ptr
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "Ptr": POINTER
 })
 def hook_DecodePointer(ql, address, params):
@@ -149,7 +149,7 @@ def hook_DecodePointer(ql, address, params):
 # HMODULE GetModuleHandleA(
 #   LPCSTR lpModuleName
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpModuleName": STRING
 })
 def hook_GetModuleHandleA(ql, address, params):
@@ -169,7 +169,7 @@ def hook_GetModuleHandleA(ql, address, params):
 # HMODULE GetModuleHandleW(
 #   LPCWSTR lpModuleName
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpModuleName": WSTRING
 })
 def hook_GetModuleHandleW(ql, address, params):
@@ -191,7 +191,7 @@ def hook_GetModuleHandleW(ql, address, params):
 #   LPCSTR lpCmdLine,
 #   UINT   uCmdShow
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpCmdLine": STRING,
     "uCmdShow": UINT
 })
@@ -201,7 +201,7 @@ def hook_WinExec(ql, address, params):
 
 # NOT_BUILD_WINDOWS_DEPRECATE DWORD GetVersion(
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_GetVersion(ql, address, params):
     ret = 0x0004
     ret = ret << 16
@@ -214,7 +214,7 @@ def hook_GetVersion(ql, address, params):
 #   SIZE_T dwInitialSize,
 #   SIZE_T dwMaximumSize
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "flOptions": DWORD,
     "dwInitialSize": SIZE_T,
     "dwMaximumSize": SIZE_T
@@ -228,7 +228,7 @@ def hook_HeapCreate(ql, address, params):
 # NOT_BUILD_WINDOWS_DEPRECATE BOOL GetVersionExA(
 #   LPOSVERSIONINFOA lpVersionInformation
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpVersionInformation": POINTER
 })
 def hook_GetVersionExA(ql, address, params):
@@ -241,7 +241,7 @@ def hook_GetVersionExA(ql, address, params):
 #   LPSTR  lpBuffer,
 #   DWORD  nSize
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpName": STRING,
     "lpBuffer": POINTER,
     "nSize": DWORD
@@ -256,7 +256,7 @@ def hook_GetEnvironmentVariableA(ql, address, params):
 #   DWORD  dwFlags,
 #   SIZE_T dwBytes
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hHeap": HANDLE,
     "dwFlags": DWORD,
     "dwBytes": SIZE_T
@@ -270,7 +270,7 @@ def hook_HeapAlloc(ql, address, params):
 #  DWORD                  dwFlags,
 #  _Frees_ptr_opt_ LPVOID lpMem
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hHeap": HANDLE,
     "dwFlags": DWORD,
     "lpMem": POINTER
@@ -285,7 +285,7 @@ def hook_HeapFree(ql, address, params):
 #   DWORD  flAllocationType,
 #   DWORD  flProtect
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpAddress": POINTER,
     "dwSize": SIZE_T,
     "flAllocationType": DWORD,
@@ -302,7 +302,7 @@ def hook_VirtualAlloc(ql, address, params):
 #   SIZE_T dwSize,
 #   DWORD  dwFreeType
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpAddress": POINTER,
     "dwSize": SIZE_T,
     "dwFreeType": DWORD
@@ -316,7 +316,7 @@ def hook_VirtualFree(ql, address, params):
 # HANDLE WINAPI GetStdHandle(
 #   _In_ DWORD nStdHandle
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "nStdHandle": DWORD
 })
 def hook_GetStdHandle(ql, address, params):
@@ -327,7 +327,7 @@ def hook_GetStdHandle(ql, address, params):
 # DWORD GetFileType(
 #   HANDLE hFile
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hFile": HANDLE
 })
 def hook_GetFileType(ql, address, params):
@@ -343,7 +343,7 @@ def hook_GetFileType(ql, address, params):
 # UINT SetHandleCount(
 #   UINT uNumber
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "uNumber": UINT
 })
 def hook_SetHandleCount(ql, address, params):
@@ -353,7 +353,7 @@ def hook_SetHandleCount(ql, address, params):
 
 # LPSTR GetCommandLineA(
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_GetCommandLineA(ql, address, params):
     cmdline = ql.PE.cmdline + b"\x00"
     addr = ql.heap.mem_alloc(len(cmdline))
@@ -362,7 +362,7 @@ def hook_GetCommandLineA(ql, address, params):
 
 # LPSTR GetCommandLineW(
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_GetCommandLineW(ql, address, params):
     cmdline = ql.PE.cmdline.decode('ascii').encode('utf-16le')
     addr = ql.heap.mem_alloc(len(cmdline))
@@ -372,7 +372,7 @@ def hook_GetCommandLineW(ql, address, params):
 
 # LPWCH GetEnvironmentStrings(
 # );s
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_GetEnvironmentStrings(ql, address, params):
     cmdline = b"\x00"
     addr = ql.heap.mem_alloc(len(cmdline))
@@ -382,7 +382,7 @@ def hook_GetEnvironmentStrings(ql, address, params):
 
 # UINT GetACP(
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_GetACP(ql, address, params):
     ret = 437
     return ret
@@ -392,7 +392,7 @@ def hook_GetACP(ql, address, params):
 #   UINT     CodePage,
 #   LPCPINFO lpCPInfo
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "CodePage": UINT,
     "lpCPInfo": POINTER
 })
@@ -407,7 +407,7 @@ def hook_GetCPInfo(ql, address, params):
 #   int                           cchSrc,
 #   LPWORD                        lpCharType
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "dwInfoType": DWORD,
     "lpSrcStr": POINTER,
     "cchSrc": INT,
@@ -426,7 +426,7 @@ def hook_GetStringTypeW(ql, address, params):
 #   INT    count,
 #   LPWORD chartype
 #  )
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "locale": POINTER,
     "type": DWORD,
     "src": STRING,
@@ -440,7 +440,7 @@ def hook_GetStringTypeExA(ql, address, params):
 
 # LPWCH GetEnvironmentStringsW(
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_GetEnvironmentStringsW(ql, address, params):
     cmdline = b"\x00\x00"
     addr = ql.heap.mem_alloc(len(cmdline))
@@ -458,7 +458,7 @@ def hook_GetEnvironmentStringsW(ql, address, params):
 #   LPCCH                              lpDefaultChar,
 #   LPBOOL                             lpUsedDefaultChar
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "CodePage": UINT,
     "dwFlags": DWORD,
     "lpWideCharStr": WSTRING,
@@ -489,7 +489,7 @@ def hook_WideCharToMultiByte(ql, address, params):
 # BOOL FreeEnvironmentStringsW(
 #   LPWCH penv
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "penv": POINTER
 })
 def hook_FreeEnvironmentStringsW(ql, address, params):
@@ -505,7 +505,7 @@ def hook_FreeEnvironmentStringsW(ql, address, params):
 #   LPWSTR  lpDestStr,
 #   int     cchDest
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "Locale": POINTER,
     "dwMapFlags": DWORD,
     "lpSrcStr": WSTRING,
@@ -526,7 +526,7 @@ def hook_LCMapStringW(ql, address, params):
 #   LPSTR  lpDestStr,
 #   int    cchDest
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "Locale": POINTER,
     "dwMapFlags": DWORD,
     "lpSrcStr": WSTRING,
@@ -544,7 +544,7 @@ def hook_LCMapStringA(ql, address, params):
 #   LPSTR   lpFilename,
 #   DWORD   nSize
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hModule": HANDLE,
     "lpFilename": POINTER,
     "nSize": DWORD
@@ -572,7 +572,7 @@ def hook_GetModuleFileNameA(ql, address, params):
 #   LPSTR   lpFilename,
 #   DWORD   nSize
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hModule": HANDLE,
     "lpFilename": POINTER,
     "nSize": DWORD
@@ -604,7 +604,7 @@ def hook_GetModuleFileNameW(ql, address, params):
 #   LPDWORD      lpNumberOfBytesRead,
 #   LPOVERLAPPED lpOverlapped
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hFile": HANDLE,
     "lpBuffer": POINTER,
     "nNumberOfBytesToRead": DWORD,
@@ -642,7 +642,7 @@ def hook_ReadFile(ql, address, params):
 #   LPDWORD      lpNumberOfBytesWritten,
 #   LPOVERLAPPED lpOverlapped
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hFile": HANDLE,
     "lpBuffer": POINTER,
     "nNumberOfBytesToWrite": DWORD,
@@ -709,7 +709,7 @@ def _CreateFile(ql, address, params, name):
 #   DWORD                 dwFlagsAndAttributes,
 #   HANDLE                hTemplateFile
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpFileName": STRING,
     "dwDesiredAccess": DWORD,
     "dwShareMode": DWORD,
@@ -723,7 +723,7 @@ def hook_CreateFileA(ql, address, params):
     return ret
 
 
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpFileName": WSTRING,
     "dwDesiredAccess": DWORD,
     "dwShareMode": DWORD,
@@ -740,7 +740,7 @@ def hook_CreateFileW(ql, address, params):
 # void GetSystemTimeAsFileTime(
 #   LPFILETIME lpSystemTimeAsFileTime
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpSystemTimeAsFileTime": POINTER
 })
 def hook_GetSystemTimeAsFileTime(ql, address, params):
@@ -749,7 +749,7 @@ def hook_GetSystemTimeAsFileTime(ql, address, params):
 
 # DWORD GetCurrentThreadId(
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_GetCurrentThreadId(ql, address, params):
     ret = ql.thread_manager.current_thread.id
     return ret
@@ -757,7 +757,7 @@ def hook_GetCurrentThreadId(ql, address, params):
 
 # DWORD GetCurrentProcessId(
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_GetCurrentProcessId(ql, address, params):
     ret = 1000
     return ret
@@ -766,7 +766,7 @@ def hook_GetCurrentProcessId(ql, address, params):
 # BOOL QueryPerformanceCounter(
 #   LARGE_INTEGER *lpPerformanceCount
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpPerformanceCount": POINTER
 })
 def hook_QueryPerformanceCounter(ql, address, params):
@@ -777,7 +777,7 @@ def hook_QueryPerformanceCounter(ql, address, params):
 # BOOL IsProcessorFeaturePresent(
 #   DWORD ProcessorFeature
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "ProcessorFeature": DWORD
 })
 def hook_IsProcessorFeaturePresent(ql, address, params):
@@ -793,7 +793,7 @@ def hook_IsProcessorFeaturePresent(ql, address, params):
 #   DWORD                   dwCreationFlags,
 #   LPDWORD                 lpThreadId
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpThreadAttributes": POINTER,
     "dwStackSize": SIZE_T,
     "lpStartAddress": POINTER,
@@ -848,7 +848,7 @@ def hook_CreateThread(ql, address, params):
 #   HANDLE hHandle,
 #   DWORD  dwMilliseconds
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hHandle": HANDLE,
     "dwMilliseconds": DWORD
 })
@@ -867,7 +867,7 @@ def hook_WaitForSingleObject(ql, address, params):
 #   BOOL         bWaitAll,
 #   DWORD        dwMilliseconds
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "nCount": DWORD,
     "lpHandles": POINTER,
     "bWaitAll": BOOL,
@@ -892,7 +892,7 @@ def hook_WaitForMultipleObjects(ql, address, params):
 # BOOL CloseHandle(
 #   HANDLE hObject
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hObject": HANDLE
 })
 def hook_CloseHandle(ql, address, params):
@@ -902,7 +902,7 @@ def hook_CloseHandle(ql, address, params):
 
 # DWORD GetTickCount(
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_GetTickCount(ql, address, params):
     ret = 200000
     return ret
@@ -913,7 +913,7 @@ def hook_GetTickCount(ql, address, params):
 #   DWORD     TypeMask,
 #   BYTE      Condition
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "ConditionMask": ULONGLONG,
     "TypeMask": DWORD,
     "Condition": BYTE
@@ -952,7 +952,7 @@ def hook_VerSetConditionMask(ql, address, params):
 
 # HANDLE GetProcessHeap(
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_GetProcessHeap(ql, address, params):
     ret = ql.heap.start_address
     return ret
@@ -961,7 +961,7 @@ def hook_GetProcessHeap(ql, address, params):
 # LONG UnhandledExceptionFilter(
 #   _EXCEPTION_POINTERS *ExceptionInfo
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "ExceptionInfo": POINTER
 })
 def hook_UnhandledExceptionFilter(ql, address, params):
@@ -973,7 +973,7 @@ def hook_UnhandledExceptionFilter(ql, address, params):
 #   HANDLE hProcess,
 #   UINT   uExitCode
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hProcess": HANDLE,
     "uExitCode": UINT
 })
@@ -986,7 +986,7 @@ def hook_TerminateProcess(ql, address, params):
 
 # HANDLE GetCurrentProcess(
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_GetCurrentProcess(ql, address, params):
     ret = 1
     return ret
@@ -995,7 +995,7 @@ def hook_GetCurrentProcess(ql, address, params):
 # HMODULE LoadLibraryA(
 #   LPCSTR lpLibFileName
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpLibFileName": STRING
 })
 def hook_LoadLibraryA(ql, address, params):
@@ -1009,7 +1009,7 @@ def hook_LoadLibraryA(ql, address, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpLibFileName": STRING,
     "hFile": POINTER,
     "dwFlags": DWORD
@@ -1023,7 +1023,7 @@ def hook_LoadLibraryExA(ql, address, params):
 # HMODULE LoadLibraryW(
 #   LPCWSTR lpLibFileName
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpLibFileName": WSTRING
 })
 def hook_LoadLibraryW(ql, address, params):
@@ -1037,7 +1037,7 @@ def hook_LoadLibraryW(ql, address, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpLibFileName": WSTRING,
     "hFile": POINTER,
     "dwFlags": DWORD
@@ -1052,7 +1052,7 @@ def hook_LoadLibraryExW(ql, address, params):
 #   HMODULE hModule,
 #   LPCSTR  lpProcName
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hModule": POINTER,
     "lpProcName": STRING
 })
@@ -1074,7 +1074,7 @@ def hook_GetProcAddress(ql, address, params):
 #LPVOID GlobalLock(
 #  HGLOBAL hMem
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hMem": POINTER
 })
 def hook_GlobalLock(ql, address, params):
@@ -1083,7 +1083,7 @@ def hook_GlobalLock(ql, address, params):
 #LPVOID GlobalUnlock(
 #  HGLOBAL hMem
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hMem": POINTER
 })
 def hook_GlobalUnlock(ql, address, params):
@@ -1093,7 +1093,7 @@ def hook_GlobalUnlock(ql, address, params):
 #  UINT   uFlags,
 #  SIZE_T dwBytes
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "uFlags": UINT,
     "dwBytes": UINT
 })
@@ -1104,7 +1104,7 @@ def hook_GlobalAlloc(ql, address, params):
 #  LPCRITICAL_SECTION lpCriticalSection,
 #  DWORD              dwSpinCount
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpCriticalSection": POINTER,
     "dwSpinCount": UINT
 })
@@ -1112,7 +1112,7 @@ def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
     return 1
 
 #DWORD TlsAlloc();
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_TlsAlloc(ql, address, params):
     idx = ql.thread_manager.current_thread.tls_index 
     ql.thread_manager.current_thread.tls_index += 1
@@ -1122,7 +1122,7 @@ def hook_TlsAlloc(ql, address, params):
 #DWORD TlsFree(
 #  DWORD dwTlsIndex
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "dwTlsIndex": UINT
 })
 def hook_TlsFree(ql, address, params):
@@ -1137,7 +1137,7 @@ def hook_TlsFree(ql, address, params):
 #LPVOID TlsGetValue(
 #  DWORD dwTlsIndex
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "dwTlsIndex": UINT})
 def hook_TlsGetValue(ql, address, params):
     idx = params['dwTlsIndex']
@@ -1153,7 +1153,7 @@ def hook_TlsGetValue(ql, address, params):
 #LPVOID TlsSetValue(
 #  DWORD dwTlsIndex
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "dwTlsIndex": UINT,
     "lpTlsValue": POINTER
 })
@@ -1169,7 +1169,7 @@ def hook_TlsSetValue(ql, address, params):
 #DWORD FlsAlloc(
 #  PFLS_CALLBACK_FUNCTION lpCallback
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpCallback": POINTER
 })
 def hook_FlsAlloc(ql, address, params):
@@ -1183,7 +1183,7 @@ def hook_FlsAlloc(ql, address, params):
 #DWORD FlsFree(
 #  DWORD dwFlsIndex
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "dwFlsIndex": UINT
 })
 def hook_FlsFree(ql, address, params):
@@ -1192,7 +1192,7 @@ def hook_FlsFree(ql, address, params):
 #LPVOID FlsGetValue(
 #  DWORD dwFlsIndex
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "dwFlsIndex": UINT})
 def hook_FlsGetValue(ql, address, params):
     return ql.fiber_manager.get(params['dwFlsIndex'])
@@ -1200,7 +1200,7 @@ def hook_FlsGetValue(ql, address, params):
 #LPVOID FlsSetValue(
 #  DWORD dwFlsIndex
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "dwFlsIndex": UINT,
     "lpFlsValue": POINTER
 })
@@ -1213,7 +1213,7 @@ def hook_FlsSetValue(ql, address, params):
 #  PVOID                  HeapInformation,
 #  SIZE_T                 HeapInformationLength
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "HeapHandle": HANDLE,
     "HeapInformationClass": UINT,
     "HeapInformation": POINTER,
@@ -1228,7 +1228,7 @@ def hook_HeapSetInformation(ql, address, params):
 #  DWORD  flNewProtect,
 #  PDWORD lpflOldProtect
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpAddress": POINTER,
     "dwSize": UINT,
     "flNewProtect": UINT,
@@ -1238,14 +1238,14 @@ def hook_VirtualProtect(ql, address, params):
     return 1
 
 #_Post_equals_last_error_ DWORD GetLastError();
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=STDCALL, params={})
 def hook_GetLastError(ql, address, params):
     return ql.last_error
 
 #void SetLastError(
 #  DWORD dwErrCode
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "dwErrCode": UINT
 })
 def hook_SetLastError(ql, address, params):
@@ -1255,7 +1255,7 @@ def hook_SetLastError(ql, address, params):
 #BOOL IsValidCodePage(
 #  UINT CodePage
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "CodePage": UINT
 })
 def hook_IsValidCodePage(ql, address, params):
@@ -1264,7 +1264,7 @@ def hook_IsValidCodePage(ql, address, params):
 #void EnterCriticalSection(
 #  LPCRITICAL_SECTION lpCriticalSection
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpCriticalSection": POINTER
 })
 def hook_EnterCriticalSection(ql, address, params):
@@ -1273,7 +1273,7 @@ def hook_EnterCriticalSection(ql, address, params):
 #void LeaveCriticalSection(
 #  LPCRITICAL_SECTION lpCriticalSection
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "lpCriticalSection": POINTER
 })
 def hook_LeaveCriticalSection(ql, address, params):
@@ -1287,7 +1287,7 @@ def hook_LeaveCriticalSection(ql, address, params):
 #  LPWSTR                            lpWideCharStr,
 #  int                               cchWideChar
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "CodePage": UINT,
     "dwFlags": UINT,
     "lpMultiByteStr": STRING,

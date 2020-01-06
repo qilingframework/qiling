@@ -8,7 +8,6 @@ sys.path.append("..")
 from qiling import *
 from qiling.exception import *
 from test_elf import *
-#from test_pe_reactos import *
 from test_macho import *
 from test_qltool import *
 

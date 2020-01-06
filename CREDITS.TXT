@@ -1,15 +1,12 @@
-This file credits all the contributors of the Qiling Freamework project
-
+This file credits all the contributors of the Qiling Framework project.
 
 Project Leader
 ==============
 LAU kaijern (xwings) <kj@qiling.io>
 
-
-Lead Advisor
-============
+Advisor
+=======
 NGUYEN Anh Quynh <aquynh@gmail.com>
-
 
 Core Developers
 ===============
@@ -17,23 +14,6 @@ DING tianze (D1iv3) <dddliv3@gmail.com>
 SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
 CHEN huitao (null) <null@qiling.io>
 YU tong (sp1ke) <spikeinhouse@gmail.com>
-
-
-Contributors (in no particular order)
-=====================================
-klks
-Kevin (chfl4gs) Foo
-jhumble
-WanderingGlitch
-Nguyen Hong Quang (quangnh89)
-ucgJhe
-re-fox
-t14g0p
-Hcamael
-hugsy
-danielhenrymantilla
-iamyeh
-bambu
 
 Alpha testers (in no particular order, named by github id)
 ==========================================================
@@ -50,3 +30,21 @@ sashs
 knownsec
 hwiosec
 iamyeh
+
+Contributors (in no particular order)
+=====================================
+klks
+Kevin (chfl4gs) Foo
+jhumble
+WanderingGlitch
+Nguyen Hong Quang (quangnh89)
+ucgJhe
+re-fox
+t14g0p
+Hcamael
+hugsy
+danielhenrymantilla
+iamyeh
+alfink
+bambu
+

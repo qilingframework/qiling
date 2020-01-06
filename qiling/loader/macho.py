@@ -91,7 +91,7 @@ class MachoX86:
             else:
                 self.ql.entry_point = self.proc_entry + self.slide
             self.ql.macho_entry = self.binary_entry + self.slide
-            self.ql.load_base =  self.slide
+            self.ql.loadbase = self.slide
 
     def loadUnixThread(self, cmd, isdyld):
         if not isdyld:
@@ -317,7 +317,7 @@ class MachoX8664:
                 self.ql.entry_point = self.proc_entry + self.slide
             print("binEntry : {}".format(self.binary_entry))
             self.ql.macho_entry = self.binary_entry + self.slide
-            self.ql.load_base =  self.slide
+            self.ql.loadbase = self.slide
         else:
             print("finish load dyld")
 
@@ -543,7 +543,7 @@ class MachoARM64:
             else:
                 self.ql.entry_point = self.proc_entry + self.slide
             self.ql.macho_entry = self.binary_entry + self.slide
-            self.ql.load_base =  self.slide
+            self.ql.loadbase = self.slide
         
     def loadSegment64(self, cmd, isdyld):
         if isdyld:

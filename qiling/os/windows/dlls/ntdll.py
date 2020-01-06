@@ -5,7 +5,7 @@
 
 import struct
 from qiling.os.windows.const import *
-from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.memory import align
 from qiling.os.windows.thread import *
@@ -17,7 +17,7 @@ from qiling.exception import *
 #   const void *src,
 #   size_t count
 #);
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "dest": POINTER,
     "src": POINTER,
     "count": UINT

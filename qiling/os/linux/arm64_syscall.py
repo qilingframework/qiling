@@ -27,6 +27,7 @@ dict_arm64_linux_syscall = {
     0xA6 : "ql_syscall_umask",
     0xA9 : "ql_syscall_gettimeofday",
     0xAC : "ql_syscall_getpid",
+    0xB2 : "ql_syscall_gettid",
     0xC6 : "ql_syscall_socket",
     0xC8 : "ql_syscall_bind",
     0xC9 : "ql_syscall_listen",

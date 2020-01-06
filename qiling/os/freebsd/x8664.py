@@ -91,12 +91,15 @@ def runner(ql):
 
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql.uc.reg_write(UC_X86_REG_RDI, ql.stack_address)
-    ql.uc.reg_write(UC_X86_REG_RAX, 0x0)
+    #ql.uc.reg_write(UC_X86_REG_RAX, 0x0)
     #ql.uc.reg_write(UC_X86_REG_R14D, 0xfffffffffffff000)
     #ql.uc.reg_write(UC_X86_REG_R15D, 0xfffffffffffff000)
 
-    ql_setup(ql)
+    ql_setup_output(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
+
+    # https://github.com/unicorn-engine/unicorn/blob/master/tests/regress/x86_64_msr.py
+    # some ref from unicorn.
 
     # FSMSR = 0xC0000100
     # GSMSR = 0xC0000101
@@ -141,8 +144,17 @@ def runner(ql):
     #     '''
     #     return set_msr(uc, FSMSR, addr)
     
+    # def set_gs(uc, addr):
+    #     '''
+    #     set the GS.base hidden descriptor-register field to the given address.
+    #     this enables referencing the gs segment on x86-64.
+    #     '''
+    #     return set_msr(uc, GSMSR, addr)        
+    
     # ql.uc.mem_map(SCRATCH_ADDR, SCRATCH_SIZE)
     # ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
+    # set_msr(ql.uc, FSMSR, 0x1000)
+    # set_gs(ql.uc, SEGMENT_ADDR)
     # set_fs(ql.uc, SEGMENT_ADDR)
 
     if (ql.until_addr == 0):
@@ -159,6 +171,7 @@ def runner(ql):
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
+        raise QlErrorExecutionStop("[!] Execution Terminated")    
     
     if ql.internal_exception != None:
         raise ql.internal_exception
