@@ -210,4 +210,4 @@ if __name__ == "__main__":
     test_pe_win_x86_regdemo()
     test_pe_win_x86_crackme()
     test_pe_win_x8664_customapi()
-    test_pe_win_x86_bruteforcecrackme()
+    # test_pe_win_x86_bruteforcecrackme()
