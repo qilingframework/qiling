@@ -1365,7 +1365,6 @@ def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, null0, null1, null2, null
 
 def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
     regreturn = 0
-    bind_port = 0
 
     if ql.arch == QL_X8664:
         data = ql.uc.mem_read(bind_addr, 8)
@@ -1385,13 +1384,12 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
         ql.file_des[bind_fd].bind(path)
 
     # need a proper fix, for now ipv4 comes first
-    elif sin_family == 2 and bind_port != port:
+    elif sin_family == 2:
         host = ql_bin_to_ip(host)
         ql.file_des[bind_fd].bind(('127.0.0.1', port))
-        bind_port = port
 
-    # IPv4 Comes First
-    elif bind_port != 0 and sin_family == 10 and bind_port != port:
+    # IPv4 should comes first
+    elif ql.ipv6 == True and sin_family == 10:
         ql.file_des[bind_fd].bind(('::1', port))
 
     else:
