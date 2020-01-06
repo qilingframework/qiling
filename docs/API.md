@@ -31,7 +31,7 @@ ql.patch
 ql.root
 ql.debug
 ql.set_syscall
-ql.set_winapi
+ql.set_api
 ```
 
 

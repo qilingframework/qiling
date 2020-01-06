@@ -110,7 +110,7 @@ class Qiling:
         self.stack_size             = stack_size
         self.interp_base            = interp_base
         self.dict_posix_syscall     = dict()
-        self.user_defined_winapi    = {}
+        self.user_defined_api    = {}
         self.global_thread_id       = 0
 
         if self.ostype and type(self.ostype) == str:
@@ -250,12 +250,12 @@ class Qiling:
         if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD, QL_IOS):
             self.dict_posix_syscall[syscall_cur] = syscall_new
         elif self.ostype == QL_WINDOWS:
-            self.set_winapi(syscall_cur, syscall_new)
+            self.set_api(syscall_cur, syscall_new)
 
 
-    def set_winapi(self, winapi_name, winapi_func):
+    def set_api(self, api_name, api_func):
         if self.ostype == QL_WINDOWS:
-            self.user_defined_winapi[winapi_name] = winapi_func
+            self.user_defined_api[api_name] = api_func
 
 
     def hook_code(self, callback, user_data = None, begin = 1, end = 0):

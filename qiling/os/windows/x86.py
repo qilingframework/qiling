@@ -31,9 +31,9 @@ def hook_winapi(ql, address, size):
         winapi_name = ql.PE.import_symbols[address]['name'].decode()
         winapi_func = None
 
-        if winapi_name in ql.user_defined_winapi:
-            if isinstance(ql.user_defined_winapi[winapi_name], types.FunctionType):
-                winapi_func = ql.user_defined_winapi[winapi_name]
+        if winapi_name in ql.user_defined_api:
+            if isinstance(ql.user_defined_api[winapi_name], types.FunctionType):
+                winapi_func = ql.user_defined_api[winapi_name]
         else:
             try:
                 winapi_func = globals()['hook_' + winapi_name]
