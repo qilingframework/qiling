@@ -6,6 +6,7 @@ import struct
 from unicorn.x86_const import *
 from qiling.os.utils import *
 from qiling.os.windows.utils import *
+from qiling.os.fncc import *
 from qiling.arch.filetype import *
 
 
