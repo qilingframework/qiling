@@ -35,11 +35,14 @@ from qiling.utils import *
 
 def ql_syscall_exit(ql, null0, null1, null2, null3, null4, null5):
     ql.exit_code = null0
-    ql.nprint("exit(%u)" %null0)
-
+    
+    ql.nprint("exit(%u) = %u" % (null0, null0))
+    ql.dprint ("[+] is this a child process: ", ql.child_processes)
+    
     if ql.child_processes == True:
         os._exit(0)
-
+    
+    
     ql.stop(stop_event = THREAD_EVENT_EXIT_EVENT)
 
 
@@ -1135,6 +1138,7 @@ def ql_syscall_vfork(ql, null0, null1, null2, null3, null4, null5):
 
     if pid == 0:
         ql.child_processes = True
+        ql.dprint ("[+] vfork(): is this a child process: ", ql.child_processes)
         regreturn = 0
         if ql.thread_management != None:
             ql.thread_management.cur_thread.set_thread_log_file(ql.log_file)
@@ -1240,7 +1244,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, nu
             regreturn = (idx)
     except:
         regreturn = -1
-
+    
     ql.nprint("socket(%d, %d, %d) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
     socket_type = socket_type_mapping(socket_type, ql.arch)
     socket_domain = socket_domain_mapping(socket_domain, ql.arch)
@@ -1369,34 +1373,26 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
         data = ql.uc.mem_read(bind_addr, bind_addrlen)
 
     sin_family, = struct.unpack("<h", data[:2])
+    port, host = struct.unpack(">HI", data[2:8])
+    
+    if ql.root == False and port <= 1024:
+        port = port + 8000    
 
     if sin_family == 1:
         path = data[2 : ].split(b'\x00')[0]
         path = ql_transform_to_real_path(ql, path.decode())
         ql.nprint(path)
         ql.file_des[bind_fd].bind(path)
-    elif sin_family == 2:
-        port, host = struct.unpack(">HI", data[2:8])
+
+    # need a proper fix, for now ipv4 comes first
+    elif sin_family == 2 and bind_port != port:
         host = ql_bin_to_ip(host)
-        if ql.root == False and port <= 1024:
-            port = port + 8000
-
-        if bind_port != port:
-            ql.file_des[bind_fd].bind(('127.0.0.1', port))
-
+        ql.file_des[bind_fd].bind(('127.0.0.1', port))
         bind_port = port
 
-    elif sin_family == 10:
-        port, host = struct.unpack(">HI", data[2:8])
-
-        if host == 0:
-            host = '::1'
-
-        if ql.root == False and port <= 1024:
-            port = port + 8000
-
-        if bind_port != port:
-            ql.file_des[bind_fd].bind(('::1', port))
+    # IPv4 Comes First
+    elif bind_port != 0 and sin_family == 10 and bind_port != port:
+        ql.file_des[bind_fd].bind(('::1', port))
 
     else:
         regreturn = -1       
@@ -1410,7 +1406,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
         ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
         ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ip(host), port, sin_family))
 
-    ql_definesyscall_return(ql, regreturn)
+    ql_definesyscall_return(ql, regreturn)    
 
 
 def ql_syscall_listen(ql, listen_sockfd, listen_backlog, null0, null1, null2, null3):

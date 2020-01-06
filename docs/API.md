@@ -21,7 +21,7 @@ interp_base = 0xhexaddress
 mmap_start = 0xhexaddress
 output = ["debug","off","disasm","dump"] // dump=(disam + debug)
 log_console
-reg_dir = /dir/path/to/clean_registery // must within rootfs
+log_dir = path to all the logs
 ```
 #### Pre-Execution Settings
 APIs allow users to instuments a executeable file/shellcode before executions
