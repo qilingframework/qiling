@@ -419,7 +419,7 @@ def open_flag_mapping(flags, ql):
         'O_NOCTTY'   : 0x800,
         'O_DIRECTORY': 0x100000,
     }
-    
+
     if ql.arch != QL_MIPS32EL:
         if ql.platform == None or ql.platform == ql.ostype:
             return flags
@@ -440,6 +440,22 @@ def open_flag_mapping(flags, ql):
         f = mips32el_open_flags
         t = mac_open_flags
 
-
-        
     return flag_mapping(flags, open_flags_name, f, t)
+
+
+def print_function(ql, address, function_name, params, ret):
+    function_name = function_name.replace('hook_', '')
+    if function_name in ("__stdio_common_vfprintf", "printf"):
+        return
+    log = '0x%0.2x: %s(' % (address, function_name)
+    for each in params:
+        value = params[each]
+        if type(value) == str or type(value) == bytearray:
+            log += '%s = "%s", ' % (each, value)
+        else:
+            log += '%s = 0x%x, ' % (each, value)
+    log = log.strip(", ")
+    log += ')'
+    if ret is not None:
+        log += ' = 0x%x' % ret
+    ql.nprint(log)
