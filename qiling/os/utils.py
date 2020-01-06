@@ -25,6 +25,7 @@ from qiling.arch.filetype import *
 from qiling.exception import *
 from qiling.utils import *
 
+import ipaddress
 import struct
 import os
 
@@ -64,6 +65,10 @@ def ql_bin_to_ipv4(ip):
         (ip & 0xff))
 
 
+def ql_bin_to_ip(ip):
+    return ipaddress.ip_address(ip).compressed
+
+
 def ql_read_string(ql, address):
     ret = ""
     c = ql.uc.mem_read(address, 1)[0]
@@ -81,14 +86,13 @@ def ql_parse_sock_address(sock_addr):
 
     if sin_family == 2:  # AF_INET
         port, host = struct.unpack(">HI", sock_addr[2:8])
-        return "%s:%d" % (ql_bin_to_ipv4(host), port)
+        return "%s:%d" % (ql_bin_to_ip(host), port)
     elif sin_family == 6:  # AF_INET6
         return ""
 
 
 def ql_hook_block_disasm(ql, address, size):
-    if ql.output == QL_OUT_DUMP:
-        ql.nprint("[+] Tracing basic block at 0x%x" %(address))
+    ql.nprint("[+] Tracing basic block at 0x%x" %(address))
 
 
 def ql_hook_code_disasm(ql, address, size):
@@ -179,9 +183,9 @@ def ql_hook_code_disasm(ql, address, size):
             (syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1], arg_3[0], arg_4[1], arg_4[0], arg_5[1], arg_5[0]))
 
 
-def ql_setup(ql):
+def ql_setup_output(ql):
     if ql.output in (QL_OUT_DISASM, QL_OUT_DUMP):
-        if ql.ostype != QL_WINDOWS:
+        if ql.output == QL_OUT_DUMP:
             ql.hook_block(ql_hook_block_disasm)
         ql.hook_code(ql_hook_code_disasm)
 

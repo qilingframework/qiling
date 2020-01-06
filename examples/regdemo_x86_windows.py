@@ -8,8 +8,6 @@ from qiling import *
 
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, output = "debug")
-    ql.reg_dir = "registry"
-    ql.reg_diff = "reg_diff.json"
     ql.run()
 
 

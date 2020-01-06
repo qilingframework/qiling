@@ -3,14 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 import struct
+from qiling.os.fncc import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
 
 
 # void __set_app_type (
 #    int at
 # )
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "at": INT
 })
 def hook___set_app_type(ql, address, params):
@@ -23,7 +23,7 @@ def hook___set_app_type(ql, address, params):
 #    char *** _Env,
 #    int _DoWildCard,
 # _startupinfo * _StartInfo);
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "_Argc": POINTER,
     "_Argv": POINTER,
     "_Env": POINTER,
@@ -37,7 +37,7 @@ def hook___getmainargs(ql, address, params):
 
 # int* __p__fmode(
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=CDECL, params={})
 def hook___p__fmode(ql, address, params):
     addr = ql.heap.mem_alloc(ql.pointersize)
     return addr
@@ -45,7 +45,7 @@ def hook___p__fmode(ql, address, params):
 
 # int * __p__commode(
 #    );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=CDECL, params={})
 def hook___p__commode(ql, address, params):
     addr = ql.heap.mem_alloc(ql.pointersize)
     return addr
@@ -55,7 +55,7 @@ def hook___p__commode(ql, address, params):
 #    unsigned int new,
 #    unsigned int mask
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "new": UINT,
     "mask": UINT
 })
@@ -67,7 +67,7 @@ def hook__controlfp(ql, address, params):
 # int atexit(
 #    void (__cdecl *func)(void)
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "func": POINTER
 })
 def hook_atexit(ql, address, params):
@@ -76,7 +76,7 @@ def hook_atexit(ql, address, params):
 
 
 # char*** __p__environ(void)
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=CDECL, params={})
 def hook___p__environ(ql, address, params):
     ret = ql.heap.mem_alloc(ql.pointersize * len(ql.env))
     count = 0
@@ -94,7 +94,7 @@ def hook___p__environ(ql, address, params):
 # int puts(
 #    const char *str
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "str": STRING
 })
 def hook_puts(ql, address, params):
@@ -106,7 +106,7 @@ def hook_puts(ql, address, params):
 
 
 # void _cexit( void );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=CDECL, params={})
 def hook__cexit(ql, address, params):
     pass
 
@@ -115,7 +115,7 @@ def hook__cexit(ql, address, params):
 #    PVFV *,
 #    PVFV *
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "pfbegin": POINTER,
     "pfend": POINTER
 })
@@ -125,7 +125,7 @@ def hook__initterm(ql, address, params):
 # void exit(
 #    int const status
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "status": INT
 })
 def hook_exit(ql, address, params):
@@ -137,7 +137,7 @@ def hook_exit(ql, address, params):
 #    PVFV *,
 #    PVFV *
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "pfbegin": POINTER,
     "pfend": POINTER
 })
@@ -146,7 +146,7 @@ def hook__initterm_e(ql, address, params):
 
 
 # char***    __cdecl __p___argv (void);
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=CDECL, params={})
 def hook___p___argv(ql, address, params):
     ret = ql.heap.mem_alloc(ql.pointersize * len(ql.argv))
     count = 0
@@ -161,14 +161,14 @@ def hook___p___argv(ql, address, params):
 
 
 # int* __p___argc(void)
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=CDECL, params={})
 def hook___p___argc(ql, address, params):
     ret = ql.heap.mem_alloc(ql.pointersize)
     ql.mem_write(ret, ql.pack(len(ql.argv)))
     return ret
 
 
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=CDECL, params={})
 def hook__get_initial_narrow_environment(ql, address, params):
     ret = 0
     count = 0
@@ -220,10 +220,10 @@ def printf(ql, address, fmt, params_addr, name):
 
 
 # int printf(const char *format, ...)
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, param_num=1)
+@winapi(cc=CDECL, param_num=1)
 def hook_printf(ql, address, _):
     ret = 0
-    format_string = get_params(ql, 1)
+    format_string = get_function_param(ql, 1)
 
     if format_string == 0:
         ql.nprint('0x%0.2x: printf(format = 0x0) = 0x%x' % (address, ret))
@@ -248,7 +248,7 @@ def hook_printf(ql, address, _):
     return None
 
 # MSVCRT_FILE * CDECL MSVCRT___acrt_iob_func(unsigned idx)
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "idx": UINT
 })
 def hook___acrt_iob_func(ql, address, params):
@@ -256,13 +256,13 @@ def hook___acrt_iob_func(ql, address, params):
     return ret
 
 
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, param_num=2)
+@winapi(cc=CDECL, param_num=2)
 def hook___stdio_common_vfprintf(ql, address, _):
     ret = 0
     if ql.pointersize == 8:
-        _, _, p_format, _, p_args = get_params(ql, 5)
+        _, _, p_format, _, p_args = get_function_param(ql, 5)
     else:
-        _, _, _, p_format, _, p_args = get_params(ql, 6)
+        _, _, _, p_format, _, p_args = get_function_param(ql, 6)
     fmt = read_cstring(ql, p_format)
     printf(ql, address, fmt, p_args, '__stdio_common_vfprintf')
     return ret
@@ -271,7 +271,7 @@ def hook___stdio_common_vfprintf(ql, address, _):
 # int lstrlenW(
 #   LPCWSTR lpString
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     'lpString': WSTRING
 })
 def hook_lstrlenW(ql, address, params):
@@ -284,7 +284,7 @@ def hook_lstrlenW(ql, address, params):
     return ret
 
 
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={})
+@winapi(cc=CDECL, params={})
 def hook___lconv_init(ql, address, params):
     ret = 0
     return ret
@@ -293,7 +293,7 @@ def hook___lconv_init(ql, address, params):
 # size_t strlen(
 #    const char *str
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "str": STRING
 })
 def hook_strlen(ql, address, params):
@@ -307,7 +307,7 @@ def hook_strlen(ql, address, params):
 #    const char *string2,
 #    size_t count
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "string1": STRING,
     "string2": STRING,
     "count": SIZE_T
@@ -329,7 +329,7 @@ def hook_strncmp(ql, address, params):
 
 
 # void* malloc（unsigned int size)
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "size": UINT
 })
 def hook_malloc(ql, address, params):
@@ -341,7 +341,7 @@ def hook_malloc(ql, address, params):
 # _onexit_t _onexit(
 #    _onexit_t function
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "function": POINTER
 })
 def hook__onexit(ql, address, params):
@@ -356,7 +356,7 @@ def hook__onexit(ql, address, params):
 #    int c,
 #    size_t count
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "dest": POINTER,
     "c": INT,
     "count": SIZE_T
@@ -373,7 +373,7 @@ def hook_memset(ql, address, params):
 #    size_t num,
 #    size_t size
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "num": SIZE_T,
     "size": SIZE_T
 })
@@ -389,7 +389,7 @@ def hook_calloc(ql, address, params):
 #   const void *src,
 #   size_t num
 # );
-@winapi(x86=X86_CDECL, x8664=X8664_FASTCALL, params={
+@winapi(cc=CDECL, params={
     "dest": POINTER,
     "src": POINTER,
     "num": SIZE_T

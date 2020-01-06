@@ -141,7 +141,7 @@ def loader_shellcode(ql):
 
 
 def runner(ql):
-    ql_setup(ql)
+    ql_setup_output(ql)
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_WINSOWS_EMU_END
     try:
@@ -156,6 +156,7 @@ def runner(ql):
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
+        raise QlErrorExecutionStop("[!] Execution Terminated")
 
     ql.registry_manager.save()
 

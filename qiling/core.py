@@ -23,11 +23,7 @@ def catch_KeyboardInterrupt(ql):
                 return func(*args, **kw)
             except BaseException as e:
                 # ql.nprint("Received a request from the user to stop!")
-                if ql.thread_management != None:
-                    td = ql.thread_management.cur_thread
-                    td.stop()
-                    td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-                ql.uc.emu_stop()
+                ql.stop(stop_event = THREAD_EVENT_UNEXECPT_EVENT)
                 ql.internal_exception = e
         return wrapper
     return decorator
@@ -58,18 +54,15 @@ class Qiling:
     byte                = 0
     thread_management   = None
     root                = True
-    port                = 0
     currentpath         = os.getcwd()
+    #log_dir             = None
     log_file_fd         = None
-    log_file_name       = None
+    #log_file_name       = None
     current_path        = '/'
     fs_mapper           = []
-    reg_dir             = None
-    reg_diff            = None
     exit_code           = 0
     debug_stop          = False
     internal_exception  = None
-
 
     def __init__(
                     self, 
@@ -85,8 +78,8 @@ class Qiling:
                     stdout          = 0, 
                     stderr          = 0,
                     output          = None, 
-                    log_console     = True,                     
-                    log_file        = None, 
+                    log_console     = True,
+                    log_dir         = None,                     
                     log_split       = False, 
                     mmap_start      = 0, 
                     stack_address   = 0, 
@@ -104,7 +97,7 @@ class Qiling:
         self.env                    = env
         self.libcache               = libcache
         self.log_console            = log_console
-        self.log_file               = log_file
+        self.log_dir                = log_dir
         self.log_split              = log_split
         self.platform               = platform.system()
         self.mmap_start             = mmap_start
@@ -114,17 +107,6 @@ class Qiling:
         self.dict_posix_syscall     = dict()
         self.user_defined_winapi    = {}
         self.global_thread_id       = 0
-
-        if self.log_file != None and type(self.log_file) == str:
-            if self.log_file[0] != '/':
-                self.log_file = os.getcwd() + '/' + self.log_file
-            self.log_file_name = self.log_file
-            if type(self.log_split) != bool or not self.log_split:
-                self.log_file_fd = open(log_file + ".qlog", 'w+')
-                #logging.basicConfig(filename=log_file + '.qlog', filemode='w+', level=logging.DEBUG, format='%(message)s')
-            else:
-                self.log_file_fd = open(log_file + "_" + str(os.getpid()) + ".qlog", 'w+')
-                #self.log_file_fd = logging.basicConfig(filename=log_file + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -144,6 +126,25 @@ class Qiling:
       
             elif  (not os.path.exists(str(self.filename[0])) or not os.path.exists(self.rootfs)):       
                 raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
+
+
+        if self.log_dir != None and type(self.log_dir) == str:
+                
+                self.log_dir = os.path.join(self.rootfs, self.log_dir)
+               
+                if not os.path.exists(self.log_dir):
+                    os.makedirs(self.log_dir, 0o755)
+
+                #if self.log_file[0] != '/' or self.log_file[0] != '\\':
+                self.log_file = os.path.join(self.log_dir, str(os.getpid()))
+               
+                if type(self.log_split) != bool or not self.log_split:
+                    self.log_file_fd = open(self.log_file, 'w+')
+                #     #logging.basicConfig(filename=log_file + '.qlog', filemode='w+', level=logging.DEBUG, format='%(message)s')
+                else:
+                    self.log_file_fd = open(self.log_file + "_" + str(os.getpid()), 'w+')
+                #     #self.log_file_fd = logging.basicConfig(filename=log_file + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
+
 
         if self.ostype in (QL_LINUX, QL_FREEBSD, QL_MACOS):
             if stdin != 0:
@@ -217,10 +218,10 @@ class Qiling:
 
         if (self.log_console == False or self.output == QL_OUT_OFF):
             pass
-        elif self.log_console == False and self.log_file_name:
+        elif self.log_console == False and self.log_file:
             print(*args, **kw, file = fd)
             #logging.debug(*args, **kw)
-        elif (self.log_file_name and self.log_console):
+        elif (self.log_dir and self.log_console):
             print(*args, **kw, file = fd)
             #logging.debug(*args, **kw)
             print(*args, **kw)
@@ -672,4 +673,12 @@ class Qiling:
 
     def add_fs_mapper(self, fm, to):
         self.fs_mapper.append([fm, to])
+    
+    def stop(self, stop_event = THREAD_EVENT_EXIT_GROUP_EVENT):
+        if self.thread_management != None:
+            td = self.thread_management.cur_thread
+            td.stop()
+            td.stop_event = stop_event
+        self.uc.emu_stop()
+
 

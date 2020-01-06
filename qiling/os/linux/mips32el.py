@@ -212,7 +212,7 @@ def loader_shellcode(ql):
 
 def runner(ql):
     ql.uc.reg_write(UC_MIPS_REG_SP, ql.new_stack)
-    ql_setup(ql)
+    ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
     if (ql.until_addr == 0):
         ql.until_addr = QL_MIPSEL_EMU_END
@@ -253,6 +253,7 @@ def runner(ql):
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
+        raise QlErrorExecutionStop("[!] Execution Terminated")    
 
     if ql.internal_exception != None:
         raise ql.internal_exception

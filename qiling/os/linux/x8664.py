@@ -76,7 +76,15 @@ def loader_file(ql):
     if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv,  env = ql.env):
         raise QlErrorFileType("Unsupported FileType")
     ql.stack_address = (int(ql.new_stack))
-    
+
+    ql.sp = ql.stack_address
+    ql_setup_output(ql)
+    ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
+
+    ql_x8664_setup_gdt_segment_ds(ql)
+    ql_x8664_setup_gdt_segment_cs(ql)
+    ql_x8664_setup_gdt_segment_ss(ql)
+
 
 def loader_shellcode(ql):
     uc = Uc(UC_ARCH_X86, UC_MODE_64)
@@ -89,18 +97,15 @@ def loader_shellcode(ql):
     ql.stack_address = ql.stack_address  + 0x200000 - 0x1000
     ql.uc.mem_write(ql.stack_address, ql.shellcoder)
     
+    ql.sp = ql.stack_address
+    ql_setup_output(ql)
+    ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
+
 
 def runner(ql):
-    ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
-    ql_setup(ql)
-    ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
-    if not ql.shellcoder: 
-        ql_x8664_setup_gdt_segment_ds(ql)
-        ql_x8664_setup_gdt_segment_cs(ql)
-        ql_x8664_setup_gdt_segment_ss(ql)
-
     if (ql.until_addr == 0):
         ql.until_addr = QL_X8664_EMU_END
+
     try:
         if ql.shellcoder:
             ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
@@ -113,6 +118,7 @@ def runner(ql):
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
+        raise QlErrorExecutionStop("[!] Execution Terminated")    
 
     if ql.internal_exception != None:
         raise ql.internal_exception
