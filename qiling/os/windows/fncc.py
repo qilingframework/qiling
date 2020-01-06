@@ -9,6 +9,18 @@ from qiling.os.windows.utils import *
 from qiling.arch.filetype import *
 
 
+DWORD = 1
+UINT = 1
+INT = 1
+BOOL = 1
+SIZE_T = 1
+BYTE = 1
+ULONGLONG = 2
+HANDLE = 3
+POINTER = 3
+STRING = 4
+WSTRING = 5
+
 def _x86_get_params_by_index(ql, index):
     # index starts from 0
     # skip ret_addr

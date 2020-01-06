@@ -13,18 +13,6 @@ from qiling.exception import *
 STDCALL = 1
 CDECL = 2
 
-DWORD = 1
-UINT = 1
-INT = 1
-BOOL = 1
-SIZE_T = 1
-BYTE = 1
-ULONGLONG = 2
-HANDLE = 3
-POINTER = 3
-STRING = 4
-WSTRING = 5
-
 
 def print_function(ql, address, function_name, params, ret):
     function_name = function_name.replace('hook_', '')
