@@ -209,7 +209,7 @@ class Qiling:
         self.__enable_bin_patch()
         loader_shellcode = self.build_os_execution("loader_shellcode")
         loader_shellcode(self)
-        self.begin_addr = self.entry_point
+        self.begin_addr = self.stack_address
 
 
     def run(self):
