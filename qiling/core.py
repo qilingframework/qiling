@@ -50,7 +50,6 @@ class Qiling:
     loadbase            = 0
     map_info            = []
     timeout             = 0
-    count               = 0
     until_addr          = 0
     byte                = 0
     # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
@@ -202,14 +201,12 @@ class Qiling:
     def load_exec(self):
         loader_file = self.build_os_execution("loader_file")
         loader_file(self)
-        self.begin_addr = self.entry_point
 
  
     def shellcode(self):
         self.__enable_bin_patch()
         loader_shellcode = self.build_os_execution("loader_shellcode")
         loader_shellcode(self)
-        self.begin_addr = self.stack_address
 
 
     def run(self):
