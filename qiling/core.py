@@ -50,6 +50,7 @@ class Qiling:
     loadbase            = 0
     map_info            = []
     timeout             = 0
+    count               = 0
     until_addr          = 0
     byte                = 0
     # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now

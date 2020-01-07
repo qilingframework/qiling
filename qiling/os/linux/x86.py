@@ -130,7 +130,7 @@ def runner(ql):
         ql.until_addr = QL_X86_EMU_END
     try:
         if ql.shellcoder:
-            ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
+            ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)), ql.timeout, ql.count)
         else:
             thread_management = ThreadManagement(ql)
             ql.thread_management = thread_management
