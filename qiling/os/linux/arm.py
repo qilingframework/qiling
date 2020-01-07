@@ -225,7 +225,7 @@ def runner(ql):
         ql.until_addr = QL_ARM_EMU_END
     try:
         if ql.shellcoder:
-            ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
+            ql.uc.emu_start(ql.begin_addr, (ql.stack_address + len(ql.shellcoder)))
         else:    
             # start multithreading
             thread_management = ThreadManagement(ql)

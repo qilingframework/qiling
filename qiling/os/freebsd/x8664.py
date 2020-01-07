@@ -229,7 +229,7 @@ def runner(ql):
         ql.until_addr = QL_X8664_EMU_END
     try:
         if ql.shellcoder:
-            ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)), ql.timeout, ql.count)
+            ql.uc.emu_start(ql.begin_addr, (ql.stack_address + len(ql.shellcoder)), ql.timeout, ql.count)
         else:
             ql.uc.emu_start(ql.begin_addr, ql.until_addr, ql.timeout, ql.count)
     except UcError:
