@@ -201,12 +201,14 @@ class Qiling:
     def load_exec(self):
         loader_file = self.build_os_execution("loader_file")
         loader_file(self)
+        self.begin_addr = self.entry_point
 
  
     def shellcode(self):
         self.__enable_bin_patch()
         loader_shellcode = self.build_os_execution("loader_shellcode")
         loader_shellcode(self)
+        self.begin_addr = self.entry_point
 
 
     def run(self):

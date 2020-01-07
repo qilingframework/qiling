@@ -253,7 +253,7 @@ def runner(ql):
                 thread_management.run()
 
             else:
-                ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
+                ql.uc.emu_start(ql.begin_addr, ql.until_addr, ql.timeout)
 
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):

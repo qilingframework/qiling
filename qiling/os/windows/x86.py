@@ -156,7 +156,7 @@ def runner(ql):
         if ql.shellcoder:
             ql.uc.emu_start(ql.code_address, ql.code_address + len(ql.shellcoder))
         else:
-            ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
+            ql.uc.emu_start(ql.begin_addr, ql.until_addr, ql.timeout)
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC= " + hex(ql.pc))
