@@ -219,6 +219,8 @@ def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
         if ql.file_des[i] == 0:
             idx = i
             break
+    else:
+        idx = -1
 
     if idx == -1:
         regreturn = -1
@@ -255,6 +257,8 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
         if ql.file_des[i] == 0:
             idx = i
             break
+    else:
+        idx = -1
 
     if idx == -1:
         regreturn = -1
