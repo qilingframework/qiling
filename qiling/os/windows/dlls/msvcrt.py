@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 import struct
 from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
 
 
 # void __set_app_type (

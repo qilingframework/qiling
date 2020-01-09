@@ -6,6 +6,7 @@
 import struct
 import time
 from qiling.os.windows.const import *
+from qiling.os.fncc import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.memory import align
@@ -1027,7 +1028,7 @@ def hook_LoadLibraryExA(ql, address, params):
     "lpLibFileName": WSTRING
 })
 def hook_LoadLibraryW(ql, address, params):
-    lpLibFileName = bytes(params["lpLibFileName"], 'ascii')
+    lpLibFileName = bytes(bytes(params["lpLibFileName"], 'ascii').deocde('utf-16le'), 'ascii')
     dll_base = ql.PE.load_dll(lpLibFileName)
     return dll_base
 
@@ -1043,7 +1044,7 @@ def hook_LoadLibraryW(ql, address, params):
     "dwFlags": DWORD
 })
 def hook_LoadLibraryExW(ql, address, params):
-    lpLibFileName = bytes(params["lpLibFileName"], 'ascii')
+    lpLibFileName = bytes(bytes(params["lpLibFileName"], "ascii").decode('utf-16le'), 'ascii')
     dll_base = ql.PE.load_dll(lpLibFileName)
     return dll_base
 
@@ -1058,7 +1059,6 @@ def hook_LoadLibraryExW(ql, address, params):
 })
 def hook_GetProcAddress(ql, address, params):
     lpProcName = bytes(params["lpProcName"], 'ascii')
-
     #Check if dll is loaded
     try:
         dll_name = [key for key, value in ql.PE.dlls.items() if value == params['hModule']][0]
@@ -1069,7 +1069,7 @@ def hook_GetProcAddress(ql, address, params):
     if lpProcName in ql.PE.import_address_table[dll_name]:
         return ql.PE.import_address_table[dll_name][lpProcName]
 
-    return 0
+    return 1
 
 #LPVOID GlobalLock(
 #  HGLOBAL hMem

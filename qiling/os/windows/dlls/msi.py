@@ -6,6 +6,7 @@
 import struct
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.memory import align
 from qiling.os.windows.thread import *

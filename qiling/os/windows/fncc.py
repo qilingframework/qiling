@@ -5,8 +5,8 @@
 import struct
 from unicorn.x86_const import *
 from qiling.os.utils import *
-from qiling.os.windows.utils import *
 from qiling.os.fncc import *
+from qiling.os.windows.utils import *
 from qiling.arch.filetype import *
 
 
@@ -35,7 +35,7 @@ def _x8664_get_params_by_index(ql, index):
 
     index -= 4
     # skip ret_addr
-    return ql.stack_read((index + 1) * 8)
+    return ql.stack_read((index + 5) * 8)
 
 
 def _get_param_by_index(ql, index):
