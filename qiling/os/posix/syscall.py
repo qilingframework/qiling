@@ -208,7 +208,6 @@ def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, 
 
 
 def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
-
     path = ql_read_string(ql, filename)
     real_path = ql_transform_to_real_path(ql, path)
     relative_path = ql_transform_to_relative_path(ql, path)
@@ -220,6 +219,8 @@ def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
         if ql.file_des[i] == 0:
             idx = i
             break
+    else:
+        idx = -1
 
     if idx == -1:
         regreturn = -1
@@ -252,24 +253,31 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
     openat_flags = openat_flags & 0xffffffff
     openat_mode = openat_mode & 0xffffffff
 
-    if os.path.exists(real_path) == False:
-        regreturn = -1
+    for i in range(256):
+        if ql.file_des[i] == 0:
+            idx = i
+            break
     else:
         idx = -1
-        for i in range(256):
-            if ql.file_des[i] == 0:
-                idx = i
-                break
-        if idx == -1:
-            regreturn = -1
-        else:
-            ql.file_des[idx] = ql_file.open(real_path, openat_flags, openat_mode)
-            regreturn = (idx)
-    ql.nprint("\nopenat(%d, %s, 0x%x, 0x%x) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
-    if regreturn == -1:
-        ql.dprint("[!] File Not Found: %s"  % relative_path)
+
+    if idx == -1:
+        regreturn = -1
     else:
-        ql.dprint("[+] File Found: %s"  % relative_path)
+        try:
+            if ql.arch == QL_ARM:
+                mode = 0
+
+            openat_flags = open_flag_mapping(openat_flags, ql)
+            ql.file_des[idx] = ql_file.open(real_path, openat_flags, openat_mode)
+            regreturn = idx
+        except:
+            regreturn = -1
+
+    ql.nprint("\nopenat(%d, %s, 0x%x, 0x%x) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
+    if regreturn >= 0 and regreturn != 2:
+        ql.dprint("[+] File Found: %s" % relative_path)
+    else:
+        ql.dprint("[!] File Not Found %s" % relative_path)
     ql_definesyscall_return(ql, regreturn)
 
 

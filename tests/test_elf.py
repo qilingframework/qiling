@@ -44,6 +44,75 @@ class ELFTest(unittest.TestCase):
         ql.run()
         del ql
 
+    def test_elf_linux_x86_posix_syscall(self):
+
+        def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
+            target = False
+            pathname = ql_read_string(ql, openat_path)
+
+            if pathname == "test_syscall_open.txt":
+                print("test => openat(%d, %s, 0x%x, 0%o)" % (openat_fd, pathname, openat_flags, openat_mode))
+                target = True
+
+            syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
+
+            if target:
+                real_path = ql_transform_to_real_path(ql, pathname)
+                assert os.path.isfile(real_path) == True
+                os.remove(real_path)
+
+        def test_syscall_unlink(ql, unlink_pathname, *args):
+            target = False
+            pathname = ql_read_string(ql, unlink_pathname)
+
+            if pathname == "test_syscall_unlink.txt":
+                print("test => unlink(%s)" % (pathname))
+                target = True
+
+            syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
+
+            if target:
+                real_path = ql_transform_to_real_path(ql, pathname)
+                assert os.path.isfile(real_path) == False
+
+        def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
+            target = False
+            pathname = ql_read_string(ql, trunc_pathname)
+
+            if pathname == "test_syscall_truncate.txt":
+                print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
+                target = True
+
+            syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
+
+            if target:
+                real_path = ql_transform_to_real_path(ql, pathname)
+                assert os.stat(real_path).st_size == 0
+                os.remove(real_path)
+
+        def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
+            target = False
+            pathname = ql.file_des[ftrunc_fd].name.split('/')[-1]
+
+            if pathname == "test_syscall_ftruncate.txt":
+                print("test => ftruncate(%d, 0x%x)" % (ftrunc_fd, ftrunc_length))
+                target = True
+
+            syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
+
+            if target:
+                real_path = ql_transform_to_real_path(ql, pathname)
+                assert os.stat(real_path).st_size == 0x10
+                os.remove(real_path)
+
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_posix_syscall"], "../examples/rootfs/x86_linux", output="debug")
+        ql.set_syscall(0x127, test_syscall_openat)
+        ql.set_syscall(0xa, test_syscall_unlink)
+        ql.set_syscall(0x5c, test_syscall_truncate)
+        ql.set_syscall(0x5d, test_syscall_ftruncate)
+        ql.run()
+        del ql
+
     def test_elf_linux_arm(self):     
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug")
         ql.run()

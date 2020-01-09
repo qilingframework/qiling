@@ -70,7 +70,6 @@ static void syscall_ftruncate() {
     int fd;
     int flags;
     mode_t mode;
-    char buffer[] = "Hello testing";
     int len=0x10;
 
     flags = O_CREAT | O_WRONLY;
