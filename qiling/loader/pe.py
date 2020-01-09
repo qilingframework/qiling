@@ -321,13 +321,12 @@ class PE(Process):
 
             if self.pe.is_dll():
                 self.ql.dprint('[+] Setting up DllMain args')
-                load_addr_bytes = self.PE_IMAGE_BASE.to_bytes(length=8, byteorder='little')
 
                 self.ql.dprint('[+] Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.PE_IMAGE_BASE))
-                self.ql.uc.reg_write(UC_X86_REG_RCX, load_addr_bytes)
+                self.ql.uc.reg_write(UC_X86_REG_RCX, self.PE_IMAGE_BASE)
 
                 self.ql.dprint('[+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
-                self.ql.uc.reg_write(UC_X86_REG_RDX, int(1).to_bytes(length=8, byteorder='little'))
+                self.ql.uc.reg_write(UC_X86_REG_RDX, 1)
         else:
             raise QlErrorArch("[!] Unknown ql.arch")
 

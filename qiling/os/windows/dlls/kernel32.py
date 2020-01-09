@@ -251,6 +251,26 @@ def hook_GetEnvironmentVariableA(ql, address, params):
     ret = 0
     return ret
 
+# BOOL SetThreadLocale(
+#   LCID Locale
+# );
+@winapi(cc=STDCALL, params={
+    "Locale": UINT
+})
+def hook_SetThreadLocale(ql, address, params):
+    return 0xC000 #LOCALE_CUSTOM_DEFAULT
+
+# DECLSPEC_ALLOCATOR HLOCAL LocalAlloc(
+#   UINT   uFlags,
+#   SIZE_T uBytes
+# );
+@winapi(cc=STDCALL, params={
+    "uFlags": UINT,
+    "uBytes": SIZE_T
+})
+def hook_LocalAlloc(ql, address, params):
+    ret = ql.heap.mem_alloc(params["uBytes"])
+    return ret
 
 # DECLSPEC_ALLOCATOR LPVOID HeapAlloc(
 #   HANDLE hHeap,
@@ -1300,3 +1320,37 @@ def hook_MultiByteToWideChar(ql, address, params):
     if params['cchWideChar'] != 0:
         ql.uc.mem_write(params['lpWideCharStr'], wide_str) 
     return len(wide_str)
+
+"""
+typedef struct _SYSTEMTIME {
+  WORD wYear;
+  WORD wMonth;
+  WORD wDayOfWeek;
+  WORD wDay;
+  WORD wHour;
+  WORD wMinute;
+  WORD wSecond;
+  WORD wMilliseconds;
+} SYSTEMTIME, *PSYSTEMTIME, *LPSYSTEMTIME;
+"""
+# void GetLocalTime(
+#   LPSYSTEMTIME lpSystemTime
+# );
+@winapi(cc=STDCALL, params={
+    "lpSystemTime": POINTER
+})
+def hook_GetLocalTime(ql, address, params):
+    import datetime
+    ptr = params['lpSystemTime']
+    d = datetime.datetime.now()
+    ql.uc.mem_write(d.year.to_bytes(length=2, byteorder='little'), ptr)
+    ql.uc.mem_write(d.month.to_bytes(length=2, byteorder='little'), ptr+2)
+    ql.uc.mem_write(d.isoweekday().to_bytes(length=2, byteorder='little'), ptr+4)
+    ql.uc.mem_write(d.day.to_bytes(length=2, byteorder='little'), ptr+6)
+    ql.uc.mem_write(d.hour.to_bytes(length=2, byteorder='little'), ptr+8)
+    ql.uc.mem_write(d.minute.to_bytes(length=2, byteorder='little'), ptr+10)
+    ql.uc.mem_write(d.second.to_bytes(length=2, byteorder='little'), ptr+12)
+    ql.uc.mem_write((d.microsecond*1000).to_bytes(length=2, byteorder='little'), ptr+14)
+    return 0
+
+
