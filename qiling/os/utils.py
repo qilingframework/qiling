@@ -460,3 +460,15 @@ def print_function(ql, address, function_name, params, ret):
     if ret is not None:
         log += ' = 0x%x' % ret
     ql.nprint(log)
+
+
+def read_cstring(ql, address):
+    result = ""
+    char = ql.uc.mem_read(address, 1)
+    while char.decode() != "\x00":
+        address += 1
+        result += char.decode()
+        char = ql.uc.mem_read(address, 1)
+    return result
+
+

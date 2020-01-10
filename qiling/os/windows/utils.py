@@ -18,16 +18,6 @@ def string_unpack(string):
     return string.decode().split("\x00")[0]
 
 
-def read_cstring(ql, address):
-    result = ""
-    char = ql.uc.mem_read(address, 1)
-    while char.decode() != "\x00":
-        address += 1
-        result += char.decode()
-        char = ql.uc.mem_read(address, 1)
-    return result
-
-
 def read_wstring(ql, address):
     result = ""
     char = ql.uc.mem_read(address, 2)
