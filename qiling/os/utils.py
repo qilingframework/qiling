@@ -179,7 +179,8 @@ def ql_hook_code_disasm(ql, address, size):
     for i in insn:
         ql.nprint('\t%s \t%s' %(i.mnemonic, i.op_str))
 
-    ql.nprint("[-] %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x" % \
+    if ql.output == QL_OUT_DUMP:
+        ql.nprint("[-] %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x" % \
             (syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1], arg_3[0], arg_4[1], arg_4[0], arg_5[1], arg_5[0]))
 
 
