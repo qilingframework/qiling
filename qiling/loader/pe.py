@@ -310,10 +310,10 @@ class PE(Process):
                 load_addr_bytes = self.PE_IMAGE_BASE.to_bytes(length=4, byteorder='little')
 
                 self.ql.dprint('[+] Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.PE_IMAGE_BASE, sp+0x4))
-                self.ql.uc.mem_write(sp+0x4, load_addr_bytes)
+                self.ql.mem_write(sp+0x4, load_addr_bytes)
 
                 self.ql.dprint('[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp+0x8))
-                self.ql.uc.mem_write(sp+0x8, int(1).to_bytes(length=4, byteorder='little'))
+                self.ql.mem_write(sp+0x8, int(1).to_bytes(length=4, byteorder='little'))
 
         elif self.ql.arch == QL_X8664:
             self.ql.uc.reg_write(UC_X86_REG_RSP, sp)
