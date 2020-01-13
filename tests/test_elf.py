@@ -191,6 +191,38 @@ class ELFTest(unittest.TestCase):
 
     def test_elf_linux_mips32el_posix_syscall(self):
 
+        def test_syscall_read(ql, read_fd, read_buf, read_count, *args):
+            target = False
+            pathname = ql.file_des[read_fd].name.split('/')[-1]
+        
+            if pathname == "test_syscall_read.txt":
+                print("test => read(%d, %s, %d)" % (read_fd, pathname, read_count))
+                target = True
+
+            syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
+
+            if target:
+                real_path = ql.file_des[read_fd].name
+                with open(real_path) as fd:
+                    assert fd.read() == ql.mem_read(read_buf, read_count).decode()
+                os.remove(real_path)
+ 
+        def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
+            target = False
+            pathname = ql.file_des[write_fd].name.split('/')[-1]
+
+            if pathname == "test_syscall_write.txt":
+                print("test => write(%d, %s, %d)" % (write_fd, pathname, write_count))
+                target = True
+
+            syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
+
+            if target:
+                real_path = ql.file_des[write_fd].name
+                with open(real_path) as fd:
+                    assert fd.read() == 'Hello testing\x00'
+                os.remove(real_path)
+
         def test_syscall_open(ql, open_pathname, open_flags, open_mode, *args):
             target = False
             pathname = ql_read_string(ql, open_pathname)
@@ -251,6 +283,8 @@ class ELFTest(unittest.TestCase):
                 os.remove(real_path)
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_posix_syscall"], "../examples/rootfs/mips32el_linux", output="debug")
+        ql.set_syscall(4003, test_syscall_read)
+        ql.set_syscall(4004, test_syscall_write)
         ql.set_syscall(4005, test_syscall_open)
         ql.set_syscall(4010, test_syscall_unlink)
         ql.set_syscall(4092, test_syscall_truncate)
