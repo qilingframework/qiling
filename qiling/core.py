@@ -136,19 +136,28 @@ class Qiling:
         if self.log_dir != None and type(self.log_dir) == str:
                 
                 self.log_dir = os.path.join(self.rootfs, self.log_dir)
-               
                 if not os.path.exists(self.log_dir):
                     os.makedirs(self.log_dir, 0o755)
 
-                #if self.log_file[0] != '/' or self.log_file[0] != '\\':
-                self.log_file = os.path.join(self.log_dir, str(os.getpid()))
-               
+                pid = os.getpid()
+                self.log_file = os.path.join(self.log_dir, str(pid))
+
+                # logging_levle = {'debug': logging.DEBUG, 'default': logging.INFO, 'off': logging.NOTSET  ,'disasm': logging.DISASM, 'dump': logging.DUMP}
+
                 if type(self.log_split) != bool or not self.log_split:
-                    self.log_file_fd = open(self.log_file, 'w+')
-                #     #logging.basicConfig(filename=log_file + '.qlog', filemode='w+', level=logging.DEBUG, format='%(message)s')
+                    logger = logging.getLogger('qiling')
+                    logger.setLevel(logging.DEBUG)
+                    fh = logging.FileHandler(self.log_file + '.qlog')
+                    ch.setLevel(logging.DEBUG)
+                    logger.addHandler(fh)
+                    self.log_file_fd = logger
                 else:
-                    self.log_file_fd = open(self.log_file + "_" + str(os.getpid()), 'w+')
-                #     #self.log_file_fd = logging.basicConfig(filename=log_file + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
+                    logger = logging.getLogger(f'qiling_thread_{pid}')
+                    logger.setLevel(logging.DEBUG)
+                    fh = logging.FileHandler(f"{self.log_file}.qlog")
+                    fh.setLevel(logging.DEBUG)
+                    logger.addHandler(fh)
+                    self.log_file_fd = logger
 
 
         if self.ostype in (QL_LINUX, QL_FREEBSD, QL_MACOS):
@@ -221,25 +230,23 @@ class Qiling:
         else:
             fd = self.log_file_fd
 
-        if (self.log_console == False or self.output == QL_OUT_OFF):
+        if self.log_console == False or self.output == QL_OUT_OFF:
             pass
-        elif self.log_console == False and self.log_file:
-            print(*args, **kw, file = fd)
-            #logging.debug(*args, **kw)
+
         elif (self.log_dir and self.log_console):
-            print(*args, **kw, file = fd)
-            #logging.debug(*args, **kw)
-            print(*args, **kw)
-        else:
+            self.log_file_fd.info(*args, **kw)
             print(*args, **kw)
                           
         if fd != None:
-            fd.flush()
+            if isinstance(fd, logging.FileHandler):
+                fd.emit()
+            elif isinstance(fd, logging.StreamHandler):
+                fd.flush()
 
 
     def dprint(self, *args, **kw):
         if self.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            self.nprint(*args, **kw)
+            self.log_file_fd.debug(*args, **kw)
 
 
     def asm2bytes(self, runasm, arm_thumb = None):

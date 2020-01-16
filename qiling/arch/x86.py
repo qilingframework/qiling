@@ -161,12 +161,12 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
     # map GDT table
     if ql.ostype == QL_LINUX and GDTTYPE == "DS":
-            ql.dprint("[+] OS Type:", ql.ostype)
-            ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
+        ql.dprint(f"[+] OS Type: {ql.ostype}")
+        ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
     
     if ql.ostype == QL_WINDOWS and GDTTYPE == "FS":
-            ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
-            ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
+        ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
+        ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
 
     if ql.ostype == QL_FREEBSD and GDTTYPE == "FS":
         if not ql.shellcoder:
