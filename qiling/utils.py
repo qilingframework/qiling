@@ -9,7 +9,7 @@ thoughout the qiling framework
 """
 
 import importlib
-import sys
+import sys, logging
 from qiling.exception import *
 from qiling.arch.filetype import *
 
@@ -58,3 +58,24 @@ def ql_get_module_function(module_name, function_name):
         raise QlErrorModuleFunctionNotFound("[!] Unable to import %s from %s" % (function_name, imp_module))
 
     return module_function
+
+def ql_setup_logging(ql_mode, log_file_path):
+    logger = logging.getLogger(f'qiling')
+    logger.setLevel(logging.DEBUG)
+
+    # setup StreamHandler for logging to stdout
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+
+    # setup FileHandler for logging to disk file
+    fh = logging.FileHandler(f'{log_file_path}.qlog')
+    fh.setLevel(logging.DEBUG)
+
+    if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
+        # use empty string for newline if disasm or dump mode was enabled
+        ch.terminator = ""
+        fh.terminator = ""
+
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+    return logger

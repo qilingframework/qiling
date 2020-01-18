@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import os, time, logging
+from ..utils import ql_setup_logging
+import os, time
 
 THREAD_EVENT_INIT_VAL = 0
 THREAD_EVENT_EXIT_EVENT = 1
@@ -46,9 +47,8 @@ class Thread:
         self.log_file_fd = None
 
         if ql.log_split and ql.log_file != None:
-            self.log_file_fd = open(self.ql.log_file + "_" + str(os.getpid()), 'w+')
-            #logging.basicConfig(filename=ql.log_file_name + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
-            
+            self.log_file_fd = ql_setup_logging(ql.output, f'{ql.log_file}_{self.thread_id}')
+           
         # For each thread, the kernel maintains two attributes (addresses)
         # called set_child_tid and clear_child_tid.  These two attributes
         # contain the value NULL by default.
