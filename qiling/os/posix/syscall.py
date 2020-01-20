@@ -1146,7 +1146,7 @@ def ql_syscall_vfork(ql, null0, null1, null2, null3, null4, null5):
 
     if pid == 0:
         ql.child_processes = True
-        ql.dprint ("[+] vfork(): is this a child process: ", ql.child_processes)
+        ql.dprint ("[+] vfork(): is this a child process: %r" % (ql.child_processes))
         regreturn = 0
         if ql.thread_management != None:
             ql.thread_management.cur_thread.set_thread_log_file(ql.log_dir)
