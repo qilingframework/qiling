@@ -60,7 +60,7 @@ def ql_get_module_function(module_name, function_name):
     return module_function
 
 
-def ql_setup_logger(logger_name='qiling'):
+def ql_setup_logger(logger_name):
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)
     return logger
