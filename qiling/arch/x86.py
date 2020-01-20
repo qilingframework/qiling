@@ -161,7 +161,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
     # map GDT table
     if ql.ostype == QL_LINUX and GDTTYPE == "DS":
-        ql.dprint(f"[+] OS Type: {ql.ostype}")
+        ql.dprint("[+] OS Type: %d" % (ql.ostype))
         ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
     
     if ql.ostype == QL_WINDOWS and GDTTYPE == "FS":
@@ -174,7 +174,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
                 GDT_ADDR = GDT_ADDR + QL_X86_GDT_ADDR_PADDING
             elif ql.arch == QL_X8664:
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
-        ql.dprint (f"[+] GDT_ADDR is {GDT_ADDR:#x}")
+        ql.dprint ("[+] GDT_ADDR is 0x%x" % (GDT_ADDR))
         ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
     
     if ql.ostype == QL_MACOS and GDTTYPE == "DS":
@@ -184,7 +184,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
             elif ql.arch == QL_X8664:
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
 
-        ql.dprint (f"[+] GDT_ADDR is {GDT_ADDR:#x}")
+        ql.dprint ("[+] GDT_ADDR is 0x%x" % (GDT_ADDR))
         ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
     
     # create GDT entry, then write GDT entry into GDT table
@@ -197,7 +197,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
     # create segment index, point segment register to this selector
     selector = create_selector(index, RPORT)
-    ql.dprint(f"[+] SET_THREAD_AREA selector : {selector:#x}")
+    ql.dprint("[+] SET_THREAD_AREA selector : 0x%x" % selector)
     ql.uc.reg_write(seg_reg, selector)
 
 

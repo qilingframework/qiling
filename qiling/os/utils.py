@@ -92,7 +92,7 @@ def ql_parse_sock_address(sock_addr):
 
 
 def ql_hook_block_disasm(ql, address, size):
-    ql.nprint(f"[+] Tracing basic block at {address:#x}\n")
+    ql.nprint(f"[+] Tracing basic block at 0x%x\n" % (address))
 
 
 def ql_hook_code_disasm(ql, address, size):
