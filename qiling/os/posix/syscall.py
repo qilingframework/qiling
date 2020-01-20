@@ -1119,13 +1119,13 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, null0, null1, null2):
 
 def ql_syscall_getpid(ql, null0, null1, null2, null3, null4, null5):
     regreturn= 0x512
-    ql.nprint("getpid() = ", regreturn)
+    ql.nprint("getpid() = %d" % (regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
 def ql_syscall_getppid(ql, null0, null1, null2, null3, null4, null5):
     regreturn= 0x1024
-    ql.nprint("getpid() = ", regreturn)
+    ql.nprint("getpid() = %d" % (regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
