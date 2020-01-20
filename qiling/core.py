@@ -132,18 +132,22 @@ class Qiling:
             elif  (not os.path.exists(str(self.filename[0])) or not os.path.exists(self.rootfs)):       
                 raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
 
+        logger = ql_setup_logging_stream(self.output)
 
         if self.log_dir != None and type(self.log_dir) == str:
-                
-                self.log_dir = os.path.join(self.rootfs, self.log_dir)
-                if not os.path.exists(self.log_dir):
-                    os.makedirs(self.log_dir, 0o755)
 
-                pid = os.getpid()
-                self.log_file = os.path.join(self.log_dir, str(pid))
-                if type(self.log_split) != bool or not self.log_split:
-                    self.log_file_fd = ql_setup_logging(self.output, self.log_file)
+            self.log_dir = os.path.join(self.rootfs, self.log_dir)
+            if not os.path.exists(self.log_dir):
+                os.makedirs(self.log_dir, 0o755)
 
+            pid = os.getpid()
+            self.log_file = os.path.join(self.log_dir, str(pid))
+
+
+            if type(self.log_split) != bool or not self.log_split:
+                logger = ql_setup_logging_file(self.output, self.log_file, logger)
+
+        self.log_file_fd = logger
 
         if self.ostype in (QL_LINUX, QL_FREEBSD, QL_MACOS):
             if stdin != 0:
@@ -218,8 +222,7 @@ class Qiling:
         if self.log_console == False or self.output == QL_OUT_OFF:
             pass
 
-        elif (self.log_dir and self.log_console):
-            # self.log_file_fd.info(*args, **kw)
+        elif self.log_console and self.log_dir:
             fd.info(*args, **kw)
                           
         if fd != None:
