@@ -57,7 +57,7 @@ def hook_syscall(ql, intno):
         except KeyboardInterrupt:
             raise
         except:
-            ql.nprint("[!] SYSCALL ERROR: ", LINUX_SYSCALL_FUNC_NAME)
+            ql.nprint("[!] SYSCALL ERROR: %s" % (LINUX_SYSCALL_FUNC_NAME))
             if ql.multithread == True:
                 td = ql.thread_management.cur_thread
                 td.stop()
@@ -260,7 +260,7 @@ def runner(ql):
             ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
             buf = ql.uc.mem_read(ql.pc, 8)
-            ql.nprint("[+] ", [hex(_) for _ in buf])
+            ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
             ql_hook_code_disasm(ql, ql.pc, 64)
         raise
 

@@ -421,12 +421,11 @@ class ELFLoader(ELFParse):
         for i in super().parse_program_header(ql):
             if i['p_type'] == PT_LOAD:
                 ql.uc.mem_write(loadbase + i['p_vaddr'], super().getelfdata(i['p_offset'], i['p_filesz']))
-                ql.dprint("[+] load 0x%x - 0x%x"%(loadbase + i['p_vaddr'], loadbase + i['p_vaddr'] + i['p_filesz']))
-
+                ql.dprint("[+] load 0x%x - 0x%x" % (loadbase + i['p_vaddr'], loadbase + i['p_vaddr'] + i['p_filesz']))
 
         entry_point = elfhead['e_entry'] + loadbase
         
-        ql.dprint("[+] mem_start: " + hex(mem_start) + " mem_end: " + hex(mem_end))
+        ql.dprint("[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
 
         ql.brk_address = mem_end + loadbase
 
@@ -446,7 +445,7 @@ class ELFLoader(ELFParse):
                     if interp_mem_size < i['p_vaddr'] + i['p_memsz'] or interp_mem_size == -1:
                         interp_mem_size = i['p_vaddr'] + i['p_memsz']
             interp_mem_size = (interp_mem_size // 0x1000 + 1) * 0x1000
-            ql.dprint("[+] interp_mem_size is : %x" % int(interp_mem_size))
+            ql.dprint("[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
 
             if ql.interp_base == 0:
                 if ql.archbit == 64:

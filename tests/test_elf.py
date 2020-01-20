@@ -22,17 +22,15 @@ class ELFTest(unittest.TestCase):
         ql.run()
         del ql
 
-
     def test_elf_linux_x8664(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
         ql.run()
         del ql
 
     def test_elf_linux_x8664_static(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x86_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", output="debug")
         ql.run()
         del ql
-
 
     def test_elf_linux_x86(self):
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", output="debug")
@@ -148,7 +146,7 @@ class ELFTest(unittest.TestCase):
         del ql
 
     def test_elf_linux_arm(self):     
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug")
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", log_dir='.', log_split=True)
         ql.run()
         del ql
 
