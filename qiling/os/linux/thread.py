@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 from ..utils import ql_setup_logging_file, ql_setup_logging_stream
-import os, time
+import os, time, logging
 
 THREAD_EVENT_INIT_VAL = 0
 THREAD_EVENT_EXIT_EVENT = 1
@@ -50,7 +50,9 @@ class Thread:
 
         if ql.log_dir:
             if ql.log_split and ql.log_file != None:
-                _logger = ql_setup_logging_file(ql.output, f'{ql.log_file}_{self.thread_id}', _logger)
+                _logger = ql_setup_logging_file(ql.output, '%s_%s' % (ql.log_file, self.thread_id), _logger, self.thread_id)
+            elif ql.log_split is False:
+                _logger = ql_setup_logging_file(ql.output, ql.log_file, _logger)
 
         self.log_file_fd = _logger
 

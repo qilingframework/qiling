@@ -60,8 +60,10 @@ def ql_get_module_function(module_name, function_name):
     return module_function
 
 
-def ql_setup_logger(handler):
-    logger = logging.getLogger('qiling')
+def ql_setup_logger(handler, logger_name=None):
+    if logger_name is None:
+        logger_name = 'qiling'
+    logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)
     logger.addHandler(handler)
     return logger
@@ -80,18 +82,19 @@ def ql_setup_logging_stream(ql_mode):
     return ql_setup_logger(ch)
 
 
-def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
+def ql_setup_logging_file(ql_mode, log_file_path, logger=None, thread_id=None):
 
     # setup FileHandler for logging to disk file
-    fh = logging.FileHandler(f'{log_file_path}.qlog')
+    fh = logging.FileHandler('%s.qlog' % (log_file_path))
     fh.setLevel(logging.DEBUG)
 
     if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
         # use empty string for newline if disasm or dump mode was enabled
         fh.terminator = ""
 
-    if  logger is None:
-        return ql_setup_logger(fh)
+    if logger is None:
+        logger = ql_setup_logger(fh, thread_id)
     else:
         logger.addHandler(fh)
-        return logger
+
+    return logger
