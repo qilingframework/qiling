@@ -132,7 +132,7 @@ class Qiling:
             elif  (not os.path.exists(str(self.filename[0])) or not os.path.exists(self.rootfs)):       
                 raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
 
-        logger = ql_setup_logging_stream(self.output)
+        _logger = ql_setup_logging_stream(self.output)
 
         if self.log_dir != None and type(self.log_dir) == str:
 
@@ -143,11 +143,10 @@ class Qiling:
             pid = os.getpid()
             self.log_file = os.path.join(self.log_dir, str(pid))
 
-
             if type(self.log_split) != bool or not self.log_split:
-                logger = ql_setup_logging_file(self.output, self.log_file, logger)
+                _logger = ql_setup_logging_file(self.output, self.log_file, _logger)
 
-        self.log_file_fd = logger
+        self.log_file_fd = _logger
 
         if self.ostype in (QL_LINUX, QL_FREEBSD, QL_MACOS):
             if stdin != 0:

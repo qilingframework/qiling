@@ -3,8 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-from ..utils import ql_setup_logging_file, ql_setup_logging_stream
-import os, time, logging
+from ..utils import ql_setup_logging_file, ql_setup_logging_stream, ql_setup_logger
+import os, time
 
 THREAD_EVENT_INIT_VAL = 0
 THREAD_EVENT_EXIT_EVENT = 1
@@ -46,12 +46,13 @@ class Thread:
         self.current_path = ql.current_path
         self.log_file_fd = None
 
-        _logger = ql_setup_logging_stream(ql.output)
+        _logger = ql_setup_logger(str(self.thread_id)) if ql.log_split else ql_setup_logger()
+        _logger = ql_setup_logging_stream(ql.output, _logger)
 
-        if ql.log_dir:
-            if ql.log_split and ql.log_file != None:
-                _logger = ql_setup_logging_file(ql.output, '%s_%s' % (ql.log_file, self.thread_id), _logger, self.thread_id)
-            elif ql.log_split is False:
+        if ql.log_dir and ql.log_file != None:
+            if ql.log_split:
+                _logger = ql_setup_logging_file(ql.output, '%s_%s' % (ql.log_file, self.thread_id), _logger)
+            else:
                 _logger = ql_setup_logging_file(ql.output, ql.log_file, _logger)
 
         self.log_file_fd = _logger
