@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys, struct, os, platform, importlib, random
+import sys, struct, os, platform, importlib
 from unicorn import *
 
 from qiling.arch.filetype import *
@@ -132,9 +132,7 @@ class Qiling:
             elif  (not os.path.exists(str(self.filename[0])) or not os.path.exists(self.rootfs)):       
                 raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
 
-        # use random logger name to keep unittest working
-        _logger = ql_setup_logger(str(random.random()))
-        _logger = ql_setup_logging_stream(self.output, _logger)
+        _logger = ql_setup_logging_stream(self.output)
 
         if self.log_dir != None and type(self.log_dir) == str:
 
@@ -220,17 +218,14 @@ class Qiling:
         else:
             fd = self.log_file_fd
 
-        if self.log_console == False or self.output == QL_OUT_OFF:
-            pass
-
-        elif self.log_console and self.log_dir:
+        if self.output != QL_OUT_OFF:
             fd.info(*args, **kw)
-                          
-        # if fd != None:
-            # if isinstance(fd, logging.FileHandler):
-                # fd.emit()
-            # elif isinstance(fd, logging.StreamHandler):
-                # fd.flush()
+
+        if fd != None:
+            if isinstance(fd, logging.FileHandler):
+                fd.emit()
+            elif isinstance(fd, logging.StreamHandler):
+                fd.flush()
 
 
     def dprint(self, *args, **kw):

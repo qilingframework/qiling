@@ -9,7 +9,7 @@ thoughout the qiling framework
 """
 
 import importlib
-import sys, logging
+import sys, random, logging
 from qiling.exception import *
 from qiling.arch.filetype import *
 
@@ -60,7 +60,9 @@ def ql_get_module_function(module_name, function_name):
     return module_function
 
 
-def ql_setup_logger(logger_name):
+def ql_setup_logger(logger_name=None):
+    if logger_name is None: # use random logger name to avoid share logger_name in unittesting
+        logger_name = 'qiling_%s' % random.random()
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)
     return logger

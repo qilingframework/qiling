@@ -46,7 +46,7 @@ class Thread:
         self.current_path = ql.current_path
         self.log_file_fd = None
 
-        _logger = ql_setup_logger(str(self.thread_id)) if ql.log_split else ql_setup_logger('qiling_thread')
+        _logger = ql_setup_logger(str(self.thread_id)) if ql.log_split else ql_setup_logger()
         _logger = ql_setup_logging_stream(ql.output, _logger)
 
         if ql.log_dir and ql.log_file != None:
