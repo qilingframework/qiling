@@ -60,7 +60,7 @@ def hook_syscall(ql, intno):
         except KeyboardInterrupt:
             raise            
         except Exception:
-            ql.nprint("[!] SYSCALL ERROR: ", MACOS_SYSCALL_FUNC_NAME)
+            ql.nprint("[!] SYSCALL ERROR: %s" % (MACOS_SYSCALL_FUNC_NAME))
             #td = ql.thread_management.cur_thread
             #td.stop()
             #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
@@ -129,9 +129,9 @@ def runner(ql):
             ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
             buf = ql.uc.mem_read(ql.pc, 8)
-            ql.nprint("[+] ", [hex(_) for _ in buf])
+            ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
             ql_hook_code_disasm(ql, ql.pc, 64)
-        raise QlErrorExecutionStop("[!] Execution Terminated")    
+        raise
     
     if ql.internal_exception != None:
         raise ql.internal_exception        

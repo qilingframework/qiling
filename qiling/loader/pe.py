@@ -12,7 +12,7 @@ import pickle
 
 from unicorn.x86_const import *
 from qiling.os.windows.utils import *
-from qiling.os.windows.memory import align
+from qiling.os.memory import align
 from qiling.os.windows.structs import *
 from qiling.exception import *
 

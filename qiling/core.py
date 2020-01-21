@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys, struct, os, platform, importlib, logging
+import sys, struct, os, platform, importlib
 from unicorn import *
 
 from qiling.arch.filetype import *
@@ -132,24 +132,21 @@ class Qiling:
             elif  (not os.path.exists(str(self.filename[0])) or not os.path.exists(self.rootfs)):       
                 raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
 
+        _logger = ql_setup_logging_stream(self.output)
 
         if self.log_dir != None and type(self.log_dir) == str:
-                
-                self.log_dir = os.path.join(self.rootfs, self.log_dir)
-               
-                if not os.path.exists(self.log_dir):
-                    os.makedirs(self.log_dir, 0o755)
 
-                #if self.log_file[0] != '/' or self.log_file[0] != '\\':
-                self.log_file = os.path.join(self.log_dir, str(os.getpid()))
-               
-                if type(self.log_split) != bool or not self.log_split:
-                    self.log_file_fd = open(self.log_file, 'w+')
-                #     #logging.basicConfig(filename=log_file + '.qlog', filemode='w+', level=logging.DEBUG, format='%(message)s')
-                else:
-                    self.log_file_fd = open(self.log_file + "_" + str(os.getpid()), 'w+')
-                #     #self.log_file_fd = logging.basicConfig(filename=log_file + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
+            self.log_dir = os.path.join(self.rootfs, self.log_dir)
+            if not os.path.exists(self.log_dir):
+                os.makedirs(self.log_dir, 0o755)
 
+            pid = os.getpid()
+            self.log_file = os.path.join(self.log_dir, str(pid))
+
+            if type(self.log_split) != bool or not self.log_split:
+                _logger = ql_setup_logging_file(self.output, self.log_file, _logger)
+
+        self.log_file_fd = _logger
 
         if self.ostype in (QL_LINUX, QL_FREEBSD, QL_MACOS):
             if stdin != 0:
@@ -221,25 +218,21 @@ class Qiling:
         else:
             fd = self.log_file_fd
 
-        if (self.log_console == False or self.output == QL_OUT_OFF):
-            pass
-        elif self.log_console == False and self.log_file:
-            print(*args, **kw, file = fd)
-            #logging.debug(*args, **kw)
-        elif (self.log_dir and self.log_console):
-            print(*args, **kw, file = fd)
-            #logging.debug(*args, **kw)
-            print(*args, **kw)
-        else:
-            print(*args, **kw)
-                          
+        if self.output != QL_OUT_OFF:
+            fd.info(*args, **kw)
+
         if fd != None:
-            fd.flush()
+            if isinstance(fd, logging.FileHandler):
+                fd.emit()
+            elif isinstance(fd, logging.StreamHandler):
+                fd.flush()
 
 
     def dprint(self, *args, **kw):
-        if self.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            self.nprint(*args, **kw)
+        if self.output == QL_OUT_DEBUG:
+            self.log_file_fd.debug(*args, **kw)
+        elif self.output == QL_OUT_DUMP:
+            self.log_file_fd.debug(args[0]+'\n', **kw)
 
 
     def asm2bytes(self, runasm, arm_thumb = None):

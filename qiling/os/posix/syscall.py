@@ -37,7 +37,7 @@ def ql_syscall_exit(ql, null0, null1, null2, null3, null4, null5):
     ql.exit_code = null0
     
     ql.nprint("exit(%u) = %u" % (null0, null0))
-    ql.dprint ("[+] is this a child process: ", ql.child_processes)
+    ql.dprint ("[+] is this a child process: %r" % (ql.child_processes))
     
     if ql.child_processes == True:
         os._exit(0)
@@ -1119,13 +1119,13 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, null0, null1, null2):
 
 def ql_syscall_getpid(ql, null0, null1, null2, null3, null4, null5):
     regreturn= 0x512
-    ql.nprint("getpid() = ", regreturn)
+    ql.nprint("getpid() = %d" % (regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
 def ql_syscall_getppid(ql, null0, null1, null2, null3, null4, null5):
     regreturn= 0x1024
-    ql.nprint("getpid() = ", regreturn)
+    ql.nprint("getpid() = %d" % (regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -1146,13 +1146,13 @@ def ql_syscall_vfork(ql, null0, null1, null2, null3, null4, null5):
 
     if pid == 0:
         ql.child_processes = True
-        ql.dprint ("[+] vfork(): is this a child process: ", ql.child_processes)
+        ql.dprint ("[+] vfork(): is this a child process: %r" % (ql.child_processes))
         regreturn = 0
         if ql.thread_management != None:
-            ql.thread_management.cur_thread.set_thread_log_file(ql.log_file)
+            ql.thread_management.cur_thread.set_thread_log_file(ql.log_dir)
         else:
-            if ql.log_file != None:
-                ql.log_file_fd = open(ql.log_file + "_" + str(os.getpid()), 'w+')
+            if ql.log_dir != None:
+                ql.log_file_fd = open(ql.log_dir + "_" + str(os.getpid()), 'w+')
                 #ql.log_file_fd = logging.basicConfig(filename=ql.log_file_name + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
     else:
         regreturn = pid
@@ -1403,7 +1403,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
         host = "::1"
     
     elif ql.bindtolocalhost == False:
-         ql.file_des[bind_fd].bind((host, port))
+        ql.file_des[bind_fd].bind((host, port))
     
     else:
         regreturn = -1       
@@ -1717,7 +1717,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
 
             f_th.update_global_thread_id()
             f_th.new_thread_id()
-            f_th.set_thread_log_file(ql.log_file)
+            f_th.set_thread_log_file(ql.log_dir)
 
             if clone_flags & CLONE_SETTLS == CLONE_SETTLS:
                 if ql.arch == QL_X86:

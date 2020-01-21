@@ -9,7 +9,7 @@ thoughout the qiling framework
 """
 
 import importlib
-import sys
+import sys, random, logging
 from qiling.exception import *
 from qiling.arch.filetype import *
 
@@ -58,3 +58,45 @@ def ql_get_module_function(module_name, function_name):
         raise QlErrorModuleFunctionNotFound("[!] Unable to import %s from %s" % (function_name, imp_module))
 
     return module_function
+
+
+def ql_setup_logger(logger_name=None):
+    if logger_name is None: # use random logger name to avoid share logger_name in unittesting
+        logger_name = 'qiling_%s' % random.random()
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.DEBUG)
+    return logger
+
+
+def ql_setup_logging_stream(ql_mode, logger=None):
+
+    # setup StreamHandler for logging to stdout
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+
+    if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
+        # use empty string for newline if disasm or dump mode was enabled
+        ch.terminator = ""
+
+    if logger is None:
+        logger = ql_setup_logger()
+
+    logger.addHandler(ch)
+    return logger
+
+
+def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
+
+    # setup FileHandler for logging to disk file
+    fh = logging.FileHandler('%s.qlog' % (log_file_path))
+    fh.setLevel(logging.DEBUG)
+
+    if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
+        # use empty string for newline if disasm or dump mode was enabled
+        fh.terminator = ""
+
+    if logger is None:
+        logger = ql_setup_logger()
+
+    logger.addHandler(fh)
+    return logger

@@ -33,7 +33,7 @@ class RegistryManager:
             self.hive = hive
         else:
             self.hive = os.path.join(ql.rootfs, "Windows", "registry")
-            ql.dprint("[+] Windows Registry PATH: ", self.hive)
+            ql.dprint("[+] Windows Registry PATH: %s" % self.hive)
             if not os.path.exists(self.hive):
                 raise QlPrintException("Error: Registry files not found!")
                 #return

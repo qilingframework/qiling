@@ -14,7 +14,7 @@ from qiling.loader.pe import PE, Shellcode
 from qiling.arch.x86 import *
 from qiling.os.windows.dlls import *
 from qiling.os.utils import *
-from qiling.os.windows.memory import Heap
+from qiling.os.memory import Heap
 from qiling.os.windows.registry import RegistryManager
 from qiling.os.windows.clipboard import Clipboard
 from qiling.os.windows.fiber import FiberManager
@@ -162,9 +162,9 @@ def runner(ql):
             ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
             buf = ql.uc.mem_read(ql.pc, 8)
-            ql.nprint("[+] ", [hex(_) for _ in buf])
+            ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
             ql_hook_code_disasm(ql, ql.pc, 64)
-        raise QlErrorExecutionStop("[!] Execution Terminated")
+        raise
 
     ql.registry_manager.save()
 
