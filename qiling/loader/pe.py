@@ -16,7 +16,6 @@ from qiling.os.memory import align
 from qiling.os.windows.structs import *
 from qiling.exception import *
 
-
 class Process:
     def __init__(self, ql):
         self.ql = ql
