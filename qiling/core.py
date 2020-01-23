@@ -232,7 +232,9 @@ class Qiling:
         if self.output == QL_OUT_DEBUG:
             self.log_file_fd.debug(*args, **kw)
         elif self.output == QL_OUT_DUMP:
-            self.log_file_fd.debug(args[0]+'\n', **kw)
+            msg = args[0]
+            msg += b'\n' if isinstance(msg, bytes) else '\n'
+            self.log_file_fd.debug(msg, **kw)
 
 
     def asm2bytes(self, runasm, arm_thumb = None):
