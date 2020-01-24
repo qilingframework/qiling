@@ -1150,9 +1150,9 @@ def ql_syscall_vfork(ql, null0, null1, null2, null3, null4, null5):
         regreturn = 0
         if ql.thread_management != None:
             ql.thread_management.cur_thread.set_thread_log_file(ql.log_dir)
-        else:
-            if ql.log_dir != None:
-                ql.log_file_fd = open(ql.log_dir + "_" + str(os.getpid()), 'w+')
+        #else:
+        #    if ql.log_dir != None:
+        #        ql.log_file_fd = open(ql.log_dir + "_" + str(os.getpid()), 'w+')
                 #ql.log_file_fd = logging.basicConfig(filename=ql.log_file_name + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
     else:
         regreturn = pid
