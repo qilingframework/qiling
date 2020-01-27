@@ -4,5 +4,12 @@
 #       doesn't exist or not a regular file
 
 git clone https://github.com/keystone-engine/keystone.git
-cd keystone/bindings/python/
+cd keystone
+mkdir build
+cd build
+../make-share.sh
+sudo make install
+sudo ldconfig
+cd ../bindings/python/
+
 python3 setup.py install    # python3 can be changed to another python path even venv
