@@ -61,8 +61,10 @@ def ql_get_module_function(module_name, function_name):
 
 
 def ql_setup_logger(logger_name=None):
-    if logger_name is None: # use random logger name to avoid share logger_name in unittesting
-        logger_name = 'qiling_%s' % random.random()
+    if logger_name is None: # increasing logger name counter to prevent conflict 
+        loggers = logging.root.manager.loggerDict
+        _counter = len(loggers)
+        logger_name = 'qiling_%s' % _counter
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)
     return logger

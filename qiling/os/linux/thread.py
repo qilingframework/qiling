@@ -233,10 +233,10 @@ class Thread:
         #global GLOBAL_THREAD_ID
         self.ql.global_thread_id = os.getpid()
     
-    def set_thread_log_file(self, log_file):
-        if self.ql.log_split and log_file != None:
-            self.log_file_fd = open(log_file + "_" + str(os.getpid()) + '.' + str(self.thread_id), 'w+')
-            #logging.basicConfig(filename= log_file + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
+    def set_thread_log_file(self, log_dir):
+        if self.ql.log_split and log_dir != None:
+            _logger = self.ql.log_file_fd
+            self.log_file_fd = ql_setup_logging_file(self.ql.output, log_dir, _logger)
     
     def get_current_path(self):
         return self.current_path
