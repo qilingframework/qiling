@@ -1142,7 +1142,6 @@ def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_si
 
 
 def ql_syscall_vfork(ql, null0, null1, null2, null3, null4, null5):
-    breakpoint()
     pid = os.fork()
 
     if pid == 0:
