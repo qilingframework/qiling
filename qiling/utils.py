@@ -9,7 +9,7 @@ thoughout the qiling framework
 """
 
 import importlib
-import sys, random, logging
+import sys, logging
 from qiling.exception import *
 from qiling.arch.filetype import *
 
