@@ -66,10 +66,12 @@ def hook_syscall(ql, intno):
     else:
         ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
-            td = ql.thread_management.cur_thread
-            td.stop()
-            td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-        raise QlErrorSyscallNotFound("[!] Syscall Not Found")
+            if ql.multithread == True:
+                td = ql.thread_management.cur_thread
+                td.stop()
+                td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+            raise QlErrorSyscallNotFound("[!] Syscall Not Found")
+
 
 def hook_shellcode(uc, addr, shellcode, ql):
     '''
@@ -176,12 +178,14 @@ lab1:
 
 
 def ql_syscall_mips32el_set_thread_area(ql, sta_area, null0, null1, null2, null3, null4):
+    uc = ql.uc     
     ql.nprint ("set_thread_area(0x%x)" % sta_area)
-    uc = ql.uc 
     pc = uc.reg_read(UC_MIPS_REG_PC)
     CONFIG3_ULR = (1 << 13)
     uc.reg_write(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
     uc.reg_write(UC_MIPS_REG_CP0_USERLOCAL, sta_area)
+    # if ql.multithread == True:
+    #     ql.thread_management.cur_thread.set_special_settings_arg(u_info)
     hook_shellcode(uc, pc + 4, bytes.fromhex('2510000025380000'), ql)
 
 

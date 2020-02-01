@@ -64,9 +64,10 @@ def hook_syscall(ql, intno):
             raise
         except Exception:
             ql.nprint("[!] SYSCALL ERROR: %s" % (LINUX_SYSCALL_FUNC_NAME))
-            td = ql.thread_management.cur_thread
-            td.stop()
-            td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+            if ql.multithread == True:
+                td = ql.thread_management.cur_thread
+                td.stop()
+                td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
             raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (LINUX_SYSCALL_FUNC_NAME))
     else:
         ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
@@ -74,7 +75,7 @@ def hook_syscall(ql, intno):
             td = ql.thread_management.cur_thread
             td.stop()
             td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-            raise QlErrorSyscallNotFound("[!] Syscall Not Found")           
+        raise QlErrorSyscallNotFound("[!] Syscall Not Found")           
 
 def exec_shellcode(ql, start, shellcode):
     if ql.shellcode_init == 0:
@@ -98,7 +99,8 @@ def ql_arm_init_kernel_get_tls(uc):
     uc.mem_write(QL_KERNEL_GET_TLS_ADDR, sc)
 
 def ql_syscall_arm_settls(ql, address, null0, null1, null2, null3, null4):
-    ql.nprint("settls(0x%x)" % address)
+    #ql.nprint("settls(0x%x)" % address)
+    
     if ql.thread_management != None:
         ql.thread_management.cur_thread.special_settings_arg = address
 
@@ -106,6 +108,8 @@ def ql_syscall_arm_settls(ql, address, null0, null1, null2, null3, null4):
     PC = ql.uc.reg_read(UC_ARM_REG_PC)
     SP = ql.uc.reg_read(UC_ARM_REG_SP)
     mode = ql_arm_check_thumb(reg_cpsr)
+
+    #ql.nprint("THUMB and Mode %x %x" % (UC_MODE_THUMB, mode))
 
     if mode == UC_MODE_THUMB:
         sc = '''
@@ -141,6 +145,7 @@ def ql_syscall_arm_settls(ql, address, null0, null1, null2, null3, null4):
 
     ql.uc.mem_write(QL_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
     ql.uc.reg_write(UC_ARM_REG_R0, address)
+    ql.nprint("settls(0x%x)" % address)
 
 def ql_arm_thread_set_tls(ql, th, arg):
     address = arg
@@ -174,6 +179,9 @@ def ql_arm_thread_set_tls(ql, th, arg):
         sc = b'\x02\xb4\x01\xa1\x08G\x00\x00p\x0f\r\xee\x04\x10\x8f\xe2\x01\x10\x81\xe2\x11\xff/\xe1\x02\xbc\x01\xbc\x00\xbd\x00\xbf'
     else:
         sc = b'p\x0f\r\xee\x04\x00\x9d\xe4\x04\xf0\x9d\xe4'
+    
+    #if ql.multithread == True:
+    #    ql.thread_management.cur_thread.set_special_settings_arg(u_info)
 
     codestart = 4
     exec_shellcode(ql, codestart, sc)
@@ -226,32 +234,36 @@ def runner(ql):
     try:
         if ql.shellcoder:
             ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
-        else:    
-            # start multithreading
-            thread_management = ThreadManagement(ql)
-            ql.thread_management = thread_management
+        else:
+            if ql.multithread == True:        
+                # start multithreading
+                thread_management = ThreadManagement(ql)
+                ql.thread_management = thread_management
 
-            main_thread = Thread(ql, thread_management, total_time = ql.timeout, special_settings_fuc = ql_arm_thread_set_tls)
-            main_thread.save()
-            main_thread.set_start_address(ql.entry_point)
+                main_thread = Thread(ql, thread_management, total_time = ql.timeout, special_settings_fuc = ql_arm_thread_set_tls)
+                main_thread.save()
+                main_thread.set_start_address(ql.entry_point)
 
-            thread_management.set_main_thread(main_thread)
-            
-            # enable lib patch
-            if ql.elf_entry != ql.entry_point:
-                main_thread.set_until_addr(ql.elf_entry)
-                thread_management.run()
-                ql.enable_lib_patch()
-                
-                main_thread.set_start_address(ql.elf_entry)
-                main_thread.set_until_addr(ql.until_addr)
-                main_thread.running()
-                
-                thread_management.clean_world()
                 thread_management.set_main_thread(main_thread)
+            
+                # enable lib patch
+                if ql.elf_entry != ql.entry_point:
+                    main_thread.set_until_addr(ql.elf_entry)
+                    thread_management.run()
+                    ql.enable_lib_patch()
+                    
+                    main_thread.set_start_address(ql.elf_entry)
+                    main_thread.set_until_addr(ql.until_addr)
+                    main_thread.running()
+                    
+                    thread_management.clean_world()
+                    thread_management.set_main_thread(main_thread)
 
 
-            thread_management.run()
+                thread_management.run() 
+            else:
+                ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout) 
+
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC= " + hex(ql.pc))
