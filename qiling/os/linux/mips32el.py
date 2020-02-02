@@ -62,7 +62,7 @@ def hook_syscall(ql, intno):
                 td = ql.thread_management.cur_thread
                 td.stop()
                 td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-            raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (LINUX_SYSCALL_FUNC_NAME))
+            raise #QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (LINUX_SYSCALL_FUNC_NAME))
     else:
         ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
@@ -188,19 +188,15 @@ def ql_syscall_mips32el_set_thread_area(ql, sta_area, null0, null1, null2, null3
     CONFIG3_ULR = (1 << 13)
     uc.reg_write(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
     uc.reg_write(UC_MIPS_REG_CP0_USERLOCAL, sta_area)
-    # if ql.multithread == True:
-    #     ql.thread_management.cur_thread.set_special_settings_arg(u_info)
     hook_shellcode(uc, pc + 4, bytes.fromhex('2510000025380000'), ql)
 
-def ql_syscall_mips32el_thread_set_thread_area(ql, sta_area, null0, null1, null2, null3, null4):
+def ql_syscall_mips32el_thread_setthreadarea(ql, sta_area, null0, null1, null2, null3, null4):
     uc = ql.uc     
     ql.nprint ("set_thread_area(0x%x)" % sta_area)
     pc = uc.reg_read(UC_MIPS_REG_PC)
     CONFIG3_ULR = (1 << 13)
     uc.reg_write(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
     uc.reg_write(UC_MIPS_REG_CP0_USERLOCAL, sta_area)
-    # if ql.multithread == True:
-    #     ql.thread_management.cur_thread.set_special_settings_arg(u_info)
     hook_shellcode(uc, pc + 4, bytes.fromhex('2510000025380000'), ql)
 
 
@@ -250,7 +246,7 @@ def runner(ql):
                 thread_management = ThreadManagement(ql)
                 ql.thread_management = thread_management
 
-                main_thread = Thread(ql, thread_management, total_time = ql.timeout, special_settings_fuc = ql_syscall_mips32el_thread_set_thread_area)
+                main_thread = Thread(ql, thread_management, total_time = ql.timeout, special_settings_fuc = ql_syscall_mips32el_thread_setthreadarea)
                 main_thread.save()
                 main_thread.set_start_address(ql.entry_point)
 
