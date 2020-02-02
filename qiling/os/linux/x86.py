@@ -76,7 +76,7 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, null0, null1, null2, null3, 
     ql.nprint("set_thread_area(u_info_addr= 0x%x)" % u_info_addr)
     u_info = ql.uc.mem_read(u_info_addr, 4 * 3)
 
-    if ql.multithread == True:
+    if ql.thread_management != None and ql.multithread == True:
         ql.thread_management.cur_thread.set_special_settings_arg(u_info)
 
     base = ql.unpack32(u_info[4 : 8])

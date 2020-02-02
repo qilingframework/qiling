@@ -101,7 +101,7 @@ def ql_arm_init_kernel_get_tls(uc):
 def ql_syscall_arm_settls(ql, address, null0, null1, null2, null3, null4):
     #ql.nprint("settls(0x%x)" % address)
     
-    if ql.thread_management != None:
+    if ql.thread_management != None and ql.multithread == True:
         ql.thread_management.cur_thread.special_settings_arg = address
 
     reg_cpsr = ql.uc.reg_read(UC_ARM_REG_CPSR)
@@ -179,9 +179,6 @@ def ql_arm_thread_set_tls(ql, th, arg):
         sc = b'\x02\xb4\x01\xa1\x08G\x00\x00p\x0f\r\xee\x04\x10\x8f\xe2\x01\x10\x81\xe2\x11\xff/\xe1\x02\xbc\x01\xbc\x00\xbd\x00\xbf'
     else:
         sc = b'p\x0f\r\xee\x04\x00\x9d\xe4\x04\xf0\x9d\xe4'
-    
-    #if ql.multithread == True:
-    #    ql.thread_management.cur_thread.set_special_settings_arg(u_info)
 
     codestart = 4
     exec_shellcode(ql, codestart, sc)

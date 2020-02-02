@@ -176,8 +176,23 @@ lab1:
     sp = uc.reg_read(UC_MIPS_REG_SP)
     uc.mem_write(sp - 4, ql.pack32(addr))
 
-
 def ql_syscall_mips32el_set_thread_area(ql, sta_area, null0, null1, null2, null3, null4):
+    uc = ql.uc     
+    ql.nprint ("set_thread_area(0x%x)" % sta_area)
+    address = sta_area
+
+    if ql.thread_management != None and ql.multithread == True:
+        ql.thread_management.cur_thread.special_settings_arg = address
+    
+    pc = uc.reg_read(UC_MIPS_REG_PC)
+    CONFIG3_ULR = (1 << 13)
+    uc.reg_write(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
+    uc.reg_write(UC_MIPS_REG_CP0_USERLOCAL, sta_area)
+    # if ql.multithread == True:
+    #     ql.thread_management.cur_thread.set_special_settings_arg(u_info)
+    hook_shellcode(uc, pc + 4, bytes.fromhex('2510000025380000'), ql)
+
+def ql_syscall_mips32el_thread_set_thread_area(ql, sta_area, null0, null1, null2, null3, null4):
     uc = ql.uc     
     ql.nprint ("set_thread_area(0x%x)" % sta_area)
     pc = uc.reg_read(UC_MIPS_REG_PC)
@@ -235,7 +250,7 @@ def runner(ql):
                 thread_management = ThreadManagement(ql)
                 ql.thread_management = thread_management
 
-                main_thread = Thread(ql, thread_management, total_time = ql.timeout)
+                main_thread = Thread(ql, thread_management, total_time = ql.timeout, special_settings_fuc = ql_syscall_mips32el_thread_set_thread_area)
                 main_thread.save()
                 main_thread.set_start_address(ql.entry_point)
 
