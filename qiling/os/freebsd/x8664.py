@@ -51,7 +51,7 @@ def hook_syscall(ql):
             #td = ql.thread_management.cur_thread
             #td.stop()
             #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-            raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (FREEBSD_SYSCALL_FUNC_NAME))
+            raise
     else:
         ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
