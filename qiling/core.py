@@ -142,8 +142,6 @@ class Qiling:
 
             pid = os.getpid()
             self.log_file = os.path.join(self.log_dir, str(pid))
-
-            # if type(self.log_split) != bool or not self.log_split:
             _logger = ql_setup_logging_file(self.output, self.log_file, _logger)
 
         self.log_file_fd = _logger
