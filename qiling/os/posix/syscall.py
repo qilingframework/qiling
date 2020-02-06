@@ -1159,8 +1159,10 @@ def ql_syscall_vfork(ql, null0, null1, null2, null3, null4, null5):
             ql.thread_management.cur_thread.set_thread_log_file(ql.log_dir)
         else:
             if ql.log_split:
-                _logger_name = str(len(logging.root.manager.loggerDict))
-                _logger = ql_setup_logging_file(ql.output, '_'.join((ql.log_file, _logger_name)))
+                _logger = ql.log_file_fd
+                _logger = ql_setup_logging_file(ql.output, ql.log_file , _logger)
+                #_logger_name = str(len(logging.root.manager.loggerDict))
+                #_logger = ql_setup_logging_file(ql.output, '_'.join((ql.log_file, _logger_name)))
                 ql.log_file_fd = _logger
     else:
         regreturn = pid
