@@ -25,6 +25,7 @@ from qiling.arch.filetype import *
 from qiling.exception import *
 from qiling.utils import *
 
+from binascii import unhexlify
 import ipaddress
 import struct
 import os
