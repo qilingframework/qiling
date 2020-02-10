@@ -94,10 +94,11 @@ matrix:
 #        - cp msvcr120_clr0400.dll $TRAVIS_HOME/build/chfl4gs/qiling/examples/rootfs/x86_windows/dlls/msvcr110.dll
 #        - cd /c/Windows/System32/ && xargs -a $TRAVIS_HOME/build/chfl4gs/qiling/list64.txt cp -t $TRAVIS_HOME/build/chfl4gs/qiling/examples/rootfs/x8664_windows/dlls
         - cd $TRAVIS_HOME/build/chfl4gs/qiling/tests
+        - cmd.exe //C 'win_setup.bat'
       script:
 #        - kstool
         - python test_all.py
-        - cmd.exe //C 'win_setup.bat'
+#        - cmd.exe //C 'win_setup.bat'
       
 #    - name: "Python 3.6 on WSL1 Ubuntu"
 #      os: windows
