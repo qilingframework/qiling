@@ -13,6 +13,7 @@ dict_arm_linux_syscall = {
     0x13 : "ql_syscall_lseek",
     0x14 : "ql_syscall_getpid",
     0x21 : "ql_syscall_access",
+    0x2A : "ql_syscall_pipe", 
     0x2B : "ql_syscall_times",
     0x2D : "ql_syscall_brk",
     0x36 : "ql_syscall_ioctl",
