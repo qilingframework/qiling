@@ -75,7 +75,7 @@ matrix:
         - python setup.py install
         - cd $TRAVIS_HOME/build/chfl4gs/qiling
         - python setup.py install
-        - cmd.exe //C 'copy C:\Program Files (x86)\keystone\lib\keystone.dll C:\Python36\Lib\site-packages\keystone'
+        - cmd.exe //C 'copy C:\Program Files (x86)\keystone\lib\keystone.dll' 'C:\Python36\Lib\site-packages\keystone'
 #        - cmd.exe /C 'copy "C:\Program Files (x86)\keystone\lib\keystone.lib" C:\Python36\Lib\site-packages\keystone'
       before_script:
 #        - mkdir -p examples/rootfs/x8664_windows/dlls
@@ -97,7 +97,7 @@ matrix:
       script:
 #        - kstool
         - python test_all.py
-        - cmd.exe //c "win_setup.bat"
+        - cmd.exe //C 'win_setup.bat'
       
 #    - name: "Python 3.6 on WSL1 Ubuntu"
 #      os: windows
