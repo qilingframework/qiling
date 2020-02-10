@@ -69,13 +69,13 @@ matrix:
         - cd keystone
         - mkdir build
         - cd build
-        - cmd.exe /c '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 & ..\nmake-dll.bat && nmake install'
+        - cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64 '&' ..\nmake-dll.bat '&&' nmake install
 #        - cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 & ..\nmake-lib.bat && nmake install'
         - cd ../bindings/python
         - python setup.py install
         - cd $TRAVIS_HOME/build/chfl4gs/qiling
         - python setup.py install
-        - cmd.exe /C 'copy "C:\Program Files (x86)\keystone\lib\keystone.dll" C:\Python36\Lib\site-packages\keystone'
+        - cmd.exe /C 'copy C:\Program Files (x86)\keystone\lib\keystone.dll C:\Python36\Lib\site-packages\keystone'
 #        - cmd.exe /C 'copy "C:\Program Files (x86)\keystone\lib\keystone.lib" C:\Python36\Lib\site-packages\keystone'
       before_script:
 #        - mkdir -p examples/rootfs/x8664_windows/dlls
