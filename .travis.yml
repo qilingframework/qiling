@@ -76,7 +76,8 @@ matrix:
         - python setup.py install
         - cd $TRAVIS_BUILD_DIR
         - python setup.py install
-        - cmd.exe //C 'copy "C:\Program Files (x86)\keystone\lib\keystone.dll" C:\Python36\Lib\site-packages\keystone'
+#        - cmd.exe //C 'copy "C:\Program Files (x86)\keystone\lib\keystone.dll" C:\Python36\Lib\site-packages\keystone'
+        - cp /c/Program\ Files\ \(x86\)/keystone/lib/keystone.dll /c/Python36/Lib/site-packages/keystone/
       before_script:
         - cmd.exe //C 'examples\scripts\dllscollector.bat'
         - cd $TRAVIS_BUILD_DIR/examples/rootfs/x86_windows/bin
