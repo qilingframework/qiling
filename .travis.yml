@@ -61,21 +61,21 @@ matrix:
       env:
         - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files (x86)/keystone/bin/:$PATH"
       before_install:
- #       - choco install python --version=3.6.8
+        - choco install python --version=3.6.8
  #       - python -m pip install --upgrade pip
       install:
- #       - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
- #       - git clone https://github.com/keystone-engine/keystone
- #       - cd keystone
- #       - mkdir build
- #       - cd build
- #       - cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 & ..\nmake-dll.bat && nmake install'
+        - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
+        - git clone https://github.com/keystone-engine/keystone
+        - cd keystone
+        - mkdir build
+        - cd build
+        - cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 & ..\nmake-dll.bat && nmake install'
 #        - cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 & ..\nmake-lib.bat && nmake install'
-#        - cd ../bindings/python
-#        - python setup.py install
-#        - cd $TRAVIS_HOME/build/chfl4gs/qiling
-#        - python setup.py install
-#        - cmd.exe /C 'copy "C:\Program Files (x86)\keystone\lib\keystone.dll" C:\Python36\Lib\site-packages\keystone'
+        - cd ../bindings/python
+        - python setup.py install
+        - cd $TRAVIS_HOME/build/chfl4gs/qiling
+        - python setup.py install
+        - cmd.exe /C 'copy "C:\Program Files (x86)\keystone\lib\keystone.dll" C:\Python36\Lib\site-packages\keystone'
 #        - cmd.exe /C 'copy "C:\Program Files (x86)\keystone\lib\keystone.lib" C:\Python36\Lib\site-packages\keystone'
       before_script:
 #        - mkdir -p examples/rootfs/x8664_windows/dlls
@@ -96,7 +96,7 @@ matrix:
 #        - cd $TRAVIS_HOME/build/chfl4gs/qiling/tests
       script:
 #        - kstool
-#        - python test_all.py
+        - python test_all.py
         - cmd.exe //c "win_setup.bat"
       
 #    - name: "Python 3.6 on WSL1 Ubuntu"
