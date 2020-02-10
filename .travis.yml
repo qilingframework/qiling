@@ -93,7 +93,7 @@ matrix:
 #        - cd /c/Windows/SysWOW64/ && xargs -a $TRAVIS_HOME/build/chfl4gs/qiling/list32.txt cp -t $TRAVIS_HOME/build/chfl4gs/qiling/examples/rootfs/x86_windows/dlls
 #        - cp msvcr120_clr0400.dll $TRAVIS_HOME/build/chfl4gs/qiling/examples/rootfs/x86_windows/dlls/msvcr110.dll
 #        - cd /c/Windows/System32/ && xargs -a $TRAVIS_HOME/build/chfl4gs/qiling/list64.txt cp -t $TRAVIS_HOME/build/chfl4gs/qiling/examples/rootfs/x8664_windows/dlls
-#        - cd $TRAVIS_HOME/build/chfl4gs/qiling/tests
+        - cd $TRAVIS_HOME/build/chfl4gs/qiling/tests
       script:
 #        - kstool
         - python test_all.py
