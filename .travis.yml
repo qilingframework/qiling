@@ -71,14 +71,14 @@ matrix:
         - cd keystone
         - mkdir build
         - cd build
-        - cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64 '＆&' ..\nmake-dll.bat '&&' nmake install
+        - cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64 '＆&' cmd.exe //C '..\nmake-dll.bat' '&&' nmake install
         - cd ../bindings/python
         - python setup.py install
         - cd $TRAVIS_BUILD_DIR
         - python setup.py install
         - cmd.exe //C 'copy C:\Program Files (x86)\keystone\lib\keystone.dll C:\Python36\Lib\site-packages\keystone'
       before_script:
-        - cmd.exe //c "examples\scripts\dllscollector.bat"
+        - cmd.exe //C "examples\scripts\dllscollector.bat"
         - cd $TRAVIS_BUILD_DIR/examples/rootfs/x86_windows/bin
         - unzip -Pinfected wannacry.bin.zip
         - cd $TRAVIS_BUILD_DIR/tests
