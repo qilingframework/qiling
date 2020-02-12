@@ -110,7 +110,7 @@ class Qiling:
         self.stack_size             = stack_size
         self.interp_base            = interp_base
         self.dict_posix_syscall     = dict()
-        self.user_defined_api    = {}
+        self.user_defined_api       = {}
         self.global_thread_id       = 0
 
         if self.ostype and type(self.ostype) == str:
