@@ -37,11 +37,9 @@ def ql_syscall_exit(ql, null0, null1, null2, null3, null4, null5):
     ql.exit_code = null0
     
     ql.nprint("exit(%u) = %u" % (null0, null0))
-    ql.dprint ("[+] is this a child process: %r" % (ql.child_processes))
     
     if ql.child_processes == True:
         os._exit(0)
-    
     
     ql.stop(stop_event = THREAD_EVENT_EXIT_EVENT)
 
