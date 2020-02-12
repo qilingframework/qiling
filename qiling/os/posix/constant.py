@@ -43,8 +43,8 @@ def linux_socket_domain_mapping(n):
 def arm_socket_type_mapping(n):
 
     arm_socket_types = {
-            'SOCK_STREAM'    : 0x1,
-            'SOCK_DGRAM'     : 0x2,
+            'SOCK_DGRAM'     : 0x1,
+            'SOCK_STREAM'    : 0x2,
             'SOCK_RAW'       : 0x3,
             'SOCK_RDM'       : 0x4,
             'SOCK_SEQPACKET' : 0x5,

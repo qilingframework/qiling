@@ -122,6 +122,24 @@ def ql_syscall_getuid(ql, null0, null1, null2, null3, null4, null5):
     regreturn = UID
     ql_definesyscall_return(ql, regreturn)    
 
+def ql_syscall_getuid32(ql, null0, null1, null2, null3, null4, null5):
+    if ql.root == False:
+        UID = 0
+    else:    
+        UID = 1000
+    ql.nprint("getuid32(%i)" % UID)
+    regreturn = UID
+    ql_definesyscall_return(ql, regreturn)  
+
+def ql_syscall_getgid32(ql, null0, null1, null2, null3, null4, null5):
+    if ql.root == False:
+        GID = 0
+    else:    
+        GID = 1000
+    ql.nprint("getgid32(%i)" % GID)
+    regreturn = GID
+    ql_definesyscall_return(ql, regreturn)  
+
 
 def ql_syscall_geteuid(ql, null0, null1, null2, null3, null4, null5):
     if ql.root == False:

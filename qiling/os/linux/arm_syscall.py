@@ -40,6 +40,8 @@ dict_arm_linux_syscall = {
     0xBF : "ql_syscall_ugetrlimit",
     0xC0 : "ql_syscall_mmap2",
     0xC3 : "ql_syscall_stat64",
+    0xC7 : "ql_syscall_getuid32",
+    0xC8 : "ql_syscall_getgid32",
     0xC5 : "ql_syscall_fstat64",
     0xDD : "ql_syscall_fcntl64",
     0xE0 : "ql_syscall_gettid",
