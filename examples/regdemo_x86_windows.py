@@ -2,16 +2,12 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-
-
 import sys
 sys.path.append("..")
 from qiling import *
 
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, output = "debug")
-    ql.reg_dir = "registry"
-    ql.reg_diff = "reg_diff.json"
     ql.run()
 
 

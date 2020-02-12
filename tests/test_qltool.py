@@ -9,8 +9,8 @@ from qiling import *
 from qiling.exception import *
 
 class QltoolTest(unittest.TestCase):
-    def testexec(self):
-        create = [sys.executable, '../qltool', 'run', '-f', '../examples/rootfs/x86_reactos/bin/x86_hello.exe', '--rootfs', '../examples/rootfs/x86_reactos']
+    def testexec_args(self):
+        create = [sys.executable, '../qltool', 'run', '-f', '../examples/rootfs/x8664_linux/bin/x8664_args', '--rootfs', '../examples/rootfs/x8664_linux', '--args', 'test1', 'test2' ,'test3']
         try:
             subprocess.check_output(create,stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:    

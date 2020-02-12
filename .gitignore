@@ -12,6 +12,10 @@ build
 dist
 
 examples/**/registry/
+examples/**/dlls/
+examples/**/Windows/
+
+test_syscall_*.txt
 
 jexamples/
 

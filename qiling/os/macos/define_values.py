@@ -2,8 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-
-
 CPU_ARCH_ABI64      =   0x01000000
 CPU_TYPE_X86        =   7
 CPU_TYPE_I386       =   CPU_TYPE_X86

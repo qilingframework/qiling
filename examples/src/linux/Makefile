@@ -46,11 +46,17 @@ mips32el_hello: hello.c
 mips32el_hello_static: hello.c
 	mipsel-linux-gnu-gcc -Wall -O2 -s -static $< -o $@
 
+mips32el_posix_syscall: posix_syscall.c
+	mipsel-linux-gnu-gcc -Wall -O2 -s $< -o $@ 
+
 x86_hello: hello.c
 	gcc -Wall -O2 -s -m32 $< -o $@
 
 x86_hello_static: hello.c
 	gcc -Wall -O2 -s -m32 -static $< -o $@
+
+x86_posix_syscall: posix_syscall.c
+	gcc -Wall -O2 -s -m32 $< -o $@
 
 x8664_hello: hello.c
 	gcc -Wall -O2 -s $< -o $@

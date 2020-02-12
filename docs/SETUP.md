@@ -19,16 +19,19 @@ sudo python3 setup.py install
 
 #### Important note on Windows DLLs and registry
 
-Due to distribution restriction, Qiling Framework will not bundle Microsoft Windows DLL files and registry. Please copy respective DLLs and registry from Microsoft Windows System, usually found in C:\Windows\system32 and place them in $rootfs/dlls
+Due to distribution restriction, Qiling Framework will not bundle Microsoft Windows DLL files and registry. Please copy respective DLLs and registry from Microsoft Windows System. For Windows 10 usually found in C:\Windows\system32 (64bit dll) and C:\Windows\SysWOW64 (32bits dll) and place them in $rootfs/dlls
 
+Reactos DLLs are included. As of now we are only able to make it work with the helloworld example. Example will be in examples/cachedlls_x8664_windows.py
 
-Refer to [DLLX86.txt](https://github.com/qilingframework/qiling/blob/master/docs/DLLX86.txt) for Windows 32bit DLLs hashes and file version
+For 32bit Windows dlls, please refer to [DLLX86.txt](https://github.com/qilingframework/qiling/blob/master/docs/DLLX86.txt) for Windows 32bit DLLs hashes and file version
 
-Refer to [DLLX8664.txt](https://github.com/qilingframework/qiling/blob/master/docs/DLLX8664.txt) for Windows 64bit DLLs hashes and file version
+For 64bit Windows dlls, please refer to [DLLX8664.txt](https://github.com/qilingframework/qiling/blob/master/docs/DLLX8664.txt) for Windows 64bit DLLs hashes and file version
+
+Additional Notes: .travis.yml will be able to clearly list out dlls needed
 
 To export Windows Registry from Windows
 ```
-ntuser hive : C:\Users\Default\NTUSER.DAT 
+ntuser hive C:\Users\Default\NTUSER.DAT 
 reg save hklm\system SYSTEM
 reg save hklm\security SECURITY
 reg save hklm\software SOFTWARE

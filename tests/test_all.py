@@ -8,16 +8,9 @@ sys.path.append("..")
 from qiling import *
 from qiling.exception import *
 from test_elf import *
-from test_pe import *
 from test_macho import *
 from test_qltool import *
-
-class AllTest(unittest.TestCase):
-    ELFTest()
-    PETest()
-    MACHOTest()
-    QltoolTest()
-
+from test_posix import *
 
 if __name__ == "__main__":
     unittest.main()

@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+
 import os
 import json
 import sys
@@ -24,30 +25,32 @@ from qiling.exception import *
 class RegistryManager:
     def __init__(self, ql, hive=None, config=None):
         self.ql = ql
-        rootfs = ql.rootfs
         self.registry_config = None
+        self.config = config
 
         # hive dir
         if hive:
             self.hive = hive
         else:
-            if not ql.reg_dir:
-                ql.reg_dir = "registry"
-            self.hive = os.path.join(rootfs, ql.reg_dir)
+            self.hive = os.path.join(ql.rootfs, "Windows", "registry")
+            ql.dprint("[+] Windows Registry PATH: %s" % self.hive)
             if not os.path.exists(self.hive):
-                return
+                raise QlPrintException("Error: Registry files not found!")
+                #return
 
-        # config path
-        if config:
-            self.config = config
+        if ql.log_dir == None:       
+            ql.log_reg_dir = os.path.join(ql.rootfs, "qlog")
         else:
-            if not ql.reg_diff:
-                ql.reg_diff = "config.json"
-
-            self.config = os.path.join(rootfs, ql.reg_dir, ql.reg_diff)
-
+            ql.log_reg_dir = ql.log_dir     
+        
+        self.config = os.path.join(ql.log_reg_dir, "registry", "registry_diff.json")
+        
         if not os.path.exists(self.config):
             self.registry_config = {}
+            try:
+                os.makedirs(os.path.join(ql.log_reg_dir, "registry"), 0o755)
+            except:
+                pass
         else:
             # read config
             # use registry config first
@@ -60,17 +63,17 @@ class RegistryManager:
                 try:
                     self.registry_config = json.loads(data)
                 except json.decoder.JSONDecodeError:
-                    raise QlErrorJsonDecode("Windows Registry JSON decode error")
+                    raise QlErrorJsonDecode("[!] Windows Registry JSON decode error")
                 finally:
                     self.f_config.close()
 
         # hkey local system
         self.hklm = {}
         try:
-            self.hklm['SAM'] = Registry.Registry(os.path.join(self.hive, 'SAM'))
-            self.hklm['SECURITY'] = Registry.Registry(os.path.join(self.hive, 'SECURITY'))
-            self.hklm['SOFTWARE'] = Registry.Registry(os.path.join(self.hive, 'SOFTWARE'))
-            self.hklm['SYSTEM'] = Registry.Registry(os.path.join(self.hive, 'SYSTEM'))
+            self.hklm['SECURITY']   = Registry.Registry(os.path.join(self.hive, 'SECURITY'))
+            self.hklm['SAM']        = Registry.Registry(os.path.join(self.hive, 'SAM'))
+            self.hklm['SOFTWARE']   = Registry.Registry(os.path.join(self.hive, 'SOFTWARE'))
+            self.hklm['SYSTEM']     = Registry.Registry(os.path.join(self.hive, 'SYSTEM'))
             # hkey current user
             self.hkcu = Registry.Registry(os.path.join(self.hive, 'NTUSER.DAT'))
         except FileNotFoundError:
@@ -90,7 +93,7 @@ class RegistryManager:
                 reg = self.hkcu
                 data = reg.open("\\".join(keys[1:]))
             else:
-                raise QlErrorNotImplemented("Windows Registry %s not implemented" % (keys[0]))
+                raise QlErrorNotImplemented("[!] Windows Registry %s not implemented" % (keys[0]))
         except Exception:
             return False
         return True
@@ -101,7 +104,7 @@ class RegistryManager:
             if self.config[key][subkey].type in REG_TYPES:
                 return REG_TYPES[self.config[key][subkey].type], self.config[key][subkey].value
             else:
-                raise QlErrorNotImplemented("Windows Registry Type %s not implemented" % (self.config[key][subkey].type))
+                raise QlErrorNotImplemented("[!] Windows Registry Type %s not implemented" % (self.config[key][subkey].type))
 
         # read hive
         reg = None
@@ -115,7 +118,7 @@ class RegistryManager:
                 reg = self.hkcu
                 data = reg.open("\\".join(keys[1:]))
             else:
-                raise QlErrorNotImplemented("Windows Registry %s not implemented" % (keys[0]))
+                raise QlErrorNotImplemented("[!] Windows Registry %s not implemented" % (keys[0]))
 
             for value in data.values():
                 if value.name() == subkey and (reg_type == Registry.RegNone or \
@@ -158,7 +161,7 @@ class RegistryManager:
                 self.ql.mem_write(address, bytes(reg_value))
                 length = len(reg_value)
             else:
-                raise QlErrorNotImplemented("Windows Registry Type not implemented")
+                raise QlErrorNotImplemented("[!] Windows Registry Type not implemented")
         elif reg_type == Registry.RegDWord:
             data = self.ql.pack32(reg_value)
             self.ql.mem_write(address, data)
@@ -168,7 +171,7 @@ class RegistryManager:
             self.ql.mem_write(address, data)
             length = len(data)
         else:
-            raise QlErrorNotImplemented("Windows Registry Type write to memory %s not implemented" % (REG_TYPES[reg_type]))
+            raise QlErrorNotImplemented("[!] Windows Registry Type write to memory %s not implemented" % (REG_TYPES[reg_type]))
 
         return length
 

@@ -2,10 +2,9 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-
-
 import struct
 from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
@@ -18,7 +17,7 @@ from qiling.os.windows.const import *
 #   REGSAM samDesired,
 #   PHKEY  phkResult
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hKey": HANDLE,
     "lpSubKey": STRING,
     "ulOptions": DWORD,
@@ -58,7 +57,7 @@ def hook_RegOpenKeyExA(ql, address, params):
 #   LPCWSTR lpSubKey,
 #   PHKEY   phkResult
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hKey": HANDLE,
     "lpSubKey": WSTRING,
     "phkResult": POINTER
@@ -100,7 +99,7 @@ def hook_RegOpenKeyW(ql, address, params):
 #   LPBYTE  lpData,
 #   LPDWORD lpcbData
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hKey": HANDLE,
     "lpValueName": STRING,
     "lpReserved": POINTER,
@@ -144,7 +143,7 @@ def hook_RegQueryValueExA(ql, address, params):
 # LSTATUS RegCloseKey(
 #   HKEY hKey
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hKey": HANDLE
 })
 def hook_RegCloseKey(ql, address, params):
@@ -159,7 +158,7 @@ def hook_RegCloseKey(ql, address, params):
 #   LPCSTR lpSubKey,
 #   PHKEY  phkResult
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hKey": HANDLE,
     "lpSubKey": STRING,
     "phkResult": POINTER
@@ -199,7 +198,7 @@ def hook_RegCreateKeyA(ql, address, params):
 #   LPCSTR lpData,
 #   DWORD  cbData
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hKey": HANDLE,
     "lpSubKey": STRING,
     "dwType": DWORD,
@@ -231,7 +230,7 @@ def hook_RegSetValueA(ql, address, params):
 #   const BYTE *lpData,
 #   DWORD      cbData
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hKey": HANDLE,
     "lpValueName": WSTRING,
     "Reserved": DWORD,
@@ -260,7 +259,7 @@ def hook_RegSetValueExW(ql, address, params):
 #   HKEY   hKey,
 #   LPCSTR lpSubKey
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hKey": HANDLE,
     "lpSubKey": STRING,
 })
@@ -282,7 +281,7 @@ def hook_RegDeleteKeyA(ql, address, params):
 #   HKEY    hKey,
 #   LPCWSTR lpValueName
 # );
-@winapi(x86=X86_STDCALL, x8664=X8664_FASTCALL, params={
+@winapi(cc=STDCALL, params={
     "hKey": HANDLE,
     "lpValueName": WSTRING,
 })

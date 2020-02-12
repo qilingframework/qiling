@@ -16,11 +16,12 @@ RUN cd /qiling \
   && pip3 install -r requirements.txt \
   && python3 setup.py install
 
+RUN pysite1=$(python3 -c "import site; print(site.getsitepackages()[0])"); \
+  pysite2=$(python3 -c "import site; print(site.getsitepackages()[1])") \
+  && cp ${pysite1}${pysite2}/keystone/libkeystone.so $pysite1/keystone/
+
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-#Fix keystone pip3 install of the lib in the wrong dir 
-RUN cp /usr/local/lib/python3.6/dist-packages/usr/lib/python3/dist-packages/keystone/libkeystone.so /usr/local/lib/python3.6/dist-packages/keystone/
 
 ENV HOME /qiling
 

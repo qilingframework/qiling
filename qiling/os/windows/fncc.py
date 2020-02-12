@@ -2,24 +2,13 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-#
-# LAU kaijern (xwings) <kj@qiling.io>
-# NGUYEN Anh Quynh <aquynh@gmail.com>
-# DING tianZe (D1iv3) <dddliv3@gmail.com>
-# SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
-# CHEN huitao (null)<null@qiling.io>
-# YU tong (sp1ke) <spikeinhouse@gmail.com>
-
-# function calling convention
-
+import struct
 from unicorn.x86_const import *
+from qiling.os.utils import *
+from qiling.os.fncc import *
 from qiling.os.windows.utils import *
-from qiling.exception import *
+from qiling.arch.filetype import *
 
-
-X86_STDCALL = 1
-X86_CDECL = 2
-X8664_FASTCALL = 3
 
 DWORD = 1
 UINT = 1
@@ -33,28 +22,79 @@ POINTER = 3
 STRING = 4
 WSTRING = 5
 
+def _x86_get_params_by_index(ql, index):
+    # index starts from 0
+    # skip ret_addr
+    return ql.stack_read((index + 1) * 4)
 
-def set_params(ql, in_params, out_params):
+
+def _x8664_get_params_by_index(ql, index):
+    reg_list = [UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9]
+    if index < 4:
+        return ql.uc.reg_read(reg_list[index])
+
+    index -= 4
+    # skip ret_addr
+    return ql.stack_read((index + 5) * 8)
+
+
+def _get_param_by_index(ql, index):
+    if ql.arch == QL_X86:
+        return _x86_get_params_by_index(ql, index)
+    elif ql.arch == QL_X8664:
+        return _x8664_get_params_by_index(ql, index)
+
+
+def _x86_get_args(ql, number):
+    arg_list = []
+    for i in range(number):
+        # skip ret_addr
+        arg_list.append(ql.stack_read((i + 1) * 4))
+    if number == 1:
+        return arg_list[0]
+    else:
+        return arg_list
+
+
+def _x8664_get_args(ql, number):
+    reg_list = [UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9]
+    arg_list = []
+    reg_num = number
+    if reg_num > 4:
+        reg_num = 4
+    number -= reg_num
+    for i in reg_list[:reg_num]:
+        arg_list.append(ql.uc.reg_read(i))
+    for i in range(number):
+        # skip ret_addr and 32 byte home space
+        arg_list.append(ql.stack_read((i + 5) * 8))
+    if reg_num == 1:
+        return arg_list[0]
+    else:
+        return arg_list
+
+
+def set_function_params(ql, in_params, out_params):
     index = 0
     for each in in_params:
         if in_params[each] == DWORD or in_params[each] == POINTER:
-            out_params[each] = get_params_by_index(ql, index)
+            out_params[each] = _get_param_by_index(ql, index)
         elif in_params[each] == ULONGLONG:
             if ql.arch == QL_X86:
-                low = get_params_by_index(ql, index)
+                low = _get_param_by_index(ql, index)
                 index += 1
-                high = get_params_by_index(ql, index)
-                out_params[each] = high << 8 + low
+                high = _get_param_by_index(ql, index)
+                out_params[each] = high << 32 + low
             else:
-                out_params[each] = get_params_by_index(ql, index)
+                out_params[each] = _get_param_by_index(ql, index)
         elif in_params[each] == STRING:
-            ptr = get_params_by_index(ql, index)
+            ptr = _get_param_by_index(ql, index)
             if ptr == 0:
                 out_params[each] = 0
             else:
                 out_params[each] = read_cstring(ql, ptr)
         elif in_params[each] == WSTRING:
-            ptr = get_params_by_index(ql, index)
+            ptr = _get_param_by_index(ql, index)
             if ptr == 0:
                 out_params[each] = 0
             else:
@@ -63,106 +103,92 @@ def set_params(ql, in_params, out_params):
     return index
 
 
-def print_function(ql, address, function_name, params, ret):
-    function_name = function_name.replace('hook_', '')
-    if function_name == "__stdio_common_vfprintf" or function_name == "printf":
-        return
-    log = '0x%0.2x: %s(' % (address, function_name)
-    for each in params:
-        value = params[each]
-        if type(value) == str or type(value) == bytearray:
-            log += '%s = "%s", ' % (each, value)
-        else:
-            log += '%s = 0x%x, ' % (each, value)
-    log = log.strip(", ")
-    log += ')'
-    if ret is not None:
-        log += ' = 0x%x' % ret
-    ql.nprint(log)
+def get_function_param(ql, number):
+    if ql.arch == QL_X86:
+        return _x86_get_args(ql, number)
+    elif ql.arch == QL_X8664:
+        return _x8664_get_args(ql, number)
+
+
+def set_return_value(ql, ret):
+    if ql.arch == QL_X86:
+        ql.uc.reg_write(UC_X86_REG_EAX, ret)
+    elif ql.arch == QL_X8664:
+        ql.uc.reg_write(UC_X86_REG_RAX, ret)
+
+
+def get_return_value(ql):
+    if ql.arch == QL_X86:
+        return ql.uc.reg_read(UC_X86_REG_EAX)
+    elif ql.arch == QL_X8664:
+        return ql.uc.reg_read(UC_X86_REG_RAX)
+
+
+def __x86_cc(ql, param_num, params, func, args, kwargs):
+    # read params
+    if params is not None:
+        param_num = set_function_params(ql, params, args[2])
+    # call function
+    result = func(*args, **kwargs)
+    # set return value
+    if result is not None:
+        set_return_value(ql, result)
+    # print
+    print_function(ql, args[1], func.__name__, args[2], result)
+    return result, param_num
 
 
 def x86_stdcall(ql, param_num, params, func, args, kwargs):
     # get ret addr
     ret_addr = ql.stack_read(0)
-    # read params
-    if params is not None:
-        param_num = set_params(ql, params, args[2])
-    # call function
-    result = func(*args, **kwargs)
-    # set return value
-    if result is not None:
-        set_return_value(ql, result)
-    # print
-    print_function(ql, args[1], func.__name__, args[2], result)
-    # add esp
-    esp = ql.uc.reg_read(UC_X86_REG_ESP)
-    ql.uc.reg_write(UC_X86_REG_ESP, esp + (param_num + 1) * 4)
-    # ret => pop eip
+
+    result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
+
+    # update stack pointer
+    ql.sp = ql.sp + ((param_num + 1) * 4)
+
     if ql.RUN:
-        ql.uc.reg_write(UC_X86_REG_EIP, ret_addr)
+        ql.pc = ret_addr
+
     return result
 
 
 def x86_cdecl(ql, param_num, params, func, args, kwargs):
-    # read params
-    if params is not None:
-        param_num = set_params(ql, params, args[2])
-    # call function
-    result = func(*args, **kwargs)
-    # set return value
-    if result is not None:
-        set_return_value(ql, result)
-    # print
-    print_function(ql, args[1], func.__name__, args[2], result)
-    # ret => pop eip
+    result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
+
     if ql.RUN:
-        ret_addr = ql.stack_pop()
-        ql.uc.reg_write(UC_X86_REG_EIP, ret_addr)
+        ql.pc = ql.stack_pop()
+
     return result
 
 
 def x8664_fastcall(ql, param_num, params, func, args, kwargs):
-    # get ret addr
-    ret_addr = ql.stack_read(0)
-    # read params
-    if params is not None:
-        param_num = set_params(ql, params, args[2])
-    # call function
-    result = func(*args, **kwargs)
-    # set return value
-    if result is not None:
-        set_return_value(ql, result)
-    # print
-    print_function(ql, args[1], func.__name__, args[2], result)
-    # add rsp
-    rsp = ql.uc.reg_read(UC_X86_REG_RSP)
-    if param_num > 4:
-        ql.uc.reg_write(UC_X86_REG_RSP, rsp + (param_num - 4 + 1) * 8)
-    else:
-        ql.uc.reg_write(UC_X86_REG_RSP, rsp + 8)
-    # ret => pop rip
+    result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
+
     if ql.RUN:
-        ql.uc.reg_write(UC_X86_REG_RIP, ret_addr)
+        ql.pc = ql.stack_pop()
+
     return result
 
 
 # x86/x8664 PE should share Windows APIs
-def winapi(x86, x8664, param_num=None, params=None):
+def winapi(cc, param_num=None, params=None):
     """
-    @param_num: the number of function params
+    @cc: windows api calling convention, only x86 needs this, x64 is always fastcall
+    @params: params dict
+    @param_num: the number of function params, used by variadic functions, e.g printf
     """
     def decorator(func):
         def wrapper(*args, **kwargs):
             ql = args[0]
             if ql.arch == QL_X86:
-                if x86 == X86_STDCALL:
+                if cc == STDCALL:
                     return x86_stdcall(ql, param_num, params, func, args, kwargs)
-                elif x86 == X86_CDECL:
+                elif cc == CDECL:
                     return x86_cdecl(ql, param_num, params, func, args, kwargs)
             elif ql.arch == QL_X8664:
-                if x8664 == X8664_FASTCALL:
-                    return x8664_fastcall(ql, param_num, params, func, args, kwargs)
+                return x8664_fastcall(ql, param_num, params, func, args, kwargs)
             else:
-                raise QlErrorArch("unknown ql.arch")
+                raise QlErrorArch("[!] Unknown ql.arch")
         return wrapper
     return decorator

@@ -1,41 +1,25 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-
-X8664_FREEBSD_SYSCALL_EXIT              = [0x1, "ql_syscall_exit"]
-X8664_FREEBSD_SYSCALL_WRITE             = [0x04, "ql_syscall_write"]
-X8664_FREEBSD_SYSCALL_SOCKET            = [0x61, "ql_syscall_socket"]
-X8664_FREEBSD_SYSCALL_BIND              = [0x68, "ql_syscall_bind"]
-X8664_FREEBSD_SYSCALL_LISTEN            = [0x6a, "ql_syscall_listen"]
-X8664_FREEBSD_SYSCALL_ACCEPT            = [0x1e, "ql_syscall_accept"]
-X8664_FREEBSD_SYSCALL_READ              = [0x03, "ql_syscall_read"]
-X8664_FREEBSD_SYSCALL_DUP2              = [0x5a, "ql_syscall_dup2"]
-X8664_FREEBSD_SYSCALL_EXECVE            = [0x3b, "ql_syscall_execve"]
-X8664_FREEBSD_SYSCALL_READLINK          = [0x3a, "ql_syscall_readlink"]
-X8664_FREEBSD_SYSCALL_ISSETUGID         = [0xfd, "ql_syscall_issetugid"]
-X8664_FREEBSD_SYSCALL_SYSCTL            = [0xca, "ql_syscall_sysctl"]
-X8664_FREEBSD_SYSCALL_MMAP              = [0x1dd, "ql_syscall_mmap2"]
-X8664_FREEBSD_SYSCALL_MADVISE           = [0x4b, "ql_syscall_madvise"]
-X8664_FREEBSD_SYSCALL_MUNMAP            = [0x49, "ql_syscall_munmap"]
-X8664_FREEBSD_SYSCALL_CLOCKGETTIME      = [0xe8, "ql_syscall_clock_gettime"]
-
-X8664_FREEBSD_SYSCALL = [
-    X8664_FREEBSD_SYSCALL_EXIT,
-    X8664_FREEBSD_SYSCALL_WRITE,
-    X8664_FREEBSD_SYSCALL_SOCKET,
-    X8664_FREEBSD_SYSCALL_BIND,
-    X8664_FREEBSD_SYSCALL_LISTEN,
-    X8664_FREEBSD_SYSCALL_ACCEPT,
-    X8664_FREEBSD_SYSCALL_READ,
-    X8664_FREEBSD_SYSCALL_DUP2,
-    X8664_FREEBSD_SYSCALL_EXECVE,
-    X8664_FREEBSD_SYSCALL_READLINK,
-    X8664_FREEBSD_SYSCALL_ISSETUGID,
-    X8664_FREEBSD_SYSCALL_SYSCTL,
-    X8664_FREEBSD_SYSCALL_MMAP,
-    X8664_FREEBSD_SYSCALL_MADVISE,
-    X8664_FREEBSD_SYSCALL_MUNMAP,
-    X8664_FREEBSD_SYSCALL_CLOCKGETTIME
-    ]
+dict_x8664_freebsd_syscall = {
+    0x01 : "ql_syscall_exit",
+    0x03 : "ql_syscall_read",
+    0x04 : "ql_syscall_write",
+    0x1E : "ql_syscall_accept",
+    0x3A : "ql_syscall_readlink",
+    0x3B : "ql_syscall_execve",
+    0x49 : "ql_syscall_munmap",
+    0x4B : "ql_syscall_madvise",
+    0x5A : "ql_syscall_dup2",
+    0x61 : "ql_syscall_socket",
+    0x68 : "ql_syscall_bind",
+    0x6A : "ql_syscall_listen",
+    0xA5 : "ql_syscall_sysarch",
+    0xCA : "ql_syscall___sysctl",
+    0xE8 : "ql_syscall_clock_gettime",
+    0xFD : "ql_syscall_issetugid",
+    0x0146 : "ql_syscall_getcwd",
+    0x01DD : "ql_syscall_mmap2",
+}

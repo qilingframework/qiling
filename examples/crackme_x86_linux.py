@@ -2,8 +2,6 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-
-
 import os
 
 from unicorn import *
@@ -42,6 +40,9 @@ class MyPipe():
 
     def close(self):
         self.outpipe.close()
+    
+    def fstat(self):
+        return os.fstat(sys.stdin.fileno())
 
 
 def instruction_count(ql, address, size, user_data):

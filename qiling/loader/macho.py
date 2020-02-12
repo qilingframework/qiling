@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-
 from struct import pack
 from qiling.loader.macho_parser.parser import *
 from qiling.loader.macho_parser.define_value import *
@@ -80,7 +79,7 @@ class MachoX86:
                     if cmd.cmd_id == LC_LOAD_DYLINKER:
                         if not isdyld:
                             if not self.dyld_path:
-                                raise QlErrorMACHOFormat("Error No Dyld path")
+                                raise QlErrorMACHOFormat("[!] Error No Dyld path")
                             self.dyld_file = MachoParser(self.ql, self.dyld_path, "x86")
                             self.loadMachoX86(depth + 1, True)
                             self.using_dyld = True
@@ -92,7 +91,7 @@ class MachoX86:
             else:
                 self.ql.entry_point = self.proc_entry + self.slide
             self.ql.macho_entry = self.binary_entry + self.slide
-            self.ql.load_base =  self.slide
+            self.ql.loadbase = self.slide
 
     def loadUnixThread(self, cmd, isdyld):
         if not isdyld:
@@ -299,7 +298,7 @@ class MachoX8664:
                         self.using_dyld = True
                         if not isdyld:
                             if not self.dyld_path:
-                                raise QlErrorMACHOFormat("Error No Dyld path")
+                                raise QlErrorMACHOFormat("[!] Error No Dyld path")
                             self.dyld_file = MachoParser(self.ql, self.dyld_path)
                             self.loading_file = self.dyld_file
                             self.proc_entry = self.loadMachoX8664(depth + 1, True)
@@ -318,7 +317,7 @@ class MachoX8664:
                 self.ql.entry_point = self.proc_entry + self.slide
             print("binEntry : {}".format(self.binary_entry))
             self.ql.macho_entry = self.binary_entry + self.slide
-            self.ql.load_base =  self.slide
+            self.ql.loadbase = self.slide
         else:
             print("finish load dyld")
 
@@ -531,7 +530,7 @@ class MachoARM64:
                     if cmd.cmd_id == LC_LOAD_DYLINKER:
                         if not isdyld:
                             if not self.dyld_path:
-                                raise QlErrorMACHOFormat("Error No Dyld path")
+                                raise QlErrorMACHOFormat("[!] Error No Dyld path")
                             self.dyld_file = MachoParser(self.ql, self.dyld_path)
                             self.loadMachoX86(depth + 1, True)
                             self.using_dyld = True
@@ -544,7 +543,7 @@ class MachoARM64:
             else:
                 self.ql.entry_point = self.proc_entry + self.slide
             self.ql.macho_entry = self.binary_entry + self.slide
-            self.ql.load_base =  self.slide
+            self.ql.loadbase = self.slide
         
     def loadSegment64(self, cmd, isdyld):
         if isdyld:
