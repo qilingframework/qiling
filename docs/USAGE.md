@@ -99,7 +99,7 @@ Qiling also provides a friendly tool named `qltool` to quickly emulate shellcode
 To emulate a binary, run:
 
 ```
-$ ./qltool run -f examples/rootfs/arm_linux/bin/arm32-hello --rootfs examples/rootfs/arm_linux/
+$ ./qltool run -f examples/rootfs/arm_linux/bin/arm-hello --rootfs examples/rootfs/arm_linux/
 
 ```
 
