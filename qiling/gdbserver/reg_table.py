@@ -22,7 +22,7 @@ registers_X8664 = [
     UC_X86_REG_R15, UC_X86_REG_RIP
 ]
 
-registers_gen = [
+registers_Segment = [
     UC_X86_REG_EFLAGS,
     UC_X86_REG_CS, UC_X86_REG_SS, UC_X86_REG_DS,
     UC_X86_REG_ES, UC_X86_REG_FS, UC_X86_REG_GS
