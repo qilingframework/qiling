@@ -69,7 +69,6 @@ class GDBSession(object):
 
             def handle_H(subcmd):
                 if subcmd.startswith('g'):
-                    # pass
                     self.send('')
                 if subcmd.startswith('c'):
                     self.send('')
