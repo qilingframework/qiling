@@ -113,6 +113,8 @@ class Qiling:
         self.dict_posix_syscall     = dict()
         self.user_defined_api    = {}
         self.global_thread_id       = 0
+        self.gdb                    = None
+        self.gdbsession             = None
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -208,9 +210,21 @@ class Qiling:
 
 
     def run(self):
+        if self.gdb is not None:
+            try:
+                ip, port = self.gdb.split(':')
+                port = int(port)
+                self.gdbserver(ip, port)
+            except:
+                print("Error ip or port")
+                exit(1)
+
         self.__enable_bin_patch()
         runner = self.build_os_execution("runner")
         runner(self)
+
+        if self.gdb is not None:
+            self.gdbsession.run()
 
 
     def nprint(self, *args, **kw):
@@ -682,7 +696,7 @@ class Qiling:
             td.stop_event = stop_event
         self.uc.emu_stop()
 
-    def gdbserver(self, port=None):
+    def gdbserver(self, ip=None, port=None):
         path = self.path
         print(path)
         try:
@@ -690,15 +704,16 @@ class Qiling:
                 GUEST_BINARY = bf.read()
         except:
             exit(1)
+
+        if ip is None:
+            ip = ''
         if port is None:
             port = 9999
-        
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind(('', port))
+        sock.bind((ip, port))
         sock.listen(1)
         conn, addr = sock.accept()
 
         mappings = [(hex(self.entry_point), 0x10)]
         exit_point = self.entry_point + len(GUEST_BINARY)
-
-        GDBSession(self, conn, exit_point, mappings).run()
+        self.gdbsession = GDBSession(self, conn, exit_point, mappings)
