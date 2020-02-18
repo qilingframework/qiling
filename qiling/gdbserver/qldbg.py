@@ -26,7 +26,6 @@ class Qldbg(object):
         self.exit_point = exit_point
         self.mapping = mappings
         self.ql.hook_code(self.dbg_hook)
-        self.ql.run()
 
     def dbg_hook(self, ql, address, size):
         """
