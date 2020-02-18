@@ -147,6 +147,33 @@ $ ./qltool shellcode --os linux --arch x86 --asm -f examples/shellcodes/lin32_ex
 
 ---
 
+#### Gdbserver
+
+Qiling has supported **Gdb remote debugging** now (x86, x86-64 for now).
+
+**usage**
+
+```python
+from qiling import *
+
+
+def test_gdb(path, rootfs):
+    ql = Qiling(path, rootfs)
+    ql.gdbserver(9999)  # The default port is 9999, can be changed to other numbers
+
+
+if __name__ == "__main__":
+    test_gdb(["rootfs/x8664_windows/x8664_hello.exe"], "rootfs/x8664_windows")
+```
+
+Run gdb and `set architecture i386:intel` for x86 or `set architecture i386:x86-64` for x86-64
+
+Then `target remote ip:port` and run the python script.
+
+Currently supported features include `si`  `ni `  `c ` and read register or memory
+
+---
+
 #### Contact
 
 Get the latest info from out webiste https://www.qiling.io
