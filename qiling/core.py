@@ -692,8 +692,6 @@ class Qiling:
             exit(1)
         if port is None:
             port = 9999
-        else:
-            port = int(port)
         
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind(('', port))
