@@ -170,7 +170,18 @@ Run gdb and `set architecture i386:intel` for x86 or `set architecture i386:x86-
 
 Then `target remote ip:port` and run the python script.
 
-Currently supported features include `si`  `ni `  `c ` and read register or memory
+```bash
+(gdb) set architecture i386:x86-64
+The target architecture is assumed to be i386:x86-64
+(gdb) target remote 127.0.0.1:9999
+Remote debugging using 127.0.0.1:9999
+warning: No executable has been specified and target does not support
+determining executable automatically.  Try using the "file" command.
+0x00000000004014e0 in ?? ()
+(gdb)
+```
+
+Currently supported features include `si`,`ni`,`c` and read register or memory
 
 ---
 
