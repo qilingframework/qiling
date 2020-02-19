@@ -33,6 +33,7 @@ def catch_KeyboardInterrupt(ql):
         return wrapper
     return decorator
 
+
 class Qiling:
     arch                = ''
     archbit             = ''
@@ -73,6 +74,7 @@ class Qiling:
     exit_code           = 0
     debug_stop          = False
     internal_exception  = None
+
 
     def __init__(
                     self, 
@@ -194,6 +196,7 @@ class Qiling:
             self.shellcode()
         else:
             self.load_exec()  
+
 
     def build_os_execution(self, function_name):
         self.runtype = ql_get_os_module_function(self.ostype, self.arch, "runner")
@@ -454,6 +457,7 @@ class Qiling:
         # pack user_data & callback for wrapper _callback
         self.uc.hook_add(UC_HOOK_MEM_FETCH, _callback, (user_data, callback), begin, end)
 
+
     def hook_insn(self, callback, arg1, user_data = None, begin = 1, end = 0):
         @catch_KeyboardInterrupt(self)
         def _callback_x86_syscall(uc, pack_data):
@@ -695,12 +699,14 @@ class Qiling:
     def add_fs_mapper(self, fm, to):
         self.fs_mapper.append([fm, to])
     
+
     def stop(self, stop_event = THREAD_EVENT_EXIT_GROUP_EVENT):
         if self.thread_management != None:
             td = self.thread_management.cur_thread
             td.stop()
             td.stop_event = stop_event
         self.uc.emu_stop()
+
 
     def gdbserver(self, ip=None, port=None):
         path = self.path
