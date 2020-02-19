@@ -1,6 +1,6 @@
 # Qiling Gdbserver
 
-Qiling has supported **Gdb remote debugging** now (x86, x86-64 for now) by Qiling Gdbserver.
+Qiling supports **Gdb remote debugging**, which listens at port 9999 if enable.
 
 ## Usage
 
@@ -10,7 +10,7 @@ from qiling import *
 
 def test_gdb(path, rootfs):
     ql = Qiling(path, rootfs, output="off")
-    # ql.gdb = True # enable gdbserver at default port
+    # ql.gdb = True # enable gdbserver at default port 9999
     # ql.gdb = ":9999"  # Listening to 0.0.0.0:9999
     ql.gdb = "127.0.0.1:9999"  # Listening to 127.0.0.1:9999
     ql.run()  
@@ -24,13 +24,13 @@ Run gdb and `set architecture i386:intel` for x86 or `set architecture i386:x86-
 
 Then `target remote ip:port` and run the python script.
 
-Currently supported features include `si`,`ni`,`c` ,read register,read memory,add/remove breakpoint
+Currently supported features include `si`,`ni`,`c` , read register, read memory, add/remove breakpoints.
 
 ---
 
 ## Example
 
-In x86-64, for example
+Below is an example on how we use gdb to debug an x86-64 binary in Qiling.
 
 **set arch**
 ```bash

@@ -17,6 +17,10 @@ from qiling.gdbserver.gdblistener import GDBSession
 
 __version__ = "0.9"
 
+# default port for GDB server
+GDB_PORT = 9999
+
+
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
         def wrapper(*args, **kw):
@@ -710,7 +714,7 @@ class Qiling:
         if ip is None:
             ip = ''
         if port is None:
-            port = 9999
+            port = GDB_PORT
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind((ip, port))
         sock.listen(1)
