@@ -60,7 +60,7 @@ class GDBSession(object):
                         tmp = hex(int.from_bytes(struct.pack('<Q', r), byteorder='big'))
                         tmp = '{:0>16}'.format(tmp[2:])
                         s += tmp
-                    for reg in registers_Segment:
+                    for reg in registers_x86_segments:
                         r = self.ql.uc.reg_read(reg)
                         tmp = hex(int.from_bytes(struct.pack('<I', r), byteorder='big'))
                         tmp = '{:0>8}'.format(tmp[2:])

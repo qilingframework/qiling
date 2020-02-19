@@ -1,6 +1,6 @@
 # Qiling Gdbserver
 
-Qiling has supported **Gdb remote debugging** now (x86, x86-64 for now) by Qiling Gdbserver.
+Qiling已通过Qiling Gdbserver支持**Gdb远程调试**（目前支持x86, x86-64）。
 
 ## Usage
 
@@ -20,17 +20,17 @@ if __name__ == "__main__":
     test_gdb(["rootfs/x8664_windows/x8664_hello.exe"], "rootfs/x8664_windows")
 ```
 
-Run gdb and `set architecture i386:intel` for x86 or `set architecture i386:x86-64` for x86-64
+运行gdb并为所需架构进行设置，x86输入命令`set architecture i386:intel`，x86-64输入命令`set architecture i386:x86-64`
 
-Then `target remote ip:port` and run the python script.
+然后输入命令`target remote ip:port` 并执行python脚本
 
-Currently supported features include `si`,`ni`,`c` ,read register,read memory,add/remove breakpoint
+当前支持的命令有 `si`,`ni`,`c`,读寄存器,读内存,插入或删除断点
 
 ---
 
 ## Example
 
-In x86-64, for example
+以x86-64为例
 
 **set arch**
 ```bash
@@ -136,9 +136,9 @@ x/10xg
 
 ## Todo
 
-1. Add support for more architectures
+1. 添加gdbserver对更多架构的支持
 
-2. Added support for more GDB commands
+2. 添加对更多GDB指令的支持
 
 3. ...
 
@@ -146,7 +146,4 @@ x/10xg
 
 ## Thank
 
-The codes learn some ideas from [uDdbg](https://github.com/iGio90/uDdbg), thanks.
-
-
-
+编写该模块时从 [uDdbg](https://github.com/iGio90/uDdbg) 借鉴了很多思想，在此感谢

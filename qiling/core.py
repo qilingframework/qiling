@@ -13,7 +13,7 @@ from qiling.utils import *
 from qiling.os.utils import *
 from qiling.arch.utils import *
 from qiling.os.linux.thread import *
-from qiling.gdbserver.lib import *
+from qiling.gdbserver.gdblistener import GDBSession
 
 __version__ = "0.9"
 
