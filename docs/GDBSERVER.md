@@ -10,7 +10,6 @@ from qiling import *
 
 def test_gdb(path, rootfs):
     ql = Qiling(path, rootfs, output="off")
-    # ql.gdb = None  # disable gdbserver
     # ql.gdb = ":9999"  # Listening to 0.0.0.0:9999
     ql.gdb = "127.0.0.1:9999"  # Listening to 127.0.0.1:9999
     ql.run()  
