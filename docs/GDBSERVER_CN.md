@@ -17,7 +17,7 @@ def test_gdb(path, rootfs):
 
 
 if __name__ == "__main__":
-    test_gdb(["rootfs/x8664_windows/x8664_hello.exe"], "rootfs/x8664_windows")
+    test_gdb(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux")
 ```
 
 运行gdb并为所需架构进行设置，x86输入命令`set architecture i386:intel`，x86-64输入命令`set architecture i386:x86-64`
