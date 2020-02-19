@@ -37,11 +37,9 @@ def ql_syscall_exit(ql, null0, null1, null2, null3, null4, null5):
     ql.exit_code = null0
     
     ql.nprint("exit(%u) = %u" % (null0, null0))
-    ql.dprint ("[+] is this a child process: %r" % (ql.child_processes))
     
     if ql.child_processes == True:
         os._exit(0)
-    
     
     ql.stop(stop_event = THREAD_EVENT_EXIT_EVENT)
 
@@ -121,6 +119,24 @@ def ql_syscall_getuid(ql, null0, null1, null2, null3, null4, null5):
     ql.nprint("getuid(%i)" % UID)
     regreturn = UID
     ql_definesyscall_return(ql, regreturn)    
+
+def ql_syscall_getuid32(ql, null0, null1, null2, null3, null4, null5):
+    if ql.root == False:
+        UID = 0
+    else:    
+        UID = 1000
+    ql.nprint("getuid32(%i)" % UID)
+    regreturn = UID
+    ql_definesyscall_return(ql, regreturn)  
+
+def ql_syscall_getgid32(ql, null0, null1, null2, null3, null4, null5):
+    if ql.root == False:
+        GID = 0
+    else:    
+        GID = 1000
+    ql.nprint("getgid32(%i)" % GID)
+    regreturn = GID
+    ql_definesyscall_return(ql, regreturn)  
 
 
 def ql_syscall_geteuid(ql, null0, null1, null2, null3, null4, null5):
@@ -283,6 +299,8 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
 
 def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, null0, null1, null2):
     lseek_ofset = ql.unpacks(ql.pack(lseek_ofset))
+    regreturn = 0
+    ql.dprint("lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
     try:
         regreturn = ql.file_des[lseek_fd].lseek(lseek_ofset, lseek_origin)
     except OSError:
@@ -294,8 +312,13 @@ def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, null0, null1, null
 def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, null0):
     offset = offset_high << 32 | offset_low
     origin = whence
-    ret = ql.file_des[fd].lseek(offset, origin)
-    regreturn = 0 if ret >= 0 else -1
+    regreturn = 0
+    ql.nprint("_llseek(%d, 0x%x, 0x%x, 0x%x = %d)" % (fd, offset_high, offset_low, origin, regreturn))
+    try:
+        ret = ql.file_des[fd].lseek(offset, origin)
+    except OSError:
+        regreturn = -1
+    #regreturn = 0 if ret >= 0 else -1
     if regreturn == 0:
         ql.mem_write(result, ql.pack64(ret))
 
@@ -1152,12 +1175,11 @@ def ql_syscall_vfork(ql, null0, null1, null2, null3, null4, null5):
             ql.thread_management.cur_thread.set_thread_log_file(ql.log_dir)
         else:
             if ql.log_split:
-                #ql.log_file = (ql.log_file + "_" + str(pid))
-                _logger = ql_setup_logging_stream(ql.output)
+                _logger = ql.log_file_fd
                 _logger = ql_setup_logging_file(ql.output, ql.log_file , _logger)
-        #    if ql.log_dir != None:
-        #        ql.log_file_fd = open(ql.log_dir + "_" + str(os.getpid()), 'w+')
-                #ql.log_file_fd = logging.basicConfig(filename=ql.log_file_name + "_" + str(os.getpid()) + ".qlog", filemode='w+', level=logging.DEBUG, format='%(message)s')
+                #_logger_name = str(len(logging.root.manager.loggerDict))
+                #_logger = ql_setup_logging_file(ql.output, '_'.join((ql.log_file, _logger_name)))
+                ql.log_file_fd = _logger
     else:
         regreturn = pid
 

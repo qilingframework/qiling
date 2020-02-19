@@ -49,16 +49,18 @@ def hook_syscall(ql, intno):
             raise
         except Exception:
             ql.nprint("[!] SYSCALL ERROR: %s" % (LINUX_SYSCALL_FUNC_NAME))
-            td = ql.thread_management.cur_thread
-            td.stop()
-            td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-            raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (LINUX_SYSCALL_FUNC_NAME))
+            if ql.multithread == True:
+                td = ql.thread_management.cur_thread
+                td.stop()
+                td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+            raise
     else:
         ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
-            td = ql.thread_management.cur_thread
-            td.stop()
-            td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+            if ql.multithread == True:
+                td = ql.thread_management.cur_thread
+                td.stop()
+                td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
             raise QlErrorSyscallNotFound("[!] Syscall Not Found")
 
 
@@ -74,7 +76,8 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, null0, null1, null2, null3, 
     ql.nprint("set_thread_area(u_info_addr= 0x%x)" % u_info_addr)
     u_info = ql.uc.mem_read(u_info_addr, 4 * 3)
 
-    ql.thread_management.cur_thread.set_special_settings_arg(u_info)
+    if ql.thread_management != None and ql.multithread == True:
+        ql.thread_management.cur_thread.set_special_settings_arg(u_info)
 
     base = ql.unpack32(u_info[4 : 8])
     limit = ql.unpack32(u_info[8 : 12])
@@ -132,15 +135,38 @@ def runner(ql):
         if ql.shellcoder:
             ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
         else:
-            thread_management = ThreadManagement(ql)
-            ql.thread_management = thread_management
+            if ql.multithread == True:
+                # start multithreading
+                thread_management = ThreadManagement(ql)
+                ql.thread_management = thread_management
 
-            main_thread = Thread(ql, thread_management, total_time = ql.timeout, special_settings_fuc = ql_x86_thread_set_tls)
-            main_thread.save()
-            main_thread.set_start_address(ql.entry_point)
+                main_thread = Thread(ql, thread_management, total_time = ql.timeout, special_settings_fuc = ql_x86_thread_set_tls)
+                main_thread.save()
+                main_thread.set_start_address(ql.entry_point)
 
-            thread_management.set_main_thread(main_thread)
-            thread_management.run()
+                thread_management.set_main_thread(main_thread)
+
+                # enable lib patch
+                if ql.elf_entry != ql.entry_point:
+                    main_thread.set_until_addr(ql.elf_entry)
+                    thread_management.run()
+                    ql.enable_lib_patch()
+
+                    main_thread.set_start_address(ql.elf_entry)
+                    main_thread.set_until_addr(ql.until_addr)
+                    main_thread.running()
+
+                    thread_management.clean_world()
+                    thread_management.set_main_thread(main_thread)
+                
+                thread_management.run()
+
+            else:
+                if ql.elf_entry != ql.entry_point:
+                    ql.uc.emu_start(ql.entry_point, ql.elf_entry, ql.timeout) 
+                    ql.enable_lib_patch()
+                ql.uc.emu_start(ql.elf_entry, ql.until_addr, ql.timeout) 
+
 
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):

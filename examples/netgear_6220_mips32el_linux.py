@@ -15,12 +15,6 @@ import sys
 sys.path.append("..")
 from qiling import *
 
-# due to fake mtdblock11 causing llseek to crash. we implement our own llseek
-def my_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, null0):
-    regreturn = 0 
-    ql.nprint("_llseek(%d, 0x%x, 0x%x, 0x%x = %d)" % (fd, offset_high, offset_low, result, regreturn))
-    ql_definesyscall_return(ql, regreturn)
-
 def my_netgear(path, rootfs):
     ql = Qiling(
                 path, 
@@ -36,7 +30,6 @@ def my_netgear(path, rootfs):
     ql.bindtolocalhost  = True
     ql.multithread      = False
     ql.add_fs_mapper('/proc', '/proc')
-    ql.set_syscall(4140, my_syscall__llseek)
     ql.run()
 
 

@@ -53,7 +53,7 @@ def hook_syscall(ql):
             #td = ql.thread_management.cur_thread
             #td.stop()
             #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-            raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (IOS_SYSCALL_FUNC_NAME))
+            raise
     else:
         ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
@@ -112,7 +112,13 @@ def runner(ql):
         if ql.shellcoder:
             ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
         else:
+            #if ql.elf_entry != ql.entry_point:
+            #    ql.uc.emu_start(ql.entry_point, ql.elf_entry, ql.timeout) 
+            #    ql.enable_lib_patch()
+            #ql.uc.emu_start(ql.elf_entry, ql.until_addr, ql.timeout) 
+            
             ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
+            
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC= " + hex(ql.pc))

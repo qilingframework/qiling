@@ -9,6 +9,7 @@ from qiling import *
 
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, output = "debug")
+    ql.multithread = True
     ql.run()
 
 

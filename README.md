@@ -53,10 +53,19 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 
 #### Install
 
-Run below command line to install Qiling (Python3 is required).
+If you are NOT using pyenv, run the command shown below to install Qiling (Python3 is required).
 
 ```
+pip3 install -r ./requirements.txt
 python3 setup.py install
+```
+
+If you are using pyenv, run the command shown below (or use docker).
+
+```
+mv $(dirname $(which python))/python2.7 $(dirname $(which python))/python2.7.bak
+pip install -r ./requirements.txt
+python setup.py install
 ```
 
 ---
@@ -134,7 +143,7 @@ Qiling also provides a friendly tool named `qltool` to quickly emulate shellcode
 To emulate a binary, run:
 
 ```
-$ ./qltool run -f examples/rootfs/arm_linux/bin/arm32-hello --rootfs examples/rootfs/arm_linux/
+$ ./qltool run -f examples/rootfs/arm_linux/bin/arm_hello --rootfs examples/rootfs/arm_linux/
 
 ```
 
@@ -144,44 +153,6 @@ To run shellcode, run:
 $ ./qltool shellcode --os linux --arch x86 --asm -f examples/shellcodes/lin32_execve.asm
 
 ```
-
----
-
-#### Gdbserver
-
-Qiling has supported **Gdb remote debugging** now (x86, x86-64 for now).
-
-**usage**
-
-```python
-from qiling import *
-
-
-def test_gdb(path, rootfs):
-    ql = Qiling(path, rootfs)
-    ql.gdbserver(9999)  # The default port is 9999, can be changed to other numbers
-
-
-if __name__ == "__main__":
-    test_gdb(["rootfs/x8664_windows/x8664_hello.exe"], "rootfs/x8664_windows")
-```
-
-Run gdb and `set architecture i386:intel` for x86 or `set architecture i386:x86-64` for x86-64
-
-Then `target remote ip:port` and run the python script.
-
-```bash
-(gdb) set architecture i386:x86-64
-The target architecture is assumed to be i386:x86-64
-(gdb) target remote 127.0.0.1:9999
-Remote debugging using 127.0.0.1:9999
-warning: No executable has been specified and target does not support
-determining executable automatically.  Try using the "file" command.
-0x00000000004014e0 in ?? ()
-(gdb)
-```
-
-Currently supported features include `si`,`ni`,`c` and read register or memory
 
 ---
 
