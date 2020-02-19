@@ -10,14 +10,14 @@ from qiling import *
 
 def test_gdb(path, rootfs):
     ql = Qiling(path, rootfs, output="off")
-    # ql.gdb = None  # disable gdbserver
+    # ql.gdb = True # enable gdbserver at default port
     # ql.gdb = ":9999"  # Listening to 0.0.0.0:9999
     ql.gdb = "127.0.0.1:9999"  # Listening to 127.0.0.1:9999
     ql.run()  
 
 
 if __name__ == "__main__":
-    test_gdb(["rootfs/x8664_windows/x8664_hello.exe"], "rootfs/x8664_windows")
+    test_gdb(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux")
 ```
 
 Run gdb and `set architecture i386:intel` for x86 or `set architecture i386:x86-64` for x86-64

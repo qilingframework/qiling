@@ -31,7 +31,7 @@ registers_x86_segments = [
 arch_reg = {QL_X86: registers_x86, QL_X8664: registers_x8664}
 
 
-def get_pc(arch):
+def get_reg_pc(arch):
     if arch == QL_X86:
         return UC_X86_REG_EIP
     elif arch == QL_X8664:
