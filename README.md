@@ -156,6 +156,16 @@ $ ./qltool shellcode --os linux --arch x86 --asm -f examples/shellcodes/lin32_ex
 
 ---
 
+#### Gdbserver
+
+Qiling has supported **Gdb remote debugging** now (x86, x86-64 for now).
+
+Currently supported features include `si`, `ni`, `c`, read register, read memory, add/remove breakpoint.
+
+See [EN](docs/GDBSERVER.md)|[CN](docs/GDBSERVER_CN.md)  for more details
+
+---
+
 #### Contact
 
 Get the latest info from out webiste https://www.qiling.io
