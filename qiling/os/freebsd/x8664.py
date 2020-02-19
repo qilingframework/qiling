@@ -18,6 +18,48 @@ QL_X8664_FREEBSD_PREDEFINE_STACKADDRESS = 0x7ffffffde000
 QL_X8664_FREEBSD_PREDEFINE_STACKSIZE = 0x21000
 QL_X8664_EMU_END = 0xffffffffffffffff
 
+def set_pe64_gdt(ql):
+
+# // TODO: put these somewhere. ghostrace maybe.
+# const (
+# 	ARCH_SET_GS = 0x1001
+# 	ARCH_SET_FS = 0x1002
+# 	ARCH_GET_FS = 0x1003
+# 	ARCH_GET_GS = 0x1004
+# )
+
+# func (k *LinuxKernel) ArchPrctl(code int, addr uint64) {
+# 	fsmsr := uint64(0xC0000100)
+# 	gsmsr := uint64(0xC0000101)
+
+# 	var tmp [8]byte
+# 	// TODO: make SET check for valid mapped memory
+# 	switch code {
+# 	case ARCH_SET_FS:
+# 		x86.Wrmsr(k.U, fsmsr, addr)
+# 	case ARCH_SET_GS:
+# 		x86.Wrmsr(k.U, gsmsr, addr)
+# 	case ARCH_GET_FS:
+# 		val := x86.Rdmsr(k.U, fsmsr)
+# 		buf, _ := k.U.PackAddr(tmp[:], val)
+# 		k.U.MemWrite(addr, buf)
+# 	case ARCH_GET_GS:
+# 		val := x86.Rdmsr(k.U, gsmsr)
+# 		buf, _ := k.U.PackAddr(tmp[:], val)
+# 		k.U.MemWrite(addr, buf)
+# 	}
+# }
+
+    ql.GS_SEGMENT_ADDR = 0x6000
+    ql.GS_SEGMENT_SIZE = 0x8000
+ 
+    GSMSR = 0xC0000101
+    FSMSR = 0xC0000100
+ 
+    ql.uc.mem_map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
+    ql.uc.msr_write(GSMSR, ql.GS_SEGMENT_ADDR)
+    ql.uc.msr_write(FSMSR, ql.GS_SEGMENT_ADDR)
+
 def hook_syscall(ql):
     syscall_num  = ql.uc.reg_read(UC_X86_REG_RAX)
     param0 = ql.uc.reg_read(UC_X86_REG_RDI)
@@ -27,6 +69,8 @@ def hook_syscall(ql):
     param4 = ql.uc.reg_read(UC_X86_REG_R8)
     param5 = ql.uc.reg_read(UC_X86_REG_R9)
     pc = ql.uc.reg_read(UC_X86_REG_RIP)
+    
+    ql.dprint("[+] 0x%x: syscall number = 0x%x(%d)" %(pc, syscall_num, syscall_num))
 
     while 1:
         FREEBSD_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
@@ -73,75 +117,27 @@ def loader_file(ql):
     if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env):
         raise QlErrorFileType("Unsupported FileType")
 
-    ql.stack_address = (int(ql.new_stack-8))
+    ql.stack_address = (int(ql.new_stack))
 
+    init_rbp = ql.stack_address + 0x40
+    init_rdi = ql.stack_address
+    
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
-    ql.uc.reg_write(UC_X86_REG_RDI, ql.stack_address)
-    #ql.uc.reg_write(UC_X86_REG_RAX, 0x0)
-    #ql.uc.reg_write(UC_X86_REG_R14D, 0xfffffffffffff000)
-    #ql.uc.reg_write(UC_X86_REG_R15D, 0xfffffffffffff000)
+    ql.uc.reg_write(UC_X86_REG_RBP, init_rbp)
+    ql.uc.reg_write(UC_X86_REG_RDI, init_rdi)
+    ql.uc.reg_write(UC_X86_REG_R14, init_rdi)
+
+    ql.dprint("[+] RSP = 0x%x" % (ql.stack_address))
+    ql.dprint("[+] RBP = 0x%x" % (init_rbp))
+    ql.dprint("[+] RDI = 0x%x" % (init_rdi))
 
     ql_setup_output(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
 
-    # https://github.com/unicorn-engine/unicorn/blob/master/tests/regress/x86_64_msr.py
-    # some ref from unicorn.
+    set_pe64_gdt(ql)
 
-    # FSMSR = 0xC0000100
-    # GSMSR = 0xC0000101
-
-    # SCRATCH_ADDR = 0x80000
-    # SCRATCH_SIZE = 0x1000
-
-    # SEGMENT_ADDR = 0x5000
-    # SEGMENT_SIZE = 0x1000
-
-    # def set_msr(uc, msr, value, scratch=SCRATCH_ADDR):
-    #     '''
-    #     set the given model-specific register (MSR) to the given value.
-    #     this will clobber some memory at the given scratch address, as it emits some code.
-    #     '''
-
-    #     #uc = ql.uc
-    #     # save clobbered registers
-    #     orax = uc.reg_read(UC_X86_REG_RAX)
-    #     ordx = uc.reg_read(UC_X86_REG_RDX)
-    #     orcx = uc.reg_read(UC_X86_REG_RCX)
-    #     orip = uc.reg_read(UC_X86_REG_RIP)
-
-    #     # x86: wrmsr
-    #     buf = b'\x0f\x30'
-    #     uc.mem_write(scratch, buf)
-    #     uc.reg_write(UC_X86_REG_RAX, value & 0xFFFFFFFF)
-    #     uc.reg_write(UC_X86_REG_RDX, (value >> 32) & 0xFFFFFFFF)
-    #     uc.reg_write(UC_X86_REG_RCX, msr & 0xFFFFFFFF)
-    #     uc.emu_start(scratch, scratch+len(buf), count=1)
-
-    #     # restore clobbered registers
-    #     uc.reg_write(UC_X86_REG_RAX, orax)
-    #     uc.reg_write(UC_X86_REG_RDX, ordx)
-    #     uc.reg_write(UC_X86_REG_RCX, orcx)
-    #     uc.reg_write(UC_X86_REG_RIP, orip)
-
-    # def set_fs(uc, addr):
-    #     '''
-    #     set the FS.base hidden descriptor-register field to the given address.
-    #     this enables referencing the fs segment on x86-64.
-    #     '''
-    #     return set_msr(uc, FSMSR, addr)
-
-    # def set_gs(uc, addr):
-    #     '''
-    #     set the GS.base hidden descriptor-register field to the given address.
-    #     this enables referencing the gs segment on x86-64.
-    #     '''
-    #     return set_msr(uc, GSMSR, addr)        
-
-    # ql.uc.mem_map(SCRATCH_ADDR, SCRATCH_SIZE)
-    # ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
-    # set_msr(ql.uc, FSMSR, 0x1000)
-    # set_gs(ql.uc, SEGMENT_ADDR)
-    # set_fs(ql.uc, SEGMENT_ADDR)
+    ql_x8664_setup_gdt_segment_cs(ql)
+    ql_x8664_setup_gdt_segment_ss(ql)
 
 
 def loader_shellcode(ql):
@@ -155,73 +151,16 @@ def loader_shellcode(ql):
     ql.stack_address = ql.stack_address  + 0x200000 - 0x1000
     ql.uc.mem_write(ql.stack_address, ql.shellcoder)
 
+    init_rbp = ql.stack_address + 0x40
+    #init_rdi = init_rbp + 0x8
+    
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
+    ql.uc.reg_write(UC_X86_REG_RBP, init_rbp)
     ql.uc.reg_write(UC_X86_REG_RDI, ql.stack_address)
-    #ql.uc.reg_write(UC_X86_REG_RAX, 0x0)
-    #ql.uc.reg_write(UC_X86_REG_R14D, 0xfffffffffffff000)
-    #ql.uc.reg_write(UC_X86_REG_R15D, 0xfffffffffffff000)
+    #ql.uc.reg_write(UC_X86_REG_R14, init_rdi)
 
     ql_setup_output(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
-
-    # https://github.com/unicorn-engine/unicorn/blob/master/tests/regress/x86_64_msr.py
-    # some ref from unicorn.
-
-    # FSMSR = 0xC0000100
-    # GSMSR = 0xC0000101
-
-    # SCRATCH_ADDR = 0x80000
-    # SCRATCH_SIZE = 0x1000
-
-    # SEGMENT_ADDR = 0x5000
-    # SEGMENT_SIZE = 0x1000
-
-    # def set_msr(uc, msr, value, scratch=SCRATCH_ADDR):
-    #     '''
-    #     set the given model-specific register (MSR) to the given value.
-    #     this will clobber some memory at the given scratch address, as it emits some code.
-    #     '''
-
-    #     #uc = ql.uc
-    #     # save clobbered registers
-    #     orax = uc.reg_read(UC_X86_REG_RAX)
-    #     ordx = uc.reg_read(UC_X86_REG_RDX)
-    #     orcx = uc.reg_read(UC_X86_REG_RCX)
-    #     orip = uc.reg_read(UC_X86_REG_RIP)
-
-    #     # x86: wrmsr
-    #     buf = b'\x0f\x30'
-    #     uc.mem_write(scratch, buf)
-    #     uc.reg_write(UC_X86_REG_RAX, value & 0xFFFFFFFF)
-    #     uc.reg_write(UC_X86_REG_RDX, (value >> 32) & 0xFFFFFFFF)
-    #     uc.reg_write(UC_X86_REG_RCX, msr & 0xFFFFFFFF)
-    #     uc.emu_start(scratch, scratch+len(buf), count=1)
-
-    #     # restore clobbered registers
-    #     uc.reg_write(UC_X86_REG_RAX, orax)
-    #     uc.reg_write(UC_X86_REG_RDX, ordx)
-    #     uc.reg_write(UC_X86_REG_RCX, orcx)
-    #     uc.reg_write(UC_X86_REG_RIP, orip)
-
-    # def set_fs(uc, addr):
-    #     '''
-    #     set the FS.base hidden descriptor-register field to the given address.
-    #     this enables referencing the fs segment on x86-64.
-    #     '''
-    #     return set_msr(uc, FSMSR, addr)
-
-    # def set_gs(uc, addr):
-    #     '''
-    #     set the GS.base hidden descriptor-register field to the given address.
-    #     this enables referencing the gs segment on x86-64.
-    #     '''
-    #     return set_msr(uc, GSMSR, addr)        
-
-    # ql.uc.mem_map(SCRATCH_ADDR, SCRATCH_SIZE)
-    # ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
-    # set_msr(ql.uc, FSMSR, 0x1000)
-    # set_gs(ql.uc, SEGMENT_ADDR)
-    # set_fs(ql.uc, SEGMENT_ADDR)
 
 
 def runner(ql):
