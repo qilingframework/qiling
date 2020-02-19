@@ -42,8 +42,8 @@ class GDBSession(object):
                 self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
             def handle_c(subcmd):
-                print(self.ql.uc.reg_read(get_pc(self.ql.arch)))
-                self.qldbg.resume_emu(self.ql.uc.reg_read(get_pc(self.ql.arch)))
+                print(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
+                self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
                 self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
             def handle_g(subcmd):
