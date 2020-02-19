@@ -210,9 +210,13 @@ class Qiling:
     def run(self):
         if self.gdb is not None:
             try:
-                ip, port = self.gdb.split(':')
-                port = int(port)
-                self.gdbserver(ip, port)
+                if self.gdb is True:
+                    self.gdbserver()
+                else:
+
+                        ip, port = self.gdb.split(':')
+                        port = int(port)
+                        self.gdbserver(ip, port)
             except:
                 print("Error ip or port")
                 exit(1)
@@ -220,7 +224,7 @@ class Qiling:
         self.__enable_bin_patch()
         runner = self.build_os_execution("runner")
         runner(self)
-        
+
         if self.gdb is not None:
             self.gdbsession.run()
 
