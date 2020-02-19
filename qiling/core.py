@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys, struct, os, platform, importlib, socket
+import sys, struct, os, platform, importlib # , socket
 from unicorn import *
 
 from qiling.arch.filetype import *
@@ -13,7 +13,7 @@ from qiling.utils import *
 from qiling.os.utils import *
 from qiling.arch.utils import *
 from qiling.os.linux.thread import *
-from qiling.gdbserver.gdblistener import GDBSession
+# from qiling.gdbserver.gdblistener import GDBSession
 
 __version__ = "0.9"
 
@@ -113,8 +113,8 @@ class Qiling:
         self.dict_posix_syscall     = dict()
         self.user_defined_api    = {}
         self.global_thread_id       = 0
-        self.gdb                    = None
-        self.gdbsession             = None
+        # self.gdb                    = None
+        # self.gdbsession             = None
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -210,21 +210,21 @@ class Qiling:
 
 
     def run(self):
-        if self.gdb is not None:
-            try:
-                ip, port = self.gdb.split(':')
-                port = int(port)
-                self.gdbserver(ip, port)
-            except:
-                print("Error ip or port")
-                exit(1)
+        # if self.gdb is not None:
+        #     try:
+        #         ip, port = self.gdb.split(':')
+        #         port = int(port)
+        #         self.gdbserver(ip, port)
+        #     except:
+        #         print("Error ip or port")
+        #         exit(1)
 
         self.__enable_bin_patch()
         runner = self.build_os_execution("runner")
         runner(self)
 
-        if self.gdb is not None:
-            self.gdbsession.run()
+        # if self.gdb is not None:
+        #     self.gdbsession.run()
 
 
     def nprint(self, *args, **kw):
@@ -696,24 +696,24 @@ class Qiling:
             td.stop_event = stop_event
         self.uc.emu_stop()
 
-    def gdbserver(self, ip=None, port=None):
-        path = self.path
-        print(path)
-        try:
-            with open(path, "rb") as bf:
-                GUEST_BINARY = bf.read()
-        except:
-            exit(1)
-
-        if ip is None:
-            ip = ''
-        if port is None:
-            port = 9999
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((ip, port))
-        sock.listen(1)
-        conn, addr = sock.accept()
-
-        mappings = [(hex(self.entry_point), 0x10)]
-        exit_point = self.entry_point + len(GUEST_BINARY)
-        self.gdbsession = GDBSession(self, conn, exit_point, mappings)
+    # def gdbserver(self, ip=None, port=None):
+    #     path = self.path
+    #     print(path)
+    #     try:
+    #         with open(path, "rb") as bf:
+    #             GUEST_BINARY = bf.read()
+    #     except:
+    #         exit(1)
+    #
+    #     if ip is None:
+    #         ip = ''
+    #     if port is None:
+    #         port = 9999
+    #     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #     sock.bind((ip, port))
+    #     sock.listen(1)
+    #     conn, addr = sock.accept()
+    #
+    #     mappings = [(hex(self.entry_point), 0x10)]
+    #     exit_point = self.entry_point + len(GUEST_BINARY)
+    #     self.gdbsession = GDBSession(self, conn, exit_point, mappings)
