@@ -200,7 +200,7 @@ class GDBSession(object):
 
             if cmd not in commands:
                 self.send('')
-                self.ql.dprint("[+] gdb command not supported: %s" %(cmd))
+                self.ql.nprint("gdb> command not supported: %s" %(cmd))
                 continue
 
             commands[cmd](subcmd)
