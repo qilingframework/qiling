@@ -23,7 +23,7 @@ Run gdb and `set architecture i386:intel` for x86 or `set architecture i386:x86-
 
 Then `target remote ip:port` and run the python script.
 
-Currently supported features include `si`, `ni`, `c`, `k`, read register, read memory, add/remove breakpoints.
+Currently supported commands include `si`, `ni`, `c`, `k`, read register, read memory, add/remove breakpoints.
 
 ---
 
