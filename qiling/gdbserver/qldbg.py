@@ -49,24 +49,24 @@ class Qldbg(object):
                     ql.stop()
 
                     self.last_bp = address
-                    self.ql.dprint('breakpoint: ', hex(address))
+                    self.ql.dprint('breakpoint: 0x%x' % address)
             elif address == self.last_bp:
                 self.last_bp = 0
             self.has_soft_bp = hit_soft_bp
             if self.current_address + size == self.exit_point:
-                print('emulation finished success !!!')
+                self.ql.dprint('emulation finished success !!!')
         except KeyboardInterrupt as ex:
-            print(">>> paused at 0x%x, instruction size = %u" % (address, size))
+            self.ql.dprint(">>> paused at 0x%x, instruction size = %u" % (address, size))
             ql.stop()
 
     def bp_insert(self, add):
         if add not in self.bp_list:
             self.bp_list.append(add)
-            self.ql.dprint('bp added at: ', hex(add))
+            self.ql.dprint('bp added at: 0x%x' % add)
 
     def bp_remove(self, type, addr, len):
         self.bp_list.remove(addr)
-        self.ql.dprint('bp remove: ', hex(addr))
+        self.ql.dprint('bp remove: 0x%x' % addr)
 
     def resume_emu(self, address=None, skip_bp=0):
         """

@@ -24,11 +24,11 @@ class GDBSession(object):
         self.sup = True
         self.tst = True
         self.qldbg = qldbg.Qldbg()
-        if self.ql.ostype == QL_LINUX:
+        self.qldbg.initialize(self.ql, exit_point=exit_point, mappings=mappings)
+        if self.ql.ostype == QL_LINUX or self.ql.ostype == QL_FREEBSD:
             self.qldbg.bp_insert(self.ql.elf_entry)
         else:
             self.qldbg.bp_insert(self.ql.entry_point)
-        self.qldbg.initialize(self.ql, exit_point=exit_point, mappings=mappings)
 
     def close(self):
         self.netin.close()
@@ -210,7 +210,7 @@ class GDBSession(object):
         try:
             while True:
                 c = self.netin.read(1)
-                # print(c)
+                # self.ql.dprint(c)
                 if c == '\x03':
                     return 'Error: CTRL+C'
 
