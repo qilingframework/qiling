@@ -24,7 +24,7 @@ class GDBSession(object):
         self.sup = True
         self.tst = True
         self.qldbg = qldbg.Qldbg()
-        if self.ql.ostype == QL_LINUX:
+        if self.ql.ostype in (QL_LINUX, QL_FREEBSD):
             self.qldbg.bp_insert(self.ql.elf_entry)
         else:
             self.qldbg.bp_insert(self.ql.entry_point)
