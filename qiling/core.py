@@ -213,10 +213,9 @@ class Qiling:
                 if self.gdb is True:
                     self.gdbserver()
                 else:
-
-                        ip, port = self.gdb.split(':')
-                        port = int(port)
-                        self.gdbserver(ip, port)
+                    ip, port = self.gdb.split(':')
+                    port = int(port)
+                    self.gdbserver(ip, port)
             except:
                 print("Error ip or port")
                 exit(1)
