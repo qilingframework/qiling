@@ -176,7 +176,11 @@ class GDBSession(object):
                 except:
                     self.send('E22')
 
-            Command = {
+            def handle_exclaim(subcmd):
+                self.send('OK')
+
+            commands = {
+                '!': handle_exclaim,
                 '?': handle_qmark,
                 'c': handle_c,
                 'g': handle_g,
@@ -194,11 +198,11 @@ class GDBSession(object):
             if cmd == 'k':
                 break
 
-            if cmd not in Command:
+            if cmd not in commands:
                 self.send('')
                 continue
 
-            Command[cmd](subcmd)
+            commands[cmd](subcmd)
 
         self.close()
 
