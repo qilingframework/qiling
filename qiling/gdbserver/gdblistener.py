@@ -196,6 +196,7 @@ class GDBSession(object):
 
             if cmd not in Command:
                 self.send('')
+                self.ql.dprint("[+] gdb command not supported: %s" %(cmd))
                 continue
 
             Command[cmd](subcmd)
@@ -233,7 +234,7 @@ class GDBSession(object):
                     raise Exception('should not be here')
         except:
             self.close()
-            exit(1)
+            raise
 
     def send(self, msg):
         """Send a packet to the GDB client"""
