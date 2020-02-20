@@ -24,7 +24,10 @@ class GDBSession(object):
         self.sup = True
         self.tst = True
         self.qldbg = qldbg.Qldbg()
-        self.qldbg.bp_insert(self.ql.entry_point)
+        if self.ql.ostype == QL_LINUX:
+            self.qldbg.bp_insert(self.ql.elf_entry)
+        else:
+            self.qldbg.bp_insert(self.ql.entry_point)
         self.qldbg.initialize(self.ql, exit_point=exit_point, mappings=mappings)
 
     def close(self):
@@ -38,11 +41,9 @@ class GDBSession(object):
             self.send_raw('+')
 
             def handle_qmark(subcmd):
-                # self.send("OK")
                 self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
             def handle_c(subcmd):
-                print(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
                 self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
                 self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
