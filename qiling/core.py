@@ -716,9 +716,6 @@ class Qiling:
     def gdbserver(self, ip=None, port=None):
         path = self.path
         try:
-            with open(path, "rb") as bf:
-                GUEST_BINARY = bf.read()
-
             if ip is None:
                 ip = '127.0.0.1'
             if port is None:
@@ -728,12 +725,12 @@ class Qiling:
             sock.listen(1)
             conn, addr = sock.accept()
         except:
-            self.nprint("[!] Error: Address already in use")
+            self.nprint("gdb> Error: Address already in use")
             raise    
         try:
             mappings = [(hex(self.entry_point), 0x10)]
-            exit_point = self.entry_point + len(GUEST_BINARY)
+            exit_point = self.entry_point + os.path.getsize(path)
             self.gdbsession = GDBSession(self, conn, exit_point, mappings)
         except:
-            self.nprint("[!] Error: Not able to initialize GDBServer")
+            self.nprint("gdb> Error: Not able to initialize GDBServer")
             raise
