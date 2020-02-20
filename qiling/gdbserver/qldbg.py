@@ -32,9 +32,7 @@ class Qldbg(object):
         Modified this function for qiling.gdbserver by kabeor from https://github.com/iGio90/uDdbg
         """
         try:
-            print(self.mapping)
             self.mapping.append([hex(address), size])
-
             self.current_address = address
 
             hit_soft_bp = False
@@ -51,7 +49,7 @@ class Qldbg(object):
                     ql.stop()
 
                     self.last_bp = address
-                    print('breakpoint: ', hex(address))
+                    self.ql.dprint('breakpoint: ', hex(address))
             elif address == self.last_bp:
                 self.last_bp = 0
             self.has_soft_bp = hit_soft_bp
@@ -64,12 +62,11 @@ class Qldbg(object):
     def bp_insert(self, add):
         if add not in self.bp_list:
             self.bp_list.append(add)
-            print('bp added at: ', hex(add))
-            print(self.bp_list)
+            self.ql.dprint('bp added at: ', hex(add))
 
     def bp_remove(self, type, addr, len):
         self.bp_list.remove(addr)
-        print('bp remove: ', hex(addr))
+        self.ql.dprint('bp remove: ', hex(addr))
 
     def resume_emu(self, address=None, skip_bp=0):
         """
@@ -80,7 +77,7 @@ class Qldbg(object):
 
         self.skip_bp_count = skip_bp
         if self.exit_point is not None:
-            print('emu restart at:  ', hex(self.current_address))
+            self.ql.dprint('emu restart at:  ', hex(self.current_address))
 
             if len(self.entry_context) == 0:
                 self.entry_context = {

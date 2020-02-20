@@ -24,7 +24,10 @@ class GDBSession(object):
         self.sup = True
         self.tst = True
         self.qldbg = qldbg.Qldbg()
-        self.qldbg.bp_insert(self.ql.entry_point)
+        if self.ql.ostype == QL_LINUX:
+            self.qldbg.bp_insert(self.ql.elf_entry)
+        else:
+            self.qldbg.bp_insert(self.ql.entry_point)
         self.qldbg.initialize(self.ql, exit_point=exit_point, mappings=mappings)
 
     def close(self):
@@ -38,11 +41,9 @@ class GDBSession(object):
             self.send_raw('+')
 
             def handle_qmark(subcmd):
-                # self.send("OK")
                 self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
             def handle_c(subcmd):
-                print(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
                 self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
                 self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
@@ -206,29 +207,33 @@ class GDBSession(object):
         csum = 0
         state = 'Finding SOP'
         packet = ''
-        while True:
-            c = self.netin.read(1)
-            # print(c)
-            if c == '\x03':
-                return 'Error: CTRL+C'
+        try:
+            while True:
+                c = self.netin.read(1)
+                # print(c)
+                if c == '\x03':
+                    return 'Error: CTRL+C'
 
-            if len(c) != 1:
-                return 'Error: EOF'
+                if len(c) != 1:
+                    return 'Error: EOF'
 
-            if state == 'Finding SOP':
-                if c == '$':
-                    state = 'Finding EOP'
-            elif state == 'Finding EOP':
-                if c == '#':
-                    if csum != int(self.netin.read(2), 16):
-                        raise Exception('invalid checksum')
-                    self.last_pkt = packet
-                    return 'Good'
+                if state == 'Finding SOP':
+                    if c == '$':
+                        state = 'Finding EOP'
+                elif state == 'Finding EOP':
+                    if c == '#':
+                        if csum != int(self.netin.read(2), 16):
+                            raise Exception('invalid checksum')
+                        self.last_pkt = packet
+                        return 'Good'
+                    else:
+                        packet += c
+                        csum = (csum + ord(c)) & 0xff
                 else:
-                    packet += c
-                    csum = (csum + ord(c)) & 0xff
-            else:
-                raise Exception('should not be here')
+                    raise Exception('should not be here')
+        except:
+            self.close()
+            exit(1)
 
     def send(self, msg):
         """Send a packet to the GDB client"""

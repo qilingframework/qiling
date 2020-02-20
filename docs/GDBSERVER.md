@@ -16,14 +16,14 @@ def test_gdb(path, rootfs):
     ql.run()  
 
 if __name__ == "__main__":
-    test_gdb(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux")
+    test_gdb(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux")
 ```
 
 Run gdb and `set architecture i386:intel` for x86 or `set architecture i386:x86-64` for x86-64
 
 Then `target remote ip:port` and run the python script.
 
-Currently supported features include `si`,`ni`,`c` , read register, read memory, add/remove breakpoints.
+Currently supported commands include `si`, `ni`, `c`, `k`, read register, read memory, add/remove breakpoints.
 
 ---
 
@@ -39,8 +39,8 @@ The target architecture is assumed to be i386:x86-64
 
 **connect**
 ```bash
-(gdb) target remote 192.168.0.105:9999
-Remote debugging using 192.168.0.105:9999
+(gdb) target remote localhost:9999
+Remote debugging using localhost:9999
 warning: No executable has been specified and target does not support
 determining executable automatically.  Try using the "file" command.
 0x00000000004014e0 in ?? ()
