@@ -7,24 +7,23 @@ Qiling已通过Qiling Gdbserver支持**Gdb远程调试**（目前支持x86, x86-
 ```python
 from qiling import *
 
-
 def test_gdb(path, rootfs):
     ql = Qiling(path, rootfs, output="off")
-    # ql.gdb = True # enable gdbserver at default port
+    ql.gdb = True # enable gdbserver at default port 9999
+    # You can also customize address & port of GDB server
     # ql.gdb = ":9999"  # Listening to 0.0.0.0:9999
-    ql.gdb = "127.0.0.1:9999"  # Listening to 127.0.0.1:9999
+    # ql.gdb = "127.0.0.1:9999"  # Listening to 127.0.0.1:9999
     ql.run()  
 
-
 if __name__ == "__main__":
-    test_gdb(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux")
+    test_gdb(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux")
 ```
 
 运行gdb并为所需架构进行设置，x86输入命令`set architecture i386:intel`，x86-64输入命令`set architecture i386:x86-64`
 
 然后输入命令`target remote ip:port` 并执行python脚本
 
-当前支持的命令有 `si`,`ni`,`c`,读寄存器,读内存,插入或删除断点
+当前支持的命令有 `si`, `ni`, `c`, `k`, 读寄存器, 读内存, 插入或删除断点
 
 ---
 
@@ -40,8 +39,8 @@ The target architecture is assumed to be i386:x86-64
 
 **connect**
 ```bash
-(gdb) target remote 192.168.0.105:9999
-Remote debugging using 192.168.0.105:9999
+(gdb) target remote localhost:9999
+Remote debugging using localhost:9999
 warning: No executable has been specified and target does not support
 determining executable automatically.  Try using the "file" command.
 0x00000000004014e0 in ?? ()

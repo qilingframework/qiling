@@ -32,9 +32,7 @@ class Qldbg(object):
         Modified this function for qiling.gdbserver by kabeor from https://github.com/iGio90/uDdbg
         """
         try:
-            print(self.mapping)
             self.mapping.append([hex(address), size])
-
             self.current_address = address
 
             hit_soft_bp = False

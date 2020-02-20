@@ -218,6 +218,7 @@ class Qiling:
                     self.gdbserver(ip, port)
             except:
                 print("Error ip or port")
+                self.gdbsession.close()
                 exit(1)
 
         self.__enable_bin_patch()
@@ -707,7 +708,7 @@ class Qiling:
             exit(1)
 
         if ip is None:
-            ip = ''
+            ip = 'localhost'
         if port is None:
             port = 9999
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
