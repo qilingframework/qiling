@@ -715,13 +715,12 @@ class Qiling:
 
     def gdbserver(self, ip=None, port=None):
         path = self.path
-        print(path)
         try:
             with open(path, "rb") as bf:
                 GUEST_BINARY = bf.read()
 
             if ip is None:
-                ip = 'localhost'
+                ip = '127.0.0.1'
             if port is None:
                 port = 9999
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -733,4 +732,5 @@ class Qiling:
             exit_point = self.entry_point + len(GUEST_BINARY)
             self.gdbsession = GDBSession(self, conn, exit_point, mappings)
         except:
+            self.dprint("[+] GDBServer error")
             exit(1)

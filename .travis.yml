@@ -37,7 +37,8 @@ matrix:
       before_install:
         - pip3 install --upgrade pip
       install:
-        - travis_wait pip3 install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
+        #- travis_wait pip3 install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn==1.0.2rc1'
+        - travis_wait pip3 install -r requirements.txt
         - git clone https://github.com/keystone-engine/keystone
         - cd keystone
         - mkdir build
