@@ -206,29 +206,33 @@ class GDBSession(object):
         csum = 0
         state = 'Finding SOP'
         packet = ''
-        while True:
-            c = self.netin.read(1)
-            # print(c)
-            if c == '\x03':
-                return 'Error: CTRL+C'
+        try:
+            while True:
+                c = self.netin.read(1)
+                # print(c)
+                if c == '\x03':
+                    return 'Error: CTRL+C'
 
-            if len(c) != 1:
-                return 'Error: EOF'
+                if len(c) != 1:
+                    return 'Error: EOF'
 
-            if state == 'Finding SOP':
-                if c == '$':
-                    state = 'Finding EOP'
-            elif state == 'Finding EOP':
-                if c == '#':
-                    if csum != int(self.netin.read(2), 16):
-                        raise Exception('invalid checksum')
-                    self.last_pkt = packet
-                    return 'Good'
+                if state == 'Finding SOP':
+                    if c == '$':
+                        state = 'Finding EOP'
+                elif state == 'Finding EOP':
+                    if c == '#':
+                        if csum != int(self.netin.read(2), 16):
+                            raise Exception('invalid checksum')
+                        self.last_pkt = packet
+                        return 'Good'
+                    else:
+                        packet += c
+                        csum = (csum + ord(c)) & 0xff
                 else:
-                    packet += c
-                    csum = (csum + ord(c)) & 0xff
-            else:
-                raise Exception('should not be here')
+                    raise Exception('should not be here')
+        except:
+            self.close()
+            exit(1)
 
     def send(self, msg):
         """Send a packet to the GDB client"""

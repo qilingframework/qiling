@@ -213,12 +213,17 @@ class Qiling:
                 if self.gdb is True:
                     self.gdbserver()
                 else:
-                    ip, port = self.gdb.split(':')
-                    port = int(port)
+                    ip, port = '', ''
+                    try:
+                        ip, port = self.gdb.split(':')
+                        port = int(port)
+                    except:
+                        print("Error ip or port")
+                        exit(1)
                     self.gdbserver(ip, port)
-            except:
-                print("Error ip or port")
-                self.gdbsession.close()
+            except KeyboardInterrupt:
+                if self.gdbsession():
+                    self.gdbsession.close()
                 exit(1)
 
         self.__enable_bin_patch()
@@ -704,18 +709,18 @@ class Qiling:
         try:
             with open(path, "rb") as bf:
                 GUEST_BINARY = bf.read()
+
+            if ip is None:
+                ip = 'localhost'
+            if port is None:
+                port = 9999
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.bind((ip, port))
+            sock.listen(1)
+            conn, addr = sock.accept()
+
+            mappings = [(hex(self.entry_point), 0x10)]
+            exit_point = self.entry_point + len(GUEST_BINARY)
+            self.gdbsession = GDBSession(self, conn, exit_point, mappings)
         except:
             exit(1)
-
-        if ip is None:
-            ip = 'localhost'
-        if port is None:
-            port = 9999
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((ip, port))
-        sock.listen(1)
-        conn, addr = sock.accept()
-
-        mappings = [(hex(self.entry_point), 0x10)]
-        exit_point = self.entry_point + len(GUEST_BINARY)
-        self.gdbsession = GDBSession(self, conn, exit_point, mappings)
