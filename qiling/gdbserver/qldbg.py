@@ -62,11 +62,11 @@ class Qldbg(object):
     def bp_insert(self, add):
         if add not in self.bp_list:
             self.bp_list.append(add)
-            self.ql.dprint('[+] bp added at: 0x%x' % add)
+            self.ql.dprint('[+] breakpoint added at: 0x%x' % add)
 
     def bp_remove(self, type, addr, len):
         self.bp_list.remove(addr)
-        self.ql.dprint('[+] bp remove: 0x%x' % addr)
+        self.ql.dprint('[+] breakpoint remove: 0x%x' % addr)
 
     def resume_emu(self, address=None, skip_bp=0):
         """
@@ -77,7 +77,7 @@ class Qldbg(object):
 
         self.skip_bp_count = skip_bp
         if self.exit_point is not None:
-            self.ql.dprint('[+] emu restart at:  ', hex(self.current_address))
+            self.ql.dprint('[+] emu restart at: 0x%x' % self.current_address)
 
             if len(self.entry_context) == 0:
                 self.entry_context = {
