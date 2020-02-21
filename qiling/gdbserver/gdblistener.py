@@ -176,7 +176,11 @@ class GDBSession(object):
                 except:
                     self.send('E22')
 
-            Command = {
+            def handle_exclaim(subcmd):
+                self.send('OK')
+
+            commands = {
+                '!': handle_exclaim,
                 '?': handle_qmark,
                 'c': handle_c,
                 'g': handle_g,
@@ -194,11 +198,12 @@ class GDBSession(object):
             if cmd == 'k':
                 break
 
-            if cmd not in Command:
+            if cmd not in commands:
                 self.send('')
+                self.ql.nprint("gdb> command not supported: %s" %(cmd))
                 continue
 
-            Command[cmd](subcmd)
+            commands[cmd](subcmd)
 
         self.close()
 
@@ -233,7 +238,7 @@ class GDBSession(object):
                     raise Exception('should not be here')
         except:
             self.close()
-            exit(1)
+            raise
 
     def send(self, msg):
         """Send a packet to the GDB client"""

@@ -22,4 +22,5 @@ def test_gdb(path, rootfs):
     ql.run()  
 
 if __name__ == "__main__":
-    test_gdb(["rootfs/x86_linux/bin/x86_hello"], "rootfs/x86_linux")
+    # test_gdb(["rootfs/x86_linux/bin/x86_hello"], "rootfs/x86_linux")
+    test_gdb(["rootfs/x8664_linux/bin/x8664_hello"], "rootfs/x8664_linux")

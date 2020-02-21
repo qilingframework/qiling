@@ -225,7 +225,7 @@ class Qiling:
                         ip, port = self.gdb.split(':')
                         port = int(port)
                     except:
-                        print("Error ip or port")
+                        self.nprint("[!] Error: ip or port")
                         exit(1)
                     self.gdbserver(ip, port)
             except KeyboardInterrupt:
@@ -716,9 +716,6 @@ class Qiling:
     def gdbserver(self, ip=None, port=None):
         path = self.path
         try:
-            with open(path, "rb") as bf:
-                GUEST_BINARY = bf.read()
-
             if ip is None:
                 ip = '127.0.0.1'
             if port is None:
@@ -727,10 +724,13 @@ class Qiling:
             sock.bind((ip, port))
             sock.listen(1)
             conn, addr = sock.accept()
-
+        except:
+            self.nprint("gdb> Error: Address already in use")
+            raise    
+        try:
             mappings = [(hex(self.entry_point), 0x10)]
-            exit_point = self.entry_point + len(GUEST_BINARY)
+            exit_point = self.entry_point + os.path.getsize(path)
             self.gdbsession = GDBSession(self, conn, exit_point, mappings)
         except:
-            self.dprint("[+] GDBServer error")
-            exit(1)
+            self.nprint("gdb> Error: Not able to initialize GDBServer")
+            raise
