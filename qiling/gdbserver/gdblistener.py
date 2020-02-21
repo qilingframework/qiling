@@ -47,6 +47,10 @@ class GDBSession(object):
                 self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
                 self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
+            def handle_C(subcmd):
+                self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
+                self.send('S%.2x' % str(subcmd))
+
             def handle_g(subcmd):
                 s = ''
                 if self.ql.arch == QL_X86:
@@ -56,12 +60,12 @@ class GDBSession(object):
                         tmp = '{:0>8}'.format(tmp[2:])
                         s += tmp
                 elif self.ql.arch == QL_X8664:
-                    for reg in arch_reg[self.ql.arch]:
+                    for reg in registers_x8664[:17]:
                         r = self.ql.uc.reg_read(reg)
                         tmp = hex(int.from_bytes(struct.pack('<Q', r), byteorder='big'))
                         tmp = '{:0>16}'.format(tmp[2:])
                         s += tmp
-                    for reg in registers_x86_segments:
+                    for reg in registers_x8664[17:]:
                         r = self.ql.uc.reg_read(reg)
                         tmp = hex(int.from_bytes(struct.pack('<I', r), byteorder='big'))
                         tmp = '{:0>8}'.format(tmp[2:])
@@ -101,6 +105,32 @@ class GDBSession(object):
                     self.send('OK')
                 except:
                     self.send('E01')
+
+            def handle_p(subcmd):  # $p21#d3
+                reg_index = int(subcmd, 16)
+                reg_value = None
+                print(reg_index)
+                try:
+                    if self.ql.arch == QL_X86:
+                        reg_value = self.ql.uc.reg_read(registers_x86[reg_index-1])
+                        reg_value = hex(int.from_bytes(struct.pack('<I', reg_value), byteorder='big'))
+                        reg_value = '{:0>8}'.format(reg_value[2:])
+                    elif self.ql.arch == QL_X8664:
+                        if reg_index <= 32:
+                            reg_value = self.ql.uc.reg_read(registers_x8664[reg_index-1])
+                        else:
+                            reg_value = 0
+                        if reg_index <= 17:
+                            reg_value = hex(int.from_bytes(struct.pack('<Q', reg_value), byteorder='big'))
+                            reg_value = '{:0>16}'.format(reg_value[2:])
+                        elif 17 < reg_index:
+                            reg_value = hex(int.from_bytes(struct.pack('<I', reg_value), byteorder='big'))
+                            reg_value = '{:0>8}'.format(reg_value[2:])
+                    self.send(reg_value)
+                except Exception as e:
+                    print(e)
+                    self.close()
+                    exit(1)
 
             def handle_q(subcmd):
                 if subcmd.startswith('Supported:') and self.sup:
@@ -183,10 +213,12 @@ class GDBSession(object):
                 '!': handle_exclaim,
                 '?': handle_qmark,
                 'c': handle_c,
+                'C': handle_C,
                 'g': handle_g,
                 'H': handle_H,
                 'm': handle_m,
                 'M': handle_M,
+                'p': handle_p,
                 'q': handle_q,
                 'v': handle_v,
                 's': handle_s,
