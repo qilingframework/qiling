@@ -49,7 +49,7 @@ class GDBSession(object):
 
             def handle_C(subcmd):
                 self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
-                self.send('S%.2x' % str(subcmd))
+                self.send('S%.2x' % GDB_SIGNAL_TRAP)
 
             def handle_g(subcmd):
                 s = ''
@@ -74,9 +74,9 @@ class GDBSession(object):
 
             def handle_H(subcmd):
                 if subcmd.startswith('g'):
-                    self.send('')
+                    self.send('OK')
                 if subcmd.startswith('c'):
-                    self.send('')
+                    self.send('OK')
 
             def handle_m(subcmd):
                 addr, size = subcmd.split(',')
@@ -93,7 +93,7 @@ class GDBSession(object):
                     self.send(tmp)
 
                 except:
-                    self.send('E01')
+                    self.send('E14')
 
             def handle_M(subcmd):
                 addr, data = subcmd.split(',')
@@ -134,7 +134,7 @@ class GDBSession(object):
 
             def handle_q(subcmd):
                 if subcmd.startswith('Supported:') and self.sup:
-                    self.send("PacketSize=512")
+                    self.send("PacketSize=1000;qXfer:features:read+;multiprocess+")
                     self.sup = False
                 elif subcmd == "Attached":
                     self.send("")
@@ -145,7 +145,7 @@ class GDBSession(object):
                 elif subcmd == "fThreadInfo":
                     self.send("m1")
                 elif subcmd == "sThreadInfo":
-                    self.send("1")
+                    self.send("l")
                 elif subcmd.startswith("TStatus") and self.tst:
                     self.send("")
                     self.tst = False
@@ -164,6 +164,16 @@ class GDBSession(object):
                 if subcmd.startswith('Kill'):
                     self.send('OK')
                     exit(1)
+                elif subcmd.startswith('Cont'):
+                    if subcmd == 'Cont?':
+                        self.send('vCont;c;C;s;S')
+                    else:
+                        subcmd = subcmd.split(';')
+                        if subcmd[1] in ('c', 'C05'):
+                            self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
+                            self.send('S%.2x' % GDB_SIGNAL_TRAP)
+                        elif subcmd[1] in ('s:1', 's:1'):
+                            handle_s(subcmd)
                 else:
                     self.send("")
 
