@@ -109,7 +109,7 @@ class GDBSession(object):
             def handle_p(subcmd):  # $p21#d3
                 reg_index = int(subcmd, 16)
                 reg_value = None
-                print(reg_index)
+                self.ql.dprint("gdb> register index: %i" % (reg_index))
                 try:
                     if self.ql.arch == QL_X86:
                         reg_value = self.ql.uc.reg_read(registers_x86[reg_index-1])
@@ -127,10 +127,9 @@ class GDBSession(object):
                             reg_value = hex(int.from_bytes(struct.pack('<I', reg_value), byteorder='big'))
                             reg_value = '{:0>8}'.format(reg_value[2:])
                     self.send(reg_value)
-                except Exception as e:
-                    print(e)
+                except:
                     self.close()
-                    exit(1)
+                    raise
 
             def handle_q(subcmd):
                 if subcmd.startswith('Supported:') and self.sup:
