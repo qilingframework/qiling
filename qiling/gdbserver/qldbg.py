@@ -77,7 +77,7 @@ class Qldbg(object):
 
         self.skip_bp_count = skip_bp
         if self.exit_point is not None:
-            self.ql.nprint('gdb> Qiling restart at: 0x%x' % self.current_address)
+            self.ql.nprint('gdb> resume at: 0x%x' % self.current_address)
 
             if len(self.entry_context) == 0:
                 self.entry_context = {
