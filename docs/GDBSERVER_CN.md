@@ -4,6 +4,8 @@ Qiling已通过Qiling Gdbserver支持**Gdb远程调试**（目前支持x86, x86-
 
 ## Usage
 
+### Debug with GDB
+
 ```python
 from qiling import *
 
@@ -26,6 +28,18 @@ if __name__ == "__main__":
 当前支持的命令有 `si`, `ni`, `c`, `k`, 读寄存器, 读内存, 插入或删除断点
 
 ---
+
+### Debug with IDA
+
+脚本与上面的相同
+
+运行IDA并且像以下这样设置IDA:
+
+![GDB-IDA](./GDBSERVER-IDA.png)
+
+注意：确保选择的是目标文件对应的架构
+
+然后运行脚本连接， 就可以在IDA上进行调试了
 
 ## Example
 

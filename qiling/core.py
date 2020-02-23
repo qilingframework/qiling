@@ -722,6 +722,9 @@ class Qiling:
                 port = 9999
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind((ip, port))
+            if ip == '':
+                ip = 'localhost'
+            self.nprint("gdb> listening on %s:%d" % (ip, port))
             sock.listen(1)
             conn, addr = sock.accept()
         except:

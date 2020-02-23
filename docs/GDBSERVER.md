@@ -4,6 +4,8 @@ Qiling supports **Gdb remote debugging**, which listens at default port **9999**
 
 ## Usage
 
+### Debug with GDB
+
 ```python
 from qiling import *
 
@@ -26,6 +28,18 @@ Then `target remote ip:port` and run the python script.
 Currently supported commands include `si`, `ni`, `c`, `k`, read register, read memory, add/remove breakpoints.
 
 ---
+
+### Debug with IDA
+
+The script is the same as above.
+
+Run IDA and set options like this:
+
+![GDB-IDA](./GDBSERVER-IDA.png)
+
+Note: Make sure you have selected the arch of target file.
+
+Then run the script and you can Debug wth IDA now.
 
 ## Example
 
