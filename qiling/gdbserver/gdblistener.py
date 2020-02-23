@@ -16,14 +16,15 @@ class GDBSession(object):
     """docstring for GDBSession"""
     def __init__(self, ql, clientsocket, exit_point, mappings):
         super(GDBSession, self).__init__()
-        self.ql = ql
-        self.clientsocket = clientsocket
-        self.netin = clientsocket.makefile('r')
-        self.netout = clientsocket.makefile('w')
-        self.last_pkt = None
-        self.sup = True
-        self.tst = True
-        self.qldbg = qldbg.Qldbg()
+        self.ql             = ql
+        self.clientsocket   = clientsocket
+        self.netin          = clientsocket.makefile('r')
+        self.netout         = clientsocket.makefile('w')
+        self.last_pkt       = None
+        self.sup            = True
+        self.tst            = True
+        self.f9_count       = 0
+        self.qldbg          = qldbg.Qldbg()
         self.qldbg.initialize(self.ql, exit_point=exit_point, mappings=mappings)
         if self.ql.ostype in (QL_LINUX, QL_FREEBSD):
             self.qldbg.bp_insert(self.ql.elf_entry)
@@ -44,12 +45,20 @@ class GDBSession(object):
                 self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
             def handle_c(subcmd):
-                self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
-                self.send(('S%.2x' % GDB_SIGNAL_TRAP))
+                if self.f9_count == 0:
+                    handle_s(subcmd)
+                else:    
+                    self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
+                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))
+                    self.f9_count = 1
 
             def handle_C(subcmd):
-                self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
-                self.send('S%.2x' % GDB_SIGNAL_TRAP)
+                if self.f9_count == 0:
+                    handle_s(subcmd)
+                else:    
+                    self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
+                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))
+                    self.f9_count = 1
 
             def handle_g(subcmd):
                 s = ''
