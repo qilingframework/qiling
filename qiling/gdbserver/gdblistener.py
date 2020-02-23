@@ -112,7 +112,10 @@ class GDBSession(object):
                 self.ql.dprint("gdb> register index: %i" % (reg_index))
                 try:
                     if self.ql.arch == QL_X86:
-                        reg_value = self.ql.uc.reg_read(registers_x86[reg_index-1])
+                        if reg_index <= 24:
+                            reg_value = self.ql.uc.reg_read(registers_x86[reg_index-1])
+                        else:
+                            reg_value = 0
                         reg_value = hex(int.from_bytes(struct.pack('<I', reg_value), byteorder='big'))
                         reg_value = '{:0>8}'.format(reg_value[2:])
                     elif self.ql.arch == QL_X8664:
