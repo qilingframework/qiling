@@ -11,8 +11,17 @@ class MachoParser:
     def __init__(self, ql, path, arch="x8664"):
         self.ql = ql
         self.binary_file = self.readFile(path)
+        self.raw_data = self.binary_file
         self.arch = arch
         self.parseFile()
+        self.page_zero_size = 0
+        self.header_address = 0x0
+        for seg in self.segments:
+            # find page zero
+            if seg.vm_address == 0 and seg.file_size == 0:
+                print("PageZero Size {:X}".format(seg.vm_size))
+                self.page_zero_size = seg.vm_size
+                self.header_address = seg.vm_size
 
     @staticmethod
     def readFile(path):

@@ -8,6 +8,9 @@ from qiling.loader.macho_parser.parser import *
 from qiling.loader.macho_parser.define_value import *
 from qiling.exception import *
 
+ZERO_PAGE_ALIGN = 0x1000
+SLIDE = 0x10000
+
 # TODO: we maybe we should use a better way to load
 # reference to xnu source code /bsd/kern/mach_loader.c
 
@@ -91,7 +94,7 @@ class MachoX86:
             else:
                 self.ql.entry_point = self.proc_entry + self.slide
             self.ql.macho_entry = self.binary_entry + self.slide
-            self.ql.loadbase = self.slide
+            self.ql.load_base =  self.slide
 
     def loadUnixThread(self, cmd, isdyld):
         if not isdyld:
@@ -235,8 +238,8 @@ class MachoX8664:
 
         self.macho_file     = MachoParser(ql, file_path)
         self.loading_file   = self.macho_file
-        self.slide          = 0x0000000
-        self.dyld_slide     = 0x3000000000000000
+        self.slide          = 0x0000000000000000
+        self.dyld_slide     = 0x0000500000000000
         self.string_align   = 8
         self.ptr_align      = 8
         self.ql             = ql
@@ -251,6 +254,7 @@ class MachoX8664:
         self.argc           = argc
         self.dyld_path      = dyld_path
         self.using_dyld     = False
+        self.vm_end_addr    = 0x0
         # self.dyld_slide = 0x1
         # todo: dyld loader
 
@@ -315,9 +319,9 @@ class MachoX8664:
                 print("entryPoint : {}".format(hex(self.ql.entry_point)))
             else:
                 self.ql.entry_point = self.proc_entry + self.slide
-            print("binEntry : {}".format(self.binary_entry))
+            print("binEntry : 0x{:X}".format(self.binary_entry))
             self.ql.macho_entry = self.binary_entry + self.slide
-            self.ql.loadbase = self.slide
+            self.ql.load_base =  self.slide
         else:
             print("finish load dyld")
 
@@ -337,6 +341,8 @@ class MachoX8664:
         self.ql.dprint("[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
         self.uc.mem_map(vaddr_start, seg_size)
         self.uc.mem_write(vaddr_start, seg_data)
+        if self.vm_end_addr < vaddr_end:
+            self.vm_end_addr = vaddr_end
         # print("SegData : {}".format(seg_data[0x119c:]))
     
     def loadUnixThread(self, cmd, isdyld):
@@ -354,15 +360,10 @@ class MachoX8664:
         pass
     
     def loadMain(self, cmd, isdyld=False):
-        text_base = 0
-        for seg in self.macho_file.segments:
-            if seg.name == "__TEXT":
-                text_base = seg.vm_address
-                print("Text base {}".format(hex(text_base)))
-                break
-        if not isdyld:
-            self.binary_entry = cmd.entry_offset + text_base 
-        self.proc_entry = cmd.entry_offset + text_base 
+        if self.macho_file.page_zero_size:
+            if not isdyld:
+                self.binary_entry = cmd.entry_offset + self.macho_file.page_zero_size
+            self.proc_entry = cmd.entry_offset + self.macho_file.page_zero_size
 
     def loadDylinker(self, cmd):
         self.dyld_path = cmd.name
@@ -432,7 +433,9 @@ class MachoX8664:
         self.ql.dprint("[+] esp 0x%x, content 0x%x" % (self.stack_esp, self.argc))
         if self.using_dyld:
             ptr -= 4
-            self.push_stack_addr(self.proc_entry)
+            print("entry :{:X}".format(self.binary_entry))
+            self.push_stack_addr(self.macho_file.header_address)
+            # self.push_stack_addr(self.binary_entry)
 
         return self.stack_esp
 
@@ -531,19 +534,19 @@ class MachoARM64:
                         if not isdyld:
                             if not self.dyld_path:
                                 raise QlErrorMACHOFormat("[!] Error No Dyld path")
-                            self.dyld_file = MachoParser(self.ql, self.dyld_path)
-                            self.loadMachoX86(depth + 1, True)
                             self.using_dyld = True
 
         if depth == 0:
             # self.ql.stack_esp = self.stack_esp
             self.ql.stack_esp = self.loadStack()
             if self.using_dyld:
+                self.dyld_file = MachoParser(self.ql, self.dyld_path)
+                self.loadMachoX86(depth + 1, True)
                 self.ql.entry_point = self.proc_entry + self.dyld_slide
             else:
                 self.ql.entry_point = self.proc_entry + self.slide
             self.ql.macho_entry = self.binary_entry + self.slide
-            self.ql.loadbase = self.slide
+            self.ql.load_base =  self.slide
         
     def loadSegment64(self, cmd, isdyld):
         if isdyld:
@@ -649,7 +652,8 @@ class MachoARM64:
         self.ql.dprint("[+] esp 0x%x, content 0x%x" % (self.stack_esp, self.argc))
         if self.using_dyld:
             ptr -= 4
-            self.push_stack_addr(binary_entry)
+            print("header addr :{:X}".format(self.macho_file.header_address))
+            self.push_stack_addr(self.macho_file.header_address)
 
         return self.stack_esp
 
