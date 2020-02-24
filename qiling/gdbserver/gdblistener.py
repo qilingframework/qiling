@@ -54,15 +54,10 @@ class GDBSession(object):
                 else:    
                     self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
                     self.send(('S%.2x' % GDB_SIGNAL_TRAP))
-                    self.f9_count = 1
-
-            def handle_C(subcmd):
-                if self.f9_count == 0:
-                    handle_s(subcmd)
-                else:    
-                    self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
-                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))
-                    self.f9_count = 1
+            
+            
+            handle_C = handle_c
+            
 
             def handle_g(subcmd):
                 s = ''
@@ -203,6 +198,7 @@ class GDBSession(object):
                     self.qldbg.soft_bp = True
                     self.qldbg.resume_emu()
                 self.send('S%.2x' % GDB_SIGNAL_TRAP)
+                self.f9_count = 1
 
             def handle_Z(subcmd):
                 data = subcmd
