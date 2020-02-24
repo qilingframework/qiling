@@ -1,6 +1,6 @@
 # Qiling Gdbserver
 
-Qiling supports **Gdb remote debugging**, which listens at default port **9999** if enable.
+Qiling supports **Gdb remote debugging** with an embedded gdbserer.
 
 ## Usage
 
@@ -11,37 +11,35 @@ from qiling import *
 
 def test_gdb(path, rootfs):
     ql = Qiling(path, rootfs, output="off")
-    ql.gdb = True # enable gdbserver at default port 9999
+
+    # enable gdbserver at default port 9999
+    ql.gdb = True
+
     # You can also customize address & port of GDB server
     # ql.gdb = ":9999"  # GDB server listens to 0.0.0.0:9999
     # ql.gdb = "127.0.0.1:9999"  # GDB server listens to 127.0.0.1:9999
+
     ql.run()  
 
 if __name__ == "__main__":
     test_gdb(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux")
 ```
 
-Run gdb and `set architecture i386:intel` for x86 or `set architecture i386:x86-64` for x86-64
+By default, gdbserver listens at **localhost**, port **9999**.
 
-Then `target remote ip:port` and run the python script.
-
-Currently supported commands include `si`, `ni`, `c`, `k`, read register, read memory, add/remove breakpoints.
+The emulated code will break at entrypoint, waiting for connection & control from gdb client.
 
 ---
 
 ### Debug with IDA
 
-The script is the same as above.
+Firstly, run Qiling code, with gdbserver enable, like in the sample script above.
 
-Run IDA and set options like this:
+Then run IDA and set options like in the below screenshot:
 
 ![GDB-IDA](./GDBSERVER-IDA.png)
 
-Note: Make sure you have selected the arch of target file.
-
-Then run the script and you can Debug wth IDA now.
-
-## Example
+Note: Make sure you select the architecture of target code.
 
 Below is an example on how we use gdb to debug an x86-64 binary in Qiling.
 
@@ -147,19 +145,15 @@ x/10xg
 
 ---
 
-## Todo
+### Todo
 
 1. Add support for more architectures
 
 2. Added support for more GDB commands
-
-3. ...
 
 ---
 
 ## Thank
 
 The codes learn some ideas from [uDdbg](https://github.com/iGio90/uDdbg), thanks.
-
-
 
