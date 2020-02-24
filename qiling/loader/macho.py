@@ -305,7 +305,7 @@ class MachoX8664:
                         if not isdyld:
                             if not self.dyld_path:
                                 raise QlErrorMACHOFormat("[!] Error No Dyld path")
-                            self.dyld_path =  (self.ql.rootfs + self.dyld_path)
+                            self.dyld_path =  os.path.join(self.ql.rootfs + self.dyld_path)
                             self.dyld_file = MachoParser(self.ql, self.dyld_path)
                             self.loading_file = self.dyld_file
                             self.proc_entry = self.loadMachoX8664(depth + 1, True)

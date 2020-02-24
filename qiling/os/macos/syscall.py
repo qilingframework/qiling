@@ -297,8 +297,6 @@ def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buffer, buffer_size):
             info = ProcRegionWithPathInfo(ql)
             info.set_path(b"/usr/lib/dyld")
             info.write_info(buffer)
-            # retval
-            # ql.uc.mem_write(ql.uc.reg_read(UC_X86_REG_RSP), struct.pack("<Q", PROC_PIDREGIONPATHINFO_SIZE))
         pass
     pass
 
@@ -308,7 +306,6 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, null0, null1, n
     stat64_file = (ql_read_string(ql, stat64_pathname))
 
     real_path = ql.macho_fs.vm_to_real_path(stat64_file)
-    # relative_path = ql_transform_to_relative_path(ql, stat64_file)
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
@@ -348,7 +345,6 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, null0, null1, n
 
 # 0x16e
 def ql_syscall_bsdthread_register(ql, threadstart, wqthread, flags, stack_addr_hint, targetconc_ptr, dispatchqueue_offset):
-    # tsd_offset = readstack()
     set_eflags_cf(ql, 0x0)
     ql_definesyscall_return(ql, 0x00000000400000df)
     pass

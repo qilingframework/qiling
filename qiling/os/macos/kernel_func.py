@@ -66,7 +66,7 @@ class FileSystem():
 
     def __init__(self, ql):
         self.ql = ql
-        self.base_path = "/Users/spike/projects/qiling.new/examples/rootfs/x8664_macos"
+        self.base_path = ql.rootfs
 
     def get_common_attr(self, path, cmn_flags):
         real_path = self.vm_to_real_path(path)
@@ -113,6 +113,8 @@ class FileSystem():
         return attr
 
     def vm_to_real_path(self, vm_path):
+        if not vm_path:
+            return None
         if vm_path[0] == '/':
             # abs path 
             return os.path.join(self.base_path, vm_path[1:])
