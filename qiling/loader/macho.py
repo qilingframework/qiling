@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+import os
+
 from struct import pack
 from qiling.loader.macho_parser.parser import *
 from qiling.loader.macho_parser.define_value import *
@@ -303,6 +305,7 @@ class MachoX8664:
                         if not isdyld:
                             if not self.dyld_path:
                                 raise QlErrorMACHOFormat("[!] Error No Dyld path")
+                            self.dyld_path =  (self.ql.rootfs + self.dyld_path)
                             self.dyld_file = MachoParser(self.ql, self.dyld_path)
                             self.loading_file = self.dyld_file
                             self.proc_entry = self.loadMachoX8664(depth + 1, True)
