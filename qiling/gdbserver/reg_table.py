@@ -33,12 +33,6 @@ registers_x8664 = [
     UC_X86_REG_ST5, UC_X86_REG_ST6, UC_X86_REG_ST7
 ]
 
-# registers_x86_segments = [
-#     UC_X86_REG_EFLAGS,
-#     UC_X86_REG_CS, UC_X86_REG_SS, UC_X86_REG_DS,
-#     UC_X86_REG_ES, UC_X86_REG_FS, UC_X86_REG_GS
-# ]
-
 arch_reg = {QL_X86: registers_x86, QL_X8664: registers_x8664}
 
 
