@@ -27,6 +27,7 @@ class GDBSession(object):
         self.last_pkt       = None
         self.sup            = True
         self.tst            = True
+        self.vCont_needed   = False
         self.f9_count       = 0
         self.qldbg          = qldbg.Qldbg()
         self.qldbg.initialize(self.ql, exit_point=exit_point, mappings=mappings)
@@ -48,14 +49,14 @@ class GDBSession(object):
             def handle_qmark(subcmd):
                 self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
+
             def handle_c(subcmd):
-                if self.f9_count == 0:
+                if self.f9_count == 0 and self.vCont_needed == True:
                     handle_s(subcmd)
-                else:    
-                    self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
-                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))
+                self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
+                self.send(('S%.2x' % GDB_SIGNAL_TRAP))
             
-            
+
             handle_C = handle_c
             
 
@@ -80,6 +81,7 @@ class GDBSession(object):
                         s += tmp
                 self.send(s)
 
+
             def handle_G(subcmd):
                 count = 0
                 if self.ql.arch == QL_X86:
@@ -101,11 +103,13 @@ class GDBSession(object):
                         count += 1
                 self.send('OK')
 
+
             def handle_H(subcmd):
                 if subcmd.startswith('g'):
                     self.send('OK')
                 if subcmd.startswith('c'):
                     self.send('OK')
+
 
             def handle_m(subcmd):
                 addr, size = subcmd.split(',')
@@ -124,6 +128,7 @@ class GDBSession(object):
                 except:
                     self.send('E14')
 
+
             def handle_M(subcmd):
                 addr, data = subcmd.split(',')
                 size, data = data.split(':')
@@ -134,6 +139,7 @@ class GDBSession(object):
                     self.send('OK')
                 except:
                     self.send('E01')
+
 
             def handle_p(subcmd):  # $p21#d3
                 reg_index = int(subcmd, 16)
@@ -150,6 +156,7 @@ class GDBSession(object):
                     elif self.ql.arch == QL_X8664:
                         if reg_index <= 32:
                             reg_value = self.ql.uc.reg_read(registers_x8664[reg_index-1])
+                            self.ida_gdb = True
                         else:
                             reg_value = 0
                         if reg_index <= 17:
@@ -162,6 +169,7 @@ class GDBSession(object):
                 except:
                     self.close()
                     raise
+
 
             def handle_P(subcmd):
                 reg_index, reg_data = subcmd.split('=')
@@ -177,7 +185,9 @@ class GDBSession(object):
                     else:
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                         self.ql.uc.reg_write(registers_x8664[reg_index], reg_data)
+                self.ql.nprint("gdb> write to register %x with %x" %(registers_x8664[reg_index],reg_data))        
                 self.send('OK')
+
 
             def handle_q(subcmd):
                 if subcmd.startswith('Supported:') and self.sup:
@@ -204,6 +214,7 @@ class GDBSession(object):
                     if not subcmd.startswith('Supported:'):
                         self.send("")
 
+
             def handle_v(subcmd):
                 if subcmd == 'MustReplyEmpty':
                     self.send("")
@@ -213,7 +224,10 @@ class GDBSession(object):
                     exit(1)
                 elif subcmd.startswith('Cont'):
                     if subcmd == 'Cont?':
-                        self.send('vCont;c;C;s;S')
+                        if self.vCont_needed == True:
+                            self.send('vCont;c;C;s;S')
+                        else:    
+                            self.send('')
                     else:
                         subcmd = subcmd.split(';')
                         if subcmd[1] in ('c', 'C05'):
@@ -223,6 +237,7 @@ class GDBSession(object):
                             handle_s(subcmd)
                 else:
                     self.send("")
+
 
             def handle_s(subcmd):
                 current_address = self.qldbg.current_address
@@ -236,6 +251,7 @@ class GDBSession(object):
                     self.qldbg.resume_emu()
                 self.send('S%.2x' % GDB_SIGNAL_TRAP)
                 self.f9_count = 1
+
 
             def handle_Z(subcmd):
                 data = subcmd
@@ -251,6 +267,7 @@ class GDBSession(object):
                 else:
                     self.send('E22')
 
+
             def handle_z(subcmd):
                 data = subcmd.split(',')
                 if len(data) != 3:
@@ -263,6 +280,7 @@ class GDBSession(object):
                     self.send('OK')
                 except:
                     self.send('E22')
+
 
             def handle_exclaim(subcmd):
                 self.send('OK')
@@ -299,6 +317,7 @@ class GDBSession(object):
 
         self.close()
 
+
     def receive(self):
         '''Receive a packet from a GDB client'''
         csum = 0
@@ -332,9 +351,11 @@ class GDBSession(object):
             self.close()
             raise
 
+
     def send(self, msg):
         """Send a packet to the GDB client"""
         self.send_raw('$%s#%.2x' % (msg, checksum(msg)))
+
 
     def send_raw(self, r):
         self.netout.write(r)
