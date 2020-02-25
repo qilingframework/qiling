@@ -13,7 +13,6 @@ import time
 import io
 import select
 import random
-import platform
 
 from unicorn import *
 from unicorn.arm_const import *
@@ -324,7 +323,7 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, null0, null1, n
         stat64_buf += ql.pack64(0x0)                            # st_mtimensec      64 byte
         stat64_buf += ql.pack64(int(stat64_info.st_ctime))      # st_ctime          64 byte
         stat64_buf += ql.pack64(0x0)                            # st_ctimensec      64 byte
-        if platform.system() == 'Darwin':
+        if ql.platform == QL_MACOS:
             stat64_buf += ql.pack64(int(stat64_info.st_birthtime))  # st_birthtime      64 byte
         else:
             stat64_buf += ql.pack64(int(stat64_info.st_ctime))  # st_birthtime      64 byte
@@ -332,11 +331,11 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, null0, null1, n
         stat64_buf += ql.pack64(stat64_info.st_size)            # st_size           64 byte
         stat64_buf += ql.pack64(stat64_info.st_blocks)          # st_blocks         64 byte
         stat64_buf += ql.pack32(stat64_info.st_blksize)         # st_blksize        32 byte
-        if platform.system() == 'Darwin':
+        if ql.platform == QL_MACOS:
             stat64_buf += ql.pack32(stat64_info.st_flags)       # st_flags          32 byte
         else:    
             stat64_buf += ql.pack32(0x0)          
-        if platform.system() == 'Darwin':
+        if ql.platform == QL_MACOS:
             stat64_buf += ql.pack32(stat64_info.st_gen)         # st_gen            32 byte
         else:    
             stat64_buf += ql.pack32(0x0)                    
