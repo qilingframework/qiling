@@ -174,6 +174,7 @@ class GDBSession(object):
                     else:
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                         self.ql.uc.reg_write(registers_x8664[reg_index], reg_data)
+                self.ql.nprint("gdb> write to register %x with %x" %(registers_x8664[reg_index],reg_data))        
                 self.send('OK')
 
             def handle_q(subcmd):
