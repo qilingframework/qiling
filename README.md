@@ -86,7 +86,7 @@ def my_sandbox(path, rootfs):
 
 if __name__ == "__main__":
     # execute Windows EXE under our rootfs
-    my_sandbox(["examples/rootfs/x86_windows/bin/x86-windows-hello.exe"], "examples/rootfs/x86_windows")
+    my_sandbox(["examples/rootfs/x86_windows/bin/x86_hello.exe"], "examples/rootfs/x86_windows")
 ```
 
 - Below example shows how to use Qiling framework to dynamically patch a Windows crackme, make it always display "Congratulation" dialog.
