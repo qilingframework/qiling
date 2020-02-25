@@ -62,7 +62,7 @@ class GDBSession(object):
             def handle_g(subcmd):
                 s = ''
                 if self.ql.arch == QL_X86:
-                    for reg in arch_reg[self.ql.arch]:
+                    for reg in registers_x86[:17]:
                         r = self.ql.uc.reg_read(reg)
                         tmp = hex(int.from_bytes(struct.pack('<I', r), byteorder='big'))
                         tmp = '{:0>8}'.format(tmp[2:])
@@ -73,7 +73,7 @@ class GDBSession(object):
                         tmp = hex(int.from_bytes(struct.pack('<Q', r), byteorder='big'))
                         tmp = '{:0>16}'.format(tmp[2:])
                         s += tmp
-                    for reg in registers_x8664[17:]:
+                    for reg in registers_x8664[17:24]:
                         r = self.ql.uc.reg_read(reg)
                         tmp = hex(int.from_bytes(struct.pack('<I', r), byteorder='big'))
                         tmp = '{:0>8}'.format(tmp[2:])
@@ -87,15 +87,18 @@ class GDBSession(object):
                         reg_data = subcmd[i:i+7]
                         reg_data = int(reg_data, 16)
                         self.ql.uc.reg_write(registers_x86[count], reg_data)
+                        count += 1
                 elif self.ql.arch == QL_X8664:
                     for i in range(0, 17*16, 16):
                         reg_data = subcmd[i:i+15]
                         reg_data = int(reg_data, 16)
                         self.ql.uc.reg_write(registers_x86[count], reg_data)
+                        count += 1
                     for j in range(17*16, 17*16+15*8, 8):
                         reg_data = subcmd[j:j+7]
                         reg_data = int(reg_data, 16)
                         self.ql.uc.reg_write(registers_x86[count], reg_data)
+                        count += 1
                 self.send('OK')
 
             def handle_H(subcmd):
