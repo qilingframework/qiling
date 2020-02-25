@@ -27,6 +27,7 @@ class GDBSession(object):
         self.last_pkt       = None
         self.sup            = True
         self.tst            = True
+        self.ida_gdb        = False
         self.f9_count       = 0
         self.qldbg          = qldbg.Qldbg()
         self.qldbg.initialize(self.ql, exit_point=exit_point, mappings=mappings)
@@ -150,6 +151,7 @@ class GDBSession(object):
                     elif self.ql.arch == QL_X8664:
                         if reg_index <= 32:
                             reg_value = self.ql.uc.reg_read(registers_x8664[reg_index-1])
+                            self.ida_gdb = True
                         else:
                             reg_value = 0
                         if reg_index <= 17:
@@ -214,7 +216,10 @@ class GDBSession(object):
                     exit(1)
                 elif subcmd.startswith('Cont'):
                     if subcmd == 'Cont?':
-                        self.send('vCont;c;C;s;S')
+                        if self.ida_gdb == True:
+                            self.send('vCont;c;C;s;S')
+                        else:    
+                            self.send('')
                     else:
                         subcmd = subcmd.split(';')
                         if subcmd[1] in ('c', 'C05'):

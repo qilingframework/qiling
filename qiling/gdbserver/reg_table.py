@@ -33,6 +33,7 @@ registers_x8664 = [
     UC_X86_REG_ST5, UC_X86_REG_ST6, UC_X86_REG_ST7
 ]
 
+arch_reg = {QL_X86: registers_x86, QL_X8664: registers_x8664}
 
 def get_reg_pc(arch):
     if arch == QL_X86:
