@@ -80,6 +80,24 @@ class GDBSession(object):
                         s += tmp
                 self.send(s)
 
+            def handle_G(subcmd):
+                count = 0
+                if self.ql.arch == QL_X86:
+                    for i in range(0, len(subcmd), 8):
+                        reg_data = subcmd[i:i+7]
+                        reg_data = int(reg_data, 16)
+                        self.ql.uc.reg_write(registers_x86[count], reg_data)
+                elif self.ql.arch == QL_X8664:
+                    for i in range(0, 17*16, 16):
+                        reg_data = subcmd[i:i+15]
+                        reg_data = int(reg_data, 16)
+                        self.ql.uc.reg_write(registers_x86[count], reg_data)
+                    for j in range(17*16, 17*16+15*8, 8):
+                        reg_data = subcmd[j:j+7]
+                        reg_data = int(reg_data, 16)
+                        self.ql.uc.reg_write(registers_x86[count], reg_data)
+                self.send('OK')
+
             def handle_H(subcmd):
                 if subcmd.startswith('g'):
                     self.send('OK')
@@ -142,9 +160,25 @@ class GDBSession(object):
                     self.close()
                     raise
 
+            def handle_P(subcmd):
+                reg_index, reg_data = subcmd.split('=')
+                reg_index = int(reg_index)
+                reg_data = int(reg_data, 16)
+                if self.ql.arch == QL_X86:
+                    reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
+                    self.ql.uc.reg_write(registers_x86[reg_index], reg_data)
+                elif self.ql.arch == QL_X8664:
+                    if reg_index <= 17:
+                        reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
+                        self.ql.uc.reg_write(registers_x8664[reg_index], reg_data)
+                    else:
+                        reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
+                        self.ql.uc.reg_write(registers_x8664[reg_index], reg_data)
+                self.send('OK')
+
             def handle_q(subcmd):
                 if subcmd.startswith('Supported:') and self.sup:
-                    self.send("PacketSize=1000;qXfer:features:read+;multiprocess+")
+                    self.send("PacketSize=1000;multiprocess+")
                     self.sup = False
                 elif subcmd == "Attached":
                     self.send("")
@@ -182,7 +216,7 @@ class GDBSession(object):
                         if subcmd[1] in ('c', 'C05'):
                             self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
                             self.send('S%.2x' % GDB_SIGNAL_TRAP)
-                        elif subcmd[1] in ('s:1', 's:1'):
+                        elif subcmd[1] in ('s:1', 'S:1'):
                             handle_s(subcmd)
                 else:
                     self.send("")
@@ -236,10 +270,12 @@ class GDBSession(object):
                 'c': handle_c,
                 'C': handle_C,
                 'g': handle_g,
+                'G': handle_G,
                 'H': handle_H,
                 'm': handle_m,
                 'M': handle_M,
                 'p': handle_p,
+                'P': handle_P,
                 'q': handle_q,
                 'v': handle_v,
                 's': handle_s,

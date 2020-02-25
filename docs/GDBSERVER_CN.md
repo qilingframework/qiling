@@ -31,6 +31,8 @@ if __name__ == "__main__":
 
 ### Debug with IDA
 
+当前仅在IDA7.4进行了测试
+
 脚本与上面的相同
 
 运行IDA并且像以下这样设置IDA:

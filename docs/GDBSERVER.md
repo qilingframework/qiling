@@ -33,6 +33,8 @@ The emulated code will break at entrypoint, waiting for connection & control fro
 
 ### Debug with IDA
 
+Currently only tested in IDA7.4.
+
 Firstly, run Qiling code, with gdbserver enable, like in the sample script above.
 
 Then run IDA and set options like in the below screenshot:
