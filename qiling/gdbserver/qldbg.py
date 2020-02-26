@@ -7,8 +7,6 @@ from qiling.gdbserver.reg_table import *
 
 class Qldbg(object):
     def __init__(self):
-        self.arch = None
-        self.mode = None
         self.current_address = 0x0
         self.current_address_size = 0x0
         self.last_bp = 0x0
@@ -60,16 +58,17 @@ class Qldbg(object):
                 self.last_bp = 0
             self.has_soft_bp = hit_soft_bp
             if self.current_address + size == self.exit_point:
-                self.ql.nprint("gdb> emulation completed!")
+                self.ql.dprint("gdb> emulation entrypoint at 0x%x" % (self.entry_point))
+                self.ql.dprint("gdb> emulation exitpoint at 0x%x" % (self.exit_point))
         except KeyboardInterrupt as ex:
             self.ql.nprint("gdb> paused at 0x%x, instruction size = %u" % (address, size))
             ql.stop()
 
 
-    def bp_insert(self, add):
-        if add not in self.bp_list:
-            self.bp_list.append(add)
-            self.ql.nprint('gdb> breakpoint added at: 0x%x' % add)
+    def bp_insert(self, addr):
+        if addr not in self.bp_list:
+            self.bp_list.append(addr)
+            self.ql.nprint('gdb> breakpoint added at: 0x%x' % addr)
 
 
     def bp_remove(self, type, addr, len):
