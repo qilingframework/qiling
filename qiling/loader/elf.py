@@ -385,7 +385,7 @@ class ELFLoader(ELFParse):
 
         if loadbase <= 0:
             if ql.archbit == 64:
-                loadbase = ql.loadbase = 0x555555554000
+                loadbase = 0x555555554000
             elif ql.arch == QL_MIPS32EL:
                 loadbase = 0x0000004fef000
             else:
