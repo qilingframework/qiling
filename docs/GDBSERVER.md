@@ -1,9 +1,8 @@
 # Qiling Gdbserver
----
 
-Qiling supports **GDB remote debugging**
+Qiling supports **GDB remote debugging**, meaning it will work with gdbserver compatible client (eg, IDApro). As of now, Qiling's gdbserver is not as complate as GDB's gdbserver, there are still some manual steps need to be done for more comprehensive debuggig (eg, manually rebase the base address in IDApro) 
 
-### Debug with GDB (compatible) mode 
+### Turning on gdbserver
 
 ```python
 from qiling import *
