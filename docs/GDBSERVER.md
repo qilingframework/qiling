@@ -1,6 +1,6 @@
 # Qiling Gdbserver
 
-Qiling supports **GDB remote debugging**, meaning it will work with gdbserver compatible client (eg, IDApro). As of now, Qiling's gdbserver is not as complate as GDB's gdbserver, there are still some manual steps need to be done for more comprehensive debuggig (eg, manually rebase the base address in IDApro) 
+Qiling supports **GDB remote debugging**, meaning it will work with gdbserver compatible client (eg, IDApro). As of now, Qiling's gdbserver is not as complete as GDB's gdbserver, but we are very close to qemu-gdbserver. There are still some manual steps need to be done for more comprehensive debugging (eg, manually rebase the base address in IDAPro) 
 
 ### Turning on gdbserver
 
@@ -148,8 +148,8 @@ x/10xg
 ### Todo
 
 1. Add support for more architectures
-
 2. Added support for more GDB commands
+3. Make it more GDB gdbserver
 
 ---
 
