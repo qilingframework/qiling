@@ -39,6 +39,8 @@ Only tested in IDAPro 7.4
 3. Make sure you select the architecture of target code
 4. Make sure you rebase your code so breakpoint will work
 
+---
+
 ### Debug with GDB
 
 **set arch**
@@ -151,7 +153,7 @@ x/10xg
 
 ---
 
-## Thank
+## Credits
 
-The codes learn some ideas from [uDdbg](https://github.com/iGio90/uDdbg), thanks.
+- Steal some ideas from [uDdbg](https://github.com/iGio90/uDdbg)
 
