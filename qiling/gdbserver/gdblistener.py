@@ -141,7 +141,7 @@ class GDBSession(object):
                     self.send('E01')
 
 
-            def handle_p(subcmd):  # $p21#d3
+            def handle_p(subcmd):
                 reg_index = int(subcmd, 16)
                 reg_value = None
                 self.ql.dprint("gdb> register index: %i" % (reg_index))
@@ -173,16 +173,18 @@ class GDBSession(object):
 
             def handle_P(subcmd):
                 reg_index, reg_data = subcmd.split('=')
-                reg_index = int(reg_index)
-                reg_data = int(reg_data, 16)
+                reg_index = int(reg_index, 16)
                 if self.ql.arch == QL_X86:
+                    reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                     self.ql.uc.reg_write(registers_x86[reg_index], reg_data)
                 elif self.ql.arch == QL_X8664:
                     if reg_index <= 17:
+                        reg_data = int(reg_data, 16)
                         reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
                         self.ql.uc.reg_write(registers_x8664[reg_index], reg_data)
                     else:
+                        reg_data = int(reg_data[:8], 16)
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                         self.ql.uc.reg_write(registers_x8664[reg_index], reg_data)
                 self.ql.nprint("gdb> write to register %x with %x" %(registers_x8664[reg_index],reg_data))        
