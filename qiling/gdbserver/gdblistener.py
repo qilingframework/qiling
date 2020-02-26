@@ -47,18 +47,18 @@ class GDBSession(object):
             self.send_raw('+')
 
             def handle_qmark(subcmd):
+                # 0506:0*,;07:b0e4f*"7f0* ;10:9060ddf7ff7f0* ;thread:4c2b;core:3;#40
+                # self.send('S0506:0*,;07:b0e4f*\"7f0* ;10:9060ddf7ff7f0* ;thread:4c2b;core:1;')
                 self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
 
             def handle_c(subcmd):
-                if self.f9_count == 0 and self.vCont_needed == True:
-                    handle_s(subcmd)
                 self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
                 self.send(('S%.2x' % GDB_SIGNAL_TRAP))
-            
+
 
             handle_C = handle_c
-            
+
 
             def handle_g(subcmd):
                 s = ''
@@ -73,12 +73,15 @@ class GDBSession(object):
                         r = self.ql.uc.reg_read(reg)
                         tmp = hex(int.from_bytes(struct.pack('<Q', r), byteorder='big'))
                         tmp = '{:0>16}'.format(tmp[2:])
+                        self.ql.dprint(tmp)
                         s += tmp
                     for reg in registers_x8664[17:24]:
                         r = self.ql.uc.reg_read(reg)
                         tmp = hex(int.from_bytes(struct.pack('<I', r), byteorder='big'))
                         tmp = '{:0>8}'.format(tmp[2:])
+                        self.ql.dprint(tmp)
                         s += tmp
+
                 self.send(s)
 
 
@@ -144,7 +147,6 @@ class GDBSession(object):
             def handle_p(subcmd):
                 reg_index = int(subcmd, 16)
                 reg_value = None
-                self.ql.dprint("gdb> register index: %i" % (reg_index))
                 try:
                     if self.ql.arch == QL_X86:
                         if reg_index <= 24:
@@ -156,7 +158,7 @@ class GDBSession(object):
                     elif self.ql.arch == QL_X8664:
                         if reg_index <= 32:
                             reg_value = self.ql.uc.reg_read(registers_x8664[reg_index-1])
-                            self.ida_gdb = True
+                            self.vCont_needed = True
                         else:
                             reg_value = 0
                         if reg_index <= 17:
@@ -191,10 +193,24 @@ class GDBSession(object):
                 self.send('OK')
 
 
+            def handle_Q(subcmd):
+                if subcmd.startswith('StartNoAckMode'):
+                    self.send('OK')
+                elif subcmd.startswith('DisableRandomization'):
+                    self.send('OK')
+
+
             def handle_q(subcmd):
                 if subcmd.startswith('Supported:') and self.sup:
+                    #self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")
                     self.send("PacketSize=1000;multiprocess+")
                     self.sup = False
+                elif subcmd.startswith('Xfer:features:read:target.xml:0,3'):
+                    self.send("l<?xml version=\"1.0\"?><!DOCTYPE target SYSTEM \"gdb-target.dtd\"><target><architecture>i386:x86-64</architecture><osabi>GNU/Linux</osabi><xi:include href=\"64bit-core.xml\"/><xi:include href=\"64bit-sse.xml\"/><xi:include href=\"64bit-linux.xml\"/><xi:include href=\"64bit-segments.xml\"/><xi:include href=\"64bit-avx.xml\"/><xi:include href=\"64bit-mpx.xml\"/></target>#3c")
+                elif subcmd.startswith('Xfer:features:read:64bit-core.xml:'):
+                    self.send('OK')
+                elif subcmd.startswith('Xfer:threads:read::0,3ffe'):
+                    self.send("")
                 elif subcmd == "Attached":
                     self.send("")
                 elif subcmd.startswith("C"):
@@ -218,23 +234,27 @@ class GDBSession(object):
 
 
             def handle_v(subcmd):
+                
                 if subcmd == 'MustReplyEmpty':
                     self.send("")
                     pass
+
                 if subcmd.startswith('Kill'):
                     self.send('OK')
                     exit(1)
-                elif subcmd.startswith('Cont'):
+
+                if subcmd.startswith('Cont'):
+                    self.ql.dprint("gdb> Cont command received: %s" % subcmd)
                     if subcmd == 'Cont?':
                         if self.vCont_needed == True:
+                            self.ql.dprint("gdb> enter vCont needed mode")
                             self.send('vCont;c;C;s;S')
                         else:    
                             self.send('')
                     else:
                         subcmd = subcmd.split(';')
                         if subcmd[1] in ('c', 'C05'):
-                            self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
-                            self.send('S%.2x' % GDB_SIGNAL_TRAP)
+                            handle_c(subcmd)
                         elif subcmd[1] in ('s:1', 'S:1'):
                             handle_s(subcmd)
                 else:
@@ -300,6 +320,7 @@ class GDBSession(object):
                 'p': handle_p,
                 'P': handle_P,
                 'q': handle_q,
+                'Q': handle_Q,
                 'v': handle_v,
                 's': handle_s,
                 'Z': handle_Z,
@@ -314,7 +335,7 @@ class GDBSession(object):
                 self.send('')
                 self.ql.nprint("gdb> command not supported: %s" %(cmd))
                 continue
-
+            self.ql.dprint("gdb> received: %s(%s)" % (cmd,subcmd))
             commands[cmd](subcmd)
 
         self.close()
@@ -357,6 +378,7 @@ class GDBSession(object):
     def send(self, msg):
         """Send a packet to the GDB client"""
         self.send_raw('$%s#%.2x' % (msg, checksum(msg)))
+        self.ql.dprint("gdb> send: $%s#%.2x" % (msg, checksum(msg)))
 
 
     def send_raw(self, r):
