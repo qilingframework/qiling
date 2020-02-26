@@ -226,10 +226,10 @@ class GDBSession(object):
                     exit(1)
 
                 if subcmd.startswith('Cont'):
-                    print(subcmd)
+                    self.ql.dprint("gdb> Cont command received: %s" % subcmd)
                     if subcmd == 'Cont?':
                         if self.vCont_needed == True:
-                            if v
+                            self.ql.dprint("gdb> enter vCont needed mode")
                             self.send('vCont;c;C;s;S')
                         else:    
                             self.send('')
