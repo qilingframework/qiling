@@ -73,13 +73,13 @@ class GDBSession(object):
                         r = self.ql.uc.reg_read(reg)
                         tmp = hex(int.from_bytes(struct.pack('<Q', r), byteorder='big'))
                         tmp = '{:0>16}'.format(tmp[2:])
-                        self.ql.dprint(tmp)
+                        #self.ql.dprint(tmp)
                         s += tmp
                     for reg in registers_x8664[17:24]:
                         r = self.ql.uc.reg_read(reg)
                         tmp = hex(int.from_bytes(struct.pack('<I', r), byteorder='big'))
                         tmp = '{:0>8}'.format(tmp[2:])
-                        self.ql.dprint(tmp)
+                        #self.ql.dprint(tmp)
                         s += tmp
 
                 self.send(s)
