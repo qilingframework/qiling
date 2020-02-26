@@ -8,6 +8,6 @@ sys.path.append("..")
 from qiling import *
 
 if __name__ == "__main__":
-    ql = Qiling(["rootfs/x8664_macos/bin/x8664_hello"], "rootfs/x8664_macos", output = "default")
+    ql = Qiling(["rootfs/x8664_macos/bin/x8664_hello"], "rootfs/x8664_macos", output = "disasm")
     ql.gdb = "0.0.0.0:9999"
     ql.run()

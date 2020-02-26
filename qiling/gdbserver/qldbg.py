@@ -24,12 +24,14 @@ class Qldbg(object):
         self.breakpoint_count = 0x0
         self.skip_bp_count = 0x0
 
+
     def initialize(self, ql, exit_point=None, mappings=None):
         self.ql = ql
         self.current_address = self.entry_point = self.ql.entry_point
         self.exit_point = exit_point
         self.mapping = mappings
         self.ql.hook_code(self.dbg_hook)
+
 
     def dbg_hook(self, ql, address, size):
         """
@@ -63,14 +65,17 @@ class Qldbg(object):
             self.ql.nprint("gdb> paused at 0x%x, instruction size = %u" % (address, size))
             ql.stop()
 
+
     def bp_insert(self, add):
         if add not in self.bp_list:
             self.bp_list.append(add)
             self.ql.nprint('gdb> breakpoint added at: 0x%x' % add)
 
+
     def bp_remove(self, type, addr, len):
         self.bp_list.remove(addr)
         self.ql.nprint('gdb> breakpoint remove: 0x%x' % addr)
+
 
     def resume_emu(self, address=None, skip_bp=0):
         """
