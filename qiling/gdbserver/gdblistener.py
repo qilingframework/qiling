@@ -51,14 +51,12 @@ class GDBSession(object):
 
 
             def handle_c(subcmd):
-                if self.f9_count == 0 and self.vCont_needed == True:
-                    handle_s(subcmd)
                 self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
                 self.send(('S%.2x' % GDB_SIGNAL_TRAP))
-            
+
 
             handle_C = handle_c
-            
+
 
             def handle_g(subcmd):
                 s = ''
@@ -156,7 +154,7 @@ class GDBSession(object):
                     elif self.ql.arch == QL_X8664:
                         if reg_index <= 32:
                             reg_value = self.ql.uc.reg_read(registers_x8664[reg_index-1])
-                            self.ida_gdb = True
+                            self.vCont_needed = True
                         else:
                             reg_value = 0
                         if reg_index <= 17:
@@ -218,23 +216,27 @@ class GDBSession(object):
 
 
             def handle_v(subcmd):
+                
                 if subcmd == 'MustReplyEmpty':
                     self.send("")
                     pass
+
                 if subcmd.startswith('Kill'):
                     self.send('OK')
                     exit(1)
-                elif subcmd.startswith('Cont'):
+
+                if subcmd.startswith('Cont'):
+                    print(subcmd)
                     if subcmd == 'Cont?':
                         if self.vCont_needed == True:
+                            if v
                             self.send('vCont;c;C;s;S')
                         else:    
                             self.send('')
                     else:
                         subcmd = subcmd.split(';')
                         if subcmd[1] in ('c', 'C05'):
-                            self.qldbg.resume_emu(self.ql.uc.reg_read(get_reg_pc(self.ql.arch)))
-                            self.send('S%.2x' % GDB_SIGNAL_TRAP)
+                            handle_c(subcmd)
                         elif subcmd[1] in ('s:1', 'S:1'):
                             handle_s(subcmd)
                 else:
