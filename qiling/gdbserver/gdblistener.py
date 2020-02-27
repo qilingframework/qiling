@@ -271,13 +271,48 @@ class GDBSession(object):
                 
                 if subcmd == 'MustReplyEmpty':
                     self.send("")
-                    pass
+                    
+                elif subcmd.startswith('File:open'):
+                    self.send("F5")
 
-                if subcmd.startswith('Kill'):
+                elif subcmd.startswith('File:pread:5,1,'):
+                    mode_file_pread = subcmd.split(',')[-1]
+                    if mode_file_pread == "fff":
+                        self.send("F1;")
+                    if mode_file_pread == "1fff":
+                        self.send("F1")                        
+                    if mode_file_pread == "7ff":
+                        self.send("F1")
+                    if mode_file_pread == "3ff":
+                        self.send("F0")
+                    if mode_file_pread == "1ff":
+                        self.send("F1")                                                                        
+                    if mode_file_pread == "ff":
+                        self.send("F1")                                                                        
+                    if mode_file_pread == "7f":
+                        self.send("F1")                                                                        
+                    if mode_file_pread == "3f":
+                        self.send("F1")                                                                        
+                    if mode_file_pread == "1f":
+                        self.send("F1")                                                                        
+                    if mode_file_pread == "7":
+                        self.send("F1")                                                                        
+                    if mode_file_pread == "3":
+                        self.send("F1")                                                                        
+                    if mode_file_pread == "1":
+                        self.send("F1")                                                                        
+                    if mode_file_pread == "0":
+                        self.send("F1")                                                                        
+
+                elif subcmd.startswith('File:close'):
+                    self.send("F0")
+
+
+                elif subcmd.startswith('Kill'):
                     self.send('OK')
                     exit(1)
 
-                if subcmd.startswith('Cont'):
+                elif subcmd.startswith('Cont'):
                     self.ql.dprint("gdb> Cont command received: %s" % subcmd)
                     if subcmd == 'Cont?':
                         # if self.ida_client == True:
