@@ -2,7 +2,7 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
-import struct
+import struct, os
 from qiling.gdbserver import qldbg
 from qiling.gdbserver.reg_table import *
 
@@ -25,10 +25,7 @@ class GDBSession(object):
         self.netin          = clientsocket.makefile('r')
         self.netout         = clientsocket.makefile('w')
         self.last_pkt       = None
-        self.sup            = True
-        self.tst            = True
-        self.vCont_needed   = False
-        self.f9_count       = 0
+        self.ida_client     = False
         self.qldbg          = qldbg.Qldbg()
         self.qldbg.initialize(self.ql, exit_point=exit_point, mappings=mappings)
         if self.ql.ostype in (QL_LINUX, QL_FREEBSD):
@@ -158,7 +155,6 @@ class GDBSession(object):
                     elif self.ql.arch == QL_X8664:
                         if reg_index <= 32:
                             reg_value = self.ql.uc.reg_read(registers_x8664[reg_index-1])
-                            self.vCont_needed = True
                         else:
                             reg_value = 0
                         if reg_index <= 17:
@@ -201,33 +197,71 @@ class GDBSession(object):
 
 
             def handle_q(subcmd):
-                if subcmd.startswith('Supported:') and self.sup:
-                    #self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")
+                if subcmd.startswith('Supported:xmlRegisters='):
+                    self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")
+                    self.ida_client = True
+                
+                elif subcmd.startswith('Supported:multiprocess+'):
                     self.send("PacketSize=1000;multiprocess+")
-                    self.sup = False
-                elif subcmd.startswith('Xfer:features:read:target.xml:0,3'):
-                    self.send("l<?xml version=\"1.0\"?><!DOCTYPE target SYSTEM \"gdb-target.dtd\"><target><architecture>i386:x86-64</architecture><osabi>GNU/Linux</osabi><xi:include href=\"64bit-core.xml\"/><xi:include href=\"64bit-sse.xml\"/><xi:include href=\"64bit-linux.xml\"/><xi:include href=\"64bit-segments.xml\"/><xi:include href=\"64bit-avx.xml\"/><xi:include href=\"64bit-mpx.xml\"/></target>#3c")
-                elif subcmd.startswith('Xfer:features:read:64bit-core.xml:'):
-                    self.send('OK')
+                    #self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;FastTracepoints+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")  
+
+                elif subcmd.startswith('Xfer:features:read:target.xml:0'):
+                    if self.ql.arch == QL_X8664 and self.ida_client:
+                        self.send("l<?xml version=\"1.0\"?><!DOCTYPE target SYSTEM \"gdb-target.dtd\"><target><architecture>i386:x86-64</architecture><osabi>GNU/Linux</osabi><xi:include href=\"64bit-core.xml\"/><xi:include href=\"64bit-sse.xml\"/><xi:include href=\"64bit-linux.xml\"/><xi:include href=\"64bit-segments.xml\"/><xi:include href=\"64bit-avx.xml\"/><xi:include href=\"64bit-mpx.xml\"/></target>")
+                    else:    
+                        self.send('l')
+
+                elif subcmd.startswith('Xfer:features:read:'):
+                    if self.ql.arch == QL_X8664:
+                        xfercmd_file = subcmd.split(':')[3]
+                        xfercmd_file = os.path.join(self.ql.rootfs,"usr","share","gdb", xfercmd_file)
+                        if os.path.exists(xfercmd_file):
+                            f = open(xfercmd_file, 'r')
+                            file_contents = f.read()
+                            self.send("l" + file_contents)
+                        else:
+                            self.ql.nprint("gdb> xml file not found: %s" % (xfercmd_file))
+                            exit(1)
+
                 elif subcmd.startswith('Xfer:threads:read::0,3ffe'):
-                    self.send("")
+                    xfercmd_file = os.path.join(self.ql.rootfs,"usr","share","gdb", "xfer_thread.xml")
+                    f = open(xfercmd_file,"w+")
+                    f.write("<threads>\r\n<thread id=\"651b\" core=\"3\" name=\"" + str(self.ql.filename[0].split('/')[-1]) + "\"/>\r\n</threads>")
+                    f.close
+                    f = open(xfercmd_file, 'r')
+                    file_contents = f.read()
+                    self.send("l" + file_contents)
+
+                elif subcmd == 'Xfer:auxv:read::0,1000':
+                      self.send('l')  
+
+                elif subcmd.startswith('Xfer:exec-file:read::0,3ffe'):
+                    self.send("l" + str(self.ql.filename[0]))
+                
                 elif subcmd == "Attached":
                     self.send("")
+                
                 elif subcmd.startswith("C"):
                     self.send("")
+                
                 elif subcmd.startswith("L:"):
                     self.send("M001")
+                
                 elif subcmd == "fThreadInfo":
                     self.send("m1")
+                
                 elif subcmd == "sThreadInfo":
                     self.send("l")
-                elif subcmd.startswith("TStatus") and self.tst:
+                
+                elif subcmd.startswith("TStatus"):
                     self.send("")
-                    self.tst = False
+                
                 elif subcmd == "Symbol":
                     self.send("OK")
+                
                 elif subcmd == "Offsets":
                     self.send("Text=0;Data=0;Bss=0")
+                
                 else:
                     if not subcmd.startswith('Supported:'):
                         self.send("")
@@ -246,11 +280,11 @@ class GDBSession(object):
                 if subcmd.startswith('Cont'):
                     self.ql.dprint("gdb> Cont command received: %s" % subcmd)
                     if subcmd == 'Cont?':
-                        if self.vCont_needed == True:
-                            self.ql.dprint("gdb> enter vCont needed mode")
-                            self.send('vCont;c;C;s;S')
-                        else:    
-                            self.send('')
+                        # if self.ida_client == True:
+                        #     self.ql.dprint("gdb> enter vCont needed mode")
+                        #     self.send('vCont;c;C;s;S')
+                        # else:    
+                        self.send('')
                     else:
                         subcmd = subcmd.split(';')
                         if subcmd[1] in ('c', 'C05'):
@@ -272,7 +306,6 @@ class GDBSession(object):
                     self.qldbg.soft_bp = True
                     self.qldbg.resume_emu()
                 self.send('S%.2x' % GDB_SIGNAL_TRAP)
-                self.f9_count = 1
 
 
             def handle_Z(subcmd):
@@ -335,7 +368,7 @@ class GDBSession(object):
                 self.send('')
                 self.ql.nprint("gdb> command not supported: %s" %(cmd))
                 continue
-            self.ql.dprint("gdb> received: %s(%s)" % (cmd,subcmd))
+            self.ql.dprint("gdb> received: %s%s" % (cmd,subcmd))
             commands[cmd](subcmd)
 
         self.close()
