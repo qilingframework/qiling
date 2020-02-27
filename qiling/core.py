@@ -724,6 +724,7 @@ class Qiling:
             sock.bind((ip, port))
             if ip == '':
                 ip = 'localhost'
+            self.nprint("gdb> initializing loadbase 0x%x" % (self.loadbase))    
             self.nprint("gdb> listening on %s:%d" % (ip, port))
             sock.listen(1)
             conn, addr = sock.accept()
