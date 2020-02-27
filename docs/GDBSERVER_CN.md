@@ -1,10 +1,9 @@
 # Qiling Gdbserver
 
-Qiling已通过Qiling Gdbserver支持**Gdb远程调试**（目前支持x86, x86-64）。
+Qiling已支持**Gdb远程调试**。这意味着它能够与gdbserver兼容的客户端(例如IDApro)一起工作。到目前为止，Qiling gdbserver的功能还没有GDB的gdbserver完整，但是已经非常接近qemu-gdbserver了。为了进行更完整的调试，仍然需要手动执行一些步骤(例如手动重新设置IDAPro中的基本地址)
 
-## Usage
 
-### Debug with GDB
+### Turning on gdbserver
 
 ```python
 from qiling import *
@@ -21,11 +20,7 @@ if __name__ == "__main__":
     test_gdb(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux")
 ```
 
-运行gdb并为所需架构进行设置，x86输入命令`set architecture i386:intel`，x86-64输入命令`set architecture i386:x86-64`
-
-然后输入命令`target remote ip:port` 并执行python脚本
-
-当前支持的命令有 `si`, `ni`, `c`, `k`, 读寄存器, 读内存, 插入或删除断点
+gdbserver默认监听**localhost**，端口**9999**，并且代码模拟将在入口点暂停
 
 ---
 
@@ -33,19 +28,17 @@ if __name__ == "__main__":
 
 当前仅在IDA7.4进行了测试
 
-脚本与上面的相同
-
-运行IDA并且像以下这样设置IDA:
+1. 如上面的示例脚本中所示，启用gdbserver选项并运行
+2. 运行IDA并且像以下这样设置IDA:
 
 ![GDB-IDA](./GDBSERVER-IDA.png)
 
-注意：确保选择的是目标文件对应的架构
+3. 确保选择的是目标文件对应的架构
+4. 确保已重新设置基址，否则断点无法使用
 
-然后运行脚本连接， 就可以在IDA上进行调试了
+---
 
-### Example
-
-以x86-64为例
+### Debug with GDB
 
 **set arch**
 ```bash
@@ -155,8 +148,10 @@ x/10xg
 
 2. 添加对更多GDB指令的支持
 
+3. 使其更接近GDB gdbserver
+
 ---
 
-## Thank
+## Credits
 
-编写该模块时从 [uDdbg](https://github.com/iGio90/uDdbg) 借鉴了很多思想，在此感谢
+从 [uDdbg](https://github.com/iGio90/uDdbg) 借鉴了很多思想，在此感谢
