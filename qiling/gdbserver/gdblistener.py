@@ -44,9 +44,19 @@ class GDBSession(object):
             self.send_raw('+')
 
             def handle_qmark(subcmd):
-                # T0506:0*,;07:b0e4f*"7f0* ;10:9060ddf7ff7f0* ;thread:4c2b;core:3;#40
-                # self.send('54303530363a302a2c3b30373a62306534662a223766302a203b31303a393036306464663766663766302a203b7468726561643a346332623b636f72653a333b')
-                self.send(('S%.2x' % GDB_SIGNAL_TRAP))
+                # 0506:0*,;07:b0e4f*"7f0* ;10:9060ddf7ff7f0* ;thread:4c2b;core:3;#40
+                # self.send('S0506:0*,;07:b0e4f*\"7f0* ;10:9060ddf7ff7f0* ;thread:4c2b;core:1;')
+                if self.ql.arch == QL_X8664:
+                    def reg2data(reg):
+                        data = hex(int.from_bytes(struct.pack('<Q', reg), byteorder='big'))
+                        data = '{:0>16}'.format(data[2:])
+                        return data
+
+                    rsp = reg2data(self.ql.uc.reg_read(UC_X86_REG_RSP))
+                    rip = reg2data(self.ql.uc.reg_read(UC_X86_REG_RIP))
+                    self.send('T0506:0*,;07:'+rsp+'* ;10:'+rip+'* ;')
+                else:
+                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
 
             def handle_c(subcmd):
