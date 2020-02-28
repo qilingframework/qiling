@@ -2,7 +2,10 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
-import struct, os
+
+import struct, os, socket
+from binascii import unhexlify
+
 from qiling.gdbserver import qldbg
 from qiling.gdbserver.reg_table import *
 
@@ -12,7 +15,10 @@ GDB_SIGNAL_TRAP = 5
 def checksum(data):
     checksum = 0
     for c in data:
-        checksum += ord(c)
+        if type(c) == str:
+            checksum += (ord(c))
+        else:
+            checksum += c    
     return checksum & 0xff
 
 
@@ -44,8 +50,6 @@ class GDBSession(object):
             self.send_raw('+')
 
             def handle_qmark(subcmd):
-                # 0506:0*,;07:b0e4f*"7f0* ;10:9060ddf7ff7f0* ;thread:4c2b;core:3;#40
-                # self.send('S0506:0*,;07:b0e4f*\"7f0* ;10:9060ddf7ff7f0* ;thread:4c2b;core:1;')
                 if self.ql.arch == QL_X8664:
                     def reg2data(reg):
                         data = hex(int.from_bytes(struct.pack('<Q', reg), byteorder='big'))
@@ -80,14 +84,15 @@ class GDBSession(object):
                         r = self.ql.uc.reg_read(reg)
                         tmp = hex(int.from_bytes(struct.pack('<Q', r), byteorder='big'))
                         tmp = '{:0>16}'.format(tmp[2:])
-                        self.ql.dprint(tmp)
+                        #self.ql.dprint(tmp)
                         s += tmp
                     for reg in registers_x8664[17:24]:
                         r = self.ql.uc.reg_read(reg)
                         tmp = hex(int.from_bytes(struct.pack('<I', r), byteorder='big'))
                         tmp = '{:0>8}'.format(tmp[2:])
-                        self.ql.dprint(tmp)
+                        #self.ql.dprint(tmp)
                         s += tmp
+               
                 self.send(s)
 
 
@@ -206,6 +211,7 @@ class GDBSession(object):
 
 
             def handle_q(subcmd):
+
                 if subcmd.startswith('Supported:xmlRegisters='):
                     if self.ql.multithread == False:
                         # gdbserver --remote-debug  --disable-packet=threads,vCont
@@ -214,6 +220,7 @@ class GDBSession(object):
                 
                 elif subcmd.startswith('Supported:multiprocess+'):
                     self.send("PacketSize=1000;multiprocess+")
+                    # gdb client needs this, somehow
                     #self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;FastTracepoints+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")  
 
                 elif subcmd.startswith('Xfer:features:read:target.xml:0'):
@@ -237,7 +244,7 @@ class GDBSession(object):
                 elif subcmd.startswith('Xfer:threads:read::0,3ffe'):
                     xfercmd_file = os.path.join(self.ql.rootfs,"usr","share","gdb", "xfer_thread.xml")
                     f = open(xfercmd_file,"w+")
-                    f.write("<threads>\r\n<thread id=\"651b\" core=\"3\" name=\"" + str(self.ql.filename[0].split('/')[-1]) + "\"/>\r\n</threads>")
+                    f.write("<threads>\r\n<thread id=\"2048\" core=\"3\" name=\"" + str(self.ql.filename[0].split('/')[-1]) + "\"/>\r\n</threads>")
                     f.close
                     f = open(xfercmd_file, 'r')
                     file_contents = f.read()
@@ -284,36 +291,37 @@ class GDBSession(object):
                     self.send("")
                     
                 elif subcmd.startswith('File:open'):
-                    self.send("F5")
-
-                elif subcmd.startswith('File:pread:5,1,'):
-                    mode_file_pread = subcmd.split(',')[-1]
-                    if mode_file_pread == "fff":
-                        self.send_raw("F1;")
-                    if mode_file_pread == "1fff":
-                        self.send_raw("F1")                        
-                    if mode_file_pread == "7ff":
-                        self.send_raw("F1")
-                    if mode_file_pread == "3ff":
+                    binname = subcmd.split(':')[-1].split(',')[0]
+                    binname = unhexlify(binname).decode(encoding='UTF-8')
+                    if binname != "just probing":
+                        self.fullbinpath = (os.path.join(str(os.getcwd()),binname))
+                        self.send("F5")
+                    else:
+                        self.fullbinpath=""    
                         self.send("F0")
-                    if mode_file_pread == "1ff":
-                        self.send_raw("F1")                                                                        
-                    if mode_file_pread == "ff":
-                        self.send("F1")                                                                        
-                    if mode_file_pread == "7f":
-                        self.send("F1")                                                                        
-                    if mode_file_pread == "3f":
-                        self.send("F0")                                                                        
-                    if mode_file_pread == "1f":
-                        self.send("F1")                                                                        
-                    if mode_file_pread == "7":
-                        self.send("F0")                                                                        
-                    if mode_file_pread == "3":
-                        self.send("F0")                                                                        
-                    if mode_file_pread == "1":
-                        self.send("F1;")                                                                        
-                    if mode_file_pread == "0":
-                        self.send("F1")                                                                        
+
+                elif subcmd.startswith('File:pread:5'):
+ 
+                    offset = subcmd.split(',')[-1]
+                    count = subcmd.split(',')[-2]
+                    offset = ((int(offset, base=16)))
+                    count = ((int(count, base=16)))
+
+                    if os.path.exists(self.fullbinpath):
+                        with open(self.fullbinpath, "rb") as f:
+                            preadheader = f.read()
+
+                        if count == 1:
+                            try:
+                                target_check = preadheader[offset]
+                                self.send("F1;\x00")    
+                            except:
+                                self.send("F0;")
+                        else:
+                            read_offset = preadheader[offset:count]
+                            self.send(b'F100;' + read_offset)
+                    else:
+                        self.send("F0;")
 
                 elif subcmd.startswith('File:close'):
                     self.send("F0")
@@ -326,11 +334,11 @@ class GDBSession(object):
                 elif subcmd.startswith('Cont'):
                     self.ql.dprint("gdb> Cont command received: %s" % subcmd)
                     if subcmd == 'Cont?':
-                        # if self.ida_client == True:
-                        #     self.ql.dprint("gdb> enter vCont needed mode")
-                        #     self.send('vCont;c;C;s;S')
-                        # else:    
-                        self.send('')
+                        if self.ida_client == True:
+                            self.ql.dprint("gdb> enter vCont needed mode")
+                            self.send('vCont;c;C;s;S')
+                        else:    
+                            self.send('')
                     else:
                         subcmd = subcmd.split(';')
                         if subcmd[1] in ('c', 'C05'):
@@ -456,9 +464,15 @@ class GDBSession(object):
 
     def send(self, msg):
         """Send a packet to the GDB client"""
-        self.send_raw('$%s#%.2x' % (msg, checksum(msg)))
+        if type(msg) == str:
+            self.send_raw('$%s#%.2x' % (msg, checksum(msg)))
+        else:
+            self.clientsocket.send(msg + (b'#%.2x' % checksum(msg)))
+            self.netout.flush()
+        
         self.ql.dprint("gdb> send: $%s#%.2x" % (msg, checksum(msg)))
 
     def send_raw(self, r):
         self.netout.write(r)
         self.netout.flush()
+        
