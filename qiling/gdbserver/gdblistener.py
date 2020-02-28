@@ -44,8 +44,8 @@ class GDBSession(object):
             self.send_raw('+')
 
             def handle_qmark(subcmd):
-                # 0506:0*,;07:b0e4f*"7f0* ;10:9060ddf7ff7f0* ;thread:4c2b;core:3;#40
-                # self.send('S0506:0*,;07:b0e4f*\"7f0* ;10:9060ddf7ff7f0* ;thread:4c2b;core:1;')
+                # T0506:0*,;07:b0e4f*"7f0* ;10:9060ddf7ff7f0* ;thread:4c2b;core:3;#40
+                # self.send('54303530363a302a2c3b30373a62306534662a223766302a203b31303a393036306464663766663766302a203b7468726561643a346332623b636f72653a333b')
                 self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
 
@@ -70,15 +70,14 @@ class GDBSession(object):
                         r = self.ql.uc.reg_read(reg)
                         tmp = hex(int.from_bytes(struct.pack('<Q', r), byteorder='big'))
                         tmp = '{:0>16}'.format(tmp[2:])
-                        #self.ql.dprint(tmp)
+                        self.ql.dprint(tmp)
                         s += tmp
                     for reg in registers_x8664[17:24]:
                         r = self.ql.uc.reg_read(reg)
                         tmp = hex(int.from_bytes(struct.pack('<I', r), byteorder='big'))
                         tmp = '{:0>8}'.format(tmp[2:])
-                        #self.ql.dprint(tmp)
+                        self.ql.dprint(tmp)
                         s += tmp
-
                 self.send(s)
 
 
@@ -198,7 +197,9 @@ class GDBSession(object):
 
             def handle_q(subcmd):
                 if subcmd.startswith('Supported:xmlRegisters='):
-                    self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")
+                    if self.ql.multithread == False:
+                        # gdbserver --remote-debug  --disable-packet=threads,vCont
+                        self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")
                     self.ida_client = True
                 
                 elif subcmd.startswith('Supported:multiprocess+'):
@@ -278,29 +279,29 @@ class GDBSession(object):
                 elif subcmd.startswith('File:pread:5,1,'):
                     mode_file_pread = subcmd.split(',')[-1]
                     if mode_file_pread == "fff":
-                        self.send("F1;")
+                        self.send_raw("F1;")
                     if mode_file_pread == "1fff":
-                        self.send("F1")                        
+                        self.send_raw("F1")                        
                     if mode_file_pread == "7ff":
-                        self.send("F1")
+                        self.send_raw("F1")
                     if mode_file_pread == "3ff":
                         self.send("F0")
                     if mode_file_pread == "1ff":
-                        self.send("F1")                                                                        
+                        self.send_raw("F1")                                                                        
                     if mode_file_pread == "ff":
                         self.send("F1")                                                                        
                     if mode_file_pread == "7f":
                         self.send("F1")                                                                        
                     if mode_file_pread == "3f":
-                        self.send("F1")                                                                        
+                        self.send("F0")                                                                        
                     if mode_file_pread == "1f":
                         self.send("F1")                                                                        
                     if mode_file_pread == "7":
-                        self.send("F1")                                                                        
+                        self.send("F0")                                                                        
                     if mode_file_pread == "3":
-                        self.send("F1")                                                                        
+                        self.send("F0")                                                                        
                     if mode_file_pread == "1":
-                        self.send("F1")                                                                        
+                        self.send("F1;")                                                                        
                     if mode_file_pread == "0":
                         self.send("F1")                                                                        
 
@@ -447,7 +448,6 @@ class GDBSession(object):
         """Send a packet to the GDB client"""
         self.send_raw('$%s#%.2x' % (msg, checksum(msg)))
         self.ql.dprint("gdb> send: $%s#%.2x" % (msg, checksum(msg)))
-
 
     def send_raw(self, r):
         self.netout.write(r)
