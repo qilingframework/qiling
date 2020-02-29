@@ -44,9 +44,9 @@ def my_netgear(path, rootfs):
 
 
 if __name__ == "__main__":
-    my_netgear(["netgear_r6220/bin/mini_httpd",
+    my_netgear(["rootfs/netgear_r6220/bin/mini_httpd",
                 "-d","/www",
                 "-r","NETGEAR R6220",
                 "-c","**.cgi",
                 "-t","300"], 
-                "netgear_r6220")
+                "rootfs/netgear_r6220")
