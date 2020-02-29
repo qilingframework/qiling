@@ -14,6 +14,15 @@
 import sys
 sys.path.append("..")
 from qiling import *
+from qiling.os.posix import syscall
+
+
+def my_syscall_write(ql, write_fd, write_buf, write_count, *rest):
+    if write_fd is 2 and ql.file_des[2].__class__.__name__ == 'ql_pipe':
+        ql_definesyscall_return(ql, -1)
+    else:
+        syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *rest)
+
 
 def my_netgear(path, rootfs):
     ql = Qiling(
@@ -21,22 +30,23 @@ def my_netgear(path, rootfs):
                 rootfs, 
                 output      = "debug", 
                 log_dir     = "qlog",
-                log_split   = True, 
+                log_split   = True,
                 log_console = True,
-                mmap_start  = 0x7ffef000 - 0x800000
+                mmap_start  = 0x7ffee000 - 0x800000,
                 )
 
     ql.root             = False
     ql.bindtolocalhost  = True
     ql.multithread      = False
     ql.add_fs_mapper('/proc', '/proc')
+    ql.set_syscall(4004, my_syscall_write)
     ql.run()
 
 
 if __name__ == "__main__":
-    my_netgear(["rootfs/netgear_r6220/bin/mini_httpd",
+    my_netgear(["netgear_r6220/bin/mini_httpd",
                 "-d","/www",
                 "-r","NETGEAR R6220",
                 "-c","**.cgi",
                 "-t","300"], 
-                "rootfs/netgear_r6220")
+                "netgear_r6220")
