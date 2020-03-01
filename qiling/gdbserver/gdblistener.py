@@ -3,10 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-# gdbserver --remote-debug  --disable-packet=threads
+# gdbserver --remote-debug --disable-packet=threads,vCont 0.0.0.0:9999 /path/to binary
 # documentation: according to https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html#Remote-Protocol 
 
-import struct, os
+import struct, os, re
 from binascii import unhexlify
 
 from qiling.gdbserver import qldbg
@@ -230,7 +230,7 @@ class GDBSession(object):
                 elif subcmd.startswith('Supported:multiprocess+'):
                     if self.ql.multithread == False:
                         self.send("PacketSize=1000;multiprocess+")
-                        # gdb - gdbserver tcpdump
+                        ### gdb - gdbserver tcpdump
                         # self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;FastTracepoints+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")  
 
                 elif subcmd.startswith('Xfer:features:read:target.xml:0'):
@@ -259,10 +259,81 @@ class GDBSession(object):
                     self.send("l" + file_contents)
 
                 elif subcmd.startswith('Xfer:auxv:read::'):
-                    # FIXME: copy from tcpdump, communication between ida and gdbserver
-                    # auxvdata = unhexlify('21002a220000a0fff7ff7f000010002a2200fffb8b1f002a2006002a22000010002a2211002a220064002a220003002a22004040552a20000004002a220038002a220005002a220009002a220007002a22000050ddf7ff7f000008002a2b09002a22003047552a2000000b002a2200e803002a220c002a2200e803002a220d002a2200ec03002a220e002a2200ec03002a2217002a2b19002a2200d9e6ffffff7f00001a002a2b1f002a2200b1efffffff7f00000f002a2200e9e6ffffff7f002a2e')
-                    auxvdata = b''
-                    self.send(b'l' + auxvdata)  
+                    if self.ql.arch == QL_X8664 and self.ql.ostype == QL_LINUX:
+
+                        ### from gdb client, info auvx
+                        ### FIXME: loadbase need to be dynamic, others can be fixed value
+
+                        loadbase = int(self.ql.entry_point + 0x40)
+                        loadbase = (hex(int.from_bytes(struct.pack('<Q', loadbase), byteorder='big')))
+                        loadbase = ('{:0>16}'.format(loadbase[2:]))
+
+                        ANNEX               = "00000000000000"
+                        AT_SYSINFO_EHDR     = "0000000000000000" # System-supplied DSO's ELF header
+                        ID_AT_HWCAP         = "1000000000000000"
+                        AT_HWCAP            = "fffb8b1f00000000" # mock cpuid 0x1f8bfbff
+                        ID_AT_PAGESZ        = "0600000000000000"
+                        AT_PAGESZ           = "0001000000000000" # System page size 4096
+                        ID_AT_CLKTCK        = "1100000000000000"
+                        AT_CLKTCK           = "6400000000000000" # Frequency of times() 100
+                        ID_AT_PHDR          = "0300000000000000"
+                        AT_PHDR             = "4040555555550000" # Program headers for program
+                        ID_AT_PHENT         = "0400000000000000" 
+                        AT_PHENT            = "0000000000000000" # Size of program header entry
+                        ID_AT_PHNUM         = "0500000000000000"
+                        AT_PHNUM            = "0000000000000000" # Number of program headers
+                        ID_AT_BASE          = "0700000000000000"
+                        AT_BASE             = "0000000000000000" # Base address of interpreter
+                        ID_AT_FLAGS         = "0800000000000000"
+                        AT_FLAGS            = "0000000000000000"
+                        ID_AT_ENTRY         = "0900000000000000"
+                        AT_ENTRY            = "0000000000000000" # Entry point of program 
+                        ID_AT_UID           = "0b00000000000000"
+                        AT_UID              = "0010000000000000" # UID at 1000
+                        ID_AT_EUID          = "0c00000000000000"
+                        AT_EUID             = "0010000000000000" # EUID at 1000
+                        ID_AT_GID           = "0d00000000000000"
+                        AT_GID              = "0010000000000000" # GID at 1000
+                        ID_AT_EGID          = "0e00000000000000"
+                        AT_EGID             = "0010000000000000" # EGID at 1000
+                        ID_AT_SECURE        = "1700000000000000"
+                        AT_SECURE           = "0000000000000000"
+                        ID_AT_RANDOM        = "1900000000000000"
+                        AT_RANDOM           = "0000000000000000" # Address of 16 random bytes
+                        ID_AT_HWCAP2        = "1a00000000000000"
+                        AT_HWCAP2           = "0000000000000000"
+                        ID_AT_EXECFN        = "1f00000000000000"
+                        AT_EXECFN           = "0000000000000000" # File name of executable
+                        ID_AT_PLATFORM      = "f000000000000000"  
+                        AT_PLATFORM         = "0000000000000000" # String identifying platform    
+                        ID_AT_NULL          = "0000000000000000"
+                        AT_NULL             = "0000000000000000"          
+
+                        auxvdata_c = (
+                                        ANNEX + AT_SYSINFO_EHDR + 
+                                        ID_AT_HWCAP + AT_HWCAP +
+                                        ID_AT_PAGESZ + AT_PAGESZ + 
+                                        ID_AT_CLKTCK + AT_CLKTCK + 
+                                        ID_AT_PHDR + AT_PHDR + 
+                                        ID_AT_PHENT + AT_PHENT + 
+                                        ID_AT_PHNUM + AT_PHNUM + 
+                                        ID_AT_BASE + AT_BASE + 
+                                        ID_AT_FLAGS + AT_FLAGS + 
+                                        ID_AT_ENTRY + AT_ENTRY + 
+                                        ID_AT_UID + AT_UID + 
+                                        ID_AT_EUID + AT_EUID + 
+                                        ID_AT_GID + AT_GID + 
+                                        ID_AT_EGID + AT_EGID + 
+                                        ID_AT_SECURE + AT_SECURE +
+                                        ID_AT_RANDOM + AT_RANDOM +
+                                        ID_AT_HWCAP2 + AT_HWCAP2 +
+                                        ID_AT_EXECFN + AT_EXECFN +
+                                        ID_AT_PLATFORM + AT_PLATFORM +
+                                        ID_AT_NULL + AT_NULL
+                                    )
+
+                    auxvdata = unhexlify(auxvdata_c)
+                    self.send(b'l!' + auxvdata)  
 
                 elif subcmd.startswith('Xfer:exec-file:read::0,3ffe'):
                     self.send("l" + str(self.ql.filename[0]))
@@ -333,24 +404,63 @@ class GDBSession(object):
                             read_offset = preadheader[offset:count] 
                             
                         preadheader_len = len(preadheader)
-                        read_offset = [chr(i).encode() for i in read_offset]
-                        offset_escape = b''
 
+                        offset_escape = ""
                         for a in read_offset:
-                            # 0x5d is after the targeted bytes, according to documentation
-                            # note: if 0x5d location before targeted bytes, idapro will not work
-                            if a == b'\x7d':
-                                a = b'\x7d\x5d'
-                            elif a == b'\x23':
-                                a = b'\x23\x5d'
-                            elif a == b'\x24':
-                                a = b'\x23\x5d'        
-                            elif a == b'\x2a':
-                                a = b'\x2a\x5d' 
+
+                            # The binary data representation uses 7d (ASCII ‘}’) as an escape character. 
+                            # Any escaped byte is transmitted as the escape character followed by the original character XORed with 0x20. 
+                            # For example, the byte 0x7d would be transmitted as the two bytes 0x7d 0x5d. The bytes 0x23 (ASCII ‘#’), 0x24 (ASCII ‘$’), and 0x7d (ASCII ‘}’) 
+                            # must always be escaped. Responses sent by the stub must also escape 0x2a (ASCII ‘*’), 
+                            # so that it is not interpreted as the start of a run-length encoded sequence (described next).
                             
+                            if a == 42:
+                                a = str("7d0a")
+                            elif a == 35:
+                                a = str("7d03")
+                            elif a == 36:
+                                a = str("7d04")
+                            elif a == 125:
+                                a = str("7d5d")                                                                        
+                            elif a == 0:
+                                a = str("00")
+                            elif a == 1:
+                                a = str("01")      
+                            elif a == 2:
+                                a = str("02")
+                            elif a == 3:
+                                a = str("03")      
+                            elif a == 4:
+                                a = str("04")      
+                            elif a == 5:
+                                a = str("05")      
+                            elif a == 6:
+                                a = str("06")
+                            elif a == 7:
+                                a = str("07")
+                            elif a == 8:
+                                a = str("08")                                                                         
+                            elif a == 9:
+                                a = str("09")                                 
+                            else:
+                                a = (str(hex(a)[2:]))
+
+                            if a == "a":
+                                a = str("0a")      
+                            elif a == "b":
+                                a = str("0b")
+                            elif a == "c":
+                                a = str("0c")      
+                            elif a == "d":
+                                a = str("0d")      
+                            elif a == "e":
+                                a = str("0e")      
+                            elif a == "f":
+                                a = str("0f")
+
                             offset_escape += a
-  
-                        read_offset = offset_escape 
+
+                        read_offset = unhexlify(offset_escape)
 
                         if count == 1 and (preadheader_len >= offset):
                             if read_offset:
@@ -359,15 +469,6 @@ class GDBSession(object):
                                 self.send('F1;\x00')    
                         
                         elif count > 1:
-                            # FIXME 1: copy from tcpdump, communication between ida and gdbserver, should stop at 200 and not 300
-                            # FIXME 2: data form read_offset need to be run-length encoded, according to https://sourceware.org/gdb/current/onlinedocs/gdb/Overview.html#Binary-Data  
-                            
-                            #if offset == 0:
-                            #    read_offset = unhexlify('7f454c46020101002a2503003e00010000003007002a2240002a2200d87d0a002a2640003800090040001d001c00060000000400000040002a220040002a220040002a2200f801002a22f801002a2208002a220003000000040000003802002a223802002a223802002a221c002a22001c002a220001002a22000100000005002a37580e002a22580e002a22000020002a210100000006000000881d002a22881d20002a21')
-                            #elif offset == 100:
-                            #    read_offset = unhexlify('881d20002a219902002a22b802002a22000020002a210200000006000000981d002a22981d20002a21981d20002a21f001002a22f001002a2208002a220004000000040000005402002a225402002a225402002a2244002a220044002a220004002a220050e5746404000000e80c002a22e80c002a22e80c002a2244002a220044002a220004002a220051e5746406002a4710002a2200')    
-                            #elif offset == 200:
-                            #    read_offset = unhexlify('52e5746404000000881d002a22881d20002a21881d20002a217802002a227802002a2201002a22002f6c696236342f6c642d6c696e75782d7838362d36342e736f2e3200040000001000000001000000474e55002a210300000002002a2200040000001400000003000000474e55005ecc71fb1f0bb25fbb6e38006ea1dbcc3150616c020000000d0000000100000006002a21200080002a22000d00000067556110002a385900000012002a2f6a00000020002a27')
                             self.send(b'F' + (str(hex(count)[2:]).encode()) + b';' + (read_offset))
                         
                         else:
@@ -387,11 +488,11 @@ class GDBSession(object):
                 elif subcmd.startswith('Cont'):
                     self.ql.dprint("gdb> Cont command received: %s" % subcmd)
                     if subcmd == 'Cont?':
-                        if self.ida_client == True:
-                            self.ql.dprint("gdb> enter vCont needed mode")
-                            self.send('vCont;c;C;s;S')
-                        else:    
-                            self.send('')
+                        # if self.ida_client == True:
+                        #     self.ql.dprint("gdb> enter vCont needed mode")
+                        #     self.send('vCont;c;C;s;S')
+                        # else:    
+                        self.send('')
                     else:
                         subcmd = subcmd.split(';')
                         if subcmd[1] in ('c', 'C05'):
