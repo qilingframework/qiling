@@ -116,7 +116,7 @@ def ql_elf_check_archtype(path):
         return elfdata
 
     with open(path, "rb") as f:
-        elfdata = f.read()[:-19]
+        elfdata = f.read()[:19]
 
     ident = getident()
     ostype = None
@@ -155,7 +155,7 @@ def ql_macho_check_archtype(path):
         return machodata  
     
     with open(path, "rb") as f:
-        machodata = f.read()[:-32]
+        machodata = f.read()[:32]
         
     ident = getident()
 
