@@ -56,21 +56,8 @@ class GDBSession(object):
         rawbin_escape = ""
         
         def incomplete_hex_check(hexchar):
-            # after it will 0x0a will become a and so on, 
-            # the code below will again do the conversion
-            
-            if hexchar == "a":
-                hexchar = str("0a")      
-            elif hexchar == "b":
-                hexchar = str("0b")
-            elif hexchar == "c":
-                hexchar = str("0c")      
-            elif hexchar == "d":
-                hexchar = str("0d")      
-            elif hexchar == "e":
-                hexchar = str("0e")      
-            elif hexchar == "f":
-                hexchar = str("0f")
+            if len(hexchar) == 1:
+                hexchar = "0" + hexchar
             return hexchar    
 
         for a in rawbin:
@@ -86,28 +73,6 @@ class GDBSession(object):
                 a = (str(hex(a)[2:]))
                 a = incomplete_hex_check(a)
                 a = str("7d" + a)
-                print(a)
-
-            elif a == 0:
-                a = str("00")
-            elif a == 1:
-                a = str("01")      
-            elif a == 2:
-                a = str("02")
-            elif a == 3:
-                a = str("03")      
-            elif a == 4:
-                a = str("04")      
-            elif a == 5:
-                a = str("05")      
-            elif a == 6:
-                a = str("06")
-            elif a == 7:
-                a = str("07")
-            elif a == 8:
-                a = str("08")                                                                         
-            elif a == 9:
-                a = str("09")                                 
             else:
                 a = (str(hex(a)[2:]))
                 a = incomplete_hex_check(a)
