@@ -254,7 +254,7 @@ class GDBSession(object):
 
                 elif subcmd.startswith('NonStop'):
                     self.send('OK') 
-                    
+
                 elif subcmd.startswith('PassSignals'):
                     self.send('OK')
 
@@ -263,13 +263,9 @@ class GDBSession(object):
                 
             def handle_q(subcmd):
 
-                if subcmd.startswith('Supported:xmlRegisters='):    
+                if subcmd.startswith('Supported:'):
                     if self.ql.multithread == False:
                         self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")
-            
-                elif subcmd.startswith('Supported:multiprocess+'):
-                    if self.ql.multithread == False:
-                        self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;FastTracepoints+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")  
 
                 elif subcmd.startswith('Xfer:features:read:target.xml:0'):
                     if self.ql.arch == QL_X8664:
@@ -297,48 +293,48 @@ class GDBSession(object):
                     self.send("l" + file_contents)
 
                 elif subcmd.startswith('Xfer:auxv:read::'):
-                    if self.ql.arch == QL_X8664 and self.ql.ostype in (QL_LINUX, QL_FREEBSD):
-
-                        ANNEX               = "00000000000000"
-                        AT_SYSINFO_EHDR     = "0000000000000000" # System-supplied DSO's ELF header
-                        ID_AT_HWCAP         = "1000000000000000"
-                        AT_HWCAP            = self.addr_to_str(self.ql.elf_hwcap) # mock cpuid 0x1f8bfbff
-                        ID_AT_PAGESZ        = "0600000000000000"
-                        AT_PAGESZ           = self.addr_to_str(self.ql.elf_pagesz) # System page size, fixed in qiling
-                        ID_AT_CLKTCK        = "1100000000000000"
-                        AT_CLKTCK           = "6400000000000000" # Frequency of times() 100
-                        ID_AT_PHDR          = "0300000000000000"
-                        AT_PHDR             = self.addr_to_str(self.ql.elf_phdr) # Program headers for program
-                        ID_AT_PHENT         = "0400000000000000" 
-                        AT_PHENT            = self.addr_to_str(self.ql.elf_phent) # Size of program header entry
-                        ID_AT_PHNUM         = "0500000000000000"
-                        AT_PHNUM            = self.addr_to_str(self.ql.elf_phnum) # Number of program headers
-                        ID_AT_BASE          = "0700000000000000"
-                        AT_BASE             = self.addr_to_str(self.ql.interp_base) # Base address of interpreter
-                        ID_AT_FLAGS         = "0800000000000000"
-                        AT_FLAGS            = self.addr_to_str(self.ql.elf_flags)
-                        ID_AT_ENTRY         = "0900000000000000"
-                        AT_ENTRY            = self.addr_to_str(self.ql.elf_entry) # Entry point of program 
-                        ID_AT_UID           = "0b00000000000000"
-                        AT_UID              = self.addr_to_str(self.ql.elf_guid) # UID at 1000 fixed in qiling
-                        ID_AT_EUID          = "0c00000000000000"
-                        AT_EUID             = self.addr_to_str(self.ql.elf_guid) # EUID at 1000 fixed in qiling
-                        ID_AT_GID           = "0d00000000000000"
-                        AT_GID              = self.addr_to_str(self.ql.elf_guid) # GID at 1000 fixed in qiling
-                        ID_AT_EGID          = "0e00000000000000"
-                        AT_EGID             = self.addr_to_str(self.ql.elf_guid) # EGID at 1000 fixed in qiling
-                        ID_AT_SECURE        = "1700000000000000"
-                        AT_SECURE           = "0000000000000000"
-                        ID_AT_RANDOM        = "1900000000000000"
-                        AT_RANDOM           = self.addr_to_str(self.ql.randstraddr) # Address of 16 random bytes
-                        ID_AT_HWCAP2        = "1a00000000000000"
-                        AT_HWCAP2           = "0000000000000000"
-                        ID_AT_EXECFN        = "1f00000000000000"
-                        AT_EXECFN           = "0000000000000000" # File name of executable
-                        ID_AT_PLATFORM      = "f000000000000000"  
-                        AT_PLATFORM         = self.addr_to_str(self.ql.cpustraddr) # String identifying platform    
-                        ID_AT_NULL          = "0000000000000000"
-                        AT_NULL             = "0000000000000000"          
+                    if self.ql.ostype in (QL_LINUX, QL_FREEBSD):
+                        if self.ql.archbit == 64:
+                            ANNEX               = "00000000000000"
+                            AT_SYSINFO_EHDR     = "0000000000000000" # System-supplied DSO's ELF header
+                            ID_AT_HWCAP         = "1000000000000000"
+                            AT_HWCAP            = self.addr_to_str(self.ql.elf_hwcap) # mock cpuid 0x1f8bfbff
+                            ID_AT_PAGESZ        = "0600000000000000"
+                            AT_PAGESZ           = self.addr_to_str(self.ql.elf_pagesz) # System page size, fixed in qiling
+                            ID_AT_CLKTCK        = "1100000000000000"
+                            AT_CLKTCK           = "6400000000000000" # Frequency of times() 100
+                            ID_AT_PHDR          = "0300000000000000"
+                            AT_PHDR             = self.addr_to_str(self.ql.elf_phdr) # Program headers for program
+                            ID_AT_PHENT         = "0400000000000000" 
+                            AT_PHENT            = self.addr_to_str(self.ql.elf_phent) # Size of program header entry
+                            ID_AT_PHNUM         = "0500000000000000"
+                            AT_PHNUM            = self.addr_to_str(self.ql.elf_phnum) # Number of program headers
+                            ID_AT_BASE          = "0700000000000000"
+                            AT_BASE             = self.addr_to_str(self.ql.interp_base) # Base address of interpreter
+                            ID_AT_FLAGS         = "0800000000000000"
+                            AT_FLAGS            = self.addr_to_str(self.ql.elf_flags)
+                            ID_AT_ENTRY         = "0900000000000000"
+                            AT_ENTRY            = self.addr_to_str(self.ql.elf_entry) # Entry point of program 
+                            ID_AT_UID           = "0b00000000000000"
+                            AT_UID              = self.addr_to_str(self.ql.elf_guid) # UID at 1000 fixed in qiling
+                            ID_AT_EUID          = "0c00000000000000"
+                            AT_EUID             = self.addr_to_str(self.ql.elf_guid) # EUID at 1000 fixed in qiling
+                            ID_AT_GID           = "0d00000000000000"
+                            AT_GID              = self.addr_to_str(self.ql.elf_guid) # GID at 1000 fixed in qiling
+                            ID_AT_EGID          = "0e00000000000000"
+                            AT_EGID             = self.addr_to_str(self.ql.elf_guid) # EGID at 1000 fixed in qiling
+                            ID_AT_SECURE        = "1700000000000000"
+                            AT_SECURE           = "0000000000000000"
+                            ID_AT_RANDOM        = "1900000000000000"
+                            AT_RANDOM           = self.addr_to_str(self.ql.randstraddr) # Address of 16 random bytes
+                            ID_AT_HWCAP2        = "1a00000000000000"
+                            AT_HWCAP2           = "0000000000000000"
+                            ID_AT_EXECFN        = "1f00000000000000"
+                            AT_EXECFN           = "0000000000000000" # File name of executable
+                            ID_AT_PLATFORM      = "f000000000000000"  
+                            AT_PLATFORM         = self.addr_to_str(self.ql.cpustraddr) # String identifying platform    
+                            ID_AT_NULL          = "0000000000000000"
+                            AT_NULL             = "0000000000000000"          
 
                         auxvdata_c = (
                                         ANNEX + AT_SYSINFO_EHDR + 
@@ -366,7 +362,7 @@ class GDBSession(object):
                     auxvdata = self.bin_to_escstr(unhexlify(auxvdata_c))
                     self.send(b'l!' + auxvdata)  
 
-                elif subcmd.startswith('Xfer:exec-file:read::0,3ffe'):
+                elif subcmd.startswith('Xfer:exec-file:read:'):
                     self.send("l" + str(self.ql.filename[0]))
 
                 elif subcmd.startswith('Xfer:libraries-svr4:read:'):
