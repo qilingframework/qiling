@@ -54,6 +54,25 @@ class GDBSession(object):
 
     def bin_to_escstr(self, rawbin):
         rawbin_escape = ""
+        
+        def incomplete_hex_check(hexchar):
+            # after it will 0x0a will become a and so on, 
+            # the code below will again do the conversion
+            
+            if hexchar == "a":
+                hexchar = str("0a")      
+            elif hexchar == "b":
+                hexchar = str("0b")
+            elif hexchar == "c":
+                hexchar = str("0c")      
+            elif hexchar == "d":
+                hexchar = str("0d")      
+            elif hexchar == "e":
+                hexchar = str("0e")      
+            elif hexchar == "f":
+                hexchar = str("0f")
+            return hexchar    
+
         for a in rawbin:
 
             # The binary data representation uses 7d (ASCII ‘}’) as an escape character. 
@@ -62,14 +81,13 @@ class GDBSession(object):
             # must always be escaped. Responses sent by the stub must also escape 0x2a (ASCII ‘*’), 
             # so that it is not interpreted as the start of a run-length encoded sequence (described next).
             
-            if a == 42:
-                a = str("7d0a")
-            elif a == 35:
-                a = str("7d03")
-            elif a == 36:
-                a = str("7d04")
-            elif a == 125:
-                a = str("7d5d")                                                                        
+            if a in (42,35,36,125):
+                a = a ^ 0x20
+                a = (str(hex(a)[2:]))
+                a = incomplete_hex_check(a)
+                a = str("7d" + a)
+                print(a)
+
             elif a == 0:
                 a = str("00")
             elif a == 1:
@@ -92,22 +110,7 @@ class GDBSession(object):
                 a = str("09")                                 
             else:
                 a = (str(hex(a)[2:]))
-
-            # after it will 0x0a will become a and so on, 
-            # code below will again do the conversion
-
-            if a == "a":
-                a = str("0a")      
-            elif a == "b":
-                a = str("0b")
-            elif a == "c":
-                a = str("0c")      
-            elif a == "d":
-                a = str("0d")      
-            elif a == "e":
-                a = str("0e")      
-            elif a == "f":
-                a = str("0f")
+                a = incomplete_hex_check(a)
 
             rawbin_escape += a
 
@@ -340,7 +343,7 @@ class GDBSession(object):
                         ID_AT_CLKTCK        = "1100000000000000"
                         AT_CLKTCK           = "6400000000000000" # Frequency of times() 100
                         ID_AT_PHDR          = "0300000000000000"
-                        AT_PHDR             =  self.addr_to_str(self.ql.elf_phdr) # Program headers for program
+                        AT_PHDR             = self.addr_to_str(self.ql.elf_phdr) # Program headers for program
                         ID_AT_PHENT         = "0400000000000000" 
                         AT_PHENT            = self.addr_to_str(self.ql.elf_phent) # Size of program header entry
                         ID_AT_PHNUM         = "0500000000000000"
