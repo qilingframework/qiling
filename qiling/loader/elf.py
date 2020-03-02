@@ -520,8 +520,8 @@ class ELFLoader(ELFParse):
         cpustr = 'i686'
         (addr, new_stack) = self.copy_str(ql.uc, new_stack, [randstr, cpustr])
         new_stack = self.alignment(new_stack, ql)
-        randstraddr = addr[0]
-        cpustraddr = addr[1]
+        
+
 
         # Set AUX
         
@@ -529,23 +529,31 @@ class ELFLoader(ELFParse):
         # new_stack = new_stack - 4
         # rand_addr = new_stack - 4
 
-        elf_table += self.NEW_AUX_ENT(AT_PHDR, loadbase + mem_start + elfhead['e_phoff'], ql)
-        elf_table += self.NEW_AUX_ENT(AT_PHENT, elfhead['e_phentsize'], ql)
-        elf_table += self.NEW_AUX_ENT(AT_PHNUM, elfhead['e_phnum'], ql)
-        elf_table += self.NEW_AUX_ENT(AT_PAGESZ, 0x1000, ql)
-        elf_table += self.NEW_AUX_ENT(AT_BASE, ql.interp_base, ql)
-        elf_table += self.NEW_AUX_ENT(AT_FLAGS, 0, ql)
-        elf_table += self.NEW_AUX_ENT(AT_ENTRY, loadbase + elfhead['e_entry'], ql)
-        elf_table += self.NEW_AUX_ENT(AT_UID, 1000, ql)
-        elf_table += self.NEW_AUX_ENT(AT_EUID, 1000, ql)
-        elf_table += self.NEW_AUX_ENT(AT_GID, 1000, ql)
-        elf_table += self.NEW_AUX_ENT(AT_EGID, 1000, ql)
-
+        ql.elf_phdr     = (loadbase + elfhead['e_phoff'])
+        ql.elf_phent    = (elfhead['e_phentsize'])
+        ql.elf_phnum    = (elfhead['e_phnum'])
+        ql.elf_pagesz   = 0x1000
+        ql.elf_guid     = 1000
+        ql.elf_flags    = 0
+        ql.elf_entry    = (loadbase + elfhead['e_entry'])
+        ql.randstraddr  = randstraddr = addr[0]
+        ql.cpustraddr   = cpustraddr = addr[1]
         if ql.archbit == 64:
-            hwcap = 0x078bfbfd
+            ql.elf_hwcap = hwcap = 0x078bfbfd
         elif ql.archbit == 32:
-            hwcap = 0x1fb8d7
+            ql.elf_hwcap = hwcap = 0x1fb8d7
 
+        elf_table += self.NEW_AUX_ENT(AT_PHDR, ql.elf_phdr + mem_start, ql)
+        elf_table += self.NEW_AUX_ENT(AT_PHENT, ql.elf_phent, ql)
+        elf_table += self.NEW_AUX_ENT(AT_PHNUM, ql.elf_phnum, ql)
+        elf_table += self.NEW_AUX_ENT(AT_PAGESZ, ql.elf_pagesz, ql)
+        elf_table += self.NEW_AUX_ENT(AT_BASE, ql.interp_base, ql)
+        elf_table += self.NEW_AUX_ENT(AT_FLAGS, ql.elf_flags, ql)
+        elf_table += self.NEW_AUX_ENT(AT_ENTRY,ql.elf_entry, ql)
+        elf_table += self.NEW_AUX_ENT(AT_UID, ql.elf_guid, ql)
+        elf_table += self.NEW_AUX_ENT(AT_EUID, ql.elf_guid, ql)
+        elf_table += self.NEW_AUX_ENT(AT_GID, ql.elf_guid, ql)
+        elf_table += self.NEW_AUX_ENT(AT_EGID, ql.elf_guid, ql)
         elf_table += self.NEW_AUX_ENT(AT_HWCAP, hwcap, ql)
         elf_table += self.NEW_AUX_ENT(AT_CLKTCK, 100, ql)
         elf_table += self.NEW_AUX_ENT(AT_RANDOM, randstraddr, ql)

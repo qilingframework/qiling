@@ -43,6 +43,76 @@ class GDBSession(object):
         else:
             self.qldbg.bp_insert(self.ql.entry_point)
 
+    def addr_to_str(self, addr):
+        if self.ql.archbit == 64:
+            addr = (hex(int.from_bytes(struct.pack('<Q', addr), byteorder='big')))
+            addr = '{:0>16}'.format(addr[2:])        
+        elif self.ql.archbit == 32:
+            addr = (hex(int.from_bytes(struct.pack('<I', addr), byteorder='big')))        
+            addr = ('{:0>8}'.format(addr[2:]))
+        return addr
+
+    def bin_to_escstr(self, rawbin):
+        rawbin_escape = ""
+        for a in rawbin:
+
+            # The binary data representation uses 7d (ASCII ‘}’) as an escape character. 
+            # Any escaped byte is transmitted as the escape character followed by the original character XORed with 0x20. 
+            # For example, the byte 0x7d would be transmitted as the two bytes 0x7d 0x5d. The bytes 0x23 (ASCII ‘#’), 0x24 (ASCII ‘$’), and 0x7d (ASCII ‘}’) 
+            # must always be escaped. Responses sent by the stub must also escape 0x2a (ASCII ‘*’), 
+            # so that it is not interpreted as the start of a run-length encoded sequence (described next).
+            
+            if a == 42:
+                a = str("7d0a")
+            elif a == 35:
+                a = str("7d03")
+            elif a == 36:
+                a = str("7d04")
+            elif a == 125:
+                a = str("7d5d")                                                                        
+            elif a == 0:
+                a = str("00")
+            elif a == 1:
+                a = str("01")      
+            elif a == 2:
+                a = str("02")
+            elif a == 3:
+                a = str("03")      
+            elif a == 4:
+                a = str("04")      
+            elif a == 5:
+                a = str("05")      
+            elif a == 6:
+                a = str("06")
+            elif a == 7:
+                a = str("07")
+            elif a == 8:
+                a = str("08")                                                                         
+            elif a == 9:
+                a = str("09")                                 
+            else:
+                a = (str(hex(a)[2:]))
+
+            # after it will 0x0a will become a and so on, 
+            # code below will again do the conversion
+
+            if a == "a":
+                a = str("0a")      
+            elif a == "b":
+                a = str("0b")
+            elif a == "c":
+                a = str("0c")      
+            elif a == "d":
+                a = str("0d")      
+            elif a == "e":
+                a = str("0e")      
+            elif a == "f":
+                a = str("0f")
+
+            rawbin_escape += a
+
+        return unhexlify(rawbin_escape) 
+
     def close(self):
         self.netin.close()
         self.netout.close()
@@ -259,53 +329,46 @@ class GDBSession(object):
                     self.send("l" + file_contents)
 
                 elif subcmd.startswith('Xfer:auxv:read::'):
-                    if self.ql.arch == QL_X8664 and self.ql.ostype == QL_LINUX:
-
-                        ### from gdb client, info auvx
-                        ### FIXME: loadbase need to be dynamic, others can be fixed value
-
-                        loadbase = int(self.ql.entry_point + 0x40)
-                        loadbase = (hex(int.from_bytes(struct.pack('<Q', loadbase), byteorder='big')))
-                        loadbase = ('{:0>16}'.format(loadbase[2:]))
+                    if self.ql.arch == QL_X8664 and self.ql.ostype in (QL_LINUX, QL_FREEBSD):
 
                         ANNEX               = "00000000000000"
                         AT_SYSINFO_EHDR     = "0000000000000000" # System-supplied DSO's ELF header
                         ID_AT_HWCAP         = "1000000000000000"
-                        AT_HWCAP            = "fffb8b1f00000000" # mock cpuid 0x1f8bfbff
+                        AT_HWCAP            = self.addr_to_str(self.ql.elf_hwcap) # mock cpuid 0x1f8bfbff
                         ID_AT_PAGESZ        = "0600000000000000"
-                        AT_PAGESZ           = "0001000000000000" # System page size 4096
+                        AT_PAGESZ           = self.addr_to_str(self.ql.elf_pagesz) # System page size, fixed in qiling
                         ID_AT_CLKTCK        = "1100000000000000"
                         AT_CLKTCK           = "6400000000000000" # Frequency of times() 100
                         ID_AT_PHDR          = "0300000000000000"
-                        AT_PHDR             = "4040555555550000" # Program headers for program
+                        AT_PHDR             =  self.addr_to_str(self.ql.elf_phdr) # Program headers for program
                         ID_AT_PHENT         = "0400000000000000" 
-                        AT_PHENT            = "0000000000000000" # Size of program header entry
+                        AT_PHENT            = self.addr_to_str(self.ql.elf_phent) # Size of program header entry
                         ID_AT_PHNUM         = "0500000000000000"
-                        AT_PHNUM            = "0000000000000000" # Number of program headers
+                        AT_PHNUM            = self.addr_to_str(self.ql.elf_phnum) # Number of program headers
                         ID_AT_BASE          = "0700000000000000"
-                        AT_BASE             = "0000000000000000" # Base address of interpreter
+                        AT_BASE             = self.addr_to_str(self.ql.interp_base) # Base address of interpreter
                         ID_AT_FLAGS         = "0800000000000000"
-                        AT_FLAGS            = "0000000000000000"
+                        AT_FLAGS            = self.addr_to_str(self.ql.elf_flags)
                         ID_AT_ENTRY         = "0900000000000000"
-                        AT_ENTRY            = "0000000000000000" # Entry point of program 
+                        AT_ENTRY            = self.addr_to_str(self.ql.elf_entry) # Entry point of program 
                         ID_AT_UID           = "0b00000000000000"
-                        AT_UID              = "0010000000000000" # UID at 1000
+                        AT_UID              = self.addr_to_str(self.ql.elf_guid) # UID at 1000 fixed in qiling
                         ID_AT_EUID          = "0c00000000000000"
-                        AT_EUID             = "0010000000000000" # EUID at 1000
+                        AT_EUID             = self.addr_to_str(self.ql.elf_guid) # EUID at 1000 fixed in qiling
                         ID_AT_GID           = "0d00000000000000"
-                        AT_GID              = "0010000000000000" # GID at 1000
+                        AT_GID              = self.addr_to_str(self.ql.elf_guid) # GID at 1000 fixed in qiling
                         ID_AT_EGID          = "0e00000000000000"
-                        AT_EGID             = "0010000000000000" # EGID at 1000
+                        AT_EGID             = self.addr_to_str(self.ql.elf_guid) # EGID at 1000 fixed in qiling
                         ID_AT_SECURE        = "1700000000000000"
                         AT_SECURE           = "0000000000000000"
                         ID_AT_RANDOM        = "1900000000000000"
-                        AT_RANDOM           = "0000000000000000" # Address of 16 random bytes
+                        AT_RANDOM           = self.addr_to_str(self.ql.randstraddr) # Address of 16 random bytes
                         ID_AT_HWCAP2        = "1a00000000000000"
                         AT_HWCAP2           = "0000000000000000"
                         ID_AT_EXECFN        = "1f00000000000000"
                         AT_EXECFN           = "0000000000000000" # File name of executable
                         ID_AT_PLATFORM      = "f000000000000000"  
-                        AT_PLATFORM         = "0000000000000000" # String identifying platform    
+                        AT_PLATFORM         = self.addr_to_str(self.ql.cpustraddr) # String identifying platform    
                         ID_AT_NULL          = "0000000000000000"
                         AT_NULL             = "0000000000000000"          
 
@@ -332,7 +395,7 @@ class GDBSession(object):
                                         ID_AT_NULL + AT_NULL
                                     )
 
-                    auxvdata = unhexlify(auxvdata_c)
+                    auxvdata = self.bin_to_escstr(unhexlify(auxvdata_c))
                     self.send(b'l!' + auxvdata)  
 
                 elif subcmd.startswith('Xfer:exec-file:read::0,3ffe'):
@@ -405,62 +468,7 @@ class GDBSession(object):
                             
                         preadheader_len = len(preadheader)
 
-                        offset_escape = ""
-                        for a in read_offset:
-
-                            # The binary data representation uses 7d (ASCII ‘}’) as an escape character. 
-                            # Any escaped byte is transmitted as the escape character followed by the original character XORed with 0x20. 
-                            # For example, the byte 0x7d would be transmitted as the two bytes 0x7d 0x5d. The bytes 0x23 (ASCII ‘#’), 0x24 (ASCII ‘$’), and 0x7d (ASCII ‘}’) 
-                            # must always be escaped. Responses sent by the stub must also escape 0x2a (ASCII ‘*’), 
-                            # so that it is not interpreted as the start of a run-length encoded sequence (described next).
-                            
-                            if a == 42:
-                                a = str("7d0a")
-                            elif a == 35:
-                                a = str("7d03")
-                            elif a == 36:
-                                a = str("7d04")
-                            elif a == 125:
-                                a = str("7d5d")                                                                        
-                            elif a == 0:
-                                a = str("00")
-                            elif a == 1:
-                                a = str("01")      
-                            elif a == 2:
-                                a = str("02")
-                            elif a == 3:
-                                a = str("03")      
-                            elif a == 4:
-                                a = str("04")      
-                            elif a == 5:
-                                a = str("05")      
-                            elif a == 6:
-                                a = str("06")
-                            elif a == 7:
-                                a = str("07")
-                            elif a == 8:
-                                a = str("08")                                                                         
-                            elif a == 9:
-                                a = str("09")                                 
-                            else:
-                                a = (str(hex(a)[2:]))
-
-                            if a == "a":
-                                a = str("0a")      
-                            elif a == "b":
-                                a = str("0b")
-                            elif a == "c":
-                                a = str("0c")      
-                            elif a == "d":
-                                a = str("0d")      
-                            elif a == "e":
-                                a = str("0e")      
-                            elif a == "f":
-                                a = str("0f")
-
-                            offset_escape += a
-
-                        read_offset = unhexlify(offset_escape)
+                        read_offset = self.bin_to_escstr(read_offset)
 
                         if count == 1 and (preadheader_len >= offset):
                             if read_offset:
