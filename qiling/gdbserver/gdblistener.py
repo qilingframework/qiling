@@ -274,7 +274,8 @@ class GDBSession(object):
                 elif subcmd.startswith('Xfer:features:read:'):
                     if self.ql.arch == QL_X8664:
                         xfercmd_file = subcmd.split(':')[3]
-                        xfercmd_file = os.path.join(self.ql.rootfs,"usr","share","gdb", xfercmd_file)
+                        ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+                        xfercmd_file = os.path.join(ROOT_DIR,"xml","x8664", xfercmd_file)
                         if os.path.exists(xfercmd_file):
                             f = open(xfercmd_file, 'r')
                             file_contents = f.read()
@@ -284,12 +285,7 @@ class GDBSession(object):
                             exit(1)
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
-                    xfercmd_file = os.path.join(self.ql.rootfs,"usr","share","gdb", "xfer_thread.xml")
-                    f = open(xfercmd_file,"w+")
-                    f.write("<threads>\r\n<thread id=\"2048\" core=\"3\" name=\"" + str(self.ql.filename[0].split('/')[-1]) + "\"/>\r\n</threads>")
-                    f.close
-                    f = open(xfercmd_file, 'r')
-                    file_contents = f.read()
+                    file_contents = ("<threads>\r\n<thread id=\"2048\" core=\"3\" name=\"" + str(self.ql.filename[0].split('/')[-1]) + "\"/>\r\n</threads>")
                     self.send("l" + file_contents)
 
                 elif subcmd.startswith('Xfer:auxv:read::'):
