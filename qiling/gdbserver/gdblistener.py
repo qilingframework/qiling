@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 # gdbserver --remote-debug --disable-packet=threads,vCont 0.0.0.0:9999 /path/to binary
-# documentation: according to https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html#Remote-Protocol 
+# documentation: according to https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html#Remote-Protocol
 
 import struct, os, re
 from binascii import unhexlify
@@ -21,12 +21,11 @@ def checksum(data):
         if type(c) == str:
             checksum += (ord(c))
         else:
-            checksum += c    
+            checksum += c
     return checksum & 0xff
 
 
 class GDBSession(object):
-    
     """docstring for GDBSession"""
     def __init__(self, ql, clientsocket, exit_point, mappings):
         super(GDBSession, self).__init__()
@@ -46,19 +45,19 @@ class GDBSession(object):
     def addr_to_str(self, addr):
         if self.ql.archbit == 64:
             addr = (hex(int.from_bytes(struct.pack('<Q', addr), byteorder='big')))
-            addr = '{:0>16}'.format(addr[2:])        
+            addr = '{:0>16}'.format(addr[2:])
         elif self.ql.archbit == 32:
-            addr = (hex(int.from_bytes(struct.pack('<I', addr), byteorder='big')))        
+            addr = (hex(int.from_bytes(struct.pack('<I', addr), byteorder='big')))
             addr = ('{:0>8}'.format(addr[2:]))
         return addr
 
     def bin_to_escstr(self, rawbin):
         rawbin_escape = ""
-        
+
         def incomplete_hex_check(hexchar):
             if len(hexchar) == 1:
                 hexchar = "0" + hexchar
-            return hexchar    
+            return hexchar
 
         for a in rawbin:
 
@@ -67,7 +66,7 @@ class GDBSession(object):
             # For example, the byte 0x7d would be transmitted as the two bytes 0x7d 0x5d. The bytes 0x23 (ASCII ‘#’), 0x24 (ASCII ‘$’), and 0x7d (ASCII ‘}’) 
             # must always be escaped. Responses sent by the stub must also escape 0x2a (ASCII ‘*’), 
             # so that it is not interpreted as the start of a run-length encoded sequence (described next).
-            
+
             if a in (42,35,36,125):
                 a = a ^ 0x20
                 a = (str(hex(a)[2:]))
@@ -79,7 +78,7 @@ class GDBSession(object):
 
             rawbin_escape += a
 
-        return unhexlify(rawbin_escape) 
+        return unhexlify(rawbin_escape)
 
     def close(self):
         self.netin.close()
@@ -245,22 +244,22 @@ class GDBSession(object):
             def handle_Q(subcmd):
                 if subcmd.startswith('StartNoAckMode'):
                     self.send('OK')
-                
+
                 elif subcmd.startswith('DisableRandomization'):
                     self.send('OK')
-                
+
                 elif subcmd.startswith('ProgramSignals'):
-                    self.send('OK')    
+                    self.send('OK')
 
                 elif subcmd.startswith('NonStop'):
-                    self.send('OK') 
+                    self.send('OK')
 
                 elif subcmd.startswith('PassSignals'):
                     self.send('OK')
 
             def handle_D(subcmd):
                 self.send('OK')
-                
+
             def handle_q(subcmd):
 
                 if subcmd.startswith('Supported:'):
@@ -270,7 +269,7 @@ class GDBSession(object):
                 elif subcmd.startswith('Xfer:features:read:target.xml:0'):
                     if self.ql.arch == QL_X8664:
                         self.send("l<?xml version=\"1.0\"?><!DOCTYPE target SYSTEM \"gdb-target.dtd\"><target><architecture>i386:x86-64</architecture><osabi>GNU/Linux</osabi><xi:include href=\"64bit-core.xml\"/><xi:include href=\"64bit-sse.xml\"/><xi:include href=\"64bit-linux.xml\"/><xi:include href=\"64bit-segments.xml\"/><xi:include href=\"64bit-avx.xml\"/><xi:include href=\"64bit-mpx.xml\"/></target>")
-                    
+
                 elif subcmd.startswith('Xfer:features:read:'):
                     if self.ql.arch == QL_X8664:
                         xfercmd_file = subcmd.split(':')[3]
@@ -301,7 +300,7 @@ class GDBSession(object):
                             AT_CLKTCK           = "6400000000000000" # Frequency of times() 100
                             ID_AT_PHDR          = "0300000000000000"
                             AT_PHDR             = self.addr_to_str(self.ql.elf_phdr) # Program headers for program
-                            ID_AT_PHENT         = "0400000000000000" 
+                            ID_AT_PHENT         = "0400000000000000"
                             AT_PHENT            = self.addr_to_str(self.ql.elf_phent) # Size of program header entry
                             ID_AT_PHNUM         = "0500000000000000"
                             AT_PHNUM            = self.addr_to_str(self.ql.elf_phnum) # Number of program headers
@@ -310,7 +309,7 @@ class GDBSession(object):
                             ID_AT_FLAGS         = "0800000000000000"
                             AT_FLAGS            = self.addr_to_str(self.ql.elf_flags)
                             ID_AT_ENTRY         = "0900000000000000"
-                            AT_ENTRY            = self.addr_to_str(self.ql.elf_entry) # Entry point of program 
+                            AT_ENTRY            = self.addr_to_str(self.ql.elf_entry) # Entry point of program
                             ID_AT_UID           = "0b00000000000000"
                             AT_UID              = self.addr_to_str(self.ql.elf_guid) # UID at 1000 fixed in qiling
                             ID_AT_EUID          = "0c00000000000000"
@@ -327,26 +326,26 @@ class GDBSession(object):
                             AT_HWCAP2           = "0000000000000000"
                             ID_AT_EXECFN        = "1f00000000000000"
                             AT_EXECFN           = "0000000000000000" # File name of executable
-                            ID_AT_PLATFORM      = "f000000000000000"  
-                            AT_PLATFORM         = self.addr_to_str(self.ql.cpustraddr) # String identifying platform    
+                            ID_AT_PLATFORM      = "f000000000000000"
+                            AT_PLATFORM         = self.addr_to_str(self.ql.cpustraddr) # String identifying platform
                             ID_AT_NULL          = "0000000000000000"
-                            AT_NULL             = "0000000000000000"          
+                            AT_NULL             = "0000000000000000"
 
                         auxvdata_c = (
-                                        ANNEX + AT_SYSINFO_EHDR + 
+                                        ANNEX + AT_SYSINFO_EHDR +
                                         ID_AT_HWCAP + AT_HWCAP +
-                                        ID_AT_PAGESZ + AT_PAGESZ + 
-                                        ID_AT_CLKTCK + AT_CLKTCK + 
-                                        ID_AT_PHDR + AT_PHDR + 
-                                        ID_AT_PHENT + AT_PHENT + 
-                                        ID_AT_PHNUM + AT_PHNUM + 
-                                        ID_AT_BASE + AT_BASE + 
-                                        ID_AT_FLAGS + AT_FLAGS + 
-                                        ID_AT_ENTRY + AT_ENTRY + 
-                                        ID_AT_UID + AT_UID + 
-                                        ID_AT_EUID + AT_EUID + 
-                                        ID_AT_GID + AT_GID + 
-                                        ID_AT_EGID + AT_EGID + 
+                                        ID_AT_PAGESZ + AT_PAGESZ +
+                                        ID_AT_CLKTCK + AT_CLKTCK +
+                                        ID_AT_PHDR + AT_PHDR +
+                                        ID_AT_PHENT + AT_PHENT +
+                                        ID_AT_PHNUM + AT_PHNUM +
+                                        ID_AT_BASE + AT_BASE +
+                                        ID_AT_FLAGS + AT_FLAGS +
+                                        ID_AT_ENTRY + AT_ENTRY +
+                                        ID_AT_UID + AT_UID +
+                                        ID_AT_EUID + AT_EUID +
+                                        ID_AT_GID + AT_GID +
+                                        ID_AT_EGID + AT_EGID +
                                         ID_AT_SECURE + AT_SECURE +
                                         ID_AT_RANDOM + AT_RANDOM +
                                         ID_AT_HWCAP2 + AT_HWCAP2 +
@@ -356,7 +355,7 @@ class GDBSession(object):
                                     )
 
                     auxvdata = self.bin_to_escstr(unhexlify(auxvdata_c))
-                    self.send(b'l!' + auxvdata)  
+                    self.send(b'l!' + auxvdata)
 
                 elif subcmd.startswith('Xfer:exec-file:read:'):
                     self.send("l" + str(self.ql.filename[0]))
@@ -366,38 +365,38 @@ class GDBSession(object):
 
                 elif subcmd == "Attached":
                     self.send("")
-                
+
                 elif subcmd.startswith("C"):
                     self.send("")
-                
+
                 elif subcmd.startswith("L:"):
                     self.send("M001")
-                
+
                 elif subcmd == "fThreadInfo":
                     self.send("m0")
-                
+
                 elif subcmd == "sThreadInfo":
                     self.send("l")
-                
+
                 elif subcmd.startswith("TStatus"):
                     self.send("")
-                
+
                 elif subcmd == "Symbol":
                     self.send("OK")
-                
+
                 elif subcmd == "Offsets":
                     self.send("Text=0;Data=0;Bss=0")
-                
+
                 else:
                     if not subcmd.startswith('Supported:'):
                         self.send("")
 
 
             def handle_v(subcmd):
-                
+
                 if subcmd == 'MustReplyEmpty':
                     self.send("")
-                    
+
                 elif subcmd.startswith('File:open'):
                     binname = subcmd.split(':')[-1].split(',')[0]
                     binname = unhexlify(binname).decode(encoding='UTF-8')
@@ -406,11 +405,11 @@ class GDBSession(object):
                         self.ql.dprint("gdb> opening file: %s" % (binname))
                         self.send("F5")
                     else:
-                        self.fullbinpath=""    
+                        self.fullbinpath=""
                         self.send("F0")
 
                 elif subcmd.startswith('File:pread:5'):
- 
+
                     offset = subcmd.split(',')[-1]
                     count = subcmd.split(',')[-2]
                     offset = ((int(offset, base=16)))
@@ -419,13 +418,13 @@ class GDBSession(object):
                     if os.path.exists(self.fullbinpath):
                         with open(self.fullbinpath, "rb") as f:
                             preadheader = f.read()
-                        
+
                         if offset != 0:
                             shift_count = offset + count
                             read_offset = preadheader[offset:shift_count]
-                        else:    
-                            read_offset = preadheader[offset:count] 
-                            
+                        else:
+                            read_offset = preadheader[offset:count]
+
                         preadheader_len = len(preadheader)
 
                         read_offset = self.bin_to_escstr(read_offset)
@@ -434,20 +433,19 @@ class GDBSession(object):
                             if read_offset:
                                 self.send(b'F1;' + (read_offset))
                             else:
-                                self.send('F1;\x00')    
-                        
+                                self.send('F1;\x00')
+
                         elif count > 1:
                             self.send(b'F' + (str(hex(count)[2:]).encode()) + b';' + (read_offset))
-                        
+
                         else:
                             self.send("F0;")
-                           
+
                     else:
                         self.send("F0;")
 
                 elif subcmd.startswith('File:close'):
                     self.send("F0")
-
 
                 elif subcmd.startswith('Kill'):
                     self.send('OK')
@@ -591,10 +589,10 @@ class GDBSession(object):
         else:
             self.clientsocket.send(b'$'+ msg + (b'#%.2x' % checksum(msg)))
             self.netout.flush()
-        
+
         self.ql.dprint("gdb> send: $%s#%.2x" % (msg, checksum(msg)))
 
     def send_raw(self, r):
         self.netout.write(r)
         self.netout.flush()
-        
+
