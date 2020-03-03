@@ -88,9 +88,12 @@ class GDBSession(object):
             self.send_raw('+')
 
             def handle_qmark(subcmd):
-                sp = self.ql.addr_to_str(self.ql.uc.reg_read(self.sp))
-                pc = self.ql.addr_to_str(self.ql.uc.reg_read(self.pc))
-                self.send('T0506:0*,;07:'+sp+';10:'+pc+';')
+                if self.ql.arch == QL_ARM:
+                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))
+                else:    
+                    sp = self.ql.addr_to_str(self.ql.uc.reg_read(self.sp))
+                    pc = self.ql.addr_to_str(self.ql.uc.reg_read(self.pc))
+                    self.send('T0506:0*,;07:'+sp+';10:'+pc+';')
 
 
             def handle_c(subcmd):
@@ -286,9 +289,17 @@ class GDBSession(object):
                     xfercmd_abspath = os.path.dirname(os.path.abspath(__file__))
                     
                     if self.ql.arch == QL_X8664:
-                        xfercmd_file = os.path.join(xfercmd_abspath,"xml","x8664", xfercmd_file)
+                        xml_folder = "x8664"
+                    elif self.ql.arch == QL_X86:
+                        xml_folder = "x86"    
                     elif self.ql.arch == QL_ARM:
-                        xfercmd_file = os.path.join(xfercmd_abspath,"xml","arm", xfercmd_file)
+                        xml_folder = "arm"
+                    elif self.ql.arch == QL_ARM64:
+                        xml_folder = "arm64"
+                    elif self.ql.arch == QL_MIPS32EL:
+                        xml_folder = "mips"
+                    
+                    xfercmd_file = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
                     if os.path.exists(xfercmd_file):
                         f = open(xfercmd_file, 'r')
