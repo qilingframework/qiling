@@ -131,6 +131,12 @@ class GDBSession(object):
                         tmp = hex(int.from_bytes(struct.pack('<I', r), byteorder='big'))
                         tmp = '{:0>8}'.format(tmp[2:])
                         s += tmp
+                elif self.ql.arch == QL_ARM:
+                    for reg in registers_arm[:17]:
+                        r = self.ql.uc.reg_read(reg)
+                        tmp = hex(int.from_bytes(struct.pack('<I', r), byteorder='big'))
+                        tmp = '{:0>8}'.format(tmp[2:])
+                        s += tmp
                 self.send(s)
 
 
@@ -153,6 +159,13 @@ class GDBSession(object):
                         reg_data = int(reg_data, 16)
                         self.ql.uc.reg_write(registers_x86[count], reg_data)
                         count += 1
+                elif self.ql.arch == QL_ARM:
+                    if self.ql.arch == QL_X86:
+                        for i in range(0, len(subcmd), 8):
+                            reg_data = subcmd[i:i + 7]
+                            reg_data = int(reg_data, 16)
+                            self.ql.uc.reg_write(registers_arm[count], reg_data)
+                            count += 1
                 self.send('OK')
 
 
@@ -215,6 +228,13 @@ class GDBSession(object):
                         elif 17 < reg_index:
                             reg_value = hex(int.from_bytes(struct.pack('<I', reg_value), byteorder='big'))
                             reg_value = '{:0>8}'.format(reg_value[2:])
+                    elif self.ql.arch == QL_ARM:
+                        if reg_index < 17:
+                            reg_value = self.ql.uc.reg_read(registers_arm[reg_index - 1])
+                        else:
+                            reg_value = 0
+                        reg_value = hex(int.from_bytes(struct.pack('<I', reg_value), byteorder='big'))
+                        reg_value = '{:0>8}'.format(reg_value[2:])
                     self.send(reg_value)
                 except:
                     self.close()
@@ -237,7 +257,11 @@ class GDBSession(object):
                         reg_data = int(reg_data[:8], 16)
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                         self.ql.uc.reg_write(registers_x8664[reg_index], reg_data)
-                self.ql.nprint("gdb> write to register %x with %x" %(registers_x8664[reg_index],reg_data))        
+                if self.ql.arch == QL_ARM:
+                    reg_data = int(reg_data, 16)
+                    reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
+                    self.ql.uc.reg_write(registers_arm[reg_index], reg_data)
+                self.ql.nprint("gdb> write to register %x with %x" % (registers_x8664[reg_index], reg_data))
                 self.send('OK')
 
 
@@ -318,48 +342,48 @@ class GDBSession(object):
                             AT_NULL             = "0000000000000000"
 
                         elif self.ql.archbit == 32:
-                            ANNEX               = "000000"
-                            AT_SYSINFO_EHDR     = "00000000" # System-supplied DSO's ELF header
-                            ID_AT_HWCAP         = "10000000"
-                            ID_AT_PAGESZ        = "06000000"
-                            ID_AT_CLKTCK        = "11000000"
-                            AT_CLKTCK           = "64000000" # Frequency of times() 100
-                            ID_AT_PHDR          = "03000000"
-                            ID_AT_PHENT         = "04000000"
-                            ID_AT_PHNUM         = "05000000"
-                            ID_AT_BASE          = "07000000"
-                            ID_AT_FLAGS         = "08000000"
-                            ID_AT_ENTRY         = "09000000"
-                            ID_AT_UID           = "0b000000"
-                            ID_AT_EUID          = "0c000000"
-                            ID_AT_GID           = "0d000000"
-                            ID_AT_EGID          = "0e000000"
-                            ID_AT_SECURE        = "17000000"
-                            AT_SECURE           = "00000000"
-                            ID_AT_RANDOM        = "19000000"
-                            ID_AT_HWCAP2        = "1a000000"
-                            AT_HWCAP2           = "00000000"
-                            ID_AT_EXECFN        = "1f000000"
-                            AT_EXECFN           = "00000000" # File name of executable
-                            ID_AT_PLATFORM      = "f0000000"
-                            ID_AT_NULL          = "00000000"
-                            AT_NULL             = "00000000"
+                            ANNEX = "000000"
+                            AT_SYSINFO_EHDR = "00000000"  # System-supplied DSO's ELF header
+                            ID_AT_HWCAP = "10000000"
+                            ID_AT_PAGESZ = "06000000"
+                            ID_AT_CLKTCK = "11000000"
+                            AT_CLKTCK = "64000000"  # Frequency of times() 100
+                            ID_AT_PHDR = "03000000"
+                            ID_AT_PHENT = "04000000"
+                            ID_AT_PHNUM = "05000000"
+                            ID_AT_BASE = "07000000"
+                            ID_AT_FLAGS = "08000000"
+                            ID_AT_ENTRY = "09000000"
+                            ID_AT_UID = "0b000000"
+                            ID_AT_EUID = "0c000000"
+                            ID_AT_GID = "0d000000"
+                            ID_AT_EGID = "0e000000"
+                            ID_AT_SECURE = "17000000"
+                            AT_SECURE = "00000000"
+                            ID_AT_RANDOM = "19000000"
+                            ID_AT_HWCAP2 = "1a000000"
+                            AT_HWCAP2 = "00000000"
+                            ID_AT_EXECFN = "1f000000"
+                            AT_EXECFN = "00000000"  # File name of executable
+                            ID_AT_PLATFORM = "f0000000"
+                            ID_AT_NULL = "00000000"
+                            AT_NULL = "00000000"
 
-                        AT_HWCAP            = self.addr_to_str(self.ql.elf_hwcap) # mock cpuid 0x1f8bfbff
-                        AT_PAGESZ           = self.addr_to_str(self.ql.elf_pagesz) # System page size, fixed in qiling
-                        AT_PHDR             = self.addr_to_str(self.ql.elf_phdr) # Program headers for program
-                        AT_PHENT            = self.addr_to_str(self.ql.elf_phent) # Size of program header entry
-                        AT_PHNUM            = self.addr_to_str(self.ql.elf_phnum) # Number of program headers
-                        AT_BASE             = self.addr_to_str(self.ql.interp_base) # Base address of interpreter
-                        AT_FLAGS            = self.addr_to_str(self.ql.elf_flags)
-                        AT_ENTRY            = self.addr_to_str(self.ql.elf_entry) # Entry point of program
-                        AT_UID              = self.addr_to_str(self.ql.elf_guid) # UID at 1000 fixed in qiling
-                        AT_EUID             = self.addr_to_str(self.ql.elf_guid) # EUID at 1000 fixed in qiling
-                        AT_GID              = self.addr_to_str(self.ql.elf_guid) # GID at 1000 fixed in qiling
-                        AT_EGID             = self.addr_to_str(self.ql.elf_guid) # EGID at 1000 fixed in qiling
-                        AT_RANDOM           = self.addr_to_str(self.ql.randstraddr) # Address of 16 random bytes
-                        AT_PLATFORM         = self.addr_to_str(self.ql.cpustraddr) # String identifying platform
- 
+                        AT_HWCAP = self.addr_to_str(self.ql.elf_hwcap)  # mock cpuid 0x1f8bfbff
+                        AT_PAGESZ = self.addr_to_str(self.ql.elf_pagesz)  # System page size, fixed in qiling
+                        AT_PHDR = self.addr_to_str(self.ql.elf_phdr)  # Program headers for program
+                        AT_PHENT = self.addr_to_str(self.ql.elf_phent)  # Size of program header entry
+                        AT_PHNUM = self.addr_to_str(self.ql.elf_phnum)  # Number of program headers
+                        AT_BASE = self.addr_to_str(self.ql.interp_base)  # Base address of interpreter
+                        AT_FLAGS = self.addr_to_str(self.ql.elf_flags)
+                        AT_ENTRY = self.addr_to_str(self.ql.elf_entry)  # Entry point of program
+                        AT_UID = self.addr_to_str(self.ql.elf_guid)  # UID at 1000 fixed in qiling
+                        AT_EUID = self.addr_to_str(self.ql.elf_guid)  # EUID at 1000 fixed in qiling
+                        AT_GID = self.addr_to_str(self.ql.elf_guid)  # GID at 1000 fixed in qiling
+                        AT_EGID = self.addr_to_str(self.ql.elf_guid)  # EGID at 1000 fixed in qiling
+                        AT_RANDOM = self.addr_to_str(self.ql.randstraddr)  # Address of 16 random bytes
+                        AT_PLATFORM = self.addr_to_str(self.ql.cpustraddr)  # String identifying platform
+
                         auxvdata_c = (
                                         ANNEX + AT_SYSINFO_EHDR +
                                         ID_AT_HWCAP + AT_HWCAP +
