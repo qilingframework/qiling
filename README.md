@@ -86,7 +86,7 @@ def my_sandbox(path, rootfs):
 
 if __name__ == "__main__":
     # execute Windows EXE under our rootfs
-    my_sandbox(["examples/rootfs/x86_windows/bin/x86-windows-hello.exe"], "examples/rootfs/x86_windows")
+    my_sandbox(["examples/rootfs/x86_windows/bin/x86_hello.exe"], "examples/rootfs/x86_windows")
 ```
 
 - Below example shows how to use Qiling framework to dynamically patch a Windows crackme, make it always display "Congratulation" dialog.
@@ -153,6 +153,14 @@ To run shellcode, run:
 $ ./qltool shellcode --os linux --arch x86 --asm -f examples/shellcodes/lin32_execve.asm
 
 ```
+
+---
+
+#### Gdbserver
+
+Qiling has supported **Gdb remote debugging** now (x86, x86-64 for now).
+
+See [EN](docs/GDBSERVER.md)|[CN](docs/GDBSERVER_CN.md)  for more details
 
 ---
 

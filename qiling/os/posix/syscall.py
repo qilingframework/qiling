@@ -879,6 +879,10 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
     try:
         buf = ql.uc.mem_read(write_buf, write_count)
         ql.nprint("\nwrite(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
+        if buf:
+            ql.dprint("[+] write() CONTENT:")
+            ql.dprint(buf)
+
         ql.file_des[write_fd].write(buf)
         regreturn = write_count
     except:
@@ -1274,7 +1278,11 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, nu
         if idx == -1:
             regreturn = -1
         else:
-            ql.file_des[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
+            if ql.output == QL_OUT_DEBUG: # set REUSEADDR options under debug mode
+                ql.file_des[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol, (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1))
+            else:
+                ql.file_des[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
+
             regreturn = (idx)
     except:
         regreturn = -1

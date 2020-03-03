@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys, struct, os, platform, importlib
+import sys, struct, os, platform, importlib, socket
 from unicorn import *
 
 from qiling.arch.filetype import *
@@ -13,8 +13,13 @@ from qiling.utils import *
 from qiling.os.utils import *
 from qiling.arch.utils import *
 from qiling.os.linux.thread import *
+from qiling.gdbserver.gdblistener import GDBSession
 
 __version__ = "0.9"
+
+# default port for GDB server
+GDB_PORT = 9999
+
 
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
@@ -27,6 +32,7 @@ def catch_KeyboardInterrupt(ql):
                 ql.internal_exception = e
         return wrapper
     return decorator
+
 
 class Qiling:
     arch                = ''
@@ -68,6 +74,7 @@ class Qiling:
     exit_code           = 0
     debug_stop          = False
     internal_exception  = None
+
 
     def __init__(
                     self, 
@@ -112,6 +119,8 @@ class Qiling:
         self.dict_posix_syscall     = dict()
         self.user_defined_api       = {}
         self.global_thread_id       = 0
+        self.gdb                    = None
+        self.gdbsession             = None
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -188,6 +197,7 @@ class Qiling:
         else:
             self.load_exec()  
 
+
     def build_os_execution(self, function_name):
         self.runtype = ql_get_os_module_function(self.ostype, self.arch, "runner")
         return ql_get_os_module_function(self.ostype, self.arch, function_name)
@@ -205,9 +215,30 @@ class Qiling:
 
 
     def run(self):
+        if self.gdb is not None:
+            try:
+                if self.gdb is True:
+                    self.gdbserver()
+                else:
+                    ip, port = '', ''
+                    try:
+                        ip, port = self.gdb.split(':')
+                        port = int(port)
+                    except:
+                        self.nprint("[!] Error: ip or port")
+                        exit(1)
+                    self.gdbserver(ip, port)
+            except KeyboardInterrupt:
+                if self.gdbsession():
+                    self.gdbsession.close()
+                exit(1)
+
         self.__enable_bin_patch()
         runner = self.build_os_execution("runner")
         runner(self)
+
+        if self.gdb is not None:
+            self.gdbsession.run()
 
 
     def nprint(self, *args, **kw):
@@ -430,6 +461,7 @@ class Qiling:
 
         # pack user_data & callback for wrapper _callback
         self.uc.hook_add(UC_HOOK_MEM_FETCH, _callback, (user_data, callback), begin, end)
+
 
     def hook_insn(self, callback, arg1, user_data = None, begin = 1, end = 0):
         @catch_KeyboardInterrupt(self)
@@ -672,6 +704,7 @@ class Qiling:
     def add_fs_mapper(self, fm, to):
         self.fs_mapper.append([fm, to])
     
+
     def stop(self, stop_event = THREAD_EVENT_EXIT_GROUP_EVENT):
         if self.thread_management != None:
             td = self.thread_management.cur_thread
@@ -680,3 +713,26 @@ class Qiling:
         self.uc.emu_stop()
 
 
+    def gdbserver(self, ip=None, port=None):
+        path = self.path
+        try:
+            if ip is None:
+                ip = '127.0.0.1'
+            if port is None:
+                port = 9999
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.bind((ip, port))
+            self.nprint("gdb> initializing loadbase 0x%x" % (self.loadbase))    
+            self.nprint("gdb> listening on %s:%d" % (ip, port))
+            sock.listen(1)
+            conn, addr = sock.accept()
+        except:
+            self.nprint("gdb> Error: Address already in use")
+            raise    
+        try:
+            mappings = [(hex(self.entry_point), 0x10)]
+            exit_point = self.entry_point + os.path.getsize(path)
+            self.gdbsession = GDBSession(self, conn, exit_point, mappings)
+        except:
+            self.nprint("gdb> Error: Not able to initialize GDBServer")
+            raise

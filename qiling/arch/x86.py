@@ -156,35 +156,35 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
         to_ret |= (access & 0xff) << 40
         to_ret |= ((limit >> 16) & 0xf) << 48
         to_ret |= (flags & 0xff) << 52
-        to_ret |= ((base >> 24) & 0xff) << 56
+        to_ret |= ((base >> 24) & 0xff) << 56;
         return pack('<Q', to_ret)
 
     # map GDT table
     if ql.ostype == QL_LINUX and GDTTYPE == "DS":
-        ql.dprint("[+] OS Type: %d" % (ql.ostype))
         ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
     
     if ql.ostype == QL_WINDOWS and GDTTYPE == "FS":
         ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
         ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
 
-    if ql.ostype == QL_FREEBSD and GDTTYPE == "FS":
+    if ql.ostype == QL_FREEBSD:
         if not ql.shellcoder:
             if ql.arch == QL_X86:
                 GDT_ADDR = GDT_ADDR + QL_X86_GDT_ADDR_PADDING
             elif ql.arch == QL_X8664:
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
-        ql.dprint ("[+] GDT_ADDR is 0x%x" % (GDT_ADDR))
-        ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
+        if GDTTYPE == "CS":        
+            ql.dprint("[+] FreeBSD %s GDT_ADDR is 0x%x" % (GDTTYPE, GDT_ADDR))
+            ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
     
-    if ql.ostype == QL_MACOS and GDTTYPE == "DS":
+    if ql.ostype == QL_MACOS and GDTTYPE == "CS":
         if not ql.shellcoder:
             if ql.arch == QL_X86:
                 GDT_ADDR = GDT_ADDR + QL_X86_GDT_ADDR_PADDING
             elif ql.arch == QL_X8664:
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
 
-        ql.dprint ("[+] GDT_ADDR is 0x%x" % (GDT_ADDR))
+        ql.dprint("[+] GDT_ADDR is 0x%x" % (GDT_ADDR))
         ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
     
     # create GDT entry, then write GDT entry into GDT table
@@ -197,7 +197,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
     # create segment index, point segment register to this selector
     selector = create_selector(index, RPORT)
-    ql.dprint("[+] SET_THREAD_AREA selector : 0x%x" % selector)
+    ql.dprint("[+] %s : 0x%x" % (GDTTYPE, selector))
     ql.uc.reg_write(seg_reg, selector)
 
 
