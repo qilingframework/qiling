@@ -88,7 +88,6 @@ class GDBSession(object):
             self.send_raw('+')
 
             def handle_qmark(subcmd):
-                #if self.ql.arch == QL_X8664:
                 sp = self.ql.addr_to_str(self.ql.uc.reg_read(self.sp))
                 pc = self.ql.addr_to_str(self.ql.uc.reg_read(self.pc))
                 self.send('T0506:0*,;07:'+sp+';10:'+pc+';')
@@ -280,23 +279,16 @@ class GDBSession(object):
             def handle_q(subcmd):
                 if subcmd.startswith('Supported:'):
                     if self.ql.multithread == False:
-                        if self.ql.arch in (QL_X86, QL_X8664):
-                            self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")
-                        elif self.ql.arch == QL_ARM:
-                            self.send  ('PacketSize=3fff;QPassSignals+;QProgramSignals+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+')    
+                        self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")
 
                 elif subcmd.startswith('Xfer:features:read'):
                     xfercmd_file = subcmd.split(':')[3]
-                    ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+                    xfercmd_abspath = os.path.dirname(os.path.abspath(__file__))
                     
                     if self.ql.arch == QL_X8664:
-                        xfercmd_file = os.path.join(ROOT_DIR,"xml","x8664", xfercmd_file)
+                        xfercmd_file = os.path.join(xfercmd_abspath,"xml","x8664", xfercmd_file)
                     elif self.ql.arch == QL_ARM:
-                        print("arm")
-                        xfercmd_file = os.path.join(ROOT_DIR,"xml","arm", xfercmd_file)
-                    else:    
-                        self.ql.nprint("gdb> arch file not found: %s" % (xfercmd_file))
-                        exit(1)
+                        xfercmd_file = os.path.join(xfercmd_abspath,"xml","arm", xfercmd_file)
 
                     if os.path.exists(xfercmd_file):
                         f = open(xfercmd_file, 'r')
@@ -433,8 +425,11 @@ class GDBSession(object):
                 elif subcmd.startswith("TStatus"):
                     self.send("")
 
-                elif subcmd == "Symbol":
-                    self.send("OK")
+                elif subcmd.startswith("Symbol"):
+                    self.send("")
+
+                elif subcmd.startswith("Attached"):
+                    self.send("")
 
                 elif subcmd == "Offsets":
                     self.send("Text=0;Data=0;Bss=0")

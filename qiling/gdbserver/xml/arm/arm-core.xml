@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<!-- Copyright (C) 2007-2020 Free Software Foundation, Inc.
+<!-- Copyright (C) 2007-2016 Free Software Foundation, Inc.
 
-     Copying and distribution of this file, with or without modification,
-     are permitted in any medium without royalty provided the copyright
-     notice and this notice are preserved.  -->
+ *!Copying and distribution of this file, with or without modification,
+ *!are permitted in any medium without royalty provided the copyright
+ *!notice and this notice are preserved.  -->
 
 <!DOCTYPE feature SYSTEM "gdb-target.dtd">
 <feature name="org.gnu.gdb.arm.core">
@@ -25,7 +25,7 @@
   <reg name="pc" bitsize="32" type="code_ptr"/>
 
   <!-- The CPSR is register 25, rather than register 16, because
-       the FPA registers historically were placed between the PC
-       and the CPSR in the "g" packet.  -->
+ *" the FPA registers historically were placed between the PC
+ *" and the CPSR in the "g" packet.  -->
   <reg name="cpsr" bitsize="32" regnum="25"/>
 </feature>
