@@ -2,6 +2,7 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
+
 from unicorn.arm64_const import *
 from unicorn.arm_const import *
 from unicorn.mips_const import *
@@ -44,16 +45,4 @@ registers_arm = [
 
 arch_reg = {QL_X86: registers_x86, QL_X8664: registers_x8664, QL_ARM: registers_arm}
 
-def get_reg_pc(arch):
-    if arch == QL_X86:
-        return UC_X86_REG_EIP
-    elif arch == QL_X8664:
-        return UC_X86_REG_RIP
-    elif arch == QL_ARM:
-        return UC_ARM_REG_PC
-    elif arch == QL_ARM_THUMB:
-        return UC_ARM_REG_PC
-    elif arch == QL_ARM64:
-        return UC_ARM64_REG_PC
-    elif arch == QL_MIPS32EL:
-        return UC_MIPS_REG_PC
+
