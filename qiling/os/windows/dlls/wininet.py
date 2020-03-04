@@ -143,6 +143,18 @@ def hook_InternetConnectA(ql, address, params):
 def hook_InternetConnectW(ql, address, params):
     pass
 
+# void InternetCheckConnectionA(
+#    LPCSTR lpszUrl,
+#    DWORD  dwFlags,
+#    DWORD  dwReserved
+#);
+@winapi(cc=STDCALL, params={
+    "lpszUrl": WSTRING,
+    "dwFlags": DWORD,
+    "dwContext": DWORD
+})
+def hook_InternetCheckConnectionA(ql, address, params):
+    pass
 
 # void HttpOpenRequestA(
 #   HINTERNET hConnect,
@@ -165,6 +177,24 @@ def hook_InternetConnectW(ql, address, params):
     "dwContext": POINTER
 })
 def hook_HttpOpenRequestA(ql, address, params):
+    pass
+
+
+# vBOOLAPI HttpSendRequestExA(
+#   HINTERNET           hRequest,
+#   LPINTERNET_BUFFERSA lpBuffersIn,
+#   LPINTERNET_BUFFERSA lpBuffersOut,
+#   DWORD               dwFlags,
+#   DWORD_PTR           dwContext
+#);
+@winapi(cc=STDCALL, params={
+    "hRequest": POINTER,
+    "lpBuffersIn": POINTER,
+    "lpBuffersOut": STRING,
+    "dwFlags": DWORD,
+    "dwContext": POINTER
+})
+def hook_HttpSendRequestExA(ql, address, params):
     pass
 
 
@@ -293,3 +323,34 @@ def hook_InternetErrorDlg(ql, address, params):
 def hook_InternetReadFile(ql, address, params):
     return 1
 
+
+# BOOLAPI InternetWriteFile(
+#   HINTERNET hFile,
+#   LPCVOID   lpBuffer,
+#   DWORD     dwNumberOfBytesToWrite,
+#   LPDWORD   lpdwNumberOfBytesWritten
+#);
+@winapi(cc=STDCALL, params={
+    "hFile": POINTER,
+    "lpBuffer": POINTER,
+    "dwNumberOfBytesToWrite": DWORD,
+    "lpdwNumberOfBytesWritten": POINTER
+})
+def hook_InternetWriteFile(ql, address, params):
+    return 1
+
+
+# BOOLAPI HttpEndRequestA(
+#   HINTERNET           hRequest,
+#   LPINTERNET_BUFFERSA lpBuffersOut,
+#   DWORD               dwFlags,
+#   DWORD_PTR           dwContext
+# );
+@winapi(cc=STDCALL, params={
+    "hFile": POINTER,
+    "lpBuffersOut": POINTER,
+    "dwFlags": DWORD,
+    "dwContext": POINTER
+})
+def hook_HttpEndRequestA(ql, address, params):
+    return 1

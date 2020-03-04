@@ -17,9 +17,6 @@ from qiling.gdbserver.gdblistener import GDBSession
 
 __version__ = "0.9"
 
-# default port for GDB server
-GDB_PORT = 9999
-
 
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
