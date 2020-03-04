@@ -10,6 +10,7 @@ Qiling is an advanced binary emulation framework, with the following features:
 
 - Cross platform: Windows, MacOS, Linux, BSD
 - Cross architecture: X86, X86_64, Arm, Arm64, Mips
+- Supports Multi Arch and Cross OS gdbserver compatible debugging. For example, IDA, gdbclient and etc.
 - Multiple file formats: PE, MachO, ELF
 - Emulate & sandbox machine code in a isolated environment
 - Provide high level API to setup & configure the sandbox
@@ -125,14 +126,19 @@ if __name__ == "__main__":
 
 The below Youtube video shows how the above example works.
 
-[![qiling DEMO 1: hotpatching a windows crackme](http://img.youtube.com/vi/p17ONUbCnUU/0.jpg)](https://www.youtube.com/watch?v=p17ONUbCnUU "Video DEMO 1")
+[![qiling DEMO 1: hotpatching a windows crackme](https://img.youtube.com/vi/p17ONUbCnUU/0.jpg)](https://www.youtube.com/watch?v=p17ONUbCnUU "Video DEMO 1")
 
+#### GDBserver with IDAPro demo
+
+- Solving a simple CTF challenge with Qiling Framework and IDAPro
+
+[![Solving a simple CTF challange with Qiling Framework and IDAPro](https://i.ytimg.com/vi/SPjVAt2FkKA/0.jpg)](https://www.youtube.com/watch?v=SPjVAt2FkKA "Video DEMO 2")
 
 #### Wannacry demo
 
 - The below Youtube video shows how Qiling analyzes Wannacry malware.
 
-[![qiling DEMO 0: catching wannacry's killer swtich](http://img.youtube.com/vi/gVtpcXBxwE8/0.jpg)](https://www.youtube.com/watch?v=gVtpcXBxwE8 "Video DEMO 0")
+[![qiling DEMO 0: catching wannacry's killer swtich](https://img.youtube.com/vi/gVtpcXBxwE8/0.jpg)](https://www.youtube.com/watch?v=gVtpcXBxwE8 "Video DEMO 0")
 
 ---
 
@@ -183,3 +189,5 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 - CHEN huitao (null) <null@qiling.io>
 - YU tong (sp1ke) <spikeinhouse@gmail.com>
 
+#### Travis-CI, Docker and Website
+- FOO Kevin (chfl4gs) <chbsd64@qiling.io>
