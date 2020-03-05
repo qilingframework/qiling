@@ -12,8 +12,12 @@ from binascii import unhexlify
 from qiling.gdbserver import qldbg
 from qiling.gdbserver.reg_table import *
 
+GDB_SIGNAL_INT  = 2
+GDB_SIGNAL_SEGV = 11
+GDB_SIGNAL_GILL = 4
+GDB_SIGNAL_STOP = 17
 GDB_SIGNAL_TRAP = 5
-
+GDB_SIGNAL_BUS  = 10
 
 def checksum(data):
     checksum = 0
@@ -416,7 +420,16 @@ class GDBSession(object):
                     self.send("l" + str(self.exe_abspath))
 
                 elif subcmd.startswith('Xfer:libraries-svr4:read:'):
-                    self.send("l<library-list-svr4 version=\"1.0\"/>")
+                    if self.ql.ostype in (QL_LINUX, QL_FREEBSD):
+                        addr_mapping=("<library-list-svr4 version=\"1.0\">")
+                        # FIXME: need to find out when do we need this
+                        #for s, e, info in self.ql.map_info:
+                        #    addr_mapping += ("<library name=\"%s\" lm=\"0x%x\" l_addr=\"%x\" l_ld=\"\"/>" %(info, e, s)) 
+                        addr_mapping += ("</library-list-svr4>")
+                        self.send("l"+addr_mapping)
+                    else:     
+                        self.send("l<library-list-svr4 version=\"1.0\"></library-list-svr4>")
+
 
                 elif subcmd == "Attached":
                     self.send("")
@@ -468,7 +481,7 @@ class GDBSession(object):
                     offset = ((int(offset, base=16)))
                     count = ((int(count, base=16)))
 
-                    if os.path.exists(self.lib_abspath):
+                    if os.path.exists(self.lib_abspath) and (self.lib_abspath).startswith("/proc"):
                         with open(self.lib_abspath, "rb") as f:
                             preadheader = f.read()
 
@@ -493,7 +506,10 @@ class GDBSession(object):
 
                         else:
                             self.send("F0;")
-
+                    
+                    elif re.match("\/proc\/.*\/maps", self.lib_abspath):
+                        self.send("F0;")    
+                    
                     else:
                         self.send("F0;")
 
