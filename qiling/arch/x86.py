@@ -94,6 +94,16 @@ class X86(Arch):
         return self.ql.uc.reg_read(UC_X86_REG_ESP)
 
 
+    # get stack pointer register
+    def get_reg_sp(self):
+        return UC_X86_REG_ESP
+
+
+    # get pc register pointer
+    def get_reg_pc(self):
+        return UC_X86_REG_EIP
+
+
 class X8664(Arch):
     def __init__(self, ql):
         super(X8664, self).__init__(ql)
@@ -141,6 +151,15 @@ class X8664(Arch):
     def get_sp(self):
         return self.ql.uc.reg_read(UC_X86_REG_RSP)
 
+
+    # get stack pointer register
+    def get_reg_sp(self):
+        return UC_X86_REG_RSP
+
+
+    # get pc register pointer
+    def get_reg_pc(self):
+        return UC_X86_REG_RIP
 
 def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_ADDR, SEGMENT_SIZE, SPORT, RPORT, GDTTYPE):
     # create segment index

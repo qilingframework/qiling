@@ -39,7 +39,8 @@ class GDBSession(object):
         self.netout         = clientsocket.makefile('w')
         self.last_pkt       = None
         self.en_vcont       = False
-        self.pc, self.sp    = self.ql.get_reg_spc()
+        self.pc             = self.ql.reg_pc()
+        self.sp             = self.ql.reg_sp()
         self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
         self.rootfs_abspath = (os.path.abspath(self.ql.rootfs))
         self.qldbg          = qldbg.Qldbg()
