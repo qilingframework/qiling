@@ -1,5 +1,1 @@
-include qiling/gdbserver/xml/x86/*
-include qiling/gdbserver/xml/x8664/*
-include qiling/gdbserver/xml/mips32el/*
-include qiling/gdbserver/xml/arm/*
-include qiling/gdbserver/xml/arm64/*
+recursive-include qiling/gdbserver/xml *
