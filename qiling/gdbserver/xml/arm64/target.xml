@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!-- Copyright (C) 2009-2016 Free Software Foundation, Inc.
+ *!Contributed by ARM Ltd.
+
+ *!Copying and distribution of this file, with or without modification,
+ *!are permitted in any medium without royalty provided the copyright
+ *!notice and this notice are preserved.  -->
+
+<!DOCTYPE target SYSTEM "gdb-target.dtd">
+<target>
+  <architecture>aarch64</architecture>
+  <xi:include href="aarch64-core.xml"/>
+  <xi:include href="aarch64-fpu.xml"/>
+</target>

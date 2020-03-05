@@ -17,9 +17,6 @@ from qiling.gdbserver.gdblistener import GDBSession
 
 __version__ = "0.9"
 
-# default port for GDB server
-GDB_PORT = 9999
-
 
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
@@ -264,6 +261,13 @@ class Qiling:
             msg = args[0]
             msg += b'\n' if isinstance(msg, bytes) else '\n'
             self.log_file_fd.debug(msg, **kw)
+
+    def addr_to_str(self, addr, short = False, endian = "big"):
+        return ql_addr_to_str(self, addr, short, endian)
+
+
+    def get_reg_spc(self):
+        return ql_get_reg_spc(self)
 
 
     def asm2bytes(self, runasm, arm_thumb = None):
