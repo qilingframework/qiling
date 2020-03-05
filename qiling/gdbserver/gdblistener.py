@@ -12,8 +12,12 @@ from binascii import unhexlify
 from qiling.gdbserver import qldbg
 from qiling.gdbserver.reg_table import *
 
+GDB_SIGNAL_INT  = 2
+GDB_SIGNAL_SEGV = 11
+GDB_SIGNAL_GILL = 4
+GDB_SIGNAL_STOP = 17
 GDB_SIGNAL_TRAP = 5
-
+GDB_SIGNAL_BUS  = 10
 
 def checksum(data):
     checksum = 0
@@ -88,9 +92,12 @@ class GDBSession(object):
             self.send_raw('+')
 
             def handle_qmark(subcmd):
-                sp = self.ql.addr_to_str(self.ql.uc.reg_read(self.sp))
-                pc = self.ql.addr_to_str(self.ql.uc.reg_read(self.pc))
-                self.send('T0506:0*,;07:'+sp+';10:'+pc+';')
+                if self.ql.arch == QL_ARM:
+                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))
+                else:    
+                    sp = self.ql.addr_to_str(self.ql.uc.reg_read(self.sp))
+                    pc = self.ql.addr_to_str(self.ql.uc.reg_read(self.pc))
+                    self.send('T0506:0*,;07:'+sp+';10:'+pc+';')
 
 
             def handle_c(subcmd):
@@ -124,7 +131,12 @@ class GDBSession(object):
                         r = self.ql.uc.reg_read(reg)
                         tmp = self.ql.addr_to_str(r)
                         s += tmp
-                
+
+                if self.ql.arch == QL_ARM64:
+                    for reg in registers_arm64[:33]:
+                        r = self.ql.uc.reg_read(reg)
+                        tmp = self.ql.addr_to_str(r)
+                        s += tmp
                 self.send(s)
 
 
@@ -141,12 +153,12 @@ class GDBSession(object):
                     for i in range(0, 17*16, 16):
                         reg_data = subcmd[i:i+15]
                         reg_data = int(reg_data, 16)
-                        self.ql.uc.reg_write(registers_x86[count], reg_data)
+                        self.ql.uc.reg_write(registers_x8664[count], reg_data)
                         count += 1
                     for j in range(17*16, 17*16+15*8, 8):
                         reg_data = subcmd[j:j+7]
                         reg_data = int(reg_data, 16)
-                        self.ql.uc.reg_write(registers_x86[count], reg_data)
+                        self.ql.uc.reg_write(registers_x8664[count], reg_data)
                         count += 1
                 
                 elif self.ql.arch == QL_ARM:
@@ -155,7 +167,13 @@ class GDBSession(object):
                         reg_data = int(reg_data, 16)
                         self.ql.uc.reg_write(registers_arm[count], reg_data)
                         count += 1
-                
+                elif self.ql.arch == QL_ARM64:
+                    for i in range(0, len(subcmd), 16):
+                        reg_data = subcmd[i:i + 15]
+                        reg_data = int(reg_data, 16)
+                        self.ql.uc.reg_write(registers_arm64[count], reg_data)
+                        count += 1
+
                 self.send('OK')
 
 
@@ -224,6 +242,13 @@ class GDBSession(object):
                             reg_value = 0
                         reg_value = self.ql.addr_to_str(reg_value)
 
+                    if self.ql.arch == QL_ARM64:
+                        if reg_index <= 32:
+                            reg_value = self.ql.uc.reg_read(registers_arm64[reg_index - 1])
+                        else:
+                            reg_value = 0
+                            reg_value = self.ql.addr_to_str(reg_value)
+
                     self.send(reg_value)
                 except:
                     self.close()
@@ -252,7 +277,12 @@ class GDBSession(object):
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                     self.ql.uc.reg_write(registers_arm[reg_index], reg_data)
-                
+
+                if self.ql.arch == QL_ARM64:
+                    reg_data = int(reg_data, 16)
+                    reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
+                    self.ql.uc.reg_write(registers_arm64[reg_index], reg_data)
+
                 self.ql.nprint("gdb> write to register %x with %x" % (registers_x8664[reg_index], reg_data))
                 self.send('OK')
 
@@ -286,9 +316,17 @@ class GDBSession(object):
                     xfercmd_abspath = os.path.dirname(os.path.abspath(__file__))
                     
                     if self.ql.arch == QL_X8664:
-                        xfercmd_file = os.path.join(xfercmd_abspath,"xml","x8664", xfercmd_file)
+                        xml_folder = "x8664"
+                    elif self.ql.arch == QL_X86:
+                        xml_folder = "x86"    
                     elif self.ql.arch == QL_ARM:
-                        xfercmd_file = os.path.join(xfercmd_abspath,"xml","arm", xfercmd_file)
+                        xml_folder = "arm"
+                    elif self.ql.arch == QL_ARM64:
+                        xml_folder = "arm64"
+                    elif self.ql.arch == QL_MIPS32EL:
+                        xml_folder = "mips"
+                    
+                    xfercmd_file = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
                     if os.path.exists(xfercmd_file):
                         f = open(xfercmd_file, 'r')
@@ -405,7 +443,16 @@ class GDBSession(object):
                     self.send("l" + str(self.exe_abspath))
 
                 elif subcmd.startswith('Xfer:libraries-svr4:read:'):
-                    self.send("l<library-list-svr4 version=\"1.0\"/>")
+                    if self.ql.ostype in (QL_LINUX, QL_FREEBSD):
+                        addr_mapping=("<library-list-svr4 version=\"1.0\">")
+                        # FIXME: need to find out when do we need this
+                        #for s, e, info in self.ql.map_info:
+                        #    addr_mapping += ("<library name=\"%s\" lm=\"0x%x\" l_addr=\"%x\" l_ld=\"\"/>" %(info, e, s)) 
+                        addr_mapping += ("</library-list-svr4>")
+                        self.send("l"+addr_mapping)
+                    else:     
+                        self.send("l<library-list-svr4 version=\"1.0\"></library-list-svr4>")
+
 
                 elif subcmd == "Attached":
                     self.send("")
@@ -457,7 +504,7 @@ class GDBSession(object):
                     offset = ((int(offset, base=16)))
                     count = ((int(count, base=16)))
 
-                    if os.path.exists(self.lib_abspath):
+                    if os.path.exists(self.lib_abspath) and (self.lib_abspath).startswith("/proc"):
                         with open(self.lib_abspath, "rb") as f:
                             preadheader = f.read()
 
@@ -482,7 +529,10 @@ class GDBSession(object):
 
                         else:
                             self.send("F0;")
-
+                    
+                    elif re.match("\/proc\/.*\/maps", self.lib_abspath):
+                        self.send("F0;")    
+                    
                     else:
                         self.send("F0;")
 

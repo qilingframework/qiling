@@ -17,9 +17,6 @@ from qiling.gdbserver.gdblistener import GDBSession
 
 __version__ = "0.9"
 
-# default port for GDB server
-GDB_PORT = 9999
-
 
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
@@ -688,6 +685,7 @@ class Qiling:
                 tmp_map_info.append([mem_s, mem_e, mem_info])
         map_info = []
         map_info.append(tmp_map_info[0])
+
         for s, e, info in tmp_map_info[1 : ]:
             if s == map_info[-1][1] and info == map_info[-1][2]:
                 map_info[-1][1] = e

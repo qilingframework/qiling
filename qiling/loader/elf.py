@@ -432,8 +432,7 @@ class ELFLoader(ELFParse):
         # Load interpreter if there is an interpreter
 
         if interp_path != '':
-            if sys.version_info >= (3, 0):
-                interp_path = str(interp_path, 'utf-8', errors="ignore")
+            interp_path = str(interp_path, 'utf-8', errors="ignore")
            
             interp = ELFParse(ql.rootfs + interp_path, ql)
             interphead = interp.parse_header(ql)

@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!-- Copyright (C) 2013-2020 Free Software Foundation, Inc.
+
+     Copying and distribution of this file, with or without modification,
+     are permitted in any medium without royalty provided the copyright
+     notice and this notice are preserved.  -->
+
+<!DOCTYPE feature SYSTEM "gdb-target.dtd">
+<feature name="org.gnu.gdb.i386.mpx">
+  <struct id="br128">
+    <field name="lbound" type="uint64"/>
+    <field name="ubound_raw" type="uint64"/>
+  </struct>
+
+  <struct id="_bndstatus" size="8">
+    <field name="bde" start="2" end="31"/>
+    <field name="error" start="0" end="1"/>
+  </struct>
+
+  <union id="status">
+    <field name="raw" type="data_ptr"/>
+    <field name="status" type="_bndstatus"/>
+  </union>
+
+  <struct id="_bndcfgu" size="8">
+    <field name="base" start="12" end="31" />
+    <field name="reserved" start="2" end="11"/>
+    <!-- Explicitly set the type here, otherwise it defaults to bool.
+         Perhaps this should be uint32, but the container type has size 8.  -->
+    <field name="preserved" start="1" end="1" type="uint64"/>
+    <field name="enabled" start="0" end="0" type="uint64"/>
+  </struct>
+
+   <union id="cfgu">
+    <field name="raw" type="data_ptr"/>
+    <field name="config" type="_bndcfgu"/>
+  </union>
+
+  <reg name="bnd0raw" bitsize="128" type="br128"/>
+  <reg name="bnd1raw" bitsize="128" type="br128"/>
+  <reg name="bnd2raw" bitsize="128" type="br128"/>
+  <reg name="bnd3raw" bitsize="128" type="br128"/>
+  <reg name="bndcfgu"    bitsize="64" type="cfgu"/>
+  <reg name="bndstatus"  bitsize="64" type="status"/>
+</feature>
