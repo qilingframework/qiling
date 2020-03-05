@@ -126,8 +126,6 @@ if __name__ == "__main__":
 
 The below Youtube video shows how the above example works.
 
-[![qiling DEMO 1: hotpatching a windows crackme](https://img.youtube.com/vi/p17ONUbCnUU/0.jpg)](https://www.youtube.com/watch?v=p17ONUbCnUU "Video DEMO 1")
-
 #### GDBserver with IDAPro demo
 
 - Solving a simple CTF challenge with Qiling Framework and IDAPro
