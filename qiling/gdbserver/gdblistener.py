@@ -324,7 +324,7 @@ class GDBSession(object):
                     elif self.ql.arch == QL_ARM64:
                         xml_folder = "arm64"
                     elif self.ql.arch == QL_MIPS32EL:
-                        xml_folder = "mips"
+                        xml_folder = "mips32el"
                     
                     xfercmd_file = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
