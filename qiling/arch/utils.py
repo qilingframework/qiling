@@ -36,8 +36,8 @@ def ql_get_reg_spc(ql):
         get_reg_pc, get_reg_sp = UC_ARM_REG_PC, UC_ARM_REG_SP
     elif ql.arch == QL_ARM_THUMB:
         get_reg_pc, get_reg_sp = UC_ARM_REG_PC, UC_ARM_REG_SP
-    #elif ql.arch == QL_ARM64:
-    #    return UC_ARM64_REG_PC
+    elif ql.arch == QL_ARM64:
+        get_reg_pc, get_reg_sp = UC_ARM64_REG_PC, UC_ARM64_REG_SP
     #elif ql.arch == QL_MIPS32EL:
     #    return UC_MIPS_REG_PC  
     return get_reg_pc, get_reg_sp   
