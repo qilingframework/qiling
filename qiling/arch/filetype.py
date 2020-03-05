@@ -12,6 +12,7 @@ QL_ARM          = 3
 QL_ARM_THUMB    = 4
 QL_ARM64        = 5
 QL_MIPS32EL     = 6
+QL_MIPS32       = 7
 
 QL_LINUX    = 1
 QL_FREEBSD  = 2
@@ -25,12 +26,12 @@ QL_OUT_DEBUG    = 3
 QL_OUT_DUMP     = 4
 QL_OUT_DISASM   = 5
 
-QL_ARCH = [ QL_ARM, QL_ARM64, QL_MIPS32EL, QL_X86, QL_X8664]
+QL_ARCH = [ QL_ARM, QL_ARM64, QL_MIPS32EL, QL_MIPS32, QL_X86, QL_X8664]
 QL_OS = [ QL_LINUX, QL_FREEBSD, QL_MACOS, QL_WINDOWS, QL_IOS ]
 QL_OUTPUT = [QL_OUT_DEFAULT, QL_OUT_OFF, QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM ]
 
 def ql_get_arch_bits(arch):
-    arch_32b = [QL_ARM, QL_MIPS32EL, QL_X86]
+    arch_32b = [QL_ARM, QL_MIPS32EL, QL_MIPS32, QL_X86]
     arch_64b = [QL_ARM64, QL_X8664]
 
     if arch in arch_32b: return 32
@@ -78,6 +79,7 @@ def ql_arch_convert_str(arch):
         QL_X86          : "x86",
         QL_X8664        : "x8664",
         QL_MIPS32EL     : "mips32el",
+        QL_MIPS32       : "mips32",        
         QL_ARM          : "arm",
         QL_ARM64        : "arm64",
         }
@@ -89,6 +91,7 @@ def arch_convert(arch):
         "x86"           : QL_X86,
         "x8664"         : QL_X8664,
         "mips32el"      : QL_MIPS32EL,
+        "mips32"        : QL_MIPS32,
         "arm"           : QL_ARM,
         "arm64"         : QL_ARM64,
         }
@@ -100,11 +103,11 @@ def arch_convert(arch):
 def output_convert(output):
     adapter = {
         None: QL_OUT_DEFAULT,
-        "default": QL_OUT_DEFAULT,
-        "disasm": QL_OUT_DISASM,
-        "debug": QL_OUT_DEBUG,
-        "dump": QL_OUT_DUMP,
-        "off": QL_OUT_OFF,
+        "default"   : QL_OUT_DEFAULT,
+        "disasm"    : QL_OUT_DISASM,
+        "debug"     : QL_OUT_DEBUG,
+        "dump"      : QL_OUT_DUMP,
+        "off"       : QL_OUT_OFF,
         }
     if output in adapter:
         return adapter[output]
@@ -139,6 +142,8 @@ def ql_elf_check_archtype(path):
             arch = QL_X86
         elif e_machine == 0x08 and endian == 1 and elfbit == 1:
             arch = QL_MIPS32EL
+        elif e_machine == 0x08 and endian == 2 and elfbit == 1:
+            arch = QL_MIPS32            
         elif e_machine == 0x28:
             arch = QL_ARM
         elif e_machine == 0xB7:
