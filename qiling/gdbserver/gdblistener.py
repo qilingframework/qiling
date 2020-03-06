@@ -138,6 +138,13 @@ class GDBSession(object):
                         r = self.ql.uc.reg_read(reg)
                         tmp = self.ql.addr_to_str(r)
                         s += tmp
+
+                if self.ql.arch == QL_MIPS32EL:
+                    for reg in registers_mips[:38]:
+                        r = self.ql.uc.reg_read(reg)
+                        tmp = self.ql.addr_to_str(r)
+                        s += tmp
+
                 self.send(s)
 
 
@@ -168,11 +175,19 @@ class GDBSession(object):
                         reg_data = int(reg_data, 16)
                         self.ql.uc.reg_write(registers_arm[count], reg_data)
                         count += 1
+
                 elif self.ql.arch == QL_ARM64:
                     for i in range(0, len(subcmd), 16):
-                        reg_data = subcmd[i:i + 15]
+                        reg_data = subcmd[i:i+15]
                         reg_data = int(reg_data, 16)
                         self.ql.uc.reg_write(registers_arm64[count], reg_data)
+                        count += 1
+
+                elif self.ql.arch == QL_MIPS32EL:
+                    for i in range(0, len(subcmd), 8):
+                        reg_data = subcmd[i:i+7]
+                        reg_data = int(reg_data, 16)
+                        self.ql.uc.reg_write(registers_mips[count], reg_data)
                         count += 1
 
                 self.send('OK')
@@ -250,6 +265,13 @@ class GDBSession(object):
                             reg_value = 0
                             reg_value = self.ql.addr_to_str(reg_value)
 
+                    if self.ql.arch == QL_MIPS32EL:
+                        if reg_index <= 37:
+                            reg_value = self.ql.uc.reg_read(registers_mips[reg_index - 1])
+                        else:
+                            reg_value = 0
+                        reg_value = self.ql.addr_to_str(reg_value)
+
                     self.send(reg_value)
                 except:
                     self.close()
@@ -283,6 +305,11 @@ class GDBSession(object):
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
                     self.ql.uc.reg_write(registers_arm64[reg_index], reg_data)
+
+                if self.ql.arch == QL_MIPS32EL:
+                    reg_data = int(reg_data, 16)
+                    reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
+                    self.ql.uc.reg_write(registers_mips[reg_index], reg_data)
 
                 self.ql.nprint("gdb> write to register %x with %x" % (registers_x8664[reg_index], reg_data))
                 self.send('OK')
