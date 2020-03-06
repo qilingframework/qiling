@@ -154,8 +154,11 @@ def ql_hook_code_disasm(ql, address, size):
         arg_4 = [uc.reg_read(UC_ARM64_REG_X4),"X4"]
         arg_5 = [uc.reg_read(UC_ARM64_REG_X5),"X5"]
 
-    elif (ql.arch == QL_MIPS32EL): # QL_MIPS32EL
-        md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)
+    elif (ql.arch in (QL_MIPS32EL, QL_MIPS32)): # QL_MIPS32
+        if ql.archendian == QL_ENDIAN_EB:
+            md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
+        else:
+            md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)    
         syscall_num = [uc.reg_read(UC_MIPS_REG_V0),"V0"]
         arg_0 = [uc.reg_read(UC_MIPS_REG_A0),"A0"]
         arg_1 = [uc.reg_read(UC_MIPS_REG_A1),"A1"]
@@ -212,6 +215,7 @@ def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
         # invalid
         return None, None
 
+
     def compile_instructions(fname, archtype, archmode):
         f = open(fname, 'rb')
         assembly = f.read()
@@ -237,6 +241,7 @@ def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
     
     archtype, archmode = ks_convert(archtype)
     return compile_instructions(runcode, archtype, archmode)
+
 
 def ql_transform_to_link_path(ql, path):
     if ql.thread_management != None:
@@ -266,6 +271,7 @@ def ql_transform_to_link_path(ql, path):
         real_path = os.path.abspath(rootfs + '/' + relative_path)
 
     return real_path
+
 
 def ql_transform_to_real_path(ql, path):
     if ql.thread_management != None:
@@ -320,6 +326,7 @@ def ql_transform_to_relative_path(ql, path):
 
     return relative_path
 
+
 def ql_vm_to_vm_abspath(ql, relative_path):
     if path[0] == '/':
         # abspath input
@@ -329,6 +336,7 @@ def ql_vm_to_vm_abspath(ql, relative_path):
         # relative path input
         cur_path = ql_get_vm_current_path(ql)
         return os.path.abspath(cur_path + '/' + relative_path)
+
 
 def ql_vm_to_real_abspath(ql, path):
     # TODO:// check Directory traversal, we have the vul

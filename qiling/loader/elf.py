@@ -157,7 +157,7 @@ class ELFParse:
         head['e_shnum']         = ql.unpack16(data[index : index + 2]);     index += 2
         head['e_shstrndx']      = ql.unpack16(data[index : index + 2]);     index += 2
         return head
-
+    
     def parse_header(self, ql):
         if ql.archbit == 64:
             return self.parse_header64(ql)
@@ -188,7 +188,7 @@ class ELFParse:
         Ssize = self.elfhead['e_shentsize']
         Snum = self.elfhead['e_shnum']
         Sdata = self.elfdata[self.elfhead['e_shoff'] : self.elfhead['e_shoff'] + Snum * Ssize]
-
+        
         for i in range(Snum):
             S = {}
             S['sh_name']        = ql.unpack32(Sdata[i * Ssize : i * Ssize + 4])
@@ -274,8 +274,8 @@ class ELFParse:
         # typedef int32_t  Elf32_Sword;
         # typedef uint32_t Elf32_Word;
 
-        Psize = self.elfhead['e_phentsize']
-        Pnum = self.elfhead['e_phnum']
+        Psize = int(self.elfhead['e_phentsize'])
+        Pnum = int(self.elfhead['e_phnum'])
         Pdata = self.elfdata[self.elfhead['e_phoff'] : self.elfhead['e_phoff'] + Pnum * Psize]
 
         for i in range(Pnum):

@@ -169,13 +169,14 @@ class Qiling:
             
             for _ in range(256):
                 self.sigaction_act.append(0)
-
+        
         if not ql_is_valid_arch(self.arch):
             raise QlErrorArch("[!] Invalid Arch")
 
         arch_func = ql_get_arch_module_function( self.arch, ql_arch_convert_str(self.arch).upper() )
 
         self.archbit = ql_get_arch_bits(self.arch)
+        self.archendian = ql_get_arch_endian(self.arch)
         self.archfunc = arch_func(self) 
 
         if self.archbit:
@@ -510,27 +511,46 @@ class Qiling:
 
 
     def unpack32(self, x):
-        return struct.unpack('I', x)[0]
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.unpack('>I', x)[0]
+        else:
+            return struct.unpack('I', x)[0]
 
 
     def pack32(self, x):
-        return struct.pack('I', x)
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.pack('>I', x)
+        else:    
+            return struct.pack('I', x)
 
 
     def unpack32s(self, x):
-        return struct.unpack('i', x)[0]
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.unpack('>i', x)[0]
+        else:    
+            return struct.unpack('i', x)[0]
 
 
     def pack32s(self, x):
-        return struct.pack('i', x)
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.pack('>i', x)
+        else:
+            return struct.pack('i', x)
 
 
     def unpack16(self, x):
-        return struct.unpack('H', x)[0]
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.unpack('>H', x)[0]
+        else:
+            return struct.unpack('H', x)[0]
 
 
     def pack16(self, x):
-        return struct.pack('H', x)
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.pack('>H', x)
+        else:    
+            return struct.pack('H', x)
+            
 
 
     def pack(self, data):
