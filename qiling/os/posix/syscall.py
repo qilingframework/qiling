@@ -387,7 +387,7 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
     if (ql.arch == QL_ARM64) or (ql.arch == QL_X8664):
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
 
-    elif (ql.arch == QL_MIPS32EL):
+    elif (ql.arch == QL_MIPS32):
         mmap2_fd = ql.unpack32s(ql.uc.mem_read(mmap2_fd, 4))
         mmap2_pgoffset = ql.unpack32(ql.uc.mem_read(mmap2_pgoffset, 4))
         MAP_ANONYMOUS=2048
@@ -452,7 +452,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     if (ql.arch == QL_ARM64) or (ql.arch == QL_X8664):
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
 
-    elif (ql.arch == QL_MIPS32EL):
+    elif (ql.arch == QL_MIPS32):
         mmap2_fd = ql.unpack32s(ql.uc.mem_read(mmap2_fd, 4))
         mmap2_pgoffset = ql.unpack32(ql.uc.mem_read(mmap2_pgoffset, 4)) * 4096
         MAP_ANONYMOUS=2048
@@ -650,7 +650,7 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, null0, null1, null2, null3):
         user_fileno = fstat_fd
         fstat_info = ql.file_des[user_fileno].fstat()
 
-        if ql.arch == QL_MIPS32EL:
+        if ql.arch == QL_MIPS32:
             # pack fstatinfo
             fstat_buf = ql.pack32(fstat_info.st_dev)
             fstat_buf += ql.pack32(0) * 3
@@ -730,7 +730,7 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, null0, null1, null2, 
     else:
         stat64_info = os.stat(real_path)
 
-        if ql.arch == QL_MIPS32EL:
+        if ql.arch == QL_MIPS32:
             # packfstatinfo
             # name offset size
             # struct stat is : a0
@@ -804,7 +804,7 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, null0, null1, null2, null3):
     else:
         stat_info = os.stat(real_path)
 
-        if ql.arch == QL_MIPS32EL:
+        if ql.arch == QL_MIPS32:
             # pack fstatinfo
             stat_buf = ql.pack32(stat_info.st_dev)
             stat_buf += ql.pack32(0) * 3
@@ -1264,9 +1264,9 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, null0, null
 
 
 def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, null1, null2):
-    if ql.arch == QL_MIPS32EL and socket_type == 2:
+    if ql.arch == QL_MIPS32 and socket_type == 2:
         socket_type = 1
-    elif ql.arch == QL_MIPS32EL and socket_type == 1:
+    elif ql.arch == QL_MIPS32 and socket_type == 1:
         socket_type = 1   
 
     idx = -1
@@ -1908,7 +1908,7 @@ def ql_syscall_pipe(ql, pipe_pipefd, null0, null1, null2, null3, null4):
         else:
             ql.file_des[idx1] = rd
             ql.file_des[idx2] = wd
-            if ql.arch == QL_MIPS32EL:
+            if ql.arch == QL_MIPS32:
                 ql.uc.reg_write(UC_MIPS_REG_V1, idx2)
                 regreturn = idx1
             else:

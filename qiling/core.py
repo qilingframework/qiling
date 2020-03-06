@@ -131,7 +131,7 @@ class Qiling:
             if (os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs)):
                 self.path = (str(self.filename[0]))
                 if self.ostype == None or self.arch == None:
-                    self.arch, self.ostype = ql_checkostype(self.path)
+                    self.arch, self.ostype = ql_checkostype(self)
               
                 self.argv = self.filename
       
@@ -176,7 +176,10 @@ class Qiling:
         arch_func = ql_get_arch_module_function( self.arch, ql_arch_convert_str(self.arch).upper() )
 
         self.archbit = ql_get_arch_bits(self.arch)
-        self.archendian = ql_get_arch_endian(self.arch)
+        
+        if self.arch not in QL_ENDINABLE:
+            self.archendian = QL_ENDIAN_EL
+
         self.archfunc = arch_func(self) 
 
         if self.archbit:

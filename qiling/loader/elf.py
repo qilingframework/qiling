@@ -386,7 +386,7 @@ class ELFLoader(ELFParse):
         if loadbase <= 0:
             if ql.archbit == 64:
                 loadbase = 0x555555554000
-            elif ql.arch == QL_MIPS32EL:
+            elif ql.arch == QL_MIPS32:
                 loadbase = 0x0000004fef000
             else:
                 loadbase = 0x56555000
@@ -449,9 +449,9 @@ class ELFLoader(ELFParse):
             if ql.interp_base == 0:
                 if ql.archbit == 64:
                     ql.interp_base = 0x7ffff7dd5000
-                elif ql.archbit == 32 and ql.arch != QL_MIPS32EL:
+                elif ql.archbit == 32 and ql.arch != QL_MIPS32:
                     ql.interp_base = 0xfb7d3000
-                elif ql.arch == QL_MIPS32EL:
+                elif ql.arch == QL_MIPS32:
                     ql.interp_base = 0x00000047ba000
                 else:
                     ql.interp_base = 0xff7d5000
@@ -469,7 +469,7 @@ class ELFLoader(ELFParse):
         if ql.mmap_start == 0:
             if ql.archbit == 64:
                 ql.mmap_start = 0x7ffff7dd6000 - 0x4000000
-            elif ql.arch == QL_MIPS32EL:
+            elif ql.arch == QL_MIPS32:
                 ql.mmap_start = 0x7ffef000 - 0x400000
             else:
                 ql.mmap_start = 0xf7fd6000 - 0x400000

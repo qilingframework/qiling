@@ -139,10 +139,10 @@ class GDBSession(object):
                         tmp = self.ql.addr_to_str(r)
                         s += tmp
 
-                if self.ql.arch in (QL_MIPS32, QL_MIPS32EL):
+                if self.ql.arch == QL_MIPS32:
                     for reg in registers_mips[:38]:
                         r = self.ql.uc.reg_read(reg)
-                        if self.ql.arch == QL_MIPS32:
+                        if self.ql.archendian == QL_ENDIAN_EL:
                             tmp = self.ql.addr_to_str(r, endian="little")
                         else:
                             tmp = self.ql.addr_to_str(r)
@@ -186,7 +186,7 @@ class GDBSession(object):
                         self.ql.uc.reg_write(registers_arm64[count], reg_data)
                         count += 1
 
-                elif self.ql.arch in (QL_MIPS32, QL_MIPS32EL):
+                elif self.ql.arch == QL_MIPS32:
                     for i in range(0, len(subcmd), 8):
                         reg_data = subcmd[i:i+7]
                         reg_data = int(reg_data, 16)
@@ -268,12 +268,12 @@ class GDBSession(object):
                             reg_value = 0
                             reg_value = self.ql.addr_to_str(reg_value)
 
-                    if self.ql.arch in (QL_MIPS32, QL_MIPS32EL):
+                    if self.ql.arch == QL_MIPS32:
                         if reg_index <= 37:
                             reg_value = self.ql.uc.reg_read(registers_mips[reg_index - 1])
                         else:
                             reg_value = 0
-                        if self.ql.arch == QL_MIPS32:
+                        if self.ql.archendian == QL_ENDIAN_EL:
                             reg_value = self.ql.addr_to_str(reg_value, endian="little")
                         else:
                             reg_value = self.ql.addr_to_str(reg_value)
@@ -311,9 +311,9 @@ class GDBSession(object):
                     reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
                     self.ql.uc.reg_write(registers_arm64[reg_index], reg_data)
 
-                if self.ql.arch in (QL_MIPS32, QL_MIPS32EL):
+                if self.ql.arch == QL_MIPS32:
                     reg_data = int(reg_data, 16)
-                    if self.ql.arch == QL_MIPS32:
+                    if self.ql.archendian == QL_ENDIAN_EL:
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='little')
                     else:
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
@@ -359,7 +359,7 @@ class GDBSession(object):
                         xml_folder = "arm"
                     elif self.ql.arch == QL_ARM64:
                         xml_folder = "arm64"
-                    elif self.ql.arch in (QL_MIPS32, QL_MIPS32EL):
+                    elif self.ql.arch == QL_MIPS32:
                         xml_folder = "mips32"
 
                     xfercmd_file = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        

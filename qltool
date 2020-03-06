@@ -76,7 +76,8 @@ def run_shellcode(options):
             adapter = {
                 'x86': (KS_ARCH_X86, KS_MODE_32),
                 'x8664': (KS_ARCH_X86, KS_MODE_64),
-                'mips32el': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
+                #FIXME
+                'mips32': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
                 'arm': (KS_ARCH_ARM, KS_MODE_ARM),
                 'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
             }

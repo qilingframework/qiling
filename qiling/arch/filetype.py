@@ -11,8 +11,7 @@ QL_X8664        = 2
 QL_ARM          = 3
 QL_ARM_THUMB    = 4
 QL_ARM64        = 5
-QL_MIPS32EL     = 6
-QL_MIPS32       = 7
+QL_MIPS32       = 6
 
 QL_ENDIAN_EB = 2
 QL_ENDIAN_EL = 1
@@ -29,25 +28,17 @@ QL_OUT_DEBUG    = 3
 QL_OUT_DUMP     = 4
 QL_OUT_DISASM   = 5
 
-QL_ARCH = [ QL_ARM, QL_ARM64, QL_MIPS32EL, QL_MIPS32, QL_X86, QL_X8664]
+QL_ARCH = [ QL_ARM, QL_ARM64, QL_MIPS32, QL_X86, QL_X8664]
+QL_ENDINABLE = [ QL_MIPS32 ]
 QL_OS = [ QL_LINUX, QL_FREEBSD, QL_MACOS, QL_WINDOWS, QL_IOS ]
 QL_OUTPUT = [QL_OUT_DEFAULT, QL_OUT_OFF, QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM ]
 
 def ql_get_arch_bits(arch):
-    arch_32b = [QL_ARM, QL_MIPS32EL, QL_MIPS32, QL_X86]
+    arch_32b = [QL_ARM, QL_MIPS32, QL_X86]
     arch_64b = [QL_ARM64, QL_X8664]
 
     if arch in arch_32b: return 32
     if arch in arch_64b: return 64
-    raise QlErrorArch("[!] Invalid Arch")
-
-
-def ql_get_arch_endian(arch):
-    little_endian = [QL_ARM, QL_MIPS32EL, QL_X86, QL_ARM64, QL_X8664]
-    big_endian = [QL_MIPS32]
-
-    if arch in little_endian: return 1
-    if arch in big_endian: return 2
     raise QlErrorArch("[!] Invalid Arch")
 
 
@@ -93,7 +84,6 @@ def ql_arch_convert_str(arch):
     adapter = {
         QL_X86          : "x86",
         QL_X8664        : "x8664",
-        QL_MIPS32EL     : "mips32el",
         QL_MIPS32       : "mips32",        
         QL_ARM          : "arm",
         QL_ARM64        : "arm64",
@@ -105,7 +95,6 @@ def arch_convert(arch):
     adapter = {
         "x86"           : QL_X86,
         "x8664"         : QL_X8664,
-        "mips32el"      : QL_MIPS32EL,
         "mips32"        : QL_MIPS32,
         "arm"           : QL_ARM,
         "arm64"         : QL_ARM64,
@@ -131,7 +120,8 @@ def output_convert(output):
     return None, None
 
 
-def ql_elf_check_archtype(path):
+def ql_elf_check_archtype(self):
+    path = self.path
     def getident():
         return elfdata
 
@@ -158,8 +148,10 @@ def ql_elf_check_archtype(path):
         if e_machine == b"\x03\x00":
             arch = QL_X86
         elif e_machine == b"\x08\x00" and endian == 1 and elfbit == 1:
-            arch = QL_MIPS32EL     
+            self.archendian = QL_ENDIAN_EL
+            arch = QL_MIPS32
         elif e_machine == b"\x00\x08" and endian == 2 and elfbit == 1:
+            self.archendian = QL_ENDIAN_EB
             arch = QL_MIPS32           
         elif e_machine == b"\x28\x00":
             arch = QL_ARM
@@ -234,12 +226,14 @@ def ql_pe_check_archtype(path):
 
 
 
-def ql_checkostype(path):
+def ql_checkostype(self):
+
+    path = self.path
 
     arch = None
     ostype = None
     
-    arch, ostype = ql_elf_check_archtype(path)
+    arch, ostype = ql_elf_check_archtype(self)
 
     if ostype not in (QL_LINUX, QL_FREEBSD):
         arch, ostype = ql_macho_check_archtype(path)
