@@ -201,15 +201,24 @@ def ql_setup_output(ql):
 def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
 
     def ks_convert(arch):
-        adapter = {
-            QL_X86: (KS_ARCH_X86, KS_MODE_32),
-            QL_X8664: (KS_ARCH_X86, KS_MODE_64),
-            # FIXME
-            #QL_MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
-            QL_ARM: (KS_ARCH_ARM, KS_MODE_ARM),
-            QL_ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-            QL_ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
-            }
+        if ql.arch == QL_MIPS32 and ql.archendian == QL_ENDIAN_EB:
+            adapter = {
+                QL_X86: (KS_ARCH_X86, KS_MODE_32),
+                QL_X8664: (KS_ARCH_X86, KS_MODE_64),
+                QL_MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
+                QL_ARM: (KS_ARCH_ARM, KS_MODE_ARM),
+                QL_ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
+                QL_ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                }
+        else:
+            adapter = {
+                QL_X86: (KS_ARCH_X86, KS_MODE_32),
+                QL_X8664: (KS_ARCH_X86, KS_MODE_64),
+                QL_MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
+                QL_ARM: (KS_ARCH_ARM, KS_MODE_ARM),
+                QL_ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
+                QL_ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                }
 
         if arch in adapter:
             return adapter[arch]
