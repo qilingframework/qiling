@@ -1479,8 +1479,11 @@ def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, null0, null1, null2, 
         else:
             return True
 
-    tv_sec = ql.unpack32(ql.uc.mem_read(nanosleep_req, 4))
-    tv_sec += ql.unpack(ql.uc.mem_read(nanosleep_req + 4, 4)) / 1000000000
+    n = ql.archbit // 8 # 4 for 32-bit , 8 for 64-bit
+
+    tv_sec = ql.unpack(ql.uc.mem_read(nanosleep_req, n))
+    tv_sec += ql.unpack(ql.uc.mem_read(nanosleep_req + n, n)) / 1000000000
+
     if ql.thread_management == None:
         time.sleep(tv_sec)
     else:
