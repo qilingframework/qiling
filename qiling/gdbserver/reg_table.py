@@ -57,9 +57,26 @@ registers_arm64 = [
     UC_ARM64_REG_X30, UC_ARM64_REG_SP, UC_ARM64_REG_PC
 ]
 
+registers_mips = [
+    UC_MIPS_REG_0, UC_MIPS_REG_1, UC_MIPS_REG_2,
+    UC_MIPS_REG_3, UC_MIPS_REG_4, UC_MIPS_REG_5,
+    UC_MIPS_REG_6, UC_MIPS_REG_7, UC_MIPS_REG_8,
+    UC_MIPS_REG_9, UC_MIPS_REG_10, UC_MIPS_REG_11,
+    UC_MIPS_REG_12, UC_MIPS_REG_13, UC_MIPS_REG_14,
+    UC_MIPS_REG_15, UC_MIPS_REG_16, UC_MIPS_REG_17,
+    UC_MIPS_REG_18, UC_MIPS_REG_19, UC_MIPS_REG_20,
+    UC_MIPS_REG_21, UC_MIPS_REG_22, UC_MIPS_REG_23,
+    UC_MIPS_REG_24, UC_MIPS_REG_25, UC_MIPS_REG_26,
+    UC_MIPS_REG_27, UC_MIPS_REG_28, UC_MIPS_REG_29,
+    UC_MIPS_REG_30, UC_MIPS_REG_31, UC_MIPS_REG_INVALID,
+    UC_MIPS_REG_LO, UC_MIPS_REG_HI, UC_MIPS_REG_INVALID,
+    UC_MIPS_REG_INVALID, UC_MIPS_REG_PC
+]
+
 arch_reg = {QL_X86: registers_x86,
             QL_X8664: registers_x8664,
             QL_ARM: registers_arm,
-            QL_ARM64: registers_arm64}
+            QL_ARM64: registers_arm64,
+            QL_MIPS32EL: registers_mips}
 
 
