@@ -55,3 +55,13 @@ class MIPS32EL(Arch):
     # get stack pointer
     def get_sp(self):
         return self.ql.uc.reg_read(UC_MIPS_REG_SP)
+
+
+    # get stack pointer register
+    def get_reg_sp(self):
+        return UC_MIPS_REG_SP
+
+
+    # get pc register pointer
+    def get_reg_pc(self):
+        return UC_MIPS_REG_PC

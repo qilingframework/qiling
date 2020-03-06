@@ -266,10 +266,6 @@ class Qiling:
         return ql_addr_to_str(self, addr, short, endian)
 
 
-    def get_reg_spc(self):
-        return ql_get_reg_spc(self)
-
-
     def asm2bytes(self, runasm, arm_thumb = None):
         return ql_asm2bytes(self,  self.arch, runasm, arm_thumb)
 
@@ -584,6 +580,18 @@ class Qiling:
 
     # get PC register
     @property
+    def reg_pc(self):
+        return self.archfunc.get_reg_pc()
+
+
+    # get SP register
+    @property
+    def reg_sp(self):
+        return self.archfunc.get_reg_sp()
+
+
+    # get PC register value
+    @property
     def pc(self):
         return self.archfunc.get_pc()
 
@@ -685,6 +693,7 @@ class Qiling:
                 tmp_map_info.append([mem_s, mem_e, mem_info])
         map_info = []
         map_info.append(tmp_map_info[0])
+
         for s, e, info in tmp_map_info[1 : ]:
             if s == map_info[-1][1] and info == map_info[-1][2]:
                 map_info[-1][1] = e

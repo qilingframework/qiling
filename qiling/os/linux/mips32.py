@@ -7,19 +7,19 @@ from unicorn import *
 from unicorn.mips_const import *
 
 from qiling.loader.elf import *
-from qiling.os.linux.mips32el_syscall import *
+from qiling.os.linux.mips32_syscall import *
 from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *
 from qiling.os.utils import *
 from qiling.arch.filetype import *
 
 # memory address where emulation starts
-QL_MIPS32EL_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000
-QL_MIPS32EL_LINUX_PREDEFINE_STACKSIZE = 0x30000
+QL_MIPS32_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000
+QL_MIPS32_LINUX_PREDEFINE_STACKSIZE = 0x30000
 QL_SHELLCODE_ADDR = 0x0f000000
 QL_SHELLCODE_LEN = 0x1000
 QL_SHELLCODE_INIT = 0
-QL_MIPS32EL_EMU_END = 0x8fffffff
+QL_MIPS32_EMU_END = 0x8fffffff
 
 def hook_syscall(ql, intno):
     syscall_num = ql.uc.reg_read(UC_MIPS_REG_V0)
@@ -41,7 +41,7 @@ def hook_syscall(ql, intno):
         if LINUX_SYSCALL_FUNC != None:
             LINUX_SYSCALL_FUNC_NAME = LINUX_SYSCALL_FUNC.__name__
             break
-        LINUX_SYSCALL_FUNC_NAME = dict_mips32el_linux_syscall.get(syscall_num, None)
+        LINUX_SYSCALL_FUNC_NAME = dict_mips32_linux_syscall.get(syscall_num, None)
         if LINUX_SYSCALL_FUNC_NAME != None:
             LINUX_SYSCALL_FUNC = eval(LINUX_SYSCALL_FUNC_NAME)
             break
@@ -175,7 +175,7 @@ lab1:
     sp = uc.reg_read(UC_MIPS_REG_SP)
     uc.mem_write(sp - 4, ql.pack32(addr))
 
-def ql_syscall_mips32el_thread_setthreadarea(ql, th, arg):
+def ql_syscall_mips32_thread_setthreadarea(ql, th, arg):
     uc = ql.uc
     address = arg
     pc = uc.reg_read(UC_MIPS_REG_PC)
@@ -191,7 +191,7 @@ def ql_syscall_mips32el_thread_setthreadarea(ql, th, arg):
         hook_shellcode(uc, pc + 4, bytes.fromhex('2510000025380000'), ql)
 
 
-def ql_syscall_mips32el_set_thread_area(ql, sta_area, null0, null1, null2, null3, null4):
+def ql_syscall_mips32_set_thread_area(ql, sta_area, null0, null1, null2, null3, null4):
     uc = ql.uc     
     ql.nprint ("set_thread_area(0x%x)" % sta_area)
 
@@ -207,12 +207,12 @@ def ql_syscall_mips32el_set_thread_area(ql, sta_area, null0, null1, null2, null3
 
 
 def loader_file(ql):
-    uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)
+    uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_BIG_ENDIAN)
     ql.uc = uc
     if (ql.stack_address == 0):
-        ql.stack_address = QL_MIPS32EL_LINUX_PREDEFINE_STACKADDRESS
+        ql.stack_address = QL_MIPS32_LINUX_PREDEFINE_STACKADDRESS
     if (ql.stack_size == 0): 
-        ql.stack_size = QL_MIPS32EL_LINUX_PREDEFINE_STACKSIZE
+        ql.stack_size = QL_MIPS32_LINUX_PREDEFINE_STACKSIZE
     ql.uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
     if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env):
@@ -225,7 +225,7 @@ def loader_file(ql):
 
 
 def loader_shellcode(ql):
-    uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)
+    uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_BIG_ENDIAN)
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = 0x1000000
@@ -242,7 +242,7 @@ def loader_shellcode(ql):
 
 def runner(ql):
     if (ql.until_addr == 0):
-        ql.until_addr = QL_MIPS32EL_EMU_END
+        ql.until_addr = QL_MIPS32_EMU_END
     try:
         if ql.shellcoder:
             ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
@@ -252,7 +252,7 @@ def runner(ql):
                 thread_management = ThreadManagement(ql)
                 ql.thread_management = thread_management
 
-                main_thread = Thread(ql, thread_management, total_time = ql.timeout, special_settings_fuc = ql_syscall_mips32el_thread_setthreadarea)
+                main_thread = Thread(ql, thread_management, total_time = ql.timeout, special_settings_fuc = ql_syscall_mips32_thread_setthreadarea)
                 main_thread.save()
                 main_thread.set_start_address(ql.entry_point)
 
