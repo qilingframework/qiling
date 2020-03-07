@@ -519,7 +519,6 @@ class Qiling:
         else:
             return struct.unpack('I', x)[0]
 
-
     def pack32(self, x):
         if self.archendian == QL_ENDIAN_EB:
             return struct.pack('>I', x)
@@ -532,6 +531,9 @@ class Qiling:
             return struct.unpack('>i', x)[0]
         else:    
             return struct.unpack('i', x)[0]
+
+    def unpack32s_ne(self, x):
+        return struct.unpack('i', x)[0]
 
 
     def pack32s(self, x):

@@ -100,6 +100,11 @@ def ql_syscall_alarm(ql, alarm_seconds, null0, null1, null2, null3, null4):
     ql.nprint("alarm(%d) = %d" % (alarm_seconds, regreturn))
     ql_definesyscall_return(ql, regreturn)    
 
+def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
+    regreturn = 0
+    filename = ql_read_string(ql, filename)
+    ql.nprint("chmod(%s,%d) = %d" % (filename, mode, regreturn))
+    ql_definesyscall_return(ql, regreturn) 
 
 def ql_syscall_issetugid(ql, null0, null1, null2, null3, null4, null5):
     if ql.root == False:
@@ -379,9 +384,11 @@ def ql_syscall_access(ql, access_path, access_mode, null0, null1, null2, null3):
     
 
 def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
+    ql.dprint("[+] log mmap - mmap(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
+
+    # FIXME
     # this is ugly patch, we might need to get value from elf parse,
-    # is32bit or is64bit value not by arch
-   
+    # is32bit or is64bit value not by arch 
     MAP_ANONYMOUS=32
 
     if (ql.arch == QL_ARM64) or (ql.arch == QL_X8664):
@@ -391,25 +398,26 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
         mmap2_fd = ql.unpack32s(ql.uc.mem_read(mmap2_fd, 4))
         mmap2_pgoffset = ql.unpack32(ql.uc.mem_read(mmap2_pgoffset, 4))
         MAP_ANONYMOUS=2048
-        if ql.archendian == QL_ENDIAN_EB and mmap2_length >= 65536:
-            mmap2_length = 65536    
+  
     else:
         mmap2_fd = ql.unpack32s(ql.pack32(mmap2_fd))
-
 
     mmap_base = mmap2_addr
     need_mmap = True
 
-    if mmap2_addr != 0 and mmap2_addr < ql.mmap_start:
+    if mmap2_addr != 0 and (mmap2_addr < ql.mmap_start):
         need_mmap = False    
+    
+    # initial ql.mmap_start
     if mmap2_addr == 0:
         mmap_base = ql.mmap_start
         ql.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
 
-    ql.dprint("[+] log mmap - mmap(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
+
     ql.dprint("[+] log mmap - return addr : " + hex(mmap_base))
     ql.dprint("[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
+    # initialized mapping
     if need_mmap:
         ql.dprint("[+] log mmap - mapping needed")
         try:
@@ -417,9 +425,13 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
         except:
             ql.show_map_info()
             raise   
-
-    ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
     
+    try:
+        ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
+    except:
+        pass    
+    
+
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
     mem_info = ''
@@ -430,15 +442,14 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
 
         ql.dprint("[+] log mem wirte : " + hex(len(data)))
         ql.dprint("[+] log mem mmap  : " + str(ql.file_des[mmap2_fd].name))
+
         ql.uc.mem_write(mmap_base, data)
-        
         mem_info = ql.file_des[mmap2_fd].name
         
     ql.insert_map_info(mem_s, mem_e, mem_info)
     
 
     ql.nprint("mmap(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
-    
     regreturn = mmap_base
     ql.dprint("[+] mmap_base is 0x%x" % regreturn)
 

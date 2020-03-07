@@ -471,6 +471,8 @@ class ELFLoader(ELFParse):
                 ql.mmap_start = 0x7ffff7dd6000 - 0x4000000
             elif ql.arch == QL_MIPS32:
                 ql.mmap_start = 0x7ffef000 - 0x400000
+                if ql.archendian == QL_ENDIAN_EB:
+                    ql.mmap_start  = 0x778bf000 - 0x400000
             else:
                 ql.mmap_start = 0xf7fd6000 - 0x400000
 
@@ -532,15 +534,19 @@ class ELFLoader(ELFParse):
         ql.elf_phent    = (elfhead['e_phentsize'])
         ql.elf_phnum    = (elfhead['e_phnum'])
         ql.elf_pagesz   = 0x1000
+        if ql.archendian == QL_ENDIAN_EB:
+            ql.elf_pagesz   = 0x0010    
         ql.elf_guid     = 1000
         ql.elf_flags    = 0
         ql.elf_entry    = (loadbase + elfhead['e_entry'])
         ql.randstraddr  = randstraddr = addr[0]
         ql.cpustraddr   = cpustraddr = addr[1]
         if ql.archbit == 64:
-            ql.elf_hwcap = hwcap = 0x078bfbfd
+            ql.elf_hwcap = 0x078bfbfd
         elif ql.archbit == 32:
-            ql.elf_hwcap = hwcap = 0x1fb8d7
+            ql.elf_hwcap = 0x1fb8d7
+            if ql.archendian == QL_ENDIAN_EB:
+                ql.elf_hwcap = 0xd7b81f
 
         elf_table += self.NEW_AUX_ENT(AT_PHDR, ql.elf_phdr + mem_start, ql)
         elf_table += self.NEW_AUX_ENT(AT_PHENT, ql.elf_phent, ql)
@@ -553,7 +559,7 @@ class ELFLoader(ELFParse):
         elf_table += self.NEW_AUX_ENT(AT_EUID, ql.elf_guid, ql)
         elf_table += self.NEW_AUX_ENT(AT_GID, ql.elf_guid, ql)
         elf_table += self.NEW_AUX_ENT(AT_EGID, ql.elf_guid, ql)
-        elf_table += self.NEW_AUX_ENT(AT_HWCAP, hwcap, ql)
+        elf_table += self.NEW_AUX_ENT(AT_HWCAP, ql.elf_hwcap, ql)
         elf_table += self.NEW_AUX_ENT(AT_CLKTCK, 100, ql)
         elf_table += self.NEW_AUX_ENT(AT_RANDOM, randstraddr, ql)
         elf_table += self.NEW_AUX_ENT(AT_PLATFORM, cpustraddr, ql)
