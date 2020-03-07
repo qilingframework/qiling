@@ -1290,7 +1290,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, nu
     ql.nprint("socket(%d, %d, %d) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
     socket_type = socket_type_mapping(socket_type, ql.arch)
     socket_domain = socket_domain_mapping(socket_domain, ql.arch)
-    ql.dprint("[+] scoket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
+    ql.dprint("[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
