@@ -1,9 +1,9 @@
-QL_X86       = 1
-QL_X8664     = 2
-QL_ARM       = 3
-QL_ARM_THUMB = 4
-QL_ARM64     = 5
-QL_MIP32EL   = 6
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
+from qiling.arch.filetype import *
 
 def linux_socket_type_mapping(n):
 
@@ -114,9 +114,9 @@ def arm_socket_domain_mapping(n):
     d = { v:k for k, v in arm_socket_domain.items() }
     return d.get(n)
 
-def mipsel_socket_type_mapping(n):
+def mips32_socket_type_mapping(n):
 
-    mipsel_socket_types = {
+    mips32_socket_types = {
             'SOCK_DGRAM'     : 0x1,
             'SOCK_STREAM'    : 0x2,
             'SOCK_RAW'       : 0x3,
@@ -128,13 +128,13 @@ def mipsel_socket_type_mapping(n):
             'SOCK_NONBLOCK'  : 0x80,
             }
 
-    d = { v:k for k, v in mipsel_socket_types.items() }
+    d = { v:k for k, v in mips32_socket_types.items() }
     return d.get(n)
 
 
-def mipsel_socket_domain_mapping(n):
+def mips32_socket_domain_mapping(n):
 
-    mipsel_socket_domain = {
+    mips32_socket_domain = {
             'AF_UNSPEC'     : 0x0,
             'AF_FILE'       : 0x1,
             'AF_UNIX'       : 0x1,
@@ -185,7 +185,7 @@ def mipsel_socket_domain_mapping(n):
             'AF_MAX'        : 0x2c,
             }
 
-    d = { v:k for k, v in mipsel_socket_domain.items() }
+    d = { v:k for k, v in mips32_socket_domain.items() }
     return d.get(n)
 
 
@@ -196,7 +196,7 @@ def socket_type_mapping(t, arch):
             QL_ARM: arm_socket_type_mapping,
             QL_ARM_THUMB: arm_socket_type_mapping,
             QL_ARM64: arm_socket_type_mapping,
-            QL_MIP32EL: mipsel_socket_type_mapping,
+            QL_MIPS32: mips32_socket_type_mapping,
             }.get(arch)(t)
 
 
@@ -207,5 +207,5 @@ def socket_domain_mapping(p, arch):
             QL_ARM: arm_socket_domain_mapping,
             QL_ARM_THUMB: arm_socket_domain_mapping,
             QL_ARM64: arm_socket_domain_mapping,
-            QL_MIP32EL: mipsel_socket_domain_mapping,
+            QL_MIPS32: mips32_socket_domain_mapping,
             }.get(arch)(p)
