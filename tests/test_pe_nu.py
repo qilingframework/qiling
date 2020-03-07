@@ -72,14 +72,12 @@ def test_pe_win_x86_wannacry():
     del ql
 
 def test_windowssc_x86():
-    print("Windows X86 32bit Shellcode")
     ql = Qiling(shellcoder = X86_WIN, archtype = "x86", ostype = "windows", rootfs="../examples/rootfs/x86_windows", output="debug")
     ql.run()
     del ql
 
 
 def test_windowssc_x64():
-    print("\nWindows X8664 64bit Shellcode")
     ql = Qiling(shellcoder = X8664_WIN, archtype = "x8664", ostype = "windows", rootfs="../examples/rootfs/x86_windows", output="debug")
     ql.run()
     del ql
