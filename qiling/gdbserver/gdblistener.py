@@ -97,20 +97,30 @@ class GDBSession(object):
                 pc = self.ql.addr_to_str(self.ql.pc)
 
                 if self.ql.arch == QL_ARM:
-                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))
-                
+                    # gdbserver $T050b:0*"00;0d:e0f6ffbe;0f:8079fdb6;#ae"
+                    """
+                    simple reply to suits gdb7.1
+                    """
+                    # self.send(('S%.2x' % GDB_SIGNAL_TRAP))
+                    self.send('T050b:0*"00;0d:%s;0f:%s;' %(sp, pc))
+                elif self.ql.arch == QL_ARM64:
+                    # gdbserver response "$T051d:0*,;1f:80f6f*"ff0* ;20:c02cfdb7f* 0* ;thread:p1f9.1f9;core:0;#56");
+                    self.send('T0501d:0*"00;1f:%s;20:%s;' %(sp, pc))
                 elif self.ql.arch == QL_MIPS32:
                     if self.ql.archendian == QL_ENDIAN_EB:
                         sp = self.ql.addr_to_str(self.ql.sp, endian ="little")
                         pc = self.ql.addr_to_str(self.ql.pc, endian ="little")
                         # gdbserver response ("$T051d:7fff6dc0;25:77fc4880;thread:28fa;core:0;");
-                        self.send('T051d:%s;25:%s;thread:;core:0;' %(sp, pc))
-                    # gdbserver response ("$T051d:00e7ff7f;25:40ccfc77;#65")
+                        self.send('T051d:%s;25:%s;' %(sp, pc))
                     else:
-                        self.send('T051d:%s;25:%s;' %(sp,pc))
-
-                else:    
+                        # gdbserver response ("$T051d:00e7ff7f;25:40ccfc77;#65")
+                        self.send('T051d:%s;25:%s;' %(pc,sp))
+                elif self.ql.arch == QL_X8664:    
                     self.send('T0506:0*,;07:%s;10:%s;' %(sp, pc))
+                elif self.ql.arch == QL_X86:    
+                    self.send('T0505:00000000;04:%s;08:%s;' %(sp, pc))
+                else:
+                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))      
 
 
             def handle_c(subcmd):
@@ -124,7 +134,7 @@ class GDBSession(object):
             def handle_g(subcmd):
                 s = ''
                 if self.ql.arch == QL_X86:
-                    for reg in registers_x86[:17]:
+                    for reg in registers_x86[:16]:
                         r = self.ql.uc.reg_read(reg)
                         tmp = self.ql.addr_to_str(r)
                         s += tmp
@@ -156,8 +166,8 @@ class GDBSession(object):
                         r = self.ql.uc.reg_read(reg)
                         if self.ql.archendian == QL_ENDIAN_EB:
                             tmp = self.ql.addr_to_str(r, endian ="little")
-                        else:    
-                            tmp = self.ql.addr_to_str(r)
+                        else:
+                            tmp = self.ql.addr_to_str(r)    
                         s += tmp
 
                 self.send(s)
@@ -289,6 +299,10 @@ class GDBSession(object):
                             reg_value = self.ql.addr_to_str(reg_value, endian="little")
                         else:
                             reg_value = self.ql.addr_to_str(reg_value)
+                    
+                    if type(reg_value) is not str:
+                        reg_value = self.ql.addr_to_str(reg_value)
+
                     self.send(reg_value)
                 except:
                     self.close()
