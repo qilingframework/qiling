@@ -210,7 +210,13 @@ class Qiling:
 
  
     def shellcode(self):
-        self.__enable_bin_patch()
+        """
+        1. Shellcode might not need bin_patch API 
+        2. Somehow Windows take (self) as str
+        3. Solution: Disable Windows Base Platform for now
+        """
+        if ql.platform != QL_WINDOWS:
+            self.__enable_bin_patch()
         loader_shellcode = self.build_os_execution("loader_shellcode")
         loader_shellcode(self)
 
