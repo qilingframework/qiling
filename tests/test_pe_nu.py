@@ -228,5 +228,5 @@ if __name__ == "__main__":
     test_pe_win_x86_crackme()
     test_pe_win_x8664_customapi()
     test_windowssc_x86()
-    test_windowssc_x64(self)
+    test_windowssc_x64()
     #test_pe_win_x86_bruteforcecrackme()

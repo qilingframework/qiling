@@ -142,10 +142,10 @@ class GDBSession(object):
                 if self.ql.arch == QL_MIPS32:
                     for reg in registers_mips[:38]:
                         r = self.ql.uc.reg_read(reg)
-                        #if self.ql.archendian == QL_ENDIAN_EL:
-                        #    tmp = self.ql.addr_to_str(r, endian="little")
-                        #else:
-                        tmp = self.ql.addr_to_str(r)
+                        if self.ql.archendian == QL_ENDIAN_EL:
+                            tmp = self.ql.addr_to_str(r, endian="little")
+                        else:
+                            tmp = self.ql.addr_to_str(r)
                         s += tmp
 
                 self.send(s)
@@ -532,7 +532,7 @@ class GDBSession(object):
                     else:
                         self.send("F0")
 
-                elif subcmd.startswith('File:pread:'):
+                elif subcmd.startswith('File:pread:5'):
 
                     offset = subcmd.split(',')[-1]
                     count = subcmd.split(',')[-2]
