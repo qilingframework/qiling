@@ -142,9 +142,6 @@ class GDBSession(object):
                 if self.ql.arch == QL_MIPS32:
                     for reg in registers_mips[:38]:
                         r = self.ql.uc.reg_read(reg)
-                        #if self.ql.arch == QL_MIPS32:
-                        #    tmp = self.ql.addr_to_str(r, endian="little")
-                        #else:
                         tmp = self.ql.addr_to_str(r)
                         s += tmp
 
