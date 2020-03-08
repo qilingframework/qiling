@@ -54,8 +54,7 @@ matrix:
       before_script:
         cd tests
       script:
-        - python3 test_all_macos.py
-        - python3 test_elf_nu.py
+        - python3 test_all.py
         
     - name: "Python 3.6.8 on Windows"
       os: windows
@@ -115,3 +114,4 @@ matrix:
 
   allow_failures:
     - os: osx
+    - os: windows
