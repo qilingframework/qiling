@@ -521,11 +521,24 @@ class GDBSession(object):
                     self.send("")
 
                 elif subcmd.startswith('File:open'):
-                    self.lib_abspath = subcmd.split(':')[-1].split(',')[0]
-                    self.lib_abspath = unhexlify(self.lib_abspath).decode(encoding='UTF-8')
-                    if self.lib_abspath != "just probing" and os.path.exists(self.lib_abspath):
-                        self.ql.dprint("gdb> target file: %s" % (self.lib_abspath))
-                        self.send("F5")
+                    self.lib_path = subcmd.split(':')[-1].split(',')[0]
+                    self.lib_path = unhexlify(self.lib_path).decode(encoding='UTF-8')
+                    if self.lib_path != "just probing":
+                        """
+                        os.path.join not working, always shows self.lib_path ony
+                        """
+                        #self.lib_abspath = os.path.join(str(self.rootfs_abspath) ,str(self.lib_path))
+                        if self.lib_path.startswith("/"):
+                            self.lib_abspath = (self.rootfs_abspath + self.lib_path)
+                        else:
+                            self.lib_abspath = (self.rootfs_abspath + "/" + self.lib_path)   
+
+                        self.ql.dprint("gdb> target file: %s" % (self.lib_path))
+
+                        if os.path.exists(self.lib_abspath):
+                            self.send("F5")
+                        else:
+                            self.send("F0")   
                     else:
                         self.send("F0")
 
@@ -536,7 +549,7 @@ class GDBSession(object):
                     offset = ((int(offset, base=16)))
                     count = ((int(count, base=16)))
 
-                    if os.path.exists(self.lib_abspath) and not (self.lib_abspath).startswith("/proc"):
+                    if os.path.exists(self.lib_abspath) and not (self.lib_path).startswith("/proc"):
 
                         with open(self.lib_abspath, "rb") as f:
                             preadheader = f.read()
