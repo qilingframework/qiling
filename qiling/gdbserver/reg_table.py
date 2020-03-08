@@ -77,6 +77,6 @@ arch_reg = {QL_X86: registers_x86,
             QL_X8664: registers_x8664,
             QL_ARM: registers_arm,
             QL_ARM64: registers_arm64,
-            QL_MIPS32EL: registers_mips}
+            QL_MIPS32: registers_mips}
 
 

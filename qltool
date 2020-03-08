@@ -65,7 +65,7 @@ def run_shellcode(options):
             print("ERROR: -os required: either linux, windows, freebsd, macos")
             exit(1)
     
-    elif not options.arch in ("arm", "arm64", "x86", "x8664", "mips32el"):
+    elif not options.arch in ("arm", "arm64", "x86", "x8664", "mips32el","mips32"):
             print("ERROR: -arch required: either arm, arm64, x86, x8664, mips32el")
             exit(1)     
 
@@ -73,13 +73,22 @@ def run_shellcode(options):
     elif options.asm == True:
         # convert arch to arch/mode that Keystone can consume
         def ks_convert(arch):
-            adapter = {
-                'x86': (KS_ARCH_X86, KS_MODE_32),
-                'x8664': (KS_ARCH_X86, KS_MODE_64),
-                'mips32el': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
-                'arm': (KS_ARCH_ARM, KS_MODE_ARM),
-                'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
-            }
+            if options.arch == "mips32":
+                adapter = {
+                    'x86': (KS_ARCH_X86, KS_MODE_32),
+                    'x8664': (KS_ARCH_X86, KS_MODE_64),
+                    'mips32el': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
+                    'arm': (KS_ARCH_ARM, KS_MODE_ARM),
+                    'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
+                }
+            else:    
+                adapter = {
+                    'x86': (KS_ARCH_X86, KS_MODE_32),
+                    'x8664': (KS_ARCH_X86, KS_MODE_64),
+                    'mips32': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
+                    'arm': (KS_ARCH_ARM, KS_MODE_ARM),
+                    'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
+                }
 
             if arch in adapter:
                 return adapter[arch]

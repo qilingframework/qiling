@@ -11,8 +11,10 @@ QL_X8664        = 2
 QL_ARM          = 3
 QL_ARM_THUMB    = 4
 QL_ARM64        = 5
-QL_MIPS32EL     = 6
-QL_MIPS32       = 7
+QL_MIPS32       = 6
+
+QL_ENDIAN_EB = 2
+QL_ENDIAN_EL = 1
 
 QL_LINUX    = 1
 QL_FREEBSD  = 2
@@ -26,27 +28,31 @@ QL_OUT_DEBUG    = 3
 QL_OUT_DUMP     = 4
 QL_OUT_DISASM   = 5
 
-QL_ARCH = [ QL_ARM, QL_ARM64, QL_MIPS32EL, QL_MIPS32, QL_X86, QL_X8664]
-QL_OS = [ QL_LINUX, QL_FREEBSD, QL_MACOS, QL_WINDOWS, QL_IOS ]
-QL_OUTPUT = [QL_OUT_DEFAULT, QL_OUT_OFF, QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM ]
+QL_ARCH         = [ QL_ARM, QL_ARM64, QL_MIPS32, QL_X86, QL_X8664]
+QL_ENDINABLE    = [ QL_MIPS32 ]
+QL_OS           = [ QL_LINUX, QL_FREEBSD, QL_MACOS, QL_WINDOWS, QL_IOS ]
+QL_OUTPUT       = [ QL_OUT_DEFAULT, QL_OUT_OFF, QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM ]
 
 def ql_get_arch_bits(arch):
-    arch_32b = [QL_ARM, QL_MIPS32EL, QL_MIPS32, QL_X86]
+    arch_32b = [QL_ARM, QL_MIPS32, QL_X86]
     arch_64b = [QL_ARM64, QL_X8664]
 
     if arch in arch_32b: return 32
     if arch in arch_64b: return 64
     raise QlErrorArch("[!] Invalid Arch")
 
+
 def ql_is_valid_ostype(ostype):
     if ostype not in QL_OS:
         return False
     return True
 
+
 def ql_is_valid_arch(arch):
     if arch not in QL_ARCH:
         return False
     return True
+
 
 def ql_ostype_convert_str(ostype):
     adapter = {
@@ -78,7 +84,6 @@ def ql_arch_convert_str(arch):
     adapter = {
         QL_X86          : "x86",
         QL_X8664        : "x8664",
-        QL_MIPS32EL     : "mips32el",
         QL_MIPS32       : "mips32",        
         QL_ARM          : "arm",
         QL_ARM64        : "arm64",
@@ -90,7 +95,6 @@ def arch_convert(arch):
     adapter = {
         "x86"           : QL_X86,
         "x8664"         : QL_X8664,
-        "mips32el"      : QL_MIPS32EL,
         "mips32"        : QL_MIPS32,
         "arm"           : QL_ARM,
         "arm64"         : QL_ARM64,
@@ -99,6 +103,7 @@ def arch_convert(arch):
         return adapter[arch]
     # invalid
     return None, None 
+
 
 def output_convert(output):
     adapter = {
@@ -114,12 +119,14 @@ def output_convert(output):
     # invalid
     return None, None
 
-def ql_elf_check_archtype(path):
+
+def ql_elf_check_archtype(self):
+    path = self.path
     def getident():
         return elfdata
 
     with open(path, "rb") as f:
-        elfdata = f.read()[:19]
+        elfdata = f.read()[:20]
 
     ident = getident()
     ostype = None
@@ -129,7 +136,7 @@ def ql_elf_check_archtype(path):
         elfbit = ident[0x4]
         endian = ident[0x5]
         osabi = ident[0x7]
-        e_machine = ident[0x12]
+        e_machine = ident[0x12:0x14]
 
         if osabi == 0x11 or osabi == 0x03 or osabi == 0x0:
             ostype = QL_LINUX
@@ -138,17 +145,19 @@ def ql_elf_check_archtype(path):
         else:
             ostype = None
 
-        if e_machine == 0x03:
+        if e_machine == b"\x03\x00":
             arch = QL_X86
-        elif e_machine == 0x08 and endian == 1 and elfbit == 1:
-            arch = QL_MIPS32EL
-        elif e_machine == 0x08 and endian == 2 and elfbit == 1:
-            arch = QL_MIPS32            
-        elif e_machine == 0x28:
+        elif e_machine == b"\x08\x00" and endian == 1 and elfbit == 1:
+            self.archendian = QL_ENDIAN_EL
+            arch = QL_MIPS32
+        elif e_machine == b"\x00\x08" and endian == 2 and elfbit == 1:
+            self.archendian = QL_ENDIAN_EB
+            arch = QL_MIPS32           
+        elif e_machine == b"\x28\x00":
             arch = QL_ARM
-        elif e_machine == 0xB7:
+        elif e_machine == b"\xB7\x00":
             arch = QL_ARM64
-        elif e_machine == 0x3E:
+        elif e_machine == b"\x3E\x00":
             arch = QL_X8664
         else:
             arch = None    
@@ -191,6 +200,7 @@ def ql_macho_check_archtype(path):
 
     return arch, ostype
 
+
 def ql_pe_check_archtype(path):
     pe = pefile.PE(path, fast_load=True)
     ostype = None
@@ -216,12 +226,14 @@ def ql_pe_check_archtype(path):
 
 
 
-def ql_checkostype(path):
+def ql_checkostype(self):
+
+    path = self.path
 
     arch = None
     ostype = None
     
-    arch, ostype = ql_elf_check_archtype(path)
+    arch, ostype = ql_elf_check_archtype(self)
 
     if ostype not in (QL_LINUX, QL_FREEBSD):
         arch, ostype = ql_macho_check_archtype(path)
