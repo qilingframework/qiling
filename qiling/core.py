@@ -210,8 +210,7 @@ class Qiling:
 
  
     def shellcode(self):
-        #if self.platform is not QL_WINDOWS:
-        #    self.__enable_bin_patch()
+        self.__enable_bin_patch()
         loader_shellcode = self.build_os_execution("loader_shellcode")
         loader_shellcode(self)
 
