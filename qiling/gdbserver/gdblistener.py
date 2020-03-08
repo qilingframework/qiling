@@ -94,7 +94,7 @@ class GDBSession(object):
 
             def handle_qmark(subcmd):
                 sp = self.ql.addr_to_str(self.ql.sp)
-                pc = self.ql.addr_to_str(self.ql.sp)
+                pc = self.ql.addr_to_str(self.ql.pc)
 
                 if self.ql.arch == QL_ARM:
                     self.send(('S%.2x' % GDB_SIGNAL_TRAP))
@@ -102,11 +102,12 @@ class GDBSession(object):
                 elif self.ql.arch == QL_MIPS32:
                     if self.ql.archendian == QL_ENDIAN_EB:
                         sp = self.ql.addr_to_str(self.ql.sp, endian ="little")
-                        pc = self.ql.addr_to_str(self.ql.sp, endian ="little")
+                        pc = self.ql.addr_to_str(self.ql.pc, endian ="little")
                         # gdbserver response ("$T051d:7fff6dc0;25:77fc4880;thread:28fa;core:0;");
                         self.send('T051d:%s;25:%s;thread:;core:0;' %(sp, pc))
                     # gdbserver response ("$T051d:00e7ff7f;25:40ccfc77;#65")
-                    self.send('T051d:%s;25:%s;' %(sp,pc))
+                    else:
+                        self.send('T051d:%s;25:%s;' %(sp,pc))
 
                 else:    
                     self.send('T0506:0*,;07:%s;10:%s;' %(sp, pc))
