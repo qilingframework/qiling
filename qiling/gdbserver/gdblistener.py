@@ -93,11 +93,22 @@ class GDBSession(object):
             self.send_raw('+')
 
             def handle_qmark(subcmd):
+                sp = self.ql.addr_to_str(self.ql.sp)
+                pc = self.ql.addr_to_str(self.ql.sp)
+
                 if self.ql.arch == QL_ARM:
                     self.send(('S%.2x' % GDB_SIGNAL_TRAP))
+                
+                elif self.ql.arch == QL_MIPS32:
+                    if self.ql.archendian == QL_ENDIAN_EB:
+                        sp = self.ql.addr_to_str(self.ql.sp, endian ="little")
+                        pc = self.ql.addr_to_str(self.ql.sp, endian ="little")
+                        # gdbserver response ("$T051d:7fff6dc0;25:77fc4880;thread:28fa;core:0;");
+                        self.send('T051d:%s;25:%s;thread:;core:0;' %(sp, pc))
+                    # gdbserver response ("$T051d:00e7ff7f;25:40ccfc77;#65")
+                    self.send('T051d:%s;25:%s;' %(sp,pc))
+
                 else:    
-                    sp = self.ql.addr_to_str(self.ql.sp)
-                    pc = self.ql.addr_to_str(self.ql.sp)
                     self.send('T0506:0*,;07:%s;10:%s;' %(sp, pc))
 
 
@@ -142,7 +153,10 @@ class GDBSession(object):
                 if self.ql.arch == QL_MIPS32:
                     for reg in registers_mips[:38]:
                         r = self.ql.uc.reg_read(reg)
-                        tmp = self.ql.addr_to_str(r)
+                        if self.ql.archendian == QL_ENDIAN_EB:
+                            tmp = self.ql.addr_to_str(r, endian ="little")
+                        else:    
+                            tmp = self.ql.addr_to_str(r)
                         s += tmp
 
                 self.send(s)
@@ -478,7 +492,9 @@ class GDBSession(object):
                 elif subcmd.startswith('Xfer:libraries-svr4:read:'):
                     if self.ql.ostype in (QL_LINUX, QL_FREEBSD):
                         xml_addr_mapping=("<library-list-svr4 version=\"1.0\">")
-                        # FIXME: need to find out when do we need this
+                        """
+                        FIXME: need to find out when do we need this
+                        """
                         #for s, e, info in self.ql.map_info:
                         #    addr_mapping += ("<library name=\"%s\" lm=\"0x%x\" l_addr=\"%x\" l_ld=\"\"/>" %(info, e, s)) 
                         xml_addr_mapping += ("</library-list-svr4>")
@@ -525,15 +541,18 @@ class GDBSession(object):
                     self.lib_path = unhexlify(self.lib_path).decode(encoding='UTF-8')
                     if self.lib_path != "just probing":
                         """
+                        FIXME
                         os.path.join not working, always shows self.lib_path ony
                         """
                         #self.lib_abspath = os.path.join(str(self.rootfs_abspath) ,str(self.lib_path))
-                        if self.lib_path.startswith("/"):
+                        if self.lib_path.startswith("/") and not self.lib_path.startswith(self.rootfs_abspath):
                             self.lib_abspath = (self.rootfs_abspath + self.lib_path)
+                        elif self.lib_path.startswith(self.rootfs_abspath):
+                            self.lib_abspath = self.lib_path
                         else:
                             self.lib_abspath = (self.rootfs_abspath + "/" + self.lib_path)   
 
-                        self.ql.dprint("gdb> target file: %s" % (self.lib_path))
+                        self.ql.dprint("gdb> target file: %s" % (self.lib_abspath))
 
                         if os.path.exists(self.lib_abspath):
                             self.send("F5")
