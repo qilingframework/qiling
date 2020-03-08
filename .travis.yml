@@ -54,7 +54,8 @@ matrix:
       before_script:
         cd tests
       script:
-        - python3 test_all.py
+        - python3 test_all_macos.py
+        - python3 test_elf_nu.py
         
     - name: "Python 3.6.8 on Windows"
       os: windows
@@ -113,4 +114,4 @@ matrix:
     #    - docker run qiling:1.0 /bin/sh -c "cd tests && python3 test_all.py"
 
   allow_failures:
-    - os: osx, windows
+    - os: osx

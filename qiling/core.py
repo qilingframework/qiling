@@ -659,7 +659,14 @@ class Qiling:
         if value == 'Linux':
             self._platform = QL_LINUX
         elif value == 'Darwin':
-            self._platform = QL_MACOS
+            if self.arch == QL_ARM64:
+                self._platform = QL_IOS
+            else:    
+                self._platform = QL_MACOS
+        elif value == 'Windows':
+            self._platform = QL_WINDOWS
+        elif value == 'FreeBSD':
+            self._platform = QL_FREEBSD     
         else:
             self._platform = None
 
