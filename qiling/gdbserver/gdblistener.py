@@ -374,23 +374,10 @@ class GDBSession(object):
                         self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")
 
                 elif subcmd.startswith('Xfer:features:read'):
-                    xfercmd_file = subcmd.split(':')[3]
+                    xfercmd_file    = subcmd.split(':')[3]
                     xfercmd_abspath = os.path.dirname(os.path.abspath(__file__))
-                    
-                    def archinfo(archnifo):
-                        adapter = {
-                                        "arm"       : QL_ARM,
-                                        "arm64"     : QL_ARM64,
-                                        "mips32"    : QL_MIPS32,
-                                        "x86"       : QL_X86,
-                                        "x8664"     : QL_X86,
-                                    }
-                        if archnifo in adapter:
-                            return adapter[archnifo]                                
-                    
-                    xml_folder = ql_arch_convert_str(self.ql.arch)
-
-                    xfercmd_file = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
+                    xml_folder      = ql_arch_convert_str(self.ql.arch)
+                    xfercmd_file    = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
                     if os.path.exists(xfercmd_file):
                         f = open(xfercmd_file, 'r')
