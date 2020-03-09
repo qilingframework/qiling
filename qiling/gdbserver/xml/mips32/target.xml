@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!-- Copyright (C) 2007-2016 Free Software Foundation, Inc.
+<!-- Copyright (C) 2007-2012 Free Software Foundation, Inc.
 
  *!Copying and distribution of this file, with or without modification,
  *!are permitted in any medium without royalty provided the copyright
@@ -14,6 +14,6 @@
   <xi:include href="mips-fpu.xml"/>
 
   <feature name="org.gnu.gdb.mips.linux">
-  <reg name="restart" bitsize="32" group="system"/>
+ * <reg name="restart" bitsize="32" group="system"/>
   </feature>
 </target>
