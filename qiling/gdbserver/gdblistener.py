@@ -11,6 +11,7 @@ from binascii import unhexlify
 
 from qiling.gdbserver import qldbg
 from qiling.gdbserver.reg_table import *
+from qiling.arch.filetype import *
 
 GDB_SIGNAL_INT  = 2
 GDB_SIGNAL_SEGV = 11
@@ -50,7 +51,6 @@ class GDBSession(object):
         else:
             self.qldbg.bp_insert(self.ql.entry_point)
 
-    
 
     def bin_to_escstr(self, rawbin):
         rawbin_escape = ""
@@ -93,34 +93,34 @@ class GDBSession(object):
             self.send_raw('+')
 
             def handle_qmark(subcmd):
-                sp = self.ql.addr_to_str(self.ql.sp)
-                pc = self.ql.addr_to_str(self.ql.pc)
+                def gdbqmark_converter(arch):
+                    """
+                    MIPS32_EL : gdbserver response ("$T051d:00e7ff7f;25:40ccfc77;#65")
+                    MIPS32_EB : gdbserver response ("$T051d:7fff6dc0;25:77fc4880;thread:28fa;core:0;");
+                    ARM64: gdbserver response "$T051d:0*,;1f:80f6f*"ff0* ;20:c02cfdb7f* 0* ;thread:p1f9.1f9;core:0;#56");
+                    ARM: gdbserver $T050b:0*"00;0d:e0f6ffbe;0f:8079fdb6;#ae"
+                    """
+                    adapter = {
+                        QL_X86          : [ 0x05, 0x04, 0x08 ],
+                        QL_X8664        : [ 0x06, 0x07, 0x10 ],
+                        QL_MIPS32       : [ 0x1d, 0x00, 0x25 ],        
+                        QL_ARM          : [ 0x0b, 0x0d, 0x0f ],
+                        QL_ARM64        : [ 0x1d, 0xf1, 0x20 ]
+                        }
+                    return adapter.get(arch)
 
-                if self.ql.arch == QL_ARM:
-                    # gdbserver $T050b:0*"00;0d:e0f6ffbe;0f:8079fdb6;#ae"
-                    """
-                    simple reply to suits gdb7.1
-                    """
-                    # self.send(('S%.2x' % GDB_SIGNAL_TRAP))
-                    self.send('T050b:0*"00;0d:%s;0f:%s;' %(sp, pc))
-                elif self.ql.arch == QL_ARM64:
-                    # gdbserver response "$T051d:0*,;1f:80f6f*"ff0* ;20:c02cfdb7f* 0* ;thread:p1f9.1f9;core:0;#56");
-                    self.send('T0501d:0*"00;1f:%s;20:%s;' %(sp, pc))
-                elif self.ql.arch == QL_MIPS32:
+                idhex, spid, pcid  = gdbqmark_converter(self.ql.arch)  
+                sp          = self.ql.addr_to_str(self.ql.sp)
+                pc          = self.ql.addr_to_str(self.ql.pc)
+                nullfill    = "0" * int(self.ql.archbit / 4)
+
+                if self.ql.arch == QL_MIPS32:
                     if self.ql.archendian == QL_ENDIAN_EB:
                         sp = self.ql.addr_to_str(self.ql.sp, endian ="little")
                         pc = self.ql.addr_to_str(self.ql.pc, endian ="little")
-                        # gdbserver response ("$T051d:7fff6dc0;25:77fc4880;thread:28fa;core:0;");
-                        self.send('T051d:%s;25:%s;' %(sp, pc))
-                    else:
-                        # gdbserver response ("$T051d:00e7ff7f;25:40ccfc77;#65")
-                        self.send('T051d:%s;25:%s;' %(pc,sp))
-                elif self.ql.arch == QL_X8664:    
-                    self.send('T0506:0*,;07:%s;10:%s;' %(sp, pc))
-                elif self.ql.arch == QL_X86:    
-                    self.send('T0505:00000000;04:%s;08:%s;' %(sp, pc))
-                else:
-                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))      
+                    self.send('T%.2x%.2x:%s;%.2x:%s;' %(GDB_SIGNAL_TRAP, idhex, sp, pcid, pc))
+                else:    
+                    self.send('T%.2x%.2x:%s;%.2x:%s;%.2x:%s;' %(GDB_SIGNAL_TRAP, idhex, nullfill, spid, sp, pcid, pc))
 
 
             def handle_c(subcmd):
@@ -377,16 +377,18 @@ class GDBSession(object):
                     xfercmd_file = subcmd.split(':')[3]
                     xfercmd_abspath = os.path.dirname(os.path.abspath(__file__))
                     
-                    if self.ql.arch == QL_X8664:
-                        xml_folder = "x8664"
-                    elif self.ql.arch == QL_X86:
-                        xml_folder = "x86"    
-                    elif self.ql.arch == QL_ARM:
-                        xml_folder = "arm"
-                    elif self.ql.arch == QL_ARM64:
-                        xml_folder = "arm64"
-                    elif self.ql.arch == QL_MIPS32:
-                        xml_folder = "mips32"
+                    def archinfo(archnifo):
+                        adapter = {
+                                        "arm"       : QL_ARM,
+                                        "arm64"     : QL_ARM64,
+                                        "mips32"    : QL_MIPS32,
+                                        "x86"       : QL_X86,
+                                        "x8664"     : QL_X86,
+                                    }
+                        if archnifo in adapter:
+                            return adapter[archnifo]                                
+                    
+                    xml_folder = ql_arch_convert_str(self.ql.arch)
 
                     xfercmd_file = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
