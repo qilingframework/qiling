@@ -125,7 +125,10 @@ class GDBSession(object):
 
             def handle_c(subcmd):
                 self.qldbg.resume_emu(self.ql.uc.reg_read(self.pc_reg))
-                self.send(('S%.2x' % GDB_SIGNAL_TRAP))
+                if self.qldbg.bp_list in ([self.ql.elf_entry], [self.ql.entry_point]):
+                    self.send("W00")
+                else:
+                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
 
             handle_C = handle_c
