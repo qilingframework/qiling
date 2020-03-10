@@ -281,7 +281,7 @@ def open_flags_mapping(flags, arch):
             QL_MACOS: mac_open_flags_mapping,
             }.get(arch)()
 
-    ret = []
+    ret = ["O_RDONLY"]
 
     for val, sym in inverted_dict.items():
         if val & flags != 0:
