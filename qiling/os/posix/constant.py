@@ -209,7 +209,7 @@ def socket_domain_mapping(p, arch):
             }.get(arch)(p)
 
 
-def mac_open_flags_mapping(flags):
+def mac_open_flags_mapping():
         
     mac_open_flags = {
         "O_RDONLY"   : 0x0000,
@@ -230,7 +230,7 @@ def mac_open_flags_mapping(flags):
     return _invert_dict(mac_open_flags)
 
 
-def linux_open_flags_mapping(flags):
+def linux_open_flags_mapping():
 
     linux_open_flags = {
         'O_RDONLY'   : 0x0,
@@ -279,9 +279,9 @@ def open_flags_mapping(flags, arch):
             QL_X8664: linux_open_flags_mapping,
             QL_MIPS32: mips32_open_flags_mapping,
             QL_MACOS: mac_open_flags_mapping,
-            }.get(arch)(flags)
+            }.get(arch)()
 
-    ret = []
+    ret = ["O_RDONLY"]
 
     for val, sym in inverted_dict.items():
         if val & flags != 0:
