@@ -1722,6 +1722,15 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, null0, null1, nu
         ql.dprint("[!] error call %d" % socketcall_call)
         ql.stop(stop_event = THREAD_EVENT_UNEXECPT_EVENT)
 
+def ql_syscall_signal(ql, sig, __sighandler_t, null0, null1, null2, null3):
+    regreturn = 0
+    ql.nprint("signal(%d, 0x%x) = %d" % (sig, __sighandler_t,regreturn))
+    ql_definesyscall_return(ql, regreturn)
+
+def ql_syscall_ptrace(ql, request, pid, addr, data, null0, null1):
+    regreturn = 0
+    ql.nprint("ptrace(0x%x, 0x%x, 0x%x, 0x%x) = %d" % (request, pid, addr, data, regreturn))
+    ql_definesyscall_return(ql, regreturn)
 
 def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_newtls, clone_child_tidptr, null0):
     CSIGNAL = 0x000000ff	
