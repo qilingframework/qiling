@@ -257,7 +257,7 @@ def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
             regreturn = -1
 
     ql.nprint("open(%s, 0x%x, 0o%o) = %d" % (relative_path, flags, mode, regreturn))
-    ql.dprint("open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags), mode, regreturn))
+    ql.dprint("open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.arch), mode, regreturn))
     if regreturn >= 0 and regreturn != 2:
         ql.dprint("[+] File Found: %s" % relative_path)
     else:
