@@ -20,6 +20,7 @@ dict_x86_linux_syscall = {
     0x5B : "ql_syscall_munmap",
     0x5C : "ql_syscall_truncate",
     0x5D : "ql_syscall_ftruncate",
+    0x6B : "ql_syscall_lstat",
     0x78 : "ql_syscall_clone",
     0x7A : "ql_syscall_uname",
     0x7D : "ql_syscall_mprotect",
