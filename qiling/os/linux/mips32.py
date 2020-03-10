@@ -7,19 +7,19 @@ from unicorn import *
 from unicorn.mips_const import *
 
 from qiling.loader.elf import *
-from qiling.os.linux.mips32el_syscall import *
+from qiling.os.linux.mips32_syscall import *
 from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *
 from qiling.os.utils import *
 from qiling.arch.filetype import *
 
 # memory address where emulation starts
-QL_MIPSEL_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000
-QL_MIPSEL_LINUX_PREDEFINE_STACKSIZE = 0x30000
+QL_MIPS32_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000
+QL_MIPS32_LINUX_PREDEFINE_STACKSIZE = 0x30000
 QL_SHELLCODE_ADDR = 0x0f000000
 QL_SHELLCODE_LEN = 0x1000
 QL_SHELLCODE_INIT = 0
-QL_MIPSEL_EMU_END = 0x8fffffff
+QL_MIPS32_EMU_END = 0x8fffffff
 
 def hook_syscall(ql, intno):
     syscall_num = ql.uc.reg_read(UC_MIPS_REG_V0)
@@ -41,7 +41,7 @@ def hook_syscall(ql, intno):
         if LINUX_SYSCALL_FUNC != None:
             LINUX_SYSCALL_FUNC_NAME = LINUX_SYSCALL_FUNC.__name__
             break
-        LINUX_SYSCALL_FUNC_NAME = dict_mips32el_linux_syscall.get(syscall_num, None)
+        LINUX_SYSCALL_FUNC_NAME = dict_mips32_linux_syscall.get(syscall_num, None)
         if LINUX_SYSCALL_FUNC_NAME != None:
             LINUX_SYSCALL_FUNC = eval(LINUX_SYSCALL_FUNC_NAME)
             break
@@ -167,20 +167,41 @@ lab1:
         ql.shellcode_init = 1
 
     store_code = uc.mem_read(addr, 8)
-    sc = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf8\xff\xbf\xaf\xf4\xff\xa4\xaf\xf0\xff\xa5\xaf\xec\xff\xa6\xaf\xe8\xff\xa7\xaf\xe4\xff\xa2\xaf\xe0\xff\xa3\xaf\xdc\xff\xa8\xaf\xff\xff\x06(\xff\xff\xd0\x04\x8c\x00\xe5'<\x00\xe8'\xfc\xff\xa4\x8f\x08\x00\x06$\t\xf8\x00\x01\x00\x00\x00\x00\xf8\xff\xbf\x8f\xf4\xff\xa4\x8f\xf0\xff\xa5\x8f\xec\xff\xa6\x8f\xe8\xff\xa7\x8f\xe4\xff\xa2\x8f\xe0\xff\xa3\x8f\xdc\xff\xa8\x8f\x00\x00\x00\x08\x00\x00\x00\x00%8\x00\x00%8\x00\x00\t\x00\x00\x10\x00\x00\x00\x00%\x10\xe0\x00%\x18\xa0\x00!\x18b\x00%\x10\xe0\x00!\x10\x82\x00\x00\x00c\x80\x00\x00C\xa0\x01\x00\xe7$%\x10\xe0\x00%\x18\xc0\x00+\x10C\x00\xf4\xff@\x14\x00\x00\x00\x00\x00\x00\x00\x00\x08\x00\xe0\x03\x00\x00\x00\x00".replace(b'\x00\x00\x00\x08', ql.pack32(0x08000000 ^ (addr // 4)), 1)
+    
+    sc = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf8\xff\xbf\xaf\xf4\xff\xa4\xaf\xf0\xff\xa5\xaf\xec\xff\xa6\xaf\xe8\xff\xa7\xaf\xe4\xff\xa2\xaf\xe0\xff\xa3\xaf\xdc\xff\xa8\xaf\xff\xff\x06(\xff\xff\xd0\x04\x8c\x00\xe5'<\x00\xe8'\xfc\xff\xa4\x8f\x08\x00\x06$\t\xf8\x00\x01\x00\x00\x00\x00\xf8\xff\xbf\x8f\xf4\xff\xa4\x8f\xf0\xff\xa5\x8f\xec\xff\xa6\x8f\xe8\xff\xa7\x8f\xe4\xff\xa2\x8f\xe0\xff\xa3\x8f\xdc\xff\xa8\x8f\x00\x00\x00\x08\x00\x00\x00\x00%8\x00\x00%8\x00\x00\t\x00\x00\x10\x00\x00\x00\x00%\x10\xe0\x00%\x18\xa0\x00!\x18b\x00%\x10\xe0\x00!\x10\x82\x00\x00\x00c\x80\x00\x00C\xa0\x01\x00\xe7$%\x10\xe0\x00%\x18\xc0\x00+\x10C\x00\xf4\xff@\x14\x00\x00\x00\x00\x00\x00\x00\x00\x08\x00\xe0\x03\x00\x00\x00\x00"
+
+    if ql.archendian == QL_ENDIAN_EB:
+        
+        split_bytes = []
+        n  = 4
+        for index in range(0, len(sc), n):
+            split_bytes.append((sc[index : index + n])[::-1])
+
+        ebsc = b""
+        for i in split_bytes:
+            ebsc += i
+        
+        sc = ebsc.replace(b'\x08\x00\x00\x00', ql.pack32(0x08000000 ^ (addr // 4)), 1)       
+    else:
+        sc = sc.replace(b'\x00\x00\x00\x08', ql.pack32(0x08000000 ^ (addr // 4)), 1)
+        
+    
     sc = shellcode + sc[len(shellcode) :] + store_code
 
     uc.mem_write(QL_SHELLCODE_ADDR, sc)
-    uc.mem_write(addr, b'\x00\x00\xc0\x0b\x00\x00\x00\x00')
+    if ql.archendian == QL_ENDIAN_EB:
+        uc.mem_write(addr, b'\x0b\xc0\x00\x00\x00\x00\x00\x00')
+    else:
+        uc.mem_write(addr, b'\x00\x00\xc0\x0b\x00\x00\x00\x00')
     sp = uc.reg_read(UC_MIPS_REG_SP)
     uc.mem_write(sp - 4, ql.pack32(addr))
 
-def ql_syscall_mips32el_thread_setthreadarea(ql, th, arg):
+def ql_syscall_mips32_thread_setthreadarea(ql, th, arg):
     uc = ql.uc
     address = arg
+
     pc = uc.reg_read(UC_MIPS_REG_PC)
     CONFIG3_ULR = (1 << 13)
-    
     uc.reg_write(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
     uc.reg_write(UC_MIPS_REG_CP0_USERLOCAL, address)
 
@@ -188,10 +209,13 @@ def ql_syscall_mips32el_thread_setthreadarea(ql, th, arg):
     # somehow for multithread these code are still not mature
     ql.dprint ("[+] shellcode_init is %i" % (ql.shellcode_init))
     if ql.shellcode_init == 0:
-        hook_shellcode(uc, pc + 4, bytes.fromhex('2510000025380000'), ql)
+        if ql.archendian == QL_ENDIAN_EB:
+            hook_shellcode(uc, pc + 4, bytes.fromhex('0000102500003825'), ql)
+        else:    
+            hook_shellcode(uc, pc + 4, bytes.fromhex('2510000025380000'), ql)
 
 
-def ql_syscall_mips32el_set_thread_area(ql, sta_area, null0, null1, null2, null3, null4):
+def ql_syscall_mips32_set_thread_area(ql, sta_area, null0, null1, null2, null3, null4):
     uc = ql.uc     
     ql.nprint ("set_thread_area(0x%x)" % sta_area)
 
@@ -202,17 +226,23 @@ def ql_syscall_mips32el_set_thread_area(ql, sta_area, null0, null1, null2, null3
     CONFIG3_ULR = (1 << 13)
     uc.reg_write(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
     uc.reg_write(UC_MIPS_REG_CP0_USERLOCAL, sta_area)
-    hook_shellcode(uc, pc + 4, bytes.fromhex('2510000025380000'), ql)
+    if ql.archendian == QL_ENDIAN_EB:
+        hook_shellcode(uc, pc + 4, bytes.fromhex('0000102500003825'), ql)
+    else:    
+        hook_shellcode(uc, pc + 4, bytes.fromhex('2510000025380000'), ql)
 
 
 
 def loader_file(ql):
-    uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)
+    if ql.archendian == QL_ENDIAN_EB:
+        uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_BIG_ENDIAN)
+    else:
+        uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)
     ql.uc = uc
     if (ql.stack_address == 0):
-        ql.stack_address = QL_MIPSEL_LINUX_PREDEFINE_STACKADDRESS
+        ql.stack_address = QL_MIPS32_LINUX_PREDEFINE_STACKADDRESS
     if (ql.stack_size == 0): 
-        ql.stack_size = QL_MIPSEL_LINUX_PREDEFINE_STACKSIZE
+        ql.stack_size = QL_MIPS32_LINUX_PREDEFINE_STACKSIZE
     ql.uc.mem_map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
     if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env):
@@ -225,7 +255,10 @@ def loader_file(ql):
 
 
 def loader_shellcode(ql):
-    uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)
+    if ql.archendian == QL_ENDIAN_EB:
+        uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_BIG_ENDIAN)
+    else:
+        uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)    
     ql.uc = uc
     if (ql.stack_address == 0):
         ql.stack_address = 0x1000000
@@ -242,7 +275,7 @@ def loader_shellcode(ql):
 
 def runner(ql):
     if (ql.until_addr == 0):
-        ql.until_addr = QL_MIPSEL_EMU_END
+        ql.until_addr = QL_MIPS32_EMU_END
     try:
         if ql.shellcoder:
             ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
@@ -252,7 +285,7 @@ def runner(ql):
                 thread_management = ThreadManagement(ql)
                 ql.thread_management = thread_management
 
-                main_thread = Thread(ql, thread_management, total_time = ql.timeout, special_settings_fuc = ql_syscall_mips32el_thread_setthreadarea)
+                main_thread = Thread(ql, thread_management, total_time = ql.timeout, special_settings_fuc = ql_syscall_mips32_thread_setthreadarea)
                 main_thread.save()
                 main_thread.set_start_address(ql.entry_point)
 

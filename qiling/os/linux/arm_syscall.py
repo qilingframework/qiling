@@ -10,6 +10,7 @@ dict_arm_linux_syscall = {
     0x05 : "ql_syscall_open",
     0x06 : "ql_syscall_close",
     0x0B : "ql_syscall_execve",
+    0xf  : "ql_syscall_chmod",
     0x13 : "ql_syscall_lseek",
     0x14 : "ql_syscall_getpid",
     0x21 : "ql_syscall_access",

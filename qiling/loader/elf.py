@@ -157,7 +157,7 @@ class ELFParse:
         head['e_shnum']         = ql.unpack16(data[index : index + 2]);     index += 2
         head['e_shstrndx']      = ql.unpack16(data[index : index + 2]);     index += 2
         return head
-
+    
     def parse_header(self, ql):
         if ql.archbit == 64:
             return self.parse_header64(ql)
@@ -188,7 +188,7 @@ class ELFParse:
         Ssize = self.elfhead['e_shentsize']
         Snum = self.elfhead['e_shnum']
         Sdata = self.elfdata[self.elfhead['e_shoff'] : self.elfhead['e_shoff'] + Snum * Ssize]
-
+        
         for i in range(Snum):
             S = {}
             S['sh_name']        = ql.unpack32(Sdata[i * Ssize : i * Ssize + 4])
@@ -274,8 +274,8 @@ class ELFParse:
         # typedef int32_t  Elf32_Sword;
         # typedef uint32_t Elf32_Word;
 
-        Psize = self.elfhead['e_phentsize']
-        Pnum = self.elfhead['e_phnum']
+        Psize = int(self.elfhead['e_phentsize'])
+        Pnum = int(self.elfhead['e_phnum'])
         Pdata = self.elfdata[self.elfhead['e_phoff'] : self.elfhead['e_phoff'] + Pnum * Psize]
 
         for i in range(Pnum):
@@ -386,7 +386,7 @@ class ELFLoader(ELFParse):
         if loadbase <= 0:
             if ql.archbit == 64:
                 loadbase = 0x555555554000
-            elif ql.arch == QL_MIPS32EL:
+            elif ql.arch == QL_MIPS32:
                 loadbase = 0x0000004fef000
             else:
                 loadbase = 0x56555000
@@ -449,9 +449,9 @@ class ELFLoader(ELFParse):
             if ql.interp_base == 0:
                 if ql.archbit == 64:
                     ql.interp_base = 0x7ffff7dd5000
-                elif ql.archbit == 32 and ql.arch != QL_MIPS32EL:
+                elif ql.archbit == 32 and ql.arch != QL_MIPS32:
                     ql.interp_base = 0xfb7d3000
-                elif ql.arch == QL_MIPS32EL:
+                elif ql.arch == QL_MIPS32:
                     ql.interp_base = 0x00000047ba000
                 else:
                     ql.interp_base = 0xff7d5000
@@ -469,8 +469,10 @@ class ELFLoader(ELFParse):
         if ql.mmap_start == 0:
             if ql.archbit == 64:
                 ql.mmap_start = 0x7ffff7dd6000 - 0x4000000
-            elif ql.arch == QL_MIPS32EL:
+            elif ql.arch == QL_MIPS32:
                 ql.mmap_start = 0x7ffef000 - 0x400000
+                if ql.archendian == QL_ENDIAN_EB:
+                    ql.mmap_start  = 0x778bf000 - 0x400000
             else:
                 ql.mmap_start = 0xf7fd6000 - 0x400000
 
@@ -532,15 +534,19 @@ class ELFLoader(ELFParse):
         ql.elf_phent    = (elfhead['e_phentsize'])
         ql.elf_phnum    = (elfhead['e_phnum'])
         ql.elf_pagesz   = 0x1000
+        if ql.archendian == QL_ENDIAN_EB:
+            ql.elf_pagesz   = 0x0010    
         ql.elf_guid     = 1000
         ql.elf_flags    = 0
         ql.elf_entry    = (loadbase + elfhead['e_entry'])
         ql.randstraddr  = randstraddr = addr[0]
         ql.cpustraddr   = cpustraddr = addr[1]
         if ql.archbit == 64:
-            ql.elf_hwcap = hwcap = 0x078bfbfd
+            ql.elf_hwcap = 0x078bfbfd
         elif ql.archbit == 32:
-            ql.elf_hwcap = hwcap = 0x1fb8d7
+            ql.elf_hwcap = 0x1fb8d7
+            if ql.archendian == QL_ENDIAN_EB:
+                ql.elf_hwcap = 0xd7b81f
 
         elf_table += self.NEW_AUX_ENT(AT_PHDR, ql.elf_phdr + mem_start, ql)
         elf_table += self.NEW_AUX_ENT(AT_PHENT, ql.elf_phent, ql)
@@ -553,7 +559,7 @@ class ELFLoader(ELFParse):
         elf_table += self.NEW_AUX_ENT(AT_EUID, ql.elf_guid, ql)
         elf_table += self.NEW_AUX_ENT(AT_GID, ql.elf_guid, ql)
         elf_table += self.NEW_AUX_ENT(AT_EGID, ql.elf_guid, ql)
-        elf_table += self.NEW_AUX_ENT(AT_HWCAP, hwcap, ql)
+        elf_table += self.NEW_AUX_ENT(AT_HWCAP, ql.elf_hwcap, ql)
         elf_table += self.NEW_AUX_ENT(AT_CLKTCK, 100, ql)
         elf_table += self.NEW_AUX_ENT(AT_RANDOM, randstraddr, ql)
         elf_table += self.NEW_AUX_ENT(AT_PLATFORM, cpustraddr, ql)

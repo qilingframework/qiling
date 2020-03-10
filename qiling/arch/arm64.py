@@ -54,3 +54,13 @@ class ARM64(Arch):
     # get stack pointer
     def get_sp(self):
         return self.ql.uc.reg_read(UC_ARM64_REG_PC)
+
+
+    # get stack pointer register
+    def get_reg_sp(self):
+        return UC_ARM64_REG_SP
+
+
+    # get pc register pointer
+    def get_reg_pc(self):
+        return UC_ARM64_REG_PC

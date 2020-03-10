@@ -7,9 +7,10 @@ from unicorn.mips_const import *
 from struct import pack
 from .arch import Arch
 
-class MIPS32EL(Arch):
+
+class MIPS32(Arch):
     def __init__(self, ql):
-        super(MIPS32EL, self).__init__(ql)
+        super(MIPS32, self).__init__(ql)
 
 
     def stack_push(self, value):
@@ -55,3 +56,13 @@ class MIPS32EL(Arch):
     # get stack pointer
     def get_sp(self):
         return self.ql.uc.reg_read(UC_MIPS_REG_SP)
+
+
+    # get stack pointer register
+    def get_reg_sp(self):
+        return UC_MIPS_REG_SP
+
+
+    # get pc register pointer
+    def get_reg_pc(self):
+        return UC_MIPS_REG_PC

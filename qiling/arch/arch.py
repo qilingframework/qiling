@@ -44,3 +44,13 @@ class Arch:
     # get stack pointer
     def get_sp(self):
         pass
+
+
+    # get stack pointer register
+    def get_reg_sp(self):
+        pass
+
+
+    # get PC register
+    def get_reg_pc(self):
+        pass    

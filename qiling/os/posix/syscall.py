@@ -100,6 +100,11 @@ def ql_syscall_alarm(ql, alarm_seconds, null0, null1, null2, null3, null4):
     ql.nprint("alarm(%d) = %d" % (alarm_seconds, regreturn))
     ql_definesyscall_return(ql, regreturn)    
 
+def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
+    regreturn = 0
+    filename = ql_read_string(ql, filename)
+    ql.nprint("chmod(%s,%d) = %d" % (filename, mode, regreturn))
+    ql_definesyscall_return(ql, regreturn) 
 
 def ql_syscall_issetugid(ql, null0, null1, null2, null3, null4, null5):
     if ql.root == False:
@@ -379,35 +384,40 @@ def ql_syscall_access(ql, access_path, access_mode, null0, null1, null2, null3):
     
 
 def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
+    ql.dprint("[+] log mmap - mmap(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
+
+    # FIXME
     # this is ugly patch, we might need to get value from elf parse,
-    # is32bit or is64bit value not by arch
-   
+    # is32bit or is64bit value not by arch 
     MAP_ANONYMOUS=32
 
     if (ql.arch == QL_ARM64) or (ql.arch == QL_X8664):
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
 
-    elif (ql.arch == QL_MIPS32EL):
+    elif (ql.arch == QL_MIPS32):
         mmap2_fd = ql.unpack32s(ql.uc.mem_read(mmap2_fd, 4))
         mmap2_pgoffset = ql.unpack32(ql.uc.mem_read(mmap2_pgoffset, 4))
         MAP_ANONYMOUS=2048
+  
     else:
         mmap2_fd = ql.unpack32s(ql.pack32(mmap2_fd))
-
 
     mmap_base = mmap2_addr
     need_mmap = True
 
-    if mmap2_addr != 0 and mmap2_addr < ql.mmap_start:
-        need_mmap = False
+    if mmap2_addr != 0 and (mmap2_addr < ql.mmap_start):
+        need_mmap = False    
+    
+    # initial ql.mmap_start
     if mmap2_addr == 0:
         mmap_base = ql.mmap_start
         ql.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
 
-    ql.dprint("[+] log mmap - mmap(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
+
     ql.dprint("[+] log mmap - return addr : " + hex(mmap_base))
     ql.dprint("[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
+    # initialized mapping
     if need_mmap:
         ql.dprint("[+] log mmap - mapping needed")
         try:
@@ -415,9 +425,13 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
         except:
             ql.show_map_info()
             raise   
-
-    ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
     
+    try:
+        ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
+    except:
+        pass    
+    
+
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
     mem_info = ''
@@ -428,15 +442,14 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
 
         ql.dprint("[+] log mem wirte : " + hex(len(data)))
         ql.dprint("[+] log mem mmap  : " + str(ql.file_des[mmap2_fd].name))
+
         ql.uc.mem_write(mmap_base, data)
-        
         mem_info = ql.file_des[mmap2_fd].name
         
     ql.insert_map_info(mem_s, mem_e, mem_info)
     
-    if ql.output == QL_OUT_DEFAULT:
-        ql.nprint("mmap(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
-    
+
+    ql.nprint("mmap(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
     regreturn = mmap_base
     ql.dprint("[+] mmap_base is 0x%x" % regreturn)
 
@@ -452,7 +465,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     if (ql.arch == QL_ARM64) or (ql.arch == QL_X8664):
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
 
-    elif (ql.arch == QL_MIPS32EL):
+    elif (ql.arch == QL_MIPS32):
         mmap2_fd = ql.unpack32s(ql.uc.mem_read(mmap2_fd, 4))
         mmap2_pgoffset = ql.unpack32(ql.uc.mem_read(mmap2_pgoffset, 4)) * 4096
         MAP_ANONYMOUS=2048
@@ -470,9 +483,9 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         mmap_base = ql.mmap_start
         ql.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
 
-    ql.dprint("[+] log mmap - mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
-    ql.dprint("[+] log mmap - return addr : " + hex(mmap_base))
-    ql.dprint("[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
+    ql.dprint("[+] log mmap2 - mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
+    ql.dprint("[+] log mmap2 - return addr : " + hex(mmap_base))
+    ql.dprint("[+] log mmap2 - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
     if need_mmap:
         ql.dprint("[+] log mmap - mapping needed")
@@ -492,19 +505,18 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         ql.file_des[mmap2_fd].lseek(mmap2_pgoffset)
         data = ql.file_des[mmap2_fd].read(mmap2_length)
 
-        ql.dprint("[+] log mem wirte : " + hex(len(data)))
-        ql.dprint("[+] log mem mmap  : " + str(ql.file_des[mmap2_fd].name))
+        ql.dprint("[+] log2 mem wirte : " + hex(len(data)))
+        ql.dprint("[+] log2 mem mmap  : " + str(ql.file_des[mmap2_fd].name))
         ql.uc.mem_write(mmap_base, data)
         
         mem_info = ql.file_des[mmap2_fd].name
         
     ql.insert_map_info(mem_s, mem_e, mem_info)
     
-    if ql.output == QL_OUT_DEFAULT:
-        ql.nprint("mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
+    ql.nprint("mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
     
     regreturn = mmap_base
-    ql.dprint("[+] mmap_base is 0x%x" % regreturn)
+    ql.dprint("[+] mmap2_base is 0x%x" % regreturn)
 
     ql_definesyscall_return(ql, regreturn)
 
@@ -650,7 +662,7 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, null0, null1, null2, null3):
         user_fileno = fstat_fd
         fstat_info = ql.file_des[user_fileno].fstat()
 
-        if ql.arch == QL_MIPS32EL:
+        if ql.arch == QL_MIPS32:
             # pack fstatinfo
             fstat_buf = ql.pack32(fstat_info.st_dev)
             fstat_buf += ql.pack32(0) * 3
@@ -730,7 +742,7 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, null0, null1, null2, 
     else:
         stat64_info = os.stat(real_path)
 
-        if ql.arch == QL_MIPS32EL:
+        if ql.arch == QL_MIPS32:
             # packfstatinfo
             # name offset size
             # struct stat is : a0
@@ -804,7 +816,7 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, null0, null1, null2, null3):
     else:
         stat_info = os.stat(real_path)
 
-        if ql.arch == QL_MIPS32EL:
+        if ql.arch == QL_MIPS32:
             # pack fstatinfo
             stat_buf = ql.pack32(stat_info.st_dev)
             stat_buf += ql.pack32(0) * 3
@@ -1264,9 +1276,9 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, null0, null
 
 
 def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, null1, null2):
-    if ql.arch == QL_MIPS32EL and socket_type == 2:
+    if ql.arch == QL_MIPS32 and socket_type == 2:
         socket_type = 1
-    elif ql.arch == QL_MIPS32EL and socket_type == 1:
+    elif ql.arch == QL_MIPS32 and socket_type == 1:
         socket_type = 1   
 
     idx = -1
@@ -1290,7 +1302,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, nu
     ql.nprint("socket(%d, %d, %d) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
     socket_type = socket_type_mapping(socket_type, ql.arch)
     socket_domain = socket_domain_mapping(socket_domain, ql.arch)
-    ql.dprint("[+] scoket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
+    ql.dprint("[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -1478,8 +1490,11 @@ def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, null0, null1, null2, 
         else:
             return True
 
-    tv_sec = ql.unpack32(ql.uc.mem_read(nanosleep_req, 4))
-    tv_sec += ql.unpack(ql.uc.mem_read(nanosleep_req + 4, 4)) / 1000000000
+    n = ql.archbit // 8 # 4 for 32-bit , 8 for 64-bit
+
+    tv_sec = ql.unpack(ql.uc.mem_read(nanosleep_req, n))
+    tv_sec += ql.unpack(ql.uc.mem_read(nanosleep_req + n, n)) / 1000000000
+
     if ql.thread_management == None:
         time.sleep(tv_sec)
     else:
@@ -1908,7 +1923,7 @@ def ql_syscall_pipe(ql, pipe_pipefd, null0, null1, null2, null3, null4):
         else:
             ql.file_des[idx1] = rd
             ql.file_des[idx2] = wd
-            if ql.arch == QL_MIPS32EL:
+            if ql.arch == QL_MIPS32:
                 ql.uc.reg_write(UC_MIPS_REG_V1, idx2)
                 regreturn = idx1
             else:

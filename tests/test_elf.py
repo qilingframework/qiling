@@ -187,6 +187,23 @@ class ELFTest(unittest.TestCase):
         del ql 
 
 
+    def test_elf_linux_mips32(self):
+        def random_generator(size=6, chars=string.ascii_uppercase + string.digits):
+            return ''.join(random.choice(chars) for x in range(size))
+
+        ql = Qiling(["../examples/rootfs/mips32_linux/bin/mips32_hello", random_generator(random.randint(1,99))], "../examples/rootfs/mips32_linux")
+        ql.run()
+        del ql
+
+
+    def test_elf_linux_mips32_static(self):
+        def random_generator(size=6, chars=string.ascii_uppercase + string.digits):
+            return ''.join(random.choice(chars) for x in range(size))
+
+        ql = Qiling(["../examples/rootfs/mips32_linux/bin/mips32_hello_static", random_generator(random.randint(1,99))], "../examples/rootfs/mips32_linux")
+        ql.run()
+        del ql 
+
     def test_elf_linux_mips32el_posix_syscall(self):
 
         def test_syscall_read(ql, read_fd, read_buf, read_count, *args):

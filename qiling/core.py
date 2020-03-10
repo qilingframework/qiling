@@ -131,7 +131,7 @@ class Qiling:
             if (os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs)):
                 self.path = (str(self.filename[0]))
                 if self.ostype == None or self.arch == None:
-                    self.arch, self.ostype = ql_checkostype(self.path)
+                    self.arch, self.ostype = ql_checkostype(self)
               
                 self.argv = self.filename
       
@@ -169,13 +169,17 @@ class Qiling:
             
             for _ in range(256):
                 self.sigaction_act.append(0)
-
+        
         if not ql_is_valid_arch(self.arch):
             raise QlErrorArch("[!] Invalid Arch")
 
         arch_func = ql_get_arch_module_function( self.arch, ql_arch_convert_str(self.arch).upper() )
 
         self.archbit = ql_get_arch_bits(self.arch)
+        
+        if self.arch not in QL_ENDINABLE:
+            self.archendian = QL_ENDIAN_EL
+
         self.archfunc = arch_func(self) 
 
         if self.archbit:
@@ -264,10 +268,6 @@ class Qiling:
 
     def addr_to_str(self, addr, short = False, endian = "big"):
         return ql_addr_to_str(self, addr, short, endian)
-
-
-    def get_reg_spc(self):
-        return ql_get_reg_spc(self)
 
 
     def asm2bytes(self, runasm, arm_thumb = None):
@@ -514,27 +514,48 @@ class Qiling:
 
 
     def unpack32(self, x):
-        return struct.unpack('I', x)[0]
-
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.unpack('>I', x)[0]
+        else:
+            return struct.unpack('I', x)[0]
 
     def pack32(self, x):
-        return struct.pack('I', x)
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.pack('>I', x)
+        else:    
+            return struct.pack('I', x)
 
 
     def unpack32s(self, x):
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.unpack('>i', x)[0]
+        else:    
+            return struct.unpack('i', x)[0]
+
+    def unpack32s_ne(self, x):
         return struct.unpack('i', x)[0]
 
 
     def pack32s(self, x):
-        return struct.pack('i', x)
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.pack('>i', x)
+        else:
+            return struct.pack('i', x)
 
 
     def unpack16(self, x):
-        return struct.unpack('H', x)[0]
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.unpack('>H', x)[0]
+        else:
+            return struct.unpack('H', x)[0]
 
 
     def pack16(self, x):
-        return struct.pack('H', x)
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.pack('>H', x)
+        else:    
+            return struct.pack('H', x)
+            
 
 
     def pack(self, data):
@@ -584,6 +605,18 @@ class Qiling:
 
     # get PC register
     @property
+    def reg_pc(self):
+        return self.archfunc.get_reg_pc()
+
+
+    # get SP register
+    @property
+    def reg_sp(self):
+        return self.archfunc.get_reg_sp()
+
+
+    # get PC register value
+    @property
     def pc(self):
         return self.archfunc.get_pc()
 
@@ -626,7 +659,14 @@ class Qiling:
         if value == 'Linux':
             self._platform = QL_LINUX
         elif value == 'Darwin':
-            self._platform = QL_MACOS
+            if self.arch == QL_ARM64:
+                self._platform = QL_IOS
+            else:    
+                self._platform = QL_MACOS
+        elif value == 'Windows':
+            self._platform = QL_WINDOWS
+        elif value == 'FreeBSD':
+            self._platform = QL_FREEBSD     
         else:
             self._platform = None
 
