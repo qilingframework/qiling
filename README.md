@@ -146,6 +146,7 @@ Qiling also provides a friendly tool named `qltool` to quickly emulate shellcode
 
 With qltool, easy execution can be performed:
 
+
 With shellcode:
 
 ```
