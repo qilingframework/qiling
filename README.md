@@ -1,4 +1,6 @@
 Qiling - Advanced Binary Emulation framework
+
+[![Gitter](https://badges.gitter.im/qilingframework/community.svg)](https://gitter.im/qilingframework/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build Status](https://travis-ci.com/qilingframework/qiling.svg?branch=master)](https://travis-ci.com/qilingframework/qiling)
 ---
 
