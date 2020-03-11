@@ -186,7 +186,7 @@ class Qiling:
             self.pointersize = (self.archbit // 8)
 
         if not self.ostype in (QL_OS):
-            raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos','ios'")
+            raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos'")
         
         if self.output and type(self.output) == str:
             self.output = self.output.lower()
@@ -275,7 +275,7 @@ class Qiling:
 
 
     def set_syscall(self, syscall_cur, syscall_new):
-        if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD, QL_IOS):
+        if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD):
             self.dict_posix_syscall[syscall_cur] = syscall_new
         elif self.ostype == QL_WINDOWS:
             self.set_api(syscall_cur, syscall_new)

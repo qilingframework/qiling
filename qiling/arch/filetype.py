@@ -20,7 +20,6 @@ QL_LINUX    = 1
 QL_FREEBSD  = 2
 QL_MACOS    = 3
 QL_WINDOWS  = 4
-QL_IOS      = 5
 
 QL_OUT_DEFAULT  = 1
 QL_OUT_OFF      = 2
@@ -30,7 +29,7 @@ QL_OUT_DISASM   = 5
 
 QL_ARCH         = [ QL_ARM, QL_ARM64, QL_MIPS32, QL_X86, QL_X8664]
 QL_ENDINABLE    = [ QL_MIPS32 ]
-QL_OS           = [ QL_LINUX, QL_FREEBSD, QL_MACOS, QL_WINDOWS, QL_IOS ]
+QL_OS           = [ QL_LINUX, QL_FREEBSD, QL_MACOS, QL_WINDOWS ]
 QL_OUTPUT       = [ QL_OUT_DEFAULT, QL_OUT_OFF, QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM ]
 
 def ql_get_arch_bits(arch):
@@ -60,7 +59,6 @@ def ql_ostype_convert_str(ostype):
         QL_MACOS        : "macos",
         QL_FREEBSD      : "freebsd",
         QL_WINDOWS      : "windows",
-        QL_IOS          : "ios",
         }
 
     return adapter.get(ostype)
@@ -72,7 +70,6 @@ def ostype_convert(ostype):
         "macos"         : QL_MACOS,
         "freebsd"       : QL_FREEBSD,
         "windows"       : QL_WINDOWS,
-        "ios"           : QL_IOS,
         }
     if ostype in adapter:
         return adapter[ostype]
@@ -175,16 +172,13 @@ def ql_macho_check_archtype(path):
 
     macho_macos_sig64 =  b'\xcf\xfa\xed\xfe'
     macho_macos_sig32 =  b'\xce\xfa\xed\xfe'
-
-    macho_ios_sig64 = b'\xca\xfe\xba\xbe' #should be header for FAT
+    macho_macos_fat = b'\xca\xfe\xba\xbe' #should be header for FAT
    
     ostype = None
     arch = None
 
-    if ident[ : 4] in (macho_macos_sig32, macho_macos_sig64):
+    if ident[ : 4] in (macho_macos_sig32, macho_macos_sig64, macho_macos_fat):
         ostype = QL_MACOS
-    elif ident[ : 4] ==  macho_ios_sig64:
-        ostype = QL_IOS
     else:
         ostype = None        
         
@@ -238,7 +232,7 @@ def ql_checkostype(self):
     if ostype not in (QL_LINUX, QL_FREEBSD):
         arch, ostype = ql_macho_check_archtype(path)
 
-    if ostype not in (QL_LINUX, QL_FREEBSD, QL_MACOS, QL_IOS):
+    if ostype not in (QL_LINUX, QL_FREEBSD, QL_MACOS):
         arch, ostype = ql_pe_check_archtype(path)
        
     if ostype not in (QL_OS):        
