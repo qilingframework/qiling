@@ -2,6 +2,7 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
+
 from unicorn.arm64_const import *
 from unicorn.arm_const import *
 from unicorn.mips_const import *
@@ -33,19 +34,49 @@ registers_x8664 = [
     UC_X86_REG_ST5, UC_X86_REG_ST6, UC_X86_REG_ST7
 ]
 
-arch_reg = {QL_X86: registers_x86, QL_X8664: registers_x8664}
+registers_arm = [
+    UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R2,
+    UC_ARM_REG_R3, UC_ARM_REG_R4, UC_ARM_REG_R5,
+    UC_ARM_REG_R6, UC_ARM_REG_R7, UC_ARM_REG_R8,
+    UC_ARM_REG_R9, UC_ARM_REG_R10, UC_ARM_REG_R11,
+    UC_ARM_REG_R12, UC_ARM_REG_SP, UC_ARM_REG_LR,
+    UC_ARM_REG_PC, UC_ARM_REG_CPSR
+]
+
+registers_arm64 = [
+    UC_ARM64_REG_X0, UC_ARM64_REG_X1, UC_ARM64_REG_X2,
+    UC_ARM64_REG_X3, UC_ARM64_REG_X4, UC_ARM64_REG_X5,
+    UC_ARM64_REG_X6, UC_ARM64_REG_X7, UC_ARM64_REG_X8,
+    UC_ARM64_REG_X9, UC_ARM64_REG_X10, UC_ARM64_REG_X11,
+    UC_ARM64_REG_X12, UC_ARM64_REG_X13, UC_ARM64_REG_X14,
+    UC_ARM64_REG_X15, UC_ARM64_REG_X16, UC_ARM64_REG_X17,
+    UC_ARM64_REG_X18, UC_ARM64_REG_X19, UC_ARM64_REG_X20,
+    UC_ARM64_REG_X21, UC_ARM64_REG_X22, UC_ARM64_REG_X23,
+    UC_ARM64_REG_X24, UC_ARM64_REG_X25, UC_ARM64_REG_X26,
+    UC_ARM64_REG_X27, UC_ARM64_REG_X28, UC_ARM64_REG_X29,
+    UC_ARM64_REG_X30, UC_ARM64_REG_SP, UC_ARM64_REG_PC
+]
+
+registers_mips = [
+    UC_MIPS_REG_0, UC_MIPS_REG_1, UC_MIPS_REG_2,
+    UC_MIPS_REG_3, UC_MIPS_REG_4, UC_MIPS_REG_5,
+    UC_MIPS_REG_6, UC_MIPS_REG_7, UC_MIPS_REG_8,
+    UC_MIPS_REG_9, UC_MIPS_REG_10, UC_MIPS_REG_11,
+    UC_MIPS_REG_12, UC_MIPS_REG_13, UC_MIPS_REG_14,
+    UC_MIPS_REG_15, UC_MIPS_REG_16, UC_MIPS_REG_17,
+    UC_MIPS_REG_18, UC_MIPS_REG_19, UC_MIPS_REG_20,
+    UC_MIPS_REG_21, UC_MIPS_REG_22, UC_MIPS_REG_23,
+    UC_MIPS_REG_24, UC_MIPS_REG_25, UC_MIPS_REG_26,
+    UC_MIPS_REG_27, UC_MIPS_REG_28, UC_MIPS_REG_29,
+    UC_MIPS_REG_30, UC_MIPS_REG_31, UC_MIPS_REG_INVALID,
+    UC_MIPS_REG_LO, UC_MIPS_REG_HI, UC_MIPS_REG_INVALID,
+    UC_MIPS_REG_INVALID, UC_MIPS_REG_PC
+]
+
+arch_reg = {QL_X86: registers_x86,
+            QL_X8664: registers_x8664,
+            QL_ARM: registers_arm,
+            QL_ARM64: registers_arm64,
+            QL_MIPS32: registers_mips}
 
 
-def get_reg_pc(arch):
-    if arch == QL_X86:
-        return UC_X86_REG_EIP
-    elif arch == QL_X8664:
-        return UC_X86_REG_RIP
-    elif arch == QL_ARM:
-        return UC_ARM_REG_PC
-    elif arch == QL_ARM_THUMB:
-        return UC_ARM_REG_PC
-    elif arch == QL_ARM64:
-        return UC_ARM64_REG_PC
-    elif arch == QL_MIPS32EL:
-        return UC_MIPS_REG_PC
