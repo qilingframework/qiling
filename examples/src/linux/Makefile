@@ -40,6 +40,9 @@ arm64_hello: hello.c
 arm64_hello_static: hello.c
 	aarch64-linux-gnu-gcc -Wall -O2 -s -static $< -o $@
 
+arm64_posix_syscall: posix_syscall.c
+	aarch64-linux-gnu-gcc -Wall -O2 -s $< -o $@
+
 mips32el_hello: hello.c
 	mipsel-linux-gnu-gcc -Wall -O2 -s $< -o $@
 
