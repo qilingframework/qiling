@@ -1,49 +1,47 @@
 # Qiling Gdbserver
 
-Qiling supports **Gdb remote debugging**, which listens at default port **9999** if enable.
+Qiling supports **GDB remote debugging**, meaning it will work with gdbserver compatible client (eg, IDApro). As of now, Qiling's gdbserver is not as complete as GDB's gdbserver, but we are very close to qemu-gdbserver. There are still some manual steps need to be done for more comprehensive debugging (eg, manually rebase the base address in IDAPro) 
 
-## Usage
-
-### Debug with GDB
+### Turning on gdbserver
 
 ```python
 from qiling import *
 
 def test_gdb(path, rootfs):
     ql = Qiling(path, rootfs, output="off")
-    ql.gdb = True # enable gdbserver at default port 9999
+
+    # enable gdbserver at default port 9999
+    ql.gdb = True
+
     # You can also customize address & port of GDB server
     # ql.gdb = ":9999"  # GDB server listens to 0.0.0.0:9999
     # ql.gdb = "127.0.0.1:9999"  # GDB server listens to 127.0.0.1:9999
+
     ql.run()  
 
 if __name__ == "__main__":
     test_gdb(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux")
 ```
 
-Run gdb and `set architecture i386:intel` for x86 or `set architecture i386:x86-64` for x86-64
-
-Then `target remote ip:port` and run the python script.
-
-Currently supported commands include `si`, `ni`, `c`, `k`, read register, read memory, add/remove breakpoints.
+By default, gdbserver listens at **localhost**, port **9999** and emulated code will pause at entrypoint.
 
 ---
 
 ### Debug with IDA
 
-The script is the same as above.
+Only tested in IDAPro 7.4
 
-Run IDA and set options like this:
+1. run Qiling code, with gdbserver enable, like in the sample script above.
+2. Configure IDAPro as below
 
 ![GDB-IDA](./GDBSERVER-IDA.png)
 
-Note: Make sure you have selected the arch of target file.
+3. Make sure you select the architecture of target code
+4. Make sure you rebase your code so breakpoint will work
 
-Then run the script and you can Debug wth IDA now.
+---
 
-## Example
-
-Below is an example on how we use gdb to debug an x86-64 binary in Qiling.
+### Debug with GDB
 
 **set arch**
 ```bash
@@ -147,19 +145,15 @@ x/10xg
 
 ---
 
-## Todo
+### Todo
 
 1. Add support for more architectures
-
 2. Added support for more GDB commands
-
-3. ...
+3. Make it more GDB gdbserver
 
 ---
 
-## Thank
+## Credits
 
-The codes learn some ideas from [uDdbg](https://github.com/iGio90/uDdbg), thanks.
-
-
+- Steal some ideas from [uDdbg](https://github.com/iGio90/uDdbg)
 

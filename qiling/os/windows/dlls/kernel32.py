@@ -617,6 +617,37 @@ def hook_GetModuleFileNameW(ql, address, params):
         raise QlErrorNotImplemented("[!] API not implemented")
     return ret
 
+# HANDLE FindFirstFileA(
+#  LPCSTR             lpFileName,
+#  LPWIN32_FIND_DATAA lpFindFileData
+# );
+@winapi(cc=STDCALL, params={
+    "lpFilename": POINTER,
+    "lpFindFileData": POINTER
+})
+def hook_FindFirstFileA(ql, address, params):
+    pass
+
+# HANDLE FindNextFileA(
+#  LPCSTR             lpFileName,
+#  LPWIN32_FIND_DATAA lpFindFileData
+# );
+@winapi(cc=STDCALL, params={
+    "lpFilename": POINTER,
+    "lpFindFileData": POINTER
+})
+def hook_FindNextFileA(ql, address, params):
+    pass
+
+
+# BOOL FindClose(
+#    HANDLE hFindFile
+# );
+@winapi(cc=STDCALL, params={
+    "hFindFile": HANDLE,
+})
+def hook_FindClose(ql, address, params):
+    pass
 
 # BOOL ReadFile(
 #   HANDLE       hFile,

@@ -17,9 +17,6 @@ from qiling.gdbserver.gdblistener import GDBSession
 
 __version__ = "0.9"
 
-# default port for GDB server
-GDB_PORT = 9999
-
 
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
@@ -134,7 +131,7 @@ class Qiling:
             if (os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs)):
                 self.path = (str(self.filename[0]))
                 if self.ostype == None or self.arch == None:
-                    self.arch, self.ostype = ql_checkostype(self.path)
+                    self.arch, self.ostype = ql_checkostype(self)
               
                 self.argv = self.filename
       
@@ -172,20 +169,24 @@ class Qiling:
             
             for _ in range(256):
                 self.sigaction_act.append(0)
-
+        
         if not ql_is_valid_arch(self.arch):
             raise QlErrorArch("[!] Invalid Arch")
 
         arch_func = ql_get_arch_module_function( self.arch, ql_arch_convert_str(self.arch).upper() )
 
         self.archbit = ql_get_arch_bits(self.arch)
+        
+        if self.arch not in QL_ENDINABLE:
+            self.archendian = QL_ENDIAN_EL
+
         self.archfunc = arch_func(self) 
 
         if self.archbit:
             self.pointersize = (self.archbit // 8)
 
         if not self.ostype in (QL_OS):
-            raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos','ios'")
+            raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos'")
         
         if self.output and type(self.output) == str:
             self.output = self.output.lower()
@@ -265,13 +266,16 @@ class Qiling:
             msg += b'\n' if isinstance(msg, bytes) else '\n'
             self.log_file_fd.debug(msg, **kw)
 
+    def addr_to_str(self, addr, short = False, endian = "big"):
+        return ql_addr_to_str(self, addr, short, endian)
+
 
     def asm2bytes(self, runasm, arm_thumb = None):
         return ql_asm2bytes(self,  self.arch, runasm, arm_thumb)
 
 
     def set_syscall(self, syscall_cur, syscall_new):
-        if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD, QL_IOS):
+        if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD):
             self.dict_posix_syscall[syscall_cur] = syscall_new
         elif self.ostype == QL_WINDOWS:
             self.set_api(syscall_cur, syscall_new)
@@ -510,27 +514,48 @@ class Qiling:
 
 
     def unpack32(self, x):
-        return struct.unpack('I', x)[0]
-
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.unpack('>I', x)[0]
+        else:
+            return struct.unpack('I', x)[0]
 
     def pack32(self, x):
-        return struct.pack('I', x)
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.pack('>I', x)
+        else:    
+            return struct.pack('I', x)
 
 
     def unpack32s(self, x):
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.unpack('>i', x)[0]
+        else:    
+            return struct.unpack('i', x)[0]
+
+    def unpack32s_ne(self, x):
         return struct.unpack('i', x)[0]
 
 
     def pack32s(self, x):
-        return struct.pack('i', x)
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.pack('>i', x)
+        else:
+            return struct.pack('i', x)
 
 
     def unpack16(self, x):
-        return struct.unpack('H', x)[0]
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.unpack('>H', x)[0]
+        else:
+            return struct.unpack('H', x)[0]
 
 
     def pack16(self, x):
-        return struct.pack('H', x)
+        if self.archendian == QL_ENDIAN_EB:
+            return struct.pack('>H', x)
+        else:    
+            return struct.pack('H', x)
+            
 
 
     def pack(self, data):
@@ -580,6 +605,18 @@ class Qiling:
 
     # get PC register
     @property
+    def reg_pc(self):
+        return self.archfunc.get_reg_pc()
+
+
+    # get SP register
+    @property
+    def reg_sp(self):
+        return self.archfunc.get_reg_sp()
+
+
+    # get PC register value
+    @property
     def pc(self):
         return self.archfunc.get_pc()
 
@@ -623,6 +660,10 @@ class Qiling:
             self._platform = QL_LINUX
         elif value == 'Darwin':
             self._platform = QL_MACOS
+        elif value == 'Windows':
+            self._platform = QL_WINDOWS
+        elif value == 'FreeBSD':
+            self._platform = QL_FREEBSD     
         else:
             self._platform = None
 
@@ -681,6 +722,7 @@ class Qiling:
                 tmp_map_info.append([mem_s, mem_e, mem_info])
         map_info = []
         map_info.append(tmp_map_info[0])
+
         for s, e, info in tmp_map_info[1 : ]:
             if s == map_info[-1][1] and info == map_info[-1][2]:
                 map_info[-1][1] = e
@@ -722,8 +764,7 @@ class Qiling:
                 port = 9999
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind((ip, port))
-            if ip == '':
-                ip = 'localhost'
+            self.nprint("gdb> initializing loadbase 0x%x" % (self.loadbase))    
             self.nprint("gdb> listening on %s:%d" % (ip, port))
             sock.listen(1)
             conn, addr = sock.accept()

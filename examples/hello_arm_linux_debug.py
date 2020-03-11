@@ -13,4 +13,6 @@ def run_sandbox(path, rootfs, output):
 
 
 if __name__ == "__main__":
-    run_sandbox(["rootfs/arm_linux/bin/arm_hello_static"], "rootfs/arm_linux", "debug")
+    #run_sandbox(["rootfs/arm_linux/bin/arm_hello_static"], "rootfs/arm_linux", None)
+    run_sandbox(["rootfs/arm_linux/bin/arm_hello_static"], "rootfs/arm_linux", "disasm")
+    # run_sandbox(["rootfs/arm_linux/bin/arm_hello_static"], "rootfs/arm_linux", "debug")

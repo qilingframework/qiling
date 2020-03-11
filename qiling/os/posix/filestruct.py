@@ -69,8 +69,10 @@ class ql_socket:
         self.__socket = socket
     
     @classmethod
-    def open(self, socket_domain, socket_type, socket_protocol):
+    def open(self, socket_domain, socket_type, socket_protocol, opts=None):
         s = socket.socket(socket_domain, socket_type, socket_protocol)
+        if opts:
+            s.setsockopt(*opts)
         return self(s)
 
     def read(self, read_len):
