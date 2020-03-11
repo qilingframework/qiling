@@ -45,7 +45,7 @@ def hook_syscall(ql, intno):
             LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
-        except Exception:
+        except:
             ql.nprint("[!] SYSCALL ERROR: %s" % (LINUX_SYSCALL_FUNC_NAME))
             if ql.multithread == True:
                 td = ql.thread_management.cur_thread
