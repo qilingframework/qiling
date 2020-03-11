@@ -118,7 +118,7 @@ matrix:
        before_install:
          - docker build -t qiling:1.0 .
        script:
-         - docker run qiling:1.0 /bin/sh -c "cd tests && python3 test_all.py"
+         - docker run --privileged qiling:1.0 /bin/sh -c "cd tests && python3 test_all.py"
 
   allow_failures:
     - os: osx
