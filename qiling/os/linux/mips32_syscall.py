@@ -37,6 +37,7 @@ dict_mips32_linux_syscall = {
     4093 : "ql_syscall_ftruncate",
     4096 : "ql_syscall_getpriority",
     4106 : "ql_syscall_stat",
+    4107 : "ql_syscall_lstat",
     4108 : "ql_syscall_fstat",
     4114 : "ql_syscall_wait4",
     4116 : "ql_syscall_sysinfo",

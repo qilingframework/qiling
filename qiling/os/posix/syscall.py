@@ -250,13 +250,14 @@ def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
             if ql.arch == QL_ARM:
                 mode = 0
 
-            flags = open_flag_mapping(flags, ql)
+            flags = ql_open_flag_mapping(flags, ql)
             ql.file_des[idx] = ql_file.open(real_path, flags, mode)
             regreturn = idx
         except:
             regreturn = -1
 
-    ql.nprint("open(%s, 0x%x, 0x%x) = %d" % (relative_path, flags, mode, regreturn))
+    ql.nprint("open(%s, 0x%x, 0o%o) = %d" % (relative_path, flags, mode, regreturn))
+    ql.dprint("[+] open(%s, %s, 0o%o) = %d" % (relative_path, ql_open_flag_mapping(flags, ql), mode, regreturn))
     if regreturn >= 0 and regreturn != 2:
         ql.dprint("[+] File Found: %s" % relative_path)
     else:
@@ -288,13 +289,14 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
             if ql.arch == QL_ARM:
                 mode = 0
 
-            openat_flags = open_flag_mapping(openat_flags, ql)
+            openat_flags = ql_open_flag_mapping(openat_flags, ql)
             ql.file_des[idx] = ql_file.open(real_path, openat_flags, openat_mode)
             regreturn = idx
         except:
             regreturn = -1
 
-    ql.nprint("\nopenat(%d, %s, 0x%x, 0x%x) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
+    ql.nprint("openat(%d, %s, 0x%x, 0o%o) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
+    ql.dprint("[+] openat(%d, %s, %s, 0o%o) = %d" % (openat_fd, relative_path, ql_open_flag_mapping(openat_flags, ql), openat_mode, regreturn))
     if regreturn >= 0 and regreturn != 2:
         ql.dprint("[+] File Found: %s" % relative_path)
     else:
@@ -862,6 +864,66 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, null0, null1, null2, null3):
         ql.dprint("[+] stat() write completed")
     else:
         ql.dprint("[!] stat() read/write fail")
+    ql_definesyscall_return(ql, regreturn)
+    
+    
+def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, null0, null1, null2, null3):
+    lstat_file = (ql_read_string(ql, lstat_path))
+
+    real_path = ql_transform_to_real_path(ql, lstat_file)
+    relative_path = ql_transform_to_relative_path(ql, lstat_file)
+
+    if os.path.exists(real_path) == False:
+        regreturn = -1
+    else:
+        lstat_info = os.lstat(real_path)
+
+        if ql.arch == QL_MIPS32:
+            # pack fstatinfo
+            lstat_buf = ql.pack32(lstat_info.st_dev)
+            lstat_buf += ql.pack32(0) * 3
+            lstat_buf += ql.pack32(lstat_info.st_ino)
+            lstat_buf += ql.pack32(lstat_info.st_mode)
+            lstat_buf += ql.pack32(lstat_info.st_nlink)
+            lstat_buf += ql.pack32(lstat_info.st_uid)
+            lstat_buf += ql.pack32(lstat_info.st_gid)
+            lstat_buf += ql.pack32(lstat_info.st_rdev)
+            lstat_buf += ql.pack32(0) * 2
+            lstat_buf += ql.pack32(lstat_info.st_size)
+            lstat_buf += ql.pack32(0)
+            lstat_buf += ql.pack32(int(lstat_info.st_atime))
+            lstat_buf += ql.pack32(0)
+            lstat_buf += ql.pack32(int(lstat_info.st_mtime))
+            lstat_buf += ql.pack32(0)
+            lstat_buf += ql.pack32(int(lstat_info.st_ctime))
+            lstat_buf += ql.pack32(0)
+            lstat_buf += ql.pack32(lstat_info.st_blksize)
+            lstat_buf += ql.pack32(lstat_info.st_blocks)
+            lstat_buf = lstat_buf.ljust(0x90, b'\x00')
+        else:
+            # pack statinfo
+            lstat_buf = ql.pack32(lstat_info.st_mode)
+            lstat_buf += ql.pack32(lstat_info.st_ino)
+            lstat_buf += ql.pack32(lstat_info.st_dev)
+            lstat_buf += ql.pack32(lstat_info.st_rdev)
+            lstat_buf += ql.pack32(lstat_info.st_nlink)
+            lstat_buf += ql.pack32(lstat_info.st_size)
+            lstat_buf += ql.pack32(lstat_info.st_size)
+            lstat_buf += ql.pack32(lstat_info.st_size)
+            lstat_buf += ql.pack32(int(lstat_info.st_atime))
+            lstat_buf += ql.pack32(int(lstat_info.st_mtime))
+            lstat_buf += ql.pack32(int(lstat_info.st_ctime))
+            lstat_buf += ql.pack32(lstat_info.st_blksize)
+            lstat_buf += ql.pack32(lstat_info.st_blocks)
+
+        regreturn = 0
+        ql.mem_write(lstat_buf_ptr, lstat_buf)
+
+    ql.nprint("lstat(%s, 0x%x) = %d" % (relative_path, lstat_buf_ptr, regreturn))
+    if regreturn == 0:
+        ql.dprint("[+] lstat() write completed")
+    else:
+        ql.dprint("[!] lstat() read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 

@@ -377,7 +377,7 @@ def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
     return ret
 
 
-def open_flag_mapping(flags, ql):
+def ql_open_flag_mapping(flags, ql):
         
     open_flags_name = [
         "O_RDONLY",
