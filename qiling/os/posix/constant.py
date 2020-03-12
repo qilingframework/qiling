@@ -114,6 +114,7 @@ def arm_socket_domain_mapping(n):
 
     return _invert_dict(arm_socket_domain).get(n)
 
+
 def mips32_socket_type_mapping(n):
 
     mips32_socket_types = {
@@ -272,9 +273,9 @@ def mips32_open_flags_mapping():
     return _invert_dict(mips32_open_flags)
 
 
-def arm64_open_flags_mapping():
+def arm_open_flags_mapping():
 
-    arm64_open_flags = {
+    arm_open_flags = {
         'O_RDONLY'   : 0x0,
         'O_WRONLY'   : 0x1,
         'O_RDWR'     : 0x2,
@@ -290,37 +291,18 @@ def arm64_open_flags_mapping():
         'O_SYNC'     : 0x101000,
     }
 
-    return _invert_dict(arm64_open_flags)
-
-
-def arm_arm64_open_flags_mapping():
-
-    arm_arm64_open_flags = {
-        'O_RDONLY'   : 0x0,
-        'O_WRONLY'   : 0x1,
-        'O_RDWR'     : 0x2,
-        'O_CREAT'    : 0x40,
-        'O_EXCL'     : 0x80,
-        'O_NOCTTY'   : 0x100,
-        'O_TRUNC'    : 0x200,
-        'O_APPEND'   : 0x400,
-        'O_NONBLOCK' : 0x800,
-        'O_ASYNC'    : 0x2000,
-        'O_DIRECTORY': 0x10000,
-        'O_NOFOLLOW' : 0x20000,
-        'O_SYNC'     : 0x101000,
-    }
-
-    return _invert_dict(arm_arm64_open_flags)
+    return _invert_dict(arm_open_flags)
 
 
 def open_flags_mapping(flags, arch):
 
+    arm64_open_flags_mapping = arm_open_flags_mapping
+
     inverted_dict = {
             QL_X86: linux_open_flags_mapping,
             QL_X8664: linux_open_flags_mapping,
-            QL_ARM: arm_arm64_open_flags_mapping,
-            QL_ARM64: arm_arm64_open_flags_mapping,
+            QL_ARM: arm_open_flags_mapping,
+            QL_ARM64: arm64_open_flags_mapping,
             QL_MIPS32: mips32_open_flags_mapping,
             QL_MACOS: mac_open_flags_mapping,
             }.get(arch)()
