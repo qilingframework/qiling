@@ -7,6 +7,7 @@ class FileReader:
     def read(self, size):
         data = self.binary[self.offset : self.offset + size]
         self.offset += size
+        #print(data)
         return data
 
     def setOffset(self, offset):

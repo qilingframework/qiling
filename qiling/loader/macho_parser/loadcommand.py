@@ -71,7 +71,8 @@ class LoadSegment32(LoadSegment):
 
 
 class LoadSegment64(LoadSegment):
-
+    # FIXME: segmengs should not be fixed size of 0x1000, should be calculated
+    # header mark as 0x1000 but it seems we need count it to matched IDApro
     def __init__(self, data):
         super().__init__(data)
         self.vm_address             = unpack("<Q", self.FR.read(8))[0]
