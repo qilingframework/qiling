@@ -162,6 +162,7 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    # syscall testing for ARM, will be uncomment after ARM executable generated properly.
     # def test_elf_linux_arm_posix_syscall(self):
         # def test_syscall_read(ql, read_fd, read_buf, read_count, *args):
             # target = False
