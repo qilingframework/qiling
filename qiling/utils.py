@@ -8,10 +8,10 @@ This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
 
-import importlib
-import sys, logging
+import sys, logging, importlib
 from qiling.exception import *
 from qiling.arch.filetype import *
+
 
 def ql_get_os_module_function(ostype, arch, function_name):
     if not ql_is_valid_ostype(ostype):

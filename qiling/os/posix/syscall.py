@@ -1430,6 +1430,14 @@ def ql_syscall_dup3(ql, null0, null1, null2, null3, null4, null5):
     ql_definesyscall_return(ql, regreturn)
 
 
+  
+def ql_syscall___sysctl(ql, sysctl_name, sysctl_namelen, sysctl_bytes_oldlenp, sysctl_size_oldlenp, sysctl_bytes_newlen, sysctl_size_newlen):
+    # sysctl (name=0x7fffffffe3d8, namelen=2, oldp=0x7fffffffe3d4, oldlenp=0x7fffffffe3e0, newp=0x0, newlen=<optimized out>)
+    regreturn = 0
+    ql.nprint("__sysctl(0x%x) = %i" % (sysctl_name, regreturn)) 
+    ql_definesyscall_return(ql, regreturn)
+
+
 def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, null0, null1, null2, null3):
     F_SETFD = 2
     F_GETFL = 3

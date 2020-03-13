@@ -26,9 +26,7 @@ from qiling.exception import *
 from qiling.utils import *
 
 from binascii import unhexlify
-import ipaddress
-import struct
-import os
+import ipaddress, struct, os, ctypes
 
 
 def ql_definesyscall_return(ql, regreturn):
