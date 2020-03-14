@@ -1418,3 +1418,48 @@ def hook_GetLocalTime(ql, address, params):
     return 0
 
 
+
+# void EnterCriticalSection(
+#  LPCRITICAL_SECTION lpCriticalSection
+# );
+@winapi(cc=STDCALL, params={
+    "lpCriticalSection": POINTER
+})
+def hook_EnterCriticalSection(ql, address, params):
+    return 0
+
+
+# void LeaveCriticalSection(
+#  LPCRITICAL_SECTION lpCriticalSection
+# );
+@winapi(cc=STDCALL, params={
+    "lpCriticalSection": POINTER
+})
+def hook_LeaveCriticalSection(ql, address, params):
+    return 0
+
+
+# BOOL InitializeCriticalSectionEx(
+#   LPCRITICAL_SECTION lpCriticalSection,
+#   DWORD              dwSpinCount,
+#   DWORD              Flags
+# );
+@winapi(cc=STDCALL, params={
+    "lpCriticalSection": POINTER,
+    "dwSpinCount": DWORD,
+    "Flags": DWORD
+})
+def hook_InitializeCriticalSectionEx(ql, address, params):
+    return 1
+
+
+# BOOL InitializeCriticalSectionAndSpinCount(
+#  LPCRITICAL_SECTION lpCriticalSection,
+#  DWORD              dwSpinCount
+# );
+@winapi(cc=STDCALL, params={
+    "lpCriticalSection": POINTER,
+    "dwSpinCount": UINT
+})
+def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
+    return 1
