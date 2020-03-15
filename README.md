@@ -79,7 +79,7 @@ You can build a docker container with
 And connect to it mounting your mock filesystem with
 
 ```
-# docker run -it -v $PWD:/qiling -v /your/path/to/mock/fs:/qiling/examples/roots/WINOS/Windows/SysWOW64 qiling bash
+# docker run -it -v $PWD:/qiling -v /your/path/to/mock/fs:/qiling/examples/rootfs/WINOS/Windows/SysWOW64 qiling bash
 ```
 
 After that 
