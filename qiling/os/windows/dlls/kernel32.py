@@ -267,6 +267,28 @@ def hook_GetVersion(ql, address, params):
     return ret
 
 
+# NOT_BUILD_WINDOWS_DEPRECATE BOOL GetVersionExA(
+#   LPOSVERSIONINFOA lpVersionInformation
+# );
+@winapi(cc=STDCALL, params={
+    "lpVersionInformation": STRING
+
+})
+def hook_GetVersionExA(ql, address, params):
+    return 1
+
+
+# NOT_BUILD_WINDOWS_DEPRECATE BOOL GetVersionExW(
+#   LPOSVERSIONINFOW lpVersionInformation
+# );
+@winapi(cc=STDCALL, params={
+    "lpVersionInformation": STRING
+
+})
+def hook_GetVersionExW(ql, address, params):
+    return 1
+
+
 # HANDLE HeapCreate(
 #   DWORD  flOptions,
 #   SIZE_T dwInitialSize,
