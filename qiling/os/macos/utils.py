@@ -15,7 +15,7 @@ def page_align_end(addr, page_size):
     if addr % page_size == 0:
         return addr
     else:
-        return ((addr / page_size) + 1) * page_size
+        return int(((addr / page_size) + 1) * page_size)
 
 def set_eflags_cf(ql, target_cf):
     tmp_flags = ql.uc.reg_read(UC_X86_REG_EFLAGS)

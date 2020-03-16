@@ -5,6 +5,7 @@
 
 # basic values
 PAGE_SIZE                   = 0x1000
+VMMAP_PAGE_SIZE             = 0x100000
 MAX_FD_SIZE					= 0xFF
 MAX_PATH_SIZE               = 0x800
 
