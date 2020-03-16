@@ -156,7 +156,7 @@ def hook_IsClipboardFormatAvailable(ql, address, params):
     "uMapType": UINT
 })
 def hook_MapVirtualKeyW(ql, address, params):
-    # TODO this function should probably do something, malwares use it to check the keyboard layout
+    # TODO this function must be implemented. Don't know how to do it right now
     return 0x1
 
 

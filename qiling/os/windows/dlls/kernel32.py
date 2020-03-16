@@ -1513,6 +1513,7 @@ def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
 
 })
 def hook_LCMapStringEx(ql, address, params):
+    # TODO needs a better implementation
     return 1
 
 
@@ -1526,8 +1527,8 @@ def hook_LCMapStringEx(ql, address, params):
 })
 def hook_IsWow64Process(ql, address, params):
     pointer = params["Wow64Process"]
-    false=0x0.to_bytes(length=ql.pointersize, byteorder='little')
-    true=0x1.to_bytes(length=ql.pointersize, byteorder='little')
+    false = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
+    true = 0x1.to_bytes(length=ql.pointersize, byteorder='little')
     if ql.archbit == 32:
         ql.uc.mem_write(pointer, false)
     else:
@@ -1565,10 +1566,32 @@ def hook_GetSystemInfo(ql, address, params):
     pointer = params["lpSystemInfo"]
     dwordsize = 4
     wordsize = 2
-    dummysize= 2*wordsize+dwordsize
-    size= dummysize+dwordsize+ql.pointersize+ql.pointersize+ql.pointersize+3*dwordsize+2*wordsize
-    ql.uc.mem_write(pointer,0x41.to_bytes(length=size, byteorder='little'))
+    dummysize = 2 * wordsize + dwordsize
+    size = dummysize + dwordsize + ql.pointersize + ql.pointersize + ql.pointersize + 3 * dwordsize + 2 * wordsize
+    ql.uc.mem_write(pointer, 0x41.to_bytes(length=size, byteorder='little'))
+    return 0
 
 
-
-
+# BOOL DuplicateHandle(
+#   HANDLE   hSourceProcessHandle,
+#   HANDLE   hSourceHandle,
+#   HANDLE   hTargetProcessHandle,
+#   LPHANDLE lpTargetHandle,
+#   DWORD    dwDesiredAccess,
+#   BOOL     bInheritHandle,
+#   DWORD    dwOptions
+# );
+@winapi(cc=STDCALL, params={
+    "hSourceProcessHandle": POINTER,
+    "hSourceHandle": POINTER,
+    "hTargetProcessHandle": POINTER,
+    "lpTargetHandle": POINTER,
+    "dwDesiredAccess": DWORD,
+    "bInheritHandle": BOOL,
+    "dwOptions": DWORD
+})
+def hook_DuplicateHandle(ql, address, params):
+    content = params["hSourceHandle"]
+    dst = params["lpTargetHandle"]
+    ql.uc.mem_write(dst, content.to_bytes(length=ql.pointersize, byteorder='little'))
+    return 1
