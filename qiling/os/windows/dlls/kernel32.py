@@ -1516,3 +1516,20 @@ def hook_LCMapStringEx(ql, address, params):
     return 1
 
 
+# BOOL IsWow64Process(
+#   HANDLE hProcess,
+#   PBOOL  Wow64Process
+# );
+@winapi(cc=STDCALL, params={
+    "hProcess": HANDLE,
+    "Wow64Process": POINTER
+})
+def hook_IsWow64Process(ql, address, params):
+    pointer = params["Wow64Process"]
+    false=0x0.to_bytes(length=ql.pointersize, byteorder='little')
+    true=0x1.to_bytes(length=ql.pointersize, byteorder='little')
+    if ql.archbit == 32:
+        ql.uc.mem_write(pointer, false)
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")
+    return 1
