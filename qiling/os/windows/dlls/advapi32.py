@@ -18,13 +18,13 @@ def RegOpenKey(ql, address, params):
     phkResult = params["phkResult"]
 
     if hKey not in REG_KEYS:
-        return 2
+        return 0x123456
     else:
         s_hKey = REG_KEYS[hKey]
         params["hKey"] = s_hKey
-
+    # is possible to have substring like Control Panel\Mouse. This caused qilig to not find the subkey
     if not ql.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
-        return 2
+        return 0x1234567
 
     # new handle
     if ret == ERROR_SUCCESS:

@@ -89,14 +89,17 @@ class RegistryManager:
         try:
             if keys[0] == "HKEY_LOCAL_MACHINE":
                 reg = self.hklm[keys[1]]
-                data = reg.open("\\".join(keys[2:]))
+                sub = "\\".join(keys[2:]).replace("\x00", "")
+                data = reg.open(sub)
             elif keys[0] == "HKEY_CURRENT_USER":
                 reg = self.hkcu
-                data = reg.open("\\".join(keys[1:]))
+                sub="\\".join(keys[1:]).replace("\x00","")
+                data = reg.open(sub)
             else:
                 raise QlErrorNotImplemented("[!] Windows Registry %s not implemented" % (keys[0]))
-        except Exception:
+        except Exception as e:
             return False
+
         return True
 
     def read(self, key, subkey, reg_type):
