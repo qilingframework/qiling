@@ -26,31 +26,31 @@ REG_KEYS = {
 }
 
 REG_TYPES = {
-    "REG_NONE"                      : Registry.RegNone,
-    "REG_SZ"                        : Registry.RegSZ,
-    "REG_EXPAND_SZ"                 : Registry.RegExpandSZ,
-    "REG_BINARY"                    : Registry.RegBin,
-    "REG_DWORD"                     : Registry.RegDWord,
-    "REG_DWORD_BIG_ENDIAN"          : Registry.RegBigEndian,
-    "REG_LINK"                      : Registry.RegLink,
-    "REG_MULTI_SZ"                  : Registry.RegMultiSZ,
-    "REG_RESOURCE_LIST"             : Registry.RegResourceList,
-    "REG_FULL_RESOURCE_DESCRIPTOR"  : Registry.RegFullResourceDescriptor,
+    "REG_NONE": Registry.RegNone,
+    "REG_SZ": Registry.RegSZ,
+    "REG_EXPAND_SZ": Registry.RegExpandSZ,
+    "REG_BINARY": Registry.RegBin,
+    "REG_DWORD": Registry.RegDWord,
+    "REG_DWORD_BIG_ENDIAN": Registry.RegBigEndian,
+    "REG_LINK": Registry.RegLink,
+    "REG_MULTI_SZ": Registry.RegMultiSZ,
+    "REG_RESOURCE_LIST": Registry.RegResourceList,
+    "REG_FULL_RESOURCE_DESCRIPTOR": Registry.RegFullResourceDescriptor,
     "REG_RESOURCE_REQUIREMENTS_LIST": Registry.RegResourceRequirementsList,
-    "REG_QWORD"                     : Registry.RegQWord,
+    "REG_QWORD": Registry.RegQWord,
 
-    Registry.RegNone                : "REG_NONE",
-    Registry.RegSZ                  : "REG_SZ",
-    Registry.RegExpandSZ            : "REG_EXPAND_SZ",
-    Registry.RegBin                 : "REG_BINARY",
-    Registry.RegDWord               : "REG_DWORD",
-    Registry.RegBigEndian           : "REG_DWORD_BIG_ENDIAN",
-    Registry.RegLink                : "REG_LINK",
-    Registry.RegMultiSZ             : "REG_MULTI_SZ",
-    Registry.RegResourceList        : "REG_RESOURCE_LIST",
-    Registry.RegFullResourceDescriptor   : "REG_FULL_RESOURCE_DESCRIPTOR",
-    Registry.RegResourceRequirementsList : "REG_RESOURCE_REQUIREMENTS_LIST",
-    Registry.RegQWord               : "REG_QWORD"
+    Registry.RegNone: "REG_NONE",
+    Registry.RegSZ: "REG_SZ",
+    Registry.RegExpandSZ: "REG_EXPAND_SZ",
+    Registry.RegBin: "REG_BINARY",
+    Registry.RegDWord: "REG_DWORD",
+    Registry.RegBigEndian: "REG_DWORD_BIG_ENDIAN",
+    Registry.RegLink: "REG_LINK",
+    Registry.RegMultiSZ: "REG_MULTI_SZ",
+    Registry.RegResourceList: "REG_RESOURCE_LIST",
+    Registry.RegFullResourceDescriptor: "REG_FULL_RESOURCE_DESCRIPTOR",
+    Registry.RegResourceRequirementsList: "REG_RESOURCE_REQUIREMENTS_LIST",
+    Registry.RegQWord: "REG_QWORD"
 }
 
 RTL_MAXIMUM_ATOM_LENGTH = 255
@@ -204,3 +204,17 @@ CREATE_ALWAYS = 2
 OPEN_EXISTING = 3
 OPEN_ALWAYS = 4
 TRUNCATE_EXISTING = 5
+
+# HRESULT values
+S_OK = 0x00
+S_FALSE = 0x01
+E_ABORT = 0x80004004
+E_ACCESSDENIED = 0x80070005
+E_FAIL = 0x80004005
+E_HANDLE = 0x80070006
+E_INVALIDARG = 0x80070057
+E_NOINTERFACE = 0x80004002
+E_NOTIMPL = 0x80004001
+E_OUTOFMEMORY = 0x8007000E
+E_POINTER = 0x80004003
+E_UNEXPECTED = 0x8000FFFF
