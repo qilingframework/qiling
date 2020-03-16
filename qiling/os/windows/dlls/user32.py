@@ -145,3 +145,38 @@ def hook_GetClipboardData(ql, address, params):
 def hook_IsClipboardFormatAvailable(ql, address, params):
     rtn = ql.clipboard.format_available(params['uFormat'])
     return rtn
+
+
+# UINT MapVirtualKeyW(
+#   UINT uCode,
+#   UINT uMapType
+# );
+@winapi(cc=STDCALL, params={
+    "uCode": UINT,
+    "uMapType": UINT
+})
+def hook_MapVirtualKeyW(ql, address, params):
+    # TODO this function should probably do something, malwares use it to check the keyboard layout
+    return 0x1
+
+
+# UINT RegisterWindowMessageA(
+#   LPCSTR lpString
+# );
+@winapi(cc=STDCALL, params={
+    "lpString": STRING
+})
+def hook_RegisterWindowMessageA(ql, address, params):
+    # is communication between different process. I don't think we can emulate this
+    return 0xD10C
+
+
+# UINT RegisterWindowMessageW(
+#   LPCWSTR lpString
+# );
+@winapi(cc=STDCALL, params={
+    "lpString": WSTRING
+})
+def hook_RegisterWindowMessageW(ql, address, params):
+    # is communication between different process. I don't think we can emulate this
+    return 0xD10C

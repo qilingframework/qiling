@@ -1533,3 +1533,42 @@ def hook_IsWow64Process(ql, address, params):
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 1
+
+
+# typedef struct _SYSTEM_INFO {
+#   union {
+#     DWORD dwOemId;
+#     struct {
+#       WORD wProcessorArchitecture;
+#       WORD wReserved;
+#     } DUMMYSTRUCTNAME;
+#   } DUMMYUNIONNAME;
+#   DWORD     dwPageSize;
+#   LPVOID    lpMinimumApplicationAddress;
+#   LPVOID    lpMaximumApplicationAddress;
+#   DWORD_PTR dwActiveProcessorMask;
+#   DWORD     dwNumberOfProcessors;
+#   DWORD     dwProcessorType;
+#   DWORD     dwAllocationGranularity;
+#   WORD      wProcessorLevel;
+#   WORD      wProcessorRevision;
+# } SYSTEM_INFO, *LPSYSTEM_INFO;
+
+# void GetSystemInfo(
+#   LPSYSTEM_INFO lpSystemInfo
+# );
+@winapi(cc=STDCALL, params={
+    "lpSystemInfo": POINTER
+})
+def hook_GetSystemInfo(ql, address, params):
+    # TODO create struct
+    pointer = params["lpSystemInfo"]
+    dwordsize = 4
+    wordsize = 2
+    dummysize= 2*wordsize+dwordsize
+    size= dummysize+dwordsize+ql.pointersize+ql.pointersize+ql.pointersize+3*dwordsize+2*wordsize
+    ql.uc.mem_write(pointer,0x41.to_bytes(length=size, byteorder='little'))
+
+
+
+
