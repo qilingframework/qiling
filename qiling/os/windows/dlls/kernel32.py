@@ -438,6 +438,7 @@ def hook_GetCommandLineA(ql, address, params):
     ql.uc.mem_write(addr, cmdline)
     return addr
 
+
 # LPSTR GetCommandLineW(
 # );
 @winapi(cc=STDCALL, params={})
@@ -557,8 +558,8 @@ def hook_WideCharToMultiByte(ql, address, params):
         ret = len(s_lpWideCharStr) + 2
         ret = align(ret // 2, 2)
     else:
-        s = bytes(s_lpWideCharStr, 'ascii').decode('utf-16le') + "\x00"
-        ql.uc.mem_write(lpMultiByteStr, bytes(s, 'ascii'))
+        s = bytes(s_lpWideCharStr, 'latin1').decode('latin1') + "\x00"
+        ql.uc.mem_write(lpMultiByteStr, bytes(s, 'latin1'))
         ret = len(s)
 
     return ret
@@ -1363,14 +1364,14 @@ def hook_IsValidCodePage(ql, address, params):
     return 1
 
 
-#int MultiByteToWideChar(
+# int MultiByteToWideChar(
 #  UINT                              CodePage,
 #  DWORD                             dwFlags,
 #  _In_NLS_string_(cbMultiByte)LPCCH lpMultiByteStr,
 #  int                               cbMultiByte,
 #  LPWSTR                            lpWideCharStr,
 #  int                               cchWideChar
-#);
+# );
 @winapi(cc=STDCALL, params={
     "CodePage": UINT,
     "dwFlags": UINT,
@@ -1380,10 +1381,11 @@ def hook_IsValidCodePage(ql, address, params):
     "cchWideChar": INT
 })
 def hook_MultiByteToWideChar(ql, address, params):
-    wide_str = params['lpMultiByteStr'].encode('utf-16le')
+    wide_str = params['lpMultiByteStr'].encode('latin1')
     if params['cchWideChar'] != 0:
-        ql.uc.mem_write(params['lpWideCharStr'], wide_str) 
+        ql.uc.mem_write(params['lpWideCharStr'], wide_str)
     return len(wide_str)
+
 
 """
 typedef struct _SYSTEMTIME {
@@ -1463,3 +1465,32 @@ def hook_InitializeCriticalSectionEx(ql, address, params):
 })
 def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
     return 1
+
+
+# int LCMapStringEx(
+#   LPCWSTR          lpLocaleName,
+#   DWORD            dwMapFlags,
+#   LPCWSTR          lpSrcStr,
+#   int              cchSrc,
+#   LPWSTR           lpDestStr,
+#   int              cchDest,
+#   LPNLSVERSIONINFO lpVersionInformation,
+#   LPVOID           lpReserved,
+#   LPARAM           sortHandle
+# );
+@winapi(cc=STDCALL, params={
+    "lpLocaleName": POINTER,
+    "dwMapFlags": DWORD,
+    "lpSrcStr": POINTER,
+    "cchSrc": INT,
+    "lpDestStr": POINTER,
+    "cchDest": INT,
+    "lpVersionInformation": POINTER,
+    "lpReserved": UINT,
+    "sortHandle": UINT
+
+})
+def hook_LCMapStringEx(ql, address, params):
+    return 1
+
+

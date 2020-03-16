@@ -20,9 +20,9 @@ def string_unpack(string):
 def read_wstring(ql, address):
     result = ""
     char = ql.uc.mem_read(address, 2)
-    while char.decode() != "\x00\x00":
+    while char.decode("latin1") != "\x00\x00":
         address += 2
-        result += char.decode()
+        result += char.decode("latin1")
         char = ql.uc.mem_read(address, 2)
     return result
 
