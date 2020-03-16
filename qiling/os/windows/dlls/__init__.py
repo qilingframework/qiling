@@ -11,3 +11,4 @@ from .msi import *
 from .ntdll import *
 from .ucrtbased import *
 from .wsock32 import *
+from .ole32 import *
