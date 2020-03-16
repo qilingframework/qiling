@@ -11,6 +11,7 @@ from binascii import unhexlify
 
 from qiling.gdbserver import qldbg
 from qiling.gdbserver.reg_table import *
+from qiling.arch.filetype import *
 
 GDB_SIGNAL_INT  = 2
 GDB_SIGNAL_SEGV = 11
@@ -39,7 +40,8 @@ class GDBSession(object):
         self.netout         = clientsocket.makefile('w')
         self.last_pkt       = None
         self.en_vcont       = False
-        self.pc, self.sp    = self.ql.get_reg_spc()
+        self.pc_reg         = self.ql.reg_pc
+        self.sp_reg         = self.ql.reg_sp
         self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
         self.rootfs_abspath = (os.path.abspath(self.ql.rootfs))
         self.qldbg          = qldbg.Qldbg()
@@ -49,7 +51,6 @@ class GDBSession(object):
         else:
             self.qldbg.bp_insert(self.ql.entry_point)
 
-    
 
     def bin_to_escstr(self, rawbin):
         rawbin_escape = ""
@@ -71,7 +72,7 @@ class GDBSession(object):
                 a = a ^ 0x20
                 a = (str(hex(a)[2:]))
                 a = incomplete_hex_check(a)
-                a = str("7d" + a)
+                a = str("7d%s" % a)
             else:
                 a = (str(hex(a)[2:]))
                 a = incomplete_hex_check(a)
@@ -92,17 +93,42 @@ class GDBSession(object):
             self.send_raw('+')
 
             def handle_qmark(subcmd):
-                if self.ql.arch == QL_ARM:
-                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))
+                def gdbqmark_converter(arch):
+                    """
+                    MIPS32_EL : gdbserver response ("$T051d:00e7ff7f;25:40ccfc77;#65")
+                    MIPS32_EB : gdbserver response ("$T051d:7fff6dc0;25:77fc4880;thread:28fa;core:0;");
+                    ARM64: gdbserver response "$T051d:0*,;1f:80f6f*"ff0* ;20:c02cfdb7f* 0* ;thread:p1f9.1f9;core:0;#56");
+                    ARM: gdbserver $T050b:0*"00;0d:e0f6ffbe;0f:8079fdb6;#ae"
+                    """
+                    adapter = {
+                        QL_X86          : [ 0x05, 0x04, 0x08 ],
+                        QL_X8664        : [ 0x06, 0x07, 0x10 ],
+                        QL_MIPS32       : [ 0x1d, 0x00, 0x25 ],        
+                        QL_ARM          : [ 0x0b, 0x0d, 0x0f ],
+                        QL_ARM64        : [ 0x1d, 0xf1, 0x20 ]
+                        }
+                    return adapter.get(arch)
+
+                idhex, spid, pcid  = gdbqmark_converter(self.ql.arch)  
+                sp          = self.ql.addr_to_str(self.ql.sp)
+                pc          = self.ql.addr_to_str(self.ql.pc)
+                nullfill    = "0" * int(self.ql.archbit / 4)
+
+                if self.ql.arch == QL_MIPS32:
+                    if self.ql.archendian == QL_ENDIAN_EB:
+                        sp = self.ql.addr_to_str(self.ql.sp, endian ="little")
+                        pc = self.ql.addr_to_str(self.ql.pc, endian ="little")
+                    self.send('T%.2x%.2x:%s;%.2x:%s;' %(GDB_SIGNAL_TRAP, idhex, sp, pcid, pc))
                 else:    
-                    sp = self.ql.addr_to_str(self.ql.uc.reg_read(self.sp))
-                    pc = self.ql.addr_to_str(self.ql.uc.reg_read(self.pc))
-                    self.send('T0506:0*,;07:'+sp+';10:'+pc+';')
+                    self.send('T%.2x%.2x:%s;%.2x:%s;%.2x:%s;' %(GDB_SIGNAL_TRAP, idhex, nullfill, spid, sp, pcid, pc))
 
 
             def handle_c(subcmd):
-                self.qldbg.resume_emu(self.ql.uc.reg_read(self.pc))
-                self.send(('S%.2x' % GDB_SIGNAL_TRAP))
+                self.qldbg.resume_emu(self.ql.uc.reg_read(self.pc_reg))
+                if self.qldbg.bp_list in ([self.ql.elf_entry], [self.ql.entry_point]):
+                    self.send("W00")
+                else:
+                    self.send(('S%.2x' % GDB_SIGNAL_TRAP))
 
 
             handle_C = handle_c
@@ -111,7 +137,7 @@ class GDBSession(object):
             def handle_g(subcmd):
                 s = ''
                 if self.ql.arch == QL_X86:
-                    for reg in registers_x86[:17]:
+                    for reg in registers_x86[:16]:
                         r = self.ql.uc.reg_read(reg)
                         tmp = self.ql.addr_to_str(r)
                         s += tmp
@@ -137,6 +163,16 @@ class GDBSession(object):
                         r = self.ql.uc.reg_read(reg)
                         tmp = self.ql.addr_to_str(r)
                         s += tmp
+
+                if self.ql.arch == QL_MIPS32:
+                    for reg in registers_mips[:38]:
+                        r = self.ql.uc.reg_read(reg)
+                        if self.ql.archendian == QL_ENDIAN_EB:
+                            tmp = self.ql.addr_to_str(r, endian ="little")
+                        else:
+                            tmp = self.ql.addr_to_str(r)    
+                        s += tmp
+
                 self.send(s)
 
 
@@ -167,11 +203,19 @@ class GDBSession(object):
                         reg_data = int(reg_data, 16)
                         self.ql.uc.reg_write(registers_arm[count], reg_data)
                         count += 1
+
                 elif self.ql.arch == QL_ARM64:
                     for i in range(0, len(subcmd), 16):
-                        reg_data = subcmd[i:i + 15]
+                        reg_data = subcmd[i:i+15]
                         reg_data = int(reg_data, 16)
                         self.ql.uc.reg_write(registers_arm64[count], reg_data)
+                        count += 1
+
+                elif self.ql.arch == QL_MIPS32:
+                    for i in range(0, len(subcmd), 8):
+                        reg_data = subcmd[i:i+7]
+                        reg_data = int(reg_data, 16)
+                        self.ql.uc.reg_write(registers_mips[count], reg_data)
                         count += 1
 
                 self.send('OK')
@@ -249,6 +293,19 @@ class GDBSession(object):
                             reg_value = 0
                             reg_value = self.ql.addr_to_str(reg_value)
 
+                    if self.ql.arch == QL_MIPS32:
+                        if reg_index <= 37:
+                            reg_value = self.ql.uc.reg_read(registers_mips[reg_index - 1])
+                        else:
+                            reg_value = 0
+                        if self.ql.archendian == QL_ENDIAN_EL:
+                            reg_value = self.ql.addr_to_str(reg_value, endian="little")
+                        else:
+                            reg_value = self.ql.addr_to_str(reg_value)
+                    
+                    if type(reg_value) is not str:
+                        reg_value = self.ql.addr_to_str(reg_value)
+
                     self.send(reg_value)
                 except:
                     self.close()
@@ -283,6 +340,14 @@ class GDBSession(object):
                     reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
                     self.ql.uc.reg_write(registers_arm64[reg_index], reg_data)
 
+                if self.ql.arch == QL_MIPS32:
+                    reg_data = int(reg_data, 16)
+                    if self.ql.archendian == QL_ENDIAN_EL:
+                        reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='little')
+                    else:
+                        reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
+                    self.ql.uc.reg_write(registers_mips[reg_index], reg_data)
+
                 self.ql.nprint("gdb> write to register %x with %x" % (registers_x8664[reg_index], reg_data))
                 self.send('OK')
 
@@ -312,26 +377,15 @@ class GDBSession(object):
                         self.send("PacketSize=3fff;QPassSignals+;QProgramSignals+;QStartupWithShell+;QEnvironmentHexEncoded+;QEnvironmentReset+;QEnvironmentUnset+;QSetWorkingDir+;QCatchSyscalls+;qXfer:libraries-svr4:read+;augmented-libraries-svr4-read+;qXfer:auxv:read+;qXfer:spu:read+;qXfer:spu:write+;qXfer:siginfo:read+;qXfer:siginfo:write+;qXfer:features:read+;QStartNoAckMode+;qXfer:osdata:read+;multiprocess+;fork-events+;vfork-events+;exec-events+;QNonStop+;QDisableRandomization+;qXfer:threads:read+;ConditionalTracepoints+;TraceStateVariables+;TracepointSource+;DisconnectedTracing+;StaticTracepoints+;InstallInTrace+;qXfer:statictrace:read+;qXfer:traceframe-info:read+;EnableDisableTracepoints+;QTBuffer:size+;tracenz+;ConditionalBreakpoints+;BreakpointCommands+;QAgent+;swbreak+;hwbreak+;qXfer:exec-file:read+;vContSupported+;QThreadEvents+;no-resumed+")
 
                 elif subcmd.startswith('Xfer:features:read'):
-                    xfercmd_file = subcmd.split(':')[3]
+                    xfercmd_file    = subcmd.split(':')[3]
                     xfercmd_abspath = os.path.dirname(os.path.abspath(__file__))
-                    
-                    if self.ql.arch == QL_X8664:
-                        xml_folder = "x8664"
-                    elif self.ql.arch == QL_X86:
-                        xml_folder = "x86"    
-                    elif self.ql.arch == QL_ARM:
-                        xml_folder = "arm"
-                    elif self.ql.arch == QL_ARM64:
-                        xml_folder = "arm64"
-                    elif self.ql.arch == QL_MIPS32EL:
-                        xml_folder = "mips32el"
-                    
-                    xfercmd_file = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
+                    xml_folder      = ql_arch_convert_str(self.ql.arch)
+                    xfercmd_file    = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
                     if os.path.exists(xfercmd_file):
                         f = open(xfercmd_file, 'r')
                         file_contents = f.read()
-                        self.send("l" + file_contents)
+                        self.send("l%s" % file_contents)
                     else:
                         self.ql.nprint("gdb> xml file not found: %s" % (xfercmd_file))
                         exit(1)
@@ -437,19 +491,21 @@ class GDBSession(object):
                                     )
 
                     auxvdata = self.bin_to_escstr(unhexlify(auxvdata_c))
-                    self.send(b'l!' + auxvdata)
+                    self.send(b'l!%s' % auxvdata)
 
                 elif subcmd.startswith('Xfer:exec-file:read:'):
-                    self.send("l" + str(self.exe_abspath))
+                    self.send("l%s" % str(self.exe_abspath))
 
                 elif subcmd.startswith('Xfer:libraries-svr4:read:'):
                     if self.ql.ostype in (QL_LINUX, QL_FREEBSD):
-                        addr_mapping=("<library-list-svr4 version=\"1.0\">")
-                        # FIXME: need to find out when do we need this
+                        xml_addr_mapping=("<library-list-svr4 version=\"1.0\">")
+                        """
+                        FIXME: need to find out when do we need this
+                        """
                         #for s, e, info in self.ql.map_info:
                         #    addr_mapping += ("<library name=\"%s\" lm=\"0x%x\" l_addr=\"%x\" l_ld=\"\"/>" %(info, e, s)) 
-                        addr_mapping += ("</library-list-svr4>")
-                        self.send("l"+addr_mapping)
+                        xml_addr_mapping += ("</library-list-svr4>")
+                        self.send("l%s" % xml_addr_mapping)
                     else:     
                         self.send("l<library-list-svr4 version=\"1.0\"></library-list-svr4>")
 
@@ -488,23 +544,39 @@ class GDBSession(object):
                     self.send("")
 
                 elif subcmd.startswith('File:open'):
-                    binname = subcmd.split(':')[-1].split(',')[0]
-                    binname = unhexlify(binname).decode(encoding='UTF-8')
-                    if binname != "just probing":
-                        self.lib_abspath = str(os.path.join(self.rootfs_abspath,binname))
-                        self.ql.dprint("gdb> opening file: %s" % (binname))
-                        self.send("F5")
+                    self.lib_path = subcmd.split(':')[-1].split(',')[0]
+                    self.lib_path = unhexlify(self.lib_path).decode(encoding='UTF-8')
+                    if self.lib_path != "just probing":
+                        """
+                        FIXME
+                        os.path.join not working, always shows self.lib_path ony
+                        """
+                        #self.lib_abspath = os.path.join(str(self.rootfs_abspath) ,str(self.lib_path))
+                        if self.lib_path.startswith("/") and not self.lib_path.startswith(self.rootfs_abspath):
+                            self.lib_abspath = (self.rootfs_abspath + self.lib_path)
+                        elif self.lib_path.startswith(self.rootfs_abspath):
+                            self.lib_abspath = self.lib_path
+                        else:
+                            self.lib_abspath = (self.rootfs_abspath + "/" + self.lib_path)   
+
+                        self.ql.dprint("gdb> target file: %s" % (self.lib_abspath))
+
+                        if os.path.exists(self.lib_abspath):
+                            self.send("F5")
+                        else:
+                            self.send("F0")   
                     else:
                         self.send("F0")
 
-                elif subcmd.startswith('File:pread:5'):
+                elif subcmd.startswith('File:pread:'):
 
                     offset = subcmd.split(',')[-1]
                     count = subcmd.split(',')[-2]
                     offset = ((int(offset, base=16)))
                     count = ((int(count, base=16)))
 
-                    if os.path.exists(self.lib_abspath) and (self.lib_abspath).startswith("/proc"):
+                    if os.path.exists(self.lib_abspath) and not (self.lib_path).startswith("/proc"):
+
                         with open(self.lib_abspath, "rb") as f:
                             preadheader = f.read()
 
@@ -679,7 +751,7 @@ class GDBSession(object):
         if type(msg) == str:
             self.send_raw('$%s#%.2x' % (msg, checksum(msg)))
         else:
-            self.clientsocket.send(b'$'+ msg + (b'#%.2x' % checksum(msg)))
+            self.clientsocket.send(b'$%s#%.2x' % (msg, checksum(msg)))
             self.netout.flush()
 
         self.ql.dprint("gdb> send: $%s#%.2x" % (msg, checksum(msg)))

@@ -82,15 +82,46 @@ typedef struct _STARTUPINFO {
   HANDLE hStdError;
 } STARTUPINFO, *LPSTARTUPINFO;
 """
+
+
+# VOID WINAPI GetStartupInfoA(
+#   _Out_ LPSTARTUPINFO lpStartupInfo
+# );
 @winapi(cc=STDCALL, params={
     "lpStartupInfo": POINTER
 })
 def hook_GetStartupInfoA(ql, address, params):
     # TODO fill in std output handles.
     # Seems to work fine without them so far though
-    size = 52 + 4*ql.pointersize
-    addr = ql.heap.mem_alloc(size)
-    return addr
+    pointer = params["lpStartupInfo"]
+    size = 52 + 4 * ql.pointersize
+    dwordsize = 4
+    wordsize = 2
+    cb = 0x44.to_bytes(length=dwordsize, byteorder='little')
+    lpReserved = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
+    lpDesktop = 0xc3c930.to_bytes(length=ql.pointersize, byteorder='little')
+    lpTitle = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
+    dwX = 0x0.to_bytes(length=dwordsize, byteorder='little')
+    dwY = 0x0.to_bytes(length=dwordsize, byteorder='little')
+    dwXSize = 0x64.to_bytes(length=dwordsize, byteorder='little')
+    dwYSize = 0x64.to_bytes(length=dwordsize, byteorder='little')
+    dwXCountChars = 0x84.to_bytes(length=dwordsize, byteorder='little')
+    dwYCountChars = 0x80.to_bytes(length=dwordsize, byteorder='little')
+    dwFillAttribute = 0xff.to_bytes(length=dwordsize, byteorder='little')
+    dwFlags = 0x40.to_bytes(length=dwordsize, byteorder='little')
+    wShowWindow = 0x1.to_bytes(length=wordsize, byteorder='little')
+    cbReserved2 = 0x0.to_bytes(length=wordsize, byteorder='little')
+    lpReserved2 = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
+    hStdInput = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
+    hStdOutput = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
+    hStdError = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
+    dummy_content = cb + lpReserved + lpDesktop + lpTitle + dwX + dwY + dwXSize + dwYSize + dwXCountChars + dwYCountChars + dwFillAttribute + dwFlags + wShowWindow + cbReserved2 + lpReserved2 + hStdInput + hStdOutput + hStdError
+    # addr = ql.heap.mem_alloc(size)
+
+    assert (len(dummy_content) == size == 0x44)
+    ql.uc.mem_write(pointer, dummy_content)
+    return 0
+
 
 # VOID WINAPI GetStartupInfoW(
 #   _Out_ LPSTARTUPINFO lpStartupInfo
@@ -99,9 +130,35 @@ def hook_GetStartupInfoA(ql, address, params):
     "lpStartupInfo": POINTER
 })
 def hook_GetStartupInfoW(ql, address, params):
-    size = 52 + 4*ql.pointersize
-    addr = ql.heap.mem_alloc(size)
-    return addr
+    pointer = params["lpStartupInfo"]
+    size = 52 + 4 * ql.pointersize
+    dwordsize = 4
+    wordsize = 2
+    cb = 0x44.to_bytes(length=dwordsize, byteorder='little')
+    lpReserved = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
+    lpDesktop = 0xc3c930.to_bytes(length=ql.pointersize, byteorder='little')
+    lpTitle = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
+    dwX = 0x0.to_bytes(length=dwordsize, byteorder='little')
+    dwY = 0x0.to_bytes(length=dwordsize, byteorder='little')
+    dwXSize = 0x64.to_bytes(length=dwordsize, byteorder='little')
+    dwYSize = 0x64.to_bytes(length=dwordsize, byteorder='little')
+    dwXCountChars = 0x84.to_bytes(length=dwordsize, byteorder='little')
+    dwYCountChars = 0x80.to_bytes(length=dwordsize, byteorder='little')
+    dwFillAttribute = 0xff.to_bytes(length=dwordsize, byteorder='little')
+    dwFlags = 0x40.to_bytes(length=dwordsize, byteorder='little')
+    wShowWindow = 0x1.to_bytes(length=wordsize, byteorder='little')
+    cbReserved2 = 0x0.to_bytes(length=wordsize, byteorder='little')
+    lpReserved2 = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
+    hStdInput = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
+    hStdOutput = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
+    hStdError = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
+    dummy_content = cb + lpReserved + lpDesktop + lpTitle + dwX + dwY + dwXSize + dwYSize + dwXCountChars + dwYCountChars + dwFillAttribute + dwFlags + wShowWindow + cbReserved2 + lpReserved2 + hStdInput + hStdOutput + hStdError
+    # addr = ql.heap.mem_alloc(size)
+
+    assert (len(dummy_content) == size == 0x44)
+    ql.uc.mem_write(pointer, dummy_content)
+    return 0
+
 
 #LONG InterlockedExchange(
 #  LONG volatile *Target,
@@ -1151,16 +1208,9 @@ def hook_GlobalUnlock(ql, address, params):
 def hook_GlobalAlloc(ql, address, params):
     return ql.heap.mem_alloc(params['dwBytes'])
 
-#BOOL InitializeCriticalSectionAndSpinCount(
-#  LPCRITICAL_SECTION lpCriticalSection,
-#  DWORD              dwSpinCount
-#);
-@winapi(cc=STDCALL, params={
-    "lpCriticalSection": POINTER,
-    "dwSpinCount": UINT
-})
-def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
-    return 1
+
+
+
 
 #DWORD TlsAlloc();
 @winapi(cc=STDCALL, params={})
@@ -1312,23 +1362,6 @@ def hook_SetLastError(ql, address, params):
 def hook_IsValidCodePage(ql, address, params):
     return 1
 
-#void EnterCriticalSection(
-#  LPCRITICAL_SECTION lpCriticalSection
-#);
-@winapi(cc=STDCALL, params={
-    "lpCriticalSection": POINTER
-})
-def hook_EnterCriticalSection(ql, address, params):
-    return 0
-
-#void LeaveCriticalSection(
-#  LPCRITICAL_SECTION lpCriticalSection
-#);
-@winapi(cc=STDCALL, params={
-    "lpCriticalSection": POINTER
-})
-def hook_LeaveCriticalSection(ql, address, params):
-    return 0
 
 #int MultiByteToWideChar(
 #  UINT                              CodePage,
@@ -1385,3 +1418,48 @@ def hook_GetLocalTime(ql, address, params):
     return 0
 
 
+
+# void EnterCriticalSection(
+#  LPCRITICAL_SECTION lpCriticalSection
+# );
+@winapi(cc=STDCALL, params={
+    "lpCriticalSection": POINTER
+})
+def hook_EnterCriticalSection(ql, address, params):
+    return 0
+
+
+# void LeaveCriticalSection(
+#  LPCRITICAL_SECTION lpCriticalSection
+# );
+@winapi(cc=STDCALL, params={
+    "lpCriticalSection": POINTER
+})
+def hook_LeaveCriticalSection(ql, address, params):
+    return 0
+
+
+# BOOL InitializeCriticalSectionEx(
+#   LPCRITICAL_SECTION lpCriticalSection,
+#   DWORD              dwSpinCount,
+#   DWORD              Flags
+# );
+@winapi(cc=STDCALL, params={
+    "lpCriticalSection": POINTER,
+    "dwSpinCount": DWORD,
+    "Flags": DWORD
+})
+def hook_InitializeCriticalSectionEx(ql, address, params):
+    return 1
+
+
+# BOOL InitializeCriticalSectionAndSpinCount(
+#  LPCRITICAL_SECTION lpCriticalSection,
+#  DWORD              dwSpinCount
+# );
+@winapi(cc=STDCALL, params={
+    "lpCriticalSection": POINTER,
+    "dwSpinCount": UINT
+})
+def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
+    return 1

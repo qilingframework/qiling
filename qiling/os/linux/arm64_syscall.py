@@ -37,6 +37,7 @@ dict_arm64_linux_syscall = {
     0xDD : "ql_syscall_execve",
     0xDE : "ql_syscall_mmap2",
     0xE2 : "ql_syscall_mprotect",
+    0x041A : "ql_syscall_lstat",
     0x0105 : "ql_syscall_prlimit64",
     0x0400 : "ql_syscall_open",
     0x0409 : "ql_syscall_access",
