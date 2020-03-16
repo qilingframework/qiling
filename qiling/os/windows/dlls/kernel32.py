@@ -580,8 +580,8 @@ def hook_WideCharToMultiByte(ql, address, params):
         ret = len(s_lpWideCharStr) + 2
         ret = align(ret // 2, 2)
     else:
-        s = bytes(s_lpWideCharStr, 'latin1').decode('latin1') + "\x00"
-        ql.uc.mem_write(lpMultiByteStr, bytes(s, 'latin1'))
+        s = bytes(s_lpWideCharStr, 'utf-16le').decode('utf-16le') + "\x00"
+        ql.uc.mem_write(lpMultiByteStr, bytes(s, 'utf-16le'))
         ret = len(s)
 
     return ret
@@ -1403,7 +1403,7 @@ def hook_IsValidCodePage(ql, address, params):
     "cchWideChar": INT
 })
 def hook_MultiByteToWideChar(ql, address, params):
-    wide_str = params['lpMultiByteStr'].encode('latin1')
+    wide_str = params['lpMultiByteStr'].encode('utf-16le')
     if params['cchWideChar'] != 0:
         ql.uc.mem_write(params['lpWideCharStr'], wide_str)
     return len(wide_str)
