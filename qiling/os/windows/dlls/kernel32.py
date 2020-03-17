@@ -267,6 +267,28 @@ def hook_GetVersion(ql, address, params):
     return ret
 
 
+# NOT_BUILD_WINDOWS_DEPRECATE BOOL GetVersionExA(
+#   LPOSVERSIONINFOA lpVersionInformation
+# );
+@winapi(cc=STDCALL, params={
+    "lpVersionInformation": STRING
+
+})
+def hook_GetVersionExA(ql, address, params):
+    return 1
+
+
+# NOT_BUILD_WINDOWS_DEPRECATE BOOL GetVersionExW(
+#   LPOSVERSIONINFOW lpVersionInformation
+# );
+@winapi(cc=STDCALL, params={
+    "lpVersionInformation": STRING
+
+})
+def hook_GetVersionExW(ql, address, params):
+    return 1
+
+
 # HANDLE HeapCreate(
 #   DWORD  flOptions,
 #   SIZE_T dwInitialSize,
@@ -438,6 +460,7 @@ def hook_GetCommandLineA(ql, address, params):
     ql.uc.mem_write(addr, cmdline)
     return addr
 
+
 # LPSTR GetCommandLineW(
 # );
 @winapi(cc=STDCALL, params={})
@@ -557,8 +580,8 @@ def hook_WideCharToMultiByte(ql, address, params):
         ret = len(s_lpWideCharStr) + 2
         ret = align(ret // 2, 2)
     else:
-        s = bytes(s_lpWideCharStr, 'ascii').decode('utf-16le') + "\x00"
-        ql.uc.mem_write(lpMultiByteStr, bytes(s, 'ascii'))
+        s = bytes(s_lpWideCharStr, 'utf-16le').decode('utf-16le') + "\x00"
+        ql.uc.mem_write(lpMultiByteStr, bytes(s, 'utf-16le'))
         ret = len(s)
 
     return ret
@@ -1363,14 +1386,14 @@ def hook_IsValidCodePage(ql, address, params):
     return 1
 
 
-#int MultiByteToWideChar(
+# int MultiByteToWideChar(
 #  UINT                              CodePage,
 #  DWORD                             dwFlags,
 #  _In_NLS_string_(cbMultiByte)LPCCH lpMultiByteStr,
 #  int                               cbMultiByte,
 #  LPWSTR                            lpWideCharStr,
 #  int                               cchWideChar
-#);
+# );
 @winapi(cc=STDCALL, params={
     "CodePage": UINT,
     "dwFlags": UINT,
@@ -1382,8 +1405,9 @@ def hook_IsValidCodePage(ql, address, params):
 def hook_MultiByteToWideChar(ql, address, params):
     wide_str = params['lpMultiByteStr'].encode('utf-16le')
     if params['cchWideChar'] != 0:
-        ql.uc.mem_write(params['lpWideCharStr'], wide_str) 
+        ql.uc.mem_write(params['lpWideCharStr'], wide_str)
     return len(wide_str)
+
 
 """
 typedef struct _SYSTEMTIME {
@@ -1462,4 +1486,112 @@ def hook_InitializeCriticalSectionEx(ql, address, params):
     "dwSpinCount": UINT
 })
 def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
+    return 1
+
+
+# int LCMapStringEx(
+#   LPCWSTR          lpLocaleName,
+#   DWORD            dwMapFlags,
+#   LPCWSTR          lpSrcStr,
+#   int              cchSrc,
+#   LPWSTR           lpDestStr,
+#   int              cchDest,
+#   LPNLSVERSIONINFO lpVersionInformation,
+#   LPVOID           lpReserved,
+#   LPARAM           sortHandle
+# );
+@winapi(cc=STDCALL, params={
+    "lpLocaleName": POINTER,
+    "dwMapFlags": DWORD,
+    "lpSrcStr": POINTER,
+    "cchSrc": INT,
+    "lpDestStr": POINTER,
+    "cchDest": INT,
+    "lpVersionInformation": POINTER,
+    "lpReserved": UINT,
+    "sortHandle": UINT
+
+})
+def hook_LCMapStringEx(ql, address, params):
+    # TODO needs a better implementation
+    return 1
+
+
+# BOOL IsWow64Process(
+#   HANDLE hProcess,
+#   PBOOL  Wow64Process
+# );
+@winapi(cc=STDCALL, params={
+    "hProcess": HANDLE,
+    "Wow64Process": POINTER
+})
+def hook_IsWow64Process(ql, address, params):
+    pointer = params["Wow64Process"]
+    false = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
+    true = 0x1.to_bytes(length=ql.pointersize, byteorder='little')
+    if ql.archbit == 32:
+        ql.uc.mem_write(pointer, false)
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")
+    return 1
+
+
+# typedef struct _SYSTEM_INFO {
+#   union {
+#     DWORD dwOemId;
+#     struct {
+#       WORD wProcessorArchitecture;
+#       WORD wReserved;
+#     } DUMMYSTRUCTNAME;
+#   } DUMMYUNIONNAME;
+#   DWORD     dwPageSize;
+#   LPVOID    lpMinimumApplicationAddress;
+#   LPVOID    lpMaximumApplicationAddress;
+#   DWORD_PTR dwActiveProcessorMask;
+#   DWORD     dwNumberOfProcessors;
+#   DWORD     dwProcessorType;
+#   DWORD     dwAllocationGranularity;
+#   WORD      wProcessorLevel;
+#   WORD      wProcessorRevision;
+# } SYSTEM_INFO, *LPSYSTEM_INFO;
+
+# void GetSystemInfo(
+#   LPSYSTEM_INFO lpSystemInfo
+# );
+@winapi(cc=STDCALL, params={
+    "lpSystemInfo": POINTER
+})
+def hook_GetSystemInfo(ql, address, params):
+    # TODO create struct
+    pointer = params["lpSystemInfo"]
+    dwordsize = 4
+    wordsize = 2
+    dummysize = 2 * wordsize + dwordsize
+    size = dummysize + dwordsize + ql.pointersize + ql.pointersize + ql.pointersize + 3 * dwordsize + 2 * wordsize
+    ql.uc.mem_write(pointer, 0x41.to_bytes(length=size, byteorder='little'))
+    return 0
+
+
+# BOOL DuplicateHandle(
+#   HANDLE   hSourceProcessHandle,
+#   HANDLE   hSourceHandle,
+#   HANDLE   hTargetProcessHandle,
+#   LPHANDLE lpTargetHandle,
+#   DWORD    dwDesiredAccess,
+#   BOOL     bInheritHandle,
+#   DWORD    dwOptions
+# );
+@winapi(cc=STDCALL, params={
+    "hSourceProcessHandle": POINTER,
+    "hSourceHandle": POINTER,
+    "hTargetProcessHandle": POINTER,
+    "lpTargetHandle": POINTER,
+    "dwDesiredAccess": DWORD,
+    "bInheritHandle": BOOL,
+    "dwOptions": DWORD
+})
+def hook_DuplicateHandle(ql, address, params):
+    content = params["hSourceHandle"]
+    dst = params["lpTargetHandle"]
+    ql.uc.mem_write(dst, content.to_bytes(length=ql.pointersize, byteorder='little'))
     return 1

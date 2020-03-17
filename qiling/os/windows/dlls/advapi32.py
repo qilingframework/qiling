@@ -10,21 +10,7 @@ from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
 
 
-# LSTATUS RegOpenKeyExA(
-#   HKEY   hKey,
-#   LPCSTR lpSubKey,
-#   DWORD  ulOptions,
-#   REGSAM samDesired,
-#   PHKEY  phkResult
-# );
-@winapi(cc=STDCALL, params={
-    "hKey": HANDLE,
-    "lpSubKey": STRING,
-    "ulOptions": DWORD,
-    "samDesired": POINTER,
-    "phkResult": POINTER
-})
-def hook_RegOpenKeyExA(ql, address, params):
+def RegOpenKey(ql, address, params):
     ret = ERROR_SUCCESS
 
     hKey = params["hKey"]
@@ -42,7 +28,7 @@ def hook_RegOpenKeyExA(ql, address, params):
 
     # new handle
     if ret == ERROR_SUCCESS:
-        new_handle = Handle(regkey=s_hKey+"\\"+s_lpSubKey)
+        new_handle = Handle(regkey=s_hKey + "\\" + s_lpSubKey)
         ql.handle_manager.append(new_handle)
         if phkResult != 0:
             ql.mem_write(phkResult, ql.pack(new_handle.id))
@@ -50,6 +36,42 @@ def hook_RegOpenKeyExA(ql, address, params):
         new_handle = 0
 
     return ret
+
+
+# LSTATUS RegOpenKeyExA(
+#   HKEY   hKey,
+#   LPCSTR lpSubKey,
+#   DWORD  ulOptions,
+#   REGSAM samDesired,
+#   PHKEY  phkResult
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": STRING,
+    "ulOptions": DWORD,
+    "samDesired": POINTER,
+    "phkResult": POINTER
+})
+def hook_RegOpenKeyExA(ql, address, params):
+    return RegOpenKey(ql, address, params)
+
+
+# LSTATUS RegOpenKeyExW(
+#   HKEY    hKey,
+#   LPCWSTR lpSubKey,
+#   DWORD   ulOptions,
+#   REGSAM  samDesired,
+#   PHKEY   phkResult
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": WSTRING,
+    "ulOptions": DWORD,
+    "samDesired": POINTER,
+    "phkResult": POINTER
+})
+def hook_RegOpenKeyExW(ql, address, params):
+    return RegOpenKey(ql, address, params)
 
 
 # LSTATUS RegOpenKeyW(
@@ -63,32 +85,21 @@ def hook_RegOpenKeyExA(ql, address, params):
     "phkResult": POINTER
 })
 def hook_RegOpenKeyW(ql, address, params):
-    ret = ERROR_SUCCESS
+    return RegOpenKey(ql,address, params)
 
-    hKey = params["hKey"]
-    s_lpSubKey = w2cstring(params["lpSubKey"])
-    phkResult = params["phkResult"]
 
-    if not (hKey in REG_KEYS):
-        return 2
-    else:
-        s_hKey = REG_KEYS[hKey]
-        params["hKey"] = s_hKey
-
-    if not ql.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
-        return 2
-
-    # new handle
-    if ret == ERROR_SUCCESS:
-        new_handle = Handle(regkey=s_hKey+"\\"+s_lpSubKey)
-        ql.handle_manager.append(new_handle)
-        if phkResult != 0:
-            ql.mem_write(phkResult, ql.pack(new_handle.id))
-    else:
-        new_handle = 0
-
-    return ret
-
+# LSTATUS RegOpenKeyA(
+#   HKEY    hKey,
+#   LPCWSTR lpSubKey,
+#   PHKEY   phkResult
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": STRING,
+    "phkResult": POINTER
+})
+def hook_RegOpenKeyA(ql, address, params):
+    return RegOpenKey(ql,address, params)
 
 
 # LSTATUS RegQueryValueExA(
@@ -181,7 +192,7 @@ def hook_RegCreateKeyA(ql, address, params):
 
     # new handle
     if ret == ERROR_SUCCESS:
-        new_handle = Handle(regkey=s_hKey+"\\"+s_lpSubKey)
+        new_handle = Handle(regkey=s_hKey + "\\" + s_lpSubKey)
         ql.handle_manager.append(new_handle)
         if phkResult != 0:
             ql.mem_write(phkResult, ql.pack(new_handle.id))
