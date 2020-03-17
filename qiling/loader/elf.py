@@ -521,11 +521,9 @@ class ELFLoader(ELFParse):
         cpustr = 'i686'
         (addr, new_stack) = self.copy_str(ql.uc, new_stack, [randstr, cpustr])
         new_stack = self.alignment(new_stack, ql)
-        
-
 
         # Set AUX
-        
+
         # ql.uc.mem_write(int(new_stack) - 4, ql.pack32(0x11111111))
         # new_stack = new_stack - 4
         # rand_addr = new_stack - 4
@@ -535,7 +533,7 @@ class ELFLoader(ELFParse):
         ql.elf_phnum    = (elfhead['e_phnum'])
         ql.elf_pagesz   = 0x1000
         if ql.archendian == QL_ENDIAN_EB:
-            ql.elf_pagesz   = 0x0010    
+            ql.elf_pagesz   = 0x0010
         ql.elf_guid     = 1000
         ql.elf_flags    = 0
         ql.elf_entry    = (loadbase + elfhead['e_entry'])
@@ -570,8 +568,8 @@ class ELFLoader(ELFParse):
         ql.uc.mem_write(int(new_stack - len(elf_table)), elf_table)
         new_stack = new_stack - len(elf_table)
 
-            # print("rdi is : " + hex(ql.uc.reg_read(UC_X86_REG_RDI)))
-            # ql.uc.reg_write(UC_X86_REG_RDI, new_stack + 8)
+        # print("rdi is : " + hex(ql.uc.reg_read(UC_X86_REG_RDI)))
+        # ql.uc.reg_write(UC_X86_REG_RDI, new_stack + 8)
 
         # for i in range(120):
         #     buf = ql.uc.mem_read(new_stack + i * 0x8, 8)
