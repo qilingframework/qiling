@@ -314,7 +314,6 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, null0, null1, n
     stat64_file = (ql_read_string(ql, stat64_pathname))
 
     real_path = ql.macho_fs.vm_to_real_path(stat64_file)
-    print("real_path {}".format(real_path))
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
@@ -332,13 +331,22 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, null0, null1, n
         stat64_buf += ql.pack64(0x0)                            # st_mtimensec      64 byte
         stat64_buf += ql.pack64(int(stat64_info.st_ctime))      # st_ctime          64 byte
         stat64_buf += ql.pack64(0x0)                            # st_ctimensec      64 byte
-        stat64_buf += ql.pack64(int(stat64_info.st_birthtime))  # st_birthtime      64 byte
+        if ql.platform == QL_MACOS:
+            stat64_buf += ql.pack64(int(stat64_info.st_birthtime))  # st_birthtime      64 byte
+        else:
+            stat64_buf += ql.pack64(int(stat64_info.st_ctime))  # st_birthtime      64 byte
         stat64_buf += ql.pack64(0x0)                            # st_birthtimensec  64 byte
         stat64_buf += ql.pack64(stat64_info.st_size)            # st_size           64 byte
         stat64_buf += ql.pack64(stat64_info.st_blocks)          # st_blocks         64 byte
         stat64_buf += ql.pack32(stat64_info.st_blksize)         # st_blksize        32 byte
-        stat64_buf += ql.pack32(stat64_info.st_flags)           # st_flags          32 byte
-        stat64_buf += ql.pack32(stat64_info.st_gen)             # st_gen            32 byte
+        if ql.platform == QL_MACOS:
+            stat64_buf += ql.pack32(stat64_info.st_flags)       # st_flags          32 byte
+        else:    
+            stat64_buf += ql.pack32(0x0)          
+        if ql.platform == QL_MACOS:
+            stat64_buf += ql.pack32(stat64_info.st_gen)         # st_gen            32 byte
+        else:    
+            stat64_buf += ql.pack32(0x0)                    
         stat64_buf += ql.pack32(0x0)                            # st_lspare         32 byte
         stat64_buf += ql.pack64(0x0)                            # st_qspare         64 byte
 
