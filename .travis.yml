@@ -32,7 +32,7 @@ matrix:
 
     - name: "Python 3.7 on OSX"
       os: osx
-      osx_image: xcode11.2
+      osx_image: xcode11.3
       language: shell
       before_install:
         - pip3 install --upgrade pip
@@ -86,13 +86,13 @@ matrix:
       script:
         - python test_pe_nu.py
 
-    # - name: "Python 3.6 on Docker"
-    #   services:
-    #     - docker
-    #   before_install:
-    #     - docker build -t qiling:1.0 .
-    #   script:
-    #     - docker run --privileged qiling:1.0 /bin/sh -c "cd tests && python3 test_all.py"
+    - name: "Python 3.6 on Docker"
+      services:
+        - docker
+      before_install:
+        - docker build -t qiling:1.0 .
+      script:
+        - docker run qiling:1.0 /bin/bash -c "cd tests && python3 test_all.py"
 
 #    - name: "Python 3.6 on WSL1 Ubuntu"
 #      os: windows
