@@ -44,11 +44,11 @@ class MachHostServer():
             out_msg.content += pack("<L", host_info_outCnt) # host info output count 
 
             # host info out
-            out_msg.content += pack("<L", 0x4)              # max_cpus
-            out_msg.content += pack("<L", 0x4)              # avail_cpus
+            out_msg.content += pack("<L", 0x2)              # max_cpus
+            out_msg.content += pack("<L", 0x2)              # avail_cpus
             out_msg.content += pack("<L", 0x80000000)       # memory_size
             out_msg.content += pack("<L", 0x7)              # cpu_type
-            out_msg.content += pack("<L", 0x8)              # cpu_subtype
+            out_msg.content += pack("<L", 0x67)              # cpu_subtype
             if host_info_outCnt > 5:
                 out_msg.content += pack("<L", 0x1)          # cpu_threadtype
                 out_msg.content += pack("<L", 0x2)          # physical_cpu
