@@ -490,17 +490,19 @@ class Qiling:
         else:
             return struct.unpack('I', x)[0]
 
+
     def pack32(self, x):
         if self.archendian == QL_ENDIAN_EB:
             return struct.pack('>I', x)
-        else:    
+        else:
             return struct.pack('I', x)
 
     def unpack32s(self, x):
         if self.archendian == QL_ENDIAN_EB:
             return struct.unpack('>i', x)[0]
-        else:    
+        else:
             return struct.unpack('i', x)[0]
+
 
     def unpack32s_ne(self, x):
         return struct.unpack('i', x)[0]
@@ -520,9 +522,8 @@ class Qiling:
     def pack16(self, x):
         if self.archendian == QL_ENDIAN_EB:
             return struct.pack('>H', x)
-        else:    
+        else:
             return struct.pack('H', x)
-            
 
     def pack(self, data):
         if self.archbit == 64:
@@ -615,7 +616,7 @@ class Qiling:
         elif value == 'Windows':
             self._platform = QL_WINDOWS
         elif value == 'FreeBSD':
-            self._platform = QL_FREEBSD     
+            self._platform = QL_FREEBSD
         else:
             self._platform = None
 
