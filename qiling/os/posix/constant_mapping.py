@@ -41,17 +41,9 @@ def open_flags_mapping(flags, arch):
             QL_MACOS: mac_open_flags,
             }.get(arch)
 
-    # inverted_dict = _invert_dict(mapping_dict)
-
     ret = ["O_RDONLY"]
 
     return _constant_mapping(flags, mapping_dict, ret)
-
-    # for val, sym in inverted_dict.items():
-        # if val & flags != 0:
-            # ret.append(sym)
-
-    # return " | ".join(ret)
 
 
 def mmap_flag_mapping(flags):
