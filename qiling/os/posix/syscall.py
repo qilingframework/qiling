@@ -1426,9 +1426,24 @@ def ql_syscall_dup2(ql, dup2_oldfd, dup2_newfd, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_dup3(ql, null0, null1, null2, null3, null4, null5):
-    ql.nprint("dup3")
+def ql_syscall_dup3(ql, dup3_oldfd, dup3_newfd, dup3_flags, null2, null3, null4, null5):
+    if 0 <= dup3_newfd < 256 and 0 <= dup3_oldfd < 256:
+        if ql.file_des[dup3_oldfd] != 0:
+            ql.file_des[dup3_newfd] = ql.file_des[dup3_oldfd].dup()
+            regreturn = dup3_newfd
+        else:
+            regreturn = -1
+    else:
+        regreturn = -1
+    ql.nprint("dup3(%d, %d, %d) = %d" % (dup3_oldfd, dup3_newfd,dup3_flags ,regreturn))
+    ql_definesyscall_return(ql, regreturn)
+
+
+  
+def ql_syscall___sysctl(ql, sysctl_name, sysctl_namelen, sysctl_bytes_oldlenp, sysctl_size_oldlenp, sysctl_bytes_newlen, sysctl_size_newlen):
+    # sysctl (name=0x7fffffffe3d8, namelen=2, oldp=0x7fffffffe3d4, oldlenp=0x7fffffffe3e0, newp=0x0, newlen=<optimized out>)
     regreturn = 0
+    ql.nprint("__sysctl(0x%x) = %i" % (sysctl_name, regreturn)) 
     ql_definesyscall_return(ql, regreturn)
 
 

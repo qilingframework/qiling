@@ -167,7 +167,8 @@ if __name__ == '__main__':
     run_parser.add_argument('-f', '--filename', required=False, default='', metavar="FILE", dest="filename", help="filename")
     run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
     run_parser.add_argument('--output', required=False, default='default', help='output mode, options are off, debug , disasm, dump')
-    run_parser.add_argument('--gdb', required=False, help='enable gdb server')
+    run_parser.add_argument('-g','--gdb', required=False, help='enable gdb server')
+    run_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
     run_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
     run_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
     run_parser.add_argument('--args', required=False, default=[], nargs=argparse.REMAINDER, dest="args", help="args")
@@ -203,10 +204,16 @@ if __name__ == '__main__':
             print("ERROR: Command error!")
             usage()
             exit(1)
+        
         if options.gdb:
-            ql.gdb = options.gdb   
+            ql.gdb = options.gdb
+        
+        if options.multithread:
+            ql.multithread = True               
+        
         ql.run()
         exit(ql.exit_code)
+    
     elif (options.subparser_name == 'shellcode'):
         run_shellcode(options)
     else:

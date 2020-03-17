@@ -7,6 +7,7 @@ This module is intended for general purpose functions that are only used in qili
 """
 
 import struct
+
 from unicorn.arm64_const import *
 from unicorn.arm_const import *
 from unicorn.mips_const import *

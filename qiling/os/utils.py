@@ -26,9 +26,7 @@ from qiling.exception import *
 from qiling.utils import *
 
 from binascii import unhexlify
-import ipaddress
-import struct
-import os
+import ipaddress, struct, os, ctypes
 
 
 def ql_definesyscall_return(ql, regreturn):
@@ -474,7 +472,16 @@ def print_function(ql, address, function_name, params, ret):
     for each in params:
         value = params[each]
         if type(value) == str or type(value) == bytearray:
+            # content=""
+            # for let in value:
+            #
+            #     if let.isprintable():
+            #         content+=let
+            #     else:
+            #         content+=hex(ord(let))
+
             log += '%s = "%s", ' % (each, value)
+
         else:
             log += '%s = 0x%x, ' % (each, value)
     log = log.strip(", ")
@@ -487,9 +494,9 @@ def print_function(ql, address, function_name, params, ret):
 def read_cstring(ql, address):
     result = ""
     char = ql.uc.mem_read(address, 1)
-    while char.decode() != "\x00":
+    while char.decode("utf-8", "backslashreplace") != "\x00":
         address += 1
-        result += char.decode()
+        result += char.decode("utf-8", "backslashreplace")
         char = ql.uc.mem_read(address, 1)
     return result
 
