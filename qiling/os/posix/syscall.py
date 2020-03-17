@@ -395,8 +395,8 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
 
     mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset = _struct
 
-    ql.dprint("[+] log mmap - mmap(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset))
-    ql.dprint("[+] log mmap - mmap(0x%x, %d, %s, %s, %d, %d)" % (mmap_addr, mmap_length, mmap_prot_mapping(mmap_prot), mmap_flag_mapping(mmap_flags), mmap_fd, mmap_offset))
+    ql.dprint("[+] log old_mmap - old_mmap(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset))
+    ql.dprint("[+] log old_mmap - old_mmap(0x%x, %d, %s, %s, %d, %d)" % (mmap_addr, mmap_length, mmap_prot_mapping(mmap_prot), mmap_flag_mapping(mmap_flags), mmap_fd, mmap_offset))
 
     # FIXME
     # this is ugly patch, we might need to get value from elf parse,
@@ -427,12 +427,12 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
         ql.mmap_start = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
 
 
-    ql.dprint("[+] log mmap - return addr : " + hex(mmap_base))
-    ql.dprint("[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
+    ql.dprint("[+] log old_mmap - return addr : " + hex(mmap_base))
+    ql.dprint("[+] log old_mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
     # initialized mapping
     if need_mmap:
-        ql.dprint("[+] log mmap - mapping needed")
+        ql.dprint("[+] log old_mmap - mapping needed")
         try:
             ql.uc.mem_map(mmap_base, ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000)
         except:
@@ -462,7 +462,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
     ql.insert_map_info(mem_s, mem_e, mem_info)
 
 
-    ql.nprint("mmap(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset, mmap_base))
+    ql.nprint("old_mmap(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset, mmap_base))
     regreturn = mmap_base
     ql.dprint("[+] mmap_base is 0x%x" % regreturn)
 
