@@ -15,6 +15,13 @@ sudo pip3 install -r requirements.txt
 sudo python3 setup.py install 
 ```
 
+If you are using pyenv, run the command shown below.
+```
+mv $(dirname $(which python))/python2.7 $(dirname $(which python))/python2.7.bak
+pip install -r requirements.txt
+python setup.py install
+```
+
 ---
 
 #### Important note on Windows DLLs and registry
