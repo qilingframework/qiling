@@ -117,7 +117,9 @@ def hook_GetStartupInfoA(ql, address, params):
     hStdInput = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
     hStdOutput = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
     hStdError = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
-    dummy_content = cb + lpReserved + lpDesktop + lpTitle + dwX + dwY + dwXSize + dwYSize + dwXCountChars + dwYCountChars + dwFillAttribute + dwFlags + wShowWindow + cbReserved2 + lpReserved2 + hStdInput + hStdOutput + hStdError
+    dummy_content = cb + lpReserved + lpDesktop + lpTitle + dwX + dwY + dwXSize + dwYSize + dwXCountChars \
+                    + dwYCountChars + dwFillAttribute + dwFlags + wShowWindow + cbReserved2 + lpReserved2 \
+                    + hStdInput + hStdOutput + hStdError
     # addr = ql.heap.mem_alloc(size)
 
     assert (len(dummy_content) == size == 0x44)
@@ -154,7 +156,9 @@ def hook_GetStartupInfoW(ql, address, params):
     hStdInput = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
     hStdOutput = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
     hStdError = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
-    dummy_content = cb + lpReserved + lpDesktop + lpTitle + dwX + dwY + dwXSize + dwYSize + dwXCountChars + dwYCountChars + dwFillAttribute + dwFlags + wShowWindow + cbReserved2 + lpReserved2 + hStdInput + hStdOutput + hStdError
+    dummy_content = cb + lpReserved + lpDesktop + lpTitle + dwX + dwY + dwXSize + dwYSize + dwXCountChars \
+                    + dwYCountChars + dwFillAttribute + dwFlags + wShowWindow + cbReserved2 + lpReserved2 \
+                    + hStdInput + hStdOutput + hStdError
     # addr = ql.heap.mem_alloc(size)
 
     assert (len(dummy_content) == size == 0x44)
@@ -777,7 +781,6 @@ def hook_ReadFile(ql, address, params):
     lpNumberOfBytesRead = params["lpNumberOfBytesRead"]
     lpOverlapped = params["lpOverlapped"]
     if hFile == STD_INPUT_HANDLE:
-        return 0
         s = ql.stdin.read(nNumberOfBytesToRead)
         slen = len(s)
         read_len = slen
@@ -1081,29 +1084,29 @@ def hook_VerSetConditionMask(ql, address, params):
     ConditionMask = params["ConditionMask"]
     TypeMask = params["TypeMask"]
     Condition = params["Condition"]
-    if (TypeMask == 0):
+    if TypeMask == 0:
         ret = ConditionMask
     else:
         Condition &= VER_CONDITION_MASK
-        if (Condition == 0):
+        if Condition == 0:
             ret = ConditionMask
         else:
             ullCondMask = Condition
-            if (TypeMask & VER_PRODUCT_TYPE):
+            if TypeMask & VER_PRODUCT_TYPE:
                 ConditionMask |= ullCondMask << (7 * VER_NUM_BITS_PER_CONDITION_MASK)
-            elif (TypeMask & VER_SUITENAME):
+            elif TypeMask & VER_SUITENAME:
                 ConditionMask |= ullCondMask << (6 * VER_NUM_BITS_PER_CONDITION_MASK)
-            elif (TypeMask & VER_SERVICEPACKMAJOR):
+            elif TypeMask & VER_SERVICEPACKMAJOR:
                 ConditionMask |= ullCondMask << (5 * VER_NUM_BITS_PER_CONDITION_MASK)
-            elif (TypeMask & VER_SERVICEPACKMINOR):
+            elif TypeMask & VER_SERVICEPACKMINOR:
                 ConditionMask |= ullCondMask << (4 * VER_NUM_BITS_PER_CONDITION_MASK)
-            elif (TypeMask & VER_PLATFORMID):
+            elif TypeMask & VER_PLATFORMID:
                 ConditionMask |= ullCondMask << (3 * VER_NUM_BITS_PER_CONDITION_MASK)
-            elif (TypeMask & VER_BUILDNUMBER):
+            elif TypeMask & VER_BUILDNUMBER:
                 ConditionMask |= ullCondMask << (2 * VER_NUM_BITS_PER_CONDITION_MASK)
-            elif (TypeMask & VER_MAJORVERSION):
+            elif TypeMask & VER_MAJORVERSION:
                 ConditionMask |= ullCondMask << (1 * VER_NUM_BITS_PER_CONDITION_MASK)
-            elif (TypeMask & VER_MINORVERSION):
+            elif TypeMask & VER_MINORVERSION:
                 ConditionMask |= ullCondMask << (0 * VER_NUM_BITS_PER_CONDITION_MASK)
             ret = ConditionMask
     return ret
@@ -1186,7 +1189,7 @@ def hook_LoadLibraryExA(ql, address, params):
     "lpLibFileName": WSTRING
 })
 def hook_LoadLibraryW(ql, address, params):
-    lpLibFileName = bytes(bytes(params["lpLibFileName"], 'ascii').deocde('utf-16le'), 'ascii')
+    lpLibFileName = bytes(bytes(params["lpLibFileName"], 'ascii').decode('utf-16le'), 'ascii')
     dll_base = ql.PE.load_dll(lpLibFileName)
     return dll_base
 

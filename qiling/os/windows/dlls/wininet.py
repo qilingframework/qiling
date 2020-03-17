@@ -143,6 +143,7 @@ def hook_InternetConnectA(ql, address, params):
 def hook_InternetConnectW(ql, address, params):
     pass
 
+
 # void InternetCheckConnectionA(
 #    LPCSTR lpszUrl,
 #    DWORD  dwFlags,
@@ -156,6 +157,7 @@ def hook_InternetConnectW(ql, address, params):
 def hook_InternetCheckConnectionA(ql, address, params):
     pass
 
+
 # void HttpOpenRequestA(
 #   HINTERNET hConnect,
 #   LPCSTR    lpszVerb,
@@ -165,7 +167,7 @@ def hook_InternetCheckConnectionA(ql, address, params):
 #   LPCSTR    *lplpszAcceptTypes,
 #   DWORD     dwFlags,
 #   DWORD_PTR dwContext
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hConnect": POINTER,
     "lpszVerb": STRING,

@@ -85,7 +85,7 @@ def hook_RegOpenKeyExW(ql, address, params):
     "phkResult": POINTER
 })
 def hook_RegOpenKeyW(ql, address, params):
-    return RegOpenKey(ql,address, params)
+    return RegOpenKey(ql, address, params)
 
 
 # LSTATUS RegOpenKeyA(
@@ -99,7 +99,7 @@ def hook_RegOpenKeyW(ql, address, params):
     "phkResult": POINTER
 })
 def hook_RegOpenKeyA(ql, address, params):
-    return RegOpenKey(ql,address, params)
+    return RegOpenKey(ql, address, params)
 
 
 # LSTATUS RegQueryValueExA(

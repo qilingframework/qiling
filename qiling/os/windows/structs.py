@@ -108,7 +108,7 @@ class PEB:
         return s
 
 
-class LDR_DATA:
+class LdrData:
     def __init__(self, ql, base=0,
                  length=0,
                  initialized=0,

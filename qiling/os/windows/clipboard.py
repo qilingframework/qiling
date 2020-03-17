@@ -19,18 +19,18 @@ class Clipboard:
         self.formats = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 128, 129, 130, 131, 142, 512, 767,
                         768, 1023]
 
-    def open(self, hWnd):
+    def open(self, h_wnd):
         """
         Lock clipboard to hWnd if not already locked. 
         If hWnd is null default to current thead id
         """
-        if hWnd == 0:
+        if h_wnd == 0:
             hWnd = self.ql.thread_manager.current_thread.id
 
-        if self.locked_by != NOT_LOCKED and self.locked_by != hWnd:
+        if self.locked_by != NOT_LOCKED and self.locked_by != h_wnd:
             return 0
         else:
-            self.locked_by = hWnd
+            self.locked_by = h_wnd
             return 1
 
     def format_available(self, fmt):

@@ -11,6 +11,7 @@ from Registry import Registry
 from qiling.os.windows.const import *
 from qiling.exception import *
 
+
 # Registry Manager reads data from two places
 # 1. config.json
 #       if you want to modify the registry key/value, you can modify config.json
@@ -36,20 +37,19 @@ class RegistryManager:
             ql.dprint("[+] Windows Registry PATH: %s" % self.hive)
             if not os.path.exists(self.hive) and not ql.shellcode:
                 raise QlPrintException("Error: Registry files not found!")
-            
 
-        if ql.log_dir == None:       
+        if ql.log_dir is None:
             ql.log_reg_dir = os.path.join(ql.rootfs, "qlog")
         else:
-            ql.log_reg_dir = ql.log_dir     
-        
+            ql.log_reg_dir = ql.log_dir
+
         self.config = os.path.join(ql.log_reg_dir, "registry", "registry_diff.json")
-        
+
         if not os.path.exists(self.config):
             self.registry_config = {}
             try:
                 os.makedirs(os.path.join(ql.log_reg_dir, "registry"), 0o755)
-            except:
+            except Exception:
                 pass
         else:
             # read config
@@ -70,10 +70,10 @@ class RegistryManager:
         # hkey local system
         self.hklm = {}
         try:
-            self.hklm['SECURITY']   = Registry.Registry(os.path.join(self.hive, 'SECURITY'))
-            self.hklm['SAM']        = Registry.Registry(os.path.join(self.hive, 'SAM'))
-            self.hklm['SOFTWARE']   = Registry.Registry(os.path.join(self.hive, 'SOFTWARE'))
-            self.hklm['SYSTEM']     = Registry.Registry(os.path.join(self.hive, 'SYSTEM'))
+            self.hklm['SECURITY'] = Registry.Registry(os.path.join(self.hive, 'SECURITY'))
+            self.hklm['SAM'] = Registry.Registry(os.path.join(self.hive, 'SAM'))
+            self.hklm['SOFTWARE'] = Registry.Registry(os.path.join(self.hive, 'SOFTWARE'))
+            self.hklm['SYSTEM'] = Registry.Registry(os.path.join(self.hive, 'SYSTEM'))
             # hkey current user
             self.hkcu = Registry.Registry(os.path.join(self.hive, 'NTUSER.DAT'))
         except FileNotFoundError:
@@ -105,7 +105,8 @@ class RegistryManager:
             if self.config[key][subkey].type in REG_TYPES:
                 return REG_TYPES[self.config[key][subkey].type], self.config[key][subkey].value
             else:
-                raise QlErrorNotImplemented("[!] Windows Registry Type %s not implemented" % (self.config[key][subkey].type))
+                raise QlErrorNotImplemented(
+                    "[!] Windows Registry Type %s not implemented" % self.config[key][subkey].type)
 
         # read hive
         reg = None
@@ -122,8 +123,8 @@ class RegistryManager:
                 raise QlErrorNotImplemented("[!] Windows Registry %s not implemented" % (keys[0]))
 
             for value in data.values():
-                if value.name() == subkey and (reg_type == Registry.RegNone or \
-                    value.value_type() == reg_type):
+                if value.name() == subkey and (reg_type == Registry.RegNone or
+                                               value.value_type() == reg_type):
                     return value.value_type(), value.value()
             return None, None
         except Registry.RegistryKeyNotFoundException:
@@ -172,7 +173,8 @@ class RegistryManager:
             self.ql.mem_write(address, data)
             length = len(data)
         else:
-            raise QlErrorNotImplemented("[!] Windows Registry Type write to memory %s not implemented" % (REG_TYPES[reg_type]))
+            raise QlErrorNotImplemented(
+                "[!] Windows Registry Type write to memory %s not implemented" % (REG_TYPES[reg_type]))
 
         return length
 
