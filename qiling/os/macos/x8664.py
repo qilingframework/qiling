@@ -25,6 +25,8 @@ from qiling.arch.filetype import *
 QL_X8664_MACOS_PREDEFINE_STACKADDRESS = 0x7ffcf0000000
 QL_X8664_MACOS_PREDEFINE_STACKSIZE =        0x19a00000
 QL_X8664_MACOS_PREDEFINE_MMAPADDRESS =  0x7ffbf0100000
+QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x400000000000
+QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x4000000f4000
 
 QL_X8664_EMU_END = 0xffffffffffffffff
 
@@ -82,6 +84,7 @@ def loader_file(ql):
     ql.macho_host_server = MachHostServer(ql)
     ql.macho_task_server = MachTaskServer(ql)
     ql.mmap_start = QL_X8664_MACOS_PREDEFINE_MMAPADDRESS
+    ql.macho_vmmap_end = QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS
     if (ql.stack_address == 0):
         ql.stack_address = QL_X8664_MACOS_PREDEFINE_STACKADDRESS
     if (ql.stack_size == 0): 

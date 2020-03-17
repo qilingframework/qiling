@@ -29,6 +29,7 @@ from qiling.os.macos.utils import *
 from qiling.arch.filetype import *
 from qiling.arch.x86 import *
 
+
 # TODO: We need to finish these syscall
 # there are three kinds of syscall, we often use posix syscall, mach syscall is used by handle mach msg
 # Unfortunately we dont have enough doc about mach syscall 
@@ -60,6 +61,13 @@ def ql_x86_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, f
     ql.nprint("0x{:X} syscall[mach] >> mach vm map trap(0x{:X}, 0x{:X}, 0x{:X}, 0x{:X}, 0x{:X}, 0x{:X})".format(
         ql.uc.reg_read(UC_X86_REG_RIP), target, address, size, mask, flags, cur_protection
     ))
+    
+    vmmap_start = page_align_end(ql.macho_vmmap_end, PAGE_SIZE)
+    vmmap_end = page_align_end(vmmap_start + size, PAGE_SIZE)
+
+    ql.macho_vmmap_end = vmmap_end
+    ql.uc.mem_map(vmmap_start, vmmap_end - vmmap_start)
+    ql.uc.mem_write(address, struct.pack("<Q", vmmap_start))
     # print(address, size)
     # ql.uc.mem_map(address, size)
     ql_definesyscall_return(ql, KERN_SUCCESS)
@@ -306,6 +314,7 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, null0, null1, n
     stat64_file = (ql_read_string(ql, stat64_pathname))
 
     real_path = ql.macho_fs.vm_to_real_path(stat64_file)
+    print("real_path {}".format(real_path))
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
@@ -323,22 +332,13 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, null0, null1, n
         stat64_buf += ql.pack64(0x0)                            # st_mtimensec      64 byte
         stat64_buf += ql.pack64(int(stat64_info.st_ctime))      # st_ctime          64 byte
         stat64_buf += ql.pack64(0x0)                            # st_ctimensec      64 byte
-        if ql.platform == QL_MACOS:
-            stat64_buf += ql.pack64(int(stat64_info.st_birthtime))  # st_birthtime      64 byte
-        else:
-            stat64_buf += ql.pack64(int(stat64_info.st_ctime))  # st_birthtime      64 byte
+        stat64_buf += ql.pack64(int(stat64_info.st_birthtime))  # st_birthtime      64 byte
         stat64_buf += ql.pack64(0x0)                            # st_birthtimensec  64 byte
         stat64_buf += ql.pack64(stat64_info.st_size)            # st_size           64 byte
         stat64_buf += ql.pack64(stat64_info.st_blocks)          # st_blocks         64 byte
         stat64_buf += ql.pack32(stat64_info.st_blksize)         # st_blksize        32 byte
-        if ql.platform == QL_MACOS:
-            stat64_buf += ql.pack32(stat64_info.st_flags)       # st_flags          32 byte
-        else:    
-            stat64_buf += ql.pack32(0x0)          
-        if ql.platform == QL_MACOS:
-            stat64_buf += ql.pack32(stat64_info.st_gen)         # st_gen            32 byte
-        else:    
-            stat64_buf += ql.pack32(0x0)                    
+        stat64_buf += ql.pack32(stat64_info.st_flags)           # st_flags          32 byte
+        stat64_buf += ql.pack32(stat64_info.st_gen)             # st_gen            32 byte
         stat64_buf += ql.pack32(0x0)                            # st_lspare         32 byte
         stat64_buf += ql.pack64(0x0)                            # st_qspare         64 byte
 
@@ -350,6 +350,85 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, null0, null1, n
         ql.dprint("[+] stat64 write completed")
     else:
         ql.dprint("[!] stat64 read/write fail")
+    ql_definesyscall_return(ql, regreturn)
+
+# 0x153
+def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, null0, null1, null2, null3):
+    fstat64_buf = b''
+    ql.nprint("RIP: 0x{:X}".format(ql.uc.reg_read(UC_X86_REG_RIP)))
+    if fstat64_fd < 256 and ql.file_des[fstat64_fd] != 0:
+        user_fileno = fstat64_fd
+        fstat64_info = ql.file_des[user_fileno].fstat()
+        
+        if ql.arch == QL_ARM64:
+            fstat64_buf = ql.pack64(fstat64_info.st_dev)
+            fstat64_buf += ql.pack64(fstat64_info.st_ino)
+            fstat64_buf += ql.pack32(fstat64_info.st_mode)
+            fstat64_buf += ql.pack32(fstat64_info.st_nlink)
+            fstat64_buf += ql.pack32(1000)
+            fstat64_buf += ql.pack32(1000)
+            fstat64_buf += ql.pack64(fstat64_info.st_rdev)
+            fstat64_buf += ql.pack64(0)
+            fstat64_buf += ql.pack64(fstat64_info.st_size)
+            fstat64_buf += ql.pack32(fstat64_info.st_blksize)
+            fstat64_buf += ql.pack32(0)
+            fstat64_buf += ql.pack64(fstat64_info.st_blocks)
+            fstat64_buf += ql.pack64(int(fstat64_info.st_atime))
+            fstat64_buf += ql.pack64(0)
+            fstat64_buf += ql.pack64(int(fstat64_info.st_mtime))
+            fstat64_buf += ql.pack64(0)
+            fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
+            fstat64_buf += ql.pack64(0)
+        else:
+
+            # pack fstatinfo
+            # fstat64_buf = ql.pack64(fstat64_info.st_dev)
+            # fstat64_buf += ql.pack64(0x0000000300c30000)
+            # fstat64_buf += ql.pack32(fstat64_info.st_mode)
+            # fstat64_buf += ql.pack32(fstat64_info.st_nlink)
+            # fstat64_buf += ql.pack32(fstat64_info.st_uid)
+            # fstat64_buf += ql.pack32(fstat64_info.st_gid)
+            # fstat64_buf += ql.pack64(0x0000000000008800) #?? fstat_info.st_rdev
+            # fstat64_buf += ql.pack32(0xffffd257)
+            # fstat64_buf += ql.pack64(fstat64_info.st_size)
+            # fstat64_buf += ql.pack32(0x00000400) #?? fstat_info.st_blksize
+            # fstat64_buf += ql.pack64(0x0000000000000000) #?? fstat_info.st_blocks
+            # fstat64_buf += ql.pack64(int(fstat64_info.st_atime))
+            # fstat64_buf += ql.pack64(int(fstat64_info.st_mtime))
+            # fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
+            # fstat64_buf += ql.pack64(fstat64_info.st_ino)
+
+            fstat64_buf += ql.pack32(fstat64_info.st_dev)                   # dev_t	 	st_dev
+            fstat64_buf += ql.pack32(fstat64_info.st_ino)                   # ino_t	  	st_ino
+            fstat64_buf += ql.pack32(fstat64_info.st_mode)                  # mode_t	 	st_mode
+            fstat64_buf += ql.pack32(fstat64_info.st_nlink)                 # nlink_t		st_nlink
+            fstat64_buf += ql.pack32(fstat64_info.st_uid)                   # uid_t		st_uid
+            fstat64_buf += ql.pack32(fstat64_info.st_gid)                   # gid_t		st_gid
+            fstat64_buf += ql.pack32(0x8800)                                # dev_t		st_rdev
+            fstat64_buf += ql.pack32(int(fstat64_info.st_atime))            # user64_time_t	st_atime
+            fstat64_buf += ql.pack32(0x0)                                   # user64_long_t	st_atimensec
+            fstat64_buf += ql.pack32(int(fstat64_info.st_mtime))            # user64_time_t	st_mtime
+            fstat64_buf += ql.pack32(0x0)                                   # user64_long_t	st_mtimensec
+            fstat64_buf += ql.pack32(int(fstat64_info.st_ctime))            # user64_time_t	st_ctime
+            fstat64_buf += ql.pack32(0x0)                                   # user64_long_t	st_ctimensec
+            fstat64_buf += ql.pack32(fstat64_info.st_size)                  # off_t		st_size
+            fstat64_buf += ql.pack32(0x0)                                   # blkcnt_t	st_blocks
+            fstat64_buf += ql.pack32(0x0)                                   # blksize_t	st_blksize
+            fstat64_buf += ql.pack32(0x0)                                   # __uint32_t	st_flags
+            fstat64_buf += ql.pack32(0x0)                                   # __uint32_t	st_gen
+            fstat64_buf += ql.pack32(0x0)                                   # __int32_t	st_lspare
+            fstat64_buf += ql.pack32(0x0)                                   # __int64_t	st_qspare[2]
+
+        ql.uc.mem_write(fstat64_add, fstat64_buf)
+        regreturn = 0
+    else:
+        regreturn = -1
+
+    ql.nprint("fstat64(%d, 0x%x) = %d" % (fstat64_fd, fstat64_add, regreturn))
+    if regreturn == 0:
+        ql.dprint("[+] fstat64 write completed")
+    else:
+        ql.dprint("[!] fstat64 read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 # 0x16e

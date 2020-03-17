@@ -77,7 +77,6 @@ class MachHostServer():
             out_msg.content += pack("<L", 0x0)              # idle_priority = IDLEPRI;
             out_msg.content += pack("<L", 0x0)              # minimum_priority = MINPRI_USER;
             out_msg.content += pack("<L", 0x4f)             # maximum_priority = MAXPRI_RESERVED
-            pass
         else:
             self.ql.nprint("Host flavor not support")
             raise
