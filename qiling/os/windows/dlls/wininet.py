@@ -105,7 +105,7 @@ def hook_InternetCloseHandle(ql, address, params):
 #   DWORD         dwService,
 #   DWORD         dwFlags,
 #   DWORD_PTR     dwContext
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hInternet": POINTER,
     "lpszServerName": STRING,
@@ -129,7 +129,7 @@ def hook_InternetConnectA(ql, address, params):
 #   DWORD         dwService,
 #   DWORD         dwFlags,
 #   DWORD_PTR     dwContext
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hInternet": POINTER,
     "lpszServerName": WSTRING,
@@ -147,7 +147,7 @@ def hook_InternetConnectW(ql, address, params):
 #    LPCSTR lpszUrl,
 #    DWORD  dwFlags,
 #    DWORD  dwReserved
-#);
+# );
 @winapi(cc=STDCALL, params={
     "lpszUrl": WSTRING,
     "dwFlags": DWORD,
@@ -186,7 +186,7 @@ def hook_HttpOpenRequestA(ql, address, params):
 #   LPINTERNET_BUFFERSA lpBuffersOut,
 #   DWORD               dwFlags,
 #   DWORD_PTR           dwContext
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hRequest": POINTER,
     "lpBuffersIn": POINTER,
@@ -207,7 +207,7 @@ def hook_HttpSendRequestExA(ql, address, params):
 #   LPCWSTR   *lplpszAcceptTypes,
 #   DWORD     dwFlags,
 #   DWORD_PTR dwContext
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hConnect": POINTER,
     "lpszVerb": WSTRING,
@@ -227,7 +227,7 @@ def hook_HttpOpenRequestW(ql, address, params):
 #   DWORD     dwOption,
 #   LPVOID    lpBuffer,
 #   DWORD     dwBufferLength
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hInternet": POINTER,
     "dwOption": DWORD,
@@ -243,7 +243,7 @@ def hook_InternetSetOptionA(ql, address, params):
 #   DWORD     dwOption,
 #   LPVOID    lpBuffer,
 #   DWORD     dwBufferLength
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hInternet": POINTER,
     "dwOption": DWORD,
@@ -260,7 +260,7 @@ def hook_InternetSetOptionW(ql, address, params):
 #  DWORD     dwHeadersLength,
 #  LPVOID    lpOptional,
 #  DWORD     dwOptionalLength
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hRequest": POINTER,
     "lpszHeaders": STRING,
@@ -278,7 +278,7 @@ def hook_HttpSendRequestA(ql, address, params):
 #  DWORD     dwHeadersLength,
 #  LPVOID    lpOptional,
 #  DWORD     dwOptionalLength
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hRequest": POINTER,
     "lpszHeaders": WSTRING,
@@ -296,7 +296,7 @@ def hook_HttpSendRequestW(ql, address, params):
 #   DWORD     dwError,
 #   DWORD     dwFlags,
 #   LPVOID    *lppvData
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hWnd": POINTER,
     "hRequest": POINTER,
@@ -313,7 +313,7 @@ def hook_InternetErrorDlg(ql, address, params):
 #   LPVOID    lpBuffer,
 #   DWORD     dwNumberOfBytesToRead,
 #   LPDWORD   lpdwNumberOfBytesRead
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hFile": POINTER,
     "lpBuffer": POINTER,
@@ -329,7 +329,7 @@ def hook_InternetReadFile(ql, address, params):
 #   LPCVOID   lpBuffer,
 #   DWORD     dwNumberOfBytesToWrite,
 #   LPDWORD   lpdwNumberOfBytesWritten
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hFile": POINTER,
     "lpBuffer": POINTER,

@@ -146,7 +146,6 @@ class Thread:
         self.waitforthreads = []
         self.tls = {}
         self.tls_index = 0
-        
 
     # create new thread
     def create(self, func_addr, func_params, status):

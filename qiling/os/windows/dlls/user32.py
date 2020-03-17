@@ -91,24 +91,27 @@ def hook_EndDialog(ql, address, params):
 def hook_GetDesktopWindow(ql, address, params):
     pass
 
-#BOOL OpenClipboard(
+
+# BOOL OpenClipboard(
 #  HWND hWndNewOwner
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hWndNewOwner": HANDLE
 })
 def hook_OpenClipboard(ql, address, params):
     return ql.clipboard.open(params['hWndNewOwner'])
 
-#BOOL CloseClipboard();
+
+# BOOL CloseClipboard();
 @winapi(cc=STDCALL, params={})
 def hook_CloseClipboard(ql, address, params):
     return ql.clipboard.close()
 
-#HANDLE SetClipboardData(
+
+# HANDLE SetClipboardData(
 #  UINT   uFormat,
 #  HANDLE hMem
-#);
+# );
 @winapi(cc=STDCALL, params={
     "uFormat": UINT,
     "hMem": STRING
@@ -120,9 +123,10 @@ def hook_SetClipboardData(ql, address, params):
         data = b""
     return ql.clipboard.set_data(params['uFormat'], data)
 
-#HANDLE GetClipboardData(
+
+# HANDLE GetClipboardData(
 #  UINT uFormat
-#);
+# );
 @winapi(cc=STDCALL, params={
     "uFormat": UINT
 })
@@ -136,9 +140,10 @@ def hook_GetClipboardData(ql, address, params):
         ql.dprint('Failed to get clipboard data')
         return 0
 
-#BOOL IsClipboardFormatAvailable(
+
+# BOOL IsClipboardFormatAvailable(
 #  UINT format
-#);
+# );
 @winapi(cc=STDCALL, params={
     "uFormat": UINT
 })

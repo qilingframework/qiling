@@ -106,11 +106,10 @@ def loader_file(ql):
     ql.uc = uc
 
     # MAPPED Vars for loadPE32
-    if (ql.stack_address == 0): 
+    if ql.stack_address == 0:
         ql.stack_address = QL_X86_WINDOWS_STACK_ADDRESS
-    if (ql.stack_size == 0): 
+    if ql.stack_size == 0:
         ql.stack_size = QL_X86_WINDOWS_STACK_SIZE
-
 
     setup_windows32(ql)
 
@@ -129,9 +128,9 @@ def loader_shellcode(ql):
     ql.uc = uc
 
     # MAPPED Vars for loadPE32
-    if (ql.stack_address == 0):
+    if ql.stack_address == 0:
         ql.stack_address = QL_X86_WINDOWS_STACK_ADDRESS
-    if (ql.stack_size == 0): 
+    if ql.stack_size == 0:
         ql.stack_size = QL_X86_WINDOWS_STACK_SIZE
 
     ql.code_address = 0x40000
@@ -150,7 +149,7 @@ def loader_shellcode(ql):
 
 
 def runner(ql):
-    if (ql.until_addr == 0):
+    if ql.until_addr == 0:
         ql.until_addr = QL_X86_WINDOWS_EMU_END
     try:
         if ql.shellcoder:
@@ -168,5 +167,5 @@ def runner(ql):
 
     ql.registry_manager.save()
 
-    if ql.internal_exception != None:
-        raise ql.internal_exception   
+    if ql.internal_exception is not None:
+        raise ql.internal_exception
