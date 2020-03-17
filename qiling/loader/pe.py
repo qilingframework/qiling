@@ -16,6 +16,7 @@ from qiling.os.memory import align
 from qiling.os.windows.structs import *
 from qiling.exception import *
 
+
 class Process:
     def __init__(self, ql):
         self.ql = ql
@@ -132,9 +133,9 @@ class Process:
         teb_data = TEB(
             self.ql,
             base=teb_addr,
-            PEB_Address=teb_addr + teb_size,
-            StackBase=self.ql.stack_address + self.ql.stack_size,
-            StackLimit=self.ql.stack_size,
+            peb_address=teb_addr + teb_size,
+            stack_base=self.ql.stack_address + self.ql.stack_size,
+            stack_limit=self.ql.stack_size,
             Self=teb_addr)
 
         self.ql.uc.mem_write(teb_addr, teb_data.bytes())
@@ -154,7 +155,7 @@ class Process:
         self.ql.nprint("[+] PEB addr is " + hex(peb_addr))
 
         peb_size = len(PEB(self.ql).bytes())
-        peb_data = PEB(self.ql, base=peb_addr, LdrAddress=peb_addr + peb_size)
+        peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size)
         self.ql.uc.mem_write(peb_addr, peb_data.bytes())
         self.ql.STRUCTERS_LAST_ADDR += peb_size
         self.PEB = self.ql.PEB = peb_data
@@ -165,18 +166,18 @@ class Process:
         ldr_data = LDR_DATA(
                     self.ql,
                     base=ldr_addr,
-                    InLoadOrderModuleList={
-                        'Flink': ldr_addr + 2 * self.ql.pointersize,
-                        'Blink': ldr_addr + 2 * self.ql.pointersize
-                    },
-                    InMemoryOrderModuleList={
-                        'Flink': ldr_addr + 4 * self.ql.pointersize,
-                        'Blink': ldr_addr + 4 * self.ql.pointersize
-                    },
-                    InInitializationOrderModuleList={
-                        'Flink': ldr_addr + 6 * self.ql.pointersize,
-                        'Blink': ldr_addr + 6 * self.ql.pointersize
-                    }
+            in_load_order_module_list={
+                'Flink': ldr_addr + 2 * self.ql.pointersize,
+                'Blink': ldr_addr + 2 * self.ql.pointersize
+            },
+            in_memory_order_module_list={
+                'Flink': ldr_addr + 4 * self.ql.pointersize,
+                'Blink': ldr_addr + 4 * self.ql.pointersize
+            },
+            in_initialization_order_module_list={
+                'Flink': ldr_addr + 6 * self.ql.pointersize,
+                'Blink': ldr_addr + 6 * self.ql.pointersize
+            }
         )
         self.ql.uc.mem_write(ldr_addr, ldr_data.bytes())
         self.ql.STRUCTERS_LAST_ADDR += ldr_size
@@ -185,19 +186,19 @@ class Process:
     def add_ldr_data_table_entry(self, dll_name):
         dll_base = self.dlls[dll_name]
         path = "C:\\Windows\\System32\\" + dll_name
-        ldr_table_entry_size = len(LDR_DATA_TABLE_ENTRY(self.ql).bytes())
+        ldr_table_entry_size = len(LdrDataTableEntry(self.ql).bytes())
         base = self.ql.heap.mem_alloc(ldr_table_entry_size)
-        ldr_table_entry = LDR_DATA_TABLE_ENTRY(self.ql,
-                    base=base,
-                    InLoadOrderLinks={'Flink': 0, 'Blink': 0},
-                    InMemoryOrderLinks={'Flink': 0, 'Blink': 0},
-                    InInitializationOrderLinks={'Flink': 0, 'Blink': 0},
-                    DllBase=dll_base,
-                    EntryPoint=0,
-                    FullDllName=path,
-                    BaseDllName=dll_name)
+        ldr_table_entry = LdrDataTableEntry(self.ql,
+                                            base=base,
+                                            in_load_order_links={'Flink': 0, 'Blink': 0},
+                                            in_memory_order_links={'Flink': 0, 'Blink': 0},
+                                            in_initialization_order_links={'Flink': 0, 'Blink': 0},
+                                            dll_base=dll_base,
+                                            entry_point=0,
+                                            full_dll_name=path,
+                                            base_dll_name=dll_name)
 
-        #Flink
+        # Flink
         if len(self.ldr_list) == 0:
             flink = self.LDR
             ldr_table_entry.InLoadOrderLinks['Flink'] = flink.InLoadOrderModuleList['Flink']
