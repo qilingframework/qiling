@@ -52,41 +52,8 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 
 ---
 
-#### Install
-
-##### Local
-If you are NOT using pyenv, run the command shown below to install Qiling (Python3 is required).
-
-```
-pip3 install -r ./requirements.txt
-python3 setup.py install
-```
-
-If you are using pyenv, run the command shown below (or use docker).
-
-```
-mv $(dirname $(which python))/python2.7 $(dirname $(which python))/python2.7.bak
-pip install -r ./requirements.txt
-python setup.py install
-```
-
-##### Docker
-You can build a docker container with
-```
-# docker build -t quiling .
-```
-
-And connect to it mounting your mock filesystem with
-
-```
-# docker run -it -v $PWD:/qiling -v /your/path/to/mock/fs:/qiling/examples/rootfs/WINOS/Windows/SysWOW64 qiling bash
-```
-
-After that 
-
-```
-python3 /qiling/setup.py install
-```
+#### Installation
+Please see [setup guide](docs/SETUP.md) file for how to install Qiling Framework.
 
 ---
 
