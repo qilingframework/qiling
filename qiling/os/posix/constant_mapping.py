@@ -19,7 +19,7 @@ def _constant_mapping(bits, d_map, ret=None):
 
     for val, sym in b_map.items():
         if val & bits != 0:
-            bits -= val
+            bits ^= val
             ret.append(sym)
 
     if bits != 0:
