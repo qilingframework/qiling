@@ -37,6 +37,7 @@ def RegOpenKey(ql, address, params):
 
     return ret
 
+
 def RegQueryValue(ql, address, params):
     ret = ERROR_SUCCESS
 
@@ -151,7 +152,7 @@ def hook_RegOpenKeyA(ql, address, params):
     "lpcbData": POINTER
 })
 def hook_RegQueryValueExA(ql, address, params):
-    return RegQueryValue(ql,address,params)
+    return RegQueryValue(ql, address, params)
 
 
 # LSTATUS RegQueryValueExW(
