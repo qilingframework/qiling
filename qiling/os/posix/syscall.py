@@ -52,7 +52,7 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
     map_info = ql.map_info
 
     for idx, val in enumerate(map_info):
-        mem_start, mem_end, _ = val
+        mem_start, mem_end, _, _ = val
         if mem_start <= munmap_addr <= mem_end:
             del map_info[idx]
 
