@@ -89,14 +89,17 @@ class RegistryManager:
         try:
             if keys[0] == "HKEY_LOCAL_MACHINE":
                 reg = self.hklm[keys[1]]
-                data = reg.open("\\".join(keys[2:]))
+                sub = "\\".join(keys[2:]).replace("\x00", "")
+                data = reg.open(sub)
             elif keys[0] == "HKEY_CURRENT_USER":
                 reg = self.hkcu
-                data = reg.open("\\".join(keys[1:]))
+                sub = "\\".join(keys[1:]).replace("\x00", "")
+                data = reg.open(sub)
             else:
                 raise QlErrorNotImplemented("[!] Windows Registry %s not implemented" % (keys[0]))
-        except Exception:
+        except Exception as e:
             return False
+
         return True
 
     def read(self, key, subkey, reg_type):
@@ -115,13 +118,16 @@ class RegistryManager:
         try:
             if keys[0] == "HKEY_LOCAL_MACHINE":
                 reg = self.hklm[keys[1]]
-                data = reg.open("\\".join(keys[2:]))
+                sub = "\\".join(keys[2:]).replace("\x00", "")
+                data = reg.open(sub)
             elif keys[0] == "HKEY_CURRENT_USER":
                 reg = self.hkcu
-                data = reg.open("\\".join(keys[1:]))
+                sub = "\\".join(keys[1:]).replace("\x00", "")
+                data = reg.open(sub)
             else:
                 raise QlErrorNotImplemented("[!] Windows Registry %s not implemented" % (keys[0]))
 
+            subkey = subkey.replace("\x00", "")
             for value in data.values():
                 if value.name() == subkey and (reg_type == Registry.RegNone or
                                                value.value_type() == reg_type):
@@ -155,7 +161,7 @@ class RegistryManager:
         length = 0
         # string
         if reg_type == Registry.RegSZ or reg_type == Registry.RegExpandSZ:
-            self.ql.mem_write(address, reg_value)
+            self.ql.mem_write(address, bytes(reg_value, "utf-8") + b"\x00")
             length = len(reg_value)
         elif reg_type == Registry.RegBin:
             # you can set REG_BINARY like '\x00\x01\x02' in config.json

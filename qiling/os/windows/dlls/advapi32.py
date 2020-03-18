@@ -18,13 +18,13 @@ def RegOpenKey(ql, address, params):
     phkResult = params["phkResult"]
 
     if hKey not in REG_KEYS:
-        return 2
+        return 0x123456
     else:
         s_hKey = REG_KEYS[hKey]
         params["hKey"] = s_hKey
-
+    # is possible to have substring like Control Panel\Mouse. This caused qilig to not find the subkey
     if not ql.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
-        return 2
+        return 0x1234567
 
     # new handle
     if ret == ERROR_SUCCESS:
@@ -34,6 +34,38 @@ def RegOpenKey(ql, address, params):
             ql.mem_write(phkResult, ql.pack(new_handle.id))
     else:
         new_handle = 0
+
+    return ret
+
+def RegQueryValue(ql, address, params):
+    ret = ERROR_SUCCESS
+
+    hKey = params["hKey"]
+    s_lpValueName = params["lpValueName"]
+    lpType = params["lpType"]
+    lpData = params["lpData"]
+    lpcbData = params["lpcbData"]
+
+    s_hKey = ql.handle_manager.get(hKey).regkey
+    params["hKey"] = s_hKey
+
+    # read reg_type
+    if lpType != 0:
+        reg_type = ql.unpack(ql.mem_read(lpType, 4))
+    else:
+        reg_type = Registry.RegNone
+
+    # read registy
+    reg_type, value = ql.registry_manager.read(s_hKey, s_lpValueName, reg_type)
+
+    # error key
+    if reg_type is None or value is None:
+        return 0x123456
+    else:
+        # set lpData
+        length = ql.registry_manager.write_reg_value_into_mem(value, reg_type, lpData)
+        # set lpcbData
+        ql.mem_write(lpcbData, ql.pack(length))
 
     return ret
 
@@ -119,36 +151,27 @@ def hook_RegOpenKeyA(ql, address, params):
     "lpcbData": POINTER
 })
 def hook_RegQueryValueExA(ql, address, params):
-    ret = ERROR_SUCCESS
+    return RegQueryValue(ql,address,params)
 
-    hKey = params["hKey"]
-    s_lpValueName = params["lpValueName"]
-    lpType = params["lpType"]
-    lpData = params["lpData"]
-    lpcbData = params["lpcbData"]
 
-    s_hKey = ql.handle_manager.get(hKey).regkey
-    params["hKey"] = s_hKey
-
-    # read reg_type
-    if lpType != 0:
-        reg_type = ql.unpack(ql.mem_read(lpType, 4))
-    else:
-        reg_type = Registry.RegNone
-
-    # read registy
-    reg_type, value = ql.registry_manager.read(s_hKey, s_lpValueName, reg_type)
-
-    # error key
-    if reg_type is None or value is None:
-        return 2
-    else:
-        # set lpData
-        length = ql.registry_manager.write_reg_value_into_mem(value, reg_type, lpData)
-        # set lpcbData
-        ql.mem_write(lpcbData, ql.pack(length))
-
-    return ret
+# LSTATUS RegQueryValueExW(
+#   HKEY    hKey,
+#   LPCWSTR lpValueName,
+#   LPDWORD lpReserved,
+#   LPDWORD lpType,
+#   LPBYTE  lpData,
+#   LPDWORD lpcbData
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpValueName": WSTRING,
+    "lpReserved": POINTER,
+    "lpType": POINTER,
+    "lpData": POINTER,
+    "lpcbData": POINTER
+})
+def hook_RegQueryValueExW(ql, address, params):
+    return RegQueryValue(ql, address, params)
 
 
 # LSTATUS RegCloseKey(
