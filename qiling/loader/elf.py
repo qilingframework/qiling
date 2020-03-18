@@ -579,3 +579,4 @@ class ELFLoader(ELFParse):
         ql.elf_entry = loadbase + elfhead['e_entry']
         ql.new_stack = new_stack
         ql.loadbase = loadbase
+        ql.insert_map_info(new_stack, ql.stack_address+ql.stack_size, '[stack]')

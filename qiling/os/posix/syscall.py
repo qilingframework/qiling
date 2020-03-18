@@ -48,6 +48,16 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
     munmap_len = ((munmap_len + 0x1000 - 1) // 0x1000) * 0x1000
     ql.uc.mem_unmap(munmap_addr, munmap_len)
     regreturn = 0
+
+    map_info = ql.map_info
+
+    for idx, val in enumerate(map_info):
+        mem_start, mem_end, _ = val
+        if mem_start <= munmap_addr <= mem_end:
+            del map_info[idx]
+
+    ql.map_info = map_info
+
     ql.nprint("munmap(0x%x, 0x%x) = %d" % (munmap_addr , munmap_len, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
@@ -448,7 +458,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
 
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
-    mem_info = ''
+    mem_info = '[mapped]'
 
     if ((mmap_flags & MAP_ANONYMOUS) == 0) and mmap_fd < 256 and ql.file_des[mmap_fd] != 0:
         ql.file_des[mmap_fd].lseek(mmap_offset)
@@ -522,7 +532,7 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
 
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
-    mem_info = ''
+    mem_info = '[mapped]'
 
     if ((mmap2_flags & MAP_ANONYMOUS) == 0) and mmap2_fd < 256 and ql.file_des[mmap2_fd] != 0:
         ql.file_des[mmap2_fd].lseek(mmap2_pgoffset)
@@ -588,7 +598,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
-    mem_info = ''
+    mem_info = '[mapped]'
 
     if ((mmap2_flags & MAP_ANONYMOUS) == 0) and mmap2_fd < 256 and ql.file_des[mmap2_fd] != 0:
         ql.file_des[mmap2_fd].lseek(mmap2_pgoffset)
