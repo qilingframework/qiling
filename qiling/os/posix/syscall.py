@@ -450,11 +450,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
             ql.show_map_info()
             raise
 
-    try:
-        ql.uc.mem_write(mmap_base, b'\x00' * (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
-    except:
-        pass
-
+    ql.uc.mem_write(mmap_base, b'\x00' * (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
@@ -534,10 +530,7 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
             ql.show_map_info()
             raise   
     
-    try:
-        ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
-    except:
-        pass    
+    ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
     
 
     mem_s = mmap_base
