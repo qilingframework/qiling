@@ -24,7 +24,8 @@ QL_X8664_WINSOWS_EMU_END = 0x0
 
 def set_pe64_gdt(ql):
     # uc.mem_map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
-    # setup_gdt_segment(uc, GDT_ADDR, GDT_LIMIT, UC_X86_REG_GS, 15, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, A_PRESENT | A_DATA | A_DATA_WRITABLE | A_PRIV_3 | A_DIR_CON_BIT, S_GDT | S_PRIV_3)
+    # setup_gdt_segment(uc, GDT_ADDR, GDT_LIMIT, UC_X86_REG_GS, 15, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, A_PRESENT |
+    # A_DATA | A_DATA_WRITABLE | A_PRIV_3 | A_DIR_CON_BIT, S_GDT | S_PRIV_3)
     GSMSR = 0xC0000101
     ql.uc.mem_map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
     ql.uc.msr_write(GSMSR, ql.GS_SEGMENT_ADDR)
@@ -104,9 +105,9 @@ def loader_file(ql):
     uc = Uc(UC_ARCH_X86, UC_MODE_64)
     ql.uc = uc
     # init ql pe
-    if (ql.stack_address == 0): 
+    if ql.stack_address == 0:
         ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
-    if (ql.stack_size == 0): 
+    if ql.stack_size == 0:
         ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
 
     windows_setup64(ql)
@@ -125,9 +126,9 @@ def loader_shellcode(ql):
     ql.uc = uc
 
     # init ql pe
-    if (ql.stack_address == 0): 
+    if ql.stack_address == 0:
         ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
-    if (ql.stack_size == 0):
+    if ql.stack_size == 0:
         ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
 
     ql.code_address = 0x140000000
@@ -146,7 +147,7 @@ def loader_shellcode(ql):
 
 
 def runner(ql):
-    if (ql.until_addr == 0):
+    if ql.until_addr == 0:
         ql.until_addr = QL_X8664_WINSOWS_EMU_END
     try:
         if ql.shellcoder:
@@ -168,5 +169,5 @@ def runner(ql):
 
     ql.registry_manager.save()
 
-    if ql.internal_exception != None:
+    if ql.internal_exception is not None:
         raise ql.internal_exception

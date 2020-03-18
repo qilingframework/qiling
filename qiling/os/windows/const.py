@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
+from Registry import Registry
+
 ERROR_SUCCESS = 0
 INVALID_HANDLE_VALUE = -1
 
@@ -10,7 +12,6 @@ STD_OUTPUT_HANDLE = 0xfffffff5
 STD_ERROR_HANDLE = 0xfffffff4
 
 # Registry Type
-from Registry import Registry
 
 # Predefined Keys
 REG_KEYS = {
