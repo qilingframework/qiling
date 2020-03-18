@@ -49,7 +49,8 @@ def hook_GetStringTypeW(ql, address, params):
     "chartype": POINTER
 })
 def hook_GetStringTypeExA(ql, address, params):
-    ret = 0
+    # TODO implement
+    ret = 1
     return ret
 
 

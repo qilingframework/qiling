@@ -11,7 +11,7 @@ from .processthreadsapi import *
 from .processenv import *
 from .stringapiset import *
 from .synchapi import *
-from .synchapi import *
+from .sysinfoapi import *
 from .winbase import *
 from .winnls import *
 from .winnt import *

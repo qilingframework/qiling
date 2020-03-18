@@ -46,6 +46,16 @@ def hook_LeaveCriticalSection(ql, address, params):
     return 0
 
 
+# void InitializeCriticalSection(
+#   LPCRITICAL_SECTION lpCriticalSection
+# );
+@winapi(cc=STDCALL, params={
+    "lpCriticalSection": POINTER,
+})
+def hook_InitializeCriticalSection(ql, address, params):
+    return 1
+
+
 # BOOL InitializeCriticalSectionEx(
 #   LPCRITICAL_SECTION lpCriticalSection,
 #   DWORD              dwSpinCount,

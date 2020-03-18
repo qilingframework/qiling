@@ -86,6 +86,23 @@ def hook_LocalAlloc(ql, address, params):
     return ret
 
 
+# DECLSPEC_ALLOCATOR HLOCAL LocalReAlloc(
+#   _Frees_ptr_opt_ HLOCAL hMem,
+#   SIZE_T                 uBytes,
+#   UINT                   uFlags
+# );
+@winapi(cc=STDCALL, params={
+    "hMem": POINTER,
+    "uBytes": SIZE_T,
+    "uFlags": UINT
+})
+def hook_LocalReAlloc(ql, address, params):
+    old_mem = params["hMem"]
+    ql.heap.mem_free(old_mem)
+    ret = ql.heap.mem_alloc(params["uBytes"])
+    return ret
+
+
 # UINT SetHandleCount(
 #   UINT uNumber
 # );

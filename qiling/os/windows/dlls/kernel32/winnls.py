@@ -88,6 +88,16 @@ def hook_IsValidCodePage(ql, address, params):
     return 1
 
 
+def _LCMapString(ql, address, params):
+    cchDest = params["cchDest"]
+    string = params["lpSrcStr"] + "\x00"
+    dst = params["lpDestStr"]
+    if cchDest != 0:
+        # TODO maybe do some other check, for now is working
+        ql.uc.mem_write(dst, bytes(string, "utf-16le"))
+    return len(string)
+
+
 # int LCMapStringW(
 #   LCID    Locale,
 #   DWORD   dwMapFlags,
@@ -105,9 +115,7 @@ def hook_IsValidCodePage(ql, address, params):
     "cchDest": INT
 })
 def hook_LCMapStringW(ql, address, params):
-    # TODO implement
-    ret = 1
-    return ret
+    return _LCMapString(ql, address, params)
 
 
 # int LCMapStringA(
@@ -121,15 +129,13 @@ def hook_LCMapStringW(ql, address, params):
 @winapi(cc=STDCALL, params={
     "Locale": POINTER,
     "dwMapFlags": DWORD,
-    "lpSrcStr": WSTRING,
+    "lpSrcStr": STRING,
     "cchSrc": INT,
     "lpDestStr": POINTER,
     "cchDest": INT
 })
 def hook_LCMapStringA(ql, address, params):
-    # TODO implement
-    ret = 1
-    return ret
+    return _LCMapString(ql, address, params)
 
 
 # int LCMapStringEx(
@@ -156,6 +162,4 @@ def hook_LCMapStringA(ql, address, params):
 
 })
 def hook_LCMapStringEx(ql, address, params):
-    # TODO needs a better implementation
-    ret = 1
-    return ret
+    return _LCMapString(ql, address, params)
