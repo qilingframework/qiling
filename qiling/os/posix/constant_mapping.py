@@ -61,12 +61,12 @@ def mmap_flag_mapping(flags):
 def mmap_prot_mapping(prots):
     
     if prots is 0x0:
-        return 'PORT_NONE'
+        return 'PROT_NONE'
 
     mmap_prots = {
         'PROT_READ' : 0x1,
         'PROT_WRITE': 0x2,
-        'PORT_EXEC' : 0x4,
+        'PROT_EXEC' : 0x4,
     }
 
     return _constant_mapping(prots, mmap_prots)
