@@ -9,7 +9,7 @@ import types
 from unicorn import *
 from unicorn.x86_const import *
 
-# impport read_string and other commom utils.
+# import read_string and other common utils.
 from qiling.loader.pe import PE, Shellcode
 from qiling.arch.x86 import *
 from qiling.os.windows.dlls import *

@@ -59,31 +59,54 @@ def hook_FatalExit(ql, address, params):
     ql.RUN = False
 
 
-# VOID WINAPI GetStartupInfo(
-#   _Out_ LPSTARTUPINFO lpStartupInfo
-# );
-"""
-typedef struct _STARTUPINFO {
-  DWORD  cb;
-  LPTSTR lpReserved;
-  LPTSTR lpDesktop;
-  LPTSTR lpTitle;
-  DWORD  dwX;
-  DWORD  dwY;
-  DWORD  dwXSize;
-  DWORD  dwYSize;
-  DWORD  dwXCountChars;
-  DWORD  dwYCountChars;
-  DWORD  dwFillAttribute;
-  DWORD  dwFlags;
-  WORD   wShowWindow;
-  WORD   cbReserved2;
-  LPBYTE lpReserved2;
-  HANDLE hStdInput;
-  HANDLE hStdOutput;
-  HANDLE hStdError;
-} STARTUPINFO, *LPSTARTUPINFO;
-"""
+# typedef struct _STARTUPINFO {
+#   DWORD  cb;
+#   LPTSTR lpReserved;
+#   LPTSTR lpDesktop;
+#   LPTSTR lpTitle;
+#   DWORD  dwX;
+#   DWORD  dwY;
+#   DWORD  dwXSize;
+#   DWORD  dwYSize;
+#   DWORD  dwXCountChars;
+#   DWORD  dwYCountChars;
+#   DWORD  dwFillAttribute;
+#   DWORD  dwFlags;
+#   WORD   wShowWindow;
+#   WORD   cbReserved2;
+#   LPBYTE lpReserved2;
+#   HANDLE hStdInput;
+#   HANDLE hStdOutput;
+#   HANDLE hStdError;
+# } STARTUPINFO, *LPSTARTUPINFO;
+def GetStartupInfo(ql, address, params):
+    startup_info = {
+        "cb": 0x44.to_bytes(length=4, byteorder='little'),
+        "lpReserved": 0x0.to_bytes(length=ql.pointersize, byteorder='little'),
+        "lpDesktop": 0xc3c930.to_bytes(length=ql.pointersize, byteorder='little'),
+        "lpTitle": 0x0.to_bytes(length=ql.pointersize, byteorder='little'),
+        "dwX": 0x0.to_bytes(length=4, byteorder='little'),
+        "dwY": 0x0.to_bytes(length=4, byteorder='little'),
+        "dwXSize": 0x64.to_bytes(length=4, byteorder='little'),
+        "dwYSize": 0x64.to_bytes(length=4, byteorder='little'),
+        "dwXCountChars": 0x84.to_bytes(length=4, byteorder='little'),
+        "dwYCountChars": 0x80.to_bytes(length=4, byteorder='little'),
+        "dwFillAttribute": 0xff.to_bytes(length=4, byteorder='little'),
+        "dwFlags": 0x40.to_bytes(length=4, byteorder='little'),
+        "wShowWindow": 0x1.to_bytes(length=2, byteorder='little'),
+        "cbReserved2": 0x0.to_bytes(length=2, byteorder='little'),
+        "lpReserved2": 0x0.to_bytes(length=ql.pointersize, byteorder='little'),
+        "hStdInput": 0xffffffff.to_bytes(length=4, byteorder='little'),
+        "hStdOutput": 0xffffffff.to_bytes(length=4, byteorder='little'),
+        "hStdError": 0xffffffff.to_bytes(length=4, byteorder='little')
+    }
+    pointer = params["lpStartupInfo"]
+    values = b"".join(startup_info.values())
+
+    # CB must be the size of the struct
+    assert len(values) == startup_info["cb"][0]
+    ql.uc.mem_write(pointer, values)
+    return 0
 
 
 # VOID WINAPI GetStartupInfoA(
@@ -93,38 +116,7 @@ typedef struct _STARTUPINFO {
     "lpStartupInfo": POINTER
 })
 def hook_GetStartupInfoA(ql, address, params):
-    # TODO fill in std output handles.
-    # Seems to work fine without them so far though
-    pointer = params["lpStartupInfo"]
-    size = 52 + 4 * ql.pointersize
-    dwordsize = 4
-    wordsize = 2
-    cb = 0x44.to_bytes(length=dwordsize, byteorder='little')
-    lpReserved = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
-    lpDesktop = 0xc3c930.to_bytes(length=ql.pointersize, byteorder='little')
-    lpTitle = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
-    dwX = 0x0.to_bytes(length=dwordsize, byteorder='little')
-    dwY = 0x0.to_bytes(length=dwordsize, byteorder='little')
-    dwXSize = 0x64.to_bytes(length=dwordsize, byteorder='little')
-    dwYSize = 0x64.to_bytes(length=dwordsize, byteorder='little')
-    dwXCountChars = 0x84.to_bytes(length=dwordsize, byteorder='little')
-    dwYCountChars = 0x80.to_bytes(length=dwordsize, byteorder='little')
-    dwFillAttribute = 0xff.to_bytes(length=dwordsize, byteorder='little')
-    dwFlags = 0x40.to_bytes(length=dwordsize, byteorder='little')
-    wShowWindow = 0x1.to_bytes(length=wordsize, byteorder='little')
-    cbReserved2 = 0x0.to_bytes(length=wordsize, byteorder='little')
-    lpReserved2 = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
-    hStdInput = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
-    hStdOutput = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
-    hStdError = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
-    dummy_content = cb + lpReserved + lpDesktop + lpTitle + dwX + dwY + dwXSize + dwYSize + dwXCountChars \
-                    + dwYCountChars + dwFillAttribute + dwFlags + wShowWindow + cbReserved2 + lpReserved2 \
-                    + hStdInput + hStdOutput + hStdError
-    # addr = ql.heap.mem_alloc(size)
-
-    assert (len(dummy_content) == size == 0x44)
-    ql.uc.mem_write(pointer, dummy_content)
-    return 0
+    return GetStartupInfo(ql, address, params)
 
 
 # VOID WINAPI GetStartupInfoW(
@@ -134,36 +126,8 @@ def hook_GetStartupInfoA(ql, address, params):
     "lpStartupInfo": POINTER
 })
 def hook_GetStartupInfoW(ql, address, params):
-    pointer = params["lpStartupInfo"]
-    size = 52 + 4 * ql.pointersize
-    dwordsize = 4
-    wordsize = 2
-    cb = 0x44.to_bytes(length=dwordsize, byteorder='little')
-    lpReserved = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
-    lpDesktop = 0xc3c930.to_bytes(length=ql.pointersize, byteorder='little')
-    lpTitle = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
-    dwX = 0x0.to_bytes(length=dwordsize, byteorder='little')
-    dwY = 0x0.to_bytes(length=dwordsize, byteorder='little')
-    dwXSize = 0x64.to_bytes(length=dwordsize, byteorder='little')
-    dwYSize = 0x64.to_bytes(length=dwordsize, byteorder='little')
-    dwXCountChars = 0x84.to_bytes(length=dwordsize, byteorder='little')
-    dwYCountChars = 0x80.to_bytes(length=dwordsize, byteorder='little')
-    dwFillAttribute = 0xff.to_bytes(length=dwordsize, byteorder='little')
-    dwFlags = 0x40.to_bytes(length=dwordsize, byteorder='little')
-    wShowWindow = 0x1.to_bytes(length=wordsize, byteorder='little')
-    cbReserved2 = 0x0.to_bytes(length=wordsize, byteorder='little')
-    lpReserved2 = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
-    hStdInput = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
-    hStdOutput = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
-    hStdError = 0xffffffff.to_bytes(length=dwordsize, byteorder='little')
-    dummy_content = cb + lpReserved + lpDesktop + lpTitle + dwX + dwY + dwXSize + dwYSize + dwXCountChars \
-                    + dwYCountChars + dwFillAttribute + dwFlags + wShowWindow + cbReserved2 + lpReserved2 \
-                    + hStdInput + hStdOutput + hStdError
-    # addr = ql.heap.mem_alloc(size)
-
-    assert (len(dummy_content) == size == 0x44)
-    ql.uc.mem_write(pointer, dummy_content)
-    return 0
+    # The struct for the W version uses LPWSTRING, but i think is the same in this context
+    return GetStartupInfo(ql, address, params)
 
 
 # LONG InterlockedExchange(
@@ -1598,6 +1562,7 @@ def hook_IsWow64Process(ql, address, params):
 #   WORD      wProcessorRevision;
 # } SYSTEM_INFO, *LPSYSTEM_INFO;
 
+
 # void GetSystemInfo(
 #   LPSYSTEM_INFO lpSystemInfo
 # );
@@ -1605,13 +1570,22 @@ def hook_IsWow64Process(ql, address, params):
     "lpSystemInfo": POINTER
 })
 def hook_GetSystemInfo(ql, address, params):
-    # TODO create struct
     pointer = params["lpSystemInfo"]
-    dwordsize = 4
-    wordsize = 2
-    dummysize = 2 * wordsize + dwordsize
-    size = dummysize + dwordsize + ql.pointersize + ql.pointersize + ql.pointersize + 3 * dwordsize + 2 * wordsize
-    ql.uc.mem_write(pointer, 0x41.to_bytes(length=size, byteorder='little'))
+    system_info = {"dummy": 0x0.to_bytes(length=2 * 2 + 4, byteorder='little'),
+                   "dwPageSize": ql.heap.page_size.to_bytes(length=4, byteorder='little'),
+                   "lpMinimumApplicationAddress": ql.PE_IMAGE_BASE.to_bytes(length=ql.pointersize, byteorder='little'),
+                   "lpMaximumApplicationAddress": (ql.DLL_BASE_ADDR + ql.DLL_SIZE).to_bytes(length=ql.pointersize,
+                                                                                            byteorder='little'),
+                   "dwActiveProcessorMask": 0x3.to_bytes(length=ql.pointersize, byteorder='little'),
+                   # TODO not sure from here, did not found variables inside the emulator
+                   "dwNumberOfProcessors": 0x4.to_bytes(length=4, byteorder='little'),
+                   "dwProcessorType": 0x24a.to_bytes(length=4, byteorder='little'),
+                   "dwAllocationGranularity": (ql.heap.page_size * 10).to_bytes(length=4, byteorder='little'),
+                   "wProcessorLevel": 0x6.to_bytes(length=2, byteorder='little'),
+                   "wProcessorRevision": 0x4601.to_bytes(length=2, byteorder='little')
+                   }
+    values = b"".join(system_info.values())
+    ql.uc.mem_write(pointer, values)
     return 0
 
 
