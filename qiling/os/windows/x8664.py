@@ -78,6 +78,7 @@ def windows_setup64(ql):
     ql.RUN = True
 
     ql.heap = Heap(ql, ql.HEAP_BASE_ADDR, ql.HEAP_BASE_ADDR + ql.HEAP_SIZE)
+    ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
 
     # setup gdt
     set_pe64_gdt(ql)
