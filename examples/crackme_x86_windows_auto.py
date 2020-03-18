@@ -6,8 +6,9 @@
 from unicorn.x86_const import *
 
 import sys
-sys.path.append("..")
 from qiling import *
+
+sys.path.append("..")
 
 
 class StringBuffer:
@@ -19,7 +20,7 @@ class StringBuffer:
         self.buffer = self.buffer[n:]
         return ret
 
-    def readline(self, end = b'\n'):
+    def readline(self, end=b'\n'):
         ret = b''
         while True:
             c = self.read(1)

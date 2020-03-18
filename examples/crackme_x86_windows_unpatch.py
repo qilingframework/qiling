@@ -5,8 +5,9 @@
 from unicorn.x86_const import *
 
 import sys
-sys.path.append("..")
 from qiling import *
+sys.path.append("..")
+
 
 def force_call_dialog_func(ql):
     # get DialogFunc address

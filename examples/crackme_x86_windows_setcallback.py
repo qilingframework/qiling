@@ -3,8 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 import sys
-sys.path.append("..")
 from qiling import *
+sys.path.append("..")
+
 
 def force_call_dialog_func(ql):
     # get DialogFunc address
@@ -29,7 +30,7 @@ def my_sandbox(path, rootfs):
     ql.patch(0x004010CD, b'\x90\x90')
     ql.patch(0x0040110B, b'\x90\x90')
     ql.patch(0x00401112, b'\x90\x90')
-    #ql.hook_mem_read(hook_memread, 0xffffdef4)
+    # ql.hook_mem_read(hook_memread, 0xffffdef4)
     ql.hook_address(force_call_dialog_func, 0x00401016)
     ql.run()
 
