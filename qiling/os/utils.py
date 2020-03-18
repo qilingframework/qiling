@@ -472,16 +472,7 @@ def print_function(ql, address, function_name, params, ret):
     for each in params:
         value = params[each]
         if type(value) == str or type(value) == bytearray:
-            # content=""
-            # for let in value:
-            #
-            #     if let.isprintable():
-            #         content+=let
-            #     else:
-            #         content+=hex(ord(let))
-
             log += '%s = "%s", ' % (each, value)
-
         else:
             log += '%s = 0x%x, ' % (each, value)
     log = log.strip(", ")

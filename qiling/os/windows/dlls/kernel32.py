@@ -365,6 +365,21 @@ def hook_HeapAlloc(ql, address, params):
     ret = ql.heap.mem_alloc(params["dwBytes"])
     return ret
 
+
+# SIZE_T HeapSize(
+#   HANDLE  hHeap,
+#   DWORD   dwFlags,
+#   LPCVOID lpMem
+# );
+@winapi(cc=STDCALL, params={
+    "hHeap": HANDLE,
+    "dwFlags": DWORD,
+    "dwBytes": SIZE_T
+})
+def hook_HeapSize(ql, address, params):
+    return ql.HEAP_SIZE
+
+
 #BOOL HeapFree(
 #  HANDLE                 hHeap,
 #  DWORD                  dwFlags,
