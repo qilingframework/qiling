@@ -634,55 +634,58 @@ class Qiling:
     def set_exit(self, until_addr):
         self.until_addr = until_addr
 
-    def insert_map_info(self, mem_s, mem_e, mem_info):
+    def insert_map_info(self, mem_s, mem_e, mem_p, mem_info):
         tmp_map_info = []
         insert_flag = 0
         map_info = self.map_info
         if len(map_info) == 0:
-            tmp_map_info.append([mem_s, mem_e, mem_info])
+            tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
         else:
-            for s, e, info in map_info:
+            for s, e, p, info in map_info:
                 if e <= mem_s:
-                    tmp_map_info.append([s, e, info])
+                    tmp_map_info.append([s, e, p, info])
                     continue
                 if s >= mem_e:
                     if insert_flag == 0:
                         insert_flag = 1
-                        tmp_map_info.append([mem_s, mem_e, mem_info])
-                    tmp_map_info.append([s, e, info])
+                        tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
+                    tmp_map_info.append([s, e, p, info])
                     continue
                 if s < mem_s:
-                    tmp_map_info.append([s, mem_s, info])
+                    tmp_map_info.append([s, mem_s, mem_p, info])
 
                 if s == mem_s:
                     pass
 
                 if insert_flag == 0:
                     insert_flag = 1
-                    tmp_map_info.append([mem_s, mem_e, mem_info])
-
+                    tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
+                
                 if e > mem_e:
-                    tmp_map_info.append([mem_e, e, info])
-
+                    tmp_map_info.append([mem_e, e, mem_p, info])
+                
                 if e == mem_e:
                     pass
             if insert_flag == 0:
-                tmp_map_info.append([mem_s, mem_e, mem_info])
-        map_info = [tmp_map_info[0]]
+                tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
+        map_info = []
+        map_info.append(tmp_map_info[0])
 
-        for s, e, info in tmp_map_info[1:]:
+        for s, e, p, info in tmp_map_info[1 : ]:
             if s == map_info[-1][1] and info == map_info[-1][2]:
                 map_info[-1][1] = e
             else:
-                map_info.append([s, e, info])
+                map_info.append([s, e, p, info])
+
         self.map_info = map_info
 
     def show_map_info(self):
-        for s, e, info in self.map_info:
-            self.nprint("[+] %08x - %08x      %s" % (s, e, info))
+        self.nprint("[+] Start      End        Perm.  Path")
+        for s, e, p, info in self.map_info:
+            self.nprint("[+] %08x - %08x - %s    %s" % (s, e, p, info))
 
     def __get_lib_base(self, filename):
-        for s, e, info in self.map_info:
+        for s, e, p, info in self.map_info:
             if os.path.split(info)[1] == filename:
                 return s
         return -1
