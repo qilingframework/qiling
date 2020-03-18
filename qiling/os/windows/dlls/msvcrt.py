@@ -84,7 +84,7 @@ def hook___p__environ(ql, address, params):
     for key in ql.env:
         pointer = ql.heap.mem_alloc(ql.pointersize)
         env = key + "=" + ql.env[key]
-        env_addr = ql.heap.mem_alloc(len(env)+1)
+        env_addr = ql.heap.mem_alloc(len(env) + 1)
         ql.mem_write(env_addr, bytes(env, 'ascii') + b'\x00')
         ql.mem_write(pointer, ql.pack(env_addr))
         ql.mem_write(ret + count * ql.pointersize, ql.pack(pointer))
@@ -123,6 +123,7 @@ def hook__cexit(ql, address, params):
 def hook__initterm(ql, address, params):
     pass
 
+
 # void exit(
 #    int const status
 # );
@@ -153,7 +154,7 @@ def hook___p___argv(ql, address, params):
     count = 0
     for each in ql.argv:
         arg_pointer = ql.heap.mem_alloc(ql.pointersize)
-        arg = ql.heap.mem_alloc(len(each)+1)
+        arg = ql.heap.mem_alloc(len(each) + 1)
         ql.mem_write(arg, bytes(each, 'ascii') + b'\x00')
         ql.mem_write(arg_pointer, ql.pack(arg))
         ql.mem_write(ret + count * ql.pointersize, ql.pack(arg_pointer))
@@ -175,7 +176,7 @@ def hook__get_initial_narrow_environment(ql, address, params):
     count = 0
     for key in ql.env:
         value = key + "=" + ql.env[key]
-        env = ql.heap.mem_alloc(len(value)+1)
+        env = ql.heap.mem_alloc(len(value) + 1)
         if count == 0:
             ret = env
         ql.mem_write(env, bytes(value, 'ascii') + b'\x00')
@@ -247,6 +248,7 @@ def hook_printf(ql, address, _):
             ql.uc.reg_write(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
 
     return None
+
 
 # MSVCRT_FILE * CDECL MSVCRT___acrt_iob_func(unsigned idx)
 @winapi(cc=CDECL, params={

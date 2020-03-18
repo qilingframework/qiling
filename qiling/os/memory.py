@@ -6,6 +6,7 @@
 from qiling.arch.filetype import *
 from qiling.exception import *
 
+
 def align(size, unit):
     return (size // unit + (1 if size % unit else 0)) * unit
 
