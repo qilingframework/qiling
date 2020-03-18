@@ -188,8 +188,8 @@ def hook_GetModuleHandleA(ql, address, params):
     if lpModuleName == 0:
         ret = ql.PE.PE_IMAGE_BASE
     else:
-        if not lpModuleName.lower().endswith('.dll'):
-            lpModuleName += '.dll'
+        if not lpModuleName.lower().endswith(".dll") and not lpModuleName.lower().endswith(".drv"):
+            lpModuleName += ".dll"
         if lpModuleName.lower() in ql.PE.dlls:
             ret = ql.PE.dlls[lpModuleName.lower()]
         else:
@@ -209,8 +209,8 @@ def hook_GetModuleHandleW(ql, address, params):
         ret = ql.PE.PE_IMAGE_BASE
     else:
         lpModuleName = bytes(lpModuleName, "ascii").decode('utf-16le')
-        if not lpModuleName.lower().endswith('.dll'):
-            lpModuleName += '.dll'
+        if not lpModuleName.lower().endswith(".dll") and not lpModuleName.lower().endswith(".drv"):
+            lpModuleName += ".dll"
         if lpModuleName.lower() in ql.PE.dlls:
             ret = ql.PE.dlls[lpModuleName.lower()]
         else:
@@ -506,7 +506,8 @@ def hook_GetCPInfo(ql, address, params):
     "lpCharType": POINTER
 })
 def hook_GetStringTypeW(ql, address, params):
-    ret = 0
+    # TODO implement
+    ret = 1
     return ret
 
 
@@ -606,7 +607,8 @@ def hook_FreeEnvironmentStringsW(ql, address, params):
     "cchDest": INT
 })
 def hook_LCMapStringW(ql, address, params):
-    ret = 0
+    # TODO implement
+    ret = 1
     return ret
 
 
@@ -627,7 +629,37 @@ def hook_LCMapStringW(ql, address, params):
     "cchDest": INT
 })
 def hook_LCMapStringA(ql, address, params):
-    ret = 0
+    # TODO implement
+    ret = 1
+    return ret
+
+
+# int LCMapStringEx(
+#   LPCWSTR          lpLocaleName,
+#   DWORD            dwMapFlags,
+#   LPCWSTR          lpSrcStr,
+#   int              cchSrc,
+#   LPWSTR           lpDestStr,
+#   int              cchDest,
+#   LPNLSVERSIONINFO lpVersionInformation,
+#   LPVOID           lpReserved,
+#   LPARAM           sortHandle
+# );
+@winapi(cc=STDCALL, params={
+    "lpLocaleName": POINTER,
+    "dwMapFlags": DWORD,
+    "lpSrcStr": POINTER,
+    "cchSrc": INT,
+    "lpDestStr": POINTER,
+    "cchDest": INT,
+    "lpVersionInformation": POINTER,
+    "lpReserved": UINT,
+    "sortHandle": UINT
+
+})
+def hook_LCMapStringEx(ql, address, params):
+    # TODO needs a better implementation
+    ret = 1
     return ret
 
 
@@ -1496,32 +1528,6 @@ def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
     return 1
 
 
-# int LCMapStringEx(
-#   LPCWSTR          lpLocaleName,
-#   DWORD            dwMapFlags,
-#   LPCWSTR          lpSrcStr,
-#   int              cchSrc,
-#   LPWSTR           lpDestStr,
-#   int              cchDest,
-#   LPNLSVERSIONINFO lpVersionInformation,
-#   LPVOID           lpReserved,
-#   LPARAM           sortHandle
-# );
-@winapi(cc=STDCALL, params={
-    "lpLocaleName": POINTER,
-    "dwMapFlags": DWORD,
-    "lpSrcStr": POINTER,
-    "cchSrc": INT,
-    "lpDestStr": POINTER,
-    "cchDest": INT,
-    "lpVersionInformation": POINTER,
-    "lpReserved": UINT,
-    "sortHandle": UINT
-
-})
-def hook_LCMapStringEx(ql, address, params):
-    # TODO needs a better implementation
-    return 1
 
 
 # BOOL IsWow64Process(
@@ -1612,3 +1618,35 @@ def hook_DuplicateHandle(ql, address, params):
     dst = params["lpTargetHandle"]
     ql.uc.mem_write(dst, content.to_bytes(length=ql.pointersize, byteorder='little'))
     return 1
+
+
+# int GetLocaleInfoA(
+#   LCID   Locale,
+#   LCTYPE LCType,
+#   LPSTR  lpLCData,
+#   int    cchData
+# );
+@winapi(cc=STDCALL, params={
+    "Locale": DWORD,
+    "LCType": DWORD,
+    "lpLCData": POINTER,
+    "cchData": INT,
+})
+def hook_GetLocaleInfoA(ql, address, params):
+    locale_value = params["Locale"]
+    lctype_value = params["LCType"]
+    cchData = params["cchData"]
+    ql.dprint("locale")
+    ql.dprint(locale_value)
+    ql.dprint("lctype")
+    ql.dprint(lctype_value)
+
+    local_dict = LOCALE.get(locale_value, None)
+    if local_dict is None:
+        raise QlErrorNotImplemented("[!] API not implemented")
+    lctype = local_dict[lctype_value] + "\x00"
+
+    if cchData != 0:
+        lplcdata = params["lpLCData"]
+        ql.uc.mem_write(lplcdata, lctype.encode("utf16-le"))
+    return len(lctype)
