@@ -463,7 +463,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
     prot_dict = {"PROT_READ": "r", "PROT_WRITE": "w", "PROT_EXEC": "x"}
 
     for idx, val in prot_dict.items():
-        if idx in mmap_prot_mapping(mmap2_prot):
+        if idx in mmap_prot_mapping(mmap_prot):
             mem_p.append(val)
         else:
             mem_p.append("-")
