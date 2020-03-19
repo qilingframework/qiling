@@ -8,6 +8,7 @@ import sys
 sys.path.append("..")
 from qiling import *
 
+
 def force_call_dialog_func(ql):
     # get DialogFunc address
     lpDialogFunc = ql.unpack32(ql.mem_read(ql.sp - 0x8, 4))

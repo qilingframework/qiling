@@ -172,7 +172,7 @@ def hook_MapVirtualKeyW(ql, address, params):
     "lpString": STRING
 })
 def hook_RegisterWindowMessageA(ql, address, params):
-    # is communication between different process. I don't think we can emulate this
+    # maybe some samples really use this and we need to have a real implementation
     return 0xD10C
 
 
@@ -183,5 +183,34 @@ def hook_RegisterWindowMessageA(ql, address, params):
     "lpString": WSTRING
 })
 def hook_RegisterWindowMessageW(ql, address, params):
-    # is communication between different process. I don't think we can emulate this
+    # maybe some samples really use this and we need to have a real implementation
     return 0xD10C
+
+
+# HWND GetActiveWindow();
+@winapi(cc=STDCALL, params={
+})
+def hook_GetActiveWindow(ql, address, params):
+    # maybe some samples really use this and we need to have a real implementation
+    return 0xD10C
+
+
+# HWND GetLastActivePopup(
+#   HWND hWnd
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER
+})
+def hook_GetLastActivePopup(ql, address, params):
+    hwnd = params["hWnd"]
+    return hwnd
+
+
+# BOOL GetPhysicalCursorPos(
+#   LPPOINT lpPoint
+# );
+@winapi(cc=STDCALL, params={
+    "lpPoint": POINTER
+})
+def hook_GetPhysicalCursorPos(ql, address, params):
+    return 1
