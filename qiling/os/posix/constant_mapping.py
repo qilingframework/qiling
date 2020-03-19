@@ -74,12 +74,12 @@ def mmap_prot_mapping(prots):
 
 def socket_type_mapping(t, arch):
     return {
-            QL_X86: linux_socket_type,
-            QL_X8664: linux_socket_type,
-            QL_ARM: arm_socket_type,
-            QL_ARM_THUMB: arm_socket_type,
-            QL_ARM64: arm_socket_type,
-            QL_MIPS32: mips32_socket_type,
+            QL_X86: linux_socket_types,
+            QL_X8664: linux_socket_types,
+            QL_ARM: arm_socket_types,
+            QL_ARM_THUMB: arm_socket_types,
+            QL_ARM64: arm_socket_types,
+            QL_MIPS32: mips32_socket_types,
             }.get(arch)(t)
 
 
