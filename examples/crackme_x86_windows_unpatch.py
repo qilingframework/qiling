@@ -5,8 +5,8 @@
 from unicorn.x86_const import *
 
 import sys
-from qiling import *
 sys.path.append("..")
+from qiling import *
 
 
 def force_call_dialog_func(ql):

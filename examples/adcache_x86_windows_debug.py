@@ -4,10 +4,10 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import sys
+sys.path.append("..")
 from zipfile import ZipFile
 from qiling import *
 
-sys.path.append("..")
 
 if __name__ == "__main__":
     with ZipFile("shellcodes/win32_https_download.zip") as zip_reader:
