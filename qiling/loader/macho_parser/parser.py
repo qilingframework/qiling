@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 from .header import *
 from .loadcommand import *
 from .data import *
@@ -8,11 +13,20 @@ from struct import unpack
 class MachoParser:
     
     # arch = "x8664" or "x86" 
-    def __init__(self, ql, path, arch="x8664"):
+    def __init__(self, ql, path, arch= None):
         self.ql = ql
         self.binary_file = self.readFile(path)
-        self.arch = arch
+        self.raw_data = self.binary_file
+        self.arch = ql.arch
         self.parseFile()
+        self.page_zero_size = 0
+        self.header_address = 0x0
+        for seg in self.segments:
+            # find page zero
+            if seg.vm_address == 0 and seg.file_size == 0:
+                print("PageZero Size {:X}".format(seg.vm_size))
+                self.page_zero_size = seg.vm_size
+                self.header_address = seg.vm_size
 
     @staticmethod
     def readFile(path):
@@ -37,15 +51,15 @@ class MachoParser:
     def parseHeader(self):
 
         self.magic = self.getMagic(self.binary_file)
-        if self.magic == MAGIC_X8664:
-            # x64
-            self.ql.dprint("[+] Got a x64 Header ")
+        
+        if self.magic == MAGIC_64:
+            self.ql.dprint("[+] Got a 64bit Header ")
             self.header = BinaryHeader(self.binary_file)
 
-        elif self.magic == MAGIC_X86:
-            # x86
-            self.ql.dprint("[+] Got a x86 Header") 
-            self.header = BinaryHeader(self.binary_file)
+        #elif self.magic == MAGIC_X86:
+        #    # x86
+        #    self.ql.dprint("[+] Got a x86 Header") 
+        #    self.header = BinaryHeader(self.binary_file)
 
         elif self.magic == MAGIC_FAT:
             # fat 
@@ -82,7 +96,7 @@ class MachoParser:
                 lc = LoadCommand(self.lc_raw[offset:])
             else:
                 self.ql.nprint("[-] cmd size overflow")
-                return false 
+                return False 
 
             if self.header.lc_size >= offset + lc.cmd_size:
                 complete_cmd = lc.get_complete()
@@ -90,6 +104,7 @@ class MachoParser:
             else:
                 self.ql.nprint("[-] cmd size overflow")
                 return False
+            
             self.commands.append(complete_cmd)
             
             offset += lc.cmd_size
@@ -98,8 +113,7 @@ class MachoParser:
 
 
     def parseData(self):
-
-        self.segments = []
+        self.segments = []      
         for command in self.commands:
             if command.cmd_id == LC_SEGMENT_64:
                 self.segments.append(Segment(command, self.binary_file))
@@ -118,7 +132,6 @@ class MachoParser:
                 self.seg_split_info = SegmentSplitInfo(command, self.binary_file)
             elif command.cmd_id == LC_DYSYMTAB:
                 self.dysymbol_table = DySymbolTable(command, self.binary_file)
-        
         return True
     
     @staticmethod
