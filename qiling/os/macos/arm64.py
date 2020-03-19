@@ -127,7 +127,6 @@ def loader_shellcode(ql):
     
 
 def runner(ql):
-    ql.debug_stop = True
     ql.uc.reg_write(UC_ARM64_REG_SP, ql.stack_address)
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
@@ -136,7 +135,6 @@ def runner(ql):
     map_somefunc_space(ql)
     ql.macho_thread = MachoThread()
     load_shared_region(ql)
-    ql.root = True
 
     if (ql.until_addr == 0):
         ql.until_addr = QL_ARM64_EMU_END
