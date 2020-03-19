@@ -13,11 +13,12 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
-#void *memcpy(
-#   void *dest,
-#   const void *src,
-#   size_t count
-#);
+
+# void *memcpy(
+#    void *dest,
+#    const void *src,
+#    size_t count
+# );
 @winapi(cc=STDCALL, params={
     "dest": POINTER,
     "src": POINTER,

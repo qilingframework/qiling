@@ -48,6 +48,16 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
     munmap_len = ((munmap_len + 0x1000 - 1) // 0x1000) * 0x1000
     ql.uc.mem_unmap(munmap_addr, munmap_len)
     regreturn = 0
+
+    map_info = ql.map_info
+
+    for idx, val in enumerate(map_info):
+        mem_start, mem_end, _, _ = val
+        if mem_start <= munmap_addr <= mem_end or mem_start <= munmap_addr+munmap_len <= mem_end:
+            map_info[idx] = []
+
+    ql.map_info = [each for each in map_info if each != []]
+
     ql.nprint("munmap(0x%x, 0x%x) = %d" % (munmap_addr , munmap_len, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
@@ -348,6 +358,32 @@ def ql_syscall_brk(ql, brk_input, null0, null1, null2, null3, null4):
 def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, null1, null2):
     regreturn = 0
     ql.nprint("mprotect(0x%x, 0x%x, 0x%x) = %d" % (mprotect_start, mprotect_len, mprotect_prot, regreturn))
+    ql.dprint("[+] mprotect(0x%x, 0x%x, %s) = %d" % (mprotect_start, mprotect_len, mmap_prot_mapping(mprotect_prot), regreturn))
+
+    new_prot = []
+    prot_dict = {"PROT_READ": "r", "PROT_WRITE": "w", "PROT_EXEC": "x"}
+    mapped_prot = mmap_prot_mapping(mprotect_prot)
+
+    for idx, val in prot_dict.items():
+        if "PROT_NONE" in mapped_prot:
+            new_prot = "---"
+            break
+        elif idx in mapped_prot:
+            new_prot.append(val)
+        else:
+            new_prot.append("-")
+
+    new_prot = ''.join(new_prot)
+
+    map_info = ql.map_info
+
+    for idx, val in enumerate(map_info):
+        start, end, prot, info = val
+        if start <= mprotect_start <= end or start <= mprotect_start+mprotect_len <= end:
+            map_info[idx] = [start, end, new_prot, info]
+
+    ql.map_info = map_info
+
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -439,15 +475,21 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
             ql.show_map_info()
             raise
 
-    try:
-        ql.uc.mem_write(mmap_base, b'\x00' * (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
-    except:
-        pass
-
+    ql.uc.mem_write(mmap_base, b'\x00' * (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
-    mem_info = ''
+    mem_info = '[mapped]'
+    mem_p = []
+    prot_dict = {"PROT_READ": "r", "PROT_WRITE": "w", "PROT_EXEC": "x"}
+
+    for idx, val in prot_dict.items():
+        if idx in mmap_prot_mapping(mmap_prot):
+            mem_p.append(val)
+        else:
+            mem_p.append("-")
+
+    mem_p = ''.join(mem_p)
 
     if ((mmap_flags & MAP_ANONYMOUS) == 0) and mmap_fd < 256 and ql.file_des[mmap_fd] != 0:
         ql.file_des[mmap_fd].lseek(mmap_offset)
@@ -459,7 +501,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
         ql.uc.mem_write(mmap_base, data)
         mem_info = ql.file_des[mmap_fd].name
 
-    ql.insert_map_info(mem_s, mem_e, mem_info)
+    ql.insert_map_info(mem_s, mem_e, mem_p, mem_info)
 
 
     ql.nprint("old_mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset, mmap_base))
@@ -513,15 +555,22 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
             ql.show_map_info()
             raise   
     
-    try:
-        ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
-    except:
-        pass    
+    ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
     
 
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
-    mem_info = ''
+    mem_info = '[mapped]'
+    mem_p = []
+    prot_dict = {"PROT_READ": "r", "PROT_WRITE": "w", "PROT_EXEC": "x"}
+
+    for idx, val in prot_dict.items():
+        if idx in mmap_prot_mapping(mmap2_prot):
+            mem_p.append(val)
+        else:
+            mem_p.append("-")
+
+    mem_p = ''.join(mem_p)
 
     if ((mmap2_flags & MAP_ANONYMOUS) == 0) and mmap2_fd < 256 and ql.file_des[mmap2_fd] != 0:
         ql.file_des[mmap2_fd].lseek(mmap2_pgoffset)
@@ -587,7 +636,17 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
-    mem_info = ''
+    mem_info = '[mapped]'
+    mem_p = []
+    prot_dict = {"PROT_READ": "r", "PROT_WRITE": "w", "PROT_EXEC": "x"}
+
+    for idx, val in prot_dict.items():
+        if idx in mmap_prot_mapping(mmap2_prot):
+            mem_p.append(val)
+        else:
+            mem_p.append("-")
+
+    mem_p = ''.join(mem_p)
 
     if ((mmap2_flags & MAP_ANONYMOUS) == 0) and mmap2_fd < 256 and ql.file_des[mmap2_fd] != 0:
         ql.file_des[mmap2_fd].lseek(mmap2_pgoffset)
@@ -599,7 +658,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         
         mem_info = ql.file_des[mmap2_fd].name
         
-    ql.insert_map_info(mem_s, mem_e, mem_info)
+    ql.insert_map_info(mem_s, mem_e, mem_p, mem_info)
     
     ql.nprint("mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
     

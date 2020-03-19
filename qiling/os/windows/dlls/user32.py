@@ -91,38 +91,42 @@ def hook_EndDialog(ql, address, params):
 def hook_GetDesktopWindow(ql, address, params):
     pass
 
-#BOOL OpenClipboard(
+
+# BOOL OpenClipboard(
 #  HWND hWndNewOwner
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hWndNewOwner": HANDLE
 })
 def hook_OpenClipboard(ql, address, params):
     return ql.clipboard.open(params['hWndNewOwner'])
 
-#BOOL CloseClipboard();
+
+# BOOL CloseClipboard();
 @winapi(cc=STDCALL, params={})
 def hook_CloseClipboard(ql, address, params):
     return ql.clipboard.close()
 
-#HANDLE SetClipboardData(
+
+# HANDLE SetClipboardData(
 #  UINT   uFormat,
 #  HANDLE hMem
-#);
+# );
 @winapi(cc=STDCALL, params={
     "uFormat": UINT,
     "hMem": STRING
 })
 def hook_SetClipboardData(ql, address, params):
     try:
-        data = bytes(params['hMem'], 'ascii')
-    except:
+        data = bytes(params['hMem'], 'ascii', 'ignore')
+    except UnicodeEncodeError:
         data = b""
     return ql.clipboard.set_data(params['uFormat'], data)
 
-#HANDLE GetClipboardData(
+
+# HANDLE GetClipboardData(
 #  UINT uFormat
-#);
+# );
 @winapi(cc=STDCALL, params={
     "uFormat": UINT
 })
@@ -136,9 +140,10 @@ def hook_GetClipboardData(ql, address, params):
         ql.dprint('Failed to get clipboard data')
         return 0
 
-#BOOL IsClipboardFormatAvailable(
+
+# BOOL IsClipboardFormatAvailable(
 #  UINT format
-#);
+# );
 @winapi(cc=STDCALL, params={
     "uFormat": UINT
 })
@@ -167,7 +172,7 @@ def hook_MapVirtualKeyW(ql, address, params):
     "lpString": STRING
 })
 def hook_RegisterWindowMessageA(ql, address, params):
-    # is communication between different process. I don't think we can emulate this
+    # maybe some samples really use this and we need to have a real implementation
     return 0xD10C
 
 
@@ -178,5 +183,34 @@ def hook_RegisterWindowMessageA(ql, address, params):
     "lpString": WSTRING
 })
 def hook_RegisterWindowMessageW(ql, address, params):
-    # is communication between different process. I don't think we can emulate this
+    # maybe some samples really use this and we need to have a real implementation
     return 0xD10C
+
+
+# HWND GetActiveWindow();
+@winapi(cc=STDCALL, params={
+})
+def hook_GetActiveWindow(ql, address, params):
+    # maybe some samples really use this and we need to have a real implementation
+    return 0xD10C
+
+
+# HWND GetLastActivePopup(
+#   HWND hWnd
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER
+})
+def hook_GetLastActivePopup(ql, address, params):
+    hwnd = params["hWnd"]
+    return hwnd
+
+
+# BOOL GetPhysicalCursorPos(
+#   LPPOINT lpPoint
+# );
+@winapi(cc=STDCALL, params={
+    "lpPoint": POINTER
+})
+def hook_GetPhysicalCursorPos(ql, address, params):
+    return 1

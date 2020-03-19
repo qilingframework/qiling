@@ -10,6 +10,7 @@ sys.path.append("..")
 from qiling import *
 
 
+
 class StringBuffer:
     def __init__(self):
         self.buffer = b''
@@ -19,7 +20,7 @@ class StringBuffer:
         self.buffer = self.buffer[n:]
         return ret
 
-    def readline(self, end = b'\n'):
+    def readline(self, end=b'\n'):
         ret = b''
         while True:
             c = self.read(1)

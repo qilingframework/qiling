@@ -19,7 +19,7 @@ def _constant_mapping(bits, d_map, ret=None):
 
     for val, sym in b_map.items():
         if val & bits != 0:
-            bits -= val
+            bits ^= val
             ret.append(sym)
 
     if bits != 0:
@@ -41,17 +41,9 @@ def open_flags_mapping(flags, arch):
             QL_MACOS: mac_open_flags,
             }.get(arch)
 
-    # inverted_dict = _invert_dict(mapping_dict)
-
     ret = ["O_RDONLY"]
 
     return _constant_mapping(flags, mapping_dict, ret)
-
-    # for val, sym in inverted_dict.items():
-        # if val & flags != 0:
-            # ret.append(sym)
-
-    # return " | ".join(ret)
 
 
 def mmap_flag_mapping(flags):
@@ -69,12 +61,12 @@ def mmap_flag_mapping(flags):
 def mmap_prot_mapping(prots):
     
     if prots is 0x0:
-        return 'PORT_NONE'
+        return 'PROT_NONE'
 
     mmap_prots = {
         'PROT_READ' : 0x1,
         'PROT_WRITE': 0x2,
-        'PORT_EXEC' : 0x4,
+        'PROT_EXEC' : 0x4,
     }
 
     return _constant_mapping(prots, mmap_prots)
@@ -82,12 +74,12 @@ def mmap_prot_mapping(prots):
 
 def socket_type_mapping(t, arch):
     return {
-            QL_X86: linux_socket_type,
-            QL_X8664: linux_socket_type,
-            QL_ARM: arm_socket_type,
-            QL_ARM_THUMB: arm_socket_type,
-            QL_ARM64: arm_socket_type,
-            QL_MIPS32: mips32_socket_type,
+            QL_X86: linux_socket_types,
+            QL_X8664: linux_socket_types,
+            QL_ARM: arm_socket_types,
+            QL_ARM_THUMB: arm_socket_types,
+            QL_ARM64: arm_socket_types,
+            QL_MIPS32: mips32_socket_types,
             }.get(arch)(t)
 
 

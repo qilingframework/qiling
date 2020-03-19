@@ -416,7 +416,7 @@ class ELFLoader(ELFParse):
             return -1
 
         ql.uc.mem_map(loadbase + mem_start, mem_end - mem_start)
-        ql.insert_map_info(loadbase + mem_start, loadbase + mem_end, self.path)
+        ql.insert_map_info(loadbase + mem_start, loadbase + mem_end, 'r-x', self.path)
 
         for i in super().parse_program_header(ql):
             if i['p_type'] == PT_LOAD:
@@ -458,7 +458,7 @@ class ELFLoader(ELFParse):
 
             ql.dprint("[+] interp_base is : 0x%x" % (ql.interp_base))
             ql.uc.mem_map(ql.interp_base, int(interp_mem_size))
-            ql.insert_map_info(ql.interp_base, ql.interp_base + int(interp_mem_size), os.path.abspath(interp_path))
+            ql.insert_map_info(ql.interp_base, ql.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
 
             for i in interp.parse_program_header(ql):
                 if i['p_type'] == PT_LOAD:
@@ -579,3 +579,4 @@ class ELFLoader(ELFParse):
         ql.elf_entry = loadbase + elfhead['e_entry']
         ql.new_stack = new_stack
         ql.loadbase = loadbase
+        ql.insert_map_info(new_stack, ql.stack_address+ql.stack_size, 'rw-', '[stack]')
