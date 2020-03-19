@@ -54,7 +54,7 @@ def hook_winapi(ql, address, size):
                 ql.dprint("[!] %s Exception Found" % winapi_name)
                 raise QlErrorSyscallError("[!] Windows API Implementation Error")
         else:
-            ql.nprint("[!] %s is not implemented" % winapi_name)
+            ql.nprint("[!] %s is not implemented\n" % winapi_name)
             if ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
