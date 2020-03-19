@@ -313,3 +313,38 @@ def hook_LoadCursorA(ql, address, params):
 })
 def hook_GetOEMCP(ql, address, params):
     return OEM_US
+
+
+# int LoadStringA(
+#   HINSTANCE hInstance,
+#   UINT      uID,
+#   LPSTR     lpBuffer,
+#   int       cchBufferMax
+# );
+@winapi(cc=STDCALL, params={
+    "hInstance": POINTER,
+    "uID": UINT,
+    "lpBuffer": POINTER,
+    "cchBufferMax": INT
+})
+def hook_LoadStringA(ql, address, params):
+    dst = params["lpBuffer"]
+    max_len = params["cchBufferMax"]
+    string = "AAAABBBBCCCCDDDD" + "\x00"
+    if max_len == 0:
+        if len(string) >= max_len:
+            string[max_len] = "\x00"
+            string = string[:max_len]
+        ql.uc.mem_write(dst, string.encode("utf-16le"))
+    # should not count the \x00 byte
+    return len(string) - 1
+
+
+# BOOL MessageBeep(
+#   UINT uType
+# );
+@winapi(cc=STDCALL, params={
+    "uType": UINT,
+})
+def hook_MessageBeep(ql, address, params):
+    return 1

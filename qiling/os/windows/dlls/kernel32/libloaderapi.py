@@ -197,3 +197,41 @@ def hook_LoadLibraryExW(ql, address, params):
     lpLibFileName = bytes(bytes(params["lpLibFileName"], "ascii").decode('utf-16le'), 'ascii')
     dll_base = ql.PE.load_dll(lpLibFileName)
     return dll_base
+
+
+# DWORD SizeofResource(
+#   HMODULE hModule,
+#   HRSRC   hResInfo
+# );
+@winapi(cc=STDCALL, params={
+    "hModule": POINTER,
+    "hResInfo": POINTER
+})
+def hook_SizeofResource(ql, address, params):
+    # Return size of resource
+    # TODO set a valid value. More tests have to be made to find it.
+    return 0x8
+
+
+# HGLOBAL LoadResource(
+#   HMODULE hModule,
+#   HRSRC   hResInfo
+# );
+@winapi(cc=STDCALL, params={
+    "hModule": POINTER,
+    "hResInfo": POINTER
+})
+def hook_LoadResource(ql, address, params):
+    pointer = params["hResInfo"]
+    return pointer
+
+
+# LPVOID LockResource(
+#   HGLOBAL hResData
+# );
+@winapi(cc=STDCALL, params={
+    "hResData": POINTER
+})
+def hook_LockResource(ql, address, params):
+    pointer = params["hResData"]
+    return pointer

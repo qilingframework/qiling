@@ -87,6 +87,7 @@ def hook_ReadFile(ql, address, params):
     lpNumberOfBytesRead = params["lpNumberOfBytesRead"]
     lpOverlapped = params["lpOverlapped"]
     if hFile == STD_INPUT_HANDLE:
+        ql.dprint("Insert input")
         s = ql.stdin.read(nNumberOfBytesToRead)
         slen = len(s)
         read_len = slen

@@ -165,3 +165,22 @@ def hook_lstrcpynA(ql, address, params):
         src = src[:max_length]
     ql.uc.mem_write(dst, bytes(src, encoding="utf-16le"))
     return dst
+
+
+# HRSRC FindResourceA(
+#   HMODULE hModule,
+#   LPCSTR  lpName,
+#   LPCSTR  lpType
+# );
+@winapi(cc=STDCALL, params={
+    "hModule": POINTER,
+    "lpName": POINTER,
+    "lpType": POINTER
+})
+def hook_FindResourceA(ql, address, params):
+    # Retrieve a resource
+    # Name e Type can be int or strings, this can be a problem
+    name = params["lpName"]
+    type = params["lpType"]
+    # TODO i don't know how to implement this, the return 0 is to simulate an error
+    return 0
