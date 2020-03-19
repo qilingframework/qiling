@@ -17,6 +17,7 @@ linux_socket_types = {
 
 linux_socket_domain = {
     'AF_UNSPEC'    : 0x0,
+    'AF_LOCAL'     : 0x1,
     'AF_INET'      : 0x2,
     'AF_AX25'      : 0x3,
     'AF_IPX'       : 0x4,
@@ -27,6 +28,24 @@ linux_socket_domain = {
     'AF_X25'       : 0x9,
     'AF_INET6'     : 0xa,
     'AF_MAX'       : 0xc,
+}
+
+macos_socket_domain = {
+    'AF_UNSPEC'    : 0x0,
+    'AF_LOCAL'     : 0x1,
+    'AF_INET'      : 0x2,
+    'AF_IMPLINK'   : 0x3,
+    'AF_PUP'       : 0x4,
+    'AF_CHAOS'     : 0x5,
+    'AF_NS'        : 0x6,
+    'AF_ISO'       : 0x7,
+    'AF_OSI'       : 0x7,
+    'AF_ECMA'      : 0x8,
+    'AF_DATAKIT'   : 0x9,
+    'AF_CCITT'     : 0xa,
+    'AF_SNA'       : 0xb,
+    'AF_DECnet'    : 0xc,
+    'AF_INET6'     : 0x1e,
 }
 
 
