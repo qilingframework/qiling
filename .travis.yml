@@ -92,7 +92,7 @@ matrix:
       before_install:
         - docker build -t qiling:1.0 .
       script:
-        - docker run qiling:1.0 /bin/bash -c "cd tests && ./test_nix.py"
+        - docker run qiling:1.0 /bin/bash -c "cd tests && ./test_nix.sh"
 
 #    - name: "Python 3.6 on WSL1 Ubuntu"
 #      os: windows
