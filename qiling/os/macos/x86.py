@@ -121,21 +121,10 @@ def runner(ql):
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
             ql.show_map_info()
-<<<<<<< HEAD
             buf = ql.uc.mem_read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
         raise QlErrorExecutionStop("[!] Execution Terminated")    
-=======
-            try:
-                buf = ql.uc.mem_read(ql.pc, 8)
-                ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                ql.nprint("\n")
-                ql_hook_code_disasm(ql, ql.pc, 64)
-            except:
-                pass
-        raise
->>>>>>> master
     
     if ql.internal_exception != None:
         raise ql.internal_exception        

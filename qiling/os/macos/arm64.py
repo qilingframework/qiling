@@ -45,6 +45,7 @@ def hook_syscall(ql):
     param5 = ql.uc.reg_read(UC_ARM64_REG_X5)
     pc = ql.uc.reg_read(UC_ARM64_REG_PC)
 
+
     while 1:
         MACOS_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
         if MACOS_SYSCALL_FUNC != None:
