@@ -99,5 +99,5 @@ def socket_domain_mapping(p, arch):
             QL_MIPS32: mips32_socket_domain,
             QL_MACOS: macos_socket_domain,
             }.get(arch)
-
+    
     return _constant_mapping(p, socket_domain_map, single_mapping=True)
