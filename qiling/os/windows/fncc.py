@@ -9,7 +9,6 @@ from qiling.os.fncc import *
 from qiling.os.windows.utils import *
 from qiling.arch.filetype import *
 
-
 DWORD = 1
 UINT = 1
 INT = 1
@@ -21,6 +20,7 @@ HANDLE = 3
 POINTER = 3
 STRING = 4
 WSTRING = 5
+
 
 def _x86_get_params_by_index(ql, index):
     # index starts from 0
@@ -178,6 +178,7 @@ def winapi(cc, param_num=None, params=None):
     @params: params dict
     @param_num: the number of function params, used by variadic functions, e.g printf
     """
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             ql = args[0]
@@ -190,5 +191,7 @@ def winapi(cc, param_num=None, params=None):
                 return x8664_fastcall(ql, param_num, params, func, args, kwargs)
             else:
                 raise QlErrorArch("[!] Unknown ql.arch")
+
         return wrapper
+
     return decorator

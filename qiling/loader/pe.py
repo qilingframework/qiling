@@ -16,6 +16,7 @@ from qiling.os.memory import align
 from qiling.os.windows.structs import *
 from qiling.exception import *
 
+
 class Process:
     def __init__(self, ql):
         self.ql = ql
@@ -29,13 +30,14 @@ class Process:
         dll_name = dll_name.lower().decode()
 
         if self.ql.arch == QL_X86:
-            self.ql.dlls = os.path.join("Windows","SysWOW64")
+            self.ql.dlls = os.path.join("Windows", "SysWOW64")
         elif self.ql.arch == QL_X8664:
-            self.ql.dlls = os.path.join("Windows","System32")
+            self.ql.dlls = os.path.join("Windows", "System32")
 
-        if not dll_name.endswith(".dll"):
-            dll_name = dll_name + '.dll'
-        
+        extension = dll_name[-4:]
+        if not extension in (".dll", ".exe", ".sys", ".drv"):
+            dll_name = dll_name + ".dll"
+
         path = os.path.join(self.ql.rootfs, self.ql.dlls, dll_name)
 
         if not os.path.exists(path):
@@ -70,7 +72,8 @@ class Process:
             cmdlines = []
 
             for entry in dll.DIRECTORY_ENTRY_EXPORT.symbols:
-                self.import_symbols[self.ql.DLL_LAST_ADDR + entry.address] = {'name': entry.name, 'ordinal': entry.ordinal}
+                self.import_symbols[self.ql.DLL_LAST_ADDR + entry.address] = {'name': entry.name,
+                                                                              'ordinal': entry.ordinal}
                 self.import_address_table[dll_name][entry.name] = self.ql.DLL_LAST_ADDR + entry.address
                 self.import_address_table[dll_name][entry.ordinal] = self.ql.DLL_LAST_ADDR + entry.address
                 cmdline_entry = self.set_cmdline(entry.name, entry.address, data)
@@ -80,9 +83,9 @@ class Process:
             if self.ql.libcache:
                 # cache this dll file
                 pickle.dump((data, cmdlines,
-                    self.import_symbols,
-                    self.import_address_table),
-                    open(fcache, "wb"))
+                             self.import_symbols,
+                             self.import_address_table),
+                            open(fcache, "wb"))
                 self.ql.nprint("[+] Cached %s" % path)
 
         dll_base = self.ql.DLL_LAST_ADDR
@@ -132,9 +135,9 @@ class Process:
         teb_data = TEB(
             self.ql,
             base=teb_addr,
-            PEB_Address=teb_addr + teb_size,
-            StackBase=self.ql.stack_address + self.ql.stack_size,
-            StackLimit=self.ql.stack_size,
+            peb_address=teb_addr + teb_size,
+            stack_base=self.ql.stack_address + self.ql.stack_size,
+            stack_limit=self.ql.stack_size,
             Self=teb_addr)
 
         self.ql.uc.mem_write(teb_addr, teb_data.bytes())
@@ -154,29 +157,29 @@ class Process:
         self.ql.nprint("[+] PEB addr is " + hex(peb_addr))
 
         peb_size = len(PEB(self.ql).bytes())
-        peb_data = PEB(self.ql, base=peb_addr, LdrAddress=peb_addr + peb_size)
+        peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size)
         self.ql.uc.mem_write(peb_addr, peb_data.bytes())
         self.ql.STRUCTERS_LAST_ADDR += peb_size
         self.PEB = self.ql.PEB = peb_data
 
     def init_ldr_data(self):
         ldr_addr = self.ql.STRUCTERS_LAST_ADDR
-        ldr_size = len(LDR_DATA(self.ql).bytes())
-        ldr_data = LDR_DATA(
-                    self.ql,
-                    base=ldr_addr,
-                    InLoadOrderModuleList={
-                        'Flink': ldr_addr + 2 * self.ql.pointersize,
-                        'Blink': ldr_addr + 2 * self.ql.pointersize
-                    },
-                    InMemoryOrderModuleList={
-                        'Flink': ldr_addr + 4 * self.ql.pointersize,
-                        'Blink': ldr_addr + 4 * self.ql.pointersize
-                    },
-                    InInitializationOrderModuleList={
-                        'Flink': ldr_addr + 6 * self.ql.pointersize,
-                        'Blink': ldr_addr + 6 * self.ql.pointersize
-                    }
+        ldr_size = len(LdrData(self.ql).bytes())
+        ldr_data = LdrData(
+            self.ql,
+            base=ldr_addr,
+            in_load_order_module_list={
+                'Flink': ldr_addr + 2 * self.ql.pointersize,
+                'Blink': ldr_addr + 2 * self.ql.pointersize
+            },
+            in_memory_order_module_list={
+                'Flink': ldr_addr + 4 * self.ql.pointersize,
+                'Blink': ldr_addr + 4 * self.ql.pointersize
+            },
+            in_initialization_order_module_list={
+                'Flink': ldr_addr + 6 * self.ql.pointersize,
+                'Blink': ldr_addr + 6 * self.ql.pointersize
+            }
         )
         self.ql.uc.mem_write(ldr_addr, ldr_data.bytes())
         self.ql.STRUCTERS_LAST_ADDR += ldr_size
@@ -185,19 +188,19 @@ class Process:
     def add_ldr_data_table_entry(self, dll_name):
         dll_base = self.dlls[dll_name]
         path = "C:\\Windows\\System32\\" + dll_name
-        ldr_table_entry_size = len(LDR_DATA_TABLE_ENTRY(self.ql).bytes())
+        ldr_table_entry_size = len(LdrDataTableEntry(self.ql).bytes())
         base = self.ql.heap.mem_alloc(ldr_table_entry_size)
-        ldr_table_entry = LDR_DATA_TABLE_ENTRY(self.ql,
-                    base=base,
-                    InLoadOrderLinks={'Flink': 0, 'Blink': 0},
-                    InMemoryOrderLinks={'Flink': 0, 'Blink': 0},
-                    InInitializationOrderLinks={'Flink': 0, 'Blink': 0},
-                    DllBase=dll_base,
-                    EntryPoint=0,
-                    FullDllName=path,
-                    BaseDllName=dll_name)
+        ldr_table_entry = LdrDataTableEntry(self.ql,
+                                            base=base,
+                                            in_load_order_links={'Flink': 0, 'Blink': 0},
+                                            in_memory_order_links={'Flink': 0, 'Blink': 0},
+                                            in_initialization_order_links={'Flink': 0, 'Blink': 0},
+                                            dll_base=dll_base,
+                                            entry_point=0,
+                                            full_dll_name=path,
+                                            base_dll_name=dll_name)
 
-        #Flink
+        # Flink
         if len(self.ldr_list) == 0:
             flink = self.LDR
             ldr_table_entry.InLoadOrderLinks['Flink'] = flink.InLoadOrderModuleList['Flink']
@@ -207,7 +210,7 @@ class Process:
             flink.InLoadOrderModuleList['Flink'] = ldr_table_entry.base
             flink.InMemoryOrderModuleList['Flink'] = ldr_table_entry.base + 2 * self.ql.pointersize
             flink.InInitializationOrderModuleList['Flink'] = ldr_table_entry.base + 4 * self.ql.pointersize
-            
+
         else:
             flink = self.ldr_list[-1]
             ldr_table_entry.InLoadOrderLinks['Flink'] = flink.InLoadOrderLinks['Flink']
@@ -218,7 +221,7 @@ class Process:
             flink.InMemoryOrderLinks['Flink'] = ldr_table_entry.base + 2 * self.ql.pointersize
             flink.InInitializationOrderLinks['Flink'] = ldr_table_entry.base + 4 * self.ql.pointersize
 
-        #Blink
+        # Blink
         blink = self.LDR
         ldr_table_entry.InLoadOrderLinks['Blink'] = blink.InLoadOrderModuleList['Blink']
         ldr_table_entry.InMemoryOrderLinks['Blink'] = blink.InMemoryOrderModuleList['Blink']
@@ -308,11 +311,11 @@ class PE(Process):
                 self.ql.dprint('[+] Setting up DllMain args')
                 load_addr_bytes = self.PE_IMAGE_BASE.to_bytes(length=4, byteorder='little')
 
-                self.ql.dprint('[+] Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.PE_IMAGE_BASE, sp+0x4))
-                self.ql.mem_write(sp+0x4, load_addr_bytes)
+                self.ql.dprint('[+] Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.PE_IMAGE_BASE, sp + 0x4))
+                self.ql.mem_write(sp + 0x4, load_addr_bytes)
 
-                self.ql.dprint('[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp+0x8))
-                self.ql.mem_write(sp+0x8, int(1).to_bytes(length=4, byteorder='little'))
+                self.ql.dprint('[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp + 0x8))
+                self.ql.mem_write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
 
         elif self.ql.arch == QL_X8664:
             self.ql.uc.reg_write(UC_X86_REG_RSP, sp)
@@ -339,11 +342,11 @@ class PE(Process):
         data = bytearray(self.pe.get_memory_mapped_image())
         self.ql.uc.mem_write(self.PE_IMAGE_BASE, bytes(data))
 
-        #Add main PE to ldr_data_table
+        # Add main PE to ldr_data_table
         mod_name = os.path.basename(self.path)
         self.dlls[mod_name] = self.PE_IMAGE_BASE
         super().add_ldr_data_table_entry(mod_name)
-        
+
         # parse directory entry import
         for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
             dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')

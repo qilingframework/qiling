@@ -9,7 +9,7 @@ import types
 from unicorn import *
 from unicorn.x86_const import *
 
-# impport read_string and other commom utils.
+# import read_string and other common utils.
 from qiling.loader.pe import PE, Shellcode
 from qiling.arch.x86 import *
 from qiling.os.windows.dlls import *
@@ -47,7 +47,7 @@ def hook_winapi(ql, address, size):
                 ql.dprint("[!] %s Exception Found" % winapi_name)
                 raise QlErrorSyscallError("[!] Windows API Implementation Error")
         else:
-            ql.nprint("[!] %s is not implemented" % winapi_name)
+            ql.nprint("[!] %s is not implemented\n" % winapi_name)
             if ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
@@ -106,11 +106,10 @@ def loader_file(ql):
     ql.uc = uc
 
     # MAPPED Vars for loadPE32
-    if (ql.stack_address == 0): 
+    if ql.stack_address == 0:
         ql.stack_address = QL_X86_WINDOWS_STACK_ADDRESS
-    if (ql.stack_size == 0): 
+    if ql.stack_size == 0:
         ql.stack_size = QL_X86_WINDOWS_STACK_SIZE
-
 
     setup_windows32(ql)
 
@@ -129,9 +128,9 @@ def loader_shellcode(ql):
     ql.uc = uc
 
     # MAPPED Vars for loadPE32
-    if (ql.stack_address == 0):
+    if ql.stack_address == 0:
         ql.stack_address = QL_X86_WINDOWS_STACK_ADDRESS
-    if (ql.stack_size == 0): 
+    if ql.stack_size == 0:
         ql.stack_size = QL_X86_WINDOWS_STACK_SIZE
 
     ql.code_address = 0x40000
@@ -150,7 +149,7 @@ def loader_shellcode(ql):
 
 
 def runner(ql):
-    if (ql.until_addr == 0):
+    if ql.until_addr == 0:
         ql.until_addr = QL_X86_WINDOWS_EMU_END
     try:
         if ql.shellcoder:
@@ -159,14 +158,18 @@ def runner(ql):
             ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            ql.nprint("[+] PC= " + hex(ql.pc))
+            ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
             ql.show_map_info()
-            buf = ql.uc.mem_read(ql.pc, 8)
-            ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-            ql_hook_code_disasm(ql, ql.pc, 64)
+            try:
+                buf = ql.uc.mem_read(ql.pc, 8)
+                ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                ql.nprint("\n")
+                ql_hook_code_disasm(ql, ql.pc, 64)
+            except:
+                pass
         raise
 
     ql.registry_manager.save()
 
-    if ql.internal_exception != None:
-        raise ql.internal_exception   
+    if ql.internal_exception is not None:
+        raise ql.internal_exception

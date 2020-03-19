@@ -15,12 +15,20 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
-# HRESULT OleInitialize(
-#   IN LPVOID pvReserved
+# BOOL IsWow64Process(
+#   HANDLE hProcess,
+#   PBOOL  Wow64Process
 # );
 @winapi(cc=STDCALL, params={
-    "pvReserved": UINT
+    "hProcess": HANDLE,
+    "Wow64Process": POINTER
 })
-def hook_OleInitialize(ql, address, params):
-    # I don't think we need to do anything, we hook every call for the COM library and manage them locally
-    return S_OK
+def hook_IsWow64Process(ql, address, params):
+    pointer = params["Wow64Process"]
+    false = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
+    true = 0x1.to_bytes(length=ql.pointersize, byteorder='little')
+    if ql.archbit == 32:
+        ql.uc.mem_write(pointer, false)
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")
+    return 1
