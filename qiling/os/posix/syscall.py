@@ -50,17 +50,38 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
     regreturn = 0
 
     map_info = ql.map_info
+    unmap_range = []
+    munmap_end = munmap_addr+munmap_len
 
     for idx, val in enumerate(map_info):
-        mem_start, mem_end, _, _ = val
-        if mem_start <= munmap_addr <= mem_end or mem_start <= munmap_addr+munmap_len <= mem_end:
+        mem_start, mem_end, prot, info = val
+        if mem_start <= munmap_addr <= mem_end or mem_start <= munmap_end <= mem_end:
+            unmap_range.append(val)
             map_info[idx] = []
+
+    for start, end, prot, info in unmap_range:
+        if start < munmap_addr < end:
+            new_start = start
+            new_prot = prot
+            new_info = info
+            break
+    else:
+        new_start = 0
+
+    for start, end, _, _ in unmap_range:
+        if start < munmap_end <= end:
+            new_end = munmap_addr
+            break
+    else:
+        new_end = 0
 
     ql.map_info = [each for each in map_info if each != []]
 
+    if new_start and new_end: # need to insert extra mapping area
+        ql.insert_map_info(new_start, new_end, new_prot, new_info)
+
     ql.nprint("munmap(0x%x, 0x%x) = %d" % (munmap_addr , munmap_len, regreturn))
     ql_definesyscall_return(ql, regreturn)
-
 
 def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
     ql.exit_code = exit_code
