@@ -9,8 +9,8 @@ from unicorn import *
 from unicorn.arm64_const import *
 
 from qiling.loader.macho import *
-from qiling.arch.x86 import *
-from qiling.os.macos.x8664_syscall import *
+#from qiling.arch.x86 import *
+from qiling.os.macos.arm64_syscall import *
 from qiling.os.macos.syscall import *
 from qiling.os.macos.utils import *
 from qiling.os.macos.kernel_func import *
@@ -23,14 +23,14 @@ from qiling.os.utils import *
 from qiling.arch.filetype import *
 
 #QL_X8664_MACOS_PREDEFINE_STACKADDRESS = 0x7ffcf0000000
-QL_ARM64_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
+QL_ARM64_MACOS_PREDEFINE_STACKADDRESS = 0x7ffffffde000
 
 #QL_X8664_MACOS_PREDEFINE_STACKSIZE =        0x19a00000
-QL_ARM64_LINUX_PREDEFINE_STACKSIZE = 0x21000
+QL_ARM64_MACOS_PREDEFINE_STACKSIZE = 0x21000
 
-QL_X8664_MACOS_PREDEFINE_MMAPADDRESS =  0x7ffbf0100000
-QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x400000000000
-QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x4000000f4000
+QL_ARM64_MACOS_PREDEFINE_MMAPADDRESS =  0x7ffbf0100000
+QL_ARM64_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x400000000000
+QL_ARM64_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x4000000f4000
 
 #QL_X8664_EMU_END = 0xffffffffffffffff
 QL_ARM64_EMU_END = 0xffffffffffffffff
@@ -50,7 +50,7 @@ def hook_syscall(ql):
         if MACOS_SYSCALL_FUNC != None:
             MACOS_SYSCALL_FUNC_NAME = MACOS_SYSCALL_FUNC.__name__
             break
-        MACOS_SYSCALL_FUNC_NAME = dict_x8664_macos_syscall.get(syscall_num, None)
+        MACOS_SYSCALL_FUNC_NAME = dict_arm64_macos_syscall.get(syscall_num, None)
         if MACOS_SYSCALL_FUNC_NAME != None:
             MACOS_SYSCALL_FUNC = eval(MACOS_SYSCALL_FUNC_NAME)
             break
@@ -93,20 +93,20 @@ def loader_file(ql):
     ql.macho_port_manager = MachPortManager(ql, ql.macho_mach_port)
     ql.macho_host_server = MachHostServer(ql)
     ql.macho_task_server = MachTaskServer(ql)
-    ql.mmap_start = QL_X8664_MACOS_PREDEFINE_MMAPADDRESS
-    ql.macho_vmmap_end = QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS
+    ql.mmap_start = QL_ARM64_MACOS_PREDEFINE_MMAPADDRESS
+    ql.macho_vmmap_end = QL_ARM64_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS
     if (ql.stack_address == 0):
-        ql.stack_address = QL_X8664_MACOS_PREDEFINE_STACKADDRESS
+        ql.stack_address = QL_ARM64_MACOS_PREDEFINE_STACKADDRESS
     if (ql.stack_size == 0): 
-        ql.stack_size = QL_X8664_MACOS_PREDEFINE_STACKSIZE
+        ql.stack_size = QL_ARM64_MACOS_PREDEFINE_STACKSIZE
     ql.uc.mem_map(ql.stack_address, ql.stack_size)
 
-    stack_esp = QL_X8664_MACOS_PREDEFINE_STACKADDRESS + QL_X8664_MACOS_PREDEFINE_STACKSIZE
+    stack_esp = QL_ARM64_MACOS_PREDEFINE_STACKADDRESS + QL_ARM64_MACOS_PREDEFINE_STACKSIZE
     envs = env_dict_to_array(ql.env)
     apples = ql_real_to_vm_abspath(ql, ql.path)
 
-    loader = MachoX8664(ql, ql.path, stack_esp, [ql.path], envs, apples, 1)
-    loader.loadMachoX8664()
+    loader = Macho(ql, ql.path, stack_esp, [ql.path], envs, apples, 1)
+    loader.loadMacho()
     ql.macho_task.min_offset = page_align_end(loader.vm_end_addr, PAGE_SIZE)
     ql.stack_address = (int(ql.stack_esp))
     
@@ -131,9 +131,6 @@ def runner(ql):
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
     ql_arm64_enable_vfp(ql.uc)
-    ql_x8664_setup_gdt_segment_ds(ql)
-    ql_x8664_setup_gdt_segment_cs(ql)
-    ql_x8664_setup_gdt_segment_ss(ql)
     vm_shared_region_enter(ql)
     map_somefunc_space(ql)
     ql.macho_thread = MachoThread()
@@ -141,7 +138,7 @@ def runner(ql):
     ql.root = True
 
     if (ql.until_addr == 0):
-        ql.until_addr = QL_X8664_EMU_END
+        ql.until_addr = QL_ARM64_EMU_END
     try:
         if ql.shellcoder:
             ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))

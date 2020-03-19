@@ -95,8 +95,8 @@ def loader_file(ql):
     envs = env_dict_to_array(ql.env)
     apples = ql_real_to_vm_abspath(ql, ql.path)
 
-    loader = MachoX8664(ql, ql.path, stack_esp, [ql.path], envs, apples, 1)
-    loader.loadMachoX8664()
+    loader = Macho(ql, ql.path, stack_esp, [ql.path], envs, apples, 1)
+    loader.loadMacho()
     ql.macho_task.min_offset = page_align_end(loader.vm_end_addr, PAGE_SIZE)
     ql.stack_address = (int(ql.stack_esp))
     

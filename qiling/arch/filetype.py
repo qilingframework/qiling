@@ -183,15 +183,15 @@ def ql_macho_check_archtype(path):
         ostype = None        
         
     if ostype:
-        if ident[0x7] == 0: # 32 bit
-            arch = QL_X86
-        elif ident[0x7] == 1: # 64 bit
+        #if ident[0x7] == 0: # 32 bit
+        #    arch = QL_X86
+        if ident[0x4] == 7 and ident[0x7] == 1: # X86 64 bit
             arch = QL_X8664
-        elif ident[0x7] == 3: # ARM64
+        elif ident[0x4] == 12 and ident[0x7] == 1: # ARM64  ident[0x4] = 0x0C
             arch = QL_ARM64    
         else:
-            arch = None
-
+            arch = None    
+        
     return arch, ostype
 
 
