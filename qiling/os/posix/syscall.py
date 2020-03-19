@@ -354,7 +354,6 @@ def ql_syscall_brk(ql, brk_input, null0, null1, null2, null3, null4):
     ql_definesyscall_return(ql, brk_input)
     ql.dprint("[+] brk return(0x%x)" % ql.brk_address)
 
-
 def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, null1, null2):
     regreturn = 0
     ql.nprint("mprotect(0x%x, 0x%x, 0x%x) = %d" % (mprotect_start, mprotect_len, mprotect_prot, regreturn))
@@ -379,13 +378,12 @@ def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, 
 
     for idx, val in enumerate(map_info):
         start, end, prot, info = val
-        if start <= mprotect_start <= end or start <= mprotect_start+mprotect_len <= end:
+        if start < mprotect_start+mprotect_len-1 < end:
             map_info[idx] = [start, end, new_prot, info]
 
     ql.map_info = map_info
 
     ql_definesyscall_return(ql, regreturn)
-
 
 def ql_syscall_uname(ql, address, null0, null1, null2, null3, null4):
     buf = b''
