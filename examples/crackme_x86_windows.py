@@ -11,6 +11,7 @@ sys.path.append("..")
 from qiling import *
 
 
+
 class StringBuffer:
     def __init__(self):
         self.buffer = b''
@@ -35,7 +36,7 @@ def instruction_count(ql, address, size, user_data):
 
 
 def get_count(flag):
-    ql = Qiling(["rootfs/x86_windows/bin/crackme.exe"], "rootfs/x86_windows", libcache = True, output = "off")
+    ql = Qiling(["rootfs/x86_windows/bin/crackme.exe"], "rootfs/x86_windows", libcache=True, output="off")
     ql.stdin = StringBuffer()
     ql.stdout = StringBuffer()
     ql.stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
@@ -50,7 +51,7 @@ def get_count(flag):
 def solve():
     # BJWXB_CTF{C5307D46-E70E-4038-B6F9-8C3F698B7C53}
     prefix = list("BJWXB_CTF{")
-    flag = list("\x00"*100)
+    flag = list("\x00" * 100)
     base = get_count(prefix + flag)
     i = 0
 

@@ -35,8 +35,8 @@ class Process:
             self.ql.dlls = os.path.join("Windows", "System32")
 
         extension = dll_name[-4:]
-        if not extension in (".dll", ".exe", ".sys"):
-            dll_name = dll_name + '.dll'
+        if not extension in (".dll", ".exe", ".sys", ".drv"):
+            dll_name = dll_name + ".dll"
 
         path = os.path.join(self.ql.rootfs, self.ql.dlls, dll_name)
 
