@@ -480,7 +480,7 @@ def print_function(ql, address, function_name, params, ret):
     log += ')'
     if ret is not None:
         log += ' = 0x%x' % ret
-    ql.nprint(log)
+    ql.nprint(log + '\n')
 
 
 def read_cstring(ql, address):

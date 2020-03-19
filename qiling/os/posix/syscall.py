@@ -53,10 +53,10 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
 
     for idx, val in enumerate(map_info):
         mem_start, mem_end, _, _ = val
-        if mem_start <= munmap_addr <= mem_end:
-            del map_info[idx]
+        if mem_start <= munmap_addr <= mem_end or mem_start <= munmap_addr+munmap_len <= mem_end:
+            map_info[idx] = []
 
-    ql.map_info = map_info
+    ql.map_info = [each for each in map_info if each != []]
 
     ql.nprint("munmap(0x%x, 0x%x) = %d" % (munmap_addr , munmap_len, regreturn))
     ql_definesyscall_return(ql, regreturn)
