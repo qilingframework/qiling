@@ -601,7 +601,7 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
         ql.uc.mem_write(mmap_base, data)
         mem_info = ql.file_des[mmap2_fd].name
         
-    ql.insert_map_info(mem_s, mem_e, mem_info)
+    ql.insert_map_info(mem_s, mem_e, mem_p, mem_info)
     
 
     ql.nprint("mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
@@ -1527,11 +1527,9 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, nu
     
     ql.nprint("socket(%d, %d, %d) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
     
-    # FIXME: Not working in MACOS
-    if ql.ostype is not QL_MACOS:
-        socket_type = socket_type_mapping(socket_type, ql.arch)
-        socket_domain = socket_domain_mapping(socket_domain, ql.arch)
-        ql.dprint("[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
+    socket_type = socket_type_mapping(socket_type, ql.arch)
+    socket_domain = socket_domain_mapping(socket_domain, ql.arch)
+    ql.dprint("[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
 
     ql_definesyscall_return(ql, regreturn)
 
