@@ -263,3 +263,11 @@ def hook_TerminateProcess(ql, address, params):
     ql.uc.emu_stop()
     ql.RUN = False
     return ret
+
+
+# HANDLE GetCurrentThread();
+@winapi(cc=STDCALL, params={
+})
+def hook_GetCurrentThread(ql, address, params):
+    ret = 1
+    return ret

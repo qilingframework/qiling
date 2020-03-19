@@ -7,6 +7,7 @@ import struct
 from qiling.os.windows.fncc import *
 from qiling.os.fncc import *
 from qiling.os.windows.utils import *
+from qiling.os.windows.const import *
 
 
 # INT_PTR DialogBoxParamA(
@@ -214,3 +215,101 @@ def hook_GetLastActivePopup(ql, address, params):
 })
 def hook_GetPhysicalCursorPos(ql, address, params):
     return 1
+
+
+# int GetSystemMetrics(
+#   int nIndex
+# );
+@winapi(cc=STDCALL, params={
+    "nIndex": INT
+})
+def hook_GetSystemMetrics(ql, address, params):
+    info = params["nIndex"]
+    if info == SM_CXICON or info == SM_CYICON:
+        # Size of icon
+        return 32
+    elif info == SM_CXVSCROLL:
+        return 4
+    elif info == SM_CYHSCROLL:
+        return 300
+    else:
+        ql.dprint("Info value %x" % info)
+        raise QlErrorNotImplemented("[!] API not implemented")
+
+
+# HDC GetDC(
+#   HWND hWnd
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER
+})
+def hook_GetDC(ql, address, params):
+    handler = params["hWnd"]
+    # Maybe we should really emulate the handling of screens and windows. Is going to be a pain
+    return 0xD10C
+
+
+# int GetDeviceCaps(
+#   HDC hdc,
+#   int index
+# );
+@winapi(cc=STDCALL, params={
+    "hdc": POINTER,
+    "index": INT
+})
+def hook_GetDeviceCaps(ql, address, params):
+    # Maybe we should really emulate the handling of screens and windows. Is going to be a pain
+    return 1
+
+
+# int ReleaseDC(
+#   HWND hWnd,
+#   HDC  hDC
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER,
+    "hdc": POINTER
+})
+def hook_ReleaseDC(ql, address, params):
+    return 1
+
+
+# DWORD GetSysColor(
+#   int nIndex
+# );
+@winapi(cc=STDCALL, params={
+    "nIndex": INT
+})
+def hook_GetSysColor(ql, address, params):
+    info = params["nIndex"]
+    return 0
+
+
+# HBRUSH GetSysColorBrush(
+#   int nIndex
+# );
+@winapi(cc=STDCALL, params={
+    "nIndex": INT
+})
+def hook_GetSysColorBrush(ql, address, params):
+    info = params["nIndex"]
+    return 0xd10c
+
+
+# HCURSOR LoadCursorA(
+#   HINSTANCE hInstance,
+#   LPCSTR    lpCursorName
+# );
+@winapi(cc=STDCALL, params={
+    "hInstance": POINTER,
+    "lpCursorName": INT
+})
+def hook_LoadCursorA(ql, address, params):
+    return 0xd10c
+
+
+# UINT GetOEMCP();
+@winapi(cc=STDCALL, params={
+})
+def hook_GetOEMCP(ql, address, params):
+    return OEM_US
