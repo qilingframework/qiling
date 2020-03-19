@@ -17,6 +17,7 @@ dict_x86_linux_syscall = {
     0x2D : "ql_syscall_brk",
     0x30 : "ql_syscall_signal",
     0x55 : "ql_syscall_readlink",
+    0x5A : "ql_syscall_old_mmap",
     0x5B : "ql_syscall_munmap",
     0x5C : "ql_syscall_truncate",
     0x5D : "ql_syscall_ftruncate",
