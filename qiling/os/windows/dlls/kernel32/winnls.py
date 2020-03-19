@@ -151,7 +151,7 @@ def hook_LCMapStringA(ql, address, params):
 @winapi(cc=STDCALL, params={
     "lpLocaleName": POINTER,
     "dwMapFlags": DWORD,
-    "lpSrcStr": POINTER,
+    "lpSrcStr": WSTRING,
     "cchSrc": INT,
     "lpDestStr": POINTER,
     "cchDest": INT,
