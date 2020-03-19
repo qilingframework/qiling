@@ -10,12 +10,15 @@ def _invert_dict(d):
     return { v:k for k, v in d.items()}
 
 
-def _constant_mapping(bits, d_map, ret=None):
+def _constant_mapping(bits, d_map, ret=None, single_mapping=False):
 
     if ret is None:
         ret = []
 
     b_map = _invert_dict(d_map)
+
+    if single_mapping:
+        return b_map[bits]
 
     for val, sym in b_map.items():
         if val & bits != 0:
@@ -73,22 +76,28 @@ def mmap_prot_mapping(prots):
 
 
 def socket_type_mapping(t, arch):
-    return {
+    socket_type_map = {
             QL_X86: linux_socket_types,
             QL_X8664: linux_socket_types,
             QL_ARM: arm_socket_types,
             QL_ARM_THUMB: arm_socket_types,
             QL_ARM64: arm_socket_types,
             QL_MIPS32: mips32_socket_types,
-            }.get(arch)(t)
+            QL_MACOS: linux_socket_types,
+            }.get(arch)
+
+    return _constant_mapping(t, socket_type_map, single_mapping=True)
 
 
 def socket_domain_mapping(p, arch):
-    return {
+    socket_domain_map = {
             QL_X86: linux_socket_domain,
             QL_X8664: linux_socket_domain,
             QL_ARM: arm_socket_domain,
             QL_ARM_THUMB: arm_socket_domain,
             QL_ARM64: arm_socket_domain,
             QL_MIPS32: mips32_socket_domain,
-            }.get(arch)(p)
+            QL_MACOS: macos_socket_domain,
+            }.get(arch)
+    
+    return _constant_mapping(p, socket_domain_map, single_mapping=True)

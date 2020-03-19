@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 from .define_value import *
 from .utils import *
 from struct import unpack
@@ -22,6 +27,7 @@ class LoadCommand:
             LC_ID_DYLINKER          :   LoadIdDylinker,
             LC_UUID                 :   LoadUuid,
             LC_VERSION_MIN_MACOSX   :   LoadVersionMinMacosx,
+            LC_VERSION_MIN_IPHONEOS :   LoadVersionMinIphoneos,
             LC_SOURCE_VERSION       :   LoadSourceVersion,
             LC_UNIXTHREAD           :   LoadUnixThread,
             LC_SEGMENT_SPLIT_INFO   :   LoadSegmentSplitInfo,
@@ -31,7 +37,11 @@ class LoadCommand:
             LC_DYLD_INFO_ONLY       :   LoadDyldInfoOnly,
             LC_LOAD_DYLINKER        :   LoadDylinker,
             LC_MAIN                 :   LoadMain,
-            LC_LOAD_DYLIB           :   LoadDyLib
+            LC_LOAD_DYLIB           :   LoadDyLib,
+            LC_ENCRYPTION_INFO_64   :   LoadEncryptionInfo64,
+            LC_DYLD_EXPORTS_TRIE    :   LoadDyldExportTrie,
+            LC_DYLD_CHAINED_FIXUPS  :   LoadDyldChainedFixups,
+            LC_BUILD_VERSION        :   LoadBuildVersion
         }
 
         exec_func = cmd_map.get(self.cmd_id)
@@ -71,7 +81,8 @@ class LoadSegment32(LoadSegment):
 
 
 class LoadSegment64(LoadSegment):
-
+    # FIXME: segmengs should not be fixed size of 0x1000, should be calculated
+    # header mark as 0x1000 but it seems we need count it to matched IDApro
     def __init__(self, data):
         super().__init__(data)
         self.vm_address             = unpack("<Q", self.FR.read(8))[0]
@@ -189,6 +200,19 @@ class LoadVersionMinMacosx(LoadCommand):
     def get_complete(self):
         pass
 
+class LoadVersionMinIphoneos(LoadCommand):
+
+    def __init__(self, data):
+        super().__init__(data)
+        self.version    = unpack("<L", self.FR.read(4))[0]
+        self.reserved   = unpack("<L", self.FR.read(4))[0]
+
+    def __str__(self):
+        return (" VersionMinIphoneos: version %X" % self.version)
+
+    def get_complete(self):
+        pass
+
 
 class LoadSourceVersion(LoadCommand):
 
@@ -232,8 +256,10 @@ class LoadUnixThread(LoadCommand):
 
     def __init__(self, data):
         super().__init__(data)
+
         self.flavor = unpack("<L", self.FR.read(4))[0]
         self.count  = unpack("<L", self.FR.read(4))[0]
+        
         if self.flavor == X86_THREAD_STATE32:
             self.eax        = unpack("<L", self.FR.read(4))[0]
             self.ebx        = unpack("<L", self.FR.read(4))[0]
@@ -252,6 +278,7 @@ class LoadUnixThread(LoadCommand):
             self.fs         = unpack("<L", self.FR.read(4))[0]
             self.gs         = unpack("<L", self.FR.read(4))[0]
             self.entry      = self.eip
+        
         elif self.flavor == X86_THREAD_STATE64:
             self.rax        = unpack("<Q", self.FR.read(8))[0]
             self.rbx        = unpack("<Q", self.FR.read(8))[0]
@@ -275,6 +302,42 @@ class LoadUnixThread(LoadCommand):
             self.fs         = unpack("<Q", self.FR.read(8))[0]
             self.gs         = unpack("<Q", self.FR.read(8))[0]
             self.entry      = self.rip
+        
+        elif self.flavor == ARM_THREAD_STATE64:
+            self.x0         = unpack("<Q", self.FR.read(8))[0]
+            self.x1         = unpack("<Q", self.FR.read(8))[0]
+            self.x2         = unpack("<Q", self.FR.read(8))[0]
+            self.x3         = unpack("<Q", self.FR.read(8))[0]
+            self.x4         = unpack("<Q", self.FR.read(8))[0]
+            self.x5         = unpack("<Q", self.FR.read(8))[0]
+            self.x6         = unpack("<Q", self.FR.read(8))[0]
+            self.x7         = unpack("<Q", self.FR.read(8))[0]
+            self.x8         = unpack("<Q", self.FR.read(8))[0]
+            self.x9         = unpack("<Q", self.FR.read(8))[0]
+            self.x10        = unpack("<Q", self.FR.read(8))[0]
+            self.x11        = unpack("<Q", self.FR.read(8))[0]
+            self.x12        = unpack("<Q", self.FR.read(8))[0]
+            self.x13        = unpack("<Q", self.FR.read(8))[0]
+            self.x14        = unpack("<Q", self.FR.read(8))[0]
+            self.x15        = unpack("<Q", self.FR.read(8))[0]
+            self.x16        = unpack("<Q", self.FR.read(8))[0]
+            self.x17        = unpack("<Q", self.FR.read(8))[0]
+            self.x18        = unpack("<Q", self.FR.read(8))[0]
+            self.x19        = unpack("<Q", self.FR.read(8))[0]
+            self.x20        = unpack("<Q", self.FR.read(8))[0]
+            self.x21        = unpack("<Q", self.FR.read(8))[0]            
+            self.r22        = unpack("<Q", self.FR.read(8))[0]
+            self.x23        = unpack("<Q", self.FR.read(8))[0]
+            self.x24        = unpack("<Q", self.FR.read(8))[0]
+            self.x25        = unpack("<Q", self.FR.read(8))[0]
+            self.x26        = unpack("<Q", self.FR.read(8))[0]
+            self.x27        = unpack("<Q", self.FR.read(8))[0]            
+            self.x28        = unpack("<Q", self.FR.read(8))[0]
+            self.x29        = unpack("<Q", self.FR.read(8))[0]
+            self.x30        = unpack("<Q", self.FR.read(8))[0]            
+            self.sp         = unpack("<Q", self.FR.read(8))[0]            
+            self.pc         = unpack("<Q", self.FR.read(8))[0]
+            self.entry      = self.pc
 
     def __str__(self):
         return (" Unixthread: entry 0x%X" %self.entry)  
@@ -411,3 +474,40 @@ class LoadSection64(LoadSection):
             self.section_name, self.segment_name, self.address, self.size, self.offset, self.alignment, self.relocations_offset,
             self.number_of_relocations, self.flags
         ))
+
+
+class LoadEncryptionInfo64(LoadCommand):
+
+    def __init__(self, data):
+        super().__init__(data)
+
+    def get_complete(self):
+        pass        
+
+
+class LoadDyldExportTrie(LoadCommand):
+
+    def __init__(self, data):
+        super().__init__(data)
+
+    def get_complete(self):
+        pass       
+
+
+class LoadDyldChainedFixups(LoadCommand):
+
+    def __init__(self, data):
+        super().__init__(data)
+
+    def get_complete(self):
+        pass           
+
+
+class LoadBuildVersion(LoadCommand):
+
+    def __init__(self, data):
+        super().__init__(data)
+
+    def get_complete(self):
+        pass        
+    

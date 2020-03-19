@@ -60,11 +60,11 @@ def hook_syscall(ql, intno):
         except KeyboardInterrupt:
             raise            
         except Exception:
-            ql.nprint("[!] SYSCALL ERROR: %s" % (MACOS_SYSCALL_FUNC_NAME))
+            ql.nprint("[!] SYSCALL ERROR: ", MACOS_SYSCALL_FUNC_NAME)
             #td = ql.thread_management.cur_thread
             #td.stop()
             #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
-            raise
+            raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (MACOS_SYSCALL_FUNC_NAME))
     else:
         ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
         if ql.debug_stop:
@@ -89,13 +89,6 @@ def loader_file(ql):
     loader.loadMachoX86()
     ql.stack_address = (int(ql.stack_esp))
 
-    ql.sp = ql.stack_address
-    ql_setup_output(ql)
-    ql.hook_intr(hook_syscall)
-    ql_x86_setup_gdt_segment_ds(ql)
-    ql_x86_setup_gdt_segment_cs(ql)
-    ql_x86_setup_gdt_segment_ss(ql)
-
 
 def loader_shellcode(ql):
     uc = Uc(UC_ARCH_X86, UC_MODE_32)
@@ -107,41 +100,31 @@ def loader_shellcode(ql):
     ql.uc.mem_map(ql.stack_address,  ql.stack_size)
     ql.stack_address= ql.stack_address  + 0x200000 - 0x1000
     ql.uc.mem_write(ql.stack_address, ql.shellcoder)
+    
 
-    ql.sp = ql.stack_address
+def runner(ql):
+    ql.uc.reg_write(UC_X86_REG_ESP, ql.stack_address) 
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
     ql_x86_setup_gdt_segment_ds(ql)
     ql_x86_setup_gdt_segment_cs(ql)
     ql_x86_setup_gdt_segment_ss(ql)
 
-
-def runner(ql):
     if (ql.until_addr == 0):
         ql.until_addr = QL_X86_EMU_END
     try:
         if ql.shellcoder:
             ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
         else:
-            #if ql.elf_entry != ql.entry_point:
-            #    ql.uc.emu_start(ql.entry_point, ql.elf_entry, ql.timeout) 
-            #    ql.enable_lib_patch()
-            #ql.uc.emu_start(ql.elf_entry, ql.until_addr, ql.timeout) 
-            
             ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
-            
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
             ql.show_map_info()
-            try:
-                buf = ql.uc.mem_read(ql.pc, 8)
-                ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                ql.nprint("\n")
-                ql_hook_code_disasm(ql, ql.pc, 64)
-            except:
-                pass
-        raise
+            buf = ql.uc.mem_read(ql.pc, 8)
+            ql.nprint("[+] ", [hex(_) for _ in buf])
+            ql_hook_code_disasm(ql, ql.pc, 64)
+        raise QlErrorExecutionStop("[!] Execution Terminated")    
     
     if ql.internal_exception != None:
         raise ql.internal_exception        
