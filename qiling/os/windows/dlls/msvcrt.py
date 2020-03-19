@@ -6,6 +6,7 @@ import struct
 from qiling.os.utils import *
 from qiling.os.windows.fncc import *
 from qiling.os.fncc import *
+from qiling.os.windows.const import *
 
 
 # void __set_app_type (
@@ -401,3 +402,19 @@ def hook_memmove(ql, address, params):
     data = ql.mem_read(params['src'], params['num'])
     ql.mem_write(params['dest'], bytes(data))
     return params['dest']
+
+
+# int _ismbblead(
+#    unsigned int c
+# );
+@winapi(cc=CDECL, params={
+    "c": UINT
+})
+def hook__ismbblead(ql, address, params):
+    # TODO check if is CDECL or not
+    # If locale is utf-8 always return 0
+    loc = LOCALE["default"]
+    if loc[0x1004] == "utf-8":
+        return 0
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")

@@ -352,7 +352,8 @@ LOCALE_EN_US = {
     "jDateTimePattern": "{1} {0}"
 }
 LOCALE = {
-    0x409: LOCALE_EN_US
+    0x409: LOCALE_EN_US,
+    "default": LOCALE_EN_US
 }
 # Code Page Identifiers
 # https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
