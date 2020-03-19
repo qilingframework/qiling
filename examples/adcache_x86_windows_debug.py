@@ -4,8 +4,8 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import sys
-sys.path.append("..")
 from zipfile import ZipFile
+sys.path.append("..")
 from qiling import *
 
 

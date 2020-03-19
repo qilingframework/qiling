@@ -4,8 +4,9 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import sys
-from qiling import *
 sys.path.append("..")
+from qiling import *
+
 
 def my_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
     regreturn = 0
