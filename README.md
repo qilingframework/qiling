@@ -52,22 +52,8 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 
 ---
 
-#### Install
-
-If you are NOT using pyenv, run the command shown below to install Qiling (Python3 is required).
-
-```
-pip3 install -r ./requirements.txt
-python3 setup.py install
-```
-
-If you are using pyenv, run the command shown below (or use docker).
-
-```
-mv $(dirname $(which python))/python2.7 $(dirname $(which python))/python2.7.bak
-pip install -r ./requirements.txt
-python setup.py install
-```
+#### Installation
+Please see [setup guide](docs/SETUP.md) file for how to install Qiling Framework.
 
 ---
 
@@ -116,7 +102,7 @@ def my_sandbox(path, rootfs):
     ql.patch(0x0040110B, b'\x90\x90')
     ql.patch(0x00401112, b'\x90\x90')
     # hook at an address with a callback
-    ql.hook_address(0x00401016, force_call_dialog_func)
+    ql.hook_address(force_call_dialog_func, 0x00401016)
     ql.run()
 
 

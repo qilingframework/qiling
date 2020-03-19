@@ -91,38 +91,42 @@ def hook_EndDialog(ql, address, params):
 def hook_GetDesktopWindow(ql, address, params):
     pass
 
-#BOOL OpenClipboard(
+
+# BOOL OpenClipboard(
 #  HWND hWndNewOwner
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hWndNewOwner": HANDLE
 })
 def hook_OpenClipboard(ql, address, params):
     return ql.clipboard.open(params['hWndNewOwner'])
 
-#BOOL CloseClipboard();
+
+# BOOL CloseClipboard();
 @winapi(cc=STDCALL, params={})
 def hook_CloseClipboard(ql, address, params):
     return ql.clipboard.close()
 
-#HANDLE SetClipboardData(
+
+# HANDLE SetClipboardData(
 #  UINT   uFormat,
 #  HANDLE hMem
-#);
+# );
 @winapi(cc=STDCALL, params={
     "uFormat": UINT,
     "hMem": STRING
 })
 def hook_SetClipboardData(ql, address, params):
     try:
-        data = bytes(params['hMem'], 'ascii')
-    except:
+        data = bytes(params['hMem'], 'ascii', 'ignore')
+    except UnicodeEncodeError:
         data = b""
     return ql.clipboard.set_data(params['uFormat'], data)
 
-#HANDLE GetClipboardData(
+
+# HANDLE GetClipboardData(
 #  UINT uFormat
-#);
+# );
 @winapi(cc=STDCALL, params={
     "uFormat": UINT
 })
@@ -136,12 +140,48 @@ def hook_GetClipboardData(ql, address, params):
         ql.dprint('Failed to get clipboard data')
         return 0
 
-#BOOL IsClipboardFormatAvailable(
+
+# BOOL IsClipboardFormatAvailable(
 #  UINT format
-#);
+# );
 @winapi(cc=STDCALL, params={
     "uFormat": UINT
 })
 def hook_IsClipboardFormatAvailable(ql, address, params):
     rtn = ql.clipboard.format_available(params['uFormat'])
     return rtn
+
+
+# UINT MapVirtualKeyW(
+#   UINT uCode,
+#   UINT uMapType
+# );
+@winapi(cc=STDCALL, params={
+    "uCode": UINT,
+    "uMapType": UINT
+})
+def hook_MapVirtualKeyW(ql, address, params):
+    # TODO this function must be implemented. Don't know how to do it right now
+    return 0x1
+
+
+# UINT RegisterWindowMessageA(
+#   LPCSTR lpString
+# );
+@winapi(cc=STDCALL, params={
+    "lpString": STRING
+})
+def hook_RegisterWindowMessageA(ql, address, params):
+    # is communication between different process. I don't think we can emulate this
+    return 0xD10C
+
+
+# UINT RegisterWindowMessageW(
+#   LPCWSTR lpString
+# );
+@winapi(cc=STDCALL, params={
+    "lpString": WSTRING
+})
+def hook_RegisterWindowMessageW(ql, address, params):
+    # is communication between different process. I don't think we can emulate this
+    return 0xD10C

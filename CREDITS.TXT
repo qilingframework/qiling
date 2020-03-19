@@ -34,7 +34,7 @@ iamyeh
 Contributors (in no particular order)
 =====================================
 klks
-Kevin (chfl4gs) Foo
+FOO Kevin (chfl4gs)
 jhumble
 WanderingGlitch
 Nguyen Hong Quang (quangnh89)
@@ -48,3 +48,4 @@ iamyeh
 alfink
 bambu
 kabeor
+0ssigeno

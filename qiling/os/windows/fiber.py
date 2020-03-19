@@ -7,11 +7,13 @@
 from unicorn import *
 from unicorn.x86_const import *
 
+
 class Fiber:
     def __init__(self, idx, cb=None):
         self.idx = idx
         self.data = 0
         self.cb = cb
+
 
 class FiberManager:
     def __init__(self, ql):
@@ -24,10 +26,10 @@ class FiberManager:
         self.fibers[self.idx] = Fiber(self.idx, cb=cb)
         self.idx += 1
         return rtn
-    
+
     def free(self, idx):
         if idx not in self.fibers:
-            ql.last_error = 0x57 #ERROR_INVALID_PARAMETER
+            self.ql.last_error = 0x57  # ERROR_INVALID_PARAMETER
             return 0
         else:
             fiber = self.fibers[idx]
@@ -58,7 +60,7 @@ class FiberManager:
 
     def set(self, idx, data):
         if idx not in self.fibers:
-            ql.last_error = 0x57 #ERROR_INVALID_PARAMETER
+            self.ql.last_error = 0x57  # ERROR_INVALID_PARAMETER
             return 0
         else:
             self.fibers[idx].data = data
@@ -66,7 +68,7 @@ class FiberManager:
 
     def get(self, idx):
         if idx not in self.fibers:
-            ql.last_error = 0x57 #ERROR_INVALID_PARAMETER
+            self.ql.last_error = 0x57  # ERROR_INVALID_PARAMETER
             return 0
         else:
             return self.fibers[idx].data

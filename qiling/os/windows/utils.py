@@ -9,7 +9,7 @@ from qiling.arch.filetype import *
 
 
 def ql_x86_windows_hook_mem_error(ql, addr, size, value):
-    ql.nprint("[+] ERROR: unmapped memory access at 0x%x" % addr)
+    ql.dprint("[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
 
@@ -20,9 +20,9 @@ def string_unpack(string):
 def read_wstring(ql, address):
     result = ""
     char = ql.uc.mem_read(address, 2)
-    while char.decode() != "\x00\x00":
+    while char.decode("utf-8", "backslashreplace") != "\x00\x00":
         address += 2
-        result += char.decode()
+        result += char.decode("utf-8", "backslashreplace")
         char = ql.uc.mem_read(address, 2)
     return result
 
