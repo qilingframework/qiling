@@ -168,8 +168,8 @@ def hook_GetCurrentThreadId(ql, address, params):
 # );
 @winapi(cc=STDCALL, params={})
 def hook_GetCurrentProcessId(ql, address, params):
-    ret = 1000
-    return ret
+    # Let's return a valid value
+    return 0x2005
 
 
 # BOOL IsProcessorFeaturePresent(
@@ -179,7 +179,7 @@ def hook_GetCurrentProcessId(ql, address, params):
     "ProcessorFeature": DWORD
 })
 def hook_IsProcessorFeaturePresent(ql, address, params):
-    ret = 0
+    ret = 1
     return ret
 
 

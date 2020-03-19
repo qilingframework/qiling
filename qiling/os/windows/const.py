@@ -410,3 +410,21 @@ SM_CYFULLSCREEN = 17
 SM_CYHSCROLL = 3
 SM_CYICON = 12
 # Got bored, will add more if is necessary
+
+
+# VirtualKey Mappings
+# https://docs.microsoft.com/it-it/windows/win32/inputdev/virtual-key-codes
+# https://www.win.tue.nl/~aeb/linux/kbd/scancodes-1.html
+MAPVK_VK_TO_VSC = {
+    0x5b: 0x5b,
+    0x10: 0x2a,
+    0xa0: 0x2a,
+    0xa1: 0x36,
+    0x11: 0x1d,
+    0x12: 0x38
+}
+# more to add, just inserted the necessary for a sample
+
+MAP_VK = {
+    0: MAPVK_VK_TO_VSC
+}

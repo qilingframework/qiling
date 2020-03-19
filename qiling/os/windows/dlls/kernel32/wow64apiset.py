@@ -25,8 +25,8 @@ from qiling.exception import *
 })
 def hook_IsWow64Process(ql, address, params):
     pointer = params["Wow64Process"]
-    false = 0x0.to_bytes(length=ql.pointersize, byteorder='little')
-    true = 0x1.to_bytes(length=ql.pointersize, byteorder='little')
+    false = 0x0.to_bytes(length=1, byteorder='little')
+    true = 0x1.to_bytes(length=1, byteorder='little')
     if ql.archbit == 32:
         ql.uc.mem_write(pointer, false)
     else:

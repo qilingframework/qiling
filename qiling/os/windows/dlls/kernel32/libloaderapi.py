@@ -72,7 +72,7 @@ def hook_GetModuleFileNameA(ql, address, params):
     lpFilename = params["lpFilename"]
     nSize = params["nSize"]
 
-    # GetModuleHandle can return PE_IMAGE_BASE as handle, and GetModuleFileName can try to retrieve.
+    # GetModuleHandle can return PE_IMAGE_BASE as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and PE_IMAGE_BASE value should do the same operations
     if hModule == 0 or hModule == ql.PE.PE_IMAGE_BASE:
         filename = ql.PE.filepath
@@ -104,7 +104,7 @@ def hook_GetModuleFileNameW(ql, address, params):
     hModule = params["hModule"]
     lpFilename = params["lpFilename"]
     nSize = params["nSize"]
-    # GetModuleHandle can return PE_IMAGE_BASE as handle, and GetModuleFileName can try to retrieve.
+    # GetModuleHandle can return PE_IMAGE_BASE as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and PE_IMAGE_BASE value should do the same operations
     if hModule == 0 or hModule == ql.PE.PE_IMAGE_BASE:
         filename = ql.PE.filepath.decode('ascii').encode('utf-16le')

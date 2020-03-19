@@ -162,8 +162,19 @@ def hook_IsClipboardFormatAvailable(ql, address, params):
     "uMapType": UINT
 })
 def hook_MapVirtualKeyW(ql, address, params):
-    # TODO this function must be implemented. Don't know how to do it right now
-    return 0x1
+    map_value = params["uMapType"]
+    code_value = params["uCode"]
+    map_dict = MAP_VK.get(map_value, None)
+    if map_dict is not None:
+        code = map_dict.get(code_value, None)
+        if code is not None:
+            return code
+        else:
+            ql.dprint("Code value %x" % info)
+            raise QlErrorNotImplemented("[!] API not implemented")
+    else:
+        ql.dprint("Map value %x" % info)
+        raise QlErrorNotImplemented("[!] API not implemented")
 
 
 # UINT RegisterWindowMessageA(
