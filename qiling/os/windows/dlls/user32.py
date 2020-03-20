@@ -388,7 +388,7 @@ def hook_SetWindowsHookExA(ql, address, params):
     "nCmdShow": INT
 })
 def hook_ShowWindow(ql, address, params):
-    # return value depends on sample goal
+    # return value depends on sample goal (evasion on just display error)
     ql.dprint(params["hWnd"])
     return 0x1
 
@@ -413,6 +413,40 @@ def hook_LoadIconA(ql, address, params):
     "hWnd": POINTER
 })
 def hook_IsWindow(ql, address, params):
-    # return value depends on sample goal
+    # return value depends on sample  goal (evasion on just display error)
     ql.dprint(params["hWnd"])
     return 0x1
+
+
+# LRESULT SendMessageA(
+#   HWND   hWnd,
+#   UINT   Msg,
+#   WPARAM wParam,
+#   LPARAM lParam
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER,
+    "Msg": UINT,
+    "wParam": UINT,
+    "lParam": UINT
+})
+def hook_SendMessageA(ql, address, params):
+    # TODO don't know how to get return value
+    return 0xD10C
+
+
+# LRESULT LRESULT DefWindowProcA(
+#   HWND   hWnd,
+#   UINT   Msg,
+#   WPARAM wParam,
+#   LPARAM lParam
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER,
+    "Msg": UINT,
+    "wParam": UINT,
+    "lParam": UINT
+})
+def hook_DefWindowProcA(ql, address, params):
+    # TODO don't know how to get return value
+    return 0xD10C
