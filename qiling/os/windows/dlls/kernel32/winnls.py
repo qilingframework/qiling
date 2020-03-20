@@ -29,8 +29,7 @@ def hook_SetThreadLocale(ql, address, params):
 # );
 @winapi(cc=STDCALL, params={})
 def hook_GetACP(ql, address, params):
-    ret = 437
-    return ret
+    return OEM_US
 
 
 # BOOL GetCPInfo(
@@ -152,7 +151,7 @@ def hook_LCMapStringA(ql, address, params):
 @winapi(cc=STDCALL, params={
     "lpLocaleName": POINTER,
     "dwMapFlags": DWORD,
-    "lpSrcStr": POINTER,
+    "lpSrcStr": WSTRING,
     "cchSrc": INT,
     "lpDestStr": POINTER,
     "cchDest": INT,

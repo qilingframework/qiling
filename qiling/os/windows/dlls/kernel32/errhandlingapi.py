@@ -52,3 +52,14 @@ def hook_SetLastError(ql, address, params):
 def hook_UnhandledExceptionFilter(ql, address, params):
     ret = 1
     return ret
+
+
+# UINT SetErrorMode(
+#   UINT uMode
+# );
+@winapi(cc=STDCALL, params={
+    "uMode": UINT
+})
+def hook_SetErrorMode(ql, address, params):
+    # TODO maybe this need a better implementation
+    return 0

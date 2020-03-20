@@ -7,6 +7,7 @@ import struct
 from qiling.os.windows.fncc import *
 from qiling.os.fncc import *
 from qiling.os.windows.utils import *
+from qiling.os.windows.const import *
 
 
 # INT_PTR DialogBoxParamA(
@@ -161,8 +162,19 @@ def hook_IsClipboardFormatAvailable(ql, address, params):
     "uMapType": UINT
 })
 def hook_MapVirtualKeyW(ql, address, params):
-    # TODO this function must be implemented. Don't know how to do it right now
-    return 0x1
+    map_value = params["uMapType"]
+    code_value = params["uCode"]
+    map_dict = MAP_VK.get(map_value, None)
+    if map_dict is not None:
+        code = map_dict.get(code_value, None)
+        if code is not None:
+            return code
+        else:
+            ql.dprint("Code value %x" % info)
+            raise QlErrorNotImplemented("[!] API not implemented")
+    else:
+        ql.dprint("Map value %x" % info)
+        raise QlErrorNotImplemented("[!] API not implemented")
 
 
 # UINT RegisterWindowMessageA(
@@ -213,4 +225,137 @@ def hook_GetLastActivePopup(ql, address, params):
     "lpPoint": POINTER
 })
 def hook_GetPhysicalCursorPos(ql, address, params):
+    return 1
+
+
+# int GetSystemMetrics(
+#   int nIndex
+# );
+@winapi(cc=STDCALL, params={
+    "nIndex": INT
+})
+def hook_GetSystemMetrics(ql, address, params):
+    info = params["nIndex"]
+    if info == SM_CXICON or info == SM_CYICON:
+        # Size of icon
+        return 32
+    elif info == SM_CXVSCROLL:
+        return 4
+    elif info == SM_CYHSCROLL:
+        return 300
+    else:
+        ql.dprint("Info value %x" % info)
+        raise QlErrorNotImplemented("[!] API not implemented")
+
+
+# HDC GetDC(
+#   HWND hWnd
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER
+})
+def hook_GetDC(ql, address, params):
+    handler = params["hWnd"]
+    # Maybe we should really emulate the handling of screens and windows. Is going to be a pain
+    return 0xD10C
+
+
+# int GetDeviceCaps(
+#   HDC hdc,
+#   int index
+# );
+@winapi(cc=STDCALL, params={
+    "hdc": POINTER,
+    "index": INT
+})
+def hook_GetDeviceCaps(ql, address, params):
+    # Maybe we should really emulate the handling of screens and windows. Is going to be a pain
+    return 1
+
+
+# int ReleaseDC(
+#   HWND hWnd,
+#   HDC  hDC
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER,
+    "hdc": POINTER
+})
+def hook_ReleaseDC(ql, address, params):
+    return 1
+
+
+# DWORD GetSysColor(
+#   int nIndex
+# );
+@winapi(cc=STDCALL, params={
+    "nIndex": INT
+})
+def hook_GetSysColor(ql, address, params):
+    info = params["nIndex"]
+    return 0
+
+
+# HBRUSH GetSysColorBrush(
+#   int nIndex
+# );
+@winapi(cc=STDCALL, params={
+    "nIndex": INT
+})
+def hook_GetSysColorBrush(ql, address, params):
+    info = params["nIndex"]
+    return 0xd10c
+
+
+# HCURSOR LoadCursorA(
+#   HINSTANCE hInstance,
+#   LPCSTR    lpCursorName
+# );
+@winapi(cc=STDCALL, params={
+    "hInstance": POINTER,
+    "lpCursorName": INT
+})
+def hook_LoadCursorA(ql, address, params):
+    return 0xd10c
+
+
+# UINT GetOEMCP();
+@winapi(cc=STDCALL, params={
+})
+def hook_GetOEMCP(ql, address, params):
+    return OEM_US
+
+
+# int LoadStringA(
+#   HINSTANCE hInstance,
+#   UINT      uID,
+#   LPSTR     lpBuffer,
+#   int       cchBufferMax
+# );
+@winapi(cc=STDCALL, params={
+    "hInstance": POINTER,
+    "uID": UINT,
+    "lpBuffer": POINTER,
+    "cchBufferMax": INT
+})
+def hook_LoadStringA(ql, address, params):
+    dst = params["lpBuffer"]
+    max_len = params["cchBufferMax"]
+    string = "AAAABBBBCCCCDDDD" + "\x00"
+    if max_len == 0:
+        if len(string) >= max_len:
+            string[max_len] = "\x00"
+            string = string[:max_len]
+        ql.uc.mem_write(dst, string.encode("utf-16le"))
+    # should not count the \x00 byte
+    return len(string) - 1
+
+
+# BOOL MessageBeep(
+#   UINT uType
+# );
+@winapi(cc=STDCALL, params={
+    "uType": UINT,
+})
+def hook_MessageBeep(ql, address, params):
     return 1

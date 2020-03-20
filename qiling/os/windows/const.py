@@ -352,5 +352,79 @@ LOCALE_EN_US = {
     "jDateTimePattern": "{1} {0}"
 }
 LOCALE = {
-    0x409: LOCALE_EN_US
+    0x409: LOCALE_EN_US,
+    "default": LOCALE_EN_US
+}
+# Code Page Identifiers
+# https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
+OEM_US = 437
+
+# SystemMetrics
+# https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsystemmetrics
+SM_ARRANGE = 56
+SM_CLEANBOOT = 67
+SM_CMONITORS = 80
+SM_CMOUSEBUTTONS = 43
+SM_CONVERTIBLESLATEMODE = 0x2003
+SM_CXBORDER = 5
+SM_CXCURSOR = 13
+SM_CXDLGFRAME = 7
+SM_CXDOUBLECLK = 36
+SM_CXDRAG = 68
+SM_CXEDGE = 45
+SM_CXFIXEDFRAME = 7
+SM_CXFOCUSBORDER = 83
+SM_CXFRAME = 32
+SM_CXFULLSCREEN = 16
+SM_CXHSCROLL = 21
+SM_CXHTHUMB = 10
+SM_CXICON = 11
+SM_CXICONSPACING = 38
+SM_CXMAXIMIZED = 61
+SM_CXMAXTRACK = 59
+SM_CXMENUCHECK = 71
+SM_CXMENUSIZE = 54
+SM_CXMIN = 28
+SM_CXMINIMIZED = 57
+SM_CXMINSPACING = 47
+SM_CXMINTRACK = 34
+SM_CXPADDEDBORDER = 92
+SM_CXSCREEN = 0
+SM_CXSIZE = 30
+SM_CXSIZEFRAME = 32
+SM_CXSMICON = 49
+SM_CXSMSIZE = 52
+SM_CXVIRTUALSCREEN = 78
+SM_CXVSCROLL = 2
+SM_CYBORDER = 6
+SM_CYCAPTION = 4
+SM_CYCURSOR = 14
+SM_CYDLGFRAME = 8
+SM_CYDOUBLECLK = 37
+SM_CYDRAG = 69
+SM_CYEDGE = 46
+SM_CYFIXEDFRAME = 8
+SM_CYFOCUSBORDER = 84
+SM_CYFRAME = 33
+SM_CYFULLSCREEN = 17
+SM_CYHSCROLL = 3
+SM_CYICON = 12
+# Got bored, will add more if is necessary
+
+
+# VirtualKey Mappings
+# https://docs.microsoft.com/it-it/windows/win32/inputdev/virtual-key-codes
+# https://www.win.tue.nl/~aeb/linux/kbd/scancodes-1.html
+MAPVK_VK_TO_VSC = {
+    0x5b: 0x5b,
+    0x10: 0x2a,
+    0xa0: 0x2a,
+    0xa1: 0x36,
+    0x11: 0x1d,
+    0x12: 0x38
+}
+# more to add, just inserted the necessary for a sample
+
+MAP_VK = {
+    0: MAPVK_VK_TO_VSC
 }

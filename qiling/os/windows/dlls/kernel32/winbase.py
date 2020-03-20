@@ -144,3 +144,43 @@ def hook_GlobalUnlock(ql, address, params):
 })
 def hook_GlobalAlloc(ql, address, params):
     return ql.heap.mem_alloc(params['dwBytes'])
+
+
+# LPSTR lstrcpynA(
+#   LPSTR  lpString1,
+#   LPCSTR lpString2,
+#   int    iMaxLength
+# );
+@winapi(cc=STDCALL, params={
+    "lpString1": POINTER,
+    "lpString2": STRING,
+    "iMaxLength": INT
+})
+def hook_lstrcpynA(ql, address, params):
+    # Copy String2 into String for max iMaxLength chars
+    src = params["lpString2"]
+    dst = params["lpString1"]
+    max_length = params["iMaxLength"]
+    if len(src) > max_length:
+        src = src[:max_length]
+    ql.uc.mem_write(dst, bytes(src, encoding="utf-16le"))
+    return dst
+
+
+# HRSRC FindResourceA(
+#   HMODULE hModule,
+#   LPCSTR  lpName,
+#   LPCSTR  lpType
+# );
+@winapi(cc=STDCALL, params={
+    "hModule": POINTER,
+    "lpName": POINTER,
+    "lpType": POINTER
+})
+def hook_FindResourceA(ql, address, params):
+    # Retrieve a resource
+    # Name e Type can be int or strings, this can be a problem
+    name = params["lpName"]
+    type = params["lpType"]
+    # TODO i don't know how to implement this, the return 0 is to simulate an error
+    return 0

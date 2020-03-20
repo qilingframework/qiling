@@ -71,7 +71,10 @@ def hook_GetModuleFileNameA(ql, address, params):
     hModule = params["hModule"]
     lpFilename = params["lpFilename"]
     nSize = params["nSize"]
-    if hModule == 0:
+
+    # GetModuleHandle can return PE_IMAGE_BASE as handle, and GetModuleFileName will try to retrieve it.
+    # Pretty much 0 and PE_IMAGE_BASE value should do the same operations
+    if hModule == 0 or hModule == ql.PE.PE_IMAGE_BASE:
         filename = ql.PE.filepath
         filename_len = len(filename)
         if filename_len > nSize - 1:
@@ -81,6 +84,7 @@ def hook_GetModuleFileNameA(ql, address, params):
             ret = filename_len
         ql.uc.mem_write(lpFilename, filename + b"\x00")
     else:
+        ql.dprint("hModule %x" % hModule)
         raise QlErrorNotImplemented("[!] API not implemented")
     return ret
 
@@ -100,7 +104,9 @@ def hook_GetModuleFileNameW(ql, address, params):
     hModule = params["hModule"]
     lpFilename = params["lpFilename"]
     nSize = params["nSize"]
-    if hModule == 0:
+    # GetModuleHandle can return PE_IMAGE_BASE as handle, and GetModuleFileName will try to retrieve it.
+    # Pretty much 0 and PE_IMAGE_BASE value should do the same operations
+    if hModule == 0 or hModule == ql.PE.PE_IMAGE_BASE:
         filename = ql.PE.filepath.decode('ascii').encode('utf-16le')
         filename_len = len(filename)
         if filename_len > nSize - 1:
@@ -191,3 +197,41 @@ def hook_LoadLibraryExW(ql, address, params):
     lpLibFileName = bytes(bytes(params["lpLibFileName"], "ascii").decode('utf-16le'), 'ascii')
     dll_base = ql.PE.load_dll(lpLibFileName)
     return dll_base
+
+
+# DWORD SizeofResource(
+#   HMODULE hModule,
+#   HRSRC   hResInfo
+# );
+@winapi(cc=STDCALL, params={
+    "hModule": POINTER,
+    "hResInfo": POINTER
+})
+def hook_SizeofResource(ql, address, params):
+    # Return size of resource
+    # TODO set a valid value. More tests have to be made to find it.
+    return 0x8
+
+
+# HGLOBAL LoadResource(
+#   HMODULE hModule,
+#   HRSRC   hResInfo
+# );
+@winapi(cc=STDCALL, params={
+    "hModule": POINTER,
+    "hResInfo": POINTER
+})
+def hook_LoadResource(ql, address, params):
+    pointer = params["hResInfo"]
+    return pointer
+
+
+# LPVOID LockResource(
+#   HGLOBAL hResData
+# );
+@winapi(cc=STDCALL, params={
+    "hResData": POINTER
+})
+def hook_LockResource(ql, address, params):
+    pointer = params["hResData"]
+    return pointer
