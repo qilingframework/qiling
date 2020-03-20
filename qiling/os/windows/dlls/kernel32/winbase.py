@@ -103,6 +103,18 @@ def hook_LocalReAlloc(ql, address, params):
     return ret
 
 
+# HLOCAL LocalFree(
+#   _Frees_ptr_opt_ HLOCAL hMem
+# );
+@winapi(cc=STDCALL, params={
+    "hMem": POINTER
+})
+def hook_LocalFree(ql, address, params):
+    old_mem = params["hMem"]
+    ql.heap.mem_free(old_mem)
+    return 0
+
+
 # UINT SetHandleCount(
 #   UINT uNumber
 # );
@@ -143,7 +155,29 @@ def hook_GlobalUnlock(ql, address, params):
     "dwBytes": UINT
 })
 def hook_GlobalAlloc(ql, address, params):
-    return ql.heap.mem_alloc(params['dwBytes'])
+    return ql.heap.mem_alloc(params["dwBytes"])
+
+
+# HGLOBAL GlobalFree(
+#   _Frees_ptr_opt_ HGLOBAL hMem
+# );
+@winapi(cc=STDCALL, params={
+    "hMem": POINTER
+})
+def hook_GlobalFree(ql, address, params):
+    old_mem = params["hMem"]
+    ql.heap.mem_free(old_mem)
+    return 0
+
+
+# HGLOBAL GlobalHandle(
+#   LPCVOID pMem
+# );
+@winapi(cc=STDCALL, params={
+    "pMem": POINTER
+})
+def hook_GlobalHandle(ql, address, params):
+    return params["pMem"]
 
 
 # LPSTR lstrcpynA(

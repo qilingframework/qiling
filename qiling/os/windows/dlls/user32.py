@@ -379,6 +379,16 @@ def hook_SetWindowsHookExA(ql, address, params):
     return hook
 
 
+# BOOL UnhookWindowsHookEx(
+#   HHOOK hhk
+# );
+@winapi(cc=STDCALL, params={
+    "hhk": POINTER,
+})
+def hook_UnhookWindowsHookEx(ql, address, params):
+    return 1
+
+
 # BOOL ShowWindow(
 #   HWND hWnd,
 #   int  nCmdShow
