@@ -49,5 +49,11 @@ def debug_print_stack(ql, num, message=None):
         print(hex(sp + ql.pointersize * i) + ": " + hex(ql.stack_read(i * ql.pointersize)))
 
 
+def is_file_library(string):
+    string = string.lower().replace("\x00", "")
+    extension = string[-4:]
+    return extension in (".dll", ".exe", ".sys", ".drv")
+
+
 def string_to_hex(string):
     return ":".join("{:02x}".format(ord(c)) for c in string)
