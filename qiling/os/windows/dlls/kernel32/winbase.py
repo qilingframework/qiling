@@ -167,6 +167,40 @@ def hook_lstrcpynA(ql, address, params):
     return dst
 
 
+# LPSTR lstrcpyA(
+#   LPSTR  lpString1,
+#   LPCSTR lpString2,
+# );
+@winapi(cc=STDCALL, params={
+    "lpString1": POINTER,
+    "lpString2": STRING,
+})
+def hook_lstrcpyA(ql, address, params):
+    # Copy String2 into String
+    src = params["lpString2"]
+    dst = params["lpString1"]
+    ql.uc.mem_write(dst, bytes(src, encoding="utf-16le"))
+    return dst
+
+
+# LPSTR lstrcatA(
+#   LPSTR  lpString1,
+#   LPCSTR lpString2
+# );
+@winapi(cc=STDCALL, params={
+    "lpString1": POINTER,
+    "lpString2": STRING,
+})
+def hook_lstrcatA(ql, address, params):
+    # Copy String2 into String
+    src = params["lpString2"]
+    pointer = params["lpString1"]
+    string_base = read_cstring(ql, pointer)
+    result = string_base + src
+    ql.uc.mem_write(pointer, bytes(result, encoding="utf-16le"))
+    return pointer
+
+
 # HRSRC FindResourceA(
 #   HMODULE hModule,
 #   LPCSTR  lpName,

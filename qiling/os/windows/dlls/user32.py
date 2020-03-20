@@ -355,7 +355,25 @@ def hook_LoadStringA(ql, address, params):
 #   UINT uType
 # );
 @winapi(cc=STDCALL, params={
-    "uType": UINT,
+    "uType": UINT
 })
 def hook_MessageBeep(ql, address, params):
     return 1
+
+
+# HHOOK SetWindowsHookExA(
+#   int       idHook,
+#   HOOKPROC  lpfn,
+#   HINSTANCE hmod,
+#   DWORD     dwThreadId
+# );
+@winapi(cc=STDCALL, params={
+    "idHook": INT,
+    "lpfn": POINTER,
+    "hmod": POINTER,
+    "dwThreadId": DWORD
+})
+def hook_SetWindowsHookExA(ql, address, params):
+    # Should hook a procedure to a dll
+    hook = params["lpfn"]
+    return hook
