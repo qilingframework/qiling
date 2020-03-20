@@ -61,6 +61,5 @@ def hook_CryptStringToBinaryA(ql, address, params):
         # Write size
         ql.uc.mem_write(size_dst_pointer, len(output).to_bytes(length=4, byteorder='little'))
         # Write result
-        ql.dprint(string_to_hex(output))
         ql.uc.mem_write(string_dst, bytes(output, encoding="utf-16le"))
     return 1

@@ -61,10 +61,6 @@ def hook_GetLocaleInfoA(ql, address, params):
     locale_value = params["Locale"]
     lctype_value = params["LCType"]
     cchData = params["cchData"]
-    ql.dprint("locale")
-    ql.dprint(locale_value)
-    ql.dprint("lctype")
-    ql.dprint(lctype_value)
 
     local_dict = LOCALE.get(locale_value, None)
     if local_dict is None:

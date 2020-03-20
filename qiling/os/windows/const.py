@@ -4,7 +4,10 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 from Registry import Registry
 
-ERROR_SUCCESS = 0
+ERROR_SUCCESS = 0x0
+ERROR_INVALID_FUNCTION = 0x1
+ERROR_FILE_NOT_FOUND = 0x2
+
 INVALID_HANDLE_VALUE = -1
 
 STD_INPUT_HANDLE = 0xfffffff6
