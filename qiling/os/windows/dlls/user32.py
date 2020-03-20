@@ -385,8 +385,34 @@ def hook_SetWindowsHookExA(ql, address, params):
 # );
 @winapi(cc=STDCALL, params={
     "hWnd": POINTER,
-    "nCmdShow": INT,
+    "nCmdShow": INT
 })
 def hook_ShowWindow(ql, address, params):
-    # TODO check return value. I think it depends on what the sample really wants
+    # return value depends on sample goal
+    ql.dprint(params["hWnd"])
+    return 0x1
+
+
+# HICON LoadIconA(
+#   HINSTANCE hInstance,
+#   LPCSTR    lpIconName
+# );
+@winapi(cc=STDCALL, params={
+    "hInstance": POINTER,
+    "lpIconName": INT
+})
+def hook_LoadIconA(ql, address, params):
+    # we should create an handle for this?
+    return 0xD10C
+
+
+# BOOL IsWindow(
+#   HWND hWnd
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER
+})
+def hook_IsWindow(ql, address, params):
+    # return value depends on sample goal
+    ql.dprint(params["hWnd"])
     return 0x1
