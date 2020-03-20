@@ -25,8 +25,13 @@ def _GetModuleHandle(ql, address, params):
         if lpModuleName.lower() in ql.PE.dlls:
             ret = ql.PE.dlls[lpModuleName.lower()]
         else:
-            ret = 0
             ql.dprint("[!] DLL %s NON IMPORTED" % lpModuleName)
+            extension = lpModuleName[-4:]
+            # Let's try to import it if the sample think is default dll and was imported at the start
+            if extension == ".dll" or ".drv":
+                ret = ql.PE.load_dll(lpModuleName.encode())
+            else:
+                ret = 0x123456
     return ret
 
 

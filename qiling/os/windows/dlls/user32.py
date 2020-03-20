@@ -399,7 +399,6 @@ def hook_UnhookWindowsHookEx(ql, address, params):
 })
 def hook_ShowWindow(ql, address, params):
     # return value depends on sample goal (evasion on just display error)
-    ql.dprint(params["hWnd"])
     return 0x1
 
 
@@ -424,7 +423,6 @@ def hook_LoadIconA(ql, address, params):
 })
 def hook_IsWindow(ql, address, params):
     # return value depends on sample  goal (evasion on just display error)
-    ql.dprint(params["hWnd"])
     return 0x1
 
 
