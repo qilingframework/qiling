@@ -15,13 +15,7 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
-# HMODULE GetModuleHandleA(
-#   LPCSTR lpModuleName
-# );
-@winapi(cc=STDCALL, params={
-    "lpModuleName": STRING
-})
-def hook_GetModuleHandleA(ql, address, params):
+def _GetModuleHandle(ql, address, params):
     lpModuleName = params["lpModuleName"]
     if lpModuleName == 0:
         ret = ql.PE.PE_IMAGE_BASE
@@ -32,7 +26,18 @@ def hook_GetModuleHandleA(ql, address, params):
             ret = ql.PE.dlls[lpModuleName.lower()]
         else:
             ret = 0
+            ql.dprint("[!] DLL %s NON IMPORTED" % lpModuleName)
     return ret
+
+
+# HMODULE GetModuleHandleA(
+#   LPCSTR lpModuleName
+# );
+@winapi(cc=STDCALL, params={
+    "lpModuleName": STRING
+})
+def hook_GetModuleHandleA(ql, address, params):
+    return _GetModuleHandle(ql, address, params)
 
 
 # HMODULE GetModuleHandleW(
@@ -42,18 +47,7 @@ def hook_GetModuleHandleA(ql, address, params):
     "lpModuleName": WSTRING
 })
 def hook_GetModuleHandleW(ql, address, params):
-    lpModuleName = params["lpModuleName"]
-    if lpModuleName == 0:
-        ret = ql.PE.PE_IMAGE_BASE
-    else:
-        lpModuleName = bytes(lpModuleName, "ascii").decode('utf-16le')
-        if not lpModuleName.lower().endswith(".dll") and not lpModuleName.lower().endswith(".drv"):
-            lpModuleName += ".dll"
-        if lpModuleName.lower() in ql.PE.dlls:
-            ret = ql.PE.dlls[lpModuleName.lower()]
-        else:
-            ret = 0
-    return ret
+    return _GetModuleHandle(ql, address, params)
 
 
 # DWORD GetModuleFileNameA(
