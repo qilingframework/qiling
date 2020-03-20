@@ -47,3 +47,7 @@ def debug_print_stack(ql, num, message=None):
         sp = ql.uc.reg_read(UC_X86_REG_RSP)
     for i in range(num):
         print(hex(sp + ql.pointersize * i) + ": " + hex(ql.stack_read(i * ql.pointersize)))
+
+
+def string_to_hex(string):
+    return ":".join("{:02x}".format(ord(c)) for c in string)

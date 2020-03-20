@@ -12,4 +12,5 @@ from .ucrtbased import *
 from .wsock32 import *
 from .ole32 import *
 from .shlwapi import *
+from .crypt32 import *
 from qiling.os.windows.dlls.kernel32 import *

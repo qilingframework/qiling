@@ -377,3 +377,16 @@ def hook_SetWindowsHookExA(ql, address, params):
     # Should hook a procedure to a dll
     hook = params["lpfn"]
     return hook
+
+
+# BOOL ShowWindow(
+#   HWND hWnd,
+#   int  nCmdShow
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER,
+    "nCmdShow": INT,
+})
+def hook_ShowWindow(ql, address, params):
+    # TODO check return value. I think it depends on what the sample really wants
+    return 0x1

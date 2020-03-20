@@ -428,3 +428,12 @@ MAPVK_VK_TO_VSC = {
 MAP_VK = {
     0: MAPVK_VK_TO_VSC
 }
+
+# Crypt String Mappings
+# https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinarya
+
+CRYPT_STRING_BASE64HEADER = 0
+CRYPT_STRING_BASE64 = 1
+CRYPT_STRING_BINARY = 2
+CRYPT_STRING_BASE64REQUESTHEADER = 3
+# ...
