@@ -1,23 +1,12 @@
 #!/usr/bin/env python3
 """
-Simple example of how to use Qiling together with AFL.
+Simple example of how to use Qiling together with AFLplusplus.
 This is tested with the recent Qiling framework (the one you cloned),
-afl++ from https://github.com/vanhauser-thc/AFLplusplus
-and this unicorn fork:
-https://github.com/domenukk/unicorn/tree/0cd188142f52afce9f240eff92041947190e1174
+afl++ from https://github.com/AFLplusplus/AFLplusplus
 
-The unicorn fork adds a method to kick off the unicorn forkserver at any time.
-That means you can fuzz any unicorn projects with one line of code-ish.
+After building afl++, make sure you install `unicorn_mode/setup_unicorn.sh`
 
-I'm working on getting this upstreamed to afl++ once it's ready, but for now, git clone and checkout, then:
-```bash
-make -j8
-cd ./bindings/python
-./setup.py install --user
-```
-should do the trick.
-
-Run using afl++ unicorn mode with
+Then, run this file using afl++ unicorn mode with
 afl-fuzz -i ./afl_inputs -o ./afl_outputs -m none -U -- python3 ./fuzz_x8664_linux.py @@
 """
 
