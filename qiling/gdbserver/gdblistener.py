@@ -348,7 +348,7 @@ class GDBSession(object):
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                     self.ql.uc.reg_write(registers_mips[reg_index], reg_data)
 
-                self.ql.nprint("gdb> write to register %x with %x" % (registers_x8664[reg_index], reg_data))
+                self.ql.nprint("gdb> Write to register %x with %x\n" % (registers_x8664[reg_index], reg_data))
                 self.send('OK')
 
 
@@ -387,7 +387,7 @@ class GDBSession(object):
                         file_contents = f.read()
                         self.send("l%s" % file_contents)
                     else:
-                        self.ql.nprint("gdb> xml file not found: %s" % (xfercmd_file))
+                        self.ql.nprint("gdb> Xml file not found: %s\n" % (xfercmd_file))
                         exit(1)
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
@@ -704,7 +704,7 @@ class GDBSession(object):
 
             if cmd not in commands:
                 self.send('')
-                self.ql.nprint("gdb> command not supported: %s" %(cmd))
+                self.ql.nprint("gdb> Command not supported: %s\n" %(cmd))
                 continue
             self.ql.dprint("gdb> received: %s%s" % (cmd,subcmd))
             commands[cmd](subcmd)
