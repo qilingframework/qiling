@@ -709,7 +709,7 @@ class Qiling:
                 port = 9999
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind((ip, port))
-            self.nprint("gdb> Initializing loadbase 0x%x\n" % (self.loadbase))
+            self.nprint("\ngdb> Initializing loadbase 0x%x\n" % (self.loadbase))
             self.nprint("gdb> Listening on %s:%u\n" % (ip, port))
             sock.listen(1)
             conn, addr = sock.accept()

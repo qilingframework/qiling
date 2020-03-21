@@ -5,25 +5,32 @@
 
 from qiling.os.macos.define_values import *
 from qiling.os.macos.mach_port import *
+from qiling.arch.filetype import *
 from struct import *
 import os
 
 
 def load_shared_region(ql):
-    ql.uc.mem_write(0x7FFFFFE0001E, b'\x0d')                # set comm page version      
-    ql.uc.mem_write(0x7FFFFFE00040, b'\xec\x5e\x3b\x57')    # select memset code cpu version support
-
+    if ql.arch == QL_X8664:
+        ql.uc.mem_write(0x7FFFFFE0001E, b'\x0d')                # set comm page version      
+        #ql.uc.mem_write(0x7FFFFFE00040, b'\xec\x5e\x3b\x57')    # select memset code cpu version support
+    elif ql.arch == QL_ARM64:
+        pass
 
 def vm_shared_region_enter(ql):
     ql.uc.mem_map(SHARED_REGION_BASE_X86_64, SHARED_REGION_SIZE_X86_64)
     ql.macos_shared_region = True
     ql.macos_shared_region_port = MachPort(9999)        # random port name
-    pass
+    
 
 # I dont know what this space for
 def map_somefunc_space(ql):
-    addr_base = 0x7fffffe00000
-    addr_size = 0x100000
+    if ql.arch == QL_X8664:
+        addr_base = 0x7fffffe00000
+        addr_size = 0x100000
+    elif ql.arch == QL_ARM64:
+        addr_base = 0x0000000FFFFFC000
+        addr_size = 0x100000            
     ql.uc.mem_map(addr_base, addr_size)
     time_lock_slide = 0x68
     ql.uc.mem_write(addr_base+time_lock_slide, ql.pack32(0x1))

@@ -52,8 +52,8 @@ class FatHeader(Header):
         for item in self.binarys:
             if item.cpu_type == CPU_TYPE_X8664:
                 return item
-            # if item.cpu_type == CPU_TYPE_X86 and arch == "x86":
-            #     return item 
+            elif item.cpu_type == CPU_TYPE_ARM64:
+                return item 
         return None
 
 class FatInfo:

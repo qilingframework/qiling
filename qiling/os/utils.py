@@ -145,7 +145,10 @@ def ql_hook_code_disasm(ql, address, size):
 
     elif (ql.arch == QL_ARM64):  # QL_ARM64
         md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
-        syscall_num = [uc.reg_read(UC_ARM64_REG_X0), "X7"]
+        if ql.ostype == QL_MACOS:
+            syscall_num = [uc.reg_read(UC_ARM64_REG_X16), "X16"]
+        else:    
+            syscall_num = [uc.reg_read(UC_ARM64_REG_X8), "X8"]
         arg_0 = [uc.reg_read(UC_ARM64_REG_X0), "X0"]
         arg_1 = [uc.reg_read(UC_ARM64_REG_X1), "X1"]
         arg_2 = [uc.reg_read(UC_ARM64_REG_X2), "X2"]
