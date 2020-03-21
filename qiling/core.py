@@ -24,7 +24,7 @@ def catch_KeyboardInterrupt(ql):
             try:
                 return func(*args, **kw)
             except BaseException as e:
-                # ql.nprint("Received a request from the user to stop!")
+                # ql.nprint("Received a request from the user to stop!\n")
                 ql.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
                 ql.internal_exception = e
 
@@ -223,7 +223,7 @@ class Qiling:
                         ip, port = self.gdb.split(':')
                         port = int(port)
                     except:
-                        self.nprint("[!] Error: ip or port")
+                        self.nprint("[!] Error: ip or port\n")
                         exit(1)
                     self.gdbserver(ip, port)
             except KeyboardInterrupt:
@@ -680,9 +680,9 @@ class Qiling:
         self.map_info = map_info
 
     def show_map_info(self):
-        self.nprint("[+] Start      End        Perm.  Path")
+        self.nprint("[+] Start      End        Perm.  Path\n")
         for s, e, p, info in self.map_info:
-            self.nprint("[+] %08x - %08x - %s    %s" % (s, e, p, info))
+            self.nprint("[+] %08x - %08x - %s    %s\n" % (s, e, p, info))
 
     def __get_lib_base(self, filename):
         for s, e, p, info in self.map_info:
@@ -709,17 +709,17 @@ class Qiling:
                 port = 9999
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind((ip, port))
-            self.nprint("gdb> initializing loadbase 0x%x" % (self.loadbase))
-            self.nprint("gdb> listening on %s:%d" % (ip, port))
+            self.nprint("gdb> Initializing loadbase 0x%x\n" % (self.loadbase))
+            self.nprint("gdb> Listening on %s:%u\n" % (ip, port))
             sock.listen(1)
             conn, addr = sock.accept()
         except:
-            self.nprint("gdb> Error: Address already in use")
+            self.nprint("gdb> Error: Address already in use\n")
             raise
         try:
             mappings = [(hex(self.entry_point), 0x10)]
             exit_point = self.entry_point + os.path.getsize(path)
             self.gdbsession = GDBSession(self, conn, exit_point, mappings)
         except:
-            self.nprint("gdb> Error: Not able to initialize GDBServer")
+            self.nprint("gdb> Error: Not able to initialize GDBServer\n")
             raise
