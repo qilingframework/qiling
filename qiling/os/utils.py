@@ -489,8 +489,8 @@ def print_function(ql, address, function_name, params, ret):
 def read_cstring(ql, address):
     result = ""
     char = ql.uc.mem_read(address, 1)
-    while char.decode("utf-8", "backslashreplace") != "\x00":
+    while char.decode(errors="backslashreplace") != "\x00":
         address += 1
-        result += char.decode("utf-8", "backslashreplace")
+        result += char.decode(errors="backslashreplace")
         char = ql.uc.mem_read(address, 1)
     return result
