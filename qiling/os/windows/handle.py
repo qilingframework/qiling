@@ -54,4 +54,6 @@ class HandleManager:
         return self.handles[id]
 
     def delete(self, id):
-        del self.handles[id]
+        key = self.handles.get(id, None)
+        if key is not None:
+            del self.handles[id]

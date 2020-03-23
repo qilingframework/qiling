@@ -13,6 +13,31 @@ from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
+from os.path import *
+
+
+def _GetModuleHandle(ql, address, params):
+    lpModuleName = params["lpModuleName"]
+    if lpModuleName == 0:
+        ret = ql.PE.PE_IMAGE_BASE
+    else:
+        lpModuleName = lpModuleName.lower().replace("\x00", "")
+        if not is_file_library(lpModuleName):
+            lpModuleName += ".dll"
+        if lpModuleName in ql.PE.dlls:
+            ret = ql.PE.dlls[lpModuleName]
+        else:
+            ql.dprint("[!] Library %s not imported" % lpModuleName)
+            # Let's try to import it if the sample think is default dll and was imported at the start
+
+            # Probably we can optimize here since load_dll already do a lot of checks, but not a real problem
+            path = os.path.join(ql.rootfs, ql.dlls, lpModuleName)
+            if is_file_library(lpModuleName) and os.path.exists(path):
+                ret = ql.PE.load_dll(lpModuleName.encode())
+            else:
+                ql.dprint("[!] Library %s not found" % lpModuleName)
+                ret = 0
+    return ret
 
 
 # HMODULE GetModuleHandleA(
@@ -22,17 +47,7 @@ from qiling.exception import *
     "lpModuleName": STRING
 })
 def hook_GetModuleHandleA(ql, address, params):
-    lpModuleName = params["lpModuleName"]
-    if lpModuleName == 0:
-        ret = ql.PE.PE_IMAGE_BASE
-    else:
-        if not lpModuleName.lower().endswith(".dll") and not lpModuleName.lower().endswith(".drv"):
-            lpModuleName += ".dll"
-        if lpModuleName.lower() in ql.PE.dlls:
-            ret = ql.PE.dlls[lpModuleName.lower()]
-        else:
-            ret = 0
-    return ret
+    return _GetModuleHandle(ql, address, params)
 
 
 # HMODULE GetModuleHandleW(
@@ -42,18 +57,7 @@ def hook_GetModuleHandleA(ql, address, params):
     "lpModuleName": WSTRING
 })
 def hook_GetModuleHandleW(ql, address, params):
-    lpModuleName = params["lpModuleName"]
-    if lpModuleName == 0:
-        ret = ql.PE.PE_IMAGE_BASE
-    else:
-        lpModuleName = bytes(lpModuleName, "ascii").decode('utf-16le')
-        if not lpModuleName.lower().endswith(".dll") and not lpModuleName.lower().endswith(".drv"):
-            lpModuleName += ".dll"
-        if lpModuleName.lower() in ql.PE.dlls:
-            ret = ql.PE.dlls[lpModuleName.lower()]
-        else:
-            ret = 0
-    return ret
+    return _GetModuleHandle(ql, address, params)
 
 
 # DWORD GetModuleFileNameA(
