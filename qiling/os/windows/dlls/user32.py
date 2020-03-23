@@ -355,7 +355,106 @@ def hook_LoadStringA(ql, address, params):
 #   UINT uType
 # );
 @winapi(cc=STDCALL, params={
-    "uType": UINT,
+    "uType": UINT
 })
 def hook_MessageBeep(ql, address, params):
     return 1
+
+
+# HHOOK SetWindowsHookExA(
+#   int       idHook,
+#   HOOKPROC  lpfn,
+#   HINSTANCE hmod,
+#   DWORD     dwThreadId
+# );
+@winapi(cc=STDCALL, params={
+    "idHook": INT,
+    "lpfn": POINTER,
+    "hmod": POINTER,
+    "dwThreadId": DWORD
+})
+def hook_SetWindowsHookExA(ql, address, params):
+    # Should hook a procedure to a dll
+    hook = params["lpfn"]
+    return hook
+
+
+# BOOL UnhookWindowsHookEx(
+#   HHOOK hhk
+# );
+@winapi(cc=STDCALL, params={
+    "hhk": POINTER,
+})
+def hook_UnhookWindowsHookEx(ql, address, params):
+    return 1
+
+
+# BOOL ShowWindow(
+#   HWND hWnd,
+#   int  nCmdShow
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER,
+    "nCmdShow": INT
+})
+def hook_ShowWindow(ql, address, params):
+    # return value depends on sample goal (evasion on just display error)
+    return 0x1
+
+
+# HICON LoadIconA(
+#   HINSTANCE hInstance,
+#   LPCSTR    lpIconName
+# );
+@winapi(cc=STDCALL, params={
+    "hInstance": POINTER,
+    "lpIconName": INT
+})
+def hook_LoadIconA(ql, address, params):
+    # we should create an handle for this?
+    return 0xD10C
+
+
+# BOOL IsWindow(
+#   HWND hWnd
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER
+})
+def hook_IsWindow(ql, address, params):
+    # return value depends on sample  goal (evasion on just display error)
+    return 0x1
+
+
+# LRESULT SendMessageA(
+#   HWND   hWnd,
+#   UINT   Msg,
+#   WPARAM wParam,
+#   LPARAM lParam
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER,
+    "Msg": UINT,
+    "wParam": UINT,
+    "lParam": UINT
+})
+def hook_SendMessageA(ql, address, params):
+    # TODO don't know how to get return value
+    return 0xD10C
+
+
+# LRESULT LRESULT DefWindowProcA(
+#   HWND   hWnd,
+#   UINT   Msg,
+#   WPARAM wParam,
+#   LPARAM lParam
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": POINTER,
+    "Msg": UINT,
+    "wParam": UINT,
+    "lParam": UINT
+})
+def hook_DefWindowProcA(ql, address, params):
+    # TODO don't know how to get return value
+    return 0xD10C

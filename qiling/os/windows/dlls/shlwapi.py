@@ -37,6 +37,4 @@ def hook_PathFindFileNameA(ql, address, params):
     pathname = read_cstring(ql, pointer)
     size_before_last_slash = len("".join(pathname.split("\\")[:-1])) + pathname.count("\\")
     pointer_start = pointer + size_before_last_slash
-    test = read_cstring(ql, pointer_start)
-    ql.dprint(test)
     return pointer

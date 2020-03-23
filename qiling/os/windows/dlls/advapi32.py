@@ -10,7 +10,7 @@ from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
 
 
-def RegOpenKey(ql, address, params):
+def _RegOpenKey(ql, address, params):
     ret = ERROR_SUCCESS
 
     hKey = params["hKey"]
@@ -18,13 +18,14 @@ def RegOpenKey(ql, address, params):
     phkResult = params["phkResult"]
 
     if hKey not in REG_KEYS:
-        return 0x123456
+        ql.dprint("[!] Key %s %s not present" % (hKey, s_lpSubKey))
+        return ERROR_FILE_NOT_FOUND
     else:
         s_hKey = REG_KEYS[hKey]
         params["hKey"] = s_hKey
-    # is possible to have substring like Control Panel\Mouse. This caused qilig to not find the subkey
     if not ql.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
-        return 0x1234567
+        ql.dprint("[!] Value key %s\%s not present" % (s_hKey, s_lpSubKey))
+        return ERROR_FILE_NOT_FOUND
 
     # new handle
     if ret == ERROR_SUCCESS:
@@ -86,7 +87,7 @@ def RegQueryValue(ql, address, params):
     "phkResult": POINTER
 })
 def hook_RegOpenKeyExA(ql, address, params):
-    return RegOpenKey(ql, address, params)
+    return _RegOpenKey(ql, address, params)
 
 
 # LSTATUS RegOpenKeyExW(
@@ -104,7 +105,7 @@ def hook_RegOpenKeyExA(ql, address, params):
     "phkResult": POINTER
 })
 def hook_RegOpenKeyExW(ql, address, params):
-    return RegOpenKey(ql, address, params)
+    return _RegOpenKey(ql, address, params)
 
 
 # LSTATUS RegOpenKeyW(
@@ -118,7 +119,7 @@ def hook_RegOpenKeyExW(ql, address, params):
     "phkResult": POINTER
 })
 def hook_RegOpenKeyW(ql, address, params):
-    return RegOpenKey(ql, address, params)
+    return _RegOpenKey(ql, address, params)
 
 
 # LSTATUS RegOpenKeyA(
@@ -132,7 +133,7 @@ def hook_RegOpenKeyW(ql, address, params):
     "phkResult": POINTER
 })
 def hook_RegOpenKeyA(ql, address, params):
-    return RegOpenKey(ql, address, params)
+    return _RegOpenKey(ql, address, params)
 
 
 # LSTATUS RegQueryValueExA(

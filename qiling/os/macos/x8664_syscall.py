@@ -46,5 +46,5 @@ dict_x8664_macos_syscall = {
     0x20001f4 : "ql_syscall_getentropy",
     0x2000208 : "ql_syscall_terminate_with_payload",
     0x2000209 : "ql_syscall_abort_with_payload",
-    0x3000003 : "ql_x86_syscall_thread_set_tsd_base",
+    0x3000003 : "ql_x86_syscall_thread_set_tsd_base",    
 }
