@@ -18,7 +18,7 @@ from qiling.exception import *
 class Macho:
 
     # macho x8664 loader 
-    def __init__(self, ql, file_path, stack_esp, argvs, envs, apples, argc, dyld_path=None):
+    def __init__(self, ql, file_path, stack_sp, argvs, envs, apples, argc, dyld_path=None):
 
         self.macho_file     = MachoParser(ql, file_path)
         self.loading_file   = self.macho_file
@@ -30,8 +30,7 @@ class Macho:
         self.uc             = ql.uc
         self.binary_entry   = 0x0
         self.proc_entry     = 0x0
-        self.stack_esp      = stack_esp
-        self.stack_ebp      = stack_esp
+        self.stack_sp       = stack_sp
         self.argvs          = argvs
         self.envs           = envs
         self.apples         = apples
@@ -93,23 +92,23 @@ class Macho:
                             self.loading_file = self.dyld_file
                             self.proc_entry = self.loadMacho(depth + 1, True)
                             self.loading_file = self.macho_file
-                            print("dyldProcEntry : {}".format(self.proc_entry))
+                            #self.ql.nprint("[+] Dyld ProcEntry: {}".format(self.proc_entry))
                             self.using_dyld = True
 
         if depth == 0:
-            # self.ql.stack_esp = self.stack_esp
-            self.ql.stack_esp = self.loadStack()
+            self.ql.stack_sp = self.loadStack()
             if self.using_dyld:
-                print("procEntry : {}".format(hex(self.proc_entry)))
+                self.ql.nprint("[+] ProcEntry: {}".format(hex(self.proc_entry)))
                 self.ql.entry_point = self.proc_entry + self.dyld_slide
-                print("entryPoint : {}".format(hex(self.ql.entry_point)))
+                self.ql.nprint("[+] Dyld entry point: {}".format(hex(self.ql.entry_point)))
             else:
                 self.ql.entry_point = self.proc_entry + self.slide
-            print("binEntry : 0x{:X}".format(self.binary_entry))
+            self.ql.nprint("[+] Binary Entry Point: 0x{:X}".format(self.binary_entry))
             self.ql.macho_entry = self.binary_entry + self.slide
+            self.ql.loadbase = self.ql.macho_entry
             self.ql.load_base =  self.slide
-        else:
-            print("finish load dyld")
+        # else:
+        #     self.ql.nprint("[+] Loading dyld")
 
         return self.proc_entry
         
@@ -136,7 +135,7 @@ class Macho:
             self.binary_entry = cmd.entry
  
         self.proc_entry = cmd.entry
-        self.ql.dprint("[+] entry {}".format(hex(cmd.entry)))
+        self.ql.dprint("[+] Binary Thread Entry: {}".format(hex(cmd.entry)))
 
 
     def loadUuid(self):
@@ -178,7 +177,7 @@ class Macho:
 
         all_str = self.make_string(self.argvs, self.envs, self.apples)
         self.push_stack_string(all_str)
-        ptr = self.stack_esp
+        ptr = self.stack_sp
 
         for item in self.argvs[::-1]:
             argvs_ptr.append(ptr)   # need pack and tostring
@@ -195,52 +194,60 @@ class Macho:
             self.ql.dprint('[+] add apple ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
 
-        ptr = self.stack_esp
+        ptr = self.stack_sp
         self.push_stack_addr(0x0)
         ptr -= 4
+        
         for item in apple_ptr:
             self.push_stack_addr(item)
             ptr -= 4
         
         self.push_stack_addr(0x0)
         ptr -= 4
+        
         for item in envs_ptr:
             ptr -= 4
             self.push_stack_addr(item)
 
         self.push_stack_addr(0x0)
         ptr -= 4
+        
         for item in argvs_ptr:
             ptr -= 4
             self.push_stack_addr(item)
-            self.ql.dprint("[+] esp 0x%x, content 0x%x" % (self.stack_esp, item))
+            self.ql.dprint("[+] SP 0x%x, content 0x%x" % (self.stack_sp, item))
         argvs_ptr_ptr = ptr 
 
         self.push_stack_addr(self.argc)
         ptr -= 4
-        self.ql.dprint("[+] esp 0x%x, content 0x%x" % (self.stack_esp, self.argc))
+        self.ql.dprint("[+] SP 0x%x, content 0x%x" % (self.stack_sp, self.argc))
+       
         if self.using_dyld:
             ptr -= 4
-            print("entry :{:X}".format(self.binary_entry))
+            #self.ql.nprint("[+] Binary Dynamic Entry Point: {:X}".format(self.binary_entry))
             self.push_stack_addr(self.macho_file.header_address)
             # self.push_stack_addr(self.binary_entry)
 
-        return self.stack_esp
+        return self.stack_sp
 
     def push_stack_string(self, data):
         align = self.string_align
         length = len(data)
+        
         if length % align != 0:
             for i in range(align - (length % align)):
                 data += b'\x00' 
             length = len(data)
-        self.stack_esp -= length
-        self.uc.mem_write(self.stack_esp, data)
-        self.ql.dprint("[+] esp {} write data len {}".format(hex(self.stack_esp), length))
-        return self.stack_esp
+        
+        self.stack_sp -= length
+        self.uc.mem_write(self.stack_sp, data)
+        self.ql.dprint("[+] SP {} write data len {}".format(hex(self.stack_sp), length))
+        
+        return self.stack_sp
     
     def push_stack_addr(self, data):
         align = self.ptr_align
+        
         if data == 0:
             content = b'\x00\x00\x00\x00\x00\x00\x00\x00'
         else:
@@ -250,6 +257,7 @@ class Macho:
             self.ql.nprint('[!] stack align error')
             return 
         
-        self.stack_esp -= align
-        self.uc.mem_write(self.stack_esp, content)
-        return self.stack_esp
+        self.stack_sp -= align
+        self.uc.mem_write(self.stack_sp, content)
+
+        return self.stack_sp

@@ -24,7 +24,7 @@ class MachoParser:
         for seg in self.segments:
             # find page zero
             if seg.vm_address == 0 and seg.file_size == 0:
-                print("PageZero Size {:X}".format(seg.vm_size))
+                self.ql.nprint("[+] PageZero Size: {:X}".format(seg.vm_size))
                 self.page_zero_size = seg.vm_size
                 self.header_address = seg.vm_size
 

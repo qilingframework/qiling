@@ -44,12 +44,12 @@ class GDBSession(object):
         self.sp_reg         = self.ql.reg_sp
         self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
         self.rootfs_abspath = (os.path.abspath(self.ql.rootfs))
-        self.qldbg          = qldbg.Qldbg()
-        self.qldbg.initialize(self.ql, exit_point=exit_point, mappings=mappings)
+        self.gdb          = qldbg.Qldbg()
+        self.gdb.initialize(self.ql, exit_point=exit_point, mappings=mappings)
         if self.ql.ostype in (QL_LINUX, QL_FREEBSD):
-            self.qldbg.bp_insert(self.ql.elf_entry)
+            self.gdb.bp_insert(self.ql.elf_entry)
         else:
-            self.qldbg.bp_insert(self.ql.entry_point)
+            self.gdb.bp_insert(self.ql.entry_point)
 
 
     def bin_to_escstr(self, rawbin):
@@ -124,8 +124,8 @@ class GDBSession(object):
 
 
             def handle_c(subcmd):
-                self.qldbg.resume_emu(self.ql.uc.reg_read(self.pc_reg))
-                if self.qldbg.bp_list in ([self.ql.elf_entry], [self.ql.entry_point]):
+                self.gdb.resume_emu(self.ql.uc.reg_read(self.pc_reg))
+                if self.gdb.bp_list in ([self.ql.elf_entry], [self.ql.entry_point]):
                     self.send("W00")
                 else:
                     self.send(('S%.2x' % GDB_SIGNAL_TRAP))
@@ -348,7 +348,7 @@ class GDBSession(object):
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                     self.ql.uc.reg_write(registers_mips[reg_index], reg_data)
 
-                self.ql.nprint("gdb> write to register %x with %x" % (registers_x8664[reg_index], reg_data))
+                self.ql.nprint("gdb> Write to register %x with %x\n" % (registers_x8664[reg_index], reg_data))
                 self.send('OK')
 
 
@@ -387,7 +387,7 @@ class GDBSession(object):
                         file_contents = f.read()
                         self.send("l%s" % file_contents)
                     else:
-                        self.ql.nprint("gdb> xml file not found: %s" % (xfercmd_file))
+                        self.ql.nprint("gdb> Xml file not found: %s\n" % (xfercmd_file))
                         exit(1)
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
@@ -633,15 +633,15 @@ class GDBSession(object):
 
 
             def handle_s(subcmd):
-                current_address = self.qldbg.current_address
+                current_address = self.gdb.current_address
                 if current_address is None:
-                    entry_point = self.qldbg.entry_point
+                    entry_point = self.gdb.entry_point
                     if entry_point is not None:
-                        self.qldbg.soft_bp = True
-                        self.qldbg.resume_emu(entry_point)
+                        self.gdb.soft_bp = True
+                        self.gdb.resume_emu(entry_point)
                 else:
-                    self.qldbg.soft_bp = True
-                    self.qldbg.resume_emu()
+                    self.gdb.soft_bp = True
+                    self.gdb.resume_emu()
                 self.send('S%.2x' % GDB_SIGNAL_TRAP)
 
 
@@ -652,7 +652,7 @@ class GDBSession(object):
                     ztype, address, value = data.split(',')
                     address = int(address, 16)
                     try:
-                        self.qldbg.bp_insert(address)
+                        self.gdb.bp_insert(address)
                         self.send('OK')
                     except:
                         self.send('E22')
@@ -668,7 +668,7 @@ class GDBSession(object):
                     type = data[0]
                     addr = int(data[1], 16)
                     length = data[2]
-                    self.qldbg.bp_remove(type, addr, length)
+                    self.gdb.bp_remove(type, addr, length)
                     self.send('OK')
                 except:
                     self.send('E22')
@@ -704,7 +704,7 @@ class GDBSession(object):
 
             if cmd not in commands:
                 self.send('')
-                self.ql.nprint("gdb> command not supported: %s" %(cmd))
+                self.ql.nprint("gdb> Command not supported: %s\n" %(cmd))
                 continue
             self.ql.dprint("gdb> received: %s%s" % (cmd,subcmd))
             commands[cmd](subcmd)

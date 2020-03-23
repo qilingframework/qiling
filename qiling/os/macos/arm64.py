@@ -22,21 +22,14 @@ from qiling.os.posix.syscall import *
 from qiling.os.utils import *
 from qiling.arch.filetype import *
 
-#QL_X8664_MACOS_PREDEFINE_STACKADDRESS = 0x7ffcf0000000
-QL_ARM64_MACOS_PREDEFINE_STACKADDRESS = 0x7ffffffde000
-
-#QL_X8664_MACOS_PREDEFINE_STACKSIZE =        0x19a00000
-QL_ARM64_MACOS_PREDEFINE_STACKSIZE = 0x21000
-
-QL_ARM64_MACOS_PREDEFINE_MMAPADDRESS =  0x7ffbf0100000
-QL_ARM64_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x400000000000
+QL_ARM64_MACOS_PREDEFINE_STACKADDRESS       = 0x0000000160503000
+QL_ARM64_MACOS_PREDEFINE_STACKSIZE          = 0x21000
+QL_ARM64_MACOS_PREDEFINE_MMAPADDRESS        = 0x7ffbf0100000
 QL_ARM64_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x4000000f4000
+QL_ARM64_EMU_END                            = 0xffffffffffffffff
 
-#QL_X8664_EMU_END = 0xffffffffffffffff
-QL_ARM64_EMU_END = 0xffffffffffffffff
-
-def hook_syscall(ql):
-    syscall_num  = ql.uc.reg_read(UC_ARM64_REG_X8)
+def hook_syscall(ql, intno):
+    syscall_num  = ql.uc.reg_read(UC_ARM64_REG_X16)
     param0 = ql.uc.reg_read(UC_ARM64_REG_X0)
     param1 = ql.uc.reg_read(UC_ARM64_REG_X1)
     param2 = ql.uc.reg_read(UC_ARM64_REG_X2)
@@ -94,22 +87,23 @@ def loader_file(ql):
     ql.macho_port_manager = MachPortManager(ql, ql.macho_mach_port)
     ql.macho_host_server = MachHostServer(ql)
     ql.macho_task_server = MachTaskServer(ql)
-    ql.mmap_start = QL_ARM64_MACOS_PREDEFINE_MMAPADDRESS
+    if ql.mmap_start == 0:
+        ql.mmap_start = QL_ARM64_MACOS_PREDEFINE_MMAPADDRESS
     ql.macho_vmmap_end = QL_ARM64_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS
+
     if (ql.stack_address == 0):
         ql.stack_address = QL_ARM64_MACOS_PREDEFINE_STACKADDRESS
     if (ql.stack_size == 0): 
         ql.stack_size = QL_ARM64_MACOS_PREDEFINE_STACKSIZE
+    
     ql.uc.mem_map(ql.stack_address, ql.stack_size)
-
-    stack_esp = QL_ARM64_MACOS_PREDEFINE_STACKADDRESS + QL_ARM64_MACOS_PREDEFINE_STACKSIZE
+    stack_sp = QL_ARM64_MACOS_PREDEFINE_STACKADDRESS + QL_ARM64_MACOS_PREDEFINE_STACKSIZE
     envs = env_dict_to_array(ql.env)
     apples = ql_real_to_vm_abspath(ql, ql.path)
-
-    loader = Macho(ql, ql.path, stack_esp, [ql.path], envs, apples, 1)
+    loader = Macho(ql, ql.path, stack_sp, [ql.path], envs, apples, 1)
     loader.loadMacho()
     ql.macho_task.min_offset = page_align_end(loader.vm_end_addr, PAGE_SIZE)
-    ql.stack_address = (int(ql.stack_esp))
+    ql.stack_address = (int(ql.stack_sp))
     
 
 def loader_shellcode(ql):
@@ -127,6 +121,7 @@ def loader_shellcode(ql):
     
 
 def runner(ql):
+    ql.nprint("[+] AARCH64 IOS Stackaddress start at: 0x%x" %(ql.stack_address))
     ql.uc.reg_write(UC_ARM64_REG_SP, ql.stack_address)
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)

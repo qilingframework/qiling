@@ -53,7 +53,7 @@ class Qldbg(object):
                     ql.stop()
 
                     self.last_bp = address
-                    self.ql.nprint("gdb> breakpoint: 0x%x" % address)
+                    self.ql.nprint("gdb> Breakpoint: 0x%x\n" % address)
             elif address == self.last_bp:
                 self.last_bp = 0
             self.has_soft_bp = hit_soft_bp
@@ -61,19 +61,19 @@ class Qldbg(object):
                 self.ql.dprint("gdb> emulation entrypoint at 0x%x" % (self.entry_point))
                 self.ql.dprint("gdb> emulation exitpoint at 0x%x" % (self.exit_point))
         except KeyboardInterrupt as ex:
-            self.ql.nprint("gdb> paused at 0x%x, instruction size = %u" % (address, size))
+            self.ql.nprint("gdb> Paused at 0x%x, instruction size = %u\n" % (address, size))
             ql.stop()
 
 
     def bp_insert(self, addr):
         if addr not in self.bp_list:
             self.bp_list.append(addr)
-            self.ql.nprint('gdb> breakpoint added at: 0x%x' % addr)
+            self.ql.nprint('gdb> Breakpoint added at: 0x%x\n' % addr)
 
 
     def bp_remove(self, type, addr, len):
         self.bp_list.remove(addr)
-        self.ql.nprint('gdb> breakpoint remove: 0x%x' % addr)
+        self.ql.nprint('gdb> Breakpoint removed at: 0x%x\n' % addr)
 
 
     def resume_emu(self, address=None, skip_bp=0):
@@ -85,7 +85,7 @@ class Qldbg(object):
 
         self.skip_bp_count = skip_bp
         if self.exit_point is not None:
-            self.ql.nprint('gdb> resume at: 0x%x' % self.current_address)
+            self.ql.nprint('gdb> Resume at: 0x%x\n' % self.current_address)
 
             if len(self.entry_context) == 0:
                 self.entry_context = {

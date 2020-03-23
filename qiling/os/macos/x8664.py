@@ -91,14 +91,14 @@ def loader_file(ql):
         ql.stack_size = QL_X8664_MACOS_PREDEFINE_STACKSIZE
     ql.uc.mem_map(ql.stack_address, ql.stack_size)
 
-    stack_esp = QL_X8664_MACOS_PREDEFINE_STACKADDRESS + QL_X8664_MACOS_PREDEFINE_STACKSIZE
+    stack_sp = QL_X8664_MACOS_PREDEFINE_STACKADDRESS + QL_X8664_MACOS_PREDEFINE_STACKSIZE
     envs = env_dict_to_array(ql.env)
     apples = ql_real_to_vm_abspath(ql, ql.path)
 
-    loader = Macho(ql, ql.path, stack_esp, [ql.path], envs, apples, 1)
+    loader = Macho(ql, ql.path, stack_sp, [ql.path], envs, apples, 1)
     loader.loadMacho()
     ql.macho_task.min_offset = page_align_end(loader.vm_end_addr, PAGE_SIZE)
-    ql.stack_address = (int(ql.stack_esp))
+    ql.stack_address = (int(ql.stack_sp))
     
 
 def loader_shellcode(ql):

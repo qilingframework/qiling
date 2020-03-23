@@ -171,8 +171,10 @@ if __name__ == '__main__':
     run_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
     run_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
     run_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
-    run_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', help='Run in strace mode')
-    run_parser.add_argument('--en_root', action='store_true', default=False, dest='en_root', help='Run in strace mode')
+    run_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', help='Stop running while encounter any error (only use it with debug mode)')
+    run_parser.add_argument('--en_root', action='store_true', default=False, dest='en_root', help='Enable sudo required mode')
+    run_parser.add_argument('--dump', action='store_true', default=False, dest='dump', help='Enable Debug + Diassembler mode')
+    run_parser.add_argument('--debug', action='store_true', default=False, dest='debug', help='Enable Debug mode')
     run_parser.add_argument('--args', required=False, default=[], nargs=argparse.REMAINDER, dest="args", help="args")
     run_parser.add_argument('run_args', default=[], nargs=argparse.REMAINDER)
 
@@ -192,10 +194,21 @@ if __name__ == '__main__':
     options = parser.parse_args()
 
     if (options.subparser_name == 'run'):
+        
         if options.strace:
             options.output = "default"
         elif options.trace:
             options.output = "disasm"
+        elif options.dump:
+            options.output = "dump"
+        elif options.debug:
+            options.output = "debug"
+
+        if options.debug_stop and not (options.dump or options.debug):
+            print("ERROR: debug_stop must use with either dump or debug mode")
+            usage()
+            exit(1)   
+
         if options.filename != '' and options.run_args == []:
             ql = Qiling(filename = [options.filename] + options.args, rootfs = options.rootfs, output = options.output)
         elif options.filename == '' and options.args == [] and options.run_args != []:
@@ -208,9 +221,9 @@ if __name__ == '__main__':
         if options.gdb:
             ql.gdb = options.gdb
 
-        if options.debug_stop:
+        if options.debug_stop and (options.dump or options.debug):
             ql.debug_stop = True
-
+         
         if options.en_root:
             ql.root = True
 
