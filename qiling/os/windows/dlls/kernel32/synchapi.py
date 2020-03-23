@@ -46,6 +46,16 @@ def hook_LeaveCriticalSection(ql, address, params):
     return 0
 
 
+# void DeleteCriticalSection(
+#   LPCRITICAL_SECTION lpCriticalSection
+# );
+@winapi(cc=STDCALL, params={
+    "lpCriticalSection": POINTER
+})
+def hook_DeleteCriticalSection(ql, address, params):
+    return 0
+
+
 # void InitializeCriticalSection(
 #   LPCRITICAL_SECTION lpCriticalSection
 # );

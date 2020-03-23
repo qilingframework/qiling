@@ -12,4 +12,7 @@ from .ucrtbased import *
 from .wsock32 import *
 from .ole32 import *
 from .shlwapi import *
+from .crypt32 import *
+from .mscoree import *
+from .msvbvm60 import *
 from qiling.os.windows.dlls.kernel32 import *

@@ -103,6 +103,18 @@ def hook_LocalReAlloc(ql, address, params):
     return ret
 
 
+# HLOCAL LocalFree(
+#   _Frees_ptr_opt_ HLOCAL hMem
+# );
+@winapi(cc=STDCALL, params={
+    "hMem": POINTER
+})
+def hook_LocalFree(ql, address, params):
+    old_mem = params["hMem"]
+    ql.heap.mem_free(old_mem)
+    return 0
+
+
 # UINT SetHandleCount(
 #   UINT uNumber
 # );
@@ -143,7 +155,29 @@ def hook_GlobalUnlock(ql, address, params):
     "dwBytes": UINT
 })
 def hook_GlobalAlloc(ql, address, params):
-    return ql.heap.mem_alloc(params['dwBytes'])
+    return ql.heap.mem_alloc(params["dwBytes"])
+
+
+# HGLOBAL GlobalFree(
+#   _Frees_ptr_opt_ HGLOBAL hMem
+# );
+@winapi(cc=STDCALL, params={
+    "hMem": POINTER
+})
+def hook_GlobalFree(ql, address, params):
+    old_mem = params["hMem"]
+    ql.heap.mem_free(old_mem)
+    return 0
+
+
+# HGLOBAL GlobalHandle(
+#   LPCVOID pMem
+# );
+@winapi(cc=STDCALL, params={
+    "pMem": POINTER
+})
+def hook_GlobalHandle(ql, address, params):
+    return params["pMem"]
 
 
 # LPSTR lstrcpynA(
@@ -165,6 +199,40 @@ def hook_lstrcpynA(ql, address, params):
         src = src[:max_length]
     ql.uc.mem_write(dst, bytes(src, encoding="utf-16le"))
     return dst
+
+
+# LPSTR lstrcpyA(
+#   LPSTR  lpString1,
+#   LPCSTR lpString2,
+# );
+@winapi(cc=STDCALL, params={
+    "lpString1": POINTER,
+    "lpString2": STRING,
+})
+def hook_lstrcpyA(ql, address, params):
+    # Copy String2 into String
+    src = params["lpString2"]
+    dst = params["lpString1"]
+    ql.uc.mem_write(dst, bytes(src, encoding="utf-16le"))
+    return dst
+
+
+# LPSTR lstrcatA(
+#   LPSTR  lpString1,
+#   LPCSTR lpString2
+# );
+@winapi(cc=STDCALL, params={
+    "lpString1": POINTER,
+    "lpString2": STRING,
+})
+def hook_lstrcatA(ql, address, params):
+    # Copy String2 into String
+    src = params["lpString2"]
+    pointer = params["lpString1"]
+    string_base = read_cstring(ql, pointer)
+    result = string_base + src
+    ql.uc.mem_write(pointer, bytes(result, encoding="utf-16le"))
+    return pointer
 
 
 # HRSRC FindResourceA(
