@@ -89,7 +89,7 @@ def hook_ReadFile(ql, address, params):
     if hFile == STD_INPUT_HANDLE:
         if ql.automatize:
             # TODO maybe insert a good random generation input
-            s = b"A" * nNumberOfBytesToRead
+            s = (b"A" * (nNumberOfBytesToRead - 1)) + b"\x00"
         else:
             ql.dprint("Insert input")
             s = ql.stdin.read(nNumberOfBytesToRead)
@@ -196,6 +196,15 @@ def hook_CreateFileA(ql, address, params):
     return ret
 
 
+# HANDLE CreateFileW(
+#   LPCWSTR                lpFileName,
+#   DWORD                 dwDesiredAccess,
+#   DWORD                 dwShareMode,
+#   LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+#   DWORD                 dwCreationDisposition,
+#   DWORD                 dwFlagsAndAttributes,
+#   HANDLE                hTemplateFile
+# );
 @winapi(cc=STDCALL, params={
     "lpFileName": WSTRING,
     "dwDesiredAccess": DWORD,
@@ -208,3 +217,19 @@ def hook_CreateFileA(ql, address, params):
 def hook_CreateFileW(ql, address, params):
     ret = _CreateFile(ql, address, params, "CreateFileW")
     return ret
+
+
+# DWORD GetTempPathW(
+#   DWORD  nBufferLength,
+#   LPWSTR lpBuffer
+# );
+@winapi(cc=STDCALL, params={
+    "nBufferLength": DWORD,
+    "lpBuffer": POINTER
+})
+def hook_GetTempPathW(ql, address, params):
+    # TODO not sure if the string should end with \ and have a 00
+    temp = "C:\TEMP"
+    dest = params["lpBuffer"]
+    ql.uc.mem_write(dest, bytes(temp + "\x00" + "\x00", encoding="utf-16le"))
+    return len(temp)

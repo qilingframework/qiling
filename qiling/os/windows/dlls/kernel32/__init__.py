@@ -15,4 +15,6 @@ from .sysinfoapi import *
 from .winbase import *
 from .winnls import *
 from .winnt import *
+from .ioapiset import *
 from .wow64apiset import *
+from .tlhelp32 import *
