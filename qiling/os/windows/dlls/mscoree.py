@@ -20,3 +20,11 @@ from qiling.os.windows.const import *
 def hook_CorExitProcess(ql, address, params):
     ql.uc.emu_stop()
     ql.RUN = False
+
+
+# __int32 STDMETHODCALLTYPE _CorExeMain ();
+@winapi(cc=STDCALL, params={
+})
+def hook__CorExeMain(ql, address, params):
+    # TODO implement + check call type
+    pass
