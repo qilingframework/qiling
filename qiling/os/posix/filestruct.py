@@ -42,7 +42,10 @@ class ql_file:
         try:
             return fcntl.ioctl(self.__fd, ioctl_cmd, ioctl_arg)
         except Exception:
-            pass    
+            pass
+
+    def tell(self):
+        return self.lseek(0, os.SEEK_CUR)
     
     def dup(self):
         new_fd = os.dup(self.__fd)
