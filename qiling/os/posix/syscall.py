@@ -14,6 +14,7 @@ import io
 import select
 import pathlib
 import logging
+import itertools
 
 # Remove import fcntl due to Windows Limitation
 #import fcntl
@@ -2310,4 +2311,54 @@ def ql_syscall_umask(ql, mode, null0, null1, null2, null3, null4):
     oldmask = os.umask(mode)
     ql.nprint("umask(0%o) return oldmask 0%o" % (mode, oldmask))
     regreturn = oldmask
+    ql_definesyscall_return(ql, regreturn)
+
+
+def ql_syscall_getdents(ql, fd, dirp, count, null0, null1, null2):
+    # TODO: not sure what is the meaning of d_off, should not be 0x0
+    # but works for the example code from linux manual.
+    def _type_mapping(ent):
+        methods = ('is_fifo', 'is_char_device', 'is_dir', 'is_block_device', 'is_file', 'is_symlink', 'is_socket')
+        constants = (0x1, 0x2, 0x4, 0x6, 0x8, 0xa, 0xc)
+        if isinstance(ent, os.DirEntry):
+            ent_p = pathlib.Path(ent.path)
+        else:
+            ent_p = ent
+        for mc in zip(methods, constants):
+            check = getattr(ent_p, mc[0], None)
+            if check():
+                t = mc[1]
+                break
+        else:
+            t = 0x0 # DT_UNKNOWN
+
+        return bytes([t])
+
+    if ql.file_des[fd].tell() == 0:
+        n = ql.archbit // 8
+        total_size = 0
+        results = os.scandir(ql.file_des[fd].name)
+
+        for result in itertools.chain((pathlib.Path('.'), pathlib.Path('..')), results):
+            d_ino = result.inode() if isinstance(result, os.DirEntry) else result.stat().st_ino
+            d_off = 0x0
+            d_name = (result.name if isinstance(result, os.DirEntry) else result._str).encode() + b'\x00'
+            d_type = _type_mapping(result)
+            d_reclen = bytes([len(d_name) + n*2+3]) + b'\x00'
+
+            ql.mem_write(dirp, ql.pack(d_ino))
+            ql.mem_write(dirp+n, ql.pack(d_off))
+            ql.mem_write(dirp+n*2, d_reclen)
+            ql.mem_write(dirp+n*2+2, d_name)
+            ql.mem_write(dirp+n*2+2+len(d_name), d_type)
+
+            size = int.from_bytes(d_reclen, 'little')
+            dirp += size
+            total_size += size
+
+        regreturn = total_size
+        ql.file_des[fd].lseek(0, os.SEEK_END) # mark as end of file for dir_fd
+    else:
+        regreturn = 0
+
     ql_definesyscall_return(ql, regreturn)

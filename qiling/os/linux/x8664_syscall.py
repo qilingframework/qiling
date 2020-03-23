@@ -33,6 +33,7 @@ dict_x8664_linux_syscall = {
     0x3C : "ql_syscall_exit",
     0x3F : "ql_syscall_uname",
     0x48 : "ql_syscall_fcntl",
+    0x4E : "ql_syscall_getdents",
     0x4F : "ql_syscall_getcwd",
     0x59 : "ql_syscall_readlink",
     0x66 : "ql_syscall_getuid",
