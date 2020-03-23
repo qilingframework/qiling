@@ -11,6 +11,8 @@ thoughout the qiling framework
 import sys, logging, importlib
 from qiling.exception import *
 from qiling.arch.filetype import *
+from os.path import dirname, exists
+from os import makedirs
 
 
 def ql_get_os_module_function(ostype, arch, function_name):
@@ -38,7 +40,7 @@ def ql_build_module_import_name(module, ostype, arch):
         ret_str += "." + ostype_str
 
     if arch:
-        if module == "arch" and arch == QL_X8664:  #This is because X86_64 is bundled into X86 in arch
+        if module == "arch" and arch == QL_X8664:  # This is because X86_64 is bundled into X86 in arch
             arch_str = "x86"
         else:
             arch_str = ql_arch_convert_str(arch)
@@ -46,11 +48,12 @@ def ql_build_module_import_name(module, ostype, arch):
 
     return ret_str
 
+
 def ql_get_module_function(module_name, function_name):
     try:
         imp_module = importlib.import_module(module_name)
     except:
-        raise QlErrorModuleNotFound("[!] Unable to import module %s" %(module_name))
+        raise QlErrorModuleNotFound("[!] Unable to import module %s" % module_name)
 
     try:
         module_function = getattr(imp_module, function_name)
@@ -88,9 +91,12 @@ def ql_setup_logging_stream(ql_mode, logger=None):
 
 
 def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
+    # Create the file and directories if they do not exists
+    if not exists(log_file_path):
+        open(log_file_path, "a").close()
 
     # setup FileHandler for logging to disk file
-    fh = logging.FileHandler('%s.qlog' % (log_file_path))
+    fh = logging.FileHandler('%s.qlog' % log_file_path)
     fh.setLevel(logging.DEBUG)
 
     if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):

@@ -94,7 +94,8 @@ class Qiling:
             mmap_start=0,
             stack_address=0,
             stack_size=0,
-            interp_base=0
+            interp_base=0,
+            automatize=False
     ):
 
         self.output = output
@@ -119,6 +120,7 @@ class Qiling:
         self.global_thread_id = 0
         self.gdb = None
         self.gdbsession = None
+        self.automatize = automatize
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -128,7 +130,7 @@ class Qiling:
             self.arch = self.arch.lower()
             self.arch = arch_convert(self.archtype)
 
-        if self.rootfs and self.shellcoder == None:
+        if self.rootfs and self.shellcoder is None:
             if os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs):
                 self.path = (str(self.filename[0]))
                 if self.ostype is None or self.arch is None:
@@ -141,15 +143,17 @@ class Qiling:
 
         _logger = ql_setup_logging_stream(self.output)
 
-        if self.log_dir != None and type(self.log_dir) == str:
+        if self.log_dir is not None and type(self.log_dir) == str:
 
             self.log_dir = os.path.join(self.rootfs, self.log_dir)
             if not os.path.exists(self.log_dir):
                 os.makedirs(self.log_dir, 0o755)
 
             pid = os.getpid()
-            self.log_file = os.path.join(self.log_dir, str(pid))
-            _logger = ql_setup_logging_file(self.output, self.log_file, _logger)
+
+            # Is better to call the logfile as the binary we are testing instead of a pid with no logical value
+            self.log_file = os.path.join(self.log_dir, self.filename[0].split(os.path.sep)[-1])
+            _logger = ql_setup_logging_file(self.output, self.log_file + "_" + str(pid), _logger)
 
         self.log_file_fd = _logger
 
@@ -186,12 +190,12 @@ class Qiling:
         if self.archbit:
             self.pointersize = (self.archbit // 8)
 
-        if not self.ostype in QL_OS:
+        if self.ostype not in QL_OS:
             raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos'")
 
         if self.output and type(self.output) == str:
             self.output = self.output.lower()
-            if not self.output in QL_OUTPUT:
+            if self.output not in QL_OUTPUT:
                 raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
 
         if self.shellcoder and self.arch and self.ostype:
@@ -490,7 +494,6 @@ class Qiling:
         else:
             return struct.unpack('I', x)[0]
 
-
     def pack32(self, x):
         if self.archendian == QL_ENDIAN_EB:
             return struct.pack('>I', x)
@@ -502,7 +505,6 @@ class Qiling:
             return struct.unpack('>i', x)[0]
         else:
             return struct.unpack('i', x)[0]
-
 
     def unpack32s_ne(self, x):
         return struct.unpack('i', x)[0]
@@ -660,10 +662,10 @@ class Qiling:
                 if insert_flag == 0:
                     insert_flag = 1
                     tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
-                
+
                 if e > mem_e:
                     tmp_map_info.append([mem_e, e, mem_p, info])
-                
+
                 if e == mem_e:
                     pass
             if insert_flag == 0:
@@ -671,7 +673,7 @@ class Qiling:
         map_info = []
         map_info.append(tmp_map_info[0])
 
-        for s, e, p, info in tmp_map_info[1 : ]:
+        for s, e, p, info in tmp_map_info[1:]:
             if s == map_info[-1][1] and info == map_info[-1][2]:
                 map_info[-1][1] = e
             else:
