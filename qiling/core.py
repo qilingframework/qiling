@@ -152,7 +152,7 @@ class Qiling:
             pid = os.getpid()
 
             # Is better to call the logfile as the binary we are testing instead of a pid with no logical value
-            self.log_file = os.path.join(self.log_dir, self.filename[0].split(os.path.sep)[-1])
+            self.log_file = os.path.join(self.log_dir, self.filename[0].split("/")[-1])
             _logger = ql_setup_logging_file(self.output, self.log_file + "_" + str(pid), _logger)
 
         self.log_file_fd = _logger
