@@ -228,8 +228,11 @@ def hook_CreateFileW(ql, address, params):
     "lpBuffer": POINTER
 })
 def hook_GetTempPathW(ql, address, params):
-    # TODO not sure if the string should end with \ and have a 00
-    temp = "C:\TEMP"
+    # TODO not sure if the string should end with \ and have a \x00
+    temp = "C:\\Windows\\Temp".encode('utf-16le')
     dest = params["lpBuffer"]
-    ql.uc.mem_write(dest, bytes(temp + "\x00" + "\x00", encoding="utf-16le"))
+    temp_path = os.path.join(self.rootfs, "Windows", "Temp")
+    if not os.path.exists(temp_path):
+        os.makedirs(temp_path, 0o755)
+    ql.uc.mem_write(dest, temp)
     return len(temp)
