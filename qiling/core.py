@@ -95,7 +95,7 @@ class Qiling:
             stack_address=0,
             stack_size=0,
             interp_base=0,
-            automatize=False
+            automatize_input=False
     ):
 
         self.output = output
@@ -120,7 +120,7 @@ class Qiling:
         self.global_thread_id = 0
         self.gdb = None
         self.gdbsession = None
-        self.automatize = automatize
+        self.automatize = automatize_input
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
