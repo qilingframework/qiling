@@ -86,7 +86,7 @@ def socket_type_mapping(t, arch):
             QL_MACOS: linux_socket_types,
             }.get(arch)
 
-    return _constant_mapping(t, socket_type_map, single_mapping=True)
+    return _constant_mapping(t, socket_type_map)
 
 
 def socket_domain_mapping(p, arch):

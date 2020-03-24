@@ -12,6 +12,8 @@ linux_socket_types = {
     'SOCK_RDM'       : 0x4,
     'SOCK_SEQPACKET' : 0x5,
     'SOCK_PACKET'    : 0xa,
+    'SOCK_NONBLOCK'  : 0x800,
+    'SOCK_CLOEXEC'   : 0x80000,
 }
 
 
