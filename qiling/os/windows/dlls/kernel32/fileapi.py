@@ -236,3 +236,27 @@ def hook_GetTempPathW(ql, address, params):
         os.makedirs(temp_path, 0o755)
     ql.uc.mem_write(dest, temp)
     return len(temp)
+
+
+# DWORD GetShortPathNameW(
+#   LPCWSTR lpszLongPath,
+#   LPWSTR  lpszShortPath,
+#   DWORD   cchBuffer
+# );
+@winapi(cc=STDCALL, params={
+    "lpszLongPath": WSTRING,
+    "lpszShortPath": POINTER,
+    "cchBuffer": DWORD,
+})
+def hook_GetShortPathNameW(ql, address, params):
+    paths = params["lpszLongPath"].replace("\x00", "").split("\\")
+    res = ""
+    for path in paths:
+        nameAndExt = path.split(".")
+        name = nameAndExt[0]
+        ext = "" if len(nameAndExt) == 1 else "." + nameAndExt[1]
+        if len(name) > 8:
+            name = name[:6] + "~1"
+        res += "\\" + name + ext
+    ql.dprint(res)
+    return 1
