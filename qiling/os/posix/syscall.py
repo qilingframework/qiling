@@ -2335,6 +2335,7 @@ def ql_syscall_getdents(ql, fd, dirp, count, null0, null1, null2):
         n = ql.archbit // 8
         total_size = 0
         results = os.scandir(ql.file_des[fd].name)
+        _ent_count = 0
 
         for result in itertools.chain((pathlib.Path('.'), pathlib.Path('..')), results): # chain speical directories with the results
             d_ino = result.inode() if isinstance(result, os.DirEntry) else result.stat().st_ino
@@ -2351,10 +2352,14 @@ def ql_syscall_getdents(ql, fd, dirp, count, null0, null1, null2):
 
             dirp += d_reclen
             total_size += d_reclen
+            _ent_count += 1
 
         regreturn = total_size
         ql.file_des[fd].lseek(0, os.SEEK_END) # mark as end of file for dir_fd
     else:
+        _ent_count = 0
         regreturn = 0
 
+    ql.nprint("getdents(%d, 0x%x, 0x%x) = %d" % (fd, dirp, count, regreturn))
+    ql.dprint("[+] getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
     ql_definesyscall_return(ql, regreturn)
