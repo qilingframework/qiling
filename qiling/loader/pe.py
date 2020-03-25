@@ -360,11 +360,11 @@ class PE(Process):
                 else:
                     addr = self.import_address_table[dll_name][imp.ordinal]
 
-                    if self.ql.arch == QL_X86:
-                        address = self.ql.pack32(addr)
-                    else:
-                        address = self.ql.pack64(addr)
-                    self.ql.uc.mem_write(imp.address, address)
+                if self.ql.arch == QL_X86:
+                    address = self.ql.pack32(addr)
+                else:
+                    address = self.ql.pack64(addr)
+                self.ql.uc.mem_write(imp.address, address)
 
         self.ql.nprint("[+] Done with loading %s" % self.path)
         self.filepath = b"D:\\" + bytes(self.path.replace("/", "\\"), "utf-8")
