@@ -169,8 +169,7 @@ def runner(ql):
 
     ql.registry_manager.save()
 
+    print_syscall_count(ql)
+
     if ql.internal_exception is not None:
         raise ql.internal_exception
-
-    ql.dprint("[+] Syscalls and number of invocations")
-    ql.dprint("[-] " + str(list(ql.PE.syscall_count.items())))
