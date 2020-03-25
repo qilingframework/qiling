@@ -38,13 +38,18 @@ from qiling.arch.x86 import *
 # mach syscall #
 ################
 
-def ql_arm64_fgetattrlist(ql, target, address, size, null3, null4, null5):
+def ql_arm64_fgetattrlist(ql, fd, attrlist, attrbuff, attrsizebuff, options, null5):
+    ql.nprint("addr %x, path: %s" % (attrlist ,attrbuff))
+    KERN_SUCCESS = 1
     ql_definesyscall_return(ql, KERN_SUCCESS)
-    ql.nprint("syscall[fgetattrlist] >>fgetattrlist")    
+    ql.nprint("syscall[fgetattrlist] >>fgetattrlist")
+    
 
 def ql_arm64_poll(ql, target, address, size, null3, null4, null5):
     ql_definesyscall_return(ql, KERN_SUCCESS)
-    ql.nprint("syscall[poll] >>poll")  
+    ql.nprint("syscall[poll] >>fgetattrlist")
+    exit()
+    
 
 # 0xa
 def ql_x86_syscall_kernelrpc_mach_vm_allocate_trap(ql, port, addr, size, flags, null4, null5):

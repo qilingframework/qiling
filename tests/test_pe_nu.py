@@ -30,6 +30,11 @@ def test_pe_win_x86_hello():
     ql.run()
     del ql
 
+def test_pe_win_x86_uselessdisk():
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/UselessDisk.bin"], "../examples/rootfs/x86_windows",
+                output="debug")
+    ql.run()
+    del ql
 
 def test_pe_win_x86_multithread():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
@@ -74,20 +79,6 @@ def test_pe_win_x86_wannacry():
 
     ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows")
     ql.hook_address(stop, 0x40819a)
-    ql.run()
-    del ql
-
-
-def test_windowssc_x86():
-    ql = Qiling(shellcoder=X86_WIN, archtype="x86", ostype="windows", rootfs="../examples/rootfs/x86_windows",
-                output="default")
-    ql.run()
-    del ql
-
-
-def test_windowssc_x64():
-    ql = Qiling(shellcoder=X8664_WIN, archtype="x8664", ostype="windows", rootfs="../examples/rootfs/x8664_windows",
-                output="debug")
     ql.run()
     del ql
 
@@ -195,6 +186,7 @@ def test_pe_win_x86_bruteforcecrackme():
         ql.run()
         ql.nprint(ql.stdout.read_all().decode('utf-8'), end='')
         ql.nprint(" ============ count: %d ============ " % count[0])
+        del ql
         return count[0]
 
     def solve():
@@ -234,6 +226,5 @@ if __name__ == "__main__":
     test_pe_win_x86_regdemo()
     test_pe_win_x86_crackme()
     test_pe_win_x8664_customapi()
-    # test_windowssc_x86()
-    # test_windowssc_x64()
+    test_pe_win_x86_uselessdisk
     # test_pe_win_x86_bruteforcecrackme()

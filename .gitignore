@@ -31,3 +31,5 @@ test.file
 
 *.d
 *.o
+
+core
