@@ -25,6 +25,7 @@ dict_x86_linux_syscall = {
     0x78 : "ql_syscall_clone",
     0x7A : "ql_syscall_uname",
     0x7D : "ql_syscall_mprotect",
+    0x8D : "ql_syscall_getdents",
     0x92 : "ql_syscall_writev",
     0xA2 : "ql_syscall_nanosleep",
     0xAE : "ql_syscall_rt_sigaction",

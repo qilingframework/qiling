@@ -14,6 +14,7 @@ import io
 import select
 import pathlib
 import logging
+import itertools
 
 # Remove import fcntl due to Windows Limitation
 #import fcntl
@@ -2310,4 +2311,55 @@ def ql_syscall_umask(ql, mode, null0, null1, null2, null3, null4):
     oldmask = os.umask(mode)
     ql.nprint("umask(0%o) return oldmask 0%o" % (mode, oldmask))
     regreturn = oldmask
+    ql_definesyscall_return(ql, regreturn)
+
+
+def ql_syscall_getdents(ql, fd, dirp, count, null0, null1, null2):
+    # TODO: not sure what is the meaning of d_off, should not be 0x0
+    # but works for the example code from linux manual.
+    def _type_mapping(ent):
+        methods_constants_d = {'is_fifo': 0x1, 'is_char_device': 0x2, 'is_dir': 0x4, 'is_block_device': 0x6,
+                                'is_symlink': 0x8, 'is_symlink': 0xa, 'is_socket': 0xc}
+        ent_p = pathlib.Path(ent.path) if isinstance(ent, os.DirEntry) else ent
+
+        for method, constant in methods_constants_d.items():
+            if getattr(ent_p, method, None)():
+                t = constant
+                break
+        else:
+            t = 0x0 # DT_UNKNOWN
+
+        return bytes([t])
+
+    if ql.file_des[fd].tell() == 0:
+        n = ql.archbit // 8
+        total_size = 0
+        results = os.scandir(ql.file_des[fd].name)
+        _ent_count = 0
+
+        for result in itertools.chain((pathlib.Path('.'), pathlib.Path('..')), results): # chain speical directories with the results
+            d_ino = result.inode() if isinstance(result, os.DirEntry) else result.stat().st_ino
+            d_off = 0x0
+            d_name = (result.name if isinstance(result, os.DirEntry) else result._str).encode() + b'\x00'
+            d_type = _type_mapping(result)
+            d_reclen = len(d_name) + n*2 + 3
+
+            ql.mem_write(dirp, ql.pack(d_ino))
+            ql.mem_write(dirp+n, ql.pack(d_off))
+            ql.mem_write(dirp+n*2, ql.pack16(d_reclen))
+            ql.mem_write(dirp+n*2+2, d_name)
+            ql.mem_write(dirp+n*2+2+len(d_name), d_type)
+
+            dirp += d_reclen
+            total_size += d_reclen
+            _ent_count += 1
+
+        regreturn = total_size
+        ql.file_des[fd].lseek(0, os.SEEK_END) # mark as end of file for dir_fd
+    else:
+        _ent_count = 0
+        regreturn = 0
+
+    ql.nprint("getdents(%d, 0x%x, 0x%x) = %d" % (fd, dirp, count, regreturn))
+    ql.dprint("[+] getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
     ql_definesyscall_return(ql, regreturn)
