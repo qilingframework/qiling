@@ -18,7 +18,7 @@ dict_x8664_linux_syscall = {
     0x0B : "ql_syscall_munmap",
     0x0C : "ql_syscall_brk",
     0x0D : "ql_syscall_rt_sigaction",
-    0x0E : "ql_syscall_sigprocmask",
+    0x0E : "ql_syscall_rt_sigprocmask",
     0x10 : "ql_syscall_ioctl",
     0x14 : "ql_syscall_writev",
     0x15 : "ql_syscall_access",
