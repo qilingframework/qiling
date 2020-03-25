@@ -287,4 +287,10 @@ def hook_GetCurrentThread(ql, address, params):
     "dwProcessId": DWORD
 })
 def hook_OpenProcess(ql, address, params):
+    proc = params["dwProcessId"]
+    # If the specified process is the System Process (0x00000000),
+    # the function fails and the last error code is ERROR_INVALID_PARAMETER
+    if proc == 0:
+        ql.last_error = ERROR_INVALID_PARAMETER
+        return 0
     return 0xD10C
