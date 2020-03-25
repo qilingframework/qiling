@@ -439,7 +439,7 @@ def hook_IsWindow(ql, address, params):
     "lParam": UINT
 })
 def hook_SendMessageA(ql, address, params):
-    # TODO don't know how to get return value
+    # TODO don't know how to get right return value
     return 0xD10C
 
 
@@ -456,5 +456,39 @@ def hook_SendMessageA(ql, address, params):
     "lParam": UINT
 })
 def hook_DefWindowProcA(ql, address, params):
-    # TODO don't know how to get return value
+    # TODO don't know how to get right return value
     return 0xD10C
+
+
+# LPWSTR CharNextW(
+#   LPCWSTR lpsz
+# );
+@winapi(cc=STDCALL, params={
+    "lpsz": POINTER
+})
+def hook_CharNextW(ql, address, params):
+    # Return next char if is different from \x00
+    point = params["lpsz"]
+    string = read_wstring(ql, point)
+    ql.dprint(string)
+    if len(string) == 0:
+        return point
+    else:
+        return point + 1
+
+
+# LPWSTR CharPrevW(
+#   LPCWSTR lpszStart,
+#   LPCWSTR lpszCurrent
+# );
+@winapi(cc=STDCALL, params={
+    "lpszStart": POINTER,
+    "lpszCurrent": POINTER
+})
+def hook_CharPrevW(ql, address, params):
+    # Return next char if is different from \x00
+    current = params["lpszCurrent"]
+    start = params["lpszStart"]
+    if start == current:
+        return start
+    return current - 1

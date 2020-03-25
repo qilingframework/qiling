@@ -259,9 +259,12 @@ def hook_GetCurrentProcess(ql, address, params):
     "uExitCode": UINT
 })
 def hook_TerminateProcess(ql, address, params):
+    # Samples will try to kill other process! We don't want to always stop!
+    process = params["hProcess"]
+    if process == 0x0 or process == ql.DEFAULT_IMAGE_BASE:
+        ql.uc.emu_stop()
+        ql.RUN = False
     ret = 1
-    ql.uc.emu_stop()
-    ql.RUN = False
     return ret
 
 
@@ -271,3 +274,17 @@ def hook_TerminateProcess(ql, address, params):
 def hook_GetCurrentThread(ql, address, params):
     ret = 1
     return ret
+
+
+# HANDLE OpenProcess(
+#   DWORD dwDesiredAccess,
+#   BOOL  bInheritHandle,
+#   DWORD dwProcessId
+# );
+@winapi(cc=STDCALL, params={
+    "dwDesiredAccess": DWORD,
+    "bInheritHandle": HANDLE,
+    "dwProcessId": DWORD
+})
+def hook_OpenProcess(ql, address, params):
+    return 0xD10C

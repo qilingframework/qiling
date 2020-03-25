@@ -169,5 +169,7 @@ def runner(ql):
 
     ql.registry_manager.save()
 
+    post_report(ql)
+
     if ql.internal_exception is not None:
         raise ql.internal_exception

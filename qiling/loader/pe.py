@@ -25,6 +25,7 @@ class Process:
         self.import_address_table = {}
         self.ldr_list = []
         self.cmdline = b"D:\\" + bytes(self.ql.path.replace("/", "\\"), "utf-8") + b"\x00"
+        self.syscall_count = {}
 
     def load_dll(self, dll_name):
         dll_name = dll_name.lower().decode()

@@ -494,3 +494,8 @@ def read_cstring(ql, address):
         result += char.decode(errors="backslashreplace")
         char = ql.uc.mem_read(address, 1)
     return result
+
+
+def post_report(ql):
+    ql.dprint("[+] Syscalls and number of invocations")
+    ql.dprint("[-] " + str(list(ql.PE.syscall_count.items())))

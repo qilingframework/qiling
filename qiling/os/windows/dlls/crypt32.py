@@ -24,18 +24,18 @@ from qiling.os.windows.const import *
     "pszString": STRING,
     "cchString": DWORD,
     "dwFlags": DWORD,
-    "*pbBinary": POINTER,
-    "*pcbBinary": POINTER,
-    "*pdwSkip": POINTER,
-    "*pdwFlags": POINTER
+    "pbBinary": POINTER,
+    "pcbBinary": POINTER,
+    "pdwSkip": POINTER,
+    "pdwFlags": POINTER
 })
 def hook_CryptStringToBinaryA(ql, address, params):
     flag_src = params["dwFlags"]
     string_src = params["pszString"]
     size_src = params["cchString"]
-    size_dst_pointer = params["*pcbBinary"]
-    string_dst = params["*pbBinary"]
-    flag_dst = params["*pdwFlags"]
+    size_dst_pointer = params["pcbBinary"]
+    string_dst = params["pbBinary"]
+    flag_dst = params["pdwFlags"]
 
     size_dst = int.from_bytes(ql.uc.mem_read(size_dst_pointer, 4), byteorder="little")
     if size_dst != 0 and size_dst < size_src:

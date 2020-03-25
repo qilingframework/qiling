@@ -87,9 +87,12 @@ def hook_ReadFile(ql, address, params):
     lpNumberOfBytesRead = params["lpNumberOfBytesRead"]
     lpOverlapped = params["lpOverlapped"]
     if hFile == STD_INPUT_HANDLE:
-        ql.dprint("Insert input")
-        # s = b"A"*nNumberOfBytesToRead # automatize input
-        s = ql.stdin.read(nNumberOfBytesToRead)
+        if ql.automatize:
+            # TODO maybe insert a good random generation input
+            s = (b"A" * (nNumberOfBytesToRead - 1)) + b"\x00"
+        else:
+            ql.dprint("Insert input")
+            s = ql.stdin.read(nNumberOfBytesToRead)
         slen = len(s)
         read_len = slen
         if slen > nNumberOfBytesToRead:
@@ -193,6 +196,15 @@ def hook_CreateFileA(ql, address, params):
     return ret
 
 
+# HANDLE CreateFileW(
+#   LPCWSTR                lpFileName,
+#   DWORD                 dwDesiredAccess,
+#   DWORD                 dwShareMode,
+#   LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+#   DWORD                 dwCreationDisposition,
+#   DWORD                 dwFlagsAndAttributes,
+#   HANDLE                hTemplateFile
+# );
 @winapi(cc=STDCALL, params={
     "lpFileName": WSTRING,
     "dwDesiredAccess": DWORD,
@@ -205,3 +217,22 @@ def hook_CreateFileA(ql, address, params):
 def hook_CreateFileW(ql, address, params):
     ret = _CreateFile(ql, address, params, "CreateFileW")
     return ret
+
+
+# DWORD GetTempPathW(
+#   DWORD  nBufferLength,
+#   LPWSTR lpBuffer
+# );
+@winapi(cc=STDCALL, params={
+    "nBufferLength": DWORD,
+    "lpBuffer": POINTER
+})
+def hook_GetTempPathW(ql, address, params):
+    # TODO not sure if the string should end with \ and have a \x00
+    temp = "C:\\Windows\\Temp".encode('utf-16le')
+    dest = params["lpBuffer"]
+    temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
+    if not os.path.exists(temp_path):
+        os.makedirs(temp_path, 0o755)
+    ql.uc.mem_write(dest, temp)
+    return len(temp)
