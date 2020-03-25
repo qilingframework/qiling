@@ -231,7 +231,7 @@ def hook_GetTempPathW(ql, address, params):
     # TODO not sure if the string should end with \ and have a \x00
     temp = "C:\\Windows\\Temp".encode('utf-16le')
     dest = params["lpBuffer"]
-    temp_path = os.path.join(self.rootfs, "Windows", "Temp")
+    temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
     if not os.path.exists(temp_path):
         os.makedirs(temp_path, 0o755)
     ql.uc.mem_write(dest, temp)
