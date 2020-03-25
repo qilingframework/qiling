@@ -166,11 +166,8 @@ def _CreateFile(ql, address, params, name):
         mode += "r"
 
     # create thread handle
-    # TODO: Temp fix \\ to __ to avoid any os issue. 
-    # if another API reading \\ must replace with __
     s_lpFileName =  ql_transform_to_real_path(ql, s_lpFileName)
     f = open(s_lpFileName.replace("\\", os.sep), mode)
-
     new_handle = Handle(file=f)
     ql.handle_manager.append(new_handle)
     ret = new_handle.id

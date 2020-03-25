@@ -38,7 +38,13 @@ from qiling.arch.x86 import *
 # mach syscall #
 ################
 
+#fgetattrlist(int fd, struct attrlist *attrList, void *attrBuf, 
+#             size_t attrBufSize, unsigned long options)
+#attrList is an input parameter, which aims to specify which attributes we're interested to get.
+#attrBuf is the output buffer that will contain our object attributes.
+#attrBufSize is, as it name implies, the size of the attribute buffer. This size is expected to depend on the number of attributes that were specified through the attrList parameter. 
 def ql_arm64_fgetattrlist(ql, fd, attrlist, attrbuff, attrsizebuff, options, null5):
+
     ql.nprint("addr %x, path: %s" % (attrlist ,attrbuff))
     KERN_SUCCESS = 1
     ql_definesyscall_return(ql, KERN_SUCCESS)
