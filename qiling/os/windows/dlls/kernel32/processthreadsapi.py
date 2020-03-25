@@ -309,7 +309,7 @@ def hook_OpenProcess(ql, address, params):
 def hook_OpenProcessToken(ql, address, params):
     token_pointer = params["TokenHandle"]
     token = Token(ql)
-    handle = Handle(token=token)
-    ql.handle_manager.append(handle)
+    new_handle = Handle(token=token)
+    ql.handle_manager.append(new_handle)
     ql.uc.mem_write(token_pointer, ql.pack(new_handle.id))
     return 1

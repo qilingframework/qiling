@@ -57,7 +57,8 @@ class Token:
     def __init__(self, ql):
         # We will create them when we need it. There are too many structs
         self.struct = {}
-        self.struct[Token.TokenInformationClass.TokenUIAccess.value] = 1
+        self.struct[Token.TokenInformationClass.TokenUIAccess.value] = 0x1.to_bytes(length=4,
+                                                                                    byteorder='little')
 
     def get(self, value):
         res = self.struct[value]

@@ -319,7 +319,7 @@ def hook_RegDeleteKeyA(ql, address, params):
 # );
 @winapi(cc=STDCALL, params={
     "hKey": HANDLE,
-    "lpValueName": WSTRING,
+    "lpValueName": WSTRING
 })
 def hook_RegDeleteValueW(ql, address, params):
     ret = ERROR_SUCCESS
@@ -333,3 +333,35 @@ def hook_RegDeleteValueW(ql, address, params):
     ql.registry_manager.delete(s_hKey, s_lpValueName)
 
     return ret
+
+
+# BOOL GetTokenInformation(
+#   HANDLE                  TokenHandle,
+#   TOKEN_INFORMATION_CLASS TokenInformationClass,
+#   LPVOID                  TokenInformation,
+#   DWORD                   TokenInformationLength,
+#   PDWORD                  ReturnLength
+# );
+@winapi(cc=STDCALL, params={
+    "TokenHandle": HANDLE,
+    "TokenInformationClass": DWORD,
+    "TokenInformation": POINTER,
+    "TokenInformationLength": DWORD,
+    "ReturnLength": POINTER
+})
+def hook_GetTokenInformation(ql, address, params):
+    id = params["TokenHandle"]
+    information = params["TokenInformationClass"]
+    max_size = params["TokenInformationLength"]
+    pointer_size = params["ReturnLength"]
+    dst = params["TokenInformation"]
+    token = ql.handle_manager.get(id).token
+    information_value = token.get(information)
+
+    ql.uc.mem_write(pointer_size, len(information_value).to_bytes(4, byteorder="little"))
+    if len(information_value) > max_size:
+        # TODO set error
+        return 0
+    else:
+        ql.uc.mem_write(dst, information_value)
+        return 1
