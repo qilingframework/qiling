@@ -239,6 +239,9 @@ class Qiling:
         runner = self.build_os_execution("runner")
         runner(self)
 
+        # Print syscalls and their call numbers.
+        self.dprint("Syscalls and number of invocations")
+        self.dprint(list(self.PE.syscall_count.items()))
         if self.gdb is not None:
             self.gdbsession.run()
 

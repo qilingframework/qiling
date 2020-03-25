@@ -36,8 +36,8 @@ def hook_winapi(ql, address, size):
                 winapi_func = ql.user_defined_api[winapi_name]
         else:
             try:
-                counter = ql.PE.functions_counter.get(winapi_name, 0) + 1
-                ql.PE.functions_counter[winapi_name] = counter
+                counter = ql.PE.syscall_count.get(winapi_name, 0) + 1
+                ql.PE.syscall_count[winapi_name] = counter
                 winapi_func = globals()['hook_' + winapi_name]
             except KeyError:
                 winapi_func = None
