@@ -169,7 +169,7 @@ def runner(ql):
 
     ql.registry_manager.save()
 
-    print_syscall_count(ql)
+    post_report(ql)
 
     if ql.internal_exception is not None:
         raise ql.internal_exception

@@ -496,6 +496,6 @@ def read_cstring(ql, address):
     return result
 
 
-def print_syscall_count(ql):
+def post_report(ql):
     ql.dprint("[+] Syscalls and number of invocations")
     ql.dprint("[-] " + str(list(ql.PE.syscall_count.items())))
