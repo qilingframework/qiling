@@ -250,13 +250,12 @@ def hook_GetTempPathW(ql, address, params):
 })
 def hook_GetShortPathNameW(ql, address, params):
     paths = params["lpszLongPath"].replace("\x00", "").split("\\")
-    res = ""
-    for path in paths:
+    res = paths[0]
+    for path in paths[1:]:
         nameAndExt = path.split(".")
         name = nameAndExt[0]
         ext = "" if len(nameAndExt) == 1 else "." + nameAndExt[1]
         if len(name) > 8:
             name = name[:6] + "~1"
         res += "\\" + name + ext
-    ql.dprint(res)
     return 1
