@@ -14,9 +14,6 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
-COUNTER_PROCESS32_NEXT = 0
-MAX_PROCESS32_NEXT = 3
-
 
 # HANDLE CreateToolhelp32Snapshot(
 #   DWORD dwFlags,
@@ -61,9 +58,6 @@ def hook_Process32FirstW(ql, address, params):
 })
 def hook_Process32NextW(ql, address, params):
     # Return True if more process, 0 else
-    global COUNTER_PROCESS32_NEXT
-    global MAX_PROCESS32_NEXT
-    COUNTER_PROCESS32_NEXT += 1
-    if COUNTER_PROCESS32_NEXT == MAX_PROCESS32_NEXT:  # I don' know how many process the sample want's to cycle
+    if ql.PE.functions_counter["Process32NextW"] == 3:  # I don' know how many process the sample want's to cycle
         return 0x0
     return 0x1
