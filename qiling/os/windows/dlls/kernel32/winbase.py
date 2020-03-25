@@ -347,3 +347,40 @@ def hook_IsBadWritePtr(ql, address, params):
     ACCESS_TRUE = 0
     ACCESS_FALSE = 1
     return ACCESS_TRUE
+
+
+# typedef struct _OSVERSIONINFOEXA {
+#   DWORD dwOSVersionInfoSize;
+#   DWORD dwMajorVersion;
+#   DWORD dwMinorVersion;
+#   DWORD dwBuildNumber;
+#   DWORD dwPlatformId;
+#   CHAR  szCSDVersion[128];
+#   WORD  wServicePackMajor;
+#   WORD  wServicePackMinor;
+#   WORD  wSuiteMask;
+#   BYTE  wProductType;
+#   BYTE  wReserved;
+# } OSVERSIONINFOEXA, *POSVERSIONINFOEXA, *LPOSVERSIONINFOEXA;
+
+
+# BOOL VerifyVersionInfoW(
+#   LPOSVERSIONINFOEXW lpVersionInformation,
+#   DWORD              dwTypeMask,
+#   DWORDLONG          dwlConditionMask
+# );
+@winapi(cc=STDCALL, params={
+    "lpVersionInformation": POINTER,
+    "dwTypeMask": DWORD,
+    "dwlConditionMask": ULONGLONG
+})
+def hook_VerifyVersionInfoW(ql, address, params):
+    # TODO implement structure and compare parameters as the real function. I don't think is really necessary since
+    #  this function is normally used by malwares to check if a system operative to attack
+    #  https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow2
+    checks_passed = True
+    if checks_passed:
+        return 1
+    else:
+        ql.last_error = ERROR_OLD_WIN_VERSION
+        return 0
