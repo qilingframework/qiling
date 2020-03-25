@@ -171,3 +171,6 @@ def runner(ql):
 
     if ql.internal_exception is not None:
         raise ql.internal_exception
+
+    ql.dprint("Syscalls and number of invocations")
+    ql.dprint(list(ql.PE.syscall_count.items()))
