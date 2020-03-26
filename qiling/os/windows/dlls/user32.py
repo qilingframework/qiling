@@ -503,7 +503,6 @@ def hook_CharPrevW(ql, address, params):
 def hook_wsprintfW(ql, address, params):
     dst, p_format, p_args = get_function_param(ql, 3)
     format_string = read_wstring(ql, p_format)
-
     size, string = printf(ql, address, format_string, p_args, "wsprintfW", wstring=True)
 
     count = format_string.count('%')

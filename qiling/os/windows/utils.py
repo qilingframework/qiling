@@ -80,13 +80,8 @@ def printf(ql, address, fmt, params_addr, name, wstring=False):
                 else:
                     params[index] = read_cstring(ql, params[index])
             else:
-                # if is not a string, then we can mem_read ql.pointersize bytes and manage them as an integer
-                params[index] = (ql.unpack(
-                    ql.uc.mem_read(
-                        params_addr + index * ql.pointersize,
-                        ql.pointersize
-                    )
-                ))
+                # if is not a string, then they are already values!
+                pass
             index += 1
 
         output = '0x%0.2x: %s(format = %s' % (address, name, repr(fmt))
