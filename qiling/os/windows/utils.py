@@ -24,7 +24,7 @@ def read_wstring(ql, address):
         address += 2
         result += char.decode(errors="backslashreplace")
         char = ql.uc.mem_read(address, 2)
-    return result
+    return result.replace("\x00", "")
 
 
 def w2cstring(string):
