@@ -371,9 +371,31 @@ def hook_IsBadWritePtr(ql, address, params):
 })
 def hook_VerifyVersionInfoW(ql, address, params):
     #  https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow2
-    checks_passed = True
+    pointer = params["lpVersionInformation"]
+    os_version_info = {"dwOSVersionInfoSize": ql.uc.mem_read(pointer, 4),
+                       "dwMajorVersion": ql.uc.mem_read(pointer + 4, 4),
+                       "dwMinorVersion": ql.uc.mem_read(pointer + 8, 4),
+                       "dwBuildNumber": ql.uc.mem_read(pointer + 12, 4),
+                       "dwPlatformId": ql.uc.mem_read(pointer + 16, 4),
+                       "szCSDVersion": ql.uc.mem_read(pointer + 20, 128),
+                       "wServicePackMajor": ql.uc.mem_read(pointer + 20 + 128, 2),
+                       "wServicePackMinor": ql.uc.mem_read(pointer + 22 + 128, 2),
+                       "wSuiteMask": ql.uc.mem_read(pointer + 152, 2),
+                       "wProductType": ql.uc.mem_read(pointer + 154, 1),
+                       "wReserved": ql.uc.mem_read(pointer + 155, 1),
+                       }
+    major_version_asked = os_version_info["dwMajorVersion"][0]
+    minor_version_asked = os_version_info["dwMinorVersion"][0]
+    product_type = os_version_info["wProductType"][0]
+    version_asked = Systems_version.get(str(major_version_asked) + str(minor_version_asked) + str(product_type), None)
     ql.dprint("[!] The sample is checking the windows Version!")
+    if version_asked is None:
+        raise QlErrorNotImplemented("[!] API not implemented")
+    else:
+        ql.dprint("[-] The sample asks for %s" % version_asked)
+    # TODO implement compares
     # TODO we shouldd implement a hook to decide the answer!
+    checks_passed = False
     if checks_passed:
         return 1
     else:

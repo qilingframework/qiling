@@ -490,3 +490,28 @@ SW_SHOWMINNOACTIVE = 7
 SW_SHOWNA = 8
 SW_SHOWNOACTIVATE = 4
 SW_SHOWNORMAL = 1
+
+# OsVersionInfoConstants
+# https://docs.microsoft.com/it-it/windows/win32/api/winnt/ns-winnt-osversioninfoexa
+
+VER_NT_DOMAIN_CONTROLLER = 0x0000002
+VER_NT_SERVER = 0x0000003
+VER_NT_WORKSTATION = 0x0000001
+# major, minor, product
+
+Systems_version = {
+    "1001": "Windows 10",
+    "1000": "Windows Server 2016",
+
+    "631": "Windows 8.1",
+    "630": "Windows Server 2012 R2",
+
+    "621": "Windows 8",
+    "620": "Windows Server 2012",
+
+    "611": "Windows 7",
+    "610": "Windows Server 2008 R2",
+    "601": "Windows Vista",
+    "600": "Windows Server 2008"
+    # ..
+}
