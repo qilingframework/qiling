@@ -28,6 +28,17 @@ from qiling.utils import *
 from binascii import unhexlify
 import ipaddress, struct, os, ctypes
 
+def ql_lsbmsb_convert(ql, sc):
+    split_bytes = []
+    n  = 4
+    for index in range(0, len(sc), n):
+        split_bytes.append((sc[index : index + n])[::-1])
+
+    ebsc = b""
+    for i in split_bytes:
+        ebsc += i
+    
+    return ebsc    
 
 def ql_definesyscall_return(ql, regreturn):
     if (ql.arch == QL_ARM):  # QL_ARM
@@ -105,7 +116,10 @@ def ql_hook_code_disasm(ql, address, size):
         # ql.nprint("cpsr : " + bin(reg_cpsr))
         if reg_cpsr & 0b100000 != 0:
             mode = CS_MODE_THUMB
-        md = Cs(CS_ARCH_ARM, mode)
+        if ql.archendian == QL_ENDIAN_EB:
+            md = Cs(UC_ARCH_ARM, mode + UC_MODE_BIG_ENDIAN)
+        else:
+            md = Cs(CS_ARCH_ARM, mode)
         syscall_num = [uc.reg_read(UC_ARM_REG_R7), "R7"]
         arg_0 = [uc.reg_read(UC_ARM_REG_R0), "R0"]
         arg_1 = [uc.reg_read(UC_ARM_REG_R1), "R1"]
@@ -203,12 +217,12 @@ def ql_setup_output(ql):
 
 def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
     def ks_convert(arch):
-        if ql.arch == QL_MIPS32 and ql.archendian == QL_ENDIAN_EB:
+        if ql.archendian == QL_ENDIAN_EB:
             adapter = {
                 QL_X86: (KS_ARCH_X86, KS_MODE_32),
                 QL_X8664: (KS_ARCH_X86, KS_MODE_64),
                 QL_MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
-                QL_ARM: (KS_ARCH_ARM, KS_MODE_ARM),
+                QL_ARM: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_BIG_ENDIAN),
                 QL_ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
                 QL_ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
             }
@@ -494,3 +508,8 @@ def read_cstring(ql, address):
         result += char.decode(errors="backslashreplace")
         char = ql.uc.mem_read(address, 1)
     return result
+
+
+def post_report(ql):
+    ql.dprint("[+] Syscalls and number of invocations")
+    ql.dprint("[-] " + str(list(ql.PE.syscall_count.items())))

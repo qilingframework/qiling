@@ -30,6 +30,11 @@ def test_pe_win_x86_hello():
     ql.run()
     del ql
 
+def test_pe_win_x86_uselessdisk():
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/UselessDisk.bin"], "../examples/rootfs/x86_windows",
+                output="debug")
+    ql.run()
+    del ql
 
 def test_pe_win_x86_multithread():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
@@ -74,20 +79,6 @@ def test_pe_win_x86_wannacry():
 
     ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows")
     ql.hook_address(stop, 0x40819a)
-    ql.run()
-    del ql
-
-
-def test_windowssc_x86():
-    ql = Qiling(shellcoder=X86_WIN, archtype="x86", ostype="windows", rootfs="../examples/rootfs/x86_windows",
-                output="default")
-    ql.run()
-    del ql
-
-
-def test_windowssc_x64():
-    ql = Qiling(shellcoder=X8664_WIN, archtype="x8664", ostype="windows", rootfs="../examples/rootfs/x8664_windows",
-                output="debug")
     ql.run()
     del ql
 
@@ -162,66 +153,6 @@ def test_pe_win_x86_crackme():
     our_sandbox(["../examples/rootfs/x86_windows/bin/Easy_CrackMe.exe"], "../examples/rootfs/x86_windows")
 
 
-def test_pe_win_x86_bruteforcecrackme():
-    class StringBuffer:
-        def __init__(self):
-            self.buffer = b''
-
-        def read(self, n):
-            ret = self.buffer[:n]
-            self.buffer = self.buffer[n:]
-            return ret
-
-        def read_all(self):
-            ret = self.buffer
-            self.buffer = b''
-            return ret
-
-        def write(self, string):
-            self.buffer += string
-            return len(string)
-
-    def instruction_count(ql, address, size, user_data):
-        user_data[0] += 1
-
-    def get_count(flag):
-        ql = Qiling(["../examples/rootfs/x86_windows/bin/crackme.exe"], "../examples/rootfs/x86_windows", libcache=True,
-                    output="off")
-        ql.stdin = StringBuffer()
-        ql.stdout = StringBuffer()
-        ql.stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
-        count = [0]
-        ql.hook_code(instruction_count, count)
-        ql.run()
-        ql.nprint(ql.stdout.read_all().decode('utf-8'), end='')
-        ql.nprint(" ============ count: %d ============ " % count[0])
-        return count[0]
-
-    def solve():
-        # BJWXB_CTF{C5307D46-E70E-4038-B6F9-8C3F698B7C53}
-        prefix = list("BJWXB_CTF{C5307D46-E70E-4038-B6F9-8C3F698B7C")
-        flag = list("\x00" * 100)
-        base = get_count(prefix + flag)
-        i = 0
-
-        try:
-            for i in range(len(flag)):
-                for j in "53}":
-                    flag[i] = j
-                    data = get_count(prefix + flag)
-                    if data > base:
-                        base = data
-                        print("\n\n\n>>> FLAG: " + "".join(prefix + flag) + "\n\n\n")
-                        break
-                if flag[i] == "}":
-                    break
-            print("SOLVED!!!")
-        except KeyboardInterrupt:
-            print("STOP: KeyboardInterrupt")
-
-    solve()
-
-
 if __name__ == "__main__":
     test_pe_win_x8664_hello()
     test_pe_win_x86_hello()
@@ -232,8 +163,7 @@ if __name__ == "__main__":
     test_pe_win_x8664_fls()
     test_pe_win_x86_getlasterror()
     test_pe_win_x86_regdemo()
-    test_pe_win_x86_crackme()
     test_pe_win_x8664_customapi()
-    # test_windowssc_x86()
-    # test_windowssc_x64()
-    # test_pe_win_x86_bruteforcecrackme()
+    test_pe_win_x86_uselessdisk()
+    test_pe_win_x86_crackme()
+

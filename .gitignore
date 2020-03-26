@@ -21,6 +21,8 @@ jexamples/
 
 # dont keep raw malware
 wannacry.bin
+UselessDisk.bin
+
 *.no.py
 
 .gitkeep
@@ -31,3 +33,5 @@ test.file
 
 *.d
 *.o
+
+core

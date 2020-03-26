@@ -575,7 +575,11 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
             ql.show_map_info()
             raise   
     
-    ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
+    # FIXME: Big Endian Patch
+    try:
+        ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
+    except:
+        pass    
     
 
     mem_s = mmap_base

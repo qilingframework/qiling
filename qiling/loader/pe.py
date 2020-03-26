@@ -25,7 +25,7 @@ class Process:
         self.import_address_table = {}
         self.ldr_list = []
         self.cmdline = b"D:\\" + bytes(self.ql.path.replace("/", "\\"), "utf-8") + b"\x00"
-        self.functions_counter = {}
+        self.syscall_count = {}
 
     def load_dll(self, dll_name):
         dll_name = dll_name.lower().decode()
@@ -129,7 +129,7 @@ class Process:
             self.ql.STRUCTERS_LAST_ADDR += 0x30
             teb_addr = self.ql.STRUCTERS_LAST_ADDR
 
-        self.ql.nprint("[+] TEB addr is " + hex(teb_addr))
+        self.ql.nprint("[+] TEB addr is 0x%x\n" %teb_addr)
 
         teb_size = len(TEB(self.ql).bytes())
         teb_data = TEB(
@@ -154,7 +154,7 @@ class Process:
     def init_peb(self):
         peb_addr = self.ql.STRUCTERS_LAST_ADDR
 
-        self.ql.nprint("[+] PEB addr is " + hex(peb_addr))
+        self.ql.nprint("[+] PEB addr is 0x%x\n" %peb_addr)
 
         peb_size = len(PEB(self.ql).bytes())
         peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size)

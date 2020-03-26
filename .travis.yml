@@ -82,9 +82,11 @@ matrix:
         - cmd.exe //C 'examples\scripts\dllscollector.bat'
         - cd $TRAVIS_BUILD_DIR/examples/rootfs/x86_windows/bin
         - unzip -Pinfected wannacry.bin.zip
+        - unzip -Pinfected UselessDisk.bin.zip
         - cd $TRAVIS_BUILD_DIR/tests
       script:
         - python test_pe_nu.py
+        - python test_peshellcode_nu.py
 
     - name: "Python 3.6 on Docker"
       services:

@@ -278,6 +278,12 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    def test_elf_linux_mips32(self):
+        ql = Qiling(["../examples/rootfs/mips32_linux/bin/mips32_hello"], "../examples/rootfs/mips32_linux")
+        ql.run()
+        del ql
+
+
     def test_elf_linux_arm64_posix_syscall(self):
         def test_syscall_read(ql, read_fd, read_buf, read_count, *args):
             target = False

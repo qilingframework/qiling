@@ -12,6 +12,8 @@ from binascii import unhexlify
 from qiling.gdbserver import qldbg
 from qiling.gdbserver.reg_table import *
 from qiling.arch.filetype import *
+from qiling.os.utils import *
+
 
 GDB_SIGNAL_INT  = 2
 GDB_SIGNAL_SEGV = 11
@@ -490,7 +492,11 @@ class GDBSession(object):
                                         ID_AT_NULL + AT_NULL
                                     )
 
-                    auxvdata = self.bin_to_escstr(unhexlify(auxvdata_c))
+                        auxvdata = self.bin_to_escstr(unhexlify(auxvdata_c))
+                        #self.send(b'l!%s' % auxvdata)
+                    else:
+                        auxvdata = b""
+                    
                     self.send(b'l!%s' % auxvdata)
 
                 elif subcmd.startswith('Xfer:exec-file:read:'):
@@ -546,18 +552,12 @@ class GDBSession(object):
                 elif subcmd.startswith('File:open'):
                     self.lib_path = subcmd.split(':')[-1].split(',')[0]
                     self.lib_path = unhexlify(self.lib_path).decode(encoding='UTF-8')
+                    
                     if self.lib_path != "just probing":
-                        """
-                        FIXME
-                        os.path.join not working, always shows self.lib_path ony
-                        """
-                        #self.lib_abspath = os.path.join(str(self.rootfs_abspath) ,str(self.lib_path))
-                        if self.lib_path.startswith("/") and not self.lib_path.startswith(self.rootfs_abspath):
-                            self.lib_abspath = (self.rootfs_abspath + self.lib_path)
-                        elif self.lib_path.startswith(self.rootfs_abspath):
+                        if self.lib_path.startswith(self.rootfs_abspath):
                             self.lib_abspath = self.lib_path
                         else:
-                            self.lib_abspath = (self.rootfs_abspath + "/" + self.lib_path)   
+                            self.lib_abspath = ql_transform_to_real_path(self.ql, self.lib_path) 
 
                         self.ql.dprint("gdb> target file: %s" % (self.lib_abspath))
 
