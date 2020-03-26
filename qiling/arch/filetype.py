@@ -28,7 +28,7 @@ QL_OUT_DUMP = 4
 QL_OUT_DISASM = 5
 
 QL_ARCH = [QL_ARM, QL_ARM64, QL_MIPS32, QL_X86, QL_X8664]
-QL_ENDINABLE = [QL_MIPS32]
+QL_ENDINABLE = [QL_MIPS32, QL_ARM]
 QL_OS = [QL_LINUX, QL_FREEBSD, QL_MACOS, QL_WINDOWS]
 QL_OUTPUT = [QL_OUT_DEFAULT, QL_OUT_OFF, QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM]
 
@@ -154,8 +154,12 @@ def ql_elf_check_archtype(self):
         elif e_machine == b"\x00\x08" and endian == 2 and elfbit == 1:
             self.archendian = QL_ENDIAN_EB
             arch = QL_MIPS32
-        elif e_machine == b"\x28\x00":
+        elif e_machine == b"\x28\x00" and endian == 1 and elfbit == 1:
+            self.archendian = QL_ENDIAN_EL
             arch = QL_ARM
+        elif e_machine == b"\x28\x00" and endian == 2 and elfbit == 1:
+            self.archendian = QL_ENDIAN_EB
+            arch = QL_ARM            
         elif e_machine == b"\xB7\x00":
             arch = QL_ARM64
         elif e_machine == b"\x3E\x00":

@@ -492,7 +492,11 @@ class GDBSession(object):
                                         ID_AT_NULL + AT_NULL
                                     )
 
-                    auxvdata = self.bin_to_escstr(unhexlify(auxvdata_c))
+                        auxvdata = self.bin_to_escstr(unhexlify(auxvdata_c))
+                        #self.send(b'l!%s' % auxvdata)
+                    else:
+                        auxvdata = b""
+                    
                     self.send(b'l!%s' % auxvdata)
 
                 elif subcmd.startswith('Xfer:exec-file:read:'):
