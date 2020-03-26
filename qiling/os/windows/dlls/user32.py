@@ -504,15 +504,19 @@ def hook_wsprintfW(ql, address, params):
     dst, p_format, p_args = get_function_param(ql, 3)
     format_string = read_wstring(ql, p_format).replace("\x00", "")
 
-    ret = printf(ql, address, format_string, p_args, "wsprintfW", wstring=True)
+    size, string = printf(ql, address, format_string, p_args, "wsprintfW", wstring=True)
 
     count = format_string.count('%')
-    # x8664 fastcall donnot known the real number of parameters
-    # so you need to manually pop the stack
     if ql.arch == QL_X8664:
-        # if number of params > 4
-        if count + 1 > 4:
-            rsp = ql.uc.reg_read(UC_X86_REG_RSP)
-            ql.uc.reg_write(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
+        # We must pop the stack correctly
+        raise QlErrorNotImplemented("[!] API not implemented")
 
-    return ret
+    ql.uc.mem_write(dst, (string + "\x00").encode("utf-16le"))
+    return size
+
+
+# HWND GetForegroundWindow();
+@winapi(cc=STDCALL, params={
+})
+def hook_GetForegroundWindow(ql, address, params):
+    return 0xD10C

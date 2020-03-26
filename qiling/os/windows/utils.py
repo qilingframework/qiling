@@ -103,4 +103,4 @@ def printf(ql, address, fmt, params_addr, name, wstring=False):
         stdout = fmt
     ql.nprint(output)
     ql.stdout.write(bytes(stdout + "\n", 'utf-8'))
-    return len(stdout)
+    return len(stdout), stdout
