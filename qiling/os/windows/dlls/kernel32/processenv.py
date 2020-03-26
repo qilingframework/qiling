@@ -75,3 +75,30 @@ def hook_GetEnvironmentStringsW(ql, address, params):
 def hook_FreeEnvironmentStringsW(ql, address, params):
     ret = 1
     return ret
+
+
+# DWORD ExpandEnvironmentStringsW(
+#   LPCWSTR lpSrc,
+#   LPWSTR  lpDst,
+#   DWORD   nSize
+# );
+@winapi(cc=STDCALL, params={
+    "lpSrc": WSTRING,
+    "lpDst": POINTER,
+    "nSize": DWORD,
+})
+def hook_ExpandEnvironmentStringsW(ql, address, params):
+    string: str = params["lpSrc"].replace("\x00", "")
+    start = string.find("%")
+    end = string.rfind("%")
+    substring = string[start + 1:end]
+    result = Environment.get(substring, None)
+    if result is None:
+        ql.dprint(substring)
+        raise QlErrorNotImplemented("[!] API not implemented")
+    result = (string[:start] + result + string[end + 1:] + "\x00").encode("utf-16le")
+    dst = params["lpDst"]
+    max_size = params["nSize"]
+    if len(result) <= max_size:
+        ql.uc.mem_write(dst, result)
+    return len(result)
