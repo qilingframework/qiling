@@ -492,3 +492,27 @@ def hook_CharPrevW(ql, address, params):
     if start == current:
         return start
     return current - 1
+
+
+# int WINAPIV wsprintfW(
+#   LPWSTR  ,
+#   LPCWSTR ,
+#   ...
+# );
+@winapi(cc=STDCALL, param_num=3)
+def hook_wsprintfW(ql, address, params):
+    dst, p_format, p_args = get_function_param(ql, 3)
+    format_string = read_wstring(ql, p_format).replace("\x00", "")
+
+    ret = printf(ql, address, format_string, p_args, "wsprintfW", wstring=True)
+
+    count = format_string.count('%')
+    # x8664 fastcall donnot known the real number of parameters
+    # so you need to manually pop the stack
+    if ql.arch == QL_X8664:
+        # if number of params > 4
+        if count + 1 > 4:
+            rsp = ql.uc.reg_read(UC_X86_REG_RSP)
+            ql.uc.reg_write(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
+
+    return ret

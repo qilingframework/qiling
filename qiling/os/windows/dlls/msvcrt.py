@@ -185,43 +185,6 @@ def hook__get_initial_narrow_environment(ql, address, params):
     return ret
 
 
-def printf(ql, address, fmt, params_addr, name):
-    count = fmt.count("%")
-    params = []
-    if count > 0:
-        for i in range(count):
-            params.append(ql.unpack(
-                ql.uc.mem_read(
-                    params_addr + i * ql.pointersize,
-                    ql.pointersize
-                )
-            ))
-
-        formats = fmt.split("%")[1:]
-        index = 0
-        for f in formats:
-            if f.startswith("s"):
-                params[index] = read_cstring(ql, params[index])
-            index += 1
-
-        output = '0x%0.2x: %s(format = %s' % (address, name, repr(fmt))
-        for each in params:
-            if type(each) == str:
-                output += ', "%s"' % each
-            else:
-                output += ', 0x%0.2x' % each
-        output += ')'
-        fmt = fmt.replace("%llx", "%x")
-        stdout = fmt % tuple(params)
-        output += " = 0x%x" % len(stdout)
-    else:
-        output = '0x%0.2x: %s(format = %s) = 0x%x' % (address, name, repr(fmt), len(fmt))
-        stdout = fmt
-    ql.nprint(output)
-    ql.stdout.write(bytes(stdout, 'utf-8'))
-    return len(stdout)
-
-
 # int printf(const char *format, ...)
 @winapi(cc=CDECL, param_num=1)
 def hook_printf(ql, address, _):

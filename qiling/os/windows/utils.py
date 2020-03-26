@@ -57,3 +57,50 @@ def is_file_library(string):
 
 def string_to_hex(string):
     return ":".join("{:02x}".format(ord(c)) for c in string)
+
+
+def printf(ql, address, fmt, params_addr, name, wstring=False):
+    count = fmt.count("%")
+    params = []
+    if count > 0:
+        for i in range(count):
+            # We don't need to mem_read here, otherwise we have a problem with strings, since read_wstring/read_cstring
+            #  already take a pointer, and we will have pointer -> pointer -> STRING instead of pointer -> STRING
+            params.append(
+                params_addr + i * ql.pointersize,
+            )
+
+        formats = fmt.split("%")[1:]
+        index = 0
+        for f in formats:
+            if f.startswith("s"):
+                if wstring:
+                    params[index] = read_wstring(ql, params[index])
+                else:
+                    params[index] = read_cstring(ql, params[index])
+            else:
+                # if is not a string, then we can mem_read ql.pointersize bytes and manage them as an integer
+                params[index] = (ql.unpack(
+                    ql.uc.mem_read(
+                        params_addr + index * ql.pointersize,
+                        ql.pointersize
+                    )
+                ))
+            index += 1
+
+        output = '0x%0.2x: %s(format = %s' % (address, name, repr(fmt))
+        for each in params:
+            if type(each) == str:
+                output += ', "%s"' % each
+            else:
+                output += ', 0x%0.2x' % each
+        output += ')'
+        fmt = fmt.replace("%llx", "%x")
+        stdout = fmt % tuple(params)
+        output += " = 0x%x" % len(stdout)
+    else:
+        output = '0x%0.2x: %s(format = %s) = 0x%x' % (address, name, repr(fmt), len(fmt))
+        stdout = fmt
+    ql.nprint(output)
+    ql.stdout.write(bytes(stdout + "\n", 'utf-8'))
+    return len(stdout)
