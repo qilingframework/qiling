@@ -148,7 +148,7 @@ def hook_WaitForMultipleObjects(ql, address, params):
     "LPCWSTR": WSTRING
 })
 def hook_OpenMutexW(ql, address, params):
-    type, name = params["LPCWSTR"].replace("\x00", "").split("\\")
+    type, name = params["LPCWSTR"].split("\\")
     # The name can have a "Global" or "Local" prefix to explicitly open an object in the global or session namespace.
     if type == "Global":
         # if is global is a Windows lock. We always return a valid handle because we have no way to emulate them

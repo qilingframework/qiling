@@ -21,7 +21,7 @@ def _GetModuleHandle(ql, address, params):
     if lpModuleName == 0:
         ret = ql.PE.PE_IMAGE_BASE
     else:
-        lpModuleName = lpModuleName.lower().replace("\x00", "")
+        lpModuleName = lpModuleName.lower()
         if not is_file_library(lpModuleName):
             lpModuleName += ".dll"
         if lpModuleName in ql.PE.dlls:

@@ -267,12 +267,10 @@ def hook_lstrcatA(ql, address, params):
 def hook_lstrcatW(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
-    ql.dprint(string_to_hex(src))
     pointer = params["lpString1"]
     string_base = read_wstring(ql, pointer)
-    result = string_base + src + "\x00" + "\x00"
-    ql.dprint(result)
-    ql.uc.mem_write(pointer, bytes(result, encoding="utf-8"))
+    result = string_base + src + "\x00"
+    ql.uc.mem_write(pointer, bytes(result, encoding="utf-16le"))
     return pointer
 
 
@@ -288,9 +286,6 @@ def hook_lstrcmpiW(ql, address, params):
     # Copy String2 into String
     str1 = params["lpString1"]
     str2 = params["lpString2"]
-    # Was a check for a ransomware, will think how to automatize some compare in the future
-    # if str1.replace("\x00","") == "outlook.exe":
-    #     return 0
     if str1 == str2:
         return 0
     elif str1 > str2:

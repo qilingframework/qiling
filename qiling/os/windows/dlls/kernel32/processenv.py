@@ -88,7 +88,7 @@ def hook_FreeEnvironmentStringsW(ql, address, params):
     "nSize": DWORD,
 })
 def hook_ExpandEnvironmentStringsW(ql, address, params):
-    string: str = params["lpSrc"].replace("\x00", "")
+    string: str = params["lpSrc"]
     start = string.find("%")
     end = string.rfind("%")
     substring = string[start + 1:end]

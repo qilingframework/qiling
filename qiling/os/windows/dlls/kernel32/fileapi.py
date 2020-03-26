@@ -229,7 +229,7 @@ def hook_CreateFileW(ql, address, params):
 })
 def hook_GetTempPathW(ql, address, params):
     # TODO not sure if the string should end with \ and have a \x00
-    temp = "C:\\Windows\\Temp".encode('utf-16le')
+    temp = "C:\\Windows\\Temp\x00".encode('utf-16le')
     dest = params["lpBuffer"]
     temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
     if not os.path.exists(temp_path):
@@ -249,7 +249,7 @@ def hook_GetTempPathW(ql, address, params):
     "cchBuffer": DWORD,
 })
 def hook_GetShortPathNameW(ql, address, params):
-    paths = params["lpszLongPath"].replace("\x00", "").split("\\")
+    paths = params["lpszLongPath"].split("\\")
     dst = params["lpszShortPath"]
     max_size = params["cchBuffer"]
     res = paths[0]

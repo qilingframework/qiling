@@ -502,7 +502,7 @@ def hook_CharPrevW(ql, address, params):
 @winapi(cc=STDCALL, param_num=3)
 def hook_wsprintfW(ql, address, params):
     dst, p_format, p_args = get_function_param(ql, 3)
-    format_string = read_wstring(ql, p_format).replace("\x00", "")
+    format_string = read_wstring(ql, p_format)
 
     size, string = printf(ql, address, format_string, p_args, "wsprintfW", wstring=True)
 
@@ -519,4 +519,4 @@ def hook_wsprintfW(ql, address, params):
 @winapi(cc=STDCALL, params={
 })
 def hook_GetForegroundWindow(ql, address, params):
-    return 0xD10C
+    return 0xF02E620D  # Value so we can recognize inside dumps

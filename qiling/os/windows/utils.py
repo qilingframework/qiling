@@ -24,6 +24,7 @@ def read_wstring(ql, address):
         address += 2
         result += char.decode(errors="backslashreplace")
         char = ql.uc.mem_read(address, 2)
+    # We need to remove \x00 inside the string. Compares do not work otherwise
     return result.replace("\x00", "")
 
 
@@ -50,7 +51,7 @@ def debug_print_stack(ql, num, message=None):
 
 
 def is_file_library(string):
-    string = string.lower().replace("\x00", "")
+    string = string.lower()
     extension = string[-4:]
     return extension in (".dll", ".exe", ".sys", ".drv")
 
