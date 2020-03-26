@@ -373,7 +373,7 @@ def hook_VerifyVersionInfoW(ql, address, params):
     #  https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow2
     checks_passed = True
     ql.dprint("[!] The sample is checking the windows Version!")
-    # TODO we can implement a hook to decide the answer!
+    # TODO we shouldd implement a hook to decide the answer!
     if checks_passed:
         return 1
     else:

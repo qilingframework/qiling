@@ -38,46 +38,23 @@ def hook_SHGetFileInfoW(ql, address, params):
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
-# BOOL ShellExecuteExW(
-#   SHELLEXECUTEINFOA *pExecInfo
-# );
-@winapi(cc=STDCALL, params={
-    "pExecInfo": POINTER
-})
-def hook_ShellExecuteExW(ql, address, params):
-    pointer = params["pExecInfo"]
+def _ShellExecute(ql, dic: dict):
+    handle_window = int.from_bytes(dic["hwnd"], byteorder="little") if not isinstance(dic["hwnd"], int) else dic["hwnd"]
+    pt_operation = int.from_bytes(dic["lpVerb"], byteorder="little") if not isinstance(dic["lpVerb"], int) \
+        else dic["lpVerb"]
+    pt_file = int.from_bytes(dic["lpFile"], byteorder="little") if not isinstance(dic["lpFile"], int) else dic["lpFile"]
+    pt_params = int.from_bytes(dic["lpParameters"], byteorder="little") if not isinstance(dic["lpParameters"], int) \
+        else dic["lpParameters"]
+    pt_directory = int.from_bytes(dic["lpDirectory"], byteorder="little") if not isinstance(dic["lpDirectory"], int) \
+        else dic["lpDirectory"]
 
-    shell_execute_info = {"cbSize": ql.uc.mem_read(pointer, 4),
-                          "fMask": ql.uc.mem_read(pointer + 4, 4),
-                          "hwnd": ql.uc.mem_read(pointer + 8, ql.pointersize),
-                          "lpVerb": ql.uc.mem_read(pointer + 8 + ql.pointersize, ql.pointersize),
-                          "lpFile": ql.uc.mem_read(pointer + 8 + ql.pointersize * 2, ql.pointersize),
-                          "lpParameters": ql.uc.mem_read(pointer + 8 + ql.pointersize * 3, ql.pointersize),
-                          "lpDirectory": ql.uc.mem_read(pointer + 8 + ql.pointersize * 4, ql.pointersize),
-                          "nShow": ql.uc.mem_read(pointer + 8 + ql.pointersize * 5, 4),
-                          "hInstApp": ql.uc.mem_read(pointer + 12 + ql.pointersize * 5, 4),  # Must be 0x20 for success
-                          "lpIDList": ql.uc.mem_read(pointer + 16 + ql.pointersize * 5, ql.pointersize),
-                          "lpClass": ql.uc.mem_read(pointer + 16 + ql.pointersize * 6, ql.pointersize),
-                          "hkeyClass": ql.uc.mem_read(pointer + 16 + ql.pointersize * 7, ql.pointersize),
-                          "dwHotKey": ql.uc.mem_read(pointer + 16 + ql.pointersize * 8, 4),
-                          "dummy": ql.uc.mem_read(pointer + 20 + ql.pointersize * 8, ql.pointersize),
-                          "hprocess": ql.uc.mem_read(pointer + 20 + ql.pointersize * 9, ql.pointersize),
-                          }
-
-    # Some useful values in this struct
-    handle_window = int.from_bytes(shell_execute_info["hwnd"], byteorder="little")
-    pt_operation = int.from_bytes(shell_execute_info["lpVerb"], byteorder="little")
-    pt_file = int.from_bytes(shell_execute_info["lpFile"], byteorder="little")
-    pt_params = int.from_bytes(shell_execute_info["lpParameters"], byteorder="little")
-    pt_directory = int.from_bytes(shell_execute_info["lpDirectory"], byteorder="little")
-
-    handle_key = int.from_bytes(shell_execute_info["hkeyClass"], byteorder="little")
     operation = read_wstring(ql, pt_operation) if pt_operation != 0 else ""
     params = read_wstring(ql, pt_params) if pt_params != 0 else ""
     file = read_wstring(ql, pt_file) if pt_file != 0 else ""
     directory = read_wstring(ql, pt_file) if pt_directory != 0 else ""
-    show = int.from_bytes(shell_execute_info["nShow"], byteorder="little")
-    ql.dprint("[!] Binary is executing a shell command!")
+    show = int.from_bytes(dic["nShow"], byteorder="little") if not isinstance(dic["nShow"], int) else dic["nShow"]
+
+    ql.dprint("[!] Binary executed a shell command!")
     ql.dprint("[-] Operation: %s " % operation)
     ql.dprint("[-] Parameters: %s " % params)
     ql.dprint("[-] File: %s " % file)
@@ -86,20 +63,11 @@ def hook_ShellExecuteExW(ql, address, params):
         ql.dprint("[!] Binary is creating a hidden window!")
     if operation == "runas":
         ql.dprint("[!] Binary is executing shell command as administrator!")
-    # TODO create new process
     process = Thread(ql, status=0, isFake=True)
     handle = Handle(thread=process)
     ql.handle_manager.append(handle)
-    # Set values
-    shell_execute_info["hInstApp"] = 0x20.to_bytes(4, byteorder="little")
-    shell_execute_info["hprocess"] = ql.pack(handle.id)
-    # Check everything is correct
-    values = b"".join(shell_execute_info.values())
-    assert len(values) == shell_execute_info["cbSize"][0]
+    return handle
 
-    # Rewrite memory
-    ql.uc.mem_write(pointer, values)
-    return 1
 
 # typedef struct _SHELLEXECUTEINFOA {
 #   DWORD     cbSize;
@@ -121,3 +89,64 @@ def hook_ShellExecuteExW(ql, address, params):
 #   } DUMMYUNIONNAME;
 #   HANDLE    hProcess;
 # } SHELLEXECUTEINFOA, *LPSHELLEXECUTEINFOA;
+
+
+# BOOL ShellExecuteExW(
+#   SHELLEXECUTEINFOA *pExecInfo
+# );
+@winapi(cc=STDCALL, params={
+    "pExecInfo": POINTER
+})
+def hook_ShellExecuteExW(ql, address, params):
+    pointer = params["pExecInfo"]
+
+    shell_execute_info = {"cbSize": ql.uc.mem_read(pointer, 4),
+                          "fMask": ql.uc.mem_read(pointer + 4, 4),
+                          "hwnd": ql.uc.mem_read(pointer + 8, ql.pointersize),
+                          "lpVerb": ql.uc.mem_read(pointer + 8 + ql.pointersize, ql.pointersize),
+                          "lpFile": ql.uc.mem_read(pointer + 8 + ql.pointersize * 2, ql.pointersize),
+                          "lpParameters": ql.uc.mem_read(pointer + 8 + ql.pointersize * 3, ql.pointersize),
+                          "lpDirectory": ql.uc.mem_read(pointer + 8 + ql.pointersize * 4, ql.pointersize),
+                          "nShow": ql.uc.mem_read(pointer + 8 + ql.pointersize * 5, 4),
+                          "hInstApp": ql.uc.mem_read(pointer + 12 + ql.pointersize * 5, 4),  # Must be > 32 for success
+                          "lpIDList": ql.uc.mem_read(pointer + 16 + ql.pointersize * 5, ql.pointersize),
+                          "lpClass": ql.uc.mem_read(pointer + 16 + ql.pointersize * 6, ql.pointersize),
+                          "hkeyClass": ql.uc.mem_read(pointer + 16 + ql.pointersize * 7, ql.pointersize),
+                          "dwHotKey": ql.uc.mem_read(pointer + 16 + ql.pointersize * 8, 4),
+                          "dummy": ql.uc.mem_read(pointer + 20 + ql.pointersize * 8, ql.pointersize),
+                          "hprocess": ql.uc.mem_read(pointer + 20 + ql.pointersize * 9, ql.pointersize),
+                          }
+
+    handle = _ShellExecute(ql, shell_execute_info)
+
+    # Write results
+    shell_execute_info["hInstApp"] = 0x21.to_bytes(4, byteorder="little")
+    shell_execute_info["hprocess"] = ql.pack(handle.id)
+    # Check everything is correct
+    values = b"".join(shell_execute_info.values())
+    assert len(values) == shell_execute_info["cbSize"][0]
+
+    # Rewrite memory
+    ql.uc.mem_write(pointer, values)
+    return 1
+
+
+# HINSTANCE ShellExecuteW(
+#   HWND    hwnd,
+#   LPCWSTR lpOperation,
+#   LPCWSTR lpFile,
+#   LPCWSTR lpParameters,
+#   LPCWSTR lpDirectory,
+#   INT     nShowCmd
+# );
+@winapi(cc=STDCALL, params={
+    "hwnd": HANDLE,
+    "lpVerb": POINTER,
+    "lpFile": POINTER,
+    "lpParameters": POINTER,
+    "lpDirectory": POINTER,
+    "nShow": INT
+})
+def hook_ShellExecuteW(ql, address, params):
+    _ = _ShellExecute(ql, params)
+    return 33
