@@ -82,15 +82,17 @@ def hook_ShellExecuteExW(ql, address, params):
     ql.dprint("[-] Parameters: %s " % params)
     ql.dprint("[-] File: %s " % file)
     ql.dprint("[-] Directory: %s " % directory)
-    ql.dprint("[-] Show: %s " % show)
     if show == SW_HIDE:
         ql.dprint("[!] Binary is creating a hidden window!")
-
+    if operation == "runas":
+        ql.dprint("[!] Binary is executing shell command as administrator!")
     # TODO create new process
-    process_handle = 0x123456
+    process = Thread(ql, status=0, isFake=True)
+    handle = Handle(thread=process)
+    ql.handle_manager.append(handle)
     # Set values
     shell_execute_info["hInstApp"] = 0x20.to_bytes(4, byteorder="little")
-    shell_execute_info["hprocess"] = process_handle.to_bytes(ql.pointersize, byteorder="little")
+    shell_execute_info["hprocess"] = ql.pack(handle.id)
     # Check everything is correct
     values = b"".join(shell_execute_info.values())
     assert len(values) == shell_execute_info["cbSize"][0]

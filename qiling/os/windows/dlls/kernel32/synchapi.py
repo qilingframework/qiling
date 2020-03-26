@@ -104,8 +104,11 @@ def hook_WaitForSingleObject(ql, address, params):
     ret = 0
     hHandle = params["hHandle"]
     dwMilliseconds = params["dwMilliseconds"]
-    target_thread = ql.handle_manager.get(hHandle).thread
-    ql.thread_manager.current_thread.waitfor(target_thread)
+
+    target_thread: Thread = ql.handle_manager.get(hHandle).thread
+    if not target_thread.fake:
+        ql.thread_manager.current_thread.waitfor(target_thread)
+
     return ret
 
 
