@@ -83,6 +83,7 @@ class Qiling:
             shellcoder=None,
             ostype=None,
             archtype=None,
+            bigendian=False,
             libcache=False,
             stdin=0,
             stdout=0,
@@ -101,6 +102,7 @@ class Qiling:
         self.output = output
         self.ostype = ostype
         self.archtype = archtype
+        self.bigendian = bigendian
         self.shellcoder = shellcoder
         self.filename = filename
         self.rootfs = rootfs
@@ -126,7 +128,7 @@ class Qiling:
             self.ostype = self.ostype.lower()
             self.ostype = ostype_convert(self.ostype)
 
-        if self.shellcode and self.archtype and type(self.archtype) == str:
+        if self.shellcoder and self.archtype and type(self.archtype) == str:
             self.arch = self.arch.lower()
             self.arch = arch_convert(self.archtype)
 
@@ -183,7 +185,10 @@ class Qiling:
         self.archbit = ql_get_arch_bits(self.arch)
 
         if self.arch not in QL_ENDINABLE:
-            self.archendian = QL_ENDIAN_EL
+            self.archendian = QL_ENDIAN_EL    
+        
+        if self.shellcoder and self.arch in QL_ENDINABLE and self.bigendian == True:
+            self.archendian = QL_ENDIAN_EB
 
         self.archfunc = arch_func(self)
 
