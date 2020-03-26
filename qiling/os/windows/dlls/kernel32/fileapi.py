@@ -250,6 +250,8 @@ def hook_GetTempPathW(ql, address, params):
 })
 def hook_GetShortPathNameW(ql, address, params):
     paths = params["lpszLongPath"].replace("\x00", "").split("\\")
+    dst = params["lpszShortPath"]
+    max_size = params["cchBuffer"]
     res = paths[0]
     for path in paths[1:]:
         nameAndExt = path.split(".")
@@ -258,4 +260,10 @@ def hook_GetShortPathNameW(ql, address, params):
         if len(name) > 8:
             name = name[:6] + "~1"
         res += "\\" + name + ext
-    return 1
+    res += "\x00"
+    res = res.encode("utf-16le")
+    if max_size < len(res):
+        return len(res)
+    else:
+        ql.uc.mem_write(dst, res)
+    return len(res) - 1
