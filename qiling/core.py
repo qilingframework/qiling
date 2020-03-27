@@ -269,8 +269,9 @@ class Qiling:
 
     def dprint(self, level, *args, **kw):
         if type(self.verbose) != int or self.verbose > 99 or self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            raise QlErrorOutput("[!] ql.dprint(0,\"hello world\")")
-        elif self.verbose >= level:
+            # make any exception back to default
+            level = 0
+        if self.verbose >= level:
             if self.output == QL_OUT_DEBUG:
                 self.log_file_fd.debug(*args, **kw)
             elif self.output == QL_OUT_DUMP:
