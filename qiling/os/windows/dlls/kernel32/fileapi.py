@@ -92,7 +92,7 @@ def hook_ReadFile(ql, address, params):
             # TODO maybe insert a good random generation input
             s = (b"A" * (nNumberOfBytesToRead - 1)) + b"\x00"
         else:
-            ql.dprint("Insert input")
+            ql.dprint(0, "Insert input")
             s = ql.stdin.read(nNumberOfBytesToRead)
         slen = len(s)
         read_len = slen

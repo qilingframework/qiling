@@ -123,7 +123,7 @@ class Macho:
         seg_name = cmd.segment_name
         seg_data = bytes(self.loading_file.get_segment(seg_name).content)
 
-        self.ql.dprint("[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
+        self.ql.dprint(0, "[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
         self.uc.mem_map(vaddr_start, seg_size)
         self.uc.mem_write(vaddr_start, seg_data)
         if self.vm_end_addr < vaddr_end:
@@ -135,7 +135,7 @@ class Macho:
             self.binary_entry = cmd.entry
  
         self.proc_entry = cmd.entry
-        self.ql.dprint("[+] Binary Thread Entry: {}".format(hex(cmd.entry)))
+        self.ql.dprint(0, "[+] Binary Thread Entry: {}".format(hex(cmd.entry)))
 
 
     def loadUuid(self):
@@ -180,18 +180,18 @@ class Macho:
         ptr = self.stack_sp
 
         for item in self.argvs[::-1]:
-            argvs_ptr.append(ptr)   # need pack and tostring
-            self.ql.dprint('[+] add argvs ptr {}'.format(hex(ptr)))
+            argvs_ptr.append(ptr)  # need pack and tostring
+            self.ql.dprint(0, '[+] add argvs ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
         
         for item in self.envs[::-1]:
             envs_ptr.append(ptr)
-            self.ql.dprint('[+] add envs ptr {}'.format(hex(ptr)))
+            self.ql.dprint(0, '[+] add envs ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
 
         for item in self.apples[::-1]:
             apple_ptr.append(ptr)
-            self.ql.dprint('[+] add apple ptr {}'.format(hex(ptr)))
+            self.ql.dprint(0, '[+] add apple ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
 
         ptr = self.stack_sp
@@ -215,12 +215,12 @@ class Macho:
         for item in argvs_ptr:
             ptr -= 4
             self.push_stack_addr(item)
-            self.ql.dprint("[+] SP 0x%x, content 0x%x" % (self.stack_sp, item))
+            self.ql.dprint(0, "[+] SP 0x%x, content 0x%x" % (self.stack_sp, item))
         argvs_ptr_ptr = ptr 
 
         self.push_stack_addr(self.argc)
         ptr -= 4
-        self.ql.dprint("[+] SP 0x%x, content 0x%x" % (self.stack_sp, self.argc))
+        self.ql.dprint(0, "[+] SP 0x%x, content 0x%x" % (self.stack_sp, self.argc))
        
         if self.using_dyld:
             ptr -= 4
@@ -241,7 +241,7 @@ class Macho:
         
         self.stack_sp -= length
         self.uc.mem_write(self.stack_sp, data)
-        self.ql.dprint("[+] SP {} write data len {}".format(hex(self.stack_sp), length))
+        self.ql.dprint(0, "[+] SP {} write data len {}".format(hex(self.stack_sp), length))
         
         return self.stack_sp
     

@@ -259,12 +259,14 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
 #         mmap_base = ql.mmap_start
 #         ql.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
 
-#     ql.dprint("[+] log mmap - mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
-#     ql.dprint("[+] log mmap - return addr : " + hex(mmap_base))
-#     ql.dprint("[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
+#     ql.dprint(0,"[+] log mmap - mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot,
+#     mmap2_flags, mmap2_fd, mmap2_pgoffset))
+#     ql.dprint(0,"[+] log mmap - return addr : " + hex(mmap_base))
+#     ql.dprint(0,"[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap2_length + 0x1000
+#     - 1) // 0x1000) * 0x1000))
 
 #     if need_mmap:
-#         ql.dprint("[+] log mmap - mapping needed")
+#         ql.dprint(0,"[+] log mmap - mapping needed")
 #         try:
 #             ql.uc.mem_map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000)
 #         except:
@@ -273,7 +275,7 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
 #             # raise     
 
 #     ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
-    
+
 #     mem_s = mmap_base
 #     mem_e = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
 #     mem_info = ''
@@ -282,19 +284,20 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
 #         ql.file_des[mmap2_fd].lseek(mmap2_pgoffset)
 #         data = ql.file_des[mmap2_fd].read(mmap2_length)
 
-#         ql.dprint("[+] log mem wirte : " + hex(len(data)))
-#         ql.dprint("[+] log mem mmap  : " + str(ql.file_des[mmap2_fd].name))
+#         ql.dprint(0,"[+] log mem wirte : " + hex(len(data)))
+#         ql.dprint(0,"[+] log mem mmap  : " + str(ql.file_des[mmap2_fd].name))
 #         ql.uc.mem_write(mmap_base, data)
-        
+
 #         mem_info = ql.file_des[mmap2_fd].name
-        
+
 #     ql.insert_map_info(mem_s, mem_e, mem_info)
-    
+
 #     if ql.output == QL_OUT_DEFAULT:
-#         ql.nprint("mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
-    
+#         ql.nprint("mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot,
+#         mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
+
 #     regreturn = mmap_base
-#     ql.dprint("[+] mmap_base is 0x%x" % regreturn)
+#     ql.dprint(0,"[+] mmap_base is 0x%x" % regreturn)
 
 #     ql_definesyscall_return(ql, regreturn)
 #     # input()
@@ -374,9 +377,9 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, null0, null1, n
     ql.nprint("stat64({}, 0x{:X}) = {}".format(stat64_file, stat64_buf_ptr, regreturn))
     if regreturn == 0:
         set_eflags_cf(ql, 0x0)
-        ql.dprint("[+] stat64 write completed")
+        ql.dprint(0, "[+] stat64 write completed")
     else:
-        ql.dprint("[!] stat64 read/write fail")
+        ql.dprint(0, "[!] stat64 read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 # 0x153
@@ -453,9 +456,9 @@ def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, null0, null1, null2, n
 
     ql.nprint("fstat64(%d, 0x%x) = %d" % (fstat64_fd, fstat64_add, regreturn))
     if regreturn == 0:
-        ql.dprint("[+] fstat64 write completed")
+        ql.dprint(0, "[+] fstat64 write completed")
     else:
-        ql.dprint("[!] fstat64 read/write fail")
+        ql.dprint(0, "[!] fstat64 read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 # 0x16e
@@ -498,9 +501,9 @@ def ql_syscall_thread_open_nocancel(ql, filename, flags, mode, null0, null1, nul
 
     ql.nprint("open(%s, 0x%x, 0x%x) = %d" % (relative_path, flags, mode, regreturn))
     if regreturn >= 0 and regreturn != 2:
-        ql.dprint("[+] File Found: %s" % relative_path)
+        ql.dprint(0, "[+] File Found: %s" % relative_path)
     else:
-        ql.dprint("[!] File Not Found %s" % relative_path)
+        ql.dprint(0, "[!] File Not Found %s" % relative_path)
     ql_definesyscall_return(ql, regreturn)
 
 # 0x1b6

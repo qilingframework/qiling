@@ -89,6 +89,7 @@ class Qiling:
             stdout=0,
             stderr=0,
             output=None,
+            verbose=0,
             log_console=True,
             log_dir=None,
             log_split=False,
@@ -100,6 +101,7 @@ class Qiling:
     ):
 
         self.output = output
+        self.verbose = verbose
         self.ostype = ostype
         self.archtype = archtype
         self.bigendian = bigendian
@@ -203,6 +205,10 @@ class Qiling:
             if self.output not in QL_OUTPUT:
                 raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
 
+        if type(self.verbose) != int and self.verbose < 99 and self.output in (
+        QL_OUT_DEBUG, QL_OUT_DISASM, QL_OUT_DUMP):
+            raise QlErrorOutput("[!] verbose required input as int and less then 99")
+
         if self.shellcoder and self.arch and self.ostype:
             self.shellcode()
         else:
@@ -247,6 +253,7 @@ class Qiling:
         if self.gdb is not None:
             self.gdbsession.run()
 
+
     def nprint(self, *args, **kw):
         if self.thread_management is not None and self.thread_management.cur_thread is not None:
             fd = self.thread_management.cur_thread.log_file_fd
@@ -262,13 +269,16 @@ class Qiling:
             elif isinstance(fd, logging.StreamHandler):
                 fd.flush()
 
-    def dprint(self, *args, **kw):
-        if self.output == QL_OUT_DEBUG:
-            self.log_file_fd.debug(*args, **kw)
-        elif self.output == QL_OUT_DUMP:
-            msg = args[0]
-            msg += b'\n' if isinstance(msg, bytes) else '\n'
-            self.log_file_fd.debug(msg, **kw)
+    def dprint(self, level, *args, **kw):
+        if type(level) != int:
+            raise QlErrorOutput("[!] ql.dprint(0,\"some msg\")")
+        elif self.verbose >= level:
+            if self.output == QL_OUT_DEBUG:
+                self.log_file_fd.debug(*args, **kw)
+            elif self.output == QL_OUT_DUMP:
+                msg = str(args[0])
+                msg += '\n'  # if isinstance(msg, str) else '\n'
+                self.log_file_fd.debug(msg, **kw)
 
     def addr_to_str(self, addr, short=False, endian="big"):
         return ql_addr_to_str(self, addr, short, endian)
@@ -282,9 +292,11 @@ class Qiling:
         elif self.ostype == QL_WINDOWS:
             self.set_api(syscall_cur, syscall_new)
 
+
     def set_api(self, api_name, api_func):
         if self.ostype == QL_WINDOWS:
             self.user_defined_api[api_name] = api_func
+
 
     def hook_code(self, callback, user_data=None, begin=1, end=0):
         @catch_KeyboardInterrupt(self)
@@ -300,6 +312,7 @@ class Qiling:
         # pack user_data & callback for wrapper _callback
         self.uc.hook_add(UC_HOOK_CODE, _callback, (user_data, callback), begin, end)
 
+
     def hook_intr(self, callback, user_data=None, begin=1, end=0):
         @catch_KeyboardInterrupt(self)
         def _callback(uc, intno, pack_data):
@@ -313,6 +326,7 @@ class Qiling:
 
         # pack user_data & callback for wrapper _callback
         self.uc.hook_add(UC_HOOK_INTR, _callback, (user_data, callback), begin, end)
+
 
     def hook_block(self, callback, user_data=None, begin=1, end=0):
         @catch_KeyboardInterrupt(self)

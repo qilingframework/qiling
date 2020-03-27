@@ -23,11 +23,17 @@ QL_SHELLCODE_INIT = 0
 QL_KERNEL_GET_TLS_ADDR = 0xFFFF0FE0
 QL_ARM_EMU_END = 0x8fffffff
 
-def ql_arm_check_thumb(reg_cpsr):
+def ql_arm_check_thumb(ql, reg_cpsr):
+    if ql.archendian == QL_ENDIAN_EB:
+        reg_cpsr_v = 0b100000
+        # reg_cpsr_v = 0b000000
+    else:
+        reg_cpsr_v = 0b100000
+
     mode = UC_MODE_ARM
-    if (reg_cpsr & 0b100000) != 0:
+    if (reg_cpsr & reg_cpsr_v) != 0:
         mode = UC_MODE_THUMB
-        return mode
+    return mode
 
 def hook_syscall(ql, intno):
     syscall_num = ql.uc.reg_read(UC_ARM_REG_R7)
@@ -39,8 +45,7 @@ def hook_syscall(ql, intno):
     param5 = ql.uc.reg_read(UC_ARM_REG_R5)
     reg_cpsr = ql.uc.reg_read(UC_ARM_REG_CPSR)
     pc = ql.uc.reg_read(UC_ARM_REG_PC)
-
-    ql_arm_check_thumb(reg_cpsr)
+    ql_arm_check_thumb(ql, reg_cpsr)
 
     while 1:
         LINUX_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
@@ -92,10 +97,12 @@ def ql_arm_enable_vfp(ql):
     tmp_val = tmp_val | (0xf << 20)
     uc.reg_write(UC_ARM_REG_C1_C0_2, tmp_val)
     if ql.archendian == QL_ENDIAN_EB:
-        enable_vfp = 0x00000040
+        enable_vfp = 0x40000000
+        #enable_vfp = 0x00000040
     else:
         enable_vfp = 0x40000000
     uc.reg_write(UC_ARM_REG_FPEXC, enable_vfp)
+    ql.dprint(0, "[+] Enable ARM VFP")
 
 
 def ql_arm_init_kernel_get_tls(ql):
@@ -106,10 +113,11 @@ def ql_arm_init_kernel_get_tls(ql):
     """
     sc = b'\x04\x00\x8f\xe2\x00\x00\x90\xe5\x0e\xf0\xa0\xe1\x00\x00\x00\x00'
 
-    if ql.archendian == QL_ENDIAN_EB:
-        sc = ql_lsbmsb_convert(ql, sc)
+    # if ql.archendian == QL_ENDIAN_EB:
+    #    sc = ql_lsbmsb_convert(ql, sc)
 
     uc.mem_write(QL_KERNEL_GET_TLS_ADDR, sc)
+    ql.dprint(0, "[+] Set init_kernel_get_tls")
 
 def ql_arm_thread_set_tls(ql, th, arg):
     address = arg
@@ -117,7 +125,7 @@ def ql_arm_thread_set_tls(ql, th, arg):
     reg_cpsr = uc.reg_read(UC_ARM_REG_CPSR)
     PC = uc.reg_read(UC_ARM_REG_PC)
     SP = uc.reg_read(UC_ARM_REG_SP)
-    mode = ql_arm_check_thumb(reg_cpsr)
+    mode = ql_arm_check_thumb(ql, reg_cpsr)
     old_r0 = uc.reg_read(UC_ARM_REG_R0)
 
     if mode == UC_MODE_THUMB:
@@ -140,13 +148,15 @@ def ql_arm_thread_set_tls(ql, th, arg):
                 pop {r0}
                 pop {pc}
             '''
-        sc = b'\x02\xb4\x01\xa1\x08G\x00\x00p\x0f\r\xee\x04\x10\x8f\xe2\x01\x10\x81\xe2\x11\xff/\xe1\x02\xbc\x01\xbc\x00\xbd\x00\xbf'
-        if ql.archendian == QL_ENDIAN_EB:
-            sc = ql_lsbmsb_convert(ql, sc)
+        sc = b'\x02\xb4\x01\xa1\x08G\x00\x00p\x0f\r\xee\x04\x10\x8f\xe2\x01\x10\x81\xe2\x11\xff/\xe1\x02\xbc\x01\xbc' \
+             b'\x00\xbd\x00\xbf'
+
+        # if ql.archendian == QL_ENDIAN_EB:
+        #    sc = ql_lsbmsb_convert(ql, sc, 2)
     else:
         sc = b'p\x0f\r\xee\x04\x00\x9d\xe4\x04\xf0\x9d\xe4'
-        if ql.archendian == QL_ENDIAN_EB:
-            sc = ql_lsbmsb_convert(ql, sc)
+        # if ql.archendian == QL_ENDIAN_EB:
+        #    sc = ql_lsbmsb_convert(ql, sc)
 
     codestart = 4
     exec_shellcode(ql, codestart, sc)
@@ -170,10 +180,8 @@ def ql_syscall_arm_settls(ql, address, null0, null1, null2, null3, null4):
     reg_cpsr = ql.uc.reg_read(UC_ARM_REG_CPSR)
     PC = ql.uc.reg_read(UC_ARM_REG_PC)
     SP = ql.uc.reg_read(UC_ARM_REG_SP)
-    mode = ql_arm_check_thumb(reg_cpsr)
-
+    mode = ql_arm_check_thumb(ql, reg_cpsr)
     #ql.nprint("THUMB and Mode %x %x" % (UC_MODE_THUMB, mode))
-
     if mode == UC_MODE_THUMB:
         sc = '''
             .THUMB
@@ -194,8 +202,12 @@ def ql_syscall_arm_settls(ql, address, null0, null1, null2, null3, null4):
                 pop {pc}
             '''
         sc = b'\x02\xb4\x01\xa1\x08G\x00\x00p\x0f\r\xee\x04\x10\x8f\xe2\x01\x10\x81\xe2\x11\xff/\xe1\x02\xbc\x00\xbd'
+        # if ql.archendian == QL_ENDIAN_EB:
+        #    sc = ql_lsbmsb_convert(ql, sc, 2)
     else:
         sc = b'p\x0f\r\xee\x04\xf0\x9d\xe4'
+        # if ql.archendian == QL_ENDIAN_EB:
+        #    sc = ql_lsbmsb_convert(ql, sc)
 
     codestart = 4
     exec_shellcode(ql, codestart, sc)
@@ -213,7 +225,8 @@ def ql_syscall_arm_settls(ql, address, null0, null1, null2, null3, null4):
 
 def loader_file(ql):
     if ql.archendian == QL_ENDIAN_EB:
-        uc = Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_BIG_ENDIAN)
+        uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)
+        # uc = Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_BIG_ENDIAN)
     else:
         uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)
     ql.uc = uc

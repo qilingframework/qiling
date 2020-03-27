@@ -138,7 +138,7 @@ def hook_GetClipboardData(ql, address, params):
         ql.uc.mem_write(addr, data)
         return addr
     else:
-        ql.dprint('Failed to get clipboard data')
+        ql.dprint(0, 'Failed to get clipboard data')
         return 0
 
 
@@ -170,10 +170,10 @@ def hook_MapVirtualKeyW(ql, address, params):
         if code is not None:
             return code
         else:
-            ql.dprint("Code value %x" % info)
+            ql.dprint(0, "Code value %x" % info)
             raise QlErrorNotImplemented("[!] API not implemented")
     else:
-        ql.dprint("Map value %x" % info)
+        ql.dprint(0, "Map value %x" % info)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -244,7 +244,7 @@ def hook_GetSystemMetrics(ql, address, params):
     elif info == SM_CYHSCROLL:
         return 300
     else:
-        ql.dprint("Info value %x" % info)
+        ql.dprint(0, "Info value %x" % info)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -470,7 +470,7 @@ def hook_CharNextW(ql, address, params):
     # Return next char if is different from \x00
     point = params["lpsz"]
     string = read_wstring(ql, point)
-    ql.dprint(string)
+    ql.dprint(0, string)
     if len(string) == 0:
         return point
     else:

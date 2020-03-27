@@ -17,12 +17,12 @@ def _RegOpenKey(ql, address, params):
     phkResult = params["phkResult"]
 
     if hKey not in REG_KEYS:
-        ql.dprint("[!] Key %s %s not present" % (hKey, s_lpSubKey))
+        ql.dprint(0, "[!] Key %s %s not present" % (hKey, s_lpSubKey))
         return ERROR_FILE_NOT_FOUND
     else:
         s_hKey = REG_KEYS[hKey]
     if not ql.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
-        ql.dprint("[!] Value key %s\%s not present" % (s_hKey, s_lpSubKey))
+        ql.dprint(0, "[!] Value key %s\%s not present" % (s_hKey, s_lpSubKey))
         return ERROR_FILE_NOT_FOUND
 
     # new handle
@@ -56,7 +56,7 @@ def RegQueryValue(ql, address, params):
 
     # error key
     if reg_type is None or value is None:
-        ql.dprint("[!] Key value not found")
+        ql.dprint(0, "[!] Key value not found")
         return ERROR_FILE_NOT_FOUND
     else:
         # set lpData
