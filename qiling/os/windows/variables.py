@@ -16,5 +16,7 @@ OS_VERSION_INFO = {"dwOSVersionInfoSize": 0xADD,
                    }
 
 # Environment
-Environment = {"windir": "C:\\Windows"}
+Environment = {"windir": "C:\\Windows",
+               "appdata": "C:\\Users\\Qiling\\AppData",
+               "user": "Qiling"}
 # ...

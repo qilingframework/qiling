@@ -13,6 +13,7 @@ from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
+from qiling.os.windows.variables import *
 
 
 # DWORD_PTR SHGetFileInfoW(
@@ -160,9 +161,22 @@ def hook_ShellExecuteW(ql, address, params):
 # );
 @winapi(cc=STDCALL, params={
     "hwnd": HANDLE,
-    "pszPath": WSTRING,
+    "pszPath": POINTER,
     "csidl": INT,
     "fCreate": BOOL
 })
 def hook_SHGetSpecialFolderPathW(ql, address, params):
     directory_id = params["csidl"]
+    dst = params["pszPath"]
+    if directory_id == CSIDL_COMMON_APPDATA:
+        path = Environment["appdata"]
+        # We always create the directory
+        dir = path.split("C:\\")[1].replace("\\", "/")
+        path_emulated = os.path.join(ql.rootfs, dir)
+        ql.dprint(path_emulated)
+        ql.uc.mem_write(dst, (path + "\x00").encode("utf-16le"))
+        if not os.path.exists(path_emulated):
+            os.makedirs(path_emulated, 0o755)
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")
+    return 1

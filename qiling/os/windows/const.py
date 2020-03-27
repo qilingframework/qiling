@@ -475,6 +475,7 @@ TH32CS_SNAPTHREAD = 0x00000004
 
 # CSIDL Constants
 # https://tarma.com/support/im9/using/symbols/functions/csidls.htm
+# http://winbatch.hpdd.de/MyWbtHelp/other/CSIDL.txt
 CSIDL_ADMINTOOLS = 0x30
 CSIDL_ALTSTARTUP = 0x1D
 CSIDL_APPDATA = 0x1A
@@ -484,6 +485,7 @@ CSIDL_COMMON_ADMINTOOLS = 0x2F
 CSIDL_COMMON_ALTSTARTUP = 0x1E
 CSIDL_COMMON_APPDATA = 0x23
 # ...
+CSIDL_FLAG_CREATE = 0x8000
 
 # Show constants
 # https://docs.microsoft.com/it-it/windows/win32/api/shellapi/nf-shellapi-shellexecutea
