@@ -259,11 +259,11 @@ class ThreadManagement:
 
     def run(self):
         if len(self.running_thread_list) == 0:
-            self.ql.dprint('[!] No executable thread!')
+            self.ql.dprint(0,'[!] No executable thread!')
             return
         
         if self.main_thread not in self.running_thread_list:
-            self.ql.dprint('[!] No main thread!')
+            self.ql.dprint(0,'[!] No main thread!')
             return
         
         while True:
@@ -277,7 +277,7 @@ class ThreadManagement:
             if running_thread_num != 0:
                 for i in range(running_thread_num):
                     self.cur_thread = self.running_thread_list[i]
-                    self.ql.dprint("[+] Currently running pid is: %d; tid is: %d " % (os.getpid() ,self.cur_thread.get_thread_id()))
+                    self.ql.dprint(0,"[+] Currently running pid is: %d; tid is: %d " % (os.getpid() ,self.cur_thread.get_thread_id()))
                     
                     self.runing_time += self.running_thread_list[i].run(time_slice)
 

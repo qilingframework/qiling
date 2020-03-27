@@ -267,11 +267,11 @@ def hook_lstrcatA(ql, address, params):
 def hook_lstrcatW(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
-    ql.dprint(string_to_hex(src))
+    ql.dprint(0,string_to_hex(src))
     pointer = params["lpString1"]
     string_base = read_wstring(ql, pointer)
     result = string_base + src + "\x00" + "\x00"
-    ql.dprint(result)
+    ql.dprint(0,result)
     ql.uc.mem_write(pointer, bytes(result, encoding="utf-8"))
     return pointer
 

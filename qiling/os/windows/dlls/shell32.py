@@ -34,5 +34,5 @@ def hook_SHGetFileInfoW(ql, address, params):
     if flags == SHGFI_LARGEICON:
         return 1
     else:
-        ql.dprint(flags)
+        ql.dprint(0,flags)
         raise QlErrorNotImplemented("[!] API not implemented")

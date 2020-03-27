@@ -34,7 +34,7 @@ class FiberManager:
         else:
             fiber = self.fibers[idx]
             if fiber.cb:
-                self.ql.dprint("Skipping emulation of callback function 0x%X for fiber 0x%X" % (fiber.cb, fiber.idx))
+                self.ql.dprint(0,"Skipping emulation of callback function 0x%X for fiber 0x%X" % (fiber.cb, fiber.idx))
                 """
                 ret_addr = self.ql.uc.reg_read(UC_X86_REG_RIP + 6 ) #FIXME, use capstone to get addr of next instr?
 
@@ -49,7 +49,7 @@ class FiberManager:
                 else:
                     self.ql.stack_push(ret_addr)
                 self.ql.stack_push(ret_addr)
-                self.ql.dprint("Jumping to callback @ 0x%X" % fiber.cb)
+                self.ql.dprint(0,"Jumping to callback @ 0x%X" % fiber.cb)
                 self.ql.uc.reg_write(UC_X86_REG_RIP, fiber.cb)
                 # All of this gets overwritten by the rest of the code in fncc.py
                 # Not sure how to actually make unicorn emulate the callback function due to that

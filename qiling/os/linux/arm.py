@@ -102,7 +102,7 @@ def ql_arm_enable_vfp(ql):
     else:
         enable_vfp = 0x40000000
     uc.reg_write(UC_ARM_REG_FPEXC, enable_vfp)
-    ql.dprint("[+] Enable ARM VFP")
+    ql.dprint(0,"[+] Enable ARM VFP")
 
 
 def ql_arm_init_kernel_get_tls(ql):
@@ -117,7 +117,7 @@ def ql_arm_init_kernel_get_tls(ql):
     #    sc = ql_lsbmsb_convert(ql, sc)
 
     uc.mem_write(QL_KERNEL_GET_TLS_ADDR, sc)
-    ql.dprint("[+] Set init_kernel_get_tls")
+    ql.dprint(0,"[+] Set init_kernel_get_tls")
 
 def ql_arm_thread_set_tls(ql, th, arg):
     address = arg

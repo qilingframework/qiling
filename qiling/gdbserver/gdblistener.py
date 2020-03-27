@@ -559,7 +559,7 @@ class GDBSession(object):
                         else:
                             self.lib_abspath = ql_transform_to_real_path(self.ql, self.lib_path) 
 
-                        self.ql.dprint("gdb> target file: %s" % (self.lib_abspath))
+                        self.ql.dprint(0,"gdb> target file: %s" % (self.lib_abspath))
 
                         if os.path.exists(self.lib_abspath):
                             self.send("F5")
@@ -616,7 +616,7 @@ class GDBSession(object):
                     exit(1)
 
                 elif subcmd.startswith('Cont'):
-                    self.ql.dprint("gdb> Cont command received: %s" % subcmd)
+                    self.ql.dprint(0,"gdb> Cont command received: %s" % subcmd)
                     if subcmd == 'Cont?':
                         if self.en_vcont == True:
                             self.send('vCont;c;C;s;S')
@@ -706,7 +706,7 @@ class GDBSession(object):
                 self.send('')
                 self.ql.nprint("gdb> Command not supported: %s\n" %(cmd))
                 continue
-            self.ql.dprint("gdb> received: %s%s" % (cmd,subcmd))
+            self.ql.dprint(0,"gdb> received: %s%s" % (cmd,subcmd))
             commands[cmd](subcmd)
 
         self.close()
@@ -754,7 +754,7 @@ class GDBSession(object):
             self.clientsocket.send(b'$%s#%.2x' % (msg, checksum(msg)))
             self.netout.flush()
 
-        self.ql.dprint("gdb> send: $%s#%.2x" % (msg, checksum(msg)))
+        self.ql.dprint(0,"gdb> send: $%s#%.2x" % (msg, checksum(msg)))
 
     def send_raw(self, r):
         self.netout.write(r)

@@ -27,7 +27,7 @@ def _GetModuleHandle(ql, address, params):
         if lpModuleName in ql.PE.dlls:
             ret = ql.PE.dlls[lpModuleName]
         else:
-            ql.dprint("[!] Library %s not imported" % lpModuleName)
+            ql.dprint(0,"[!] Library %s not imported" % lpModuleName)
             # Let's try to import it if the sample think is default dll and was imported at the start
 
             # Probably we can optimize here since load_dll already do a lot of checks, but not a real problem
@@ -35,7 +35,7 @@ def _GetModuleHandle(ql, address, params):
             if is_file_library(lpModuleName) and os.path.exists(path):
                 ret = ql.PE.load_dll(lpModuleName.encode())
             else:
-                ql.dprint("[!] Library %s not found" % lpModuleName)
+                ql.dprint(0,"[!] Library %s not found" % lpModuleName)
                 ret = 0
     return ret
 
@@ -88,7 +88,7 @@ def hook_GetModuleFileNameA(ql, address, params):
             ret = filename_len
         ql.uc.mem_write(lpFilename, filename + b"\x00")
     else:
-        ql.dprint("hModule %x" % hModule)
+        ql.dprint(0,"hModule %x" % hModule)
         raise QlErrorNotImplemented("[!] API not implemented")
     return ret
 
