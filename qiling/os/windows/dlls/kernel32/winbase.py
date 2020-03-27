@@ -427,13 +427,8 @@ def hook_VerifyVersionInfoW(ql, address, params):
             res = compare(int(OS_VERSION_INFO["OS"]), operator, int(concat))
         else:
             res = compare(OS_VERSION_INFO[key], operator, os_version_info_asked[key])
-
         # The result is a AND between every value, so if we find a False we just exit from the loop
         if not res:
-            break
-
-    if res:
-        return 1
-    else:
-        ql.last_error = ERROR_OLD_WIN_VERSION
-        return 0
+            ql.last_error = ERROR_OLD_WIN_VERSION
+            return 0
+    return 1

@@ -22,7 +22,6 @@ def _RegOpenKey(ql, address, params):
         return ERROR_FILE_NOT_FOUND
     else:
         s_hKey = REG_KEYS[hKey]
-        params["hKey"] = s_hKey
     if not ql.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
         ql.dprint("[!] Value key %s\%s not present" % (s_hKey, s_lpSubKey))
         return ERROR_FILE_NOT_FOUND
@@ -353,15 +352,17 @@ def hook_GetTokenInformation(ql, address, params):
     id = params["TokenHandle"]
     information = params["TokenInformationClass"]
     max_size = params["TokenInformationLength"]
-    pointer_size = params["ReturnLength"]
+    return_point = params["ReturnLength"]
     dst = params["TokenInformation"]
     token = ql.handle_manager.get(id).token
     information_value = token.get(information)
-
-    ql.uc.mem_write(pointer_size, len(information_value).to_bytes(4, byteorder="little"))
-    if len(information_value) > max_size:
-        # TODO set error
+    ql.uc.mem_write(return_point, len(information_value).to_bytes(4, byteorder="little"))
+    return_size = int.from_bytes(ql.uc.mem_read(return_point, 4), byteorder="little")
+    if return_size > max_size:
+        ql.last_error = ERROR_INSUFFICIENT_BUFFER
         return 0
-    else:
+    if dst != 0:
         ql.uc.mem_write(dst, information_value)
         return 1
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")
