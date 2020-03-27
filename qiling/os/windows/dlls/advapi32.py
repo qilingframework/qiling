@@ -391,5 +391,5 @@ def hook_GetSidSubAuthorityCount(ql, address, params):
 def hook_GetSidSubAuthority(ql, address, params):
     num = params["nSubAuthority"]
     sid = ql.handle_manager.get(params["pSid"]).sid
-    addr_authority = sid.addr + 8 + ql.pointersize * num
+    addr_authority = sid.addr + 8 + (ql.pointersize * num)
     return addr_authority

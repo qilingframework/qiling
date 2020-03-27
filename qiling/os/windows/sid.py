@@ -33,7 +33,8 @@ class Sid:
             "Revision": 0x12.to_bytes(length=1, byteorder="little"),  # ADD
             "SubAuthorityCount": 0x2.to_bytes(length=1, byteorder="little"),  # Administrator and user
             "IdentifierAuthority": 0x0.to_bytes(length=6, byteorder="little"),
-            "SubAuthority": 0xADD.to_bytes(length=4, byteorder="little") + 0xADD.to_bytes(length=4, byteorder="little")
+            "SubAuthority": 0x12345678.to_bytes(length=ql.pointersize, byteorder="little") + 0x87654321.to_bytes(
+                length=ql.pointersize, byteorder="little")
         }
         values = b"".join(self.struct.values())
         self.addr = ql.heap.mem_alloc(len(values))
