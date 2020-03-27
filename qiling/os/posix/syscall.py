@@ -1416,7 +1416,7 @@ def ql_syscall_vfork(ql, null0, null1, null2, null3, null4, null5):
 
     if pid == 0:
         ql.child_processes = True
-        ql.dprint ("[+] vfork(): is this a child process: %r" % (ql.child_processes))
+        ql.dprint (0, "[+] vfork(): is this a child process: %r" % (ql.child_processes))
         regreturn = 0
         if ql.thread_management != None:
             ql.thread_management.cur_thread.set_thread_log_file(ql.log_dir)
@@ -1709,7 +1709,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
         ql.nprint("bind(%d, %s, %d) = %d" % (bind_fd, path, bind_addrlen, regreturn))
     else:
         ql.nprint("bind(%d,%s:%d,%d) = %d" % (bind_fd, host, port, bind_addrlen,regreturn))
-        ql.dprint ("[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ip(host), port, sin_family))
+        ql.dprint (0, "[+] syscall bind host: %s and port: %i sin_family: %i" % (ql_bin_to_ip(host), port, sin_family))
 
     ql_definesyscall_return(ql, regreturn)    
 

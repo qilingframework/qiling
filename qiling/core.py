@@ -205,7 +205,7 @@ class Qiling:
             if self.output not in QL_OUTPUT:
                 raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
         
-        if type(self.verbose) != int or self.verbose > 99 or self.output not in (QL_OUT_DEBUG, QL_OUT_DISASM, QL_OUT_DUMP):
+        if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less then 99")
         
         if self.shellcoder and self.arch and self.ostype:
@@ -268,9 +268,9 @@ class Qiling:
                 fd.flush()
 
     def dprint(self, level, *args, **kw):
-        if type(self.verbose) != int or self.verbose > 99 or self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            # make any exception back to default
-            level = 0
+        if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
+            raise QlErrorOutput("[!] ql.verbose > 1 must use with QL_OUT_DEBUG, QL_OUT_DUMP or else ql.verbose must be 0")
+
         if self.verbose >= level:
             if self.output == QL_OUT_DEBUG:
                 self.log_file_fd.debug(*args, **kw)
