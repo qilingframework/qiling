@@ -157,7 +157,7 @@ def ql_elf_check_archtype(self):
         elif e_machine == b"\x28\x00" and endian == 1 and elfbit == 1:
             self.archendian = QL_ENDIAN_EL
             arch = QL_ARM
-        elif e_machine == b"\x28\x00" and endian == 2 and elfbit == 1:
+        elif e_machine == b"\x00\x28" and endian == 2 and elfbit == 1:
             self.archendian = QL_ENDIAN_EB
             arch = QL_ARM            
         elif e_machine == b"\xB7\x00":
