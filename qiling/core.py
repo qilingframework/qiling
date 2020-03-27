@@ -205,7 +205,7 @@ class Qiling:
             if self.output not in QL_OUTPUT:
                 raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
         
-        if type(self.verbose) != int and self.verbose < 99 and self.output in (QL_OUT_DEBUG, QL_OUT_DISASM, QL_OUT_DUMP):
+        if type(self.verbose) != int or self.verbose > 99 or self.output not in (QL_OUT_DEBUG, QL_OUT_DISASM, QL_OUT_DUMP):
             raise QlErrorOutput("[!] verbose required input as int and less then 99")
         
         if self.shellcoder and self.arch and self.ostype:
@@ -237,13 +237,12 @@ class Qiling:
                         ip, port = self.gdb.split(':')
                         port = int(port)
                     except:
-                        self.nprint("[!] Error: ip or port\n")
-                        exit(1)
+                        raise QlErrorOutput("[!] Error: ip or port\n")
                     self.gdbserver(ip, port)
             except KeyboardInterrupt:
                 if self.gdbsession():
                     self.gdbsession.close()
-                exit(1)
+                raise QlErrorOutput("[!] GDBServer session ended\n")
 
         self.__enable_bin_patch()
         runner = self.build_os_execution("runner")
@@ -269,8 +268,8 @@ class Qiling:
                 fd.flush()
 
     def dprint(self, level, *args, **kw):
-        if type(level) != int:
-            raise QlErrorOutput("[!] ql.dprint(0,\"some msg\")")
+        if type(self.verbose) != int or self.verbose > 99 or self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP):
+            raise QlErrorOutput("[!] ql.dprint(0,\"hello world\")")
         elif self.verbose >= level:
             if self.output == QL_OUT_DEBUG:
                 self.log_file_fd.debug(*args, **kw)
