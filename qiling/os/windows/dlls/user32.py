@@ -499,7 +499,7 @@ def hook_CharPrevW(ql, address, params):
 #   LPCWSTR ,
 #   ...
 # );
-@winapi(cc=STDCALL, param_num=3)
+@winapi(cc=CDECL, param_num=3)
 def hook_wsprintfW(ql, address, params):
     dst, p_format, p_args = get_function_param(ql, 3)
     format_string = read_wstring(ql, p_format)

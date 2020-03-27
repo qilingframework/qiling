@@ -291,8 +291,8 @@ def hook_lstrcmpiW(ql, address, params):
     elif str1 > str2:
         return 1
     else:
-        # size depends on architecture?
-        return 0xffffffff
+        # TODO fix negative value
+        return -1
 
 
 # HRSRC FindResourceA(

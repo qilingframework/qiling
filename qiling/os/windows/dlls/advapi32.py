@@ -11,7 +11,6 @@ from qiling.os.windows.const import *
 
 
 def _RegOpenKey(ql, address, params):
-    ret = ERROR_SUCCESS
 
     hKey = params["hKey"]
     s_lpSubKey = params["lpSubKey"]
@@ -27,15 +26,11 @@ def _RegOpenKey(ql, address, params):
         return ERROR_FILE_NOT_FOUND
 
     # new handle
-    if ret == ERROR_SUCCESS:
-        new_handle = Handle(regkey=s_hKey + "\\" + s_lpSubKey)
-        ql.handle_manager.append(new_handle)
-        if phkResult != 0:
-            ql.mem_write(phkResult, ql.pack(new_handle.id))
-    else:
-        new_handle = 0
-
-    return ret
+    new_handle = Handle(regkey=s_hKey + "\\" + s_lpSubKey)
+    ql.handle_manager.append(new_handle)
+    if phkResult != 0:
+        ql.mem_write(phkResult, ql.pack(new_handle.id))
+    return ERROR_SUCCESS
 
 
 def RegQueryValue(ql, address, params):
@@ -61,12 +56,16 @@ def RegQueryValue(ql, address, params):
 
     # error key
     if reg_type is None or value is None:
-        return 0x123456
+        ql.dprint("[!] Key value not found")
+        return ERROR_FILE_NOT_FOUND
     else:
         # set lpData
         length = ql.registry_manager.write_reg_value_into_mem(value, reg_type, lpData)
         # set lpcbData
+        max_size = int.from_bytes(ql.uc.mem_read(lpcbData, 4), byteorder="little")
         ql.mem_write(lpcbData, ql.pack(length))
+        if max_size < length:
+            ret = ERROR_MORE_DATA
 
     return ret
 

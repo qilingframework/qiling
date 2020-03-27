@@ -160,7 +160,7 @@ class RegistryManager:
         length = 0
         # string
         if reg_type == Registry.RegSZ or reg_type == Registry.RegExpandSZ:
-            self.ql.mem_write(address, bytes(reg_value, "utf-8") + b"\x00")
+            self.ql.mem_write(address, bytes(reg_value, "utf-16le") + b"\x00")
             length = len(reg_value)
         elif reg_type == Registry.RegBin:
             # you can set REG_BINARY like '\x00\x01\x02' in config.json
