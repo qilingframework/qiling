@@ -8,7 +8,7 @@
 class Handle:
     ID = 0xa0000000
 
-    def __init__(self, id=None, file=None, regkey=None, thread=None, service=None, token=None):
+    def __init__(self, id=None, file=None, regkey=None, thread=None, service=None, token=None, sid=None):
         if id is None:
             self.id = Handle.ID
             Handle.ID += 1
@@ -19,6 +19,7 @@ class Handle:
         self.thread = thread
         self.service = service
         self.token = token
+        self.sid = sid
 
     # rewrite "="
     def __eq__(self, other):

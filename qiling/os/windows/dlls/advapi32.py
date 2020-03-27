@@ -366,3 +366,30 @@ def hook_GetTokenInformation(ql, address, params):
         return 1
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
+
+
+# PUCHAR GetSidSubAuthorityCount(
+#   PSID pSid
+# );
+@winapi(cc=STDCALL, params={
+    "pSid": HANDLE
+})
+def hook_GetSidSubAuthorityCount(ql, address, params):
+    sid = ql.handle_manager.get(params["pSid"]).sid
+    addr_authority_count = sid.addr + 1  # +1 because the first byte is revision
+    return addr_authority_count
+
+
+# PDWORD GetSidSubAuthority(
+#   PSID  pSid,
+#   DWORD nSubAuthority
+# );
+@winapi(cc=STDCALL, params={
+    "pSid": HANDLE,
+    "nSubAuthority": INT
+})
+def hook_GetSidSubAuthority(ql, address, params):
+    num = params["nSubAuthority"]
+    sid = ql.handle_manager.get(params["pSid"]).sid
+    addr_authority = sid.addr + 8 + ql.pointersize * num
+    return addr_authority
