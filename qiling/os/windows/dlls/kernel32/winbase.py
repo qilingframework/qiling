@@ -344,6 +344,17 @@ def hook_IsBadWritePtr(ql, address, params):
     return ACCESS_TRUE
 
 
+def compare(p1, operator, p2):
+    if operator == "==":
+        return p1 == p2
+    elif operator == ">":
+        return p1 > p2
+    elif operator == ">=":
+        return p1 >= p2
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")
+
+
 # typedef struct _OSVERSIONINFOEXA {
 #   DWORD dwOSVersionInfoSize;
 #   DWORD dwMajorVersion;
@@ -372,31 +383,51 @@ def hook_IsBadWritePtr(ql, address, params):
 def hook_VerifyVersionInfoW(ql, address, params):
     #  https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow2
     pointer = params["lpVersionInformation"]
-    os_version_info = {"dwOSVersionInfoSize": ql.uc.mem_read(pointer, 4),
-                       "dwMajorVersion": ql.uc.mem_read(pointer + 4, 4),
-                       "dwMinorVersion": ql.uc.mem_read(pointer + 8, 4),
-                       "dwBuildNumber": ql.uc.mem_read(pointer + 12, 4),
-                       "dwPlatformId": ql.uc.mem_read(pointer + 16, 4),
-                       "szCSDVersion": ql.uc.mem_read(pointer + 20, 128),
-                       "wServicePackMajor": ql.uc.mem_read(pointer + 20 + 128, 2),
-                       "wServicePackMinor": ql.uc.mem_read(pointer + 22 + 128, 2),
-                       "wSuiteMask": ql.uc.mem_read(pointer + 152, 2),
-                       "wProductType": ql.uc.mem_read(pointer + 154, 1),
-                       "wReserved": ql.uc.mem_read(pointer + 155, 1),
-                       }
-    major_version_asked = os_version_info["dwMajorVersion"][0]
-    minor_version_asked = os_version_info["dwMinorVersion"][0]
-    product_type = os_version_info["wProductType"][0]
-    version_asked = Systems_version.get(str(major_version_asked) + str(minor_version_asked) + str(product_type), None)
-    ql.dprint("[!] The sample is checking the windows Version!")
-    if version_asked is None:
-        raise QlErrorNotImplemented("[!] API not implemented")
-    else:
-        ql.dprint("[-] The sample asks for %s" % version_asked)
-    # TODO implement compares
-    # TODO we shouldd implement a hook to decide the answer!
-    checks_passed = False
-    if checks_passed:
+    os_version_info_asked = {"dwOSVersionInfoSize": int.from_bytes(ql.uc.mem_read(pointer, 4), byteorder="little"),
+                             VER_MAJORVERSION: int.from_bytes(ql.uc.mem_read(pointer + 4, 4), byteorder="little"),
+                             VER_MINORVERSION: int.from_bytes(ql.uc.mem_read(pointer + 8, 4), byteorder="little"),
+                             VER_BUILDNUMBER: int.from_bytes(ql.uc.mem_read(pointer + 12, 4), byteorder="little"),
+                             VER_PLATFORMID: int.from_bytes(ql.uc.mem_read(pointer + 16, 4), byteorder="little"),
+                             "szCSDVersion": int.from_bytes(ql.uc.mem_read(pointer + 20, 128), byteorder="little"),
+                             VER_SERVICEPACKMAJOR: int.from_bytes(ql.uc.mem_read(pointer + 20 + 128, 2),
+                                                                  byteorder="little"),
+                             VER_SERVICEPACKMINOR: int.from_bytes(ql.uc.mem_read(pointer + 22 + 128, 2),
+                                                                  byteorder="little"),
+                             VER_SUITENAME: int.from_bytes(ql.uc.mem_read(pointer + 152, 2), byteorder="little"),
+                             VER_PRODUCT_TYPE: int.from_bytes(ql.uc.mem_read(pointer + 154, 1), byteorder="little"),
+                             "wReserved": int.from_bytes(ql.uc.mem_read(pointer + 155, 1), byteorder="little"),
+                             }
+    ConditionMask: dict = Environment["ConditionMask"]
+    res = True
+    for key, value in ConditionMask.items():
+        if value == VER_EQUAL:
+            operator = "=="
+        elif value == VER_GREATER:
+            operator = ">"
+        elif value == VER_GREATER_EQUAL:
+            operator = ">="
+        else:
+            raise QlErrorNotImplemented("[!] API not implemented")
+
+        if key == VER_MAJORVERSION:
+            major_version_asked = os_version_info_asked[VER_MAJORVERSION]
+            minor_version_asked = os_version_info_asked[VER_MINORVERSION]
+            product_type = os_version_info_asked[VER_PRODUCT_TYPE]
+            version_asked = SYSTEMS_VERSION.get(str(major_version_asked) + str(minor_version_asked) + str(product_type),
+                                                None)
+            ql.dprint("[!] The sample is checking the windows Version!")
+            if version_asked is None:
+                raise QlErrorNotImplemented("[!] API not implemented")
+            else:
+                ql.dprint("[-] The sample asks for %s" % version_asked)
+
+        res = compare(value, operator, OS_VERSION_INFO[key])
+
+        # The result is a AND between every value, so if we find a False we just exit from the llop
+        if not res:
+            break
+
+    if res:
         return 1
     else:
         ql.last_error = ERROR_OLD_WIN_VERSION

@@ -499,7 +499,7 @@ VER_NT_SERVER = 0x0000003
 VER_NT_WORKSTATION = 0x0000001
 # major, minor, product
 
-Systems_version = {
+SYSTEMS_VERSION = {
     "1001": "Windows 10",
     "1000": "Windows Server 2016",
 
@@ -511,7 +511,22 @@ Systems_version = {
 
     "611": "Windows 7",
     "610": "Windows Server 2008 R2",
+
     "601": "Windows Vista",
     "600": "Windows Server 2008"
     # ..
 }
+
+# Setted for Windows 10 64bit desktop
+OS_VERSION_INFO = {"dwOSVersionInfoSize": 0xADD,
+                   VER_MAJORVERSION: 10,
+                   VER_MINORVERSION: 0,
+                   VER_BUILDNUMBER: 0xADD,
+                   VER_PLATFORMID: 0xADD,
+                   "szCSDVersion": 0xADD,
+                   VER_SERVICEPACKMAJOR: 0,
+                   VER_SERVICEPACKMINOR: 0xADD,
+                   VER_SUITENAME: 0xADD,
+                   VER_PRODUCT_TYPE: 1,
+                   "wReserved": 0xADD,
+                   }
