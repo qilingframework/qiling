@@ -114,8 +114,8 @@ def ql_hook_code_disasm(ql, address, size):
         reg_cpsr = uc.reg_read(UC_ARM_REG_CPSR)
         mode = CS_MODE_ARM      
         if ql.archendian == QL_ENDIAN_EB:
-            reg_cpsr_v = 0b100000
-            #reg_cpsr_v = 0b100000
+            reg_cpsr_v  = 0b100000
+            #reg_cpsr_v = 0b000000
         else:
             reg_cpsr_v = 0b100000
         
@@ -123,8 +123,8 @@ def ql_hook_code_disasm(ql, address, size):
             mode = CS_MODE_THUMB
 
         if ql.archendian == QL_ENDIAN_EB:
-            #md = Cs(CS_ARCH_ARM, mode)
-            md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
+            md = Cs(CS_ARCH_ARM, mode)
+            #md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
         else:
             md = Cs(CS_ARCH_ARM, mode)
         
