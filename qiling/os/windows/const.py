@@ -473,10 +473,17 @@ TH32CS_SNAPMODULE32 = 0x00000010
 TH32CS_SNAPPROCESS = 0x00000002
 TH32CS_SNAPTHREAD = 0x00000004
 
-# Environment
-Environment = {"windir": "C:\\Windows"}
+# CSIDL Constants
+# https://tarma.com/support/im9/using/symbols/functions/csidls.htm
+CSIDL_ADMINTOOLS = 0x30
+CSIDL_ALTSTARTUP = 0x1D
+CSIDL_APPDATA = 0x1A
+CSIDL_BITBUCKET = 0x0A
+CSIDL_CDBURN_AREA = 0x3B
+CSIDL_COMMON_ADMINTOOLS = 0x2F
+CSIDL_COMMON_ALTSTARTUP = 0x1E
+CSIDL_COMMON_APPDATA = 0x23
 # ...
-
 
 # Show constants
 # https://docs.microsoft.com/it-it/windows/win32/api/shellapi/nf-shellapi-shellexecutea
@@ -518,18 +525,3 @@ SYSTEMS_VERSION = {
     "600": "Windows Server 2008"
     # ..
 }
-
-# Setted for Windows 10 64bit desktop
-OS_VERSION_INFO = {"dwOSVersionInfoSize": 0xADD,
-                   VER_MAJORVERSION: 0xADD,
-                   VER_MINORVERSION: 0xADD,
-                   VER_BUILDNUMBER: 0xADD,
-                   VER_PLATFORMID: 0xADD,
-                   "szCSDVersion": 0xADD,
-                   VER_SERVICEPACKMAJOR: 0,
-                   VER_SERVICEPACKMINOR: 0xADD,
-                   VER_SUITENAME: 0xADD,
-                   VER_PRODUCT_TYPE: 0xADD,
-                   "wReserved": 0xADD,
-                   "OS": "1001"
-                   }

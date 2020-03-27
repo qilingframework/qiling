@@ -158,3 +158,25 @@ def hook_LCMapStringA(ql, address, params):
 })
 def hook_LCMapStringEx(ql, address, params):
     return _LCMapString(ql, address, params)
+
+
+# LANGID GetUserDefaultUILanguage();
+@winapi(cc=STDCALL, params={
+})
+def hook_GetUserDefaultUILanguage(ql, address, params):
+    # TODO find better documentation
+    # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
+    ql.dprint("[!] Sample is checking user language!")
+    lang = 0x445
+    return lang
+
+
+# LANGID GetSystemDefaultUILanguage();
+@winapi(cc=STDCALL, params={
+})
+def hook_GetSystemDefaultUILanguage(ql, address, params):
+    # TODO find better documentation
+    # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
+    ql.dprint("[!] Sample is checking system language!")
+    lang = 0x445
+    return lang

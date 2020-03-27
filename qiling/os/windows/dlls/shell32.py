@@ -150,3 +150,19 @@ def hook_ShellExecuteExW(ql, address, params):
 def hook_ShellExecuteW(ql, address, params):
     _ = _ShellExecute(ql, params)
     return 33
+
+
+# BOOL SHGetSpecialFolderPathW(
+#   HWND   hwnd,
+#   LPWSTR pszPath,
+#   int    csidl,
+#   BOOL   fCreate
+# );
+@winapi(cc=STDCALL, params={
+    "hwnd": HANDLE,
+    "pszPath": WSTRING,
+    "csidl": INT,
+    "fCreate": BOOL
+})
+def hook_SHGetSpecialFolderPathW(ql, address, params):
+    directory_id = params["csidl"]
