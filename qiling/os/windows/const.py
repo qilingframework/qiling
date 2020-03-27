@@ -519,14 +519,15 @@ SYSTEMS_VERSION = {
 
 # Setted for Windows 10 64bit desktop
 OS_VERSION_INFO = {"dwOSVersionInfoSize": 0xADD,
-                   VER_MAJORVERSION: 10,
-                   VER_MINORVERSION: 0,
+                   VER_MAJORVERSION: 0xADD,
+                   VER_MINORVERSION: 0xADD,
                    VER_BUILDNUMBER: 0xADD,
                    VER_PLATFORMID: 0xADD,
                    "szCSDVersion": 0xADD,
                    VER_SERVICEPACKMAJOR: 0,
                    VER_SERVICEPACKMINOR: 0xADD,
                    VER_SUITENAME: 0xADD,
-                   VER_PRODUCT_TYPE: 1,
+                   VER_PRODUCT_TYPE: 0xADD,
                    "wReserved": 0xADD,
+                   "OS": "1001"
                    }

@@ -408,22 +408,27 @@ def hook_VerifyVersionInfoW(ql, address, params):
             operator = ">="
         else:
             raise QlErrorNotImplemented("[!] API not implemented")
-
-        if key == VER_MAJORVERSION:
+        # Versions should be compared together
+        if key == VER_MAJORVERSION or key == VER_MINORVERSION or key == VER_PRODUCT_TYPE:
             major_version_asked = os_version_info_asked[VER_MAJORVERSION]
             minor_version_asked = os_version_info_asked[VER_MINORVERSION]
             product_type = os_version_info_asked[VER_PRODUCT_TYPE]
-            version_asked = SYSTEMS_VERSION.get(str(major_version_asked) + str(minor_version_asked) + str(product_type),
-                                                None)
-            ql.dprint("[!] The sample is checking the windows Version!")
-            if version_asked is None:
-                raise QlErrorNotImplemented("[!] API not implemented")
-            else:
-                ql.dprint("[-] The sample asks for %s" % version_asked)
+            concat = str(major_version_asked) + str(minor_version_asked) + str(product_type)
 
-        res = compare(value, operator, OS_VERSION_INFO[key])
+            # Just a print for analysts, will remove it from here in the future
+            if key == VER_MAJORVERSION:
+                ql.dprint("[!] The sample is checking the windows Version!")
+                version_asked = SYSTEMS_VERSION.get(concat, None)
+                if version_asked is None:
+                    raise QlErrorNotImplemented("[!] API not implemented")
+                else:
+                    ql.dprint("[-] The sample asks for %s" % version_asked)
+            # We can finally compare
+            res = compare(int(OS_VERSION_INFO["OS"]), operator, int(concat))
+        else:
+            res = compare(OS_VERSION_INFO[key], operator, os_version_info_asked[key])
 
-        # The result is a AND between every value, so if we find a False we just exit from the llop
+        # The result is a AND between every value, so if we find a False we just exit from the loop
         if not res:
             break
 
