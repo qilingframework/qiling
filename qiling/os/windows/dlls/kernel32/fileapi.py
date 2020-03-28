@@ -136,12 +136,13 @@ def hook_WriteFile(ql, address, params):
         ql.stdout.write(s)
         ql.uc.mem_write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
     else:
-        try:
-            f = ql.handle_manager.get(hFile).file
-        except KeyError as ke:
+        f = ql.handle_manager.get(hFile)
+        if f is None:
             # Invalid handle
-            ql.last_error = 0x6  # ERROR_INVALID_HANDLE
+            ql.last_error = ERROR_INVALID_HANDLE
             return 0
+        else:
+            f = f.file
         buffer = ql.uc.mem_read(lpBuffer, nNumberOfBytesToWrite)
         f.write(bytes(buffer))
         ql.uc.mem_write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
@@ -167,7 +168,7 @@ def _CreateFile(ql, address, params, name):
         mode += "r"
 
     # create thread handle
-    s_lpFileName =  ql_transform_to_real_path(ql, s_lpFileName)
+    s_lpFileName = ql_transform_to_real_path(ql, s_lpFileName)
     f = open(s_lpFileName.replace("\\", os.sep), mode)
     new_handle = Handle(file=f)
     ql.handle_manager.append(new_handle)
@@ -231,7 +232,7 @@ def hook_CreateFileW(ql, address, params):
     "lpBuffer": POINTER
 })
 def hook_GetTempPathW(ql, address, params):
-    temp = (Environment["temp"]+"\\\x00").encode('utf-16le')
+    temp = (Environment["temp"] + "\\\x00").encode('utf-16le')
     dest = params["lpBuffer"]
     temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
     if not os.path.exists(temp_path):
