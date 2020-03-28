@@ -162,7 +162,7 @@ lab1:
     '''
 
     if ql.shellcode_init == 0:
-        ql.dprint ("[+] QL_SHELLCODE_ADDR(0x%x) and shellcode_init is %i" % (QL_SHELLCODE_ADDR, ql.shellcode_init))
+        ql.dprint (0, "[+] QL_SHELLCODE_ADDR(0x%x) and shellcode_init is %i" % (QL_SHELLCODE_ADDR, ql.shellcode_init))
         uc.mem_map(QL_SHELLCODE_ADDR, QL_SHELLCODE_LEN)
         ql.shellcode_init = 1
 
@@ -196,9 +196,9 @@ def ql_syscall_mips32_thread_setthreadarea(ql, th, arg):
     uc.reg_write(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
     uc.reg_write(UC_MIPS_REG_CP0_USERLOCAL, address)
 
-    ql.dprint ("[+] multithread set_thread_area(0x%x)" % address)
+    ql.dprint (0, "[+] multithread set_thread_area(0x%x)" % address)
     # somehow for multithread these code are still not mature
-    ql.dprint ("[+] shellcode_init is %i" % (ql.shellcode_init))
+    ql.dprint (0, "[+] shellcode_init is %i" % (ql.shellcode_init))
     if ql.shellcode_init == 0:
         if ql.archendian == QL_ENDIAN_EB:
             hook_shellcode(uc, pc + 4, bytes.fromhex('0000102500003825'), ql)

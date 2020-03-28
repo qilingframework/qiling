@@ -18,7 +18,7 @@ examples/**/Windows/
 test_syscall_*.txt
 
 jexamples/
-
+logs/
 # dont keep raw malware
 wannacry.bin
 UselessDisk.bin
