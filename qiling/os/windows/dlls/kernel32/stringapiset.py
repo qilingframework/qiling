@@ -105,7 +105,7 @@ def hook_WideCharToMultiByte(ql, address, params):
     "cchWideChar": INT
 })
 def hook_MultiByteToWideChar(ql, address, params):
-    wide_str = (params['lpMultiByteStr']+"\x001").encode('utf-16le')
+    wide_str = (params['lpMultiByteStr']+"\x00").encode('utf-16le')
     if params['cchWideChar'] != 0:
         ql.uc.mem_write(params['lpWideCharStr'], wide_str)
     return len(wide_str)
