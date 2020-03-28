@@ -276,9 +276,9 @@ def hook_RegSetValueExW(ql, address, params):
     ret = ERROR_SUCCESS
 
     hKey = params["hKey"]
-    s_lpValueName = w2cstring(params["lpValueName"])
+    s_lpValueName = params["lpValueName"]
     dwType = params["dwType"]
-    s_lpData = w2cstring(params["lpData"])
+    s_lpData = params["lpData"]
     cbData = params["cbData"]
 
     s_hKey = ql.handle_manager.get(hKey).regkey
@@ -323,7 +323,7 @@ def hook_RegDeleteValueW(ql, address, params):
     ret = ERROR_SUCCESS
 
     hKey = params["hKey"]
-    s_lpValueName = w2cstring(params["lpValueName"])
+    s_lpValueName = params["lpValueName"]
 
     s_hKey = ql.handle_manager.get(hKey).regkey
     params["hKey"] = s_hKey

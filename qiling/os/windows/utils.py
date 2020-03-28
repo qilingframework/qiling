@@ -28,10 +28,6 @@ def read_wstring(ql, address):
     return result.replace("\x00", "")
 
 
-def w2cstring(string):
-    return bytes(string, "ascii").decode("utf-16le")
-
-
 def env_dict_to_array(env_dict):
     env_list = []
     for item in env_dict:

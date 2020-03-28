@@ -69,7 +69,6 @@ class Token:
         self.struct = {}
         self.ql = ql
         self.struct[Token.TokenInformationClass.TokenUIAccess.value] = 0x1.to_bytes(length=4,
-
                                                                                     byteorder='little')
         # We create a Sid Structure, set its handle and return the value
         sid = Sid(ql)
