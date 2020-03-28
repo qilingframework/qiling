@@ -86,12 +86,12 @@ def hook_IsValidCodePage(ql, address, params):
 
 def _LCMapString(ql, address, params):
     cchDest = params["cchDest"]
-    string = params["lpSrcStr"] + "\x00"
+    result = (params["lpSrcStr"] +"\x00").encode("utf-16le")
     dst = params["lpDestStr"]
     if cchDest != 0:
         # TODO maybe do some other check, for now is working
-        ql.uc.mem_write(dst, bytes(string, "utf-16le"))
-    return len(string)
+        ql.uc.mem_write(dst, result)
+    return len(result)
 
 
 # int LCMapStringW(

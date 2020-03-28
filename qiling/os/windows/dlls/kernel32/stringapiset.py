@@ -80,14 +80,10 @@ def hook_WideCharToMultiByte(ql, address, params):
     cbMultiByte = params["cbMultiByte"]
     s_lpWideCharStr = params["lpWideCharStr"]
     lpMultiByteStr = params["lpMultiByteStr"]
-
-    if cbMultiByte == 0:
-        ret = len(s_lpWideCharStr) + 2
-        ret = align(ret // 2, 2)
-    else:
-        s = bytes(s_lpWideCharStr, 'utf-16le').decode('utf-16le') + "\x00"
-        ql.uc.mem_write(lpMultiByteStr, bytes(s, 'utf-16le'))
-        ret = len(s)
+    s = (s_lpWideCharStr + "\x00").encode("utf-16le")
+    if cbMultiByte != 0:
+        ql.uc.mem_write(lpMultiByteStr, s)
+    ret = len(s)
 
     return ret
 
@@ -103,13 +99,13 @@ def hook_WideCharToMultiByte(ql, address, params):
 @winapi(cc=STDCALL, params={
     "CodePage": UINT,
     "dwFlags": UINT,
-    "lpMultiByteStr": STRING,
+    "lpMultiByteStr": WSTRING,
     "cbMultiByte": INT,
     "lpWideCharStr": POINTER,
     "cchWideChar": INT
 })
 def hook_MultiByteToWideChar(ql, address, params):
-    wide_str = params['lpMultiByteStr'].encode('utf-16le')
+    wide_str = (params['lpMultiByteStr']+"\x001").encode('utf-16le')
     if params['cchWideChar'] != 0:
         ql.uc.mem_write(params['lpWideCharStr'], wide_str)
     return len(wide_str)

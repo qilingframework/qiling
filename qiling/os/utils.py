@@ -511,9 +511,9 @@ def print_function(ql, address, function_name, params, ret):
 def read_cstring(ql, address):
     result = ""
     char = ql.uc.mem_read(address, 1)
-    while char.decode(errors="backslashreplace") != "\x00":
+    while char.decode(errors="ignore") != "\x00":
         address += 1
-        result += char.decode(errors="backslashreplace")
+        result += char.decode(errors="ignore")
         char = ql.uc.mem_read(address, 1)
     return result
 
