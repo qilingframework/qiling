@@ -14,6 +14,7 @@ from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
+from qiling.os.windows.variables import *
 
 
 # DWORD GetFileType(
@@ -230,7 +231,7 @@ def hook_CreateFileW(ql, address, params):
     "lpBuffer": POINTER
 })
 def hook_GetTempPathW(ql, address, params):
-    temp = "C:\\Windows\\Temp\\\x00".encode('utf-16le')
+    temp = (Environment["temp"]+"\\\x00").encode('utf-16le')
     dest = params["lpBuffer"]
     temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
     if not os.path.exists(temp_path):

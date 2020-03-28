@@ -44,7 +44,7 @@ ql.nprint will not print anything when output="off"
 
 
 ```
-ql.dprint("")
+ql.dprint(0,"")
 ```
 ql.dprint will only print anything when output="dump" or output="debug"
 

@@ -413,12 +413,12 @@ def hook_VerifyVersionInfoW(ql, address, params):
 
             # Just a print for analysts, will remove it from here in the future
             if key == VER_MAJORVERSION:
-                ql.dprint(0, "[!] The sample is checking the windows Version!")
+                ql.dprint(2, "[=] The sample is checking the windows Version!")
                 version_asked = SYSTEMS_VERSION.get(concat, None)
                 if version_asked is None:
                     raise QlErrorNotImplemented("[!] API not implemented")
                 else:
-                    ql.dprint(0, "[-] The sample asks for %s" % version_asked)
+                    ql.dprint(2, "[=] The sample asks for %s" % version_asked)
             # We can finally compare
             res = compare(int(OS_VERSION_INFO["OS"]), operator, int(concat))
         else:

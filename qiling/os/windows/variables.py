@@ -15,8 +15,12 @@ OS_VERSION_INFO = {"dwOSVersionInfoSize": 0xADD,
                    "OS": "1001"
                    }
 
+UiLanguage = 0x445
+
 # Environment
 Environment = {"windir": "C:\\Windows",
                "appdata": "C:\\Users\\Qiling\\AppData",
-               "user": "Qiling"}
+               "user": "Qiling",
+               "temp": "C:\\Windows\\Temp"
+               }
 # ...

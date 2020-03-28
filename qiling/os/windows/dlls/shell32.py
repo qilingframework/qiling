@@ -55,15 +55,15 @@ def _ShellExecute(ql, dic: dict):
     directory = read_wstring(ql, pt_file) if pt_directory != 0 else ""
     show = int.from_bytes(dic["nShow"], byteorder="little") if not isinstance(dic["nShow"], int) else dic["nShow"]
 
-    ql.dprint(0, "[!] Binary executed a shell command!")
-    ql.dprint(0, "[-] Operation: %s " % operation)
-    ql.dprint(0, "[-] Parameters: %s " % params)
-    ql.dprint(0, "[-] File: %s " % file)
-    ql.dprint(0, "[-] Directory: %s " % directory)
+    ql.dprint(2, "[=] Sample executed a shell command!")
+    ql.dprint(2, "[-] Operation: %s " % operation)
+    ql.dprint(2, "[-] Parameters: %s " % params)
+    ql.dprint(2, "[-] File: %s " % file)
+    ql.dprint(2, "[-] Directory: %s " % directory)
     if show == SW_HIDE:
-        ql.dprint(0, "[!] Binary is creating a hidden window!")
+        ql.dprint(2, "[=] Sample is creating a hidden window!")
     if operation == "runas":
-        ql.dprint(0, "[!] Binary is executing shell command as administrator!")
+        ql.dprint(2, "[=] Sample is executing shell command as administrator!")
     process = Thread(ql, status=0, isFake=True)
     handle = Handle(thread=process)
     ql.handle_manager.append(handle)
