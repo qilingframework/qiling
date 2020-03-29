@@ -5,7 +5,7 @@
 
 from qiling.os.macos.define_values import *
 from qiling.os.macos.mach_port import *
-from qiling.arch.filetype import *
+from qiling.const import *
 from struct import *
 import os
 

@@ -5,7 +5,7 @@
 import struct
 from unicorn.x86_const import *
 from qiling.os.utils import *
-from qiling.arch.filetype import *
+from qiling.const import *
 
 
 def ql_x86_windows_hook_mem_error(ql, addr, size, value):

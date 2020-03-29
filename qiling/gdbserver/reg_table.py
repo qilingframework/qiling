@@ -7,7 +7,7 @@ from unicorn.arm64_const import *
 from unicorn.arm_const import *
 from unicorn.mips_const import *
 from unicorn.x86_const import *
-from qiling.arch.filetype import *
+from qiling.const import *
 
 registers_x86 = [
     UC_X86_REG_EAX, UC_X86_REG_ECX, UC_X86_REG_EDX,

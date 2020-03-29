@@ -27,9 +27,9 @@ from unicorn.mips_const import *
 
 # impport read_string and other commom utils.
 from qiling.os.utils import *
-from qiling.arch.filetype import *
+from qiling.const import *
 from qiling.os.linux.thread import *
-from qiling.arch.filetype import *
+from qiling.const import *
 from qiling.os.posix.filestruct import *
 from qiling.os.posix.constant_mapping import *
 from qiling.utils import *

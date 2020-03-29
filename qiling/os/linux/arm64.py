@@ -11,7 +11,7 @@ from qiling.os.linux.arm64_syscall import *
 from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *
 from qiling.os.utils import *
-from qiling.arch.filetype import *
+from qiling.const import *
 
 QL_ARM64_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
 QL_ARM64_LINUX_PREDEFINE_STACKSIZE = 0x21000

@@ -21,7 +21,7 @@ from unicorn.mips_const import *
 # impport read_string and other commom utils.
 from qiling.os.utils import *
 from qiling.arch.utils import *
-from qiling.arch.filetype import *
+from qiling.const import *
 
 
 def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec, null2, null3, null4, null5):

@@ -6,7 +6,7 @@
 import sys, struct, os, platform, importlib, socket
 from unicorn import *
 
-from qiling.arch.filetype import *
+from qiling.const import *
 from qiling.os.posix.filestruct import *
 from qiling.exception import *
 from qiling.utils import *
@@ -492,11 +492,13 @@ class Qiling:
     def stack_pop(self):
         return self.archfunc.stack_pop()
 
-    def stack_read(self, index):
-        return self.archfunc.stack_read(index)
+    # read from stack, at a given offset from stack bottom
+    def stack_read(self, offset):
+        return self.archfunc.stack_read(offset)
 
-    def stack_write(self, index, data):
-        self.archfunc.stack_write(index, data)
+    # write to stack, at a given offset from stack bottom
+    def stack_write(self, offset, data):
+        self.archfunc.stack_write(offset, data)
 
     def unpack64(self, x):
         return struct.unpack('Q', x)[0]

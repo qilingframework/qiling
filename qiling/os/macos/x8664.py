@@ -20,7 +20,7 @@ from qiling.os.macos.task import *
 from qiling.os.macos.mach_port import *
 from qiling.os.posix.syscall import *
 from qiling.os.utils import *
-from qiling.arch.filetype import *
+from qiling.const import *
 
 QL_X8664_MACOS_PREDEFINE_STACKADDRESS = 0x7ffcf0000000
 QL_X8664_MACOS_PREDEFINE_STACKSIZE =        0x19a00000

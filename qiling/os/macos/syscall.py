@@ -26,7 +26,7 @@ from qiling.os.macos.thread import *
 from qiling.os.macos.mach_port import *
 from qiling.os.macos.kernel_func import *
 from qiling.os.macos.utils import *
-from qiling.arch.filetype import *
+from qiling.const import *
 from qiling.arch.x86 import *
 
 
