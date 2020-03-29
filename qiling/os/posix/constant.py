@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-from qiling.arch.filetype import *
+from qiling.const import *
 
 linux_socket_types = {
     'SOCK_STREAM'    : 0x1,

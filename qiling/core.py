@@ -6,7 +6,7 @@
 import sys, struct, os, platform, importlib, socket
 from unicorn import *
 
-from qiling.arch.filetype import *
+from qiling.const import *
 from qiling.os.posix.filestruct import *
 from qiling.exception import *
 from qiling.utils import *

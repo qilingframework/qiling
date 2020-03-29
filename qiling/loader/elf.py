@@ -6,7 +6,7 @@ import sys
 import os
 import string
 
-from qiling.arch.filetype import *
+from qiling.const import *
 from qiling.exception import *
 
 PT_LOAD = 1

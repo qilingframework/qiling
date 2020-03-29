@@ -20,7 +20,7 @@ from qiling.os.macos.task import *
 from qiling.os.macos.mach_port import *
 from qiling.os.posix.syscall import *
 from qiling.os.utils import *
-from qiling.arch.filetype import *
+from qiling.const import *
 
 QL_ARM64_MACOS_PREDEFINE_STACKADDRESS       = 0x0000000160503000
 QL_ARM64_MACOS_PREDEFINE_STACKSIZE          = 0x21000

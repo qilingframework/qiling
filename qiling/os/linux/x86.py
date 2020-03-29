@@ -13,7 +13,7 @@ from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *
 from qiling.os.utils import *
 from qiling.os.linux.thread import *
-from qiling.arch.filetype import *
+from qiling.const import *
 
 QL_X86_LINUX_PREDEFINE_STACKADDRESS = 0xfffdd000
 QL_X86_LINUX_PREDEFINE_STACKSIZE = 0x21000

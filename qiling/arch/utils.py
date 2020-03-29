@@ -14,7 +14,7 @@ from unicorn.mips_const import *
 from unicorn.x86_const import *
 
 from qiling.utils import *
-from qiling.arch.filetype import *
+from qiling.const import *
 from qiling.exception import *
 
 

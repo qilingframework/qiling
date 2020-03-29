@@ -11,7 +11,7 @@ from binascii import unhexlify
 
 from qiling.gdbserver import qldbg
 from qiling.gdbserver.reg_table import *
-from qiling.arch.filetype import *
+from qiling.const import *
 from qiling.os.utils import *
 
 

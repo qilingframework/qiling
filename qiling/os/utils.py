@@ -21,7 +21,7 @@ from capstone.mips_const import *
 
 from keystone import *
 
-from qiling.arch.filetype import *
+from qiling.const import *
 from qiling.exception import *
 from qiling.utils import *
 

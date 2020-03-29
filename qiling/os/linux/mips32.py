@@ -11,7 +11,7 @@ from qiling.os.linux.mips32_syscall import *
 from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *
 from qiling.os.utils import *
-from qiling.arch.filetype import *
+from qiling.const import *
 
 # memory address where emulation starts
 QL_MIPS32_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000

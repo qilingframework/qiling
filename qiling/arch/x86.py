@@ -6,7 +6,7 @@ from unicorn import *
 from unicorn.x86_const import *
 from struct import pack
 from .arch import Arch
-from qiling.arch.filetype import *
+from qiling.const import *
 
 QL_X86_F_GRANULARITY = 0x8
 QL_X86_F_PROT_32 = 0x4
