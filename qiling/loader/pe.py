@@ -72,8 +72,10 @@ class Process:
             cmdlines = []
 
             for entry in dll.DIRECTORY_ENTRY_EXPORT.symbols:
-                self.import_symbols[self.ql.DLL_LAST_ADDR + entry.address] = {'name': entry.name,
-                                                                              'ordinal': entry.ordinal}
+                self.import_symbols[self.ql.DLL_LAST_ADDR + entry.address] = {"name": entry.name,
+                                                                              "ordinal": entry.ordinal,
+                                                                              "dll": dll_name.split('.')[0]
+                                                                              }
                 self.import_address_table[dll_name][entry.name] = self.ql.DLL_LAST_ADDR + entry.address
                 self.import_address_table[dll_name][entry.ordinal] = self.ql.DLL_LAST_ADDR + entry.address
                 cmdline_entry = self.set_cmdline(entry.name, entry.address, data)

@@ -173,7 +173,6 @@ def hook_SHGetSpecialFolderPathW(ql, address, params):
         # We always create the directory
         dir = path.split("C:\\")[1].replace("\\", "/")
         path_emulated = os.path.join(ql.rootfs, dir)
-        ql.dprint(path_emulated)
         ql.uc.mem_write(dst, (path + "\x00").encode("utf-16le"))
         if not os.path.exists(path_emulated):
             os.makedirs(path_emulated, 0o755)

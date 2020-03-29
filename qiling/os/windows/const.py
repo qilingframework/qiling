@@ -509,8 +509,8 @@ SW_SHOWNORMAL = 1
 VER_NT_DOMAIN_CONTROLLER = 0x0000002
 VER_NT_SERVER = 0x0000003
 VER_NT_WORKSTATION = 0x0000001
-# major, minor, product
 
+# major, minor, product
 SYSTEMS_VERSION = {
     "1001": "Windows 10",
     "1000": "Windows Server 2016",
@@ -527,4 +527,11 @@ SYSTEMS_VERSION = {
     "601": "Windows Vista",
     "600": "Windows Server 2008"
     # ..
+}
+
+# Mapper for ordinal syscalls
+Mapper = {
+    "shell32": {
+        175: "SHGetSpecialFolderPathW"
+    }
 }

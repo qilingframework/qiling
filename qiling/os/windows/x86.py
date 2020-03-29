@@ -18,6 +18,7 @@ from qiling.os.memory import Heap
 from qiling.os.windows.registry import RegistryManager
 from qiling.os.windows.clipboard import Clipboard
 from qiling.os.windows.fiber import FiberManager
+from qiling.os.windows.const import Mapper
 
 QL_X86_WINDOWS_STACK_ADDRESS = 0xfffdd000
 QL_X86_WINDOWS_STACK_SIZE = 0x21000
@@ -28,7 +29,11 @@ QL_X86_WINDOWS_EMU_END = 0x0
 def hook_winapi(ql, address, size):
     # call win32 api
     if address in ql.PE.import_symbols:
-        winapi_name = ql.PE.import_symbols[address]['name'].decode()
+        winapi_name = ql.PE.import_symbols[address]['name']
+        if winapi_name is None:
+            winapi_name = Mapper[ql.PE.import_symbols[address]['dll']][ql.PE.import_symbols[address]['ordinal']]
+        else:
+            winapi_name = winapi_name.decode()
         winapi_func = None
 
         if winapi_name in ql.user_defined_api:
