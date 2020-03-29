@@ -50,6 +50,7 @@ if exist %WINDIR%\SysWOW64\vcruntime140.dll xcopy /f /y %WINDIR%\SysWOW64\vcrunt
 if exist %WINDIR%\SysWOW64\winhttp.dll xcopy /f /y %WINDIR%\SysWOW64\winhttp.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\SysWOW64\wininet.dll xcopy /f /y %WINDIR%\SysWOW64\wininet.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\SysWOW64\ws2_32.dll xcopy /f /y %WINDIR%\SysWOW64\ws2_32.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
+if exist %WINDIR%\SysWOW64\xpsprint.dll xcopy /f /y %WINDIR%\SysWOW64\xpsprint.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\SysWOW64\msvcr120_clr0400.dll echo f | xcopy /f /y %WINDIR%\SysWOW64\msvcr120_clr0400.dll "examples\rootfs\x86_windows\Windows\SysWOW64\msvcr110.dll"
 if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-crt-stdio-l1-1-0.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-crt-stdio-l1-1-0.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-crt-runtime-l1-1-0.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-crt-runtime-l1-1-0.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
@@ -72,5 +73,5 @@ if exist %WINDIR%\System32\downlevel\api-ms-win-crt-locale-l1-1-0.dll xcopy /f /
 if exist %WINDIR%\System32\downlevel\api-ms-win-crt-heap-l1-1-0.dll xcopy /f /y %WINDIR%\System32\downlevel\api-ms-win-crt-heap-l1-1-0.dll "examples\rootfs\x8664_windows\Windows\System32\"
 if exist %WINDIR%\System32\vcruntime140d.dll xcopy /f /y %WINDIR%\System32\vcruntime140d.dll "examples\rootfs\x8664_windows\Windows\System32\"
 if exist %WINDIR%\System32\ucrtbased.dll xcopy /f /y %WINDIR%\System32\ucrtbased.dll "examples\rootfs\x8664_windows\Windows\System32\"
-if exist %WINDIR%\System32\xpsprint.dll xcopy /f /y %WINDIR%\System32\xpsprint.dll "examples\rootfs\x8664_windows\Windows\System32\"
+
 exit /b
