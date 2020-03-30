@@ -97,8 +97,6 @@ class Qiling:
             stack_address=0,
             stack_size=0,
             interp_base=0,
-            automatize_input=False,
-            config=None
     ):
 
         self.output = output
@@ -125,8 +123,8 @@ class Qiling:
         self.global_thread_id = 0
         self.gdb = None
         self.gdbsession = None
-        self.automatize_input = automatize_input
-        self.config = config
+        self.automatize_input = False
+        self.config = os.path.dirname(os.path.abspath(__file__)) + "/os/windows/configuration.cfg"
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -746,3 +744,9 @@ class Qiling:
         except:
             self.nprint("gdb> Error: Not able to initialize GDBServer\n")
             raise
+
+    def automatize_input_value(self, automatize):
+        self.automatize_input = automatize
+
+    def config_file(self, path):
+        self.config = path

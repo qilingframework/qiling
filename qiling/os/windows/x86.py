@@ -163,14 +163,12 @@ def loader_shellcode(ql):
 
 def init_configuration(ql):
     config = configparser.ConfigParser()
-    if ql.config is None:
-        ql.config = os.path.join(ql.rootfs, "configuration.cfg")
     config.read(ql.config)
     ql.dprint(2, "[+] Added configuration file")
     for section in config.sections():
-        ql.dprint(2, "[-] Section: %s" % section)
+        ql.dprint(2, "[+] Section: %s" % section)
         for key in config[section]:
-            ql.dprint(2, key)
+            ql.dprint(2, "[-] %s %s" % (key, config[section][key]) )
     return config
 
 
