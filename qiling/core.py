@@ -98,7 +98,7 @@ class Qiling:
             stack_size=0,
             interp_base=0,
             automatize_input=False,
-            windows_config=None
+            config=None
     ):
 
         self.output = output
@@ -126,7 +126,7 @@ class Qiling:
         self.gdb = None
         self.gdbsession = None
         self.automatize_input = automatize_input
-        self.windows_config = windows_config
+        self.config = config
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
