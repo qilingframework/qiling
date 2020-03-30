@@ -83,6 +83,7 @@ matrix:
         - cd $TRAVIS_BUILD_DIR/examples/rootfs/x86_windows/bin
         - unzip -Pinfected wannacry.bin.zip
         - unzip -Pinfected UselessDisk.bin.zip
+        - unzip -Pinfected GandCrab.bin.zip
         - cd $TRAVIS_BUILD_DIR/tests
       script:
         - python test_pe_nu.py

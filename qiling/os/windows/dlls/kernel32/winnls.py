@@ -85,12 +85,12 @@ def hook_IsValidCodePage(ql, address, params):
 
 def _LCMapString(ql, address, params):
     cchDest = params["cchDest"]
-    string = params["lpSrcStr"] + "\x00"
+    result = (params["lpSrcStr"] +"\x00").encode("utf-16le")
     dst = params["lpDestStr"]
     if cchDest != 0:
         # TODO maybe do some other check, for now is working
-        ql.uc.mem_write(dst, bytes(string, "utf-16le"))
-    return len(string)
+        ql.uc.mem_write(dst, result)
+    return len(result)
 
 
 # int LCMapStringW(
@@ -158,3 +158,23 @@ def hook_LCMapStringA(ql, address, params):
 })
 def hook_LCMapStringEx(ql, address, params):
     return _LCMapString(ql, address, params)
+
+
+# LANGID GetUserDefaultUILanguage();
+@winapi(cc=STDCALL, params={
+})
+def hook_GetUserDefaultUILanguage(ql, address, params):
+    # TODO find better documentation
+    # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
+    ql.dprint(2, "[=] Sample is checking user language!")
+    return ql.config.getint("USER", "language")
+
+
+# LANGID GetSystemDefaultUILanguage();
+@winapi(cc=STDCALL, params={
+})
+def hook_GetSystemDefaultUILanguage(ql, address, params):
+    # TODO find better documentation
+    # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
+    ql.dprint(2, "[=] Sample is checking system language!")
+    return ql.config.getint("SYSTEM", "language")

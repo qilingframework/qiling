@@ -57,15 +57,6 @@ class Qiling:
     timeout = 0
     until_addr = 0
     byte = 0
-    # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
-    multithread = False
-    thread_management = None
-    # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
-    ipv6 = False
-    # Bind to localhost
-    bindtolocalhost = False
-    # required root permission
-    root = True
     currentpath = os.getcwd()
     log_file_fd = None
     current_path = '/'
@@ -97,7 +88,6 @@ class Qiling:
             stack_address=0,
             stack_size=0,
             interp_base=0,
-            automatize_input=False
     ):
 
         self.output = output
@@ -124,7 +114,17 @@ class Qiling:
         self.global_thread_id = 0
         self.gdb = None
         self.gdbsession = None
-        self.automatize = automatize_input
+        self.automatize_input = False
+        self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "os", "windows", "configuration.cfg")
+        # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
+        self.multithread = False
+        self.thread_management = None    
+        # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
+        self.ipv6 = False        
+        # Bind to localhost
+        self.bindtolocalhost = False
+        # required root permission
+        self.root = True        
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -204,10 +204,10 @@ class Qiling:
             self.output = self.output.lower()
             if self.output not in QL_OUTPUT:
                 raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
-        
+
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
-        
+
         if self.shellcoder and self.arch and self.ostype:
             self.shellcode()
         else:
@@ -744,3 +744,9 @@ class Qiling:
         except:
             self.nprint("gdb> Error: Not able to initialize GDBServer\n")
             raise
+
+    def automatize_input_value(self, automatize):
+        self.automatize_input = automatize
+
+    def config_file(self, path):
+        self.config = path

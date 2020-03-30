@@ -54,10 +54,11 @@ def hook_HeapAlloc(ql, address, params):
 @winapi(cc=STDCALL, params={
     "hHeap": HANDLE,
     "dwFlags": DWORD,
-    "dwBytes": SIZE_T
+    "lpMem": POINTER
 })
 def hook_HeapSize(ql, address, params):
-    return ql.HEAP_SIZE
+    pointer = params["lpMem"]
+    return ql.heap.mem_size(pointer)
 
 
 # BOOL HeapFree(

@@ -138,7 +138,7 @@ def hook_GetClipboardData(ql, address, params):
         ql.uc.mem_write(addr, data)
         return addr
     else:
-        ql.dprint(0,'Failed to get clipboard data')
+        ql.dprint(0, 'Failed to get clipboard data')
         return 0
 
 
@@ -170,10 +170,10 @@ def hook_MapVirtualKeyW(ql, address, params):
         if code is not None:
             return code
         else:
-            ql.dprint(0,"Code value %x" % info)
+            ql.dprint(0, "Code value %x" % info)
             raise QlErrorNotImplemented("[!] API not implemented")
     else:
-        ql.dprint(0,"Map value %x" % info)
+        ql.dprint(0, "Map value %x" % info)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -244,7 +244,7 @@ def hook_GetSystemMetrics(ql, address, params):
     elif info == SM_CYHSCROLL:
         return 300
     else:
-        ql.dprint(0,"Info value %x" % info)
+        ql.dprint(0, "Info value %x" % info)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -470,7 +470,7 @@ def hook_CharNextW(ql, address, params):
     # Return next char if is different from \x00
     point = params["lpsz"]
     string = read_wstring(ql, point)
-    ql.dprint(0,string)
+    ql.dprint(0, string)
     if len(string) == 0:
         return point
     else:
@@ -492,3 +492,30 @@ def hook_CharPrevW(ql, address, params):
     if start == current:
         return start
     return current - 1
+
+
+# int WINAPIV wsprintfW(
+#   LPWSTR  ,
+#   LPCWSTR ,
+#   ...
+# );
+@winapi(cc=CDECL, param_num=3)
+def hook_wsprintfW(ql, address, params):
+    dst, p_format, p_args = get_function_param(ql, 3)
+    format_string = read_wstring(ql, p_format)
+    size, string = printf(ql, address, format_string, p_args, "wsprintfW", wstring=True)
+
+    count = format_string.count('%')
+    if ql.arch == QL_X8664:
+        # We must pop the stack correctly
+        raise QlErrorNotImplemented("[!] API not implemented")
+
+    ql.uc.mem_write(dst, (string + "\x00").encode("utf-16le"))
+    return size
+
+
+# HWND GetForegroundWindow();
+@winapi(cc=STDCALL, params={
+})
+def hook_GetForegroundWindow(ql, address, params):
+    return 0xF02E620D  # Value so we can recognize inside dumps

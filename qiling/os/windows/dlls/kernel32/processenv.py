@@ -3,21 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct
-import time
-from qiling.os.windows.const import *
-from qiling.os.fncc import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from qiling.os.memory import align
-from qiling.os.windows.thread import *
-from qiling.os.windows.handle import *
 from qiling.exception import *
-
 
 # HANDLE WINAPI GetStdHandle(
 #   _In_ DWORD nStdHandle
 # );
+
+
 @winapi(cc=STDCALL, params={
     "nStdHandle": DWORD
 })
@@ -75,3 +68,30 @@ def hook_GetEnvironmentStringsW(ql, address, params):
 def hook_FreeEnvironmentStringsW(ql, address, params):
     ret = 1
     return ret
+
+
+# DWORD ExpandEnvironmentStringsW(
+#   LPCWSTR lpSrc,
+#   LPWSTR  lpDst,
+#   DWORD   nSize
+# );
+@winapi(cc=STDCALL, params={
+    "lpSrc": WSTRING,
+    "lpDst": POINTER,
+    "nSize": DWORD,
+})
+def hook_ExpandEnvironmentStringsW(ql, address, params):
+    string: str = params["lpSrc"]
+    start = string.find("%")
+    end = string.rfind("%")
+    substring = string[start + 1:end]
+    result = ql.config["PATHS"].get(substring, None)
+    if result is None:
+        ql.dprint(substring)
+        raise QlErrorNotImplemented("[!] API not implemented")
+    result = (string[:start] + result + string[end + 1:] + "\x00").encode("utf-16le")
+    dst = params["lpDst"]
+    max_size = params["nSize"]
+    if len(result) <= max_size:
+        ql.uc.mem_write(dst, result)
+    return len(result)

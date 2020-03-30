@@ -168,9 +168,11 @@ if __name__ == '__main__':
     run_parser = commands.add_parser('run', help = 'run')
     run_parser.add_argument('-f', '--filename', required=False, default='', metavar="FILE", dest="filename", help="filename")
     run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
-    run_parser.add_argument('-o','--output', required=False, default='default', help='output mode, options are off, debug , disasm, dump')
-    run_parser.add_argument('-v','--verbose', required=False, default=0, dest='verbose', help='verbose mode, must be int and use with --debug or --dump')
-    run_parser.add_argument('-g','--gdb', required=False, help='enable gdb server')
+    run_parser.add_argument('-o', '--output', required=False, default='default',
+                            help='output mode, options are off, debug , disasm, dump')
+    run_parser.add_argument('-v', '--verbose', required=False, default=0, dest='verbose',
+                            help='verbose mode, must be int and use with --debug or --dump')
+    run_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
     run_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
     run_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
     run_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
@@ -198,7 +200,7 @@ if __name__ == '__main__':
     options = parser.parse_args()
 
     if (options.subparser_name == 'run'):
-        
+
         if options.strace:
             options.output = "default"
         elif options.trace:
@@ -208,20 +210,20 @@ if __name__ == '__main__':
         elif options.debug:
             options.output = "debug"
 
-        if type(options.verbose) != int and options.output not in ("debug", "dump"): 
+        if type(options.verbose) != int and options.output not in ("debug", "dump"):
             print("ERROR: verbose mode, must be int and use with --debug or --dump")
             usage()
-            exit(1)             
+            exit(1)
 
         if options.debug_stop and not (options.dump or options.debug):
             print("ERROR: debug_stop must use with either dump or debug mode")
             usage()
-            exit(1)   
+            exit(1)
 
         if options.filename != '' and options.run_args == []:
-            ql = Qiling(filename = [options.filename] + options.args, rootfs = options.rootfs, output = options.output)
+            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, output=options.output)
         elif options.filename == '' and options.args == [] and options.run_args != []:
-            ql = Qiling(filename = options.run_args, rootfs = options.rootfs, output = options.output)
+            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, output=options.output)
         else:
             print("ERROR: Command error!")
             usage()

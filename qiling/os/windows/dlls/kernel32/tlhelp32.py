@@ -28,7 +28,7 @@ def hook_CreateToolhelp32Snapshot(ql, address, params):
     # TODO thinking about implementing an handler, gonna see if is really necessary
     flag = params["dwFlags"]
     if flag == TH32CS_SNAPPROCESS:
-        ql.dprint(0,"[.] We probably found a Ransomware!")
+       ql.dprint(2, "[=] The sample is checking every process!")
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 0xD10C

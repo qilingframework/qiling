@@ -13,7 +13,7 @@ from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-
+from qiling.os.windows.token import *
 
 # void ExitProcess(
 #   UINT uExitCode
@@ -287,4 +287,29 @@ def hook_GetCurrentThread(ql, address, params):
     "dwProcessId": DWORD
 })
 def hook_OpenProcess(ql, address, params):
+    proc = params["dwProcessId"]
+    # If the specified process is the System Process (0x00000000),
+    # the function fails and the last error code is ERROR_INVALID_PARAMETER
+    if proc == 0:
+        ql.last_error = ERROR_INVALID_PARAMETER
+        return 0
     return 0xD10C
+
+
+# BOOL OpenProcessToken(
+#   HANDLE  ProcessHandle,
+#   DWORD   DesiredAccess,
+#   PHANDLE TokenHandle
+# );
+@winapi(cc=STDCALL, params={
+    "ProcessHandle": HANDLE,
+    "DesiredAccess": DWORD,
+    "TokenHandle": POINTER
+})
+def hook_OpenProcessToken(ql, address, params):
+    token_pointer = params["TokenHandle"]
+    token = Token(ql)
+    new_handle = Handle(token=token)
+    ql.handle_manager.append(new_handle)
+    ql.uc.mem_write(token_pointer, ql.pack(new_handle.id))
+    return 1

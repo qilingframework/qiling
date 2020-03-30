@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import sys
+
 sys.path.insert(0, "..")
 
 from qiling import *
@@ -30,11 +31,25 @@ def test_pe_win_x86_hello():
     ql.run()
     del ql
 
+
 def test_pe_win_x86_uselessdisk():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/UselessDisk.bin"], "../examples/rootfs/x86_windows",
                 output="debug")
     ql.run()
     del ql
+
+
+def test_pe_win_x86_gandcrab():
+    def stop(ql):
+        print("Ok for now")
+        ql.uc.emu_stop()
+
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab.bin"], "../examples/rootfs/x86_windows",
+                output="debug")
+    ql.hook_address(stop, 0x10029ce0)
+    ql.run()
+    del ql
+
 
 def test_pe_win_x86_multithread():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
@@ -166,4 +181,4 @@ if __name__ == "__main__":
     test_pe_win_x8664_customapi()
     test_pe_win_x86_uselessdisk()
     test_pe_win_x86_crackme()
-
+    # test_pe_win_x86_gandcrab()

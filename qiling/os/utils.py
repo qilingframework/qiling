@@ -28,16 +28,16 @@ from qiling.utils import *
 from binascii import unhexlify
 import ipaddress, struct, os, ctypes
 
-def ql_lsbmsb_convert(ql, sc, size = 4):
+def ql_lsbmsb_convert(ql, sc, size=4):
     split_bytes = []
-    n  = size
+    n = size
     for index in range(0, len(sc), n):
-        split_bytes.append((sc[index : index + n])[::-1])
+        split_bytes.append((sc[index: index + n])[::-1])
 
     ebsc = b""
     for i in split_bytes:
         ebsc += i
-    
+
     return ebsc    
 
 def ql_definesyscall_return(ql, regreturn):
@@ -112,22 +112,22 @@ def ql_hook_code_disasm(ql, address, size):
 
     if (ql.arch == QL_ARM):  # QL_ARM
         reg_cpsr = uc.reg_read(UC_ARM_REG_CPSR)
-        mode = CS_MODE_ARM      
+        mode = CS_MODE_ARM
         if ql.archendian == QL_ENDIAN_EB:
-            reg_cpsr_v  = 0b100000
-            #reg_cpsr_v = 0b000000
+            reg_cpsr_v = 0b100000
+            # reg_cpsr_v = 0b000000
         else:
             reg_cpsr_v = 0b100000
-        
+
         if reg_cpsr & reg_cpsr_v != 0:
             mode = CS_MODE_THUMB
 
         if ql.archendian == QL_ENDIAN_EB:
             md = Cs(CS_ARCH_ARM, mode)
-            #md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
+            # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
         else:
             md = Cs(CS_ARCH_ARM, mode)
-        
+
         syscall_num = [uc.reg_read(UC_ARM_REG_R7), "R7"]
         arg_0 = [uc.reg_read(UC_ARM_REG_R0), "R0"]
         arg_1 = [uc.reg_read(UC_ARM_REG_R1), "R1"]
@@ -511,13 +511,13 @@ def print_function(ql, address, function_name, params, ret):
 def read_cstring(ql, address):
     result = ""
     char = ql.uc.mem_read(address, 1)
-    while char.decode(errors="backslashreplace") != "\x00":
+    while char.decode(errors="ignore") != "\x00":
         address += 1
-        result += char.decode(errors="backslashreplace")
+        result += char.decode(errors="ignore")
         char = ql.uc.mem_read(address, 1)
     return result
 
 
 def post_report(ql):
-    ql.dprint(0,"[+] Syscalls and number of invocations")
-    ql.dprint(0,"[-] " + str(list(ql.PE.syscall_count.items())))
+    ql.dprint(0, "[+] Syscalls and number of invocations")
+    ql.dprint(0, "[-] " + str(list(ql.PE.syscall_count.items())))
