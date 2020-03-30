@@ -78,7 +78,7 @@ class Qiling:
         self.stack_size = stack_size
         self.interp_base = interp_base
 
-        # Define after ql=Qiling()
+        # Define after ql=Qiling(), either defined by Qiling Framework or user defined
         self.arch = ''
         self.archbit = ''
         self.path = ''
@@ -743,9 +743,3 @@ class Qiling:
         except:
             self.nprint("gdb> Error: Not able to initialize GDBServer\n")
             raise
-
-    def automatize_input_value(self, automatize):
-        self.automatize_input = automatize
-
-    def config_file(self, path):
-        self.config = path

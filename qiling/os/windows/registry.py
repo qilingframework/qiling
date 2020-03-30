@@ -24,10 +24,19 @@ from qiling.exception import *
 
 
 class RegistryManager:
-    def __init__(self, ql, hive=None, config=None):
+    def __init__(self, ql, hive=None):
         self.ql = ql
-        self.registry_config = None
-        self.config = config
+        #self.registry_config = None
+
+        if ql.log_dir is None:
+            ql.log_reg_dir = os.path.join(ql.rootfs, "qlog")
+        else:
+            ql.log_reg_dir = ql.log_dir
+
+        if hasattr(ql, 'regdiff'):
+            self.regdiff = self.ql.regdiff
+        else:
+            self.regdiff = os.path.join(ql.log_reg_dir, "registry", "registry_diff.json")    
 
         # hive dir
         if hive:
@@ -35,17 +44,10 @@ class RegistryManager:
         else:
             self.hive = os.path.join(ql.rootfs, "Windows", "registry")
             ql.dprint(0, "[+] Windows Registry PATH: %s" % self.hive)
-            if not os.path.exists(self.hive) and not ql.shellcode:
+            if not os.path.exists(self.hive) and not self.ql.shellcoder:
                 raise QlPrintException("Error: Registry files not found!")
 
-        if ql.log_dir is None:
-            ql.log_reg_dir = os.path.join(ql.rootfs, "qlog")
-        else:
-            ql.log_reg_dir = ql.log_dir
-
-        self.config = os.path.join(ql.log_reg_dir, "registry", "registry_diff.json")
-
-        if not os.path.exists(self.config):
+        if not os.path.exists(self.regdiff):
             self.registry_config = {}
             try:
                 os.makedirs(os.path.join(ql.log_reg_dir, "registry"), 0o755)
@@ -54,7 +56,7 @@ class RegistryManager:
         else:
             # read config
             # use registry config first
-            self.f_config = open(self.config, "rb")
+            self.f_config = open(self.regdiff, "rb")
             data = self.f_config.read()
             if data == b"":
                 self.registry_config = {}
@@ -77,13 +79,13 @@ class RegistryManager:
             # hkey current user
             self.hkcu = Registry.Registry(os.path.join(self.hive, 'NTUSER.DAT'))
         except FileNotFoundError:
-            if not ql.shellcode:
+            if not ql.shellcoder:
                 QlPrintException("WARNING: Registry files not found!")
         except Exception:
             QlPrintException("WARNING: Registry files format error")
 
     def exists(self, key):
-        if key in self.config:
+        if key in self.regdiff:
             return True
         keys = key.split("\\")
         try:
@@ -97,19 +99,19 @@ class RegistryManager:
                 data = reg.open(sub)
             else:
                 raise QlErrorNotImplemented("[!] Windows Registry %s not implemented" % (keys[0]))
-        except Exception as e:
+        except Exception:
             return False
 
         return True
 
     def read(self, key, subkey, reg_type):
         # read reg conf first
-        if key in self.config and subkey in self.config[key]:
-            if self.config[key][subkey].type in REG_TYPES:
-                return REG_TYPES[self.config[key][subkey].type], self.config[key][subkey].value
+        if key in self.regdiff and subkey in self.regdiff[key]:
+            if self.regdiff[key][subkey].type in REG_TYPES:
+                return REG_TYPES[self.regdiff[key][subkey].type], self.regdiff[key][subkey].value
             else:
                 raise QlErrorNotImplemented(
-                    "[!] Windows Registry Type %s not implemented" % self.config[key][subkey].type)
+                    "[!] Windows Registry Type %s not implemented" % self.regdiff[key][subkey].type)
 
         # read hive
         reg = None
@@ -186,5 +188,5 @@ class RegistryManager:
     def save(self):
         # write registry config to config file
         if self.registry_config and len(self.registry_config) != 0:
-            with open(self.config, "wb") as f:
+            with open(self.regdiff, "wb") as f:
                 f.write(bytes(json.dumps(self.registry_config), "utf-8"))
