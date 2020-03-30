@@ -14,7 +14,6 @@ from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-from qiling.os.windows.variables import *
 
 
 # DWORD GetFileType(
@@ -89,7 +88,7 @@ def hook_ReadFile(ql, address, params):
     lpNumberOfBytesRead = params["lpNumberOfBytesRead"]
     lpOverlapped = params["lpOverlapped"]
     if hFile == STD_INPUT_HANDLE:
-        if ql.automatize:
+        if ql.automatize_input:
             # TODO maybe insert a good random generation input
             s = (b"A" * (nNumberOfBytesToRead - 1)) + b"\x00"
         else:
@@ -232,7 +231,7 @@ def hook_CreateFileW(ql, address, params):
     "lpBuffer": POINTER
 })
 def hook_GetTempPathW(ql, address, params):
-    temp = (Environment["temp"] + "\\\x00").encode('utf-16le')
+    temp = (ql.config["PATHS"]["temp"] + "\\\x00").encode('utf-16le')
     dest = params["lpBuffer"]
     temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
     if not os.path.exists(temp_path):

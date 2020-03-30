@@ -13,7 +13,6 @@ from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-from qiling.os.windows.variables import *
 
 
 # DWORD_PTR SHGetFileInfoW(
@@ -169,7 +168,7 @@ def hook_SHGetSpecialFolderPathW(ql, address, params):
     directory_id = params["csidl"]
     dst = params["pszPath"]
     if directory_id == CSIDL_COMMON_APPDATA:
-        path = Environment["appdata"]
+        path = ql.config["PATHS"]["appdata"]
         # We always create the directory
         dir = path.split("C:\\")[1].replace("\\", "/")
         path_emulated = os.path.join(ql.rootfs, dir)

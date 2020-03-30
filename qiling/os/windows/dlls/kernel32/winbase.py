@@ -11,7 +11,6 @@ from qiling.exception import *
 # __analysis_noreturn VOID FatalExit(
 #   int ExitCode
 # );
-from qiling.os.windows.variables import OS_VERSION_INFO, Environment
 
 
 @winapi(cc=STDCALL, params={
@@ -393,7 +392,7 @@ def hook_VerifyVersionInfoW(ql, address, params):
                              VER_PRODUCT_TYPE: int.from_bytes(ql.uc.mem_read(pointer + 154, 1), byteorder="little"),
                              "wReserved": int.from_bytes(ql.uc.mem_read(pointer + 155, 1), byteorder="little"),
                              }
-    ConditionMask: dict = Environment["ConditionMask"]
+    ConditionMask: dict = ql.hooks_variables["ConditionMask"]
     res = True
     for key, value in ConditionMask.items():
         if value == VER_EQUAL:
@@ -420,9 +419,11 @@ def hook_VerifyVersionInfoW(ql, address, params):
                 else:
                     ql.dprint(2, "[=] The sample asks for %s" % version_asked)
             # We can finally compare
-            res = compare(int(OS_VERSION_INFO["OS"]), operator, int(concat))
+            res = compare(ql.config.getint("SYSTEM", "os"), operator, int(concat))
+        elif key == VER_SERVICEPACKMAJOR:
+            res = compare(ql.config.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_version_info_asked[key])
         else:
-            res = compare(OS_VERSION_INFO[key], operator, os_version_info_asked[key])
+            raise QlErrorNotImplemented("[!] API not implemented")
         # The result is a AND between every value, so if we find a False we just exit from the loop
         if not res:
             ql.last_error = ERROR_OLD_WIN_VERSION

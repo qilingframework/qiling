@@ -13,7 +13,6 @@ from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-from qiling.os.windows.variables import *
 
 
 # BOOL SetThreadLocale(
@@ -168,7 +167,7 @@ def hook_GetUserDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
     ql.dprint(2, "[=] Sample is checking user language!")
-    return UiLanguage
+    return ql.config.getint("USER", "language")
 
 
 # LANGID GetSystemDefaultUILanguage();
@@ -178,4 +177,4 @@ def hook_GetSystemDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
     ql.dprint(2, "[=] Sample is checking system language!")
-    return UiLanguage
+    return ql.config.getint("SYSTEM", "language")

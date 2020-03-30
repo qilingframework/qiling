@@ -111,7 +111,9 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--trace", help="Enable full trace", action='store_true', default=False)
     parser.add_argument("-R", "--root", help="rootfs", default=None)
     parser.add_argument("-d", "--dump", help="Directory to dump memory regions to", default="dump")
-    parser.add_argument("-a", "--automatize", help="Automatize writes on standard input", default=False)
+    parser.add_argument("-a", "--automatize_input", help="Automatize writes on standard input", default=False)
+    parser.add_argument("-c ", "--windows_config", help="Path of windows configuration file",
+                        default="rootfs/x86_windows/configuration.cfg")
     parser.add_argument('input', nargs='*')
     args = parser.parse_args()
     for path in args.input:

@@ -5,6 +5,7 @@
 
 import traceback
 import types
+import configparser
 
 from unicorn import *
 from unicorn.x86_const import *
@@ -106,6 +107,11 @@ def setup_windows32(ql):
     ql.thread_manager = ThreadManager(ql, main_thread)
     new_handle = Handle(thread=main_thread)
     ql.handle_manager.append(new_handle)
+    # user configuration
+    ql.config = init_configuration(ql)
+    # variables used inside hooks
+    ql.hooks_variables = {}
+
 
 
 def loader_file(ql):
@@ -153,6 +159,17 @@ def loader_shellcode(ql):
     ql.hook_code(hook_winapi)
 
     ql_setup_output(ql)
+
+
+def init_configuration(ql):
+    config = configparser.ConfigParser()
+    config.read(ql.windows_config)
+    ql.dprint(2, "[+] Added configuration file")
+    for section in config.sections():
+        ql.dprint(2, "[-] Section: %s" % section)
+        for key in config[section]:
+            ql.dprint(2, key)
+    return config
 
 
 def runner(ql):

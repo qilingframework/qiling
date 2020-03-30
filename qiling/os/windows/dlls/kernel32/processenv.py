@@ -9,7 +9,6 @@ from qiling.exception import *
 # HANDLE WINAPI GetStdHandle(
 #   _In_ DWORD nStdHandle
 # );
-from qiling.os.windows.variables import Environment
 
 
 @winapi(cc=STDCALL, params={
@@ -86,7 +85,7 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
     start = string.find("%")
     end = string.rfind("%")
     substring = string[start + 1:end]
-    result = Environment.get(substring, None)
+    result = ql.config["PATHS"].get(substring, None)
     if result is None:
         ql.dprint(substring)
         raise QlErrorNotImplemented("[!] API not implemented")

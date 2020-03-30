@@ -97,7 +97,8 @@ class Qiling:
             stack_address=0,
             stack_size=0,
             interp_base=0,
-            automatize_input=False
+            automatize_input=False,
+            windows_config=None
     ):
 
         self.output = output
@@ -124,7 +125,8 @@ class Qiling:
         self.global_thread_id = 0
         self.gdb = None
         self.gdbsession = None
-        self.automatize = automatize_input
+        self.automatize_input = automatize_input
+        self.windows_config = windows_config
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -205,9 +207,11 @@ class Qiling:
             if self.output not in QL_OUTPUT:
                 raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
 
-        
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less then 99")
+
+        if self.windows_config is None:
+            self.windows_config = os.path.join(self.rootfs, "configuration.cfg")
 
         if self.shellcoder and self.arch and self.ostype:
             self.shellcode()

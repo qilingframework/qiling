@@ -181,4 +181,4 @@ if __name__ == "__main__":
     test_pe_win_x8664_customapi()
     test_pe_win_x86_uselessdisk()
     test_pe_win_x86_crackme()
-    test_pe_win_x86_gandcrab()
+    # test_pe_win_x86_gandcrab()

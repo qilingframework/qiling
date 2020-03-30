@@ -10,7 +10,6 @@ from qiling.os.windows.fncc import *
 #  LONG volatile *Target,
 #  LONG          Value
 # );
-from qiling.os.windows.variables import Environment
 
 
 @winapi(cc=STDCALL, params={
@@ -50,7 +49,7 @@ def hook_VerSetConditionMask(ql, address, params):
     # ConditionMask = params["ConditionMask"]
     TypeMask = params["TypeMask"]
     Condition = params["Condition"]
-    ConditionMask = Environment.get("ConditionMask", {})
+    ConditionMask = ql.hooks_variables.get("ConditionMask", {})
     if TypeMask == 0:
         ret = ConditionMask
     else:
@@ -89,5 +88,5 @@ def hook_VerSetConditionMask(ql, address, params):
     # But since we don't have the pointer to the variable, an hack is to use the environment.
     # Feel free to push a better solution
     # Since I can't work with bits, and since we had to work with the environment anyway, let's use a dict
-    Environment["ConditionMask"] = ConditionMask
+    ql.hooks_variables["ConditionMask"] = ConditionMask
     return ret
