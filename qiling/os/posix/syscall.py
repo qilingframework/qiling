@@ -294,7 +294,7 @@ def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
             regreturn = -1
 
     ql.nprint("open(%s, 0x%x, 0o%o) = %d" % (relative_path, flags, mode, regreturn))
-    ql.dprint(0, "[+] open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.arch), mode, regreturn))
+    ql.dprint(1, "[+] open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.arch), mode, regreturn))
     if regreturn >= 0 and regreturn != 2:
         ql.dprint(0, "[+] File Found: %s" % relative_path)
     else:
@@ -333,7 +333,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
             regreturn = -1
 
     ql.nprint("openat(%d, %s, 0x%x, 0o%o) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
-    ql.dprint(0, "[+] openat(%d, %s, %s, 0o%o) = %d" % (openat_fd, relative_path, open_flags_mapping(openat_flags, ql.arch), openat_mode, regreturn))
+    ql.dprint(1, "[+] openat(%d, %s, %s, 0o%o) = %d" % (openat_fd, relative_path, open_flags_mapping(openat_flags, ql.arch), openat_mode, regreturn))
     if regreturn >= 0 and regreturn != 2:
         ql.dprint(0, "[+] File Found: %s" % relative_path)
     else:
@@ -385,7 +385,7 @@ def ql_syscall_brk(ql, brk_input, null0, null1, null2, null3, null4):
 def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, null1, null2):
     regreturn = 0
     ql.nprint("mprotect(0x%x, 0x%x, 0x%x) = %d" % (mprotect_start, mprotect_len, mprotect_prot, regreturn))
-    ql.dprint(0, "[+] mprotect(0x%x, 0x%x, %s) = %d" % (mprotect_start, mprotect_len, mmap_prot_mapping(mprotect_prot), regreturn))
+    ql.dprint(1, "[+] mprotect(0x%x, 0x%x, %s) = %d" % (mprotect_start, mprotect_len, mmap_prot_mapping(mprotect_prot), regreturn))
 
     new_prot = []
     prot_dict = {"PROT_READ": "r", "PROT_WRITE": "w", "PROT_EXEC": "x"}
@@ -415,7 +415,7 @@ def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, 
 
 
 def ql_syscall_uname(ql, address, null0, null1, null2, null3, null4):
-    buf = b''
+    buf =  b''
     buf += b'QilingOS'.ljust(65, b'\x00')
     buf += b'ql_vm'.ljust(65, b'\x00')
     buf += b'99.0-RELEASE'.ljust(65, b'\x00')
@@ -459,7 +459,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
     mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset = _struct
 
     ql.dprint(0, "[+] log old_mmap - old_mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset))
-    ql.dprint(0, "[+] log old_mmap - old_mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (mmap_addr, mmap_length, mmap_prot_mapping(mmap_prot), mmap_flag_mapping(mmap_flags), mmap_fd, mmap_offset))
+    ql.dprint(1, "[+] log old_mmap - old_mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (mmap_addr, mmap_length, mmap_prot_mapping(mmap_prot), mmap_flag_mapping(mmap_flags), mmap_fd, mmap_offset))
 
     # FIXME
     # this is ugly patch, we might need to get value from elf parse,
@@ -540,7 +540,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
 
 def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
     ql.dprint(0, "[+] log mmap - mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
-    ql.dprint(0, "[+] log mmap - mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (mmap2_addr, mmap2_length, mmap_prot_mapping(mmap2_prot), mmap_flag_mapping(mmap2_flags), mmap2_fd, mmap2_pgoffset))
+    ql.dprint(1, "[+] log mmap - mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (mmap2_addr, mmap2_length, mmap_prot_mapping(mmap2_prot), mmap_flag_mapping(mmap2_flags), mmap2_fd, mmap2_pgoffset))
 
     # FIXME
     # this is ugly patch, we might need to get value from elf parse,
@@ -651,7 +651,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         ql.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
 
     ql.dprint(0, "[+] log mmap2 - mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
-    ql.dprint(0, "[+] log mmap2 - mmap2(0x%x, 0x%x, %s, %s, %d, %d)" % (mmap2_addr, mmap2_length, mmap_prot_mapping(mmap2_prot), mmap_flag_mapping(mmap2_flags), mmap2_fd, mmap2_pgoffset))
+    ql.dprint(1, "[+] log mmap2 - mmap2(0x%x, 0x%x, %s, %s, %d, %d)" % (mmap2_addr, mmap2_length, mmap_prot_mapping(mmap2_prot), mmap_flag_mapping(mmap2_flags), mmap2_fd, mmap2_pgoffset))
     ql.dprint(0, "[+] log mmap2 - return addr : " + hex(mmap_base))
     ql.dprint(0, "[+] log mmap2 - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
@@ -1133,8 +1133,8 @@ def ql_syscall_read(ql, read_fd, read_buf, read_len, null0, null1, null2):
     ql.nprint("read(%d, 0x%x, 0x%x) = %d" % (read_fd, read_buf, read_len, regreturn))
 
     if data:
-        ql.dprint(0, "[+] read() CONTENT:")
-        ql.dprint(0, "%s" % data)
+        ql.dprint(1, "[+] read() CONTENT:")
+        ql.dprint(1, "%s" % data)
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -1146,8 +1146,8 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
         buf = ql.uc.mem_read(write_buf, write_count)
         ql.nprint("\nwrite(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         if buf:
-            ql.dprint(0, "[+] write() CONTENT:")
-            ql.dprint(0, "%s" % buf)
+            ql.dprint(1, "[+] write() CONTENT:")
+            ql.dprint(1, "%s" % buf)
 
         ql.file_des[write_fd].write(buf)
         regreturn = write_count
@@ -1167,10 +1167,12 @@ def ql_syscall_writev(ql, writev_fd, writev_vec, writev_vien, null0, null1, null
     size_t_len = ql.archbit // 8
     iov = ql.uc.mem_read(writev_vec, writev_vien * size_t_len * 2)
     ql.nprint("writev(0x%x, 0x%x, 0x%x)" % (writev_fd, writev_vec, writev_vien))
-    for i in range(writev_vien):
-        addr = ql.unpack(iov[i * size_t_len * 2 : i * size_t_len * 2 + size_t_len])
-        l = ql.unpack(iov[i * size_t_len * 2 + size_t_len : i * size_t_len * 2 + size_t_len * 2])
-        ql.nprint("[+] writev() CONTENT : %s" % str(ql.uc.mem_read(addr, l)))
+    if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+        ql.dprint(1, "[+] writev() CONTENT:")
+        for i in range(writev_vien):
+            addr = ql.unpack(iov[i * size_t_len * 2 : i * size_t_len * 2 + size_t_len])
+            l = ql.unpack(iov[i * size_t_len * 2 + size_t_len : i * size_t_len * 2 + size_t_len * 2])
+            ql.dprint(1, "%s" % str(ql.uc.mem_read(addr, l)))
     ql_definesyscall_return(ql, regreturn)    
     
 
@@ -1558,7 +1560,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, nu
     
     socket_type = socket_type_mapping(socket_type, ql.arch)
     socket_domain = socket_domain_mapping(socket_domain, ql.arch)
-    ql.dprint(0, "[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
+    ql.dprint(1, "[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
 
     ql_definesyscall_return(ql, regreturn)
 
@@ -1916,6 +1918,9 @@ def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, null0, null1, 
 def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, null0, null1):
     if recv_sockfd < 256 and ql.file_des[recv_sockfd] != 0:
         tmp_buf = ql.file_des[recv_sockfd].recv(recv_len, recv_flags)
+        if tmp_buf:
+            ql.dprint(1, "[+] recv() CONTENT:")
+            ql.dprint(1, "%s" % tmp_buf)
         ql.uc.mem_write(recv_buf, tmp_buf)
         regreturn = len(tmp_buf)
     else:
@@ -1928,17 +1933,18 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, null0, null
     regreturn = 0
     if send_sockfd < 256 and ql.file_des[send_sockfd] != 0:
         try:
-            ql.dprint(0, "debug send start")
+            ql.dprint(1, "[+] debug send() start")
             tmp_buf = ql.uc.mem_read(send_buf, send_len)
-            ql.dprint(ql.file_des[send_sockfd])
-            ql.dprint(0, 'fd is ' + str(send_sockfd))
-            ql.dprint(tmp_buf)
-            ql.dprint(0, "send flag is " + str(send_flags))
-            ql.dprint(0, "send len is " + str(send_len))
+            ql.dprint(1, ql.file_des[send_sockfd])
+            ql.dprint(1, "[+] fd is " + str(send_sockfd))
+            ql.dprint(1, "[+] send() CONTENT:")
+            ql.dprint(1, "%s" % tmp_buf)
+            ql.dprint(1, "[+] send() flag is " + str(send_flags))
+            ql.dprint(1, "[+] send() len is " + str(send_len))
             ql.file_des[send_sockfd].send(bytes(tmp_buf), send_flags)
             ql.dprint(ql.file_des[send_sockfd])
             regreturn = send_len
-            ql.dprint(0, "debug send end")
+            ql.dprint(1, "[+] debug send end")
         except:
             print(sys.exc_info()[0])
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
