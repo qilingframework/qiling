@@ -26,7 +26,6 @@ from qiling.exception import *
 class RegistryManager:
     def __init__(self, ql, hive=None):
         self.ql = ql
-        #self.registry_config = None
 
         if ql.log_dir is None:
             ql.log_reg_dir = os.path.join(ql.rootfs, "qlog")

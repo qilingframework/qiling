@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys, struct, os, platform, importlib, socket
+import sys, struct, os, platform, importlib
 from unicorn import *
 
 from qiling.const import *
@@ -13,7 +13,7 @@ from qiling.utils import *
 from qiling.os.utils import *
 from qiling.arch.utils import *
 from qiling.os.linux.thread import *
-from qiling.gdbserver.gdblistener import GDBSession
+from qiling.gdbserver.gdblistener import GDBSession, ql_gdbserver
 
 __version__ = "0.9"
 
@@ -226,10 +226,11 @@ class Qiling:
         loader_shellcode(self)
 
     def run(self):
+        # gdbserver configuration
         if self.gdb is not None:
             try:
                 if self.gdb is True:
-                    self.gdbserver()
+                    ql_gdbserver(self)
                 else:
                     ip, port = '', ''
                     try:
@@ -237,7 +238,7 @@ class Qiling:
                         port = int(port)
                     except:
                         raise QlErrorOutput("[!] Error: ip or port\n")
-                    self.gdbserver(ip, port)
+                    ql_gdbserver(self, ip, port)
             except KeyboardInterrupt:
                 if self.gdbsession():
                     self.gdbsession.close()
@@ -720,26 +721,6 @@ class Qiling:
             td.stop_event = stop_event
         self.uc.emu_stop()
 
-    def gdbserver(self, ip=None, port=None):
-        path = self.path
-        try:
-            if ip is None:
-                ip = '127.0.0.1'
-            if port is None:
-                port = 9999
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.bind((ip, port))
-            self.nprint("\ngdb> Initializing loadbase 0x%x\n" % (self.loadbase))
-            self.nprint("gdb> Listening on %s:%u\n" % (ip, port))
-            sock.listen(1)
-            conn, addr = sock.accept()
-        except:
-            self.nprint("gdb> Error: Address already in use\n")
-            raise
-        try:
-            mappings = [(hex(self.entry_point), 0x10)]
-            exit_point = self.entry_point + os.path.getsize(path)
-            self.gdbsession = GDBSession(self, conn, exit_point, mappings)
-        except:
-            self.nprint("gdb> Error: Not able to initialize GDBServer\n")
-            raise
+
+
+

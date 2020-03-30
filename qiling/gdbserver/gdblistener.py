@@ -6,7 +6,7 @@
 # gdbserver --remote-debug --disable-packet=threads,vCont 0.0.0.0:9999 /path/to binary
 # documentation: according to https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html#Remote-Protocol
 
-import struct, os, re
+import struct, os, re, socket
 from binascii import unhexlify
 
 from qiling.gdbserver import qldbg
@@ -22,6 +22,7 @@ GDB_SIGNAL_STOP = 17
 GDB_SIGNAL_TRAP = 5
 GDB_SIGNAL_BUS  = 10
 
+
 def checksum(data):
     checksum = 0
     for c in data:
@@ -31,6 +32,29 @@ def checksum(data):
             checksum += c
     return checksum & 0xff
 
+def ql_gdbserver(ql, ip=None, port=None):
+    path = ql.path
+    try:
+        if ip is None:
+            ip = '127.0.0.1'
+        if port is None:
+            port = 9999
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind((ip, port))
+        ql.nprint("\ngdb> Initializing loadbase 0x%x\n" % (ql.loadbase))
+        ql.nprint("gdb> Listening on %s:%u\n" % (ip, port))
+        sock.listen(1)
+        conn, addr = sock.accept()
+    except:
+        ql.nprint("gdb> Error: Address already in use\n")
+        raise
+    try:
+        mappings = [(hex(ql.entry_point), 0x10)]
+        exit_point = ql.entry_point + os.path.getsize(path)
+        ql.gdbsession = GDBSession(ql, conn, exit_point, mappings)
+    except:
+        ql.nprint("gdb> Error: Not able to initialize GDBServer\n")
+        raise
 
 class GDBSession(object):
     """docstring for GDBSession"""
