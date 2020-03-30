@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+from binascii import unhexlify
+
 import sys
 sys.path.insert(0, "..")
 
