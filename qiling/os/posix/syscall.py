@@ -84,6 +84,7 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
     ql.nprint("munmap(0x%x, 0x%x) = %d" % (munmap_addr , munmap_len, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
+
 def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
     ql.exit_code = exit_code
 
@@ -132,11 +133,13 @@ def ql_syscall_alarm(ql, alarm_seconds, null0, null1, null2, null3, null4):
     ql.nprint("alarm(%d) = %d" % (alarm_seconds, regreturn))
     ql_definesyscall_return(ql, regreturn)    
 
+
 def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     regreturn = 0
     filename = ql_read_string(ql, filename)
     ql.nprint("chmod(%s,%d) = %d" % (filename, mode, regreturn))
     ql_definesyscall_return(ql, regreturn) 
+
 
 def ql_syscall_issetugid(ql, null0, null1, null2, null3, null4, null5):
     if ql.root == False:
@@ -157,6 +160,7 @@ def ql_syscall_getuid(ql, null0, null1, null2, null3, null4, null5):
     regreturn = UID
     ql_definesyscall_return(ql, regreturn)    
 
+
 def ql_syscall_getuid32(ql, null0, null1, null2, null3, null4, null5):
     if ql.root == False:
         UID = 0
@@ -165,6 +169,7 @@ def ql_syscall_getuid32(ql, null0, null1, null2, null3, null4, null5):
     ql.nprint("getuid32(%i)" % UID)
     regreturn = UID
     ql_definesyscall_return(ql, regreturn)  
+
 
 def ql_syscall_getgid32(ql, null0, null1, null2, null3, null4, null5):
     if ql.root == False:
@@ -376,6 +381,7 @@ def ql_syscall_brk(ql, brk_input, null0, null1, null2, null3, null4):
     ql_definesyscall_return(ql, brk_input)
     ql.dprint(0, "[+] brk return(0x%x)" % ql.brk_address)
 
+
 def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, null1, null2):
     regreturn = 0
     ql.nprint("mprotect(0x%x, 0x%x, 0x%x) = %d" % (mprotect_start, mprotect_len, mprotect_prot, regreturn))
@@ -406,6 +412,7 @@ def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, 
     ql.map_info = map_info
 
     ql_definesyscall_return(ql, regreturn)
+
 
 def ql_syscall_uname(ql, address, null0, null1, null2, null3, null4):
     buf = b''
@@ -1249,7 +1256,6 @@ def ql_syscall_ugetrlimit(ql, ugetrlimit_resource, ugetrlimit_rlim, null0, null1
     ql_definesyscall_return(ql, regreturn)
 
 
-
 def ql_syscall_setrlimit(ql, setrlimit_resource, setrlimit_rlim, null0, null1, null2, null3):
     # maybe we can nop the setrlimit
     tmp_rlim = (ql.unpack32s(ql.uc.mem_read(setrlimit_rlim, 4)), ql.unpack32s(ql.uc.mem_read(setrlimit_rlim + 4, 4)))
@@ -1258,6 +1264,7 @@ def ql_syscall_setrlimit(ql, setrlimit_resource, setrlimit_rlim, null0, null1, n
     regreturn = 0
     ql.nprint("setrlimit(%d, 0x%x) = %d" % (setrlimit_resource, setrlimit_rlim, regreturn))
     ql_definesyscall_return(ql, regreturn)
+
 
 def ql_syscall_prlimit64(ql, pid, resource, new_limit, old_limit, null0, null1):
     # setrlimit() and getrlimit()
@@ -1271,6 +1278,7 @@ def ql_syscall_prlimit64(ql, pid, resource, new_limit, old_limit, null0, null1):
     regreturn = 0
     #ql.nprint("prlimit64(%d, %d, 0x%x, 0x%x) = %d" % (pid, resource, new_limit, old_limit, regreturn))
     ql_definesyscall_return(ql, regreturn)
+
 
 def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, null0, null1, null2):
     if rt_sigaction_oldact != 0:
@@ -1606,7 +1614,6 @@ def ql_syscall_dup3(ql, dup3_oldfd, dup3_newfd, dup3_flags, null2, null3, null4)
         regreturn = -1
     ql.nprint("dup3(%d, %d, %d) = %d" % (dup3_oldfd, dup3_newfd,dup3_flags ,regreturn))
     ql_definesyscall_return(ql, regreturn)
-
 
   
 def ql_syscall___sysctl(ql, sysctl_name, sysctl_namelen, sysctl_bytes_oldlenp, sysctl_size_oldlenp, sysctl_bytes_newlen, sysctl_size_newlen):
@@ -1970,15 +1977,18 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, null0, null1, nu
         ql.dprint(0, "[!] error call %d" % socketcall_call)
         ql.stop(stop_event = THREAD_EVENT_UNEXECPT_EVENT)
 
+
 def ql_syscall_signal(ql, sig, __sighandler_t, null0, null1, null2, null3):
     regreturn = 0
     ql.nprint("signal(%d, 0x%x) = %d" % (sig, __sighandler_t,regreturn))
     ql_definesyscall_return(ql, regreturn)
 
+
 def ql_syscall_ptrace(ql, request, pid, addr, data, null0, null1):
     regreturn = 0
     ql.nprint("ptrace(0x%x, 0x%x, 0x%x, 0x%x) = %d" % (request, pid, addr, data, regreturn))
     ql_definesyscall_return(ql, regreturn)
+
 
 def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_newtls, clone_child_tidptr, null0):
     CSIGNAL = 0x000000ff	
