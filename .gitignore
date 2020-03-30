@@ -1,3 +1,4 @@
+# IDE left over
 .DS_Store
 .vscode
 .idea
@@ -5,33 +6,35 @@
 *.cache
 .*.swp
 
+# cache and misc
 qiling.egg-info/
 __pycache__/
 *.py[cod]
 build
 dist
 
+# examples 
 examples/**/registry/
 examples/**/dlls/
 examples/**/Windows/
 
-test_syscall_*.txt
-
+# test and logs
 jexamples/
 logs/
-# dont keep raw malware
-wannacry.bin
-UselessDisk.bin
-
+test_syscall_*.txt
 *.no.py
-
 .gitkeep
 test.file
 *.file
-
 *.qlog
-
 *.d
 *.o
-
 core
+
+# dont keep raw malware
+wannacry.bin
+UselessDisk.bin
+GandCrab.bin
+
+
+
