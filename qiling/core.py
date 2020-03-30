@@ -124,7 +124,7 @@ class Qiling:
         self.gdb = None
         self.gdbsession = None
         self.automatize_input = False
-        self.config = os.path.dirname(os.path.abspath(__file__)) + "/os/windows/configuration.cfg"
+        self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "os", "windows", "configuration.cfg")
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
