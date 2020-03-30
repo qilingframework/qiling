@@ -276,7 +276,6 @@ class Qiling:
                 self.log_file_fd.debug(*args, **kw)
             elif self.output == QL_OUT_DUMP:
                 msg = str(args[0])
-                msg += '\n' #if isinstance(msg, str) else '\n'
                 self.log_file_fd.debug(msg, **kw)
 
     def addr_to_str(self, addr, short=False, endian="big"):
