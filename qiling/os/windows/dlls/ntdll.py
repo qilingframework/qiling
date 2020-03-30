@@ -19,7 +19,7 @@ from qiling.exception import *
 #    const void *src,
 #    size_t count
 # );
-@winapi(cc=STDCALL, params={
+@winapi(cc=CDECL, params={
     "dest": POINTER,
     "src": POINTER,
     "count": UINT

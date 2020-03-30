@@ -13,7 +13,6 @@ from qiling.exception import *
 from qiling.const import *
 from os.path import dirname, exists
 from os import makedirs
-from qiling.const import *
 
 def ql_get_arch_bits(arch):
     arch_32b = [QL_ARM, QL_MIPS32, QL_X86]

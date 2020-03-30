@@ -1103,6 +1103,22 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, null0, null1, null2, null3):
         ql.dprint(0, "[!] lstat() read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
+def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, null0, null1):
+    data = None
+    if read_fd < 256 and ql.file_des[read_fd] != 0:
+        try:
+            pos = ql.file_des[read_fd].tell()
+            ql.file_des[read_fd].lseek(read_offt)
+            data = ql.file_des[read_fd].read(read_len)
+            ql.file_des[read_fd].lseek(pos)
+            ql.uc.mem_write(read_buf, data)
+            regreturn = len(data)
+        except:
+            regreturn = -1
+    else:
+        regreturn = -1
+    ql.nprint("pread(%d, 0x%x, 0x%x, 0x%x) = 0x%x" % (read_fd, read_buf, read_len, read_offt, regreturn))
+    ql_definesyscall_return(ql, regreturn)
 
 def ql_syscall_read(ql, read_fd, read_buf, read_len, null0, null1, null2):
     data = None
@@ -1119,7 +1135,7 @@ def ql_syscall_read(ql, read_fd, read_buf, read_len, null0, null1, null2):
 
     if data:
         ql.dprint(0, "[+] read() CONTENT:")
-        ql.dprint(0, data)
+        ql.dprint(0, "%s" % data)
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -1132,8 +1148,8 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
         ql.nprint("\nwrite(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         if buf:
             ql.dprint(0, "[+] write() CONTENT:")
-            ql.dprint(0, buf)
-
+            ql.dprint(0, "%s" % buf)
+            
         ql.file_des[write_fd].write(buf)
         regreturn = write_count
     except:
