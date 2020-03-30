@@ -34,37 +34,6 @@ def catch_KeyboardInterrupt(ql):
 
 
 class Qiling:
-    arch = ''
-    archbit = ''
-    uc = ''
-    path = ''
-    entry_point = 0
-    elf_entry = 0
-    new_stack = 0
-    brk_address = 0
-    shellcode_init = 0
-    file_des = []
-    stdin = ql_file('stdin', sys.stdin.fileno())
-    stdout = ql_file('stdout', sys.stdout.fileno())
-    stderr = ql_file('stderr', sys.stderr.fileno())
-    sigaction_act = []
-    child_processes = False
-    patch_bin = []
-    patch_lib = []
-    patched_lib = []
-    loadbase = 0
-    map_info = []
-    timeout = 0
-    until_addr = 0
-    byte = 0
-    currentpath = os.getcwd()
-    log_file_fd = None
-    current_path = '/'
-    fs_mapper = []
-    exit_code = 0
-    debug_stop = False
-    internal_exception = None
-
     def __init__(
             self,
             filename=None,
@@ -89,7 +58,7 @@ class Qiling:
             stack_size=0,
             interp_base=0,
     ):
-
+        # Define during ql=Qiling()
         self.output = output
         self.verbose = verbose
         self.ostype = ostype
@@ -104,11 +73,41 @@ class Qiling:
         self.log_console = log_console
         self.log_dir = log_dir
         self.log_split = log_split
-        self.platform = platform.system()
         self.mmap_start = mmap_start
         self.stack_address = stack_address
         self.stack_size = stack_size
         self.interp_base = interp_base
+
+        # Define after ql=Qiling()
+        self.arch = ''
+        self.archbit = ''
+        self.path = ''
+        self.entry_point = 0
+        self.new_stack = 0
+        self.brk_address = 0
+        self.shellcode_init = 0
+        self.file_des = []
+        self.stdin = ql_file('stdin', sys.stdin.fileno())
+        self.stdout = ql_file('stdout', sys.stdout.fileno())
+        self.stderr = ql_file('stderr', sys.stderr.fileno())
+        self.sigaction_act = []
+        self.child_processes = False
+        self.patch_bin = []
+        self.patch_lib = []
+        self.patched_lib = []
+        self.loadbase = 0
+        self.map_info = []
+        self.timeout = 0
+        self.until_addr = 0
+        self.byte = 0
+        self.currentpath = os.getcwd()
+        self.log_file_fd = None
+        self.current_path = '/'
+        self.fs_mapper = []
+        self.exit_code = 0
+        self.debug_stop = False
+        self.internal_exception = None
+        self.platform = platform.system()
         self.dict_posix_syscall = dict()
         self.user_defined_api = {}
         self.global_thread_id = 0
