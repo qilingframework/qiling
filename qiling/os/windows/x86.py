@@ -163,6 +163,8 @@ def loader_shellcode(ql):
 
 def init_configuration(ql):
     config = configparser.ConfigParser()
+    if self.windows_config is None:
+        self.windows_config = os.path.join(self.rootfs, "configuration.cfg")
     config.read(ql.windows_config)
     ql.dprint(2, "[+] Added configuration file")
     for section in config.sections():
