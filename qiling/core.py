@@ -57,15 +57,6 @@ class Qiling:
     timeout = 0
     until_addr = 0
     byte = 0
-    # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
-    multithread = False
-    thread_management = None
-    # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
-    ipv6 = False
-    # Bind to localhost
-    bindtolocalhost = False
-    # required root permission
-    root = True
     currentpath = os.getcwd()
     log_file_fd = None
     current_path = '/'
@@ -125,6 +116,15 @@ class Qiling:
         self.gdbsession = None
         self.automatize_input = False
         self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "os", "windows", "configuration.cfg")
+        # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
+        self.multithread = False
+        self.thread_management = None    
+        # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
+        self.ipv6 = False        
+        # Bind to localhost
+        self.bindtolocalhost = False
+        # required root permission
+        self.root = True        
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
