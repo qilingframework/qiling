@@ -1126,8 +1126,8 @@ def ql_syscall_read(ql, read_fd, read_buf, read_len, null0, null1, null2):
     ql.nprint("read(%d, 0x%x, 0x%x) = %d" % (read_fd, read_buf, read_len, regreturn))
 
     if data:
-        ql.dprint(0,"[+] read() CONTENT:")
-        ql.dprint(0,data)
+        ql.dprint(0, "[+] read() CONTENT:")
+        ql.dprint(0, "%s" % data)
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -1139,8 +1139,8 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
         buf = ql.uc.mem_read(write_buf, write_count)
         ql.nprint("\nwrite(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         if buf:
-            ql.dprint(0,"[+] write() CONTENT:")
-            ql.dprint(0,buf)
+            ql.dprint(0, "[+] write() CONTENT:")
+            ql.dprint(0, "%s" % buf)
 
         ql.file_des[write_fd].write(buf)
         regreturn = write_count
