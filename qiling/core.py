@@ -206,7 +206,7 @@ class Qiling:
                 raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
         
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
-            raise QlErrorOutput("[!] verbose required input as int and less then 99")
+            raise QlErrorOutput("[!] verbose required input as int and less than 99")
         
         if self.shellcoder and self.arch and self.ostype:
             self.shellcode()
