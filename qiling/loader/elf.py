@@ -421,11 +421,12 @@ class ELFLoader(ELFParse):
         for i in super().parse_program_header(ql):
             if i['p_type'] == PT_LOAD:
                 ql.uc.mem_write(loadbase + i['p_vaddr'], super().getelfdata(i['p_offset'], i['p_filesz']))
-                ql.dprint(0,"[+] load 0x%x - 0x%x" % (loadbase + i['p_vaddr'], loadbase + i['p_vaddr'] + i['p_filesz']))
+                ql.dprint(0,
+                          "[+] load 0x%x - 0x%x" % (loadbase + i['p_vaddr'], loadbase + i['p_vaddr'] + i['p_filesz']))
 
         entry_point = elfhead['e_entry'] + loadbase
-        
-        ql.dprint(0,"[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
+
+        ql.dprint(0, "[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
 
         ql.brk_address = mem_end + loadbase
 
@@ -436,7 +437,7 @@ class ELFLoader(ELFParse):
            
             interp = ELFParse(ql.rootfs + interp_path, ql)
             interphead = interp.parse_header(ql)
-            ql.dprint(0,"[+] interp is : %s" % (ql.rootfs + interp_path))
+            ql.dprint(0, "[+] interp is : %s" % (ql.rootfs + interp_path))
 
             interp_mem_size = -1
             for i in interp.parse_program_header(ql):
@@ -444,7 +445,7 @@ class ELFLoader(ELFParse):
                     if interp_mem_size < i['p_vaddr'] + i['p_memsz'] or interp_mem_size == -1:
                         interp_mem_size = i['p_vaddr'] + i['p_memsz']
             interp_mem_size = (interp_mem_size // 0x1000 + 1) * 0x1000
-            ql.dprint(0,"[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
+            ql.dprint(0, "[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
 
             if ql.interp_base == 0:
                 if ql.archbit == 64:
@@ -456,7 +457,7 @@ class ELFLoader(ELFParse):
                 else:
                     ql.interp_base = 0xff7d5000
 
-            ql.dprint(0,"[+] interp_base is : 0x%x" % (ql.interp_base))
+            ql.dprint(0, "[+] interp_base is : 0x%x" % (ql.interp_base))
             ql.uc.mem_map(ql.interp_base, int(interp_mem_size))
             ql.insert_map_info(ql.interp_base, ql.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
 
@@ -476,7 +477,7 @@ class ELFLoader(ELFParse):
             else:
                 ql.mmap_start = 0xf7fd6000 - 0x400000
 
-        ql.dprint(0,"[+] mmap_start is : 0x%x" % (ql.mmap_start))
+        ql.dprint(0, "[+] mmap_start is : 0x%x" % (ql.mmap_start))
 
         # Set elf table
         elf_table = b''

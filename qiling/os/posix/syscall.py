@@ -255,9 +255,9 @@ def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, 
     ql.nprint("facccessat (%d, 0x%x, 0x%x) = %d" %(faccessat_dfd, faccessat_filename, faccessat_mode, regreturn))
     
     if regreturn == -1:
-        ql.dprint(0,"[!] File Not Found or Skipped: %s" % access_path)
+        ql.dprint(0, "[!] File Not Found or Skipped: %s" % access_path)
     else:
-        ql.dprint(0,"[+] File Found: %s" % access_path)
+        ql.dprint(0, "[+] File Found: %s" % access_path)
 
 
 def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
@@ -289,11 +289,11 @@ def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
             regreturn = -1
 
     ql.nprint("open(%s, 0x%x, 0o%o) = %d" % (relative_path, flags, mode, regreturn))
-    ql.dprint(0,"[+] open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.arch), mode, regreturn))
+    ql.dprint(0, "[+] open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.arch), mode, regreturn))
     if regreturn >= 0 and regreturn != 2:
-        ql.dprint(0,"[+] File Found: %s" % relative_path)
+        ql.dprint(0, "[+] File Found: %s" % relative_path)
     else:
-        ql.dprint(0,"[!] File Not Found %s" % relative_path)
+        ql.dprint(0, "[!] File Not Found %s" % relative_path)
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -328,18 +328,19 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
             regreturn = -1
 
     ql.nprint("openat(%d, %s, 0x%x, 0o%o) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
-    ql.dprint(0,"[+] openat(%d, %s, %s, 0o%o) = %d" % (openat_fd, relative_path, open_flags_mapping(openat_flags, ql.arch), openat_mode, regreturn))
+    ql.dprint(0, "[+] openat(%d, %s, %s, 0o%o) = %d" % (
+    openat_fd, relative_path, open_flags_mapping(openat_flags, ql.arch), openat_mode, regreturn))
     if regreturn >= 0 and regreturn != 2:
-        ql.dprint(0,"[+] File Found: %s" % relative_path)
+        ql.dprint(0, "[+] File Found: %s" % relative_path)
     else:
-        ql.dprint(0,"[!] File Not Found %s" % relative_path)
+        ql.dprint(0, "[!] File Not Found %s" % relative_path)
     ql_definesyscall_return(ql, regreturn)
 
 
 def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, null0, null1, null2):
     lseek_ofset = ql.unpacks(ql.pack(lseek_ofset))
     regreturn = 0
-    ql.dprint(0,"lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
+    ql.dprint(0, "lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
     try:
         regreturn = ql.file_des[lseek_fd].lseek(lseek_ofset, lseek_origin)
     except OSError:
@@ -374,12 +375,13 @@ def ql_syscall_brk(ql, brk_input, null0, null1, null2, null3, null4):
     else:
         brk_input = ql.brk_address
     ql_definesyscall_return(ql, brk_input)
-    ql.dprint(0,"[+] brk return(0x%x)" % ql.brk_address)
+    ql.dprint(0, "[+] brk return(0x%x)" % ql.brk_address)
 
 def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, null1, null2):
     regreturn = 0
     ql.nprint("mprotect(0x%x, 0x%x, 0x%x) = %d" % (mprotect_start, mprotect_len, mprotect_prot, regreturn))
-    ql.dprint(0,"[+] mprotect(0x%x, 0x%x, %s) = %d" % (mprotect_start, mprotect_len, mmap_prot_mapping(mprotect_prot), regreturn))
+    ql.dprint(0, "[+] mprotect(0x%x, 0x%x, %s) = %d" % (
+    mprotect_start, mprotect_len, mmap_prot_mapping(mprotect_prot), regreturn))
 
     new_prot = []
     prot_dict = {"PROT_READ": "r", "PROT_WRITE": "w", "PROT_EXEC": "x"}
@@ -436,9 +438,9 @@ def ql_syscall_access(ql, access_path, access_mode, null0, null1, null2, null3):
 
     ql.nprint("access(%s, 0x%x) = %d " % (relative_path, access_mode, regreturn))
     if regreturn == 0:
-        ql.dprint(0,"[+] File found: %s" % relative_path)
+        ql.dprint(0, "[+] File found: %s" % relative_path)
     else:
-        ql.dprint(0,"[!] No such file or directory")
+        ql.dprint(0, "[!] No such file or directory")
 
 
 def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4):
@@ -446,19 +448,20 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
     _struct = []
 
     for offset in range(0, 0x18, 4):
-        data = ql.mem_read(struct_mmap_args+offset, 4)
+        data = ql.mem_read(struct_mmap_args + offset, 4)
         _struct.append(int.from_bytes(data, 'little'))
 
     mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset = _struct
 
-    ql.dprint(0,"[+] log old_mmap - old_mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset))
-    ql.dprint(0,"[+] log old_mmap - old_mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (mmap_addr, mmap_length, mmap_prot_mapping(mmap_prot), mmap_flag_mapping(mmap_flags), mmap_fd, mmap_offset))
+    ql.dprint(0, "[+] log old_mmap - old_mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
+    mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset))
+    ql.dprint(0, "[+] log old_mmap - old_mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (
+    mmap_addr, mmap_length, mmap_prot_mapping(mmap_prot), mmap_flag_mapping(mmap_flags), mmap_fd, mmap_offset))
 
     # FIXME
     # this is ugly patch, we might need to get value from elf parse,
     # is32bit or is64bit value not by arch
-    MAP_ANONYMOUS=32
-
+    MAP_ANONYMOUS = 32
 
     if (ql.arch == QL_ARM64) or (ql.arch == QL_X8664):
         mmap_fd = ql.unpack64(ql.pack64(mmap_fd))
@@ -482,13 +485,13 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
         mmap_base = ql.mmap_start
         ql.mmap_start = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
 
-
-    ql.dprint(0,"[+] log old_mmap - return addr : " + hex(mmap_base))
-    ql.dprint(0,"[+] log old_mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
+    ql.dprint(0, "[+] log old_mmap - return addr : " + hex(mmap_base))
+    ql.dprint(0, "[+] log old_mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
+        mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
     # initialized mapping
     if need_mmap:
-        ql.dprint(0,"[+] log old_mmap - mapping needed")
+        ql.dprint(0, "[+] log old_mmap - mapping needed")
         try:
             ql.uc.mem_map(mmap_base, ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000)
         except:
@@ -515,8 +518,8 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
         ql.file_des[mmap_fd].lseek(mmap_offset)
         data = ql.file_des[mmap_fd].read(mmap_length)
 
-        ql.dprint(0,"[+] log mem wirte : " + hex(len(data)))
-        ql.dprint(0,"[+] log mem mmap  : " + str(ql.file_des[mmap_fd].name))
+        ql.dprint(0, "[+] log mem wirte : " + hex(len(data)))
+        ql.dprint(0, "[+] log mem mmap  : " + str(ql.file_des[mmap_fd].name))
 
         ql.uc.mem_write(mmap_base, data)
         mem_info = ql.file_des[mmap_fd].name
@@ -526,19 +529,21 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
 
     ql.nprint("old_mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset, mmap_base))
     regreturn = mmap_base
-    ql.dprint(0,"[+] mmap_base is 0x%x" % regreturn)
+    ql.dprint(0, "[+] mmap_base is 0x%x" % regreturn)
 
     ql_definesyscall_return(ql, regreturn)
-    
+
 
 def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
-    ql.dprint(0,"[+] log mmap - mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
-    ql.dprint(0,"[+] log mmap - mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (mmap2_addr, mmap2_length, mmap_prot_mapping(mmap2_prot), mmap_flag_mapping(mmap2_flags), mmap2_fd, mmap2_pgoffset))
+    ql.dprint(0, "[+] log mmap - mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
+    mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
+    ql.dprint(0, "[+] log mmap - mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (
+    mmap2_addr, mmap2_length, mmap_prot_mapping(mmap2_prot), mmap_flag_mapping(mmap2_flags), mmap2_fd, mmap2_pgoffset))
 
     # FIXME
     # this is ugly patch, we might need to get value from elf parse,
     # is32bit or is64bit value not by arch 
-    MAP_ANONYMOUS=32
+    MAP_ANONYMOUS = 32
 
     if (ql.arch == QL_ARM64) or (ql.arch == QL_X8664):
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
@@ -555,20 +560,20 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
     need_mmap = True
 
     if mmap2_addr != 0 and (mmap2_addr < ql.mmap_start):
-        need_mmap = False    
-    
-    # initial ql.mmap_start
+        need_mmap = False
+
+        # initial ql.mmap_start
     if mmap2_addr == 0:
         mmap_base = ql.mmap_start
         ql.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
 
-
-    ql.dprint(0,"[+] log mmap - return addr : " + hex(mmap_base))
-    ql.dprint(0,"[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
+    ql.dprint(0, "[+] log mmap - return addr : " + hex(mmap_base))
+    ql.dprint(0, "[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
+        mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
     # initialized mapping
     if need_mmap:
-        ql.dprint(0,"[+] log mmap - mapping needed")
+        ql.dprint(0, "[+] log mmap - mapping needed")
         try:
             ql.uc.mem_map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000)
         except:
@@ -600,8 +605,8 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
         ql.file_des[mmap2_fd].lseek(mmap2_pgoffset)
         data = ql.file_des[mmap2_fd].read(mmap2_length)
 
-        ql.dprint(0,"[+] log mem wirte : " + hex(len(data)))
-        ql.dprint(0,"[+] log mem mmap  : " + str(ql.file_des[mmap2_fd].name))
+        ql.dprint(0, "[+] log mem wirte : " + hex(len(data)))
+        ql.dprint(0, "[+] log mem mmap  : " + str(ql.file_des[mmap2_fd].name))
 
         ql.uc.mem_write(mmap_base, data)
         mem_info = ql.file_des[mmap2_fd].name
@@ -609,9 +614,10 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
     ql.insert_map_info(mem_s, mem_e, mem_p, mem_info)
     
 
-    ql.nprint("mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
+    ql.nprint("mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags,
+                                                               mmap2_fd, mmap2_pgoffset, mmap_base))
     regreturn = mmap_base
-    ql.dprint(0,"[+] mmap_base is 0x%x" % regreturn)
+    ql.dprint(0, "[+] mmap_base is 0x%x" % regreturn)
 
     ql_definesyscall_return(ql, regreturn)
 
@@ -633,7 +639,6 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         mmap2_fd = ql.unpack32s(ql.pack32(mmap2_fd))
         mmap2_pgoffset = mmap2_pgoffset * 4096
 
-
     mmap_base = mmap2_addr
     need_mmap = True
 
@@ -643,18 +648,21 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         mmap_base = ql.mmap_start
         ql.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
 
-    ql.dprint(0,"[+] log mmap2 - mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
-    ql.dprint(0,"[+] log mmap2 - mmap2(0x%x, 0x%x, %s, %s, %d, %d)" % (mmap2_addr, mmap2_length, mmap_prot_mapping(mmap2_prot), mmap_flag_mapping(mmap2_flags), mmap2_fd, mmap2_pgoffset))
-    ql.dprint(0,"[+] log mmap2 - return addr : " + hex(mmap_base))
-    ql.dprint(0,"[+] log mmap2 - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
+    ql.dprint(0, "[+] log mmap2 - mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
+    mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
+    ql.dprint(0, "[+] log mmap2 - mmap2(0x%x, 0x%x, %s, %s, %d, %d)" % (
+    mmap2_addr, mmap2_length, mmap_prot_mapping(mmap2_prot), mmap_flag_mapping(mmap2_flags), mmap2_fd, mmap2_pgoffset))
+    ql.dprint(0, "[+] log mmap2 - return addr : " + hex(mmap_base))
+    ql.dprint(0, "[+] log mmap2 - addr range  : " + hex(mmap_base) + ' - ' + hex(
+        mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
     if need_mmap:
-        ql.dprint(0,"[+] log mmap - mapping needed")
+        ql.dprint(0, "[+] log mmap - mapping needed")
         try:
             ql.uc.mem_map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000)
         except:
             ql.show_map_info()
-            raise     
+            raise
 
     ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
     
@@ -676,10 +684,10 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         ql.file_des[mmap2_fd].lseek(mmap2_pgoffset)
         data = ql.file_des[mmap2_fd].read(mmap2_length)
 
-        ql.dprint(0,"[+] log2 mem wirte : " + hex(len(data)))
-        ql.dprint(0,"[+] log2 mem mmap  : " + str(ql.file_des[mmap2_fd].name))
+        ql.dprint(0, "[+] log2 mem wirte : " + hex(len(data)))
+        ql.dprint(0, "[+] log2 mem mmap  : " + str(ql.file_des[mmap2_fd].name))
         ql.uc.mem_write(mmap_base, data)
-        
+
         mem_info = ql.file_des[mmap2_fd].name
         
     ql.insert_map_info(mem_s, mem_e, mem_p, mem_info)
@@ -687,7 +695,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     ql.nprint("mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
     
     regreturn = mmap_base
-    ql.dprint(0,"[+] mmap2_base is 0x%x" % regreturn)
+    ql.dprint(0, "[+] mmap2_base is 0x%x" % regreturn)
 
     ql_definesyscall_return(ql, regreturn)
 
@@ -750,9 +758,9 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
 
     ql.nprint("fstatat64(0x%x, %s) = %d" % (fstatat64_fd, relative_path, regreturn))
     if regreturn == 0:
-        ql.dprint(0,"[+] Directory Found: %s"  % relative_path)
+        ql.dprint(0, "[+] Directory Found: %s" % relative_path)
     else:
-        ql.dprint(0,"[!] Directory Not Found: %s"  % relative_path)
+        ql.dprint(0, "[!] Directory Not Found: %s" % relative_path)
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -821,9 +829,9 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, null0, null1, null2, null3):
 
     ql.nprint("fstat64(%d, 0x%x) = %d" % (fstat64_fd, fstat64_add, regreturn))
     if regreturn == 0:
-        ql.dprint(0,"[+] fstat64 write completed")
+        ql.dprint(0, "[+] fstat64 write completed")
     else:
-        ql.dprint(0,"[!] fstat64 read/write fail")
+        ql.dprint(0, "[!] fstat64 read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -896,9 +904,9 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, null0, null1, null2, null3):
 
     ql.nprint("fstat(%d, 0x%x) = %d" % (fstat_fd, fstat_add, regreturn))
     if regreturn == 0:
-        ql.dprint(0,"[+] fstat write completed")
+        ql.dprint(0, "[+] fstat write completed")
     else:
-        ql.dprint(0,"[!] fstat read/write fail")
+        ql.dprint(0, "[!] fstat read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -969,9 +977,9 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, null0, null1, null2, 
 
     ql.nprint("stat64(%s, 0x%x) = %d" % (relative_path, stat64_buf_ptr, regreturn))
     if regreturn == 0:
-        ql.dprint(0,"[+] stat64 write completed")
+        ql.dprint(0, "[+] stat64 write completed")
     else:
-        ql.dprint(0,"[!] stat64 read/write fail")
+        ql.dprint(0, "[!] stat64 read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -1030,9 +1038,9 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, null0, null1, null2, null3):
 
     ql.nprint("stat(%s, 0x%x) = %d" % (relative_path, stat_buf_ptr, regreturn))
     if regreturn == 0:
-        ql.dprint(0,"[+] stat() write completed")
+        ql.dprint(0, "[+] stat() write completed")
     else:
-        ql.dprint(0,"[!] stat() read/write fail")
+        ql.dprint(0, "[!] stat() read/write fail")
     ql_definesyscall_return(ql, regreturn)
     
     
@@ -1090,9 +1098,9 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, null0, null1, null2, null3):
 
     ql.nprint("lstat(%s, 0x%x) = %d" % (relative_path, lstat_buf_ptr, regreturn))
     if regreturn == 0:
-        ql.dprint(0,"[+] lstat() write completed")
+        ql.dprint(0, "[+] lstat() write completed")
     else:
-        ql.dprint(0,"[!] lstat() read/write fail")
+        ql.dprint(0, "[!] lstat() read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, null0, null1):
@@ -1141,7 +1149,7 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
         if buf:
             ql.dprint(0, "[+] write() CONTENT:")
             ql.dprint(0, "%s" % buf)
-
+            
         ql.file_des[write_fd].write(buf)
         regreturn = write_count
     except:
@@ -1378,7 +1386,7 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, null0, null1, null2):
     if isinstance(ql.file_des[ioctl_fd], ql_socket) and (ioctl_cmd == SIOCGIFADDR or ioctl_cmd == SIOCGIFNETMASK):
         try:
             tmp_arg = ql.uc.mem_read(ioctl_arg, 64)
-            ql.dprint(0,"[+] query network card : %s" % tmp_arg)
+            ql.dprint(0, "[+] query network card : %s" % tmp_arg)
             data = ql.file_des[ioctl_fd].ioctl(ioctl_cmd, bytes(tmp_arg))
             ql.uc.mem_write(ioctl_arg, data)
             regreturn = 0
@@ -1550,7 +1558,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, nu
     
     socket_type = socket_type_mapping(socket_type, ql.arch)
     socket_domain = socket_domain_mapping(socket_domain, ql.arch)
-    ql.dprint(0,"[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
+    ql.dprint(0, "[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
 
     ql_definesyscall_return(ql, regreturn)
 
@@ -1620,7 +1628,7 @@ def ql_syscall_dup3(ql, dup3_oldfd, dup3_newfd, dup3_flags, null2, null3, null4)
             regreturn = -1
     else:
         regreturn = -1
-    ql.nprint("dup3(%d, %d, %d) = %d" % (dup3_oldfd, dup3_newfd,dup3_flags ,regreturn))
+    ql.nprint("dup3(%d, %d, %d) = %d" % (dup3_oldfd, dup3_newfd, dup3_flags, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -1819,7 +1827,7 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
         if _newselect_readfds != 0:
             tmp_buf = b'\x00' * (_newselect_nfds // 8 + 1)
             for i in ans[0]:
-                ql.dprint(0,"debug : " + str(tmp_r_map[i]))
+                ql.dprint(0, "debug : " + str(tmp_r_map[i]))
                 tmp_buf = set_fd_set(tmp_buf, tmp_r_map[i])
             ql.uc.mem_write(_newselect_readfds, tmp_buf)
 
@@ -1921,17 +1929,17 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, null0, null
     regreturn = 0
     if send_sockfd < 256 and ql.file_des[send_sockfd] != 0:
         try:
-            ql.dprint(0,"debug send start")
+            ql.dprint(0, "debug send start")
             tmp_buf = ql.uc.mem_read(send_buf, send_len)
             ql.dprint(ql.file_des[send_sockfd])
-            ql.dprint(0,'fd is ' + str(send_sockfd))
+            ql.dprint(0, 'fd is ' + str(send_sockfd))
             ql.dprint(tmp_buf)
-            ql.dprint(0,"send flag is " + str(send_flags))
-            ql.dprint(0,"send len is " + str(send_len))
+            ql.dprint(0, "send flag is " + str(send_flags))
+            ql.dprint(0, "send len is " + str(send_len))
             ql.file_des[send_sockfd].send(bytes(tmp_buf), send_flags)
             ql.dprint(ql.file_des[send_sockfd])
             regreturn = send_len
-            ql.dprint(0,"debug send end")
+            ql.dprint(0, "debug send end")
         except:
             print(sys.exc_info()[0])
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
@@ -1983,8 +1991,8 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, null0, null1, nu
         socketcall_flags = ql.unpack(ql.uc.mem_read(socketcall_args + ql.byte * 3, ql.byte))
         ql_syscall_recv(ql, socketcall_sockfd, socketcall_buf, socketcall_len, socketcall_flags, 0, 0)
     else:
-        ql.dprint(0,"[!] error call %d" % socketcall_call)
-        ql.stop(stop_event = THREAD_EVENT_UNEXECPT_EVENT)
+        ql.dprint(0, "[!] error call %d" % socketcall_call)
+        ql.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
 
 def ql_syscall_signal(ql, sig, __sighandler_t, null0, null1, null2, null3):
     regreturn = 0
@@ -2088,8 +2096,10 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     th.save()
 
     ql.thread_management.cur_thread = th
-    ql.dprint(0,"[+] Currently running pid is: %d; tid is: %d " % (os.getpid() ,ql.thread_management.cur_thread.get_thread_id()))
-    ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
+    ql.dprint(0, "[+] Currently running pid is: %d; tid is: %d " % (
+    os.getpid(), ql.thread_management.cur_thread.get_thread_id()))
+    ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
+    clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
 
     # Restore the stack and return value of the parent process
     ql.archfunc.set_sp(f_sp)
@@ -2102,8 +2112,10 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     f_th.stop_return_val = th
 
     ql.thread_management.cur_thread = f_th
-    ql.dprint(0,"[+] Currently running pid is: %d; tid is: %d " % (os.getpid() ,ql.thread_management.cur_thread.get_thread_id()))
-    ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
+    ql.dprint(0, "[+] Currently running pid is: %d; tid is: %d " % (
+    os.getpid(), ql.thread_management.cur_thread.get_thread_id()))
+    ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
+    clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
 
 
 def ql_syscall_set_tid_address(ql, set_tid_address_tidptr, null0, null1, null2, null3, null4):
@@ -2287,7 +2299,7 @@ def ql_syscall_unlink(ql, unlink_pathname, null0, null1, null2, null3, null4):
             os.unlink(real_path)
             regreturn = 0
         except FileNotFoundError:
-            ql.dprint(0,'[!] No such file or directory')
+            ql.dprint(0, '[!] No such file or directory')
             regreturn = -1
         except:
             regreturn = -1
@@ -2307,7 +2319,7 @@ def ql_syscall_unlinkat(ql, dirfd, pathname, flag, null0, null1, null2):
         os.unlink(real_path)
         regreturn = 0
     except FileNotFoundError:
-        ql.dprint(0,"[!] No such file or directory")
+        ql.dprint(0, "[!] No such file or directory")
         regreturn = -1
     except:
         regreturn = -1
@@ -2381,5 +2393,5 @@ def ql_syscall_getdents(ql, fd, dirp, count, null0, null1, null2):
         regreturn = 0
 
     ql.nprint("getdents(%d, 0x%x, 0x%x) = %d" % (fd, dirp, count, regreturn))
-    ql.dprint(0,"[+] getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
+    ql.dprint(0, "[+] getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
     ql_definesyscall_return(ql, regreturn)

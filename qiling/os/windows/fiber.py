@@ -34,7 +34,7 @@ class FiberManager:
         else:
             fiber = self.fibers[idx]
             if fiber.cb:
-                self.ql.dprint(0,"Skipping emulation of callback function 0x%X for fiber 0x%X" % (fiber.cb, fiber.idx))
+                self.ql.dprint(0, "Skipping emulation of callback function 0x%X for fiber 0x%X" % (fiber.cb, fiber.idx))
                 """
                 ret_addr = self.ql.uc.reg_read(UC_X86_REG_RIP + 6 ) #FIXME, use capstone to get addr of next instr?
 

@@ -30,7 +30,7 @@ def hook_syscall(ql):
     param5 = ql.uc.reg_read(UC_X86_REG_R9)
     pc = ql.uc.reg_read(UC_X86_REG_RIP)
     
-    ql.dprint(0,"[+] 0x%x: syscall number = 0x%x(%d)" %(pc, syscall_num, syscall_num))
+    ql.dprint(0, "[+] 0x%x: syscall number = 0x%x(%d)" % (pc, syscall_num, syscall_num))
 
     while 1:
         FREEBSD_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
@@ -81,15 +81,15 @@ def loader_file(ql):
 
     init_rbp = ql.stack_address + 0x40
     init_rdi = ql.stack_address
-    
+
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql.uc.reg_write(UC_X86_REG_RBP, init_rbp)
     ql.uc.reg_write(UC_X86_REG_RDI, init_rdi)
     ql.uc.reg_write(UC_X86_REG_R14, init_rdi)
 
-    ql.dprint(0,"[+] RSP = 0x%x" % (ql.stack_address))
-    ql.dprint(0,"[+] RBP = 0x%x" % (init_rbp))
-    ql.dprint(0,"[+] RDI = 0x%x" % (init_rdi))
+    ql.dprint(0, "[+] RSP = 0x%x" % (ql.stack_address))
+    ql.dprint(0, "[+] RBP = 0x%x" % (init_rbp))
+    ql.dprint(0, "[+] RDI = 0x%x" % (init_rdi))
 
     ql_setup_output(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)

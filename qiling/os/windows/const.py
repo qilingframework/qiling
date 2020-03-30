@@ -4,9 +4,19 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 from Registry import Registry
 
+# ERRORS CODE
+# https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
 ERROR_SUCCESS = 0x0
 ERROR_INVALID_FUNCTION = 0x1
 ERROR_FILE_NOT_FOUND = 0x2
+ERROR_PATH_NOT_FOUND = 0x3
+ERROR_INVALID_PARAMETER = 0x57
+ERROR_OLD_WIN_VERSION = 0X47E
+ERROR_INSUFFICIENT_BUFFER = 0x7A
+ERROR_MORE_DATA = 0xEA
+ERROR_INVALID_HANDLE = 0x6
+# ...
+
 
 INVALID_HANDLE_VALUE = -1
 
@@ -463,3 +473,65 @@ TH32CS_SNAPMODULE = 0x00000008
 TH32CS_SNAPMODULE32 = 0x00000010
 TH32CS_SNAPPROCESS = 0x00000002
 TH32CS_SNAPTHREAD = 0x00000004
+
+# CSIDL Constants
+# https://tarma.com/support/im9/using/symbols/functions/csidls.htm
+# http://winbatch.hpdd.de/MyWbtHelp/other/CSIDL.txt
+CSIDL_ADMINTOOLS = 0x30
+CSIDL_ALTSTARTUP = 0x1D
+CSIDL_APPDATA = 0x1A
+CSIDL_BITBUCKET = 0x0A
+CSIDL_CDBURN_AREA = 0x3B
+CSIDL_COMMON_ADMINTOOLS = 0x2F
+CSIDL_COMMON_ALTSTARTUP = 0x1E
+CSIDL_COMMON_APPDATA = 0x23
+# ...
+CSIDL_FLAG_CREATE = 0x8000
+
+# Show constants
+# https://docs.microsoft.com/it-it/windows/win32/api/shellapi/nf-shellapi-shellexecutea
+SW_HIDE = 0
+SW_MAXIMIZE = 3
+SW_MINIMIZE = 6
+SW_RESTORE = 9
+SW_SHOW = 5
+SW_SHOWDEFAULT = 10
+SW_SHOWMAXIMIZED = 3
+SW_SHOWMINIMIZED = 2
+SW_SHOWMINNOACTIVE = 7
+SW_SHOWNA = 8
+SW_SHOWNOACTIVATE = 4
+SW_SHOWNORMAL = 1
+
+# OsVersionInfoConstants
+# https://docs.microsoft.com/it-it/windows/win32/api/winnt/ns-winnt-osversioninfoexa
+
+VER_NT_DOMAIN_CONTROLLER = 0x0000002
+VER_NT_SERVER = 0x0000003
+VER_NT_WORKSTATION = 0x0000001
+
+# major, minor, product
+SYSTEMS_VERSION = {
+    "1001": "Windows 10",
+    "1000": "Windows Server 2016",
+
+    "631": "Windows 8.1",
+    "630": "Windows Server 2012 R2",
+
+    "621": "Windows 8",
+    "620": "Windows Server 2012",
+
+    "611": "Windows 7",
+    "610": "Windows Server 2008 R2",
+
+    "601": "Windows Vista",
+    "600": "Windows Server 2008"
+    # ..
+}
+
+# Mapper for ordinal syscalls
+Mapper = {
+    "shell32": {
+        175: "SHGetSpecialFolderPathW"
+    }
+}

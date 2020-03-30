@@ -137,7 +137,7 @@ class Thread:
     RUNNING = 1
     TERMINATED = 2
 
-    def __init__(self, ql, status=1):
+    def __init__(self, ql, status=1, isFake=False):
         self.ql = ql
         self.id = Thread.ID
         Thread.ID += 1
@@ -146,6 +146,7 @@ class Thread:
         self.waitforthreads = []
         self.tls = {}
         self.tls_index = 0
+        self.fake = isFake
 
     # create new thread
     def create(self, func_addr, func_params, status):

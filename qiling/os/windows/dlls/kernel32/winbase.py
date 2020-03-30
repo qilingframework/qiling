@@ -3,21 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct
-import time
 from qiling.os.windows.const import *
-from qiling.os.fncc import *
 from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
-from qiling.os.windows.handle import *
 from qiling.exception import *
-
 
 # __analysis_noreturn VOID FatalExit(
 #   int ExitCode
 # );
+
+
 @winapi(cc=STDCALL, params={
     "ExitCode": INT
 })
@@ -267,12 +262,10 @@ def hook_lstrcatA(ql, address, params):
 def hook_lstrcatW(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
-    ql.dprint(0,string_to_hex(src))
     pointer = params["lpString1"]
     string_base = read_wstring(ql, pointer)
-    result = string_base + src + "\x00" + "\x00"
-    ql.dprint(0,result)
-    ql.uc.mem_write(pointer, bytes(result, encoding="utf-8"))
+    result = string_base + src + "\x00"
+    ql.uc.mem_write(pointer, bytes(result, encoding="utf-16le"))
     return pointer
 
 
@@ -288,16 +281,13 @@ def hook_lstrcmpiW(ql, address, params):
     # Copy String2 into String
     str1 = params["lpString1"]
     str2 = params["lpString2"]
-    # Was a check for a ransomware, will think how to automatize some compare in the future
-    # if str1.replace("\x00","") == "outlook.exe":
-    #     return 0
     if str1 == str2:
         return 0
     elif str1 > str2:
         return 1
     else:
-        # size depends on architecture?
-        return 0xffffffff
+        # TODO fix negative value
+        return -1
 
 
 # HRSRC FindResourceA(
@@ -347,3 +337,95 @@ def hook_IsBadWritePtr(ql, address, params):
     ACCESS_TRUE = 0
     ACCESS_FALSE = 1
     return ACCESS_TRUE
+
+
+def compare(p1, operator, p2):
+    if operator == "==":
+        return p1 == p2
+    elif operator == ">":
+        return p1 > p2
+    elif operator == ">=":
+        return p1 >= p2
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")
+
+
+# typedef struct _OSVERSIONINFOEXA {
+#   DWORD dwOSVersionInfoSize;
+#   DWORD dwMajorVersion;
+#   DWORD dwMinorVersion;
+#   DWORD dwBuildNumber;
+#   DWORD dwPlatformId;
+#   CHAR  szCSDVersion[128];
+#   WORD  wServicePackMajor;
+#   WORD  wServicePackMinor;
+#   WORD  wSuiteMask;
+#   BYTE  wProductType;
+#   BYTE  wReserved;
+# } OSVERSIONINFOEXA, *POSVERSIONINFOEXA, *LPOSVERSIONINFOEXA;
+
+
+# BOOL VerifyVersionInfoW(
+#   LPOSVERSIONINFOEXW lpVersionInformation,
+#   DWORD              dwTypeMask,
+#   DWORDLONG          dwlConditionMask
+# );
+@winapi(cc=STDCALL, params={
+    "lpVersionInformation": POINTER,
+    "dwTypeMask": DWORD,
+    "dwlConditionMask": ULONGLONG
+})
+def hook_VerifyVersionInfoW(ql, address, params):
+    #  https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow2
+    pointer = params["lpVersionInformation"]
+    os_version_info_asked = {"dwOSVersionInfoSize": int.from_bytes(ql.uc.mem_read(pointer, 4), byteorder="little"),
+                             VER_MAJORVERSION: int.from_bytes(ql.uc.mem_read(pointer + 4, 4), byteorder="little"),
+                             VER_MINORVERSION: int.from_bytes(ql.uc.mem_read(pointer + 8, 4), byteorder="little"),
+                             VER_BUILDNUMBER: int.from_bytes(ql.uc.mem_read(pointer + 12, 4), byteorder="little"),
+                             VER_PLATFORMID: int.from_bytes(ql.uc.mem_read(pointer + 16, 4), byteorder="little"),
+                             "szCSDVersion": int.from_bytes(ql.uc.mem_read(pointer + 20, 128), byteorder="little"),
+                             VER_SERVICEPACKMAJOR: int.from_bytes(ql.uc.mem_read(pointer + 20 + 128, 2),
+                                                                  byteorder="little"),
+                             VER_SERVICEPACKMINOR: int.from_bytes(ql.uc.mem_read(pointer + 22 + 128, 2),
+                                                                  byteorder="little"),
+                             VER_SUITENAME: int.from_bytes(ql.uc.mem_read(pointer + 152, 2), byteorder="little"),
+                             VER_PRODUCT_TYPE: int.from_bytes(ql.uc.mem_read(pointer + 154, 1), byteorder="little"),
+                             "wReserved": int.from_bytes(ql.uc.mem_read(pointer + 155, 1), byteorder="little"),
+                             }
+    ConditionMask: dict = ql.hooks_variables["ConditionMask"]
+    res = True
+    for key, value in ConditionMask.items():
+        if value == VER_EQUAL:
+            operator = "=="
+        elif value == VER_GREATER:
+            operator = ">"
+        elif value == VER_GREATER_EQUAL:
+            operator = ">="
+        else:
+            raise QlErrorNotImplemented("[!] API not implemented")
+        # Versions should be compared together
+        if key == VER_MAJORVERSION or key == VER_MINORVERSION or key == VER_PRODUCT_TYPE:
+            major_version_asked = os_version_info_asked[VER_MAJORVERSION]
+            minor_version_asked = os_version_info_asked[VER_MINORVERSION]
+            product_type = os_version_info_asked[VER_PRODUCT_TYPE]
+            concat = str(major_version_asked) + str(minor_version_asked) + str(product_type)
+
+            # Just a print for analysts, will remove it from here in the future
+            if key == VER_MAJORVERSION:
+                ql.dprint(2, "[=] The sample is checking the windows Version!")
+                version_asked = SYSTEMS_VERSION.get(concat, None)
+                if version_asked is None:
+                    raise QlErrorNotImplemented("[!] API not implemented")
+                else:
+                    ql.dprint(2, "[=] The sample asks for %s" % version_asked)
+            # We can finally compare
+            res = compare(ql.config.getint("SYSTEM", "os"), operator, int(concat))
+        elif key == VER_SERVICEPACKMAJOR:
+            res = compare(ql.config.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_version_info_asked[key])
+        else:
+            raise QlErrorNotImplemented("[!] API not implemented")
+        # The result is a AND between every value, so if we find a False we just exit from the loop
+        if not res:
+            ql.last_error = ERROR_OLD_WIN_VERSION
+            return 0
+    return 1

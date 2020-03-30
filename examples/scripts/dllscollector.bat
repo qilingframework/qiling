@@ -72,4 +72,6 @@ if exist %WINDIR%\System32\downlevel\api-ms-win-crt-locale-l1-1-0.dll xcopy /f /
 if exist %WINDIR%\System32\downlevel\api-ms-win-crt-heap-l1-1-0.dll xcopy /f /y %WINDIR%\System32\downlevel\api-ms-win-crt-heap-l1-1-0.dll "examples\rootfs\x8664_windows\Windows\System32\"
 if exist %WINDIR%\System32\vcruntime140d.dll xcopy /f /y %WINDIR%\System32\vcruntime140d.dll "examples\rootfs\x8664_windows\Windows\System32\"
 if exist %WINDIR%\System32\ucrtbased.dll xcopy /f /y %WINDIR%\System32\ucrtbased.dll "examples\rootfs\x8664_windows\Windows\System32\"
+if exist %WINDIR%\winsxs\amd64_microsoft-windows-printing-xpsprint_31bf3856ad364e35_10.0.17763.194_none_20349c5a971eb293\XpsPrint.dll xcopy /f /y %WINDIR%\winsxs\amd64_microsoft-windows-printing-xpsprint_31bf3856ad364e35_10.0.17763.194_none_20349c5a971eb293\XpsPrint.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
+
 exit /b

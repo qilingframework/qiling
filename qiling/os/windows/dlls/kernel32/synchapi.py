@@ -104,8 +104,11 @@ def hook_WaitForSingleObject(ql, address, params):
     ret = 0
     hHandle = params["hHandle"]
     dwMilliseconds = params["dwMilliseconds"]
-    target_thread = ql.handle_manager.get(hHandle).thread
-    ql.thread_manager.current_thread.waitfor(target_thread)
+
+    target_thread: Thread = ql.handle_manager.get(hHandle).thread
+    if not target_thread.fake:
+        ql.thread_manager.current_thread.waitfor(target_thread)
+
     return ret
 
 
@@ -135,3 +138,32 @@ def hook_WaitForMultipleObjects(ql, address, params):
             ql.thread_manager.current_thread.waitfor(thread)
 
     return ret
+
+
+# HANDLE OpenMutexW(
+#   DWORD   dwDesiredAccess,
+#   BOOL    bInheritHandle,
+#   LPCWSTR lpName
+# );
+@winapi(cc=STDCALL, params={
+    "dwDesiredAccess": DWORD,
+    "bInheritHandle": BOOL,
+    "LPCWSTR": WSTRING
+})
+def hook_OpenMutexW(ql, address, params):
+    type, name = params["LPCWSTR"].split("\\")
+    # The name can have a "Global" or "Local" prefix to explicitly open an object in the global or session namespace.
+    if type == "Global":
+        # if is global is a Windows lock. We always return a valid handle because we have no way to emulate them
+        # TODO maybe create it? Not sure if is necessary
+        # example sample: Gandcrab e42431d37561cc695de03b85e8e99c9e31321742
+        return 0xD10C
+    else:
+        # TODO manage creation of mutex object if is necessary
+        mutex = ql.handle_manager.get(name)
+        if mutex is None:
+            # If a named mutex does not exist, the function fails and GetLastError returns ERROR_FILE_NOT_FOUND.
+            ql.last_error = ERROR_FILE_NOT_FOUND
+            return 0
+        else:
+            raise QlErrorNotImplemented("[!] API not implemented")
