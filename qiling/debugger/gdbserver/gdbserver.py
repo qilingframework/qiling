@@ -32,34 +32,11 @@ def checksum(data):
             checksum += c
     return checksum & 0xff
 
-def ql_gdbserver(ql, ip=None, port=None):
-    path = ql.path
-    try:
-        if ip is None:
-            ip = '127.0.0.1'
-        if port is None:
-            port = 9999
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((ip, port))
-        ql.nprint("\ngdb> Initializing loadbase 0x%x\n" % (ql.loadbase))
-        ql.nprint("gdb> Listening on %s:%u\n" % (ip, port))
-        sock.listen(1)
-        conn, addr = sock.accept()
-    except:
-        ql.nprint("gdb> Error: Address already in use\n")
-        raise
-    try:
-        mappings = [(hex(ql.entry_point), 0x10)]
-        exit_point = ql.entry_point + os.path.getsize(path)
-        ql.remotedebugsession = GDBsession(ql, conn, exit_point, mappings)
-    except:
-        ql.nprint("gdb> Error: Not able to initialize GDBServer\n")
-        raise
 
-class GDBsession(object):
-    """docstring for GDBsession"""
+class GDBSERVERsession(object):
+    """docstring for Debugsession"""
     def __init__(self, ql, clientsocket, exit_point, mappings):
-        super(GDBsession, self).__init__()
+        super(GDBSERVERsession, self).__init__()
         self.ql             = ql
         self.clientsocket   = clientsocket
         self.netin          = clientsocket.makefile('r')

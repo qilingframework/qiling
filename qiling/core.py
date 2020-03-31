@@ -13,6 +13,7 @@ from qiling.utils import *
 from qiling.os.utils import *
 from qiling.arch.utils import *
 from qiling.os.linux.thread import *
+from qiling.debugger.utils import *
 
 __version__ = "0.9"
 
@@ -230,8 +231,6 @@ class Qiling:
         loader_shellcode(self)
 
     def run(self):
-        # should be defined in "ql_" + remotedebugsrv + "server"
-        self.remotedebugsession = ""
         if self.debugger is not None:
             try:
                 remotedebugsrv, ip, port = '', '', ''
@@ -241,31 +240,22 @@ class Qiling:
                 ip, port = self.debugger.split(':')
                 # If only ip:port is defined, remotedebugsrv is always gdb
                 remotedebugsrv = "gdb"
+     
+            remotedebugsrv = debugger_convert(remotedebugsrv)
+
+            if remotedebugsrv not in (QL_DEBUGGER):
+                raise QlErrorOutput("[!] Error: Debugger not supported\n")       
+            else:
+                try:
+                    if self.debugger is True:
+                        ql_debugger(self, remotedebugsrv)
+                    else:
+                        ql_debugger(self, remotedebugsrv, ip, port)
                 
-            try:
-                port = int(port)                 
-                remotedebugsrv_id = debugger_convert(remotedebugsrv)
-
-                if remotedebugsrv_id not in (QL_DEBUGGER):
-                    raise QlErrorOutput("[!] Error: debugger not supported\n")       
-                   
-            except:
-                raise QlErrorOutput("[!] Error: must be: ip:port:debugserver\n")
-            
-            # module name will append with server, if gdb will be gdbserver
-            remotedebugsrv = remotedebugsrv + "server"
-            REMOTEDEBUG_SERVER = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, "ql_" + remotedebugsrv)
-
-            try:
-                if self.debugger is True:
-                    REMOTEDEBUG_SERVER(self)
-                else:
-                    REMOTEDEBUG_SERVER(self, ip, port)
-            
-            except KeyboardInterrupt:
-                if self.remotedebugsession():
-                    self.remotedebugsession.close()
-                raise QlErrorOutput("[!] Remote debugging session ended\n")
+                except KeyboardInterrupt:
+                    if self.remotedebugsession():
+                        self.remotedebugsession.close()
+                    raise QlErrorOutput("[!] Remote debugging session ended\n")
 
         self.__enable_bin_patch()
         runner = self.build_os_execution("runner")
