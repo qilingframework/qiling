@@ -2357,6 +2357,19 @@ def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, null0, null1):
     ql_definesyscall_return(ql, regreturn)
 
 
+def ql_syscall_mkdir(ql, pathname, mode, null0, null1, null2, null3):
+    file_path = ql_read_string(ql, pathname)
+    real_path = ql_transform_to_real_path(ql, file_path)
+    ql.nprint("mkdir(%s, 0%o)" % (real_path, mode))
+    try:
+        if not os.path.exists(real_path):
+            os.mkdir(real_path, mode)
+        regreturn = 0
+    except:
+        regreturn = -1
+    ql_definesyscall_return(ql, regreturn)
+
+
 def ql_syscall_umask(ql, mode, null0, null1, null2, null3, null4):
     oldmask = os.umask(mode)
     ql.nprint("umask(0%o) return oldmask 0%o" % (mode, oldmask))
