@@ -239,7 +239,17 @@ def ql_syscall_setuid(ql, null0, null1, null2, null3, null4, null5):
         UID = 1000
     ql.nprint("setuid(%i)" % UID)
     regreturn = UID
-    ql_definesyscall_return(ql, regreturn)     
+    ql_definesyscall_return(ql, regreturn)
+
+
+def ql_syscall_setpriority(ql, which, who, prio, null3, null4, null5):
+    ql.nprint("setpriority(%i %i %i)" % (which, who, prio))
+    try:
+        os.setpriority(which, who, prio)
+        regreturn = 0
+    except:
+        regreturn = -1
+    ql_definesyscall_return(ql, regreturn)
 
 
 def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, null0, null1, null2):
@@ -715,6 +725,12 @@ def ql_syscall_close(ql, close_fd, null0, null1, null2, null3, null4):
         ql.file_des[close_fd] = 0
         regreturn = 0
     ql.nprint("close(%d) = %d" % (close_fd, regreturn))
+    ql_definesyscall_return(ql, regreturn)
+
+
+def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec, null2, null3, null4, null5):
+    ql.nprint("clock_gettime()")
+    regreturn = 0
     ql_definesyscall_return(ql, regreturn)
 
 
