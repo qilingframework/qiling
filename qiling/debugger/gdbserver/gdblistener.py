@@ -9,8 +9,8 @@
 import struct, os, re, socket
 from binascii import unhexlify
 
-from qiling.gdbserver import qldbg
-from qiling.gdbserver.reg_table import *
+from qiling.debugger.gdbserver import qldbg
+from qiling.debugger.gdbserver.reg_table import *
 from qiling.const import *
 from qiling.os.utils import *
 
@@ -51,15 +51,15 @@ def ql_gdbserver(ql, ip=None, port=None):
     try:
         mappings = [(hex(ql.entry_point), 0x10)]
         exit_point = ql.entry_point + os.path.getsize(path)
-        ql.gdbsession = GDBSession(ql, conn, exit_point, mappings)
+        ql.remotedebugsession = GDBsession(ql, conn, exit_point, mappings)
     except:
         ql.nprint("gdb> Error: Not able to initialize GDBServer\n")
         raise
 
-class GDBSession(object):
-    """docstring for GDBSession"""
+class GDBsession(object):
+    """docstring for GDBsession"""
     def __init__(self, ql, clientsocket, exit_point, mappings):
-        super(GDBSession, self).__init__()
+        super(GDBsession, self).__init__()
         self.ql             = ql
         self.clientsocket   = clientsocket
         self.netin          = clientsocket.makefile('r')

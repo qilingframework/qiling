@@ -13,7 +13,6 @@ from qiling.utils import *
 from qiling.os.utils import *
 from qiling.arch.utils import *
 from qiling.os.linux.thread import *
-from qiling.gdbserver.gdblistener import GDBSession, ql_gdbserver
 
 __version__ = "0.9"
 
@@ -111,8 +110,7 @@ class Qiling:
         self.dict_posix_syscall = dict()
         self.user_defined_api = {}
         self.global_thread_id = 0
-        self.gdb = None
-        self.gdbsession = None
+        self.debugger = None
         self.automatize_input = False
         self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "os", "windows", "configuration.cfg")
         # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
@@ -226,30 +224,48 @@ class Qiling:
         loader_shellcode(self)
 
     def run(self):
-        # gdbserver configuration
-        if self.gdb is not None:
+        self.remotedebugsession = ""
+        if self.debugger is not None:
             try:
-                if self.gdb is True:
-                    ql_gdbserver(self)
+                ip, port, remotedebugsrv = '', '', ''
+                ip, port, remotedebugsrv = self.debugger.split(':')
+            except:
+                ip, port = '', ''
+                ip, port = self.debugger.split(':')
+                # If only ip:port is defined, remotedebugsrv is always gdb
+                remotedebugsrv = "gdb"
+                
+            try:
+                port = int(port)                 
+                remotedebugsrv_id = debugger_convert(remotedebugsrv)
+
+                if remotedebugsrv_id in (QL_DEBUGGER):
+                    REMOTEDEBUG_SERVER = ("ql_" + remotedebugsrv + "server")
                 else:
-                    ip, port = '', ''
-                    try:
-                        ip, port = self.gdb.split(':')
-                        port = int(port)
-                    except:
-                        raise QlErrorOutput("[!] Error: ip or port\n")
-                    ql_gdbserver(self, ip, port)
+                    raise QlErrorOutput("[!] Error: debugger not supported\n")       
+                   
+            except:
+                raise QlErrorOutput("[!] Error: must be: ip:port:debugserver\n")
+
+            REMOTEDEBUG_SERVER = ql_get_module_function("qiling.debugger." + remotedebugsrv + "server." + remotedebugsrv + "listener", "ql_" + remotedebugsrv + "server")
+
+            try:
+                if self.debugger is True:
+                    REMOTEDEBUG_SERVER(self)
+                else:
+                    REMOTEDEBUG_SERVER(self, ip, port)
+            
             except KeyboardInterrupt:
-                if self.gdbsession():
-                    self.gdbsession.close()
-                raise QlErrorOutput("[!] GDBServer session ended\n")
+                if self.remotedebugsession():
+                    self.remotedebugsession.close()
+                raise QlErrorOutput("[!] Remote debugging session ended\n")
 
         self.__enable_bin_patch()
         runner = self.build_os_execution("runner")
         runner(self)
 
-        if self.gdb is not None:
-            self.gdbsession.run()
+        if self.debugger is not None:
+            self.remotedebugsession.run()
 
 
     def nprint(self, *args, **kw):

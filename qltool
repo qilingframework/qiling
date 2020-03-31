@@ -230,7 +230,7 @@ if __name__ == '__main__':
             exit(1)
 
         if options.gdb:
-            ql.gdb = options.gdb
+            ql.debugger = options.gdb
 
         if options.debug_stop and (options.dump or options.debug):
             ql.debug_stop = True

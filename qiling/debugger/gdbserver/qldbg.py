@@ -2,7 +2,7 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
-from qiling.gdbserver.reg_table import *
+from qiling.debugger.gdbserver.reg_table import *
 
 
 class Qldbg(object):

@@ -48,6 +48,8 @@ def ql_ostype_convert_str(ostype):
     return adapter.get(ostype)
 
 
+
+
 def ostype_convert(ostype):
     adapter = {
         "linux": QL_LINUX,
@@ -100,6 +102,17 @@ def output_convert(output):
     # invalid
     return None, None
 
+
+def debugger_convert(debugger):
+    adapter = {
+        None: QL_GDB,
+        "gdb": QL_GDB,
+        "ida": QL_IDAPRO,
+    }
+    if debugger in adapter:
+        return adapter[debugger]
+    # invalid
+    return None, None
 
 def ql_elf_check_archtype(self):
     path = self.path
