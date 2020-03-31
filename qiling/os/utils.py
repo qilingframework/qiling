@@ -127,71 +127,64 @@ def ql_hook_code_disasm(ql, address, size):
             # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
         else:
             md = Cs(CS_ARCH_ARM, mode)
-
-        syscall_num = [uc.reg_read(UC_ARM_REG_R7), "R7"]
-        arg_0 = [uc.reg_read(UC_ARM_REG_R0), "R0"]
-        arg_1 = [uc.reg_read(UC_ARM_REG_R1), "R1"]
-        arg_2 = [uc.reg_read(UC_ARM_REG_R2), "R2"]
-        arg_3 = [uc.reg_read(UC_ARM_REG_R3), "R3"]
-        arg_4 = [uc.reg_read(UC_ARM_REG_R4), "R4"]
-        arg_5 = [uc.reg_read(UC_ARM_REG_R5), "R5"]
+        
+        #for reg in self.ql.reg_table:
+        # uc.reg_reg(reg)
+        # syscall_num = [uc.reg_read(UC_ARM_REG_R7), "R7"]
+        # arg_0 = [uc.reg_read(UC_ARM_REG_R0), "R0"]
+        # arg_1 = [uc.reg_read(UC_ARM_REG_R1), "R1"]
+        # arg_2 = [uc.reg_read(UC_ARM_REG_R2), "R2"]
+        # arg_3 = [uc.reg_read(UC_ARM_REG_R3), "R3"]
+        # arg_4 = [uc.reg_read(UC_ARM_REG_R4), "R4"]
+        # arg_5 = [uc.reg_read(UC_ARM_REG_R5), "R5"]
 
     elif (ql.arch == QL_X86):  # QL_X86
         md = Cs(CS_ARCH_X86, CS_MODE_32)
-        if ql.ostype == QL_MACOS:
-            syscall_num = [uc.reg_read(UC_X86_REG_EAX), "EAX"]
-            arg_0 = [uc.reg_read(UC_X86_REG_ESP + 4 * 1), "ESP_1"]
-            arg_1 = [uc.reg_read(UC_X86_REG_ESP + 4 * 2), "ESP_2"]
-            arg_2 = [uc.reg_read(UC_X86_REG_ESP + 4 * 3), "ESP_3"]
-            arg_3 = [uc.reg_read(UC_X86_REG_ESP + 4 * 4), "ESP_4"]
-            arg_4 = [uc.reg_read(UC_X86_REG_ESP + 4 * 5), "ESP_5"]
-            arg_5 = [uc.reg_read(UC_X86_REG_ESP + 4 * 6), "ESP_6"]
-        else:
-            syscall_num = [uc.reg_read(UC_X86_REG_EAX), "EAX"]
-            arg_0 = [uc.reg_read(UC_X86_REG_EBX), "EBX"]
-            arg_1 = [uc.reg_read(UC_X86_REG_ECX), "ECX"]
-            arg_2 = [uc.reg_read(UC_X86_REG_EDX), "EDX"]
-            arg_3 = [uc.reg_read(UC_X86_REG_ESI), "ESI"]
-            arg_4 = [uc.reg_read(UC_X86_REG_EDI), "EDI"]
-            arg_5 = [uc.reg_read(UC_X86_REG_EBP), "EBP"]
+        # syscall_num = [uc.reg_read(UC_X86_REG_EAX), "EAX"]
+        # arg_0 = [uc.reg_read(UC_X86_REG_EBX), "EBX"]
+        # arg_1 = [uc.reg_read(UC_X86_REG_ECX), "ECX"]
+        # arg_2 = [uc.reg_read(UC_X86_REG_EDX), "EDX"]
+        # arg_3 = [uc.reg_read(UC_X86_REG_ESI), "ESI"]
+        # arg_4 = [uc.reg_read(UC_X86_REG_EDI), "EDI"]
+        # arg_5 = [uc.reg_read(UC_X86_REG_EBP), "EBP"]
 
     elif (ql.arch == QL_X8664):  # QL_X86_64
         md = Cs(CS_ARCH_X86, CS_MODE_64)
-        syscall_num = [uc.reg_read(UC_X86_REG_RAX), "RAX"]
-        arg_0 = [uc.reg_read(UC_X86_REG_RDI), "RDI"]
-        arg_1 = [uc.reg_read(UC_X86_REG_RSI), "RSI"]
-        arg_2 = [uc.reg_read(UC_X86_REG_RDX), "RDX"]
-        arg_3 = [uc.reg_read(UC_X86_REG_R10), "R10"]
-        arg_4 = [uc.reg_read(UC_X86_REG_R8), "R8"]
-        arg_5 = [uc.reg_read(UC_X86_REG_R9), "R9"]
+        # syscall_num = [uc.reg_read(UC_X86_REG_RAX), "RAX"]
+        # arg_0 = [uc.reg_read(UC_X86_REG_RDI), "RDI"]
+        # arg_1 = [uc.reg_read(UC_X86_REG_RSI), "RSI"]
+        # arg_2 = [uc.reg_read(UC_X86_REG_RDX), "RDX"]
+        # arg_3 = [uc.reg_read(UC_X86_REG_R10), "R10"]
+        # arg_4 = [uc.reg_read(UC_X86_REG_R8), "R8"]
+        # arg_5 = [uc.reg_read(UC_X86_REG_R9), "R9"]
 
     elif (ql.arch == QL_ARM64):  # QL_ARM64
         md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
-        if ql.ostype == QL_MACOS:
-            syscall_num = [uc.reg_read(UC_ARM64_REG_X16), "X16"]
-        else:    
-            syscall_num = [uc.reg_read(UC_ARM64_REG_X8), "X8"]
-        arg_0 = [uc.reg_read(UC_ARM64_REG_X0), "X0"]
-        arg_1 = [uc.reg_read(UC_ARM64_REG_X1), "X1"]
-        arg_2 = [uc.reg_read(UC_ARM64_REG_X2), "X2"]
-        arg_3 = [uc.reg_read(UC_ARM64_REG_X3), "X3"]
-        arg_4 = [uc.reg_read(UC_ARM64_REG_X4), "X4"]
-        arg_5 = [uc.reg_read(UC_ARM64_REG_X5), "X5"]
+        # if ql.ostype == QL_MACOS:
+        #     syscall_num = [uc.reg_read(UC_ARM64_REG_X16), "X16"]
+        # else:    
+        #     syscall_num = [uc.reg_read(UC_ARM64_REG_X8), "X8"]
+        # arg_0 = [uc.reg_read(UC_ARM64_REG_X0), "X0"]
+        # arg_1 = [uc.reg_read(UC_ARM64_REG_X1), "X1"]
+        # arg_2 = [uc.reg_read(UC_ARM64_REG_X2), "X2"]
+        # arg_3 = [uc.reg_read(UC_ARM64_REG_X3), "X3"]
+        # arg_4 = [uc.reg_read(UC_ARM64_REG_X4), "X4"]
+        # arg_5 = [uc.reg_read(UC_ARM64_REG_X5), "X5"]
 
     elif (ql.arch == QL_MIPS32):  # QL_MIPS32
         if ql.archendian == QL_ENDIAN_EB:
             md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
         else:
             md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)
-        syscall_num = [uc.reg_read(UC_MIPS_REG_V0), "V0"]
-        arg_0 = [uc.reg_read(UC_MIPS_REG_A0), "A0"]
-        arg_1 = [uc.reg_read(UC_MIPS_REG_A1), "A1"]
-        arg_2 = [uc.reg_read(UC_MIPS_REG_A2), "A2"]
-        arg_3 = [uc.reg_read(UC_MIPS_REG_A3), "A3"]
-        arg_4 = uc.reg_read(UC_MIPS_REG_SP)
-        arg_4 = [arg_4 + 0x10, "SP+0x10"]
-        arg_5 = uc.reg_read(UC_MIPS_REG_SP)
-        arg_5 = [arg_5 + 0x14, "SP+0x14"]
+        # syscall_num = [uc.reg_read(UC_MIPS_REG_V0), "V0"]
+        # arg_0 = [uc.reg_read(UC_MIPS_REG_A0), "A0"]
+        # arg_1 = [uc.reg_read(UC_MIPS_REG_A1), "A1"]
+        # arg_2 = [uc.reg_read(UC_MIPS_REG_A2), "A2"]
+        # arg_3 = [uc.reg_read(UC_MIPS_REG_A3), "A3"]
+        # arg_4 = uc.reg_read(UC_MIPS_REG_SP)
+        # arg_4 = [arg_4 + 0x10, "SP+0x10"]
+        # arg_5 = uc.reg_read(UC_MIPS_REG_SP)
+        # arg_5 = [arg_5 + 0x14, "SP+0x14"]
 
     else:
         raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
@@ -211,9 +204,14 @@ def ql_hook_code_disasm(ql, address, size):
         ql.nprint('\t%s \t%s\n' % (i.mnemonic, i.op_str))
 
     if ql.output == QL_OUT_DUMP:
-        ql.nprint("[-] %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x\n" % \
-                  (syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1],
-                   arg_3[0], arg_4[1], arg_4[0], arg_5[1], arg_5[0]))
+        # FIXME: Need to name each reg
+        for reg in ql.reg_table:
+            REG_NAME = uc.reg_read(reg)
+            ql.dprint(3, "[-] 0x%x" % (REG_NAME))
+            
+        #ql.nprint("[-] %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x\n" % \
+                  #(syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1],
+                  # arg_3[0], arg_4[1], arg_4[0], arg_5[1], arg_5[0]))
 
 
 def ql_setup_output(ql):

@@ -64,3 +64,19 @@ class ARM64(Arch):
     # get pc register pointer
     def get_reg_pc(self):
         return UC_ARM64_REG_PC
+
+    def get_reg_table(self):
+        registers_table = [
+            UC_ARM64_REG_X0, UC_ARM64_REG_X1, UC_ARM64_REG_X2,
+            UC_ARM64_REG_X3, UC_ARM64_REG_X4, UC_ARM64_REG_X5,
+            UC_ARM64_REG_X6, UC_ARM64_REG_X7, UC_ARM64_REG_X8,
+            UC_ARM64_REG_X9, UC_ARM64_REG_X10, UC_ARM64_REG_X11,
+            UC_ARM64_REG_X12, UC_ARM64_REG_X13, UC_ARM64_REG_X14,
+            UC_ARM64_REG_X15, UC_ARM64_REG_X16, UC_ARM64_REG_X17,
+            UC_ARM64_REG_X18, UC_ARM64_REG_X19, UC_ARM64_REG_X20,
+            UC_ARM64_REG_X21, UC_ARM64_REG_X22, UC_ARM64_REG_X23,
+            UC_ARM64_REG_X24, UC_ARM64_REG_X25, UC_ARM64_REG_X26,
+            UC_ARM64_REG_X27, UC_ARM64_REG_X28, UC_ARM64_REG_X29,
+            UC_ARM64_REG_X30, UC_ARM64_REG_SP, UC_ARM64_REG_PC
+            ]
+        return registers_table          

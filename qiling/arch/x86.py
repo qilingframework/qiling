@@ -103,6 +103,19 @@ class X86(Arch):
     def get_reg_pc(self):
         return UC_X86_REG_EIP
 
+    def get_reg_table(self):
+        registers_table = [
+            UC_X86_REG_EAX, UC_X86_REG_ECX, UC_X86_REG_EDX,
+            UC_X86_REG_EBX, UC_X86_REG_ESP, UC_X86_REG_EBP,
+            UC_X86_REG_ESI, UC_X86_REG_EDI, UC_X86_REG_EIP,
+            UC_X86_REG_EFLAGS, UC_X86_REG_CS, UC_X86_REG_SS,
+            UC_X86_REG_DS, UC_X86_REG_ES, UC_X86_REG_FS,
+            UC_X86_REG_GS, UC_X86_REG_ST0, UC_X86_REG_ST1,
+            UC_X86_REG_ST2, UC_X86_REG_ST3, UC_X86_REG_ST4,
+            UC_X86_REG_ST5, UC_X86_REG_ST6, UC_X86_REG_ST7
+            ]
+        return registers_table  
+
 
 class X8664(Arch):
     def __init__(self, ql):
@@ -160,6 +173,23 @@ class X8664(Arch):
     # get pc register pointer
     def get_reg_pc(self):
         return UC_X86_REG_RIP
+
+
+    def get_reg_table(self):
+        registers_table = [
+            UC_X86_REG_RAX, UC_X86_REG_RBX, UC_X86_REG_RCX,
+            UC_X86_REG_RDX, UC_X86_REG_RSI, UC_X86_REG_RDI,
+            UC_X86_REG_RBP, UC_X86_REG_RSP, UC_X86_REG_R8,
+            UC_X86_REG_R9, UC_X86_REG_R10, UC_X86_REG_R11,
+            UC_X86_REG_R12, UC_X86_REG_R13, UC_X86_REG_R14,
+            UC_X86_REG_R15, UC_X86_REG_RIP, UC_X86_REG_EFLAGS,
+            UC_X86_REG_CS, UC_X86_REG_SS, UC_X86_REG_DS,
+            UC_X86_REG_ES, UC_X86_REG_FS, UC_X86_REG_GS,
+            UC_X86_REG_ST0, UC_X86_REG_ST1,
+            UC_X86_REG_ST2, UC_X86_REG_ST3, UC_X86_REG_ST4,
+            UC_X86_REG_ST5, UC_X86_REG_ST6, UC_X86_REG_ST7
+            ]
+        return registers_table          
 
 def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_ADDR, SEGMENT_SIZE, SPORT, RPORT, GDTTYPE):
     # create segment index

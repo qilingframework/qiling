@@ -53,4 +53,8 @@ class Arch:
 
     # get PC register
     def get_reg_pc(self):
-        pass    
+        pass
+
+    # get PC register
+    def get_reg_table(self):
+        pass   

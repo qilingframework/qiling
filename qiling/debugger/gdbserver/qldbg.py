@@ -2,8 +2,6 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
-from qiling.debugger.gdbserver.reg_table import *
-
 
 class Qldbg(object):
     def __init__(self):
@@ -98,7 +96,7 @@ class Qldbg(object):
                     map_len = maps[1]
                     self.entry_context['memory'][map_address] = bytes(self.ql.uc.mem_read(map_address, map_len))
 
-                for r in arch_reg[self.ql.arch]:
+                for r in self.ql.reg_table:
                     try:
                         self.entry_context['regs'][r] = self.ql.uc.reg_read(r)
                     except Exception as ex:

@@ -281,14 +281,19 @@ class Qiling:
                 fd.flush()
 
     def dprint(self, level, *args, **kw):
-        if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
-            raise QlErrorOutput("[!] ql.verbose > 1 must use with QL_OUT_DEBUG, QL_OUT_DUMP or else ql.verbose must be 0")
+        try:
+            self.verbose = int(self.verbose)
+        except:
+            raise QlErrorOutput("[!] Verbose muse be int")    
+        
+        if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
+            raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUT_DEBUG, QL_OUT_DUMP or else ql.verbose must be 0")
 
-        if self.verbose >= level:
+        if int(self.verbose) >= level:
             if self.output == QL_OUT_DEBUG:
                 self.log_file_fd.debug(*args, **kw)
             elif self.output == QL_OUT_DUMP:
-                msg = str(args[0])
+                msg = str(args[0]) + "\n"
                 self.log_file_fd.debug(msg, **kw)
 
     def addr_to_str(self, addr, short=False, endian="big"):
@@ -608,6 +613,11 @@ class Qiling:
     @property
     def reg_sp(self):
         return self.archfunc.get_reg_sp()
+
+    # get register table
+    @property
+    def reg_table(self):
+        return self.archfunc.get_reg_table()
 
     # get PC register value
     @property

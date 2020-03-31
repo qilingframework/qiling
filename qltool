@@ -241,6 +241,9 @@ if __name__ == '__main__':
         if options.multithread:
             ql.multithread = True
 
+        if options.verbose:
+            ql.verbose = options.verbose   
+
         ql.run()
         exit(ql.exit_code)
 
