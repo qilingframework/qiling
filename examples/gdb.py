@@ -19,8 +19,8 @@ def test_gdb(path, rootfs):
     # You can also customize address & port or type of debugging server
     # ql.debugger= ":9999"  # GDB server listens to 0.0.0.0:9999
     # ql.debugger = "127.0.0.1:9999"  # GDB server listens to 127.0.0.1:9999
-    # ql.debugger = "127.0.0.1:9999:gdb"  # GDB server listens to 127.0.0.1:9999
-    # ql.debugger = "127.0.0.1:9999:idapro"  # IDApro server listens to 127.0.0.1:9999
+    # ql.debugger = "gdb:127.0.0.1:9999"  # GDB server listens to 127.0.0.1:9999
+    # ql.debugger = "idapro:127.0.0.1:9999"  # IDApro server listens to 127.0.0.1:9999
 
     # Emulate
     ql.run()  

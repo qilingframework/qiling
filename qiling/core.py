@@ -230,11 +230,12 @@ class Qiling:
         loader_shellcode(self)
 
     def run(self):
+        # should be defined in "ql_" + remotedebugsrv + "server"
         self.remotedebugsession = ""
         if self.debugger is not None:
             try:
-                ip, port, remotedebugsrv = '', '', ''
-                ip, port, remotedebugsrv = self.debugger.split(':')
+                remotedebugsrv, ip, port = '', '', ''
+                remotedebugsrv, ip, port = self.debugger.split(':')
             except:
                 ip, port = '', ''
                 ip, port = self.debugger.split(':')
@@ -245,15 +246,15 @@ class Qiling:
                 port = int(port)                 
                 remotedebugsrv_id = debugger_convert(remotedebugsrv)
 
-                if remotedebugsrv_id in (QL_DEBUGGER):
-                    REMOTEDEBUG_SERVER = ("ql_" + remotedebugsrv + "server")
-                else:
+                if remotedebugsrv_id not in (QL_DEBUGGER):
                     raise QlErrorOutput("[!] Error: debugger not supported\n")       
                    
             except:
                 raise QlErrorOutput("[!] Error: must be: ip:port:debugserver\n")
-
-            REMOTEDEBUG_SERVER = ql_get_module_function("qiling.debugger." + remotedebugsrv + "server." + remotedebugsrv + "listener", "ql_" + remotedebugsrv + "server")
+            
+            # module name will append with server, if gdb will be gdbserver
+            remotedebugsrv = remotedebugsrv + "server"
+            REMOTEDEBUG_SERVER = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, "ql_" + remotedebugsrv)
 
             try:
                 if self.debugger is True:
