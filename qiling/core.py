@@ -112,7 +112,7 @@ class Qiling:
         self.global_thread_id = 0
         self.debugger = None
         self.automatize_input = False
-        self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "os", "windows", "configuration.cfg")
+        self.config = None 
         # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
         self.multithread = False
         self.thread_management = None    
@@ -157,7 +157,8 @@ class Qiling:
             _logger = ql_setup_logging_file(self.output, self.log_file + "_" + str(pid), _logger)
 
         self.log_file_fd = _logger
-
+        
+        # OS dependent configuration
         if self.ostype in (QL_LINUX, QL_FREEBSD, QL_MACOS):
             if stdin != 0:
                 self.stdin = stdin
@@ -175,6 +176,11 @@ class Qiling:
 
             for _ in range(256):
                 self.sigaction_act.append(0)
+
+            self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "os", "posix", "configuration.cfg")
+        
+        elif self.ostype == QL_WINDOWS:
+            self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "os", "windows", "configuration.cfg")
 
         if not ql_is_valid_arch(self.arch):
             raise QlErrorArch("[!] Invalid Arch")
