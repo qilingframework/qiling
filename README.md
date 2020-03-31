@@ -1,4 +1,4 @@
-Qiling - Advanced Binary Emulation framework
+[![Gitter](https://badges.gitter.im/qilingframework/community.svg)](https://gitter.im/qilingframework/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build Status](https://travis-ci.com/qilingframework/qiling.svg?branch=master)](https://travis-ci.com/qilingframework/qiling)
 ---
 
@@ -52,22 +52,8 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 
 ---
 
-#### Install
-
-If you are NOT using pyenv, run the command shown below to install Qiling (Python3 is required).
-
-```
-pip3 install -r ./requirements.txt
-python3 setup.py install
-```
-
-If you are using pyenv, run the command shown below (or use docker).
-
-```
-mv $(dirname $(which python))/python2.7 $(dirname $(which python))/python2.7.bak
-pip install -r ./requirements.txt
-python setup.py install
-```
+#### Installation
+Please see [setup guide](docs/SETUP.md) file for how to install Qiling Framework.
 
 ---
 
@@ -116,7 +102,7 @@ def my_sandbox(path, rootfs):
     ql.patch(0x0040110B, b'\x90\x90')
     ql.patch(0x00401112, b'\x90\x90')
     # hook at an address with a callback
-    ql.hook_address(0x00401016, force_call_dialog_func)
+    ql.hook_address(force_call_dialog_func, 0x00401016)
     ql.run()
 
 
@@ -144,18 +130,42 @@ The below Youtube video shows how the above example works.
 
 Qiling also provides a friendly tool named `qltool` to quickly emulate shellcode & executable binaries.
 
-To emulate a binary, run:
+With qltool, easy execution can be performed:
+
+
+With shellcode:
 
 ```
-$ ./qltool run -f examples/rootfs/arm_linux/bin/arm_hello --rootfs examples/rootfs/arm_linux/
-
-```
-
-To run shellcode, run:
-
-```
+$ ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex
 $ ./qltool shellcode --os linux --arch x86 --asm -f examples/shellcodes/lin32_execve.asm
+$ ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex --strace
+```
 
+With binary file:
+
+```
+$ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples/rootfs/x8664_linux/
+$ ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux
+```
+
+With binary gdbserver:
+
+```
+$ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --gdb 127.0.0.1:9999 --rootfs examples/rootfs/x8664_linux
+```
+
+With binary file and argv:
+
+```
+$ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_args --rootfs examples/rootfs/x8664_linux --args test1 test2 test3
+$ ./qltool run --rootfs examples/rootfs/x8664_linux examples/rootfs/x8664_linux/bin/x8664_args test1 test2 test3
+```
+
+with binary file and various output format:
+
+```
+$ ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm
+$ ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace
 ```
 
 ---

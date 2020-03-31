@@ -3,8 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-from qiling.arch.filetype import *
+from qiling.const import *
 from qiling.exception import *
+
 
 def align(size, unit):
     return (size // unit + (1 if size % unit else 0)) * unit
@@ -70,6 +71,12 @@ class Heap:
         chunk.inuse = True
         # print("heap.mem_alloc addresss: " + hex(chunk.address))
         return chunk.address
+
+    def mem_size(self, addr):
+        for chunk in self.chunks:
+            if addr == chunk.address and chunk.inuse:
+                return chunk.size
+        return 0
 
     def mem_free(self, addr):
         for chunk in self.chunks:

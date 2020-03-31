@@ -11,7 +11,7 @@ from qiling.os.linux.mips32_syscall import *
 from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *
 from qiling.os.utils import *
-from qiling.arch.filetype import *
+from qiling.const import *
 
 # memory address where emulation starts
 QL_MIPS32_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000
@@ -54,8 +54,8 @@ def hook_syscall(ql, intno):
             LINUX_SYSCALL_FUNC(ql, param0, param1, param2, param3, param4, param5)
         except KeyboardInterrupt:
             raise
-        except Exception:
-            ql.nprint("[!] SYSCALL ERROR: %s" % (LINUX_SYSCALL_FUNC_NAME))
+        except Exception as e:
+            ql.nprint("[!] SYSCALL ERROR: %s\n[-] %s" % (LINUX_SYSCALL_FUNC_NAME, e))
             if ql.multithread == True:
                 td = ql.thread_management.cur_thread
                 td.stop()
@@ -162,7 +162,7 @@ lab1:
     '''
 
     if ql.shellcode_init == 0:
-        ql.dprint ("[+] QL_SHELLCODE_ADDR(0x%x) and shellcode_init is %i" % (QL_SHELLCODE_ADDR, ql.shellcode_init))
+        ql.dprint (0, "[+] QL_SHELLCODE_ADDR(0x%x) and shellcode_init is %i" % (QL_SHELLCODE_ADDR, ql.shellcode_init))
         uc.mem_map(QL_SHELLCODE_ADDR, QL_SHELLCODE_LEN)
         ql.shellcode_init = 1
 
@@ -171,16 +171,7 @@ lab1:
     sc = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf8\xff\xbf\xaf\xf4\xff\xa4\xaf\xf0\xff\xa5\xaf\xec\xff\xa6\xaf\xe8\xff\xa7\xaf\xe4\xff\xa2\xaf\xe0\xff\xa3\xaf\xdc\xff\xa8\xaf\xff\xff\x06(\xff\xff\xd0\x04\x8c\x00\xe5'<\x00\xe8'\xfc\xff\xa4\x8f\x08\x00\x06$\t\xf8\x00\x01\x00\x00\x00\x00\xf8\xff\xbf\x8f\xf4\xff\xa4\x8f\xf0\xff\xa5\x8f\xec\xff\xa6\x8f\xe8\xff\xa7\x8f\xe4\xff\xa2\x8f\xe0\xff\xa3\x8f\xdc\xff\xa8\x8f\x00\x00\x00\x08\x00\x00\x00\x00%8\x00\x00%8\x00\x00\t\x00\x00\x10\x00\x00\x00\x00%\x10\xe0\x00%\x18\xa0\x00!\x18b\x00%\x10\xe0\x00!\x10\x82\x00\x00\x00c\x80\x00\x00C\xa0\x01\x00\xe7$%\x10\xe0\x00%\x18\xc0\x00+\x10C\x00\xf4\xff@\x14\x00\x00\x00\x00\x00\x00\x00\x00\x08\x00\xe0\x03\x00\x00\x00\x00"
 
     if ql.archendian == QL_ENDIAN_EB:
-        
-        split_bytes = []
-        n  = 4
-        for index in range(0, len(sc), n):
-            split_bytes.append((sc[index : index + n])[::-1])
-
-        ebsc = b""
-        for i in split_bytes:
-            ebsc += i
-        
+        ebsc = ql_lsbmsb_convert(ql, sc)
         sc = ebsc.replace(b'\x08\x00\x00\x00', ql.pack32(0x08000000 ^ (addr // 4)), 1)       
     else:
         sc = sc.replace(b'\x00\x00\x00\x08', ql.pack32(0x08000000 ^ (addr // 4)), 1)
@@ -205,9 +196,9 @@ def ql_syscall_mips32_thread_setthreadarea(ql, th, arg):
     uc.reg_write(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
     uc.reg_write(UC_MIPS_REG_CP0_USERLOCAL, address)
 
-    ql.dprint ("[+] multithread set_thread_area(0x%x)" % address)
+    ql.dprint (0, "[+] multithread set_thread_area(0x%x)" % address)
     # somehow for multithread these code are still not mature
-    ql.dprint ("[+] shellcode_init is %i" % (ql.shellcode_init))
+    ql.dprint (0, "[+] shellcode_init is %i" % (ql.shellcode_init))
     if ql.shellcode_init == 0:
         if ql.archendian == QL_ENDIAN_EB:
             hook_shellcode(uc, pc + 4, bytes.fromhex('0000102500003825'), ql)
@@ -314,11 +305,15 @@ def runner(ql):
 
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            ql.nprint("[+] PC= " + hex(ql.pc))
+            ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
             ql.show_map_info()
-            buf = ql.uc.mem_read(ql.pc, 8)
-            ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-            ql_hook_code_disasm(ql, ql.pc, 64)
+            try:
+                buf = ql.uc.mem_read(ql.pc, 8)
+                ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                ql.nprint("\n")
+                ql_hook_code_disasm(ql, ql.pc, 64)
+            except:
+                pass
         raise
 
     if ql.internal_exception != None:

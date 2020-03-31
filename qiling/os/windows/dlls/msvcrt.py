@@ -6,6 +6,7 @@ import struct
 from qiling.os.utils import *
 from qiling.os.windows.fncc import *
 from qiling.os.fncc import *
+from qiling.os.windows.const import *
 
 
 # void __set_app_type (
@@ -84,7 +85,7 @@ def hook___p__environ(ql, address, params):
     for key in ql.env:
         pointer = ql.heap.mem_alloc(ql.pointersize)
         env = key + "=" + ql.env[key]
-        env_addr = ql.heap.mem_alloc(len(env)+1)
+        env_addr = ql.heap.mem_alloc(len(env) + 1)
         ql.mem_write(env_addr, bytes(env, 'ascii') + b'\x00')
         ql.mem_write(pointer, ql.pack(env_addr))
         ql.mem_write(ret + count * ql.pointersize, ql.pack(pointer))
@@ -123,6 +124,7 @@ def hook__cexit(ql, address, params):
 def hook__initterm(ql, address, params):
     pass
 
+
 # void exit(
 #    int const status
 # );
@@ -153,7 +155,7 @@ def hook___p___argv(ql, address, params):
     count = 0
     for each in ql.argv:
         arg_pointer = ql.heap.mem_alloc(ql.pointersize)
-        arg = ql.heap.mem_alloc(len(each)+1)
+        arg = ql.heap.mem_alloc(len(each) + 1)
         ql.mem_write(arg, bytes(each, 'ascii') + b'\x00')
         ql.mem_write(arg_pointer, ql.pack(arg))
         ql.mem_write(ret + count * ql.pointersize, ql.pack(arg_pointer))
@@ -175,49 +177,12 @@ def hook__get_initial_narrow_environment(ql, address, params):
     count = 0
     for key in ql.env:
         value = key + "=" + ql.env[key]
-        env = ql.heap.mem_alloc(len(value)+1)
+        env = ql.heap.mem_alloc(len(value) + 1)
         if count == 0:
             ret = env
         ql.mem_write(env, bytes(value, 'ascii') + b'\x00')
         count += 1
     return ret
-
-
-def printf(ql, address, fmt, params_addr, name):
-    count = fmt.count("%")
-    params = []
-    if count > 0:
-        for i in range(count):
-            params.append(ql.unpack(
-                ql.uc.mem_read(
-                    params_addr + i * ql.pointersize,
-                    ql.pointersize
-                )
-            ))
-
-        formats = fmt.split("%")[1:]
-        index = 0
-        for f in formats:
-            if f.startswith("s"):
-                params[index] = read_cstring(ql, params[index])
-            index += 1
-
-        output = '0x%0.2x: %s(format = %s' % (address, name, repr(fmt))
-        for each in params:
-            if type(each) == str:
-                output += ', "%s"' % each
-            else:
-                output += ', 0x%0.2x' % each
-        output += ')'
-        fmt = fmt.replace("%llx", "%x")
-        stdout = fmt % tuple(params)
-        output += " = 0x%x" % len(stdout)
-    else:
-        output = '0x%0.2x: %s(format = %s) = 0x%x' % (address, name, repr(fmt), len(fmt))
-        stdout = fmt
-    ql.nprint(output)
-    ql.stdout.write(bytes(stdout, 'utf-8'))
-    return len(stdout)
 
 
 # int printf(const char *format, ...)
@@ -233,7 +198,7 @@ def hook_printf(ql, address, _):
     format_string = read_cstring(ql, format_string)
 
     param_addr = ql.sp + ql.pointersize * 2
-    ret = printf(ql, address, format_string, param_addr, "printf")
+    ret, _ = printf(ql, address, format_string, param_addr, "printf")
 
     set_return_value(ql, ret)
 
@@ -247,6 +212,7 @@ def hook_printf(ql, address, _):
             ql.uc.reg_write(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
 
     return None
+
 
 # MSVCRT_FILE * CDECL MSVCRT___acrt_iob_func(unsigned idx)
 @winapi(cc=CDECL, params={
@@ -399,3 +365,19 @@ def hook_memmove(ql, address, params):
     data = ql.mem_read(params['src'], params['num'])
     ql.mem_write(params['dest'], bytes(data))
     return params['dest']
+
+
+# int _ismbblead(
+#    unsigned int c
+# );
+@winapi(cc=CDECL, params={
+    "c": UINT
+})
+def hook__ismbblead(ql, address, params):
+    # TODO check if is CDECL or not
+    # If locale is utf-8 always return 0
+    loc = LOCALE["default"]
+    if loc[0x1004] == "utf-8":
+        return 0
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")

@@ -8,7 +8,7 @@ import types
 from unicorn import *
 from unicorn.x86_const import *
 
-# impport read_string and other commom utils.
+# import read_string and other common utils.
 from qiling.loader.pe import PE, Shellcode
 from qiling.os.windows.dlls import *
 from qiling.os.utils import *
@@ -24,7 +24,8 @@ QL_X8664_WINSOWS_EMU_END = 0x0
 
 def set_pe64_gdt(ql):
     # uc.mem_map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
-    # setup_gdt_segment(uc, GDT_ADDR, GDT_LIMIT, UC_X86_REG_GS, 15, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, A_PRESENT | A_DATA | A_DATA_WRITABLE | A_PRIV_3 | A_DIR_CON_BIT, S_GDT | S_PRIV_3)
+    # setup_gdt_segment(uc, GDT_ADDR, GDT_LIMIT, UC_X86_REG_GS, 15, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, A_PRESENT |
+    # A_DATA | A_DATA_WRITABLE | A_PRIV_3 | A_DIR_CON_BIT, S_GDT | S_PRIV_3)
     GSMSR = 0xC0000101
     ql.uc.mem_map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
     ql.uc.msr_write(GSMSR, ql.GS_SEGMENT_ADDR)
@@ -50,10 +51,10 @@ def hook_winapi(ql, address, size):
             try:
                 winapi_func(ql, address, {})
             except Exception:
-                ql.dprint("[!] %s Exception Found" % winapi_name)
+                ql.dprint(0, "[!] %s Exception Found" % winapi_name)
                 raise QlErrorSyscallError("[!] Windows API Implementation Error")
         else:
-            ql.nprint("[!] %s is not implemented" % winapi_name)
+            ql.nprint("[!] %s is not implemented\n" % winapi_name)
             if ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
@@ -78,6 +79,7 @@ def windows_setup64(ql):
     ql.RUN = True
 
     ql.heap = Heap(ql, ql.HEAP_BASE_ADDR, ql.HEAP_BASE_ADDR + ql.HEAP_SIZE)
+    ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
 
     # setup gdt
     set_pe64_gdt(ql)
@@ -103,9 +105,9 @@ def loader_file(ql):
     uc = Uc(UC_ARCH_X86, UC_MODE_64)
     ql.uc = uc
     # init ql pe
-    if (ql.stack_address == 0): 
+    if ql.stack_address == 0:
         ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
-    if (ql.stack_size == 0): 
+    if ql.stack_size == 0:
         ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
 
     windows_setup64(ql)
@@ -124,9 +126,9 @@ def loader_shellcode(ql):
     ql.uc = uc
 
     # init ql pe
-    if (ql.stack_address == 0): 
+    if ql.stack_address == 0:
         ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
-    if (ql.stack_size == 0):
+    if ql.stack_size == 0:
         ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
 
     ql.code_address = 0x140000000
@@ -145,7 +147,7 @@ def loader_shellcode(ql):
 
 
 def runner(ql):
-    if (ql.until_addr == 0):
+    if ql.until_addr == 0:
         ql.until_addr = QL_X8664_WINSOWS_EMU_END
     try:
         if ql.shellcoder:
@@ -154,14 +156,20 @@ def runner(ql):
             ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            ql.nprint("[+] PC= " + hex(ql.pc))
+            ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
             ql.show_map_info()
-            buf = ql.uc.mem_read(ql.pc, 8)
-            ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-            ql_hook_code_disasm(ql, ql.pc, 64)
+            try:
+                buf = ql.uc.mem_read(ql.pc, 8)
+                ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                ql.nprint("\n")
+                ql_hook_code_disasm(ql, ql.pc, 64)
+            except:
+                pass
         raise
 
     ql.registry_manager.save()
 
-    if ql.internal_exception != None:
+    post_report(ql)
+
+    if ql.internal_exception is not None:
         raise ql.internal_exception

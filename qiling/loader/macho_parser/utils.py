@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 class FileReader:
 
     def __init__(self, binary):
@@ -7,6 +12,7 @@ class FileReader:
     def read(self, size):
         data = self.binary[self.offset : self.offset + size]
         self.offset += size
+        #print(data)
         return data
 
     def setOffset(self, offset):

@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 from .utils import *
 from .define_value import *
 from struct import unpack
@@ -21,7 +26,7 @@ class BinaryHeader(Header):
         self.lc_size        = unpack("<L", FR.read(4))[0]
         self.flags          = unpack("<L", FR.read(4))[0]
         
-        if self.magic == MAGIC_X8664:
+        if self.magic == MAGIC_64:
             self.reserved = unpack("<L", FR.read(4))[0]
         self.header_size = FR.offset
 
@@ -45,9 +50,9 @@ class FatHeader(Header):
     def getBinary(self, arch):
 
         for item in self.binarys:
-            if item.cpu_type == CPU_TYPE_X8664 and arch == "x8664":
+            if item.cpu_type == CPU_TYPE_X8664:
                 return item
-            if item.cpu_type == CPU_TYPE_X86 and arch == "x86":
+            elif item.cpu_type == CPU_TYPE_ARM64:
                 return item 
         return None
 

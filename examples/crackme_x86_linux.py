@@ -10,6 +10,8 @@ import sys
 sys.path.append("..")
 from qiling import *
 
+
+
 class MyPipe():
     def __init__(self):
         self.buf = b''
@@ -17,10 +19,10 @@ class MyPipe():
     def write(self, s):
         self.buf += s
 
-    def read(self, l):
-        if l <= len(self.buf):
-            ret = self.buf[ : l]
-            self.buf = self.buf[l : ]
+    def read(self, size):
+        if size <= len(self.buf):
+            ret = self.buf[: size]
+            self.buf = self.buf[size:]
         else:
             ret = self.buf
             self.buf = ''
@@ -40,7 +42,7 @@ class MyPipe():
 
     def close(self):
         self.outpipe.close()
-    
+
     def fstat(self):
         return os.fstat(sys.stdin.fileno())
 
@@ -51,7 +53,8 @@ def instruction_count(ql, address, size, user_data):
 
 def run_one_round(payload):
     stdin = MyPipe()
-    ql = Qiling(["rootfs/x86_linux/bin/crackme_linux"], "rootfs/x86_linux", output = "off", stdin = stdin, stdout = sys.stdout, stderr = sys.stderr)
+    ql = Qiling(["rootfs/x86_linux/bin/crackme_linux"], "rootfs/x86_linux", output="off", stdin=stdin,
+                stdout=sys.stdout, stderr=sys.stderr)
     ins_count = [0]
     ql.hook_code(instruction_count, ins_count)
     stdin.write(payload)
@@ -69,7 +72,7 @@ def solve():
     old_count = run_one_round(flag)
     for idx in idx_list:
         for i in b'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ ':
-            flag = flag[ : idx] + chr(i).encode() + flag[idx + 1 : ]
+            flag = flag[: idx] + chr(i).encode() + flag[idx + 1:]
             tmp = run_one_round(flag)
             if tmp > old_count:
                 old_count = tmp

@@ -13,12 +13,13 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
-#UINT MSI_GetComponentStateA 	( 	
-#       MSIPACKAGE *  	    package,
-#		LPCSTR  	        szComponent,
-#		INSTALLSTATE *  	piInstalled,
-#		INSTALLSTATE *  	piAction 
-#	); 	
+
+# UINT MsiGetComponentStateA(
+#   MSIHANDLE    hInstall,
+#   LPCSTR       szComponent,
+#   INSTALLSTATE *piInstalled,
+#   INSTALLSTATE *piAction
+# );
 @winapi(cc=STDCALL, params={
     "package": POINTER,
     "szComponent": STRING,
@@ -26,4 +27,4 @@ from qiling.exception import *
     "piAction": POINTER
 })
 def hook_MsiGetComponentStateA(ql, address, params):
-    return 6 #INVALID_HANDLE
+    return 6  # INVALID_HANDLE

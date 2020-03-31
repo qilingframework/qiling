@@ -3,7 +3,6 @@
 # Python setup for Qiling framework
 
 
-
 from setuptools import setup, find_packages
 
 VERSION = '0.9'
@@ -12,19 +11,19 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 
 setup(
-    name = 'qiling',
-    version = VERSION,
+    name='qiling',
+    version=VERSION,
 
-    description = 'Qiling is an advanced binary emulation framework that cross-platform-architecture.',
-    url = 'http://qiling.io',
+    description='Qiling is an advanced binary emulation framework that cross-platform-architecture.',
+    url='http://qiling.io',
 
-    maintainer = 'Nguyen Anh Quynh, KaiJern Lau, Tianze Ding, BoWen Sun, Huitao Chen, TongYu',
-    maintainer_email = 'info@qiling.io',
+    maintainer='Nguyen Anh Quynh, KaiJern Lau, Tianze Ding, BoWen Sun, Huitao Chen, TongYu',
+    maintainer_email='info@qiling.io',
 
-    license = 'GPLv2',
+    license='GPLv2',
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
-    classifiers = [
+    classifiers=[
         # How mature is this project? Common values are
         #   3 - Alpha
         #   4 - Beta
@@ -43,9 +42,9 @@ setup(
         'Programming Language :: Python :: 3',
     ],
 
-    keywords = 'qiling binary emulator framework',
+    keywords='qiling binary emulator framework',
 
-    packages = find_packages(),
+    packages=find_packages(),
     include_package_data=True,
-    install_requires = required,
+    install_requires=required,
 )

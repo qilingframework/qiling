@@ -6,59 +6,19 @@
 from unicorn import *
 from unicorn.x86_const import *
 
+
 from qiling.loader.elf import *
 from qiling.arch.x86 import *
 from qiling.os.freebsd.x8664_syscall import *
 from qiling.os.posix.syscall import *
 from qiling.os.freebsd.syscall import *
 from qiling.os.utils import *
-from qiling.arch.filetype import *
+from qiling.const import *
 
 QL_X8664_FREEBSD_PREDEFINE_STACKADDRESS = 0x7ffffffde000
 QL_X8664_FREEBSD_PREDEFINE_STACKSIZE = 0x21000
 QL_X8664_EMU_END = 0xffffffffffffffff
 
-def set_pe64_gdt(ql):
-
-# // TODO: put these somewhere. ghostrace maybe.
-# const (
-# 	ARCH_SET_GS = 0x1001
-# 	ARCH_SET_FS = 0x1002
-# 	ARCH_GET_FS = 0x1003
-# 	ARCH_GET_GS = 0x1004
-# )
-
-# func (k *LinuxKernel) ArchPrctl(code int, addr uint64) {
-# 	fsmsr := uint64(0xC0000100)
-# 	gsmsr := uint64(0xC0000101)
-
-# 	var tmp [8]byte
-# 	// TODO: make SET check for valid mapped memory
-# 	switch code {
-# 	case ARCH_SET_FS:
-# 		x86.Wrmsr(k.U, fsmsr, addr)
-# 	case ARCH_SET_GS:
-# 		x86.Wrmsr(k.U, gsmsr, addr)
-# 	case ARCH_GET_FS:
-# 		val := x86.Rdmsr(k.U, fsmsr)
-# 		buf, _ := k.U.PackAddr(tmp[:], val)
-# 		k.U.MemWrite(addr, buf)
-# 	case ARCH_GET_GS:
-# 		val := x86.Rdmsr(k.U, gsmsr)
-# 		buf, _ := k.U.PackAddr(tmp[:], val)
-# 		k.U.MemWrite(addr, buf)
-# 	}
-# }
-
-    ql.GS_SEGMENT_ADDR = 0x6000
-    ql.GS_SEGMENT_SIZE = 0x8000
- 
-    GSMSR = 0xC0000101
-    FSMSR = 0xC0000100
- 
-    ql.uc.mem_map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
-    ql.uc.msr_write(GSMSR, ql.GS_SEGMENT_ADDR)
-    ql.uc.msr_write(FSMSR, ql.GS_SEGMENT_ADDR)
 
 def hook_syscall(ql):
     syscall_num  = ql.uc.reg_read(UC_X86_REG_RAX)
@@ -70,7 +30,7 @@ def hook_syscall(ql):
     param5 = ql.uc.reg_read(UC_X86_REG_R9)
     pc = ql.uc.reg_read(UC_X86_REG_RIP)
     
-    ql.dprint("[+] 0x%x: syscall number = 0x%x(%d)" %(pc, syscall_num, syscall_num))
+    ql.dprint(0, "[+] 0x%x: syscall number = 0x%x(%d)" % (pc, syscall_num, syscall_num))
 
     while 1:
         FREEBSD_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
@@ -121,20 +81,18 @@ def loader_file(ql):
 
     init_rbp = ql.stack_address + 0x40
     init_rdi = ql.stack_address
-    
+
     ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
     ql.uc.reg_write(UC_X86_REG_RBP, init_rbp)
     ql.uc.reg_write(UC_X86_REG_RDI, init_rdi)
     ql.uc.reg_write(UC_X86_REG_R14, init_rdi)
 
-    ql.dprint("[+] RSP = 0x%x" % (ql.stack_address))
-    ql.dprint("[+] RBP = 0x%x" % (init_rbp))
-    ql.dprint("[+] RDI = 0x%x" % (init_rdi))
+    ql.dprint(0, "[+] RSP = 0x%x" % (ql.stack_address))
+    ql.dprint(0, "[+] RBP = 0x%x" % (init_rbp))
+    ql.dprint(0, "[+] RDI = 0x%x" % (init_rdi))
 
     ql_setup_output(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
-
-    set_pe64_gdt(ql)
 
     ql_x8664_setup_gdt_segment_cs(ql)
     ql_x8664_setup_gdt_segment_ss(ql)
@@ -177,11 +135,15 @@ def runner(ql):
             
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM):
-            ql.nprint("[+] PC= " + hex(ql.pc))
+            ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
             ql.show_map_info()
-            buf = ql.uc.mem_read(ql.pc, 8)
-            ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-            ql_hook_code_disasm(ql, ql.pc, 64)
+            try:
+                buf = ql.uc.mem_read(ql.pc, 8)
+                ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                ql.nprint("\n")
+                ql_hook_code_disasm(ql, ql.pc, 64)
+            except:
+                pass
         raise
     
     if ql.internal_exception != None:

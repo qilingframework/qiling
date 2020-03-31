@@ -5,11 +5,12 @@
 
 import traceback
 import types
+import configparser
 
 from unicorn import *
 from unicorn.x86_const import *
 
-# impport read_string and other commom utils.
+# import read_string and other common utils.
 from qiling.loader.pe import PE, Shellcode
 from qiling.arch.x86 import *
 from qiling.os.windows.dlls import *
@@ -18,6 +19,7 @@ from qiling.os.memory import Heap
 from qiling.os.windows.registry import RegistryManager
 from qiling.os.windows.clipboard import Clipboard
 from qiling.os.windows.fiber import FiberManager
+from qiling.os.windows.const import Mapper
 
 QL_X86_WINDOWS_STACK_ADDRESS = 0xfffdd000
 QL_X86_WINDOWS_STACK_SIZE = 0x21000
@@ -28,7 +30,11 @@ QL_X86_WINDOWS_EMU_END = 0x0
 def hook_winapi(ql, address, size):
     # call win32 api
     if address in ql.PE.import_symbols:
-        winapi_name = ql.PE.import_symbols[address]['name'].decode()
+        winapi_name = ql.PE.import_symbols[address]['name']
+        if winapi_name is None:
+            winapi_name = Mapper[ql.PE.import_symbols[address]['dll']][ql.PE.import_symbols[address]['ordinal']]
+        else:
+            winapi_name = winapi_name.decode()
         winapi_func = None
 
         if winapi_name in ql.user_defined_api:
@@ -36,6 +42,8 @@ def hook_winapi(ql, address, size):
                 winapi_func = ql.user_defined_api[winapi_name]
         else:
             try:
+                counter = ql.PE.syscall_count.get(winapi_name, 0) + 1
+                ql.PE.syscall_count[winapi_name] = counter
                 winapi_func = globals()['hook_' + winapi_name]
             except KeyError:
                 winapi_func = None
@@ -44,10 +52,10 @@ def hook_winapi(ql, address, size):
             try:
                 winapi_func(ql, address, {})
             except Exception:
-                ql.dprint("[!] %s Exception Found" % winapi_name)
+                ql.dprint(0, "[!] %s Exception Found" % winapi_name)
                 raise QlErrorSyscallError("[!] Windows API Implementation Error")
         else:
-            ql.nprint("[!] %s is not implemented" % winapi_name)
+            ql.nprint("[!] %s is not implemented\n" % winapi_name)
             if ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
@@ -99,6 +107,11 @@ def setup_windows32(ql):
     ql.thread_manager = ThreadManager(ql, main_thread)
     new_handle = Handle(thread=main_thread)
     ql.handle_manager.append(new_handle)
+    # user configuration
+    ql.config = init_configuration(ql)
+    # variables used inside hooks
+    ql.hooks_variables = {}
+
 
 
 def loader_file(ql):
@@ -106,11 +119,10 @@ def loader_file(ql):
     ql.uc = uc
 
     # MAPPED Vars for loadPE32
-    if (ql.stack_address == 0): 
+    if ql.stack_address == 0:
         ql.stack_address = QL_X86_WINDOWS_STACK_ADDRESS
-    if (ql.stack_size == 0): 
+    if ql.stack_size == 0:
         ql.stack_size = QL_X86_WINDOWS_STACK_SIZE
-
 
     setup_windows32(ql)
 
@@ -129,9 +141,9 @@ def loader_shellcode(ql):
     ql.uc = uc
 
     # MAPPED Vars for loadPE32
-    if (ql.stack_address == 0):
+    if ql.stack_address == 0:
         ql.stack_address = QL_X86_WINDOWS_STACK_ADDRESS
-    if (ql.stack_size == 0): 
+    if ql.stack_size == 0:
         ql.stack_size = QL_X86_WINDOWS_STACK_SIZE
 
     ql.code_address = 0x40000
@@ -149,8 +161,19 @@ def loader_shellcode(ql):
     ql_setup_output(ql)
 
 
+def init_configuration(ql):
+    config = configparser.ConfigParser()
+    config.read(ql.config)
+    ql.dprint(2, "[+] Added configuration file")
+    for section in config.sections():
+        ql.dprint(2, "[+] Section: %s" % section)
+        for key in config[section]:
+            ql.dprint(2, "[-] %s %s" % (key, config[section][key]) )
+    return config
+
+
 def runner(ql):
-    if (ql.until_addr == 0):
+    if ql.until_addr == 0:
         ql.until_addr = QL_X86_WINDOWS_EMU_END
     try:
         if ql.shellcoder:
@@ -159,14 +182,20 @@ def runner(ql):
             ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            ql.nprint("[+] PC= " + hex(ql.pc))
+            ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
             ql.show_map_info()
-            buf = ql.uc.mem_read(ql.pc, 8)
-            ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-            ql_hook_code_disasm(ql, ql.pc, 64)
+            try:
+                buf = ql.uc.mem_read(ql.pc, 8)
+                ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                ql.nprint("\n")
+                ql_hook_code_disasm(ql, ql.pc, 64)
+            except:
+                pass
         raise
 
     ql.registry_manager.save()
 
-    if ql.internal_exception != None:
-        raise ql.internal_exception   
+    post_report(ql)
+
+    if ql.internal_exception is not None:
+        raise ql.internal_exception
