@@ -10,12 +10,14 @@ from qiling import *
 def test_gdb(path, rootfs):
     ql = Qiling(path, rootfs, output="off")
 
-    # enable gdbserver at default port 9999
-    ql.gdb = True
+    # Enable debugger to listen at localhost address, default port 9999
+    ql.debugger = True
 
-    # You can also customize address & port of GDB server
-    # ql.gdb = ":9999"  # GDB server listens to 0.0.0.0:9999
-    # ql.gdb = "127.0.0.1:9999"  # GDB server listens to 127.0.0.1:9999
+    # You can also customize address & port or type of debugging server
+    # ql.debugger= ":9999"  # GDB server listens to 0.0.0.0:9999
+    # ql.debugger = "127.0.0.1:9999"  # GDB server listens to 127.0.0.1:9999
+    # ql.debugger = "gdb:127.0.0.1:9999"  # GDB server listens to 127.0.0.1:9999
+    # ql.debugger = "idapro:127.0.0.1:9999"  # IDA pro server listens to 127.0.0.1:9999
 
     ql.run()  
 
