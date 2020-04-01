@@ -169,13 +169,19 @@ def hook_SHGetSpecialFolderPathW(ql, address, params):
     directory_id = params["csidl"]
     dst = params["pszPath"]
     if directory_id == CSIDL_COMMON_APPDATA:
-        path = ql.config["PATHS"]["appdata"]
+        path = ql.config["PATHS_ROOTFS"]["appdata"]
         # We always create the directory
-        dir = path.split("C:\\")[1].replace("\\", "/")
-        path_emulated = ql_transform_to_real_path(ql, dir)
+        appdata_dir = path
+        ql.dprint(0, "[+] dir path: %s" % appdata_dir)
+        path_emulated = ql_transform_to_real_path(ql, appdata_dir)
+        ql.dprint(0, "[!] emulated path: %s" % path_emulated)
         ql.uc.mem_write(dst, (path + "\x00").encode("utf-16le"))
+        # FIXME: Somehow winodws path is wrong
         if not os.path.exists(path_emulated):
-            os.makedirs(path_emulated, 0o755)
+            try:
+                os.makedirs(path_emulated, 0o755)
+            except:
+                ql.drpint(0, "[!] os.makedirs fail")    
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 1
