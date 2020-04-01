@@ -52,7 +52,6 @@ class Qiling:
             verbose=0,
             log_console=True,
             log_dir=None,
-            log_split=False,
             mmap_start=0,
             stack_address=0,
             stack_size=0,
@@ -72,7 +71,6 @@ class Qiling:
         self.libcache = libcache
         self.log_console = log_console
         self.log_dir = log_dir
-        self.log_split = log_split
         self.mmap_start = mmap_start
         self.stack_address = stack_address
         self.stack_size = stack_size
@@ -122,7 +120,8 @@ class Qiling:
         # Bind to localhost
         self.bindtolocalhost = False
         # required root permission
-        self.root = True        
+        self.root = True
+        self.log_split = False    
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -287,14 +286,18 @@ class Qiling:
             raise QlErrorOutput("[!] Verbose muse be int")    
         
         if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
-            raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUT_DEBUG, QL_OUT_DUMP or else ql.verbose must be 0")
+            raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUT_DEBUG or else ql.verbose must be 0")
 
-        if int(self.verbose) >= level:
-            if self.output == QL_OUT_DEBUG:
+        if self.output == QL_OUT_DUMP:
+                self.verbose = 99
+                #self.nprint(*args, **kw)
+                #msg = str(args[0]) + "\n"
+                #self.log_file_fd.debug(msg, **kw)
+
+        if int(self.verbose) >= level and self.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+                #self.nprint(*args, **kw)
                 self.log_file_fd.debug(*args, **kw)
-            elif self.output == QL_OUT_DUMP:
-                msg = str(args[0]) + "\n"
-                self.log_file_fd.debug(msg, **kw)
+
 
     def addr_to_str(self, addr, short=False, endian="big"):
         return ql_addr_to_str(self, addr, short, endian)

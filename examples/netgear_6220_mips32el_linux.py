@@ -30,11 +30,11 @@ def my_netgear(path, rootfs):
                 rootfs, 
                 output      = "debug", 
                 log_dir     = "qlog",
-                log_split   = True,
                 log_console = True,
                 mmap_start  = 0x7ffee000 - 0x800000,
                 )
 
+    ql.log_split        = True,
     ql.root             = False
     ql.bindtolocalhost  = True
     ql.multithread      = False

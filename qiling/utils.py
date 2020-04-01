@@ -328,7 +328,7 @@ def ql_setup_logging_stream(ql_mode, logger=None):
 
 def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
     # Create the file and directories if they do not exists
-    if not exists(log_file_path):
+    if not exists(log_file_path) and log_file_path.endswith(".qlog"):
         open(log_file_path, "a").close()
 
     # setup FileHandler for logging to disk file

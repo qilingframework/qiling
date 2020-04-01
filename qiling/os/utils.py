@@ -207,7 +207,7 @@ def ql_hook_code_disasm(ql, address, size):
         # FIXME: Need to name each reg
         for reg in ql.reg_table:
             REG_NAME = uc.reg_read(reg)
-            ql.dprint(3, "[-] 0x%x" % (REG_NAME))
+            ql.dprint(3, "[-] 0x%x\n" % (REG_NAME))
             
         #ql.nprint("[-] %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x\n" % \
                   #(syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1],
