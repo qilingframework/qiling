@@ -170,11 +170,10 @@ def hook_SHGetSpecialFolderPathW(ql, address, params):
     dst = params["pszPath"]
     if directory_id == CSIDL_COMMON_APPDATA:
         path = ql.config["PATHS"]["appdata"]
-        roofspath = ql.config["PATHS_ROOTFS"]["appdata"]
         # We always create the directory
-        appdata_dir = roofspath
-        ql.dprint(0, "[+] dir path: %s" % appdata_dir)
-        path_emulated = (ql.rootfs + appdata_dir)
+        appdata_dir = path.split("C:\\")[1].replace("\\", "/")
+        ql.dprint(0, "[+] dir path: %s" % path)
+        path_emulated = os.path.join(ql.rootfs, appdata_dir)
         ql.dprint(0, "[!] emulated path: %s" % path_emulated)
         ql.uc.mem_write(dst, (path + "\x00").encode("utf-16le"))
         # FIXME: Somehow winodws path is wrong
