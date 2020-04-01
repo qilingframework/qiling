@@ -53,21 +53,6 @@ def hook_WinExec(ql, address, params):
     return 33
 
 
-# DWORD GetEnvironmentVariableA(
-#   LPCSTR lpName,
-#   LPSTR  lpBuffer,
-#   DWORD  nSize
-# );
-@winapi(cc=STDCALL, params={
-    "lpName": STRING,
-    "lpBuffer": POINTER,
-    "nSize": DWORD
-})
-def hook_GetEnvironmentVariableA(ql, address, params):
-    ret = 0
-    return ret
-
-
 # DECLSPEC_ALLOCATOR HLOCAL LocalAlloc(
 #   UINT   uFlags,
 #   SIZE_T uBytes

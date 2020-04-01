@@ -47,17 +47,6 @@ def hook_GetVersionExW(ql, address, params):
     return 1
 
 
-# NOT_BUILD_WINDOWS_DEPRECATE BOOL GetVersionExA(
-#   LPOSVERSIONINFOA lpVersionInformation
-# );
-@winapi(cc=STDCALL, params={
-    "lpVersionInformation": POINTER
-})
-def hook_GetVersionExA(ql, address, params):
-    ret = 1
-    return ret
-
-
 # typedef struct _SYSTEM_INFO {
 #   union {
 #     DWORD dwOemId;

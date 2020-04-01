@@ -95,3 +95,19 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
     if len(result) <= max_size:
         ql.uc.mem_write(dst, result)
     return len(result)
+
+
+# DWORD GetEnvironmentVariableA(
+#   LPCSTR lpName,
+#   LPSTR  lpBuffer,
+#   DWORD  nSize
+# );
+@winapi(cc=STDCALL, params={
+    "lpName": STRING,
+    "lpBuffer": POINTER,
+    "nSize": DWORD
+})
+def hook_GetEnvironmentVariableA(ql, address, params):
+    ret = 0
+    return ret
+
