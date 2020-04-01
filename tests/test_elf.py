@@ -151,7 +151,8 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_arm(self):     
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", log_dir='logs', log_split=True)
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", log_dir='logs')
+        ql.log_split=True
         ql.run()
         del ql
 
