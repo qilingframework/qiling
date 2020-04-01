@@ -87,4 +87,33 @@ class ARM(Arch):
             UC_ARM_REG_R12, UC_ARM_REG_SP, UC_ARM_REG_LR,
             UC_ARM_REG_PC, UC_ARM_REG_CPSR
             ]
-        return registers_table      
+        return registers_table
+
+    # set register name
+    def set_reg_name(self):
+        pass  
+
+    def get_reg_name(self, uc_reg):
+        adapter = {
+            UC_ARM_REG_R0: "R0",
+            UC_ARM_REG_R1: "R1", 
+            UC_ARM_REG_R2: "R2",
+            UC_ARM_REG_R3: "R3", 
+            UC_ARM_REG_R4: "R4", 
+            UC_ARM_REG_R5: "R5",
+            UC_ARM_REG_R6: "R6", 
+            UC_ARM_REG_R7: "R7", 
+            UC_ARM_REG_R8: "R8",
+            UC_ARM_REG_R9: "R9", 
+            UC_ARM_REG_R10: "R11", 
+            UC_ARM_REG_R11: "R12",
+            UC_ARM_REG_R12: "R13", 
+            UC_ARM_REG_SP: "SP", 
+            UC_ARM_REG_LR: "LR",
+            UC_ARM_REG_PC: "PC", 
+            UC_ARM_REG_CPSR: "CPSR",
+        }
+        if uc_reg in adapter:
+            return adapter[uc_reg]
+        # invalid
+        return None

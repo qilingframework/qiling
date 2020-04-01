@@ -114,8 +114,43 @@ class X86(Arch):
             UC_X86_REG_ST2, UC_X86_REG_ST3, UC_X86_REG_ST4,
             UC_X86_REG_ST5, UC_X86_REG_ST6, UC_X86_REG_ST7
             ]
-        return registers_table  
+        return registers_table
 
+    # set register name
+    def set_reg_name(self):
+        pass  
+
+    def get_reg_name(self, uc_reg):
+        adapter = {
+            UC_X86_REG_EAX: "EAX", 
+            UC_X86_REG_ECX: "ECX", 
+            UC_X86_REG_EDX: "EDX",
+            UC_X86_REG_EBX: "EBX", 
+            UC_X86_REG_ESP: "ESP", 
+            UC_X86_REG_EBP: "EBP",
+            UC_X86_REG_ESI: "ESI", 
+            UC_X86_REG_EDI: "EDI", 
+            UC_X86_REG_EIP: "EIP",
+            UC_X86_REG_EFLAGS: "EF", 
+            UC_X86_REG_CS: "CS", 
+            UC_X86_REG_SS: "SS",
+            UC_X86_REG_DS: "DS", 
+            UC_X86_REG_ES: "ES", 
+            UC_X86_REG_FS: "FS",
+            UC_X86_REG_GS: "GS", 
+            UC_X86_REG_ST0: "ST0", 
+            UC_X86_REG_ST1: "ST1",
+            UC_X86_REG_ST2: "ST2", 
+            UC_X86_REG_ST3: "ST3", 
+            UC_X86_REG_ST4: "ST4",
+            UC_X86_REG_ST5: "ST5", 
+            UC_X86_REG_ST6: "ST6", 
+            UC_X86_REG_ST7: "ST7"
+        }
+        if uc_reg in adapter:
+            return adapter[uc_reg]
+        # invalid
+        return None
 
 class X8664(Arch):
     def __init__(self, ql):
@@ -189,7 +224,51 @@ class X8664(Arch):
             UC_X86_REG_ST2, UC_X86_REG_ST3, UC_X86_REG_ST4,
             UC_X86_REG_ST5, UC_X86_REG_ST6, UC_X86_REG_ST7
             ]
-        return registers_table          
+        return registers_table  
+
+    # set register name
+    def set_reg_name(self):
+        pass  
+
+    def get_reg_name(self, uc_reg):
+        adapter = {
+            UC_X86_REG_RAX: "RAX", 
+            UC_X86_REG_RCX: "RCX", 
+            UC_X86_REG_RDX: "RDX",
+            UC_X86_REG_RBX: "RBX", 
+            UC_X86_REG_RSP: "RSP", 
+            UC_X86_REG_RBP: "RBP",
+            UC_X86_REG_RSI: "RSI", 
+            UC_X86_REG_RDI: "RDI", 
+            UC_X86_REG_RIP: "RIP",
+            UC_X86_REG_R8: "R8",
+            UC_X86_REG_R9: "R9", 
+            UC_X86_REG_R10: "R10",
+            UC_X86_REG_R11: "R11",
+            UC_X86_REG_R12: "R12", 
+            UC_X86_REG_R13: "R13", 
+            UC_X86_REG_R14: "R14",
+            UC_X86_REG_R15: "R15",
+            UC_X86_REG_EFLAGS: "EF", 
+            UC_X86_REG_CS: "CS", 
+            UC_X86_REG_SS: "SS",
+            UC_X86_REG_DS: "DS", 
+            UC_X86_REG_ES: "ES", 
+            UC_X86_REG_FS: "FS",
+            UC_X86_REG_GS: "GS", 
+            UC_X86_REG_ST0: "ST0", 
+            UC_X86_REG_ST1: "ST1",
+            UC_X86_REG_ST2: "ST2", 
+            UC_X86_REG_ST3: "ST3", 
+            UC_X86_REG_ST4: "ST4",
+            UC_X86_REG_ST5: "ST5", 
+            UC_X86_REG_ST6: "ST6", 
+            UC_X86_REG_ST7: "ST7"
+        }
+        if uc_reg in adapter:
+            return adapter[uc_reg]
+        # invalid
+        return None                
 
 def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_ADDR, SEGMENT_SIZE, SPORT, RPORT, GDTTYPE):
     # create segment index

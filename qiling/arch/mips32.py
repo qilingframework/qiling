@@ -84,4 +84,54 @@ class MIPS32(Arch):
             UC_MIPS_REG_LO, UC_MIPS_REG_HI, UC_MIPS_REG_INVALID,
             UC_MIPS_REG_INVALID, UC_MIPS_REG_PC
             ]
-        return registers_table              
+        return registers_table  
+
+    # set register name
+    def set_reg_name(self):
+        pass  
+
+    def get_reg_name(self, uc_reg):
+        adapter = {
+            UC_MIPS_REG_0: "0", 
+            UC_MIPS_REG_1: "1", 
+            UC_MIPS_REG_2: "2",
+            UC_MIPS_REG_3: "3", 
+            UC_MIPS_REG_4: "4", 
+            UC_MIPS_REG_5: "5",
+            UC_MIPS_REG_6: "6", 
+            UC_MIPS_REG_7: "7", 
+            UC_MIPS_REG_8: "8",
+            UC_MIPS_REG_9: "9", 
+            UC_MIPS_REG_10: "10", 
+            UC_MIPS_REG_11: "11",
+            UC_MIPS_REG_12: "12", 
+            UC_MIPS_REG_13: "13", 
+            UC_MIPS_REG_14: "14",
+            UC_MIPS_REG_15: "15", 
+            UC_MIPS_REG_16: "16",
+            UC_MIPS_REG_17: "17",
+            UC_MIPS_REG_18: "18", 
+            UC_MIPS_REG_19: "19", 
+            UC_MIPS_REG_20: "20",
+            UC_MIPS_REG_21: "21", 
+            UC_MIPS_REG_22: "22", 
+            UC_MIPS_REG_23: "23",
+            UC_MIPS_REG_24: "24", 
+            UC_MIPS_REG_25: "25", 
+            UC_MIPS_REG_26: "26",
+            UC_MIPS_REG_27: "27", 
+            UC_MIPS_REG_28: "28", 
+            UC_MIPS_REG_29: "SP",
+            UC_MIPS_REG_30: "30", 
+            UC_MIPS_REG_31: "31", 
+            UC_MIPS_REG_INVALID: "INV",
+            UC_MIPS_REG_LO: "LO", 
+            UC_MIPS_REG_HI: "HI", 
+            UC_MIPS_REG_INVALID: "INV",
+            UC_MIPS_REG_INVALID: "INV", 
+            UC_MIPS_REG_PC: "PC"
+        }
+        if uc_reg in adapter:
+            return adapter[uc_reg]
+        # invalid
+        return None         

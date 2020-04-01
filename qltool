@@ -231,10 +231,10 @@ if __name__ == '__main__':
 
         if options.filename != '' and options.run_args == []:
             ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, 
-                        output=options.output, log_console=options.console, log_dir=options.log_dir)
+                        output=options.output, log_console = options.console, log_dir=options.log_dir)
         elif options.filename == '' and options.args == [] and options.run_args != []:
             ql = Qiling(filename=options.run_args, rootfs=options.rootfs, output=options.output, 
-                        log_console=options.console, log_dir=options.log_dir)
+                        log_console = options.console, log_dir=options.log_dir)
         else:
             print("ERROR: Command error!")
             usage()

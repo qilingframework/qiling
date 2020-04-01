@@ -57,4 +57,13 @@ class Arch:
 
     # get PC register
     def get_reg_table(self):
-        pass   
+        pass
+    
+    # get register name
+    def get_reg_name(self):
+        pass
+
+    # set register name
+    def set_reg_name(self, uc_reg):
+        pass  
+   

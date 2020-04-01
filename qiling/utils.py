@@ -309,15 +309,16 @@ def ql_setup_logger(logger_name=None):
     return logger
 
 
-def ql_setup_logging_stream(ql_mode, logger=None):
+def ql_setup_logging_stream(ql, logger=None):
+    ql_mode = ql.output
 
     # setup StreamHandler for logging to stdout
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
 
-    if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
-        # use empty string for newline if disasm or dump mode was enabled
-        ch.terminator = ""
+    # if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
+    #     # use empty string for newline if disasm or dump mode was enabled
+    #     ch.terminator = ""
 
     if logger is None:
         logger = ql_setup_logger()
@@ -335,9 +336,9 @@ def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
     fh = logging.FileHandler('%s.qlog' % log_file_path)
     fh.setLevel(logging.DEBUG)
 
-    if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
-        # use empty string for newline if disasm or dump mode was enabled
-        fh.terminator = ""
+    # if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
+    #     # use empty string for newline if disasm or dump mode was enabled
+    #     fh.terminator = ""
 
     if logger is None:
         logger = ql_setup_logger()

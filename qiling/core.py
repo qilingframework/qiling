@@ -142,7 +142,7 @@ class Qiling:
             elif not os.path.exists(str(self.filename[0])) or not os.path.exists(self.rootfs):
                 raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
 
-        _logger = ql_setup_logging_stream(self.output)
+        _logger = ql_setup_logging_stream(self)
 
         if self.log_dir is not None and type(self.log_dir) == str:
 
@@ -270,8 +270,9 @@ class Qiling:
         else:
             fd = self.log_file_fd
 
-        if self.output != QL_OUT_OFF:
-            fd.info(*args, **kw)
+        # FIXME: this is not right
+        #if self.log_console == True:
+        fd.info(*args, **kw)
 
         if fd is not None:
             if isinstance(fd, logging.FileHandler):
@@ -290,13 +291,9 @@ class Qiling:
 
         if self.output == QL_OUT_DUMP:
                 self.verbose = 99
-                #self.nprint(*args, **kw)
-                #msg = str(args[0]) + "\n"
-                #self.log_file_fd.debug(msg, **kw)
 
         if int(self.verbose) >= level and self.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                #self.nprint(*args, **kw)
-                self.log_file_fd.debug(*args, **kw)
+                self.nprint(*args, **kw)
 
 
     def addr_to_str(self, addr, short=False, endian="big"):
@@ -621,6 +618,14 @@ class Qiling:
     @property
     def reg_table(self):
         return self.archfunc.get_reg_table()
+
+    @property
+    def reg_name(self):
+        return self.archfunc.get_reg_name(self.uc_reg_name)
+
+    @reg_name.setter
+    def reg_name(self, uc_reg):
+        self.uc_reg_name = uc_reg
 
     # get PC register value
     @property
