@@ -22,6 +22,7 @@ REM
 REM  Dlls
 REM
 if exist %WINDIR%\SysWOW64\advapi32.dll xcopy /f /y %WINDIR%\SysWOW64\advapi32.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
+if exist %WINDIR%\SysWOW64\rpcrt4.dll xcopy /f /y %WINDIR%\SysWOW64\rpcrt4.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\SysWOW64\crypt32.dll xcopy /f /y %WINDIR%\SysWOW64\crypt32.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\SysWOW64\iphlpapi.dll xcopy /f /y %WINDIR%\SysWOW64\iphlpapi.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\SysWOW64\kernel32.dll xcopy /f /y %WINDIR%\SysWOW64\kernel32.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
