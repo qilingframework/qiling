@@ -7,6 +7,7 @@ import struct
 import time
 from qiling.os.windows.const import *
 from qiling.os.fncc import *
+from qiling.os.utils import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.memory import align
@@ -171,7 +172,7 @@ def hook_SHGetSpecialFolderPathW(ql, address, params):
         path = ql.config["PATHS"]["appdata"]
         # We always create the directory
         dir = path.split("C:\\")[1].replace("\\", "/")
-        path_emulated = os.path.join(ql.rootfs, dir)
+        path_emulated = ql_transform_to_real_path(ql, dir)
         ql.uc.mem_write(dst, (path + "\x00").encode("utf-16le"))
         if not os.path.exists(path_emulated):
             os.makedirs(path_emulated, 0o755)

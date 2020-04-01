@@ -45,9 +45,9 @@ def test_pe_win_x86_gandcrab():
         print("Ok for now")
         ql.uc.emu_stop()
 
-    ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab.bin"], "../examples/rootfs/x86_windows",
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                 output="debug")
-    ql.hook_address(stop, 0x10029ce0)
+    ql.hook_address(stop, 0x10040b07)
     ql.run()
     del ql
 
@@ -182,4 +182,4 @@ if __name__ == "__main__":
     test_pe_win_x8664_customapi()
     test_pe_win_x86_uselessdisk()
     test_pe_win_x86_crackme()
-    # test_pe_win_x86_gandcrab()
+    test_pe_win_x86_gandcrab()
