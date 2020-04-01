@@ -315,7 +315,12 @@ def ql_setup_logging_stream(ql, logger=None):
     # setup StreamHandler for logging to stdout
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
-
+    
+    """
+    guess this was added due to the incompatablity
+    with print ("", end ="") with logger, 
+    fix it with concat, will keep it for now
+    """
     # if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
     #     # use empty string for newline if disasm or dump mode was enabled
     #     ch.terminator = ""
@@ -335,7 +340,12 @@ def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
     # setup FileHandler for logging to disk file
     fh = logging.FileHandler('%s.qlog' % log_file_path)
     fh.setLevel(logging.DEBUG)
-
+    
+    """
+    guess this was added due to the incompatablity
+    with print ("", end ="") with logger, 
+    fix it with concat, will keep it for now
+    """
     # if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
     #     # use empty string for newline if disasm or dump mode was enabled
     #     fh.terminator = ""
