@@ -513,6 +513,25 @@ def hook_wsprintfW(ql, address, params):
     ql.uc.mem_write(dst, (string + "\x00").encode("utf-16le"))
     return size
 
+# int WINAPIV wsprintfW(
+#   LPWSTR  ,
+#   LPCWSTR ,
+#   ...
+# );
+@winapi(cc=CDECL, param_num=3)
+def hook_sprintf(ql, address, params):
+    dst, p_format, p_args = get_function_param(ql, 3)
+    format_string = read_wstring(ql, p_format)
+    size, string = printf(ql, address, format_string, p_args, "sprintf", wstring=True)
+
+    count = format_string.count('%')
+    if ql.arch == QL_X8664:
+        # We must pop the stack correctly
+        raise QlErrorNotImplemented("[!] API not implemented")
+
+    ql.uc.mem_write(dst, (string + "\x00").encode("utf-16le"))
+    return size
+
 
 # HWND GetForegroundWindow();
 @winapi(cc=STDCALL, params={
