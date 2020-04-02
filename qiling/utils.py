@@ -313,7 +313,8 @@ def ql_setup_logging_stream(ql, logger=None):
     ql_mode = ql.output
 
     # setup StreamHandler for logging to stdout
-    ch = logging.StreamHandler()
+    #ch = logging.StreamHandler()
+    ch = logging.getLogger()
     ch.setLevel(logging.DEBUG)
     
     """
