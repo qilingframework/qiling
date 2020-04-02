@@ -171,7 +171,7 @@ def ql_arm_thread_set_tls(ql, th, arg):
     uc.reg_write(UC_ARM_REG_R0, address)
     
 
-def ql_syscall_arm_settls(ql, address, null0, null1, null2, null3, null4):
+def ql_syscall_arm_settls(ql, address, *args, **kw):
     #ql.nprint("settls(0x%x)" % address)
     
     if ql.thread_management != None and ql.multithread == True:

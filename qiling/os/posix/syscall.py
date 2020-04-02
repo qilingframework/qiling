@@ -34,10 +34,10 @@ from qiling.os.posix.filestruct import *
 from qiling.os.posix.constant_mapping import *
 from qiling.utils import *
 
-def ql_syscall_exit(ql, null0, null1, null2, null3, null4, null5):
-    ql.exit_code = null0
+def ql_syscall_exit(ql, exitcode, *args, **kw):
+    ql.exit_code = exitcode
     
-    ql.nprint("exit(%u) = %u" % (null0, null0))
+    ql.nprint("exit(%u) = %u" % (exitcode, exitcode))
     
     if ql.child_processes == True:
         os._exit(0)
@@ -45,7 +45,7 @@ def ql_syscall_exit(ql, null0, null1, null2, null3, null4, null5):
     ql.stop(stop_event = THREAD_EVENT_EXIT_EVENT)
 
 
-def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
+def ql_syscall_munmap(ql, munmap_addr , munmap_len, *args, **kw):
     munmap_len = ((munmap_len + 0x1000 - 1) // 0x1000) * 0x1000
     ql.uc.mem_unmap(munmap_addr, munmap_len)
     regreturn = 0
@@ -85,7 +85,7 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
+def ql_syscall_exit_group(ql, exit_code, *args, **kw):
     ql.exit_code = exit_code
 
     ql.nprint("exit_group(%u)" % ql.exit_code)
@@ -96,13 +96,13 @@ def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
     ql.stop()
     
 
-def ql_syscall_madvise(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_madvise(ql, *args, **kw):
     regreturn = 0
     ql.nprint("madvise() = %d" %  regreturn)
     ql_definesyscall_return(ql, regreturn)    
 
 
-def ql_syscall_sysinfo(ql, sysinfo_info, null0, null1, null2, null3, null4):
+def ql_syscall_sysinfo(ql, sysinfo_info, *args, **kw):
 
     data = b''   
     data += struct.pack("QQQQQQQQQQHQQI",
@@ -128,7 +128,7 @@ def ql_syscall_sysinfo(ql, sysinfo_info, null0, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn)    
 
 
-def ql_syscall_alarm(ql, alarm_seconds, null0, null1, null2, null3, null4):
+def ql_syscall_alarm(ql, alarm_seconds, *args, **kw):
     regreturn = 0
     ql.nprint("alarm(%d) = %d" % (alarm_seconds, regreturn))
     ql_definesyscall_return(ql, regreturn)    
@@ -141,7 +141,7 @@ def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn) 
 
 
-def ql_syscall_issetugid(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_issetugid(ql, *args, **kw):
     if ql.root == False:
         UGID = 0
     else:    
@@ -151,7 +151,7 @@ def ql_syscall_issetugid(ql, null0, null1, null2, null3, null4, null5):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_getuid(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_getuid(ql, *args, **kw):
     if ql.root == False:
         UID = 0
     else:    
@@ -161,7 +161,7 @@ def ql_syscall_getuid(ql, null0, null1, null2, null3, null4, null5):
     ql_definesyscall_return(ql, regreturn)    
 
 
-def ql_syscall_getuid32(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_getuid32(ql, *args, **kw):
     if ql.root == False:
         UID = 0
     else:    
@@ -171,7 +171,7 @@ def ql_syscall_getuid32(ql, null0, null1, null2, null3, null4, null5):
     ql_definesyscall_return(ql, regreturn)  
 
 
-def ql_syscall_getgid32(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_getgid32(ql, *args, **kw):
     if ql.root == False:
         GID = 0
     else:    
@@ -181,7 +181,7 @@ def ql_syscall_getgid32(ql, null0, null1, null2, null3, null4, null5):
     ql_definesyscall_return(ql, regreturn)  
 
 
-def ql_syscall_geteuid(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_geteuid(ql, *args, **kw):
     if ql.root == False:
         EUID = 0
     else:    
@@ -191,7 +191,7 @@ def ql_syscall_geteuid(ql, null0, null1, null2, null3, null4, null5):
     ql_definesyscall_return(ql, regreturn) 
 
 
-def ql_syscall_getegid(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_getegid(ql, *args, **kw):
     if ql.root == False:
         EGID = 0
     else:    
@@ -201,7 +201,7 @@ def ql_syscall_getegid(ql, null0, null1, null2, null3, null4, null5):
     ql_definesyscall_return(ql, regreturn) 
 
 
-def ql_syscall_getgid(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_getgid(ql, *args, **kw):
     if ql.root == False:
         GID = 0
     else:    
@@ -211,7 +211,7 @@ def ql_syscall_getgid(ql, null0, null1, null2, null3, null4, null5):
     ql_definesyscall_return(ql, regreturn)    
 
 
-def ql_syscall_setgroups(ql, gidsetsize, grouplist, null0, null1, null2, null3):
+def ql_syscall_setgroups(ql, gidsetsize, grouplist, *args, **kw):
     if ql.root == False:
         GID = 0
     else:    
@@ -222,7 +222,7 @@ def ql_syscall_setgroups(ql, gidsetsize, grouplist, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)    
 
 
-def ql_syscall_setgid(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_setgid(ql, *args, **kw):
     if ql.root == False:
         GID = 0
     else:    
@@ -232,7 +232,7 @@ def ql_syscall_setgid(ql, null0, null1, null2, null3, null4, null5):
     ql_definesyscall_return(ql, regreturn)           
 
 
-def ql_syscall_setuid(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_setuid(ql, *args, **kw):
     if ql.root == False:
         UID = 0
     else:    
@@ -242,7 +242,7 @@ def ql_syscall_setuid(ql, null0, null1, null2, null3, null4, null5):
     ql_definesyscall_return(ql, regreturn)     
 
 
-def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, null0, null1, null2):
+def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, *args, **kw):
 
     access_path = ql_read_string(ql, faccessat_filename)
     real_path = ql_transform_to_real_path(ql, access_path)
@@ -265,7 +265,7 @@ def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, 
         ql.dprint(0, "[+] File Found: %s" % access_path)
 
 
-def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
+def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
     path = ql_read_string(ql, filename)
     real_path = ql_transform_to_real_path(ql, path)
     relative_path = ql_transform_to_relative_path(ql, path)
@@ -303,7 +303,7 @@ def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, null0, null1):
+def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args, **kw):
     openat_fd = ql.unpacks(ql.pack(openat_fd))
     openat_path = ql_read_string(ql, openat_path)
 
@@ -344,7 +344,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, null0, null1, null2):
+def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, *args, **kw):
     lseek_ofset = ql.unpacks(ql.pack(lseek_ofset))
     regreturn = 0
     ql.dprint(0, "lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
@@ -356,7 +356,7 @@ def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, null0, null1, null
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, null0):
+def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, *args, **kw):
     offset = offset_high << 32 | offset_low
     origin = whence
     regreturn = 0
@@ -373,7 +373,7 @@ def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, null0):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_brk(ql, brk_input, null0, null1, null2, null3, null4):
+def ql_syscall_brk(ql, brk_input, *args, **kw):
     ql.nprint("brk(0x%x)" % brk_input)
     if brk_input != 0:
         if brk_input > ql.brk_address:
@@ -385,7 +385,7 @@ def ql_syscall_brk(ql, brk_input, null0, null1, null2, null3, null4):
     ql.dprint(0, "[+] brk return(0x%x)" % ql.brk_address)
 
 
-def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, null1, null2):
+def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, *args, **kw):
     regreturn = 0
     ql.nprint("mprotect(0x%x, 0x%x, 0x%x) = %d" % (mprotect_start, mprotect_len, mprotect_prot, regreturn))
     ql.dprint(1, "[+] mprotect(0x%x, 0x%x, %s) = %d" % (
@@ -418,7 +418,7 @@ def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, 
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_uname(ql, address, null0, null1, null2, null3, null4):
+def ql_syscall_uname(ql, address, *args, **kw):
     buf =  b''
     buf += b'QilingOS'.ljust(65, b'\x00')
     buf += b'ql_vm'.ljust(65, b'\x00')
@@ -432,7 +432,7 @@ def ql_syscall_uname(ql, address, null0, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_access(ql, access_path, access_mode, null0, null1, null2, null3):
+def ql_syscall_access(ql, access_path, access_mode, *args, **kw):
     path = (ql_read_string(ql, access_path))
 
     real_path = ql_transform_to_real_path(ql, path)
@@ -452,7 +452,7 @@ def ql_syscall_access(ql, access_path, access_mode, null0, null1, null2, null3):
         ql.dprint(0, "[!] No such file or directory")
 
 
-def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4):
+def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     # according to the linux kernel this is only for the ia32 compatibility
     _struct = []
 
@@ -542,7 +542,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
+def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, *args, **kw):
     ql.dprint(0, "[+] log mmap - mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
     mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
     ql.dprint(1, "[+] log mmap - mmap(0x%x, 0x%x, %s, %s, %d, %d)" % (
@@ -630,7 +630,7 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
+def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, *args, **kw):
     # this is ugly patch, we might need to get value from elf parse,
     # is32bit or is64bit value not by arch
    
@@ -708,7 +708,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_close(ql, close_fd, null0, null1, null2, null3, null4):
+def ql_syscall_close(ql, close_fd, *args, **kw):
     regreturn = -1
     if close_fd < 256 and ql.file_des[close_fd] != 0:
         ql.file_des[close_fd].close()
@@ -718,7 +718,7 @@ def ql_syscall_close(ql, close_fd, null0, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstatat64_flag, null0, null1):
+def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstatat64_flag, *args, **kw):
     fstatat64_fname = ql_read_string(ql, fstatat64_fname)
 
     real_path = ql_transform_to_real_path(ql, fstatat64_fname)
@@ -774,7 +774,7 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, null0, null1, null2, null3):
+def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
     if fstat64_fd < 256 and ql.file_des[fstat64_fd] != 0:
         user_fileno = fstat64_fd
         fstat64_info = ql.file_des[user_fileno].fstat()
@@ -845,7 +845,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_fstat(ql, fstat_fd, fstat_add, null0, null1, null2, null3):
+def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
     
     if fstat_fd < 256 and ql.file_des[fstat_fd] != 0:
         user_fileno = fstat_fd
@@ -921,7 +921,7 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, null0, null1, null2, null3):
 
 
 # int stat64(const char *pathname, struct stat64 *buf);
-def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, null0, null1, null2, null3):
+def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
     stat64_file = (ql_read_string(ql, stat64_pathname))
 
     real_path = ql_transform_to_real_path(ql, stat64_file)
@@ -994,7 +994,7 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, null0, null1, null2, 
 
 
 # int stat(const char *path, struct stat *buf);
-def ql_syscall_stat(ql, stat_path, stat_buf_ptr, null0, null1, null2, null3):
+def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
     stat_file = (ql_read_string(ql, stat_path))
 
     real_path = ql_transform_to_real_path(ql, stat_file)
@@ -1054,7 +1054,7 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
     
     
-def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, null0, null1, null2, null3):
+def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
     lstat_file = (ql_read_string(ql, lstat_path))
 
     real_path = ql_transform_to_real_path(ql, lstat_file)
@@ -1113,7 +1113,7 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, null0, null1, null2, null3):
         ql.dprint(0, "[!] lstat() read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
-def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, null0, null1):
+def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, *args, **kw):
     data = None
     if read_fd < 256 and ql.file_des[read_fd] != 0:
         try:
@@ -1130,7 +1130,7 @@ def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, null0, null1)
     ql.nprint("pread(%d, 0x%x, 0x%x, 0x%x) = 0x%x" % (read_fd, read_buf, read_len, read_offt, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
-def ql_syscall_read(ql, read_fd, read_buf, read_len, null0, null1, null2):
+def ql_syscall_read(ql, read_fd, read_buf, read_len, *args, **kw):
     data = None
     if read_fd < 256 and ql.file_des[read_fd] != 0:
         try:
@@ -1149,13 +1149,13 @@ def ql_syscall_read(ql, read_fd, read_buf, read_len, null0, null1, null2):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
+def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
     regreturn = 0
     buf = None
     
     try:
         buf = ql.uc.mem_read(write_buf, write_count)
-        ql.nprint("\nwrite(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
+        ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         if buf:
             ql.dprint(1, "[+] write() CONTENT:")
             ql.dprint(1, "%s" % buf)
@@ -1172,7 +1172,7 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_writev(ql, writev_fd, writev_vec, writev_vien, null0, null1, null2):
+def ql_syscall_writev(ql, writev_fd, writev_vec, writev_vien, *args, **kw):
     regreturn = 0
     size_t_len = ql.archbit // 8
     iov = ql.uc.mem_read(writev_vec, writev_vien * size_t_len * 2)
@@ -1186,7 +1186,7 @@ def ql_syscall_writev(ql, writev_fd, writev_vec, writev_vien, null0, null1, null
     ql_definesyscall_return(ql, regreturn)    
     
 
-def ql_syscall_archprctl(ql, null0, ARCH_SET_FS, null1, null2, null3, null4):
+def ql_syscall_archprctl(ql, input0, ARCH_SET_FS, null1, null2, null3, null4):
     FSMSR = 0xC0000100
     ql.uc.msr_write(FSMSR, ARCH_SET_FS)
     regreturn = 0
@@ -1194,13 +1194,13 @@ def ql_syscall_archprctl(ql, null0, ARCH_SET_FS, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_prctl(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_prctl(ql, *args, **kw):
     regreturn = 0
     ql.nprint("prctl() = %d" % (regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_readlink(ql, path_name, path_buff, path_buffsize, null0, null1, null2):
+def ql_syscall_readlink(ql, path_name, path_buff, path_buffsize, *args, **kw):
     pathname = (ql.uc.mem_read(path_name, 0x100).split(b'\x00'))[0]
     pathname = str(pathname, 'utf-8', errors="ignore")
 
@@ -1222,7 +1222,7 @@ def ql_syscall_readlink(ql, path_name, path_buff, path_buffsize, null0, null1, n
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_getcwd(ql, path_buff, path_buffsize, null0, null1, null2, null3):
+def ql_syscall_getcwd(ql, path_buff, path_buffsize, *args, **kw):
     localpath = ql_transform_to_relative_path(ql, './')
     localpath = bytes(localpath, 'utf-8') + b'\x00'
     ql.uc.mem_write(path_buff, localpath)
@@ -1235,7 +1235,7 @@ def ql_syscall_getcwd(ql, path_buff, path_buffsize, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_chdir(ql, path_name, null0, null1, null2, null3, null4):
+def ql_syscall_chdir(ql, path_name, *args, **kw):
     regreturn = 0
     pathname = ql_read_string(ql, path_name)
 
@@ -1254,7 +1254,7 @@ def ql_syscall_chdir(ql, path_name, null0, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn)     
 
 
-def ql_syscall_readlinkat(ql, readlinkat_dfd, readlinkat_path, readlinkat_buf, readlinkat_bufsiz, null0, null1):
+def ql_syscall_readlinkat(ql, readlinkat_dfd, readlinkat_path, readlinkat_buf, readlinkat_bufsiz, *args, **kw):
     pathname = (ql.uc.mem_read(readlinkat_path, 0x100).split(b'\x00'))[0]
     pathname = str(pathname, 'utf-8', errors="ignore")
 
@@ -1276,7 +1276,7 @@ def ql_syscall_readlinkat(ql, readlinkat_dfd, readlinkat_path, readlinkat_buf, r
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_ugetrlimit(ql, ugetrlimit_resource, ugetrlimit_rlim, null0, null1, null2, null3):
+def ql_syscall_ugetrlimit(ql, ugetrlimit_resource, ugetrlimit_rlim, *args, **kw):
     rlim = resource.getrlimit(ugetrlimit_resource)
     ql.uc.mem_write(ugetrlimit_rlim, ql.pack32s(rlim[0]) + ql.pack32s(rlim[1]))
     regreturn = 0
@@ -1284,7 +1284,7 @@ def ql_syscall_ugetrlimit(ql, ugetrlimit_resource, ugetrlimit_rlim, null0, null1
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_setrlimit(ql, setrlimit_resource, setrlimit_rlim, null0, null1, null2, null3):
+def ql_syscall_setrlimit(ql, setrlimit_resource, setrlimit_rlim, *args, **kw):
     # maybe we can nop the setrlimit
     tmp_rlim = (ql.unpack32s(ql.uc.mem_read(setrlimit_rlim, 4)), ql.unpack32s(ql.uc.mem_read(setrlimit_rlim + 4, 4)))
     resource.setrlimit(setrlimit_resource, tmp_rlim)
@@ -1294,7 +1294,7 @@ def ql_syscall_setrlimit(ql, setrlimit_resource, setrlimit_rlim, null0, null1, n
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_prlimit64(ql, pid, resource, new_limit, old_limit, null0, null1):
+def ql_syscall_prlimit64(ql, pid, resource, new_limit, old_limit, *args, **kw):
     # setrlimit() and getrlimit()
     #if pid == 0:
     #    ql_syscall_setrlimit(ql, resource, new_limit, 0, 0, 0, 0);
@@ -1308,7 +1308,7 @@ def ql_syscall_prlimit64(ql, pid, resource, new_limit, old_limit, null0, null1):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, null0, null1, null2):
+def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, *args, **kw):
     if rt_sigaction_oldact != 0:
         if ql.sigaction_act[rt_sigaction_signum] == 0:
             ql.uc.mem_write(rt_sigaction_oldact, b'\x00' * 20)
@@ -1329,7 +1329,7 @@ def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigact
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, null0, null1, null2):
+def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, *args, **kw):
     TCGETS = 0x5401
     TIOCGWINSZ = 0x5413
     TIOCSWINSZ = 0x5414
@@ -1423,19 +1423,19 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, null0, null1, null2):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_getpid(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_getpid(ql, *args, **kw):
     regreturn= 0x512
     ql.nprint("getpid() = %d" % (regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_getppid(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_getppid(ql, *args, **kw):
     regreturn= 0x1024
     ql.nprint("getpid() = %d" % (regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_sigprocmask_oset, rt_sigprocmask_sigsetsize, null0, null1):
+def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_sigprocmask_oset, rt_sigprocmask_sigsetsize, *args, **kw):
     SIG_BLOCK = 0x0
     SIG_UNBLOCK = 0x1
 
@@ -1447,7 +1447,7 @@ def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_si
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_vfork(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_vfork(ql, *args, **kw):
     pid = os.fork()
 
     if pid == 0:
@@ -1473,19 +1473,19 @@ def ql_syscall_vfork(ql, null0, null1, null2, null3, null4, null5):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_setsid(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_setsid(ql, *args, **kw):
     regreturn = os.getpid()
     ql.nprint("setsid() = %d" % regreturn)
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_time(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_time(ql, *args, **kw):
     regreturn = int(time.time()) 
     ql.nprint("time() = %d" % regreturn)
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_wait4(ql, wait4_pid, wait4_wstatus, wait4_options, wait4_rusage, null0, null1):
+def ql_syscall_wait4(ql, wait4_pid, wait4_wstatus, wait4_options, wait4_rusage, *args, **kw):
     spid, status, rusage = os.wait4(wait4_pid, wait4_options)
     ql.uc.mem_write(wait4_wstatus, ql.pack32(status))
     regreturn = spid
@@ -1493,7 +1493,7 @@ def ql_syscall_wait4(ql, wait4_pid, wait4_wstatus, wait4_options, wait4_rusage, 
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, null0, null1, null2):
+def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw):
     pathname = ql_read_string(ql, execve_pathname)
     real_path = ql_transform_to_real_path(ql, pathname)
     relative_path = ql_transform_to_relative_path(ql, pathname)
@@ -1542,7 +1542,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, null0, null
     ql.nprint("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))    
 
 
-def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, null1, null2):
+def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **kw):
     if ql.arch == QL_MIPS32 and socket_type == 2:
         socket_type = 1
     elif ql.arch == QL_MIPS32 and socket_type == 1:
@@ -1575,7 +1575,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, nu
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, null0, null1, null2):  
+def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, *args, **kw):  
     AF_UNIX = 1
     AF_INET = 2
     sock_addr = ql.uc.mem_read(connect_addr, connect_addrlen)
@@ -1612,13 +1612,13 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, null0,
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_setsockopt(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_setsockopt(ql, *args, **kw):
     ql.nprint("setsockopt")
     regreturn = 0
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_dup2(ql, dup2_oldfd, dup2_newfd, null0, null1, null2, null3):
+def ql_syscall_dup2(ql, dup2_oldfd, dup2_newfd, *args, **kw):
     if 0 <= dup2_newfd < 256 and 0 <= dup2_oldfd < 256:
         if ql.file_des[dup2_oldfd] != 0:
             ql.file_des[dup2_newfd] = ql.file_des[dup2_oldfd].dup()
@@ -1651,7 +1651,7 @@ def ql_syscall___sysctl(ql, sysctl_name, sysctl_namelen, sysctl_bytes_oldlenp, s
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, null0, null1, null2, null3):
+def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, *args, **kw):
     F_SETFD = 2
     F_GETFL = 3
     F_SETFL = 4
@@ -1689,7 +1689,7 @@ def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, null0, null1, null2, null3):
+def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, *args, **kw):
     ql.nprint("shutdown(%d, %d)" % (shutdown_fd, shutdown_how))
     if shutdown_fd >=0 and shutdown_fd < 256 and ql.file_des[shutdown_fd] != 0:
         try:
@@ -1700,7 +1700,7 @@ def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, null0, null1, null2, null
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
+def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
     regreturn = 0
 
     if ql.arch == QL_X8664:
@@ -1749,7 +1749,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
     ql_definesyscall_return(ql, regreturn)    
 
 
-def ql_syscall_listen(ql, listen_sockfd, listen_backlog, null0, null1, null2, null3):
+def ql_syscall_listen(ql, listen_sockfd, listen_backlog, *args, **kw):
     if listen_sockfd < 256 and ql.file_des[listen_sockfd] != 0:
         try:
             ql.file_des[listen_sockfd].listen(listen_backlog)
@@ -1764,7 +1764,7 @@ def ql_syscall_listen(ql, listen_sockfd, listen_backlog, null0, null1, null2, nu
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, null0, null1, null2, null3):
+def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, *args, **kw):
     def nanosleep_block_fuc(ql, th, arg):
         st, tm = arg
         et = ql.thread_management.runing_time
@@ -1792,7 +1792,7 @@ def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, null0, null1, null2, 
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_setitimer(ql, setitimer_which, setitimer_new_value, setitimer_old_value, null0, null1, null2):
+def ql_syscall_setitimer(ql, setitimer_which, setitimer_new_value, setitimer_old_value, *args, **kw):
     # TODO:The system provides each process with three interval timers, each decrementing in a distinct time domain. 
     # When any timer expires, a signal is sent to the process, and the timer (potentially) restarts.
     # But I haven’t figured out how to send a signal yet.
@@ -1801,7 +1801,7 @@ def ql_syscall_setitimer(ql, setitimer_which, setitimer_new_value, setitimer_old
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, null0):
+def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, *args, **kw):
     
     regreturn = 0
     
@@ -1860,7 +1860,7 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, null0, null1, null2):    
+def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, *args, **kw):    
     def inet_addr(ip):
         ret = b''
         tmp = ip.split('.')
@@ -1897,7 +1897,7 @@ def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, null0, nul
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_times(ql, times_tbuf, null0, null1, null2, null3, null4):
+def ql_syscall_times(ql, times_tbuf, *args, **kw):
     tmp_times = os.times()
     if times_tbuf != 0:
         tmp_buf = b''
@@ -1911,7 +1911,7 @@ def ql_syscall_times(ql, times_tbuf, null0, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, null0, null1, null2, null3):
+def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, *args, **kw):
     tmp_time = time.time()
     tv_sec = int(tmp_time)
     tv_usec = int((tmp_time - tv_sec) * 1000000)
@@ -1925,7 +1925,7 @@ def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, null0, null1, 
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, null0, null1):
+def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, *args, **kw):
     if recv_sockfd < 256 and ql.file_des[recv_sockfd] != 0:
         tmp_buf = ql.file_des[recv_sockfd].recv(recv_len, recv_flags)
         if tmp_buf:
@@ -1939,7 +1939,7 @@ def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, null0, null
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, null0, null1):
+def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw):
     regreturn = 0
     if send_sockfd < 256 and ql.file_des[send_sockfd] != 0:
         try:
@@ -1965,7 +1965,7 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, null0, null
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, null0, null1, null2, null3):
+def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, *args, **kw):
     SOCKETCALL_SYS_SOCKET = 1
     SOCKETCALL_SYS_BIND = 2
     SOCKETCALL_SYS_CONNECT = 3
@@ -2010,19 +2010,19 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, null0, null1, nu
         ql.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
 
 
-def ql_syscall_signal(ql, sig, __sighandler_t, null0, null1, null2, null3):
+def ql_syscall_signal(ql, sig, __sighandler_t, *args, **kw):
     regreturn = 0
     ql.nprint("signal(%d, 0x%x) = %d" % (sig, __sighandler_t,regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_ptrace(ql, request, pid, addr, data, null0, null1):
+def ql_syscall_ptrace(ql, request, pid, addr, data, *args, **kw):
     regreturn = 0
     ql.nprint("ptrace(0x%x, 0x%x, 0x%x, 0x%x) = %d" % (request, pid, addr, data, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_newtls, clone_child_tidptr, null0):
+def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_newtls, clone_child_tidptr, *args, **kw):
     CSIGNAL = 0x000000ff	
     CLONE_VM = 0x00000100	
     CLONE_FS = 0x00000200	
@@ -2136,7 +2136,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
 
 
-def ql_syscall_set_tid_address(ql, set_tid_address_tidptr, null0, null1, null2, null3, null4):
+def ql_syscall_set_tid_address(ql, set_tid_address_tidptr, *args, **kw):
     if ql.thread_management == None:
         regreturn = os.getpid()
     else:
@@ -2146,7 +2146,7 @@ def ql_syscall_set_tid_address(ql, set_tid_address_tidptr, null0, null1, null2, 
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_set_robust_list(ql, set_robust_list_head_ptr, set_robust_list_head_len, null0, null1, null2, null3):
+def ql_syscall_set_robust_list(ql, set_robust_list_head_ptr, set_robust_list_head_len, *args, **kw):
     if ql.thread_management == None:
         regreturn = 0
     else:
@@ -2198,14 +2198,14 @@ def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_gettid(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_gettid(ql, *args, **kw):
     th = ql.thread_management.cur_thread
     regreturn = th.get_thread_id()    
     ql.nprint("gettid() = %d" % regreturn)
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_pipe(ql, pipe_pipefd, null0, null1, null2, null3, null4):
+def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
     rd, wd = ql_pipe.open()
 
     idx1 = -1
@@ -2237,7 +2237,7 @@ def ql_syscall_pipe(ql, pipe_pipefd, null0, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_nice(ql, nice_inc, null0, null1, null2, null3, null4):
+def ql_syscall_nice(ql, nice_inc, *args, **kw):
     regreturn = 0
     ql.nprint("nice(%d) = %d" % (nice_inc, regreturn))
     ql_definesyscall_return(ql, regreturn)
@@ -2250,7 +2250,7 @@ def ql_syscall_getpriority(ql, getpriority_which, getpriority_who, null1, null2,
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_sendfile64(ql, sendfile64_out_fd, sendfile64_in_fd, sendfile64_offest, sendfile64_count, null0, null1):
+def ql_syscall_sendfile64(ql, sendfile64_out_fd, sendfile64_in_fd, sendfile64_offest, sendfile64_count, *args, **kw):
     if sendfile64_out_fd >= 0 and sendfile64_out_fd < 256 and sendfile64_in_fd >= 0 and sendfile64_in_fd < 256:
         ql.file_des[sendfile64_in_fd].lseek(ql.unpack32(ql.uc.mem_read(sendfile64_offest, 4)))
         buf = ql.file_des[sendfile64_in_fd].read(sendfile64_count)
@@ -2262,7 +2262,7 @@ def ql_syscall_sendfile64(ql, sendfile64_out_fd, sendfile64_in_fd, sendfile64_of
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_truncate(ql, path, length, null0, null1, null2, null3):
+def ql_syscall_truncate(ql, path, length, *args, **kw):
     path = ql_read_string(ql, path)
     real_path = ql_transform_to_real_path(ql, path)
     st_size = os.stat(real_path).st_size
@@ -2284,7 +2284,7 @@ def ql_syscall_truncate(ql, path, length, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, null0, null1, null2, null3):
+def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args, **kw):
     real_path = ql.file_des[ftrunc_fd].name
     path = real_path.split('/')[-1]
     st_size = os.stat(real_path).st_size
@@ -2306,7 +2306,7 @@ def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, null0, null1, null2, null
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_unlink(ql, unlink_pathname, null0, null1, null2, null3, null4):
+def ql_syscall_unlink(ql, unlink_pathname, *args, **kw):
     pathname = ql_read_string(ql, unlink_pathname)
     real_path = ql_transform_to_real_path(ql, pathname)
     opened_fds = [getattr(ql.file_des[i], 'name', None) for i in range(256) if ql.file_des[i] != 0]
@@ -2328,7 +2328,7 @@ def ql_syscall_unlink(ql, unlink_pathname, null0, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_unlinkat(ql, dirfd, pathname, flag, null0, null1, null2):
+def ql_syscall_unlinkat(ql, dirfd, pathname, flag, *args, **kw):
     # fix me. dirfd(relative path) not implement.
     file_path = ql_read_string(ql, pathname)
     real_path = ql_transform_to_real_path(ql, file_path)
@@ -2344,7 +2344,7 @@ def ql_syscall_unlinkat(ql, dirfd, pathname, flag, null0, null1, null2):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, null0, null1):
+def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
     # fix me. dirfd(relative path) not implement.
     file_path = ql_read_string(ql, pathname)
     real_path = ql_transform_to_real_path(ql, file_path)
@@ -2357,7 +2357,7 @@ def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, null0, null1):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_mkdir(ql, pathname, mode, null0, null1, null2, null3):
+def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
     file_path = ql_read_string(ql, pathname)
     real_path = ql_transform_to_real_path(ql, file_path)
     ql.nprint("mkdir(%s, 0%o)" % (real_path, mode))
@@ -2370,14 +2370,14 @@ def ql_syscall_mkdir(ql, pathname, mode, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_umask(ql, mode, null0, null1, null2, null3, null4):
+def ql_syscall_umask(ql, mode, *args, **kw):
     oldmask = os.umask(mode)
     ql.nprint("umask(0%o) return oldmask 0%o" % (mode, oldmask))
     regreturn = oldmask
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_getdents(ql, fd, dirp, count, null0, null1, null2):
+def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
     # TODO: not sure what is the meaning of d_off, should not be 0x0
     # but works for the example code from linux manual.
     def _type_mapping(ent):

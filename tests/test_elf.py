@@ -509,7 +509,7 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_arm_custom_syscall(self):
-        def my_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
+        def my_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
             regreturn = 0
             buf = None
             

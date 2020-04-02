@@ -206,7 +206,7 @@ def ql_syscall_mips32_thread_setthreadarea(ql, th, arg):
             hook_shellcode(uc, pc + 4, bytes.fromhex('2510000025380000'), ql)
 
 
-def ql_syscall_mips32_set_thread_area(ql, sta_area, null0, null1, null2, null3, null4):
+def ql_syscall_mips32_set_thread_area(ql, sta_area, *args, **kw):
     uc = ql.uc     
     ql.nprint ("set_thread_area(0x%x)" % sta_area)
 

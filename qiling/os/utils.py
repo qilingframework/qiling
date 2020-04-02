@@ -149,34 +149,24 @@ def ql_hook_code_disasm(ql, address, size):
     insn = md.disasm(tmp, address)
     opsize = int(size)
 
-    _address = ("[+] 0x%x\t" % (address))
+    ql.nprint ("[+] 0x%x\t" % (address), end = "")
 
-    _opcode = ""
     for i in tmp:
-        _opcode += (" %02x" % i)
+        ql.nprint (" %02x" % i, end = "")
 
-    _opsize = ""
     if opsize < 4:
-        _opsize = ("\t  ")
+        ql.nprint ("\t  ", end = "")
     
-    _asmcode = ""
     for i in insn:
-       _asmcode += ('\t%s \t%s' % (i.mnemonic, i.op_str))
+       ql.nprint ('\t%s \t%s' % (i.mnemonic, i.op_str))
     
-    ql.nprint(_address + _opcode + _opsize  + _asmcode)
-
     if ql.output == QL_OUT_DUMP:
-        # FIXME: Need to name each reg
         for reg in ql.reg_table:
             ql.reg_name = reg
             REG_NAME = ql.reg_name
             REG_VAL = ql.uc.reg_read(reg)
             ql.dprint(3, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
             
-        #ql.nprint("[-] %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x\n" % \
-                  #(syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1],
-                  # arg_3[0], arg_4[1], arg_4[0], arg_5[1], arg_5[0]))
-
 
 def ql_setup_output(ql):
     if ql.output in (QL_OUT_DISASM, QL_OUT_DUMP):

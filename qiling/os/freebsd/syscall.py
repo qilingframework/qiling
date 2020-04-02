@@ -24,13 +24,13 @@ from qiling.arch.utils import *
 from qiling.const import *
 
 
-def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec, null2, null3, null4, null5):
+def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec, *args, **kw):
     ql.nprint("clock_gettime()")
     regreturn = 0
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_sysarch(ql, op, parms, null2, null3, null4, null5):
+def ql_syscall_sysarch(ql, op, parms, *args, **kw):
     """
     wild guess, of cause not working
     """

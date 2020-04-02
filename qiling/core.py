@@ -273,8 +273,11 @@ class Qiling:
         if self.log_console == True:
             print(*args, **kw)
         
-        # for logging purposes
-        fd.info(*args, **kw)
+        # FIXME: cases like print("", end = "") will crash
+        try:
+            fd.info(*args, **kw)
+        except:
+            pass
 
         if fd is not None:
             if isinstance(fd, logging.FileHandler):

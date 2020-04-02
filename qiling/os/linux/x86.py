@@ -72,7 +72,7 @@ def ql_x86_thread_set_tls(ql, th, arg):
     ql_x86_setup_syscall_set_thread_area(ql, base, limit)
     
 
-def ql_x86_syscall_set_thread_area(ql, u_info_addr, null0, null1, null2, null3, null4):
+def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
     ql.nprint("set_thread_area(u_info_addr= 0x%x)" % u_info_addr)
     u_info = ql.uc.mem_read(u_info_addr, 4 * 3)
 
