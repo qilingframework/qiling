@@ -30,7 +30,7 @@ dict_x8664_macos_syscall = {
     0x2000099 : "ql_syscall_pread",
     0x20000a9 : "ql_syscall_csops",
     0x20000ca : "ql_syscall_sysctl",
-    0x20000c5 : "ql_syscall_mmap2",
+    0x20000c5 : "ql_syscall_mmap2_macos",
     0x20000c7 : "ql_syscall_lseek",
     0x20000dc : "ql_syscall_getattrlist",
     0x2000126 : "ql_syscall_shared_region_check_np",
@@ -46,5 +46,5 @@ dict_x8664_macos_syscall = {
     0x20001f4 : "ql_syscall_getentropy",
     0x2000208 : "ql_syscall_terminate_with_payload",
     0x2000209 : "ql_syscall_abort_with_payload",
-    0x3000003 : "ql_x86_syscall_thread_set_tsd_base",    
+    0x3000003 : "ql_x86_syscall_thread_fast_set_cthread_self64",
 }

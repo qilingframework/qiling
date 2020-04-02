@@ -20,13 +20,12 @@ from qiling.os.macos.task import *
 from qiling.os.macos.mach_port import *
 from qiling.os.posix.syscall import *
 from qiling.os.utils import *
-from qiling.const import *
+from qiling.arch.filetype import *
 
 QL_X8664_MACOS_PREDEFINE_STACKADDRESS = 0x7ffcf0000000
 QL_X8664_MACOS_PREDEFINE_STACKSIZE =        0x19a00000
 QL_X8664_MACOS_PREDEFINE_MMAPADDRESS =  0x7ffbf0100000
 QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x400000000000
-QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x4000000f4000
 
 QL_X8664_EMU_END = 0xffffffffffffffff
 
@@ -59,7 +58,7 @@ def hook_syscall(ql):
         except KeyboardInterrupt:
             raise            
         except Exception:
-            ql.nprint("[!] SYSCALL ERROR: %s" % MACOS_SYSCALL_FUNC_NAME)
+            ql.nprint("[!] SYSCALL ERROR: ", MACOS_SYSCALL_FUNC_NAME)
             #td = ql.thread_management.cur_thread
             #td.stop()
             #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
@@ -91,14 +90,14 @@ def loader_file(ql):
         ql.stack_size = QL_X8664_MACOS_PREDEFINE_STACKSIZE
     ql.uc.mem_map(ql.stack_address, ql.stack_size)
 
-    stack_sp = QL_X8664_MACOS_PREDEFINE_STACKADDRESS + QL_X8664_MACOS_PREDEFINE_STACKSIZE
+    stack_esp = QL_X8664_MACOS_PREDEFINE_STACKADDRESS + QL_X8664_MACOS_PREDEFINE_STACKSIZE
     envs = env_dict_to_array(ql.env)
     apples = ql_real_to_vm_abspath(ql, ql.path)
 
-    loader = Macho(ql, ql.path, stack_sp, [ql.path], envs, apples, 1)
-    loader.loadMacho()
+    loader = MachoX8664(ql, ql.path, stack_esp, [ql.path], envs, apples, 1)
+    loader.loadMachoX8664()
     ql.macho_task.min_offset = page_align_end(loader.vm_end_addr, PAGE_SIZE)
-    ql.stack_address = (int(ql.stack_sp))
+    ql.stack_address = (int(ql.stack_esp))
     
 
 def loader_shellcode(ql):
@@ -122,8 +121,9 @@ def runner(ql):
     ql_x8664_setup_gdt_segment_cs(ql)
     ql_x8664_setup_gdt_segment_ss(ql)
     vm_shared_region_enter(ql)
-    map_somefunc_space(ql)
+    map_commpage(ql)
     ql.macho_thread = MachoThread()
+    load_commpage(ql)
     load_shared_region(ql)
     ql.root = True
 
@@ -136,10 +136,10 @@ def runner(ql):
             ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            ql.nprint("[+] PC = 0x%x\n" % (ql.pc))
+            ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
             buf = ql.uc.mem_read(ql.pc, 8)
-            ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+            ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
         raise QlErrorExecutionStop("[!] Execution Terminated")    
     
