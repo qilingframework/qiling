@@ -17,7 +17,7 @@ dict_x8664_freebsd_syscall = {
     0x68 : "ql_syscall_bind",
     0x6A : "ql_syscall_listen",
     0xA5 : "ql_syscall_sysarch",
-    0xCA : "ql_syscall___sysctl",
+    0xCA : "ql_syscall__sysctl",
     0xE8 : "ql_syscall_clock_gettime",
     0xFD : "ql_syscall_issetugid",
     0x0146 : "ql_syscall_getcwd",
