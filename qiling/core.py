@@ -271,8 +271,8 @@ class Qiling:
             fd = self.log_file_fd
 
         # FIXME: this is not right
-        #if self.log_console == True:
-        fd.info(*args, **kw)
+        if self.log_console:
+            fd.info(*args, **kw)
 
         if fd is not None:
             if isinstance(fd, logging.FileHandler):
