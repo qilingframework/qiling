@@ -25,6 +25,8 @@ class ELFTest(unittest.TestCase):
 
     def test_elf_linux_x8664(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
+        addr = ql.mem.map_anywhere(0x100000)
+        ql.nprint("0x%x" %  addr)
         ql.run()
         del ql
 
@@ -37,6 +39,8 @@ class ELFTest(unittest.TestCase):
 
     def test_elf_linux_x86(self):
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_hello"], "../examples/rootfs/x86_linux", output="debug")
+        addr = ql.mem.map_anywhere(0x100000)
+        ql.nprint("0x%x" %  addr)        
         ql.run()
         del ql
 

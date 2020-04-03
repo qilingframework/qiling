@@ -122,7 +122,7 @@ class Qiling:
         self.bindtolocalhost = False
         # required root permission
         self.root = True
-        self.log_split = False    
+        self.log_split = False  
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -145,8 +145,6 @@ class Qiling:
 
         _logger = ql_setup_logging_stream(self)
         
-        self.mem = QlMemoryManager(self)
-
         if self.log_dir is not None and type(self.log_dir) == str:
 
             self.log_dir = os.path.join(self.rootfs, self.log_dir)
@@ -202,6 +200,16 @@ class Qiling:
 
         if self.archbit:
             self.pointersize = (self.archbit // 8)
+
+
+        if self.archbit == 64:
+            max_addr = 0xFFFFFFFFFFFFFFFF
+        elif self.archbit == 32:
+            max_addr = 0xFFFFFFFF
+        try:
+            self.mem = QlMemoryManager(self, max_addr)
+        except:
+            raise QlErrorArch("[!] Invalid Arch Bit")    
 
         if self.ostype not in QL_OS:
             raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos'")
