@@ -12,7 +12,6 @@ import pickle
 
 from unicorn.x86_const import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.structs import *
 from qiling.exception import *
 
@@ -91,7 +90,7 @@ class Process:
                 self.ql.nprint("[+] Cached %s" % path)
 
         dll_base = self.ql.DLL_LAST_ADDR
-        dll_len = align(len(bytes(data)), 0x1000)
+        dll_len = self.ql.heap._align(len(bytes(data)), 0x1000)
         self.ql.DLL_SIZE += dll_len
         self.ql.mem.map(dll_base, dll_len)
         self.ql.mem.write(dll_base, bytes(data))

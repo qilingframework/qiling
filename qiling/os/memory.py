@@ -7,8 +7,6 @@ from qiling.const import *
 from qiling.exception import *
 from qiling.os.utils import *
 
-from enum import Enum, IntEnum, auto
-
 from unicorn import (
     UC_PROT_ALL,
     UC_PROT_EXEC,
@@ -16,7 +14,6 @@ from unicorn import (
     UC_PROT_READ,
     UC_PROT_WRITE,
 )
-
 
 class QlMemoryManager:
     """
@@ -213,7 +210,7 @@ class Heap:
         self.current_use = 0
 
     def _align(self, size, unit):
-        return (size // unit + (1 if size % unit else 0)) * unit           
+        return (size // unit + (1 if size % unit else 0)) * unit     
 
     def mem_alloc(self, size):
         if self.ql.arch == QL_X86:
