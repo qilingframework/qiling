@@ -130,7 +130,7 @@ class Process:
             self.ql.STRUCTERS_LAST_ADDR += 0x30
             teb_addr = self.ql.STRUCTERS_LAST_ADDR
 
-        self.ql.nprint("[+] TEB addr is 0x%x\n" %teb_addr)
+        self.ql.nprint("[+] TEB addr is 0x%x" %teb_addr)
 
         teb_size = len(TEB(self.ql).bytes())
         teb_data = TEB(
@@ -155,7 +155,7 @@ class Process:
     def init_peb(self):
         peb_addr = self.ql.STRUCTERS_LAST_ADDR
 
-        self.ql.nprint("[+] PEB addr is 0x%x\n" %peb_addr)
+        self.ql.nprint("[+] PEB addr is 0x%x" %peb_addr)
 
         peb_size = len(PEB(self.ql).bytes())
         peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size)

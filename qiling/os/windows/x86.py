@@ -15,6 +15,7 @@ from qiling.arch.x86 import *
 from qiling.os.windows.dlls import *
 from qiling.os.utils import *
 from qiling.os.memory import Heap
+from qiling.os.windows.const import *
 from qiling.os.windows.registry import RegistryManager
 from qiling.os.windows.clipboard import Clipboard
 from qiling.os.windows.fiber import FiberManager
@@ -24,10 +25,8 @@ QL_X86_WINDOWS_STACK_ADDRESS = 0xfffdd000
 QL_X86_WINDOWS_STACK_SIZE = 0x21000
 QL_X86_WINDOWS_EMU_END = 0x0
 
-
 # hook WinAPI in PE EMU
 def hook_winapi(ql, address, size):
-    # call win32 api
     if address in ql.PE.import_symbols:
         winapi_name = ql.PE.import_symbols[address]['name']
         if winapi_name is None:
@@ -60,12 +59,7 @@ def hook_winapi(ql, address, size):
 
 
 def setup_windows32(ql):
-    ql.FS_SEGMENT_ADDR = 0x6000
-    ql.FS_SEGMENT_SIZE = 0x6000
-    ql.STRUCTERS_LAST_ADDR = ql.FS_SEGMENT_ADDR
-
-    ql.GS_SEGMENT_ADDR = 0x5000
-    ql.GS_SEGMENT_SIZE = 0x1000
+    ql.STRUCTERS_LAST_ADDR = FS_SEGMENT_ADDR
 
     ql.PE_IMAGE_BASE = 0
     ql.PE_IMAGE_SIZE = 0
@@ -79,14 +73,14 @@ def setup_windows32(ql):
     ql.DLL_SIZE = 0
     ql.DLL_LAST_ADDR = ql.DLL_BASE_ADDR
 
+    ql.RUN = True
+
     ql.heap = Heap(ql, ql.HEAP_BASE_ADDR, ql.HEAP_BASE_ADDR + ql.HEAP_SIZE)
     ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
 
-    ql.RUN = True
-
     # New set GDT Share with Linux
-    ql_x86_setup_gdt_segment_fs(ql, ql.FS_SEGMENT_ADDR, ql.FS_SEGMENT_SIZE)
-    ql_x86_setup_gdt_segment_gs(ql, ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
+    ql_x86_setup_gdt_segment_fs(ql, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE)
+    ql_x86_setup_gdt_segment_gs(ql, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
     ql_x86_setup_gdt_segment_ds(ql)
     ql_x86_setup_gdt_segment_cs(ql)
     ql_x86_setup_gdt_segment_ss(ql)
@@ -110,7 +104,6 @@ def setup_windows32(ql):
     ql.config = ql_init_configuration(ql)
     # variables used inside hooks
     ql.hooks_variables = {}
-
 
 
 def loader_file(ql):

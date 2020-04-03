@@ -14,29 +14,24 @@ from qiling.os.windows.dlls import *
 from qiling.arch.x86 import *
 from qiling.os.utils import *
 from qiling.os.memory import Heap
+from qiling.os.windows.const import *
 from qiling.os.windows.registry import RegistryManager
 from qiling.os.windows.clipboard import Clipboard
 from qiling.os.windows.fiber import FiberManager
+from qiling.os.windows.const import Mapper
 
 QL_X8664_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
 QL_X8664_WINDOWS_STACK_SIZE = 0x40000
 QL_X8664_WINSOWS_EMU_END = 0x0
 
-
-def set_pe64_gdt(ql):
-    # uc.mem_map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
-    # setup_gdt_segment(uc, GDT_ADDR, GDT_LIMIT, UC_X86_REG_GS, 15, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, A_PRESENT |
-    # A_DATA | A_DATA_WRITABLE | A_PRIV_3 | A_DIR_CON_BIT, S_GDT | S_PRIV_3)
-    #GSMSR = 0xC0000101
-    ql.mem.map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
-    ql_x8664_set_gs(ql, ql.GS_SEGMENT_ADDR)
-
-
 # hook WinAPI in PE EMU
 def hook_winapi(ql, address, size):
-    # call win api
     if address in ql.PE.import_symbols:
-        winapi_name = ql.PE.import_symbols[address]['name'].decode()
+        winapi_name = ql.PE.import_symbols[address]['name']
+        if winapi_name is None:
+            winapi_name = Mapper[ql.PE.import_symbols[address]['dll']][ql.PE.import_symbols[address]['ordinal']]
+        else:
+            winapi_name = winapi_name.decode()
         winapi_func = None
 
         if winapi_name in ql.user_defined_api:
@@ -44,6 +39,8 @@ def hook_winapi(ql, address, size):
                 winapi_func = ql.user_defined_api[winapi_name]
         else:
             try:
+                counter = ql.PE.syscall_count.get(winapi_name, 0) + 1
+                ql.PE.syscall_count[winapi_name] = counter
                 winapi_func = globals()['hook_' + winapi_name]
             except KeyError:
                 winapi_func = None
@@ -60,22 +57,25 @@ def hook_winapi(ql, address, size):
                 raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
 
+def set_pe64_gdt(ql):
+    ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
+    ql_x8664_set_gs(ql, GS_SEGMENT_ADDR)
+
+
 def windows_setup64(ql):
-    ql.GS_SEGMENT_ADDR = 0x6000
-    ql.GS_SEGMENT_SIZE = 0x8000
-    ql.STRUCTERS_LAST_ADDR = ql.GS_SEGMENT_ADDR
-
-    ql.DLL_BASE_ADDR = 0x7ffff0000000
-    ql.DLL_SIZE = 0
-    ql.DLL_LAST_ADDR = ql.DLL_BASE_ADDR
-
-    ql.HEAP_BASE_ADDR = 0x500000000
-    ql.HEAP_SIZE = 0x5000000
+    ql.STRUCTERS_LAST_ADDR = GS_SEGMENT_ADDR
 
     ql.PE_IMAGE_BASE = 0
     ql.PE_IMAGE_SIZE = 0
     ql.DEFAULT_IMAGE_BASE = 0x140000000
     ql.entry_point = 0
+
+    ql.HEAP_BASE_ADDR = 0x500000000
+    ql.HEAP_SIZE = 0x5000000
+
+    ql.DLL_BASE_ADDR = 0x7ffff0000000
+    ql.DLL_SIZE = 0
+    ql.DLL_LAST_ADDR = ql.DLL_BASE_ADDR
 
     ql.RUN = True
 
@@ -121,7 +121,6 @@ def loader_file(ql):
     ql.PE.load()
 
     ql.hook_code(hook_winapi)
-
     ql_setup_output(ql)
 
 
@@ -146,7 +145,6 @@ def loader_shellcode(ql):
 
     # hook win api
     ql.hook_code(hook_winapi)
-
     ql_setup_output(ql)
 
 

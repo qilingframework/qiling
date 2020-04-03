@@ -4,6 +4,13 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 from Registry import Registry
 
+# WINDOWS SETUP VALUE
+GS_SEGMENT_ADDR = 0x6000
+GS_SEGMENT_SIZE = 0x6000
+
+FS_SEGMENT_ADDR = 0x6000
+FS_SEGMENT_SIZE = 0x6000
+
 # ERRORS CODE
 # https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
 ERROR_SUCCESS = 0x0
