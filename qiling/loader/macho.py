@@ -13,8 +13,6 @@ from qiling.exception import *
 
 # TODO: we maybe we should use a better way to load
 # reference to xnu source code /bsd/kern/mach_loader.c
-
-
 class Macho:
 
     # macho x8664 loader 

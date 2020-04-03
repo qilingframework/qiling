@@ -20,12 +20,13 @@ from qiling.os.macos.task import *
 from qiling.os.macos.mach_port import *
 from qiling.os.posix.syscall import *
 from qiling.os.utils import *
-from qiling.arch.filetype import *
+from qiling.const import *
 
 QL_X8664_MACOS_PREDEFINE_STACKADDRESS = 0x7ffcf0000000
 QL_X8664_MACOS_PREDEFINE_STACKSIZE =        0x19a00000
 QL_X8664_MACOS_PREDEFINE_MMAPADDRESS =  0x7ffbf0100000
-QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x400000000000
+#QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x400000000000
+QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x4000000f4000
 
 QL_X8664_EMU_END = 0xffffffffffffffff
 
@@ -90,14 +91,14 @@ def loader_file(ql):
         ql.stack_size = QL_X8664_MACOS_PREDEFINE_STACKSIZE
     ql.uc.mem_map(ql.stack_address, ql.stack_size)
 
-    stack_esp = QL_X8664_MACOS_PREDEFINE_STACKADDRESS + QL_X8664_MACOS_PREDEFINE_STACKSIZE
+    stack_sp = QL_X8664_MACOS_PREDEFINE_STACKADDRESS + QL_X8664_MACOS_PREDEFINE_STACKSIZE
     envs = env_dict_to_array(ql.env)
     apples = ql_real_to_vm_abspath(ql, ql.path)
 
-    loader = MachoX8664(ql, ql.path, stack_esp, [ql.path], envs, apples, 1)
-    loader.loadMachoX8664()
+    loader = Macho(ql, ql.path, stack_sp, [ql.path], envs, apples, 1)
+    loader.loadMacho()
     ql.macho_task.min_offset = page_align_end(loader.vm_end_addr, PAGE_SIZE)
-    ql.stack_address = (int(ql.stack_esp))
+    ql.stack_address = (int(ql.stack_sp))
     
 
 def loader_shellcode(ql):

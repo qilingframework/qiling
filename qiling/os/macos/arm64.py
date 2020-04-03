@@ -127,7 +127,7 @@ def runner(ql):
     ql.hook_intr(hook_syscall)
     ql_arm64_enable_vfp(ql.uc)
     vm_shared_region_enter(ql)
-    map_somefunc_space(ql)
+    map_commpage(ql)
     ql.macho_thread = MachoThread()
     load_shared_region(ql)
 

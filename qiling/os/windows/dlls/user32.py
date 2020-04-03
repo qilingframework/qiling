@@ -513,7 +513,7 @@ def hook_wsprintfW(ql, address, params):
     ql.uc.mem_write(dst, (string + "\x00").encode("utf-16le"))
     return size
 
-# int WINAPIV wsprintfW(
+# int WINAPIV sprintf(
 #   LPWSTR  ,
 #   LPCWSTR ,
 #   ...
