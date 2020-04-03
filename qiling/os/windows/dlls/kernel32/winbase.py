@@ -435,3 +435,24 @@ def hook_GetUserNameW(ql, address, params):
     else:
         ql.uc.mem_write(dst, username)
     return 1
+
+
+# BOOL GetComputerNameW(
+#   LPWSTR  lpBuffer,
+#   LPDWORD nSize
+# );
+@winapi(cc=STDCALL, params={
+    "lpBuffer": POINTER,
+    "nSize": POINTER
+})
+def hook_GetComputerNameW(ql, address, params):
+    computer = (ql.config["SYSTEM"]["computer_name"] + "\x00").encode("utf-16le")
+    dst = params["lpBuffer"]
+    max_size = params["nSize"]
+    ql.uc.mem_write(max_size, (len(computer)-2).to_bytes(4, byteorder="little"))
+    if len(computer) > max_size:
+        ql.last_error = ERROR_BUFFER_OVERFLOW
+        return 0
+    else:
+        ql.uc.mem_write(dst, computer)
+    return 1
