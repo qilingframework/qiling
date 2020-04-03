@@ -27,6 +27,7 @@ from qiling.utils import *
 
 from binascii import unhexlify
 import ipaddress, struct, os, ctypes
+import configparser
 
 def ql_lsbmsb_convert(ql, sc, size=4):
     split_bytes = []
@@ -75,6 +76,16 @@ def ql_bin_to_ipv4(ip):
         (ip & 0xff00) >> 8,
         (ip & 0xff))
 
+
+def ql_init_configuration(ql):
+    config = configparser.ConfigParser()
+    config.read(ql.config)
+    ql.dprint(2, "[+] Added configuration file")
+    for section in config.sections():
+        ql.dprint(2, "[+] Section: %s" % section)
+        for key in config[section]:
+            ql.dprint(2, "[-] %s %s" % (key, config[section][key]) )
+    return config
 
 def ql_bin_to_ip(ip):
     return ipaddress.ip_address(ip).compressed

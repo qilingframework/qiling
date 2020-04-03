@@ -99,7 +99,10 @@ def windows_setup64(ql):
     ql.thread_manager = ThreadManager(ql, main_thread)
     new_handle = Handle(thread=main_thread)
     ql.handle_manager.append(new_handle)
-
+    # user configuration
+    ql.config = ql_init_configuration(ql)
+    # variables used inside hooks
+    ql.hooks_variables = {}
 
 def loader_file(ql):
     uc = Uc(UC_ARCH_X86, UC_MODE_64)
