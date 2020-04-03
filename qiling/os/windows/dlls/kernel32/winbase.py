@@ -428,12 +428,12 @@ def hook_GetUserNameW(ql, address, params):
     username = (ql.config["USER"]["user"]+"\x00").encode("utf-16le")
     dst = params["lpBuffer"]
     max_size = params["pcbBuffer"]
-    ql.uc.mem_write(max_size, len(username).to_bytes(4, byteorder="little"))
+    ql.mem.write(max_size, len(username).to_bytes(4, byteorder="little"))
     if len(username) > max_size:
         ql.last_error = ERROR_INSUFFICIENT_BUFFER
         return 0
     else:
-        ql.uc.mem_write(dst, username)
+        ql.mem.write(dst, username)
     return 1
 
 
@@ -449,10 +449,10 @@ def hook_GetComputerNameW(ql, address, params):
     computer = (ql.config["SYSTEM"]["computer_name"] + "\x00").encode("utf-16le")
     dst = params["lpBuffer"]
     max_size = params["nSize"]
-    ql.uc.mem_write(max_size, (len(computer)-2).to_bytes(4, byteorder="little"))
+    ql.mem.write(max_size, (len(computer)-2).to_bytes(4, byteorder="little"))
     if len(computer) > max_size:
         ql.last_error = ERROR_BUFFER_OVERFLOW
         return 0
     else:
-        ql.uc.mem_write(dst, computer)
+        ql.mem.write(dst, computer)
     return 1

@@ -299,20 +299,21 @@ def hook_GetVolumeInformationW(ql, address, params):
         if pt_volume_name != 0:
             # TODO implement
             volume_name = ("AAAABBBB"+"\x00").encode("utf-16le")
-            ql.uc.mem_write(pt_volume_name, volume_name)
+
+            ql.mem.write(pt_volume_name, volume_name)
         pt_serial_number = params["lpVolumeSerialNumber"]
         if pt_serial_number != 0:
             serial_number = (ql.config["VOLUME"]["serial_number"] + "\x00").encode("utf-16le")
-            ql.uc.mem_write(pt_serial_number, serial_number)
+            ql.mem.write(pt_serial_number, serial_number)
         pt_system_type = params["lpFileSystemNameBuffer"]
         pt_flag = params["lpFileSystemFlags"]
         if pt_flag != 0:
             # TODO implement
             flag = 0x00020000.to_bytes(4, byteorder="little")
-            ql.uc.mem_write(pt_flag, flag)
+            ql.mem.write(pt_flag, flag)
         if pt_system_type != 0:
             system_type = (ql.config["VOLUME"]["type"] + "\x00").encode("utf-16le")
-            ql.uc.mem_write(pt_system_type, system_type)
+            ql.mem.write(pt_system_type, system_type)
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 1

@@ -157,7 +157,7 @@ def hook_GetTickCount(ql, address, params):
 def hook_GetWindowsDirectoryW(ql, address, params):
     dst = params["lpBuffer"]
     value = (ql.config["PATHS"]["windir"] + "\x00").encode("utf-16le")
-    ql.uc.mem_write(dst, value)
+    ql.mem.write(dst, value)
     return len(value)-2
 
 
@@ -183,5 +183,5 @@ def hook_GetNativeSystemInfo(ql, address, params):
                    "wProcessorRevision": 0x4601.to_bytes(length=2, byteorder='little')
                    }
     values = b"".join(system_info.values())
-    ql.uc.mem_write(pointer, values)
+    ql.mem.write(pointer, values)
     return 0
