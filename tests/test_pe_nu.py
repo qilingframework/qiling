@@ -47,7 +47,7 @@ def test_pe_win_x86_gandcrab():
 
     ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                 output="debug")
-    ql.hook_address(stop, 0x1001a3c6)
+    ql.hook_address(stop, 0x40860f)
     ql.run()
     del ql
 
