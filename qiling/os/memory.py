@@ -7,19 +7,6 @@ from qiling.const import *
 from qiling.exception import *
 from qiling.os.utils import *
 
-MAX_UINT64 = 0xFFFFFFFFFFFFFFFF
-
-# A Simple Heap Implementation
-class Chunk():
-    def __init__(self, address, size):
-        self.inuse = True
-        self.address = address
-        self.size = size
-
-    @staticmethod
-    def compare(chunk):
-        return chunk.size
-
 
 class QlMemoryManager:
     """
@@ -27,9 +14,15 @@ class QlMemoryManager:
     https://github.com/zeropointdynamics/zelos/blob/master/src/zelos/memory.py
     """
 
-    def __init__(self, ql):
+    def __init__(self, ql, max_addr):
         self.ql = ql
-        self.max_addr = MAX_UINT64
+        self.max_mem_addr = max_addr
+        self.max_addr = max_addr
+
+    def _align(self, addr, alignment=0x1000):
+        # rounds up to nearest alignment
+        mask = ((1 << self.ql.archbit) - 1) & -alignment
+        return (addr + (alignment - 1)) & mask
 
     def read(self, addr: int, size: int) -> bytearray:
         return self.ql.uc.mem_read(addr, size)
@@ -70,7 +63,7 @@ class QlMemoryManager:
         return False
 
     def _find_free_space(
-        self, size, min_addr=0, max_addr=MAX_UINT64, alignment=0x10000
+        self, size, min_addr=0, max_addr = 0, alignment=0x10000
     ):
         """
         Finds a region of memory that is free, larger than 'size' arg,
@@ -85,7 +78,7 @@ class QlMemoryManager:
             mapped += [[address_start, (address_end - address_start)]]
         
         for i in range(0, len(mapped)):
-            addr = align(
+            addr = self._align(
                 mapped[i][0] + mapped[i][1], alignment=alignment
             )
             # Enable allocating memory in the middle of a gap when the
@@ -95,12 +88,14 @@ class QlMemoryManager:
             # Cap the gap's max address by accounting for the next
             # section's start address, requested max address, and the
             # max possible address
+
             max_gap_addr = (
                 self.max_addr
                 if i == len(mapped) - 1
                 else mapped[i + 1][1]
             )
-            max_gap_addr = min(max_gap_addr, max_addr)
+
+            max_gap_addr = min(max_gap_addr, self.max_mem_addr)
             # Ensure the end address is less than the max and the start
             # address is free
             if addr + size < max_gap_addr and self._is_mapped(addr) == False:
@@ -109,12 +104,11 @@ class QlMemoryManager:
 
     def map_anywhere(
         self,
-        size: int,
-        name: str = "",
-        kind: str = "",
-        min_addr: int = 0,
-        max_addr: int = 0xFFFFFFFFFFFFFFFF,
-        alignment: int = 0x1000,
+        size,
+        #name = "",
+        #kind = "",
+        min_addr = 0,
+        alignment = 0x1000,
         #prot: int = ProtType.RWX,
     ) -> int:
         """
@@ -138,16 +132,28 @@ class QlMemoryManager:
         Returns:
             Start address of mapped region.
         """
+        max_mem_addr = self.max_mem_addr
         address = self._find_free_space(
-            size, min_addr=min_addr, max_addr=max_addr, alignment=alignment
+            size, min_addr=min_addr, max_addr=max_mem_addr, alignment=alignment
         )
         """
         we need a better mem_map as defined in the issue
         """
         #self.map(address, util.align(size), name, kind)
-        self.ql.uc.mem_map(address, align(size))
+        self.ql.uc.mem_map(address, self._align(size))
         return address
 
+
+# A Simple Heap Implementation
+class Chunk():
+    def __init__(self, address, size):
+        self.inuse = True
+        self.address = address
+        self.size = size
+
+    @staticmethod
+    def compare(chunk):
+        return chunk.size
 
 class Heap:
     def __init__(self, ql, start_address, end_address):
@@ -162,11 +168,14 @@ class Heap:
         # curent use memory size
         self.current_use = 0
 
+    def _align(self, size, unit):
+        return (size // unit + (1 if size % unit else 0)) * unit           
+
     def mem_alloc(self, size):
         if self.ql.arch == QL_X86:
-            size = align_heap(size, 4)
+            size = self._align(size, 4)
         elif self.ql.arch == QL_X8664:
-            size = align_heap(size, 8)
+            size = self._align(size, 8)
         else:
             raise QlErrorArch("[!] Unknown ql.arch")
 
@@ -180,7 +189,7 @@ class Heap:
         chunk = None
         # If we need mem_map new memory
         if self.current_use + size > self.current_alloc:
-            real_size = align_heap(size, self.page_size)
+            real_size = self._align(size, self.page_size)
             # If the heap is not enough
             if self.start_address + self.current_use + real_size > self.end_address:
                 return 0
