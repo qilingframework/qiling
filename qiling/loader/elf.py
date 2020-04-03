@@ -415,7 +415,7 @@ class ELFLoader(ELFParse):
             ql.nprint("[+] Some error in head e_type: %u!" %elfhead['e_type'])
             return -1
 
-        ql.uc.mem_map(loadbase + mem_start, mem_end - mem_start)
+        ql.mem.map(loadbase + mem_start, mem_end - mem_start)
         ql.insert_map_info(loadbase + mem_start, loadbase + mem_end, 'r-x', self.path)
 
         for i in super().parse_program_header(ql):
