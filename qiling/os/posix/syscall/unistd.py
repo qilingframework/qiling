@@ -219,7 +219,7 @@ def ql_syscall_brk(ql, brk_input, null0, null1, null2, null3, null4):
     ql.nprint("brk(0x%x)" % brk_input)
     if brk_input != 0:
         if brk_input > ql.brk_address:
-            ql.uc.mem_map(ql.brk_address, (int(((brk_input + 0xfff) // 0x1000) * 0x1000 - ql.brk_address)))
+            ql.mem.map(ql.brk_address, (int(((brk_input + 0xfff) // 0x1000) * 0x1000 - ql.brk_address)))
             ql.brk_address = int(((brk_input + 0xfff) // 0x1000) * 0x1000)
     else:
         brk_input = ql.brk_address

@@ -93,7 +93,7 @@ class Process:
         dll_base = self.ql.DLL_LAST_ADDR
         dll_len = align(len(bytes(data)), 0x1000)
         self.ql.DLL_SIZE += dll_len
-        self.ql.uc.mem_map(dll_base, dll_len)
+        self.ql.mem.map(dll_base, dll_len)
         self.ql.mem.write(dll_base, bytes(data))
         self.ql.DLL_LAST_ADDR += dll_len
 
@@ -248,7 +248,7 @@ class Shellcode(Process):
 
     def load(self):
         # setup stack memory
-        self.ql.uc.mem_map(self.ql.stack_address, self.ql.stack_size)
+        self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
         if self.ql.arch == QL_X86:
             self.ql.uc.reg_write(UC_X86_REG_ESP, self.ql.stack_address + 0x3000)
             self.ql.uc.reg_write(UC_X86_REG_EBP, self.ql.stack_address + 0x3000)
@@ -257,7 +257,7 @@ class Shellcode(Process):
             self.ql.uc.reg_write(UC_X86_REG_RBP, self.ql.stack_address + 0x3000)
 
         # load shellcode in
-        self.ql.uc.mem_map(self.ql.code_address, self.ql.code_size)
+        self.ql.mem.map(self.ql.code_address, self.ql.code_size)
         self.ql.mem.write(self.ql.code_address, self.ql.shellcoder)
 
         # init tib/peb/ldr
@@ -300,7 +300,7 @@ class PE(Process):
 
         # set stack pointer
         self.ql.nprint("[+] Initiate stack address at 0x%x " % self.ql.stack_address)
-        self.ql.uc.mem_map(self.ql.stack_address, self.ql.stack_size)
+        self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
 
         # Stack should not init at the very bottom. Will cause errors with Dlls
         sp = self.ql.stack_address + self.ql.stack_size - 0x1000
@@ -339,7 +339,7 @@ class PE(Process):
         super().init_ldr_data()
 
         # mmap PE file into memory
-        self.ql.uc.mem_map(self.PE_IMAGE_BASE, self.PE_IMAGE_SIZE)
+        self.ql.mem.map(self.PE_IMAGE_BASE, self.PE_IMAGE_SIZE)
         self.pe.parse_data_directories()
         data = bytearray(self.pe.get_memory_mapped_image())
         self.ql.mem.write(self.PE_IMAGE_BASE, bytes(data))

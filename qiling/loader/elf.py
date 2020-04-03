@@ -458,7 +458,7 @@ class ELFLoader(ELFParse):
                     ql.interp_base = 0xff7d5000
 
             ql.dprint(0, "[+] interp_base is : 0x%x" % (ql.interp_base))
-            ql.uc.mem_map(ql.interp_base, int(interp_mem_size))
+            ql.mem.map(ql.interp_base, int(interp_mem_size))
             ql.insert_map_info(ql.interp_base, ql.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
 
             for i in interp.parse_program_header(ql):

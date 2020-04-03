@@ -163,10 +163,10 @@ lab1:
 
     if ql.shellcode_init == 0:
         ql.dprint (0, "[+] QL_SHELLCODE_ADDR(0x%x) and shellcode_init is %i" % (QL_SHELLCODE_ADDR, ql.shellcode_init))
-        uc.mem_map(QL_SHELLCODE_ADDR, QL_SHELLCODE_LEN)
+        ql.mem.map(QL_SHELLCODE_ADDR, QL_SHELLCODE_LEN)
         ql.shellcode_init = 1
 
-    store_code = uc.mem_read(addr, 8)
+    store_code = ql.mem.read(addr, 8)
     
     sc = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf8\xff\xbf\xaf\xf4\xff\xa4\xaf\xf0\xff\xa5\xaf\xec\xff\xa6\xaf\xe8\xff\xa7\xaf\xe4\xff\xa2\xaf\xe0\xff\xa3\xaf\xdc\xff\xa8\xaf\xff\xff\x06(\xff\xff\xd0\x04\x8c\x00\xe5'<\x00\xe8'\xfc\xff\xa4\x8f\x08\x00\x06$\t\xf8\x00\x01\x00\x00\x00\x00\xf8\xff\xbf\x8f\xf4\xff\xa4\x8f\xf0\xff\xa5\x8f\xec\xff\xa6\x8f\xe8\xff\xa7\x8f\xe4\xff\xa2\x8f\xe0\xff\xa3\x8f\xdc\xff\xa8\x8f\x00\x00\x00\x08\x00\x00\x00\x00%8\x00\x00%8\x00\x00\t\x00\x00\x10\x00\x00\x00\x00%\x10\xe0\x00%\x18\xa0\x00!\x18b\x00%\x10\xe0\x00!\x10\x82\x00\x00\x00c\x80\x00\x00C\xa0\x01\x00\xe7$%\x10\xe0\x00%\x18\xc0\x00+\x10C\x00\xf4\xff@\x14\x00\x00\x00\x00\x00\x00\x00\x00\x08\x00\xe0\x03\x00\x00\x00\x00"
 
@@ -179,13 +179,13 @@ lab1:
     
     sc = shellcode + sc[len(shellcode) :] + store_code
 
-    uc.mem_write(QL_SHELLCODE_ADDR, sc)
+    ql.mem.write(QL_SHELLCODE_ADDR, sc)
     if ql.archendian == QL_ENDIAN_EB:
-        uc.mem_write(addr, b'\x0b\xc0\x00\x00\x00\x00\x00\x00')
+        ql.mem.write(addr, b'\x0b\xc0\x00\x00\x00\x00\x00\x00')
     else:
-        uc.mem_write(addr, b'\x00\x00\xc0\x0b\x00\x00\x00\x00')
+        ql.mem.write(addr, b'\x00\x00\xc0\x0b\x00\x00\x00\x00')
     sp = uc.reg_read(UC_MIPS_REG_SP)
-    uc.mem_write(sp - 4, ql.pack32(addr))
+    ql.mem.write(sp - 4, ql.pack32(addr))
 
 def ql_syscall_mips32_thread_setthreadarea(ql, th, arg):
     uc = ql.uc
@@ -234,7 +234,7 @@ def loader_file(ql):
         ql.stack_address = QL_MIPS32_LINUX_PREDEFINE_STACKADDRESS
     if (ql.stack_size == 0): 
         ql.stack_size = QL_MIPS32_LINUX_PREDEFINE_STACKSIZE
-    ql.uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.mem.map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
     if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env):
         raise QlErrorFileType("Unsupported FileType")
@@ -255,7 +255,7 @@ def loader_shellcode(ql):
         ql.stack_address = 0x1000000
     if (ql.stack_size == 0): 
         ql.stack_size = 2 * 1024 * 1024
-    ql.uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.mem.map(ql.stack_address, ql.stack_size)
     ql.stack_address =  ql.stack_address  + 0x200000 - 0x1000
     ql.mem.write(ql.stack_address, ql.shellcoder) 
 

@@ -59,7 +59,7 @@ def load_shared_region(ql):
 
 
 def vm_shared_region_enter(ql):
-    ql.uc.mem_map(SHARED_REGION_BASE_X86_64, SHARED_REGION_SIZE_X86_64)
+    ql.mem.map(SHARED_REGION_BASE_X86_64, SHARED_REGION_SIZE_X86_64)
     ql.macos_shared_region = True
     ql.macos_shared_region_port = MachPort(9999)        # random port name
     pass
@@ -72,7 +72,7 @@ def map_commpage(ql):
     elif ql.arch == QL_ARM64:
         addr_base = 0x0000000FFFFFC000
         addr_size = 0x1000        
-    ql.uc.mem_map(addr_base, addr_size)
+    ql.mem.map(addr_base, addr_size)
     time_lock_slide = 0x68
     ql.mem.write(addr_base+time_lock_slide, ql.pack32(0x1))
 

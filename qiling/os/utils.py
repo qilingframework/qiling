@@ -76,14 +76,6 @@ def ql_bin_to_ipv4(ip):
         (ip & 0xff))
 
 
-def align(addr, alignment=0x1000):
-    # rounds up to nearest alignment
-    mask = ((1 << 64) - 1) & -alignment
-    return (addr + (alignment - 1)) & mask
-
-def align_heap(size, unit):
-    return (size // unit + (1 if size % unit else 0)) * unit   
-
 def ql_bin_to_ip(ip):
     return ipaddress.ip_address(ip).compressed
 

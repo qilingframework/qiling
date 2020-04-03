@@ -27,7 +27,7 @@ def set_pe64_gdt(ql):
     # setup_gdt_segment(uc, GDT_ADDR, GDT_LIMIT, UC_X86_REG_GS, 15, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, A_PRESENT |
     # A_DATA | A_DATA_WRITABLE | A_PRIV_3 | A_DIR_CON_BIT, S_GDT | S_PRIV_3)
     GSMSR = 0xC0000101
-    ql.uc.mem_map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
+    ql.mem.map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
     ql.uc.msr_write(GSMSR, ql.GS_SEGMENT_ADDR)
 
 

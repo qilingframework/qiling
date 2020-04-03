@@ -72,7 +72,7 @@ def loader_file(ql):
         ql.stack_address = QL_X8664_FREEBSD_PREDEFINE_STACKADDRESS
     if (ql.stack_size == 0):
         ql.stack_size = QL_X8664_FREEBSD_PREDEFINE_STACKSIZE
-    ql.uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.mem.map(ql.stack_address, ql.stack_size)
     loader = ELFLoader(ql.path, ql)
     if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env):
         raise QlErrorFileType("Unsupported FileType")
@@ -105,7 +105,7 @@ def loader_shellcode(ql):
         ql.stack_address = 0x1000000
     if (ql.stack_size == 0):    
         ql.stack_size = 2 * 1024 * 1024
-    ql.uc.mem_map(ql.stack_address,  ql.stack_size)
+    ql.mem.map(ql.stack_address,  ql.stack_size)
     ql.stack_address = ql.stack_address  + 0x200000 - 0x1000
     ql.mem.write(ql.stack_address, ql.shellcoder)
 
