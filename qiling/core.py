@@ -281,14 +281,12 @@ class Qiling:
         else:
             fd = self.log_file_fd
 
-        if self.log_console == True:
-            print(*args, **kw)
-        
-        # FIXME: cases like print("", end = "") will crash
-        try:
-            fd.info(*args, **kw)
-        except:
-            pass
+        msg = args[0]
+
+        # support keyword "end" in ql.print functions, use it as terminator or default newline character by OS
+        msg += kw["end"] if kw.get("end", None) != None else os.linesep
+
+        fd.info(msg)
 
         if fd is not None:
             if isinstance(fd, logging.FileHandler):
