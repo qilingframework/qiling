@@ -414,3 +414,24 @@ def hook_VerifyVersionInfoW(ql, address, params):
             ql.last_error = ERROR_OLD_WIN_VERSION
             return 0
     return 1
+
+
+# BOOL GetUserNameW(
+#   LPWSTR  lpBuffer,
+#   LPDWORD pcbBuffer
+# );
+@winapi(cc=STDCALL, params={
+    "lpBuffer": POINTER,
+    "pcbBuffer": POINTER
+})
+def hook_GetUserNameW(ql, address, params):
+    username = (ql.config["USER"]["user"]+"\x00").encode("utf-16le")
+    dst = params["lpBuffer"]
+    max_size = params["pcbBuffer"]
+    ql.uc.mem_write(max_size, len(username).to_bytes(4, byteorder="little"))
+    if len(username) > max_size:
+        ql.last_error = ERROR_INSUFFICIENT_BUFFER
+        return 0
+    else:
+        ql.uc.mem_write(dst, username)
+    return 1
