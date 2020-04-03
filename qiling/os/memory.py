@@ -29,7 +29,7 @@ class QlMemoryManager:
 
     def __init__(self, ql):
         self.ql = ql
-        self.max_addr: int = MAX_UINT64
+        self.max_addr = MAX_UINT64
 
     def read(self, addr: int, size: int) -> bytearray:
         return self.ql.uc.mem_read(addr, size)
