@@ -312,8 +312,12 @@ def ql_setup_logging_stream(ql, logger=None):
     ql_mode = ql.output
 
     # setup StreamHandler for logging to stdout
-    #ch = logging.StreamHandler()
-    ch = logging.getLogger()
+    if ql.log_console == True:
+        ch = logging.StreamHandler()
+    else:
+        # not print out to stdout by using NullHandler
+        ch = logging.NullHandler()
+
     ch.setLevel(logging.DEBUG)
     
     """
@@ -321,9 +325,9 @@ def ql_setup_logging_stream(ql, logger=None):
     with print ("", end ="") with logger, 
     fix it with concat, will keep it for now
     """
-    # if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
-    #     # use empty string for newline if disasm or dump mode was enabled
-    #     ch.terminator = ""
+    if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
+        # use empty string for newline if disasm or dump mode was enabled
+        ch.terminator = ""
 
     if logger is None:
         logger = ql_setup_logger()
@@ -334,8 +338,9 @@ def ql_setup_logging_stream(ql, logger=None):
 
 def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
     # Create the file and directories if they do not exists
-    if not exists(log_file_path) and log_file_path.endswith(".qlog"):
-        open(log_file_path, "a").close()
+    # since FileHandler will do this comment for now.
+    # if not exists(log_file_path) and log_file_path.endswith(".qlog"):
+        # open(log_file_path, "a").close()
 
     # setup FileHandler for logging to disk file
     fh = logging.FileHandler('%s.qlog' % log_file_path)
@@ -346,9 +351,9 @@ def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
     with print ("", end ="") with logger, 
     fix it with concat, will keep it for now
     """
-    # if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
-    #     # use empty string for newline if disasm or dump mode was enabled
-    #     fh.terminator = ""
+    if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
+        # use empty string for newline if disasm or dump mode was enabled
+        fh.terminator = ""
 
     if logger is None:
         logger = ql_setup_logger()
