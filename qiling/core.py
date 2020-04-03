@@ -273,14 +273,10 @@ class Qiling:
         else:
             fd = self.log_file_fd
 
-        # support keyword "end" in ql.print functions
-        if kw.get("end", None) != None:
-            for handler in fd.handlers:
-                handler.terminator = kw["end"]
 
         msg = args[0]
 
-        # use keyword end as terminator or default newline character by OS
+        # support keyword "end" in ql.print functions, use it as terminator or default newline character by OS
         msg += kw.get("end") if kw.get("end", None) != None else os.linesep
 
         fd.info(msg)
