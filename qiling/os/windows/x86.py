@@ -185,7 +185,7 @@ def runner(ql):
             ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
             ql.show_map_info()
             try:
-                buf = ql.uc.mem_read(ql.pc, 8)
+                buf = ql.mem.read(ql.pc, 8)
                 ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
                 ql.nprint("\n")
                 ql_hook_code_disasm(ql, ql.pc, 64)

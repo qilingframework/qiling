@@ -59,20 +59,20 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, null0, null1, nu
     ql.print("socketcall(%d, %x)" % (socketcall_call, socketcall_args))
 
     if socketcall_call == SOCKETCALL_SYS_SOCKET:
-        socketcall_domain = ql.unpack(ql.uc.mem_read(socketcall_args, ql.byte))
-        socketcall_type = ql.unpack(ql.uc.mem_read(socketcall_args + ql.byte, ql.byte))
-        socketcall_protocol = ql.unpack(ql.uc.mem_read(socketcall_args + ql.byte * 2, ql.byte))
+        socketcall_domain = ql.unpack(ql.mem.read(socketcall_args, ql.byte))
+        socketcall_type = ql.unpack(ql.mem.read(socketcall_args + ql.byte, ql.byte))
+        socketcall_protocol = ql.unpack(ql.mem.read(socketcall_args + ql.byte * 2, ql.byte))
         ql_syscall_socket(ql, socketcall_domain, socketcall_type, socketcall_protocol, 0, 0, 0)
     elif socketcall_call == SOCKETCALL_SYS_CONNECT:
-        socketcall_sockfd = ql.unpack(ql.uc.mem_read(socketcall_args, ql.byte))
-        socketcall_addr = ql.unpack(ql.uc.mem_read(socketcall_args + ql.byte, ql.byte))
-        socketcall_addrlen = ql.unpack(ql.uc.mem_read(socketcall_args + ql.byte * 2, ql.byte))
+        socketcall_sockfd = ql.unpack(ql.mem.read(socketcall_args, ql.byte))
+        socketcall_addr = ql.unpack(ql.mem.read(socketcall_args + ql.byte, ql.byte))
+        socketcall_addrlen = ql.unpack(ql.mem.read(socketcall_args + ql.byte * 2, ql.byte))
         ql_syscall_connect(ql, socketcall_sockfd, socketcall_addr, socketcall_addrlen, 0, 0, 0)
     elif socketcall_call == SOCKETCALL_SYS_RECV:
-        socketcall_sockfd = ql.unpack(ql.uc.mem_read(socketcall_args, ql.byte))
-        socketcall_buf = ql.unpack(ql.uc.mem_read(socketcall_args + ql.byte, ql.byte))
-        socketcall_len = ql.unpack(ql.uc.mem_read(socketcall_args + ql.byte * 2, ql.byte))
-        socketcall_flags = ql.unpack(ql.uc.mem_read(socketcall_args + ql.byte * 3, ql.byte))
+        socketcall_sockfd = ql.unpack(ql.mem.read(socketcall_args, ql.byte))
+        socketcall_buf = ql.unpack(ql.mem.read(socketcall_args + ql.byte, ql.byte))
+        socketcall_len = ql.unpack(ql.mem.read(socketcall_args + ql.byte * 2, ql.byte))
+        socketcall_flags = ql.unpack(ql.mem.read(socketcall_args + ql.byte * 3, ql.byte))
         ql_syscall_recv(ql, socketcall_sockfd, socketcall_buf, socketcall_len, socketcall_flags, 0, 0)
     else:
         ql.dprint(0, "[!] error call %d" % socketcall_call)

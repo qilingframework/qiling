@@ -209,7 +209,7 @@ def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, null0):
         regreturn = -1
     #regreturn = 0 if ret >= 0 else -1
     if regreturn == 0:
-        ql.mem_write(result, ql.pack64(ret))
+        ql.mem.write(result, ql.pack64(ret))
 
     ql.nprint("_llseek(%d, 0x%x, 0x%x, 0x%x = %d)" % (fd, offset_high, offset_low, origin, regreturn))
     ql_definesyscall_return(ql, regreturn)
@@ -265,7 +265,7 @@ def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, null0, null1)
             ql.file_des[read_fd].lseek(read_offt)
             data = ql.file_des[read_fd].read(read_len)
             ql.file_des[read_fd].lseek(pos)
-            ql.uc.mem_write(read_buf, data)
+            ql.mem.write(read_buf, data)
             regreturn = len(data)
         except:
             regreturn = -1
@@ -280,7 +280,7 @@ def ql_syscall_read(ql, read_fd, read_buf, read_len, null0, null1, null2):
     if read_fd < 256 and ql.file_des[read_fd] != 0:
         try:
             data = ql.file_des[read_fd].read(read_len)
-            ql.uc.mem_write(read_buf, data)
+            ql.mem.write(read_buf, data)
             regreturn = len(data)
         except:
             regreturn = -1
@@ -299,7 +299,7 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
     buf = None
 
     try:
-        buf = ql.uc.mem_read(write_buf, write_count)
+        buf = ql.mem.read(write_buf, write_count)
         ql.nprint("\nwrite(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         if buf:
             ql.dprint(1, "[+] write() CONTENT:")
@@ -318,7 +318,7 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, null0, null1, null2):
 
 
 def ql_syscall_readlink(ql, path_name, path_buff, path_buffsize, null0, null1, null2):
-    pathname = (ql.uc.mem_read(path_name, 0x100).split(b'\x00'))[0]
+    pathname = (ql.mem.read(path_name, 0x100).split(b'\x00'))[0]
     pathname = str(pathname, 'utf-8', errors="ignore")
 
     real_path = ql_transform_to_link_path(ql, pathname)
@@ -330,7 +330,7 @@ def ql_syscall_readlink(ql, path_name, path_buff, path_buffsize, null0, null1, n
         FILEPATH = ql.path
         localpath = os.path.abspath(FILEPATH)
         localpath = bytes(localpath, 'utf-8') + b'\x00'
-        ql.uc.mem_write(path_buff, localpath)
+        ql.mem.write(path_buff, localpath)
         regreturn = (len(localpath)-1)
     else:
         regreturn = 0x0
@@ -342,10 +342,10 @@ def ql_syscall_readlink(ql, path_name, path_buff, path_buffsize, null0, null1, n
 def ql_syscall_getcwd(ql, path_buff, path_buffsize, null0, null1, null2, null3):
     localpath = ql_transform_to_relative_path(ql, './')
     localpath = bytes(localpath, 'utf-8') + b'\x00'
-    ql.uc.mem_write(path_buff, localpath)
+    ql.mem.write(path_buff, localpath)
     regreturn = (len(localpath))
 
-    pathname = (ql.uc.mem_read(path_buff, 0x100).split(b'\x00'))[0]
+    pathname = (ql.mem.read(path_buff, 0x100).split(b'\x00'))[0]
     pathname = str(pathname, 'utf-8', errors="ignore")
 
     ql.nprint("getcwd(%s, 0x%x) = %d" % (pathname, path_buffsize, regreturn))
@@ -372,7 +372,7 @@ def ql_syscall_chdir(ql, path_name, null0, null1, null2, null3, null4):
 
 
 def ql_syscall_readlinkat(ql, readlinkat_dfd, readlinkat_path, readlinkat_buf, readlinkat_bufsiz, null0, null1):
-    pathname = (ql.uc.mem_read(readlinkat_path, 0x100).split(b'\x00'))[0]
+    pathname = (ql.mem.read(readlinkat_path, 0x100).split(b'\x00'))[0]
     pathname = str(pathname, 'utf-8', errors="ignore")
 
     real_path = ql_transform_to_link_path(ql, pathname)
@@ -384,7 +384,7 @@ def ql_syscall_readlinkat(ql, readlinkat_dfd, readlinkat_path, readlinkat_buf, r
         FILEPATH = ql.path
         localpath = os.path.abspath(FILEPATH)
         localpath = bytes(localpath, 'utf-8') + b'\x00'
-        ql.uc.mem_write(readlinkat_buf, localpath)
+        ql.mem.write(readlinkat_buf, localpath)
         regreturn = (len(localpath)-1)
     else:
         regreturn = 0x0
@@ -448,7 +448,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, null0, null
     argv = []
     if execve_argv != 0:
         while True:
-            argv_addr = unpack(ql.uc.mem_read(execve_argv, word_size))
+            argv_addr = unpack(ql.mem.read(execve_argv, word_size))
             if argv_addr == 0:
                 break
             argv.append(ql_read_string(ql, argv_addr))
@@ -457,7 +457,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, null0, null
     env = {}
     if execve_envp != 0:
         while True:
-            env_addr = unpack(ql.uc.mem_read(execve_envp, word_size))
+            env_addr = unpack(ql.mem.read(execve_envp, word_size))
             if env_addr == 0:
                 break
             env_str = ql_read_string(ql, env_addr)
@@ -546,7 +546,7 @@ def ql_syscall_pipe(ql, pipe_pipefd, null0, null1, null2, null3, null4):
                 ql.uc.reg_write(UC_MIPS_REG_V1, idx2)
                 regreturn = idx1
             else:
-                ql.uc.mem_write(pipe_pipefd, ql.pack32(idx1) + ql.pack32(idx2))
+                ql.mem.write(pipe_pipefd, ql.pack32(idx1) + ql.pack32(idx2))
                 regreturn = 0
 
     ql.nprint("pipe(%x, [%d, %d]) = %d" % (pipe_pipefd, idx1, idx2, regreturn))
@@ -671,11 +671,11 @@ def ql_syscall_getdents(ql, fd, dirp, count, null0, null1, null2):
             d_type = _type_mapping(result)
             d_reclen = len(d_name) + n*2 + 3
 
-            ql.mem_write(dirp, ql.pack(d_ino))
-            ql.mem_write(dirp+n, ql.pack(d_off))
-            ql.mem_write(dirp+n*2, ql.pack16(d_reclen))
-            ql.mem_write(dirp+n*2+2, d_name)
-            ql.mem_write(dirp+n*2+2+len(d_name), d_type)
+            ql.mem.write(dirp, ql.pack(d_ino))
+            ql.mem.write(dirp+n, ql.pack(d_off))
+            ql.mem.write(dirp+n*2, ql.pack16(d_reclen))
+            ql.mem.write(dirp+n*2+2, d_name)
+            ql.mem.write(dirp+n*2+2+len(d_name), d_type)
 
             dirp += d_reclen
             total_size += d_reclen

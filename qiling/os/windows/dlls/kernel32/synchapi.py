@@ -132,7 +132,7 @@ def hook_WaitForMultipleObjects(ql, address, params):
     dwMilliseconds = params["dwMilliseconds"]
 
     for i in range(nCount):
-        handle_value = ql.unpack(ql.mem_read(lpHandles + i * ql.pointersize, ql.pointersize))
+        handle_value = ql.unpack(ql.mem.read(lpHandles + i * ql.pointersize, ql.pointersize))
         if handle_value != 0:
             thread = ql.handle_manager.get(handle_value).thread
             ql.thread_manager.current_thread.waitfor(thread)

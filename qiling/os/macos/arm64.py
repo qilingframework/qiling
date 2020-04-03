@@ -117,7 +117,7 @@ def loader_shellcode(ql):
 
     ql.uc.mem_map(ql.stack_address, ql.stack_size)
     ql.stack_address =  ql.stack_address  + 0x200000 - 0x1000    
-    ql.uc.mem_write(ql.stack_address, ql.shellcoder)
+    ql.mem.write(ql.stack_address, ql.shellcoder)
     
 
 def runner(ql):
@@ -142,7 +142,7 @@ def runner(ql):
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC= " + hex(ql.pc))
             ql.show_map_info()
-            buf = ql.uc.mem_read(ql.pc, 8)
+            buf = ql.mem.read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
         raise QlErrorExecutionStop("[!] Execution Terminated")    

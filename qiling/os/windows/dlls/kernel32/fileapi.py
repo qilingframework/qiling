@@ -99,13 +99,13 @@ def hook_ReadFile(ql, address, params):
         if slen > nNumberOfBytesToRead:
             s = s[:nNumberOfBytesToRead]
             read_len = nNumberOfBytesToRead
-        ql.uc.mem_write(lpBuffer, s)
-        ql.uc.mem_write(lpNumberOfBytesRead, ql.pack(read_len))
+        ql.mem.write(lpBuffer, s)
+        ql.mem.write(lpNumberOfBytesRead, ql.pack(read_len))
     else:
         f = ql.handle_manager.get(hFile).file
         data = f.read(nNumberOfBytesToRead)
-        ql.uc.mem_write(lpBuffer, data)
-        ql.uc.mem_write(lpNumberOfBytesRead, ql.pack32(lpNumberOfBytesRead))
+        ql.mem.write(lpBuffer, data)
+        ql.mem.write(lpNumberOfBytesRead, ql.pack32(lpNumberOfBytesRead))
     return ret
 
 
@@ -131,9 +131,9 @@ def hook_WriteFile(ql, address, params):
     lpNumberOfBytesWritten = params["lpNumberOfBytesWritten"]
     lpOverlapped = params["lpOverlapped"]
     if hFile == STD_OUTPUT_HANDLE:
-        s = ql.uc.mem_read(lpBuffer, nNumberOfBytesToWrite)
+        s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.stdout.write(s)
-        ql.uc.mem_write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
+        ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
     else:
         f = ql.handle_manager.get(hFile)
         if f is None:
@@ -142,9 +142,9 @@ def hook_WriteFile(ql, address, params):
             return 0
         else:
             f = f.file
-        buffer = ql.uc.mem_read(lpBuffer, nNumberOfBytesToWrite)
+        buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         f.write(bytes(buffer))
-        ql.uc.mem_write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
+        ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
     return ret
 
 
@@ -236,7 +236,7 @@ def hook_GetTempPathW(ql, address, params):
     temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
     if not os.path.exists(temp_path):
         os.makedirs(temp_path, 0o755)
-    ql.uc.mem_write(dest, temp)
+    ql.mem.write(dest, temp)
     return len(temp)
 
 
@@ -267,5 +267,5 @@ def hook_GetShortPathNameW(ql, address, params):
     if max_size < len(res):
         return len(res)
     else:
-        ql.uc.mem_write(dst, res)
+        ql.mem.write(dst, res)
     return len(res) - 1

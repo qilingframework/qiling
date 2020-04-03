@@ -16,26 +16,26 @@ class MIPS32(Arch):
     def stack_push(self, value):
         SP = self.ql.uc.reg_read(UC_MIPS_REG_SP)
         SP -= 4
-        self.ql.uc.mem_write(SP, self.ql.pack32(value))
+        self.ql.mem.write(SP, self.ql.pack32(value))
         self.ql.uc.reg_write(UC_MIPS_REG_SP, SP)
         return SP
 
 
     def stack_pop(self):
         SP = self.ql.uc.reg_read(UC_MIPS_REG_SP)
-        data = self.ql.unpack32(self.ql.uc.mem_read(SP, 4))
+        data = self.ql.unpack32(self.ql.mem.read(SP, 4))
         self.ql.uc.reg_write(UC_MIPS_REG_SP, SP + 4)
         return data
 
 
     def stack_read(self, offset):
         SP = self.ql.uc.reg_read(UC_MIPS_REG_SP)
-        return self.ql.unpack32(self.ql.uc.mem_read(SP + offset, 4))
+        return self.ql.unpack32(self.ql.mem.read(SP + offset, 4))
 
 
     def stack_write(self, offset, data):
         SP = self.ql.uc.reg_read(UC_MIPS_REG_SP)
-        return self.ql.uc.mem_write(SP + offset, self.ql.pack32(data))
+        return self.ql.mem.write(SP + offset, self.ql.pack32(data))
 
 
     # set PC

@@ -118,7 +118,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
     _struct = []
 
     for offset in range(0, 0x18, 4):
-        data = ql.mem_read(struct_mmap_args + offset, 4)
+        data =ql.mem.read(struct_mmap_args + offset, 4)
         _struct.append(int.from_bytes(data, 'little'))
 
     mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset = _struct
@@ -136,8 +136,8 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
         mmap_fd = ql.unpack64(ql.pack64(mmap_fd))
 
     elif (ql.arch == QL_MIPS32):
-        mmap_fd = ql.unpack32s(ql.uc.mem_read(mmap_fd, 4))
-        mmap_offset = ql.unpack32(ql.uc.mem_read(mmap_offset, 4))
+        mmap_fd = ql.unpack32s(ql.mem.read(mmap_fd, 4))
+        mmap_offset = ql.unpack32(ql.mem.read(mmap_offset, 4))
         MAP_ANONYMOUS=2048
 
     else:
@@ -167,7 +167,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
             ql.show_map_info()
             raise
 
-    ql.uc.mem_write(mmap_base, b'\x00' * (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
+    ql.mem.write(mmap_base, b'\x00' * (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
@@ -190,7 +190,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
         ql.dprint(0, "[+] log mem wirte : " + hex(len(data)))
         ql.dprint(0, "[+] log mem mmap  : " + str(ql.file_des[mmap_fd].name))
 
-        ql.uc.mem_write(mmap_base, data)
+        ql.mem.write(mmap_base, data)
         mem_info = ql.file_des[mmap_fd].name
 
     ql.insert_map_info(mem_s, mem_e, mem_p, mem_info)
@@ -218,8 +218,8 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
 
     elif (ql.arch == QL_MIPS32):
-        mmap2_fd = ql.unpack32s(ql.uc.mem_read(mmap2_fd, 4))
-        mmap2_pgoffset = ql.unpack32(ql.uc.mem_read(mmap2_pgoffset, 4))
+        mmap2_fd = ql.unpack32s(ql.mem.read(mmap2_fd, 4))
+        mmap2_pgoffset = ql.unpack32(ql.mem.read(mmap2_pgoffset, 4))
         MAP_ANONYMOUS=2048
 
     else:
@@ -251,7 +251,7 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
 
     # FIXME: Big Endian Patch
     try:
-        ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
+        ql.mem.write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
     except:
         pass
 
@@ -277,7 +277,7 @@ def ql_syscall_mmap(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2
         ql.dprint(0, "[+] log mem wirte : " + hex(len(data)))
         ql.dprint(0, "[+] log mem mmap  : " + str(ql.file_des[mmap2_fd].name))
 
-        ql.uc.mem_write(mmap_base, data)
+        ql.mem.write(mmap_base, data)
         mem_info = ql.file_des[mmap2_fd].name
 
     ql.insert_map_info(mem_s, mem_e, mem_p, mem_info)
@@ -301,8 +301,8 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
 
     elif (ql.arch == QL_MIPS32):
-        mmap2_fd = ql.unpack32s(ql.uc.mem_read(mmap2_fd, 4))
-        mmap2_pgoffset = ql.unpack32(ql.uc.mem_read(mmap2_pgoffset, 4)) * 4096
+        mmap2_fd = ql.unpack32s(ql.mem.read(mmap2_fd, 4))
+        mmap2_pgoffset = ql.unpack32(ql.mem.read(mmap2_pgoffset, 4)) * 4096
         MAP_ANONYMOUS=2048
     else:
         mmap2_fd = ql.unpack32s(ql.pack32(mmap2_fd))
@@ -333,7 +333,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
             ql.show_map_info()
             raise
 
-    ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
+    ql.mem.write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
@@ -355,7 +355,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
 
         ql.dprint(0, "[+] log2 mem wirte : " + hex(len(data)))
         ql.dprint(0, "[+] log2 mem mmap  : " + str(ql.file_des[mmap2_fd].name))
-        ql.uc.mem_write(mmap_base, data)
+        ql.mem.write(mmap_base, data)
 
         mem_info = ql.file_des[mmap2_fd].name
 

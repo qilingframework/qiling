@@ -64,7 +64,7 @@ def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_
     if futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAIT:
         def futex_wait_addr(ql, th, arg):
             addr, val = arg
-            if ql.unpack32(ql.uc.mem_read(addr, 4)) != val:
+            if ql.unpack32(ql.mem.read(addr, 4)) != val:
                 return False
             else:
                 return True

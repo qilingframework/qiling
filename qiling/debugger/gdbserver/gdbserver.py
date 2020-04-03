@@ -238,7 +238,7 @@ class GDBSERVERsession(object):
                 try:
                     tmp = ''
                     for s in range(size):
-                        mem = self.ql.uc.mem_read(addr + s, 1)
+                        mem = self.ql.mem.read(addr + s, 1)
                         mem = "".join(
                             [str("{:02x}".format(ord(c))) for c in mem.decode('latin1')])
                         tmp += mem
@@ -254,7 +254,7 @@ class GDBSERVERsession(object):
                 addr = int(addr, 16)
                 data = int(data, 16)
                 try:
-                    self.ql.mem_write(addr, data)
+                    self.ql.mem.write(addr, data)
                     self.send('OK')
                 except:
                     self.send('E01')

@@ -20,12 +20,12 @@ class MachMsgHeader():
         self.msgh_id = None
     
     def read_header_from_mem(self, addr):
-        self.msgh_bits = unpack("<L", self.ql.uc.mem_read(addr, 0x4))[0]
-        self.msgh_size = unpack("<L", self.ql.uc.mem_read(addr + 0x4, 0x4))[0]
-        self.msgh_remote_port = unpack("<L", self.ql.uc.mem_read(addr + 0x8, 0x4))[0]
-        self.msgh_local_port = unpack("<L", self.ql.uc.mem_read(addr + 0xc, 0x4))[0]
-        self.msgh_voucher_port = unpack("<L", self.ql.uc.mem_read(addr + 0x10, 0x4))[0]
-        self.msgh_id = unpack("<L", self.ql.uc.mem_read(addr + 0x14, 0x4))[0]
+        self.msgh_bits = unpack("<L", self.ql.mem.read(addr, 0x4))[0]
+        self.msgh_size = unpack("<L", self.ql.mem.read(addr + 0x4, 0x4))[0]
+        self.msgh_remote_port = unpack("<L", self.ql.mem.read(addr + 0x8, 0x4))[0]
+        self.msgh_local_port = unpack("<L", self.ql.mem.read(addr + 0xc, 0x4))[0]
+        self.msgh_voucher_port = unpack("<L", self.ql.mem.read(addr + 0x10, 0x4))[0]
+        self.msgh_id = unpack("<L", self.ql.mem.read(addr + 0x14, 0x4))[0]
 
     def __str__(self):
         return "[MachMsg] bits :{}, size:{}, remote port:{}, local port:{}, voucher port:{}, id:{}".format(
@@ -51,16 +51,16 @@ class MachMsg():
         self.content = self.read_msg_content(addr + self.header.header_size, size - self.header.header_size)
 
     def write_msg_to_mem(self, addr):
-        self.ql.uc.mem_write(addr, pack("<L", self.header.msgh_bits))
-        self.ql.uc.mem_write(addr + 0x4, pack("<L", self.header.msgh_size))
-        self.ql.uc.mem_write(addr + 0x8, pack("<L", self.header.msgh_remote_port))
-        self.ql.uc.mem_write(addr + 0xc, pack("<L", self.header.msgh_local_port))
-        self.ql.uc.mem_write(addr + 0x10, pack("<L", self.header.msgh_voucher_port))
-        self.ql.uc.mem_write(addr + 0x14, pack("<L", self.header.msgh_id))
+        self.ql.mem.write(addr, pack("<L", self.header.msgh_bits))
+        self.ql.mem.write(addr + 0x4, pack("<L", self.header.msgh_size))
+        self.ql.mem.write(addr + 0x8, pack("<L", self.header.msgh_remote_port))
+        self.ql.mem.write(addr + 0xc, pack("<L", self.header.msgh_local_port))
+        self.ql.mem.write(addr + 0x10, pack("<L", self.header.msgh_voucher_port))
+        self.ql.mem.write(addr + 0x14, pack("<L", self.header.msgh_id))
         if self.content:
-            self.ql.uc.mem_write(addr + 0x18, self.content)
+            self.ql.mem.write(addr + 0x18, self.content)
         if self.trailer:
-            self.ql.uc.mem_write(addr + 0x18 + len(self.content), self.trailer)
+            self.ql.mem.write(addr + 0x18 + len(self.content), self.trailer)
 
     def read_msg_header(self, addr, size):
         header = MachMsgHeader(self.ql)
@@ -69,8 +69,8 @@ class MachMsg():
         return header
 
     def read_msg_content(self, addr, size):
-        print("0x{:X}, {}".format(addr, size))
-        return self.ql.uc.mem_read(addr, size)
+        self.ql.nprint("0x{:X}, {}".format(addr, size))
+        return self.ql.mem.read(addr, size)
 
 
 class MachPort():
@@ -107,7 +107,7 @@ class MachPortManager():
             self.ql.nprint("Error Mach Msgid {} can not handled".format(msg.header.msgh_id))
             raise
 
-        print("Reply-> Header: {}, Content: {}".format(out_msg.header, out_msg.content))
+        self.ql.dprint(0, "Reply-> Header: {}, Content: {}".format(out_msg.header, out_msg.content))
 
     def get_thread_port(self, MachoThread):
         return MachoThread.port.name

@@ -144,7 +144,7 @@ def test_pe_win_x86_crackme():
 
     def force_call_dialog_func(ql):
         # get DialogFunc address
-        lpDialogFunc = ql.unpack32(ql.mem_read(ql.sp - 0x8, 4))
+        lpDialogFunc = ql.unpack32(ql.mem.read(ql.sp - 0x8, 4))
         # setup stack for DialogFunc
         ql.stack_push(0)
         ql.stack_push(1001)

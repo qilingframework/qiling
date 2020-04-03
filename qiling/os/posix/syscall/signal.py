@@ -37,17 +37,17 @@ from qiling.utils import *
 def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, null0, null1, null2):
     if rt_sigaction_oldact != 0:
         if ql.sigaction_act[rt_sigaction_signum] == 0:
-            ql.uc.mem_write(rt_sigaction_oldact, b'\x00' * 20)
+            ql.mem.write(rt_sigaction_oldact, b'\x00' * 20)
         else:
             data = b''
             for key in ql.sigaction_act[rt_sigaction_signum]:
                 data += ql.pack32(key)
-            ql.uc.mem_write(rt_sigaction_oldact, data)
+            ql.mem.write(rt_sigaction_oldact, data)
 
     if rt_sigaction_act != 0:
         data = []
         for key in range(5):
-            data.append(ql.unpack32(ql.uc.mem_read(rt_sigaction_act + 4 * key, 4)))
+            data.append(ql.unpack32(ql.mem.read(rt_sigaction_act + 4 * key, 4)))
         ql.sigaction_act[rt_sigaction_signum] = data
 
     regreturn = 0

@@ -61,7 +61,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.file_des[read_fd].name
                 with open(real_path) as fd:
-                    assert fd.read() == ql.mem_read(read_buf, read_count).decode()
+                    assert fd.read() ==ql.mem.read(read_buf, read_count).decode()
                 os.remove(real_path)
 
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
@@ -178,7 +178,7 @@ class ELFTest(unittest.TestCase):
             # if target:
                 # real_path = ql.file_des[read_fd].name
                 # with open(real_path) as fd:
-                    # assert fd.read() == ql.mem_read(read_buf, read_count).decode()
+                    # assert fd.read() ==ql.mem.read(read_buf, read_count).decode()
                 # os.remove(real_path)
  
         # def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
@@ -299,7 +299,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.file_des[read_fd].name
                 with open(real_path) as fd:
-                    assert fd.read() == ql.mem_read(read_buf, read_count).decode()
+                    assert fd.read() ==ql.mem.read(read_buf, read_count).decode()
                 os.remove(real_path)
  
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
@@ -420,7 +420,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.file_des[read_fd].name
                 with open(real_path) as fd:
-                    assert fd.read() == ql.mem_read(read_buf, read_count).decode()
+                    assert fd.read() ==ql.mem.read(read_buf, read_count).decode()
                 os.remove(real_path)
  
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
@@ -514,7 +514,7 @@ class ELFTest(unittest.TestCase):
             buf = None
             
             try:
-                buf = ql.uc.mem_read(write_buf, write_count)
+                buf = ql.mem.read(write_buf, write_count)
                 ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
                 ql.file_des[write_fd].write(buf)
                 regreturn = write_count

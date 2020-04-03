@@ -102,7 +102,7 @@ class ThreadManager:
         self.ins_count = 0
         self.THREAD_RET_ADDR = self.ql.heap.mem_alloc(8)
         # write nop to THREAD_RET_ADDR
-        self.ql.mem_write(self.THREAD_RET_ADDR, b"\x90"*8)
+        self.ql.mem.write(self.THREAD_RET_ADDR, b"\x90"*8)
         self.ql.hook_code(thread_scheduler)
 
     def append(self, thread):
@@ -155,11 +155,11 @@ class Thread:
         new_stack = self.ql.heap.mem_alloc(stack_size) + stack_size
 
         if self.ql.arch == QL_X86:
-            self.ql.mem_write(new_stack - 4, self.ql.pack32(self.ql.thread_manager.THREAD_RET_ADDR))
-            self.ql.mem_write(new_stack, self.ql.pack32(func_params))
+            self.ql.mem.write(new_stack - 4, self.ql.pack32(self.ql.thread_manager.THREAD_RET_ADDR))
+            self.ql.mem.write(new_stack, self.ql.pack32(func_params))
         elif self.ql.arch == QL_X8664:
-            self.ql.mem_write(new_stack - 8, self.ql.pack64(self.ql.thread_manager.THREAD_RET_ADDR))
-            self.ql.mem_write(new_stack, self.ql.pack64(func_params))
+            self.ql.mem.write(new_stack - 8, self.ql.pack64(self.ql.thread_manager.THREAD_RET_ADDR))
+            self.ql.mem.write(new_stack, self.ql.pack64(func_params))
 
         # set eip, ebp, esp
         self.context.save()

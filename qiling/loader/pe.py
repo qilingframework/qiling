@@ -94,7 +94,7 @@ class Process:
         dll_len = align(len(bytes(data)), 0x1000)
         self.ql.DLL_SIZE += dll_len
         self.ql.uc.mem_map(dll_base, dll_len)
-        self.ql.uc.mem_write(dll_base, bytes(data))
+        self.ql.mem.write(dll_base, bytes(data))
         self.ql.DLL_LAST_ADDR += dll_len
 
         # add dll to ldr data
@@ -115,11 +115,11 @@ class Process:
         if name == b"_acmdln":
             cmdline_entry = {"name": name, "address": address}
             memory[address:address + self.ql.pointersize] = packed_addr
-            self.ql.uc.mem_write(addr, self.cmdline)
+            self.ql.mem.write(addr, self.cmdline)
         elif name == b"_wcmdln":
             cmdline_entry = {"name": name, "address": address}
             memory[address:address + self.ql.pointersize] = packed_addr
-            self.ql.uc.mem_write(addr, str(self.cmdline).encode("utf-16le"))
+            self.ql.mem.write(addr, str(self.cmdline).encode("utf-16le"))
 
         return cmdline_entry
 
@@ -142,14 +142,14 @@ class Process:
             stack_limit=self.ql.stack_size,
             Self=teb_addr)
 
-        self.ql.uc.mem_write(teb_addr, teb_data.bytes())
+        self.ql.mem.write(teb_addr, teb_data.bytes())
 
         self.ql.STRUCTERS_LAST_ADDR += teb_size
         if self.ql.arch == QL_X8664:
             # TEB
-            self.ql.uc.mem_write(gs + 0x30, self.ql.pack64(teb_addr))
+            self.ql.mem.write(gs + 0x30, self.ql.pack64(teb_addr))
             # PEB
-            self.ql.uc.mem_write(gs + 0x60, self.ql.pack64(teb_addr + teb_size))
+            self.ql.mem.write(gs + 0x60, self.ql.pack64(teb_addr + teb_size))
 
         self.TEB = self.ql.TEB = teb_data
 
@@ -160,7 +160,7 @@ class Process:
 
         peb_size = len(PEB(self.ql).bytes())
         peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size)
-        self.ql.uc.mem_write(peb_addr, peb_data.bytes())
+        self.ql.mem.write(peb_addr, peb_data.bytes())
         self.ql.STRUCTERS_LAST_ADDR += peb_size
         self.PEB = self.ql.PEB = peb_data
 
@@ -183,7 +183,7 @@ class Process:
                 'Blink': ldr_addr + 6 * self.ql.pointersize
             }
         )
-        self.ql.uc.mem_write(ldr_addr, ldr_data.bytes())
+        self.ql.mem.write(ldr_addr, ldr_data.bytes())
         self.ql.STRUCTERS_LAST_ADDR += ldr_size
         self.LDR = self.ql.LDR = ldr_data
 
@@ -233,9 +233,9 @@ class Process:
         blink.InMemoryOrderModuleList['Blink'] = ldr_table_entry.base + 2 * self.ql.pointersize
         blink.InInitializationOrderModuleList['Blink'] = ldr_table_entry.base + 4 * self.ql.pointersize
 
-        self.ql.uc.mem_write(flink.base, flink.bytes())
-        self.ql.uc.mem_write(blink.base, blink.bytes())
-        self.ql.uc.mem_write(ldr_table_entry.base, ldr_table_entry.bytes())
+        self.ql.mem.write(flink.base, flink.bytes())
+        self.ql.mem.write(blink.base, blink.bytes())
+        self.ql.mem.write(ldr_table_entry.base, ldr_table_entry.bytes())
 
         self.ldr_list.append(ldr_table_entry)
 
@@ -258,7 +258,7 @@ class Shellcode(Process):
 
         # load shellcode in
         self.ql.uc.mem_map(self.ql.code_address, self.ql.code_size)
-        self.ql.mem_write(self.ql.code_address, self.ql.shellcoder)
+        self.ql.mem.write(self.ql.code_address, self.ql.shellcoder)
 
         # init tib/peb/ldr
         super().init_tib()
@@ -314,10 +314,10 @@ class PE(Process):
                 load_addr_bytes = self.PE_IMAGE_BASE.to_bytes(length=4, byteorder='little')
 
                 self.ql.dprint(0, '[+] Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.PE_IMAGE_BASE, sp + 0x4))
-                self.ql.mem_write(sp + 0x4, load_addr_bytes)
+                self.ql.mem.write(sp + 0x4, load_addr_bytes)
 
                 self.ql.dprint(0, '[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp + 0x8))
-                self.ql.mem_write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
+                self.ql.mem.write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
 
         elif self.ql.arch == QL_X8664:
             self.ql.uc.reg_write(UC_X86_REG_RSP, sp)
@@ -342,7 +342,7 @@ class PE(Process):
         self.ql.uc.mem_map(self.PE_IMAGE_BASE, self.PE_IMAGE_SIZE)
         self.pe.parse_data_directories()
         data = bytearray(self.pe.get_memory_mapped_image())
-        self.ql.uc.mem_write(self.PE_IMAGE_BASE, bytes(data))
+        self.ql.mem.write(self.PE_IMAGE_BASE, bytes(data))
 
         # Add main PE to ldr_data_table
         mod_name = os.path.basename(self.path)
@@ -366,7 +366,7 @@ class PE(Process):
                     address = self.ql.pack32(addr)
                 else:
                     address = self.ql.pack64(addr)
-                self.ql.uc.mem_write(imp.address, address)
+                self.ql.mem.write(imp.address, address)
 
         self.ql.nprint("[+] Done with loading %s" % self.path)
         self.filepath = b"D:\\" + bytes(self.path.replace("/", "\\"), "utf-8")

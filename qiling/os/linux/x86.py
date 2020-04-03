@@ -66,7 +66,7 @@ def hook_syscall(ql, intno):
 
 def ql_x86_thread_set_tls(ql, th, arg):
     u_info = arg
-    # u_info = ql.uc.mem_read(u_info_addr, 4 * 3)
+    # u_info = ql.mem.read(u_info_addr, 4 * 3)
     base = ql.unpack32(u_info[4 : 8])
     limit = ql.unpack32(u_info[8 : 12])
     ql_x86_setup_syscall_set_thread_area(ql, base, limit)
@@ -74,7 +74,7 @@ def ql_x86_thread_set_tls(ql, th, arg):
 
 def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
     ql.nprint("set_thread_area(u_info_addr= 0x%x)" % u_info_addr)
-    u_info = ql.uc.mem_read(u_info_addr, 4 * 3)
+    u_info = ql.mem.read(u_info_addr, 4 * 3)
 
     if ql.thread_management != None and ql.multithread == True:
         ql.thread_management.cur_thread.set_special_settings_arg(u_info)
@@ -83,7 +83,7 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
     limit = ql.unpack32(u_info[8 : 12])
     ql.nprint("[+] set_thread_area base : 0x%x limit is : 0x%x" % (base, limit))
     ql_x86_setup_syscall_set_thread_area(ql, base, limit)
-    ql.uc.mem_write(u_info_addr, ql.pack32(12))
+    ql.mem.write(u_info_addr, ql.pack32(12))
     regreturn = 0
     ql_definesyscall_return(ql, regreturn)
 
@@ -118,7 +118,7 @@ def loader_shellcode(ql):
         ql.stack_size = 2 * 1024 * 1024
     ql.uc.mem_map(ql.stack_address,  ql.stack_size)
     ql.stack_address =  ql.stack_address  + 0x100000
-    ql.uc.mem_write(ql.stack_address, ql.shellcoder)
+    ql.mem.write(ql.stack_address, ql.shellcoder)
 
     ql.sp = ql.stack_address
     ql_setup_output(ql)
@@ -173,7 +173,7 @@ def runner(ql):
             ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
             ql.show_map_info()
             try:
-                buf = ql.uc.mem_read(ql.pc, 8)
+                buf = ql.mem.read(ql.pc, 8)
                 ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
                 ql.nprint("\n")
                 ql_hook_code_disasm(ql, ql.pc, 64)

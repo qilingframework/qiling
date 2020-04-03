@@ -81,7 +81,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
 
             if clone_flags & CLONE_SETTLS == CLONE_SETTLS:
                 if ql.arch == QL_X86:
-                    newtls = ql.uc.mem_read(clone_newtls, 4 * 3)
+                    newtls = ql.mem.read(clone_newtls, 4 * 3)
                 else:
                     newtls = clone_newtls
                 f_th.set_special_settings_arg(newtls)
@@ -107,7 +107,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     if clone_flags & CLONE_SETTLS == CLONE_SETTLS:
         th.set_special_settings_fuc(f_th.special_settings_fuc)
         if ql.arch == QL_X86:
-            newtls = ql.uc.mem_read(clone_newtls, 4 * 3)
+            newtls = ql.mem.read(clone_newtls, 4 * 3)
         else:
             newtls = clone_newtls
         th.set_special_settings_arg(newtls)

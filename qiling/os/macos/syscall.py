@@ -41,7 +41,6 @@ from qiling.os.posix.constant_mapping import *
 
 
 def ql_arm64_fgetattrlist(ql, fd, attrlist, attrbuff, attrsizebuff, options, *args, **kw):
-
     ql.nprint("addr %x, path: %s" % (attrlist ,attrbuff))
     KERN_SUCCESS = 1
     ql_definesyscall_return(ql, KERN_SUCCESS)
@@ -68,10 +67,10 @@ def ql_x86_syscall_kernelrpc_mach_vm_allocate_trap(ql, port, addr, size, flags, 
     mmap_start = ql.macho_task.min_offset
     mmap_end = page_align_end(mmap_start + size, PAGE_SIZE)
     ql.uc.mem_map(mmap_start, mmap_end - mmap_start)
-    ql.uc.mem_write(mmap_start, b'\x00'*(mmap_end - mmap_start))
+    ql.mem.write(mmap_start, b'\x00'*(mmap_end - mmap_start))
     ql.macho_task.min_offset = mmap_end
     ql.nprint("vm alloc form {:X} to {:X}".format(mmap_start, mmap_end))
-    ql.uc.mem_write(addr, struct.pack("<Q", mmap_start))
+    ql.mem.write(addr, struct.pack("<Q", mmap_start))
     ql_definesyscall_return(ql, 0)
 
 # 0xc
@@ -85,22 +84,22 @@ def ql_x86_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, f
         ql.uc.reg_read(UC_X86_REG_RIP), target, address, size, mask, flags, cur_protection
     ))
 
-    print("Before the end is 0x{:X}".format(ql.macho_vmmap_end))
-    print("Mask is 0x{:X}".format(mask))
+    ql.nprint("Before the end is 0x{:X}".format(ql.macho_vmmap_end))
+    ql.nprint("Mask is 0x{:X}".format(mask))
 
     if ql.macho_vmmap_end & mask > 0:
         ql.macho_vmmap_end = ql.macho_vmmap_end - (ql.macho_vmmap_end & mask)
-        print("Clear :0x{:X}".format(ql.macho_vmmap_end))
+        ql.nprint("Clear :0x{:X}".format(ql.macho_vmmap_end))
         ql.macho_vmmap_end += mask + 1
 
-    print("slide end :0x{:X}".format(ql.macho_vmmap_end))
+    ql.nprint("slide end :0x{:X}".format(ql.macho_vmmap_end))
     
     vmmap_start = page_align_end(ql.macho_vmmap_end, PAGE_SIZE)
     vmmap_end = page_align_end(vmmap_start + size, PAGE_SIZE)
 
     ql.macho_vmmap_end = vmmap_end
     ql.uc.mem_map(vmmap_start, vmmap_end - vmmap_start)
-    ql.uc.mem_write(address, struct.pack("<Q", vmmap_start))
+    ql.mem.write(address, struct.pack("<Q", vmmap_start))
     # print(address, size)
     # ql.uc.mem_map(address, size)
     ql_definesyscall_return(ql, KERN_SUCCESS)
@@ -175,7 +174,7 @@ def ql_syscall_fcntl64_macos(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
     elif fcntl_cmd == F_SETFD:
         regreturn = 0
     elif fcntl_cmd == F_ADDFILESIGS_RETURN:
-        ql.uc.mem_write(fcntl_arg, ql.pack32(0xefffffff))
+        ql.mem.write(fcntl_arg, ql.pack32(0xefffffff))
         regreturn = 0
     else:
         regreturn = 0
@@ -192,14 +191,14 @@ def ql_syscall_pread(ql, fd, buf, nbyte, offset, null0, null1):
     if fd >= 0 and fd <= MAX_FD_SIZE:
         ql.file_des[fd].lseek(offset)
         data = ql.file_des[fd].read(nbyte)
-        ql.uc.mem_write(buf, data)
+        ql.mem.write(buf, data)
     set_eflags_cf(ql, 0x0)
     ql_definesyscall_return(ql, nbyte)
 
 # 0xa9
 def ql_syscall_csops(ql, pid, ops, useraddr, usersize, *args, **kw):
     flag = struct.pack("<L", (CS_ENFORCEMENT | CS_GET_TASK_ALLOW))
-    ql.uc.mem_write(useraddr, flag)
+    ql.mem.write(useraddr, flag)
     ql.nprint("syscall >> csops(pid: {}, ops: 0x{:X}, useraddr: 0x{:X}, usersize: 0x{:X}) flag: 0x{:X}".format(
         pid, ops, useraddr, usersize, ((CS_ENFORCEMENT | CS_GET_TASK_ALLOW))
     ))
@@ -211,13 +210,13 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
         path, alist, attributeBuffer, bufferSize, options
     ))
     attrlist = {}
-    attrlist["bitmapcount"] = unpack("<H", ql.uc.mem_read(alist, 2))[0]
-    attrlist["reserved"] = unpack("<H", ql.uc.mem_read(alist + 2, 2))[0]
-    attrlist["commonattr"] = unpack("<L", ql.uc.mem_read(alist + 4, 4))[0]
-    attrlist["volattr"] = unpack("<L", ql.uc.mem_read(alist + 8, 4))[0]
-    attrlist["dirattr"] = unpack("<L", ql.uc.mem_read(alist + 12, 4))[0]
-    attrlist["fileattr"] = unpack("<L", ql.uc.mem_read(alist + 16, 4))[0]
-    attrlist["forkattr"] = unpack("<L", ql.uc.mem_read(alist + 20, 4))[0]
+    attrlist["bitmapcount"] = unpack("<H", ql.mem.read(alist, 2))[0]
+    attrlist["reserved"] = unpack("<H", ql.mem.read(alist + 2, 2))[0]
+    attrlist["commonattr"] = unpack("<L", ql.mem.read(alist + 4, 4))[0]
+    attrlist["volattr"] = unpack("<L", ql.mem.read(alist + 8, 4))[0]
+    attrlist["dirattr"] = unpack("<L", ql.mem.read(alist + 12, 4))[0]
+    attrlist["fileattr"] = unpack("<L", ql.mem.read(alist + 16, 4))[0]
+    attrlist["forkattr"] = unpack("<L", ql.mem.read(alist + 20, 4))[0]
     path_str = macho_read_string(ql, path, MAX_PATH_SIZE)
 
     ql.nprint("\nbitmapcount {}, reserved {}, commonattr {}, volattr {}, dirattr {}, fileattr {}, forkattr {}\n".format(
@@ -240,7 +239,7 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
         ql.nprint("Length error")
         ql_definesyscall_return(ql, 1)
     else:
-        ql.uc.mem_write(attributeBuffer, attr)
+        ql.mem.write(attributeBuffer, attr)
         set_eflags_cf(ql, 0x0)
         ql_definesyscall_return(ql, KERN_SUCCESS)
 
@@ -255,9 +254,9 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
     if (ql.arch == QL_ARM64) or (ql.arch == QL_X8664):
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
 
-    elif (ql.arch == QL_MIPS32EL):
-        mmap2_fd = ql.unpack32s(ql.uc.mem_read(mmap2_fd, 4))
-        mmap2_pgoffset = ql.unpack32(ql.uc.mem_read(mmap2_pgoffset, 4)) * 4096
+    elif (ql.arch == QL_MIPS32):
+        mmap2_fd = ql.unpack32s(ql.mem.read(mmap2_fd, 4))
+        mmap2_pgoffset = ql.unpack32(ql.mem.read(mmap2_pgoffset, 4)) * 4096
         MAP_ANONYMOUS=2048
     else:
         mmap2_fd = ql.unpack32s(ql.pack32(mmap2_fd))
@@ -273,7 +272,7 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
         mmap_base = ql.mmap_start
         ql.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
 
-    ql.dprint(0, 0, "[+] log mmap - mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
+    ql.dprint(0, "[+] log mmap - mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
     ql.dprint(0, "[+] log mmap - return addr : " + hex(mmap_base))
     ql.dprint(0, "[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
@@ -286,7 +285,7 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
             pass
             # raise     
 
-    ql.uc.mem_write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
+    ql.mem.write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
     
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
@@ -308,7 +307,7 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
 
         ql.dprint(0, "[+] log mem wirte : " + hex(len(data)))
         ql.dprint(0, "[+] log mem mmap  : " + str(ql.file_des[mmap2_fd].name))
-        ql.uc.mem_write(mmap_base, data)
+        ql.mem.write(mmap_base, data)
         
         mem_info = ql.file_des[mmap2_fd].name
         
@@ -339,7 +338,7 @@ def ql_syscall_shared_region_check_np(ql, p, uap, retvalp, *args, **kw):
 # 0x150
 def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buffer, buffer_size):
     ql.nprint("RIP: 0x{:X}".format(ql.uc.reg_read(UC_X86_REG_RIP)))
-    retval = struct.unpack("<Q", ql.uc.mem_read(ql.uc.reg_read(UC_X86_REG_RSP), 8))[0]
+    retval = struct.unpack("<Q", ql.mem.read(ql.uc.reg_read(UC_X86_REG_RSP), 8))[0]
     ql.nprint("syscall >> proc info(callnum: {}, pid: {}, flavor: {}, arg: 0x{:X}, buffer: 0x{:X}, buffersize: {}, retval: 0x{:X})".format(
         callnum, pid, flavor, arg, buffer, buffer_size, retval
     ))
@@ -357,7 +356,7 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
     stat64_file = (ql_read_string(ql, stat64_pathname))
 
     real_path = ql.macho_fs.vm_to_real_path(stat64_file)
-    print("real_path {}".format(real_path))
+    ql.dprint(0, "real_path {}".format(real_path))
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
@@ -394,7 +393,7 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
         stat64_buf += ql.pack32(0x0)                            # st_lspare         32 byte
         stat64_buf += ql.pack64(0x0)                            # st_qspare         64 byte
 
-        ql.uc.mem_write(stat64_buf_ptr, stat64_buf)
+        ql.mem.write(stat64_buf_ptr, stat64_buf)
         regreturn = 0
     ql.nprint("stat64({}, 0x{:X}) = {}".format(stat64_file, stat64_buf_ptr, regreturn))
     if regreturn == 0:
@@ -471,7 +470,7 @@ def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack32(0x0)                                   # __int32_t	st_lspare
             fstat64_buf += ql.pack32(0x0)                                   # __int64_t	st_qspare[2]
 
-        ql.uc.mem_write(fstat64_add, fstat64_buf)
+        ql.mem.write(fstat64_add, fstat64_buf)
         regreturn = 0
     else:
         regreturn = -1
@@ -539,7 +538,7 @@ def ql_syscall_shared_region_map_and_slide_np(ql, fd, count, mappings_addr, slid
         mapping.read_mapping(mappings_addr)
         ql.file_des[fd].lseek(mapping.sfm_file_offset)
         content = ql.file_des[fd].read(mapping.sfm_size)
-        ql.uc.mem_write(mapping.sfm_address, content)
+        ql.mem.write(mapping.sfm_address, content)
         mappings_addr += mapping.size
         mapping_list.append(mapping)
     ql_definesyscall_return(ql, slide_size)

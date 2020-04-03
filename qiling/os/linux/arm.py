@@ -88,7 +88,7 @@ def exec_shellcode(ql, start, shellcode):
     if ql.shellcode_init == 0:
         ql.uc.mem_map(QL_SHELLCODE_ADDR, QL_SHELLCODE_LEN)
         ql.shellcode_init = 1
-    ql.uc.mem_write(QL_SHELLCODE_ADDR + start, shellcode)
+    ql.mem.write(QL_SHELLCODE_ADDR + start, shellcode)
 
 
 def ql_arm_enable_vfp(ql):
@@ -214,11 +214,11 @@ def ql_syscall_arm_settls(ql, address, *args, **kw):
     codelen = 0
     if mode == UC_MODE_THUMB:
         codelen = 1
-    ql.uc.mem_write(SP - 4, ql.pack32(PC + codelen))
+    ql.mem.write(SP - 4, ql.pack32(PC + codelen))
     ql.uc.reg_write(UC_ARM_REG_SP, SP - 4)
     ql.uc.reg_write(UC_ARM_REG_PC, QL_SHELLCODE_ADDR + codestart + codelen)
 
-    ql.uc.mem_write(QL_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
+    ql.mem.write(QL_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
     ql.uc.reg_write(UC_ARM_REG_R0, address)
     ql.nprint("settls(0x%x)" % address)
 
@@ -253,7 +253,7 @@ def loader_shellcode(ql):
         ql.stack_size = 2 * 1024 * 1024
     ql.uc.mem_map(ql.stack_address, ql.stack_size)
     ql.stack_address  = (ql.stack_address + 0x200000 - 0x1000)
-    ql.uc.mem_write(ql.stack_address, ql.shellcoder) 
+    ql.mem.write(ql.stack_address, ql.shellcoder) 
 
 
 def runner(ql):
@@ -306,7 +306,7 @@ def runner(ql):
             ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
             ql.show_map_info()
             try:
-                buf = ql.uc.mem_read(ql.pc, 8)
+                buf = ql.mem.read(ql.pc, 8)
                 ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
                 ql.nprint("\n")
                 ql_hook_code_disasm(ql, ql.pc, 64)

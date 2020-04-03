@@ -92,7 +92,7 @@ def loader_shellcode(ql):
         ql.stack_size = 2 * 1024 * 1024
     ql.uc.mem_map(ql.stack_address, ql.stack_size)
     ql.stack_address =  ql.stack_address  + 0x200000 - 0x1000    
-    ql.uc.mem_write(ql.stack_address, ql.shellcoder) 
+    ql.mem.write(ql.stack_address, ql.shellcoder) 
 
 def runner(ql):
     ql.uc.reg_write(UC_ARM64_REG_SP, ql.stack_address)
@@ -142,7 +142,7 @@ def runner(ql):
             ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
             ql.show_map_info()
             try:
-                buf = ql.uc.mem_read(ql.pc, 8)
+                buf = ql.mem.read(ql.pc, 8)
                 ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
                 ql.nprint("\n")
                 ql_hook_code_disasm(ql, ql.pc, 64)

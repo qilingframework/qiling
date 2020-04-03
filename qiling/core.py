@@ -14,6 +14,7 @@ from qiling.os.utils import *
 from qiling.arch.utils import *
 from qiling.os.linux.thread import *
 from qiling.debugger.utils import *
+from qiling.os.memory import QlMemoryManager
 
 __version__ = "0.9"
 
@@ -143,6 +144,8 @@ class Qiling:
                 raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
 
         _logger = ql_setup_logging_stream(self)
+        
+        self.mem = QlMemoryManager(self)
 
         if self.log_dir is not None and type(self.log_dir) == str:
 
@@ -601,13 +604,7 @@ class Qiling:
         else:
             self.patch_lib.append((addr, code, file_name.decode()))
 
-    # read @size of bytes from memory address @addr
-    def mem_read(self, addr, size):
-        return self.uc.mem_read(addr, size)
-
-    # write @data to memory address @addr
-    def mem_write(self, addr, data):
-        return self.uc.mem_write(addr, data)
+    
 
     # get PC register
     @property
@@ -679,11 +676,11 @@ class Qiling:
 
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:
-            self.uc.mem_write(self.loadbase + addr, code)
+            self.mem.write(self.loadbase + addr, code)
 
     def enable_lib_patch(self):
         for addr, code, filename in self.patch_lib:
-            self.uc.mem_write(self.__get_lib_base(filename) + addr, code)
+            self.mem.write(self.__get_lib_base(filename) + addr, code)
 
     def set_timeout(self, microseconds):
         self.timeout = microseconds

@@ -13,7 +13,7 @@ def my_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
     buf = None
     
     try:
-        buf = ql.mem_read(write_buf, write_count)
+        buf =ql.mem.read(write_buf, write_count)
         ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
         ql.file_des[write_fd].write(buf)
         regreturn = write_count

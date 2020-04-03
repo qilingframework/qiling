@@ -42,7 +42,7 @@ def ql_syscall_uname(ql, address, null0, null1, null2, null3, null4):
     buf += b'QiligOS 99.0-RELEASE r1'.ljust(65, b'\x00')
     buf += b'ql_processor'.ljust(65, b'\x00')
     buf += b''.ljust(65, b'\x00')
-    ql.uc.mem_write(address, buf)
+    ql.mem.write(address, buf)
     regreturn = 0
     ql.nprint("uname(0x%x) = %d" % (address, regreturn))
     ql_definesyscall_return(ql, regreturn)

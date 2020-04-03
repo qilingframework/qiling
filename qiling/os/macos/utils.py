@@ -26,12 +26,12 @@ def set_eflags_cf(ql, target_cf):
 
 def macho_read_string(ql, address, max_length):
     ret = ""
-    c = ql.uc.mem_read(address, 1)[0]
+    c = ql.mem.read(address, 1)[0]
     read_bytes = 1
 
     while c != 0x0:
         ret += chr(c)
-        c = ql.uc.mem_read(address + read_bytes, 1)[0]
+        c = ql.mem.read(address + read_bytes, 1)[0]
         read_bytes += 1
         if read_bytes > max_length:
             break

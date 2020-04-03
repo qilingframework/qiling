@@ -12,7 +12,7 @@ from qiling import *
 md = Cs(CS_ARCH_X86, CS_MODE_64)
 
 def print_asm(ql, address, size):
-    buf = ql.mem_read(address, size)
+    buf =ql.mem.read(address, size)
     for i in md.disasm(buf, address):
         print(":: 0x%x:\t%s\t%s" %(i.address, i.mnemonic, i.op_str))
 

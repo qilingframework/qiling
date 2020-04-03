@@ -123,7 +123,7 @@ class Macho:
 
         self.ql.dprint(0, "[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
         self.uc.mem_map(vaddr_start, seg_size)
-        self.uc.mem_write(vaddr_start, seg_data)
+        self.ql.mem.write(vaddr_start, seg_data)
         if self.vm_end_addr < vaddr_end:
             self.vm_end_addr = vaddr_end
         # print("SegData : {}".format(seg_data[0x119c:]))
@@ -238,7 +238,7 @@ class Macho:
             length = len(data)
         
         self.stack_sp -= length
-        self.uc.mem_write(self.stack_sp, data)
+        self.ql.mem.write(self.stack_sp, data)
         self.ql.dprint(0, "[+] SP {} write data len {}".format(hex(self.stack_sp), length))
         
         return self.stack_sp
@@ -256,6 +256,6 @@ class Macho:
             return 
         
         self.stack_sp -= align
-        self.uc.mem_write(self.stack_sp, content)
+        self.ql.mem.write(self.stack_sp, content)
 
         return self.stack_sp

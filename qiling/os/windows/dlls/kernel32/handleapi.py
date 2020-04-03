@@ -36,7 +36,7 @@ from qiling.exception import *
 def hook_DuplicateHandle(ql, address, params):
     content = params["hSourceHandle"]
     dst = params["lpTargetHandle"]
-    ql.uc.mem_write(dst, content.to_bytes(length=ql.pointersize, byteorder='little'))
+    ql.mem.write(dst, content.to_bytes(length=ql.pointersize, byteorder='little'))
     return 1
 
 

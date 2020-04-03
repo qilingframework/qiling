@@ -23,6 +23,38 @@ class Chunk():
         return chunk.size
 
 
+class QlMemoryManager:
+    def __init__(self, ql):
+        self.ql = ql
+        #self.chunks = []
+        #self.start_address = start_address
+        #self.end_address = end_address
+        # unicorn needs 0x1000
+        self.page_size = 0x1000
+        # current alloced memory size
+        self.current_alloc = 0
+        # curent use memory size
+        self.current_use = 0
+    
+    def read(self, addr: int, size: int) -> bytearray:
+        return self.ql.uc.mem_read(addr, size)
+
+    def write(self, addr: int, data: bytes) -> None:
+        return self.ql.uc.mem_write(addr, data)
+
+    def _is_mapped(self, address):    
+        for address_start, address_end, perm, info in self.ql.map_info:
+            if (
+                address >= address_start
+                and address < address_end
+            ):
+                return False
+
+        for region in list(self.ql.uc.mem_regions()):
+            if address >= region[0] and address < region[1]:
+                return False
+        return True
+
 class Heap:
     def __init__(self, ql, start_address, end_address):
         self.ql = ql

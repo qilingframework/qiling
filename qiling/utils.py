@@ -93,7 +93,6 @@ def output_convert(output):
         "disasm": QL_OUT_DISASM,
         "debug": QL_OUT_DEBUG,
         "dump": QL_OUT_DUMP,
-        "off": QL_OUT_OFF,
     }
     if output in adapter:
         return adapter[output]

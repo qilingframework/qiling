@@ -84,7 +84,7 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
         fstat64_buf += ql.pack64(0)
         fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
         fstat64_buf += ql.pack64(0)
-        ql.uc.mem_write(fstatat64_buf,fstat64_buf)
+        ql.mem.write(fstatat64_buf,fstat64_buf)
         regreturn = 0
 
     ql.nprint("fstatat64(0x%x, %s) = %d" % (fstatat64_fd, relative_path, regreturn))
@@ -155,7 +155,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, null0, null1, null2, null3):
             fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
             fstat64_buf += ql.pack64(fstat64_info.st_ino)
 
-        ql.uc.mem_write(fstat64_add, fstat64_buf)
+        ql.mem.write(fstat64_add, fstat64_buf)
         regreturn = 0
     else:
         regreturn = -1
@@ -230,7 +230,7 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, null0, null1, null2, null3):
             fstat_buf += ql.pack32(int(fstat_info.st_mtime))
             fstat_buf += ql.pack32(int(fstat_info.st_ctime))
 
-        ql.uc.mem_write(fstat_add, fstat_buf)
+        ql.mem.write(fstat_add, fstat_buf)
         regreturn = 0
     else:
         regreturn = -1
@@ -305,7 +305,7 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, null0, null1, null2, 
             stat64_buf += ql.pack64(int(stat64_info.st_ctime))
             stat64_buf += ql.pack64(stat64_info.st_ino)
 
-        ql.uc.mem_write(stat64_buf_ptr, stat64_buf)
+        ql.mem.write(stat64_buf_ptr, stat64_buf)
         regreturn = 0
 
     ql.nprint("stat64(%s, 0x%x) = %d" % (relative_path, stat64_buf_ptr, regreturn))
@@ -367,7 +367,7 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, null0, null1, null2, null3):
             stat_buf += ql.pack32(stat_info.st_blocks)
 
         regreturn = 0
-        ql.uc.mem_write(stat_buf_ptr, stat_buf)
+        ql.mem.write(stat_buf_ptr, stat_buf)
 
     ql.nprint("stat(%s, 0x%x) = %d" % (relative_path, stat_buf_ptr, regreturn))
     if regreturn == 0:
@@ -427,7 +427,7 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, null0, null1, null2, null3):
             lstat_buf += ql.pack32(lstat_info.st_blocks)
 
         regreturn = 0
-        ql.mem_write(lstat_buf_ptr, lstat_buf)
+        ql.mem.write(lstat_buf_ptr, lstat_buf)
 
     ql.nprint("lstat(%s, 0x%x) = %d" % (relative_path, lstat_buf_ptr, regreturn))
     if regreturn == 0:

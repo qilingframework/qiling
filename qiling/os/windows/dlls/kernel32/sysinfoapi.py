@@ -89,7 +89,7 @@ def hook_GetSystemInfo(ql, address, params):
                    "wProcessorRevision": 0x4601.to_bytes(length=2, byteorder='little')
                    }
     values = b"".join(system_info.values())
-    ql.uc.mem_write(pointer, values)
+    ql.mem.write(pointer, values)
     return 0
 
 
@@ -117,14 +117,14 @@ def hook_GetLocalTime(ql, address, params):
     import datetime
     ptr = params['lpSystemTime']
     d = datetime.datetime.now()
-    ql.uc.mem_write(d.year.to_bytes(length=2, byteorder='little'), ptr)
-    ql.uc.mem_write(d.month.to_bytes(length=2, byteorder='little'), ptr + 2)
-    ql.uc.mem_write(d.isoweekday().to_bytes(length=2, byteorder='little'), ptr + 4)
-    ql.uc.mem_write(d.day.to_bytes(length=2, byteorder='little'), ptr + 6)
-    ql.uc.mem_write(d.hour.to_bytes(length=2, byteorder='little'), ptr + 8)
-    ql.uc.mem_write(d.minute.to_bytes(length=2, byteorder='little'), ptr + 10)
-    ql.uc.mem_write(d.second.to_bytes(length=2, byteorder='little'), ptr + 12)
-    ql.uc.mem_write((d.microsecond * 1000).to_bytes(length=2, byteorder='little'), ptr + 14)
+    ql.mem.write(d.year.to_bytes(length=2, byteorder='little'), ptr)
+    ql.mem.write(d.month.to_bytes(length=2, byteorder='little'), ptr + 2)
+    ql.mem.write(d.isoweekday().to_bytes(length=2, byteorder='little'), ptr + 4)
+    ql.mem.write(d.day.to_bytes(length=2, byteorder='little'), ptr + 6)
+    ql.mem.write(d.hour.to_bytes(length=2, byteorder='little'), ptr + 8)
+    ql.mem.write(d.minute.to_bytes(length=2, byteorder='little'), ptr + 10)
+    ql.mem.write(d.second.to_bytes(length=2, byteorder='little'), ptr + 12)
+    ql.mem.write((d.microsecond * 1000).to_bytes(length=2, byteorder='little'), ptr + 14)
     return 0
 
 

@@ -36,7 +36,7 @@ from qiling.utils import *
 
 def ql_syscall_ugetrlimit(ql, ugetrlimit_resource, ugetrlimit_rlim, null0, null1, null2, null3):
     rlim = resource.getrlimit(ugetrlimit_resource)
-    ql.uc.mem_write(ugetrlimit_rlim, ql.pack32s(rlim[0]) + ql.pack32s(rlim[1]))
+    ql.mem.write(ugetrlimit_rlim, ql.pack32s(rlim[0]) + ql.pack32s(rlim[1]))
     regreturn = 0
     ql.nprint("ugetrlimit(%d, 0x%x) = %d" % (ugetrlimit_resource, ugetrlimit_rlim, regreturn))
     ql_definesyscall_return(ql, regreturn)
@@ -44,7 +44,7 @@ def ql_syscall_ugetrlimit(ql, ugetrlimit_resource, ugetrlimit_rlim, null0, null1
 
 def ql_syscall_setrlimit(ql, setrlimit_resource, setrlimit_rlim, null0, null1, null2, null3):
     # maybe we can nop the setrlimit
-    tmp_rlim = (ql.unpack32s(ql.uc.mem_read(setrlimit_rlim, 4)), ql.unpack32s(ql.uc.mem_read(setrlimit_rlim + 4, 4)))
+    tmp_rlim = (ql.unpack32s(ql.mem.read(setrlimit_rlim, 4)), ql.unpack32s(ql.mem.read(setrlimit_rlim + 4, 4)))
     resource.setrlimit(setrlimit_resource, tmp_rlim)
 
     regreturn = 0

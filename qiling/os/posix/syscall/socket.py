@@ -70,7 +70,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, nu
 def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, null0, null1, null2):
     AF_UNIX = 1
     AF_INET = 2
-    sock_addr = ql.uc.mem_read(connect_addr, connect_addrlen)
+    sock_addr = ql.mem.read(connect_addr, connect_addrlen)
     family = ql.unpack16(sock_addr[ : 2])
     s = ql.file_des[connect_sockfd]
     ip = b''
@@ -125,9 +125,9 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
     regreturn = 0
 
     if ql.arch == QL_X8664:
-        data = ql.uc.mem_read(bind_addr, 8)
+        data = ql.mem.read(bind_addr, 8)
     else:
-        data = ql.uc.mem_read(bind_addr, bind_addrlen)
+        data = ql.mem.read(bind_addr, bind_addrlen)
 
     sin_family, = struct.unpack("<h", data[:2])
     port, host = struct.unpack(">HI", data[2:8])
@@ -212,8 +212,8 @@ def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, null0, nul
             tmp_buf += ql.pack16(address[1])
             tmp_buf += inet_addr(address[0])
             tmp_buf += b'\x00' * 8
-            ql.uc.mem_write(accept_addr, tmp_buf)
-            ql.uc.mem_write(accept_addrlen, ql.pack32(16))
+            ql.mem.write(accept_addr, tmp_buf)
+            ql.mem.write(accept_addrlen, ql.pack32(16))
     except:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             raise
@@ -228,7 +228,7 @@ def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, null0, null
         if tmp_buf:
             ql.dprint(1, "[+] recv() CONTENT:")
             ql.dprint(1, "%s" % tmp_buf)
-        ql.uc.mem_write(recv_buf, tmp_buf)
+        ql.mem.write(recv_buf, tmp_buf)
         regreturn = len(tmp_buf)
     else:
         regreturn = -1
@@ -241,7 +241,7 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, null0, null
     if send_sockfd < 256 and ql.file_des[send_sockfd] != 0:
         try:
             ql.dprint(1, "[+] debug send() start")
-            tmp_buf = ql.uc.mem_read(send_buf, send_len)
+            tmp_buf = ql.mem.read(send_buf, send_len)
             ql.dprint(1, ql.file_des[send_sockfd])
             ql.dprint(1, "[+] fd is " + str(send_sockfd))
             ql.dprint(1, "[+] send() CONTENT:")

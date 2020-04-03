@@ -51,8 +51,8 @@ def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, null0, null1, null2, 
 
     n = ql.archbit // 8 # 4 for 32-bit , 8 for 64-bit
 
-    tv_sec = ql.unpack(ql.uc.mem_read(nanosleep_req, n))
-    tv_sec += ql.unpack(ql.uc.mem_read(nanosleep_req + n, n)) / 1000000000
+    tv_sec = ql.unpack(ql.mem.read(nanosleep_req, n))
+    tv_sec += ql.unpack(ql.mem.read(nanosleep_req + n, n)) / 1000000000
 
     if ql.thread_management == None:
         time.sleep(tv_sec)
@@ -85,7 +85,7 @@ def ql_syscall_times(ql, times_tbuf, null0, null1, null2, null3, null4):
         tmp_buf += ql.pack32(int(tmp_times.system * 1000))
         tmp_buf += ql.pack32(int(tmp_times.children_user * 1000))
         tmp_buf += ql.pack32(int(tmp_times.children_sytem * 1000))
-        ql.uc.mem_write(times_tbuf, tmp_buf)
+        ql.mem.write(times_tbuf, tmp_buf)
     regreturn = int(tmp_times.elapsed * 100)
     ql.nprint('times(%x) = %d' % (times_tbuf, regreturn))
     ql_definesyscall_return(ql, regreturn)
@@ -97,9 +97,9 @@ def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, null0, null1, 
     tv_usec = int((tmp_time - tv_sec) * 1000000)
 
     if gettimeofday_tv != 0:
-        ql.uc.mem_write(gettimeofday_tv, ql.pack32(tv_sec) + ql.pack32(tv_usec))
+        ql.mem.write(gettimeofday_tv, ql.pack32(tv_sec) + ql.pack32(tv_usec))
     if gettimeofday_tz != 0:
-        ql.uc.mem_write(gettimeofday_tz, b'\x00' * 8)
+        ql.mem.write(gettimeofday_tz, b'\x00' * 8)
     regreturn = 0
     ql.nprint("gettimeofday(%x, %x) = %d" % (gettimeofday_tv, gettimeofday_tz, regreturn))
     ql_definesyscall_return(ql, regreturn)

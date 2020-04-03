@@ -96,7 +96,7 @@ class Thread:
         self.robust_list_head_len = None
 
         if self.set_child_tid_address != None:
-            self.ql.uc.mem_write(self.set_child_tid_address, ql.pack32(self.thread_id))
+            self.ql.mem.write(self.set_child_tid_address, ql.pack32(self.thread_id))
 
         ql.global_thread_id += 1
     
@@ -164,7 +164,7 @@ class Thread:
     
     def _on_stop(self):
         if self.clear_child_tid_address != None:
-            self.ql.uc.mem_write(self.clear_child_tid_address, self.ql.pack32(0))
+            self.ql.mem.write(self.clear_child_tid_address, self.ql.pack32(0))
 
     def stop(self):
         self._on_stop()

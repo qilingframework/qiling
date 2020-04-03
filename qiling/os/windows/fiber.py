@@ -41,7 +41,7 @@ class FiberManager:
                 # Write Fls data to memory to be accessed by cb
                 addr = self.ql.heap.mem_alloc(self.ql.pointersize)
                 data = fiber.data.to_bytes(self.ql.pointersize, byteorder='little')
-                self.ql.uc.mem_write(addr, data)
+                self.ql.mem.write(addr, data)
 
                 # set up params and return address then jump to callback
                 if self.ql.pointersize == 8:

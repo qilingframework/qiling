@@ -53,25 +53,25 @@ class X86(Arch):
     def stack_push(self, value):
         SP = self.ql.uc.reg_read(UC_X86_REG_ESP)
         SP -= 4
-        self.ql.uc.mem_write(SP, self.ql.pack32(value))
+        self.ql.mem.write(SP, self.ql.pack32(value))
         self.ql.uc.reg_write(UC_X86_REG_ESP, SP)
         return SP
 
     def stack_pop(self):
         SP = self.ql.uc.reg_read(UC_X86_REG_ESP)
-        data = self.ql.unpack32(self.ql.uc.mem_read(SP, 4))
+        data = self.ql.unpack32(self.ql.mem.read(SP, 4))
         self.ql.uc.reg_write(UC_X86_REG_ESP, SP + 4)
         return data
 
 
     def stack_read(self, offset):
         SP = self.ql.uc.reg_read(UC_X86_REG_ESP)
-        return self.ql.unpack32(self.ql.uc.mem_read(SP + offset, 4))
+        return self.ql.unpack32(self.ql.mem.read(SP + offset, 4))
 
 
     def stack_write(self, offset, data):
         SP = self.ql.uc.reg_read(UC_X86_REG_ESP)
-        return self.ql.uc.mem_write(SP + offset, self.ql.pack32(data))
+        return self.ql.mem.write(SP + offset, self.ql.pack32(data))
 
 
     # set PC
@@ -160,25 +160,25 @@ class X8664(Arch):
     def stack_push(self, value):
         SP = self.ql.uc.reg_read(UC_X86_REG_RSP)
         SP -= 8
-        self.ql.uc.mem_write(SP, self.ql.pack64(value))
+        self.ql.mem.write(SP, self.ql.pack64(value))
         self.ql.uc.reg_write(UC_X86_REG_RSP, SP)
         return SP
 
     def stack_pop(self):
         SP = self.ql.uc.reg_read(UC_X86_REG_RSP)
-        data = self.ql.unpack64(self.ql.uc.mem_read(SP, 8))
+        data = self.ql.unpack64(self.ql.mem.read(SP, 8))
         self.ql.uc.reg_write(UC_X86_REG_RSP, SP + 8)
         return data
 
 
     def stack_read(self, offset):
         SP = self.ql.uc.reg_read(UC_X86_REG_RSP)
-        return self.ql.unpack64(self.ql.uc.mem_read(SP + offset, 8))
+        return self.ql.unpack64(self.ql.mem.read(SP + offset, 8))
 
 
     def stack_write(self, offset, data):
         SP = self.ql.uc.reg_read(UC_X86_REG_RSP)
-        return self.ql.uc.mem_write(SP + offset, self.ql.pack64(data))
+        return self.ql.mem.write(SP + offset, self.ql.pack64(data))
 
     # set PC
     def set_pc(self, value):
@@ -317,7 +317,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
     
     # create GDT entry, then write GDT entry into GDT table
     gdt_entry = create_gdt_entry(SEGMENT_ADDR, SEGMENT_SIZE, SPORT, QL_X86_F_PROT_32)
-    ql.uc.mem_write(GDT_ADDR + (index << 3), gdt_entry)
+    ql.mem.write(GDT_ADDR + (index << 3), gdt_entry)
 
     #ql.nprint(ql.arch)
     # setup GDT by writing to GDTR

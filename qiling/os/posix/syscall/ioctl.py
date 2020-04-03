@@ -102,10 +102,10 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, null0, null1, null2):
 
     if isinstance(ql.file_des[ioctl_fd], ql_socket) and (ioctl_cmd == SIOCGIFADDR or ioctl_cmd == SIOCGIFNETMASK):
         try:
-            tmp_arg = ql.uc.mem_read(ioctl_arg, 64)
+            tmp_arg = ql.mem.read(ioctl_arg, 64)
             ql.dprint(0, "[+] query network card : %s" % tmp_arg)
             data = ql.file_des[ioctl_fd].ioctl(ioctl_cmd, bytes(tmp_arg))
-            ql.uc.mem_write(ioctl_arg, data)
+            ql.mem.write(ioctl_arg, data)
             regreturn = 0
         except:
             regreturn = -1
@@ -114,10 +114,10 @@ def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, null0, null1, null2):
             info = ioctl(ioctl_fd, ioctl_cmd, ioctl_arg)
             if ioctl_cmd == TCGETS:
                 data = struct.pack("BBBB", *info)
-                ql.uc.mem_write(ioctl_arg, data)
+                ql.mem.write(ioctl_arg, data)
             elif ioctl_cmd == TIOCGWINSZ:
                 data = struct.pack("HHHH", *info)
-                ql.uc.mem_write(ioctl_arg, data)
+                ql.mem.write(ioctl_arg, data)
             else:
                 return
             regreturn = 0

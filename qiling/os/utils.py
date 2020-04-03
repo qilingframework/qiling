@@ -82,12 +82,12 @@ def ql_bin_to_ip(ip):
 
 def ql_read_string(ql, address):
     ret = ""
-    c = ql.uc.mem_read(address, 1)[0]
+    c = ql.mem.read(address, 1)[0]
     read_bytes = 1
 
     while c != 0x0:
         ret += chr(c)
-        c = ql.uc.mem_read(address + read_bytes, 1)[0]
+        c = ql.mem.read(address + read_bytes, 1)[0]
         read_bytes += 1
     return ret
 
@@ -462,11 +462,11 @@ def print_function(ql, address, function_name, params, ret):
 
 def read_cstring(ql, address):
     result = ""
-    char = ql.uc.mem_read(address, 1)
+    char = ql.mem.read(address, 1)
     while char.decode(errors="ignore") != "\x00":
         address += 1
         result += char.decode(errors="ignore")
-        char = ql.uc.mem_read(address, 1)
+        char = ql.mem.read(address, 1)
     return result
 
 

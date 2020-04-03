@@ -72,7 +72,7 @@ def GetStartupInfo(ql, address, params):
 
     # CB must be the size of the struct
     assert len(values) == startup_info["cb"][0]
-    ql.uc.mem_write(pointer, values)
+    ql.mem.write(pointer, values)
     return 0
 
 
@@ -236,7 +236,7 @@ def hook_CreateThread(ql, address, params):
 
     # set lpThreadId
     if lpThreadId != 0:
-        ql.mem_write(lpThreadId, ql.pack(thread_id))
+        ql.mem.write(lpThreadId, ql.pack(thread_id))
 
     # set thread handle
     return ret
@@ -311,5 +311,5 @@ def hook_OpenProcessToken(ql, address, params):
     token = Token(ql)
     new_handle = Handle(token=token)
     ql.handle_manager.append(new_handle)
-    ql.uc.mem_write(token_pointer, ql.pack(new_handle.id))
+    ql.mem.write(token_pointer, ql.pack(new_handle.id))
     return 1

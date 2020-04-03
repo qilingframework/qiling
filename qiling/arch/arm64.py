@@ -15,26 +15,26 @@ class ARM64(Arch):
     def stack_push(self, value):
         SP = self.ql.uc.reg_read(UC_ARM64_REG_SP)
         SP -= 8
-        self.ql.uc.mem_write(SP, self.ql.pack64(value))
+        self.ql.mem.write(SP, self.ql.pack64(value))
         self.ql.uc.reg_write(UC_ARM64_REG_SP, SP)
         return SP
 
 
     def stack_pop(self):
         SP = self.ql.uc.reg_read(UC_ARM64_REG_SP)
-        data = self.ql.unpack64(self.ql.uc.mem_read(SP, 8))
+        data = self.ql.unpack64(self.ql.mem.read(SP, 8))
         self.ql.uc.reg_write(UC_ARM64_REG_SP, SP + 8)
         return data
 
 
     def stack_read(self, offset):
         SP = self.ql.uc.reg_read(UC_ARM64_REG_SP)
-        return self.ql.unpack64(self.ql.uc.mem_read(SP + offset, 8))
+        return self.ql.unpack64(self.ql.mem.read(SP + offset, 8))
 
 
     def stack_write(self, offset, data):
         SP = self.ql.uc.reg_read(UC_ARM64_REG_SP)
-        return self.ql.uc.mem_write(SP + offset, self.ql.pack64(data))
+        return self.ql.mem.write(SP + offset, self.ql.pack64(data))
 
     # set PC
     def set_pc(self, value):

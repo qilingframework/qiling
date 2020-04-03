@@ -86,7 +86,7 @@ def hook_GetModuleFileNameA(ql, address, params):
             ret = nSize
         else:
             ret = filename_len
-        ql.uc.mem_write(lpFilename, filename + b"\x00")
+        ql.mem.write(lpFilename, filename + b"\x00")
     else:
         ql.dprint(0, "hModule %x" % hModule)
         raise QlErrorNotImplemented("[!] API not implemented")
@@ -118,7 +118,7 @@ def hook_GetModuleFileNameW(ql, address, params):
             ret = nSize
         else:
             ret = filename_len
-        ql.uc.mem_write(lpFilename, filename + b"\x00")
+        ql.mem.write(lpFilename, filename + b"\x00")
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return ret

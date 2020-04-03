@@ -19,11 +19,11 @@ def string_unpack(string):
 
 def read_wstring(ql, address):
     result = ""
-    char = ql.uc.mem_read(address, 2)
+    char = ql.mem.read(address, 2)
     while char.decode(errors="ignore") != "\x00\x00":
         address += 2
         result += char.decode(errors="ignore")
-        char = ql.uc.mem_read(address, 2)
+        char = ql.mem.read(address, 2)
     # We need to remove \x00 inside the string. Compares do not work otherwise
     return result.replace("\x00", "")
 
