@@ -5,11 +5,9 @@
 
 from qiling.const import *
 from qiling.exception import *
+from qiling.os.utils import *
 
-
-def align(size, unit):
-    return (size // unit + (1 if size % unit else 0)) * unit
-
+MAX_UINT64 = 0xFFFFFFFFFFFFFFFF
 
 # A Simple Heap Implementation
 class Chunk():
@@ -24,36 +22,132 @@ class Chunk():
 
 
 class QlMemoryManager:
+    """
+    some ideas and code from:
+    https://github.com/zeropointdynamics/zelos/blob/master/src/zelos/memory.py
+    """
+
     def __init__(self, ql):
         self.ql = ql
-        #self.chunks = []
-        #self.start_address = start_address
-        #self.end_address = end_address
-        # unicorn needs 0x1000
-        self.page_size = 0x1000
-        # current alloced memory size
-        self.current_alloc = 0
-        # curent use memory size
-        self.current_use = 0
-    
+        self.max_addr: int = MAX_UINT64
+
     def read(self, addr: int, size: int) -> bytearray:
         return self.ql.uc.mem_read(addr, size)
 
     def write(self, addr: int, data: bytes) -> None:
         return self.ql.uc.mem_write(addr, data)
 
-    def _is_mapped(self, address):    
+    def unmap(self, addr, size) -> None:
+        '''
+        The main function of mem_unmap is to reclaim memory.
+        This function will reclaim the memory starting with addr and length of size.
+        
+        Upon successful completion, munmap() shall return 0; 
+
+        otherwise, it shall return -1 and set errno to indicate the error.
+        '''        
+        return self.ql.uc.mem_unmap(addr, size)
+
+    def _is_mapped(self, address): 
+        '''
+        The main function of is_mmaped is to determine 
+        whether the memory starting with addr and size has been allocated.
+
+        Returns true if it has already been allocated.
+
+        If unassigned, returns False.
+        '''   
         for address_start, address_end, perm, info in self.ql.map_info:
             if (
                 address >= address_start
                 and address < address_end
             ):
-                return False
+                return True
 
         for region in list(self.ql.uc.mem_regions()):
             if address >= region[0] and address < region[1]:
-                return False
-        return True
+                return True
+        return False
+
+    def _find_free_space(
+        self, size, min_addr=0, max_addr=MAX_UINT64, alignment=0x10000
+    ):
+        """
+        Finds a region of memory that is free, larger than 'size' arg,
+        and aligned.
+        """
+        mapped = []
+        
+        for address_start, address_end, perm, info in self.ql.map_info:
+            mapped += [[address_start, (address_end - address_start)]]
+        
+        for address_start, address_end, perms in self.ql.uc.mem_regions():
+            mapped += [[address_start, (address_end - address_start)]]
+        
+        for i in range(0, len(mapped)):
+            addr = align(
+                mapped[i][0] + mapped[i][1], alignment=alignment
+            )
+            # Enable allocating memory in the middle of a gap when the
+            # min requested address falls in the middle of a gap
+            if addr < min_addr:
+                addr = min_addr
+            # Cap the gap's max address by accounting for the next
+            # section's start address, requested max address, and the
+            # max possible address
+            max_gap_addr = (
+                self.max_addr
+                if i == len(mapped) - 1
+                else mapped[i + 1][1]
+            )
+            max_gap_addr = min(max_gap_addr, max_addr)
+            # Ensure the end address is less than the max and the start
+            # address is free
+            if addr + size < max_gap_addr and self._is_mapped(addr) == False:
+                return addr
+        raise QlOutOfMemory("[!] Out Of Memory")
+
+    def map_anywhere(
+        self,
+        size: int,
+        name: str = "",
+        kind: str = "",
+        min_addr: int = 0,
+        max_addr: int = 0xFFFFFFFFFFFFFFFF,
+        alignment: int = 0x1000,
+        #prot: int = ProtType.RWX,
+    ) -> int:
+        """
+        Maps a region of memory with requested size, within the
+        addresses specified. The size and start address will respect the
+        alignment.
+
+        Args:
+            size: # of bytes to map. This will be rounded up to match
+                the alignment.
+            name: String used to identify mapped region. Used for
+                debugging.
+            kind: String used to identify the purpose of the mapped
+                region. Used for debugging.
+            min_addr: The lowest address that could be mapped.
+            max_addr: The highest address that could be mapped.
+            alignment: Ensures the size and start address are multiples
+                of this. Must be a multiple of 0x1000. Default 0x1000.
+            prot: RWX permissions of the mapped region. Defaults to
+                granting all permissions.
+        Returns:
+            Start address of mapped region.
+        """
+        address = self._find_free_space(
+            size, min_addr=min_addr, max_addr=max_addr, alignment=alignment
+        )
+        """
+        we need a better mem_map as defined in the issue
+        """
+        #self.map(address, util.align(size), name, kind)
+        self.ql.uc.mem_map(address, align(size))
+        return address
+
 
 class Heap:
     def __init__(self, ql, start_address, end_address):
@@ -70,9 +164,9 @@ class Heap:
 
     def mem_alloc(self, size):
         if self.ql.arch == QL_X86:
-            size = align(size, 4)
+            size = align_heap(size, 4)
         elif self.ql.arch == QL_X8664:
-            size = align(size, 8)
+            size = align_heap(size, 8)
         else:
             raise QlErrorArch("[!] Unknown ql.arch")
 
@@ -86,7 +180,7 @@ class Heap:
         chunk = None
         # If we need mem_map new memory
         if self.current_use + size > self.current_alloc:
-            real_size = align(size, self.page_size)
+            real_size = align_heap(size, self.page_size)
             # If the heap is not enough
             if self.start_address + self.current_use + real_size > self.end_address:
                 return 0

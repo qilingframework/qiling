@@ -36,7 +36,7 @@ from qiling.utils import *
 
 def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
     munmap_len = ((munmap_len + 0x1000 - 1) // 0x1000) * 0x1000
-    ql.uc.mem_unmap(munmap_addr, munmap_len)
+    ql.mem.unmap(munmap_addr, munmap_len)
     regreturn = 0
 
     map_info = ql.map_info
