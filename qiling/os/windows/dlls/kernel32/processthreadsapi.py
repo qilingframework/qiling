@@ -13,7 +13,7 @@ from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-from qiling.os.windows.token import *
+from qiling.os.windows.structs import *
 
 # void ExitProcess(
 #   UINT uExitCode
