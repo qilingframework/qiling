@@ -144,3 +144,18 @@ def hook_GetSystemTimeAsFileTime(ql, address, params):
 def hook_GetTickCount(ql, address, params):
     ret = 200000
     return ret
+
+
+# UINT GetWindowsDirectoryW(
+#   LPWSTR lpBuffer,
+#   UINT   uSize
+# );
+@winapi(cc=STDCALL, params={
+    "lpBuffer": POINTER,
+    "uSize": UINT
+})
+def hook_GetWindowsDirectoryW(ql, address, params):
+    dst = params["lpBuffer"]
+    value = (ql.config["PATHS"]["windir"] + "\x00").encode("utf-16le")
+    ql.uc.mem_write(dst, value)
+    return len(value)-2
