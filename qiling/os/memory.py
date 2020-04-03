@@ -7,6 +7,13 @@ from qiling.const import *
 from qiling.exception import *
 from qiling.os.utils import *
 
+from unicorn import (
+    UC_PROT_ALL,
+    UC_PROT_EXEC,
+    UC_PROT_NONE,
+    UC_PROT_READ,
+    UC_PROT_WRITE,
+)
 
 class QlMemoryManager:
     """
@@ -140,8 +147,42 @@ class QlMemoryManager:
         we need a better mem_map as defined in the issue
         """
         #self.map(address, util.align(size), name, kind)
-        self.ql.uc.mem_map(address, self._align(size))
+        self.map(address, self._align(size))
         return address
+
+    def protect(self, addr, size, perms):
+        aligned_address = addr & 0xFFFFF000  # Address needs to align with
+        aligned_size = self._align((addr & 0xFFF) + size)
+        self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
+
+
+    def map(self, addr, size, perms=UC_PROT_ALL, ptr = None):
+        '''
+	    The main function of mem_mmap is to implement memory allocation in unicorn, 
+	    which is slightly similar to the function of syscall_mmap. 
+
+	    When the memory can satisfy the given addr and size, 
+	    it needs to be allocated to the corresponding address space.
+	    
+	    Upon successful completion, mem_map() shall return 0; 
+
+    	otherwise, it shall return -1 and set errno to indicate the error.
+         
+        is should call other API to get_available mainly gives a length, 
+        and then the memory manager returns  an address that can apply for that length.
+
+        '''
+        if ptr == None:
+            if self._is_mapped(addr) == False:
+               self.ql.uc.mem_map(addr, size)
+            else:
+                raise QlMemoryMappedError("[!] Memory Mapped")    
+            
+            if perms != UC_PROT_ALL:
+                self.protect(addr, size, perms)
+        else:
+            self.ql.uc.mem_map_ptr(addr, size, perms, ptr)
+
 
 
 # A Simple Heap Implementation
@@ -169,7 +210,7 @@ class Heap:
         self.current_use = 0
 
     def _align(self, size, unit):
-        return (size // unit + (1 if size % unit else 0)) * unit           
+        return (size // unit + (1 if size % unit else 0)) * unit     
 
     def mem_alloc(self, size):
         if self.ql.arch == QL_X86:
@@ -193,7 +234,7 @@ class Heap:
             # If the heap is not enough
             if self.start_address + self.current_use + real_size > self.end_address:
                 return 0
-            self.ql.uc.mem_map(self.start_address + self.current_alloc, real_size)
+            self.ql.mem.map(self.start_address + self.current_alloc, real_size)
             chunk = Chunk(self.start_address + self.current_use, size)
             self.current_alloc += real_size
             self.current_use += size

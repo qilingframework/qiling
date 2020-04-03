@@ -96,7 +96,7 @@ def loader_file(ql):
     if (ql.stack_size == 0): 
         ql.stack_size = QL_ARM64_MACOS_PREDEFINE_STACKSIZE
     
-    ql.uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.mem.map(ql.stack_address, ql.stack_size)
     stack_sp = QL_ARM64_MACOS_PREDEFINE_STACKADDRESS + QL_ARM64_MACOS_PREDEFINE_STACKSIZE
     envs = env_dict_to_array(ql.env)
     apples = ql_real_to_vm_abspath(ql, ql.path)
@@ -115,7 +115,7 @@ def loader_shellcode(ql):
     if (ql.stack_size == 0): 
         ql.stack_size = 2 * 1024 * 1024
 
-    ql.uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.mem.map(ql.stack_address, ql.stack_size)
     ql.stack_address =  ql.stack_address  + 0x200000 - 0x1000    
     ql.mem.write(ql.stack_address, ql.shellcoder)
     

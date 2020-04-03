@@ -66,7 +66,7 @@ def ql_x86_syscall_kernelrpc_mach_vm_allocate_trap(ql, port, addr, size, flags, 
     ql.nprint("param: port:{:X}, addr:{:X}, size:{:X}, flags:{:X}, {:X}, {:X}".format(port, addr, size, flags, null, null))
     mmap_start = ql.macho_task.min_offset
     mmap_end = page_align_end(mmap_start + size, PAGE_SIZE)
-    ql.uc.mem_map(mmap_start, mmap_end - mmap_start)
+    ql.mem.map(mmap_start, mmap_end - mmap_start)
     ql.mem.write(mmap_start, b'\x00'*(mmap_end - mmap_start))
     ql.macho_task.min_offset = mmap_end
     ql.nprint("vm alloc form {:X} to {:X}".format(mmap_start, mmap_end))
@@ -98,10 +98,10 @@ def ql_x86_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, f
     vmmap_end = page_align_end(vmmap_start + size, PAGE_SIZE)
 
     ql.macho_vmmap_end = vmmap_end
-    ql.uc.mem_map(vmmap_start, vmmap_end - vmmap_start)
+    ql.mem.map(vmmap_start, vmmap_end - vmmap_start)
     ql.mem.write(address, struct.pack("<Q", vmmap_start))
     # print(address, size)
-    # ql.uc.mem_map(address, size)
+    # ql.mem.map(address, size)
     ql_definesyscall_return(ql, KERN_SUCCESS)
 
 # 0x12
@@ -279,7 +279,7 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
     if need_mmap:
         ql.dprint(0, "[+] log mmap - mapping needed")
         try:
-            ql.uc.mem_map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000)
+            ql.mem.map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000)
         except:
             # ql.show_map_info()
             pass
@@ -576,6 +576,6 @@ def ql_syscall_abort_with_payload(ql, reason_namespace, reason_code, payload, pa
 # 0x3
 def ql_x86_syscall_thread_fast_set_cthread_self64(ql, u_info_addr, *args, **kw):
     ql.nprint("syscall[mdep] >> thread fast set cthread self64(tsd_base:0x{:X})".format(u_info_addr))
-    # ql.uc.reg_write(UC_X86_REG_GS, 0x1)
+    ql.uc.msr_write(MSR_KERNEL_GS_BASE, u_info_addr)
     ql_definesyscall_return(ql, KERN_SUCCESS)
     return 
