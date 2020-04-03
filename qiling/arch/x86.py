@@ -44,6 +44,10 @@ QL_X86_GDT_ENTRY_SIZE = 0x8
 QL_X86_GDT_ADDR_PADDING = 0xe0000000
 QL_X8664_GDT_ADDR_PADDING = 0x7effffff00000000
 
+# These msr registers are x86 specific
+_FSMSR = 0xC0000100
+_GSMSR = 0xC0000101
+
 
 class X86(Arch):
     def __init__(self, ql):
@@ -329,6 +333,22 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
     ql.uc.reg_write(seg_reg, selector)
 
 
+def ql_x8664_set_gs(ql, addr):
+    ql.uc.msr_write(_GSMSR, addr)
+
+
+def ql_x8664_get_gs(ql):
+    return ql.uc.msr_read(_GSMSR)
+
+
+def ql_x8664_set_fs(ql, addr):
+    ql.uc.msr_write(_FSMSR, addr)
+
+
+def ql_x8664_get_fs(ql):
+    return ql.uc.msr_read(_FSMSR)
+
+
 def ql_x86_setup_gdt_segment_ds(ql):
     ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_DS, 16, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3, "DS")
 
@@ -367,3 +387,4 @@ def ql_x8664_setup_gdt_segment_ss(ql):
 
 def ql_x8664_setup_gdt_segment_fs(ql, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE):
     ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_FS, 14, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT |  QL_X86_S_PRIV_3, "FS")
+

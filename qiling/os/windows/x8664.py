@@ -11,6 +11,7 @@ from unicorn.x86_const import *
 # import read_string and other common utils.
 from qiling.loader.pe import PE, Shellcode
 from qiling.os.windows.dlls import *
+from qiling.arch.x86 import *
 from qiling.os.utils import *
 from qiling.os.memory import Heap
 from qiling.os.windows.registry import RegistryManager
@@ -26,9 +27,9 @@ def set_pe64_gdt(ql):
     # uc.mem_map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
     # setup_gdt_segment(uc, GDT_ADDR, GDT_LIMIT, UC_X86_REG_GS, 15, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, A_PRESENT |
     # A_DATA | A_DATA_WRITABLE | A_PRIV_3 | A_DIR_CON_BIT, S_GDT | S_PRIV_3)
-    GSMSR = 0xC0000101
+    #GSMSR = 0xC0000101
     ql.mem.map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
-    ql.uc.msr_write(GSMSR, ql.GS_SEGMENT_ADDR)
+    ql_x8664_set_gs(ql, ql.GS_SEGMENT_ADDR)
 
 
 # hook WinAPI in PE EMU
