@@ -29,14 +29,14 @@ QL_ARM64_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x4000000f4000
 QL_ARM64_EMU_END                            = 0xffffffffffffffff
 
 def hook_syscall(ql, intno):
-    syscall_num  = ql.uc.reg_read(UC_ARM64_REG_X16)
-    param0 = ql.uc.reg_read(UC_ARM64_REG_X0)
-    param1 = ql.uc.reg_read(UC_ARM64_REG_X1)
-    param2 = ql.uc.reg_read(UC_ARM64_REG_X2)
-    param3 = ql.uc.reg_read(UC_ARM64_REG_X3)
-    param4 = ql.uc.reg_read(UC_ARM64_REG_X4)
-    param5 = ql.uc.reg_read(UC_ARM64_REG_X5)
-    pc = ql.uc.reg_read(UC_ARM64_REG_PC)
+    syscall_num  = ql.register(UC_ARM64_REG_X16)
+    param0 = ql.register(UC_ARM64_REG_X0)
+    param1 = ql.register(UC_ARM64_REG_X1)
+    param2 = ql.register(UC_ARM64_REG_X2)
+    param3 = ql.register(UC_ARM64_REG_X3)
+    param4 = ql.register(UC_ARM64_REG_X4)
+    param5 = ql.register(UC_ARM64_REG_X5)
+    pc = ql.register(UC_ARM64_REG_PC)
 
 
     while 1:
@@ -122,7 +122,7 @@ def loader_shellcode(ql):
 
 def runner(ql):
     ql.nprint("[+] AARCH64 IOS Stackaddress start at: 0x%x" %(ql.stack_address))
-    ql.uc.reg_write(UC_ARM64_REG_SP, ql.stack_address)
+    ql.register(UC_ARM64_REG_SP, ql.stack_address)
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
     ql_arm64_enable_vfp(ql.uc)

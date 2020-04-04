@@ -62,7 +62,7 @@ def ql_arm64_poll(ql, target, address, size, *args, **kw):
 # 0xa
 def ql_x86_syscall_kernelrpc_mach_vm_allocate_trap(ql, port, addr, size, flags, *args, **kw):
     null = 0
-    ql.nprint("0x{:X} syscall[mach] >> mach vm allocate trap".format(ql.uc.reg_read(UC_X86_REG_RIP)))
+    ql.nprint("0x{:X} syscall[mach] >> mach vm allocate trap".format(ql.register(UC_X86_REG_RIP)))
     ql.nprint("param: port:{:X}, addr:{:X}, size:{:X}, flags:{:X}, {:X}, {:X}".format(port, addr, size, flags, null, null))
     mmap_start = ql.macho_task.min_offset
     mmap_end = page_align_end(mmap_start + size, PAGE_SIZE)
@@ -81,7 +81,7 @@ def ql_x86_syscall_kernelrpc_mach_vm_deallocate_trap(ql, target, address, size, 
 # 0xf
 def ql_x86_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, flags, cur_protection):
     ql.nprint("0x{:X} syscall[mach] >> mach vm map trap(target:0x{:X}, address:0x{:X}, size:0x{:X}, mask:0x{:X}, flag:0x{:X}, cur_protect:0x{:X})".format(
-        ql.uc.reg_read(UC_X86_REG_RIP), target, address, size, mask, flags, cur_protection
+        ql.register(UC_X86_REG_RIP), target, address, size, mask, flags, cur_protection
     ))
 
     ql.nprint("Before the end is 0x{:X}".format(ql.macho_vmmap_end))
@@ -127,7 +127,7 @@ def ql_x86_syscall_host_self_trap(ql, *args, **kw):
 # 0x1f
 def ql_x86_syscall_mach_msg_trap(ql, args, opt, ssize, rsize, rname, timeout):
     ql.nprint("0x{:X} syscall[mach] >> mach_msg_trap(args:0x{:X} opt: {}, ssize: {}, rsize: {}, rname: {}, timeout: {})".format(
-        ql.uc.reg_read(UC_X86_REG_RIP), args, opt, ssize, rsize, rname, timeout))
+        ql.register(UC_X86_REG_RIP), args, opt, ssize, rsize, rname, timeout))
     mach_msg = MachMsg(ql)
     mach_msg.read_msg_from_mem(args, ssize)
     ql.nprint("Recv-> Header: {}, Content: {}".format(mach_msg.header, mach_msg.content))
@@ -184,7 +184,7 @@ def ql_syscall_fcntl64_macos(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
 
 # 0x99
 def ql_syscall_pread(ql, fd, buf, nbyte, offset, null0, null1):
-    ql.nprint("RIP: 0x{:X}".format(ql.uc.reg_read(UC_X86_REG_RIP)))
+    ql.nprint("RIP: 0x{:X}".format(ql.register(UC_X86_REG_RIP)))
     ql.nprint("syscall >> pread(fd: 0x{:X}, buf: 0x{:X}, nbyte: {}, offset: 0x{:X})".format(
         fd, buf, nbyte, offset
     ))
@@ -205,7 +205,7 @@ def ql_syscall_csops(ql, pid, ops, useraddr, usersize, *args, **kw):
     ql_definesyscall_return(ql, KERN_SUCCESS)
 
 def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options, *args, **kw):
-    ql.nprint("RIP: 0x{:X}".format(ql.uc.reg_read(UC_X86_REG_RIP)))
+    ql.nprint("RIP: 0x{:X}".format(ql.register(UC_X86_REG_RIP)))
     ql.nprint("syscall >> getattrlist(path: 0x{:X}, alist: 0x{:X}, attributeBuffer: 0x{:X}, bufferSize: {}, options: {})".format(
         path, alist, attributeBuffer, bufferSize, options
     ))
@@ -247,7 +247,7 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
 def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
     # this is ugly patch, we might need to get value from elf parse,
     # is32bit or is64bit value not by arch
-    ql.nprint("RIP: 0x{:X}".format(ql.uc.reg_read(UC_X86_REG_RIP)))
+    ql.nprint("RIP: 0x{:X}".format(ql.register(UC_X86_REG_RIP)))
    
     MAP_ANONYMOUS=32
 
@@ -337,8 +337,8 @@ def ql_syscall_shared_region_check_np(ql, p, uap, retvalp, *args, **kw):
 
 # 0x150
 def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buffer, buffer_size):
-    ql.nprint("RIP: 0x{:X}".format(ql.uc.reg_read(UC_X86_REG_RIP)))
-    retval = struct.unpack("<Q", ql.mem.read(ql.uc.reg_read(UC_X86_REG_RSP), 8))[0]
+    ql.nprint("RIP: 0x{:X}".format(ql.register(UC_X86_REG_RIP)))
+    retval = struct.unpack("<Q", ql.mem.read(ql.register(UC_X86_REG_RSP), 8))[0]
     ql.nprint("syscall >> proc info(callnum: {}, pid: {}, flavor: {}, arg: 0x{:X}, buffer: 0x{:X}, buffersize: {}, retval: 0x{:X})".format(
         callnum, pid, flavor, arg, buffer, buffer_size, retval
     ))
@@ -352,7 +352,7 @@ def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buffer, buffer_size):
 
 # 0x152
 def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
-    ql.nprint("RIP: 0x{:X}".format(ql.uc.reg_read(UC_X86_REG_RIP)))
+    ql.nprint("RIP: 0x{:X}".format(ql.register(UC_X86_REG_RIP)))
     stat64_file = (ql_read_string(ql, stat64_pathname))
 
     real_path = ql.macho_fs.vm_to_real_path(stat64_file)
@@ -406,7 +406,7 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
 # 0x153
 def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
     fstat64_buf = b''
-    ql.nprint("RIP: 0x{:X}".format(ql.uc.reg_read(UC_X86_REG_RIP)))
+    ql.nprint("RIP: 0x{:X}".format(ql.register(UC_X86_REG_RIP)))
     if fstat64_fd < 256 and ql.file_des[fstat64_fd] != 0:
         user_fileno = fstat64_fd
         fstat64_info = ql.file_des[user_fileno].fstat()

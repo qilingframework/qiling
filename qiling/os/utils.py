@@ -43,17 +43,17 @@ def ql_lsbmsb_convert(ql, sc, size=4):
 
 def ql_definesyscall_return(ql, regreturn):
     if (ql.arch == QL_ARM):  # QL_ARM
-        ql.uc.reg_write(UC_ARM_REG_R0, regreturn)
+        ql.register(UC_ARM_REG_R0, regreturn)
         # ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
 
     elif (ql.arch == QL_ARM64):  # QL_ARM64
-        ql.uc.reg_write(UC_ARM64_REG_X0, regreturn)
+        ql.register(UC_ARM64_REG_X0, regreturn)
 
     elif (ql.arch == QL_X86):  # QL_X86
-        ql.uc.reg_write(UC_X86_REG_EAX, regreturn)
+        ql.register(UC_X86_REG_EAX, regreturn)
 
     elif (ql.arch == QL_X8664):  # QL_X86_64
-        ql.uc.reg_write(UC_X86_REG_RAX, regreturn)
+        ql.register(UC_X86_REG_RAX, regreturn)
 
     elif (ql.arch == QL_MIPS32):  # QL_MIPSE32EL
         if regreturn == -1:
@@ -65,8 +65,8 @@ def ql_definesyscall_return(ql, regreturn):
             a3return = 0
         # if ql.output == QL_OUT_DEBUG:
         #    print("[+] A3 is %d" % a3return)
-        ql.uc.reg_write(UC_MIPS_REG_V0, regreturn)
-        ql.uc.reg_write(UC_MIPS_REG_A3, a3return)
+        ql.register(UC_MIPS_REG_V0, regreturn)
+        ql.register(UC_MIPS_REG_A3, a3return)
 
 
 def ql_bin_to_ipv4(ip):
@@ -175,7 +175,7 @@ def ql_hook_code_disasm(ql, address, size):
         for reg in ql.reg_table:
             ql.reg_name = reg
             REG_NAME = ql.reg_name
-            REG_VAL = ql.uc.reg_read(reg)
+            REG_VAL = ql.register(reg)
             ql.dprint(3, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
             
 

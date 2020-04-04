@@ -21,14 +21,14 @@ QL_X8664_LINUX_PREDEFINE_STACKSIZE = 0x21000
 QL_X8664_EMU_END = 0xffffffffffffffff
 
 def hook_syscall(ql):
-    syscall_num  = ql.uc.reg_read(UC_X86_REG_RAX)
-    param0 = ql.uc.reg_read(UC_X86_REG_RDI)
-    param1 = ql.uc.reg_read(UC_X86_REG_RSI)
-    param2 = ql.uc.reg_read(UC_X86_REG_RDX)
-    param3 = ql.uc.reg_read(UC_X86_REG_R10)
-    param4 = ql.uc.reg_read(UC_X86_REG_R8)
-    param5 = ql.uc.reg_read(UC_X86_REG_R9)
-    pc = ql.uc.reg_read(UC_X86_REG_RIP)
+    syscall_num  = ql.register(UC_X86_REG_RAX)
+    param0 = ql.register(UC_X86_REG_RDI)
+    param1 = ql.register(UC_X86_REG_RSI)
+    param2 = ql.register(UC_X86_REG_RDX)
+    param3 = ql.register(UC_X86_REG_R10)
+    param4 = ql.register(UC_X86_REG_R8)
+    param5 = ql.register(UC_X86_REG_R9)
+    pc = ql.register(UC_X86_REG_RIP)
 
     while 1:
         LINUX_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)

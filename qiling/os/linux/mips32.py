@@ -22,16 +22,16 @@ QL_SHELLCODE_INIT = 0
 QL_MIPS32_EMU_END = 0x8fffffff
 
 def hook_syscall(ql, intno):
-    syscall_num = ql.uc.reg_read(UC_MIPS_REG_V0)
-    param0 = ql.uc.reg_read(UC_MIPS_REG_A0)
-    param1 = ql.uc.reg_read(UC_MIPS_REG_A1)
-    param2 = ql.uc.reg_read(UC_MIPS_REG_A2)
-    param3 = ql.uc.reg_read(UC_MIPS_REG_A3)
-    param4 = ql.uc.reg_read(UC_MIPS_REG_SP)
+    syscall_num = ql.register(UC_MIPS_REG_V0)
+    param0 = ql.register(UC_MIPS_REG_A0)
+    param1 = ql.register(UC_MIPS_REG_A1)
+    param2 = ql.register(UC_MIPS_REG_A2)
+    param3 = ql.register(UC_MIPS_REG_A3)
+    param4 = ql.register(UC_MIPS_REG_SP)
     param4 = param4 + 0x10
-    param5 = ql.uc.reg_read(UC_MIPS_REG_SP)
+    param5 = ql.register(UC_MIPS_REG_SP)
     param5 = param5 + 0x14
-    pc = ql.uc.reg_read(UC_MIPS_REG_PC)
+    pc = ql.register(UC_MIPS_REG_PC)
 
     if intno != 0x11:
         raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)
@@ -240,7 +240,7 @@ def loader_file(ql):
         raise QlErrorFileType("Unsupported FileType")
     ql.stack_address = (int(ql.new_stack))
     
-    ql.uc.reg_write(UC_MIPS_REG_SP, ql.new_stack)
+    ql.register(UC_MIPS_REG_SP, ql.new_stack)
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
 
@@ -259,7 +259,7 @@ def loader_shellcode(ql):
     ql.stack_address =  ql.stack_address  + 0x200000 - 0x1000
     ql.mem.write(ql.stack_address, ql.shellcoder) 
 
-    ql.uc.reg_write(UC_MIPS_REG_SP, ql.new_stack)
+    ql.register(UC_MIPS_REG_SP, ql.new_stack)
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
 

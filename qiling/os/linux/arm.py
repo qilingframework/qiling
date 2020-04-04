@@ -36,15 +36,15 @@ def ql_arm_check_thumb(ql, reg_cpsr):
     return mode
 
 def hook_syscall(ql, intno):
-    syscall_num = ql.uc.reg_read(UC_ARM_REG_R7)
-    param0 = ql.uc.reg_read(UC_ARM_REG_R0)
-    param1 = ql.uc.reg_read(UC_ARM_REG_R1)
-    param2 = ql.uc.reg_read(UC_ARM_REG_R2)
-    param3 = ql.uc.reg_read(UC_ARM_REG_R3)
-    param4 = ql.uc.reg_read(UC_ARM_REG_R4)
-    param5 = ql.uc.reg_read(UC_ARM_REG_R5)
-    reg_cpsr = ql.uc.reg_read(UC_ARM_REG_CPSR)
-    pc = ql.uc.reg_read(UC_ARM_REG_PC)
+    syscall_num = ql.register(UC_ARM_REG_R7)
+    param0 = ql.register(UC_ARM_REG_R0)
+    param1 = ql.register(UC_ARM_REG_R1)
+    param2 = ql.register(UC_ARM_REG_R2)
+    param3 = ql.register(UC_ARM_REG_R3)
+    param4 = ql.register(UC_ARM_REG_R4)
+    param5 = ql.register(UC_ARM_REG_R5)
+    reg_cpsr = ql.register(UC_ARM_REG_CPSR)
+    pc = ql.register(UC_ARM_REG_PC)
     ql_arm_check_thumb(ql, reg_cpsr)
 
     while 1:
@@ -177,9 +177,9 @@ def ql_syscall_arm_settls(ql, address, *args, **kw):
     if ql.thread_management != None and ql.multithread == True:
         ql.thread_management.cur_thread.special_settings_arg = address
 
-    reg_cpsr = ql.uc.reg_read(UC_ARM_REG_CPSR)
-    PC = ql.uc.reg_read(UC_ARM_REG_PC)
-    SP = ql.uc.reg_read(UC_ARM_REG_SP)
+    reg_cpsr = ql.register(UC_ARM_REG_CPSR)
+    PC = ql.register(UC_ARM_REG_PC)
+    SP = ql.register(UC_ARM_REG_SP)
     mode = ql_arm_check_thumb(ql, reg_cpsr)
     #ql.nprint("THUMB and Mode %x %x" % (UC_MODE_THUMB, mode))
     if mode == UC_MODE_THUMB:
@@ -215,11 +215,11 @@ def ql_syscall_arm_settls(ql, address, *args, **kw):
     if mode == UC_MODE_THUMB:
         codelen = 1
     ql.mem.write(SP - 4, ql.pack32(PC + codelen))
-    ql.uc.reg_write(UC_ARM_REG_SP, SP - 4)
-    ql.uc.reg_write(UC_ARM_REG_PC, QL_SHELLCODE_ADDR + codestart + codelen)
+    ql.register(UC_ARM_REG_SP, SP - 4)
+    ql.register(UC_ARM_REG_PC, QL_SHELLCODE_ADDR + codestart + codelen)
 
     ql.mem.write(QL_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
-    ql.uc.reg_write(UC_ARM_REG_R0, address)
+    ql.register(UC_ARM_REG_R0, address)
     ql.nprint("settls(0x%x)" % address)
 
 
@@ -257,7 +257,7 @@ def loader_shellcode(ql):
 
 
 def runner(ql):
-    ql.uc.reg_write(UC_ARM_REG_SP, ql.stack_address)
+    ql.register(UC_ARM_REG_SP, ql.stack_address)
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
     ql_arm_enable_vfp(ql)

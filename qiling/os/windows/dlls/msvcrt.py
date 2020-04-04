@@ -208,8 +208,8 @@ def hook_printf(ql, address, _):
     if ql.arch == QL_X8664:
         # if number of params > 4
         if count + 1 > 4:
-            rsp = ql.uc.reg_read(UC_X86_REG_RSP)
-            ql.uc.reg_write(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
+            rsp = ql.register(UC_X86_REG_RSP)
+            ql.register(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
 
     return None
 

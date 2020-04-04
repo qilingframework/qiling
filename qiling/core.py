@@ -608,6 +608,13 @@ class Qiling:
             self.patch_lib.append((addr, code, file_name.decode()))
     
 
+    # ql.register - read and write register 
+    def register(self, register_str, value= None):
+        if value is None:
+            return self.archfunc.get_register(register_str)
+        else:    
+            return self.archfunc.set_register(register_str, value)
+
     # ql.reg_pc - PC register name getter
     @property
     def reg_pc(self):
@@ -626,7 +633,7 @@ class Qiling:
     # ql.reg_name - Register name converter getter
     @property
     def reg_name(self):
-        return self.archfunc.get_reg_name(self.uc_reg_name)
+        return self.archfunc.get_reg_name_str(self.uc_reg_name)
 
     # ql.reg_name - Register name converter setter
     @reg_name.setter

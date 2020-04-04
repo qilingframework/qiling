@@ -249,11 +249,11 @@ class Shellcode(Process):
         # setup stack memory
         self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
         if self.ql.arch == QL_X86:
-            self.ql.uc.reg_write(UC_X86_REG_ESP, self.ql.stack_address + 0x3000)
-            self.ql.uc.reg_write(UC_X86_REG_EBP, self.ql.stack_address + 0x3000)
+            self.ql.register(UC_X86_REG_ESP, self.ql.stack_address + 0x3000)
+            self.ql.register(UC_X86_REG_EBP, self.ql.stack_address + 0x3000)
         else:
-            self.ql.uc.reg_write(UC_X86_REG_RSP, self.ql.stack_address + 0x3000)
-            self.ql.uc.reg_write(UC_X86_REG_RBP, self.ql.stack_address + 0x3000)
+            self.ql.register(UC_X86_REG_RSP, self.ql.stack_address + 0x3000)
+            self.ql.register(UC_X86_REG_RBP, self.ql.stack_address + 0x3000)
 
         # load shellcode in
         self.ql.mem.map(self.ql.code_address, self.ql.code_size)
@@ -305,8 +305,8 @@ class PE(Process):
         sp = self.ql.stack_address + self.ql.stack_size - 0x1000
 
         if self.ql.arch == QL_X86:
-            self.ql.uc.reg_write(UC_X86_REG_ESP, sp)
-            self.ql.uc.reg_write(UC_X86_REG_EBP, sp)
+            self.ql.register(UC_X86_REG_ESP, sp)
+            self.ql.register(UC_X86_REG_EBP, sp)
 
             if self.pe.is_dll():
                 self.ql.dprint(0, '[+] Setting up DllMain args')
@@ -319,17 +319,17 @@ class PE(Process):
                 self.ql.mem.write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
 
         elif self.ql.arch == QL_X8664:
-            self.ql.uc.reg_write(UC_X86_REG_RSP, sp)
-            self.ql.uc.reg_write(UC_X86_REG_RBP, sp)
+            self.ql.register(UC_X86_REG_RSP, sp)
+            self.ql.register(UC_X86_REG_RBP, sp)
 
             if self.pe.is_dll():
                 self.ql.dprint(0, '[+] Setting up DllMain args')
 
                 self.ql.dprint(0, '[+] Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.PE_IMAGE_BASE))
-                self.ql.uc.reg_write(UC_X86_REG_RCX, self.PE_IMAGE_BASE)
+                self.ql.register(UC_X86_REG_RCX, self.PE_IMAGE_BASE)
 
                 self.ql.dprint(0, '[+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
-                self.ql.uc.reg_write(UC_X86_REG_RDX, 1)
+                self.ql.register(UC_X86_REG_RDX, 1)
         else:
             raise QlErrorArch("[!] Unknown ql.arch")
 
