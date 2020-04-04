@@ -7,47 +7,7 @@ from unicorn.x86_const import *
 from struct import pack
 from .arch import Arch
 from qiling.const import *
-
-QL_X86_F_GRANULARITY = 0x8
-QL_X86_F_PROT_32 = 0x4
-QL_X86_F_LONG = 0x2
-QL_X86_F_AVAILABLE = 0x1
-
-QL_X86_A_PRESENT = 0x80
-
-QL_X86_A_PRIV_3 = 0x60
-QL_X86_A_PRIV_2 = 0x40
-QL_X86_A_PRIV_1 = 0x20
-QL_X86_A_PRIV_0 = 0x0
-
-QL_X86_A_CODE = 0x10
-QL_X86_A_DATA = 0x10
-QL_X86_A_TSS = 0x0
-QL_X86_A_GATE = 0x0
-QL_X86_A_EXEC = 0x8
-
-QL_X86_A_DATA_WRITABLE = 0x2
-QL_X86_A_CODE_READABLE = 0x2
-QL_X86_A_DIR_CON_BIT = 0x4
-
-QL_X86_S_GDT = 0x0
-QL_X86_S_LDT = 0x4
-QL_X86_S_PRIV_3 = 0x3
-QL_X86_S_PRIV_2 = 0x2
-QL_X86_S_PRIV_1 = 0x1
-QL_X86_S_PRIV_0 = 0x0
-
-QL_X86_GDT_ADDR = 0x3000
-QL_X86_GDT_LIMIT = 0x1000
-QL_X86_GDT_ENTRY_SIZE = 0x8
-
-QL_X86_GDT_ADDR_PADDING = 0xe0000000
-QL_X8664_GDT_ADDR_PADDING = 0x7effffff00000000
-
-# These msr registers are x86 specific
-_FSMSR = 0xC0000100
-_GSMSR = 0xC0000101
-
+from qiling.arch.x86_const import *
 
 class X86(Arch):
     def __init__(self, ql):
@@ -334,19 +294,19 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
 
 def ql_x8664_set_gs(ql, addr):
-    ql.uc.msr_write(_GSMSR, addr)
+    ql.uc.msr_write(GSMSR, addr)
 
 
 def ql_x8664_get_gs(ql):
-    return ql.uc.msr_read(_GSMSR)
+    return ql.uc.msr_read(GSMSR)
 
 
 def ql_x8664_set_fs(ql, addr):
-    ql.uc.msr_write(_FSMSR, addr)
+    ql.uc.msr_write(FSMSR, addr)
 
 
 def ql_x8664_get_fs(ql):
-    return ql.uc.msr_read(_FSMSR)
+    return ql.uc.msr_read(FSMSR)
 
 
 def ql_x86_setup_gdt_segment_ds(ql):

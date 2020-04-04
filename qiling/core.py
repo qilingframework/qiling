@@ -178,10 +178,7 @@ class Qiling:
             for _ in range(256):
                 self.sigaction_act.append(0)
 
-            self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "os", "posix", "configuration.cfg")
-        
-        elif self.ostype == QL_WINDOWS:
-            self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "os", "windows", "configuration.cfg")
+        self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ql_ostype_convert_str(self.ostype) + ".ql")
 
         if not ql_is_valid_arch(self.arch):
             raise QlErrorArch("[!] Invalid Arch")

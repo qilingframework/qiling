@@ -12,6 +12,7 @@ from unicorn.x86_const import *
 from qiling.loader.pe import PE, Shellcode
 from qiling.os.windows.dlls import *
 from qiling.arch.x86 import *
+from qiling.arch.x86_const import *
 from qiling.os.utils import *
 from qiling.os.memory import Heap
 from qiling.os.windows.const import *
