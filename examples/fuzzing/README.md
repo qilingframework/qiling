@@ -4,7 +4,7 @@
 
 ## Fuzz pretty much anything...
 
-Just read on [the frontpage](../README.md) what qiling can do, then think you can fuzz all of this with code coverage.
+Just read on [the frontpage](../../README.md) what qiling can do, then think you can fuzz all of this with code coverage.
 
 
 ![Qilingfuzz Screenshopt, Around 160 execs per second and 13 crashes found..](qilingfzz.png)
@@ -15,15 +15,12 @@ Just read on [the frontpage](../README.md) what qiling can do, then think you ca
 
 It has been tested with the recent Qiling framework (the one you cloned), and [afl++](https://github.com/AFLplusplus/AFLplusplus)
 
-The unicornafl fork adds methods to kick off the afl forkserver at any time.
+Unicornafl adds methods to kick off the afl forkserver at any time to unicorn-engine.
 *That means you can fuzz _any unicorn project_ (even c/rust/...) with a few lines of code.*
 
-in this case, we make use of `afl_start_forkserver(..)`, although `afl_fuzz(..)` is even more powerful/faster 
-(it can do persistent mode, so no more forking),
-yet more work to implement. Blogpost or something else on this will follow.
+in this case, we make use of `afl_fuzz(..)`.
 
-For this script, the forkserver is added as a qiling callback on the `main()` method of the target binary.
-On top, we add additional "crashes" (`os.abort`) as callback to the address where `stack-check fail` gets called.
+For this script, the fuzz method is started through a qiling callback on the `main()` method of the target binary.
 
 Just look at the script, it is documented. ;)
 
