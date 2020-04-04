@@ -73,9 +73,9 @@ def hook_syscall(ql, intno):
 
 
 def ql_arm64_enable_vfp(uc):
-    ARM64FP = uc.reg_read(UC_ARM64_REG_CPACR_EL1)
+    ARM64FP = ql.register(UC_ARM64_REG_CPACR_EL1)
     ARM64FP |= 0x300000
-    uc.reg_write(UC_ARM64_REG_CPACR_EL1, ARM64FP)
+    ql.register(UC_ARM64_REG_CPACR_EL1, ARM64FP)
 
 
 def loader_file(ql):

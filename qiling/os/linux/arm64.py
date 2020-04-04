@@ -62,10 +62,10 @@ def hook_syscall(ql, intno):
             raise QlErrorSyscallNotFound("[!] Syscall Not Found")    
 
 
-def ql_arm64_enable_vfp(uc):
-    ARM64FP = uc.reg_read(UC_ARM64_REG_CPACR_EL1)
+def ql_arm64_enable_vfp(ql):
+    ARM64FP = ql.register(UC_ARM64_REG_CPACR_EL1)
     ARM64FP |= 0x300000
-    uc.reg_write(UC_ARM64_REG_CPACR_EL1, ARM64FP)
+    ql.register(UC_ARM64_REG_CPACR_EL1, ARM64FP)
 
 
 def loader_file(ql):
@@ -98,7 +98,7 @@ def runner(ql):
     ql.register(UC_ARM64_REG_SP, ql.stack_address)
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
-    ql_arm64_enable_vfp(ql.uc)
+    ql_arm64_enable_vfp(ql)
     if (ql.until_addr == 0):
         ql.until_addr = QL_ARM64_EMU_END
     try:

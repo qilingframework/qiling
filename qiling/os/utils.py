@@ -122,7 +122,7 @@ def ql_hook_code_disasm(ql, address, size):
     tmp = uc.mem_read(address, size)
 
     if (ql.arch == QL_ARM):  # QL_ARM
-        reg_cpsr = uc.reg_read(UC_ARM_REG_CPSR)
+        reg_cpsr = ql.register(UC_ARM_REG_CPSR)
         mode = CS_MODE_ARM
         if ql.archendian == QL_ENDIAN_EB:
             reg_cpsr_v = 0b100000
