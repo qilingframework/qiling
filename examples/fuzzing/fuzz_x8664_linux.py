@@ -69,8 +69,12 @@ X64BASE = 0x555555554000
 
 def main(input_file, enable_trace=False):
     stdin = MyPipe()
-    ql = Qiling(["./x8664_fuzz"], "../rootfs/x8664_linux", stdin=stdin,
-                stdout=None, stderr=None, output="off")
+    ql = Qiling(["./x8664_fuzz"], "../rootfs/x8664_linux",
+                stdin=stdin,
+                log_console=enable_trace,
+                stdout=1 if enable_trace else None,
+                stderr=1 if enable_trace else None,
+                output="out" if enable_trace else "off")
 
     # or this for output:
     # ... stdout=sys.stdout, stderr=sys.stderr)
@@ -117,10 +121,11 @@ def main(input_file, enable_trace=False):
             return b' '.join(hexlify(data)[i:i+2] for i in range(0, len(hexlify(data)), 2)).decode('utf-8')
 
         def disasm(count, ql, address, size):
-            buf = ql.mem_read(address, size)
+            buf =ql.mem.read(address, size)
             try:
                 for i in md.disasm(buf, address):
-                    return "{:08X}\t{:08X}: {:24s} {:10s} {:16s}".format(count[0], i.address, spaced_hex(buf), i.mnemonic, i.op_str)
+                    return "{:08X}\t{:08X}: {:24s} {:10s} {:16s}".format(count[0], i.address, spaced_hex(buf), i.mnemonic,
+                                                                        i.op_str)
             except:
                 import traceback
                 print(traceback.format_exc())
