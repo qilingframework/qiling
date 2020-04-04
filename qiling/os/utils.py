@@ -160,16 +160,19 @@ def ql_hook_code_disasm(ql, address, size):
     insn = md.disasm(tmp, address)
     opsize = int(size)
 
-    ql.nprint ("[+] 0x%x\t" % (address), end = "")
+    ql.nprint("[+] 0x%x\t" % (address), end="")
 
     for i in tmp:
-        ql.nprint (" %02x" % i, end = "")
+        ql.nprint (" %02x " % i, end="")
 
-    if opsize < 4:
-        ql.nprint ("\t  ", end = "")
+    # if address == 0xfb7d3c76:
+        # breakpoint()
+
+    if opsize <= 6:
+        ql.nprint ("\t"*(7-opsize), end="")
     
     for i in insn:
-       ql.nprint ('\t%s \t%s' % (i.mnemonic, i.op_str))
+        ql.nprint ('\t%s \t%s' % (i.mnemonic, i.op_str))
     
     if ql.output == QL_OUT_DUMP:
         for reg in ql.reg_table:
