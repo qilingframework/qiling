@@ -115,7 +115,6 @@ def loader_file(ql):
     # load pe
     ql.PE = PE(ql, ql.path)
     ql.PE.load()
-
     ql.hook_code(hook_winapi)
     ql_setup_output(ql)
 
