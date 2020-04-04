@@ -50,7 +50,7 @@ To trace bugs in the qiling script, either run it directly with an input file fi
 If something goes wrong, you can do a few things:
 - Run the script without AFL (`./fuzz_x8664_linx.py ./sominputfile` in our example).
 - Sprinkle debug logs and hooks allover (for example, log the emulated instructions, `-t` in our example)
-- For additional infos inside AFL ("did the python script crash?"), run with `AFL_DEBUG_CHID_OUTPUT=1`.
+- For additional infos inside AFL ("did the python script crash?"), run with `AFL_DEBUG_CHILD_OUTPUT=1`.
 
 To debug a crash, run the script without AFL. Crashes will be in `./afl_outputs/crashes`.
 
