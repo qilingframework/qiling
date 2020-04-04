@@ -6,38 +6,29 @@
 from unicorn import *
 from unicorn.x86_const import *
 
-
 from qiling.loader.elf import *
 from qiling.arch.x86 import *
+
 from qiling.os.freebsd.x8664_syscall import *
 from qiling.os.posix.syscall import *
 from qiling.os.freebsd.syscall import *
+
 from qiling.os.utils import *
 from qiling.const import *
-
-QL_X8664_FREEBSD_PREDEFINE_STACKADDRESS = 0x7ffffffde000
-QL_X8664_FREEBSD_PREDEFINE_STACKSIZE = 0x21000
-QL_X8664_EMU_END = 0xffffffffffffffff
+from qiling.os.freebsd.const import *
+from qiling.os.const import *
 
 
 def hook_syscall(ql):
-    syscall_num  = ql.register(UC_X86_REG_RAX)
-    param0 = ql.register(UC_X86_REG_RDI)
-    param1 = ql.register(UC_X86_REG_RSI)
-    param2 = ql.register(UC_X86_REG_RDX)
-    param3 = ql.register(UC_X86_REG_R10)
-    param4 = ql.register(UC_X86_REG_R8)
-    param5 = ql.register(UC_X86_REG_R9)
-    pc = ql.register(UC_X86_REG_RIP)
-    
-    ql.dprint(0, "[+] 0x%x: syscall number = 0x%x(%d)" % (pc, syscall_num, syscall_num))
 
+    param0, param1, param2, param3, param4, param5 = ql.syscall_param
+    
     while 1:
-        FREEBSD_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
+        FREEBSD_SYSCALL_FUNC = ql.dict_posix_syscall.get(ql.syscall, None)
         if FREEBSD_SYSCALL_FUNC != None:
             FREEBSD_SYSCALL_FUNC_NAME = FREEBSD_SYSCALL_FUNC.__name__
             break
-        FREEBSD_SYSCALL_FUNC_NAME = dict_x8664_freebsd_syscall.get(syscall_num, None)
+        FREEBSD_SYSCALL_FUNC_NAME = dict_freebsd_syscall.get(ql.syscall, None)
         if FREEBSD_SYSCALL_FUNC_NAME != None:
             FREEBSD_SYSCALL_FUNC = eval(FREEBSD_SYSCALL_FUNC_NAME)
             break
@@ -52,22 +43,15 @@ def hook_syscall(ql):
             raise            
         except Exception:
             ql.nprint("[!] SYSCALL ERROR: %s" % (FREEBSD_SYSCALL_FUNC_NAME))
-            #td = ql.thread_management.cur_thread
-            #td.stop()
-            #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
             raise
     else:
-        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" % (ql.pc, ql.syscall, ql.syscall,))
         if ql.debug_stop:
-            #td = ql.thread_management.cur_thread
-            #td.stop()
-            #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
             raise QlErrorSyscallNotFound("[!] Syscall Not Found")    
 
 
 def loader_file(ql):
-    uc = Uc(UC_ARCH_X86, UC_MODE_64)
-    ql.uc = uc
+    ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
     if (ql.stack_address == 0):
         ql.stack_address = QL_X8664_FREEBSD_PREDEFINE_STACKADDRESS
     if (ql.stack_size == 0):
@@ -99,8 +83,7 @@ def loader_file(ql):
 
 
 def loader_shellcode(ql):
-    uc = Uc(UC_ARCH_X86, UC_MODE_64)
-    ql.uc = uc
+    ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
     if (ql.stack_address == 0):
         ql.stack_address = 0x1000000
     if (ql.stack_size == 0):    
@@ -123,7 +106,7 @@ def loader_shellcode(ql):
 
 def runner(ql):
     if (ql.until_addr == 0):
-        ql.until_addr = QL_X8664_EMU_END
+        ql.until_addr = QL_ARCHBIT64_EMU_END
     try:
         if ql.shellcoder:
             ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))

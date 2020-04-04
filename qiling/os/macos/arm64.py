@@ -21,30 +21,18 @@ from qiling.os.macos.mach_port import *
 from qiling.os.posix.syscall import *
 from qiling.os.utils import *
 from qiling.const import *
-
-QL_ARM64_MACOS_PREDEFINE_STACKADDRESS       = 0x0000000160503000
-QL_ARM64_MACOS_PREDEFINE_STACKSIZE          = 0x21000
-QL_ARM64_MACOS_PREDEFINE_MMAPADDRESS        = 0x7ffbf0100000
-QL_ARM64_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x4000000f4000
-QL_ARM64_EMU_END                            = 0xffffffffffffffff
+from qiling.os.const import *
+from qiling.os.macos.const import *
 
 def hook_syscall(ql, intno):
-    syscall_num  = ql.register(UC_ARM64_REG_X16)
-    param0 = ql.register(UC_ARM64_REG_X0)
-    param1 = ql.register(UC_ARM64_REG_X1)
-    param2 = ql.register(UC_ARM64_REG_X2)
-    param3 = ql.register(UC_ARM64_REG_X3)
-    param4 = ql.register(UC_ARM64_REG_X4)
-    param5 = ql.register(UC_ARM64_REG_X5)
-    pc = ql.register(UC_ARM64_REG_PC)
-
+    param0, param1, param2, param3, param4, param5 = ql.syscall_param
 
     while 1:
-        MACOS_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
+        MACOS_SYSCALL_FUNC = ql.dict_posix_syscall.get(ql.syscall, None)
         if MACOS_SYSCALL_FUNC != None:
             MACOS_SYSCALL_FUNC_NAME = MACOS_SYSCALL_FUNC.__name__
             break
-        MACOS_SYSCALL_FUNC_NAME = dict_arm64_macos_syscall.get(syscall_num, None)
+        MACOS_SYSCALL_FUNC_NAME = dict_macos_syscall.get(ql.syscall, None)
         if MACOS_SYSCALL_FUNC_NAME != None:
             MACOS_SYSCALL_FUNC = eval(MACOS_SYSCALL_FUNC_NAME)
             break
@@ -64,18 +52,10 @@ def hook_syscall(ql, intno):
             #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
             raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (MACOS_SYSCALL_FUNC_NAME))
     else:
-        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(ql.pc, ql.syscall, ql.syscall))
         if ql.debug_stop:
-            #td = ql.thread_management.cur_thread
-            #td.stop()
-            #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+
             raise QlErrorSyscallNotFound("[!] Syscall Not Found")
-
-
-def ql_arm64_enable_vfp(uc):
-    ARM64FP = ql.register(UC_ARM64_REG_CPACR_EL1)
-    ARM64FP |= 0x300000
-    ql.register(UC_ARM64_REG_CPACR_EL1, ARM64FP)
 
 
 def loader_file(ql):
@@ -125,29 +105,13 @@ def runner(ql):
     ql.register(UC_ARM64_REG_SP, ql.stack_address)
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
-    ql_arm64_enable_vfp(ql.uc)
+    ql.archfunc.enable_vfp()
     vm_shared_region_enter(ql)
     map_commpage(ql)
     ql.macho_thread = MachoThread()
     load_shared_region(ql)
+    ql_run_os(ql)
 
-    if (ql.until_addr == 0):
-        ql.until_addr = QL_ARM64_EMU_END
-    try:
-        if ql.shellcoder:
-            ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
-        else:
-            ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
-    except UcError:
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            ql.nprint("[+] PC= " + hex(ql.pc))
-            ql.show_map_info()
-            buf = ql.mem.read(ql.pc, 8)
-            ql.nprint("[+] ", [hex(_) for _ in buf])
-            ql_hook_code_disasm(ql, ql.pc, 64)
-        raise QlErrorExecutionStop("[!] Execution Terminated")    
-    
-    if ql.internal_exception != None:
-        raise ql.internal_exception    
+  
 
 

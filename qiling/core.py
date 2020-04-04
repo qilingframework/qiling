@@ -122,7 +122,8 @@ class Qiling:
         self.bindtolocalhost = False
         # required root permission
         self.root = True
-        self.log_split = False  
+        self.log_split = False
+        self.shellcode_init = 0
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -184,6 +185,7 @@ class Qiling:
             raise QlErrorArch("[!] Invalid Arch")
 
         arch_func = ql_get_arch_module_function(self.arch, ql_arch_convert_str(self.arch).upper())
+        comm_os = ql_get_commonos_module_function(self.ostype)
 
         self.archbit = ql_get_arch_bits(self.arch)
 
@@ -194,6 +196,7 @@ class Qiling:
             self.archendian = QL_ENDIAN_EB
 
         self.archfunc = arch_func(self)
+        self.commos = comm_os(self)
 
         if self.archbit:
             self.pointersize = (self.archbit // 8)
@@ -614,6 +617,16 @@ class Qiling:
             return self.archfunc.get_register(register_str)
         else:    
             return self.archfunc.set_register(register_str, value)
+
+    # ql.syscall - get syscall for all posix series
+    @property
+    def syscall(self):
+        return self.commos.get_syscall()
+
+    # ql.syscall_param - get syscall for all posix series
+    @property
+    def syscall_param(self):
+        return self.commos.get_syscall_param()
 
     # ql.reg_pc - PC register name getter
     @property

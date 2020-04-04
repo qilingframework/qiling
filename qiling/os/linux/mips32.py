@@ -7,41 +7,30 @@ from unicorn import *
 from unicorn.mips_const import *
 
 from qiling.loader.elf import *
+
 from qiling.os.linux.mips32_syscall import *
 from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *
+
+from qiling.os.linux.const import *
+from qiling.os.linux.utils import *
 from qiling.os.utils import *
 from qiling.const import *
 
-# memory address where emulation starts
-QL_MIPS32_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000
-QL_MIPS32_LINUX_PREDEFINE_STACKSIZE = 0x30000
-QL_SHELLCODE_ADDR = 0x0f000000
-QL_SHELLCODE_LEN = 0x1000
-QL_SHELLCODE_INIT = 0
-QL_MIPS32_EMU_END = 0x8fffffff
+
 
 def hook_syscall(ql, intno):
-    syscall_num = ql.register(UC_MIPS_REG_V0)
-    param0 = ql.register(UC_MIPS_REG_A0)
-    param1 = ql.register(UC_MIPS_REG_A1)
-    param2 = ql.register(UC_MIPS_REG_A2)
-    param3 = ql.register(UC_MIPS_REG_A3)
-    param4 = ql.register(UC_MIPS_REG_SP)
-    param4 = param4 + 0x10
-    param5 = ql.register(UC_MIPS_REG_SP)
-    param5 = param5 + 0x14
-    pc = ql.register(UC_MIPS_REG_PC)
+    param0, param1, param2, param3, param4, param5 = ql.syscall_param
 
     if intno != 0x11:
         raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)
 
     while 1:
-        LINUX_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
+        LINUX_SYSCALL_FUNC = ql.dict_posix_syscall.get(ql.syscall, None)
         if LINUX_SYSCALL_FUNC != None:
             LINUX_SYSCALL_FUNC_NAME = LINUX_SYSCALL_FUNC.__name__
             break
-        LINUX_SYSCALL_FUNC_NAME = dict_mips32_linux_syscall.get(syscall_num, None)
+        LINUX_SYSCALL_FUNC_NAME = dict_linux_syscall.get(ql.syscall, None)
         if LINUX_SYSCALL_FUNC_NAME != None:
             LINUX_SYSCALL_FUNC = eval(LINUX_SYSCALL_FUNC_NAME)
             break
@@ -62,7 +51,7 @@ def hook_syscall(ql, intno):
                 td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
             raise 
     else:
-        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(ql.pc, ql.syscall, ql.syscall))
         if ql.debug_stop:
             if ql.multithread == True:
                 td = ql.thread_management.cur_thread
@@ -71,7 +60,47 @@ def hook_syscall(ql, intno):
             raise QlErrorSyscallNotFound("[!] Syscall Not Found")
 
 
-def hook_shellcode(uc, addr, shellcode, ql):
+def loader_file(ql):
+    if ql.archendian == QL_ENDIAN_EB:
+        ql.uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_BIG_ENDIAN)
+    else:
+        ql.uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)
+    if (ql.stack_address == 0):
+        ql.stack_address = QL_MIPS32_LINUX_PREDEFINE_STACKADDRESS
+    if (ql.stack_size == 0): 
+        ql.stack_size = QL_MIPS32_LINUX_PREDEFINE_STACKSIZE
+    ql.mem.map(ql.stack_address, ql.stack_size)
+    loader = ELFLoader(ql.path, ql)
+    if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env):
+        raise QlErrorFileType("Unsupported FileType")
+    ql.stack_address = (int(ql.new_stack))
+    ql.register(UC_MIPS_REG_SP, ql.new_stack)
+    ql_setup_output(ql)
+    ql.hook_intr(hook_syscall)
+
+
+def loader_shellcode(ql):
+    if ql.archendian == QL_ENDIAN_EB:
+        ql.uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_BIG_ENDIAN)
+    else:
+        ql.uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)    
+    if (ql.stack_address == 0):
+        ql.stack_address = 0x1000000
+    if (ql.stack_size == 0): 
+        ql.stack_size = 2 * 1024 * 1024
+    ql.mem.map(ql.stack_address, ql.stack_size)
+    ql.stack_address =  ql.stack_address  + 0x200000 - 0x1000
+    ql.mem.write(ql.stack_address, ql.shellcoder) 
+    ql.register(UC_MIPS_REG_SP, ql.new_stack)
+    ql_setup_output(ql)
+    ql.hook_intr(hook_syscall)
+
+
+def runner(ql):
+    ql_os_run(ql)
+
+
+def exec_shellcode(ql, addr, shellcode):
     '''
     nop
 	nop
@@ -161,13 +190,7 @@ lab1:
 	nop
     '''
 
-    if ql.shellcode_init == 0:
-        ql.dprint (0, "[+] QL_SHELLCODE_ADDR(0x%x) and shellcode_init is %i" % (QL_SHELLCODE_ADDR, ql.shellcode_init))
-        ql.mem.map(QL_SHELLCODE_ADDR, QL_SHELLCODE_LEN)
-        ql.shellcode_init = 1
-
     store_code = ql.mem.read(addr, 8)
-    
     sc = b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf8\xff\xbf\xaf\xf4\xff\xa4\xaf\xf0\xff\xa5\xaf\xec\xff\xa6\xaf\xe8\xff\xa7\xaf\xe4\xff\xa2\xaf\xe0\xff\xa3\xaf\xdc\xff\xa8\xaf\xff\xff\x06(\xff\xff\xd0\x04\x8c\x00\xe5'<\x00\xe8'\xfc\xff\xa4\x8f\x08\x00\x06$\t\xf8\x00\x01\x00\x00\x00\x00\xf8\xff\xbf\x8f\xf4\xff\xa4\x8f\xf0\xff\xa5\x8f\xec\xff\xa6\x8f\xe8\xff\xa7\x8f\xe4\xff\xa2\x8f\xe0\xff\xa3\x8f\xdc\xff\xa8\x8f\x00\x00\x00\x08\x00\x00\x00\x00%8\x00\x00%8\x00\x00\t\x00\x00\x10\x00\x00\x00\x00%\x10\xe0\x00%\x18\xa0\x00!\x18b\x00%\x10\xe0\x00!\x10\x82\x00\x00\x00c\x80\x00\x00C\xa0\x01\x00\xe7$%\x10\xe0\x00%\x18\xc0\x00+\x10C\x00\xf4\xff@\x14\x00\x00\x00\x00\x00\x00\x00\x00\x08\x00\xe0\x03\x00\x00\x00\x00"
 
     if ql.archendian == QL_ENDIAN_EB:
@@ -175,146 +198,13 @@ lab1:
         sc = ebsc.replace(b'\x08\x00\x00\x00', ql.pack32(0x08000000 ^ (addr // 4)), 1)       
     else:
         sc = sc.replace(b'\x00\x00\x00\x08', ql.pack32(0x08000000 ^ (addr // 4)), 1)
-        
     
     sc = shellcode + sc[len(shellcode) :] + store_code
-
-    ql.mem.write(QL_SHELLCODE_ADDR, sc)
+    ql_map_shellcode(ql, 0, sc, QL_ARCHBIT32_SHELLCODE_ADDR, QL_ARCHBIT32_SHELLCODE_SIZE)
+    
     if ql.archendian == QL_ENDIAN_EB:
         ql.mem.write(addr, b'\x0b\xc0\x00\x00\x00\x00\x00\x00')
     else:
         ql.mem.write(addr, b'\x00\x00\xc0\x0b\x00\x00\x00\x00')
     sp = ql.register(UC_MIPS_REG_SP)
     ql.mem.write(sp - 4, ql.pack32(addr))
-
-def ql_syscall_mips32_thread_setthreadarea(ql, th, arg):
-    uc = ql.uc
-    address = arg
-
-    pc = ql.register(UC_MIPS_REG_PC)
-    CONFIG3_ULR = (1 << 13)
-    ql.register(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
-    ql.register(UC_MIPS_REG_CP0_USERLOCAL, address)
-
-    ql.dprint (0, "[+] multithread set_thread_area(0x%x)" % address)
-    # somehow for multithread these code are still not mature
-    ql.dprint (0, "[+] shellcode_init is %i" % (ql.shellcode_init))
-    if ql.shellcode_init == 0:
-        if ql.archendian == QL_ENDIAN_EB:
-            hook_shellcode(uc, pc + 4, bytes.fromhex('0000102500003825'), ql)
-        else:    
-            hook_shellcode(uc, pc + 4, bytes.fromhex('2510000025380000'), ql)
-
-
-def ql_syscall_mips32_set_thread_area(ql, sta_area, *args, **kw):
-    uc = ql.uc     
-    ql.nprint ("set_thread_area(0x%x)" % sta_area)
-
-    if ql.thread_management != None and ql.multithread == True:
-        ql.thread_management.cur_thread.special_settings_arg = sta_area
-    
-    pc = ql.register(UC_MIPS_REG_PC)
-    CONFIG3_ULR = (1 << 13)
-    ql.register(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
-    ql.register(UC_MIPS_REG_CP0_USERLOCAL, sta_area)
-    if ql.archendian == QL_ENDIAN_EB:
-        hook_shellcode(uc, pc + 4, bytes.fromhex('0000102500003825'), ql)
-    else:    
-        hook_shellcode(uc, pc + 4, bytes.fromhex('2510000025380000'), ql)
-
-
-
-def loader_file(ql):
-    if ql.archendian == QL_ENDIAN_EB:
-        uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_BIG_ENDIAN)
-    else:
-        uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)
-    ql.uc = uc
-    if (ql.stack_address == 0):
-        ql.stack_address = QL_MIPS32_LINUX_PREDEFINE_STACKADDRESS
-    if (ql.stack_size == 0): 
-        ql.stack_size = QL_MIPS32_LINUX_PREDEFINE_STACKSIZE
-    ql.mem.map(ql.stack_address, ql.stack_size)
-    loader = ELFLoader(ql.path, ql)
-    if loader.load_with_ld(ql, ql.stack_address + ql.stack_size, argv = ql.argv, env = ql.env):
-        raise QlErrorFileType("Unsupported FileType")
-    ql.stack_address = (int(ql.new_stack))
-    
-    ql.register(UC_MIPS_REG_SP, ql.new_stack)
-    ql_setup_output(ql)
-    ql.hook_intr(hook_syscall)
-
-
-def loader_shellcode(ql):
-    if ql.archendian == QL_ENDIAN_EB:
-        uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_BIG_ENDIAN)
-    else:
-        uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)    
-    ql.uc = uc
-    if (ql.stack_address == 0):
-        ql.stack_address = 0x1000000
-    if (ql.stack_size == 0): 
-        ql.stack_size = 2 * 1024 * 1024
-    ql.mem.map(ql.stack_address, ql.stack_size)
-    ql.stack_address =  ql.stack_address  + 0x200000 - 0x1000
-    ql.mem.write(ql.stack_address, ql.shellcoder) 
-
-    ql.register(UC_MIPS_REG_SP, ql.new_stack)
-    ql_setup_output(ql)
-    ql.hook_intr(hook_syscall)
-
-
-def runner(ql):
-    if (ql.until_addr == 0):
-        ql.until_addr = QL_MIPS32_EMU_END
-    try:
-        if ql.shellcoder:
-            ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
-        else:
-            if ql.multithread == True:
-                # start multithreading
-                thread_management = ThreadManagement(ql)
-                ql.thread_management = thread_management
-
-                main_thread = Thread(ql, thread_management, total_time = ql.timeout, special_settings_fuc = ql_syscall_mips32_thread_setthreadarea)
-                main_thread.save()
-                main_thread.set_start_address(ql.entry_point)
-
-                thread_management.set_main_thread(main_thread)
-
-                # enable lib patch
-                if ql.elf_entry != ql.entry_point:
-                    main_thread.set_until_addr(ql.elf_entry)
-                    thread_management.run()
-                    ql.enable_lib_patch()
-
-                    main_thread.set_start_address(ql.elf_entry)
-                    main_thread.set_until_addr(ql.until_addr)
-                    main_thread.running()
-
-                    thread_management.clean_world()
-                    thread_management.set_main_thread(main_thread)
-                
-                thread_management.run()
-
-            else:
-                if ql.elf_entry != ql.entry_point:
-                    ql.uc.emu_start(ql.entry_point, ql.elf_entry, ql.timeout) 
-                    ql.enable_lib_patch()
-                ql.uc.emu_start(ql.elf_entry, ql.until_addr, ql.timeout) 
-
-    except UcError:
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
-            ql.show_map_info()
-            try:
-                buf = ql.mem.read(ql.pc, 8)
-                ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                ql.nprint("\n")
-                ql_hook_code_disasm(ql, ql.pc, 64)
-            except:
-                pass
-        raise
-
-    if ql.internal_exception != None:
-        raise ql.internal_exception

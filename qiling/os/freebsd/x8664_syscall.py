@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-dict_x8664_freebsd_syscall = {
+dict_freebsd_syscall = {
     0x01 : "ql_syscall_exit",
     0x03 : "ql_syscall_read",
     0x04 : "ql_syscall_write",

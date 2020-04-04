@@ -4,6 +4,10 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 from unicorn.x86_const import *
+from unicorn.arm_const import *
+
+from qiling.os.const import *
+from qiling.os.utils import *
 
 def env_dict_to_array(env_dict):
     env_list = []
@@ -36,3 +40,23 @@ def macho_read_string(ql, address, max_length):
         if read_bytes > max_length:
             break
     return ret
+
+def ql_run_os(ql):
+    if (ql.until_addr == 0):
+        ql.until_addr = QL_ARCHBIT64_EMU_END
+    try:
+        if ql.shellcoder:
+            ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
+        else:
+            ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
+    except UcError:
+        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+            ql.nprint("[+] PC= " + hex(ql.pc))
+            ql.show_map_info()
+            buf = ql.mem.read(ql.pc, 8)
+            ql.nprint("[+] ", [hex(_) for _ in buf])
+            ql_hook_code_disasm(ql, ql.pc, 64)
+        raise QlErrorExecutionStop("[!] Execution Terminated")    
+    
+    if ql.internal_exception != None:
+        raise ql.internal_exception  

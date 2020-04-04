@@ -6,6 +6,7 @@ from unicorn import *
 from unicorn.arm_const import *
 from struct import pack
 from .arch import Arch
+from qiling.const import *
 
 def ql_arm_check_thumb(uc, reg_cpsr):
     mode = UC_MODE_ARM
@@ -50,8 +51,7 @@ class ARM(Arch):
 
     # get PC
     def get_pc(self):
-        reg_cpsr = self.ql.register(UC_ARM_REG_CPSR)
-        mode = ql_arm_check_thumb(self.ql.uc, reg_cpsr)
+        mode = self.ql.archfunc.check_thumb()
         if mode == UC_MODE_THUMB:
             append = 1
         else:
@@ -78,6 +78,33 @@ class ARM(Arch):
     def get_reg_pc(self):
         return UC_ARM_REG_PC
 
+    def enable_vfp(self):
+        tmp_val = self.ql.register(UC_ARM_REG_C1_C0_2)
+        tmp_val = tmp_val | (0xf << 20)
+        self.ql.register(UC_ARM_REG_C1_C0_2, tmp_val)
+        if self.ql.archendian == QL_ENDIAN_EB:
+            enable_vfp = 0x40000000
+            #enable_vfp = 0x00000040
+        else:
+            enable_vfp = 0x40000000
+        self.ql.register(UC_ARM_REG_FPEXC, enable_vfp)
+        self.ql.dprint(0, "[+] Enable ARM VFP")
+
+
+    def check_thumb(self):
+    
+        reg_cpsr = self.ql.register(UC_ARM_REG_CPSR)
+        if self.ql.archendian == QL_ENDIAN_EB:
+            reg_cpsr_v = 0b100000
+            # reg_cpsr_v = 0b000000
+        else:
+            reg_cpsr_v = 0b100000
+
+        mode = UC_MODE_ARM
+        if (reg_cpsr & reg_cpsr_v) != 0:
+            mode = UC_MODE_THUMB
+            self.ql.dprint(0, "[+] Enable ARM THUMB")
+        return mode
 
     def get_reg_table(self):
         registers_table = [

@@ -21,7 +21,7 @@ from unicorn.arm64_const import *
 from unicorn.mips_const import *
 
 from qiling.os.utils import *
-from qiling.os.macos.define_values import *
+from qiling.os.macos.const import *
 from qiling.os.macos.thread import *
 from qiling.os.macos.mach_port import *
 from qiling.os.macos.kernel_func import *

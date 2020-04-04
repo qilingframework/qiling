@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-dict_x8664_macos_syscall = {
+dict_macos_syscall = {
     0x100000a : "ql_x86_syscall_kernelrpc_mach_vm_allocate_trap",
     0x100000c : "ql_x86_syscall_kernelrpc_mach_vm_deallocate_trap",
     0x100000f : "ql_x86_syscall_kernelrpc_mach_vm_map_trap",

@@ -6,6 +6,7 @@ from unicorn import *
 from unicorn.arm64_const import *
 from struct import pack
 from .arch import Arch
+from qiling.const import *
 
 class ARM64(Arch):
     def __init__(self, ql):
@@ -36,10 +37,10 @@ class ARM64(Arch):
         SP = self.ql.register(UC_ARM64_REG_SP)
         return self.ql.mem.write(SP + offset, self.ql.pack64(data))
 
+
     # set PC
     def set_pc(self, value):
         self.ql.register(UC_ARM64_REG_PC, value)
-
 
     # get PC
     def get_pc(self):
@@ -139,6 +140,10 @@ class ARM64(Arch):
             register_str = self.get_reg_name(register_str)  
         return self.ql.uc.reg_write(register_str, value)
 
+    def enable_vfp(self):
+        ARM64FP = self.ql.register(UC_ARM64_REG_CPACR_EL1)
+        ARM64FP |= 0x300000
+        self.ql.register(UC_ARM64_REG_CPACR_EL1, ARM64FP)
 
     def get_reg_name(self, uc_reg_name):
         adapter = {
