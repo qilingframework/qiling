@@ -21,9 +21,7 @@ from qiling.os.windows.clipboard import Clipboard
 from qiling.os.windows.fiber import FiberManager
 from qiling.os.windows.const import Mapper
 
-QL_X8664_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
-QL_X8664_WINDOWS_STACK_SIZE = 0x40000
-QL_X8664_WINSOWS_EMU_END = 0x0
+
 
 # hook WinAPI in PE EMU
 def hook_winapi(ql, address, size):
@@ -107,16 +105,13 @@ def windows_setup64(ql):
     ql.hooks_variables = {}
 
 def loader_file(ql):
-    uc = Uc(UC_ARCH_X86, UC_MODE_64)
-    ql.uc = uc
+    ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
     # init ql pe
     if ql.stack_address == 0:
         ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
     if ql.stack_size == 0:
         ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
-
     windows_setup64(ql)
-
     # load pe
     ql.PE = PE(ql, ql.path)
     ql.PE.load()
@@ -126,53 +121,22 @@ def loader_file(ql):
 
 
 def loader_shellcode(ql):
-    uc = Uc(UC_ARCH_X86, UC_MODE_64)
-    ql.uc = uc
-
+    ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
     # init ql pe
     if ql.stack_address == 0:
         ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
     if ql.stack_size == 0:
         ql.stack_size = QL_X8664_WINDOWS_STACK_SIZE
-
     ql.code_address = 0x140000000
     ql.code_size = 10 * 1024 * 1024
-
     windows_setup64(ql)
-
     # load shellcode
     ql.PE = Shellcode(ql, [b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
     ql.PE.load()
-
     # hook win api
     ql.hook_code(hook_winapi)
     ql_setup_output(ql)
 
 
 def runner(ql):
-    if ql.until_addr == 0:
-        ql.until_addr = QL_X8664_WINSOWS_EMU_END
-    try:
-        if ql.shellcoder:
-            ql.uc.emu_start(ql.code_address, ql.code_address + len(ql.shellcoder))
-        else:
-            ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
-    except UcError:
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
-            ql.show_map_info()
-            try:
-                buf = ql.mem.read(ql.pc, 8)
-                ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                ql.nprint("\n")
-                ql_hook_code_disasm(ql, ql.pc, 64)
-            except:
-                pass
-        raise
-
-    ql.registry_manager.save()
-
-    post_report(ql)
-
-    if ql.internal_exception is not None:
-        raise ql.internal_exception
+    ql_os_run(ql)

@@ -41,7 +41,7 @@ def macho_read_string(ql, address, max_length):
             break
     return ret
 
-def ql_run_os(ql):
+def ql_os_run(ql):
     if (ql.until_addr == 0):
         ql.until_addr = QL_ARCHBIT64_EMU_END
     try:

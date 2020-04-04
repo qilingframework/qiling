@@ -6,6 +6,39 @@ import struct
 from unicorn.x86_const import *
 from qiling.os.utils import *
 from qiling.const import *
+from qiling.os.const import *
+from qiling.os.utils import *
+
+def ql_os_run(ql):
+    if ql.until_addr == 0:
+        if ql.archbit == 32:
+            ql.until_addr = QL_ARCHBIT32_EMU_END
+        else:
+            ql.until_addr = QL_ARCHBIT64_EMU_END            
+    try:
+        if ql.shellcoder:
+            ql.uc.emu_start(ql.code_address, ql.code_address + len(ql.shellcoder))
+        else:
+            ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
+    except UcError:
+        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+            ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
+            ql.show_map_info()
+            try:
+                buf = ql.mem.read(ql.pc, 8)
+                ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                ql.nprint("\n")
+                ql_hook_code_disasm(ql, ql.pc, 64)
+            except:
+                pass
+        raise
+
+    ql.registry_manager.save()
+
+    post_report(ql)
+
+    if ql.internal_exception is not None:
+        raise ql.internal_exception
 
 def ql_x86_windows_hook_mem_error(ql, addr, size, value):
     ql.dprint(0, "[+] ERROR: unmapped memory access at 0x%x" % addr)

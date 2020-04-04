@@ -4,6 +4,14 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 from Registry import Registry
 
+
+# Windows 32/64 bit
+QL_X86_WINDOWS_STACK_ADDRESS = 0xfffdd000
+QL_X86_WINDOWS_STACK_SIZE = 0x21000
+QL_X8664_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
+QL_X8664_WINDOWS_STACK_SIZE = 0x40000
+
+
 # ERRORS CODE
 # https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
 ERROR_SUCCESS = 0x0

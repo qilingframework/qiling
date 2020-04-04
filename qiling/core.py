@@ -196,7 +196,8 @@ class Qiling:
             self.archendian = QL_ENDIAN_EB
 
         self.archfunc = arch_func(self)
-        self.commos = comm_os(self)
+        if comm_os:
+            self.commos = comm_os(self)
 
         if self.archbit:
             self.pointersize = (self.archbit // 8)

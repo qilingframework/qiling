@@ -105,6 +105,6 @@ def runner(ql):
     ql.macho_thread = MachoThread()
     load_commpage(ql)
     load_shared_region(ql)
-    ql_run_os(ql)  
+    ql_os_run(ql)  
 
 
