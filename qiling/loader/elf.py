@@ -415,7 +415,7 @@ class ELFLoader(ELFParse):
             ql.nprint("[+] Some error in head e_type: %u!" %elfhead['e_type'])
             return -1
 
-        ql.uc.mem_map(loadbase + mem_start, mem_end - mem_start)
+        ql.mem.map(loadbase + mem_start, mem_end - mem_start)
         ql.insert_map_info(loadbase + mem_start, loadbase + mem_end, 'r-x', self.path)
 
         for i in super().parse_program_header(ql):
@@ -569,8 +569,8 @@ class ELFLoader(ELFParse):
         ql.mem.write(int(new_stack - len(elf_table)), elf_table)
         new_stack = new_stack - len(elf_table)
 
-        # print("rdi is : " + hex(ql.uc.reg_read(UC_X86_REG_RDI)))
-        # ql.uc.reg_write(UC_X86_REG_RDI, new_stack + 8)
+        # print("rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
+        # ql.register(UC_X86_REG_RDI, new_stack + 8)
 
         # for i in range(120):
         #     buf = ql.mem.read(new_stack + i * 0x8, 8)

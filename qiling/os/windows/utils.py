@@ -7,7 +7,6 @@ from unicorn.x86_const import *
 from qiling.os.utils import *
 from qiling.const import *
 
-
 def ql_x86_windows_hook_mem_error(ql, addr, size, value):
     ql.dprint(0, "[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
@@ -39,9 +38,9 @@ def debug_print_stack(ql, num, message=None):
     if message:
         ql.dprint(0, "========== %s ==========" % message)
     if ql.arch == QL_X86:
-        sp = ql.uc.reg_read(UC_X86_REG_ESP)
+        sp = ql.register(UC_X86_REG_ESP)
     else:
-        sp = ql.uc.reg_read(UC_X86_REG_RSP)
+        sp = ql.register(UC_X86_REG_RSP)
     for i in range(num):
         ql.dprint(0, hex(sp + ql.pointersize * i) + ": " + hex(ql.stack_read(i * ql.pointersize)))
 

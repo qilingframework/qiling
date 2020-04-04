@@ -40,14 +40,14 @@ class colors:
 
 
 def dump_regs(ql, address, size):
-    regs = {'eax': ql.uc.reg_read(UC_X86_REG_EAX),
-            'ebx': ql.uc.reg_read(UC_X86_REG_EBX),
-            'ecx': ql.uc.reg_read(UC_X86_REG_ECX),
-            'edx': ql.uc.reg_read(UC_X86_REG_EDX),
-            'edi': ql.uc.reg_read(UC_X86_REG_EDI),
-            'esi': ql.uc.reg_read(UC_X86_REG_ESI),
-            'ebp': ql.uc.reg_read(UC_X86_REG_EBP),
-            'esp': ql.uc.reg_read(UC_X86_REG_ESP)}
+    regs = {'eax': ql.register(UC_X86_REG_EAX),
+            'ebx': ql.register(UC_X86_REG_EBX),
+            'ecx': ql.register(UC_X86_REG_ECX),
+            'edx': ql.register(UC_X86_REG_EDX),
+            'edi': ql.register(UC_X86_REG_EDI),
+            'esi': ql.register(UC_X86_REG_ESI),
+            'ebp': ql.register(UC_X86_REG_EBP),
+            'esp': ql.register(UC_X86_REG_ESP)}
 
     if not hasattr(dump_regs, 'regs'):
         dump_regs.regs = regs

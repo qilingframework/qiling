@@ -22,16 +22,16 @@ QL_SHELLCODE_INIT = 0
 QL_MIPS32_EMU_END = 0x8fffffff
 
 def hook_syscall(ql, intno):
-    syscall_num = ql.uc.reg_read(UC_MIPS_REG_V0)
-    param0 = ql.uc.reg_read(UC_MIPS_REG_A0)
-    param1 = ql.uc.reg_read(UC_MIPS_REG_A1)
-    param2 = ql.uc.reg_read(UC_MIPS_REG_A2)
-    param3 = ql.uc.reg_read(UC_MIPS_REG_A3)
-    param4 = ql.uc.reg_read(UC_MIPS_REG_SP)
+    syscall_num = ql.register(UC_MIPS_REG_V0)
+    param0 = ql.register(UC_MIPS_REG_A0)
+    param1 = ql.register(UC_MIPS_REG_A1)
+    param2 = ql.register(UC_MIPS_REG_A2)
+    param3 = ql.register(UC_MIPS_REG_A3)
+    param4 = ql.register(UC_MIPS_REG_SP)
     param4 = param4 + 0x10
-    param5 = ql.uc.reg_read(UC_MIPS_REG_SP)
+    param5 = ql.register(UC_MIPS_REG_SP)
     param5 = param5 + 0x14
-    pc = ql.uc.reg_read(UC_MIPS_REG_PC)
+    pc = ql.register(UC_MIPS_REG_PC)
 
     if intno != 0x11:
         raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)
@@ -184,17 +184,17 @@ lab1:
         ql.mem.write(addr, b'\x0b\xc0\x00\x00\x00\x00\x00\x00')
     else:
         ql.mem.write(addr, b'\x00\x00\xc0\x0b\x00\x00\x00\x00')
-    sp = uc.reg_read(UC_MIPS_REG_SP)
+    sp = ql.register(UC_MIPS_REG_SP)
     ql.mem.write(sp - 4, ql.pack32(addr))
 
 def ql_syscall_mips32_thread_setthreadarea(ql, th, arg):
     uc = ql.uc
     address = arg
 
-    pc = uc.reg_read(UC_MIPS_REG_PC)
+    pc = ql.register(UC_MIPS_REG_PC)
     CONFIG3_ULR = (1 << 13)
-    uc.reg_write(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
-    uc.reg_write(UC_MIPS_REG_CP0_USERLOCAL, address)
+    ql.register(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
+    ql.register(UC_MIPS_REG_CP0_USERLOCAL, address)
 
     ql.dprint (0, "[+] multithread set_thread_area(0x%x)" % address)
     # somehow for multithread these code are still not mature
@@ -213,10 +213,10 @@ def ql_syscall_mips32_set_thread_area(ql, sta_area, *args, **kw):
     if ql.thread_management != None and ql.multithread == True:
         ql.thread_management.cur_thread.special_settings_arg = sta_area
     
-    pc = uc.reg_read(UC_MIPS_REG_PC)
+    pc = ql.register(UC_MIPS_REG_PC)
     CONFIG3_ULR = (1 << 13)
-    uc.reg_write(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
-    uc.reg_write(UC_MIPS_REG_CP0_USERLOCAL, sta_area)
+    ql.register(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
+    ql.register(UC_MIPS_REG_CP0_USERLOCAL, sta_area)
     if ql.archendian == QL_ENDIAN_EB:
         hook_shellcode(uc, pc + 4, bytes.fromhex('0000102500003825'), ql)
     else:    
@@ -240,7 +240,7 @@ def loader_file(ql):
         raise QlErrorFileType("Unsupported FileType")
     ql.stack_address = (int(ql.new_stack))
     
-    ql.uc.reg_write(UC_MIPS_REG_SP, ql.new_stack)
+    ql.register(UC_MIPS_REG_SP, ql.new_stack)
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
 
@@ -259,7 +259,7 @@ def loader_shellcode(ql):
     ql.stack_address =  ql.stack_address  + 0x200000 - 0x1000
     ql.mem.write(ql.stack_address, ql.shellcoder) 
 
-    ql.uc.reg_write(UC_MIPS_REG_SP, ql.new_stack)
+    ql.register(UC_MIPS_REG_SP, ql.new_stack)
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
 

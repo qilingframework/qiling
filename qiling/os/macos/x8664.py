@@ -31,14 +31,14 @@ QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x4000000f4000
 QL_X8664_EMU_END = 0xffffffffffffffff
 
 def hook_syscall(ql):
-    syscall_num  = ql.uc.reg_read(UC_X86_REG_RAX)
-    param0 = ql.uc.reg_read(UC_X86_REG_RDI)
-    param1 = ql.uc.reg_read(UC_X86_REG_RSI)
-    param2 = ql.uc.reg_read(UC_X86_REG_RDX)
-    param3 = ql.uc.reg_read(UC_X86_REG_R10)
-    param4 = ql.uc.reg_read(UC_X86_REG_R8)
-    param5 = ql.uc.reg_read(UC_X86_REG_R9)
-    pc = ql.uc.reg_read(UC_X86_REG_RIP)
+    syscall_num  = ql.register(UC_X86_REG_RAX)
+    param0 = ql.register(UC_X86_REG_RDI)
+    param1 = ql.register(UC_X86_REG_RSI)
+    param2 = ql.register(UC_X86_REG_RDX)
+    param3 = ql.register(UC_X86_REG_R10)
+    param4 = ql.register(UC_X86_REG_R8)
+    param5 = ql.register(UC_X86_REG_R9)
+    pc = ql.register(UC_X86_REG_RIP)
 
     while 1:
         MACOS_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
@@ -115,7 +115,7 @@ def loader_shellcode(ql):
 
 def runner(ql):
     ql.debug_stop = True
-    ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
+    ql.register(UC_X86_REG_RSP, ql.stack_address)
     ql_setup_output(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
     ql_x8664_setup_gdt_segment_ds(ql)

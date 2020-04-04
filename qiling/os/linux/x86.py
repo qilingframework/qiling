@@ -20,14 +20,14 @@ QL_X86_LINUX_PREDEFINE_STACKSIZE = 0x21000
 QL_X86_EMU_END = 0x8fffffff
 
 def hook_syscall(ql, intno):
-    syscall_num  = ql.uc.reg_read(UC_X86_REG_EAX)
-    param0 = ql.uc.reg_read(UC_X86_REG_EBX)
-    param1 = ql.uc.reg_read(UC_X86_REG_ECX)
-    param2 = ql.uc.reg_read(UC_X86_REG_EDX)
-    param3 = ql.uc.reg_read(UC_X86_REG_ESI)
-    param4 = ql.uc.reg_read(UC_X86_REG_EDI)
-    param5 = ql.uc.reg_read(UC_X86_REG_EBP)
-    pc = ql.uc.reg_read(UC_X86_REG_EIP)
+    syscall_num  = ql.register(UC_X86_REG_EAX)
+    param0 = ql.register(UC_X86_REG_EBX)
+    param1 = ql.register(UC_X86_REG_ECX)
+    param2 = ql.register(UC_X86_REG_EDX)
+    param3 = ql.register(UC_X86_REG_ESI)
+    param4 = ql.register(UC_X86_REG_EDI)
+    param5 = ql.register(UC_X86_REG_EBP)
+    pc = ql.register(UC_X86_REG_EIP)
 
     while 1:
         LINUX_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)

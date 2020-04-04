@@ -178,10 +178,7 @@ class Qiling:
             for _ in range(256):
                 self.sigaction_act.append(0)
 
-            self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "os", "posix", "configuration.cfg")
-        
-        elif self.ostype == QL_WINDOWS:
-            self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "os", "windows", "configuration.cfg")
+        self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ql_ostype_convert_str(self.ostype) + ".ql")
 
         if not ql_is_valid_arch(self.arch):
             raise QlErrorArch("[!] Invalid Arch")
@@ -602,71 +599,83 @@ class Qiling:
         else:
             raise
 
-            # patch @code to memory address @addr
 
+    # patch @code to memory address @addr
     def patch(self, addr, code, file_name=b''):
         if file_name == b'':
             self.patch_bin.append((addr, code))
         else:
             self.patch_lib.append((addr, code, file_name.decode()))
-
     
 
-    # get PC register
+    # ql.register - read and write register 
+    def register(self, register_str, value= None):
+        if value is None:
+            return self.archfunc.get_register(register_str)
+        else:    
+            return self.archfunc.set_register(register_str, value)
+
+    # ql.reg_pc - PC register name getter
     @property
     def reg_pc(self):
         return self.archfunc.get_reg_pc()
 
-    # get SP register
+    # ql.reg_sp - SP register name getter
     @property
     def reg_sp(self):
         return self.archfunc.get_reg_sp()
 
-    # get register table
+    # ql.reg_tables - Register table getter
     @property
     def reg_table(self):
         return self.archfunc.get_reg_table()
 
+    # ql.reg_name - Register name converter getter
     @property
     def reg_name(self):
-        return self.archfunc.get_reg_name(self.uc_reg_name)
+        return self.archfunc.get_reg_name_str(self.uc_reg_name)
 
+    # ql.reg_name - Register name converter setter
     @reg_name.setter
     def reg_name(self, uc_reg):
         self.uc_reg_name = uc_reg
 
-    # get PC register value
+    # ql.pc - PC register value getter
     @property
     def pc(self):
         return self.archfunc.get_pc()
 
-    # pc.setter: set PC register
+    # ql.pc - PC register value setter
     @pc.setter
     def pc(self, value):
         self.archfunc.set_pc(value)
 
-    # get stack pointer register
+    # ql.sp - SP register value getter
     @property
     def sp(self):
         return self.archfunc.get_sp()
 
-    # sp.setter: set stack pointer register
+    # ql.sp - SP register value setter
     @sp.setter
     def sp(self, value):
         self.archfunc.set_sp(value)
 
+    # ql.output var getter
     @property
     def output(self):
         return self._output
 
+    # ql.output - output var setter eg. QL_OUT_DEFAULT and etc
     @output.setter
     def output(self, output):
         self._output = output_convert(output)
-
+    
+    # ql.platform - platform var = host os getter eg. QL_LINUX and etc
     @property
     def platform(self):
         return self._platform
 
+    # ql.platform - platform var = host os setter eg. QL_LINUX and etc
     @platform.setter
     def platform(self, value):
         if value == 'Linux':

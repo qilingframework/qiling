@@ -18,14 +18,14 @@ QL_ARM64_LINUX_PREDEFINE_STACKSIZE = 0x21000
 QL_ARM64_EMU_END = 0xffffffffffffffff
 
 def hook_syscall(ql, intno):
-    syscall_num  = ql.uc.reg_read(UC_ARM64_REG_X8)
-    param0 = ql.uc.reg_read(UC_ARM64_REG_X0)
-    param1 = ql.uc.reg_read(UC_ARM64_REG_X1)
-    param2 = ql.uc.reg_read(UC_ARM64_REG_X2)
-    param3 = ql.uc.reg_read(UC_ARM64_REG_X3)
-    param4 = ql.uc.reg_read(UC_ARM64_REG_X4)
-    param5 = ql.uc.reg_read(UC_ARM64_REG_X5)
-    pc = ql.uc.reg_read(UC_ARM64_REG_PC)
+    syscall_num  = ql.register(UC_ARM64_REG_X8)
+    param0 = ql.register(UC_ARM64_REG_X0)
+    param1 = ql.register(UC_ARM64_REG_X1)
+    param2 = ql.register(UC_ARM64_REG_X2)
+    param3 = ql.register(UC_ARM64_REG_X3)
+    param4 = ql.register(UC_ARM64_REG_X4)
+    param5 = ql.register(UC_ARM64_REG_X5)
+    pc = ql.register(UC_ARM64_REG_PC)
 
     while 1:
         LINUX_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
@@ -62,10 +62,10 @@ def hook_syscall(ql, intno):
             raise QlErrorSyscallNotFound("[!] Syscall Not Found")    
 
 
-def ql_arm64_enable_vfp(uc):
-    ARM64FP = uc.reg_read(UC_ARM64_REG_CPACR_EL1)
+def ql_arm64_enable_vfp(ql):
+    ARM64FP = ql.register(UC_ARM64_REG_CPACR_EL1)
     ARM64FP |= 0x300000
-    uc.reg_write(UC_ARM64_REG_CPACR_EL1, ARM64FP)
+    ql.register(UC_ARM64_REG_CPACR_EL1, ARM64FP)
 
 
 def loader_file(ql):
@@ -95,10 +95,10 @@ def loader_shellcode(ql):
     ql.mem.write(ql.stack_address, ql.shellcoder) 
 
 def runner(ql):
-    ql.uc.reg_write(UC_ARM64_REG_SP, ql.stack_address)
+    ql.register(UC_ARM64_REG_SP, ql.stack_address)
     ql_setup_output(ql)
     ql.hook_intr(hook_syscall)
-    ql_arm64_enable_vfp(ql.uc)
+    ql_arm64_enable_vfp(ql)
     if (ql.until_addr == 0):
         ql.until_addr = QL_ARM64_EMU_END
     try:
