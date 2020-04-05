@@ -203,9 +203,6 @@ class Qiling:
         arch_func = ql_get_arch_module_function(self.arch, ql_arch_convert_str(self.arch).upper())
         comm_os = ql_get_commonos_module_function(self.ostype)
 
-
-        
-
         """
         define file is 32 or 64bit, and check file endian
         QL_ENDIAN_EL = Little Endian
