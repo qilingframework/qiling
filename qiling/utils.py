@@ -249,31 +249,6 @@ def ql_checkostype(self):
 
     return arch, ostype
 
-"""
-START: new function to replace ql_get_os_module_function
-"""
-def ql_get_loados_module_function(ql):
-    if not ql_is_valid_ostype(ql.ostype):
-        raise QlErrorOsType("[!] Invalid OSType")
-
-    if not ql_is_valid_arch(ql.arch):
-        raise QlErrorArch("[!] Invalid Arch")
-
-    if ql.ostype == QL_LINUX:
-        function_name = "QlLinuxManager"
-    elif ql.ostype == QL_FREEBSD:
-        function_name = "QlFreeBSDManager"        
-    elif ql.ostype == QL_WINDOWS:
-        function_name = "QlWindowsManager"
-    elif ql.ostype == QL_MACOS:
-        function_name = "QlMacOSManager"
-    else:
-        function_name = ""    
-
-    module_name = ql_build_module_import_name("os", ql.ostype)
-    return ql_get_module_function(module_name, function_name, ql)
-
-
 def ql_get_os_module_function(ql, function_name = None):
     if not ql_is_valid_ostype(ql.ostype):
         raise QlErrorOsType("[!] Invalid OSType")

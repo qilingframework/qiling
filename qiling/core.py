@@ -203,9 +203,6 @@ class Qiling:
         arch_func = ql_get_arch_module_function(self.arch, ql_arch_convert_str(self.arch).upper())
         comm_os = ql_get_commonos_module_function(self.ostype)
 
-
-        
-
         """
         define file is 32 or 64bit, and check file endian
         QL_ENDIAN_EL = Little Endian
@@ -780,7 +777,7 @@ class Qiling:
                     tmp_map_info.append([s, e, p, info])
                     continue
                 if s < mem_s:
-                    tmp_map_info.append([s, mem_s, mem_p, info])
+                    tmp_map_info.append([s, mem_s, p, info])
 
                 if s == mem_s:
                     pass
@@ -790,7 +787,7 @@ class Qiling:
                     tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
 
                 if e > mem_e:
-                    tmp_map_info.append([mem_e, e, mem_p, info])
+                    tmp_map_info.append([mem_e, e, p, info])
 
                 if e == mem_e:
                     pass
@@ -800,12 +797,39 @@ class Qiling:
         map_info.append(tmp_map_info[0])
 
         for s, e, p, info in tmp_map_info[1:]:
-            if s == map_info[-1][1] and info == map_info[-1][2]:
+            if s == map_info[-1][1] and info == map_info[-1][3] and p == map_info[-1][2]:
                 map_info[-1][1] = e
             else:
                 map_info.append([s, e, p, info])
 
         self.map_info = map_info
+    
+    def del_map_info(self, mem_s, mem_e):
+        tmp_map_info = []
+
+        for s, e, p, info in self.map_info:
+            if e <= mem_s:
+                tmp_map_info.append([s, e, p, info])
+                continue
+
+            if s >= mem_e:
+                tmp_map_info.append([s, e, p, info])
+                continue
+
+            if s < mem_s:
+                tmp_map_info.append([s, mem_s, p, info])
+
+            if s == mem_s:
+                pass
+
+            if e > mem_e:
+                tmp_map_info.append([mem_e, e, p, info])
+
+            if e == mem_e:
+                pass
+
+        self.map_info = tmp_map_info
+
 
     def show_map_info(self):
         self.nprint("[+] Start      End        Perm.  Path\n")
