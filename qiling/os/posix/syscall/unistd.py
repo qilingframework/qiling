@@ -230,16 +230,7 @@ def ql_syscall_brk(ql, brk_input, *args, **kw):
 
         elif brk_input < ql.brk_address: # shrink current bkr_address to brk_input if its smaller
             ql.mem.unmap(new_brk_addr, ql.brk_address - new_brk_addr)
-
-            map_info = ql.map_info # delete unmmaped area
-
-            for idx, val in enumerate(map_info):
-                mem_start, mem_end, _, _ = val
-                if ql.brk_address == mem_end:
-                    map_info[idx] = []
-                    break
-
-            ql.map_info = [each for each in map_info if each != []]
+            ql.del_map_info(new_brk_addr, ql.brk_address)
 
         ql.brk_address = new_brk_addr
 
