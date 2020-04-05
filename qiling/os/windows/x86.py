@@ -3,17 +3,15 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import traceback
 import types
 
 from unicorn import *
-#from unicorn.x86_const import *
 
-# import read_string and other common utils.
 from qiling.loader.pe import PE, Shellcode
-from qiling.arch.x86_const import *
 from qiling.os.windows.dlls import *
+from qiling.arch.x86_const import *
 from qiling.os.utils import *
+
 from qiling.os.windows.const import *
 from qiling.os.windows.const import Mapper
 
@@ -52,7 +50,6 @@ def hook_winapi(ql, address, size):
 
 def loader_file(ql):
     ql.uc = Uc(UC_ARCH_X86, UC_MODE_32)
-    # MAPPED Vars for loadPE32
     if ql.stack_address == 0:
         ql.stack_address = QL_X86_WINDOWS_STACK_ADDRESS
     if ql.stack_size == 0:

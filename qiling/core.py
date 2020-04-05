@@ -120,20 +120,27 @@ class Qiling:
         self.ipv6 = False        
         # Bind to localhost
         self.bindtolocalhost = False
-        # required root permission
+        # by turning this on, you must run your analysis with sudo
         self.root = True
         self.log_split = False
         self.shellcode_init = 0
         self.entry_point = 0
 
+        """
+        Qiling Framework Core Engine
+        """
+
+        # ostype string - int convertion
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
             self.ostype = ostype_convert(self.ostype)
 
+        # pre-define shellcoder env
         if self.shellcoder and self.archtype and type(self.archtype) == str:
             self.arch = self.arch.lower()
             self.arch = arch_convert(self.archtype)
 
+        # read file propeties, not shellcoder
         if self.rootfs and self.shellcoder is None:
             if os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs):
                 self.path = (str(self.filename[0]))
@@ -144,9 +151,10 @@ class Qiling:
 
             elif not os.path.exists(str(self.filename[0])) or not os.path.exists(self.rootfs):
                 raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
-
-        _logger = ql_setup_logging_stream(self)
         
+        # Looger's configuration
+        _logger = ql_setup_logging_stream(self)
+
         if self.log_dir is not None and type(self.log_dir) == str:
 
             self.log_dir = os.path.join(self.rootfs, self.log_dir)
@@ -161,7 +169,7 @@ class Qiling:
 
         self.log_file_fd = _logger
         
-        # OS dependent configuration
+        # OS dependent configuration for stdio
         if self.ostype in (QL_LINUX, QL_FREEBSD, QL_MACOS):
             if stdin != 0:
                 self.stdin = stdin
@@ -180,30 +188,50 @@ class Qiling:
             for _ in range(256):
                 self.sigaction_act.append(0)
 
+        # define analysis enviroment profile
         self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ql_ostype_convert_str(self.ostype) + ".ql")
 
+        # double check supported architecture
         if not ql_is_valid_arch(self.arch):
             raise QlErrorArch("[!] Invalid Arch")
 
+        """
+        Load architecture's module, only module
+        Load common os module,  only module
+        ql.pc, ql.sp and etc
+        """
         arch_func = ql_get_arch_module_function(self.arch, ql_arch_convert_str(self.arch).upper())
         comm_os = ql_get_commonos_module_function(self.ostype)
 
-        self.archbit = ql_get_arch_bits(self.arch)
 
-        if self.arch not in QL_ENDINABLE:
-            self.archendian = QL_ENDIAN_EL    
         
-        if self.shellcoder and self.arch in QL_ENDINABLE and self.bigendian == True:
-            self.archendian = QL_ENDIAN_EB
 
+        """
+        define file is 32 or 64bit, and check file endian
+        QL_ENDIAN_EL = Little Endian
+        big endian is define during ql_elf_check_archtype
+        """
+        self.archbit = ql_get_arch_bits(self.arch)
+        if self.arch not in (QL_ENDINABLE):
+            self.archendian = QL_ENDIAN_EL
+
+        """
+        Load architecture's function
+        Load common os module,  only module
+        ql.pc, ql.sp and etc
+        """
         self.archfunc = arch_func(self)
         if comm_os:
             self.commos = comm_os(self)
 
+        # based on CPU bit and set pointer size
         if self.archbit:
             self.pointersize = (self.archbit // 8)
 
-
+        """
+        Load Memory Management Module
+        ql.mem.read, ql.mem.write and etc
+        """
         if self.archbit == 64:
             max_addr = 0xFFFFFFFFFFFFFFFF
         elif self.archbit == 32:
@@ -211,27 +239,38 @@ class Qiling:
         try:
             self.mem = QlMemoryManager(self, max_addr)
         except:
-            raise QlErrorArch("[!] Invalid Arch Bit")    
+            raise QlErrorArch("[!] Cannot load Memory Management module")    
 
+        # chceck for supported OS type    
         if self.ostype not in QL_OS:
             raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos'")
-
+        
+        # qiling output method conversion
         if self.output and type(self.output) == str:
             self.output = self.output.lower()
             if self.output not in QL_OUTPUT:
                 raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
 
+        # check verbose, only can check after ouput being defined
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
 
+        """
+        load os type, should replace self.shellcode() and self.load_exec()
+        disable for now
+        """
+        load_os = ql_get_os_module_function(self)        
+        self.loados = load_os(self)
+
+        # Loader running
         if self.shellcoder and self.arch and self.ostype:
             self.shellcode()
         else:
             self.load_exec()
 
     def build_os_execution(self, function_name):
-        self.runtype = ql_get_os_module_function(self.ostype, self.arch, "runner")
-        return ql_get_os_module_function(self.ostype, self.arch, function_name)
+        self.runtype = ql_get_os_module_function(self, "runner")
+        return ql_get_os_module_function(self, function_name)
 
     def load_exec(self):
         loader_file = self.build_os_execution("loader_file")
@@ -243,6 +282,7 @@ class Qiling:
         loader_shellcode(self)
 
     def run(self):
+        # debugger init
         if self.debugger is not None:
             try:
                 remotedebugsrv, ip, port = '', '', ''
@@ -269,10 +309,14 @@ class Qiling:
                         self.remotedebugsession.close()
                     raise QlErrorOutput("[!] Remote debugging session ended\n")
 
+        # patch binary
         self.__enable_bin_patch()
+        
+        # execution, ql.run()
         runner = self.build_os_execution("runner")
         runner(self)
 
+        # resume with debugger
         if self.debugger is not None:
             self.remotedebugsession.run()
 

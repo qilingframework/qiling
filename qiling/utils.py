@@ -249,16 +249,54 @@ def ql_checkostype(self):
 
     return arch, ostype
 
-
-def ql_get_os_module_function(ostype, arch, function_name):
-    if not ql_is_valid_ostype(ostype):
+"""
+START: new function to replace ql_get_os_module_function
+"""
+def ql_get_loados_module_function(ql):
+    if not ql_is_valid_ostype(ql.ostype):
         raise QlErrorOsType("[!] Invalid OSType")
 
-    if not ql_is_valid_arch(arch):
+    if not ql_is_valid_arch(ql.arch):
         raise QlErrorArch("[!] Invalid Arch")
 
-    module_name = ql_build_module_import_name("os", ostype, arch)
-    return ql_get_module_function(module_name, function_name)
+    if ql.ostype == QL_LINUX:
+        function_name = "QlLinuxManager"
+    elif ql.ostype == QL_FREEBSD:
+        function_name = "QlFreeBSDManager"        
+    elif ql.ostype == QL_WINDOWS:
+        function_name = "QlWindowsManager"
+    elif ql.ostype == QL_MACOS:
+        function_name = "QlMacOSManager"
+    else:
+        function_name = ""    
+
+    module_name = ql_build_module_import_name("os", ql.ostype)
+    return ql_get_module_function(module_name, function_name, ql)
+
+
+def ql_get_os_module_function(ql, function_name = None):
+    if not ql_is_valid_ostype(ql.ostype):
+        raise QlErrorOsType("[!] Invalid OSType")
+
+    if not ql_is_valid_arch(ql.arch):
+        raise QlErrorArch("[!] Invalid Arch")
+
+    if function_name == None:
+        if ql.ostype == QL_LINUX:
+            function_name = "QlLinuxManager"
+        elif ql.ostype == QL_FREEBSD:
+            function_name = "QlFreeBSDManager"        
+        elif ql.ostype == QL_WINDOWS:
+            function_name = "QlWindowsManager"
+        elif ql.ostype == QL_MACOS:
+            function_name = "QlMacOSManager"
+        else:
+            function_name = ""
+        module_name = ql_build_module_import_name("os", ql.ostype)
+        return ql_get_module_function(module_name, function_name, ql)
+    else:
+        module_name = ql_build_module_import_name("os", ql.ostype, ql.arch)
+        return ql_get_module_function(module_name, function_name)
 
 
 def ql_get_arch_module_function(arch, function_name):
@@ -285,13 +323,13 @@ def ql_get_commonos_module_function(ostype):
     
     return ql_get_module_function(module_name, func_name)
 
-def ql_build_module_import_name(module, ostype, arch):
+def ql_build_module_import_name(module, ostype, arch = None):
     ret_str = "qiling." + module
 
     ostype_str = ostype
     arch_str = arch
 
-    if type(arch) is int:
+    if type(ostype) is int:
         ostype_str = ql_ostype_convert_str(ostype)
     
     if ostype_str:
@@ -302,12 +340,16 @@ def ql_build_module_import_name(module, ostype, arch):
             arch_str = "x86"
         elif type(arch) is int:
             arch_str = ql_arch_convert_str(arch)
+    else:
+        arch_str = ostype_str
         
-        ret_str += "." + arch_str
+    ret_str += "." + arch_str
     return ret_str
 
 
-def ql_get_module_function(module_name, function_name):
+def ql_get_module_function(module_name, function_name = None, ql = None):
+    if function_name == None and ql:
+        pass
     try:
         imp_module = importlib.import_module(module_name)
     except:
