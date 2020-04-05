@@ -216,15 +216,37 @@ def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, *args, *
 
 
 def ql_syscall_brk(ql, brk_input, *args, **kw):
+    # current brk_address will be modified if brk_input is not NULL(zero)
+    # otherwise, just return current brk_address
+
     ql.nprint("brk(0x%x)" % brk_input)
+
     if brk_input != 0:
-        if brk_input > ql.brk_address:
-            ql.mem.map(ql.brk_address, (int(((brk_input + 0xfff) // 0x1000) * 0x1000 - ql.brk_address)))
-            ql.brk_address = int(((brk_input + 0xfff) // 0x1000) * 0x1000)
-    else:
-        brk_input = ql.brk_address
-    ql_definesyscall_return(ql, brk_input)
-    ql.dprint(0, "[+] brk return(0x%x)" % ql.brk_address)
+        new_brk_addr = ((brk_input + 0xfff) // 0x1000) * 0x1000
+
+        if brk_input > ql.brk_address: # increase current brk_address if brk_input is greater
+            ql.mem.map(ql.brk_address, new_brk_addr - ql.brk_address)
+            ql.insert_map_info(ql.brk_address, new_brk_addr, "rw-", "[mapped]")
+
+        elif brk_input < ql.brk_address: # shrink current bkr_address to brk_input if its smaller
+            ql.mem.unmap(new_brk_addr, ql.brk_address - new_brk_addr)
+
+            map_info = ql.map_info # delete unmmaped area
+
+            for idx, val in enumerate(map_info):
+                mem_start, mem_end, _, _ = val
+                if ql.brk_address == mem_end:
+                    map_info[idx] = []
+                    break
+
+            ql.map_info = [each for each in map_info if each != []]
+
+        ql.brk_address = new_brk_addr
+
+    regreturn = ql.brk_address
+
+    ql_definesyscall_return(ql, regreturn)
+    ql.dprint(0, "[+] brk return(0x%x)" % regreturn)
 
 
 def ql_syscall_access(ql, access_path, access_mode, *args, **kw):
