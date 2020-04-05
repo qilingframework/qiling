@@ -499,8 +499,8 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
         ql.env              = env
         ql.path             = real_path
         ql.map_info         = []
-        ql.runtype          = ql_get_os_module_function(ql.ostype, ql.arch, "runner")
-        loader_file         = ql_get_os_module_function(ql.ostype, ql.arch, "loader_file")
+        ql.runtype          = ql_get_os_module_function(ql, "runner")
+        loader_file         = ql_get_os_module_function(ql, "loader_file")
 
         loader_file(ql)
         ql.run()

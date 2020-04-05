@@ -6,9 +6,7 @@
 import types
 
 from unicorn import *
-#from unicorn.x86_const import *
 
-# import read_string and other common utils.
 from qiling.loader.pe import PE, Shellcode
 from qiling.os.windows.dlls import *
 from qiling.arch.x86_const import *
@@ -16,7 +14,6 @@ from qiling.os.utils import *
 
 from qiling.os.windows.const import *
 from qiling.os.windows.const import Mapper
-
 
 # hook WinAPI in PE EMU
 def hook_winapi(ql, address, size):
@@ -53,7 +50,6 @@ def hook_winapi(ql, address, size):
 
 def loader_file(ql):
     ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
-    # init ql pe
     if ql.stack_address == 0:
         ql.stack_address = QL_X8664_WINDOWS_STACK_ADDRESS
     if ql.stack_size == 0:
@@ -62,6 +58,7 @@ def loader_file(ql):
     # load pe
     ql.PE = PE(ql, ql.path)
     ql.PE.load()
+    # hook win api    
     ql.hook_code(hook_winapi)
     ql_setup_output(ql)
 
