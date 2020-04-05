@@ -50,6 +50,7 @@ class Qiling:
             stdout=0,
             stderr=0,
             output=None,
+            syscall_filter=None,
             verbose=0,
             log_console=True,
             log_dir=None,
@@ -60,6 +61,7 @@ class Qiling:
     ):
         # Define during ql=Qiling()
         self.output = output
+        self.syscall_filter = syscall_filter
         self.verbose = verbose
         self.ostype = ostype
         self.archtype = archtype
@@ -154,6 +156,17 @@ class Qiling:
         
         # Looger's configuration
         _logger = ql_setup_logging_stream(self)
+
+        # setup syscall filter
+        if self.syscall_filter != None and self.output == QL_OUT_DEFAULT:
+
+            class Syscall_filter(logging.Filter):
+                def __init__(self, syscall_names):
+                    self.syscall_list = syscall_names.split(',')
+                def filter(self, record):
+                    return any((each in record.getMessage() for each in self.syscall_list))
+
+            _logger.addFilter(Syscall_filter(self.syscall_filter))
 
         if self.log_dir is not None and type(self.log_dir) == str:
 
