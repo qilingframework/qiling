@@ -9,7 +9,7 @@ from unicorn.x86_const import *
 from qiling.const import *
 from qiling.arch.x86_const import *
 
-class QlWindowsManager:
+class QlWindowsOSManager:
     
     def __init__(self, ql):
         self.ql = ql

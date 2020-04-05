@@ -97,16 +97,3 @@ def runner(ql):
     ql.archfunc.enable_vfp()
     ql_arm_init_kernel_get_tls(ql)
     ql_os_run(ql)
-
-def ql_arm_init_kernel_get_tls(ql):
-    ql.mem.map(0xFFFF0000, 0x1000)
-    """
-    'adr r0, data; ldr r0, [r0]; mov pc, lr; data:.ascii "\x00\x00"'
-    """
-    sc = b'\x04\x00\x8f\xe2\x00\x00\x90\xe5\x0e\xf0\xa0\xe1\x00\x00\x00\x00'
-
-    # if ql.archendian == QL_ENDIAN_EB:
-    #    sc = ql_lsbmsb_convert(ql, sc)
-
-    ql.mem.write(QL_ARM_KERNEL_GET_TLS_ADDR, sc)
-    ql.dprint(0, "[+] Set init_kernel_get_tls")    

@@ -278,10 +278,10 @@ def ql_get_commonos_module_function(ostype):
         module_name = ql_build_module_import_name("os", "posix", "posix")
         func_name = "QlPosixManager"
 
-    # common os class, windows type OS share one same class
+    # common os class, Microsoft OS share one same class
     elif ostype is QL_WINDOWS:
-        module_name = ql_build_module_import_name("os", "windows", "windows")
-        func_name = "QlWindowsManager"
+        module_name = ql_build_module_import_name("os", "windows", "windowsos")
+        func_name = "QlWindowsOSManager"
     
     return ql_get_module_function(module_name, func_name)
 
