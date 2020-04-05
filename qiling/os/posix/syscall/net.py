@@ -31,7 +31,7 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.syscall.socket import ql_syscall_socket, ql_syscall_connect
+from qiling.os.posix.syscall.socket import ql_syscall_socket, ql_syscall_connect, ql_syscall_recv
 
 from qiling.os.posix.const_mapping import *
 from qiling.utils import *
