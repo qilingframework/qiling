@@ -207,10 +207,15 @@ class Qiling:
         define file is 32 or 64bit, and check file endian
         QL_ENDIAN_EL = Little Endian
         big endian is define during ql_elf_check_archtype
+
+        since there is no elf for shellcoder mode
+        judge archendian by whether bigendian set or not
         """
         self.archbit = ql_get_arch_bits(self.arch)
         if self.arch not in (QL_ENDINABLE):
             self.archendian = QL_ENDIAN_EL
+        else:
+            self.archendian = QL_ENDIAN_BE if self.bigendian else QL_ENDIAN_EL
 
         """
         Load architecture's function
