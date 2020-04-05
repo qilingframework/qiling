@@ -272,19 +272,26 @@ def ql_get_arch_module_function(arch, function_name):
 def ql_get_commonos_module_function(ostype):
     if not ql_is_valid_ostype(ostype):
         raise QlErrorOsType("[!] Invalid OSType")
-
+    
+    # common os class, posix type OS share one same class
     if ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD):
         module_name = ql_build_module_import_name("os", "posix", "posix")
-        return ql_get_module_function(module_name, "QlPosixManager")
+        func_name = "QlPosixManager"
 
+    # common os class, windows type OS share one same class
+    elif ostype is QL_WINDOWS:
+        module_name = ql_build_module_import_name("os", "windows", "windows")
+        func_name = "QlWindowsManager"
+    
+    return ql_get_module_function(module_name, func_name)
 
 def ql_build_module_import_name(module, ostype, arch):
     ret_str = "qiling." + module
 
-    ostype_str = None
-    if ostype == "posix":
-        ostype_str = "posix"
-    elif ostype:
+    ostype_str = ostype
+    arch_str = arch
+
+    if type(arch) is int:
         ostype_str = ql_ostype_convert_str(ostype)
     
     if ostype_str:
@@ -293,10 +300,9 @@ def ql_build_module_import_name(module, ostype, arch):
     if arch:
         if module == "arch" and arch == QL_X8664:  # This is because X86_64 is bundled into X86 in arch
             arch_str = "x86"
-        elif arch == "posix":
-            arch_str = "posix"
-        else:
+        elif type(arch) is int:
             arch_str = ql_arch_convert_str(arch)
+        
         ret_str += "." + arch_str
     return ret_str
 

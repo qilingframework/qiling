@@ -124,6 +124,7 @@ class Qiling:
         self.root = True
         self.log_split = False
         self.shellcode_init = 0
+        self.entry_point = 0
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()

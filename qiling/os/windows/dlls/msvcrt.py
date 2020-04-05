@@ -133,7 +133,7 @@ def hook__initterm(ql, address, params):
 })
 def hook_exit(ql, address, params):
     ql.uc.emu_stop()
-    ql.RUN = False
+    ql.commos.PE_RUN = False
 
 
 # int __cdecl _initterm_e(
