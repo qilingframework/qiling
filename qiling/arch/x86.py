@@ -392,7 +392,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
 
 def ql_x8664_set_gs(ql):
-    if ql.mem._is_mapped(GS_SEGMENT_ADDR) == False:
+    if ql.mem._is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE) == False:
         ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
     ql.uc.msr_write(GSMSR, GS_SEGMENT_ADDR)
 
