@@ -186,12 +186,12 @@ class LdrDataTableEntry:
         full_dll_name = full_dll_name.encode("utf-16le")
         self.FullDllName = {'Length': len(full_dll_name), 'MaximumLength': len(full_dll_name) + 2}
         self.FullDllName['BufferPtr'] = ql.heap.mem_alloc(self.FullDllName['MaximumLength'])
-        ql.uc.mem_write(self.FullDllName['BufferPtr'], full_dll_name + b"\x00\x00")
+        ql.mem.write(self.FullDllName['BufferPtr'], full_dll_name + b"\x00\x00")
 
         base_dll_name = base_dll_name.encode("utf-16le")
         self.BaseDllName = {'Length': len(base_dll_name), 'MaximumLength': len(base_dll_name) + 2}
         self.BaseDllName['BufferPtr'] = ql.heap.mem_alloc(self.BaseDllName['MaximumLength'])
-        ql.uc.mem_write(self.BaseDllName['BufferPtr'], base_dll_name + b"\x00\x00")
+        ql.mem.write(self.BaseDllName['BufferPtr'], base_dll_name + b"\x00\x00")
 
         self.Flags = flags
         self.LoadCount = load_count

@@ -9,7 +9,6 @@ from qiling.os.windows.const import *
 from qiling.os.fncc import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -77,8 +76,8 @@ def hook_GetSystemInfo(ql, address, params):
     pointer = params["lpSystemInfo"]
     system_info = {"dummy": 0x0.to_bytes(length=2 * 2 + 4, byteorder='little'),
                    "dwPageSize": ql.heap.page_size.to_bytes(length=4, byteorder='little'),
-                   "lpMinimumApplicationAddress": ql.PE_IMAGE_BASE.to_bytes(length=ql.pointersize, byteorder='little'),
-                   "lpMaximumApplicationAddress": (ql.DLL_BASE_ADDR + ql.DLL_SIZE).to_bytes(length=ql.pointersize,
+                   "lpMinimumApplicationAddress": ql.commos.PE_IMAGE_BASE.to_bytes(length=ql.pointersize, byteorder='little'),
+                   "lpMaximumApplicationAddress": (ql.commos.DLL_BASE_ADDR + ql.commos.DLL_SIZE).to_bytes(length=ql.pointersize,
                                                                                             byteorder='little'),
                    "dwActiveProcessorMask": 0x3.to_bytes(length=ql.pointersize, byteorder='little'),
                    # TODO not sure from here, did not found variables inside the emulator
@@ -89,7 +88,7 @@ def hook_GetSystemInfo(ql, address, params):
                    "wProcessorRevision": 0x4601.to_bytes(length=2, byteorder='little')
                    }
     values = b"".join(system_info.values())
-    ql.uc.mem_write(pointer, values)
+    ql.mem.write(pointer, values)
     return 0
 
 
@@ -117,14 +116,14 @@ def hook_GetLocalTime(ql, address, params):
     import datetime
     ptr = params['lpSystemTime']
     d = datetime.datetime.now()
-    ql.uc.mem_write(d.year.to_bytes(length=2, byteorder='little'), ptr)
-    ql.uc.mem_write(d.month.to_bytes(length=2, byteorder='little'), ptr + 2)
-    ql.uc.mem_write(d.isoweekday().to_bytes(length=2, byteorder='little'), ptr + 4)
-    ql.uc.mem_write(d.day.to_bytes(length=2, byteorder='little'), ptr + 6)
-    ql.uc.mem_write(d.hour.to_bytes(length=2, byteorder='little'), ptr + 8)
-    ql.uc.mem_write(d.minute.to_bytes(length=2, byteorder='little'), ptr + 10)
-    ql.uc.mem_write(d.second.to_bytes(length=2, byteorder='little'), ptr + 12)
-    ql.uc.mem_write((d.microsecond * 1000).to_bytes(length=2, byteorder='little'), ptr + 14)
+    ql.mem.write(d.year.to_bytes(length=2, byteorder='little'), ptr)
+    ql.mem.write(d.month.to_bytes(length=2, byteorder='little'), ptr + 2)
+    ql.mem.write(d.isoweekday().to_bytes(length=2, byteorder='little'), ptr + 4)
+    ql.mem.write(d.day.to_bytes(length=2, byteorder='little'), ptr + 6)
+    ql.mem.write(d.hour.to_bytes(length=2, byteorder='little'), ptr + 8)
+    ql.mem.write(d.minute.to_bytes(length=2, byteorder='little'), ptr + 10)
+    ql.mem.write(d.second.to_bytes(length=2, byteorder='little'), ptr + 12)
+    ql.mem.write((d.microsecond * 1000).to_bytes(length=2, byteorder='little'), ptr + 14)
     return 0
 
 

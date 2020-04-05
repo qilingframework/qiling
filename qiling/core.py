@@ -14,6 +14,7 @@ from qiling.os.utils import *
 from qiling.arch.utils import *
 from qiling.os.linux.thread import *
 from qiling.debugger.utils import *
+from qiling.os.memory import QlMemoryManager
 
 __version__ = "0.9"
 
@@ -121,7 +122,9 @@ class Qiling:
         self.bindtolocalhost = False
         # required root permission
         self.root = True
-        self.log_split = False    
+        self.log_split = False
+        self.shellcode_init = 0
+        self.entry_point = 0
 
         if self.ostype and type(self.ostype) == str:
             self.ostype = self.ostype.lower()
@@ -143,7 +146,7 @@ class Qiling:
                 raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
 
         _logger = ql_setup_logging_stream(self)
-
+        
         if self.log_dir is not None and type(self.log_dir) == str:
 
             self.log_dir = os.path.join(self.rootfs, self.log_dir)
@@ -177,15 +180,13 @@ class Qiling:
             for _ in range(256):
                 self.sigaction_act.append(0)
 
-            self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "os", "posix", "configuration.cfg")
-        
-        elif self.ostype == QL_WINDOWS:
-            self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "os", "windows", "configuration.cfg")
+        self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ql_ostype_convert_str(self.ostype) + ".ql")
 
         if not ql_is_valid_arch(self.arch):
             raise QlErrorArch("[!] Invalid Arch")
 
         arch_func = ql_get_arch_module_function(self.arch, ql_arch_convert_str(self.arch).upper())
+        comm_os = ql_get_commonos_module_function(self.ostype)
 
         self.archbit = ql_get_arch_bits(self.arch)
 
@@ -196,9 +197,21 @@ class Qiling:
             self.archendian = QL_ENDIAN_EB
 
         self.archfunc = arch_func(self)
+        if comm_os:
+            self.commos = comm_os(self)
 
         if self.archbit:
             self.pointersize = (self.archbit // 8)
+
+
+        if self.archbit == 64:
+            max_addr = 0xFFFFFFFFFFFFFFFF
+        elif self.archbit == 32:
+            max_addr = 0xFFFFFFFF
+        try:
+            self.mem = QlMemoryManager(self, max_addr)
+        except:
+            raise QlErrorArch("[!] Invalid Arch Bit")    
 
         if self.ostype not in QL_OS:
             raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos'")
@@ -270,11 +283,12 @@ class Qiling:
         else:
             fd = self.log_file_fd
 
-        if self.log_console == True:
-            print(*args, **kw)
-        
-        # for logging purposes
-        fd.info(*args, **kw)
+        msg = args[0]
+
+        # support keyword "end" in ql.print functions, use it as terminator or default newline character by OS
+        msg += kw["end"] if kw.get("end", None) != None else os.linesep
+
+        fd.info(msg)
 
         if fd is not None:
             if isinstance(fd, logging.FileHandler):
@@ -590,77 +604,93 @@ class Qiling:
         else:
             raise
 
-            # patch @code to memory address @addr
 
+    # patch @code to memory address @addr
     def patch(self, addr, code, file_name=b''):
         if file_name == b'':
             self.patch_bin.append((addr, code))
         else:
             self.patch_lib.append((addr, code, file_name.decode()))
+    
 
-    # read @size of bytes from memory address @addr
-    def mem_read(self, addr, size):
-        return self.uc.mem_read(addr, size)
+    # ql.register - read and write register 
+    def register(self, register_str, value= None):
+        if value is None:
+            return self.archfunc.get_register(register_str)
+        else:    
+            return self.archfunc.set_register(register_str, value)
 
-    # write @data to memory address @addr
-    def mem_write(self, addr, data):
-        return self.uc.mem_write(addr, data)
+    # ql.syscall - get syscall for all posix series
+    @property
+    def syscall(self):
+        return self.commos.get_syscall()
 
-    # get PC register
+    # ql.syscall_param - get syscall for all posix series
+    @property
+    def syscall_param(self):
+        return self.commos.get_syscall_param()
+
+    # ql.reg_pc - PC register name getter
     @property
     def reg_pc(self):
         return self.archfunc.get_reg_pc()
 
-    # get SP register
+    # ql.reg_sp - SP register name getter
     @property
     def reg_sp(self):
         return self.archfunc.get_reg_sp()
 
-    # get register table
+    # ql.reg_tables - Register table getter
     @property
     def reg_table(self):
         return self.archfunc.get_reg_table()
 
+    # ql.reg_name - Register name converter getter
     @property
     def reg_name(self):
-        return self.archfunc.get_reg_name(self.uc_reg_name)
+        return self.archfunc.get_reg_name_str(self.uc_reg_name)
 
+    # ql.reg_name - Register name converter setter
     @reg_name.setter
     def reg_name(self, uc_reg):
         self.uc_reg_name = uc_reg
 
-    # get PC register value
+    # ql.pc - PC register value getter
     @property
     def pc(self):
         return self.archfunc.get_pc()
 
-    # pc.setter: set PC register
+    # ql.pc - PC register value setter
     @pc.setter
     def pc(self, value):
         self.archfunc.set_pc(value)
 
-    # get stack pointer register
+    # ql.sp - SP register value getter
     @property
     def sp(self):
         return self.archfunc.get_sp()
 
-    # sp.setter: set stack pointer register
+    # ql.sp - SP register value setter
     @sp.setter
     def sp(self, value):
         self.archfunc.set_sp(value)
 
+    # ql.output var getter
     @property
     def output(self):
         return self._output
 
+    # ql.output - output var setter eg. QL_OUT_DEFAULT and etc
     @output.setter
     def output(self, output):
         self._output = output_convert(output)
-
+    
+    # ql.platform - platform var = host os getter eg. QL_LINUX and etc
     @property
     def platform(self):
         return self._platform
 
+    # ql.platform - platform var = host os setter eg. QL_LINUX and etc
     @platform.setter
     def platform(self, value):
         if value == 'Linux':
@@ -676,11 +706,11 @@ class Qiling:
 
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:
-            self.uc.mem_write(self.loadbase + addr, code)
+            self.mem.write(self.loadbase + addr, code)
 
     def enable_lib_patch(self):
         for addr, code, filename in self.patch_lib:
-            self.uc.mem_write(self.__get_lib_base(filename) + addr, code)
+            self.mem.write(self.__get_lib_base(filename) + addr, code)
 
     def set_timeout(self, microseconds):
         self.timeout = microseconds

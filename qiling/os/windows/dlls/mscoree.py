@@ -19,7 +19,7 @@ from qiling.os.windows.const import *
 })
 def hook_CorExitProcess(ql, address, params):
     ql.uc.emu_stop()
-    ql.RUN = False
+    ql.commos.PE_RUN = False
 
 
 # __int32 STDMETHODCALLTYPE _CorExeMain ();

@@ -93,7 +93,6 @@ def output_convert(output):
         "disasm": QL_OUT_DISASM,
         "debug": QL_OUT_DEBUG,
         "dump": QL_OUT_DUMP,
-        "off": QL_OUT_OFF,
     }
     if output in adapter:
         return adapter[output]
@@ -261,6 +260,7 @@ def ql_get_os_module_function(ostype, arch, function_name):
     module_name = ql_build_module_import_name("os", ostype, arch)
     return ql_get_module_function(module_name, function_name)
 
+
 def ql_get_arch_module_function(arch, function_name):
     if not ql_is_valid_arch(arch):
         raise QlErrorArch("[!] Invalid Arch")
@@ -268,20 +268,42 @@ def ql_get_arch_module_function(arch, function_name):
     module_name = ql_build_module_import_name("arch", None, arch)
     return ql_get_module_function(module_name, function_name)
 
+
+def ql_get_commonos_module_function(ostype):
+    if not ql_is_valid_ostype(ostype):
+        raise QlErrorOsType("[!] Invalid OSType")
+    
+    # common os class, posix type OS share one same class
+    if ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD):
+        module_name = ql_build_module_import_name("os", "posix", "posix")
+        func_name = "QlPosixManager"
+
+    # common os class, Microsoft OS share one same class
+    elif ostype is QL_WINDOWS:
+        module_name = ql_build_module_import_name("os", "windows", "windowsos")
+        func_name = "QlWindowsOSManager"
+    
+    return ql_get_module_function(module_name, func_name)
+
 def ql_build_module_import_name(module, ostype, arch):
     ret_str = "qiling." + module
 
-    if ostype:
+    ostype_str = ostype
+    arch_str = arch
+
+    if type(arch) is int:
         ostype_str = ql_ostype_convert_str(ostype)
+    
+    if ostype_str:
         ret_str += "." + ostype_str
 
     if arch:
         if module == "arch" and arch == QL_X8664:  # This is because X86_64 is bundled into X86 in arch
             arch_str = "x86"
-        else:
+        elif type(arch) is int:
             arch_str = ql_arch_convert_str(arch)
+        
         ret_str += "." + arch_str
-
     return ret_str
 
 
@@ -313,18 +335,16 @@ def ql_setup_logging_stream(ql, logger=None):
     ql_mode = ql.output
 
     # setup StreamHandler for logging to stdout
-    #ch = logging.StreamHandler()
-    ch = logging.getLogger()
+    if ql.log_console == True:
+        ch = logging.StreamHandler()
+    else:
+        # not print out to stdout by using NullHandler
+        ch = logging.NullHandler()
+
     ch.setLevel(logging.DEBUG)
     
-    """
-    guess this was added due to the incompatablity
-    with print ("", end ="") with logger, 
-    fix it with concat, will keep it for now
-    """
-    # if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
-    #     # use empty string for newline if disasm or dump mode was enabled
-    #     ch.terminator = ""
+    # use empty character for string terminator by default
+    ch.terminator = ""
 
     if logger is None:
         logger = ql_setup_logger()
@@ -334,22 +354,13 @@ def ql_setup_logging_stream(ql, logger=None):
 
 
 def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
-    # Create the file and directories if they do not exists
-    if not exists(log_file_path) and log_file_path.endswith(".qlog"):
-        open(log_file_path, "a").close()
 
     # setup FileHandler for logging to disk file
     fh = logging.FileHandler('%s.qlog' % log_file_path)
     fh.setLevel(logging.DEBUG)
     
-    """
-    guess this was added due to the incompatablity
-    with print ("", end ="") with logger, 
-    fix it with concat, will keep it for now
-    """
-    # if ql_mode in (QL_OUT_DISASM, QL_OUT_DUMP):
-    #     # use empty string for newline if disasm or dump mode was enabled
-    #     fh.terminator = ""
+    # use empty character for stirng terminateor by default
+    fh.terminator = ""
 
     if logger is None:
         logger = ql_setup_logger()

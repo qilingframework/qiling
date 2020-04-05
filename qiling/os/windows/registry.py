@@ -161,22 +161,22 @@ class RegistryManager:
         length = 0
         # string
         if reg_type == Registry.RegSZ or reg_type == Registry.RegExpandSZ:
-            self.ql.mem_write(address, bytes(reg_value, "utf-16le") + b"\x00")
+            self.ql.mem.write(address, bytes(reg_value, "utf-16le") + b"\x00")
             length = len(reg_value)
         elif reg_type == Registry.RegBin:
             # you can set REG_BINARY like '\x00\x01\x02' in config.json
             if type(reg_value) == str:
-                self.ql.mem_write(address, bytes(reg_value))
+                self.ql.mem.write(address, bytes(reg_value))
                 length = len(reg_value)
             else:
                 raise QlErrorNotImplemented("[!] Windows Registry Type not implemented")
         elif reg_type == Registry.RegDWord:
             data = self.ql.pack32(reg_value)
-            self.ql.mem_write(address, data)
+            self.ql.mem.write(address, data)
             length = len(data)
         elif reg_type == Registry.RegQWord:
             data = self.ql.pack64(reg_value)
-            self.ql.mem_write(address, data)
+            self.ql.mem.write(address, data)
             length = len(data)
         else:
             raise QlErrorNotImplemented(

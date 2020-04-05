@@ -86,9 +86,9 @@ def hook___p__environ(ql, address, params):
         pointer = ql.heap.mem_alloc(ql.pointersize)
         env = key + "=" + ql.env[key]
         env_addr = ql.heap.mem_alloc(len(env) + 1)
-        ql.mem_write(env_addr, bytes(env, 'ascii') + b'\x00')
-        ql.mem_write(pointer, ql.pack(env_addr))
-        ql.mem_write(ret + count * ql.pointersize, ql.pack(pointer))
+        ql.mem.write(env_addr, bytes(env, 'ascii') + b'\x00')
+        ql.mem.write(pointer, ql.pack(env_addr))
+        ql.mem.write(ret + count * ql.pointersize, ql.pack(pointer))
         count += 1
     return ret
 
@@ -133,7 +133,7 @@ def hook__initterm(ql, address, params):
 })
 def hook_exit(ql, address, params):
     ql.uc.emu_stop()
-    ql.RUN = False
+    ql.commos.PE_RUN = False
 
 
 # int __cdecl _initterm_e(
@@ -156,9 +156,9 @@ def hook___p___argv(ql, address, params):
     for each in ql.argv:
         arg_pointer = ql.heap.mem_alloc(ql.pointersize)
         arg = ql.heap.mem_alloc(len(each) + 1)
-        ql.mem_write(arg, bytes(each, 'ascii') + b'\x00')
-        ql.mem_write(arg_pointer, ql.pack(arg))
-        ql.mem_write(ret + count * ql.pointersize, ql.pack(arg_pointer))
+        ql.mem.write(arg, bytes(each, 'ascii') + b'\x00')
+        ql.mem.write(arg_pointer, ql.pack(arg))
+        ql.mem.write(ret + count * ql.pointersize, ql.pack(arg_pointer))
         count += 1
     return ret
 
@@ -167,7 +167,7 @@ def hook___p___argv(ql, address, params):
 @winapi(cc=CDECL, params={})
 def hook___p___argc(ql, address, params):
     ret = ql.heap.mem_alloc(ql.pointersize)
-    ql.mem_write(ret, ql.pack(len(ql.argv)))
+    ql.mem.write(ret, ql.pack(len(ql.argv)))
     return ret
 
 
@@ -180,7 +180,7 @@ def hook__get_initial_narrow_environment(ql, address, params):
         env = ql.heap.mem_alloc(len(value) + 1)
         if count == 0:
             ret = env
-        ql.mem_write(env, bytes(value, 'ascii') + b'\x00')
+        ql.mem.write(env, bytes(value, 'ascii') + b'\x00')
         count += 1
     return ret
 
@@ -208,8 +208,8 @@ def hook_printf(ql, address, _):
     if ql.arch == QL_X8664:
         # if number of params > 4
         if count + 1 > 4:
-            rsp = ql.uc.reg_read(UC_X86_REG_RSP)
-            ql.uc.reg_write(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
+            rsp = ql.register(UC_X86_REG_RSP)
+            ql.register(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
 
     return None
 
@@ -314,7 +314,7 @@ def hook_malloc(ql, address, params):
 def hook__onexit(ql, address, params):
     function = params['function']
     addr = ql.heap.mem_alloc(ql.pointersize)
-    ql.uc.mem_write(addr, ql.pack(function))
+    ql.mem.write(addr, ql.pack(function))
     return addr
 
 
@@ -332,7 +332,7 @@ def hook_memset(ql, address, params):
     dest = params["dest"]
     c = params["c"]
     count = params["count"]
-    ql.uc.mem_write(dest, bytes(c) * count)
+    ql.mem.write(dest, bytes(c) * count)
     return dest
 
 
@@ -362,8 +362,8 @@ def hook_calloc(ql, address, params):
     "num": SIZE_T
 })
 def hook_memmove(ql, address, params):
-    data = ql.mem_read(params['src'], params['num'])
-    ql.mem_write(params['dest'], bytes(data))
+    data =ql.mem.read(params['src'], params['num'])
+    ql.mem.write(params['dest'], bytes(data))
     return params['dest']
 
 

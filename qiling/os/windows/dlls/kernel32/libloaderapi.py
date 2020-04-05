@@ -9,7 +9,6 @@ from qiling.os.windows.const import *
 from qiling.os.fncc import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -86,7 +85,7 @@ def hook_GetModuleFileNameA(ql, address, params):
             ret = nSize
         else:
             ret = filename_len
-        ql.uc.mem_write(lpFilename, filename + b"\x00")
+        ql.mem.write(lpFilename, filename + b"\x00")
     else:
         ql.dprint(0, "hModule %x" % hModule)
         raise QlErrorNotImplemented("[!] API not implemented")
@@ -118,7 +117,7 @@ def hook_GetModuleFileNameW(ql, address, params):
             ret = nSize
         else:
             ret = filename_len
-        ql.uc.mem_write(lpFilename, filename + b"\x00")
+        ql.mem.write(lpFilename, filename + b"\x00")
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return ret

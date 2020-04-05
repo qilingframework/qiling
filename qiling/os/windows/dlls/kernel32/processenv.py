@@ -25,7 +25,7 @@ def hook_GetStdHandle(ql, address, params):
 def hook_GetCommandLineA(ql, address, params):
     cmdline = ql.PE.cmdline + b"\x00"
     addr = ql.heap.mem_alloc(len(cmdline))
-    ql.uc.mem_write(addr, cmdline)
+    ql.mem.write(addr, cmdline)
     return addr
 
 
@@ -35,7 +35,7 @@ def hook_GetCommandLineA(ql, address, params):
 def hook_GetCommandLineW(ql, address, params):
     cmdline = ql.PE.cmdline.decode('ascii').encode('utf-16le')
     addr = ql.heap.mem_alloc(len(cmdline))
-    ql.uc.mem_write(addr, cmdline)
+    ql.mem.write(addr, cmdline)
     return addr
 
 
@@ -45,7 +45,7 @@ def hook_GetCommandLineW(ql, address, params):
 def hook_GetEnvironmentStrings(ql, address, params):
     cmdline = b"\x00"
     addr = ql.heap.mem_alloc(len(cmdline))
-    ql.uc.mem_write(addr, cmdline)
+    ql.mem.write(addr, cmdline)
     return addr
 
 
@@ -55,7 +55,7 @@ def hook_GetEnvironmentStrings(ql, address, params):
 def hook_GetEnvironmentStringsW(ql, address, params):
     cmdline = b"\x00\x00"
     addr = ql.heap.mem_alloc(len(cmdline))
-    ql.uc.mem_write(addr, cmdline)
+    ql.mem.write(addr, cmdline)
     return addr
 
 
@@ -93,7 +93,7 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
     dst = params["lpDst"]
     max_size = params["nSize"]
     if len(result) <= max_size:
-        ql.uc.mem_write(dst, result)
+        ql.mem.write(dst, result)
     return len(result)
 
 

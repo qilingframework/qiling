@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-dict_x8664_linux_syscall = {
+dict_linux_syscall = {
     0x00 : "ql_syscall_read",
     0x01 : "ql_syscall_write",
     0x02 : "ql_syscall_open",
@@ -45,7 +45,7 @@ dict_x8664_linux_syscall = {
     0x6B : "ql_syscall_geteuid",
     0x6C : "ql_syscall_getegid",
     0x6E : "ql_syscall_getppid",
-    0x9E : "ql_syscall_archprctl",
+    0x9E : "ql_syscall_arch_prctl",
     0xDA : "ql_syscall_set_tid_address",
     0xE7 : "ql_syscall_exit_group",
     0x0101 : "ql_syscall_openat",

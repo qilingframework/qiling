@@ -37,4 +37,4 @@ class Sid:
         }
         values = b"".join(self.struct.values())
         self.addr = ql.heap.mem_alloc(len(values))
-        ql.uc.mem_write(self.addr, values)
+        ql.mem.write(self.addr, values)

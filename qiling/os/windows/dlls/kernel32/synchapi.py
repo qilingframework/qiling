@@ -9,7 +9,6 @@ from qiling.os.windows.const import *
 from qiling.os.fncc import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -132,7 +131,7 @@ def hook_WaitForMultipleObjects(ql, address, params):
     dwMilliseconds = params["dwMilliseconds"]
 
     for i in range(nCount):
-        handle_value = ql.unpack(ql.mem_read(lpHandles + i * ql.pointersize, ql.pointersize))
+        handle_value = ql.unpack(ql.mem.read(lpHandles + i * ql.pointersize, ql.pointersize))
         if handle_value != 0:
             thread = ql.handle_manager.get(handle_value).thread
             ql.thread_manager.current_thread.waitfor(thread)
@@ -163,7 +162,7 @@ def hook_OpenMutexW(ql, address, params):
         mutex = ql.handle_manager.get(name)
         if mutex is None:
             # If a named mutex does not exist, the function fails and GetLastError returns ERROR_FILE_NOT_FOUND.
-            ql.last_error = ERROR_FILE_NOT_FOUND
+            ql.commos.last_error  = ERROR_FILE_NOT_FOUND
             return 0
         else:
             raise QlErrorNotImplemented("[!] API not implemented")

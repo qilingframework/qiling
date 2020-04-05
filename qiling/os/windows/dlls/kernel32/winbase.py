@@ -18,7 +18,7 @@ from qiling.exception import *
 })
 def hook_FatalExit(ql, address, params):
     ql.uc.emu_stop()
-    ql.RUN = False
+    ql.commos.PE_RUN = False
 
 
 # PVOID EncodePointer(
@@ -177,7 +177,7 @@ def hook_lstrcpynA(ql, address, params):
     max_length = params["iMaxLength"]
     if len(src) > max_length:
         src = src[:max_length]
-    ql.uc.mem_write(dst, bytes(src, encoding="utf-16le"))
+    ql.mem.write(dst, bytes(src, encoding="utf-16le"))
     return dst
 
 
@@ -198,7 +198,7 @@ def hook_lstrcpynW(ql, address, params):
     max_length = params["iMaxLength"]
     if len(src) > max_length:
         src = src[:max_length]
-    ql.uc.mem_write(dst, bytes(src, encoding="utf-16le"))
+    ql.mem.write(dst, bytes(src, encoding="utf-16le"))
     return dst
 
 
@@ -214,7 +214,7 @@ def hook_lstrcpyA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
     dst = params["lpString1"]
-    ql.uc.mem_write(dst, bytes(src, encoding="utf-16le"))
+    ql.mem.write(dst, bytes(src, encoding="utf-16le"))
     return dst
 
 
@@ -232,7 +232,7 @@ def hook_lstrcatA(ql, address, params):
     pointer = params["lpString1"]
     string_base = read_cstring(ql, pointer)
     result = string_base + src + "\x00"
-    ql.uc.mem_write(pointer, bytes(result, encoding="utf-16le"))
+    ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
     return pointer
 
 
@@ -250,7 +250,7 @@ def hook_lstrcatW(ql, address, params):
     pointer = params["lpString1"]
     string_base = read_wstring(ql, pointer)
     result = string_base + src + "\x00"
-    ql.uc.mem_write(pointer, bytes(result, encoding="utf-16le"))
+    ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
     return pointer
 
 
@@ -363,19 +363,19 @@ def compare(p1, operator, p2):
 def hook_VerifyVersionInfoW(ql, address, params):
     #  https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow2
     pointer = params["lpVersionInformation"]
-    os_version_info_asked = {"dwOSVersionInfoSize": int.from_bytes(ql.uc.mem_read(pointer, 4), byteorder="little"),
-                             VER_MAJORVERSION: int.from_bytes(ql.uc.mem_read(pointer + 4, 4), byteorder="little"),
-                             VER_MINORVERSION: int.from_bytes(ql.uc.mem_read(pointer + 8, 4), byteorder="little"),
-                             VER_BUILDNUMBER: int.from_bytes(ql.uc.mem_read(pointer + 12, 4), byteorder="little"),
-                             VER_PLATFORMID: int.from_bytes(ql.uc.mem_read(pointer + 16, 4), byteorder="little"),
-                             "szCSDVersion": int.from_bytes(ql.uc.mem_read(pointer + 20, 128), byteorder="little"),
-                             VER_SERVICEPACKMAJOR: int.from_bytes(ql.uc.mem_read(pointer + 20 + 128, 2),
+    os_version_info_asked = {"dwOSVersionInfoSize": int.from_bytes(ql.mem.read(pointer, 4), byteorder="little"),
+                             VER_MAJORVERSION: int.from_bytes(ql.mem.read(pointer + 4, 4), byteorder="little"),
+                             VER_MINORVERSION: int.from_bytes(ql.mem.read(pointer + 8, 4), byteorder="little"),
+                             VER_BUILDNUMBER: int.from_bytes(ql.mem.read(pointer + 12, 4), byteorder="little"),
+                             VER_PLATFORMID: int.from_bytes(ql.mem.read(pointer + 16, 4), byteorder="little"),
+                             "szCSDVersion": int.from_bytes(ql.mem.read(pointer + 20, 128), byteorder="little"),
+                             VER_SERVICEPACKMAJOR: int.from_bytes(ql.mem.read(pointer + 20 + 128, 2),
                                                                   byteorder="little"),
-                             VER_SERVICEPACKMINOR: int.from_bytes(ql.uc.mem_read(pointer + 22 + 128, 2),
+                             VER_SERVICEPACKMINOR: int.from_bytes(ql.mem.read(pointer + 22 + 128, 2),
                                                                   byteorder="little"),
-                             VER_SUITENAME: int.from_bytes(ql.uc.mem_read(pointer + 152, 2), byteorder="little"),
-                             VER_PRODUCT_TYPE: int.from_bytes(ql.uc.mem_read(pointer + 154, 1), byteorder="little"),
-                             "wReserved": int.from_bytes(ql.uc.mem_read(pointer + 155, 1), byteorder="little"),
+                             VER_SUITENAME: int.from_bytes(ql.mem.read(pointer + 152, 2), byteorder="little"),
+                             VER_PRODUCT_TYPE: int.from_bytes(ql.mem.read(pointer + 154, 1), byteorder="little"),
+                             "wReserved": int.from_bytes(ql.mem.read(pointer + 155, 1), byteorder="little"),
                              }
     ConditionMask: dict = ql.hooks_variables["ConditionMask"]
     res = True
@@ -411,6 +411,6 @@ def hook_VerifyVersionInfoW(ql, address, params):
             raise QlErrorNotImplemented("[!] API not implemented")
         # The result is a AND between every value, so if we find a False we just exit from the loop
         if not res:
-            ql.last_error = ERROR_OLD_WIN_VERSION
+            ql.commos.last_error  = ERROR_OLD_WIN_VERSION
             return 0
     return 1

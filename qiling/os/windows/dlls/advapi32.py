@@ -29,7 +29,7 @@ def _RegOpenKey(ql, address, params):
     new_handle = Handle(regkey=s_hKey + "\\" + s_lpSubKey)
     ql.handle_manager.append(new_handle)
     if phkResult != 0:
-        ql.mem_write(phkResult, ql.pack(new_handle.id))
+        ql.mem.write(phkResult, ql.pack(new_handle.id))
     return ERROR_SUCCESS
 
 
@@ -47,7 +47,7 @@ def RegQueryValue(ql, address, params):
 
     # read reg_type
     if lpType != 0:
-        reg_type = ql.unpack(ql.mem_read(lpType, 4))
+        reg_type = ql.unpack(ql.mem.read(lpType, 4))
     else:
         reg_type = Registry.RegNone
 
@@ -62,8 +62,8 @@ def RegQueryValue(ql, address, params):
         # set lpData
         length = ql.registry_manager.write_reg_value_into_mem(value, reg_type, lpData)
         # set lpcbData
-        max_size = int.from_bytes(ql.uc.mem_read(lpcbData, 4), byteorder="little")
-        ql.mem_write(lpcbData, ql.pack(length))
+        max_size = int.from_bytes(ql.mem.read(lpcbData, 4), byteorder="little")
+        ql.mem.write(lpcbData, ql.pack(length))
         if max_size < length:
             ret = ERROR_MORE_DATA
 
@@ -218,7 +218,7 @@ def hook_RegCreateKeyA(ql, address, params):
         new_handle = Handle(regkey=s_hKey + "\\" + s_lpSubKey)
         ql.handle_manager.append(new_handle)
         if phkResult != 0:
-            ql.mem_write(phkResult, ql.pack(new_handle.id))
+            ql.mem.write(phkResult, ql.pack(new_handle.id))
     else:
         new_handle = 0
 
@@ -355,13 +355,13 @@ def hook_GetTokenInformation(ql, address, params):
     dst = params["TokenInformation"]
     token = ql.handle_manager.get(id).token
     information_value = token.get(information)
-    ql.uc.mem_write(return_point, len(information_value).to_bytes(4, byteorder="little"))
-    return_size = int.from_bytes(ql.uc.mem_read(return_point, 4), byteorder="little")
+    ql.mem.write(return_point, len(information_value).to_bytes(4, byteorder="little"))
+    return_size = int.from_bytes(ql.mem.read(return_point, 4), byteorder="little")
     if return_size > max_size:
-        ql.last_error = ERROR_INSUFFICIENT_BUFFER
+        ql.commos.last_error  = ERROR_INSUFFICIENT_BUFFER
         return 0
     if dst != 0:
-        ql.uc.mem_write(dst, information_value)
+        ql.mem.write(dst, information_value)
         return 1
     else:
         raise QlErrorNotImplemented("[!] API not implemented")

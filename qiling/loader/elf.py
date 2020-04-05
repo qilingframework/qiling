@@ -415,12 +415,12 @@ class ELFLoader(ELFParse):
             ql.nprint("[+] Some error in head e_type: %u!" %elfhead['e_type'])
             return -1
 
-        ql.uc.mem_map(loadbase + mem_start, mem_end - mem_start)
+        ql.mem.map(loadbase + mem_start, mem_end - mem_start)
         ql.insert_map_info(loadbase + mem_start, loadbase + mem_end, 'r-x', self.path)
 
         for i in super().parse_program_header(ql):
             if i['p_type'] == PT_LOAD:
-                ql.uc.mem_write(loadbase + i['p_vaddr'], super().getelfdata(i['p_offset'], i['p_filesz']))
+                ql.mem.write(loadbase + i['p_vaddr'], super().getelfdata(i['p_offset'], i['p_filesz']))
                 ql.dprint(0,
                           "[+] load 0x%x - 0x%x" % (loadbase + i['p_vaddr'], loadbase + i['p_vaddr'] + i['p_filesz']))
 
@@ -458,12 +458,12 @@ class ELFLoader(ELFParse):
                     ql.interp_base = 0xff7d5000
 
             ql.dprint(0, "[+] interp_base is : 0x%x" % (ql.interp_base))
-            ql.uc.mem_map(ql.interp_base, int(interp_mem_size))
+            ql.mem.map(ql.interp_base, int(interp_mem_size))
             ql.insert_map_info(ql.interp_base, ql.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
 
             for i in interp.parse_program_header(ql):
                 if i['p_type'] == PT_LOAD:
-                    ql.uc.mem_write(ql.interp_base + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
+                    ql.mem.write(ql.interp_base + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
             entry_point = interphead['e_entry'] + ql.interp_base
 
         # Set MMAP addr
@@ -525,7 +525,7 @@ class ELFLoader(ELFParse):
 
         # Set AUX
 
-        # ql.uc.mem_write(int(new_stack) - 4, ql.pack32(0x11111111))
+        # ql.mem.write(int(new_stack) - 4, ql.pack32(0x11111111))
         # new_stack = new_stack - 4
         # rand_addr = new_stack - 4
 
@@ -566,14 +566,14 @@ class ELFLoader(ELFParse):
 
         elf_table += b'\x00' * (0x10 - (new_stack - len(elf_table)) & 0xf)
 
-        ql.uc.mem_write(int(new_stack - len(elf_table)), elf_table)
+        ql.mem.write(int(new_stack - len(elf_table)), elf_table)
         new_stack = new_stack - len(elf_table)
 
-        # print("rdi is : " + hex(ql.uc.reg_read(UC_X86_REG_RDI)))
-        # ql.uc.reg_write(UC_X86_REG_RDI, new_stack + 8)
+        # print("rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
+        # ql.register(UC_X86_REG_RDI, new_stack + 8)
 
         # for i in range(120):
-        #     buf = ql.uc.mem_read(new_stack + i * 0x8, 8)
+        #     buf = ql.mem.read(new_stack + i * 0x8, 8)
         #     ql.nprint("0x%08x : 0x%08x " % (new_stack + i * 0x4, ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
 
         ql.entry_point = entry_point

@@ -9,7 +9,6 @@ from qiling.os.windows.const import *
 from qiling.os.fncc import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -23,7 +22,7 @@ from qiling.os.windows.token import *
 })
 def hook_ExitProcess(ql, address, params):
     ql.uc.emu_stop()
-    ql.RUN = False
+    ql.commos.PE_RUN = False
 
 
 # typedef struct _STARTUPINFO {
@@ -72,7 +71,7 @@ def GetStartupInfo(ql, address, params):
 
     # CB must be the size of the struct
     assert len(values) == startup_info["cb"][0]
-    ql.uc.mem_write(pointer, values)
+    ql.mem.write(pointer, values)
     return 0
 
 
@@ -115,7 +114,7 @@ def hook_TlsAlloc(ql, address, params):
 def hook_TlsFree(ql, address, params):
     idx = params['dwTlsIndex']
     if idx not in ql.thread_manager.current_thread.tls:
-        ql.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
+        ql.commos.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
         del (ql.thread_manager.current_thread.tls[idx])
@@ -130,12 +129,12 @@ def hook_TlsFree(ql, address, params):
 def hook_TlsGetValue(ql, address, params):
     idx = params['dwTlsIndex']
     if idx not in ql.thread_manager.current_thread.tls:
-        ql.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
+        ql.commos.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
         # api explicity clears last error on success:
         # https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-tlsgetvalue
-        ql.last_error = 0
+        ql.commos.last_error
         return ql.thread_manager.current_thread.tls[idx]
 
 
@@ -149,7 +148,7 @@ def hook_TlsGetValue(ql, address, params):
 def hook_TlsSetValue(ql, address, params):
     idx = params['dwTlsIndex']
     if idx not in ql.thread_manager.current_thread.tls:
-        ql.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
+        ql.commos.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
         ql.thread_manager.current_thread.tls[idx] = params['lpTlsValue']
@@ -236,7 +235,7 @@ def hook_CreateThread(ql, address, params):
 
     # set lpThreadId
     if lpThreadId != 0:
-        ql.mem_write(lpThreadId, ql.pack(thread_id))
+        ql.mem.write(lpThreadId, ql.pack(thread_id))
 
     # set thread handle
     return ret
@@ -261,9 +260,9 @@ def hook_GetCurrentProcess(ql, address, params):
 def hook_TerminateProcess(ql, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
-    if process == 0x0 or process == ql.DEFAULT_IMAGE_BASE:
+    if process == 0x0 or process == ql.commos.DEFAULT_IMAGE_BASE:
         ql.uc.emu_stop()
-        ql.RUN = False
+        ql.commos.PE_RUN = False
     ret = 1
     return ret
 
@@ -291,7 +290,7 @@ def hook_OpenProcess(ql, address, params):
     # If the specified process is the System Process (0x00000000),
     # the function fails and the last error code is ERROR_INVALID_PARAMETER
     if proc == 0:
-        ql.last_error = ERROR_INVALID_PARAMETER
+        ql.commos.last_error  = ERROR_INVALID_PARAMETER
         return 0
     return 0xD10C
 
@@ -311,5 +310,5 @@ def hook_OpenProcessToken(ql, address, params):
     token = Token(ql)
     new_handle = Handle(token=token)
     ql.handle_manager.append(new_handle)
-    ql.uc.mem_write(token_pointer, ql.pack(new_handle.id))
+    ql.mem.write(token_pointer, ql.pack(new_handle.id))
     return 1

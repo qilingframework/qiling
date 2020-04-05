@@ -9,7 +9,6 @@ from qiling.os.windows.const import *
 from qiling.os.fncc import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -69,7 +68,7 @@ def hook_GetLocaleInfoA(ql, address, params):
 
     if cchData != 0:
         lplcdata = params["lpLCData"]
-        ql.uc.mem_write(lplcdata, lctype.encode("utf16-le"))
+        ql.mem.write(lplcdata, lctype.encode("utf16-le"))
     return len(lctype)
 
 
@@ -89,7 +88,7 @@ def _LCMapString(ql, address, params):
     dst = params["lpDestStr"]
     if cchDest != 0:
         # TODO maybe do some other check, for now is working
-        ql.uc.mem_write(dst, result)
+        ql.mem.write(dst, result)
     return len(result)
 
 

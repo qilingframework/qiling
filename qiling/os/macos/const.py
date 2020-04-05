@@ -3,11 +3,25 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+QL_X8664_MACOS_PREDEFINE_STACKADDRESS = 0x7ffcf0000000
+QL_X8664_MACOS_PREDEFINE_STACKSIZE =        0x19a00000
+QL_X8664_MACOS_PREDEFINE_MMAPADDRESS =  0x7ffbf0100000
+QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x4000000f4000
+
+QL_ARM64_MACOS_PREDEFINE_STACKADDRESS       = 0x0000000160503000
+QL_ARM64_MACOS_PREDEFINE_STACKSIZE          = 0x21000
+QL_ARM64_MACOS_PREDEFINE_MMAPADDRESS        = 0x7ffbf0100000
+QL_ARM64_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x4000000f4000
+
 # basic values
 PAGE_SIZE                   = 0x1000
 VMMAP_PAGE_SIZE             = 0x100000
 MAX_FD_SIZE					= 0xFF
 MAX_PATH_SIZE               = 0x800
+
+
+# GS
+MSR_KERNEL_GS_BASE          = 0xc0000102
 
 # kernel flags
 KERN_SUCCESS                = 0
@@ -483,3 +497,53 @@ HOST_VM_PURGABLE                    = 9
 HOST_DEBUG_INFO_INTERNAL            = 10
 HOST_CAN_HAS_DEBUGGER               = 11
 HOST_PREFERRED_USER_ARCH            = 12
+
+
+# commpage 
+COMM_PAGE_START_ADDRESS             = 0x7FFFFFE00000
+COMM_PAGE_SIGNATURE                 = COMM_PAGE_START_ADDRESS + 0x000   # first 16 bytes are a signature
+COMM_PAGE_CPU_CAPABILITIES64        = COMM_PAGE_START_ADDRESS + 0x010   # uint64_t _cpu_capabilities
+COMM_PAGE_UNUSED                    = COMM_PAGE_START_ADDRESS + 0x018   # 6 unused bytes
+COMM_PAGE_VERSION                   = COMM_PAGE_START_ADDRESS + 0x01E   # 16-bit version
+COMM_PAGE_THIS_VERSION              = 13                                # in ver 13, _COMM_PAGE_NT_SHIFT defaults to 0 (was 32) 
+
+COMM_PAGE_CPU_CAPABILITIES          = COMM_PAGE_START_ADDRESS + 0x020   # uint32_t _cpu_capabilities (retained for compatibility) */
+COMM_PAGE_NCPUS                     = COMM_PAGE_START_ADDRESS + 0x022   # uint8_t number of configured CPUs (hw.logicalcpu at boot time) */
+COMM_PAGE_UNUSED0                   = COMM_PAGE_START_ADDRESS + 0x024   # 2 unused bytes, previouly reserved for expansion of cpu_capabilities */
+COMM_PAGE_CACHE_LINESIZE            = COMM_PAGE_START_ADDRESS + 0x026   # uint16_t cache line size */
+
+COMM_PAGE_SCHED_GEN                 = COMM_PAGE_START_ADDRESS + 0x028	# uint32_t scheduler generation number (count of pre-emptions) */
+COMM_PAGE_MEMORY_PRESSURE           = COMM_PAGE_START_ADDRESS + 0x02c   # uint32_t copy of vm_memory_pressure */
+COMM_PAGE_SPIN_COUNT                = COMM_PAGE_START_ADDRESS + 0x030	# uint32_t max spin count for mutex's */
+
+COMM_PAGE_ACTIVE_CPUS               = COMM_PAGE_START_ADDRESS + 0x034   # uint8_t number of active CPUs (hw.activecpu) */
+COMM_PAGE_PHYSICAL_CPUS             = COMM_PAGE_START_ADDRESS + 0x035   # uint8_t number of physical CPUs (hw.physicalcpu_max) */
+COMM_PAGE_LOGICAL_CPUS              = COMM_PAGE_START_ADDRESS + 0x036   # uint8_t number of logical CPUs (hw.logicalcpu_max) */
+COMM_PAGE_UNUSED1                   = COMM_PAGE_START_ADDRESS + 0x037   # 1 unused bytes */
+COMM_PAGE_MEMORY_SIZE               = COMM_PAGE_START_ADDRESS + 0x038   # uint64_t max memory size */
+
+COMM_PAGE_CPUFAMILY                 = COMM_PAGE_START_ADDRESS + 0x040   # uint32_t hw.cpufamily, x86*/
+COMM_PAGE_KDEBUG_ENABLE             = COMM_PAGE_START_ADDRESS + 0x044   # uint32_t export "kdebug_enable" to userspace */
+COMM_PAGE_ATM_DIAGNOSTIC_CONFIG     = COMM_PAGE_START_ADDRESS + 0x48    # uint32_t export "atm_diagnostic_config" to userspace */
+
+COMM_PAGE_UNUSED2                   = COMM_PAGE_START_ADDRESS + 0x04C   # [0x4C,0x50) unused */
+
+COMM_PAGE_TIME_DATA_START           = COMM_PAGE_START_ADDRESS + 0x050   # base of offsets below (_NT_SCALE etc) */
+COMM_PAGE_NT_TSC_BASE               = COMM_PAGE_START_ADDRESS + 0x050   # used by nanotime() */
+COMM_PAGE_NT_SCALE                  = COMM_PAGE_START_ADDRESS + 0x058   # used by nanotime() */
+COMM_PAGE_NT_SHIFT                  = COMM_PAGE_START_ADDRESS + 0x05c   # used by nanotime() */
+COMM_PAGE_NT_NS_BASE                = COMM_PAGE_START_ADDRESS + 0x060   # used by nanotime() */
+COMM_PAGE_NT_GENERATION             = COMM_PAGE_START_ADDRESS + 0x068   # used by nanotime() */
+COMM_PAGE_GTOD_GENERATION           = COMM_PAGE_START_ADDRESS + 0x06c   # used by gettimeofday() */
+COMM_PAGE_GTOD_NS_BASE              = COMM_PAGE_START_ADDRESS + 0x070   # used by gettimeofday() */
+COMM_PAGE_GTOD_SEC_BASE             = COMM_PAGE_START_ADDRESS + 0x078   # used by gettimeofday() */
+
+# APPROX_TIME must be aligned to 64-byte cache line size
+COMM_PAGE_APPROX_TIME               = COMM_PAGE_START_ADDRESS + 0x080   # used by mach_approximate_time() */
+COMM_PAGE_APPROX_TIME_SUPPORTED     = COMM_PAGE_START_ADDRESS + 0x088   # used by mach_approximate_time() */
+
+# following entries to next cache line
+COMM_PAGE_CONT_TIMEBASE             = COMM_PAGE_START_ADDRESS + 0x0C0   # used by mach_continuous_time() */
+COMM_PAGE_BOOTTIME_USEC             = COMM_PAGE_START_ADDRESS + 0x0C8   # uint64_t boottime */
+
+COMM_PAGE_END                       = COMM_PAGE_START_ADDRESS + 0xfff

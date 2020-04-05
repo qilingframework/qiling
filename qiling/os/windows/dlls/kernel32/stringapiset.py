@@ -9,7 +9,6 @@ from qiling.os.windows.const import *
 from qiling.os.fncc import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -82,7 +81,7 @@ def hook_WideCharToMultiByte(ql, address, params):
     lpMultiByteStr = params["lpMultiByteStr"]
     s = (s_lpWideCharStr + "\x00").encode("utf-16le")
     if cbMultiByte != 0:
-        ql.uc.mem_write(lpMultiByteStr, s)
+        ql.mem.write(lpMultiByteStr, s)
     ret = len(s)
 
     return ret
@@ -107,5 +106,5 @@ def hook_WideCharToMultiByte(ql, address, params):
 def hook_MultiByteToWideChar(ql, address, params):
     wide_str = (params['lpMultiByteStr']+"\x00").encode('utf-16le')
     if params['cchWideChar'] != 0:
-        ql.uc.mem_write(params['lpWideCharStr'], wide_str)
+        ql.mem.write(params['lpWideCharStr'], wide_str)
     return len(wide_str)

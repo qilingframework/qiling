@@ -51,7 +51,7 @@ def hook_GetDlgItemTextA(ql, address, params):
     ql.stdout.write(b"Input DlgItemText :\n")
     string = ql.stdin.readline().strip()[:cchMax]
     ret = len(string)
-    ql.uc.mem_write(lpString, string)
+    ql.mem.write(lpString, string)
 
     return ret
 
@@ -135,7 +135,7 @@ def hook_GetClipboardData(ql, address, params):
     data = ql.clipboard.get_data(params['uFormat'])
     if data:
         addr = ql.heap.mem_alloc(len(data))
-        ql.uc.mem_write(addr, data)
+        ql.mem.write(addr, data)
         return addr
     else:
         ql.dprint(0, 'Failed to get clipboard data')
@@ -346,7 +346,7 @@ def hook_LoadStringA(ql, address, params):
         if len(string) >= max_len:
             string[max_len] = "\x00"
             string = string[:max_len]
-        ql.uc.mem_write(dst, string.encode("utf-16le"))
+        ql.mem.write(dst, string.encode("utf-16le"))
     # should not count the \x00 byte
     return len(string) - 1
 
@@ -510,7 +510,26 @@ def hook_wsprintfW(ql, address, params):
         # We must pop the stack correctly
         raise QlErrorNotImplemented("[!] API not implemented")
 
-    ql.uc.mem_write(dst, (string + "\x00").encode("utf-16le"))
+    ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
+    return size
+
+# int WINAPIV sprintf(
+#   LPWSTR  ,
+#   LPCWSTR ,
+#   ...
+# );
+@winapi(cc=CDECL, param_num=3)
+def hook_sprintf(ql, address, params):
+    dst, p_format, p_args = get_function_param(ql, 3)
+    format_string = read_wstring(ql, p_format)
+    size, string = printf(ql, address, format_string, p_args, "sprintf", wstring=True)
+
+    count = format_string.count('%')
+    if ql.arch == QL_X8664:
+        # We must pop the stack correctly
+        raise QlErrorNotImplemented("[!] API not implemented")
+
+    ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
     return size
 
 

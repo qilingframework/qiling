@@ -8,7 +8,6 @@ from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -26,8 +25,8 @@ from qiling.exception import *
 })
 def hook_memcpy(ql, address, params):
     try:
-        data = bytes(ql.uc.mem_read(params['src'], params['count']))
-        ql.uc.mem_write(params['dest'], data)
+        data = bytes(ql.mem.read(params['src'], params['count']))
+        ql.mem.write(params['dest'], data)
     except Exception as e:
         import traceback
         print(traceback.format_exc())

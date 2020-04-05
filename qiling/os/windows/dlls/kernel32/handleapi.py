@@ -9,7 +9,6 @@ from qiling.os.windows.const import *
 from qiling.os.fncc import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -36,7 +35,7 @@ from qiling.exception import *
 def hook_DuplicateHandle(ql, address, params):
     content = params["hSourceHandle"]
     dst = params["lpTargetHandle"]
-    ql.uc.mem_write(dst, content.to_bytes(length=ql.pointersize, byteorder='little'))
+    ql.mem.write(dst, content.to_bytes(length=ql.pointersize, byteorder='little'))
     return 1
 
 

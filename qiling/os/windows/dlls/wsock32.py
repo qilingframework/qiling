@@ -8,7 +8,6 @@ from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -53,14 +52,14 @@ def hook_WSASocketA(ql, address, params):
 # );
 @winapi(cc=STDCALL, params={"s": INT, "name": POINTER, "namelen": INT})
 def hook_connect(ql, address, params):
-    sin_family = ql.mem_read(params["name"], 1)[0]
-    sin_port = int.from_bytes(ql.mem_read(params["name"] + 2, 2), byteorder="big")
+    sin_family =ql.mem.read(params["name"], 1)[0]
+    sin_port = int.from_bytes(ql.mem.read(params["name"] + 2, 2), byteorder="big")
     if sin_family == 0x17:  # IPv6
-        segments = list(map("{:02x}".format, ql.mem_read(params["name"] + 8, 16)))
+        segments = list(map("{:02x}".format,ql.mem.read(params["name"] + 8, 16)))
         sin_addr = ":".join(["".join(x) for x in zip(segments[0::2], segments[1::2])])
     elif sin_family == 0x2:  # IPv4
         sin_addr = ".".join(
-            [str(octet) for octet in ql.mem_read(params["name"] + 4, 4)]
+            [str(octet) for octet in ql.mem.read(params["name"] + 4, 4)]
         )
     else:
         print("[!] sockaddr sin_family unhandled variant")

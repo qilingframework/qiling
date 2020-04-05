@@ -21,31 +21,19 @@ from qiling.os.macos.mach_port import *
 from qiling.os.posix.syscall import *
 from qiling.os.utils import *
 from qiling.const import *
+from qiling.os.const import *
+from qiling.os.macos.const import *
 
-QL_X8664_MACOS_PREDEFINE_STACKADDRESS = 0x7ffcf0000000
-QL_X8664_MACOS_PREDEFINE_STACKSIZE =        0x19a00000
-QL_X8664_MACOS_PREDEFINE_MMAPADDRESS =  0x7ffbf0100000
-QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x400000000000
-QL_X8664_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS = 0x4000000f4000
-
-QL_X8664_EMU_END = 0xffffffffffffffff
 
 def hook_syscall(ql):
-    syscall_num  = ql.uc.reg_read(UC_X86_REG_RAX)
-    param0 = ql.uc.reg_read(UC_X86_REG_RDI)
-    param1 = ql.uc.reg_read(UC_X86_REG_RSI)
-    param2 = ql.uc.reg_read(UC_X86_REG_RDX)
-    param3 = ql.uc.reg_read(UC_X86_REG_R10)
-    param4 = ql.uc.reg_read(UC_X86_REG_R8)
-    param5 = ql.uc.reg_read(UC_X86_REG_R9)
-    pc = ql.uc.reg_read(UC_X86_REG_RIP)
+    param0, param1, param2, param3, param4, param5 = ql.syscall_param
 
     while 1:
-        MACOS_SYSCALL_FUNC = ql.dict_posix_syscall.get(syscall_num, None)
+        MACOS_SYSCALL_FUNC = ql.dict_posix_syscall.get(ql.syscall, None)
         if MACOS_SYSCALL_FUNC != None:
             MACOS_SYSCALL_FUNC_NAME = MACOS_SYSCALL_FUNC.__name__
             break
-        MACOS_SYSCALL_FUNC_NAME = dict_x8664_macos_syscall.get(syscall_num, None)
+        MACOS_SYSCALL_FUNC_NAME = dict_macos_syscall.get(ql.syscall, None)
         if MACOS_SYSCALL_FUNC_NAME != None:
             MACOS_SYSCALL_FUNC = eval(MACOS_SYSCALL_FUNC_NAME)
             break
@@ -59,24 +47,17 @@ def hook_syscall(ql):
         except KeyboardInterrupt:
             raise            
         except Exception:
-            ql.nprint("[!] SYSCALL ERROR: %s" % MACOS_SYSCALL_FUNC_NAME)
-            #td = ql.thread_management.cur_thread
-            #td.stop()
-            #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
+            ql.nprint("[!] SYSCALL ERROR: ", MACOS_SYSCALL_FUNC_NAME)
             raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (MACOS_SYSCALL_FUNC_NAME))
     else:
-        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(pc, syscall_num, syscall_num))
+        ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(ql.pc, ql.syscall, ql.syscall))
         if ql.debug_stop:
-            #td = ql.thread_management.cur_thread
-            #td.stop()
-            #td.stop_event = THREAD_EVENT_UNEXECPT_EVENT
             raise QlErrorSyscallNotFound("[!] Syscall Not Found")
 
 
 
 def loader_file(ql):
-    uc = Uc(UC_ARCH_X86, UC_MODE_64)
-    ql.uc = uc
+    ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
     ql.macho_task = MachoTask()
     ql.macho_fs = FileSystem(ql)
     ql.macho_mach_port = MachPort(2187)
@@ -89,7 +70,7 @@ def loader_file(ql):
         ql.stack_address = QL_X8664_MACOS_PREDEFINE_STACKADDRESS
     if (ql.stack_size == 0): 
         ql.stack_size = QL_X8664_MACOS_PREDEFINE_STACKSIZE
-    ql.uc.mem_map(ql.stack_address, ql.stack_size)
+    ql.mem.map(ql.stack_address, ql.stack_size)
 
     stack_sp = QL_X8664_MACOS_PREDEFINE_STACKADDRESS + QL_X8664_MACOS_PREDEFINE_STACKSIZE
     envs = env_dict_to_array(ql.env)
@@ -102,48 +83,28 @@ def loader_file(ql):
     
 
 def loader_shellcode(ql):
-    uc = Uc(UC_ARCH_X86, UC_MODE_64)
-    ql.uc = uc
+    ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
     if (ql.stack_address == 0):
         ql.stack_address = 0x1000000
     if (ql.stack_size == 0): 
         ql.stack_size = 2 * 1024 * 1024
-    ql.uc.mem_map(ql.stack_address,  ql.stack_size)
+    ql.mem.map(ql.stack_address,  ql.stack_size)
     ql.stack_address = ql.stack_address  + 0x200000 - 0x1000
-    ql.uc.mem_write(ql.stack_address, ql.shellcoder)
+    ql.mem.write(ql.stack_address, ql.shellcoder)
     
 
 def runner(ql):
-    ql.debug_stop = True
-    ql.uc.reg_write(UC_X86_REG_RSP, ql.stack_address)
+    ql.register(UC_X86_REG_RSP, ql.stack_address)
     ql_setup_output(ql)
     ql.hook_insn(hook_syscall, UC_X86_INS_SYSCALL)
     ql_x8664_setup_gdt_segment_ds(ql)
     ql_x8664_setup_gdt_segment_cs(ql)
     ql_x8664_setup_gdt_segment_ss(ql)
     vm_shared_region_enter(ql)
-    map_somefunc_space(ql)
+    map_commpage(ql)
     ql.macho_thread = MachoThread()
+    load_commpage(ql)
     load_shared_region(ql)
-    ql.root = True
-
-    if (ql.until_addr == 0):
-        ql.until_addr = QL_X8664_EMU_END
-    try:
-        if ql.shellcoder:
-            ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
-        else:
-            ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
-    except UcError:
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            ql.nprint("[+] PC = 0x%x\n" % (ql.pc))
-            ql.show_map_info()
-            buf = ql.uc.mem_read(ql.pc, 8)
-            ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-            ql_hook_code_disasm(ql, ql.pc, 64)
-        raise QlErrorExecutionStop("[!] Execution Terminated")    
-    
-    if ql.internal_exception != None:
-        raise ql.internal_exception    
+    ql_os_run(ql)  
 
 

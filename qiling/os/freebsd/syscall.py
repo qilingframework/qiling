@@ -24,13 +24,13 @@ from qiling.arch.utils import *
 from qiling.const import *
 
 
-def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec, null2, null3, null4, null5):
+def ql_syscall_clock_gettime(ql, clock_gettime_clock_id, clock_gettime_timespec, *args, **kw):
     ql.nprint("clock_gettime()")
     regreturn = 0
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_sysarch(ql, op, parms, null2, null3, null4, null5):
+def ql_syscall_sysarch(ql, op, parms, *args, **kw):
     """
     wild guess, of cause not working
     """
@@ -41,11 +41,11 @@ def ql_syscall_sysarch(ql, op, parms, null2, null3, null4, null5):
     GSMSR = 0xC0000101
     FSMSR = 0xC0000100
 
-    #ql.uc.mem_map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
+    #ql.mem.map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
     #ql.uc.msr_write(GSMSR, ql.GS_SEGMENT_ADDR)
     ql.uc.msr_write(FSMSR, parms)
 
     #op_buf = ql.pack32(op)
-    #ql.uc.mem_write(parms, op_buf)
+    #ql.mem.write(parms, op_buf)
     ql.nprint("sysarch(0x%x,0x%x) = %i" % (op, parms, regreturn))
     ql_definesyscall_return(ql, regreturn)

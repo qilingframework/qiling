@@ -27,6 +27,7 @@ from qiling.utils import *
 
 from binascii import unhexlify
 import ipaddress, struct, os, ctypes
+import configparser
 
 def ql_lsbmsb_convert(ql, sc, size=4):
     split_bytes = []
@@ -42,17 +43,17 @@ def ql_lsbmsb_convert(ql, sc, size=4):
 
 def ql_definesyscall_return(ql, regreturn):
     if (ql.arch == QL_ARM):  # QL_ARM
-        ql.uc.reg_write(UC_ARM_REG_R0, regreturn)
+        ql.register(UC_ARM_REG_R0, regreturn)
         # ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
 
     elif (ql.arch == QL_ARM64):  # QL_ARM64
-        ql.uc.reg_write(UC_ARM64_REG_X0, regreturn)
+        ql.register(UC_ARM64_REG_X0, regreturn)
 
     elif (ql.arch == QL_X86):  # QL_X86
-        ql.uc.reg_write(UC_X86_REG_EAX, regreturn)
+        ql.register(UC_X86_REG_EAX, regreturn)
 
     elif (ql.arch == QL_X8664):  # QL_X86_64
-        ql.uc.reg_write(UC_X86_REG_RAX, regreturn)
+        ql.register(UC_X86_REG_RAX, regreturn)
 
     elif (ql.arch == QL_MIPS32):  # QL_MIPSE32EL
         if regreturn == -1:
@@ -64,8 +65,8 @@ def ql_definesyscall_return(ql, regreturn):
             a3return = 0
         # if ql.output == QL_OUT_DEBUG:
         #    print("[+] A3 is %d" % a3return)
-        ql.uc.reg_write(UC_MIPS_REG_V0, regreturn)
-        ql.uc.reg_write(UC_MIPS_REG_A3, a3return)
+        ql.register(UC_MIPS_REG_V0, regreturn)
+        ql.register(UC_MIPS_REG_A3, a3return)
 
 
 def ql_bin_to_ipv4(ip):
@@ -76,18 +77,28 @@ def ql_bin_to_ipv4(ip):
         (ip & 0xff))
 
 
+def ql_init_configuration(ql):
+    config = configparser.ConfigParser()
+    config.read(ql.config)
+    ql.dprint(2, "[+] Added configuration file")
+    for section in config.sections():
+        ql.dprint(2, "[+] Section: %s" % section)
+        for key in config[section]:
+            ql.dprint(2, "[-] %s %s" % (key, config[section][key]) )
+    return config
+
 def ql_bin_to_ip(ip):
     return ipaddress.ip_address(ip).compressed
 
 
 def ql_read_string(ql, address):
     ret = ""
-    c = ql.uc.mem_read(address, 1)[0]
+    c = ql.mem.read(address, 1)[0]
     read_bytes = 1
 
     while c != 0x0:
         ret += chr(c)
-        c = ql.uc.mem_read(address + read_bytes, 1)[0]
+        c = ql.mem.read(address + read_bytes, 1)[0]
         read_bytes += 1
     return ret
 
@@ -111,7 +122,7 @@ def ql_hook_code_disasm(ql, address, size):
     tmp = uc.mem_read(address, size)
 
     if (ql.arch == QL_ARM):  # QL_ARM
-        reg_cpsr = uc.reg_read(UC_ARM_REG_CPSR)
+        reg_cpsr = ql.register(UC_ARM_REG_CPSR)
         mode = CS_MODE_ARM
         if ql.archendian == QL_ENDIAN_EB:
             reg_cpsr_v = 0b100000
@@ -149,34 +160,24 @@ def ql_hook_code_disasm(ql, address, size):
     insn = md.disasm(tmp, address)
     opsize = int(size)
 
-    _address = ("[+] 0x%x\t" % (address))
+    ql.nprint("[+] 0x%x\t" % (address), end="")
 
-    _opcode = ""
     for i in tmp:
-        _opcode += (" %02x" % i)
+        ql.nprint (" %02x " % i, end="")
 
-    _opsize = ""
-    if opsize < 4:
-        _opsize = ("\t  ")
+    if opsize <= 6:
+        ql.nprint ("\t", end="")
     
-    _asmcode = ""
     for i in insn:
-       _asmcode += ('\t%s \t%s' % (i.mnemonic, i.op_str))
+        ql.nprint ("%s %s" % (i.mnemonic, i.op_str))
     
-    ql.nprint(_address + _opcode + _opsize  + _asmcode)
-
     if ql.output == QL_OUT_DUMP:
-        # FIXME: Need to name each reg
         for reg in ql.reg_table:
             ql.reg_name = reg
             REG_NAME = ql.reg_name
-            REG_VAL = ql.uc.reg_read(reg)
+            REG_VAL = ql.register(reg)
             ql.dprint(3, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
             
-        #ql.nprint("[-] %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x %s= 0x%x\n" % \
-                  #(syscall_num[1], syscall_num[0], arg_0[1], arg_0[0], arg_1[1], arg_1[0], arg_2[1], arg_2[0], arg_3[1],
-                  # arg_3[0], arg_4[1], arg_4[0], arg_5[1], arg_5[0]))
-
 
 def ql_setup_output(ql):
     if ql.output in (QL_OUT_DISASM, QL_OUT_DUMP):
@@ -472,11 +473,11 @@ def print_function(ql, address, function_name, params, ret):
 
 def read_cstring(ql, address):
     result = ""
-    char = ql.uc.mem_read(address, 1)
+    char = ql.mem.read(address, 1)
     while char.decode(errors="ignore") != "\x00":
         address += 1
         result += char.decode(errors="ignore")
-        char = ql.uc.mem_read(address, 1)
+        char = ql.mem.read(address, 1)
     return result
 
 

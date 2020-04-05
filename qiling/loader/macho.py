@@ -13,8 +13,6 @@ from qiling.exception import *
 
 # TODO: we maybe we should use a better way to load
 # reference to xnu source code /bsd/kern/mach_loader.c
-
-
 class Macho:
 
     # macho x8664 loader 
@@ -124,8 +122,8 @@ class Macho:
         seg_data = bytes(self.loading_file.get_segment(seg_name).content)
 
         self.ql.dprint(0, "[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
-        self.uc.mem_map(vaddr_start, seg_size)
-        self.uc.mem_write(vaddr_start, seg_data)
+        self.ql.mem.map(vaddr_start, seg_size)
+        self.ql.mem.write(vaddr_start, seg_data)
         if self.vm_end_addr < vaddr_end:
             self.vm_end_addr = vaddr_end
         # print("SegData : {}".format(seg_data[0x119c:]))

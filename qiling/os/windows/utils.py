@@ -6,7 +6,81 @@ import struct
 from unicorn.x86_const import *
 from qiling.os.utils import *
 from qiling.const import *
+from qiling.os.const import *
+from qiling.os.utils import *
+from qiling.arch.x86 import *
+from qiling.os.memory import Heap
+from qiling.os.windows.registry import RegistryManager
+from qiling.os.windows.clipboard import Clipboard
+from qiling.os.windows.fiber import FiberManager
+from qiling.os.windows.handle import HandleManager, Handle
+from qiling.os.windows.thread import ThreadManager, Thread
 
+
+def setup(ql):
+    ql.heap = Heap(ql, ql.commos.HEAP_BASE_ADDR, ql.commos.HEAP_BASE_ADDR + ql.commos.HEAP_SIZE)
+    ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
+    
+    # setup gdt
+    if ql.arch == QL_X86:
+        ql_x86_setup_gdt_segment_fs(ql, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE)
+        ql_x86_setup_gdt_segment_gs(ql, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
+        ql_x86_setup_gdt_segment_ds(ql)
+        ql_x86_setup_gdt_segment_cs(ql)
+        ql_x86_setup_gdt_segment_ss(ql)
+    elif ql.arch == QL_X8664:
+        ql_x8664_set_gs(ql)     
+    
+    # handle manager
+    ql.handle_manager = HandleManager()
+    # registry manger
+    ql.registry_manager = RegistryManager(ql)
+    # clipboard
+    ql.clipboard = Clipboard(ql)
+    # fibers
+    ql.fiber_manager = FiberManager(ql)
+    # Place to set errors for retrieval by GetLastError()
+    # thread manager
+    main_thread = Thread(ql)
+    ql.thread_manager = ThreadManager(ql, main_thread)
+    new_handle = Handle(thread=main_thread)
+    ql.handle_manager.append(new_handle)
+    # user configuration
+    ql.config = ql_init_configuration(ql)
+    # variables used inside hooks
+    ql.hooks_variables = {}
+
+
+def ql_os_run(ql):
+    if ql.until_addr == 0:
+        if ql.archbit == 32:
+            ql.until_addr = QL_ARCHBIT32_EMU_END
+        else:
+            ql.until_addr = QL_ARCHBIT64_EMU_END            
+    try:
+        if ql.shellcoder:
+            ql.uc.emu_start(ql.code_address, ql.code_address + len(ql.shellcoder))
+        else:
+            ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
+    except UcError:
+        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+            ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
+            ql.show_map_info()
+            try:
+                buf = ql.mem.read(ql.pc, 8)
+                ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                ql.nprint("\n")
+                ql_hook_code_disasm(ql, ql.pc, 64)
+            except:
+                pass
+        raise
+
+    ql.registry_manager.save()
+
+    post_report(ql)
+
+    if ql.internal_exception is not None:
+        raise ql.internal_exception
 
 def ql_x86_windows_hook_mem_error(ql, addr, size, value):
     ql.dprint(0, "[+] ERROR: unmapped memory access at 0x%x" % addr)
@@ -19,11 +93,11 @@ def string_unpack(string):
 
 def read_wstring(ql, address):
     result = ""
-    char = ql.uc.mem_read(address, 2)
+    char = ql.mem.read(address, 2)
     while char.decode(errors="ignore") != "\x00\x00":
         address += 2
         result += char.decode(errors="ignore")
-        char = ql.uc.mem_read(address, 2)
+        char = ql.mem.read(address, 2)
     # We need to remove \x00 inside the string. Compares do not work otherwise
     return result.replace("\x00", "")
 
@@ -37,13 +111,13 @@ def env_dict_to_array(env_dict):
 
 def debug_print_stack(ql, num, message=None):
     if message:
-        print("========== %s ==========" % message)
+        ql.dprint(0, "========== %s ==========" % message)
     if ql.arch == QL_X86:
-        sp = ql.uc.reg_read(UC_X86_REG_ESP)
+        sp = ql.register(UC_X86_REG_ESP)
     else:
-        sp = ql.uc.reg_read(UC_X86_REG_RSP)
+        sp = ql.register(UC_X86_REG_RSP)
     for i in range(num):
-        print(hex(sp + ql.pointersize * i) + ": " + hex(ql.stack_read(i * ql.pointersize)))
+        ql.dprint(0, hex(sp + ql.pointersize * i) + ": " + hex(ql.stack_read(i * ql.pointersize)))
 
 
 def is_file_library(string):
