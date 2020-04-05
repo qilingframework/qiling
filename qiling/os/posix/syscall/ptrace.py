@@ -31,10 +31,10 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_ptrace(ql, request, pid, addr, data, null0, null1):
+def ql_syscall_ptrace(ql, request, pid, addr, data, *args, **kw):
     regreturn = 0
     ql.nprint("ptrace(0x%x, 0x%x, 0x%x, 0x%x) = %d" % (request, pid, addr, data, regreturn))
     ql_definesyscall_return(ql, regreturn)

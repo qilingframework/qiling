@@ -31,10 +31,10 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
+def ql_syscall_munmap(ql, munmap_addr , munmap_len, *args, **kw):
     munmap_len = ((munmap_len + 0x1000 - 1) // 0x1000) * 0x1000
     ql.mem.unmap(munmap_addr, munmap_len)
     regreturn = 0
@@ -74,13 +74,13 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_madvise(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_madvise(ql, *args, **kw):
     regreturn = 0
     ql.nprint("madvise() = %d" %  regreturn)
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, null1, null2):
+def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, *args, **kw):
     regreturn = 0
     ql.nprint("mprotect(0x%x, 0x%x, 0x%x) = %d" % (mprotect_start, mprotect_len, mprotect_prot, regreturn))
     ql.dprint(1, "[+] mprotect(0x%x, 0x%x, %s) = %d" % (
@@ -113,7 +113,7 @@ def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, 
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4):
+def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     # according to the linux kernel this is only for the ia32 compatibility
     _struct = []
 

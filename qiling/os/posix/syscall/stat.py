@@ -31,7 +31,7 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
 def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
@@ -41,7 +41,7 @@ def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstatat64_flag, null0, null1):
+def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstatat64_flag, *args, **kw):
     fstatat64_fname = ql_read_string(ql, fstatat64_fname)
 
     real_path = ql_transform_to_real_path(ql, fstatat64_fname)
@@ -97,7 +97,7 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, null0, null1, null2, null3):
+def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
     if fstat64_fd < 256 and ql.file_des[fstat64_fd] != 0:
         user_fileno = fstat64_fd
         fstat64_info = ql.file_des[user_fileno].fstat()
@@ -168,7 +168,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_fstat(ql, fstat_fd, fstat_add, null0, null1, null2, null3):
+def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
 
     if fstat_fd < 256 and ql.file_des[fstat_fd] != 0:
         user_fileno = fstat_fd
@@ -244,7 +244,7 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, null0, null1, null2, null3):
 
 
 # int stat64(const char *pathname, struct stat64 *buf);
-def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, null0, null1, null2, null3):
+def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
     stat64_file = (ql_read_string(ql, stat64_pathname))
 
     real_path = ql_transform_to_real_path(ql, stat64_file)
@@ -317,7 +317,7 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, null0, null1, null2, 
 
 
 # int stat(const char *path, struct stat *buf);
-def ql_syscall_stat(ql, stat_path, stat_buf_ptr, null0, null1, null2, null3):
+def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
     stat_file = (ql_read_string(ql, stat_path))
 
     real_path = ql_transform_to_real_path(ql, stat_file)
@@ -377,7 +377,7 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, null0, null1, null2, null3):
+def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
     lstat_file = (ql_read_string(ql, lstat_path))
 
     real_path = ql_transform_to_real_path(ql, lstat_file)
@@ -436,7 +436,7 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, null0, null1, null2, null3):
         ql.dprint(0, "[!] lstat() read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
-def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, null0, null1):
+def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
     # fix me. dirfd(relative path) not implement.
     file_path = ql_read_string(ql, pathname)
     real_path = ql_transform_to_real_path(ql, file_path)
@@ -449,7 +449,7 @@ def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, null0, null1):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_mkdir(ql, pathname, mode, null0, null1, null2, null3):
+def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
     file_path = ql_read_string(ql, pathname)
     real_path = ql_transform_to_real_path(ql, file_path)
     ql.nprint("mkdir(%s, 0%o)" % (real_path, mode))
@@ -462,7 +462,7 @@ def ql_syscall_mkdir(ql, pathname, mode, null0, null1, null2, null3):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_umask(ql, mode, null0, null1, null2, null3, null4):
+def ql_syscall_umask(ql, mode, *args, **kw):
     oldmask = os.umask(mode)
     ql.nprint("umask(0%o) return oldmask 0%o" % (mode, oldmask))
     regreturn = oldmask

@@ -31,10 +31,10 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, null0, null1, null2):
+def ql_syscall_ioctl(ql, ioctl_fd, ioctl_cmd, ioctl_arg, *args, **kw):
     TCGETS = 0x5401
     TIOCGWINSZ = 0x5413
     TIOCSWINSZ = 0x5414

@@ -28,7 +28,7 @@ from qiling.os.macos.kernel_func import *
 from qiling.os.macos.utils import *
 from qiling.const import *
 from qiling.arch.x86 import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 
 
 # TODO: We need to finish these syscall
@@ -183,7 +183,7 @@ def ql_syscall_fcntl64_macos(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
     ql_definesyscall_return(ql, regreturn)
 
 # 0x99
-def ql_syscall_pread(ql, fd, buf, nbyte, offset, null0, null1):
+def ql_syscall_pread(ql, fd, buf, nbyte, offset, *args, **kw):
     ql.nprint("RIP: 0x{:X}".format(ql.register(UC_X86_REG_RIP)))
     ql.nprint("syscall >> pread(fd: 0x{:X}, buf: 0x{:X}, nbyte: {}, offset: 0x{:X})".format(
         fd, buf, nbyte, offset

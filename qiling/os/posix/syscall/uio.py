@@ -31,10 +31,10 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_writev(ql, writev_fd, writev_vec, writev_vien, null0, null1, null2):
+def ql_syscall_writev(ql, writev_fd, writev_vec, writev_vien, *args, **kw):
     regreturn = 0
     size_t_len = ql.archbit // 8
     iov = ql.mem.read(writev_vec, writev_vien * size_t_len * 2)
