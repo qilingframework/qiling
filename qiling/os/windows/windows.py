@@ -3,10 +3,118 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-from unicorn.x86_const import *
+import types
+
+from unicorn import *
+
+from qiling.arch.x86_const import *
+from qiling.os.utils import *
 from qiling.const import *
+
+from qiling.loader.pe import PE, Shellcode
+from qiling.os.windows.dlls import *
+from qiling.os.windows.const import *
+from qiling.os.windows.const import Mapper
 
 class QlWindowsManager:
     
     def __init__(self, ql):
         self.ql = ql
+
+    # hook WinAPI in PE EMU
+    def hook_winapi(self, int, address, size):
+        if address in self.ql.PE.import_symbols:
+            winapi_name = self.ql.PE.import_symbols[address]['name']
+            if winapi_name is None:
+                winapi_name = Mapper[self.ql.PE.import_symbols[address]['dll']][self.ql.PE.import_symbols[address]['ordinal']]
+            else:
+                winapi_name = winapi_name.decode()
+            winapi_func = None
+
+            if winapi_name in self.ql.comm_os.user_defined_api:
+                if isinstance(self.ql.comm_os.user_defined_api[winapi_name], types.FunctionType):
+                    winapi_func = self.ql.comm_os.user_defined_api[winapi_name]
+            else:
+                try:
+                    counter = self.ql.PE.syscall_count.get(winapi_name, 0) + 1
+                    self.ql.PE.syscall_count[winapi_name] = counter
+                    winapi_func = globals()['hook_' + winapi_name]
+                except KeyError:
+                    winapi_func = None
+
+            if winapi_func:
+                try:
+                    winapi_func(self.ql, address, {})
+                except Exception:
+                    self.ql.dprint(0, "[!] %s Exception Found" % winapi_name)
+                    raise QlErrorSyscallError("[!] Windows API Implementation Error")
+            else:
+                self.ql.nprint("[!] %s is not implemented\n" % winapi_name)
+                if self.ql.debug_stop:
+                    raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
+
+
+    def loader(self):
+        if self.ql.arch == QL_X8664:
+            self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
+            self.QL_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
+            self.QL_WINDOWS_STACK_SIZE = 0x40000
+            self.ql.code_address = 0x140000000
+            self.ql.code_size = 10 * 1024 * 1024
+        elif self.ql.arch == QL_X86:        
+            self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_32)
+            self.QL_WINDOWS_STACK_ADDRESS = 0xfffdd000
+            self.QL_WINDOWS_STACK_SIZE =0x21000 
+            self.ql.code_address = 0x40000
+            self.ql.code_size = 10 * 1024 * 1024
+
+        if self.ql.stack_address == 0:
+            self.ql.stack_address = self.QL_WINDOWS_STACK_ADDRESS
+        if self.ql.stack_size == 0:
+            self.ql.stack_size = self.QL_WINDOWS_STACK_SIZE            
+        
+        setup(self.ql)
+        # load pe
+      
+        if self.ql.shellcoder:
+            self.ql.PE = Shellcode(self.ql, [b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
+        else:
+            self.ql.PE = PE(self.ql, self.ql.path)
+       
+        self.ql.PE.load()
+        # hook win api
+        self.ql.hook_code(self.hook_winapi)
+        
+
+
+    def runner(self):
+        ql_setup_output(self.ql)
+        if self.ql.until_addr == 0:
+            if self.ql.archbit == 32:
+                self.ql.until_addr = QL_ARCHBIT32_EMU_END
+            else:
+                self.ql.until_addr = QL_ARCHBIT64_EMU_END            
+        try:
+            if self.ql.shellcoder:
+                self.ql.uc.emu_start(self.ql.code_address, self.ql.code_address + len(self.ql.shellcoder))
+            else:
+                self.ql.uc.emu_start(self.ql.entry_point, self.ql.until_addr, self.ql.timeout)
+        except UcError:
+            if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+                self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.pc))
+                self.ql.mem.show_mapinfo()
+                try:
+                    buf = ql.mem.read(ql.pc, 8)
+                    self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                    self.ql.nprint("\n")
+                    ql_hook_code_disasm(ql, ql.pc, 64)
+                except:
+                    pass
+            raise
+
+        self.ql.registry_manager.save()
+
+        post_report(self.ql)
+
+        if self.ql.internal_exception is not None:
+            raise self.ql.internal_exception

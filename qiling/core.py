@@ -25,12 +25,10 @@ def catch_KeyboardInterrupt(ql):
             try:
                 return func(*args, **kw)
             except BaseException as e:
-                ql.dprint(0, "Received a request from the user to stop!")
+                #ql.dprint(0, "Received a request from the user to stop!")
                 ql.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
                 ql.internal_exception = e
-
         return wrapper
-
     return decorator
 
 
@@ -106,8 +104,6 @@ class Qiling:
         self.debug_stop = False
         self.internal_exception = None
         self.platform = platform.system()
-        self.dict_posix_syscall = dict()
-        self.user_defined_api = {}
         self.global_thread_id = 0
         self.debugger = None
         self.automatize_input = False
@@ -226,7 +222,7 @@ class Qiling:
         """
         self.archfunc = arch_func(self)
         if comm_os:
-            self.commos = comm_os(self)
+            self.comm_os = comm_os(self)
 
         # based on CPU bit and set pointer size
         if self.archbit:
@@ -259,18 +255,11 @@ class Qiling:
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
 
-        """
-        load os type, should replace self.shellcode() and self.load_exec()
-        disable for now
-        """
+        
+        # load os and perform initialization
         load_os = ql_get_os_module_function(self)        
-        self.loados = load_os(self)
-
-        # Loader running
-        if self.shellcoder and self.arch and self.ostype:
-            self.shellcode()
-        else:
-            self.load_exec()
+        self.load_os = load_os(self)
+        self.load_os.loader()
 
     def build_os_execution(self, function_name):
         self.runtype = ql_get_os_module_function(self, "runner")
@@ -329,16 +318,15 @@ class Qiling:
 
         # patch binary
         self.__enable_bin_patch()
-        
-        # execution, ql.run()
-        runner = self.build_os_execution("runner")
-        runner(self)
+
+        # run the binary
+        self.load_os.runner()     
 
         # resume with debugger
         if self.debugger is not None:
             self.remotedebugsession.run()
 
-
+    # normal print out
     def nprint(self, *args, **kw):
         if self.thread_management is not None and self.thread_management.cur_thread is not None:
             fd = self.thread_management.cur_thread.log_file_fd
@@ -358,6 +346,7 @@ class Qiling:
             elif isinstance(fd, logging.StreamHandler):
                 fd.flush()
 
+    # debug print out, always use with verbose level with dprint(0,"helloworld")
     def dprint(self, level, *args, **kw):
         try:
             self.verbose = int(self.verbose)
@@ -377,20 +366,25 @@ class Qiling:
     def addr_to_str(self, addr, short=False, endian="big"):
         return ql_addr_to_str(self, addr, short, endian)
 
+
     def asm2bytes(self, runasm, arm_thumb=None):
         return ql_asm2bytes(self, self.arch, runasm, arm_thumb)
     
+
     # replace linux or windows syscall/api with custom api/syscall
     def set_syscall(self, syscall_cur, syscall_new):
         if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD):
-            self.dict_posix_syscall[syscall_cur] = syscall_new
+            #self.comm_os.dict_posix_syscall[syscall_cur] = syscall_new
+            self.comm_os.cur_syscall = syscall_cur
+            self.comm_os.set_syscall = syscall_new
         elif self.ostype == QL_WINDOWS:
             self.set_api(syscall_cur, syscall_new)
+
 
     # replace Windows API with custom syscall
     def set_api(self, api_name, api_func):
         if self.ostype == QL_WINDOWS:
-            self.user_defined_api[api_name] = api_func
+            self.comm_os.user_defined_api[api_name] = api_func
 
 
     def hook_code(self, callback, user_data=None, begin=1, end=0):
@@ -686,12 +680,12 @@ class Qiling:
     # ql.syscall - get syscall for all posix series
     @property
     def syscall(self):
-        return self.commos.get_syscall()
+        return self.comm_os.get_syscall()
 
     # ql.syscall_param - get syscall for all posix series
     @property
     def syscall_param(self):
-        return self.commos.get_syscall_param()
+        return self.comm_os.get_syscall_param()
 
     # ql.reg_pc - PC register name getter
     @property

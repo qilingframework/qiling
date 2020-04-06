@@ -162,7 +162,7 @@ def hook_OpenMutexW(ql, address, params):
         mutex = ql.handle_manager.get(name)
         if mutex is None:
             # If a named mutex does not exist, the function fails and GetLastError returns ERROR_FILE_NOT_FOUND.
-            ql.commos.last_error  = ERROR_FILE_NOT_FOUND
+            ql.comm_os.last_error  = ERROR_FILE_NOT_FOUND
             return 0
         else:
             raise QlErrorNotImplemented("[!] API not implemented")

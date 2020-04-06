@@ -13,6 +13,8 @@ class QlWindowsOSManager:
     
     def __init__(self, ql):
         self.ql = ql
+        self.user_defined_api = {}
+        
         if self.ql.arch == QL_X86:
             self.STRUCTERS_LAST_ADDR = FS_SEGMENT_ADDR
             self.DEFAULT_IMAGE_BASE = 0x400000

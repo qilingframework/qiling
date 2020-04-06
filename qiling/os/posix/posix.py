@@ -10,11 +10,82 @@ from unicorn.x86_const import *
 
 from qiling.const import *
 
+from qiling.os.macos.syscall import *
+from qiling.os.posix.syscall import *
+from qiling.os.freebsd.syscall import *
+from qiling.os.linux.syscall import *
+
 class QlPosixManager:
     
     def __init__(self, ql):
         self.ql = ql
+        self.dict_posix_syscall = dict()
+        self.set_syscall = ""
+        self.cur_syscall = ""
     
+    def load_syscall(self, intno= None):
+        # FIXME: maybe we need a better place
+        if self.ql.ostype == QL_FREEBSD:
+            from qiling.os.freebsd.x8664_syscall import map_syscall
+ 
+        elif self.ql.ostype == QL_MACOS:
+            if  self.ql.arch == QL_X8664:   
+                from qiling.os.macos.x8664_syscall import map_syscall
+            elif  self.ql.arch == QL_ARM64:
+                from qiling.os.macos.arm64_syscall import map_syscall
+
+        elif self.ql.ostype == QL_LINUX:
+            if self.ql.arch == QL_X8664:   
+                from qiling.os.linux.x8664_syscall import map_syscall
+            if self.ql.arch == QL_X86:   
+                from qiling.os.linux.x86_syscall import map_syscall                
+            elif self.ql.arch == QL_ARM64:
+                from qiling.os.linux.arm64_syscall import map_syscall
+            elif self.ql.arch == QL_MIPS32:   
+                from qiling.os.linux.mips32_syscall import map_syscall
+                if intno != 0x11:
+                    raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)
+            elif self.ql.arch == QL_ARM:
+                from qiling.os.linux.arm_syscall import map_syscall                
+        
+        param0 , param1, param2, param3, param4, param5 = self.ql.syscall_param
+
+        while 1:
+            self.syscall_map = self.dict_posix_syscall.get(self.ql.syscall, None)
+            if self.syscall_map != None:
+                self.syscall_name = self.syscall_map.__name__
+                break
+            
+            self.syscall_name = map_syscall(self.ql.syscall)
+            
+            if self.set_syscall and self.cur_syscall:
+                match_name = "ql_syscall_" + str(self.cur_syscall)
+                self.ql.dprint(0,"[+] set_syscall: original %s replace with %s" % (match_name, self.set_syscall))
+                if match_name == self.syscall_name:
+                    self.syscall_name = self.set_syscall
+                    #break
+            
+            if self.syscall_name != None:
+                self.syscall_map = eval(self.syscall_name)
+                break
+            
+            self.syscall_map = None
+            self.syscall_name = None
+            break
+
+        if self.syscall_map != None:
+            try:
+                self.syscall_map(self.ql, param0, param1, param2, param3, param4, param5)
+            except KeyboardInterrupt:
+                raise            
+            except Exception:
+                self.ql.nprint("[!] SYSCALL ERROR: ", self.syscall_name)
+                raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (self.syscall_name))
+        else:
+            self.ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(self.ql.pc, self.ql.syscall, self.ql.syscall))
+            if self.ql.debug_stop:
+                raise QlErrorSyscallNotFound("[!] Syscall Not Found")
+
     # get syscall
     def get_syscall(self):
         if self.ql.arch == QL_ARM64:
