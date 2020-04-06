@@ -18,7 +18,7 @@ from qiling.const import *
 from qiling.os.freebsd.const import *
 from qiling.os.const import *
 
-class QlFreeBSDManager:
+class QlOsFreebsdManager:
     
     def __init__(self, ql):
         self.ql = ql

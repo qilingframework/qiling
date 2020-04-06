@@ -9,6 +9,7 @@ from unicorn.mips_const import *
 from unicorn.x86_const import *
 
 from qiling.const import *
+from qiling.utils import *
 
 from qiling.os.macos.syscall import *
 from qiling.os.posix.syscall import *
@@ -24,29 +25,40 @@ class QlPosixManager:
         self.cur_syscall = ""
     
     def load_syscall(self, intno = None):
-        # FIXME: maybe we need a better place
+        # FIXME: Need to figure this out
+        # ostype_str = ql_ostype_convert_str(self.ql.ostype)
+        # arch_str = ql_arch_convert_str(self.ql.arch)
+        # arch_str = arch_str + "_syscall"
+        # module_name = ql_build_module_import_name("os", ostype_str, arch_str)
+        # func_name = "map_syscall"
+        #return ql_get_module_function(module_name, func_name)
+
         if self.ql.ostype == QL_FREEBSD:
-            from qiling.os.freebsd.x8664_syscall import map_syscall
+           from qiling.os.freebsd.x8664_syscall import map_syscall
  
         elif self.ql.ostype == QL_MACOS:
-            if  self.ql.arch == QL_X8664:   
-                from qiling.os.macos.x8664_syscall import map_syscall
-            elif  self.ql.arch == QL_ARM64:
-                from qiling.os.macos.arm64_syscall import map_syscall
+           if  self.ql.arch == QL_X8664:   
+               from qiling.os.macos.x8664_syscall import map_syscall
+           elif  self.ql.arch == QL_ARM64:
+               from qiling.os.macos.arm64_syscall import map_syscall
 
         elif self.ql.ostype == QL_LINUX:
-            if self.ql.arch == QL_X8664:   
-                from qiling.os.linux.x8664_syscall import map_syscall
-            if self.ql.arch == QL_X86:   
-                from qiling.os.linux.x86_syscall import map_syscall                
-            elif self.ql.arch == QL_ARM64:
-                from qiling.os.linux.arm64_syscall import map_syscall
-            elif self.ql.arch == QL_MIPS32:   
-                from qiling.os.linux.mips32_syscall import map_syscall
-                if intno != 0x11:
-                    raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)
-            elif self.ql.arch == QL_ARM:
-                from qiling.os.linux.arm_syscall import map_syscall                
+           if self.ql.arch == QL_X8664:   
+               from qiling.os.linux.x8664_syscall import map_syscall
+           if self.ql.arch == QL_X86:   
+               from qiling.os.linux.x86_syscall import map_syscall                
+           elif self.ql.arch == QL_ARM64:
+               from qiling.os.linux.arm64_syscall import map_syscall
+           elif self.ql.arch == QL_MIPS32:   
+               from qiling.os.linux.mips32_syscall import map_syscall
+               if intno != 0x11:
+                   raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)
+           elif self.ql.arch == QL_ARM:
+               from qiling.os.linux.arm_syscall import map_syscall                
+        
+        if self.ql.arch == QL_MIPS32:   
+            if intno != 0x11:
+                raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)        
         
         param0 , param1, param2, param3, param4, param5 = self.ql.syscall_param
 

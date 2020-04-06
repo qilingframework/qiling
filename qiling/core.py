@@ -126,14 +126,12 @@ class Qiling:
         """
 
         # ostype string - int convertion
-        if self.ostype and type(self.ostype) == str:
-            self.ostype = self.ostype.lower()
-            self.ostype = ostype_convert(self.ostype)
-
-        # pre-define shellcoder env
-        if self.shellcoder and self.archtype and type(self.archtype) == str:
-            self.arch = self.arch.lower()
-            self.arch = arch_convert(self.archtype)
+        if self.shellcoder:
+            if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str ):
+                self.ostype = self.ostype.lower()
+                self.ostype = ostype_convert(self.ostype)
+                self.arch = self.arch.lower()
+                self.arch = arch_convert(self.archtype)
 
         # read file propeties, not shellcoder
         if self.rootfs and self.shellcoder is None:
@@ -146,7 +144,8 @@ class Qiling:
 
             elif not os.path.exists(str(self.filename[0])) or not os.path.exists(self.rootfs):
                 raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
-        
+
+
         # Looger's configuration
         _logger = ql_setup_logging_stream(self)
 
@@ -157,7 +156,6 @@ class Qiling:
                 os.makedirs(self.log_dir, 0o755)
 
             pid = os.getpid()
-
             # Is better to call the logfile as the binary we are testing instead of a pid with no logical value
             self.log_file = os.path.join(self.log_dir, self.filename[0].split("/")[-1])
             _logger = ql_setup_logging_file(self.output, self.log_file + "_" + str(pid), _logger)
@@ -190,49 +188,6 @@ class Qiling:
         if not ql_is_valid_arch(self.arch):
             raise QlErrorArch("[!] Invalid Arch")
 
-        """
-        Load architecture's module, only module
-        Load common os module,  only module
-        ql.pc, ql.sp and etc
-        """
-        arch_func = ql_get_arch_module_function(self.arch, ql_arch_convert_str(self.arch).upper())
-        comm_os = ql_get_commonos_module_function(self.ostype)
-
-        """
-        define file is 32 or 64bit, and check file endian
-        QL_ENDIAN_EL = Little Endian
-        big endian is define during ql_elf_check_archtype
-        """
-        self.archbit = ql_get_arch_bits(self.arch)
-        if self.arch not in (QL_ENDINABLE):
-            self.archendian = QL_ENDIAN_EL
-
-        """
-        Load architecture's function
-        Load common os module,  only module
-        ql.pc, ql.sp and etc
-        """
-        self.archfunc = arch_func(self)
-        if comm_os:
-            self.comm_os = comm_os(self)
-
-        # based on CPU bit and set pointer size
-        if self.archbit:
-            self.pointersize = (self.archbit // 8)
-
-        """
-        Load Memory Management Module
-        ql.mem.read, ql.mem.write and etc
-        """
-        if self.archbit == 64:
-            max_addr = 0xFFFFFFFFFFFFFFFF
-        elif self.archbit == 32:
-            max_addr = 0xFFFFFFFF
-        try:
-            self.mem = QlMemoryManager(self, max_addr)
-        except:
-            raise QlErrorArch("[!] Cannot load Memory Management module")    
-
         # chceck for supported OS type    
         if self.ostype not in QL_OS:
             raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos'")
@@ -247,7 +202,45 @@ class Qiling:
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
 
-        
+        """
+        define file is 32 or 64bit, and check file endian
+        QL_ENDIAN_EL = Little Endian
+        big endian is define during ql_elf_check_archtype
+        """
+        self.archbit = ql_get_arch_bits(self.arch)
+        if self.arch not in (QL_ENDINABLE):
+            self.archendian = QL_ENDIAN_EL
+
+        # based on CPU bit and set pointer size
+        if self.archbit:
+            self.pointersize = (self.archbit // 8)            
+
+        """
+        Load architecture's module
+        Load common os module
+        ql.pc, ql.sp and etc
+        """
+        arch_func = ql_get_arch_module_function(self.arch, ql_arch_convert_str(self.arch).upper())
+        comm_os = ql_get_commonos_module_function(self.ostype)
+
+        self.archfunc = arch_func(self)
+        if comm_os:
+            self.comm_os = comm_os(self)
+
+        """
+        Load Memory Management Module
+        ql.mem.read, ql.mem.write and etc
+        """
+        if self.archbit == 64:
+            max_addr = 0xFFFFFFFFFFFFFFFF
+        elif self.archbit == 32:
+            max_addr = 0xFFFFFFFF
+        try:
+            self.mem = QlMemoryManager(self, max_addr)
+        except:
+            raise QlErrorArch("[!] Cannot load Memory Management module")    
+
+       
         # load os and perform initialization
         load_os = ql_get_os_module_function(self)        
         self.load_os = load_os(self)
@@ -351,7 +344,7 @@ class Qiling:
 
     # replace linux or windows syscall/api with custom api/syscall
     def set_syscall(self, syscall_cur, syscall_new):
-        if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD):
+        if self.ostype in (QL_POSIX):
             syscall_name = "ql_syscall_" + str(syscall_cur)
             self.comm_os.dict_posix_syscall[syscall_name] = syscall_new
         elif self.ostype == QL_WINDOWS:
@@ -361,7 +354,7 @@ class Qiling:
     # replace Windows API with custom syscall
     def set_api(self, api_name, api_func):
         if self.ostype == QL_WINDOWS:
-            self.comm_os.user_defined_api[api_name] = api_func
+            self.load_os.user_defined_api[api_name] = api_func
 
 
     def hook_code(self, callback, user_data=None, begin=1, end=0):

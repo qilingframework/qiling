@@ -255,18 +255,11 @@ def ql_get_os_module_function(ql, function_name = None):
 
     if not ql_is_valid_arch(ql.arch):
         raise QlErrorArch("[!] Invalid Arch")
-
+    
     if function_name == None:
-        if ql.ostype == QL_LINUX:
-            function_name = "QlLinuxManager"
-        elif ql.ostype == QL_FREEBSD:
-            function_name = "QlFreeBSDManager"        
-        elif ql.ostype == QL_WINDOWS:
-            function_name = "QlWindowsManager"
-        elif ql.ostype == QL_MACOS:
-            function_name = "QlMacOSManager"
-        else:
-            function_name = ""
+        ostype_str = ql_ostype_convert_str(ql.ostype)
+        ostype_str = ostype_str.capitalize()
+        function_name = "QlOs" + ostype_str + "Manager"
         module_name = ql_build_module_import_name("os", ql.ostype)
         return ql_get_module_function(module_name, function_name, ql)
     else:
@@ -287,16 +280,13 @@ def ql_get_commonos_module_function(ostype):
         raise QlErrorOsType("[!] Invalid OSType")
     
     # common os class, posix type OS share one same class
-    if ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD):
+    if ostype in (QL_POSIX):
         module_name = ql_build_module_import_name("os", "posix", "posix")
         func_name = "QlPosixManager"
-
-    # common os class, Microsoft OS share one same class
-    elif ostype is QL_WINDOWS:
-        module_name = ql_build_module_import_name("os", "windows", "windowsos")
-        func_name = "QlWindowsOSManager"
-    
-    return ql_get_module_function(module_name, func_name)
+    else:
+        module_name = ""    
+    if module_name: 
+        return ql_get_module_function(module_name, func_name)
 
 def ql_build_module_import_name(module, ostype, arch = None):
     ret_str = "qiling." + module
