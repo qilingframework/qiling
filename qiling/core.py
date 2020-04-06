@@ -352,9 +352,8 @@ class Qiling:
     # replace linux or windows syscall/api with custom api/syscall
     def set_syscall(self, syscall_cur, syscall_new):
         if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD):
-            #self.comm_os.dict_posix_syscall[syscall_cur] = syscall_new
-            self.comm_os.cur_syscall = syscall_cur
-            self.comm_os.set_syscall = syscall_new
+            syscall_name = "ql_syscall_" + str(syscall_cur)
+            self.comm_os.dict_posix_syscall[syscall_name] = syscall_new
         elif self.ostype == QL_WINDOWS:
             self.set_api(syscall_cur, syscall_new)
 
