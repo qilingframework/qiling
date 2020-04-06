@@ -25,7 +25,7 @@ from qiling.os.const import *
 from qiling.os.macos.const import *
 
 
-class QlMacOSManager:
+class QlOsMacosManager:
     
     def __init__(self, ql):
         self.ql = ql

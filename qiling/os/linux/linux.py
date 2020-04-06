@@ -20,7 +20,7 @@ from qiling.const import *
 
 from qiling.arch.x86 import *
 
-class QlLinuxManager:
+class QlOsLinuxManager:
     
     def __init__(self, ql):
         self.ql = ql
@@ -34,7 +34,7 @@ class QlLinuxManager:
         self.QL_LINUX_PREDEFINE_STACKSIZE = 0x21000 
         
         """
-         FIXME: all these code can move to arch, IF
+        FIXME: all these code can move to arch, IF
         """
         # ARM
         if self.ql.arch == QL_ARM:
