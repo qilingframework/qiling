@@ -158,7 +158,7 @@ def randomize_config_value(ql, key, subkey):
         year = random.randint(2000, 2020)
         second_half = int(third, 16) + year
         result = int(hex(first_half)[2:] + hex(second_half)[2:], 16)
-        ql.config[key][subkey] = result
+        ql.config[key][subkey] = str(result)
     elif key == "USER" and subkey == "user":
         length = random.randint(0, 15)
         new_name = ""

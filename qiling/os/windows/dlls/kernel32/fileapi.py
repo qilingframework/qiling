@@ -302,6 +302,7 @@ def hook_GetVolumeInformationW(ql, address, params):
             ql.mem.write(pt_volume_name, volume_name)
         pt_serial_number = params["lpVolumeSerialNumber"]
         if pt_serial_number != 0:
+            # TODO maybe has to be int
             serial_number = (ql.config["VOLUME"]["serial_number"] + "\x00").encode("utf-16le")
             ql.mem.write(pt_serial_number, serial_number)
         pt_system_type = params["lpFileSystemNameBuffer"]
