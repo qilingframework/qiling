@@ -257,12 +257,18 @@ class Qiling:
         """
         load_os = ql_get_os_module_function(self)        
         self.loados = load_os(self)
-
-        # Loader running
-        if self.shellcoder and self.arch and self.ostype:
-            self.shellcode()
+        
+        """
+         FIXME: getting ready for now os oriented class
+        """
+        if self.ostype in (QL_FREEBSD, QL_WINDOWS, QL_MACOS):
+            self.loados.loader()
         else:
-            self.load_exec()
+            # Loader running all till here are defined in ql = Qiling()
+            if self.shellcoder and self.arch and self.ostype:
+                self.shellcode()
+            else:
+                self.load_exec()
 
     def build_os_execution(self, function_name):
         self.runtype = ql_get_os_module_function(self, "runner")
@@ -307,16 +313,22 @@ class Qiling:
 
         # patch binary
         self.__enable_bin_patch()
-        
-        # execution, ql.run()
-        runner = self.build_os_execution("runner")
-        runner(self)
+
+        """
+         FIXME: getting ready for now os oriented class
+        """
+        if self.ostype in (QL_FREEBSD, QL_WINDOWS, QL_MACOS):
+            self.loados.runner()     
+        else:
+            # execution, ql.run()
+            runner = self.build_os_execution("runner")
+            runner(self)
 
         # resume with debugger
         if self.debugger is not None:
             self.remotedebugsession.run()
 
-
+    # normal print out
     def nprint(self, *args, **kw):
         if self.thread_management is not None and self.thread_management.cur_thread is not None:
             fd = self.thread_management.cur_thread.log_file_fd
@@ -336,6 +348,7 @@ class Qiling:
             elif isinstance(fd, logging.StreamHandler):
                 fd.flush()
 
+    # debug print out, always use with verbose level with dprint(0,"helloworld")
     def dprint(self, level, *args, **kw):
         try:
             self.verbose = int(self.verbose)
@@ -355,15 +368,18 @@ class Qiling:
     def addr_to_str(self, addr, short=False, endian="big"):
         return ql_addr_to_str(self, addr, short, endian)
 
+
     def asm2bytes(self, runasm, arm_thumb=None):
         return ql_asm2bytes(self, self.arch, runasm, arm_thumb)
     
+
     # replace linux or windows syscall/api with custom api/syscall
     def set_syscall(self, syscall_cur, syscall_new):
         if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD):
             self.dict_posix_syscall[syscall_cur] = syscall_new
         elif self.ostype == QL_WINDOWS:
             self.set_api(syscall_cur, syscall_new)
+
 
     # replace Windows API with custom syscall
     def set_api(self, api_name, api_func):

@@ -40,23 +40,3 @@ def macho_read_string(ql, address, max_length):
         if read_bytes > max_length:
             break
     return ret
-
-def ql_os_run(ql):
-    if (ql.until_addr == 0):
-        ql.until_addr = QL_ARCHBIT64_EMU_END
-    try:
-        if ql.shellcoder:
-            ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
-        else:
-            ql.uc.emu_start(ql.entry_point, ql.until_addr, ql.timeout)
-    except UcError:
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            ql.nprint("[+] PC= " + hex(ql.pc))
-            ql.mem.show_mapinfo()
-            buf = ql.mem.read(ql.pc, 8)
-            ql.nprint("[+] ", [hex(_) for _ in buf])
-            ql_hook_code_disasm(ql, ql.pc, 64)
-        raise QlErrorExecutionStop("[!] Execution Terminated")    
-    
-    if ql.internal_exception != None:
-        raise ql.internal_exception  
