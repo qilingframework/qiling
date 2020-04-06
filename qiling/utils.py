@@ -262,6 +262,12 @@ def ql_get_os_module_function(ql, function_name = None):
         function_name = "QlOs" + ostype_str + "Manager"
         module_name = ql_build_module_import_name("os", ql.ostype)
         return ql_get_module_function(module_name, function_name, ql)
+    elif function_name == "map_syscall":
+        ostype_str = ql_ostype_convert_str(ql.ostype)
+        arch_str = ql_arch_convert_str(ql.arch)
+        arch_str = arch_str + "_syscall"
+        module_name = ql_build_module_import_name("os", ostype_str, arch_str)
+        return ql_get_module_function(module_name, function_name)
     else:
         module_name = ql_build_module_import_name("os", ql.ostype, ql.arch)
         return ql_get_module_function(module_name, function_name)

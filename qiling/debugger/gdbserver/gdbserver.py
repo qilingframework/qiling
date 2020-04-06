@@ -508,7 +508,7 @@ class GDBSERVERsession(object):
                         """
                         FIXME: need to find out when do we need this
                         """
-                        #for s, e, info in self.ql.mem.map_info:
+                        #for s, e, info in self.ql.map_info:
                         #    addr_mapping += ("<library name=\"%s\" lm=\"0x%x\" l_addr=\"%x\" l_ld=\"\"/>" %(info, e, s)) 
                         xml_addr_mapping += ("</library-list-svr4>")
                         self.send("l%s" % xml_addr_mapping)
