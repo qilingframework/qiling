@@ -7,7 +7,7 @@ def map_syscall(syscall_num):
     adapter = {
         0x01 : "ql_syscall_exit",
         0x03 : "ql_syscall_read",
-        0x04 : "ql_syscall_write",
+        #0x04 : "ql_syscall_write",
         0x05 : "ql_syscall_open",
         0x06 : "ql_syscall_close",
         0x0A : "ql_syscall_unlink",

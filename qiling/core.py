@@ -341,8 +341,12 @@ class Qiling:
     def asm2bytes(self, runasm, arm_thumb=None):
         return ql_asm2bytes(self, self.arch, runasm, arm_thumb)
     
-
-    # replace linux or windows syscall/api with custom api/syscall
+    """
+    replace linux or windows syscall/api with custom api/syscall
+    if replace function name is needed, first syscall must be available
+    - ql.set_syscall(0x04, my_syscall_write)
+    - ql.set_syscall("write", my_syscall_write)
+    """
     def set_syscall(self, syscall_cur, syscall_new):
         if self.ostype in (QL_POSIX):
             if isinstance(syscall_cur, int):
