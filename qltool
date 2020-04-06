@@ -132,8 +132,11 @@ def run_shellcode(options):
     elif options.trace:
         options.output = "disasm"   
 
-    ql = Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output,
-                syscall_filter = options.syscall_filter)
+    ql = Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output)
+
+    if options.syscall_filter != None:
+        ql.syscall_filter = options.syscall_filter
+
     ql.run()
 
 
@@ -238,7 +241,11 @@ if __name__ == '__main__':
 
         if options.filename != '' and options.run_args == []:
             ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, 
-                        output=options.output, log_console = options.console, log_dir=options.log_dir, syscall_filter=options.syscall_filter)
+                        output=options.output, log_console = options.console, log_dir=options.log_dir)
+
+            if options.strace and options.syscall_filter != None:
+                ql.syscall_filter = options.syscall_filter
+
         elif options.filename == '' and options.args == [] and options.run_args != []:
             ql = Qiling(filename=options.run_args, rootfs=options.rootfs, output=options.output, 
                         log_console = options.console, log_dir=options.log_dir)
