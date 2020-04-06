@@ -5,15 +5,15 @@
 
 import sys
 sys.path.append("..")
+
 from qiling import *
 
 
 def my_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
     regreturn = 0
-    buf = None
-    
+
     try:
-        buf =ql.mem.read(write_buf, write_count)
+        buf = ql.mem.read(write_buf, write_count)
         ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
         ql.file_des[write_fd].write(buf)
         regreturn = write_count
@@ -22,15 +22,19 @@ def my_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
         ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             raise
+
     ql_definesyscall_return(ql, regreturn)
 
 
 if __name__ == "__main__":
     ql = Qiling(["rootfs/arm_linux/bin/arm_hello"], "rootfs/arm_linux", output = "debug")
-# custom syscall func by name or num(id).
-# known bug: If the syscall func is not be implemented in qiling, qiling does
-# not have the name of syscall func and does not know which func should be
-# replaced, you must custom it by num(id).
+    # Custom syscall handler by syscall name or syscall number.
+    # Known issue: If the syscall func is not be implemented in qiling, qiling does
+    # not know which func should be replaced.
+    # In that case, you must specify syscall by its number.
     ql.set_syscall(0x04, my_syscall_write)
+
+    # set syscall by syscall name
     #ql.set_syscall("write", my_syscall_write)
+
     ql.run()
