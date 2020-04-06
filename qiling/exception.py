@@ -62,6 +62,9 @@ class QlErrorSyscallNotFound(QlErrorBase):
 class QlOutOfMemory(QlErrorBase):
     pass
 
+class QlMemoryMappedError(QlErrorBase):
+    pass
+
 
 def QlPrintException(msg):
     exc_type, exc_value, exc_traceback = sys.exc_info()

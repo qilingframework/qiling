@@ -7,43 +7,7 @@ from unicorn.x86_const import *
 from struct import pack
 from .arch import Arch
 from qiling.const import *
-
-QL_X86_F_GRANULARITY = 0x8
-QL_X86_F_PROT_32 = 0x4
-QL_X86_F_LONG = 0x2
-QL_X86_F_AVAILABLE = 0x1
-
-QL_X86_A_PRESENT = 0x80
-
-QL_X86_A_PRIV_3 = 0x60
-QL_X86_A_PRIV_2 = 0x40
-QL_X86_A_PRIV_1 = 0x20
-QL_X86_A_PRIV_0 = 0x0
-
-QL_X86_A_CODE = 0x10
-QL_X86_A_DATA = 0x10
-QL_X86_A_TSS = 0x0
-QL_X86_A_GATE = 0x0
-QL_X86_A_EXEC = 0x8
-
-QL_X86_A_DATA_WRITABLE = 0x2
-QL_X86_A_CODE_READABLE = 0x2
-QL_X86_A_DIR_CON_BIT = 0x4
-
-QL_X86_S_GDT = 0x0
-QL_X86_S_LDT = 0x4
-QL_X86_S_PRIV_3 = 0x3
-QL_X86_S_PRIV_2 = 0x2
-QL_X86_S_PRIV_1 = 0x1
-QL_X86_S_PRIV_0 = 0x0
-
-QL_X86_GDT_ADDR = 0x3000
-QL_X86_GDT_LIMIT = 0x1000
-QL_X86_GDT_ENTRY_SIZE = 0x8
-
-QL_X86_GDT_ADDR_PADDING = 0xe0000000
-QL_X8664_GDT_ADDR_PADDING = 0x7effffff00000000
-
+from qiling.arch.x86_const import *
 
 class X86(Arch):
     def __init__(self, ql):
@@ -51,47 +15,47 @@ class X86(Arch):
 
 
     def stack_push(self, value):
-        SP = self.ql.uc.reg_read(UC_X86_REG_ESP)
+        SP = self.ql.register(UC_X86_REG_ESP)
         SP -= 4
         self.ql.mem.write(SP, self.ql.pack32(value))
-        self.ql.uc.reg_write(UC_X86_REG_ESP, SP)
+        self.ql.register(UC_X86_REG_ESP, SP)
         return SP
 
     def stack_pop(self):
-        SP = self.ql.uc.reg_read(UC_X86_REG_ESP)
+        SP = self.ql.register(UC_X86_REG_ESP)
         data = self.ql.unpack32(self.ql.mem.read(SP, 4))
-        self.ql.uc.reg_write(UC_X86_REG_ESP, SP + 4)
+        self.ql.register(UC_X86_REG_ESP, SP + 4)
         return data
 
 
     def stack_read(self, offset):
-        SP = self.ql.uc.reg_read(UC_X86_REG_ESP)
+        SP = self.ql.register(UC_X86_REG_ESP)
         return self.ql.unpack32(self.ql.mem.read(SP + offset, 4))
 
 
     def stack_write(self, offset, data):
-        SP = self.ql.uc.reg_read(UC_X86_REG_ESP)
+        SP = self.ql.register(UC_X86_REG_ESP)
         return self.ql.mem.write(SP + offset, self.ql.pack32(data))
 
 
     # set PC
     def set_pc(self, value):
-        self.ql.uc.reg_write(UC_X86_REG_EIP, value)
+        self.ql.register(UC_X86_REG_EIP, value)
 
 
     # get PC
     def get_pc(self):
-        return self.ql.uc.reg_read(UC_X86_REG_EIP)
+        return self.ql.register(UC_X86_REG_EIP)
 
 
     # set stack pointer
     def set_sp(self, value):
-        self.ql.uc.reg_write(UC_X86_REG_ESP, value)
+        self.ql.register(UC_X86_REG_ESP, value)
 
 
     # get stack pointer
     def get_sp(self):
-        return self.ql.uc.reg_read(UC_X86_REG_ESP)
+        return self.ql.register(UC_X86_REG_ESP)
 
 
     # get stack pointer register
@@ -102,6 +66,7 @@ class X86(Arch):
     # get pc register pointer
     def get_reg_pc(self):
         return UC_X86_REG_EIP
+
 
     def get_reg_table(self):
         registers_table = [
@@ -117,10 +82,10 @@ class X86(Arch):
         return registers_table
 
     # set register name
-    def set_reg_name(self):
+    def set_reg_name_str(self):
         pass  
 
-    def get_reg_name(self, uc_reg):
+    def get_reg_name_str(self, uc_reg):
         adapter = {
             UC_X86_REG_EAX: "EAX", 
             UC_X86_REG_ECX: "ECX", 
@@ -152,52 +117,96 @@ class X86(Arch):
         # invalid
         return None
 
+    def get_register(self, register_str):
+        if type(register_str) == str:
+            register_str = self.get_reg_name(register_str)  
+        return self.ql.uc.reg_read(register_str)
+
+
+    def set_register(self, register_str, value):
+        if type(register_str) == str:
+            register_str = self.get_reg_name(register_str)  
+        return self.ql.uc.reg_write(register_str, value)
+
+
+    def get_reg_name(self, uc_reg_name):
+        adapter = {
+            "EAX": UC_X86_REG_EAX, 
+            "ECX": UC_X86_REG_ECX, 
+            "EDX": UC_X86_REG_EDX,
+            "EBX": UC_X86_REG_EBX, 
+            "ESP": UC_X86_REG_ESP, 
+            "EBP": UC_X86_REG_EBP,
+            "ESI": UC_X86_REG_ESI, 
+            "EDI": UC_X86_REG_EDI, 
+            "EIP": UC_X86_REG_EIP,
+            "EF" :UC_X86_REG_EFLAGS, 
+            "CS": UC_X86_REG_CS, 
+            "SS": UC_X86_REG_SS,
+            "DS": UC_X86_REG_DS, 
+            "ES": UC_X86_REG_ES, 
+            "FS": UC_X86_REG_FS,
+            "GS": UC_X86_REG_GS, 
+            "ST0": UC_X86_REG_ST0, 
+            "ST1": UC_X86_REG_ST1,
+            "ST2": UC_X86_REG_ST2, 
+            "ST3": UC_X86_REG_ST3, 
+            "ST4": UC_X86_REG_ST4,
+            "ST5": UC_X86_REG_ST5, 
+            "ST6": UC_X86_REG_ST6, 
+            "ST7": UC_X86_REG_ST7
+        }
+        if uc_reg_name in adapter:
+            return adapter[uc_reg_name]
+        # invalid
+        return None
+
 class X8664(Arch):
     def __init__(self, ql):
         super(X8664, self).__init__(ql)
 
 
     def stack_push(self, value):
-        SP = self.ql.uc.reg_read(UC_X86_REG_RSP)
+        SP = self.ql.register(UC_X86_REG_RSP)
         SP -= 8
         self.ql.mem.write(SP, self.ql.pack64(value))
-        self.ql.uc.reg_write(UC_X86_REG_RSP, SP)
+        self.ql.register(UC_X86_REG_RSP, SP)
         return SP
 
     def stack_pop(self):
-        SP = self.ql.uc.reg_read(UC_X86_REG_RSP)
+        SP = self.ql.register(UC_X86_REG_RSP)
         data = self.ql.unpack64(self.ql.mem.read(SP, 8))
-        self.ql.uc.reg_write(UC_X86_REG_RSP, SP + 8)
+        self.ql.register(UC_X86_REG_RSP, SP + 8)
         return data
 
 
     def stack_read(self, offset):
-        SP = self.ql.uc.reg_read(UC_X86_REG_RSP)
+        SP = self.ql.register(UC_X86_REG_RSP)
         return self.ql.unpack64(self.ql.mem.read(SP + offset, 8))
 
 
     def stack_write(self, offset, data):
-        SP = self.ql.uc.reg_read(UC_X86_REG_RSP)
+        SP = self.ql.register(UC_X86_REG_RSP)
         return self.ql.mem.write(SP + offset, self.ql.pack64(data))
 
     # set PC
     def set_pc(self, value):
-        self.ql.uc.reg_write(UC_X86_REG_RIP, value)
+        self.ql.register(UC_X86_REG_RIP, value)
 
 
     # get PC
     def get_pc(self):
-        return self.ql.uc.reg_read(UC_X86_REG_RIP)
+        return self.ql.register(UC_X86_REG_RIP)
 
 
     # set stack pointer
     def set_sp(self, value):
-        self.ql.uc.reg_write(UC_X86_REG_RSP, value)
+        self.ql.register(UC_X86_REG_RSP, value)
 
 
     # get stack pointer
     def get_sp(self):
-        return self.ql.uc.reg_read(UC_X86_REG_RSP)
+        return self.ql.register(UC_X86_REG_RSP)
 
 
     # get stack pointer register
@@ -227,10 +236,10 @@ class X8664(Arch):
         return registers_table  
 
     # set register name
-    def set_reg_name(self):
+    def set_reg_name_str(self):
         pass  
 
-    def get_reg_name(self, uc_reg):
+    def get_reg_name_str(self, uc_reg):
         adapter = {
             UC_X86_REG_RAX: "RAX", 
             UC_X86_REG_RCX: "RCX", 
@@ -268,7 +277,60 @@ class X8664(Arch):
         if uc_reg in adapter:
             return adapter[uc_reg]
         # invalid
-        return None                
+        return None 
+
+
+    def get_register(self, register_str):
+        if type(register_str) == str:
+            register_str = self.get_reg_name(register_str)  
+        return self.ql.uc.reg_read(register_str)
+
+
+    def set_register(self, register_str, value):
+        if type(register_str) == str:
+            register_str = self.get_reg_name(register_str)  
+        return self.ql.uc.reg_write(register_str, value)
+
+
+    def get_reg_name(self, uc_reg_name):
+        adapter = {
+            "RAX": UC_X86_REG_RAX, 
+            "RCX": UC_X86_REG_RCX, 
+            "RDX": UC_X86_REG_RDX,
+            "RBX": UC_X86_REG_RBX, 
+            "RSP": UC_X86_REG_RSP, 
+            "RBP": UC_X86_REG_RBP,
+            "RSI": UC_X86_REG_RSI, 
+            "RDI": UC_X86_REG_RDI, 
+            "RIP": UC_X86_REG_RIP,
+            "R8": UC_X86_REG_R8,
+            "R9": UC_X86_REG_R9, 
+            "R10": UC_X86_REG_R10,
+            "R11": UC_X86_REG_R11,
+            "R12": UC_X86_REG_R12, 
+            "R13": UC_X86_REG_R13, 
+            "R14": UC_X86_REG_R14,
+            "R15": UC_X86_REG_R15,
+            "EF" :UC_X86_REG_EFLAGS, 
+            "CS": UC_X86_REG_CS, 
+            "SS": UC_X86_REG_SS,
+            "DS": UC_X86_REG_DS, 
+            "ES": UC_X86_REG_ES, 
+            "FS": UC_X86_REG_FS,
+            "GS": UC_X86_REG_GS, 
+            "ST0": UC_X86_REG_ST0, 
+            "ST1": UC_X86_REG_ST1,
+            "ST2": UC_X86_REG_ST2, 
+            "ST3": UC_X86_REG_ST3, 
+            "ST4": UC_X86_REG_ST4,
+            "ST5": UC_X86_REG_ST5, 
+            "ST6": UC_X86_REG_ST6, 
+            "ST7": UC_X86_REG_ST7
+        }
+        if uc_reg_name in adapter:
+            return adapter[uc_reg_name]
+        # invalid
+        return None                       
 
 def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_ADDR, SEGMENT_SIZE, SPORT, RPORT, GDTTYPE):
     # create segment index
@@ -289,11 +351,11 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
     # map GDT table
     if ql.ostype == QL_LINUX and GDTTYPE == "DS":
-        ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
+        ql.mem.map(GDT_ADDR, GDT_LIMIT)
     
     if ql.ostype == QL_WINDOWS and GDTTYPE == "FS":
-        ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
-        ql.uc.mem_map(SEGMENT_ADDR, SEGMENT_SIZE)
+        ql.mem.map(GDT_ADDR, GDT_LIMIT)
+        ql.mem.map(SEGMENT_ADDR, SEGMENT_SIZE)
 
     if ql.ostype == QL_FREEBSD:
         if not ql.shellcoder:
@@ -303,7 +365,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
         if GDTTYPE == "CS":        
             ql.dprint(0, "[+] FreeBSD %s GDT_ADDR is 0x%x" % (GDTTYPE, GDT_ADDR))
-            ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
+            ql.mem.map(GDT_ADDR, GDT_LIMIT)
     
     if ql.ostype == QL_MACOS and GDTTYPE == "CS":
         if not ql.shellcoder:
@@ -313,7 +375,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
 
         ql.dprint(0, "[+] GDT_ADDR is 0x%x" % (GDT_ADDR))
-        ql.uc.mem_map(GDT_ADDR, GDT_LIMIT)
+        ql.mem.map(GDT_ADDR, GDT_LIMIT)
     
     # create GDT entry, then write GDT entry into GDT table
     gdt_entry = create_gdt_entry(SEGMENT_ADDR, SEGMENT_SIZE, SPORT, QL_X86_F_PROT_32)
@@ -321,12 +383,30 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
     #ql.nprint(ql.arch)
     # setup GDT by writing to GDTR
-    ql.uc.reg_write(UC_X86_REG_GDTR, (0, GDT_ADDR, GDT_LIMIT, 0x0))
+    ql.register(UC_X86_REG_GDTR, (0, GDT_ADDR, GDT_LIMIT, 0x0))
 
     # create segment index, point segment register to this selector
     selector = create_selector(index, RPORT)
     ql.dprint(0, "[+] %s : 0x%x" % (GDTTYPE, selector))
-    ql.uc.reg_write(seg_reg, selector)
+    ql.register(seg_reg, selector)
+
+
+def ql_x8664_set_gs(ql):
+    if ql.mem._is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE) == False:
+        ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
+    ql.uc.msr_write(GSMSR, GS_SEGMENT_ADDR)
+
+
+def ql_x8664_get_gs(ql):
+    return ql.uc.msr_read(GSMSR)
+
+
+def ql_x8664_set_fs(ql, addr):
+    ql.uc.msr_write(FSMSR, addr)
+
+
+def ql_x8664_get_fs(ql):
+    return ql.uc.msr_read(FSMSR)
 
 
 def ql_x86_setup_gdt_segment_ds(ql):
@@ -367,3 +447,4 @@ def ql_x8664_setup_gdt_segment_ss(ql):
 
 def ql_x8664_setup_gdt_segment_fs(ql, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE):
     ql_x86_setup_gdt_segment(ql, QL_X86_GDT_ADDR, QL_X86_GDT_LIMIT, UC_X86_REG_FS, 14, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT |  QL_X86_S_PRIV_3, "FS")
+

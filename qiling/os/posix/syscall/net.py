@@ -31,10 +31,13 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.syscall.socket import ql_syscall_socket, ql_syscall_connect, ql_syscall_recv
+
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, null0, null1, null2, null3):
+
+def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, *args, **kw):
     SOCKETCALL_SYS_SOCKET = 1
     SOCKETCALL_SYS_BIND = 2
     SOCKETCALL_SYS_CONNECT = 3

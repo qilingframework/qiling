@@ -31,7 +31,7 @@ def _x86_get_params_by_index(ql, index):
 def _x8664_get_params_by_index(ql, index):
     reg_list = [UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9]
     if index < 4:
-        return ql.uc.reg_read(reg_list[index])
+        return ql.register(reg_list[index])
 
     index -= 4
     # skip ret_addr
@@ -64,7 +64,7 @@ def _x8664_get_args(ql, number):
         reg_num = 4
     number -= reg_num
     for i in reg_list[:reg_num]:
-        arg_list.append(ql.uc.reg_read(i))
+        arg_list.append(ql.register(i))
     for i in range(number):
         # skip ret_addr and 32 byte home space
         arg_list.append(ql.stack_read((i + 5) * 8))
@@ -112,16 +112,16 @@ def get_function_param(ql, number):
 
 def set_return_value(ql, ret):
     if ql.arch == QL_X86:
-        ql.uc.reg_write(UC_X86_REG_EAX, ret)
+        ql.register(UC_X86_REG_EAX, ret)
     elif ql.arch == QL_X8664:
-        ql.uc.reg_write(UC_X86_REG_RAX, ret)
+        ql.register(UC_X86_REG_RAX, ret)
 
 
 def get_return_value(ql):
     if ql.arch == QL_X86:
-        return ql.uc.reg_read(UC_X86_REG_EAX)
+        return ql.register(UC_X86_REG_EAX)
     elif ql.arch == QL_X8664:
-        return ql.uc.reg_read(UC_X86_REG_RAX)
+        return ql.register(UC_X86_REG_RAX)
 
 
 def __x86_cc(ql, param_num, params, func, args, kwargs):
@@ -147,7 +147,7 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
     # update stack pointer
     ql.sp = ql.sp + ((param_num + 1) * 4)
 
-    if ql.RUN:
+    if ql.commos.PE_RUN:
         ql.pc = ret_addr
 
     return result
@@ -156,7 +156,7 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
 def x86_cdecl(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
 
-    if ql.RUN:
+    if ql.commos.PE_RUN:
         ql.pc = ql.stack_pop()
 
     return result
@@ -165,7 +165,7 @@ def x86_cdecl(ql, param_num, params, func, args, kwargs):
 def x8664_fastcall(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
 
-    if ql.RUN:
+    if ql.commos.PE_RUN:
         ql.pc = ql.stack_pop()
 
     return result

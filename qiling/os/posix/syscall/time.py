@@ -31,16 +31,16 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_time(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_time(ql, *args, **kw):
     regreturn = int(time.time())
     ql.nprint("time() = %d" % regreturn)
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, null0, null1, null2, null3):
+def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, *args, **kw):
     def nanosleep_block_fuc(ql, th, arg):
         st, tm = arg
         et = ql.thread_management.runing_time
@@ -68,7 +68,7 @@ def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, null0, null1, null2, 
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_setitimer(ql, setitimer_which, setitimer_new_value, setitimer_old_value, null0, null1, null2):
+def ql_syscall_setitimer(ql, setitimer_which, setitimer_new_value, setitimer_old_value, *args, **kw):
     # TODO:The system provides each process with three interval timers, each decrementing in a distinct time domain.
     # When any timer expires, a signal is sent to the process, and the timer (potentially) restarts.
     # But I haven’t figured out how to send a signal yet.
@@ -77,7 +77,7 @@ def ql_syscall_setitimer(ql, setitimer_which, setitimer_new_value, setitimer_old
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_times(ql, times_tbuf, null0, null1, null2, null3, null4):
+def ql_syscall_times(ql, times_tbuf, *args, **kw):
     tmp_times = os.times()
     if times_tbuf != 0:
         tmp_buf = b''
@@ -91,7 +91,7 @@ def ql_syscall_times(ql, times_tbuf, null0, null1, null2, null3, null4):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, null0, null1, null2, null3):
+def ql_syscall_gettimeofday(ql, gettimeofday_tv, gettimeofday_tz, *args, **kw):
     tmp_time = time.time()
     tv_sec = int(tmp_time)
     tv_usec = int((tmp_time - tv_sec) * 1000000)

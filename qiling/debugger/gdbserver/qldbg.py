@@ -98,7 +98,7 @@ class Qldbg(object):
 
                 for r in self.ql.reg_table:
                     try:
-                        self.entry_context['regs'][r] = self.ql.uc.reg_read(r)
+                        self.entry_context['regs'][r] = self.ql.register(r)
                     except Exception as ex:
                         pass
             start_addr = self.current_address

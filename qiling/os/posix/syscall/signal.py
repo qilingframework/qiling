@@ -31,10 +31,10 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, null0, null1, null2):
+def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, *args, **kw):
     if rt_sigaction_oldact != 0:
         if ql.sigaction_act[rt_sigaction_signum] == 0:
             ql.mem.write(rt_sigaction_oldact, b'\x00' * 20)
@@ -55,7 +55,7 @@ def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigact
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_sigprocmask_oset, rt_sigprocmask_sigsetsize, null0, null1):
+def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_sigprocmask_oset, rt_sigprocmask_sigsetsize, *args, **kw):
     SIG_BLOCK = 0x0
     SIG_UNBLOCK = 0x1
 
@@ -67,7 +67,7 @@ def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_si
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_signal(ql, sig, __sighandler_t, null0, null1, null2, null3):
+def ql_syscall_signal(ql, sig, __sighandler_t, *args, **kw):
     regreturn = 0
     ql.nprint("signal(%d, 0x%x) = %d" % (sig, __sighandler_t,regreturn))
     ql_definesyscall_return(ql, regreturn)

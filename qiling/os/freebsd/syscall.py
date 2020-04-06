@@ -41,7 +41,7 @@ def ql_syscall_sysarch(ql, op, parms, *args, **kw):
     GSMSR = 0xC0000101
     FSMSR = 0xC0000100
 
-    #ql.uc.mem_map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
+    #ql.mem.map(ql.GS_SEGMENT_ADDR, ql.GS_SEGMENT_SIZE)
     #ql.uc.msr_write(GSMSR, ql.GS_SEGMENT_ADDR)
     ql.uc.msr_write(FSMSR, parms)
 

@@ -9,6 +9,9 @@ VMMAP_PAGE_SIZE             = 0x100000
 MAX_FD_SIZE					= 0xFF
 MAX_PATH_SIZE               = 0x800
 
+# GS
+MSR_KERNEL_GS_BASE          = 0xc0000102
+
 # kernel flags
 KERN_SUCCESS                = 0
 KERN_INVALID_ADDRESS        = 1

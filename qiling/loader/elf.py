@@ -415,8 +415,8 @@ class ELFLoader(ELFParse):
             ql.nprint("[+] Some error in head e_type: %u!" %elfhead['e_type'])
             return -1
 
-        ql.uc.mem_map(loadbase + mem_start, mem_end - mem_start)
-        ql.insert_map_info(loadbase + mem_start, loadbase + mem_end, 'r-x', self.path)
+        ql.mem.map(loadbase + mem_start, mem_end - mem_start)
+        ql.mem.add_mapinfo(loadbase + mem_start, loadbase + mem_end, 'r-x', self.path)
 
         for i in super().parse_program_header(ql):
             if i['p_type'] == PT_LOAD:
@@ -458,8 +458,8 @@ class ELFLoader(ELFParse):
                     ql.interp_base = 0xff7d5000
 
             ql.dprint(0, "[+] interp_base is : 0x%x" % (ql.interp_base))
-            ql.uc.mem_map(ql.interp_base, int(interp_mem_size))
-            ql.insert_map_info(ql.interp_base, ql.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
+            ql.mem.map(ql.interp_base, int(interp_mem_size))
+            ql.mem.add_mapinfo(ql.interp_base, ql.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
 
             for i in interp.parse_program_header(ql):
                 if i['p_type'] == PT_LOAD:
@@ -569,8 +569,8 @@ class ELFLoader(ELFParse):
         ql.mem.write(int(new_stack - len(elf_table)), elf_table)
         new_stack = new_stack - len(elf_table)
 
-        # print("rdi is : " + hex(ql.uc.reg_read(UC_X86_REG_RDI)))
-        # ql.uc.reg_write(UC_X86_REG_RDI, new_stack + 8)
+        # print("rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
+        # ql.register(UC_X86_REG_RDI, new_stack + 8)
 
         # for i in range(120):
         #     buf = ql.mem.read(new_stack + i * 0x8, 8)
@@ -580,4 +580,4 @@ class ELFLoader(ELFParse):
         ql.elf_entry = loadbase + elfhead['e_entry']
         ql.new_stack = new_stack
         ql.loadbase = loadbase
-        ql.insert_map_info(new_stack, ql.stack_address+ql.stack_size, 'rw-', '[stack]')
+        ql.mem.add_mapinfo(new_stack, ql.stack_address+ql.stack_size, 'rw-', '[stack]')

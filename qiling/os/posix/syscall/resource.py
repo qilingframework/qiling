@@ -31,10 +31,10 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_ugetrlimit(ql, ugetrlimit_resource, ugetrlimit_rlim, null0, null1, null2, null3):
+def ql_syscall_ugetrlimit(ql, ugetrlimit_resource, ugetrlimit_rlim, *args, **kw):
     rlim = resource.getrlimit(ugetrlimit_resource)
     ql.mem.write(ugetrlimit_rlim, ql.pack32s(rlim[0]) + ql.pack32s(rlim[1]))
     regreturn = 0
@@ -42,7 +42,7 @@ def ql_syscall_ugetrlimit(ql, ugetrlimit_resource, ugetrlimit_rlim, null0, null1
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_setrlimit(ql, setrlimit_resource, setrlimit_rlim, null0, null1, null2, null3):
+def ql_syscall_setrlimit(ql, setrlimit_resource, setrlimit_rlim, *args, **kw):
     # maybe we can nop the setrlimit
     tmp_rlim = (ql.unpack32s(ql.mem.read(setrlimit_rlim, 4)), ql.unpack32s(ql.mem.read(setrlimit_rlim + 4, 4)))
     resource.setrlimit(setrlimit_resource, tmp_rlim)
@@ -52,7 +52,7 @@ def ql_syscall_setrlimit(ql, setrlimit_resource, setrlimit_rlim, null0, null1, n
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_prlimit64(ql, pid, resource, new_limit, old_limit, null0, null1):
+def ql_syscall_prlimit64(ql, pid, resource, new_limit, old_limit, *args, **kw):
     # setrlimit() and getrlimit()
     #if pid == 0:
     #    ql_syscall_setrlimit(ql, resource, new_limit, 0, 0, 0, 0);

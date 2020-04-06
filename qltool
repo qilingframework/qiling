@@ -173,12 +173,14 @@ if __name__ == '__main__':
     run_parser.add_argument('-v', '--verbose', required=False, default=0, dest='verbose',
                             help='verbose mode, must be int and use with --debug or --dump')
     run_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
+    run_parser.add_argument('--profile', required=False, default='', metavar="FILE", dest="profile", help="Defile OS profile")
     run_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
     run_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
     run_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')
     run_parser.add_argument('--log_dir', required=False, default=None, dest='log_dir', help='log file dir')
     run_parser.add_argument('--log_split', action='store_true', default=False, dest='log_split', help='split log file')
     run_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
+    run_parser.add_argument('--disasm', action='store_true', default=False, dest='disasm', help='Run in disassemble mode')
     run_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', help='Stop running while encounter any error (only use it with debug mode)')
     run_parser.add_argument('--en_root', action='store_true', default=False, dest='en_root', help='Enable sudo required mode')
     run_parser.add_argument('--dump', action='store_true', default=False, dest='dump', help='Enable Debug + Diassembler mode')
@@ -212,6 +214,8 @@ if __name__ == '__main__':
             options.output = "dump"
         elif options.debug:
             options.output = "debug"
+        elif options.disasm:
+            options.output = "disasm"            
 
         if options.console == "False":
             options.console = False
@@ -254,6 +258,14 @@ if __name__ == '__main__':
 
         if options.multithread:
             ql.multithread = True
+
+        if options.profile:
+            if os.path.exists(options.profile):
+                ql.config = options.config
+            else:
+                print("File Not Found!!!")
+                exit(1)        
+
 
         if options.verbose:
             ql.verbose = options.verbose   

@@ -9,7 +9,6 @@ from qiling.os.windows.const import *
 from qiling.os.fncc import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -77,8 +76,8 @@ def hook_GetSystemInfo(ql, address, params):
     pointer = params["lpSystemInfo"]
     system_info = {"dummy": 0x0.to_bytes(length=2 * 2 + 4, byteorder='little'),
                    "dwPageSize": ql.heap.page_size.to_bytes(length=4, byteorder='little'),
-                   "lpMinimumApplicationAddress": ql.PE_IMAGE_BASE.to_bytes(length=ql.pointersize, byteorder='little'),
-                   "lpMaximumApplicationAddress": (ql.DLL_BASE_ADDR + ql.DLL_SIZE).to_bytes(length=ql.pointersize,
+                   "lpMinimumApplicationAddress": ql.commos.PE_IMAGE_BASE.to_bytes(length=ql.pointersize, byteorder='little'),
+                   "lpMaximumApplicationAddress": (ql.commos.DLL_BASE_ADDR + ql.commos.DLL_SIZE).to_bytes(length=ql.pointersize,
                                                                                             byteorder='little'),
                    "dwActiveProcessorMask": 0x3.to_bytes(length=ql.pointersize, byteorder='little'),
                    # TODO not sure from here, did not found variables inside the emulator

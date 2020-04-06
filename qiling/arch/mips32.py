@@ -14,48 +14,48 @@ class MIPS32(Arch):
 
 
     def stack_push(self, value):
-        SP = self.ql.uc.reg_read(UC_MIPS_REG_SP)
+        SP = self.ql.register(UC_MIPS_REG_SP)
         SP -= 4
         self.ql.mem.write(SP, self.ql.pack32(value))
-        self.ql.uc.reg_write(UC_MIPS_REG_SP, SP)
+        self.ql.register(UC_MIPS_REG_SP, SP)
         return SP
 
 
     def stack_pop(self):
-        SP = self.ql.uc.reg_read(UC_MIPS_REG_SP)
+        SP = self.ql.register(UC_MIPS_REG_SP)
         data = self.ql.unpack32(self.ql.mem.read(SP, 4))
-        self.ql.uc.reg_write(UC_MIPS_REG_SP, SP + 4)
+        self.ql.register(UC_MIPS_REG_SP, SP + 4)
         return data
 
 
     def stack_read(self, offset):
-        SP = self.ql.uc.reg_read(UC_MIPS_REG_SP)
+        SP = self.ql.register(UC_MIPS_REG_SP)
         return self.ql.unpack32(self.ql.mem.read(SP + offset, 4))
 
 
     def stack_write(self, offset, data):
-        SP = self.ql.uc.reg_read(UC_MIPS_REG_SP)
+        SP = self.ql.register(UC_MIPS_REG_SP)
         return self.ql.mem.write(SP + offset, self.ql.pack32(data))
 
 
     # set PC
     def set_pc(self, value):
-        self.ql.uc.reg_write(UC_MIPS_REG_PC, value)
+        self.ql.register(UC_MIPS_REG_PC, value)
 
 
     # get PC
     def get_pc(self):
-        return self.ql.uc.reg_read(UC_MIPS_REG_PC)
+        return self.ql.register(UC_MIPS_REG_PC)
 
 
     # set stack pointer
     def set_sp(self, value):
-        self.ql.uc.reg_write(UC_MIPS_REG_SP, value)
+        self.ql.register(UC_MIPS_REG_SP, value)
 
 
     # get stack pointer
     def get_sp(self):
-        return self.ql.uc.reg_read(UC_MIPS_REG_SP)
+        return self.ql.register(UC_MIPS_REG_SP)
 
 
     # get stack pointer register
@@ -87,10 +87,10 @@ class MIPS32(Arch):
         return registers_table  
 
     # set register name
-    def set_reg_name(self):
+    def set_reg_name_str(self):
         pass  
 
-    def get_reg_name(self, uc_reg):
+    def get_reg_name_str(self, uc_reg):
         adapter = {
             UC_MIPS_REG_0: "0", 
             UC_MIPS_REG_1: "1", 
@@ -135,3 +135,62 @@ class MIPS32(Arch):
             return adapter[uc_reg]
         # invalid
         return None         
+
+
+    def get_register(self, register_str):
+        if type(register_str) == str:
+            register_str = self.get_reg_name(register_str)  
+        return self.ql.uc.reg_read(register_str)
+
+
+    def set_register(self, register_str, value):
+        if type(register_str) == str:
+            register_str = self.get_reg_name(register_str)  
+        return self.ql.uc.reg_write(register_str, value)
+
+
+    def get_reg_name(self, uc_reg_name):
+        adapter = {
+            "0": UC_MIPS_REG_0, 
+            "1": UC_MIPS_REG_1, 
+            "2": UC_MIPS_REG_2,
+            "3": UC_MIPS_REG_3, 
+            "4": UC_MIPS_REG_4, 
+            "5": UC_MIPS_REG_5,
+            "6": UC_MIPS_REG_6, 
+            "7": UC_MIPS_REG_7, 
+            "8": UC_MIPS_REG_8,
+            "9": UC_MIPS_REG_9, 
+            "10": UC_MIPS_REG_10, 
+            "11": UC_MIPS_REG_11,
+            "12": UC_MIPS_REG_12, 
+            "13": UC_MIPS_REG_13, 
+            "14": UC_MIPS_REG_14,
+            "15": UC_MIPS_REG_15, 
+            "16": UC_MIPS_REG_16,
+            "17": UC_MIPS_REG_17,
+            "18": UC_MIPS_REG_18, 
+            "19": UC_MIPS_REG_19, 
+            "20": UC_MIPS_REG_20,
+            "21": UC_MIPS_REG_21, 
+            "22": UC_MIPS_REG_22, 
+            "23": UC_MIPS_REG_23,
+            "24": UC_MIPS_REG_24, 
+            "25": UC_MIPS_REG_25, 
+            "26": UC_MIPS_REG_26,
+            "27": UC_MIPS_REG_27, 
+            "28": UC_MIPS_REG_28, 
+            "SP": UC_MIPS_REG_29,
+            "30": UC_MIPS_REG_30, 
+            "31": UC_MIPS_REG_31, 
+            "INV": UC_MIPS_REG_INVALID,
+            "LO": UC_MIPS_REG_LO, 
+            "HI": UC_MIPS_REG_HI, 
+            "INV": UC_MIPS_REG_INVALID,
+            "INV":UC_MIPS_REG_INVALID,
+            "PC": UC_MIPS_REG_PC,
+        }
+        if uc_reg_name in adapter:
+            return adapter[uc_reg_name]
+        # invalid
+        return None

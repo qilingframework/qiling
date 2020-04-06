@@ -31,10 +31,10 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, null1, null2):
+def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **kw):
     if ql.arch == QL_MIPS32 and socket_type == 2:
         socket_type = 1
     elif ql.arch == QL_MIPS32 and socket_type == 1:
@@ -67,7 +67,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, null0, nu
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, null0, null1, null2):
+def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, *args, **kw):
     AF_UNIX = 1
     AF_INET = 2
     sock_addr = ql.mem.read(connect_addr, connect_addrlen)
@@ -104,13 +104,13 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, null0,
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_setsockopt(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_setsockopt(ql, *args, **kw):
     ql.nprint("setsockopt")
     regreturn = 0
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, null0, null1, null2, null3):
+def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, *args, **kw):
     ql.nprint("shutdown(%d, %d)" % (shutdown_fd, shutdown_how))
     if shutdown_fd >=0 and shutdown_fd < 256 and ql.file_des[shutdown_fd] != 0:
         try:
@@ -121,7 +121,7 @@ def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, null0, null1, null2, null
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
+def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
     regreturn = 0
 
     if ql.arch == QL_X8664:
@@ -170,7 +170,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  null0, null1, null2):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_listen(ql, listen_sockfd, listen_backlog, null0, null1, null2, null3):
+def ql_syscall_listen(ql, listen_sockfd, listen_backlog, *args, **kw):
     if listen_sockfd < 256 and ql.file_des[listen_sockfd] != 0:
         try:
             ql.file_des[listen_sockfd].listen(listen_backlog)
@@ -185,7 +185,7 @@ def ql_syscall_listen(ql, listen_sockfd, listen_backlog, null0, null1, null2, nu
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, null0, null1, null2):
+def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, *args, **kw):
     def inet_addr(ip):
         ret = b''
         tmp = ip.split('.')
@@ -222,7 +222,7 @@ def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, null0, nul
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, null0, null1):
+def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, *args, **kw):
     if recv_sockfd < 256 and ql.file_des[recv_sockfd] != 0:
         tmp_buf = ql.file_des[recv_sockfd].recv(recv_len, recv_flags)
         if tmp_buf:
@@ -236,7 +236,7 @@ def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, null0, null
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, null0, null1):
+def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw):
     regreturn = 0
     if send_sockfd < 256 and ql.file_des[send_sockfd] != 0:
         try:

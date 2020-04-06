@@ -31,10 +31,10 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, null0):
+def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, *args, **kw):
 
     regreturn = 0
 
@@ -86,6 +86,8 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
             for i in ans[2]:
                 tmp_buf = set_fd_set(tmp_buf, tmp_e_map[i])
             ql.mem.write(_newselect_exceptfds, tmp_buf)
+    except KeyboardInterrupt:
+        raise
     except:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             raise

@@ -10,7 +10,6 @@ from qiling.os.fncc import *
 from qiling.os.utils import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -138,7 +137,7 @@ def hook_WriteFile(ql, address, params):
         f = ql.handle_manager.get(hFile)
         if f is None:
             # Invalid handle
-            ql.last_error = ERROR_INVALID_HANDLE
+            ql.commos.last_error  = ERROR_INVALID_HANDLE
             return 0
         else:
             f = f.file

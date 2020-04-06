@@ -27,6 +27,7 @@ from qiling.utils import *
 
 from binascii import unhexlify
 import ipaddress, struct, os, ctypes
+import configparser
 
 def ql_lsbmsb_convert(ql, sc, size=4):
     split_bytes = []
@@ -42,17 +43,17 @@ def ql_lsbmsb_convert(ql, sc, size=4):
 
 def ql_definesyscall_return(ql, regreturn):
     if (ql.arch == QL_ARM):  # QL_ARM
-        ql.uc.reg_write(UC_ARM_REG_R0, regreturn)
+        ql.register(UC_ARM_REG_R0, regreturn)
         # ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
 
     elif (ql.arch == QL_ARM64):  # QL_ARM64
-        ql.uc.reg_write(UC_ARM64_REG_X0, regreturn)
+        ql.register(UC_ARM64_REG_X0, regreturn)
 
     elif (ql.arch == QL_X86):  # QL_X86
-        ql.uc.reg_write(UC_X86_REG_EAX, regreturn)
+        ql.register(UC_X86_REG_EAX, regreturn)
 
     elif (ql.arch == QL_X8664):  # QL_X86_64
-        ql.uc.reg_write(UC_X86_REG_RAX, regreturn)
+        ql.register(UC_X86_REG_RAX, regreturn)
 
     elif (ql.arch == QL_MIPS32):  # QL_MIPSE32EL
         if regreturn == -1:
@@ -64,8 +65,8 @@ def ql_definesyscall_return(ql, regreturn):
             a3return = 0
         # if ql.output == QL_OUT_DEBUG:
         #    print("[+] A3 is %d" % a3return)
-        ql.uc.reg_write(UC_MIPS_REG_V0, regreturn)
-        ql.uc.reg_write(UC_MIPS_REG_A3, a3return)
+        ql.register(UC_MIPS_REG_V0, regreturn)
+        ql.register(UC_MIPS_REG_A3, a3return)
 
 
 def ql_bin_to_ipv4(ip):
@@ -76,13 +77,15 @@ def ql_bin_to_ipv4(ip):
         (ip & 0xff))
 
 
-def align(addr, alignment=0x1000):
-    # rounds up to nearest alignment
-    mask = ((1 << 64) - 1) & -alignment
-    return (addr + (alignment - 1)) & mask
-
-def align_heap(size, unit):
-    return (size // unit + (1 if size % unit else 0)) * unit   
+def ql_init_configuration(ql):
+    config = configparser.ConfigParser()
+    config.read(ql.config)
+    ql.dprint(2, "[+] Added configuration file")
+    for section in config.sections():
+        ql.dprint(2, "[+] Section: %s" % section)
+        for key in config[section]:
+            ql.dprint(2, "[-] %s %s" % (key, config[section][key]) )
+    return config
 
 def ql_bin_to_ip(ip):
     return ipaddress.ip_address(ip).compressed
@@ -119,7 +122,7 @@ def ql_hook_code_disasm(ql, address, size):
     tmp = uc.mem_read(address, size)
 
     if (ql.arch == QL_ARM):  # QL_ARM
-        reg_cpsr = uc.reg_read(UC_ARM_REG_CPSR)
+        reg_cpsr = ql.register(UC_ARM_REG_CPSR)
         mode = CS_MODE_ARM
         if ql.archendian == QL_ENDIAN_EB:
             reg_cpsr_v = 0b100000
@@ -157,22 +160,22 @@ def ql_hook_code_disasm(ql, address, size):
     insn = md.disasm(tmp, address)
     opsize = int(size)
 
-    ql.nprint ("[+] 0x%x\t" % (address), end = "")
+    ql.nprint("[+] 0x%x\t" % (address), end="")
 
     for i in tmp:
-        ql.nprint (" %02x" % i, end = "")
+        ql.nprint (" %02x " % i, end="")
 
-    if opsize < 4:
-        ql.nprint ("\t  ", end = "")
+    if opsize <= 6:
+        ql.nprint ("\t", end="")
     
     for i in insn:
-       ql.nprint ('\t%s \t%s' % (i.mnemonic, i.op_str))
+        ql.nprint ("%s %s" % (i.mnemonic, i.op_str))
     
     if ql.output == QL_OUT_DUMP:
         for reg in ql.reg_table:
             ql.reg_name = reg
             REG_NAME = ql.reg_name
-            REG_VAL = ql.uc.reg_read(reg)
+            REG_VAL = ql.register(reg)
             ql.dprint(3, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
             
 

@@ -12,7 +12,6 @@ import pickle
 
 from unicorn.x86_const import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.structs import *
 from qiling.exception import *
 
@@ -47,12 +46,12 @@ class Process:
         if dll_name in self.dlls:
             return self.dlls[dll_name]
         else:
-            self.dlls[dll_name] = self.ql.DLL_LAST_ADDR
+            self.dlls[dll_name] = self.ql.commos.DLL_LAST_ADDR
 
-        self.ql.nprint("[+] Loading %s to 0x%x" % (path, self.ql.DLL_LAST_ADDR))
+        self.ql.nprint("[+] Loading %s to 0x%x" % (path, self.ql.commos.DLL_LAST_ADDR))
 
         # cache depends on address base
-        fcache = path + ".%x.cache" % self.ql.DLL_LAST_ADDR
+        fcache = path + ".%x.cache" % self.ql.commos.DLL_LAST_ADDR
 
         # Add dll to IAT
         try:
@@ -72,12 +71,12 @@ class Process:
             cmdlines = []
 
             for entry in dll.DIRECTORY_ENTRY_EXPORT.symbols:
-                self.import_symbols[self.ql.DLL_LAST_ADDR + entry.address] = {"name": entry.name,
+                self.import_symbols[self.ql.commos.DLL_LAST_ADDR + entry.address] = {"name": entry.name,
                                                                               "ordinal": entry.ordinal,
                                                                               "dll": dll_name.split('.')[0]
                                                                               }
-                self.import_address_table[dll_name][entry.name] = self.ql.DLL_LAST_ADDR + entry.address
-                self.import_address_table[dll_name][entry.ordinal] = self.ql.DLL_LAST_ADDR + entry.address
+                self.import_address_table[dll_name][entry.name] = self.ql.commos.DLL_LAST_ADDR + entry.address
+                self.import_address_table[dll_name][entry.ordinal] = self.ql.commos.DLL_LAST_ADDR + entry.address
                 cmdline_entry = self.set_cmdline(entry.name, entry.address, data)
                 if cmdline_entry:
                     cmdlines.append(cmdline_entry)
@@ -90,12 +89,12 @@ class Process:
                             open(fcache, "wb"))
                 self.ql.nprint("[+] Cached %s" % path)
 
-        dll_base = self.ql.DLL_LAST_ADDR
-        dll_len = align(len(bytes(data)), 0x1000)
-        self.ql.DLL_SIZE += dll_len
-        self.ql.uc.mem_map(dll_base, dll_len)
+        dll_base = self.ql.commos.DLL_LAST_ADDR
+        dll_len = self.ql.heap._align(len(bytes(data)), 0x1000)
+        self.ql.commos.DLL_SIZE += dll_len
+        self.ql.mem.map(dll_base, dll_len)
         self.ql.mem.write(dll_base, bytes(data))
-        self.ql.DLL_LAST_ADDR += dll_len
+        self.ql.commos.DLL_LAST_ADDR += dll_len
 
         # add dll to ldr data
         self.add_ldr_data_table_entry(dll_name)
@@ -125,13 +124,13 @@ class Process:
 
     def init_tib(self):
         if self.ql.arch == QL_X86:
-            teb_addr = self.ql.STRUCTERS_LAST_ADDR
+            teb_addr = self.ql.commos.STRUCTERS_LAST_ADDR
         else:
-            gs = self.ql.STRUCTERS_LAST_ADDR
-            self.ql.STRUCTERS_LAST_ADDR += 0x30
-            teb_addr = self.ql.STRUCTERS_LAST_ADDR
+            gs = self.ql.commos.STRUCTERS_LAST_ADDR
+            self.ql.commos.STRUCTERS_LAST_ADDR += 0x30
+            teb_addr = self.ql.commos.STRUCTERS_LAST_ADDR
 
-        self.ql.nprint("[+] TEB addr is 0x%x\n" %teb_addr)
+        self.ql.nprint("[+] TEB addr is 0x%x" %teb_addr)
 
         teb_size = len(TEB(self.ql).bytes())
         teb_data = TEB(
@@ -144,7 +143,7 @@ class Process:
 
         self.ql.mem.write(teb_addr, teb_data.bytes())
 
-        self.ql.STRUCTERS_LAST_ADDR += teb_size
+        self.ql.commos.STRUCTERS_LAST_ADDR += teb_size
         if self.ql.arch == QL_X8664:
             # TEB
             self.ql.mem.write(gs + 0x30, self.ql.pack64(teb_addr))
@@ -154,18 +153,18 @@ class Process:
         self.TEB = self.ql.TEB = teb_data
 
     def init_peb(self):
-        peb_addr = self.ql.STRUCTERS_LAST_ADDR
+        peb_addr = self.ql.commos.STRUCTERS_LAST_ADDR
 
-        self.ql.nprint("[+] PEB addr is 0x%x\n" %peb_addr)
+        self.ql.nprint("[+] PEB addr is 0x%x" %peb_addr)
 
         peb_size = len(PEB(self.ql).bytes())
         peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size)
         self.ql.mem.write(peb_addr, peb_data.bytes())
-        self.ql.STRUCTERS_LAST_ADDR += peb_size
+        self.ql.commos.STRUCTERS_LAST_ADDR += peb_size
         self.PEB = self.ql.PEB = peb_data
 
     def init_ldr_data(self):
-        ldr_addr = self.ql.STRUCTERS_LAST_ADDR
+        ldr_addr = self.ql.commos.STRUCTERS_LAST_ADDR
         ldr_size = len(LdrData(self.ql).bytes())
         ldr_data = LdrData(
             self.ql,
@@ -184,7 +183,7 @@ class Process:
             }
         )
         self.ql.mem.write(ldr_addr, ldr_data.bytes())
-        self.ql.STRUCTERS_LAST_ADDR += ldr_size
+        self.ql.commos.STRUCTERS_LAST_ADDR += ldr_size
         self.LDR = self.ql.LDR = ldr_data
 
     def add_ldr_data_table_entry(self, dll_name):
@@ -248,16 +247,16 @@ class Shellcode(Process):
 
     def load(self):
         # setup stack memory
-        self.ql.uc.mem_map(self.ql.stack_address, self.ql.stack_size)
+        self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
         if self.ql.arch == QL_X86:
-            self.ql.uc.reg_write(UC_X86_REG_ESP, self.ql.stack_address + 0x3000)
-            self.ql.uc.reg_write(UC_X86_REG_EBP, self.ql.stack_address + 0x3000)
+            self.ql.register(UC_X86_REG_ESP, self.ql.stack_address + 0x3000)
+            self.ql.register(UC_X86_REG_EBP, self.ql.stack_address + 0x3000)
         else:
-            self.ql.uc.reg_write(UC_X86_REG_RSP, self.ql.stack_address + 0x3000)
-            self.ql.uc.reg_write(UC_X86_REG_RBP, self.ql.stack_address + 0x3000)
+            self.ql.register(UC_X86_REG_RSP, self.ql.stack_address + 0x3000)
+            self.ql.register(UC_X86_REG_RBP, self.ql.stack_address + 0x3000)
 
         # load shellcode in
-        self.ql.uc.mem_map(self.ql.code_address, self.ql.code_size)
+        self.ql.mem.map(self.ql.code_address, self.ql.code_size)
         self.ql.mem.write(self.ql.code_address, self.ql.shellcoder)
 
         # init tib/peb/ldr
@@ -285,13 +284,13 @@ class PE(Process):
         self.pe = pefile.PE(self.path, fast_load=True)
 
         # for simplicity, no image base relocation
-        self.ql.PE_IMAGE_BASE = self.PE_IMAGE_BASE = self.pe.OPTIONAL_HEADER.ImageBase
-        self.ql.PE_IMAGE_SIZE = self.PE_IMAGE_SIZE = self.pe.OPTIONAL_HEADER.SizeOfImage
+        self.ql.commos.PE_IMAGE_BASE = self.PE_IMAGE_BASE = self.pe.OPTIONAL_HEADER.ImageBase
+        self.ql.commos.PE_IMAGE_SIZE = self.PE_IMAGE_SIZE = self.pe.OPTIONAL_HEADER.SizeOfImage
 
-        if self.PE_IMAGE_BASE + self.PE_IMAGE_SIZE > self.ql.HEAP_BASE_ADDR:
+        if self.PE_IMAGE_BASE + self.PE_IMAGE_SIZE > self.ql.commos.HEAP_BASE_ADDR:
             # pe reloc
-            self.ql.PE_IMAGE_BASE = self.PE_IMAGE_BASE = self.ql.DEFAULT_IMAGE_BASE
-            self.pe.relocate_image(self.ql.DEFAULT_IMAGE_BASE)
+            self.ql.commos.PE_IMAGE_BASE = self.PE_IMAGE_BASE = self.ql.commos.DEFAULT_IMAGE_BASE
+            self.pe.relocate_image(self.ql.commos.DEFAULT_IMAGE_BASE)
 
         self.ql.entry_point = self.PE_ENTRY_POINT = self.PE_IMAGE_BASE + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
         self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
@@ -300,14 +299,14 @@ class PE(Process):
 
         # set stack pointer
         self.ql.nprint("[+] Initiate stack address at 0x%x " % self.ql.stack_address)
-        self.ql.uc.mem_map(self.ql.stack_address, self.ql.stack_size)
+        self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
 
         # Stack should not init at the very bottom. Will cause errors with Dlls
         sp = self.ql.stack_address + self.ql.stack_size - 0x1000
 
         if self.ql.arch == QL_X86:
-            self.ql.uc.reg_write(UC_X86_REG_ESP, sp)
-            self.ql.uc.reg_write(UC_X86_REG_EBP, sp)
+            self.ql.register(UC_X86_REG_ESP, sp)
+            self.ql.register(UC_X86_REG_EBP, sp)
 
             if self.pe.is_dll():
                 self.ql.dprint(0, '[+] Setting up DllMain args')
@@ -320,17 +319,17 @@ class PE(Process):
                 self.ql.mem.write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
 
         elif self.ql.arch == QL_X8664:
-            self.ql.uc.reg_write(UC_X86_REG_RSP, sp)
-            self.ql.uc.reg_write(UC_X86_REG_RBP, sp)
+            self.ql.register(UC_X86_REG_RSP, sp)
+            self.ql.register(UC_X86_REG_RBP, sp)
 
             if self.pe.is_dll():
                 self.ql.dprint(0, '[+] Setting up DllMain args')
 
                 self.ql.dprint(0, '[+] Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.PE_IMAGE_BASE))
-                self.ql.uc.reg_write(UC_X86_REG_RCX, self.PE_IMAGE_BASE)
+                self.ql.register(UC_X86_REG_RCX, self.PE_IMAGE_BASE)
 
                 self.ql.dprint(0, '[+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
-                self.ql.uc.reg_write(UC_X86_REG_RDX, 1)
+                self.ql.register(UC_X86_REG_RDX, 1)
         else:
             raise QlErrorArch("[!] Unknown ql.arch")
 
@@ -339,7 +338,7 @@ class PE(Process):
         super().init_ldr_data()
 
         # mmap PE file into memory
-        self.ql.uc.mem_map(self.PE_IMAGE_BASE, self.PE_IMAGE_SIZE)
+        self.ql.mem.map(self.PE_IMAGE_BASE, self.PE_IMAGE_SIZE)
         self.pe.parse_data_directories()
         data = bytearray(self.pe.get_memory_mapped_image())
         self.ql.mem.write(self.PE_IMAGE_BASE, bytes(data))

@@ -6,7 +6,7 @@
 # find source code in https://github.com/doadam/xnu-4570.1.46/master/BUILD/obj/RELEASE_X86_64/osfmk/RELEASE/mach/mach_host_server.c
 from struct import pack, unpack
 from qiling.os.macos.mach_port import *
-from qiling.os.macos.define_values import *
+from qiling.os.macos.const import *
 
 
 class MachHostServer():
