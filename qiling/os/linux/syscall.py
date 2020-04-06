@@ -17,6 +17,7 @@ from unicorn.arm_const import *
 from unicorn.x86_const import *
 from unicorn.arm64_const import *
 from unicorn.mips_const import *
+from qiling.arch.x86 import *
 
 from qiling.os.linux.const import *
 from qiling.os.linux.utils import *
@@ -34,7 +35,6 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
     base = ql.unpack32(u_info[4 : 8])
     limit = ql.unpack32(u_info[8 : 12])
     ql.nprint("[+] set_thread_area base : 0x%x limit is : 0x%x" % (base, limit))
-    from qiling.os.linux.x86 import ql_x86_setup_syscall_set_thread_area
     ql_x86_setup_syscall_set_thread_area(ql, base, limit)
     ql.mem.write(u_info_addr, ql.pack32(12))
     regreturn = 0
@@ -42,7 +42,7 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
 
 
 def ql_syscall_mips32_set_thread_area(ql, sta_area, *args, **kw):
-    from qiling.os.linux.mips32 import exec_shellcode
+    from qiling.os.linux.utils import exec_shellcode
     ql.nprint ("set_thread_area(0x%x)" % sta_area)
 
     if ql.thread_management != None and ql.multithread == True:

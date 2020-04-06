@@ -7,19 +7,20 @@ from unicorn.arm64_const import *
 from unicorn.arm_const import *
 from unicorn.mips_const import *
 from unicorn.x86_const import *
-from qiling.os.macos.syscall import *
 
 from qiling.const import *
 
+from qiling.os.macos.syscall import *
 from qiling.os.posix.syscall import *
 from qiling.os.freebsd.syscall import *
+from qiling.os.linux.syscall import *
 
 class QlPosixManager:
     
     def __init__(self, ql):
         self.ql = ql
     
-    def load_syscall(self):
+    def load_syscall(self, intno= None):
         # FIXME: maybe we need a better place
         if self.ql.ostype == QL_FREEBSD:
             from qiling.os.freebsd.x8664_syscall import map_syscall
@@ -29,6 +30,20 @@ class QlPosixManager:
                 from qiling.os.macos.x8664_syscall import map_syscall
             elif  self.ql.arch == QL_ARM64:
                 from qiling.os.macos.arm64_syscall import map_syscall
+
+        elif self.ql.ostype == QL_LINUX:
+            if self.ql.arch == QL_X8664:   
+                from qiling.os.linux.x8664_syscall import map_syscall
+            if self.ql.arch == QL_X86:   
+                from qiling.os.linux.x86_syscall import map_syscall                
+            elif self.ql.arch == QL_ARM64:
+                from qiling.os.linux.arm64_syscall import map_syscall
+            elif self.ql.arch == QL_MIPS32:   
+                from qiling.os.linux.mips32_syscall import map_syscall
+                if intno != 0x11:
+                    raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)
+            elif self.ql.arch == QL_ARM:
+                from qiling.os.linux.arm_syscall import map_syscall                
         
         param0 , param1, param2, param3, param4, param5 = self.ql.syscall_param
 

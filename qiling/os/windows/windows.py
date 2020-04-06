@@ -20,16 +20,6 @@ class QlWindowsManager:
     
     def __init__(self, ql):
         self.ql = ql
-        if self.ql.arch == QL_X8664:
-            self.QL_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
-            self.QL_WINDOWS_STACK_SIZE = 0x40000
-            self.ql.code_address = 0x140000000
-            self.ql.code_size = 10 * 1024 * 1024
-        elif self.ql.arch == QL_X86:   
-            self.QL_WINDOWS_STACK_ADDRESS = 0xfffdd000
-            self.QL_WINDOWS_STACK_SIZE =0x21000 
-            self.ql.code_address = 0x40000
-            self.ql.code_size = 10 * 1024 * 1024
 
     # hook WinAPI in PE EMU
     def hook_winapi(self, int, address, size):
@@ -67,8 +57,16 @@ class QlWindowsManager:
     def loader(self):
         if self.ql.arch == QL_X8664:
             self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
+            self.QL_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
+            self.QL_WINDOWS_STACK_SIZE = 0x40000
+            self.ql.code_address = 0x140000000
+            self.ql.code_size = 10 * 1024 * 1024
         elif self.ql.arch == QL_X86:        
             self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_32)
+            self.QL_WINDOWS_STACK_ADDRESS = 0xfffdd000
+            self.QL_WINDOWS_STACK_SIZE =0x21000 
+            self.ql.code_address = 0x40000
+            self.ql.code_size = 10 * 1024 * 1024
 
         if self.ql.stack_address == 0:
             self.ql.stack_address = self.QL_WINDOWS_STACK_ADDRESS
@@ -86,10 +84,11 @@ class QlWindowsManager:
         self.ql.PE.load()
         # hook win api
         self.ql.hook_code(self.hook_winapi)
-        ql_setup_output(self.ql)
+        
 
 
     def runner(self):
+        ql_setup_output(self.ql)
         if self.ql.until_addr == 0:
             if self.ql.archbit == 32:
                 self.ql.until_addr = QL_ARCHBIT32_EMU_END

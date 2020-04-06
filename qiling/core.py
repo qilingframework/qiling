@@ -251,24 +251,11 @@ class Qiling:
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
 
-        """
-        load os type, should replace self.shellcode() and self.load_exec()
-        disable for now
-        """
-        load_os = ql_get_os_module_function(self)        
-        self.loados = load_os(self)
         
-        """
-         FIXME: getting ready for now os oriented class
-        """
-        if self.ostype in (QL_FREEBSD, QL_WINDOWS, QL_MACOS):
-            self.loados.loader()
-        else:
-            # Loader running all till here are defined in ql = Qiling()
-            if self.shellcoder and self.arch and self.ostype:
-                self.shellcode()
-            else:
-                self.load_exec()
+        # load os and perform initialization
+        load_os = ql_get_os_module_function(self)        
+        self.load_os = load_os(self)
+        self.load_os.loader()
 
     def build_os_execution(self, function_name):
         self.runtype = ql_get_os_module_function(self, "runner")
@@ -314,15 +301,8 @@ class Qiling:
         # patch binary
         self.__enable_bin_patch()
 
-        """
-         FIXME: getting ready for now os oriented class
-        """
-        if self.ostype in (QL_FREEBSD, QL_WINDOWS, QL_MACOS):
-            self.loados.runner()     
-        else:
-            # execution, ql.run()
-            runner = self.build_os_execution("runner")
-            runner(self)
+        # run the binary
+        self.load_os.runner()     
 
         # resume with debugger
         if self.debugger is not None:
