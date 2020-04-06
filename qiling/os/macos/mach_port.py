@@ -7,6 +7,14 @@
 from struct import pack, unpack
 
 
+# define in kernel osfmk/mach/message.h
+# mach_msg_header_t:
+#   mach_msg_bits_t	msgh_bits;                  unsigned int 
+#   mach_msg_size_t	msgh_size;                  4 bytes
+#   mach_port_t		msgh_remote_port;           4 bytes
+#   mach_port_t		msgh_local_port;            4 bytes
+#   mach_port_name_t	msgh_voucher_port;      4 bytes
+#   mach_msg_id_t		msgh_id;                4 bytes
 class MachMsgHeader():
 
     def __init__(self, ql):
@@ -26,6 +34,7 @@ class MachMsgHeader():
         self.msgh_local_port = unpack("<L", self.ql.mem.read(addr + 0xc, 0x4))[0]
         self.msgh_voucher_port = unpack("<L", self.ql.mem.read(addr + 0x10, 0x4))[0]
         self.msgh_id = unpack("<L", self.ql.mem.read(addr + 0x14, 0x4))[0]
+        # print("size !!!!! {}".format(self.msgh_size))
 
     def __str__(self):
         return "[MachMsg] bits :{}, size:{}, remote port:{}, local port:{}, voucher port:{}, id:{}".format(
@@ -38,6 +47,8 @@ class MachMsgHeader():
         )
 
 
+# Mach message Class 
+# mach msg: header + content + trailer
 class MachMsg():
     def __init__(self, ql):
         self.ql = ql
@@ -48,6 +59,7 @@ class MachMsg():
     
     def read_msg_from_mem(self, addr, size):
         self.header = self.read_msg_header(addr, size)
+        # between header and content is 4 byte \x00
         self.content = self.read_msg_content(addr + self.header.header_size, size - self.header.header_size)
 
     def write_msg_to_mem(self, addr):
@@ -73,12 +85,18 @@ class MachMsg():
         return self.ql.mem.read(addr, size)
 
 
+# Mach Port Class 
+# not Finished
 class MachPort():
 
     def __init__(self, port_name):
         self.name = port_name
         pass
 
+
+# Mach Port Manager : 
+#   1. handle mach msg
+#   2. register some Host Port
 
 class MachPortManager():
 
@@ -87,6 +105,7 @@ class MachPortManager():
         self.host_port = MachPort(0x303)
         self.clock_port = MachPort(0x803)
         self.semaphore_port = MachPort(0x903)
+        self.special_port = MachPort(0x707)
         self.my_port = my_port
         self.count = 0
         pass
@@ -103,9 +122,12 @@ class MachPortManager():
         elif msg.header.msgh_id == 3418:
             out_msg = self.ql.macho_task_server.semaphore_create(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
+        elif msg.header.msgh_id == 3409:
+            out_msg = self.ql.macho_task_server.get_special_port(msg.header, msg.content)
+            out_msg.write_msg_to_mem(addr)
         else:
             self.ql.nprint("Error Mach Msgid {} can not handled".format(msg.header.msgh_id))
-            raise
+            raise Exception("Mach Msgid Not Found")
 
         self.ql.dprint(0, "Reply-> Header: {}, Content: {}".format(out_msg.header, out_msg.content))
 
@@ -124,14 +146,3 @@ class MachPortManager():
 # 	PAD_ARG_8
 # 	PAD_ARG_(user_addr_t, rcv_msg);  /* Unused on mach_msg_trap */  addr length
 # };
-
-
-# typedef	struct 
-# {
-#   mach_msg_bits_t	msgh_bits;                  unsigned int 
-#   mach_msg_size_t	msgh_size;                  4 bytes
-#   mach_port_t		msgh_remote_port;           4 bytes
-#   mach_port_t		msgh_local_port;            4 bytes
-#   mach_port_name_t	msgh_voucher_port;      4 bytes
-#   mach_msg_id_t		msgh_id;                4 bytes
-# } mach_msg_header_t;

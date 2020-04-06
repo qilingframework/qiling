@@ -125,7 +125,6 @@ def runner(ql):
     map_commpage(ql)
     ql.macho_thread = MachoThread()
     load_commpage(ql)
-    load_shared_region(ql)
     ql.root = True
 
     if (ql.until_addr == 0):
