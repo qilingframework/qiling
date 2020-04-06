@@ -31,9 +31,9 @@ class QlWindowsManager:
                 winapi_name = winapi_name.decode()
             winapi_func = None
 
-            if winapi_name in self.ql.commos.user_defined_api:
-                if isinstance(self.ql.commos.user_defined_api[winapi_name], types.FunctionType):
-                    winapi_func = self.ql.commos.user_defined_api[winapi_name]
+            if winapi_name in self.ql.comm_os.user_defined_api:
+                if isinstance(self.ql.comm_os.user_defined_api[winapi_name], types.FunctionType):
+                    winapi_func = self.ql.comm_os.user_defined_api[winapi_name]
             else:
                 try:
                     counter = self.ql.PE.syscall_count.get(winapi_name, 0) + 1

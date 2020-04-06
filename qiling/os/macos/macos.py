@@ -32,7 +32,7 @@ class QlMacOSManager:
 
 
     def hook_syscall(self, intno= None, int = None):
-        return self.ql.commos.load_syscall()
+        return self.ql.comm_os.load_syscall()
  
 
     def loader(self):

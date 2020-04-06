@@ -28,7 +28,7 @@ class QlLinuxManager:
         self.QL_ARM_KERNEL_GET_TLS_ADDR = 0xFFFF0FE0
 
     def hook_syscall(self, int= None, intno= None):
-        return self.ql.commos.load_syscall(intno)
+        return self.ql.comm_os.load_syscall(intno)
 
     def loader(self):
         self.QL_LINUX_PREDEFINE_STACKSIZE = 0x21000 

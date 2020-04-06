@@ -25,12 +25,10 @@ def catch_KeyboardInterrupt(ql):
             try:
                 return func(*args, **kw)
             except BaseException as e:
-                ql.dprint(0, "Received a request from the user to stop!")
+                #ql.dprint(0, "Received a request from the user to stop!")
                 ql.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
                 ql.internal_exception = e
-
         return wrapper
-
     return decorator
 
 
@@ -216,7 +214,7 @@ class Qiling:
         """
         self.archfunc = arch_func(self)
         if comm_os:
-            self.commos = comm_os(self)
+            self.comm_os = comm_os(self)
 
         # based on CPU bit and set pointer size
         if self.archbit:
@@ -354,7 +352,9 @@ class Qiling:
     # replace linux or windows syscall/api with custom api/syscall
     def set_syscall(self, syscall_cur, syscall_new):
         if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD):
-            self.commos.dict_posix_syscall[syscall_cur] = syscall_new
+            #self.comm_os.dict_posix_syscall[syscall_cur] = syscall_new
+            self.comm_os.cur_syscall = syscall_cur
+            self.comm_os.set_syscall = syscall_new
         elif self.ostype == QL_WINDOWS:
             self.set_api(syscall_cur, syscall_new)
 
@@ -362,7 +362,7 @@ class Qiling:
     # replace Windows API with custom syscall
     def set_api(self, api_name, api_func):
         if self.ostype == QL_WINDOWS:
-            self.commos.user_defined_api[api_name] = api_func
+            self.comm_os.user_defined_api[api_name] = api_func
 
 
     def hook_code(self, callback, user_data=None, begin=1, end=0):
@@ -658,12 +658,12 @@ class Qiling:
     # ql.syscall - get syscall for all posix series
     @property
     def syscall(self):
-        return self.commos.get_syscall()
+        return self.comm_os.get_syscall()
 
     # ql.syscall_param - get syscall for all posix series
     @property
     def syscall_param(self):
-        return self.commos.get_syscall_param()
+        return self.comm_os.get_syscall_param()
 
     # ql.reg_pc - PC register name getter
     @property

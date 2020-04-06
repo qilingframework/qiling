@@ -20,6 +20,8 @@ class QlPosixManager:
     def __init__(self, ql):
         self.ql = ql
         self.dict_posix_syscall = dict()
+        self.set_syscall = ""
+        self.cur_syscall = ""
     
     def load_syscall(self, intno= None):
         # FIXME: maybe we need a better place
@@ -49,26 +51,36 @@ class QlPosixManager:
         param0 , param1, param2, param3, param4, param5 = self.ql.syscall_param
 
         while 1:
-            _SYSCALL_FUNC = self.ql.dict_posix_syscall.get(self.ql.syscall, None)
-            if _SYSCALL_FUNC != None:
-                _SYSCALL_FUNC_NAME = _SYSCALL_FUNC.__name__
+            self.syscall_map = self.dict_posix_syscall.get(self.ql.syscall, None)
+            if self.syscall_map != None:
+                self.syscall_name = self.syscall_map.__name__
                 break
-            _SYSCALL_FUNC_NAME = map_syscall(self.ql.syscall)
-            if _SYSCALL_FUNC_NAME != None:
-                _SYSCALL_FUNC = eval(_SYSCALL_FUNC_NAME)
+            
+            self.syscall_name = map_syscall(self.ql.syscall)
+            
+            if self.set_syscall and self.cur_syscall:
+                match_name = "ql_syscall_" + str(self.cur_syscall)
+                self.ql.dprint(0,"[+] set_syscall: original %s replace with %s" % (match_name, self.set_syscall))
+                if match_name == self.syscall_name:
+                    self.syscall_name = self.set_syscall
+                    #break
+            
+            if self.syscall_name != None:
+                self.syscall_map = eval(self.syscall_name)
                 break
-            _SYSCALL_FUNC = None
-            _SYSCALL_FUNC_NAME = None
+            
+            self.syscall_map = None
+            self.syscall_name = None
             break
 
-        if _SYSCALL_FUNC != None:
+        if self.syscall_map != None:
             try:
-                _SYSCALL_FUNC(self.ql, param0, param1, param2, param3, param4, param5)
+                self.syscall_map(self.ql, param0, param1, param2, param3, param4, param5)
             except KeyboardInterrupt:
                 raise            
             except Exception:
-                self.ql.nprint("[!] SYSCALL ERROR: ", _SYSCALL_FUNC_NAME)
-                raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (_SYSCALL_FUNC_NAME))
+                self.ql.nprint("[!] SYSCALL ERROR: ", self.syscall_name)
+                raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (self.syscall_name))
         else:
             self.ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implement" %(self.ql.pc, self.ql.syscall, self.ql.syscall))
             if self.ql.debug_stop:
