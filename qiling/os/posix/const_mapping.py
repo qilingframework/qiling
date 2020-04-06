@@ -63,7 +63,7 @@ def mmap_flag_mapping(flags):
 
 def mmap_prot_mapping(prots):
     
-    if prots is 0x0:
+    if prots == 0x0:
         return 'PROT_NONE'
 
     mmap_prots = {
