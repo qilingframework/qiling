@@ -106,8 +106,6 @@ class Qiling:
         self.debug_stop = False
         self.internal_exception = None
         self.platform = platform.system()
-        self.dict_posix_syscall = dict()
-        self.user_defined_api = {}
         self.global_thread_id = 0
         self.debugger = None
         self.automatize_input = False
@@ -356,7 +354,7 @@ class Qiling:
     # replace linux or windows syscall/api with custom api/syscall
     def set_syscall(self, syscall_cur, syscall_new):
         if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD):
-            self.dict_posix_syscall[syscall_cur] = syscall_new
+            self.commos.dict_posix_syscall[syscall_cur] = syscall_new
         elif self.ostype == QL_WINDOWS:
             self.set_api(syscall_cur, syscall_new)
 
@@ -364,7 +362,7 @@ class Qiling:
     # replace Windows API with custom syscall
     def set_api(self, api_name, api_func):
         if self.ostype == QL_WINDOWS:
-            self.user_defined_api[api_name] = api_func
+            self.commos.user_defined_api[api_name] = api_func
 
 
     def hook_code(self, callback, user_data=None, begin=1, end=0):

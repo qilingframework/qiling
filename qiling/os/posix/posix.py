@@ -19,6 +19,7 @@ class QlPosixManager:
     
     def __init__(self, ql):
         self.ql = ql
+        self.dict_posix_syscall = dict()
     
     def load_syscall(self, intno= None):
         # FIXME: maybe we need a better place
