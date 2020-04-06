@@ -358,7 +358,7 @@ def hook_GetTokenInformation(ql, address, params):
     ql.mem.write(return_point, len(information_value).to_bytes(4, byteorder="little"))
     return_size = int.from_bytes(ql.mem.read(return_point, 4), byteorder="little")
     if return_size > max_size:
-        ql.commos.last_error  = ERROR_INSUFFICIENT_BUFFER
+        ql.load_os.last_error  = ERROR_INSUFFICIENT_BUFFER
         return 0
     if dst != 0:
         ql.mem.write(dst, information_value)

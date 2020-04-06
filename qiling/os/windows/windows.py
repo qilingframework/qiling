@@ -16,20 +16,31 @@ from qiling.os.windows.dlls import *
 from qiling.os.windows.const import *
 from qiling.os.windows.const import Mapper
 
-class QlWindowsManager:
+class QlOsWindowsManager:
     
     def __init__(self, ql):
         self.ql = ql
-        if self.ql.arch == QL_X8664:
-            self.QL_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
-            self.QL_WINDOWS_STACK_SIZE = 0x40000
-            self.ql.code_address = 0x140000000
-            self.ql.code_size = 10 * 1024 * 1024
-        elif self.ql.arch == QL_X86:   
-            self.QL_WINDOWS_STACK_ADDRESS = 0xfffdd000
-            self.QL_WINDOWS_STACK_SIZE =0x21000 
-            self.ql.code_address = 0x40000
-            self.ql.code_size = 10 * 1024 * 1024
+        self.user_defined_api = {}
+        
+        if self.ql.arch == QL_X86:
+            self.STRUCTERS_LAST_ADDR = FS_SEGMENT_ADDR
+            self.DEFAULT_IMAGE_BASE = 0x400000
+            self.HEAP_BASE_ADDR = 0x5000000
+            self.HEAP_SIZE = 0x5000000
+            self.DLL_BASE_ADDR = 0x10000000
+        elif self.ql.arch == QL_X8664:
+            self.STRUCTERS_LAST_ADDR = GS_SEGMENT_ADDR 
+            self.DEFAULT_IMAGE_BASE = 0x400000
+            self.HEAP_BASE_ADDR = 0x500000000
+            self.HEAP_SIZE = 0x5000000
+            self.DLL_BASE_ADDR = 0x7ffff0000000
+            
+        self.PE_IMAGE_BASE = 0
+        self.PE_IMAGE_SIZE = 0
+        self.DLL_SIZE = 0
+        self.DLL_LAST_ADDR = self.DLL_BASE_ADDR
+        self.PE_RUN = True
+        self.last_error = 0
 
     # hook WinAPI in PE EMU
     def hook_winapi(self, int, address, size):
@@ -41,9 +52,9 @@ class QlWindowsManager:
                 winapi_name = winapi_name.decode()
             winapi_func = None
 
-            if winapi_name in self.ql.user_defined_api:
-                if isinstance(self.ql.user_defined_api[winapi_name], types.FunctionType):
-                    winapi_func = self.ql.user_defined_api[winapi_name]
+            if winapi_name in self.user_defined_api:
+                if isinstance(self.user_defined_api[winapi_name], types.FunctionType):
+                    winapi_func = self.user_defined_api[winapi_name]
             else:
                 try:
                     counter = self.ql.PE.syscall_count.get(winapi_name, 0) + 1
@@ -67,8 +78,16 @@ class QlWindowsManager:
     def loader(self):
         if self.ql.arch == QL_X8664:
             self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
+            self.QL_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
+            self.QL_WINDOWS_STACK_SIZE = 0x40000
+            self.ql.code_address = 0x140000000
+            self.ql.code_size = 10 * 1024 * 1024
         elif self.ql.arch == QL_X86:        
             self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_32)
+            self.QL_WINDOWS_STACK_ADDRESS = 0xfffdd000
+            self.QL_WINDOWS_STACK_SIZE =0x21000 
+            self.ql.code_address = 0x40000
+            self.ql.code_size = 10 * 1024 * 1024
 
         if self.ql.stack_address == 0:
             self.ql.stack_address = self.QL_WINDOWS_STACK_ADDRESS
@@ -86,10 +105,11 @@ class QlWindowsManager:
         self.ql.PE.load()
         # hook win api
         self.ql.hook_code(self.hook_winapi)
-        ql_setup_output(self.ql)
+        
 
 
     def runner(self):
+        ql_setup_output(self.ql)
         if self.ql.until_addr == 0:
             if self.ql.archbit == 32:
                 self.ql.until_addr = QL_ARCHBIT32_EMU_END

@@ -137,7 +137,7 @@ def hook_WriteFile(ql, address, params):
         f = ql.handle_manager.get(hFile)
         if f is None:
             # Invalid handle
-            ql.commos.last_error  = ERROR_INVALID_HANDLE
+            ql.load_os.last_error  = ERROR_INVALID_HANDLE
             return 0
         else:
             f = f.file

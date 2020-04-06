@@ -29,7 +29,7 @@ class FiberManager:
 
     def free(self, idx):
         if idx not in self.fibers:
-            self.ql.commos.last_error = 0x57  # ERROR_INVALID_PARAMETER
+            self.ql.load_os.last_error = 0x57  # ERROR_INVALID_PARAMETER
             return 0
         else:
             fiber = self.fibers[idx]
@@ -60,7 +60,7 @@ class FiberManager:
 
     def set(self, idx, data):
         if idx not in self.fibers:
-            self.ql.commos.last_error = 0x57  # ERROR_INVALID_PARAMETER
+            self.ql.load_os.last_error = 0x57  # ERROR_INVALID_PARAMETER
             return 0
         else:
             self.fibers[idx].data = data
@@ -68,7 +68,7 @@ class FiberManager:
 
     def get(self, idx):
         if idx not in self.fibers:
-            self.ql.commos.last_error = 0x57  # ERROR_INVALID_PARAMETER
+            self.ql.load_os.last_error = 0x57  # ERROR_INVALID_PARAMETER
             return 0
         else:
             return self.fibers[idx].data

@@ -25,32 +25,29 @@ from qiling.os.const import *
 from qiling.os.macos.const import *
 
 
-class QlMacOSManager:
+class QlOsMacosManager:
     
     def __init__(self, ql):
         self.ql = ql
-        if self.ql.arch == QL_X8664:
-            self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x7ffcf0000000
-            self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x19a00000
-            self.QL_MACOS_PREDEFINE_MMAPADDRESS         =  0x7ffbf0100000
-            self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS  = 0x4000000f4000
-            
-        elif self.ql.arch == QL_ARM64:    
-            self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x0000000160503000
-            self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x21000
-            self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
-            self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS  = 0x4000000f4000
 
 
     def hook_syscall(self, intno= None, int = None):
-        return self.ql.commos.load_syscall()
+        return self.ql.comm_os.load_syscall()
  
 
     def loader(self):
         if self.ql.arch == QL_ARM64:
             self.ql.uc = Uc(UC_ARCH_ARM64, UC_MODE_ARM)
+            self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x0000000160503000
+            self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x21000
+            self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
+            self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS  = 0x4000000f4000
         elif  self.ql.arch == QL_X8664:   
             self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
+            self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x7ffcf0000000
+            self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x19a00000
+            self.QL_MACOS_PREDEFINE_MMAPADDRESS         =  0x7ffbf0100000
+            self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS  = 0x4000000f4000
 
         if self.ql.shellcoder:
             if (self.ql.stack_address == 0):
@@ -113,8 +110,6 @@ class QlMacOSManager:
         if  self.ql.arch == QL_X8664:
             load_commpage(self.ql)
         
-        load_shared_region(self.ql)
-
         if (self.ql.until_addr == 0):
             self.ql.until_addr = QL_ARCHBIT64_EMU_END
         try:

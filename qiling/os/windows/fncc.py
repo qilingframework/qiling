@@ -147,7 +147,7 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
     # update stack pointer
     ql.sp = ql.sp + ((param_num + 1) * 4)
 
-    if ql.commos.PE_RUN:
+    if ql.load_os.PE_RUN:
         ql.pc = ret_addr
 
     return result
@@ -156,7 +156,7 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
 def x86_cdecl(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
 
-    if ql.commos.PE_RUN:
+    if ql.load_os.PE_RUN:
         ql.pc = ql.stack_pop()
 
     return result
@@ -165,7 +165,7 @@ def x86_cdecl(ql, param_num, params, func, args, kwargs):
 def x8664_fastcall(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
 
-    if ql.commos.PE_RUN:
+    if ql.load_os.PE_RUN:
         ql.pc = ql.stack_pop()
 
     return result

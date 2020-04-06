@@ -34,6 +34,7 @@ from qiling.os.posix.const_mapping import *
 # TODO: We need to finish these syscall
 # there are three kinds of syscall, we often use posix syscall, mach syscall is used by handle mach msg
 # Unfortunately we dont have enough doc about mach syscallios 
+# We can find all of these syscalls in kernel source code, some pthread func may found in libpthread
 
 ################
 # ios syscall #
@@ -61,9 +62,7 @@ def ql_arm64_poll(ql, target, address, size, *args, **kw):
 
 # 0xa
 def ql_x86_syscall_kernelrpc_mach_vm_allocate_trap(ql, port, addr, size, flags, *args, **kw):
-    null = 0
-    ql.nprint("0x{:X} syscall[mach] >> mach vm allocate trap".format(ql.register(UC_X86_REG_RIP)))
-    ql.nprint("param: port:{:X}, addr:{:X}, size:{:X}, flags:{:X}, {:X}, {:X}".format(port, addr, size, flags, null, null))
+    ql.nprint("syscall[mach] >> mach vm allocate trap(port:{:X}, addr:{:X}, size:{:X}, flags:{:X})".format(port, addr, size, flags))
     mmap_start = ql.macho_task.min_offset
     mmap_end = page_align_end(mmap_start + size, PAGE_SIZE)
     ql.mem.map(mmap_start, mmap_end - mmap_start)
@@ -80,19 +79,14 @@ def ql_x86_syscall_kernelrpc_mach_vm_deallocate_trap(ql, target, address, size, 
 
 # 0xf
 def ql_x86_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, flags, cur_protection):
-    ql.nprint("0x{:X} syscall[mach] >> mach vm map trap(target:0x{:X}, address:0x{:X}, size:0x{:X}, mask:0x{:X}, flag:0x{:X}, cur_protect:0x{:X})".format(
-        ql.register(UC_X86_REG_RIP), target, address, size, mask, flags, cur_protection
+    ql.nprint("syscall[mach] >> mach vm map trap(target:0x{:X}, address:0x{:X}, size:0x{:X}, mask:0x{:X}, flag:0x{:X}, cur_protect:0x{:X})".format(
+        target, address, size, mask, flags, cur_protection
     ))
-
-    ql.nprint("Before the end is 0x{:X}".format(ql.macho_vmmap_end))
-    ql.nprint("Mask is 0x{:X}".format(mask))
 
     if ql.macho_vmmap_end & mask > 0:
         ql.macho_vmmap_end = ql.macho_vmmap_end - (ql.macho_vmmap_end & mask)
-        ql.nprint("Clear :0x{:X}".format(ql.macho_vmmap_end))
         ql.macho_vmmap_end += mask + 1
 
-    ql.nprint("slide end :0x{:X}".format(ql.macho_vmmap_end))
     
     vmmap_start = page_align_end(ql.macho_vmmap_end, PAGE_SIZE)
     vmmap_end = page_align_end(vmmap_start + size, PAGE_SIZE)
@@ -100,18 +94,37 @@ def ql_x86_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, f
     ql.macho_vmmap_end = vmmap_end
     ql.mem.map(vmmap_start, vmmap_end - vmmap_start)
     ql.mem.write(address, struct.pack("<Q", vmmap_start))
-    # print(address, size)
-    # ql.mem.map(address, size)
     ql_definesyscall_return(ql, KERN_SUCCESS)
 
 # 0x12
 def ql_x86_syscall_kernelrpc_mach_port_deallocate_trap(ql, *args, **kw):
     ql.nprint("syscall[mach] >> mach port deallocate trap")
 
+# 0x13
+def ql_x86_syscall_kernelrpc_mach_port_mod_refs_trap(ql, target, name, right, delta, *args, **kw):
+    ql.nprint("syscall[mach] >> mach port mod refs trap(target:0x{:X}, name:0x{:X}, right:0x{:X}, delta:0x{:X})".format(
+        target, name, right, delta
+    ))
+    pass
+
+# 0x18
+def ql_x86_syscall_kernelrpc_mach_port_construct_trap(ql, target, options, context, name, *args, **kw):
+    ql.nprint("syscall[mach] >> mach port construct trap(target:0x{:X}, options:0x{:X}, context:0x{:X}, name:0x{:X})".format(
+        target, options, context, name
+    ))
+    pass
+
 # 0x1a
 def ql_x86_syscall_mach_reply_port(ql, *args, **kw):
     ql_definesyscall_return(ql, ql.macho_mach_port.name)
     ql.nprint("syscall[mach] >> mach reply port , ret: {}".format(ql.macho_mach_port.name))
+
+# 0x1b
+def ql_x86_syscall_thread_self_trap(ql, *args, **kw):
+    port_manager = ql.macho_port_manager
+    thread_port = port_manager.get_thread_port(ql.macho_thread)
+    ql.nprint("syscall[mach] >> thread_self_trap: ret:{}".format(thread_port))
+    ql_definesyscall_return(ql, thread_port)
 
 # 0x1c
 def ql_x86_syscall_task_self_trap(ql, *args, **kw):
@@ -126,20 +139,13 @@ def ql_x86_syscall_host_self_trap(ql, *args, **kw):
 
 # 0x1f
 def ql_x86_syscall_mach_msg_trap(ql, args, opt, ssize, rsize, rname, timeout):
-    ql.nprint("0x{:X} syscall[mach] >> mach_msg_trap(args:0x{:X} opt: {}, ssize: {}, rsize: {}, rname: {}, timeout: {})".format(
-        ql.register(UC_X86_REG_RIP), args, opt, ssize, rsize, rname, timeout))
+    ql.nprint("syscall[mach] >> mach_msg_trap(args:0x{:X} opt: {}, ssize: {}, rsize: {}, rname: {}, timeout: {})".format(
+        args, opt, ssize, rsize, rname, timeout))
     mach_msg = MachMsg(ql)
     mach_msg.read_msg_from_mem(args, ssize)
     ql.nprint("Recv-> Header: {}, Content: {}".format(mach_msg.header, mach_msg.content))
     ql.macho_port_manager.deal_with_msg(mach_msg, args)
-    # ql.macho_port_manager.get_host_info_reply(args)
     ql_definesyscall_return(ql, 0)
-
-def ql_x86_syscall_thread_self_trap(ql, *args, **kw):
-    port_manager = ql.macho_port_manager
-    thread_port = port_manager.get_thread_port(ql.macho_thread)
-    ql.nprint("syscall[mach] >> thread_self_trap: ret:{}".format(thread_port))
-    ql_definesyscall_return(ql, thread_port)
 
 
 #################
@@ -159,11 +165,8 @@ def ql_syscall_access_macos(ql, path, flags, *args, **kw):
 def ql_syscall_sigprocmask(ql, how, mask, omask, *args, **kw):
     ql.nprint("syscall >> sigprocmask(how: 0x%X, mask: 0x%X, omask: 0x%X)" % (how, mask, omask))
 
-# 0x4a 
-
 # 0x5c
 def ql_syscall_fcntl64_macos(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
-    
     regreturn = 0
     if fcntl_cmd == F_GETFL:
         regreturn = 2
@@ -184,7 +187,6 @@ def ql_syscall_fcntl64_macos(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
 
 # 0x99
 def ql_syscall_pread(ql, fd, buf, nbyte, offset, *args, **kw):
-    ql.nprint("RIP: 0x{:X}".format(ql.register(UC_X86_REG_RIP)))
     ql.nprint("syscall >> pread(fd: 0x{:X}, buf: 0x{:X}, nbyte: {}, offset: 0x{:X})".format(
         fd, buf, nbyte, offset
     ))
@@ -204,8 +206,8 @@ def ql_syscall_csops(ql, pid, ops, useraddr, usersize, *args, **kw):
     ))
     ql_definesyscall_return(ql, KERN_SUCCESS)
 
+# 0xdc
 def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options, *args, **kw):
-    ql.nprint("RIP: 0x{:X}".format(ql.register(UC_X86_REG_RIP)))
     ql.nprint("syscall >> getattrlist(path: 0x{:X}, alist: 0x{:X}, attributeBuffer: 0x{:X}, bufferSize: {}, options: {})".format(
         path, alist, attributeBuffer, bufferSize, options
     ))
@@ -243,12 +245,28 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
         set_eflags_cf(ql, 0x0)
         ql_definesyscall_return(ql, KERN_SUCCESS)
 
+# 0xc2
+# struct rlimit {
+#     rlim_t	rlim_cur;		/* current (soft) limit */       uint64
+#     rlim_t	rlim_max;		/* maximum value for rlim_cur */ uint64
+# };
+def ql_syscall_getrlimit(ql, which, rlp, *args, **kw):
+    ql.nprint("syscall >> getrlimit(which:0x{:X}, rlp:0x{:X})".format(which, rlp))
+    _RLIMIT_POSIX_FLAG = 0x1000
+    RLIM_NLIMITS = 9
+    which = which & _RLIMIT_POSIX_FLAG
+    if which >= RLIM_NLIMITS:
+        ql_definesyscall_return(ql, EINVAL)
+    else :
+        ql.mem.write(rlp, b'\x00\x13\x00\x00\x00\x00\x00\x00')  # rlim_cur
+        ql.mem.write(rlp, b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F')  # rlim_max
+        pass
+    pass
+
 # 0xc5
+# this is ugly patch, we might need to get value from elf parse,
+# is32bit or is64bit value not by arch
 def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
-    # this is ugly patch, we might need to get value from elf parse,
-    # is32bit or is64bit value not by arch
-    ql.nprint("RIP: 0x{:X}".format(ql.register(UC_X86_REG_RIP)))
-   
     MAP_ANONYMOUS=32
 
     if (ql.arch == QL_ARM64) or (ql.arch == QL_X8664):
@@ -261,7 +279,6 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
     else:
         mmap2_fd = ql.unpack32s(ql.pack32(mmap2_fd))
         mmap2_pgoffset = mmap2_pgoffset * 4096
-
 
     mmap_base = mmap2_addr
     need_mmap = True
@@ -281,9 +298,7 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
         try:
             ql.mem.map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000)
         except:
-            # ql.mem.show_mapinfo()
             pass
-            # raise     
 
     ql.mem.write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
     
@@ -320,7 +335,6 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
     ql.dprint(0, "[+] mmap_base is 0x%x" % regreturn)
 
     ql_definesyscall_return(ql, regreturn)
-    # input()
 
 # 0xca
 def ql_syscall_sysctl(ql, name, namelen, old, oldlenp, new_arg, newlen):
@@ -329,15 +343,21 @@ def ql_syscall_sysctl(ql, name, namelen, old, oldlenp, new_arg, newlen):
     ))
     ql_definesyscall_return(ql, KERN_SUCCESS)
 
+# 0x112
+def ql_syscall_sysctlbyname(ql, name, namelen, old, oldlenp, new_arg, newlen):
+    ql.nprint("syscall >> sysctlbyname(name:0x{:X}, namelen:0x{:X}, old:0x{:X}, oldlenp:0x{:X}, new:0x{:X}, newlen:0x{:X})".format(
+        name, namelen, old, oldlenp, new_arg, newlen
+    ))
+    ql_definesyscall_return(ql, KERN_SUCCESS)
+
 # 0x126
+# check shared region if avalible , return not ready every time
 def ql_syscall_shared_region_check_np(ql, p, uap, retvalp, *args, **kw):
-    # check shared region if avalible , return not ready every time
     ql.nprint("syscall >> shared_region_check_np(p: {}, uap: {}, retvalp :{}) : ret:{}".format(p, uap, retvalp, EINVAL))
     ql_definesyscall_return(ql, EINVAL)
 
 # 0x150
 def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buffer, buffer_size):
-    ql.nprint("RIP: 0x{:X}".format(ql.register(UC_X86_REG_RIP)))
     retval = struct.unpack("<Q", ql.mem.read(ql.register(UC_X86_REG_RSP), 8))[0]
     ql.nprint("syscall >> proc info(callnum: {}, pid: {}, flavor: {}, arg: 0x{:X}, buffer: 0x{:X}, buffersize: {}, retval: 0x{:X})".format(
         callnum, pid, flavor, arg, buffer, buffer_size, retval
@@ -352,7 +372,6 @@ def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buffer, buffer_size):
 
 # 0x152
 def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
-    ql.nprint("RIP: 0x{:X}".format(ql.register(UC_X86_REG_RIP)))
     stat64_file = (ql_read_string(ql, stat64_pathname))
 
     real_path = ql.macho_fs.vm_to_real_path(stat64_file)
@@ -406,7 +425,6 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
 # 0x153
 def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
     fstat64_buf = b''
-    ql.nprint("RIP: 0x{:X}".format(ql.register(UC_X86_REG_RIP)))
     if fstat64_fd < 256 and ql.file_des[fstat64_fd] != 0:
         user_fileno = fstat64_fd
         fstat64_info = ql.file_des[user_fileno].fstat()
@@ -431,24 +449,6 @@ def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
             fstat64_buf += ql.pack64(0)
         else:
-
-            # pack fstatinfo
-            # fstat64_buf = ql.pack64(fstat64_info.st_dev)
-            # fstat64_buf += ql.pack64(0x0000000300c30000)
-            # fstat64_buf += ql.pack32(fstat64_info.st_mode)
-            # fstat64_buf += ql.pack32(fstat64_info.st_nlink)
-            # fstat64_buf += ql.pack32(fstat64_info.st_uid)
-            # fstat64_buf += ql.pack32(fstat64_info.st_gid)
-            # fstat64_buf += ql.pack64(0x0000000000008800) #?? fstat_info.st_rdev
-            # fstat64_buf += ql.pack32(0xffffd257)
-            # fstat64_buf += ql.pack64(fstat64_info.st_size)
-            # fstat64_buf += ql.pack32(0x00000400) #?? fstat_info.st_blksize
-            # fstat64_buf += ql.pack64(0x0000000000000000) #?? fstat_info.st_blocks
-            # fstat64_buf += ql.pack64(int(fstat64_info.st_atime))
-            # fstat64_buf += ql.pack64(int(fstat64_info.st_mtime))
-            # fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
-            # fstat64_buf += ql.pack64(fstat64_info.st_ino)
-
             fstat64_buf += ql.pack32(fstat64_info.st_dev)                   # dev_t	 	st_dev
             fstat64_buf += ql.pack32(fstat64_info.st_ino)                   # ino_t	  	st_ino
             fstat64_buf += ql.pack32(fstat64_info.st_mode)                  # mode_t	 	st_mode
@@ -486,7 +486,6 @@ def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
 def ql_syscall_bsdthread_register(ql, threadstart, wqthread, flags, stack_addr_hint, targetconc_ptr, dispatchqueue_offset):
     set_eflags_cf(ql, 0x0)
     ql_definesyscall_return(ql, 0x00000000400000df)
-    pass
 
 # 0x174
 def ql_syscall_thread_selfid(ql, *args, **kw):
@@ -494,7 +493,7 @@ def ql_syscall_thread_selfid(ql, *args, **kw):
     ql.nprint("syscall >> thread selfid, ret: {}".format(ql.macho_thread.id))
 
 # 0x18e
-def ql_syscall_thread_open_nocancel(ql, filename, flags, mode, *args, **kw):
+def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
     path = ql_read_string(ql, filename)
     real_path = ql_transform_to_real_path(ql, path)
     relative_path = ql_transform_to_relative_path(ql, path)
@@ -543,7 +542,6 @@ def ql_syscall_shared_region_map_and_slide_np(ql, fd, count, mappings_addr, slid
         mapping_list.append(mapping)
     ql_definesyscall_return(ql, slide_size)
 
-
 # 0x1e3
 def ql_syscall_csrctl(ql, op, useraddr, usersize, *args, **kw):
     ql.nprint("syscall >> csrctl(op :{}, useraddr :0x{:X}, usersize :{})".format(op, useraddr, usersize))
@@ -574,8 +572,9 @@ def ql_syscall_abort_with_payload(ql, reason_namespace, reason_code, payload, pa
 ################
 
 # 0x3
+# thread_set_tsd_base
 def ql_x86_syscall_thread_fast_set_cthread_self64(ql, u_info_addr, *args, **kw):
     ql.nprint("syscall[mdep] >> thread fast set cthread self64(tsd_base:0x{:X})".format(u_info_addr))
-    ql.uc.msr_write(MSR_KERNEL_GS_BASE, u_info_addr)
+    ql.uc.msr_write(GSMSR, u_info_addr)
     ql_definesyscall_return(ql, KERN_SUCCESS)
     return 

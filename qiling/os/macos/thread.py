@@ -5,6 +5,7 @@
 
 from qiling.os.macos.mach_port import *
 
+# TODO: finished
 class MachoThread():
 
     def __init__(self):

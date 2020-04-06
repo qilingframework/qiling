@@ -9,6 +9,8 @@ from qiling.const import *
 from struct import *
 import os
 
+# commpage is a shared mem space which is in a static address
+# start at 0x7FFFFFE00000
 def load_commpage(ql):
     ql.mem.write(COMM_PAGE_SIGNATURE, b'\x00')
     ql.mem.write(COMM_PAGE_CPU_CAPABILITIES64, b'\x00\x00\x00\x00')
@@ -44,18 +46,6 @@ def load_commpage(ql):
     ql.mem.write(COMM_PAGE_APPROX_TIME_SUPPORTED, b'\x00')
     ql.mem.write(COMM_PAGE_CONT_TIMEBASE, b'\x00')
     ql.mem.write(COMM_PAGE_BOOTTIME_USEC, b'\x00')
-    # ql.mem.write(0x7FFFFFE00010, b'\x00\x00\x00\x00')    # _COMM_PAGE_CPU_CAPABILITIES64
-    # ql.mem.write(0x7FFFFFE00020, b'\x00\x00\x00\x00')    # _COMM_PAGE_CPU_CAPABILITIES
-    # ql.mem.write(0x7FFFFFE0001E, b'\x0d')                # _COMM_PAGE_VERSION      
-    # ql.mem.write(0x7FFFFFE00040, b'\xec\x5e\x3b\x57')    # _COMM_PAGE_CPUFAMILY
-
-
-def load_shared_region(ql):
-    if ql.arch == QL_X8664:    
-        ql.mem.write(0x7FFFFFE0001E, b'\x0d')                # set comm page version      
-        ql.mem.write(0x7FFFFFE00040, b'\xec\x5e\x3b\x57')    # select memset code cpu version support
-    elif ql.arch == QL_ARM64:
-        pass
 
 
 def vm_shared_region_enter(ql):
@@ -64,10 +54,10 @@ def vm_shared_region_enter(ql):
     ql.macos_shared_region_port = MachPort(9999)        # random port name
     pass
 
-# map commpage
+
 def map_commpage(ql):
     if ql.arch == QL_X8664:
-        addr_base = 0x7fffffe00000
+        addr_base = COMM_PAGE_START_ADDRESS
         addr_size = 0x100000
     elif ql.arch == QL_ARM64:
         addr_base = 0x0000000FFFFFC000
@@ -77,6 +67,7 @@ def map_commpage(ql):
     ql.mem.write(addr_base+time_lock_slide, ql.pack32(0x1))
 
 
+# reference to osfmk/mach/shared_memory_server.h
 class SharedFileMappingNp:
 
     def __init__(self, ql):
@@ -96,6 +87,7 @@ class SharedFileMappingNp:
             ))
 
 
+# reference to bsd/sys/proc_info.h
 class ProcRegionWithPathInfo():
 
     def __init__(self, ql):
@@ -110,6 +102,9 @@ class ProcRegionWithPathInfo():
         self.ql.mem.write(addr, self.vnode_info_path_vip_path)
 
 
+# virtual FS
+# Only have some basic func now 
+# tobe completed
 class FileSystem():
 
     def __init__(self, ql):

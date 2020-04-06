@@ -21,7 +21,8 @@ class Macho:
         self.macho_file     = MachoParser(ql, file_path)
         self.loading_file   = self.macho_file
         self.slide          = 0x0000000000000000
-        self.dyld_slide     = 0x0000000100020000
+        self.dyld_slide     = 0x0000000500000000
+        # self.dyld_slide     = 0x0000000100020000
         self.string_align   = 8
         self.ptr_align      = 8
         self.ql             = ql

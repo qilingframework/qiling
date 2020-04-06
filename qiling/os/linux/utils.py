@@ -24,75 +24,6 @@ def ql_map_shellcode(ql, start, shellcode, shellcode_addr, shellcode_addr_size):
         ql.shellcode_init = 1
     ql.mem.write(shellcode_addr + start, shellcode)
 
-def ql_os_run(ql):    
-    if (ql.until_addr == 0):
-        if ql.archbit == 32:
-            ql.until_addr = QL_ARCHBIT32_EMU_END
-        elif ql.archbit == 64:
-            ql.until_addr = QL_ARCHBIT64_EMU_END           
-
-    try:
-        if ql.shellcoder:
-            ql.uc.emu_start(ql.stack_address, (ql.stack_address + len(ql.shellcoder)))
-        else:
-            if ql.multithread == True:        
-                # start multithreading
-                thread_management = ThreadManagement(ql)
-                ql.thread_management = thread_management
-                
-                if ql.arch == QL_ARM:
-                    thread_set_tls = arm_thread_set_tls
-                elif ql.arch == QL_MIPS32:
-                    thread_set_tls = mips32_thread_set_tls
-                elif ql.arch == QL_X86:
-                    thread_set_tls = x86_thread_set_tls                    
-                else:
-                    thread_set_tls = None
-                
-                main_thread = Thread(ql, thread_management, total_time = ql.timeout, special_settings_fuc = thread_set_tls)
-                
-                main_thread.save()
-                main_thread.set_start_address(ql.entry_point)
-
-                thread_management.set_main_thread(main_thread)
-            
-                # enable lib patch
-                if ql.elf_entry != ql.entry_point:
-                    main_thread.set_until_addr(ql.elf_entry)
-                    thread_management.run()
-                    ql.enable_lib_patch()
-                    
-                    main_thread.set_start_address(ql.elf_entry)
-                    main_thread.set_until_addr(ql.until_addr)
-                    main_thread.running()
-                    
-                    thread_management.clean_world()
-                    thread_management.set_main_thread(main_thread)
-
-
-                thread_management.run() 
-            else:
-                if ql.elf_entry != ql.entry_point:
-                    ql.uc.emu_start(ql.entry_point, ql.elf_entry, ql.timeout) 
-                    ql.enable_lib_patch()
-                ql.uc.emu_start(ql.elf_entry, ql.until_addr, ql.timeout) 
-
-    except:
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-            ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
-            ql.mem.show_mapinfo()
-            try:
-                buf = ql.mem.read(ql.pc, 8)
-                ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                ql.nprint("\n")
-                ql_hook_code_disasm(ql, ql.pc, 64)
-            except:
-                pass
-        raise
-    
-    if ql.internal_exception != None:
-        raise ql.internal_exception
-
 """
 thread_set_tls
 """
@@ -181,7 +112,7 @@ def x86_thread_set_tls(ql, th, arg):
     # u_info = ql.mem.read(u_info_addr, 4 * 3)
     base = ql.unpack32(u_info[4 : 8])
     limit = ql.unpack32(u_info[8 : 12])
-    from qiling.os.linux.x86 import ql_x86_setup_syscall_set_thread_area
+    from qiling.os.arch.x86 import ql_x86_setup_syscall_set_thread_area
     ql_x86_setup_syscall_set_thread_area(ql, base, limit)            
 
 """

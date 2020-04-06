@@ -18,13 +18,13 @@ from qiling.const import *
 from qiling.os.freebsd.const import *
 from qiling.os.const import *
 
-class QlFreeBSDManager:
+class QlOsFreebsdManager:
     
     def __init__(self, ql):
         self.ql = ql
 
     def hook_syscall(self, intno= None):
-        return self.ql.commos.load_syscall()
+        return self.ql.comm_os.load_syscall()
 
     def loader(self):
         self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)

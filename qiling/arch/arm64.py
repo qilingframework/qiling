@@ -49,12 +49,12 @@ class ARM64(Arch):
 
     # set stack pointer
     def set_sp(self, value):
-        self.ql.register(UC_ARM64_REG_PC, value)
+        self.ql.register(UC_ARM64_REG_SP, value)
 
 
     # get stack pointer
     def get_sp(self):
-        return self.ql.register(UC_ARM64_REG_PC)
+        return self.ql.register(UC_ARM64_REG_SP)
 
 
     # get stack pointer register
