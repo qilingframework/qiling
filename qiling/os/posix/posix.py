@@ -21,8 +21,7 @@ class QlPosixManager:
     def __init__(self, ql):
         self.ql = ql
         self.dict_posix_syscall = dict()
-        self.set_syscall = ""
-        self.cur_syscall = ""
+        self.dict_posix_syscall_by_num = dict()
     
     def load_syscall(self, intno = None):
         # FIXME: Need to figure this out
@@ -62,19 +61,21 @@ class QlPosixManager:
         
         param0 , param1, param2, param3, param4, param5 = self.ql.syscall_param
 
-        self.syscall_name = map_syscall(self.ql.syscall)
-        if self.syscall_name != None:
-            # find the user func by name.
-            replace_func = self.dict_posix_syscall.get(self.syscall_name)
-            if replace_func != None:
-                self.syscall_map = replace_func
-                self.syscall_name = replace_func.__name__
-            else:
-                self.syscall_map = eval(self.syscall_name)
+        self.syscall_map = self.dict_posix_syscall_by_num.get(self.ql.syscall)
+        if self.syscall_map != None:
+            self.syscall_name = self.syscall_map.__name__
         else:
-            # find the user func by id.
-            self.syscall_map = None
-            self.syscall_name = None
+            self.syscall_name = map_syscall(self.ql.syscall)
+            if self.syscall_name != None:
+                replace_func = self.dict_posix_syscall.get(self.syscall_name)
+                if replace_func != None:
+                    self.syscall_map = replace_func
+                    self.syscall_name = replace_func.__name__
+                else:
+                    self.syscall_map = eval(self.syscall_name)
+            else:
+                self.syscall_map = None
+                self.syscall_name = None
 
         if self.syscall_map != None:
             try:
