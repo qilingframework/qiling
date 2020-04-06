@@ -152,20 +152,15 @@ class QlMemoryManager:
         then, check for is the mapped range empty, either fill with 0xFF or 0x00
         Returns true if mapped range is empty else return Flase
         If not not mapped, map it and return true
-        '''      
+        '''
         if self._is_mapped(address, size) == True:
-            mem_content = b''
             address_end = (address + size)
-            while True:
+            while address < address_end:
                 mem_read = self.ql.mem.read(address, 0x1)
+                if (mem_read[0] != 0x00) and (mem_read[0] != 0xFF):
+                    return False
                 address += 1
-                mem_content += mem_read
-                if address == address_end:
-                    break
-            if (mem_content == "\x00" * size) or (mem_content == "\xFF" * size):
-                return True
-            else:
-                return False    
+            return True
         else:
             return True
 
