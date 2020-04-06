@@ -226,11 +226,11 @@ def ql_syscall_brk(ql, brk_input, *args, **kw):
 
         if brk_input > ql.brk_address: # increase current brk_address if brk_input is greater
             ql.mem.map(ql.brk_address, new_brk_addr - ql.brk_address)
-            ql.insert_map_info(ql.brk_address, new_brk_addr, "rw-", "[mapped]")
+            ql.mem.add_mapinfo(ql.brk_address, new_brk_addr, "rw-", "[mapped]")
 
         elif brk_input < ql.brk_address: # shrink current bkr_address to brk_input if its smaller
             ql.mem.unmap(new_brk_addr, ql.brk_address - new_brk_addr)
-            ql.del_map_info(new_brk_addr, ql.brk_address)
+            ql.mem.del_mapinfo(new_brk_addr, ql.brk_address)
 
         ql.brk_address = new_brk_addr
 
@@ -489,7 +489,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
         ql.argv             = argv
         ql.env              = env
         ql.path             = real_path
-        ql.map_info         = []
+        ql.mem.map_info         = []
         ql.runtype          = ql_get_os_module_function(ql, "runner")
         loader_file         = ql_get_os_module_function(ql, "loader_file")
 

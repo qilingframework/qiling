@@ -64,7 +64,7 @@ def ql_os_run(ql):
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC = 0x%x\n" %(ql.pc))
-            ql.show_map_info()
+            ql.mem.show_mapinfo()
             try:
                 buf = ql.mem.read(ql.pc, 8)
                 ql.nprint("[+] %r" % ([hex(_) for _ in buf]))

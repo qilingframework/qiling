@@ -52,7 +52,7 @@ def ql_os_run(ql):
     except UcError:
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             ql.nprint("[+] PC= " + hex(ql.pc))
-            ql.show_map_info()
+            ql.mem.show_mapinfo()
             buf = ql.mem.read(ql.pc, 8)
             ql.nprint("[+] ", [hex(_) for _ in buf])
             ql_hook_code_disasm(ql, ql.pc, 64)
