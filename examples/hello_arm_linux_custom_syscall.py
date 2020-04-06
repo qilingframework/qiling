@@ -27,5 +27,10 @@ def my_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
 
 if __name__ == "__main__":
     ql = Qiling(["rootfs/arm_linux/bin/arm_hello"], "rootfs/arm_linux", output = "debug")
-    ql.set_syscall("write", my_syscall_write)
+# custom syscall func by name or num(id).
+# known bug: If the syscall func is not be implemented in qiling, qiling does
+# not have the name of syscall func and does not know which func should be
+# replaced, you must custom it by num(id).
+    ql.set_syscall(0x04, my_syscall_write)
+    #ql.set_syscall("write", my_syscall_write)
     ql.run()
