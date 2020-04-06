@@ -6,6 +6,49 @@ import struct
 from unicorn.x86_const import *
 from qiling.os.utils import *
 from qiling.const import *
+from qiling.os.const import *
+from qiling.os.utils import *
+from qiling.arch.x86 import *
+from qiling.os.memory import Heap
+from qiling.os.windows.registry import RegistryManager
+from qiling.os.windows.clipboard import Clipboard
+from qiling.os.windows.fiber import FiberManager
+from qiling.os.windows.handle import HandleManager, Handle
+from qiling.os.windows.thread import ThreadManager, Thread
+
+def setup(ql):
+    ql.heap = Heap(ql, ql.comm_os.HEAP_BASE_ADDR, ql.comm_os.HEAP_BASE_ADDR + ql.comm_os.HEAP_SIZE)
+    ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
+    
+    # setup gdt
+    if ql.arch == QL_X86:
+        ql_x86_setup_gdt_segment_fs(ql, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE)
+        ql_x86_setup_gdt_segment_gs(ql, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
+        ql_x86_setup_gdt_segment_ds(ql)
+        ql_x86_setup_gdt_segment_cs(ql)
+        ql_x86_setup_gdt_segment_ss(ql)
+    elif ql.arch == QL_X8664:
+        ql_x8664_set_gs(ql)     
+    
+    # handle manager
+    ql.handle_manager = HandleManager()
+    # registry manger
+    ql.registry_manager = RegistryManager(ql)
+    # clipboard
+    ql.clipboard = Clipboard(ql)
+    # fibers
+    ql.fiber_manager = FiberManager(ql)
+    # Place to set errors for retrieval by GetLastError()
+    # thread manager
+    main_thread = Thread(ql)
+    ql.thread_manager = ThreadManager(ql, main_thread)
+    new_handle = Handle(thread=main_thread)
+    ql.handle_manager.append(new_handle)
+    # user configuration
+    ql.config = ql_init_configuration(ql)
+    # variables used inside hooks
+    ql.hooks_variables = {}
+
 
 def ql_x86_windows_hook_mem_error(ql, addr, size, value):
     ql.dprint(0, "[+] ERROR: unmapped memory access at 0x%x" % addr)
@@ -38,9 +81,9 @@ def debug_print_stack(ql, num, message=None):
     if message:
         ql.dprint(0, "========== %s ==========" % message)
     if ql.arch == QL_X86:
-        sp = ql.uc.reg_read(UC_X86_REG_ESP)
+        sp = ql.register(UC_X86_REG_ESP)
     else:
-        sp = ql.uc.reg_read(UC_X86_REG_RSP)
+        sp = ql.register(UC_X86_REG_RSP)
     for i in range(num):
         ql.dprint(0, hex(sp + ql.pointersize * i) + ": " + hex(ql.stack_read(i * ql.pointersize)))
 

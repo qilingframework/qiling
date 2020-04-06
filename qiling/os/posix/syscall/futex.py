@@ -31,10 +31,10 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_set_robust_list(ql, set_robust_list_head_ptr, set_robust_list_head_len, null0, null1, null2, null3):
+def ql_syscall_set_robust_list(ql, set_robust_list_head_ptr, set_robust_list_head_len, *args, **kw):
     if ql.thread_management == None:
         regreturn = 0
     else:

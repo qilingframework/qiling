@@ -25,6 +25,90 @@ class QlMemoryManager:
         self.ql = ql
         self.max_mem_addr = max_addr
         self.max_addr = max_addr
+        self.map_info = []
+
+    def add_mapinfo(self, mem_s, mem_e, mem_p, mem_info):
+        tmp_map_info = []
+        insert_flag = 0
+        map_info = self.map_info
+        if len(map_info) == 0:
+            tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
+        else:
+            for s, e, p, info in map_info:
+                if e <= mem_s:
+                    tmp_map_info.append([s, e, p, info])
+                    continue
+                if s >= mem_e:
+                    if insert_flag == 0:
+                        insert_flag = 1
+                        tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
+                    tmp_map_info.append([s, e, p, info])
+                    continue
+                if s < mem_s:
+                    tmp_map_info.append([s, mem_s, p, info])
+
+                if s == mem_s:
+                    pass
+
+                if insert_flag == 0:
+                    insert_flag = 1
+                    tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
+
+                if e > mem_e:
+                    tmp_map_info.append([mem_e, e, p, info])
+
+                if e == mem_e:
+                    pass
+            if insert_flag == 0:
+                tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
+        map_info = []
+        map_info.append(tmp_map_info[0])
+
+        for s, e, p, info in tmp_map_info[1:]:
+            if s == map_info[-1][1] and info == map_info[-1][3] and p == map_info[-1][2]:
+                map_info[-1][1] = e
+            else:
+                map_info.append([s, e, p, info])
+
+        self.map_info = map_info
+
+
+    def del_mapinfo(self, mem_s, mem_e):
+        tmp_map_info = []
+
+        for s, e, p, info in self.map_info:
+            if e <= mem_s:
+                tmp_map_info.append([s, e, p, info])
+                continue
+
+            if s >= mem_e:
+                tmp_map_info.append([s, e, p, info])
+                continue
+
+            if s < mem_s:
+                tmp_map_info.append([s, mem_s, p, info])
+
+            if s == mem_s:
+                pass
+
+            if e > mem_e:
+                tmp_map_info.append([mem_e, e, p, info])
+
+            if e == mem_e:
+                pass
+
+        self.map_info = tmp_map_info
+
+    def show_mapinfo(self):
+        self.ql.nprint("[+] Start      End        Perm.  Path\n")
+        for s, e, p, info in self.map_info:
+            self.ql.nprint("[+] %08x - %08x - %s    %s\n" % (s, e, p, info))
+
+    def get_lib_base(self, filename):
+        for s, e, p, info in self.map_info:
+            if os.path.split(info)[1] == filename:
+                return s
+        return -1
 
     def _align(self, addr, alignment=0x1000):
         # rounds up to nearest alignment
@@ -41,33 +125,51 @@ class QlMemoryManager:
         '''
         The main function of mem_unmap is to reclaim memory.
         This function will reclaim the memory starting with addr and length of size.
-        
         Upon successful completion, munmap() shall return 0; 
-
         otherwise, it shall return -1 and set errno to indicate the error.
         '''        
         return self.ql.uc.mem_unmap(addr, size)
 
-    def _is_mapped(self, address): 
+    def _is_mapped(self, address, size): 
         '''
         The main function of is_mmaped is to determine 
-        whether the memory starting with addr and size has been allocated.
-
+        whether the memory starting with addr and size has been mapped.
         Returns true if it has already been allocated.
-
         If unassigned, returns False.
         '''   
-        for address_start, address_end, perm, info in self.ql.map_info:
-            if (
-                address >= address_start
-                and address < address_end
-            ):
+        for address_start, address_end, perm, info in self.ql.mem.map_info:
+            if ( address >= address_start and (address + size) <= address_end):
                 return True
 
         for region in list(self.ql.uc.mem_regions()):
-            if address >= region[0] and address < region[1]:
+            if address >= region[0] and (address + size) <= region[1]:
                 return True
         return False
+    
+    def _is_free(self, address, size):
+        '''
+        The main function of is_free first must fufull _is_mapped condition.
+        then, check for is the mapped range empty, either fill with 0xFF or 0x00
+        Returns true if mapped range is empty else return Flase
+        If not not mapped, map it and return true
+        '''      
+        if self._is_mapped(address, size) == True:
+            mem_content = b''
+            address_end = (address + size)
+            while True:
+                mem_read = self.ql.mem.read(address, 0x1)
+                address += 1
+                mem_content += mem_read
+                if address == address_end:
+                    break
+            if (mem_content == "\x00" * size) or (mem_content == "\xFF" * size):
+                return True
+            else:
+                return False    
+        else:
+            return True
+
+
 
     def _find_free_space(
         self, size, min_addr=0, max_addr = 0, alignment=0x10000
@@ -78,7 +180,7 @@ class QlMemoryManager:
         """
         mapped = []
         
-        for address_start, address_end, perm, info in self.ql.map_info:
+        for address_start, address_end, perm, info in self.ql.mem.map_info:
             mapped += [[address_start, (address_end - address_start)]]
         
         for address_start, address_end, perms in self.ql.uc.mem_regions():
@@ -105,7 +207,7 @@ class QlMemoryManager:
             max_gap_addr = min(max_gap_addr, self.max_mem_addr)
             # Ensure the end address is less than the max and the start
             # address is free
-            if addr + size < max_gap_addr and self._is_mapped(addr) == False:
+            if addr + size < max_gap_addr and self._is_mapped(addr, size) == False:
                 return addr
         raise QlOutOfMemory("[!] Out Of Memory")
 
@@ -173,7 +275,7 @@ class QlMemoryManager:
 
         '''
         if ptr == None:
-            if self._is_mapped(addr) == False:
+            if self._is_mapped(addr, size) == False:
                self.ql.uc.mem_map(addr, size)
             else:
                 raise QlMemoryMappedError("[!] Memory Mapped")    
@@ -182,6 +284,7 @@ class QlMemoryManager:
                 self.protect(addr, size, perms)
         else:
             self.ql.uc.mem_map_ptr(addr, size, perms, ptr)
+
 
 
 

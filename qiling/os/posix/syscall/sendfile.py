@@ -31,10 +31,10 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_sendfile64(ql, sendfile64_out_fd, sendfile64_in_fd, sendfile64_offest, sendfile64_count, null0, null1):
+def ql_syscall_sendfile64(ql, sendfile64_out_fd, sendfile64_in_fd, sendfile64_offest, sendfile64_count, *args, **kw):
     if sendfile64_out_fd >= 0 and sendfile64_out_fd < 256 and sendfile64_in_fd >= 0 and sendfile64_in_fd < 256:
         ql.file_des[sendfile64_in_fd].lseek(ql.unpack32(ql.mem.read(sendfile64_offest, 4)))
         buf = ql.file_des[sendfile64_in_fd].read(sendfile64_count)

@@ -31,10 +31,10 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_sysinfo(ql, sysinfo_info, null0, null1, null2, null3, null4):
+def ql_syscall_sysinfo(ql, sysinfo_info, *args, **kw):
 
     data = b''
     data += struct.pack("QQQQQQQQQQHQQI",

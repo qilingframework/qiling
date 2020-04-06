@@ -60,10 +60,10 @@ class Arch:
         pass
     
     # get register name
-    def get_reg_name(self):
+    def get_reg_name_str(self):
         pass
 
     # set register name
-    def set_reg_name(self, uc_reg):
-        pass  
+    def set_reg_name_str(self, uc_reg):
+        pass
    

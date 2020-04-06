@@ -31,10 +31,10 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
+def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
     path = ql_read_string(ql, filename)
     real_path = ql_transform_to_real_path(ql, path)
     relative_path = ql_transform_to_relative_path(ql, path)
@@ -72,7 +72,7 @@ def ql_syscall_open(ql, filename, flags, mode, null0, null1, null2):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, null0, null1):
+def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args, **kw):
     openat_fd = ql.unpacks(ql.pack(openat_fd))
     openat_path = ql_read_string(ql, openat_path)
 
@@ -113,7 +113,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, nul
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, null0, null1, null2, null3):
+def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, *args, **kw):
     F_SETFD = 2
     F_GETFL = 3
     F_SETFL = 4

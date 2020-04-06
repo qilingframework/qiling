@@ -31,56 +31,27 @@ from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.constant_mapping import *
+from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
-def ql_syscall_munmap(ql, munmap_addr , munmap_len, null0, null1, null2, null3):
+def ql_syscall_munmap(ql, munmap_addr , munmap_len, *args, **kw):
     munmap_len = ((munmap_len + 0x1000 - 1) // 0x1000) * 0x1000
     ql.mem.unmap(munmap_addr, munmap_len)
     regreturn = 0
 
-    map_info = ql.map_info
-    unmap_range = []
-    munmap_end = munmap_addr+munmap_len
-
-    for idx, val in enumerate(map_info):
-        mem_start, mem_end, prot, info = val
-        if mem_start <= munmap_addr <= mem_end or mem_start <= munmap_end <= mem_end:
-            unmap_range.append(val)
-            map_info[idx] = []
-
-    for start, end, prot, info in unmap_range:
-        if start < munmap_addr < end:
-            new_start = start
-            new_prot = prot
-            new_info = info
-            break
-    else:
-        new_start = 0
-
-    for start, end, _, _ in unmap_range:
-        if start < munmap_end <= end:
-            new_end = munmap_addr
-            break
-    else:
-        new_end = 0
-
-    ql.map_info = [each for each in map_info if each != []]
-
-    if new_start and new_end: # need to insert extra mapping area
-        ql.insert_map_info(new_start, new_end, new_prot, new_info)
+    ql.mem.del_mapinfo(munmap_addr, munmap_addr + munmap_len)
 
     ql.nprint("munmap(0x%x, 0x%x) = %d" % (munmap_addr , munmap_len, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_madvise(ql, null0, null1, null2, null3, null4, null5):
+def ql_syscall_madvise(ql, *args, **kw):
     regreturn = 0
     ql.nprint("madvise() = %d" %  regreturn)
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, null1, null2):
+def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, *args, **kw):
     regreturn = 0
     ql.nprint("mprotect(0x%x, 0x%x, 0x%x) = %d" % (mprotect_start, mprotect_len, mprotect_prot, regreturn))
     ql.dprint(1, "[+] mprotect(0x%x, 0x%x, %s) = %d" % (
@@ -101,19 +72,19 @@ def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, null0, 
 
     new_prot = ''.join(new_prot)
 
-    map_info = ql.map_info
+    map_info = ql.mem.map_info
 
     for idx, val in enumerate(map_info):
         start, end, prot, info = val
         if start < mprotect_start+mprotect_len-1 < end:
             map_info[idx] = [start, end, new_prot, info]
 
-    ql.map_info = map_info
+    ql.mem.map_info = map_info
 
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4):
+def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     # according to the linux kernel this is only for the ia32 compatibility
     _struct = []
 
@@ -164,7 +135,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
         try:
             ql.mem.map(mmap_base, ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000)
         except:
-            ql.show_map_info()
+            ql.mem.show_mapinfo()
             raise
 
     ql.mem.write(mmap_base, b'\x00' * (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
@@ -193,7 +164,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, null0, null1, null2, null3, null4)
         ql.mem.write(mmap_base, data)
         mem_info = ql.file_des[mmap_fd].name
 
-    ql.insert_map_info(mem_s, mem_e, mem_p, mem_info)
+    ql.mem.add_mapinfo(mem_s, mem_e, mem_p, mem_info)
 
 
     ql.nprint("old_mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset, mmap_base))
@@ -276,7 +247,7 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
         ql.mem.write(mmap_base, data)
         mem_info = ql.file_des[mmap_fd].name
 
-    ql.insert_map_info(mem_s, mem_e, mem_p, mem_info)
+    ql.mem.add_mapinfo(mem_s, mem_e, mem_p, mem_info)
 
 
     ql.nprint("mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags,
@@ -326,7 +297,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         try:
             ql.mem.map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000)
         except:
-            ql.show_map_info()
+            ql.mem.show_mapinfo()
             raise
 
     ql.mem.write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
@@ -355,7 +326,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
 
         mem_info = ql.file_des[mmap2_fd].name
 
-    ql.insert_map_info(mem_s, mem_e, mem_p, mem_info)
+    ql.mem.add_mapinfo(mem_s, mem_e, mem_p, mem_info)
 
     ql.nprint("mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
 

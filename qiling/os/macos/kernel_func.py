@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-from qiling.os.macos.define_values import *
+from qiling.os.macos.const import *
 from qiling.os.macos.mach_port import *
 from qiling.const import *
 from struct import *
