@@ -281,7 +281,7 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
         try:
             ql.mem.map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000)
         except:
-            # ql.show_map_info()
+            # ql.mem.show_mapinfo()
             pass
             # raise     
 
@@ -311,7 +311,7 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
         
         mem_info = ql.file_des[mmap2_fd].name
         
-    ql.insert_map_info(mem_s, mem_e, mem_p ,mem_info)
+    ql.mem.add_mapinfo(mem_s, mem_e, mem_p ,mem_info)
     
     if ql.output == QL_OUT_DEFAULT:
         ql.nprint("mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))

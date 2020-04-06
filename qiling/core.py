@@ -25,7 +25,7 @@ def catch_KeyboardInterrupt(ql):
             try:
                 return func(*args, **kw)
             except BaseException as e:
-                # ql.nprint("Received a request from the user to stop!\n")
+                ql.dprint(0, "Received a request from the user to stop!")
                 ql.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
                 ql.internal_exception = e
 
@@ -95,7 +95,6 @@ class Qiling:
         self.patch_lib = []
         self.patched_lib = []
         self.loadbase = 0
-        self.map_info = []
         self.timeout = 0
         self.until_addr = 0
         self.byte = 0
@@ -358,14 +357,15 @@ class Qiling:
 
     def asm2bytes(self, runasm, arm_thumb=None):
         return ql_asm2bytes(self, self.arch, runasm, arm_thumb)
-
+    
+    # replace linux or windows syscall/api with custom api/syscall
     def set_syscall(self, syscall_cur, syscall_new):
         if self.ostype in (QL_LINUX, QL_MACOS, QL_FREEBSD):
             self.dict_posix_syscall[syscall_cur] = syscall_new
         elif self.ostype == QL_WINDOWS:
             self.set_api(syscall_cur, syscall_new)
 
-
+    # replace Windows API with custom syscall
     def set_api(self, api_name, api_func):
         if self.ostype == QL_WINDOWS:
             self.user_defined_api[api_name] = api_func
@@ -751,96 +751,13 @@ class Qiling:
 
     def enable_lib_patch(self):
         for addr, code, filename in self.patch_lib:
-            self.mem.write(self.__get_lib_base(filename) + addr, code)
+            self.mem.write(self.mem.get_lib_base(filename) + addr, code)
 
     def set_timeout(self, microseconds):
         self.timeout = microseconds
 
     def set_exit(self, until_addr):
         self.until_addr = until_addr
-
-    def insert_map_info(self, mem_s, mem_e, mem_p, mem_info):
-        tmp_map_info = []
-        insert_flag = 0
-        map_info = self.map_info
-        if len(map_info) == 0:
-            tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
-        else:
-            for s, e, p, info in map_info:
-                if e <= mem_s:
-                    tmp_map_info.append([s, e, p, info])
-                    continue
-                if s >= mem_e:
-                    if insert_flag == 0:
-                        insert_flag = 1
-                        tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
-                    tmp_map_info.append([s, e, p, info])
-                    continue
-                if s < mem_s:
-                    tmp_map_info.append([s, mem_s, p, info])
-
-                if s == mem_s:
-                    pass
-
-                if insert_flag == 0:
-                    insert_flag = 1
-                    tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
-
-                if e > mem_e:
-                    tmp_map_info.append([mem_e, e, p, info])
-
-                if e == mem_e:
-                    pass
-            if insert_flag == 0:
-                tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
-        map_info = []
-        map_info.append(tmp_map_info[0])
-
-        for s, e, p, info in tmp_map_info[1:]:
-            if s == map_info[-1][1] and info == map_info[-1][3] and p == map_info[-1][2]:
-                map_info[-1][1] = e
-            else:
-                map_info.append([s, e, p, info])
-
-        self.map_info = map_info
-    
-    def del_map_info(self, mem_s, mem_e):
-        tmp_map_info = []
-
-        for s, e, p, info in self.map_info:
-            if e <= mem_s:
-                tmp_map_info.append([s, e, p, info])
-                continue
-
-            if s >= mem_e:
-                tmp_map_info.append([s, e, p, info])
-                continue
-
-            if s < mem_s:
-                tmp_map_info.append([s, mem_s, p, info])
-
-            if s == mem_s:
-                pass
-
-            if e > mem_e:
-                tmp_map_info.append([mem_e, e, p, info])
-
-            if e == mem_e:
-                pass
-
-        self.map_info = tmp_map_info
-
-
-    def show_map_info(self):
-        self.nprint("[+] Start      End        Perm.  Path\n")
-        for s, e, p, info in self.map_info:
-            self.nprint("[+] %08x - %08x - %s    %s\n" % (s, e, p, info))
-
-    def __get_lib_base(self, filename):
-        for s, e, p, info in self.map_info:
-            if os.path.split(info)[1] == filename:
-                return s
-        return -1
 
     def add_fs_mapper(self, fm, to):
         self.fs_mapper.append([fm, to])
@@ -851,7 +768,3 @@ class Qiling:
             td.stop()
             td.stop_event = stop_event
         self.uc.emu_stop()
-
-
-
-
