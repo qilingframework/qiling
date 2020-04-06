@@ -17,14 +17,12 @@ from qiling.os.freebsd.syscall import *
 from qiling.os.linux.syscall import *
 
 class QlPosixManager:
-    
     def __init__(self, ql):
         self.ql = ql
         self.dict_posix_syscall = dict()
         self.dict_posix_syscall_by_num = dict()
     
     def load_syscall(self, intno = None):
-        # FIXME: Need to figure this out
         map_syscall = ql_get_os_module_function(self.ql, function_name = "map_syscall")
         
         if self.ql.arch == QL_MIPS32:   

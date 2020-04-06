@@ -31,8 +31,6 @@ class QlOsLinuxManager:
         return self.ql.comm_os.load_syscall(intno)
 
     def loader(self):
-        self.QL_LINUX_PREDEFINE_STACKSIZE = 0x21000 
-        
         """
         FIXME: all these code can move to arch, IF
         """

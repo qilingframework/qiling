@@ -246,18 +246,6 @@ class Qiling:
         self.load_os = load_os(self)
         self.load_os.loader()
 
-    # def build_os_execution(self, function_name):
-    #     self.runtype = ql_get_os_module_function(self, "runner")
-    #     return ql_get_os_module_function(self, function_name)
-
-    # def load_exec(self):
-    #     loader_file = self.build_os_execution("loader_file")
-    #     loader_file(self)
-
-    # def shellcode(self):
-    #     self.__enable_bin_patch()
-    #     loader_shellcode = self.build_os_execution("loader_shellcode")
-    #     loader_shellcode(self)
 
     def run(self):
         # debugger init
@@ -359,9 +347,11 @@ class Qiling:
 
 
     # replace Windows API with custom syscall
-    def set_api(self, api_name, api_func):
+    def set_api(self, syscall_cur, syscall_new):
         if self.ostype == QL_WINDOWS:
-            self.load_os.user_defined_api[api_name] = api_func
+            self.load_os.user_defined_api[syscall_cur] = syscall_new
+        elif self.ostype in (QL_POSIX):
+            self.set_syscall(syscall_cur, syscall_new)
 
 
     def hook_code(self, callback, user_data=None, begin=1, end=0):
