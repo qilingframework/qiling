@@ -124,6 +124,8 @@ class Qiling:
         self.log_split = False
         self.shellcode_init = 0
         self.entry_point = 0
+        # syscall filter for strace-like functionality
+        self.syscall_filter = None
 
         """
         Qiling Framework Core Engine
