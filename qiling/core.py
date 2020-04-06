@@ -294,7 +294,7 @@ class Qiling:
 
             class Syscall_filter(logging.Filter):
                 def __init__(self, syscall_names):
-                    self.syscall_list = syscall_names.split(',')
+                    self.syscall_list = syscall_names.split(",") if isinstance(syscall_names, str) else syscall_names
                 def filter(self, record):
                     return any((record.getMessage().startswith(each) for each in self.syscall_list))
 
