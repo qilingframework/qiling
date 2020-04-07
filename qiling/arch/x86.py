@@ -5,16 +5,16 @@
 from unicorn import *
 from unicorn.x86_const import *
 from struct import pack
-from .arch import Arch
+from .arch import QlArchManager
 from qiling.arch.x86_const import *
 
 from qiling.const import *
 from unicorn import *
 from unicorn.arm_const import *
 
-class X86(Arch):
+class QlArchX86Manager(QlArchManager):
     def __init__(self, ql):
-        super(X86, self).__init__(ql)
+        super(QlArchX86Manager, self).__init__(ql)
 
 
     def stack_push(self, value):
@@ -170,9 +170,9 @@ class X86(Arch):
         # invalid
         return None
 
-class X8664(Arch):
+class QlArchX8664Manager(QlArchManager):
     def __init__(self, ql):
-        super(X8664, self).__init__(ql)
+        super(QlArchX8664Manager, self).__init__(ql)
 
 
     def stack_push(self, value):
@@ -376,9 +376,9 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
     if ql.ostype == QL_FREEBSD:
         if not ql.shellcoder:
-            if ql.arch == QL_X86:
+            if ql.archtype== QL_X86:
                 GDT_ADDR = GDT_ADDR + QL_X86_GDT_ADDR_PADDING
-            elif ql.arch == QL_X8664:
+            elif ql.archtype== QL_X8664:
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
         if GDTTYPE == "CS":        
             ql.dprint(0, "[+] FreeBSD %s GDT_ADDR is 0x%x" % (GDTTYPE, GDT_ADDR))
@@ -386,9 +386,9 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
     
     if ql.ostype == QL_MACOS and GDTTYPE == "CS":
         if not ql.shellcoder:
-            if ql.arch == QL_X86:
+            if ql.archtype== QL_X86:
                 GDT_ADDR = GDT_ADDR + QL_X86_GDT_ADDR_PADDING
-            elif ql.arch == QL_X8664:
+            elif ql.archtype== QL_X8664:
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
 
         ql.dprint(0, "[+] GDT_ADDR is 0x%x" % (GDT_ADDR))
@@ -398,7 +398,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
     gdt_entry = create_gdt_entry(SEGMENT_ADDR, SEGMENT_SIZE, SPORT, QL_X86_F_PROT_32)
     ql.mem.write(GDT_ADDR + (index << 3), gdt_entry)
 
-    #ql.nprint(ql.arch)
+    #ql.nprint(ql.archtype)
     # setup GDT by writing to GDTR
     ql.register(UC_X86_REG_GDTR, (0, GDT_ADDR, GDT_LIMIT, 0x0))
 

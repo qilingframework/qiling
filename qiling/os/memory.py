@@ -344,9 +344,9 @@ class Heap:
         return (size // unit + (1 if size % unit else 0)) * unit     
 
     def mem_alloc(self, size):
-        if self.ql.arch == QL_X86:
+        if self.ql.archtype== QL_X86:
             size = self._align(size, 4)
-        elif self.ql.arch == QL_X8664:
+        elif self.ql.archtype== QL_X8664:
             size = self._align(size, 8)
         else:
             raise QlErrorArch("[!] Unknown ql.arch")

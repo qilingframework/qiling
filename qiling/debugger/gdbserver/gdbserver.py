@@ -111,12 +111,12 @@ class GDBSERVERsession(object):
                         }
                     return adapter.get(arch)
 
-                idhex, spid, pcid  = gdbqmark_converter(self.ql.arch)  
+                idhex, spid, pcid  = gdbqmark_converter(self.ql.archtype)  
                 sp          = self.ql.addr_to_str(self.ql.sp)
                 pc          = self.ql.addr_to_str(self.ql.pc)
                 nullfill    = "0" * int(self.ql.archbit / 4)
 
-                if self.ql.arch == QL_MIPS32:
+                if self.ql.archtype== QL_MIPS32:
                     if self.ql.archendian == QL_ENDIAN_EB:
                         sp = self.ql.addr_to_str(self.ql.sp, endian ="little")
                         pc = self.ql.addr_to_str(self.ql.pc, endian ="little")
@@ -138,13 +138,13 @@ class GDBSERVERsession(object):
 
             def handle_g(subcmd):
                 s = ''
-                if self.ql.arch == QL_X86:
+                if self.ql.archtype== QL_X86:
                     for reg in self.ql.reg_table[:16]:
                         r = self.ql.register(reg)
                         tmp = self.ql.addr_to_str(r)
                         s += tmp
 
-                if self.ql.arch == QL_X8664:
+                if self.ql.archtype== QL_X8664:
                     for reg in self.ql.reg_table[:17]:
                         r = self.ql.register(reg)
                         tmp = self.ql.addr_to_str(r)
@@ -154,19 +154,19 @@ class GDBSERVERsession(object):
                         tmp = self.ql.addr_to_str(r, short = True)
                         s += tmp
                 
-                if self.ql.arch == QL_ARM:
+                if self.ql.archtype== QL_ARM:
                     for reg in self.ql.reg_table[:17]:
                         r = self.ql.register(reg)
                         tmp = self.ql.addr_to_str(r)
                         s += tmp
 
-                if self.ql.arch == QL_ARM64:
+                if self.ql.archtype== QL_ARM64:
                     for reg in self.ql.reg_table[:33]:
                         r = self.ql.register(reg)
                         tmp = self.ql.addr_to_str(r)
                         s += tmp
 
-                if self.ql.arch == QL_MIPS32:
+                if self.ql.archtype== QL_MIPS32:
                     for reg in self.ql.reg_table[:38]:
                         r = self.ql.register(reg)
                         if self.ql.archendian == QL_ENDIAN_EB:
@@ -180,14 +180,14 @@ class GDBSERVERsession(object):
 
             def handle_G(subcmd):
                 count = 0
-                if self.ql.arch == QL_X86:
+                if self.ql.archtype== QL_X86:
                     for i in range(0, len(subcmd), 8):
                         reg_data = subcmd[i:i+7]
                         reg_data = int(reg_data, 16)
                         self.ql.register(self.ql.reg_table[count], reg_data)
                         count += 1
 
-                elif self.ql.arch == QL_X8664:
+                elif self.ql.archtype== QL_X8664:
                     for i in range(0, 17*16, 16):
                         reg_data = subcmd[i:i+15]
                         reg_data = int(reg_data, 16)
@@ -199,21 +199,21 @@ class GDBSERVERsession(object):
                         self.ql.register(self.ql.reg_table[count], reg_data)
                         count += 1
                 
-                elif self.ql.arch == QL_ARM:
+                elif self.ql.archtype== QL_ARM:
                     for i in range(0, len(subcmd), 8):
                         reg_data = subcmd[i:i + 7]
                         reg_data = int(reg_data, 16)
                         self.ql.register(self.ql.reg_table[count], reg_data)
                         count += 1
 
-                elif self.ql.arch == QL_ARM64:
+                elif self.ql.archtype== QL_ARM64:
                     for i in range(0, len(subcmd), 16):
                         reg_data = subcmd[i:i+15]
                         reg_data = int(reg_data, 16)
                         self.ql.register(self.ql.reg_table[count], reg_data)
                         count += 1
 
-                elif self.ql.arch == QL_MIPS32:
+                elif self.ql.archtype== QL_MIPS32:
                     for i in range(0, len(subcmd), 8):
                         reg_data = subcmd[i:i+7]
                         reg_data = int(reg_data, 16)
@@ -264,14 +264,14 @@ class GDBSERVERsession(object):
                 reg_index = int(subcmd, 16)
                 reg_value = None
                 try:
-                    if self.ql.arch == QL_X86:
+                    if self.ql.archtype== QL_X86:
                         if reg_index <= 24:
                             reg_value = self.ql.register(registers_x86[reg_index-1])
                         else:
                             reg_value = 0
                         reg_value = self.ql.addr_to_str(reg_value)
                     
-                    if self.ql.arch == QL_X8664:
+                    if self.ql.archtype== QL_X8664:
                         if reg_index <= 32:
                             reg_value = self.ql.register(registers_x8664[reg_index-1])
                         else:
@@ -281,21 +281,21 @@ class GDBSERVERsession(object):
                         elif 17 < reg_index:
                             reg_value = self.ql.addr_to_str(reg_value, short = True)
                     
-                    if self.ql.arch == QL_ARM:
+                    if self.ql.archtype== QL_ARM:
                         if reg_index < 17:
                             reg_value = self.ql.register(registers_arm[reg_index - 1])
                         else:
                             reg_value = 0
                         reg_value = self.ql.addr_to_str(reg_value)
 
-                    if self.ql.arch == QL_ARM64:
+                    if self.ql.archtype== QL_ARM64:
                         if reg_index <= 32:
                             reg_value = self.ql.register(registers_arm64[reg_index - 1])
                         else:
                             reg_value = 0
                             reg_value = self.ql.addr_to_str(reg_value)
 
-                    if self.ql.arch == QL_MIPS32:
+                    if self.ql.archtype== QL_MIPS32:
                         if reg_index <= 37:
                             reg_value = self.ql.register(registers_mips[reg_index - 1])
                         else:
@@ -317,12 +317,12 @@ class GDBSERVERsession(object):
             def handle_P(subcmd):
                 reg_index, reg_data = subcmd.split('=')
                 reg_index = int(reg_index, 16)
-                if self.ql.arch == QL_X86:
+                if self.ql.archtype== QL_X86:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                     self.ql.register(self.ql.reg_table[reg_index], reg_data)
                 
-                if self.ql.arch == QL_X8664:
+                if self.ql.archtype== QL_X8664:
                     if reg_index <= 17:
                         reg_data = int(reg_data, 16)
                         reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
@@ -332,17 +332,17 @@ class GDBSERVERsession(object):
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                         self.ql.register(self.ql.reg_table[reg_index], reg_data)
                 
-                if self.ql.arch == QL_ARM:
+                if self.ql.archtype== QL_ARM:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                     self.ql.register(self.ql.reg_table[reg_index], reg_data)
 
-                if self.ql.arch == QL_ARM64:
+                if self.ql.archtype== QL_ARM64:
                     reg_data = int(reg_data, 16)
                     reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
                     self.ql.register(self.ql.reg_table[reg_index], reg_data)
 
-                if self.ql.arch == QL_MIPS32:
+                if self.ql.archtype== QL_MIPS32:
                     reg_data = int(reg_data, 16)
                     if self.ql.archendian == QL_ENDIAN_EL:
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='little')
@@ -381,7 +381,7 @@ class GDBSERVERsession(object):
                 elif subcmd.startswith('Xfer:features:read'):
                     xfercmd_file    = subcmd.split(':')[3]
                     xfercmd_abspath = os.path.dirname(os.path.abspath(__file__))
-                    xml_folder      = ql_arch_convert_str(self.ql.arch)
+                    xml_folder      = ql_arch_convert_str(self.ql.archtype)
                     xfercmd_file    = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
                     if os.path.exists(xfercmd_file):

@@ -17,7 +17,7 @@ class MachoParser:
         self.ql = ql
         self.binary_file = self.readFile(path)
         self.raw_data = self.binary_file
-        self.arch = ql.arch
+        self.archtype = ql.archtype
         self.parseFile()
         self.page_zero_size = 0
         self.header_address = 0x0
@@ -65,7 +65,7 @@ class MachoParser:
             # fat 
             self.ql.dprint(0, "[+] Got a fat header")
             fat = FatHeader(self.binary_file)
-            file_info = fat.getBinary(self.arch)
+            file_info = fat.getBinary(self.archtype)
             self.binary_file = self.binary_file[file_info.offset : file_info.offset + file_info.size]
             self.header = BinaryHeader(self.binary_file)
         else:

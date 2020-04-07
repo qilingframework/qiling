@@ -22,13 +22,13 @@ class QlOsWindowsManager:
         self.ql = ql
         self.user_defined_api = {}
         
-        if self.ql.arch == QL_X86:
+        if self.ql.archtype== QL_X86:
             self.STRUCTERS_LAST_ADDR = FS_SEGMENT_ADDR
             self.DEFAULT_IMAGE_BASE = 0x400000
             self.HEAP_BASE_ADDR = 0x5000000
             self.HEAP_SIZE = 0x5000000
             self.DLL_BASE_ADDR = 0x10000000
-        elif self.ql.arch == QL_X8664:
+        elif self.ql.archtype== QL_X8664:
             self.STRUCTERS_LAST_ADDR = GS_SEGMENT_ADDR 
             self.DEFAULT_IMAGE_BASE = 0x400000
             self.HEAP_BASE_ADDR = 0x500000000
@@ -82,13 +82,13 @@ class QlOsWindowsManager:
         """
         self.ql.uc = self.ql.init_Uc
 
-        if self.ql.arch == QL_X8664:
+        if self.ql.archtype== QL_X8664:
             #self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
             self.QL_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
             self.QL_WINDOWS_STACK_SIZE = 0x40000
             self.ql.code_address = 0x140000000
             self.ql.code_size = 10 * 1024 * 1024
-        elif self.ql.arch == QL_X86:        
+        elif self.ql.archtype== QL_X86:        
             #self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_32)
             self.QL_WINDOWS_STACK_ADDRESS = 0xfffdd000
             self.QL_WINDOWS_STACK_SIZE =0x21000 

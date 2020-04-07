@@ -38,26 +38,26 @@ class QlOsLinuxManager:
         self.ql.uc = self.ql.init_Uc
         
         # ARM
-        if self.ql.arch == QL_ARM:
+        if self.ql.archtype== QL_ARM:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfff0d000 
-            self.ql.archfunc.enable_vfp()
+            self.ql.arch.enable_vfp()
             ql_arm_init_kernel_get_tls(self.ql)
             self.ql.hook_intr(self.hook_syscall)
     
         # MIPS32 
-        elif self.ql.arch == QL_MIPS32:
+        elif self.ql.archtype== QL_MIPS32:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000 
             self.QL_LINUX_PREDEFINE_STACKSIZE = 0x30000  
             self.ql.hook_intr(self.hook_syscall)                
     
         # ARM64        
-        elif self.ql.arch == QL_ARM64:
+        elif self.ql.archtype== QL_ARM64:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
-            self.ql.archfunc.enable_vfp()
+            self.ql.arch.enable_vfp()
             self.ql.hook_intr(self.hook_syscall)
     
         # X86        
-        elif  self.ql.arch == QL_X86:
+        elif  self.ql.archtype== QL_X86:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfffdd000
             ql_x86_setup_gdt_segment_ds(self.ql)
             ql_x86_setup_gdt_segment_cs(self.ql)
@@ -65,7 +65,7 @@ class QlOsLinuxManager:
             self.ql.hook_intr(self.hook_syscall)
     
         # X8664            
-        elif  self.ql.arch == QL_X8664:
+        elif  self.ql.archtype== QL_X8664:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
             ql_x8664_setup_gdt_segment_ds(self.ql)
             ql_x8664_setup_gdt_segment_cs(self.ql)
@@ -112,11 +112,11 @@ class QlOsLinuxManager:
                     thread_management = ThreadManagement(ql)
                     self.ql.thread_management = thread_management
                     
-                    if self.ql.arch == QL_ARM:
+                    if self.ql.archtype== QL_ARM:
                         thread_set_tls = arm_thread_set_tls
-                    elif self.ql.arch == QL_MIPS32:
+                    elif self.ql.archtype== QL_MIPS32:
                         thread_set_tls = mips32_thread_set_tls
-                    elif self.ql.arch == QL_X86:
+                    elif self.ql.archtype== QL_X86:
                         thread_set_tls = x86_thread_set_tls                    
                     else:
                         thread_set_tls = None

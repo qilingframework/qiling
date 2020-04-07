@@ -29,9 +29,9 @@ class Process:
     def load_dll(self, dll_name):
         dll_name = dll_name.lower().decode()
 
-        if self.ql.arch == QL_X86:
+        if self.ql.archtype== QL_X86:
             self.ql.dlls = os.path.join("Windows", "SysWOW64")
-        elif self.ql.arch == QL_X8664:
+        elif self.ql.archtype== QL_X8664:
             self.ql.dlls = os.path.join("Windows", "System32")
 
         if not is_file_library(dll_name):
@@ -103,7 +103,7 @@ class Process:
         return dll_base
 
     def set_cmdline(self, name, address, memory):
-        if self.ql.arch == QL_X86:
+        if self.ql.archtype== QL_X86:
             addr = self.ql.heap.mem_alloc(len(self.cmdline))
             packed_addr = self.ql.pack32(addr)
         else:
@@ -123,7 +123,7 @@ class Process:
         return cmdline_entry
 
     def init_tib(self):
-        if self.ql.arch == QL_X86:
+        if self.ql.archtype== QL_X86:
             teb_addr = self.ql.load_os.STRUCTERS_LAST_ADDR
         else:
             gs = self.ql.load_os.STRUCTERS_LAST_ADDR
@@ -144,7 +144,7 @@ class Process:
         self.ql.mem.write(teb_addr, teb_data.bytes())
 
         self.ql.load_os.STRUCTERS_LAST_ADDR += teb_size
-        if self.ql.arch == QL_X8664:
+        if self.ql.archtype== QL_X8664:
             # TEB
             self.ql.mem.write(gs + 0x30, self.ql.pack64(teb_addr))
             # PEB
@@ -248,7 +248,7 @@ class Shellcode(Process):
     def load(self):
         # setup stack memory
         self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
-        if self.ql.arch == QL_X86:
+        if self.ql.archtype== QL_X86:
             self.ql.register(UC_X86_REG_ESP, self.ql.stack_address + 0x3000)
             self.ql.register(UC_X86_REG_EBP, self.ql.stack_address + 0x3000)
         else:
@@ -304,7 +304,7 @@ class PE(Process):
         # Stack should not init at the very bottom. Will cause errors with Dlls
         sp = self.ql.stack_address + self.ql.stack_size - 0x1000
 
-        if self.ql.arch == QL_X86:
+        if self.ql.archtype== QL_X86:
             self.ql.register(UC_X86_REG_ESP, sp)
             self.ql.register(UC_X86_REG_EBP, sp)
 
@@ -318,7 +318,7 @@ class PE(Process):
                 self.ql.dprint(0, '[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp + 0x8))
                 self.ql.mem.write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
 
-        elif self.ql.arch == QL_X8664:
+        elif self.ql.archtype== QL_X8664:
             self.ql.register(UC_X86_REG_RSP, sp)
             self.ql.register(UC_X86_REG_RBP, sp)
 
@@ -361,7 +361,7 @@ class PE(Process):
                 else:
                     addr = self.import_address_table[dll_name][imp.ordinal]
 
-                if self.ql.arch == QL_X86:
+                if self.ql.archtype== QL_X86:
                     address = self.ql.pack32(addr)
                 else:
                     address = self.ql.pack64(addr)
