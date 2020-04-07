@@ -118,8 +118,7 @@ def ql_hook_block_disasm(ql, address, size):
 
 
 def ql_hook_code_disasm(ql, address, size):
-    uc = ql.uc
-    tmp = uc.mem_read(address, size)
+    tmp = ql.mem.read(address, size)
 
     if (ql.archtype== QL_ARM):  # QL_ARM
         reg_cpsr = ql.register(UC_ARM_REG_CPSR)

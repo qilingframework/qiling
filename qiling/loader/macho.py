@@ -240,7 +240,7 @@ class Macho(QlLoader):
             length = len(data)
         
         self.stack_sp -= length
-        self.uc.mem_write(self.stack_sp, data)
+        self.ql.mem.write(self.stack_sp, data)
         self.ql.dprint(0, "[+] SP {} write data len {}".format(hex(self.stack_sp), length))
         
         return self.stack_sp
@@ -258,6 +258,6 @@ class Macho(QlLoader):
             return 
         
         self.stack_sp -= align
-        self.uc.mem_write(self.stack_sp, content)
+        self.ql.mem.write(self.stack_sp, content)
 
         return self.stack_sp

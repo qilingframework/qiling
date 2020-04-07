@@ -341,6 +341,7 @@ class ELFParse(QlLoader):
 class ELFLoader(ELFParse):
     def __init__(self, path, ql):
         ELFParse.__init__(self, path, ql)
+        self.ql = ql
 
     def pack(self, data, ql):
         if ql.archbit == 64:
@@ -364,7 +365,7 @@ class ELFLoader(ELFParse):
             #     uc.mem_write(s_addr, i + b'\x00')
             # else:
             
-            uc.mem_write(s_addr, i.encode() + b'\x00')
+            self.ql.mem.write(s_addr, i.encode() + b'\x00')
             l_addr.append(s_addr)
         return l_addr, s_addr
 
