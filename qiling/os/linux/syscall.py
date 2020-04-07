@@ -34,7 +34,9 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
 
     base = ql.unpack32(u_info[4 : 8])
     limit = ql.unpack32(u_info[8 : 12])
-    ql.nprint("[+] set_thread_area base : 0x%x limit is : 0x%x" % (base, limit))
+
+    breakpoint()
+    ql.dprint(0, "[+] set_thread_area base : 0x%x limit is : 0x%x" % (base, limit))
     ql_x86_setup_syscall_set_thread_area(ql, base, limit)
     ql.mem.write(u_info_addr, ql.pack32(12))
     regreturn = 0

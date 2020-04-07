@@ -468,7 +468,13 @@ def print_function(ql, address, function_name, params, ret):
     log += ')'
     if ret is not None:
         log += ' = 0x%x' % ret
-    ql.nprint(log + '\n')
+
+    if ql.output == QL_OUT_DEFAULT:
+        log = log.partition(" ")[-1]
+        ql.nprint(log + '\n')
+
+    elif ql.output == QL_OUT_DEBUG:
+        ql.dprint(0, log + '\n')
 
 
 def read_cstring(ql, address):
