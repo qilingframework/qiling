@@ -134,8 +134,8 @@ def run_shellcode(options):
 
     ql = Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output)
 
-    if options.syscall_filter != None:
-        ql.syscall_filter = options.syscall_filter
+    if options.strace_filter != None:
+        ql.strace_filter = options.strace_filter
 
     ql.run()
 
@@ -181,7 +181,7 @@ if __name__ == '__main__':
     run_parser.add_argument('--profile', required=False, default='', metavar="FILE", dest="profile", help="Defile OS profile")
     run_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
     run_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
-    run_parser.add_argument('-e', '--syscall-filter', required=False, dest="syscall_filter", default=None, help="Only work with strace mode, you can choose what to be printout, multi-syscalls should be separated by comma")
+    run_parser.add_argument('-e', '--strace-filter', metavar="FUNCTION NAME", required=False, dest="strace_filter", default=None, help="Only work with strace mode, you can choose what to be printout, for multiple function calls should be separated by comma")
     run_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')
     run_parser.add_argument('--log_dir', required=False, default=None, dest='log_dir', help='log file dir')
     run_parser.add_argument('--log_split', action='store_true', default=False, dest='log_split', help='split log file')
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     shellcode_parser.add_argument('--bin', action='store_true', default=True, dest='bin', help='input file format, -bin')
     shellcode_parser.add_argument('--output', required=False, default='default', help='output mode, options are off, debug , disasm, dump')
     shellcode_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
-    shellcode_parser.add_argument('-e', '--syscall-filter', required=False, dest="syscall_filter", default=None, help="Only work with strace mode, you can choose what to be printout, multi-syscalls should be separated by comma")
+    shellcode_parser.add_argument('-e', '--strace-filter', metavar="FUNCTION NAME", required=False, dest="strace_filter", default=None, help="Only work with strace mode, you can choose what to be printout, for multiple function calls should be separated by comma")
     shellcode_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')    
 
     options = parser.parse_args()
@@ -244,8 +244,8 @@ if __name__ == '__main__':
             ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, 
                         output=options.output, log_console = options.console, log_dir=options.log_dir)
 
-            if options.strace and options.syscall_filter != None:
-                ql.syscall_filter = options.syscall_filter
+            if options.strace and options.strace_filter != None:
+                ql.strace_filter = options.strace_filter
 
         elif options.filename == '' and options.args == [] and options.run_args != []:
             ql = Qiling(filename=options.run_args, rootfs=options.rootfs, output=options.output, 

@@ -121,7 +121,7 @@ class Qiling:
         self.shellcode_init = 0
         self.entry_point = 0
         # syscall filter for strace-like functionality
-        self.syscall_filter = None
+        self.strace_filter = None
 
         """
         Qiling Framework Core Engine
@@ -216,8 +216,10 @@ class Qiling:
         self.archbit = ql_get_arch_bits(self.arch)
         if self.arch not in (QL_ENDINABLE):
             self.archendian = QL_ENDIAN_EL
-        else:
-            self.archendian = QL_ENDIAN_BE if self.bigendian else QL_ENDIAN_EL
+        if self.shellcoder and self.bigendian == True:
+            self.archendian = QL_ENDIAN_EB
+        elif self.shellcoder:
+            self.archendian = QL_ENDIAN_EL
 
         # based on CPU bit and set pointer size
         if self.archbit:
@@ -257,18 +259,10 @@ class Qiling:
 
     def run(self):
 
-        # setup syscall filter for logger
-        if self.syscall_filter != None and self.output == QL_OUT_DEFAULT:
+        # setup strace filter for logger
+        if self.strace_filter != None and self.output == QL_OUT_DEFAULT:
 
-            _logger = self.log_file_fd
-
-            class Syscall_filter(logging.Filter):
-                def __init__(self, syscall_names):
-                    self.syscall_list = syscall_names.split(",") if isinstance(syscall_names, str) else syscall_names
-                def filter(self, record):
-                    return any((record.getMessage().startswith(each) for each in self.syscall_list))
-
-            _logger.addFilter(Syscall_filter(self.syscall_filter))
+            self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
 
         # debugger init
         if self.debugger is not None:
