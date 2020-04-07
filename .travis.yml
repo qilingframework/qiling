@@ -56,6 +56,7 @@ matrix:
         - cd tests
       script:
         - python3 test_macho_macos.py
+        - python3 test_macho.py
         #- ./test_nix.sh
         
     - name: "Python 3.6.8 on Windows"
@@ -118,6 +119,6 @@ matrix:
 #      script:
 #        - wsl python3 test_all.py
 
-  allow_failures:
-    - os: osx
-    - services: docker
+  # allow_failures:
+  #   - os: osx
+  #   - services: docker
