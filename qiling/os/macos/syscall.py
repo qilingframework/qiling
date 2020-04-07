@@ -42,15 +42,16 @@ from qiling.os.posix.const_mapping import *
 
 
 def ql_arm64_fgetattrlist(ql, fd, attrlist, attrbuff, attrsizebuff, options, *args, **kw):
-    ql.nprint("addr %x, path: %s" % (attrlist ,attrbuff))
+    ql.nprint("fgetattrlist(fd: %d, attrlist: 0x%x, attrbuff: 0x%x, attrsizebuff: 0x%x, options: 0x%x)" % (fd, attrlist, attrbuf, attrsizebuff, options))
+    ql.dprint(0, "addr: %x, path: %s" % (attrlist ,attrbuff))
     KERN_SUCCESS = 1
     ql_definesyscall_return(ql, KERN_SUCCESS)
-    ql.nprint("syscall[fgetattrlist] >> fgetattrlist")
+    ql.dprint(0, "syscall[fgetattrlist] >> fgetattrlist")
 
 
 def ql_arm64_poll(ql, target, address, size, *args, **kw):
     ql_definesyscall_return(ql, KERN_SUCCESS)
-    ql.nprint("syscall[poll] >> poll")
+    ql.dprint(0, "syscall[poll] >> poll")
     # FIXME:
     ql.nprint("FIXME: syscall[poll] >> exit for now")
     exit()
@@ -182,7 +183,7 @@ def ql_syscall_fcntl64_macos(ql, fcntl_fd, fcntl_cmd, fcntl_arg, *args, **kw):
     else:
         regreturn = 0
 
-    ql.nprint("fcntl64(%d, %d, 0x%x) = %d" % (fcntl_fd, fcntl_cmd, fcntl_arg, regreturn))
+    ql.nprint("fcntl64(fd: %d, cmd: %d, arg: 0x%x) = %d" % (fcntl_fd, fcntl_cmd, fcntl_arg, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 # 0x99
@@ -221,16 +222,16 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
     attrlist["forkattr"] = unpack("<L", ql.mem.read(alist + 20, 4))[0]
     path_str = macho_read_string(ql, path, MAX_PATH_SIZE)
 
-    ql.nprint("\nbitmapcount {}, reserved {}, commonattr {}, volattr {}, dirattr {}, fileattr {}, forkattr {}\n".format(
+    ql.dprint(0, "\nbitmapcount {}, reserved {}, commonattr {}, volattr {}, dirattr {}, fileattr {}, forkattr {}\n".format(
         attrlist["bitmapcount"], attrlist["reserved"], attrlist["commonattr"], attrlist["volattr"], attrlist["dirattr"], attrlist["fileattr"], attrlist["forkattr"]
     ))
-    ql.nprint("path str :{}\n".format(path_str))
+    ql.dprint(0, "path str :{}\n".format(path_str))
 
     attr = b''
     if attrlist["commonattr"] != 0:
         commonattr = ql.macho_fs.get_common_attr(path_str, attrlist["commonattr"])
         if not commonattr:
-            ql.nprint("Error File Not Exist {}".format(path_str))
+            ql.dprint(0, "Error File Not Exist {}".format(path_str))
             exit(0)
         attr += commonattr
     
@@ -238,7 +239,7 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
     attr = struct.pack("<L", attr_len) + attr
 
     if len(attr) > bufferSize:
-        ql.nprint("Length error")
+        ql.dprint(0, "Length error")
         ql_definesyscall_return(ql, 1)
     else:
         ql.mem.write(attributeBuffer, attr)
@@ -338,14 +339,14 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
 
 # 0xca
 def ql_syscall_sysctl(ql, name, namelen, old, oldlenp, new_arg, newlen):
-    ql.nprint("sysctl(name:0x{:X}, namelen:0x{:X}, old:0x{:X}, oldlenp:0x{:X}, new:0x{:X}, newlen:0x{:X})".format(
+    ql.nprint("sysctl(name: 0x{:X}, namelen: 0x{:X}, old: 0x{:X}, oldlenp: 0x{:X}, new: 0x{:X}, newlen: 0x{:X})".format(
         name, namelen, old, oldlenp, new_arg, newlen
     ))
     ql_definesyscall_return(ql, KERN_SUCCESS)
 
 # 0x112
 def ql_syscall_sysctlbyname(ql, name, namelen, old, oldlenp, new_arg, newlen):
-    ql.nprint("sysctlbyname(name:0x{:X}, namelen:0x{:X}, old:0x{:X}, oldlenp:0x{:X}, new:0x{:X}, newlen:0x{:X})".format(
+    ql.nprint("sysctlbyname(name: 0x{:X}, namelen: 0x{:X}, old: 0x{:X}, oldlenp: 0x{:X}, new: 0x{:X}, newlen: 0x{:X})".format(
         name, namelen, old, oldlenp, new_arg, newlen
     ))
     ql_definesyscall_return(ql, KERN_SUCCESS)
@@ -359,7 +360,7 @@ def ql_syscall_shared_region_check_np(ql, p, uap, retvalp, *args, **kw):
 # 0x150
 def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buffer, buffer_size):
     retval = struct.unpack("<Q", ql.mem.read(ql.register(UC_X86_REG_RSP), 8))[0]
-    ql.nprint("proc info(callnum: {}, pid: {}, flavor: {}, arg: 0x{:X}, buffer: 0x{:X}, buffersize: {}, retval: 0x{:X})".format(
+    ql.nprint("proc_info(callnum: {}, pid: {}, flavor: {}, arg: 0x{:X}, buffer: 0x{:X}, buffersize: {}, retval: 0x{:X})".format(
         callnum, pid, flavor, arg, buffer, buffer_size, retval
     ))
     if callnum == PROC_INFO_CALL_PIDINFO:
@@ -490,7 +491,7 @@ def ql_syscall_bsdthread_register(ql, threadstart, wqthread, flags, stack_addr_h
 # 0x174
 def ql_syscall_thread_selfid(ql, *args, **kw):
     ql_definesyscall_return(ql, ql.macho_thread.id)
-    ql.nprint("thread selfid, ret: {}".format(ql.macho_thread.id))
+    ql.nprint("thread_selfid() = {}".format(ql.macho_thread.id))
 
 # 0x18e
 def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
