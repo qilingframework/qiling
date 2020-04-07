@@ -367,8 +367,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
     # map GDT table
     if ql.ostype == QL_LINUX and GDTTYPE == "DS":
-        ql.mem._is_mapped(GDT_ADDR, GDT_LIMIT)
-        if ql.mem._is_mapped(GDT_ADDR, GDT_LIMIT) == False:
+        if ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT) == False:
             ql.mem.map(GDT_ADDR, GDT_LIMIT)
     
     if ql.ostype == QL_WINDOWS and GDTTYPE == "FS":
@@ -410,7 +409,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
 
 def ql_x8664_set_gs(ql):
-    if ql.mem._is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE) == False:
+    if ql.mem.is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE) == False:
         ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
     ql.uc.msr_write(GSMSR, GS_SEGMENT_ADDR)
 
