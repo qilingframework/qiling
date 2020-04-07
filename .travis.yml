@@ -52,8 +52,10 @@ matrix:
         - cd $TRAVIS_BUILD_DIR
         - python3 setup.py install
       before_script:
-        cd tests
+        - ./examples/scripts/collectdylib.sh
+        - cd tests
       script:
+        - python3 test_macho_macos.py
         - ./test_nix.sh
         
     - name: "Python 3.6.8 on Windows"
