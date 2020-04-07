@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 from .utils import *
-from .define_value import *
+from .const import *
 from struct import unpack
 
 class Header:
@@ -30,9 +30,9 @@ class BinaryHeader(Header):
             self.reserved = unpack("<L", FR.read(4))[0]
         self.header_size = FR.offset
 
-    def __str__(self):
-        return ("magic : 0x%X, cputype: 0x%X, subType: 0x%X, FileType: 0x%X, lc num: 0x%X, lc size: 0x%X, flags: 0x%X" % (self.magic, 
-            self.cpu_type, self.cpu_subtype, self.file_type, self.lc_num, self.lc_size, self.flags))
+    #def __str__(self):
+        # return ("magic : 0x%X, cputype: 0x%X, subType: 0x%X, FileType: 0x%X, lc num: 0x%X, lc size: 0x%X, flags: 0x%X" % (self.magic, 
+        #     self.cpu_type, self.cpu_subtype, self.file_type, self.lc_num, self.lc_size, self.flags))
 
 
 class FatHeader(Header):
@@ -65,7 +65,7 @@ class FatInfo:
         self.size           = unpack(">L", FR.read(4))[0]
         self.align          = 2 ** unpack(">L", FR.read(4))[0]
     
-    def __str__(self):
-        return ("CPU 0x%X, CPU subtype 0x%X, offset 0x%X, size 0x%X, align %d" %(
-            self.cpu_type, self.cpu_subtype, self.offset, self.size, self.align
-        ))
+    # def __str__(self):
+    #     return ("CPU 0x%X, CPU subtype 0x%X, offset 0x%X, size 0x%X, align %d" %(
+    #         self.cpu_type, self.cpu_subtype, self.offset, self.size, self.align
+    #     ))

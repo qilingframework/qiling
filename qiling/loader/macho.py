@@ -7,7 +7,7 @@ import os
 
 from struct import pack
 from qiling.loader.macho_parser.parser import *
-from qiling.loader.macho_parser.define_value import *
+from qiling.loader.macho_parser.const import *
 from qiling.exception import *
 
 

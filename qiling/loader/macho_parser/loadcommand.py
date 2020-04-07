@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-from .define_value import *
+from .const import *
 from .utils import *
 from struct import unpack
 
@@ -161,8 +161,8 @@ class LoadDylinker(LoadCommand):
         self.str_offset = unpack("<L", self.FR.read(4))[0]
         self.name = self.FR.readString(4)
 
-    def __str__(self):
-        return (" DyLinker: Name %s" % self.name)
+    # def __str__(self):
+    #     return (" DyLinker: Name %s" % self.name)
 
     def get_complete(self):
         pass
@@ -194,8 +194,8 @@ class LoadVersionMinMacosx(LoadCommand):
         self.version    = unpack("<L", self.FR.read(4))[0]
         self.reserved   = unpack("<L", self.FR.read(4))[0]
 
-    def __str__(self):
-        return (" VersionMinMacosx: version %X" % self.version)
+    # def __str__(self):
+    #     return (" VersionMinMacosx: version %X" % self.version)
 
     def get_complete(self):
         pass
@@ -207,8 +207,8 @@ class LoadVersionMinIphoneos(LoadCommand):
         self.version    = unpack("<L", self.FR.read(4))[0]
         self.reserved   = unpack("<L", self.FR.read(4))[0]
 
-    def __str__(self):
-        return (" VersionMinIphoneos: version %X" % self.version)
+    # def __str__(self):
+    #     return (" VersionMinIphoneos: version %X" % self.version)
 
     def get_complete(self):
         pass
@@ -245,8 +245,8 @@ class LoadDyLib(LoadCommand):
         self.compatibility_version  = unpack("<L", self.FR.read(4))[0]
         self.name                   = self.FR.readString(4)
     
-    def __str__(self):
-        return (" Dylib: name %s" % self.name)
+    # def __str__(self):
+    #     return (" Dylib: name %s" % self.name)
 
     def get_complete(self):
         pass
@@ -375,8 +375,8 @@ class LoadDataInCode(LoadCommand):
         self.data_offset    = unpack("<L", self.FR.read(4))[0]
         self.data_size      = unpack("<L", self.FR.read(4))[0]
 
-    def __str__(self):
-        return (" Data in code: offset 0x%X" % self.data_offset)
+    # def __str__(self):
+    #     return (" Data in code: offset 0x%X" % self.data_offset)
 
     def get_complete(self):
         pass
@@ -389,8 +389,8 @@ class LoadCodeSignature(LoadCommand):
         self.data_offset    = unpack("<L", self.FR.read(4))[0]
         self.data_size      = unpack("<L", self.FR.read(4))[0]
 
-    def __str__(self):
-        return (" CodeSignature: offset 0x%X" % self.data_offset)
+    # def __str__(self):
+    #     return (" CodeSignature: offset 0x%X" % self.data_offset)
 
     def get_complete(self):
         pass
@@ -411,13 +411,13 @@ class LoadDyldInfoOnly(LoadCommand):
         self.export_info_offset         = unpack("<L", self.FR.read(4))[0]
         self.export_info_size           = unpack("<L", self.FR.read(4))[0]
 
-    def __str__(self):
-        return (" DyldInfoOnly: rebase offset: 0x%X, rebase size 0x%X, binding offset 0x%X, binding size 0x%X,\
- weak offset 0x%X, weak size 0x%X, lazy offset 0x%X, lazy size 0x%X, export offset 0x%X, export size 0x%X" %(
-            self.rebase_info_offset, self.rebase_info_size, self.binding_info_offset, self.binding_info_size,
-            self.weak_binding_info_offset, self.weak_binding_info_size, self.lazy_binding_info_offset,
-            self.lazy_binding_info_size, self.export_info_offset, self.export_info_size 
-        ))
+#     def __str__(self):
+#         return (" DyldInfoOnly: rebase offset: 0x%X, rebase size 0x%X, binding offset 0x%X, binding size 0x%X,\
+#  weak offset 0x%X, weak size 0x%X, lazy offset 0x%X, lazy size 0x%X, export offset 0x%X, export size 0x%X" %(
+#             self.rebase_info_offset, self.rebase_info_size, self.binding_info_offset, self.binding_info_size,
+#             self.weak_binding_info_offset, self.weak_binding_info_size, self.lazy_binding_info_offset,
+#             self.lazy_binding_info_size, self.export_info_offset, self.export_info_size 
+#         ))
 
     def get_complete(self):
         pass
@@ -446,11 +446,11 @@ class LoadSection32(LoadSection):
         self.reserved1              = unpack("<L", self.FR.read(4))[0]
         self.reserved2              = unpack("<L", self.FR.read(4))[0]
   
-    def __str__(self):
-        return ("     Section name %s, Seg name %s, addr 0x%X, size 0x%X, offset 0x%X, align 0x%X, rel offset 0x%X, rel num %d, flags 0x%X" % (
-            self.section_name, self.segment_name, self.address, self.size, self.offset, self.alignment, self.relocations_offset,
-            self.number_of_relocations, self.flags
-        ))
+    # def __str__(self):
+    #     return ("     Section name %s, Seg name %s, addr 0x%X, size 0x%X, offset 0x%X, align 0x%X, rel offset 0x%X, rel num %d, flags 0x%X" % (
+    #         self.section_name, self.segment_name, self.address, self.size, self.offset, self.alignment, self.relocations_offset,
+    #         self.number_of_relocations, self.flags
+    #     ))
 
 
 class LoadSection64(LoadSection):
@@ -469,11 +469,11 @@ class LoadSection64(LoadSection):
         self.reserved2              = unpack("<L", self.FR.read(4))[0]
         self.reserved3              = unpack("<L", self.FR.read(4))[0]
         
-    def __str__(self):
-        return ("     Sec64: Section name %s, Seg name %s, addr 0x%X, size 0x%X, offset 0x%X, align 0x%X, rel offset 0x%X, rel num %d, flags 0x%X" % (
-            self.section_name, self.segment_name, self.address, self.size, self.offset, self.alignment, self.relocations_offset,
-            self.number_of_relocations, self.flags
-        ))
+    # def __str__(self):
+    #     return ("     Sec64: Section name %s, Seg name %s, addr 0x%X, size 0x%X, offset 0x%X, align 0x%X, rel offset 0x%X, rel num %d, flags 0x%X" % (
+    #         self.section_name, self.segment_name, self.address, self.size, self.offset, self.alignment, self.relocations_offset,
+    #         self.number_of_relocations, self.flags
+    #     ))
 
 
 class LoadEncryptionInfo64(LoadCommand):

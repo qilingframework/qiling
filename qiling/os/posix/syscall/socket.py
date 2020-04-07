@@ -253,7 +253,7 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
             regreturn = send_len
             ql.dprint(1, "[+] debug send end")
         except:
-            print(sys.exc_info()[0])
+            ql.nprint(sys.exc_info()[0])
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 raise
     else:

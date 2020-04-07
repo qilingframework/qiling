@@ -6,7 +6,7 @@
 from .header import *
 from .loadcommand import *
 from .data import *
-from .define_value import *
+from .const import *
 from .utils import *
 from struct import unpack
 

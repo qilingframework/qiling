@@ -36,15 +36,15 @@ class MachMsgHeader():
         self.msgh_id = unpack("<L", self.ql.mem.read(addr + 0x14, 0x4))[0]
         # print("size !!!!! {}".format(self.msgh_size))
 
-    def __str__(self):
-        return "[MachMsg] bits :{}, size:{}, remote port:{}, local port:{}, voucher port:{}, id:{}".format(
-            self.msgh_bits,
-            self.msgh_size,
-            self.msgh_remote_port,
-            self.msgh_local_port,
-            self.msgh_voucher_port,
-            self.msgh_id,
-        )
+    # def __str__(self):
+    #     return "[MachMsg] bits :{}, size:{}, remote port:{}, local port:{}, voucher port:{}, id:{}".format(
+    #         self.msgh_bits,
+    #         self.msgh_size,
+    #         self.msgh_remote_port,
+    #         self.msgh_local_port,
+    #         self.msgh_voucher_port,
+    #         self.msgh_id,
+    #     )
 
 
 # Mach message Class 
@@ -81,7 +81,7 @@ class MachMsg():
         return header
 
     def read_msg_content(self, addr, size):
-        self.ql.nprint("0x{:X}, {}".format(addr, size))
+        self.ql.dprint(0, "0x{:X}, {}".format(addr, size))
         return self.ql.mem.read(addr, size)
 
 
