@@ -36,17 +36,21 @@ class QlOsMacosManager:
  
 
     def loader(self):
+        """
+        initiate UC needs to be in loader,
+        or else it will kill execve
+        """
+        self.ql.uc = self.ql.init_Uc
+
         if self.ql.arch == QL_ARM64:
-            self.ql.uc = Uc(UC_ARCH_ARM64, UC_MODE_ARM)
             self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x0000000160503000
             self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x21000
             self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
             self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS  = 0x4000000f4000
         elif  self.ql.arch == QL_X8664:   
-            self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
             self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x7ffcf0000000
             self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x19a00000
-            self.QL_MACOS_PREDEFINE_MMAPADDRESS         =  0x7ffbf0100000
+            self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
             self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS  = 0x4000000f4000
 
         if self.ql.shellcoder:

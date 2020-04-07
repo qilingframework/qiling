@@ -6,7 +6,10 @@ from unicorn import *
 from unicorn.arm64_const import *
 from struct import pack
 from .arch import Arch
+
 from qiling.const import *
+from unicorn import *
+from unicorn.arm_const import *
 
 class ARM64(Arch):
     def __init__(self, ql):
@@ -37,6 +40,10 @@ class ARM64(Arch):
         SP = self.ql.register(UC_ARM64_REG_SP)
         return self.ql.mem.write(SP + offset, self.ql.pack64(data))
 
+    # get initialized unicorn engine
+    def get_Uc(self):
+        uc = Uc(UC_ARCH_ARM64, UC_MODE_ARM)   
+        return uc
 
     # set PC
     def set_pc(self, value):

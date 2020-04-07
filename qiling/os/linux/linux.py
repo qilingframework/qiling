@@ -32,45 +32,40 @@ class QlOsLinuxManager:
 
     def loader(self):
         """
-        FIXME: all these code can move to arch, IF
+        initiate UC needs to be in loader,
+        or else it will kill execve
         """
+        self.ql.uc = self.ql.init_Uc
+        
         # ARM
         if self.ql.arch == QL_ARM:
-            if self.ql.archendian == QL_ENDIAN_EB:
-                self.ql.uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)
-                # self.ql.uc = Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_BIG_ENDIAN)
-            else:
-                self.ql.uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfff0d000 
             self.ql.archfunc.enable_vfp()
             ql_arm_init_kernel_get_tls(self.ql)
             self.ql.hook_intr(self.hook_syscall)
+    
         # MIPS32 
         elif self.ql.arch == QL_MIPS32:
-            if self.ql.archendian == QL_ENDIAN_EB:
-                self.ql.uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_BIG_ENDIAN)
-            else:
-                self.ql.uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000 
             self.QL_LINUX_PREDEFINE_STACKSIZE = 0x30000  
             self.ql.hook_intr(self.hook_syscall)                
+    
         # ARM64        
         elif self.ql.arch == QL_ARM64:
-            self.ql.uc = Uc(UC_ARCH_ARM64, UC_MODE_ARM)
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
             self.ql.archfunc.enable_vfp()
             self.ql.hook_intr(self.hook_syscall)
+    
         # X86        
         elif  self.ql.arch == QL_X86:
-            self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_32)
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfffdd000
             ql_x86_setup_gdt_segment_ds(self.ql)
             ql_x86_setup_gdt_segment_cs(self.ql)
             ql_x86_setup_gdt_segment_ss(self.ql)
             self.ql.hook_intr(self.hook_syscall)
+    
         # X8664            
         elif  self.ql.arch == QL_X8664:
-            self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
             ql_x8664_setup_gdt_segment_ds(self.ql)
             ql_x8664_setup_gdt_segment_cs(self.ql)

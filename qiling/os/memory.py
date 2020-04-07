@@ -130,6 +130,13 @@ class QlMemoryManager:
         '''        
         return self.ql.uc.mem_unmap(addr, size)
 
+    def unmap_all(self):
+        for region in list(self.ql.uc.mem_regions()):
+            print("start 0x%x end 0x%x"% (region[0],(region[1] - region[0])+0x1))
+            if region[0] and region[1]:
+                return self.unmap(region[0], ((region[1] - region[0])+0x1))
+
+   
     def _is_mapped(self, address, size): 
         '''
         The main function of is_mmaped is to determine 
@@ -137,14 +144,12 @@ class QlMemoryManager:
         Returns true if it has already been allocated.
         If unassigned, returns False.
         '''   
-        for address_start, address_end, perm, info in self.ql.mem.map_info:
-            if ( address >= address_start and (address + size) <= address_end):
+        for region in list(self.ql.uc.mem_regions()):
+            if address >= region[0] and (address + size -1) <= region[1]:
                 return True
 
-        for region in list(self.ql.uc.mem_regions()):
-            if address >= region[0] and (address + size) <= region[1]:
-                return True
         return False
+        
     
     def _is_free(self, address, size):
         '''

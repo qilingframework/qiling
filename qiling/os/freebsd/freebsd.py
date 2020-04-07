@@ -27,8 +27,12 @@ class QlOsFreebsdManager:
         return self.ql.comm_os.load_syscall()
 
     def loader(self):
-        self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
-        
+        """
+        initiate UC needs to be in loader,
+        or else it will kill execve
+        """
+        self.ql.uc = self.ql.init_Uc
+
         if (self.ql.stack_address == 0):
             if self.ql.shellcoder:
                 self.ql.stack_address = 0x1000000
