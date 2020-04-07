@@ -6,7 +6,10 @@ from unicorn import *
 from unicorn.arm_const import *
 from struct import pack
 from .arch import Arch
+
 from qiling.const import *
+from unicorn import *
+from unicorn.arm_const import *
 
 def ql_arm_check_thumb(uc, reg_cpsr):
     mode = UC_MODE_ARM
@@ -43,6 +46,16 @@ class ARM(Arch):
         SP = self.ql.register(UC_ARM_REG_SP)
         return self.ql.mem.write(SP + offset, self.ql.pack32(data))
 
+
+    # get initialized unicorn engine
+    def get_Uc(self):
+        if self.ql.archendian == QL_ENDIAN_EB:
+            uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)
+            # FIXME: unicorn engine not able to choose ARM or Thumb automatically
+            #uc = Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_BIG_ENDIAN)
+        else:
+            uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)    
+        return uc
 
     # set PC
     def set_pc(self, value):

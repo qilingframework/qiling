@@ -660,6 +660,11 @@ class Qiling:
         else:    
             return self.archfunc.set_register(register_str, value)
 
+    # ql.init_Uc - initialized unicorn engine
+    @property
+    def init_Uc(self):
+        return self.archfunc.get_Uc()
+
     # ql.syscall - get syscall for all posix series
     @property
     def syscall(self):

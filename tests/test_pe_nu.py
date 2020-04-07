@@ -41,13 +41,23 @@ def test_pe_win_x86_uselessdisk():
 
 
 def test_pe_win_x86_gandcrab():
-    def stop(ql):
+    def stop(ql, default_values):
         print("Ok for now")
+        user_memory = read_wstring(ql, 0x505f134)
+        computer_memory = read_wstring(ql, 0x505ff40)
+        assert(default_values[0] != user_memory)
+        assert(default_values[1] != computer_memory)
         ql.uc.emu_stop()
 
     ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                 output="debug")
-    ql.hook_address(stop, 0x1001a3c6)
+    default_user = ql.config["USER"]["user"]
+    default_computer = ql.config["SYSTEM"]["computer_name"]
+
+    ql.hook_address(stop, 0x40860f, user_data=(default_user, default_computer))
+    randomize_config_value(ql, "USER", "user")
+    randomize_config_value(ql, "SYSTEM", "computer_name")
+    randomize_config_value(ql, "VOLUME", "serial_number")
     ql.run()
     del ql
 
@@ -80,7 +90,6 @@ def test_pe_win_x86_regdemo():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/RegDemo.exe"], "../examples/rootfs/x86_windows")
     ql.run()
     del ql
-
 
 def test_pe_win_x8664_fls():
     ql = Qiling(["../examples/rootfs/x8664_windows/bin/Fls.exe"], "../examples/rootfs/x8664_windows", output="default")

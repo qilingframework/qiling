@@ -6,8 +6,11 @@ from unicorn import *
 from unicorn.x86_const import *
 from struct import pack
 from .arch import Arch
-from qiling.const import *
 from qiling.arch.x86_const import *
+
+from qiling.const import *
+from unicorn import *
+from unicorn.arm_const import *
 
 class X86(Arch):
     def __init__(self, ql):
@@ -36,6 +39,12 @@ class X86(Arch):
     def stack_write(self, offset, data):
         SP = self.ql.register(UC_X86_REG_ESP)
         return self.ql.mem.write(SP + offset, self.ql.pack32(data))
+
+
+    # get initialized unicorn engine
+    def get_Uc(self):
+        uc = Uc(UC_ARCH_X86, UC_MODE_32)  
+        return uc
 
 
     # set PC
@@ -188,6 +197,13 @@ class X8664(Arch):
     def stack_write(self, offset, data):
         SP = self.ql.register(UC_X86_REG_RSP)
         return self.ql.mem.write(SP + offset, self.ql.pack64(data))
+
+
+    # get initialized unicorn engine
+    def get_Uc(self):
+        uc = Uc(UC_ARCH_X86, UC_MODE_64)  
+        return uc
+
 
     # set PC
     def set_pc(self, value):
@@ -346,12 +362,14 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
         to_ret |= (access & 0xff) << 40
         to_ret |= ((limit >> 16) & 0xf) << 48
         to_ret |= (flags & 0xff) << 52
-        to_ret |= ((base >> 24) & 0xff) << 56;
+        to_ret |= ((base >> 24) & 0xff) << 56
         return pack('<Q', to_ret)
 
     # map GDT table
     if ql.ostype == QL_LINUX and GDTTYPE == "DS":
-        ql.mem.map(GDT_ADDR, GDT_LIMIT)
+        ql.mem._is_mapped(GDT_ADDR, GDT_LIMIT)
+        if ql.mem._is_mapped(GDT_ADDR, GDT_LIMIT) == False:
+            ql.mem.map(GDT_ADDR, GDT_LIMIT)
     
     if ql.ostype == QL_WINDOWS and GDTTYPE == "FS":
         ql.mem.map(GDT_ADDR, GDT_LIMIT)

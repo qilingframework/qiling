@@ -143,3 +143,44 @@ def hook_GetSystemTimeAsFileTime(ql, address, params):
 def hook_GetTickCount(ql, address, params):
     ret = 200000
     return ret
+
+
+# UINT GetWindowsDirectoryW(
+#   LPWSTR lpBuffer,
+#   UINT   uSize
+# );
+@winapi(cc=STDCALL, params={
+    "lpBuffer": POINTER,
+    "uSize": UINT
+})
+def hook_GetWindowsDirectoryW(ql, address, params):
+    dst = params["lpBuffer"]
+    value = (ql.config["PATHS"]["windir"] + "\x00").encode("utf-16le")
+    ql.mem.write(dst, value)
+    return len(value)-2
+
+
+# void GetNativeSystemInfo(
+#   LPSYSTEM_INFO lpSystemInfo
+# );
+@winapi(cc=STDCALL, params={
+    "lpSystemInfo": POINTER
+})
+def hook_GetNativeSystemInfo(ql, address, params):
+    pointer = params["lpSystemInfo"]
+    system_info = {"dummy": 0x0.to_bytes(length=8, byteorder='little'),
+                   "dwPageSize": ql.heap.page_size.to_bytes(length=4, byteorder='little'),
+                   "lpMinimumApplicationAddress": ql.load_os.PE_IMAGE_BASE.to_bytes(length=ql.pointersize, byteorder='little'),
+                   "lpMaximumApplicationAddress": (ql.load_os.DLL_BASE_ADDR + ql.load_os.DLL_SIZE).to_bytes(length=ql.pointersize,
+                                                                                            byteorder='little'),
+                   "dwActiveProcessorMask": 0x3.to_bytes(length=ql.pointersize, byteorder='little'),
+                   # TODO not sure from here, did not found variables inside the emulator
+                   "dwNumberOfProcessors": 0x4.to_bytes(length=4, byteorder='little'),
+                   "dwProcessorType": 0x24a.to_bytes(length=4, byteorder='little'),
+                   "dwAllocationGranularity": (ql.heap.page_size * 10).to_bytes(length=4, byteorder='little'),
+                   "wProcessorLevel": 0x6.to_bytes(length=2, byteorder='little'),
+                   "wProcessorRevision": 0x4601.to_bytes(length=2, byteorder='little')
+                   }
+    values = b"".join(system_info.values())
+    ql.mem.write(pointer, values)
+    return 0

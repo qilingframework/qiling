@@ -489,7 +489,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
         ql.argv             = argv
         ql.env              = env
         ql.path             = real_path
-        ql.mem.map_info         = []
+        ql.mem.map_info     = []
         
         ql.load_os.loader()
         ql.run()

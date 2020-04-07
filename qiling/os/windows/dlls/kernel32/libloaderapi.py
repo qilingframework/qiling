@@ -143,7 +143,7 @@ def hook_GetProcAddress(ql, address, params):
     if lpProcName in ql.PE.import_address_table[dll_name]:
         return ql.PE.import_address_table[dll_name][lpProcName]
 
-    return 1
+    return 0
 
 
 # HMODULE LoadLibraryA(
@@ -197,7 +197,7 @@ def hook_LoadLibraryW(ql, address, params):
     "dwFlags": DWORD
 })
 def hook_LoadLibraryExW(ql, address, params):
-    lpLibFileName = bytes(bytes(params["lpLibFileName"], "ascii").decode('utf-16le'), 'ascii')
+    lpLibFileName = params["lpLibFileName"].encode()
     dll_base = ql.PE.load_dll(lpLibFileName)
     return dll_base
 
