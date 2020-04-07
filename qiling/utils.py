@@ -72,6 +72,16 @@ def ql_arch_convert_str(arch):
     return adapter.get(arch)
 
 
+def ql_archmanager_convert_str(arch):
+    adapter = {
+        QL_X86: "QlArchX86Manager",
+        QL_X8664: "QlArchX8664Manager",
+        QL_MIPS32: "QlArchMIPS32Manager",
+        QL_ARM: "QlArchARMManager",
+        QL_ARM64: "QlArchARM64Manager",
+    }
+    return adapter.get(arch)
+
 def arch_convert(arch):
     adapter = {
         "x86": QL_X86,
@@ -253,8 +263,8 @@ def ql_get_os_module_function(ql, function_name = None):
     if not ql_is_valid_ostype(ql.ostype):
         raise QlErrorOsType("[!] Invalid OSType")
 
-    if not ql_is_valid_arch(ql.arch):
-        raise QlErrorArch("[!] Invalid Arch")
+    if not ql_is_valid_arch(ql.archtype):
+        raise QlErrorArch("[!] Invalid Arch %s" % ql.archtype)
     
     if function_name == None:
         ostype_str = ql_ostype_convert_str(ql.ostype)
@@ -264,21 +274,31 @@ def ql_get_os_module_function(ql, function_name = None):
         return ql_get_module_function(module_name, function_name, ql)
     elif function_name == "map_syscall":
         ostype_str = ql_ostype_convert_str(ql.ostype)
-        arch_str = ql_arch_convert_str(ql.arch)
+        arch_str = ql_arch_convert_str(ql.archtype)
         arch_str = arch_str + "_syscall"
         module_name = ql_build_module_import_name("os", ostype_str, arch_str)
         return ql_get_module_function(module_name, function_name)
     else:
-        module_name = ql_build_module_import_name("os", ql.ostype, ql.arch)
+        module_name = ql_build_module_import_name("os", ql.ostype, ql.archtype)
         return ql_get_module_function(module_name, function_name)
 
 
 def ql_get_arch_module_function(arch, function_name):
     if not ql_is_valid_arch(arch):
         raise QlErrorArch("[!] Invalid Arch")
-
+    function_name = function_name.upper()    
     module_name = ql_build_module_import_name("arch", None, arch)
     return ql_get_module_function(module_name, function_name)
+
+def ql_get_archmanager_module_function(arch):
+    if not ql_is_valid_arch(arch):
+        raise QlErrorArch("[!] Invalid Arch")
+    
+    archmanager = ql_arch_convert_str(arch).upper()
+    archmanager = ("QlArch" + archmanager + "Manager")
+
+    module_name = ql_build_module_import_name("arch", None, arch)
+    return ql_get_module_function(module_name, archmanager)
 
 
 def ql_get_commonos_module_function(ostype):
@@ -288,7 +308,7 @@ def ql_get_commonos_module_function(ostype):
     # common os class, posix type OS share one same class
     if ostype in (QL_POSIX):
         module_name = ql_build_module_import_name("os", "posix", "posix")
-        func_name = "QlPosixManager"
+        func_name = "QlOsPosixManager"
     else:
         module_name = ""    
     if module_name: 

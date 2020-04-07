@@ -42,7 +42,7 @@ def ql_arm_init_kernel_get_tls(ql):
 
 def arm_thread_set_tls(ql, th, arg):
     address = arg
-    mode = ql.archfunc.check_thumb()
+    mode = ql.arch.check_thumb()
     old_r0 = ql.register(UC_ARM_REG_R0)
 
     if mode == UC_MODE_THUMB:

@@ -53,7 +53,7 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
         regreturn = -1
     else:
         try:
-            if ql.arch == QL_ARM:
+            if ql.archtype== QL_ARM:
                 mode = 0
 
             flags = ql_open_flag_mapping(flags, ql)
@@ -63,7 +63,7 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
             regreturn = -1
 
     ql.nprint("open(%s, 0x%x, 0o%o) = %d" % (relative_path, flags, mode, regreturn))
-    ql.dprint(1, "[+] open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.arch), mode, regreturn))
+    ql.dprint(1, "[+] open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
         ql.dprint(0, "[+] File Found: %s" % relative_path)
@@ -93,7 +93,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
         regreturn = -1
     else:
         try:
-            if ql.arch == QL_ARM:
+            if ql.archtype== QL_ARM:
                 mode = 0
 
             openat_flags = ql_open_flag_mapping(openat_flags, ql)
@@ -104,7 +104,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
 
     ql.nprint("openat(%d, %s, 0x%x, 0o%o) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
     ql.dprint(1, "[+] openat(%d, %s, %s, 0o%o) = %d" % (
-    openat_fd, relative_path, open_flags_mapping(openat_flags, ql.arch), openat_mode, regreturn))
+    openat_fd, relative_path, open_flags_mapping(openat_flags, ql.archtype), openat_mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
         ql.dprint(0, "[+] File Found: %s" % relative_path)

@@ -80,7 +80,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
             f_th.set_thread_log_file(ql.log_dir)
 
             if clone_flags & CLONE_SETTLS == CLONE_SETTLS:
-                if ql.arch == QL_X86:
+                if ql.archtype== QL_X86:
                     newtls = ql.mem.read(clone_newtls, 4 * 3)
                 else:
                     newtls = clone_newtls
@@ -90,7 +90,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
                 f_th.set_clear_child_tid_addr(clone_child_tidptr)
 
             if clone_child_stack != 0:
-                ql.archfunc.set_sp(clone_child_stack)
+                ql.arch.set_sp(clone_child_stack)
             regreturn = 0
             ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
             ql_definesyscall_return(ql, regreturn)
@@ -106,7 +106,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     # Whether to set a new tls
     if clone_flags & CLONE_SETTLS == CLONE_SETTLS:
         th.set_special_settings_fuc(f_th.special_settings_fuc)
-        if ql.arch == QL_X86:
+        if ql.archtype== QL_X86:
             newtls = ql.mem.read(clone_newtls, 4 * 3)
         else:
             newtls = clone_newtls
@@ -118,11 +118,11 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     # Set the stack and return value of the new thread
     # (the return value of the child thread is 0, and the return value of the parent thread is the tid of the child thread)
     # and save the current context.
-    f_sp = ql.archfunc.get_sp()
+    f_sp = ql.arch.get_sp()
 
     regreturn = 0
     ql_definesyscall_return(ql, regreturn)
-    ql.archfunc.set_sp(clone_child_stack)
+    ql.arch.set_sp(clone_child_stack)
     th.save()
 
     ql.thread_management.cur_thread = th
@@ -132,7 +132,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
 
     # Restore the stack and return value of the parent process
-    ql.archfunc.set_sp(f_sp)
+    ql.arch.set_sp(f_sp)
     regreturn = th.get_thread_id()
     ql_definesyscall_return(ql, regreturn)
 

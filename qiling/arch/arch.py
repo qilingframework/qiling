@@ -2,7 +2,8 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-class Arch:
+
+class QlArchManager:
     def __init__(self, ql):
         self.ql = ql
 

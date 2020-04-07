@@ -22,7 +22,7 @@ class Context:
         self.ql = ql
 
     def save(self):
-        if self.ql.arch == QL_X86:
+        if self.ql.archtype== QL_X86:
             self.edi = self.ql.register(UC_X86_REG_EDI)
             self.esi = self.ql.register(UC_X86_REG_ESI)
             self.ebx = self.ql.register(UC_X86_REG_EBX)
@@ -33,7 +33,7 @@ class Context:
             self.eip = self.ql.register(UC_X86_REG_EIP)
             self.esp = self.ql.register(UC_X86_REG_ESP)
             self.eflags = self.ql.register(UC_X86_REG_EFLAGS)
-        elif self.ql.arch == QL_X8664:
+        elif self.ql.archtype== QL_X8664:
             self.rdi = self.ql.register(UC_X86_REG_RDI)
             self.rsi = self.ql.register(UC_X86_REG_RSI)
             self.rbx = self.ql.register(UC_X86_REG_RBX)
@@ -56,7 +56,7 @@ class Context:
             raise QlErrorArch("[!] unknown ql.arch")
 
     def restore(self):
-        if self.ql.arch == QL_X86:
+        if self.ql.archtype== QL_X86:
             self.ql.register(UC_X86_REG_EDI, self.edi)
             self.ql.register(UC_X86_REG_ESI, self.esi)
             self.ql.register(UC_X86_REG_EBX, self.ebx)
@@ -67,7 +67,7 @@ class Context:
             self.ql.register(UC_X86_REG_EIP, self.eip)
             self.ql.register(UC_X86_REG_ESP, self.esp)
             self.ql.register(UC_X86_REG_EFLAGS, self.eflags)
-        elif self.ql.arch == QL_X8664:
+        elif self.ql.archtype== QL_X8664:
             self.ql.register(UC_X86_REG_RDI, self.rdi)
             self.ql.register(UC_X86_REG_RSI, self.rsi)
             self.ql.register(UC_X86_REG_RBX, self.rbx)
@@ -154,20 +154,20 @@ class Thread:
         stack_size = 1024
         new_stack = self.ql.heap.mem_alloc(stack_size) + stack_size
 
-        if self.ql.arch == QL_X86:
+        if self.ql.archtype== QL_X86:
             self.ql.mem.write(new_stack - 4, self.ql.pack32(self.ql.thread_manager.THREAD_RET_ADDR))
             self.ql.mem.write(new_stack, self.ql.pack32(func_params))
-        elif self.ql.arch == QL_X8664:
+        elif self.ql.archtype== QL_X8664:
             self.ql.mem.write(new_stack - 8, self.ql.pack64(self.ql.thread_manager.THREAD_RET_ADDR))
             self.ql.mem.write(new_stack, self.ql.pack64(func_params))
 
         # set eip, ebp, esp
         self.context.save()
-        if self.ql.arch == QL_X86:
+        if self.ql.archtype== QL_X86:
             self.context.eip = func_addr
             self.context.ebp = new_stack - 4
             self.context.esp = new_stack - 4
-        elif self.ql.arch == QL_X8664:
+        elif self.ql.archtype== QL_X8664:
             self.context.rip = func_addr
             self.context.rbp = new_stack - 8
             self.context.rsp = new_stack - 8
