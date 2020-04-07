@@ -120,6 +120,8 @@ class Qiling:
         self.log_split = False
         self.shellcode_init = 0
         self.entry_point = 0
+        # syscall filter for strace-like functionality
+        self.strace_filter = None
 
         """
         Qiling Framework Core Engine
@@ -148,6 +150,7 @@ class Qiling:
 
         # Looger's configuration
         _logger = ql_setup_logging_stream(self)
+
 
         if self.log_dir is not None and type(self.log_dir) == str:
 
@@ -206,9 +209,16 @@ class Qiling:
         define file is 32 or 64bit, and check file endian
         QL_ENDIAN_EL = Little Endian
         big endian is define during ql_elf_check_archtype
+
+        since there is no elf for shellcoder mode
+        judge archendian by whether bigendian set or not
         """
         self.archbit = ql_get_arch_bits(self.arch)
         if self.arch not in (QL_ENDINABLE):
+            self.archendian = QL_ENDIAN_EL
+        if self.shellcoder and self.bigendian == True:
+            self.archendian = QL_ENDIAN_EB
+        elif self.shellcoder:
             self.archendian = QL_ENDIAN_EL
 
         # based on CPU bit and set pointer size
@@ -248,6 +258,12 @@ class Qiling:
 
 
     def run(self):
+
+        # setup strace filter for logger
+        if self.strace_filter != None and self.output == QL_OUT_DEFAULT:
+
+            self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
+
         # debugger init
         if self.debugger is not None:
             try:
