@@ -455,7 +455,7 @@ def ql_open_flag_mapping(flags, ql):
 
 def print_function(ql, address, function_name, params, ret):
     function_name = function_name.replace('hook_', '')
-    if function_name in ("__stdio_common_vfprintf", "printf"):
+    if function_name in ("__stdio_common_vfprintf", "printf", "wsprintfW", "sprintf"):
         return
     log = '0x%0.2x: %s(' % (address, function_name)
     for each in params:

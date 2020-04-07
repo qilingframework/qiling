@@ -268,3 +268,52 @@ def hook_GetShortPathNameW(ql, address, params):
     else:
         ql.mem.write(dst, res)
     return len(res) - 1
+
+
+# BOOL GetVolumeInformationW(
+#   LPCWSTR lpRootPathName,
+#   LPWSTR  lpVolumeNameBuffer,
+#   DWORD   nVolumeNameSize,
+#   LPDWORD lpVolumeSerialNumber,
+#   LPDWORD lpMaximumComponentLength,
+#   LPDWORD lpFileSystemFlags,
+#   LPWSTR  lpFileSystemNameBuffer,
+#   DWORD   nFileSystemNameSize
+# );
+@winapi(cc=STDCALL, params={
+    "lpRootPathName": POINTER,
+    "lpVolumeNameBuffer": POINTER,
+    "nVolumeNameSize": DWORD,
+    "lpVolumeSerialNumber": POINTER,
+    "lpMaximumComponentLength": POINTER,
+    "lpFileSystemFlags": POINTER,
+    "lpFileSystemNameBuffer": POINTER,
+    "nFileSystemNameSize": DWORD
+})
+def hook_GetVolumeInformationW(ql, address, params):
+    root_pt = params["lpRootPathName"]
+    if root_pt != 0:
+        root = read_wstring(ql, root_pt)
+        pt_volume_name = params["lpVolumeNameBuffer"]
+        if pt_volume_name != 0:
+            # TODO implement
+            volume_name = ("AAAABBBB"+"\x00").encode("utf-16le")
+
+            ql.mem.write(pt_volume_name, volume_name)
+        pt_serial_number = params["lpVolumeSerialNumber"]
+        if pt_serial_number != 0:
+            # TODO maybe has to be int
+            serial_number = (ql.config["VOLUME"]["serial_number"] + "\x00").encode("utf-16le")
+            ql.mem.write(pt_serial_number, serial_number)
+        pt_system_type = params["lpFileSystemNameBuffer"]
+        pt_flag = params["lpFileSystemFlags"]
+        if pt_flag != 0:
+            # TODO implement
+            flag = 0x00020000.to_bytes(4, byteorder="little")
+            ql.mem.write(pt_flag, flag)
+        if pt_system_type != 0:
+            system_type = (ql.config["VOLUME"]["type"] + "\x00").encode("utf-16le")
+            ql.mem.write(pt_system_type, system_type)
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")
+    return 1

@@ -8,7 +8,8 @@
 class Handle:
     ID = 0xa0000000
 
-    def __init__(self, id=None, file=None, regkey=None, thread=None, service=None, token=None, sid=None):
+    def __init__(self, id=None, file=None, regkey=None, thread=None, service=None, token=None, sid=None,  mutex=None,
+                 name=None):
         if id is None:
             self.id = Handle.ID
             Handle.ID += 1
@@ -20,6 +21,8 @@ class Handle:
         self.service = service
         self.token = token
         self.sid = sid
+        self.mutex = mutex
+        self.name = name
 
     # rewrite "="
     def __eq__(self, other):
@@ -61,3 +64,11 @@ class HandleManager:
         key = self.handles.get(id, None)
         if key is not None:
             del self.handles[id]
+
+
+    def search(self, name):
+        for handle in self.handles:
+            if not isinstance(handle, int):
+                if handle.name == name:
+                    return handle
+        return None

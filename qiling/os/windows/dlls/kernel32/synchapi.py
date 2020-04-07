@@ -12,7 +12,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-
+from qiling.os.windows.structs import *
 
 # void Sleep(
 #  DWORD dwMilliseconds
@@ -147,22 +147,54 @@ def hook_WaitForMultipleObjects(ql, address, params):
 @winapi(cc=STDCALL, params={
     "dwDesiredAccess": DWORD,
     "bInheritHandle": BOOL,
-    "LPCWSTR": WSTRING
+    "lpName": WSTRING
 })
 def hook_OpenMutexW(ql, address, params):
-    type, name = params["LPCWSTR"].split("\\")
+    type, name = params["lpName"].split("\\")
     # The name can have a "Global" or "Local" prefix to explicitly open an object in the global or session namespace.
+    handle = ql.handle_manager.search(name)
     if type == "Global":
         # if is global is a Windows lock. We always return a valid handle because we have no way to emulate them
-        # TODO maybe create it? Not sure if is necessary
         # example sample: Gandcrab e42431d37561cc695de03b85e8e99c9e31321742
-        return 0xD10C
+        if handle is None:
+            return 0xD10C
+        else:
+            mutex = handle.mutex
+            if mutex.isFree():
+                mutex.lock()
+            else:
+                raise QlErrorNotImplemented("[!] API not implemented")
     else:
-        # TODO manage creation of mutex object if is necessary
-        mutex = ql.handle_manager.get(name)
-        if mutex is None:
+        if handle is None:
             # If a named mutex does not exist, the function fails and GetLastError returns ERROR_FILE_NOT_FOUND.
             ql.load_os.last_error  = ERROR_FILE_NOT_FOUND
             return 0
         else:
             raise QlErrorNotImplemented("[!] API not implemented")
+
+
+# HANDLE CreateMutexW(
+#   LPSECURITY_ATTRIBUTES lpMutexAttributes,
+#   BOOL                  bInitialOwner,
+#   LPCWSTR               lpName
+# );
+@winapi(cc=STDCALL, params={
+    "lpMutexAttributes": POINTER,
+    "bInitialOwner": BOOL,
+    "lpName": WSTRING
+})
+def hook_CreateMutexW(ql, address, params):
+    type, name = params["lpName"].split("\\")
+    owning = params["bInitialOwner"]
+    handle = ql.handle_manager.search(name)
+    if handle is not None:
+        ql.last_error = ERROR_ALREADY_EXISTS
+        return 0
+    else:
+        mutex = Mutex(name, type)
+        if owning:
+            mutex.lock()
+        handle = Handle(mutex=mutex, name=name)
+        ql.handle_manager.append(handle)
+
+    return handle.ID

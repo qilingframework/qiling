@@ -57,6 +57,6 @@ def hook_Process32FirstW(ql, address, params):
 })
 def hook_Process32NextW(ql, address, params):
     # Return True if more process, 0 else
-    if ql.PE.syscall_count["Process32NextW"] == 3:  # I don' know how many process the sample want's to cycle
+    if ql.PE.syscall_count["Process32NextW"] >= 3:  # I don' know how many process the sample want's to cycle
         return 0x0
     return 0x1

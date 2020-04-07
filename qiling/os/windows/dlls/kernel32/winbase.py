@@ -414,3 +414,45 @@ def hook_VerifyVersionInfoW(ql, address, params):
             ql.load_os.last_error  = ERROR_OLD_WIN_VERSION
             return 0
     return 1
+
+
+# BOOL GetUserNameW(
+#   LPWSTR  lpBuffer,
+#   LPDWORD pcbBuffer
+# );
+@winapi(cc=STDCALL, params={
+    "lpBuffer": POINTER,
+    "pcbBuffer": POINTER
+})
+def hook_GetUserNameW(ql, address, params):
+    username = (ql.config["USER"]["user"]+"\x00").encode("utf-16le")
+    dst = params["lpBuffer"]
+    max_size = params["pcbBuffer"]
+    ql.mem.write(max_size, len(username).to_bytes(4, byteorder="little"))
+    if len(username) > max_size:
+        ql.last_error = ERROR_INSUFFICIENT_BUFFER
+        return 0
+    else:
+        ql.mem.write(dst, username)
+    return 1
+
+
+# BOOL GetComputerNameW(
+#   LPWSTR  lpBuffer,
+#   LPDWORD nSize
+# );
+@winapi(cc=STDCALL, params={
+    "lpBuffer": POINTER,
+    "nSize": POINTER
+})
+def hook_GetComputerNameW(ql, address, params):
+    computer = (ql.config["SYSTEM"]["computer_name"] + "\x00").encode("utf-16le")
+    dst = params["lpBuffer"]
+    max_size = params["nSize"]
+    ql.mem.write(max_size, (len(computer)-2).to_bytes(4, byteorder="little"))
+    if len(computer) > max_size:
+        ql.last_error = ERROR_BUFFER_OVERFLOW
+        return 0
+    else:
+        ql.mem.write(dst, computer)
+    return 1
