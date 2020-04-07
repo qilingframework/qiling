@@ -120,6 +120,8 @@ class Qiling:
         self.log_split = False
         self.shellcode_init = 0
         self.entry_point = 0
+        # syscall filter for strace-like functionality
+        self.syscall_filter = None
 
         """
         Qiling Framework Core Engine
@@ -148,6 +150,7 @@ class Qiling:
 
         # Looger's configuration
         _logger = ql_setup_logging_stream(self)
+
 
         if self.log_dir is not None and type(self.log_dir) == str:
 
@@ -206,10 +209,15 @@ class Qiling:
         define file is 32 or 64bit, and check file endian
         QL_ENDIAN_EL = Little Endian
         big endian is define during ql_elf_check_archtype
+
+        since there is no elf for shellcoder mode
+        judge archendian by whether bigendian set or not
         """
         self.archbit = ql_get_arch_bits(self.arch)
         if self.arch not in (QL_ENDINABLE):
             self.archendian = QL_ENDIAN_EL
+        else:
+            self.archendian = QL_ENDIAN_BE if self.bigendian else QL_ENDIAN_EL
 
         # based on CPU bit and set pointer size
         if self.archbit:
@@ -248,6 +256,20 @@ class Qiling:
 
 
     def run(self):
+
+        # setup syscall filter for logger
+        if self.syscall_filter != None and self.output == QL_OUT_DEFAULT:
+
+            _logger = self.log_file_fd
+
+            class Syscall_filter(logging.Filter):
+                def __init__(self, syscall_names):
+                    self.syscall_list = syscall_names.split(",") if isinstance(syscall_names, str) else syscall_names
+                def filter(self, record):
+                    return any((record.getMessage().startswith(each) for each in self.syscall_list))
+
+            _logger.addFilter(Syscall_filter(self.syscall_filter))
+
         # debugger init
         if self.debugger is not None:
             try:
