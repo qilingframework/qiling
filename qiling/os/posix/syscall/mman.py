@@ -199,10 +199,12 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
     mmap_base = mmap_addr
     need_mmap = True
 
+    
     if mmap_addr != 0 and (mmap_addr < ql.mmap_start):
+        ql.dprint(0, "[+] mmap_addr 0x%x < ql.mmap_start 0x%x" %(mmap_addr, ql.mmap_start)) 
         need_mmap = False
 
-        # initial ql.mmap_start
+    # initial ql.mmap_start
     if mmap_addr == 0:
         mmap_base = ql.mmap_start
         ql.mmap_start = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
@@ -218,11 +220,17 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
             ql.mem.map(mmap_base, ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000)
         except:
             raise QlMemoryMappedError("[!] mapping needed but fail")
-
-    # FIXME: Big Endian Patch, write is failing
-    ql.mem.write(mmap_base, b'\x00' * (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
-
-
+ 
+    ql.dprint(0, "[+] mmap_addr 0x%x < ql.mmap_start 0x%x" %(mmap_addr, ql.mmap_start))
+    # FIXME: MIPS32 Big Endian
+    try:
+    #if ql.mem.is_mapped(mmap_base, ((((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))) == False:
+        ql.mem.write(mmap_base, b'\x00' * (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
+    except:
+        pass    
+    
+                
+    
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
     mem_info = '[mapped]'
@@ -248,7 +256,6 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
         mem_info = ql.file_des[mmap_fd].name
 
     ql.mem.add_mapinfo(mem_s, mem_e, mem_p, mem_info)
-
 
     ql.nprint("mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags,
                                                                mmap_fd, mmap_pgoffset, mmap_base))

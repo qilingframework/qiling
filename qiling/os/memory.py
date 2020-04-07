@@ -135,13 +135,13 @@ class QlMemoryManager:
         This function will reclaim the memory starting with addr and length of size.
         Upon successful completion, munmap() shall return 0; 
         otherwise, it shall return -1 and set errno to indicate the error.
-        '''        
-        return self.ql.uc.mem_unmap(addr, size)
+        '''
+        self.del_mapinfo(addr, addr + size)
+        self.ql.uc.mem_unmap(addr, size)
 
 
     def unmap_all(self):
         for region in list(self.ql.uc.mem_regions()):
-            print("start 0x%x end 0x%x"% (region[0],(region[1] - region[0])+0x1))
             if region[0] and region[1]:
                 return self.unmap(region[0], ((region[1] - region[0])+0x1))
 
@@ -303,6 +303,7 @@ class QlMemoryManager:
         '''
         if ptr == None:
             if self.is_mapped(addr, size) == False:
+               self.add_mapinfo(addr, addr + size, 'rw-', "[mapped]")
                self.ql.uc.mem_map(addr, size)
             else:
                 raise QlMemoryMappedError("[!] Memory Mapped")    

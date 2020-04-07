@@ -52,9 +52,9 @@ class QlPosixManager:
                 self.syscall_map(self.ql, param0, param1, param2, param3, param4, param5)
             except KeyboardInterrupt:
                 raise            
-            except Exception:
-                self.ql.nprint("[!] SYSCALL ERROR: ", self.syscall_name)
-                raise QlErrorSyscallError("[!] Syscall Implementation Error: %s" % (self.syscall_name))
+            except Exception as e:
+                self.ql.nprint("[!] Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
+                raise
         else:
             self.ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implemented" %(self.ql.pc, self.ql.syscall, self.ql.syscall))
             if self.ql.debug_stop:
