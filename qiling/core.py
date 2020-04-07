@@ -229,12 +229,14 @@ class Qiling:
         """
         Load architecture's module
         ql.pc, ql.sp and etc
+        FIXME: somehow self.arch = self.arch_setup() doesn't work
         """
-        arch = ql_get_archmanager_module_function(self.archtype)
+        arch = ql_arch_setup(self)   
         self.arch = arch(self)
 
         """
         Load memory module
+        FIXME: We need to refactor this
         """
         if self.archbit == 64:
             max_addr = 0xFFFFFFFFFFFFFFFF
@@ -248,14 +250,18 @@ class Qiling:
      
         """
         load os and perform initialization
+        FIXME: somehow self.os = self.os_setup() doesn't work
         """   
-        os = self.ql_get_os_module_function()        
+        os = self.os_setup()   
         self.os = os(self)
+
+        """
+        setup mem and call os loader function
+        """
         self.os.load()
 
 
     def run(self):
-
         # setup strace filter for logger
         if self.strace_filter != None and self.output == QL_OUT_DEFAULT:
 
@@ -343,8 +349,8 @@ class Qiling:
         return ql_asm2bytes(self, self.archtype, runasm, arm_thumb)
     
 
-    def ql_get_os_module_function(self, function_name = None):
-        return ql_get_os_module_function(self, function_name)
+    def os_setup(self, function_name = None):
+        return ql_os_setup(self, function_name)
 
     """
     replace linux or windows syscall/api with custom api/syscall

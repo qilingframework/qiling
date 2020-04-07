@@ -9,6 +9,8 @@ import string
 from qiling.const import *
 from qiling.exception import *
 
+from qiling.loader.loader import QlLoader
+
 PT_LOAD = 1
 PT_DYNAMIC = 2
 PT_INTERP = 3
@@ -44,7 +46,7 @@ AT_EXECFN = 31
 FILE_DES = []
 #MMAP_START = 0
 
-class ELFParse:
+class ELFParse(QlLoader):
     def __init__(self, path, ql):
         self.path = os.path.abspath(path)
         self.ql = ql

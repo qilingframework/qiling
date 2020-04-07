@@ -259,18 +259,12 @@ def ql_checkostype(self):
 
     return arch, ostype
 
-def ql_get_os_module_function(ql, function_name):
+def ql_os_setup(ql, function_name):
     if not ql_is_valid_ostype(ql.ostype):
         raise QlErrorOsType("[!] Invalid OSType")
 
     if not ql_is_valid_arch(ql.archtype):
         raise QlErrorArch("[!] Invalid Arch %s" % ql.archtype)
-    
-    # common os class, posix type OS share one same class
-    if ql.ostype in (QL_POSIX) and function_name == "posix":
-        module_name = ql_build_module_import_name("os", "posix", "posix")
-        function_name = "QlOsPosix"
-        return ql_get_module_function(module_name, function_name)
 
     if function_name == None:
         ostype_str = ql_ostype_convert_str(ql.ostype)
@@ -290,6 +284,16 @@ def ql_get_os_module_function(ql, function_name):
         module_name = ql_build_module_import_name("os", ql.ostype, ql.archtype)
         return ql_get_module_function(module_name, function_name)
 
+def ql_arch_setup(ql):
+    if not ql_is_valid_arch(ql.archtype):
+        raise QlErrorArch("[!] Invalid Arch")
+    
+    archmanager = ql_arch_convert_str(ql.archtype).upper()
+    archmanager = ("QlArch" + archmanager)
+
+    module_name = ql_build_module_import_name("arch", None, ql.archtype)
+    return ql_get_module_function(module_name, archmanager)
+
 
 def ql_get_arch_module_function(arch, function_name):
     if not ql_is_valid_arch(arch):
@@ -297,16 +301,6 @@ def ql_get_arch_module_function(arch, function_name):
     function_name = function_name.upper()    
     module_name = ql_build_module_import_name("arch", None, arch)
     return ql_get_module_function(module_name, function_name)
-
-def ql_get_archmanager_module_function(arch):
-    if not ql_is_valid_arch(arch):
-        raise QlErrorArch("[!] Invalid Arch")
-    
-    archmanager = ql_arch_convert_str(arch).upper()
-    archmanager = ("QlArch" + archmanager)
-
-    module_name = ql_build_module_import_name("arch", None, arch)
-    return ql_get_module_function(module_name, archmanager)
 
 
 def ql_build_module_import_name(module, ostype, arch = None):
@@ -322,7 +316,8 @@ def ql_build_module_import_name(module, ostype, arch = None):
         ret_str += "." + ostype_str
 
     if arch:
-        if module == "arch" and arch == QL_X8664:  # This is because X86_64 is bundled into X86 in arch
+        # This is because X86_64 is bundled into X86 in arch
+        if module == "arch" and arch == QL_X8664:  
             arch_str = "x86"
         elif type(arch) is int:
             arch_str = ql_arch_convert_str(arch)

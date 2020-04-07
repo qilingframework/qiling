@@ -85,13 +85,11 @@ class QlOsWindows(QlOs):
         self.ql.uc = self.ql.init_Uc
 
         if self.ql.archtype== QL_X8664:
-            #self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
             self.QL_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
             self.QL_WINDOWS_STACK_SIZE = 0x40000
             self.ql.code_address = 0x140000000
             self.ql.code_size = 10 * 1024 * 1024
         elif self.ql.archtype== QL_X86:        
-            #self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_32)
             self.QL_WINDOWS_STACK_ADDRESS = 0xfffdd000
             self.QL_WINDOWS_STACK_SIZE =0x21000 
             self.ql.code_address = 0x40000

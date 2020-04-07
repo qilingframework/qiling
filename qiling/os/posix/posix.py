@@ -27,7 +27,7 @@ class QlOsPosix(QlOs):
 
 
     def load_syscall(self, intno = None):
-        map_syscall = self.ql.ql_get_os_module_function(function_name = "map_syscall")
+        map_syscall = self.ql.os_setup(function_name = "map_syscall")
         
         if self.ql.archtype== QL_MIPS32:   
            if intno != 0x11:

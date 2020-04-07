@@ -15,8 +15,9 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.structs import *
 from qiling.exception import *
 
+from qiling.loader.loader import QlLoader
 
-class Process:
+class Process(QlLoader):
     def __init__(self, ql):
         self.ql = ql
         self.dlls = {}
