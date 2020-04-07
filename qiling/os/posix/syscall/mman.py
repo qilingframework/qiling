@@ -221,15 +221,13 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
         except:
             raise QlMemoryMappedError("[!] mapping needed but fail")
  
-    ql.dprint(0, "[+] mmap_addr 0x%x < ql.mmap_start 0x%x" %(mmap_addr, ql.mmap_start))
+    ql.dprint(0, "[+] mmap_base 0x%x  length 0x%x" %(mmap_base, (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000)))
+    
     # FIXME: MIPS32 Big Endian
     try:
-    #if ql.mem.is_mapped(mmap_base, ((((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))) == False:
         ql.mem.write(mmap_base, b'\x00' * (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000))
     except:
-        pass    
-    
-                
+        pass  
     
     mem_s = mmap_base
     mem_e = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
