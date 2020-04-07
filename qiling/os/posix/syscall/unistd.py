@@ -313,7 +313,7 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
 
     try:
         buf = ql.mem.read(write_buf, write_count)
-        ql.nprint("\nwrite(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
+        ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         if buf:
             ql.dprint(1, "[+] write() CONTENT:")
             ql.dprint(1, "%s" % buf)
