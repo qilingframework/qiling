@@ -56,7 +56,7 @@ matrix:
         - cd tests
       script:
         - python3 test_macho_macos.py
-        - ./test_nix.sh
+        #- ./test_nix.sh
         
     - name: "Python 3.6.8 on Windows"
       os: windows
