@@ -18,7 +18,7 @@ from qiling.exception import *
 })
 def hook_FatalExit(ql, address, params):
     ql.uc.emu_stop()
-    ql.load_os.PE_RUN = False
+    ql.os.PE_RUN = False
 
 
 # PVOID EncodePointer(
@@ -411,7 +411,7 @@ def hook_VerifyVersionInfoW(ql, address, params):
             raise QlErrorNotImplemented("[!] API not implemented")
         # The result is a AND between every value, so if we find a False we just exit from the loop
         if not res:
-            ql.load_os.last_error  = ERROR_OLD_WIN_VERSION
+            ql.os.last_error  = ERROR_OLD_WIN_VERSION
             return 0
     return 1
 

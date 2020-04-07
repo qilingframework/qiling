@@ -5,7 +5,7 @@
 from unicorn import *
 from unicorn.arm_const import *
 from struct import pack
-from .arch import QlArchManager
+from .arch import QlArch
 
 from qiling.const import *
 from unicorn import *
@@ -17,9 +17,9 @@ def ql_arm_check_thumb(uc, reg_cpsr):
         mode = UC_MODE_THUMB
         return mode
 
-class QlArchARMManager(QlArchManager):
+class QlArchARM(QlArch):
     def __init__(self, ql):
-        super(QlArchARMManager, self).__init__(ql)
+        super(QlArchARM, self).__init__(ql)
 
 
     def stack_push(self, value):

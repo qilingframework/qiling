@@ -5,16 +5,16 @@
 from unicorn import *
 from unicorn.x86_const import *
 from struct import pack
-from .arch import QlArchManager
+from .arch import QlArch
 from qiling.arch.x86_const import *
 
 from qiling.const import *
 from unicorn import *
 from unicorn.arm_const import *
 
-class QlArchX86Manager(QlArchManager):
+class QlArchX86(QlArch):
     def __init__(self, ql):
-        super(QlArchX86Manager, self).__init__(ql)
+        super(QlArchX86, self).__init__(ql)
 
 
     def stack_push(self, value):
@@ -170,9 +170,9 @@ class QlArchX86Manager(QlArchManager):
         # invalid
         return None
 
-class QlArchX8664Manager(QlArchManager):
+class QlArchX8664(QlArch):
     def __init__(self, ql):
-        super(QlArchX8664Manager, self).__init__(ql)
+        super(QlArchX8664, self).__init__(ql)
 
 
     def stack_push(self, value):

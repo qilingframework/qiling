@@ -259,25 +259,33 @@ def ql_checkostype(self):
 
     return arch, ostype
 
-def ql_get_os_module_function(ql, function_name = None):
+def ql_get_os_module_function(ql, function_name):
     if not ql_is_valid_ostype(ql.ostype):
         raise QlErrorOsType("[!] Invalid OSType")
 
     if not ql_is_valid_arch(ql.archtype):
         raise QlErrorArch("[!] Invalid Arch %s" % ql.archtype)
     
+    # common os class, posix type OS share one same class
+    if ql.ostype in (QL_POSIX) and function_name == "posix":
+        module_name = ql_build_module_import_name("os", "posix", "posix")
+        function_name = "QlOsPosix"
+        return ql_get_module_function(module_name, function_name)
+
     if function_name == None:
         ostype_str = ql_ostype_convert_str(ql.ostype)
         ostype_str = ostype_str.capitalize()
-        function_name = "QlOs" + ostype_str + "Manager"
+        function_name = "QlOs" + ostype_str
         module_name = ql_build_module_import_name("os", ql.ostype)
-        return ql_get_module_function(module_name, function_name, ql)
+        return ql_get_module_function(module_name, function_name)
+    
     elif function_name == "map_syscall":
         ostype_str = ql_ostype_convert_str(ql.ostype)
         arch_str = ql_arch_convert_str(ql.archtype)
         arch_str = arch_str + "_syscall"
         module_name = ql_build_module_import_name("os", ostype_str, arch_str)
         return ql_get_module_function(module_name, function_name)
+    
     else:
         module_name = ql_build_module_import_name("os", ql.ostype, ql.archtype)
         return ql_get_module_function(module_name, function_name)
@@ -295,24 +303,11 @@ def ql_get_archmanager_module_function(arch):
         raise QlErrorArch("[!] Invalid Arch")
     
     archmanager = ql_arch_convert_str(arch).upper()
-    archmanager = ("QlArch" + archmanager + "Manager")
+    archmanager = ("QlArch" + archmanager)
 
     module_name = ql_build_module_import_name("arch", None, arch)
     return ql_get_module_function(module_name, archmanager)
 
-
-def ql_get_commonos_module_function(ostype):
-    if not ql_is_valid_ostype(ostype):
-        raise QlErrorOsType("[!] Invalid OSType")
-    
-    # common os class, posix type OS share one same class
-    if ostype in (QL_POSIX):
-        module_name = ql_build_module_import_name("os", "posix", "posix")
-        func_name = "QlOsPosixManager"
-    else:
-        module_name = ""    
-    if module_name: 
-        return ql_get_module_function(module_name, func_name)
 
 def ql_build_module_import_name(module, ostype, arch = None):
     ret_str = "qiling." + module
@@ -338,9 +333,7 @@ def ql_build_module_import_name(module, ostype, arch = None):
     return ret_str
 
 
-def ql_get_module_function(module_name, function_name = None, ql = None):
-    if function_name == None and ql:
-        pass
+def ql_get_module_function(module_name, function_name = None):
     try:
         imp_module = importlib.import_module(module_name)
     except:

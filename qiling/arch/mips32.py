@@ -5,15 +5,15 @@
 from unicorn import *
 from unicorn.mips_const import *
 from struct import pack
-from .arch import QlArchManager
+from .arch import QlArch
 
 from qiling.const import *
 from unicorn import *
 from unicorn.arm_const import *
 
-class QlArchMIPS32Manager(QlArchManager):
+class QlArchMIPS32(QlArch):
     def __init__(self, ql):
-        super(QlArchMIPS32Manager, self).__init__(ql)
+        super(QlArchMIPS32, self).__init__(ql)
 
 
     def stack_push(self, value):

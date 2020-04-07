@@ -18,15 +18,17 @@ from qiling.const import *
 from qiling.os.freebsd.const import *
 from qiling.os.const import *
 
-class QlOsFreebsdManager:
-    
+from qiling.os.posix.posix import QlOsPosix
+
+class QlOsFreebsd(QlOsPosix):
     def __init__(self, ql):
+        super(QlOsFreebsd, self).__init__(ql)
         self.ql = ql
 
     def hook_syscall(self, intno= None):
-        return self.ql.comm_os.load_syscall()
+        return self.ql.os.load_syscall()
 
-    def loader(self):
+    def load(self):
         """
         initiate UC needs to be in loader,
         or else it will kill execve
@@ -76,7 +78,7 @@ class QlOsFreebsdManager:
         ql_x8664_setup_gdt_segment_ss(self.ql)
 
 
-    def runner(self):
+    def run(self):
         if (self.ql.until_addr == 0):
             self.ql.until_addr = QL_ARCHBIT64_EMU_END
         try:

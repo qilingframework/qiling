@@ -23,19 +23,19 @@ from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.const import *
 from qiling.os.macos.const import *
+from qiling.os.posix.posix import QlOsPosix
 
-
-class QlOsMacosManager:
-    
+class QlOsMacos(QlOsPosix):
     def __init__(self, ql):
+        super(QlOsMacos, self).__init__(ql)
         self.ql = ql
 
 
     def hook_syscall(self, intno= None, int = None):
-        return self.ql.comm_os.load_syscall()
+        return self.load_syscall()
  
 
-    def loader(self):
+    def load(self):
         """
         initiate UC needs to be in loader,
         or else it will kill execve
@@ -90,7 +90,7 @@ class QlOsMacosManager:
             self.ql.stack_address = (int(self.ql.stack_sp))
         
 
-    def runner(self):
+    def run(self):
         if self.ql.archtype== QL_ARM64:
             self.ql.register(UC_ARM64_REG_SP, self.ql.stack_address)
             self.ql.arch.enable_vfp()

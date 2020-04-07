@@ -206,17 +206,18 @@ class Qiling:
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
 
         """
-        define file is 32 or 64bit, and check file endian
-        QL_ENDIAN_EL = Little Endian
-        big endian is define during ql_elf_check_archtype
-
-        since there is no elf for shellcoder mode
-        judge archendian by whether bigendian set or not
+        Define file is 32 or 64bit and check file endian
+        QL_ENDIAN_EL = Little Endian || QL_ENDIAN_EB = Big Endian
+        QL_ENDIAN_EB is define during ql_elf_check_archtype()
         """
         self.archbit = ql_get_arch_bits(self.archtype)
         if self.archtype not in (QL_ENDINABLE):
             self.archendian = QL_ENDIAN_EL
-        if self.shellcoder and self.bigendian == True:
+        
+        """
+        Endian for shellcode needs to set manually
+        """
+        if self.shellcoder and self.bigendian == True and self.archtype in (QL_ENDINABLE):
             self.archendian = QL_ENDIAN_EB
         elif self.shellcoder:
             self.archendian = QL_ENDIAN_EL
@@ -227,19 +228,14 @@ class Qiling:
 
         """
         Load architecture's module
+        ql.pc, ql.sp and etc
         """
         arch = ql_get_archmanager_module_function(self.archtype)
         self.arch = arch(self)
 
-
         """
-        Load common os module
-        ql.pc, ql.sp and etc
+        Load memory module
         """
-        comm_os = ql_get_commonos_module_function(self.ostype)
-        if comm_os:
-            self.comm_os = comm_os(self)
-
         if self.archbit == 64:
             max_addr = 0xFFFFFFFFFFFFFFFF
         elif self.archbit == 32:
@@ -249,11 +245,13 @@ class Qiling:
         except:
             raise QlErrorArch("[!] Cannot load Memory Management module")    
 
-       
-        # load os and perform initialization
-        load_os = ql_get_os_module_function(self)        
-        self.load_os = load_os(self)
-        self.load_os.loader()
+     
+        """
+        load os and perform initialization
+        """   
+        os = self.ql_get_os_module_function()        
+        self.os = os(self)
+        self.os.load()
 
 
     def run(self):
@@ -294,7 +292,7 @@ class Qiling:
         self.__enable_bin_patch()
 
         # run the binary
-        self.load_os.runner()     
+        self.os.run()     
 
         # resume with debugger
         if self.debugger is not None:
@@ -344,6 +342,10 @@ class Qiling:
     def asm2bytes(self, runasm, arm_thumb=None):
         return ql_asm2bytes(self, self.archtype, runasm, arm_thumb)
     
+
+    def ql_get_os_module_function(self, function_name = None):
+        return ql_get_os_module_function(self, function_name)
+
     """
     replace linux or windows syscall/api with custom api/syscall
     if replace function name is needed, first syscall must be available
@@ -353,10 +355,10 @@ class Qiling:
     def set_syscall(self, syscall_cur, syscall_new):
         if self.ostype in (QL_POSIX):
             if isinstance(syscall_cur, int):
-                self.comm_os.dict_posix_syscall_by_num[syscall_cur] = syscall_new
+                self.os.dict_posix_syscall_by_num[syscall_cur] = syscall_new
             else:
                 syscall_name = "ql_syscall_" + str(syscall_cur)
-                self.comm_os.dict_posix_syscall[syscall_name] = syscall_new
+                self.os.dict_posix_syscall[syscall_name] = syscall_new
         elif self.ostype == QL_WINDOWS:
             self.set_api(syscall_cur, syscall_new)
 
@@ -364,7 +366,7 @@ class Qiling:
     # replace Windows API with custom syscall
     def set_api(self, syscall_cur, syscall_new):
         if self.ostype == QL_WINDOWS:
-            self.load_os.user_defined_api[syscall_cur] = syscall_new
+            self.os.user_defined_api[syscall_cur] = syscall_new
         elif self.ostype in (QL_POSIX):
             self.set_syscall(syscall_cur, syscall_new)
 
@@ -667,12 +669,12 @@ class Qiling:
     # ql.syscall - get syscall for all posix series
     @property
     def syscall(self):
-        return self.comm_os.get_syscall()
+        return self.os.get_syscall()
 
     # ql.syscall_param - get syscall for all posix series
     @property
     def syscall_param(self):
-        return self.comm_os.get_syscall_param()
+        return self.os.get_syscall_param()
 
     # ql.reg_pc - PC register name getter
     @property

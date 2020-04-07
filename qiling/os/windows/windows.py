@@ -16,9 +16,11 @@ from qiling.os.windows.dlls import *
 from qiling.os.windows.const import *
 from qiling.os.windows.const import Mapper
 
-class QlOsWindowsManager:
-    
+from qiling.os.os import QlOs
+
+class QlOsWindows(QlOs):
     def __init__(self, ql):
+        super(QlOsWindows, self).__init__(ql)
         self.ql = ql
         self.user_defined_api = {}
         
@@ -75,7 +77,7 @@ class QlOsWindowsManager:
                     raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
 
-    def loader(self):
+    def load(self):
         """
         initiate UC needs to be in loader, or else it will kill execve
         Note: This is Windows, but for the sake of same with others OS
@@ -114,7 +116,7 @@ class QlOsWindowsManager:
         
 
 
-    def runner(self):
+    def run(self):
         ql_setup_output(self.ql)
         if self.ql.until_addr == 0:
             if self.ql.archbit == 32:

@@ -22,7 +22,7 @@ from qiling.os.windows.structs import *
 })
 def hook_ExitProcess(ql, address, params):
     ql.uc.emu_stop()
-    ql.load_os.PE_RUN = False
+    ql.os.PE_RUN = False
 
 
 # typedef struct _STARTUPINFO {
@@ -114,7 +114,7 @@ def hook_TlsAlloc(ql, address, params):
 def hook_TlsFree(ql, address, params):
     idx = params['dwTlsIndex']
     if idx not in ql.thread_manager.current_thread.tls:
-        ql.load_os.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
+        ql.os.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
         del (ql.thread_manager.current_thread.tls[idx])
@@ -129,12 +129,12 @@ def hook_TlsFree(ql, address, params):
 def hook_TlsGetValue(ql, address, params):
     idx = params['dwTlsIndex']
     if idx not in ql.thread_manager.current_thread.tls:
-        ql.load_os.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
+        ql.os.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
         # api explicity clears last error on success:
         # https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-tlsgetvalue
-        ql.load_os.last_error
+        ql.os.last_error
         return ql.thread_manager.current_thread.tls[idx]
 
 
@@ -148,7 +148,7 @@ def hook_TlsGetValue(ql, address, params):
 def hook_TlsSetValue(ql, address, params):
     idx = params['dwTlsIndex']
     if idx not in ql.thread_manager.current_thread.tls:
-        ql.load_os.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
+        ql.os.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
         ql.thread_manager.current_thread.tls[idx] = params['lpTlsValue']
@@ -260,9 +260,9 @@ def hook_GetCurrentProcess(ql, address, params):
 def hook_TerminateProcess(ql, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
-    if process == 0x0 or process == ql.load_os.DEFAULT_IMAGE_BASE:
+    if process == 0x0 or process == ql.os.DEFAULT_IMAGE_BASE:
         ql.uc.emu_stop()
-        ql.load_os.PE_RUN = False
+        ql.os.PE_RUN = False
     ret = 1
     return ret
 
@@ -290,7 +290,7 @@ def hook_OpenProcess(ql, address, params):
     # If the specified process is the System Process (0x00000000),
     # the function fails and the last error code is ERROR_INVALID_PARAMETER
     if proc == 0:
-        ql.load_os.last_error  = ERROR_INVALID_PARAMETER
+        ql.os.last_error  = ERROR_INVALID_PARAMETER
         return 0
     return 0xD10C
 
