@@ -37,7 +37,6 @@ class QlOsPosix(QlOs):
     # ql.syscall_param - get syscall for all posix series
     @property
     def syscall_param(self):
-        print(self.get_syscall_param())
         return self.get_syscall_param()
 
 

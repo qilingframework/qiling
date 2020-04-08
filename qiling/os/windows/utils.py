@@ -171,7 +171,7 @@ def randomize_config_value(ql, key, subkey):
         for path in ql.config["PATHS"]:
             val = ql.config["PATHS"][path].replace(old_name, new_name)
             ql.config["PATHS"][path] = val
-            print(ql.config["PATHS"][path])
+            ql.dprint(0, ql.config["PATHS"][path])
     elif key == "SYSTEM" and subkey == "computer_name":
         length = random.randint(0, 15)
         new_name = ""

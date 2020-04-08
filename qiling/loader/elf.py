@@ -572,7 +572,7 @@ class ELFLoader(ELFParse):
         ql.mem.write(int(new_stack - len(elf_table)), elf_table)
         new_stack = new_stack - len(elf_table)
 
-        # print("rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
+        # ql.dprint(0, "rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
         # ql.register(UC_X86_REG_RDI, new_stack + 8)
 
         # for i in range(120):
