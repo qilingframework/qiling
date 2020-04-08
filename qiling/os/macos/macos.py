@@ -108,7 +108,7 @@ class QlOsMacos(QlOsPosix):
             ql_x8664_setup_gdt_segment_ss(self.ql)
         
         ql_setup_output(self.ql)
-        # vm_shared_region_enter(self.ql)
+        vm_shared_region_enter(self.ql)
         map_commpage(self.ql)
         self.ql.macho_thread = MachoThread()
         
