@@ -7,9 +7,12 @@
 # https://opensource.apple.com/source/cctools/cctools-795/include/mach-o/loader.h
 
 # magic
-MAGIC_32                = 0xFEEDFACE
-MAGIC_64                = 0xFEEDFACF
-MAGIC_FAT               = 0xBEBAFECA
+# MAGIC_32                = 0xFEEDFACE
+# MAGIC_64                = 0xFEEDFACF
+# MAGIC_FAT               = 0xBEBAFECA
+MAGIC_32                = [0xFEEDFACE, 0xCEFAEDFE]
+MAGIC_64                = [0xFEEDFACF, 0xCFFAEDFE]
+MAGIC_FAT               = [0xBEBAFECA, 0xCAFEBABE]
 
 # cpu type
 CPU_TYPE_X8664          = 0x01000007
