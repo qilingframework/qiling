@@ -52,16 +52,16 @@ class MachoParser:
 
         self.magic = self.getMagic(self.binary_file)
         
-        if self.magic == MAGIC_64:
+        if self.magic in MAGIC_64:
             self.ql.dprint(0, "[+] Got a 64bit Header ")
             self.header = BinaryHeader(self.binary_file)
 
-        #elif self.magic == MAGIC_X86:
+        #elif self.magic in MAGIC_X86:
         #    # x86
         #    self.ql.dprint(0,"[+] Got a x86 Header") 
         #    self.header = BinaryHeader(self.binary_file)
 
-        elif self.magic == MAGIC_FAT:
+        elif self.magic in MAGIC_FAT:
             # fat 
             self.ql.dprint(0, "[+] Got a fat header")
             fat = FatHeader(self.binary_file)
