@@ -123,6 +123,7 @@ class Qiling:
         # syscall filter for strace-like functionality
         self.strace_filter = None
 
+
         """
         Qiling Framework Core Engine
         """
@@ -245,13 +246,10 @@ class Qiling:
         """
         Load architecture's and os module
         ql.pc, ql.sp and etc
-        FIXME: somehow self.arch = self.arch_setup() doesn't work
-        FIXME: somehow self.os = self.os_setup() doesn't work
         """
-        self.arch = self.arch_setup()(self)
-        self.os = self.os_setup()(self)
 
-        #self.os.load()
+        self.arch = self.arch_setup()
+        self.os = self.os_setup()
 
     # setting up arch
     def arch_setup(self):

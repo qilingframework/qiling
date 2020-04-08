@@ -271,7 +271,7 @@ def ql_os_setup(ql, function_name = None):
         ostype_str = ostype_str.capitalize()
         function_name = "QlOs" + ostype_str
         module_name = ql_build_module_import_name("os", ql.ostype)
-        return ql_get_module_function(module_name, function_name)
+        return ql_get_module_function(module_name, function_name)(ql)
     
     elif function_name == "map_syscall":
         ostype_str = ql_ostype_convert_str(ql.ostype)
@@ -292,7 +292,7 @@ def ql_arch_setup(ql):
     archmanager = ("QlArch" + archmanager)
 
     module_name = ql_build_module_import_name("arch", None, ql.archtype)
-    return ql_get_module_function(module_name, archmanager)
+    return ql_get_module_function(module_name, archmanager)(ql)
 
 
 def ql_get_arch_module_function(arch, function_name):

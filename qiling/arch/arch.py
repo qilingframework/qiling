@@ -3,10 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+from qiling.utils import *
+
 class QlArch:
     def __init__(self, ql):
         self.ql = ql
 
+
+    # get initialized unicorn engine
+    def get_Uc(self):
+        pass
 
     # push value to stack
     def stack_push(self, value):
