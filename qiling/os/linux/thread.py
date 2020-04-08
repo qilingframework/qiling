@@ -3,16 +3,26 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+from ..utils import ql_setup_logging_file, ql_setup_logging_stream, ql_setup_logger
 import os, time
 
-from qiling.utils import ql_setup_logging_file, ql_setup_logging_stream, ql_setup_logger
-from qiling.os.thread import *
+THREAD_EVENT_INIT_VAL = 0
+THREAD_EVENT_EXIT_EVENT = 1
+THREAD_EVENT_UNEXECPT_EVENT = 2
+THREAD_EVENT_EXECVE_EVENT = 3
+THREAD_EVENT_CREATE_THREAD = 4
+THREAD_EVENT_BLOCKING_EVENT = 5
+THREAD_EVENT_EXIT_GROUP_EVENT = 6
+
+THREAD_STATUS_RUNNING = 0
+THREAD_STATUS_BLOCKING = 1
+THREAD_STATUS_TERMINATED = 2
+THREAD_STATUS_TIMEOUT = 3
 
 #GLOBAL_THREAD_ID = 0
 
-class QlThreadLinux(QlThread):
+class Thread:
     def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, special_settings_arg = None, special_settings_fuc = None, set_child_tid_addr = None):
-        super(QlThreadLinux, self).__init__(ql)
         #global GLOBAL_THREAD_ID
         if ql.global_thread_id == 0:
             ql.global_thread_id = os.getpid() + 1000
@@ -235,9 +245,8 @@ class QlThreadLinux(QlThread):
         self.current_path = path
         
 
-class QlThreadManagementLinux(QlThreadManagement):
+class ThreadManagement:
     def __init__(self, ql, time_slice = 1000):
-        super(QlThreadManagementLinux, self).__init__(ql)
         self.cur_thread = None
         self.running_thread_list = []
         self.ending_thread_list = []
