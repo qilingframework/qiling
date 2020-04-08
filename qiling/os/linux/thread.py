@@ -127,7 +127,7 @@ class Thread:
         if self.total_time != 0 and self.runing_time >= self.total_time:
             self.status = THREAD_STATUS_TIMEOUT
         
-        if self.ql.archfunc.get_pc() == self.until_addr:
+        if self.ql.arch.get_pc() == self.until_addr:
             self.stop()
             self.stop_event = THREAD_EVENT_EXIT_EVENT
         
@@ -135,11 +135,11 @@ class Thread:
     
     def suspend(self):
         self.context = self.ql.uc.context_save()
-        self.start_address = self.ql.archfunc.get_pc()
+        self.start_address = self.ql.arch.get_pc()
     
     def save(self):
         self.context = self.ql.uc.context_save()
-        self.start_address = self.ql.archfunc.get_pc()
+        self.start_address = self.ql.arch.get_pc()
     
     def set_start_address(self, addr):
         old_context = self.ql.uc.context_save()
@@ -284,7 +284,7 @@ class ThreadManagement:
 
                     if self.running_thread_list[i].is_running():
                         if self.running_thread_list[i].stop_event == THREAD_EVENT_CREATE_THREAD:
-                            new_pc = self.ql.archfunc.get_pc()
+                            new_pc = self.ql.arch.get_pc()
                             self.cur_thread.stop_return_val.set_start_address(new_pc)
                             self.add_running_thread(self.cur_thread.stop_return_val)
                             self.cur_thread.stop_return_val = None

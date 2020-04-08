@@ -285,9 +285,9 @@ class ELFTest(unittest.TestCase):
 
     # FIXME: Still having issue with test_elf_linux_mips32
     def test_elf_linux_mips32_static(self):
-        ql = Qiling(["../examples/rootfs/mips32_linux/bin/mips32_hello_static"], "../examples/rootfs/mips32_linux")
-        ql.run()
-        del ql
+       ql = Qiling(["../examples/rootfs/mips32_linux/bin/mips32_hello_static"], "../examples/rootfs/mips32_linux")
+       ql.run()
+       del ql
 
 
     def test_elf_linux_arm64_posix_syscall(self):

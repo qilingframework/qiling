@@ -506,7 +506,7 @@ def hook_wsprintfW(ql, address, params):
     size, string = printf(ql, address, format_string, p_args, "wsprintfW", wstring=True)
 
     count = format_string.count('%')
-    if ql.arch == QL_X8664:
+    if ql.archtype== QL_X8664:
         # We must pop the stack correctly
         raise QlErrorNotImplemented("[!] API not implemented")
 
@@ -525,7 +525,7 @@ def hook_sprintf(ql, address, params):
     size, string = printf(ql, address, format_string, p_args, "sprintf", wstring=True)
 
     count = format_string.count('%')
-    if ql.arch == QL_X8664:
+    if ql.archtype== QL_X8664:
         # We must pop the stack correctly
         raise QlErrorNotImplemented("[!] API not implemented")
 

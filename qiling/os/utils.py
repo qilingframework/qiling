@@ -29,6 +29,32 @@ from binascii import unhexlify
 import ipaddress, struct, os, ctypes
 import configparser
 
+def ql_os_setup(ql, function_name = None):
+    if not ql_is_valid_ostype(ql.ostype):
+        raise QlErrorOsType("[!] Invalid OSType")
+
+    if not ql_is_valid_arch(ql.archtype):
+        raise QlErrorArch("[!] Invalid Arch %s" % ql.archtype)
+
+    if function_name == None:
+        ostype_str = ql_ostype_convert_str(ql.ostype)
+        ostype_str = ostype_str.capitalize()
+        function_name = "QlOs" + ostype_str
+        module_name = ql_build_module_import_name("os", ql.ostype)
+        return ql_get_module_function(module_name, function_name)(ql)
+    
+    elif function_name == "map_syscall":
+        ostype_str = ql_ostype_convert_str(ql.ostype)
+        arch_str = ql_arch_convert_str(ql.archtype)
+        arch_str = arch_str + "_syscall"
+        module_name = ql_build_module_import_name("os", ostype_str, arch_str)
+        return ql_get_module_function(module_name, function_name)
+    
+    else:
+        module_name = ql_build_module_import_name("os", ql.ostype, ql.archtype)
+        return ql_get_module_function(module_name, function_name)
+
+
 def ql_lsbmsb_convert(ql, sc, size=4):
     split_bytes = []
     n = size
@@ -42,20 +68,20 @@ def ql_lsbmsb_convert(ql, sc, size=4):
     return ebsc    
 
 def ql_definesyscall_return(ql, regreturn):
-    if (ql.arch == QL_ARM):  # QL_ARM
+    if (ql.archtype== QL_ARM):  # QL_ARM
         ql.register(UC_ARM_REG_R0, regreturn)
         # ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
 
-    elif (ql.arch == QL_ARM64):  # QL_ARM64
+    elif (ql.archtype== QL_ARM64):  # QL_ARM64
         ql.register(UC_ARM64_REG_X0, regreturn)
 
-    elif (ql.arch == QL_X86):  # QL_X86
+    elif (ql.archtype== QL_X86):  # QL_X86
         ql.register(UC_X86_REG_EAX, regreturn)
 
-    elif (ql.arch == QL_X8664):  # QL_X86_64
+    elif (ql.archtype== QL_X8664):  # QL_X86_64
         ql.register(UC_X86_REG_RAX, regreturn)
 
-    elif (ql.arch == QL_MIPS32):  # QL_MIPSE32EL
+    elif (ql.archtype== QL_MIPS32):  # QL_MIPSE32EL
         if regreturn == -1:
             a3return = 1
         elif regreturn == 2:
@@ -118,10 +144,9 @@ def ql_hook_block_disasm(ql, address, size):
 
 
 def ql_hook_code_disasm(ql, address, size):
-    uc = ql.uc
-    tmp = uc.mem_read(address, size)
+    tmp = ql.mem.read(address, size)
 
-    if (ql.arch == QL_ARM):  # QL_ARM
+    if (ql.archtype== QL_ARM):  # QL_ARM
         reg_cpsr = ql.register(UC_ARM_REG_CPSR)
         mode = CS_MODE_ARM
         if ql.archendian == QL_ENDIAN_EB:
@@ -139,16 +164,16 @@ def ql_hook_code_disasm(ql, address, size):
         else:
             md = Cs(CS_ARCH_ARM, mode)
 
-    elif (ql.arch == QL_X86):  # QL_X86
+    elif (ql.archtype== QL_X86):  # QL_X86
         md = Cs(CS_ARCH_X86, CS_MODE_32)
 
-    elif (ql.arch == QL_X8664):  # QL_X86_64
+    elif (ql.archtype== QL_X8664):  # QL_X86_64
         md = Cs(CS_ARCH_X86, CS_MODE_64)
 
-    elif (ql.arch == QL_ARM64):  # QL_ARM64
+    elif (ql.archtype== QL_ARM64):  # QL_ARM64
         md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 
-    elif (ql.arch == QL_MIPS32):  # QL_MIPS32
+    elif (ql.archtype== QL_MIPS32):  # QL_MIPS32
         if ql.archendian == QL_ENDIAN_EB:
             md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
         else:
@@ -430,7 +455,7 @@ def ql_open_flag_mapping(flags, ql):
         'O_DIRECTORY': 0x100000,
     }
 
-    if ql.arch != QL_MIPS32:
+    if ql.archtype!= QL_MIPS32:
         if ql.platform == None or ql.platform == ql.ostype:
             return flags
 
@@ -442,11 +467,11 @@ def ql_open_flag_mapping(flags, ql):
             f = mac_open_flags
             t = linux_open_flags
 
-    elif ql.arch == QL_MIPS32 and ql.platform == QL_LINUX:
+    elif ql.archtype== QL_MIPS32 and ql.platform == QL_LINUX:
         f = mips32el_open_flags
         t = linux_open_flags
 
-    elif ql.arch == QL_MIPS32 and ql.platform == QL_MACOS:
+    elif ql.archtype== QL_MIPS32 and ql.platform == QL_MACOS:
         f = mips32el_open_flags
         t = mac_open_flags
 

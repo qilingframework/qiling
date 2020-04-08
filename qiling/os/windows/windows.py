@@ -16,19 +16,26 @@ from qiling.os.windows.dlls import *
 from qiling.os.windows.const import *
 from qiling.os.windows.const import Mapper
 
-class QlOsWindowsManager:
-    
+from qiling.os.os import QlOs
+
+class QlOsWindows(QlOs):
     def __init__(self, ql):
+        super(QlOsWindows, self).__init__(ql)
         self.ql = ql
         self.user_defined_api = {}
-        
-        if self.ql.arch == QL_X86:
+        self.ql.os = self
+        self.load()
+        # variables used inside hooks
+        self.hooks_variables = {}
+
+    def load(self):        
+        if self.ql.archtype== QL_X86:
             self.STRUCTERS_LAST_ADDR = FS_SEGMENT_ADDR
             self.DEFAULT_IMAGE_BASE = 0x400000
             self.HEAP_BASE_ADDR = 0x5000000
             self.HEAP_SIZE = 0x5000000
             self.DLL_BASE_ADDR = 0x10000000
-        elif self.ql.arch == QL_X8664:
+        elif self.ql.archtype== QL_X8664:
             self.STRUCTERS_LAST_ADDR = GS_SEGMENT_ADDR 
             self.DEFAULT_IMAGE_BASE = 0x400000
             self.HEAP_BASE_ADDR = 0x500000000
@@ -41,6 +48,40 @@ class QlOsWindowsManager:
         self.DLL_LAST_ADDR = self.DLL_BASE_ADDR
         self.PE_RUN = True
         self.last_error = 0
+
+        """
+        initiate UC needs to be in loader, or else it will kill execve
+        Note: This is Windows, but for the sake of same with others OS
+        """
+        self.ql.uc = self.ql.arch.init_uc
+
+        if self.ql.archtype== QL_X8664:
+            self.QL_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
+            self.QL_WINDOWS_STACK_SIZE = 0x40000
+            self.ql.code_address = 0x140000000
+            self.ql.code_size = 10 * 1024 * 1024
+        elif self.ql.archtype== QL_X86:        
+            self.QL_WINDOWS_STACK_ADDRESS = 0xfffdd000
+            self.QL_WINDOWS_STACK_SIZE =0x21000 
+            self.ql.code_address = 0x40000
+            self.ql.code_size = 10 * 1024 * 1024
+
+        if self.ql.stack_address == 0:
+            self.ql.stack_address = self.QL_WINDOWS_STACK_ADDRESS
+        if self.ql.stack_size == 0:
+            self.ql.stack_size = self.QL_WINDOWS_STACK_SIZE            
+        
+        setup(self)
+        
+        if self.ql.shellcoder:
+            self.ql.PE = Shellcode(self.ql, [b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
+        else:
+            self.ql.PE = PE(self.ql, self.ql.path)
+       
+        self.ql.PE.load()
+        # hook win api
+        self.ql.hook_code(self.hook_winapi)
+
 
     # hook WinAPI in PE EMU
     def hook_winapi(self, int, address, size):
@@ -75,46 +116,8 @@ class QlOsWindowsManager:
                     raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
 
-    def loader(self):
-        """
-        initiate UC needs to be in loader, or else it will kill execve
-        Note: This is Windows, but for the sake of same with others OS
-        """
-        self.ql.uc = self.ql.init_Uc
 
-        if self.ql.arch == QL_X8664:
-            #self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_64)
-            self.QL_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
-            self.QL_WINDOWS_STACK_SIZE = 0x40000
-            self.ql.code_address = 0x140000000
-            self.ql.code_size = 10 * 1024 * 1024
-        elif self.ql.arch == QL_X86:        
-            #self.ql.uc = Uc(UC_ARCH_X86, UC_MODE_32)
-            self.QL_WINDOWS_STACK_ADDRESS = 0xfffdd000
-            self.QL_WINDOWS_STACK_SIZE =0x21000 
-            self.ql.code_address = 0x40000
-            self.ql.code_size = 10 * 1024 * 1024
-
-        if self.ql.stack_address == 0:
-            self.ql.stack_address = self.QL_WINDOWS_STACK_ADDRESS
-        if self.ql.stack_size == 0:
-            self.ql.stack_size = self.QL_WINDOWS_STACK_SIZE            
-        
-        setup(self.ql)
-        # load pe
-      
-        if self.ql.shellcoder:
-            self.ql.PE = Shellcode(self.ql, [b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
-        else:
-            self.ql.PE = PE(self.ql, self.ql.path)
-       
-        self.ql.PE.load()
-        # hook win api
-        self.ql.hook_code(self.hook_winapi)
-        
-
-
-    def runner(self):
+    def run(self):
         ql_setup_output(self.ql)
         if self.ql.until_addr == 0:
             if self.ql.archbit == 32:

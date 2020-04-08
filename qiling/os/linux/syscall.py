@@ -65,7 +65,7 @@ def ql_syscall_arm_settls(ql, address, *args, **kw):
     if ql.thread_management != None and ql.multithread == True:
         ql.thread_management.cur_thread.special_settings_arg = address
 
-    mode = ql.archfunc.check_thumb()
+    mode = ql.arch.check_thumb()
     if mode == UC_MODE_THUMB:
         sc = '''
             .THUMB

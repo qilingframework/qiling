@@ -5,15 +5,15 @@
 from unicorn import *
 from unicorn.mips_const import *
 from struct import pack
-from .arch import Arch
+from .arch import QlArch
 
 from qiling.const import *
 from unicorn import *
 from unicorn.arm_const import *
 
-class MIPS32(Arch):
+class QlArchMIPS32(QlArch):
     def __init__(self, ql):
-        super(MIPS32, self).__init__(ql)
+        super(QlArchMIPS32, self).__init__(ql)
 
 
     def stack_push(self, value):
@@ -41,8 +41,8 @@ class MIPS32(Arch):
         return self.ql.mem.write(SP + offset, self.ql.pack32(data))
 
     # get initialized unicorn engine
-    def get_Uc(self):
-        if self.ql.arch == QL_MIPS32:
+    def get_init_uc(self):
+        if self.ql.archtype== QL_MIPS32:
             if self.ql.archendian == QL_ENDIAN_EB:
                 uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_BIG_ENDIAN)
             else:

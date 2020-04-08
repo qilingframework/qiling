@@ -3,7 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys, struct, os, platform, importlib
+import sys, struct, platform, importlib
+import os as pyos
 from unicorn import *
 
 from qiling.const import *
@@ -15,6 +16,7 @@ from qiling.arch.utils import *
 from qiling.os.linux.thread import *
 from qiling.debugger.utils import *
 from qiling.os.memory import QlMemoryManager
+
 
 __version__ = "0.9"
 
@@ -76,7 +78,6 @@ class Qiling:
         self.interp_base = interp_base
 
         # Define after ql=Qiling(), either defined by Qiling Framework or user defined
-        self.arch = ''
         self.archbit = ''
         self.path = ''
         self.entry_point = 0
@@ -96,7 +97,7 @@ class Qiling:
         self.timeout = 0
         self.until_addr = 0
         self.byte = 0
-        self.currentpath = os.getcwd()
+        self.currentpath = pyos.getcwd()
         self.log_file_fd = None
         self.current_path = '/'
         self.fs_mapper = []
@@ -123,6 +124,7 @@ class Qiling:
         # syscall filter for strace-like functionality
         self.strace_filter = None
 
+
         """
         Qiling Framework Core Engine
         """
@@ -132,19 +134,19 @@ class Qiling:
             if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str ):
                 self.ostype = self.ostype.lower()
                 self.ostype = ostype_convert(self.ostype)
-                self.arch = self.arch.lower()
-                self.arch = arch_convert(self.archtype)
+                self.archtype = self.archtype.lower()
+                self.archtype = arch_convert(self.archtype)
 
         # read file propeties, not shellcoder
         if self.rootfs and self.shellcoder is None:
-            if os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs):
+            if pyos.path.exists(str(self.filename[0])) and pyos.path.exists(self.rootfs):
                 self.path = (str(self.filename[0]))
-                if self.ostype is None or self.arch is None:
-                    self.arch, self.ostype = ql_checkostype(self)
+                if self.ostype is None or self.archtype is None:
+                    self.archtype, self.ostype = ql_checkostype(self)
 
                 self.argv = self.filename
 
-            elif not os.path.exists(str(self.filename[0])) or not os.path.exists(self.rootfs):
+            elif not pyos.path.exists(str(self.filename[0])) or not pyos.path.exists(self.rootfs):
                 raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
 
 
@@ -154,13 +156,13 @@ class Qiling:
 
         if self.log_dir is not None and type(self.log_dir) == str:
 
-            self.log_dir = os.path.join(self.rootfs, self.log_dir)
-            if not os.path.exists(self.log_dir):
-                os.makedirs(self.log_dir, 0o755)
+            self.log_dir = pyos.path.join(self.rootfs, self.log_dir)
+            if not pyos.path.exists(self.log_dir):
+                pyos.makedirs(self.log_dir, 0o755)
 
-            pid = os.getpid()
+            pid = pyos.getpid()
             # Is better to call the logfile as the binary we are testing instead of a pid with no logical value
-            self.log_file = os.path.join(self.log_dir, self.filename[0].split("/")[-1])
+            self.log_file = pyos.path.join(self.log_dir, self.filename[0].split("/")[-1])
             _logger = ql_setup_logging_file(self.output, self.log_file + "_" + str(pid), _logger)
 
         self.log_file_fd = _logger
@@ -185,10 +187,10 @@ class Qiling:
                 self.sigaction_act.append(0)
 
         # define analysis enviroment profile
-        self.config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ql_ostype_convert_str(self.ostype) + ".ql")
+        self.config = pyos.path.join(pyos.path.dirname(pyos.path.abspath(__file__)), "profiles", ql_ostype_convert_str(self.ostype) + ".ql")
 
         # double check supported architecture
-        if not ql_is_valid_arch(self.arch):
+        if not ql_is_valid_arch(self.archtype):
             raise QlErrorArch("[!] Invalid Arch")
 
         # chceck for supported OS type    
@@ -206,17 +208,18 @@ class Qiling:
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
 
         """
-        define file is 32 or 64bit, and check file endian
-        QL_ENDIAN_EL = Little Endian
-        big endian is define during ql_elf_check_archtype
-
-        since there is no elf for shellcoder mode
-        judge archendian by whether bigendian set or not
+        Define file is 32 or 64bit and check file endian
+        QL_ENDIAN_EL = Little Endian || QL_ENDIAN_EB = Big Endian
+        QL_ENDIAN_EB is define during ql_elf_check_archtype()
         """
-        self.archbit = ql_get_arch_bits(self.arch)
-        if self.arch not in (QL_ENDINABLE):
+        self.archbit = ql_get_arch_bits(self.archtype)
+        if self.archtype not in (QL_ENDINABLE):
             self.archendian = QL_ENDIAN_EL
-        if self.shellcoder and self.bigendian == True:
+        
+        """
+        Endian for shellcode needs to set manually
+        """
+        if self.shellcoder and self.bigendian == True and self.archtype in (QL_ENDINABLE):
             self.archendian = QL_ENDIAN_EB
         elif self.shellcoder:
             self.archendian = QL_ENDIAN_EL
@@ -225,21 +228,11 @@ class Qiling:
         if self.archbit:
             self.pointersize = (self.archbit // 8)            
 
-        """
-        Load architecture's module
-        Load common os module
-        ql.pc, ql.sp and etc
-        """
-        arch_func = ql_get_arch_module_function(self.arch, ql_arch_convert_str(self.arch).upper())
-        comm_os = ql_get_commonos_module_function(self.ostype)
 
-        self.archfunc = arch_func(self)
-        if comm_os:
-            self.comm_os = comm_os(self)
 
         """
-        Load Memory Management Module
-        ql.mem.read, ql.mem.write and etc
+        Load memory module
+        FIXME: We need to refactor this
         """
         if self.archbit == 64:
             max_addr = 0xFFFFFFFFFFFFFFFF
@@ -250,15 +243,16 @@ class Qiling:
         except:
             raise QlErrorArch("[!] Cannot load Memory Management module")    
 
-       
-        # load os and perform initialization
-        load_os = ql_get_os_module_function(self)        
-        self.load_os = load_os(self)
-        self.load_os.loader()
 
+        """
+        Load architecture's and os module
+        ql.pc, ql.sp and etc
+        """
+
+        self.arch = ql_arch_setup(self)
+        self.os = ql_os_setup(self)
 
     def run(self):
-
         # setup strace filter for logger
         if self.strace_filter != None and self.output == QL_OUT_DEFAULT:
 
@@ -295,7 +289,7 @@ class Qiling:
         self.__enable_bin_patch()
 
         # run the binary
-        self.load_os.runner()     
+        self.os.run()     
 
         # resume with debugger
         if self.debugger is not None:
@@ -311,7 +305,7 @@ class Qiling:
         msg = args[0]
 
         # support keyword "end" in ql.print functions, use it as terminator or default newline character by OS
-        msg += kw["end"] if kw.get("end", None) != None else os.linesep
+        msg += kw["end"] if kw.get("end", None) != None else pyos.linesep
 
         fd.info(msg)
 
@@ -343,8 +337,9 @@ class Qiling:
 
 
     def asm2bytes(self, runasm, arm_thumb=None):
-        return ql_asm2bytes(self, self.arch, runasm, arm_thumb)
+        return ql_asm2bytes(self, self.archtype, runasm, arm_thumb)
     
+
     """
     replace linux or windows syscall/api with custom api/syscall
     if replace function name is needed, first syscall must be available
@@ -354,10 +349,10 @@ class Qiling:
     def set_syscall(self, syscall_cur, syscall_new):
         if self.ostype in (QL_POSIX):
             if isinstance(syscall_cur, int):
-                self.comm_os.dict_posix_syscall_by_num[syscall_cur] = syscall_new
+                self.os.dict_posix_syscall_by_num[syscall_cur] = syscall_new
             else:
                 syscall_name = "ql_syscall_" + str(syscall_cur)
-                self.comm_os.dict_posix_syscall[syscall_name] = syscall_new
+                self.os.dict_posix_syscall[syscall_name] = syscall_new
         elif self.ostype == QL_WINDOWS:
             self.set_api(syscall_cur, syscall_new)
 
@@ -365,7 +360,7 @@ class Qiling:
     # replace Windows API with custom syscall
     def set_api(self, syscall_cur, syscall_new):
         if self.ostype == QL_WINDOWS:
-            self.load_os.user_defined_api[syscall_cur] = syscall_new
+            self.os.user_defined_api[syscall_cur] = syscall_new
         elif self.ostype in (QL_POSIX):
             self.set_syscall(syscall_cur, syscall_new)
 
@@ -559,18 +554,18 @@ class Qiling:
             self.uc.hook_add(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
 
     def stack_push(self, data):
-        self.archfunc.stack_push(data)
+        self.arch.stack_push(data)
 
     def stack_pop(self):
-        return self.archfunc.stack_pop()
+        return self.arch.stack_pop()
 
     # read from stack, at a given offset from stack bottom
     def stack_read(self, offset):
-        return self.archfunc.stack_read(offset)
+        return self.arch.stack_read(offset)
 
     # write to stack, at a given offset from stack bottom
     def stack_write(self, offset, data):
-        self.archfunc.stack_write(offset, data)
+        self.arch.stack_write(offset, data)
 
     def unpack64(self, x):
         return struct.unpack('Q', x)[0]
@@ -656,44 +651,29 @@ class Qiling:
     # ql.register - read and write register 
     def register(self, register_str, value= None):
         if value is None:
-            return self.archfunc.get_register(register_str)
+            return self.arch.get_register(register_str)
         else:    
-            return self.archfunc.set_register(register_str, value)
-
-    # ql.init_Uc - initialized unicorn engine
-    @property
-    def init_Uc(self):
-        return self.archfunc.get_Uc()
-
-    # ql.syscall - get syscall for all posix series
-    @property
-    def syscall(self):
-        return self.comm_os.get_syscall()
-
-    # ql.syscall_param - get syscall for all posix series
-    @property
-    def syscall_param(self):
-        return self.comm_os.get_syscall_param()
+            return self.arch.set_register(register_str, value)
 
     # ql.reg_pc - PC register name getter
     @property
     def reg_pc(self):
-        return self.archfunc.get_reg_pc()
+        return self.arch.get_reg_pc()
 
     # ql.reg_sp - SP register name getter
     @property
     def reg_sp(self):
-        return self.archfunc.get_reg_sp()
+        return self.arch.get_reg_sp()
 
     # ql.reg_tables - Register table getter
     @property
     def reg_table(self):
-        return self.archfunc.get_reg_table()
+        return self.arch.get_reg_table()
 
     # ql.reg_name - Register name converter getter
     @property
     def reg_name(self):
-        return self.archfunc.get_reg_name_str(self.uc_reg_name)
+        return self.arch.get_reg_name_str(self.uc_reg_name)
 
     # ql.reg_name - Register name converter setter
     @reg_name.setter
@@ -703,22 +683,22 @@ class Qiling:
     # ql.pc - PC register value getter
     @property
     def pc(self):
-        return self.archfunc.get_pc()
+        return self.arch.get_pc()
 
     # ql.pc - PC register value setter
     @pc.setter
     def pc(self, value):
-        self.archfunc.set_pc(value)
+        self.arch.set_pc(value)
 
     # ql.sp - SP register value getter
     @property
     def sp(self):
-        return self.archfunc.get_sp()
+        return self.arch.get_sp()
 
     # ql.sp - SP register value setter
     @sp.setter
     def sp(self, value):
-        self.archfunc.set_sp(value)
+        self.arch.set_sp(value)
 
     # ql.output var getter
     @property

@@ -9,6 +9,8 @@ import string
 from qiling.const import *
 from qiling.exception import *
 
+from qiling.loader.loader import QlLoader
+
 PT_LOAD = 1
 PT_DYNAMIC = 2
 PT_INTERP = 3
@@ -44,7 +46,7 @@ AT_EXECFN = 31
 FILE_DES = []
 #MMAP_START = 0
 
-class ELFParse:
+class ELFParse(QlLoader):
     def __init__(self, path, ql):
         self.path = os.path.abspath(path)
         self.ql = ql
@@ -339,6 +341,7 @@ class ELFParse:
 class ELFLoader(ELFParse):
     def __init__(self, path, ql):
         ELFParse.__init__(self, path, ql)
+        self.ql = ql
 
     def pack(self, data, ql):
         if ql.archbit == 64:
@@ -362,7 +365,7 @@ class ELFLoader(ELFParse):
             #     uc.mem_write(s_addr, i + b'\x00')
             # else:
             
-            uc.mem_write(s_addr, i.encode() + b'\x00')
+            self.ql.mem.write(s_addr, i.encode() + b'\x00')
             l_addr.append(s_addr)
         return l_addr, s_addr
 
@@ -386,7 +389,7 @@ class ELFLoader(ELFParse):
         if loadbase <= 0:
             if ql.archbit == 64:
                 loadbase = 0x555555554000
-            elif ql.arch == QL_MIPS32:
+            elif ql.archtype== QL_MIPS32:
                 loadbase = 0x0000004fef000
             else:
                 loadbase = 0x56555000
@@ -450,9 +453,9 @@ class ELFLoader(ELFParse):
             if ql.interp_base == 0:
                 if ql.archbit == 64:
                     ql.interp_base = 0x7ffff7dd5000
-                elif ql.archbit == 32 and ql.arch != QL_MIPS32:
+                elif ql.archbit == 32 and ql.archtype!= QL_MIPS32:
                     ql.interp_base = 0xfb7d3000
-                elif ql.arch == QL_MIPS32:
+                elif ql.archtype== QL_MIPS32:
                     ql.interp_base = 0x00000047ba000
                 else:
                     ql.interp_base = 0xff7d5000
@@ -470,7 +473,7 @@ class ELFLoader(ELFParse):
         if ql.mmap_start == 0:
             if ql.archbit == 64:
                 ql.mmap_start = 0x7ffff7dd6000 - 0x4000000
-            elif ql.arch == QL_MIPS32:
+            elif ql.archtype== QL_MIPS32:
                 ql.mmap_start = 0x7ffef000 - 0x400000
                 if ql.archendian == QL_ENDIAN_EB:
                     ql.mmap_start  = 0x778bf000 - 0x400000

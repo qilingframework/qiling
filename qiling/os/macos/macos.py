@@ -23,31 +23,29 @@ from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.const import *
 from qiling.os.macos.const import *
+from qiling.os.posix.posix import QlOsPosix
 
-
-class QlOsMacosManager:
-    
+class QlOsMacos(QlOsPosix):
     def __init__(self, ql):
+        super(QlOsMacos, self).__init__(ql)
         self.ql = ql
+        self.ql.os = self
+        self.load()
 
 
-    def hook_syscall(self, intno= None, int = None):
-        return self.ql.comm_os.load_syscall()
- 
-
-    def loader(self):
+    def load(self):   
         """
         initiate UC needs to be in loader,
         or else it will kill execve
         """
-        self.ql.uc = self.ql.init_Uc
+        self.ql.uc = self.ql.arch.init_uc
 
-        if self.ql.arch == QL_ARM64:
+        if self.ql.archtype== QL_ARM64:
             self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x0000000160503000
             self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x21000
             self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
             self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS  = 0x4000000f4000
-        elif  self.ql.arch == QL_X8664:   
+        elif  self.ql.archtype== QL_X8664:   
             self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x7ffcf0000000
             self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x19a00000
             self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
@@ -88,19 +86,23 @@ class QlOsMacosManager:
             loader.loadMacho()
             self.ql.macho_task.min_offset = page_align_end(loader.vm_end_addr, PAGE_SIZE)
             self.ql.stack_address = (int(self.ql.stack_sp))
-        
 
-    def runner(self):
-        if self.ql.arch == QL_ARM64:
+
+    def hook_syscall(self, intno= None, int = None):
+        return self.load_syscall()
+
+
+    def run(self):
+        if self.ql.archtype== QL_ARM64:
             self.ql.register(UC_ARM64_REG_SP, self.ql.stack_address)
-            self.ql.archfunc.enable_vfp()
+            self.ql.arch.enable_vfp()
             self.ql.hook_intr(self.hook_syscall)
         
-        elif self.ql.arch == QL_X8664:           
+        elif self.ql.archtype== QL_X8664:           
             self.ql.register(UC_X86_REG_RSP, self.ql.stack_address)
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
-        if  self.ql.arch == QL_X8664:
+        if  self.ql.archtype== QL_X8664:
             ql_x8664_setup_gdt_segment_ds(self.ql)
             ql_x8664_setup_gdt_segment_cs(self.ql)
             ql_x8664_setup_gdt_segment_ss(self.ql)
@@ -111,7 +113,7 @@ class QlOsMacosManager:
         self.ql.macho_thread = MachoThread()
         
         # load_commpage not wroking with QL_ARM64, yet
-        if  self.ql.arch == QL_X8664:
+        if  self.ql.archtype== QL_X8664:
             load_commpage(self.ql)
         
         if (self.ql.until_addr == 0):

@@ -39,9 +39,9 @@ def _x8664_get_params_by_index(ql, index):
 
 
 def _get_param_by_index(ql, index):
-    if ql.arch == QL_X86:
+    if ql.archtype== QL_X86:
         return _x86_get_params_by_index(ql, index)
-    elif ql.arch == QL_X8664:
+    elif ql.archtype== QL_X8664:
         return _x8664_get_params_by_index(ql, index)
 
 
@@ -80,7 +80,7 @@ def set_function_params(ql, in_params, out_params):
         if in_params[each] == DWORD or in_params[each] == POINTER:
             out_params[each] = _get_param_by_index(ql, index)
         elif in_params[each] == ULONGLONG:
-            if ql.arch == QL_X86:
+            if ql.archtype== QL_X86:
                 low = _get_param_by_index(ql, index)
                 index += 1
                 high = _get_param_by_index(ql, index)
@@ -104,23 +104,23 @@ def set_function_params(ql, in_params, out_params):
 
 
 def get_function_param(ql, number):
-    if ql.arch == QL_X86:
+    if ql.archtype== QL_X86:
         return _x86_get_args(ql, number)
-    elif ql.arch == QL_X8664:
+    elif ql.archtype== QL_X8664:
         return _x8664_get_args(ql, number)
 
 
 def set_return_value(ql, ret):
-    if ql.arch == QL_X86:
+    if ql.archtype== QL_X86:
         ql.register(UC_X86_REG_EAX, ret)
-    elif ql.arch == QL_X8664:
+    elif ql.archtype== QL_X8664:
         ql.register(UC_X86_REG_RAX, ret)
 
 
 def get_return_value(ql):
-    if ql.arch == QL_X86:
+    if ql.archtype== QL_X86:
         return ql.register(UC_X86_REG_EAX)
-    elif ql.arch == QL_X8664:
+    elif ql.archtype== QL_X8664:
         return ql.register(UC_X86_REG_RAX)
 
 
@@ -147,7 +147,7 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
     # update stack pointer
     ql.sp = ql.sp + ((param_num + 1) * 4)
 
-    if ql.load_os.PE_RUN:
+    if ql.os.PE_RUN:
         ql.pc = ret_addr
 
     return result
@@ -156,7 +156,7 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
 def x86_cdecl(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
 
-    if ql.load_os.PE_RUN:
+    if ql.os.PE_RUN:
         ql.pc = ql.stack_pop()
 
     return result
@@ -165,7 +165,7 @@ def x86_cdecl(ql, param_num, params, func, args, kwargs):
 def x8664_fastcall(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
 
-    if ql.load_os.PE_RUN:
+    if ql.os.PE_RUN:
         ql.pc = ql.stack_pop()
 
     return result
@@ -182,12 +182,12 @@ def winapi(cc, param_num=None, params=None):
     def decorator(func):
         def wrapper(*args, **kwargs):
             ql = args[0]
-            if ql.arch == QL_X86:
+            if ql.archtype== QL_X86:
                 if cc == STDCALL:
                     return x86_stdcall(ql, param_num, params, func, args, kwargs)
                 elif cc == CDECL:
                     return x86_cdecl(ql, param_num, params, func, args, kwargs)
-            elif ql.arch == QL_X8664:
+            elif ql.archtype== QL_X8664:
                 return x8664_fastcall(ql, param_num, params, func, args, kwargs)
             else:
                 raise QlErrorArch("[!] Unknown ql.arch")

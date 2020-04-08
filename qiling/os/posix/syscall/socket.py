@@ -35,9 +35,9 @@ from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
 def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **kw):
-    if ql.arch == QL_MIPS32 and socket_type == 2:
+    if ql.archtype== QL_MIPS32 and socket_type == 2:
         socket_type = 1
-    elif ql.arch == QL_MIPS32 and socket_type == 1:
+    elif ql.archtype== QL_MIPS32 and socket_type == 1:
         socket_type = 1
 
     idx = -1
@@ -60,8 +60,8 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
 
     ql.nprint("socket(%d, %d, %d) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
 
-    socket_type = socket_type_mapping(socket_type, ql.arch)
-    socket_domain = socket_domain_mapping(socket_domain, ql.arch)
+    socket_type = socket_type_mapping(socket_type, ql.archtype)
+    socket_domain = socket_domain_mapping(socket_domain, ql.archtype)
     ql.dprint(1, "[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
 
     ql_definesyscall_return(ql, regreturn)
@@ -124,7 +124,7 @@ def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, *args, **kw):
 def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
     regreturn = 0
 
-    if ql.arch == QL_X8664:
+    if ql.archtype== QL_X8664:
         data = ql.mem.read(bind_addr, 8)
     else:
         data = ql.mem.read(bind_addr, bind_addrlen)

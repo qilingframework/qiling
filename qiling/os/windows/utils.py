@@ -17,18 +17,19 @@ from qiling.os.windows.handle import HandleManager, Handle
 from qiling.os.windows.thread import ThreadManager, Thread
 
 
-def setup(ql):
-    ql.heap = Heap(ql, ql.load_os.HEAP_BASE_ADDR, ql.load_os.HEAP_BASE_ADDR + ql.load_os.HEAP_SIZE)
+def setup(self):
+    ql = self.ql
+    ql.heap = Heap(ql, ql.os.HEAP_BASE_ADDR, ql.os.HEAP_BASE_ADDR + ql.os.HEAP_SIZE)
     ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
     
     # setup gdt
-    if ql.arch == QL_X86:
+    if ql.archtype== QL_X86:
         ql_x86_setup_gdt_segment_fs(ql, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE)
         ql_x86_setup_gdt_segment_gs(ql, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
         ql_x86_setup_gdt_segment_ds(ql)
         ql_x86_setup_gdt_segment_cs(ql)
         ql_x86_setup_gdt_segment_ss(ql)
-    elif ql.arch == QL_X8664:
+    elif ql.archtype== QL_X8664:
         ql_x8664_set_gs(ql)     
     
     # handle manager
@@ -81,7 +82,7 @@ def env_dict_to_array(env_dict):
 def debug_print_stack(ql, num, message=None):
     if message:
         ql.dprint(0, "========== %s ==========" % message)
-    if ql.arch == QL_X86:
+    if ql.archtype== QL_X86:
         sp = ql.register(UC_X86_REG_ESP)
     else:
         sp = ql.register(UC_X86_REG_RSP)

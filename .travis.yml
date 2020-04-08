@@ -52,9 +52,12 @@ matrix:
         - cd $TRAVIS_BUILD_DIR
         - python3 setup.py install
       before_script:
-        cd tests
+        - ./examples/scripts/collectdylib.sh
+        - cd tests
       script:
-        - ./test_nix.sh
+        - python3 test_macho_macos.py
+        - python3 test_macho.py
+        #- ./test_nix.sh
         
     - name: "Python 3.6.8 on Windows"
       os: windows
@@ -116,6 +119,6 @@ matrix:
 #      script:
 #        - wsl python3 test_all.py
 
-  allow_failures:
-    - os: osx
-    - services: docker
+  # allow_failures:
+  #   - os: osx
+  #   - services: docker

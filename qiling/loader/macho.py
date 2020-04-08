@@ -10,10 +10,11 @@ from qiling.loader.macho_parser.parser import *
 from qiling.loader.macho_parser.const import *
 from qiling.exception import *
 
+from qiling.loader.loader import QlLoader
 
 # TODO: we maybe we should use a better way to load
 # reference to xnu source code /bsd/kern/mach_loader.c
-class Macho:
+class Macho(QlLoader):
 
     # macho x8664 loader 
     def __init__(self, ql, file_path, stack_sp, argvs, envs, apples, argc, dyld_path=None):
@@ -240,7 +241,7 @@ class Macho:
             length = len(data)
         
         self.stack_sp -= length
-        self.uc.mem_write(self.stack_sp, data)
+        self.ql.mem.write(self.stack_sp, data)
         self.ql.dprint(0, "[+] SP {} write data len {}".format(hex(self.stack_sp), length))
         
         return self.stack_sp
@@ -258,6 +259,6 @@ class Macho:
             return 
         
         self.stack_sp -= align
-        self.uc.mem_write(self.stack_sp, content)
+        self.ql.mem.write(self.stack_sp, content)
 
         return self.stack_sp

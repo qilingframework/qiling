@@ -5,21 +5,21 @@
 from unicorn import *
 from unicorn.arm_const import *
 from struct import pack
-from .arch import Arch
+from .arch import QlArch
 
 from qiling.const import *
 from unicorn import *
 from unicorn.arm_const import *
 
-def ql_arm_check_thumb(uc, reg_cpsr):
-    mode = UC_MODE_ARM
-    if reg_cpsr & 0b100000 != 0:
-        mode = UC_MODE_THUMB
-        return mode
+# def ql_arm_check_thumb(uc, reg_cpsr):
+#     mode = UC_MODE_ARM
+#     if reg_cpsr & 0b100000 != 0:
+#         mode = UC_MODE_THUMB
+#         return mode
 
-class ARM(Arch):
+class QlArchARM(QlArch):
     def __init__(self, ql):
-        super(ARM, self).__init__(ql)
+        super(QlArchARM, self).__init__(ql)
 
 
     def stack_push(self, value):
@@ -48,7 +48,7 @@ class ARM(Arch):
 
 
     # get initialized unicorn engine
-    def get_Uc(self):
+    def get_init_uc(self):
         if self.ql.archendian == QL_ENDIAN_EB:
             uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)
             # FIXME: unicorn engine not able to choose ARM or Thumb automatically
@@ -64,7 +64,7 @@ class ARM(Arch):
 
     # get PC
     def get_pc(self):
-        mode = self.ql.archfunc.check_thumb()
+        mode = self.ql.arch.check_thumb()
         if mode == UC_MODE_THUMB:
             append = 1
         else:
