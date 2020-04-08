@@ -583,6 +583,7 @@ def ql_syscall_terminate_with_payload(ql, pid, reason_namespace, reason_code, pa
             payload, payload_size, reason_string))
     ql_definesyscall_return(ql, KERN_SUCCESS)
     ql.uc.emu_stop()
+    exit(1)
 
 # 0x209
 def ql_syscall_abort_with_payload(ql, reason_namespace, reason_code, payload, payload_size, reason_string, reason_flags):
