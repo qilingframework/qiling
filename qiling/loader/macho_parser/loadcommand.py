@@ -339,8 +339,8 @@ class LoadUnixThread(LoadCommand):
             self.pc         = unpack("<Q", self.FR.read(8))[0]
             self.entry      = self.pc
 
-    def __str__(self):
-        return (" Unixthread: entry 0x%X" %self.entry)  
+    #def __str__(self):
+    #    return (" Unixthread: entry 0x%X" %self.entry)  
 
     def get_complete(self):
         pass
