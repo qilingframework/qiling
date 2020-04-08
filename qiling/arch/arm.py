@@ -11,11 +11,11 @@ from qiling.const import *
 from unicorn import *
 from unicorn.arm_const import *
 
-def ql_arm_check_thumb(uc, reg_cpsr):
-    mode = UC_MODE_ARM
-    if reg_cpsr & 0b100000 != 0:
-        mode = UC_MODE_THUMB
-        return mode
+# def ql_arm_check_thumb(uc, reg_cpsr):
+#     mode = UC_MODE_ARM
+#     if reg_cpsr & 0b100000 != 0:
+#         mode = UC_MODE_THUMB
+#         return mode
 
 class QlArchARM(QlArch):
     def __init__(self, ql):
@@ -48,7 +48,7 @@ class QlArchARM(QlArch):
 
 
     # get initialized unicorn engine
-    def get_Uc(self):
+    def get_init_uc(self):
         if self.ql.archendian == QL_ENDIAN_EB:
             uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)
             # FIXME: unicorn engine not able to choose ARM or Thumb automatically

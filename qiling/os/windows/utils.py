@@ -17,7 +17,8 @@ from qiling.os.windows.handle import HandleManager, Handle
 from qiling.os.windows.thread import ThreadManager, Thread
 
 
-def setup(ql):
+def setup(self):
+    ql = self.ql
     ql.heap = Heap(ql, ql.os.HEAP_BASE_ADDR, ql.os.HEAP_BASE_ADDR + ql.os.HEAP_SIZE)
     ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
     

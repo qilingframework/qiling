@@ -42,7 +42,7 @@ class QlArchX86(QlArch):
 
 
     # get initialized unicorn engine
-    def get_Uc(self):
+    def get_init_uc(self):
         uc = Uc(UC_ARCH_X86, UC_MODE_32)  
         return uc
 
@@ -200,7 +200,7 @@ class QlArchX8664(QlArch):
 
 
     # get initialized unicorn engine
-    def get_Uc(self):
+    def get_init_uc(self):
         uc = Uc(UC_ARCH_X86, UC_MODE_64)  
         return uc
 

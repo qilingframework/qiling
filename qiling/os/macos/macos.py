@@ -38,7 +38,7 @@ class QlOsMacos(QlOsPosix):
         initiate UC needs to be in loader,
         or else it will kill execve
         """
-        self.ql.uc = self.ql.init_Uc
+        self.ql.uc = self.ql.arch.init_uc
 
         if self.ql.archtype== QL_ARM64:
             self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x0000000160503000

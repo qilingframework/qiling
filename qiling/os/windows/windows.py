@@ -25,6 +25,8 @@ class QlOsWindows(QlOs):
         self.user_defined_api = {}
         self.ql.os = self
         self.load()
+        # variables used inside hooks
+        self.hooks_variables = {}
 
     def load(self):        
         if self.ql.archtype== QL_X86:
@@ -51,7 +53,7 @@ class QlOsWindows(QlOs):
         initiate UC needs to be in loader, or else it will kill execve
         Note: This is Windows, but for the sake of same with others OS
         """
-        self.ql.uc = self.ql.init_Uc
+        self.ql.uc = self.ql.arch.init_uc
 
         if self.ql.archtype== QL_X8664:
             self.QL_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
@@ -69,8 +71,8 @@ class QlOsWindows(QlOs):
         if self.ql.stack_size == 0:
             self.ql.stack_size = self.QL_WINDOWS_STACK_SIZE            
         
-        setup(self.ql)
-      
+        setup(self)
+        
         if self.ql.shellcoder:
             self.ql.PE = Shellcode(self.ql, [b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
         else:
