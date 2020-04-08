@@ -52,7 +52,6 @@ def vm_shared_region_enter(ql):
     ql.mem.map(SHARED_REGION_BASE_X86_64, SHARED_REGION_SIZE_X86_64)
     ql.macos_shared_region = True
     ql.macos_shared_region_port = MachPort(9999)        # random port name
-    pass
 
 
 def map_commpage(ql):
