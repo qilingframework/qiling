@@ -121,4 +121,4 @@ matrix:
 
   allow_failures:
     - os: osx
-    - services: docker
+    #- services: docker

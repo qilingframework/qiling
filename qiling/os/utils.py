@@ -253,7 +253,7 @@ def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
 
         except KsError as e:
             print("ERROR Keystone Compile Error: %s" % e)
-            exit
+            raise
 
         return shellcode
 
