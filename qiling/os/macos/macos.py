@@ -29,13 +29,11 @@ class QlOsMacos(QlOsPosix):
     def __init__(self, ql):
         super(QlOsMacos, self).__init__(ql)
         self.ql = ql
+        self.ql.os = self
+        self.load()
 
 
-    def hook_syscall(self, intno= None, int = None):
-        return self.load_syscall()
- 
-
-    def load(self):
+    def load(self):   
         """
         initiate UC needs to be in loader,
         or else it will kill execve
@@ -88,7 +86,11 @@ class QlOsMacos(QlOsPosix):
             loader.loadMacho()
             self.ql.macho_task.min_offset = page_align_end(loader.vm_end_addr, PAGE_SIZE)
             self.ql.stack_address = (int(self.ql.stack_sp))
-        
+
+
+    def hook_syscall(self, intno= None, int = None):
+        return self.load_syscall()
+
 
     def run(self):
         if self.ql.archtype== QL_ARM64:

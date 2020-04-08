@@ -23,12 +23,10 @@ from qiling.os.posix.posix import QlOsPosix
 class QlOsFreebsd(QlOsPosix):
     def __init__(self, ql):
         super(QlOsFreebsd, self).__init__(ql)
-        self.ql = ql
-
-    def hook_syscall(self, intno= None):
-        return self.ql.os.load_syscall()
-
-    def load(self):
+        self.ql.os = self
+        self.load()
+        
+    def load(self):   
         """
         initiate UC needs to be in loader,
         or else it will kill execve
@@ -76,6 +74,10 @@ class QlOsFreebsd(QlOsPosix):
 
         ql_x8664_setup_gdt_segment_cs(self.ql)
         ql_x8664_setup_gdt_segment_ss(self.ql)
+
+
+    def hook_syscall(self, intno= None):
+        return self.ql.os.load_syscall()
 
 
     def run(self):

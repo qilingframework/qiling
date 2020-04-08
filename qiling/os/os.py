@@ -8,4 +8,3 @@ from qiling.const import *
 class QlOs:
     def __init__(self, ql):
         self.ql = ql
-

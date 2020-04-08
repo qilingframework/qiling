@@ -226,13 +226,7 @@ class Qiling:
         if self.archbit:
             self.pointersize = (self.archbit // 8)            
 
-        """
-        Load architecture's module
-        ql.pc, ql.sp and etc
-        FIXME: somehow self.arch = self.arch_setup() doesn't work
-        """
-        arch = ql_arch_setup(self)   
-        self.arch = arch(self)
+
 
         """
         Load memory module
@@ -247,18 +241,25 @@ class Qiling:
         except:
             raise QlErrorArch("[!] Cannot load Memory Management module")    
 
-     
-        """
-        load os and perform initialization
-        FIXME: somehow self.os = self.os_setup() doesn't work
-        """   
-        os = self.os_setup()   
-        self.os = os(self)
 
         """
-        setup mem and call os loader function
+        Load architecture's and os module
+        ql.pc, ql.sp and etc
+        FIXME: somehow self.arch = self.arch_setup() doesn't work
+        FIXME: somehow self.os = self.os_setup() doesn't work
         """
-        self.os.load()
+        self.arch = self.arch_setup()(self)
+        self.os = self.os_setup()(self)
+
+        #self.os.load()
+
+    # setting up arch
+    def arch_setup(self):
+        return ql_arch_setup(self)
+
+    # setting up os
+    def os_setup(self, function_name = None):
+        return ql_os_setup(self, function_name)
 
 
     def run(self):
@@ -348,9 +349,6 @@ class Qiling:
     def asm2bytes(self, runasm, arm_thumb=None):
         return ql_asm2bytes(self, self.archtype, runasm, arm_thumb)
     
-
-    def os_setup(self, function_name = None):
-        return ql_os_setup(self, function_name)
 
     """
     replace linux or windows syscall/api with custom api/syscall

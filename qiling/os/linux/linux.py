@@ -28,11 +28,10 @@ class QlOsLinux(QlOsPosix):
         self.ql = ql
         self.QL_LINUX_PREDEFINE_STACKSIZE = 0x21000
         self.QL_ARM_KERNEL_GET_TLS_ADDR = 0xFFFF0FE0
+        self.ql.os = self
+        self.load()
 
-    def hook_syscall(self, int= None, intno= None):
-        return self.load_syscall(intno)
-
-    def load(self):
+    def load(self):   
         """
         initiate UC needs to be in loader,
         or else it will kill execve
@@ -97,8 +96,13 @@ class QlOsLinux(QlOsPosix):
         ql_setup_output(self.ql)
 
 
+    def hook_syscall(self, int= None, intno= None):
+        return self.load_syscall(intno)
 
+    
     def run(self):
+
+
         if (self.ql.until_addr == 0):
             if self.ql.archbit == 32:
                 self.ql.until_addr = QL_ARCHBIT32_EMU_END

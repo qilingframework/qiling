@@ -23,7 +23,10 @@ class QlOsWindows(QlOs):
         super(QlOsWindows, self).__init__(ql)
         self.ql = ql
         self.user_defined_api = {}
-        
+        self.ql.os = self
+        self.load()
+
+    def load(self):        
         if self.ql.archtype== QL_X86:
             self.STRUCTERS_LAST_ADDR = FS_SEGMENT_ADDR
             self.DEFAULT_IMAGE_BASE = 0x400000
@@ -43,6 +46,40 @@ class QlOsWindows(QlOs):
         self.DLL_LAST_ADDR = self.DLL_BASE_ADDR
         self.PE_RUN = True
         self.last_error = 0
+
+        """
+        initiate UC needs to be in loader, or else it will kill execve
+        Note: This is Windows, but for the sake of same with others OS
+        """
+        self.ql.uc = self.ql.init_Uc
+
+        if self.ql.archtype== QL_X8664:
+            self.QL_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
+            self.QL_WINDOWS_STACK_SIZE = 0x40000
+            self.ql.code_address = 0x140000000
+            self.ql.code_size = 10 * 1024 * 1024
+        elif self.ql.archtype== QL_X86:        
+            self.QL_WINDOWS_STACK_ADDRESS = 0xfffdd000
+            self.QL_WINDOWS_STACK_SIZE =0x21000 
+            self.ql.code_address = 0x40000
+            self.ql.code_size = 10 * 1024 * 1024
+
+        if self.ql.stack_address == 0:
+            self.ql.stack_address = self.QL_WINDOWS_STACK_ADDRESS
+        if self.ql.stack_size == 0:
+            self.ql.stack_size = self.QL_WINDOWS_STACK_SIZE            
+        
+        setup(self.ql)
+      
+        if self.ql.shellcoder:
+            self.ql.PE = Shellcode(self.ql, [b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
+        else:
+            self.ql.PE = PE(self.ql, self.ql.path)
+       
+        self.ql.PE.load()
+        # hook win api
+        self.ql.hook_code(self.hook_winapi)
+
 
     # hook WinAPI in PE EMU
     def hook_winapi(self, int, address, size):
@@ -76,42 +113,6 @@ class QlOsWindows(QlOs):
                 if self.ql.debug_stop:
                     raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
-
-    def load(self):
-        """
-        initiate UC needs to be in loader, or else it will kill execve
-        Note: This is Windows, but for the sake of same with others OS
-        """
-        self.ql.uc = self.ql.init_Uc
-
-        if self.ql.archtype== QL_X8664:
-            self.QL_WINDOWS_STACK_ADDRESS = 0x7ffffffde000
-            self.QL_WINDOWS_STACK_SIZE = 0x40000
-            self.ql.code_address = 0x140000000
-            self.ql.code_size = 10 * 1024 * 1024
-        elif self.ql.archtype== QL_X86:        
-            self.QL_WINDOWS_STACK_ADDRESS = 0xfffdd000
-            self.QL_WINDOWS_STACK_SIZE =0x21000 
-            self.ql.code_address = 0x40000
-            self.ql.code_size = 10 * 1024 * 1024
-
-        if self.ql.stack_address == 0:
-            self.ql.stack_address = self.QL_WINDOWS_STACK_ADDRESS
-        if self.ql.stack_size == 0:
-            self.ql.stack_size = self.QL_WINDOWS_STACK_SIZE            
-        
-        setup(self.ql)
-        # load pe
-      
-        if self.ql.shellcoder:
-            self.ql.PE = Shellcode(self.ql, [b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
-        else:
-            self.ql.PE = PE(self.ql, self.ql.path)
-       
-        self.ql.PE.load()
-        # hook win api
-        self.ql.hook_code(self.hook_winapi)
-        
 
 
     def run(self):

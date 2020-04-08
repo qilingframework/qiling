@@ -259,7 +259,7 @@ def ql_checkostype(self):
 
     return arch, ostype
 
-def ql_os_setup(ql, function_name):
+def ql_os_setup(ql, function_name = None):
     if not ql_is_valid_ostype(ql.ostype):
         raise QlErrorOsType("[!] Invalid OSType")
 
