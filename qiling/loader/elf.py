@@ -406,6 +406,7 @@ class ELFLoader(ELFParse):
                     mem_start = i['p_vaddr']
                 if mem_end < i['p_vaddr'] + i['p_memsz'] or mem_end == -1:
                     mem_end = i['p_vaddr'] + i['p_memsz']
+
             if i['p_type'] == PT_INTERP:
                 interp_path = self.NullStr(super().getelfdata(i['p_offset'], i['p_filesz']))
 
@@ -418,14 +419,32 @@ class ELFLoader(ELFParse):
             ql.nprint("[+] Some error in head e_type: %u!" %elfhead['e_type'])
             return -1
 
-        ql.mem.map(loadbase + mem_start, mem_end - mem_start)
-        ql.mem.add_mapinfo(loadbase + mem_start, loadbase + mem_end, 'r-x', self.path)
+        # ql.mem.map(loadbase + mem_start, mem_end - mem_start, perms=, info=self.path)
+        # ql.mem.add_mapinfo(loadbase + mem_start, loadbase + mem_end, 'r-x', self.path)
 
         for i in super().parse_program_header(ql):
             if i['p_type'] == PT_LOAD:
+                _mem_s = ((loadbase + i["p_vaddr"]) // 0x1000) * 0x1000
+                _mem_e = ((loadbase + i["p_vaddr"] + i["p_memsz"]) // 0x1000 + 1) * 0x1000
+
+                # ql.dprint(0, "[+] load 0x%x - 0x%x" % (loadbase + i['p_vaddr'], loadbase + i['p_vaddr'] + i['p_filesz']))
+                _perms = int(bin(i["p_flags"])[:1:-1], 2) # reverse bit for perms bit mapping
+
+
+                ql.nprint("[+] load 0x%x - 0x%x" % (_mem_s, _mem_e))
+                ql.mem.map(_mem_s, _mem_e - _mem_s, perms=_perms, info=self.path)
+                ql.dprint(0, "[+] load 0x%x - 0x%x" % (_mem_s, _mem_e))
+                # breakpoint()
                 ql.mem.write(loadbase + i['p_vaddr'], super().getelfdata(i['p_offset'], i['p_filesz']))
-                ql.dprint(0,
-                          "[+] load 0x%x - 0x%x" % (loadbase + i['p_vaddr'], loadbase + i['p_vaddr'] + i['p_filesz']))
+
+        # ql.mem.show_mapinfo()
+
+        # breakpoint()
+
+        if _mem_e < mem_end:
+            ql.nprint("[+] load 0x%x - 0x%x" % (_mem_e, mem_end - _mem_e))
+            ql.mem.map(_mem_e, mem_end - _mem_e)
+
 
         entry_point = elfhead['e_entry'] + loadbase
 
@@ -461,8 +480,8 @@ class ELFLoader(ELFParse):
                     ql.interp_base = 0xff7d5000
 
             ql.dprint(0, "[+] interp_base is : 0x%x" % (ql.interp_base))
-            ql.mem.map(ql.interp_base, int(interp_mem_size))
-            ql.mem.add_mapinfo(ql.interp_base, ql.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
+            ql.mem.map(ql.interp_base, int(interp_mem_size), info=os.path.abspath(interp_path))
+            # ql.mem.add_mapinfo(ql.interp_base, ql.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
 
             for i in interp.parse_program_header(ql):
                 if i['p_type'] == PT_LOAD:
@@ -583,4 +602,5 @@ class ELFLoader(ELFParse):
         ql.elf_entry = loadbase + elfhead['e_entry']
         ql.new_stack = new_stack
         ql.loadbase = loadbase
-        ql.mem.add_mapinfo(new_stack, ql.stack_address+ql.stack_size, 'rw-', '[stack]')
+        # ql.mem.add_mapinfo(new_stack, ql.stack_address+ql.stack_size, 'rw-', '[stack]')
+        # breakpoint()
