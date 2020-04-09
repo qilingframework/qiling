@@ -14,7 +14,7 @@ from qiling.os.windows.registry import RegistryManager
 from qiling.os.windows.clipboard import Clipboard
 from qiling.os.windows.fiber import FiberManager
 from qiling.os.windows.handle import HandleManager, Handle
-from qiling.os.windows.thread import ThreadManager, Thread
+from qiling.os.windows.thread import QlWindowsThreadManager, QlWindowsThread
 
 
 def setup(self):
@@ -41,8 +41,8 @@ def setup(self):
     self.ql.fiber_manager = FiberManager(self.ql)
     # Place to set errors for retrieval by GetLastError()
     # thread manager
-    main_thread = Thread(self.ql)
-    self.ql.thread_manager = ThreadManager(self.ql, main_thread)
+    main_thread = QlWindowsThread(self.ql)
+    self.ql.thread_manager = QlWindowsThreadManager(self.ql, main_thread)
     new_handle = Handle(thread=main_thread)
     self.ql.handle_manager.append(new_handle)
     # user configuration

@@ -106,7 +106,7 @@ def hook_WaitForSingleObject(self, address, params):
 
     target_thread: Thread = self.ql.handle_manager.get(hHandle).thread
     if not target_thread.fake:
-        self.ql.thread_manager.current_thread.waitfor(target_thread)
+        self.ql.thread_manager.cur_thread.waitfor(target_thread)
 
     return ret
 
@@ -134,7 +134,7 @@ def hook_WaitForMultipleObjects(self, address, params):
         handle_value = self.ql.unpack(self.ql.mem.read(lpHandles + i * self.ql.pointersize, self.ql.pointersize))
         if handle_value != 0:
             thread = self.ql.handle_manager.get(handle_value).thread
-            self.ql.thread_manager.current_thread.waitfor(thread)
+            self.ql.thread_manager.cur_thread.waitfor(thread)
 
     return ret
 

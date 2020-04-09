@@ -63,7 +63,7 @@ def _ShellExecute(self, dic: dict):
         self.ql.dprint(2, "[=] Sample is creating a hidden window!")
     if operation == "runas":
         self.ql.dprint(2, "[=] Sample is executing shell command as administrator!")
-    process = Thread(self, status=0, isFake=True)
+    process = QlWindowsThread(self, status=0, isFake=True)
     handle = Handle(thread=process)
     self.ql.handle_manager.append(handle)
     return handle

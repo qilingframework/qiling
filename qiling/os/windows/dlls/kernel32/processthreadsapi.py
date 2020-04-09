@@ -99,9 +99,9 @@ def hook_GetStartupInfoW(self, address, params):
 # DWORD TlsAlloc();
 @winapi(cc=STDCALL, params={})
 def hook_TlsAlloc(self, address, params):
-    idx = self.ql.thread_manager.current_thread.tls_index
-    self.ql.thread_manager.current_thread.tls_index += 1
-    self.ql.thread_manager.current_thread.tls[idx] = 0
+    idx = self.ql.thread_manager.cur_thread.tls_index
+    self.ql.thread_manager.cur_thread.tls_index += 1
+    self.ql.thread_manager.cur_thread.tls[idx] = 0
     return idx
 
 
@@ -113,11 +113,11 @@ def hook_TlsAlloc(self, address, params):
 })
 def hook_TlsFree(self, address, params):
     idx = params['dwTlsIndex']
-    if idx not in self.ql.thread_manager.current_thread.tls:
+    if idx not in self.ql.thread_manager.cur_thread.tls:
         self.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
-        del (self.ql.thread_manager.current_thread.tls[idx])
+        del (self.ql.thread_manager.cur_thread.tls[idx])
         return 1
 
 
@@ -128,14 +128,14 @@ def hook_TlsFree(self, address, params):
     "dwTlsIndex": UINT})
 def hook_TlsGetValue(self, address, params):
     idx = params['dwTlsIndex']
-    if idx not in self.ql.thread_manager.current_thread.tls:
+    if idx not in self.ql.thread_manager.cur_thread.tls:
         self.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
         # api explicity clears last error on success:
         # https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-tlsgetvalue
         self.last_error
-        return self.ql.thread_manager.current_thread.tls[idx]
+        return self.ql.thread_manager.cur_thread.tls[idx]
 
 
 # LPVOID TlsSetValue(
@@ -147,11 +147,11 @@ def hook_TlsGetValue(self, address, params):
 })
 def hook_TlsSetValue(self, address, params):
     idx = params['dwTlsIndex']
-    if idx not in self.ql.thread_manager.current_thread.tls:
+    if idx not in self.ql.thread_manager.cur_thread.tls:
         self.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
-        self.ql.thread_manager.current_thread.tls[idx] = params['lpTlsValue']
+        self.ql.thread_manager.cur_thread.tls[idx] = params['lpTlsValue']
         return 1
 
 
@@ -159,7 +159,7 @@ def hook_TlsSetValue(self, address, params):
 # );
 @winapi(cc=STDCALL, params={})
 def hook_GetCurrentThreadId(self, address, params):
-    ret = self.ql.thread_manager.current_thread.id
+    ret = self.ql.thread_manager.cur_thread.id
     return ret
 
 
@@ -211,12 +211,12 @@ def hook_CreateThread(self, address, params):
     lpThreadId = params["lpThreadId"]
 
     # new thread obj
-    new_thread = Thread(self. ql)
+    new_thread = QlWindowsThread(self. ql)
 
     if dwCreationFlags & CREATE_SUSPENDED == CREATE_SUSPENDED:
-        thread_status = Thread.READY
+        thread_status = QlWindowsThread.READY
     else:
-        thread_status = Thread.RUNNING
+        thread_status = QlWindowsThread.RUNNING
 
     # create new thread
     thread_id = new_thread.create(
