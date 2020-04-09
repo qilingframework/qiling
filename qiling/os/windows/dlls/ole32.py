@@ -20,6 +20,6 @@ from qiling.exception import *
 @winapi(cc=STDCALL, params={
     "pvReserved": UINT
 })
-def hook_OleInitialize(ql, address, params):
+def hook_OleInitialize(self, address, params):
     # I don't think we need to do anything, we hook every call for the COM library and manage them locally
     return S_OK

@@ -24,7 +24,7 @@ from qiling.os.windows.const import *
     "lpDialogFunc": POINTER,
     "dwInitParam": POINTER
 })
-def hook_DialogBoxParamA(ql, address, params):
+def hook_DialogBoxParamA(self, address, params):
     ret = 0
     return ret
 
@@ -41,17 +41,17 @@ def hook_DialogBoxParamA(ql, address, params):
     "lpString": POINTER,
     "cchMax": INT
 })
-def hook_GetDlgItemTextA(ql, address, params):
+def hook_GetDlgItemTextA(self, address, params):
     ret = 0
     hDlg = params["hDlg"]
     nIDDlgItem = params["nIDDlgItem"]
     lpString = params["lpString"]
     cchMax = params["cchMax"]
 
-    ql.stdout.write(b"Input DlgItemText :\n")
-    string = ql.stdin.readline().strip()[:cchMax]
+    self.ql.stdout.write(b"Input DlgItemText :\n")
+    string = self.ql.stdin.readline().strip()[:cchMax]
     ret = len(string)
-    ql.mem.write(lpString, string)
+    self.ql.mem.write(lpString, string)
 
     return ret
 
@@ -68,7 +68,7 @@ def hook_GetDlgItemTextA(ql, address, params):
     "lpCaption": STRING,
     "uType": UINT
 })
-def hook_MessageBoxA(ql, address, params):
+def hook_MessageBoxA(self, address, params):
     ret = 2
     return ret
 
@@ -81,7 +81,7 @@ def hook_MessageBoxA(ql, address, params):
     "hDlg": HANDLE,
     "nResult": POINTER
 })
-def hook_EndDialog(ql, address, params):
+def hook_EndDialog(self, address, params):
     ret = 1
     return ret
 
@@ -89,7 +89,7 @@ def hook_EndDialog(ql, address, params):
 # HWND GetDesktopWindow((
 # );
 @winapi(cc=STDCALL, params={})
-def hook_GetDesktopWindow(ql, address, params):
+def hook_GetDesktopWindow(self, address, params):
     pass
 
 
@@ -99,14 +99,14 @@ def hook_GetDesktopWindow(ql, address, params):
 @winapi(cc=STDCALL, params={
     "hWndNewOwner": HANDLE
 })
-def hook_OpenClipboard(ql, address, params):
-    return ql.clipboard.open(params['hWndNewOwner'])
+def hook_OpenClipboard(self, address, params):
+    return self.ql.clipboard.open(params['hWndNewOwner'])
 
 
 # BOOL CloseClipboard();
 @winapi(cc=STDCALL, params={})
-def hook_CloseClipboard(ql, address, params):
-    return ql.clipboard.close()
+def hook_CloseClipboard(self, address, params):
+    return self.ql.clipboard.close()
 
 
 # HANDLE SetClipboardData(
@@ -117,12 +117,12 @@ def hook_CloseClipboard(ql, address, params):
     "uFormat": UINT,
     "hMem": STRING
 })
-def hook_SetClipboardData(ql, address, params):
+def hook_SetClipboardData(self, address, params):
     try:
         data = bytes(params['hMem'], 'ascii', 'ignore')
     except UnicodeEncodeError:
         data = b""
-    return ql.clipboard.set_data(params['uFormat'], data)
+    return self.ql.clipboard.set_data(params['uFormat'], data)
 
 
 # HANDLE GetClipboardData(
@@ -131,14 +131,14 @@ def hook_SetClipboardData(ql, address, params):
 @winapi(cc=STDCALL, params={
     "uFormat": UINT
 })
-def hook_GetClipboardData(ql, address, params):
-    data = ql.clipboard.get_data(params['uFormat'])
+def hook_GetClipboardData(self, address, params):
+    data = self.ql.clipboard.get_data(params['uFormat'])
     if data:
-        addr = ql.heap.mem_alloc(len(data))
-        ql.mem.write(addr, data)
+        addr = self.ql.heap.mem_alloc(len(data))
+        self.ql.mem.write(addr, data)
         return addr
     else:
-        ql.dprint(0, 'Failed to get clipboard data')
+        self.ql.dprint(0, 'Failed to get clipboard data')
         return 0
 
 
@@ -148,8 +148,8 @@ def hook_GetClipboardData(ql, address, params):
 @winapi(cc=STDCALL, params={
     "uFormat": UINT
 })
-def hook_IsClipboardFormatAvailable(ql, address, params):
-    rtn = ql.clipboard.format_available(params['uFormat'])
+def hook_IsClipboardFormatAvailable(self, address, params):
+    rtn = self.ql.clipboard.format_available(params['uFormat'])
     return rtn
 
 
@@ -161,7 +161,7 @@ def hook_IsClipboardFormatAvailable(ql, address, params):
     "uCode": UINT,
     "uMapType": UINT
 })
-def hook_MapVirtualKeyW(ql, address, params):
+def hook_MapVirtualKeyW(self, address, params):
     map_value = params["uMapType"]
     code_value = params["uCode"]
     map_dict = MAP_VK.get(map_value, None)
@@ -170,10 +170,10 @@ def hook_MapVirtualKeyW(ql, address, params):
         if code is not None:
             return code
         else:
-            ql.dprint(0, "Code value %x" % info)
+            self.ql.dprint(0, "Code value %x" % info)
             raise QlErrorNotImplemented("[!] API not implemented")
     else:
-        ql.dprint(0, "Map value %x" % info)
+        self.ql.dprint(0, "Map value %x" % info)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -183,7 +183,7 @@ def hook_MapVirtualKeyW(ql, address, params):
 @winapi(cc=STDCALL, params={
     "lpString": STRING
 })
-def hook_RegisterWindowMessageA(ql, address, params):
+def hook_RegisterWindowMessageA(self, address, params):
     # maybe some samples really use this and we need to have a real implementation
     return 0xD10C
 
@@ -194,7 +194,7 @@ def hook_RegisterWindowMessageA(ql, address, params):
 @winapi(cc=STDCALL, params={
     "lpString": WSTRING
 })
-def hook_RegisterWindowMessageW(ql, address, params):
+def hook_RegisterWindowMessageW(self, address, params):
     # maybe some samples really use this and we need to have a real implementation
     return 0xD10C
 
@@ -202,7 +202,7 @@ def hook_RegisterWindowMessageW(ql, address, params):
 # HWND GetActiveWindow();
 @winapi(cc=STDCALL, params={
 })
-def hook_GetActiveWindow(ql, address, params):
+def hook_GetActiveWindow(self, address, params):
     # maybe some samples really use this and we need to have a real implementation
     return 0xD10C
 
@@ -213,7 +213,7 @@ def hook_GetActiveWindow(ql, address, params):
 @winapi(cc=STDCALL, params={
     "hWnd": POINTER
 })
-def hook_GetLastActivePopup(ql, address, params):
+def hook_GetLastActivePopup(self, address, params):
     hwnd = params["hWnd"]
     return hwnd
 
@@ -224,7 +224,7 @@ def hook_GetLastActivePopup(ql, address, params):
 @winapi(cc=STDCALL, params={
     "lpPoint": POINTER
 })
-def hook_GetPhysicalCursorPos(ql, address, params):
+def hook_GetPhysicalCursorPos(self, address, params):
     return 1
 
 
@@ -234,7 +234,7 @@ def hook_GetPhysicalCursorPos(ql, address, params):
 @winapi(cc=STDCALL, params={
     "nIndex": INT
 })
-def hook_GetSystemMetrics(ql, address, params):
+def hook_GetSystemMetrics(self, address, params):
     info = params["nIndex"]
     if info == SM_CXICON or info == SM_CYICON:
         # Size of icon
@@ -244,7 +244,7 @@ def hook_GetSystemMetrics(ql, address, params):
     elif info == SM_CYHSCROLL:
         return 300
     else:
-        ql.dprint(0, "Info value %x" % info)
+        self.ql.dprint(0, "Info value %x" % info)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -254,7 +254,7 @@ def hook_GetSystemMetrics(ql, address, params):
 @winapi(cc=STDCALL, params={
     "hWnd": POINTER
 })
-def hook_GetDC(ql, address, params):
+def hook_GetDC(self, address, params):
     handler = params["hWnd"]
     # Maybe we should really emulate the handling of screens and windows. Is going to be a pain
     return 0xD10C
@@ -268,7 +268,7 @@ def hook_GetDC(ql, address, params):
     "hdc": POINTER,
     "index": INT
 })
-def hook_GetDeviceCaps(ql, address, params):
+def hook_GetDeviceCaps(self, address, params):
     # Maybe we should really emulate the handling of screens and windows. Is going to be a pain
     return 1
 
@@ -281,7 +281,7 @@ def hook_GetDeviceCaps(ql, address, params):
     "hWnd": POINTER,
     "hdc": POINTER
 })
-def hook_ReleaseDC(ql, address, params):
+def hook_ReleaseDC(self, address, params):
     return 1
 
 
@@ -291,7 +291,7 @@ def hook_ReleaseDC(ql, address, params):
 @winapi(cc=STDCALL, params={
     "nIndex": INT
 })
-def hook_GetSysColor(ql, address, params):
+def hook_GetSysColor(self, address, params):
     info = params["nIndex"]
     return 0
 
@@ -302,7 +302,7 @@ def hook_GetSysColor(ql, address, params):
 @winapi(cc=STDCALL, params={
     "nIndex": INT
 })
-def hook_GetSysColorBrush(ql, address, params):
+def hook_GetSysColorBrush(self, address, params):
     info = params["nIndex"]
     return 0xd10c
 
@@ -315,14 +315,14 @@ def hook_GetSysColorBrush(ql, address, params):
     "hInstance": POINTER,
     "lpCursorName": INT
 })
-def hook_LoadCursorA(ql, address, params):
+def hook_LoadCursorA(self, address, params):
     return 0xd10c
 
 
 # UINT GetOEMCP();
 @winapi(cc=STDCALL, params={
 })
-def hook_GetOEMCP(ql, address, params):
+def hook_GetOEMCP(self, address, params):
     return OEM_US
 
 
@@ -338,7 +338,7 @@ def hook_GetOEMCP(ql, address, params):
     "lpBuffer": POINTER,
     "cchBufferMax": INT
 })
-def hook_LoadStringA(ql, address, params):
+def hook_LoadStringA(self, address, params):
     dst = params["lpBuffer"]
     max_len = params["cchBufferMax"]
     string = "AAAABBBBCCCCDDDD" + "\x00"
@@ -346,7 +346,7 @@ def hook_LoadStringA(ql, address, params):
         if len(string) >= max_len:
             string[max_len] = "\x00"
             string = string[:max_len]
-        ql.mem.write(dst, string.encode("utf-16le"))
+        self.ql.mem.write(dst, string.encode("utf-16le"))
     # should not count the \x00 byte
     return len(string) - 1
 
@@ -357,7 +357,7 @@ def hook_LoadStringA(ql, address, params):
 @winapi(cc=STDCALL, params={
     "uType": UINT
 })
-def hook_MessageBeep(ql, address, params):
+def hook_MessageBeep(self, address, params):
     return 1
 
 
@@ -373,7 +373,7 @@ def hook_MessageBeep(ql, address, params):
     "hmod": POINTER,
     "dwThreadId": DWORD
 })
-def hook_SetWindowsHookExA(ql, address, params):
+def hook_SetWindowsHookExA(self, address, params):
     # Should hook a procedure to a dll
     hook = params["lpfn"]
     return hook
@@ -385,7 +385,7 @@ def hook_SetWindowsHookExA(ql, address, params):
 @winapi(cc=STDCALL, params={
     "hhk": POINTER,
 })
-def hook_UnhookWindowsHookEx(ql, address, params):
+def hook_UnhookWindowsHookEx(self, address, params):
     return 1
 
 
@@ -397,7 +397,7 @@ def hook_UnhookWindowsHookEx(ql, address, params):
     "hWnd": POINTER,
     "nCmdShow": INT
 })
-def hook_ShowWindow(ql, address, params):
+def hook_ShowWindow(self, address, params):
     # return value depends on sample goal (evasion on just display error)
     return 0x1
 
@@ -410,7 +410,7 @@ def hook_ShowWindow(ql, address, params):
     "hInstance": POINTER,
     "lpIconName": INT
 })
-def hook_LoadIconA(ql, address, params):
+def hook_LoadIconA(self, address, params):
     # we should create an handle for this?
     return 0xD10C
 
@@ -421,7 +421,7 @@ def hook_LoadIconA(ql, address, params):
 @winapi(cc=STDCALL, params={
     "hWnd": POINTER
 })
-def hook_IsWindow(ql, address, params):
+def hook_IsWindow(self, address, params):
     # return value depends on sample  goal (evasion on just display error)
     return 0x1
 
@@ -438,7 +438,7 @@ def hook_IsWindow(ql, address, params):
     "wParam": UINT,
     "lParam": UINT
 })
-def hook_SendMessageA(ql, address, params):
+def hook_SendMessageA(self, address, params):
     # TODO don't know how to get right return value
     return 0xD10C
 
@@ -455,7 +455,7 @@ def hook_SendMessageA(ql, address, params):
     "wParam": UINT,
     "lParam": UINT
 })
-def hook_DefWindowProcA(ql, address, params):
+def hook_DefWindowProcA(self, address, params):
     # TODO don't know how to get right return value
     return 0xD10C
 
@@ -466,11 +466,11 @@ def hook_DefWindowProcA(ql, address, params):
 @winapi(cc=STDCALL, params={
     "lpsz": POINTER
 })
-def hook_CharNextW(ql, address, params):
+def hook_CharNextW(self, address, params):
     # Return next char if is different from \x00
     point = params["lpsz"]
-    string = read_wstring(ql, point)
-    ql.dprint(0, string)
+    string = read_wstring(self.ql, point)
+    self.ql.dprint(0, string)
     if len(string) == 0:
         return point
     else:
@@ -485,7 +485,7 @@ def hook_CharNextW(ql, address, params):
     "lpszStart": POINTER,
     "lpszCurrent": POINTER
 })
-def hook_CharPrevW(ql, address, params):
+def hook_CharPrevW(self, address, params):
     # Return next char if is different from \x00
     current = params["lpszCurrent"]
     start = params["lpszStart"]
@@ -500,17 +500,17 @@ def hook_CharPrevW(ql, address, params):
 #   ...
 # );
 @winapi(cc=CDECL, param_num=3)
-def hook_wsprintfW(ql, address, params):
-    dst, p_format, p_args = get_function_param(ql, 3)
-    format_string = read_wstring(ql, p_format)
-    size, string = printf(ql, address, format_string, p_args, "wsprintfW", wstring=True)
+def hook_wsprintfW(self, address, params):
+    dst, p_format, p_args = get_function_param(self, 3)
+    format_string = read_wstring(self.ql, p_format)
+    size, string = printf(self, address, format_string, p_args, "wsprintfW", wstring=True)
 
     count = format_string.count('%')
-    if ql.archtype== QL_X8664:
+    if self.ql.archtype== QL_X8664:
         # We must pop the stack correctly
         raise QlErrorNotImplemented("[!] API not implemented")
 
-    ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
+    self.ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
     return size
 
 # int WINAPIV sprintf(
@@ -519,22 +519,22 @@ def hook_wsprintfW(ql, address, params):
 #   ...
 # );
 @winapi(cc=CDECL, param_num=3)
-def hook_sprintf(ql, address, params):
-    dst, p_format, p_args = get_function_param(ql, 3)
-    format_string = read_wstring(ql, p_format)
-    size, string = printf(ql, address, format_string, p_args, "sprintf", wstring=True)
+def hook_sprintf(self, address, params):
+    dst, p_format, p_args = get_function_param(self, 3)
+    format_string = read_wstring(self.ql, p_format)
+    size, string = printf(self, address, format_string, p_args, "sprintf", wstring=True)
 
     count = format_string.count('%')
-    if ql.archtype== QL_X8664:
+    if self.ql.archtype== QL_X8664:
         # We must pop the stack correctly
         raise QlErrorNotImplemented("[!] API not implemented")
 
-    ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
+    self.ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
     return size
 
 
 # HWND GetForegroundWindow();
 @winapi(cc=STDCALL, params={
 })
-def hook_GetForegroundWindow(ql, address, params):
+def hook_GetForegroundWindow(self, address, params):
     return 0xF02E620D  # Value so we can recognize inside dumps

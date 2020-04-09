@@ -17,14 +17,14 @@ from qiling.os.windows.const import *
 @winapi(cc=STDCALL, params={
     "exitCode": DWORD
 })
-def hook_CorExitProcess(ql, address, params):
-    ql.uc.emu_stop()
-    ql.os.PE_RUN = False
+def hook_CorExitProcess(self, address, params):
+    self.uc.emu_stop()
+    self.PE_RUN = False
 
 
 # __int32 STDMETHODCALLTYPE _CorExeMain ();
 @winapi(cc=STDCALL, params={
 })
-def hook__CorExeMain(ql, address, params):
+def hook__CorExeMain(self, address, params):
     # TODO implement + check call type
     pass

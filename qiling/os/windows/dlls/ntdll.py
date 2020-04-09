@@ -23,10 +23,10 @@ from qiling.exception import *
     "src": POINTER,
     "count": UINT
 })
-def hook_memcpy(ql, address, params):
+def hook_memcpy(self, address, params):
     try:
-        data = bytes(ql.mem.read(params['src'], params['count']))
-        ql.mem.write(params['dest'], data)
+        data = bytes(self.ql.mem.read(params['src'], params['count']))
+        self.ql.mem.write(params['dest'], data)
     except Exception as e:
         import traceback
         print(traceback.format_exc())

@@ -65,7 +65,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.file_des[read_fd].name
                 with open(real_path) as fd:
-                    assert fd.read() ==ql.mem.read(read_buf, read_count).decode()
+                    assert fd.read() == ql.mem.read(read_buf, read_count).decode()
                 os.remove(real_path)
 
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
@@ -182,7 +182,7 @@ class ELFTest(unittest.TestCase):
             # if target:
                 # real_path = ql.file_des[read_fd].name
                 # with open(real_path) as fd:
-                    # assert fd.read() ==ql.mem.read(read_buf, read_count).decode()
+                    # assert fd.read() == ql.mem.read(read_buf, read_count).decode()
                 # os.remove(real_path)
  
         # def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
@@ -304,7 +304,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.file_des[read_fd].name
                 with open(real_path) as fd:
-                    assert fd.read() ==ql.mem.read(read_buf, read_count).decode()
+                    assert fd.read() == ql.mem.read(read_buf, read_count).decode()
                 os.remove(real_path)
  
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
@@ -433,7 +433,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.file_des[read_fd].name
                 with open(real_path) as fd:
-                    assert fd.read() ==ql.mem.read(read_buf, read_count).decode()
+                    assert fd.read() == ql.mem.read(read_buf, read_count).decode()
                 os.remove(real_path)
  
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):

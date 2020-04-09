@@ -20,15 +20,15 @@ from qiling.exception import *
 @winapi(cc=STDCALL, params={
     "lpTopLevelExceptionFilter": DWORD
 })
-def hook_SetUnhandledExceptionFilter(ql, address, params):
+def hook_SetUnhandledExceptionFilter(self, address, params):
     ret = 0x4
     return ret
 
 
 # _Post_equals_last_error_ DWORD GetLastError();
 @winapi(cc=STDCALL, params={})
-def hook_GetLastError(ql, address, params):
-    return ql.os.last_error 
+def hook_GetLastError(self, address, params):
+    return self.last_error 
 
 
 # void SetLastError(
@@ -37,8 +37,8 @@ def hook_GetLastError(ql, address, params):
 @winapi(cc=STDCALL, params={
     "dwErrCode": UINT
 })
-def hook_SetLastError(ql, address, params):
-    ql.os.last_error  = params['dwErrCode']
+def hook_SetLastError(self, address, params):
+    self.last_error  = params['dwErrCode']
     return 0
 
 
@@ -48,7 +48,7 @@ def hook_SetLastError(ql, address, params):
 @winapi(cc=STDCALL, params={
     "ExceptionInfo": POINTER
 })
-def hook_UnhandledExceptionFilter(ql, address, params):
+def hook_UnhandledExceptionFilter(self, address, params):
     ret = 1
     return ret
 
@@ -59,6 +59,6 @@ def hook_UnhandledExceptionFilter(ql, address, params):
 @winapi(cc=STDCALL, params={
     "uMode": UINT
 })
-def hook_SetErrorMode(ql, address, params):
+def hook_SetErrorMode(self, address, params):
     # TODO maybe this need a better implementation
     return 0

@@ -477,7 +477,7 @@ def ql_open_flag_mapping(flags, ql):
     return flag_mapping(flags, open_flags_name, f, t)
 
 
-def print_function(ql, address, function_name, params, ret):
+def print_function(self, address, function_name, params, ret):
     function_name = function_name.replace('hook_', '')
     if function_name in ("__stdio_common_vfprintf", "printf", "wsprintfW", "sprintf"):
         return
@@ -493,24 +493,24 @@ def print_function(ql, address, function_name, params, ret):
     if ret is not None:
         log += ' = 0x%x' % ret
 
-    if ql.output == QL_OUT_DEFAULT:
+    if self.ql.output == QL_OUT_DEFAULT:
         log = log.partition(" ")[-1]
-        ql.nprint(log + '\n')
+        self.ql.nprint(log + '\n')
 
-    elif ql.output == QL_OUT_DEBUG:
-        ql.dprint(0, log + '\n')
+    elif self.ql.output == QL_OUT_DEBUG:
+        self.ql.dprint(0, log + '\n')
 
 
-def read_cstring(ql, address):
+def read_cstring(self, address):
     result = ""
-    char = ql.mem.read(address, 1)
+    char = self.ql.mem.read(address, 1)
     while char.decode(errors="ignore") != "\x00":
         address += 1
         result += char.decode(errors="ignore")
-        char = ql.mem.read(address, 1)
+        char = self.ql.mem.read(address, 1)
     return result
 
+def post_report(self):
+    self.ql.dprint(0, "[+] Syscalls and number of invocations")
+    self.ql.dprint(0, "[-] " + str(list(self.syscall_count.items())))
 
-def post_report(ql):
-    ql.dprint(0, "[+] Syscalls and number of invocations")
-    ql.dprint(0, "[-] " + str(list(ql.PE.syscall_count.items())))

@@ -15,7 +15,7 @@ from qiling.os.windows.const import *
 @winapi(cc=CDECL, params={
     "at": INT
 })
-def hook___set_app_type(ql, address, params):
+def hook___set_app_type(self, address, params):
     pass
 
 
@@ -32,7 +32,7 @@ def hook___set_app_type(ql, address, params):
     "_DoWildCard": INT,
     "_StartInfo": POINTER
 })
-def hook___getmainargs(ql, address, params):
+def hook___getmainargs(self, address, params):
     ret = 0
     return ret
 
@@ -40,16 +40,16 @@ def hook___getmainargs(ql, address, params):
 # int* __p__fmode(
 # );
 @winapi(cc=CDECL, params={})
-def hook___p__fmode(ql, address, params):
-    addr = ql.heap.mem_alloc(ql.pointersize)
+def hook___p__fmode(self, address, params):
+    addr = self.ql.heap.mem_alloc(self.ql.pointersize)
     return addr
 
 
 # int * __p__commode(
 #    );
 @winapi(cc=CDECL, params={})
-def hook___p__commode(ql, address, params):
-    addr = ql.heap.mem_alloc(ql.pointersize)
+def hook___p__commode(self, address, params):
+    addr = self.ql.heap.mem_alloc(self.ql.pointersize)
     return addr
 
 
@@ -61,7 +61,7 @@ def hook___p__commode(ql, address, params):
     "new": UINT,
     "mask": UINT
 })
-def hook__controlfp(ql, address, params):
+def hook__controlfp(self, address, params):
     ret = 0x8001f
     return ret
 
@@ -72,23 +72,23 @@ def hook__controlfp(ql, address, params):
 @winapi(cc=CDECL, params={
     "func": POINTER
 })
-def hook_atexit(ql, address, params):
+def hook_atexit(self, address, params):
     ret = 0
     return ret
 
 
 # char*** __p__environ(void)
 @winapi(cc=CDECL, params={})
-def hook___p__environ(ql, address, params):
-    ret = ql.heap.mem_alloc(ql.pointersize * len(ql.env))
+def hook___p__environ(self, address, params):
+    ret = self.ql.heap.mem_alloc(self.ql.pointersize * len(self.ql.env))
     count = 0
-    for key in ql.env:
-        pointer = ql.heap.mem_alloc(ql.pointersize)
-        env = key + "=" + ql.env[key]
-        env_addr = ql.heap.mem_alloc(len(env) + 1)
-        ql.mem.write(env_addr, bytes(env, 'ascii') + b'\x00')
-        ql.mem.write(pointer, ql.pack(env_addr))
-        ql.mem.write(ret + count * ql.pointersize, ql.pack(pointer))
+    for key in self.ql.env:
+        pointer = self.ql.heap.mem_alloc(self.ql.pointersize)
+        env = key + "=" + self.ql.env[key]
+        env_addr = self.ql.heap.mem_alloc(len(env) + 1)
+        self.ql.mem.write(env_addr, bytes(env, 'ascii') + b'\x00')
+        self.ql.mem.write(pointer, self.ql.pack(env_addr))
+        self.ql.mem.write(ret + count * self.ql.pointersize, self.ql.pack(pointer))
         count += 1
     return ret
 
@@ -99,17 +99,17 @@ def hook___p__environ(ql, address, params):
 @winapi(cc=CDECL, params={
     "str": STRING
 })
-def hook_puts(ql, address, params):
+def hook_puts(self, address, params):
     ret = 0
     string = params["str"]
-    ql.stdout.write(bytes(string + "\n", "utf-8"))
+    self.ql.stdout.write(bytes(string + "\n", "utf-8"))
     ret = len(string) + 1
     return ret
 
 
 # void _cexit( void );
 @winapi(cc=CDECL, params={})
-def hook__cexit(ql, address, params):
+def hook__cexit(self, address, params):
     pass
 
 
@@ -121,7 +121,7 @@ def hook__cexit(ql, address, params):
     "pfbegin": POINTER,
     "pfend": POINTER
 })
-def hook__initterm(ql, address, params):
+def hook__initterm(self, address, params):
     pass
 
 
@@ -131,9 +131,9 @@ def hook__initterm(ql, address, params):
 @winapi(cc=CDECL, params={
     "status": INT
 })
-def hook_exit(ql, address, params):
-    ql.uc.emu_stop()
-    ql.os.PE_RUN = False
+def hook_exit(self, address, params):
+    self.ql.uc.emu_stop()
+    self.PE_RUN = False
 
 
 # int __cdecl _initterm_e(
@@ -144,72 +144,72 @@ def hook_exit(ql, address, params):
     "pfbegin": POINTER,
     "pfend": POINTER
 })
-def hook__initterm_e(ql, address, params):
+def hook__initterm_e(self, address, params):
     return 0
 
 
 # char***    __cdecl __p___argv (void);
 @winapi(cc=CDECL, params={})
-def hook___p___argv(ql, address, params):
-    ret = ql.heap.mem_alloc(ql.pointersize * len(ql.argv))
+def hook___p___argv(self, address, params):
+    ret = self.ql.heap.mem_alloc(self.ql.pointersize * len(self.ql.argv))
     count = 0
-    for each in ql.argv:
-        arg_pointer = ql.heap.mem_alloc(ql.pointersize)
-        arg = ql.heap.mem_alloc(len(each) + 1)
-        ql.mem.write(arg, bytes(each, 'ascii') + b'\x00')
-        ql.mem.write(arg_pointer, ql.pack(arg))
-        ql.mem.write(ret + count * ql.pointersize, ql.pack(arg_pointer))
+    for each in self.ql.argv:
+        arg_pointer = self.ql.heap.mem_alloc(self.ql.pointersize)
+        arg = self.ql.heap.mem_alloc(len(each) + 1)
+        self.ql.mem.write(arg, bytes(each, 'ascii') + b'\x00')
+        self.ql.mem.write(arg_pointer, self.ql.pack(arg))
+        self.ql.mem.write(ret + count * self.ql.pointersize, self.ql.pack(arg_pointer))
         count += 1
     return ret
 
 
 # int* __p___argc(void)
 @winapi(cc=CDECL, params={})
-def hook___p___argc(ql, address, params):
-    ret = ql.heap.mem_alloc(ql.pointersize)
-    ql.mem.write(ret, ql.pack(len(ql.argv)))
+def hook___p___argc(self, address, params):
+    ret = self.ql.heap.mem_alloc(self.ql.pointersize)
+    self.ql.mem.write(ret, self.ql.pack(len(self.ql.argv)))
     return ret
 
 
 @winapi(cc=CDECL, params={})
-def hook__get_initial_narrow_environment(ql, address, params):
+def hook__get_initial_narrow_environment(self, address, params):
     ret = 0
     count = 0
-    for key in ql.env:
-        value = key + "=" + ql.env[key]
-        env = ql.heap.mem_alloc(len(value) + 1)
+    for key in self.ql.env:
+        value = key + "=" + self.ql.env[key]
+        env = self.ql.heap.mem_alloc(len(value) + 1)
         if count == 0:
             ret = env
-        ql.mem.write(env, bytes(value, 'ascii') + b'\x00')
+        self.ql.mem.write(env, bytes(value, 'ascii') + b'\x00')
         count += 1
     return ret
 
 
 # int printf(const char *format, ...)
 @winapi(cc=CDECL, param_num=1)
-def hook_printf(ql, address, _):
+def hook_printf(self, address, _):
     ret = 0
-    format_string = get_function_param(ql, 1)
+    format_string = get_function_param(self, 1)
 
     if format_string == 0:
-        ql.nprint('0x%0.2x: printf(format = 0x0) = 0x%x' % (address, ret))
+        self.ql.nprint('0x%0.2x: printf(format = 0x0) = 0x%x' % (address, ret))
         return ret
 
-    format_string = read_cstring(ql, format_string)
+    format_string = read_cstring(self, format_string)
 
-    param_addr = ql.sp + ql.pointersize * 2
-    ret, _ = printf(ql, address, format_string, param_addr, "printf")
+    param_addr = self.ql.sp + self.ql.pointersize * 2
+    ret, _ = printf(self, address, format_string, param_addr, "printf")
 
-    set_return_value(ql, ret)
+    set_return_value(self, ret)
 
     count = format_string.count('%')
     # x8664 fastcall donnot known the real number of parameters
     # so you need to manually pop the stack
-    if ql.archtype== QL_X8664:
+    if self.ql.archtype== QL_X8664:
         # if number of params > 4
         if count + 1 > 4:
-            rsp = ql.register(UC_X86_REG_RSP)
-            ql.register(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
+            rsp = self.ql.register(UC_X86_REG_RSP)
+            self.ql.register(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
 
     return None
 
@@ -218,20 +218,20 @@ def hook_printf(ql, address, _):
 @winapi(cc=CDECL, params={
     "idx": UINT
 })
-def hook___acrt_iob_func(ql, address, params):
+def hook___acrt_iob_func(self, address, params):
     ret = 0
     return ret
 
 
 @winapi(cc=CDECL, param_num=2)
-def hook___stdio_common_vfprintf(ql, address, _):
+def hook___stdio_common_vfprintf(self, address, _):
     ret = 0
-    if ql.pointersize == 8:
-        _, _, p_format, _, p_args = get_function_param(ql, 5)
+    if self.ql.pointersize == 8:
+        _, _, p_format, _, p_args = get_function_param(self, 5)
     else:
-        _, _, _, p_format, _, p_args = get_function_param(ql, 6)
-    fmt = read_cstring(ql, p_format)
-    printf(ql, address, fmt, p_args, '__stdio_common_vfprintf')
+        _, _, _, p_format, _, p_args = get_function_param(self, 6)
+    fmt = read_cstring(self, p_format)
+    printf(self, address, fmt, p_args, '__stdio_common_vfprintf')
     return ret
 
 
@@ -241,7 +241,7 @@ def hook___stdio_common_vfprintf(ql, address, _):
 @winapi(cc=CDECL, params={
     'lpString': WSTRING
 })
-def hook_lstrlenW(ql, address, params):
+def hook_lstrlenW(self, address, params):
     ret = 0
     string = params["lpString"]
     if string == 0:
@@ -252,7 +252,7 @@ def hook_lstrlenW(ql, address, params):
 
 
 @winapi(cc=CDECL, params={})
-def hook___lconv_init(ql, address, params):
+def hook___lconv_init(self, address, params):
     ret = 0
     return ret
 
@@ -263,7 +263,7 @@ def hook___lconv_init(ql, address, params):
 @winapi(cc=CDECL, params={
     "str": STRING
 })
-def hook_strlen(ql, address, params):
+def hook_strlen(self, address, params):
     _str = params["str"]
     strlen = len(_str)
     return strlen
@@ -279,7 +279,7 @@ def hook_strlen(ql, address, params):
     "string2": STRING,
     "count": SIZE_T
 })
-def hook_strncmp(ql, address, params):
+def hook_strncmp(self, address, params):
     s1 = params["string1"]
     s2 = params["string2"]
     count = params["count"]
@@ -299,9 +299,9 @@ def hook_strncmp(ql, address, params):
 @winapi(cc=CDECL, params={
     "size": UINT
 })
-def hook_malloc(ql, address, params):
+def hook_malloc(self, address, params):
     size = params['size']
-    addr = ql.heap.mem_alloc(size)
+    addr = self.ql.heap.mem_alloc(size)
     return addr
 
 
@@ -311,10 +311,10 @@ def hook_malloc(ql, address, params):
 @winapi(cc=CDECL, params={
     "function": POINTER
 })
-def hook__onexit(ql, address, params):
+def hook__onexit(self, address, params):
     function = params['function']
-    addr = ql.heap.mem_alloc(ql.pointersize)
-    ql.mem.write(addr, ql.pack(function))
+    addr = self.ql.heap.mem_alloc(self.ql.pointersize)
+    self.ql.mem.write(addr, self.ql.pack(function))
     return addr
 
 
@@ -328,11 +328,11 @@ def hook__onexit(ql, address, params):
     "c": INT,
     "count": SIZE_T
 })
-def hook_memset(ql, address, params):
+def hook_memset(self, address, params):
     dest = params["dest"]
     c = params["c"]
     count = params["count"]
-    ql.mem.write(dest, bytes(c) * count)
+    self.ql.mem.write(dest, bytes(c) * count)
     return dest
 
 
@@ -344,10 +344,10 @@ def hook_memset(ql, address, params):
     "num": SIZE_T,
     "size": SIZE_T
 })
-def hook_calloc(ql, address, params):
+def hook_calloc(self, address, params):
     num = params['num']
     size = params['size']
-    ret = ql.heap.mem_alloc(num * size)
+    ret = self.ql.heap.mem_alloc(num * size)
     return ret
 
 
@@ -361,9 +361,9 @@ def hook_calloc(ql, address, params):
     "src": POINTER,
     "num": SIZE_T
 })
-def hook_memmove(ql, address, params):
-    data =ql.mem.read(params['src'], params['num'])
-    ql.mem.write(params['dest'], bytes(data))
+def hook_memmove(self, address, params):
+    data = self.ql.mem.read(params['src'], params['num'])
+    self.ql.mem.write(params['dest'], bytes(data))
     return params['dest']
 
 
@@ -373,7 +373,7 @@ def hook_memmove(ql, address, params):
 @winapi(cc=CDECL, params={
     "c": UINT
 })
-def hook__ismbblead(ql, address, params):
+def hook__ismbblead(self, address, params):
     # TODO check if is CDECL or not
     # If locale is utf-8 always return 0
     loc = LOCALE["default"]
