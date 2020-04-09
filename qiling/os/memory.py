@@ -120,7 +120,6 @@ class QlMemoryManager:
         return (addr + (alignment - 1)) & mask
 
 
-
     def read(self, addr: int, size: int) -> bytearray:
         return self.ql.uc.mem_read(addr, size)
 
@@ -313,9 +312,6 @@ class QlMemoryManager:
         else:
             self.ql.uc.mem_map_ptr(addr, size, perms, ptr)
 
-
-
-
 # A Simple Heap Implementation
 class Chunk():
     def __init__(self, address, size):
@@ -344,6 +340,7 @@ class Heap:
         return (size // unit + (1 if size % unit else 0)) * unit     
 
     def mem_alloc(self, size):
+        
         if self.ql.archtype== QL_X86:
             size = self._align(size, 4)
         elif self.ql.archtype== QL_X8664:

@@ -20,6 +20,7 @@ from unicorn.x86_const import *
 from unicorn.arm64_const import *
 from unicorn.mips_const import *
 
+from qiling.exception import *
 from qiling.os.utils import *
 from qiling.os.macos.const import *
 from qiling.os.macos.thread import *
@@ -56,7 +57,7 @@ def ql_arm64_poll(ql, target, address, size, *args, **kw):
     ql_definesyscall_return(ql, KERN_SUCCESS)
     # FIXME:
     ql.nprint("FIXME: syscall[poll] >> exit for now")
-    exit()
+    #exit()
 
 
 ################
@@ -239,7 +240,7 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
         commonattr = ql.macho_fs.get_common_attr(path_str, attrlist["commonattr"])
         if not commonattr:
             ql.dprint(0, "Error File Not Exist: %s" % (path_str))
-            exit(0)
+            raise QlErrorSyscallError("Error File Not Exist")
         attr += commonattr
     
     attr_len = len(attr) + 4
@@ -583,6 +584,7 @@ def ql_syscall_terminate_with_payload(ql, pid, reason_namespace, reason_code, pa
             payload, payload_size, reason_string))
     ql_definesyscall_return(ql, KERN_SUCCESS)
     ql.uc.emu_stop()
+    raise QlErrorSyscallError("[!] Exit with Error")
 
 # 0x209
 def ql_syscall_abort_with_payload(ql, reason_namespace, reason_code, payload, payload_size, reason_string, reason_flags):

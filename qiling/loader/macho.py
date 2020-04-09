@@ -38,8 +38,6 @@ class Macho(QlLoader):
         self.dyld_path      = dyld_path
         self.using_dyld     = False
         self.vm_end_addr    = 0x0
-        # self.dyld_slide = 0x1
-        # todo: dyld loader
 
     def loadMacho(self, depth=0, isdyld=False):
 
@@ -77,7 +75,6 @@ class Macho(QlLoader):
                         pass
 
                     if cmd.cmd_id == LC_SEGMENT_64:
-                        #print(cmd)
                         self.loadSegment64(cmd, isdyld)
 
                 if pass_count == 3:
@@ -92,7 +89,6 @@ class Macho(QlLoader):
                             self.loading_file = self.dyld_file
                             self.proc_entry = self.loadMacho(depth + 1, True)
                             self.loading_file = self.macho_file
-                            #self.ql.nprint("[+] Dyld ProcEntry: {}".format(self.proc_entry))
                             self.using_dyld = True
 
         if depth == 0:
@@ -107,12 +103,11 @@ class Macho(QlLoader):
             self.ql.macho_entry = self.binary_entry + self.slide
             self.ql.loadbase = self.ql.macho_entry
             self.ql.load_base =  self.slide
-        # else:
-        #     self.ql.nprint("[+] Loading dyld")
 
         return self.proc_entry
         
     def loadSegment64(self, cmd, isdyld):
+        PAGE_SIZE = 0x1000
         if isdyld:
             slide = self.dyld_slide
         else:
@@ -123,12 +118,18 @@ class Macho(QlLoader):
         seg_name = cmd.segment_name
         seg_data = bytes(self.loading_file.get_segment(seg_name).content)
 
-        self.ql.dprint(0, "[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
-        self.ql.mem.map(vaddr_start, seg_size)
-        self.ql.mem.write(vaddr_start, seg_data)
-        if self.vm_end_addr < vaddr_end:
-            self.vm_end_addr = vaddr_end
-        # print("SegData : {}".format(seg_data[0x119c:]))
+        if seg_name[:10] == "__PAGEZERO":
+            self.ql.dprint(0, "[+] Now loading {}, VM[{}:{}] for pagezero actually it only got a page size".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
+            self.ql.mem.map(vaddr_start, PAGE_SIZE)
+            self.ql.mem.write(vaddr_start, b'\x00' * PAGE_SIZE)
+            if self.vm_end_addr < vaddr_end:
+                self.vm_end_addr = vaddr_end
+        else:
+            self.ql.dprint(0, "[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
+            self.ql.mem.map(vaddr_start, seg_size)
+            self.ql.mem.write(vaddr_start, seg_data)
+            if self.vm_end_addr < vaddr_end:
+                self.vm_end_addr = vaddr_end
     
     def loadUnixThread(self, cmd, isdyld):
         if not isdyld:

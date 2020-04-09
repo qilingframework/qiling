@@ -42,7 +42,7 @@ class QlArchX86(QlArch):
 
 
     # get initialized unicorn engine
-    def get_Uc(self):
+    def get_init_uc(self):
         uc = Uc(UC_ARCH_X86, UC_MODE_32)  
         return uc
 
@@ -200,7 +200,7 @@ class QlArchX8664(QlArch):
 
 
     # get initialized unicorn engine
-    def get_Uc(self):
+    def get_init_uc(self):
         uc = Uc(UC_ARCH_X86, UC_MODE_64)  
         return uc
 
@@ -384,15 +384,16 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
             ql.dprint(0, "[+] FreeBSD %s GDT_ADDR is 0x%x" % (GDTTYPE, GDT_ADDR))
             ql.mem.map(GDT_ADDR, GDT_LIMIT)
     
-    if ql.ostype == QL_MACOS and GDTTYPE == "CS":
+    if ql.ostype == QL_MACOS:
         if not ql.shellcoder:
             if ql.archtype== QL_X86:
                 GDT_ADDR = GDT_ADDR + QL_X86_GDT_ADDR_PADDING
             elif ql.archtype== QL_X8664:
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
 
-        ql.dprint(0, "[+] GDT_ADDR is 0x%x" % (GDT_ADDR))
-        ql.mem.map(GDT_ADDR, GDT_LIMIT)
+        if not ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT):
+            ql.dprint(0, "[+] GDT_ADDR is 0x%x" % (GDT_ADDR))
+            ql.mem.map(GDT_ADDR, GDT_LIMIT)
     
     # create GDT entry, then write GDT entry into GDT table
     gdt_entry = create_gdt_entry(SEGMENT_ADDR, SEGMENT_SIZE, SPORT, QL_X86_F_PROT_32)

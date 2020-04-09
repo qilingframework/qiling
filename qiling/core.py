@@ -17,6 +17,7 @@ from qiling.os.linux.thread import *
 from qiling.debugger.utils import *
 from qiling.os.memory import QlMemoryManager
 
+
 __version__ = "0.9"
 
 
@@ -122,6 +123,7 @@ class Qiling:
         self.entry_point = 0
         # syscall filter for strace-like functionality
         self.strace_filter = None
+
 
         """
         Qiling Framework Core Engine
@@ -245,22 +247,10 @@ class Qiling:
         """
         Load architecture's and os module
         ql.pc, ql.sp and etc
-        FIXME: somehow self.arch = self.arch_setup() doesn't work
-        FIXME: somehow self.os = self.os_setup() doesn't work
         """
-        self.arch = self.arch_setup()(self)
-        self.os = self.os_setup()(self)
 
-        #self.os.load()
-
-    # setting up arch
-    def arch_setup(self):
-        return ql_arch_setup(self)
-
-    # setting up os
-    def os_setup(self, function_name = None):
-        return ql_os_setup(self, function_name)
-
+        self.arch = ql_arch_setup(self)
+        self.os = ql_os_setup(self)
 
     def run(self):
         # setup strace filter for logger
@@ -664,21 +654,6 @@ class Qiling:
             return self.arch.get_register(register_str)
         else:    
             return self.arch.set_register(register_str, value)
-
-    # ql.init_Uc - initialized unicorn engine
-    @property
-    def init_Uc(self):
-        return self.arch.get_Uc()
-
-    # ql.syscall - get syscall for all posix series
-    @property
-    def syscall(self):
-        return self.os.get_syscall()
-
-    # ql.syscall_param - get syscall for all posix series
-    @property
-    def syscall_param(self):
-        return self.os.get_syscall_param()
 
     # ql.reg_pc - PC register name getter
     @property

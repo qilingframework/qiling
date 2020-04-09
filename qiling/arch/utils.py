@@ -18,6 +18,17 @@ from qiling.const import *
 from qiling.exception import *
 
 
+def ql_arch_setup(ql):
+    if not ql_is_valid_arch(ql.archtype):
+        raise QlErrorArch("[!] Invalid Arch")
+    
+    archmanager = ql_arch_convert_str(ql.archtype).upper()
+    archmanager = ("QlArch" + archmanager)
+
+    module_name = ql_build_module_import_name("arch", None, ql.archtype)
+    return ql_get_module_function(module_name, archmanager)(ql)
+    
+
 def ql_addr_to_str(ql, addr, short, endian):
     if ql.archbit == 64 and short == False:
         addr = (hex(int.from_bytes(struct.pack('<Q', addr), byteorder=endian)))

@@ -52,7 +52,6 @@ def vm_shared_region_enter(ql):
     ql.mem.map(SHARED_REGION_BASE_X86_64, SHARED_REGION_SIZE_X86_64)
     ql.macos_shared_region = True
     ql.macos_shared_region_port = MachPort(9999)        # random port name
-    pass
 
 
 def map_commpage(ql):
@@ -82,7 +81,7 @@ class SharedFileMappingNp:
         self.sfm_max_prot = unpack("<L", self.ql.mem.read(addr + 24, 4))[0]
         self.sfm_init_prot = unpack("<L", self.ql.mem.read(addr + 28, 4))[0]
 
-        self.ql.nprint("[ShareFileMapping]: addr: 0x{:X}, size: 0x{:X}, fileOffset:0x{:X}, maxProt: {}, initProt: {}".format(
+        self.ql.dprint(0, "[ShareFileMapping]: addr: 0x{:X}, size: 0x{:X}, fileOffset:0x{:X}, maxProt: {}, initProt: {}".format(
             self.sfm_address, self.sfm_size, self.sfm_file_offset, self.sfm_max_prot, self.sfm_init_prot
             ))
 
@@ -123,26 +122,26 @@ class FileSystem():
             filename = path.split("/")[-1]
             filename_len = len(filename) + 1        # add \0
             attr += pack("<L", filename_len)
-            self.ql.nprint("FileName :{}, len:{}".format(filename, filename_len))
+            self.ql.dprint(0, "FileName :{}, len:{}".format(filename, filename_len))
 
         if cmn_flags & ATTR_CMN_DEVID != 0:
             attr += pack("<L", file_stat.st_dev)
-            self.ql.nprint("DevID: {}".format(file_stat.st_dev))
+            self.ql.dprint(0, "DevID: {}".format(file_stat.st_dev))
 
         if cmn_flags & ATTR_CMN_OBJTYPE != 0:
             if os.path.isdir(path):
                 attr += pack("<L", VDIR)
-                self.ql.nprint("ObjType: DIR")
+                self.ql.dprint("ObjType: DIR")
             elif os.path.islink(path):
                 attr += pack("<L", VLINK)
-                self.ql.nprint("ObjType: LINK")
+                self.ql.dprint(0, "ObjType: LINK")
             else:
                 attr += pack("<L", VREG)
-                self.ql.nprint("ObjType: REG")
+                self.ql.dprint(0, "ObjType: REG")
             
         if cmn_flags & ATTR_CMN_OBJID != 0:
             attr += pack("<Q", file_stat.st_ino)
-            self.ql.nprint("VnodeID :{}".format(file_stat.st_ino))
+            self.ql.dprint(0, "VnodeID :{}".format(file_stat.st_ino))
 
         # at last, add name 
         if cmn_flags & ATTR_CMN_NAME != 0:
@@ -151,7 +150,7 @@ class FileSystem():
             attr += filename.encode("utf8")
             attr += b'\x00'
         
-        self.ql.nprint("Attr : {}".format(attr))
+        self.ql.dprint(0, "Attr : {}".format(attr))
     
         return attr
 

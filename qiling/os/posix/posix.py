@@ -11,6 +11,8 @@ from unicorn.x86_const import *
 from qiling.const import *
 from qiling.utils import *
 
+from qiling.os.utils import *
+
 from qiling.os.macos.syscall import *
 from qiling.os.posix.syscall import *
 from qiling.os.freebsd.syscall import *
@@ -26,20 +28,32 @@ class QlOsPosix(QlOs):
         self.dict_posix_syscall_by_num = dict()
 
 
+    # ql.syscall - get syscall for all posix series
+    @property
+    def syscall(self):
+        return self.get_syscall()
+
+
+    # ql.syscall_param - get syscall for all posix series
+    @property
+    def syscall_param(self):
+        return self.get_syscall_param()
+
+
     def load_syscall(self, intno = None):
-        map_syscall = self.ql.os_setup(function_name = "map_syscall")
+        map_syscall = ql_os_setup(self.ql, function_name = "map_syscall")
         
         if self.ql.archtype== QL_MIPS32:   
            if intno != 0x11:
                raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)        
         
-        param0 , param1, param2, param3, param4, param5 = self.ql.syscall_param
+        param0 , param1, param2, param3, param4, param5 = self.syscall_param
 
-        self.syscall_map = self.dict_posix_syscall_by_num.get(self.ql.syscall)
+        self.syscall_map = self.dict_posix_syscall_by_num.get(self.syscall)
         if self.syscall_map != None:
             self.syscall_name = self.syscall_map.__name__
         else:
-            self.syscall_name = map_syscall(self.ql.syscall)
+            self.syscall_name = map_syscall(self.syscall)
             if self.syscall_name != None:
                 replace_func = self.dict_posix_syscall.get(self.syscall_name)
                 if replace_func != None:
@@ -60,7 +74,7 @@ class QlOsPosix(QlOs):
                 self.ql.nprint("[!] Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
                 raise
         else:
-            self.ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implemented" %(self.ql.pc, self.ql.syscall, self.ql.syscall))
+            self.ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implemented" %(self.ql.pc, self.syscall, self.syscall))
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Syscall Not Found")
 

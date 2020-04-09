@@ -36,7 +36,7 @@ class QlOsLinux(QlOsPosix):
         initiate UC needs to be in loader,
         or else it will kill execve
         """
-        self.ql.uc = self.ql.init_Uc
+        self.ql.uc = self.ql.arch.init_uc
         
         # ARM
         if self.ql.archtype== QL_ARM:

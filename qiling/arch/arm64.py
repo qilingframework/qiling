@@ -41,7 +41,7 @@ class QlArchARM64(QlArch):
         return self.ql.mem.write(SP + offset, self.ql.pack64(data))
 
     # get initialized unicorn engine
-    def get_Uc(self):
+    def get_init_uc(self):
         uc = Uc(UC_ARCH_ARM64, UC_MODE_ARM)   
         return uc
 

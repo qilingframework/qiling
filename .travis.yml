@@ -119,6 +119,6 @@ matrix:
 #      script:
 #        - wsl python3 test_all.py
 
-  # allow_failures:
-  #   - os: osx
-  #   - services: docker
+  allow_failures:
+    - os: osx
+    #- services: docker

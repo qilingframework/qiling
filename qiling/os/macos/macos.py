@@ -38,7 +38,7 @@ class QlOsMacos(QlOsPosix):
         initiate UC needs to be in loader,
         or else it will kill execve
         """
-        self.ql.uc = self.ql.init_Uc
+        self.ql.uc = self.ql.arch.init_uc
 
         if self.ql.archtype== QL_ARM64:
             self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x0000000160503000
@@ -108,7 +108,8 @@ class QlOsMacos(QlOsPosix):
             ql_x8664_setup_gdt_segment_ss(self.ql)
         
         ql_setup_output(self.ql)
-        vm_shared_region_enter(self.ql)
+        # FIXME: Not working due to overlarge mapping, need to fix it
+        # vm_shared_region_enter(self.ql)
         map_commpage(self.ql)
         self.ql.macho_thread = MachoThread()
         

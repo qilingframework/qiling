@@ -26,7 +26,7 @@ class BinaryHeader(Header):
         self.lc_size        = unpack("<L", FR.read(4))[0]
         self.flags          = unpack("<L", FR.read(4))[0]
         
-        if self.magic == MAGIC_64:
+        if self.magic in MAGIC_64:
             self.reserved = unpack("<L", FR.read(4))[0]
         self.header_size = FR.offset
 
