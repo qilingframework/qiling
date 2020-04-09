@@ -65,6 +65,8 @@ class QlOutOfMemory(QlErrorBase):
 class QlMemoryMappedError(QlErrorBase):
     pass
 
+class QlGDTError(QlErrorBase):
+    pass
 
 def QlPrintException(msg):
     exc_type, exc_value, exc_traceback = sys.exc_info()
