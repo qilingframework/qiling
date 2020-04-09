@@ -362,7 +362,7 @@ class GDTManage:
 
         self.ql = ql
         self.gdt_number = GDT_ENTRY_ENTRIES
-        self.gdt_used = [False] * GDT_ENTRY_ENTRIES
+        # self.gdt_used = [False] * GDT_ENTRY_ENTRIES
         self.gdt_addr = GDT_ADDR
         self.gdt_limit = GDT_LIMIT
 
@@ -372,7 +372,7 @@ class GDTManage:
         # create GDT entry, then write GDT entry into GDT table
         gdt_entry = self._create_gdt_entry(SEGMENT_ADDR, SEGMENT_SIZE, SPORT, QL_X86_F_PROT_32)
         self.ql.mem.write(self.gdt_addr + (index << 3), gdt_entry)
-        self.gdt_used[index] = True
+        # self.gdt_used[index] = True
 
     def get_gdt_buf(self, start, end):
         return ql.mem.read(self.gdt_addr + (start << 3), (start << 3) - (end << 3))
@@ -381,12 +381,13 @@ class GDTManage:
         return ql.mem.write(self.gdt_addr + (start << 3), buf[ : (start << 3) - (end << 3)])
 
     def get_free_idx(self, start = 0, end = -1):
+        # The Linux kernel determines whether the segment is empty by judging whether the content in the current GDT segment is 0.
         if end == -1:
             end = self.gdt_number
 
         idx = -1
         for i in range(start, end):
-            if not self.gdt_used[i]:
+            if self.ql.unpack64(self.ql.mem.read(self.gdt_addr + (i << 3), 8)) == 0:
                 idx = i
                 break
 
