@@ -10,17 +10,15 @@ from unicorn.x86_const import *
 from unicorn.arm64_const import *
 from unicorn.mips_const import *
 
+from qiling.const import *
+
 from qiling.loader.elf import *
 from qiling.arch.x86 import *
 
+from qiling.os.utils import *
+from qiling.os.posix.posix import QlOsPosix
 from qiling.os.linux.const import *
 from qiling.os.linux.utils import *
-from qiling.os.utils import *
-from qiling.const import *
-
-from qiling.arch.x86 import *
-
-from qiling.os.posix.posix import QlOsPosix
 
 class QlOsLinux(QlOsPosix):
     def __init__(self, ql):
@@ -121,7 +119,7 @@ class QlOsLinux(QlOsPosix):
             else:
                 if self.ql.multithread == True:        
                     # start multithreading
-                    thread_management = ThreadManagement(ql)
+                    thread_management = QlLinuxThreadManagement(ql)
                     self.ql.thread_management = thread_management
                     
                     if self.ql.archtype== QL_ARM:
@@ -133,7 +131,7 @@ class QlOsLinux(QlOsPosix):
                     else:
                         thread_set_tls = None
                     
-                    main_thread = Thread(self.ql, thread_management, total_time = self.ql.timeout, special_settings_fuc = thread_set_tls)
+                    main_thread = QlLinuxThread(self.ql, thread_management, total_time = self.ql.timeout, special_settings_fuc = thread_set_tls)
                     
                     main_thread.save()
                     main_thread.set_start_address(self.ql.entry_point)
