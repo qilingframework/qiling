@@ -372,6 +372,7 @@ class GDTManage:
         # create GDT entry, then write GDT entry into GDT table
         gdt_entry = self._create_gdt_entry(SEGMENT_ADDR, SEGMENT_SIZE, SPORT, QL_X86_F_PROT_32)
         self.ql.mem.write(self.gdt_addr + (index << 3), gdt_entry)
+        self.gdt_used[index] = True
 
     def get_gdt_buf(self, start, end):
         return ql.mem.read(self.gdt_addr + (start << 3), (start << 3) - (end << 3))
@@ -387,6 +388,7 @@ class GDTManage:
         for i in range(start, end):
             if not self.gdt_used[i]:
                 idx = i
+                break
 
         return idx
 
