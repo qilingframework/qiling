@@ -103,14 +103,15 @@ def ql_bin_to_ipv4(ip):
         (ip & 0xff))
 
 
-def ql_init_configuration(ql):
+def ql_init_configuration(self):
     config = configparser.ConfigParser()
-    config.read(ql.config)
-    ql.dprint(2, "[+] Added configuration file")
+    config.read(self.profile)
+    print(self.profile)
+    self.ql.dprint(2, "[+] Added configuration file")
     for section in config.sections():
-        ql.dprint(2, "[+] Section: %s" % section)
+        self.ql.dprint(2, "[+] Section: %s" % section)
         for key in config[section]:
-            ql.dprint(2, "[-] %s %s" % (key, config[section][key]) )
+            self.ql.dprint(2, "[-] %s %s" % (key, config[section][key]) )
     return config
 
 def ql_bin_to_ip(ip):

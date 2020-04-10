@@ -404,9 +404,9 @@ def hook_VerifyVersionInfoW(self, address, params):
                 else:
                     self.ql.dprint(2, "[=] The sample asks for %s" % version_asked)
             # We can finally compare
-            res = compare(self.ql.config.getint("SYSTEM", "os"), operator, int(concat))
+            res = compare(self.profile.getint("SYSTEM", "os"), operator, int(concat))
         elif key == VER_SERVICEPACKMAJOR:
-            res = compare(self.ql.config.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_version_info_asked[key])
+            res = compare(self.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_version_info_asked[key])
         else:
             raise QlErrorNotImplemented("[!] API not implemented")
         # The result is a AND between every value, so if we find a False we just exit from the loop
@@ -425,7 +425,7 @@ def hook_VerifyVersionInfoW(self, address, params):
     "pcbBuffer": POINTER
 })
 def hook_GetUserNameW(self, address, params):
-    username = (self.ql.config["USER"]["user"]+"\x00").encode("utf-16le")
+    username = (self.profile["USER"]["user"]+"\x00").encode("utf-16le")
     dst = params["lpBuffer"]
     max_size = params["pcbBuffer"]
     self.ql.mem.write(max_size, len(username).to_bytes(4, byteorder="little"))
@@ -446,7 +446,7 @@ def hook_GetUserNameW(self, address, params):
     "nSize": POINTER
 })
 def hook_GetComputerNameW(self, address, params):
-    computer = (self.ql.config["SYSTEM"]["computer_name"] + "\x00").encode("utf-16le")
+    computer = (self.profile["SYSTEM"]["computer_name"] + "\x00").encode("utf-16le")
     dst = params["lpBuffer"]
     max_size = params["nSize"]
     self.ql.mem.write(max_size, (len(computer)-2).to_bytes(4, byteorder="little"))

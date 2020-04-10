@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys
+import sys, random
 
 sys.path.insert(0, "..")
 
@@ -49,10 +49,50 @@ def test_pe_win_x86_gandcrab():
         assert(default_values[1] != computer_memory)
         ql.uc.emu_stop()
 
+    def randomize_config_value(ql, key, subkey):
+        # https://en.wikipedia.org/wiki/Volume_serial_number
+        # https://www.digital-detective.net/documents/Volume%20Serial%20Numbers.pdf
+        if key == "VOLUME" and subkey == "serial_number":
+            month = random.randint(0, 12)
+            day = random.randint(0, 30)
+            first = hex(month)[2:] + hex(day)[2:]
+            seconds = random.randint(0, 60)
+            milli = random.randint(0, 100)
+            second = hex(seconds)[2:] + hex(milli)[2:]
+            first_half = int(first, 16) + int(second, 16)
+            hour = random.randint(0, 24)
+            minute = random.randint(0, 60)
+            third = hex(hour)[2:] + hex(minute)[2:]
+            year = random.randint(2000, 2020)
+            second_half = int(third, 16) + year
+            result = int(hex(first_half)[2:] + hex(second_half)[2:], 16)
+            ql.os.profile[key][subkey] = str(result)
+        elif key == "USER" and subkey == "user":
+            length = random.randint(0, 15)
+            new_name = ""
+            for i in range(length):
+                new_name += random.choice(st.ascii_lowercase + st.ascii_uppercase)
+            old_name = ql.os.profile[key][subkey]
+            # update paths
+            ql.os.profile[key][subkey] = new_name
+            for path in ql.os.profile["PATHS"]:
+                val = ql.os.profile["PATHS"][path].replace(old_name, new_name)
+                ql.os.profile["PATHS"][path] = val
+                ql.dprint(0, ql.os.profile["PATHS"][path])
+        elif key == "SYSTEM" and subkey == "computer_name":
+            length = random.randint(0, 15)
+            new_name = ""
+            for i in range(length):
+                new_name += random.choice(st.ascii_lowercase + st.ascii_uppercase)
+            ql.os.profile[key][subkey] = new_name
+        else:
+            raise QlErrorNotImplemented("[!] API not implemented")
+
+
     ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                 output="debug")
-    default_user = ql.config["USER"]["user"]
-    default_computer = ql.config["SYSTEM"]["computer_name"]
+    default_user = ql.os.profile["USER"]["user"]
+    default_computer = ql.os.profile["SYSTEM"]["computer_name"]
 
     ql.hook_address(stop, 0x40860f, user_data=(default_user, default_computer))
     randomize_config_value(ql, "USER", "user")

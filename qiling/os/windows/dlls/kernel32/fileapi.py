@@ -101,7 +101,7 @@ def hook_ReadFile(self, address, params):
         self.ql.mem.write(lpBuffer, s)
         self.ql.mem.write(lpNumberOfBytesRead, self.ql.pack(read_len))
     else:
-        f = self.ql.handle_manager.get(hFile).file
+        f = self.handle_manager.get(hFile).file
         data = f.read(nNumberOfBytesToRead)
         self.ql.mem.write(lpBuffer, data)
         self.ql.mem.write(lpNumberOfBytesRead, self.ql.pack32(lpNumberOfBytesRead))
@@ -134,7 +134,7 @@ def hook_WriteFile(self, address, params):
         self.ql.stdout.write(s)
         self.ql.mem.write(lpNumberOfBytesWritten, self.ql.pack(nNumberOfBytesToWrite))
     else:
-        f = self.ql.handle_manager.get(hFile)
+        f = self.handle_manager.get(hFile)
         if f is None:
             # Invalid handle
             self.last_error  = ERROR_INVALID_HANDLE
@@ -169,7 +169,7 @@ def _CreateFile(self, address, params, name):
     s_lpFileName = ql_transform_to_real_path(self.ql, s_lpFileName)
     f = open(s_lpFileName.replace("\\", os.sep), mode)
     new_handle = Handle(file=f)
-    self.ql.handle_manager.append(new_handle)
+    self.handle_manager.append(new_handle)
     ret = new_handle.id
 
     return ret
@@ -230,7 +230,7 @@ def hook_CreateFileW(self, address, params):
     "lpBuffer": POINTER
 })
 def hook_GetTempPathW(self, address, params):
-    temp = (self.ql.config["PATHS"]["temp"] + "\\\x00").encode('utf-16le')
+    temp = (self.profile["PATHS"]["temp"] + "\\\x00").encode('utf-16le')
     dest = params["lpBuffer"]
     temp_path = os.path.join(self.ql.rootfs, "Windows", "Temp")
     if not os.path.exists(temp_path):
@@ -303,7 +303,7 @@ def hook_GetVolumeInformationW(self, address, params):
         pt_serial_number = params["lpVolumeSerialNumber"]
         if pt_serial_number != 0:
             # TODO maybe has to be int
-            serial_number = (self.ql.config["VOLUME"]["serial_number"] + "\x00").encode("utf-16le")
+            serial_number = (self.profile["VOLUME"]["serial_number"] + "\x00").encode("utf-16le")
             self.ql.mem.write(pt_serial_number, serial_number)
         pt_system_type = params["lpFileSystemNameBuffer"]
         pt_flag = params["lpFileSystemFlags"]
@@ -312,7 +312,7 @@ def hook_GetVolumeInformationW(self, address, params):
             flag = 0x00020000.to_bytes(4, byteorder="little")
             self.ql.mem.write(pt_flag, flag)
         if pt_system_type != 0:
-            system_type = (self.ql.config["VOLUME"]["type"] + "\x00").encode("utf-16le")
+            system_type = (self.profile["VOLUME"]["type"] + "\x00").encode("utf-16le")
             self.ql.mem.write(pt_system_type, system_type)
     else:
         raise QlErrorNotImplemented("[!] API not implemented")

@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys, struct, platform, importlib
+import sys, struct, platform, ntpath
 import os as pyos
 from unicorn import *
 
@@ -57,6 +57,7 @@ class Qiling:
             stack_address=0,
             stack_size=0,
             interp_base=0,
+            append = None,
     ):
         # Define during ql=Qiling()
         self.output = output
@@ -108,7 +109,7 @@ class Qiling:
         self.global_thread_id = 0
         self.debugger = None
         self.automatize_input = False
-        self.config = None 
+        self.profile = None 
         # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
         self.multithread = False
         self.thread_management = None    
@@ -123,7 +124,8 @@ class Qiling:
         self.entry_point = 0
         # syscall filter for strace-like functionality
         self.strace_filter = None
-
+        # generic append function
+        self.append = append
 
         """
         Qiling Framework Core Engine
@@ -149,24 +151,34 @@ class Qiling:
             elif not pyos.path.exists(str(self.filename[0])) or not pyos.path.exists(self.rootfs):
                 raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
 
+        if self.shellcoder:
+            self.targetname = "qilingshellcode"
+        else:    
+            self.targetname = ntpath.basename(self.filename[0])
+        
+        self.cur_pathname = pyos.path.abspath(os.getcwd())
 
         # Looger's configuration
         _logger = ql_setup_logging_stream(self)
 
-
         if self.log_dir is not None and type(self.log_dir) == str:
-
-            self.log_dir = pyos.path.join(self.rootfs, self.log_dir)
+            self.log_dir = pyos.path.join(self.cur_pathname, self.log_dir)   
+            
             if not pyos.path.exists(self.log_dir):
                 pyos.makedirs(self.log_dir, 0o755)
 
             pid = pyos.getpid()
-            # Is better to call the logfile as the binary we are testing instead of a pid with no logical value
-            self.log_file = pyos.path.join(self.log_dir, self.filename[0].split("/")[-1])
-            _logger = ql_setup_logging_file(self.output, self.log_file + "_" + str(pid), _logger)
 
-        self.log_file_fd = _logger
+            if self.append:
+                self.log_filename = self.targetname + "_" + self.append          
+            else:
+                self.log_filename = self.targetname
+            
+            self.log_file = pyos.path.join(self.log_dir, self.log_filename)    
+            _logger = ql_setup_logging_file(self.output, self.log_file + "_" + str(pid), _logger)
         
+        self.log_file_fd = _logger
+            
         # OS dependent configuration for stdio
         if self.ostype in (QL_LINUX, QL_FREEBSD, QL_MACOS):
             if stdin != 0:
@@ -186,8 +198,7 @@ class Qiling:
             for _ in range(256):
                 self.sigaction_act.append(0)
 
-        # define analysis enviroment profile
-        self.config = pyos.path.join(pyos.path.dirname(pyos.path.abspath(__file__)), "profiles", ql_ostype_convert_str(self.ostype) + ".ql")
+
 
         # double check supported architecture
         if not ql_is_valid_arch(self.archtype):

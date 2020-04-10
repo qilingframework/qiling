@@ -85,7 +85,7 @@ def hook_ExpandEnvironmentStringsW(self, address, params):
     start = string.find("%")
     end = string.rfind("%")
     substring = string[start + 1:end]
-    result = self.ql.config["PATHS"].get(substring, None)
+    result = self.profile["PATHS"].get(substring, None)
     if result is None:
         self.ql.dprint(substring)
         raise QlErrorNotImplemented("[!] API not implemented")

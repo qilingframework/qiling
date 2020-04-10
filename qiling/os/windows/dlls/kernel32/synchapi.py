@@ -104,7 +104,7 @@ def hook_WaitForSingleObject(self, address, params):
     hHandle = params["hHandle"]
     dwMilliseconds = params["dwMilliseconds"]
 
-    target_thread: Thread = self.ql.handle_manager.get(hHandle).thread
+    target_thread: Thread = self.handle_manager.get(hHandle).thread
     if not target_thread.fake:
         self.ql.thread_manager.cur_thread.waitfor(target_thread)
 
@@ -133,7 +133,7 @@ def hook_WaitForMultipleObjects(self, address, params):
     for i in range(nCount):
         handle_value = self.ql.unpack(self.ql.mem.read(lpHandles + i * self.ql.pointersize, self.ql.pointersize))
         if handle_value != 0:
-            thread = self.ql.handle_manager.get(handle_value).thread
+            thread = self.handle_manager.get(handle_value).thread
             self.ql.thread_manager.cur_thread.waitfor(thread)
 
     return ret
@@ -152,7 +152,7 @@ def hook_WaitForMultipleObjects(self, address, params):
 def hook_OpenMutexW(self, address, params):
     type, name = params["lpName"].split("\\")
     # The name can have a "Global" or "Local" prefix to explicitly open an object in the global or session namespace.
-    handle = self.ql.handle_manager.search(name)
+    handle = self.handle_manager.search(name)
     if type == "Global":
         # if is global is a Windows lock. We always return a valid handle because we have no way to emulate them
         # example sample: Gandcrab e42431d37561cc695de03b85e8e99c9e31321742
@@ -186,7 +186,7 @@ def hook_OpenMutexW(self, address, params):
 def hook_CreateMutexW(self, address, params):
     type, name = params["lpName"].split("\\")
     owning = params["bInitialOwner"]
-    handle = self.ql.handle_manager.search(name)
+    handle = self.handle_manager.search(name)
     if handle is not None:
         #self.ql.last_error = ERROR_ALREADY_EXISTS
         return 0
@@ -195,6 +195,6 @@ def hook_CreateMutexW(self, address, params):
         if owning:
             mutex.lock()
         handle = Handle(mutex=mutex, name=name)
-        self.ql.handle_manager.append(handle)
+        self.handle_manager.append(handle)
 
     return handle.ID

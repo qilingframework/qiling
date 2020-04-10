@@ -230,7 +230,7 @@ def hook_CreateThread(self, address, params):
 
     # create thread handle
     new_handle = Handle(thread=new_thread)
-    self.ql.handle_manager.append(new_handle)
+    self.handle_manager.append(new_handle)
     ret = new_handle.id
 
     # set lpThreadId
@@ -309,6 +309,6 @@ def hook_OpenProcessToken(self, address, params):
     token_pointer = params["TokenHandle"]
     token = Token(self.ql)
     new_handle = Handle(token=token)
-    self.ql.handle_manager.append(new_handle)
+    self.handle_manager.append(new_handle)
     self.ql.mem.write(token_pointer, self.ql.pack(new_handle.id))
     return 1

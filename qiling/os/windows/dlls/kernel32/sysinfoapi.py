@@ -155,7 +155,7 @@ def hook_GetTickCount(self, address, params):
 })
 def hook_GetWindowsDirectoryW(self, address, params):
     dst = params["lpBuffer"]
-    value = (self.ql.config["PATHS"]["windir"] + "\x00").encode("utf-16le")
+    value = (self.profile["PATHS"]["windir"] + "\x00").encode("utf-16le")
     self.ql.mem.write(dst, value)
     return len(value)-2
 

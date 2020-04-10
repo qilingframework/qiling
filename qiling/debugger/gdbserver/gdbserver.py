@@ -393,7 +393,7 @@ class GDBSERVERsession(object):
                         exit(1)
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
-                    file_contents = ("<threads>\r\n<thread id=\"2048\" core=\"3\" name=\"" + str(self.ql.filename[0].split('/')[-1]) + "\"/>\r\n</threads>")
+                    file_contents = ("<threads>\r\n<thread id=\"2048\" core=\"3\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
                     self.send("l" + file_contents)
 
                 elif subcmd.startswith('Xfer:auxv:read::'):

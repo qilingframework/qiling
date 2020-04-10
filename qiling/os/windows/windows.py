@@ -53,22 +53,18 @@ class QlOsWindows(QlOs):
             self.ql.stack_address = self.QL_WINDOWS_STACK_ADDRESS
         if self.ql.stack_size == 0:
             self.ql.stack_size = self.QL_WINDOWS_STACK_SIZE            
-        
 
-
-        if self.ql.shellcoder:
-            self.LoaderPE = LoaderPE(self.ql, dlls= [b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
-        else:
+        if self.ql.path and not self.ql.shellcoder:
             self.LoaderPE = LoaderPE(self.ql, path =self.ql.path)
+        else:     
+            self.LoaderPE = LoaderPE(self.ql, dlls= [b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
         
         # due to init memory mapping
-        # setup() must come before loader
+        # setup() must come before loader.load() and afer setting up loader
         setup(self)
 
+        # after setup the ENV
         self.LoaderPE.load()
- 
-
-
         # hook win api
         self.ql.hook_code(self.hook_winapi)
 
@@ -132,7 +128,7 @@ class QlOsWindows(QlOs):
                     pass
             raise
 
-        self.ql.registry_manager.save()
+        self.registry_manager.save()
 
         post_report(self)
 

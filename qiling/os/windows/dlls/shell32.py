@@ -65,7 +65,7 @@ def _ShellExecute(self, dic: dict):
         self.ql.dprint(2, "[=] Sample is executing shell command as administrator!")
     process = QlWindowsThread(self, status=0, isFake=True)
     handle = Handle(thread=process)
-    self.ql.handle_manager.append(handle)
+    self.handle_manager.append(handle)
     return handle
 
 
@@ -168,7 +168,7 @@ def hook_SHGetSpecialFolderPathW(self, address, params):
     directory_id = params["csidl"]
     dst = params["pszPath"]
     if directory_id == CSIDL_COMMON_APPDATA:
-        path = self.ql.config["PATHS"]["appdata"]
+        path = self.profile["PATHS"]["appdata"]
         # We always create the directory
         appdata_dir = path.split("C:\\")[1].replace("\\", "/")
         self.ql.dprint(0, "[+] dir path: %s" % path)

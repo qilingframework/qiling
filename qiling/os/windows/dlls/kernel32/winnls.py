@@ -166,7 +166,7 @@ def hook_GetUserDefaultUILanguage(self, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
     self.ql.dprint(2, "[=] Sample is checking user language!")
-    return self.ql.config.getint("USER", "language")
+    return self.profile.getint("USER", "language")
 
 
 # LANGID GetSystemDefaultUILanguage();
@@ -176,4 +176,4 @@ def hook_GetSystemDefaultUILanguage(self, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
     self.ql.dprint(2, "[=] Sample is checking system language!")
-    return self.ql.config.getint("SYSTEM", "language")
+    return self.profile.getint("SYSTEM", "language")
