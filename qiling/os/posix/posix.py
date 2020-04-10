@@ -9,16 +9,13 @@ from unicorn.mips_const import *
 from unicorn.x86_const import *
 
 from qiling.const import *
-from qiling.utils import *
-
-from qiling.os.utils import *
-
-from qiling.os.macos.syscall import *
-from qiling.os.posix.syscall import *
-from qiling.os.freebsd.syscall import *
-from qiling.os.linux.syscall import *
-
 from qiling.os.os import QlOs
+from qiling.os.utils import *
+from qiling.os.posix.syscall import *
+from qiling.os.linux.syscall import *
+from qiling.os.macos.syscall import *
+from qiling.os.freebsd.syscall import *
+
 
 class QlOsPosix(QlOs):
     def __init__(self, ql):
