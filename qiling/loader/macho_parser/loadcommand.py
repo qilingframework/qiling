@@ -98,11 +98,11 @@ class LoadSegment64(LoadSegment):
             for i in range(self.number_of_sections):
                 self.sections.append(LoadSection64(self.FR.read(0x50)))
         
-    def __str__(self):
-        return (" SEG64:Seg Name %s, vmaddr 0x%X, vm size 0x%X, file offset 0x%X, file size 0x%X, max vp 0x%X, init vp 0x%X, section num %d, flags 0x%X" % (
-           self.segment_name, self.vm_address, self.vm_size, self.file_offset, self.file_size, self.maximum_vm_protection,
-           self.initial_vm_protection, self.number_of_sections, self.flags 
-        ))
+    # def __str__(self):
+    #     return (" SEG64:Seg Name %s, vmaddr 0x%X, vm size 0x%X, file offset 0x%X, file size 0x%X, max vp 0x%X, init vp 0x%X, section num %d, flags 0x%X" % (
+    #        self.segment_name, self.vm_address, self.vm_size, self.file_offset, self.file_size, self.maximum_vm_protection,
+    #        self.initial_vm_protection, self.number_of_sections, self.flags 
+    #     ))
 
     def get_complete(self):
         pass
@@ -118,10 +118,10 @@ class LoadSymtab(LoadCommand):
         self.string_table_size      = unpack("<L", self.FR.read(4))[0]
 
 
-    def __str__(self):
-        return (" Symtab: sym table offset 0x%X, sym num 0x%X, str table offset 0x%X, str table size 0x%X" % (
-            self.symbol_table_offset, self.number_of_symbols, self.string_table_offset, self.string_table_size
-        ))
+    # def __str__(self):
+    #     return (" Symtab: sym table offset 0x%X, sym num 0x%X, str table offset 0x%X, str table size 0x%X" % (
+    #         self.symbol_table_offset, self.number_of_symbols, self.string_table_offset, self.string_table_size
+    #     ))
 
     def get_complete(self):
         pass

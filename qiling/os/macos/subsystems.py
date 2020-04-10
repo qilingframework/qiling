@@ -12,7 +12,7 @@
 from struct import pack, unpack
 from qiling.os.macos.mach_port import *
 from qiling.os.macos.const import *
-
+from qiling.const import *
 
 class MachHostServer():
 
@@ -28,7 +28,7 @@ class MachHostServer():
         # parse request
         out_msg = MachMsg(self.ql)
         if len(in_content) < 16:
-            self.ql.dprint(0, "Error in Host info SubSystem -hostinfo()")
+            self.ql.dprint(D_PROT, "Error in Host info SubSystem -hostinfo()")
             raise
         ndr = unpack("<Q", in_content[:8])[0]
         flavor = unpack("<L", in_content[8:12])[0]
@@ -83,7 +83,7 @@ class MachHostServer():
             out_msg.content += pack("<L", 0x0)              # minimum_priority = MINPRI_USER;
             out_msg.content += pack("<L", 0x4f)             # maximum_priority = MAXPRI_RESERVED
         else:
-            self.ql.dprint(0, "Host flavor not support")
+            self.ql.dprint(D_PROT, "Host flavor not support")
             raise
         return out_msg
 

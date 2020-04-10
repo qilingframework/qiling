@@ -5,6 +5,8 @@
 import struct
 from unicorn.x86_const import *
 import string as st
+
+from qiling.const import *
 from qiling.os.const import *
 from qiling.os.utils import *
 from qiling.arch.x86 import *
@@ -54,10 +56,8 @@ def setup(self):
     self.handle_manager.append(new_handle)
     
 
-
-
 def ql_x86_windows_hook_mem_error(self, addr, size, value):
-    self.ql.dprint(0, "[+] ERROR: unmapped memory access at 0x%x" % addr)
+    self.ql.dprint(D_PROT, "[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
 
@@ -85,9 +85,9 @@ def env_dict_to_array(env_dict):
 
 def debug_print_stack(self, num, message=None):
     if message:
-        self.ql.dprint(0, "========== %s ==========" % message)
+        self.ql.dprint(D_PROT, "========== %s ==========" % message)
         sp = self.ql.sp
-        self.ql.dprint(0, hex(sp + self.ql.pointersize * i) + ": " + hex(self.ql.stack_read(i * self.ql.pointersize)))
+        self.ql.dprint(D_PROT, hex(sp + self.ql.pointersize * i) + ": " + hex(self.ql.stack_read(i * self.ql.pointersize)))
 
 
 def is_file_library(string):

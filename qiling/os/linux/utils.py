@@ -38,7 +38,7 @@ def ql_arm_init_kernel_get_tls(ql):
     #    sc = ql_lsbmsb_convert(ql, sc)
 
     ql.mem.write(QL_ARM_KERNEL_GET_TLS_ADDR, sc)
-    ql.dprint(0, "[+] Set init_kernel_get_tls")    
+    ql.dprint(D_PROT, "[+] Set init_kernel_get_tls")    
 
 def arm_thread_set_tls(ql, th, arg):
     address = arg
@@ -46,7 +46,7 @@ def arm_thread_set_tls(ql, th, arg):
     old_r0 = ql.register(UC_ARM_REG_R0)
 
     if mode == UC_MODE_THUMB:
-        ql.dprint(0,"[+] settls THUMB mode")
+        ql.dprint(D_PROT,"[+] settls THUMB mode")
         sc = '''
             .THUMB
              _start:
@@ -72,7 +72,7 @@ def arm_thread_set_tls(ql, th, arg):
         # if ql.archendian == QL_ENDIAN_EB:
         #    sc = ql_lsbmsb_convert(ql, sc, 2)
     else:
-        ql.dprint(0,"[+] settls ARM mode")
+        ql.dprint(D_PROT,"[+] settls ARM mode")
         sc = b'p\x0f\r\xee\x04\x00\x9d\xe4\x04\xf0\x9d\xe4'
         # if ql.archendian == QL_ENDIAN_EB:
         #    sc = ql_lsbmsb_convert(ql, sc)

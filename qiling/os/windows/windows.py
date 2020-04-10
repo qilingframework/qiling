@@ -94,7 +94,7 @@ class QlOsWindows(QlOs):
                 try:
                     winapi_func(self, address, {})
                 except Exception:
-                    self.ql.dprint(0, "[!] %s Exception Found" % winapi_name)
+                    self.ql.dprint(D_PROT, "[!] %s Exception Found" % winapi_name)
                     raise QlErrorSyscallError("[!] Windows API Implementation Error")
             else:
                 self.ql.nprint("[!] %s is not implemented\n" % winapi_name)

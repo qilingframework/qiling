@@ -27,7 +27,7 @@ def test_pe_win_x8664_hello():
 
 def test_pe_win_x86_hello():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows",
-                output="default", log_dir='test_qlog', append="test")
+                output="default", log_dir='/var/tmp/test_qlog', append="test")
     ql.log_split = True            
     ql.run()
     del ql
@@ -78,7 +78,7 @@ def test_pe_win_x86_gandcrab():
             for path in ql.os.profile["PATHS"]:
                 val = ql.os.profile["PATHS"][path].replace(old_name, new_name)
                 ql.os.profile["PATHS"][path] = val
-                ql.dprint(0, ql.os.profile["PATHS"][path])
+                ql.dprint(D_PROT, ql.os.profile["PATHS"][path])
         elif key == "SYSTEM" and subkey == "computer_name":
             length = random.randint(0, 15)
             new_name = ""

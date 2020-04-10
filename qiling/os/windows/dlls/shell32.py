@@ -13,7 +13,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-
+from qiling.const import *
 
 # DWORD_PTR SHGetFileInfoW(
 #   LPCWSTR     pszPath,
@@ -34,7 +34,7 @@ def hook_SHGetFileInfoW(self, address, params):
     if flags == SHGFI_LARGEICON:
         return 1
     else:
-        self.dprint(0, flags)
+        self.dprint(D_PROT, flags)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -54,15 +54,15 @@ def _ShellExecute(self, dic: dict):
     directory = read_wstring(self.ql, pt_file) if pt_directory != 0 else ""
     show = int.from_bytes(dic["nShow"], byteorder="little") if not isinstance(dic["nShow"], int) else dic["nShow"]
 
-    self.ql.dprint(2, "[=] Sample executed a shell command!")
-    self.ql.dprint(2, "[-] Operation: %s " % operation)
-    self.ql.dprint(2, "[-] Parameters: %s " % params)
-    self.ql.dprint(2, "[-] File: %s " % file)
-    self.ql.dprint(2, "[-] Directory: %s " % directory)
+    self.ql.dprint(D_RPRT, "[=] Sample executed a shell command!")
+    self.ql.dprint(D_RPRT, "[-] Operation: %s " % operation)
+    self.ql.dprint(D_RPRT, "[-] Parameters: %s " % params)
+    self.ql.dprint(D_RPRT, "[-] File: %s " % file)
+    self.ql.dprint(D_RPRT, "[-] Directory: %s " % directory)
     if show == SW_HIDE:
-        self.ql.dprint(2, "[=] Sample is creating a hidden window!")
+        self.ql.dprint(D_RPRT, "[=] Sample is creating a hidden window!")
     if operation == "runas":
-        self.ql.dprint(2, "[=] Sample is executing shell command as administrator!")
+        self.ql.dprint(D_RPRT, "[=] Sample is executing shell command as administrator!")
     process = QlWindowsThread(self, status=0, isFake=True)
     handle = Handle(thread=process)
     self.handle_manager.append(handle)
@@ -171,17 +171,17 @@ def hook_SHGetSpecialFolderPathW(self, address, params):
         path = self.profile["PATHS"]["appdata"]
         # We always create the directory
         appdata_dir = path.split("C:\\")[1].replace("\\", "/")
-        self.ql.dprint(0, "[+] dir path: %s" % path)
+        self.ql.dprint(D_PROT, "[+] dir path: %s" % path)
         path_emulated = os.path.join(self.ql.rootfs, appdata_dir)
-        self.ql.dprint(0, "[!] emulated path: %s" % path_emulated)
+        self.ql.dprint(D_PROT, "[!] emulated path: %s" % path_emulated)
         self.ql.mem.write(dst, (path + "\x00").encode("utf-16le"))
         # FIXME: Somehow winodws path is wrong
         if not os.path.exists(path_emulated):
             try:
                 os.makedirs(path_emulated, 0o755)
-                self.ql.dprint(0, "[!] os.makedirs completed")
+                self.ql.dprint(D_PROT, "[!] os.makedirs completed")
             except:
-                self.ql.dprint(0, "[!] os.makedirs fail")    
+                self.ql.dprint(D_PROT, "[!] os.makedirs fail")    
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 1

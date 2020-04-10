@@ -10,7 +10,7 @@ import sys
 from Registry import Registry
 from qiling.os.windows.const import *
 from qiling.exception import *
-
+from qiling.const import *
 
 # Registry Manager reads data from two places
 # 1. config.json
@@ -44,7 +44,7 @@ class RegistryManager:
             self.hive = hive
         else:
             self.hive = os.path.join(ql.rootfs, "Windows", "registry")
-            ql.dprint(0, "[+] Windows Registry PATH: %s" % self.hive)
+            ql.dprint(D_PROT, "[+] Windows Registry PATH: %s" % self.hive)
             if not os.path.exists(self.hive) and not self.ql.shellcoder:
                 raise QlPrintException("Error: Registry files not found!")
 

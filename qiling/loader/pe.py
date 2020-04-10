@@ -14,7 +14,7 @@ from unicorn.x86_const import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.structs import *
 from qiling.exception import *
-
+from qiling.const import *
 from qiling.loader.loader import QlLoader
 
 class Process(QlLoader):
@@ -306,13 +306,13 @@ class LoaderPE(Process, QlLoader):
                 self.ql.register(UC_X86_REG_EBP, sp)
 
                 if self.pe.is_dll():
-                    self.ql.dprint(0, '[+] Setting up DllMain args')
+                    self.ql.dprint(D_PROT, '[+] Setting up DllMain args')
                     load_addr_bytes = self.PE_IMAGE_BASE.to_bytes(length=4, byteorder='little')
 
-                    self.ql.dprint(0, '[+] Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.PE_IMAGE_BASE, sp + 0x4))
+                    self.ql.dprint(D_PROT, '[+] Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.PE_IMAGE_BASE, sp + 0x4))
                     self.ql.mem.write(sp + 0x4, load_addr_bytes)
 
-                    self.ql.dprint(0, '[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp + 0x8))
+                    self.ql.dprint(D_PROT, '[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp + 0x8))
                     self.ql.mem.write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
 
             elif self.ql.archtype== QL_X8664:
@@ -320,12 +320,12 @@ class LoaderPE(Process, QlLoader):
                 self.ql.register(UC_X86_REG_RBP, sp)
 
                 if self.pe.is_dll():
-                    self.ql.dprint(0, '[+] Setting up DllMain args')
+                    self.ql.dprint(D_PROT, '[+] Setting up DllMain args')
 
-                    self.ql.dprint(0, '[+] Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.PE_IMAGE_BASE))
+                    self.ql.dprint(D_PROT, '[+] Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.PE_IMAGE_BASE))
                     self.ql.register(UC_X86_REG_RCX, self.PE_IMAGE_BASE)
 
-                    self.ql.dprint(0, '[+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
+                    self.ql.dprint(D_PROT, '[+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
                     self.ql.register(UC_X86_REG_RDX, 1)
             else:
                 raise QlErrorArch("[!] Unknown ql.arch")

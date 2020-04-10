@@ -13,6 +13,7 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 from qiling.os.windows.structs import *
+from qiling.const import *
 
 # void Sleep(
 #  DWORD dwMilliseconds

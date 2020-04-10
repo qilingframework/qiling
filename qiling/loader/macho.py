@@ -9,7 +9,7 @@ from struct import pack
 from qiling.loader.macho_parser.parser import *
 from qiling.loader.macho_parser.const import *
 from qiling.exception import *
-
+from qiling.const import *
 from qiling.loader.loader import QlLoader
 
 # TODO: we maybe we should use a better way to load
@@ -119,13 +119,13 @@ class Macho(QlLoader):
         seg_data = bytes(self.loading_file.get_segment(seg_name).content)
 
         if seg_name[:10] == "__PAGEZERO":
-            self.ql.dprint(0, "[+] Now loading {}, VM[{}:{}] for pagezero actually it only got a page size".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
+            self.ql.dprint(D_PROT, "[+] Now loading {}, VM[{}:{}] for pagezero actually it only got a page size".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
             self.ql.mem.map(vaddr_start, PAGE_SIZE)
             self.ql.mem.write(vaddr_start, b'\x00' * PAGE_SIZE)
             if self.vm_end_addr < vaddr_end:
                 self.vm_end_addr = vaddr_end
         else:
-            self.ql.dprint(0, "[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
+            self.ql.dprint(D_PROT, "[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
             self.ql.mem.map(vaddr_start, seg_size)
             self.ql.mem.write(vaddr_start, seg_data)
             if self.vm_end_addr < vaddr_end:
@@ -136,7 +136,7 @@ class Macho(QlLoader):
             self.binary_entry = cmd.entry
  
         self.proc_entry = cmd.entry
-        self.ql.dprint(0, "[+] Binary Thread Entry: {}".format(hex(cmd.entry)))
+        self.ql.dprint(D_PROT, "[+] Binary Thread Entry: {}".format(hex(cmd.entry)))
 
 
     def loadUuid(self):
@@ -182,17 +182,17 @@ class Macho(QlLoader):
 
         for item in self.argvs[::-1]:
             argvs_ptr.append(ptr)  # need pack and tostring
-            self.ql.dprint(0, '[+] add argvs ptr {}'.format(hex(ptr)))
+            self.ql.dprint(D_PROT, '[+] add argvs ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
         
         for item in self.envs[::-1]:
             envs_ptr.append(ptr)
-            self.ql.dprint(0, '[+] add envs ptr {}'.format(hex(ptr)))
+            self.ql.dprint(D_PROT, '[+] add envs ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
 
         for item in self.apples[::-1]:
             apple_ptr.append(ptr)
-            self.ql.dprint(0, '[+] add apple ptr {}'.format(hex(ptr)))
+            self.ql.dprint(D_PROT, '[+] add apple ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
 
         ptr = self.stack_sp
@@ -216,12 +216,12 @@ class Macho(QlLoader):
         for item in argvs_ptr:
             ptr -= 4
             self.push_stack_addr(item)
-            self.ql.dprint(0, "[+] SP 0x%x, content 0x%x" % (self.stack_sp, item))
+            self.ql.dprint(D_PROT, "[+] SP 0x%x, content 0x%x" % (self.stack_sp, item))
         argvs_ptr_ptr = ptr 
 
         self.push_stack_addr(self.argc)
         ptr -= 4
-        self.ql.dprint(0, "[+] SP 0x%x, content 0x%x" % (self.stack_sp, self.argc))
+        self.ql.dprint(D_PROT, "[+] SP 0x%x, content 0x%x" % (self.stack_sp, self.argc))
        
         if self.using_dyld:
             ptr -= 4
@@ -242,7 +242,7 @@ class Macho(QlLoader):
         
         self.stack_sp -= length
         self.ql.mem.write(self.stack_sp, data)
-        self.ql.dprint(0, "[+] SP {} write data len {}".format(hex(self.stack_sp), length))
+        self.ql.dprint(D_PROT, "[+] SP {} write data len {}".format(hex(self.stack_sp), length))
         
         return self.stack_sp
     
