@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import traceback
 
@@ -33,7 +33,7 @@ class QlOsMacos(QlOsPosix):
         self.load()
 
 
-    def load(self):   
+    def load(self):
         """
         initiate UC needs to be in loader,
         or else it will kill execve
@@ -45,7 +45,7 @@ class QlOsMacos(QlOsPosix):
             self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x21000
             self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
             self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS  = 0x4000000f4000
-        elif  self.ql.archtype== QL_X8664:   
+        elif  self.ql.archtype== QL_X8664:
             self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x7ffcf0000000
             self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x19a00000
             self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
@@ -54,13 +54,13 @@ class QlOsMacos(QlOsPosix):
         if self.ql.shellcoder:
             if (self.ql.stack_address == 0):
                 self.ql.stack_address = 0x1000000
-            if (self.ql.stack_size == 0): 
+            if (self.ql.stack_size == 0):
                 self.ql.stack_size = 10 * 1024 * 1024
         else:
             if (self.ql.stack_address == 0):
                 self.ql.stack_address = self.QL_MACOS_PREDEFINE_STACKADDRESS
-            if (self.ql.stack_size == 0): 
-                self.ql.stack_size = self.QL_MACOS_PREDEFINE_STACKSIZE        
+            if (self.ql.stack_size == 0):
+                self.ql.stack_size = self.QL_MACOS_PREDEFINE_STACKSIZE
 
         self.ql.macho_task = MachoTask()
         self.ql.macho_fs = FileSystem(self.ql)
@@ -68,10 +68,10 @@ class QlOsMacos(QlOsPosix):
         self.ql.macho_port_manager = MachPortManager(self.ql, self.ql.macho_mach_port)
         self.ql.macho_host_server = MachHostServer(self.ql)
         self.ql.macho_task_server = MachTaskServer(self.ql)
-        
+
         if self.ql.mmap_start == 0:
             self.ql.mmap_start = self.QL_MACOS_PREDEFINE_MMAPADDRESS
-        
+
         if self.ql.shellcoder:
             self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
             self.ql.stack_address = self.ql.stack_address  + 0x200000 - 0x1000
@@ -97,8 +97,8 @@ class QlOsMacos(QlOsPosix):
             self.ql.register(UC_ARM64_REG_SP, self.ql.stack_address)
             self.ql.arch.enable_vfp()
             self.ql.hook_intr(self.hook_syscall)
-        
-        elif self.ql.archtype== QL_X8664:           
+
+        elif self.ql.archtype== QL_X8664:
             self.ql.register(UC_X86_REG_RSP, self.ql.stack_address)
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
@@ -106,17 +106,19 @@ class QlOsMacos(QlOsPosix):
             ql_x8664_setup_gdt_segment_ds(self.ql)
             ql_x8664_setup_gdt_segment_cs(self.ql)
             ql_x8664_setup_gdt_segment_ss(self.ql)
-        
+
         ql_setup_output(self.ql)
         # FIXME: Not working due to overlarge mapping, need to fix it
         # vm_shared_region_enter(self.ql)
         map_commpage(self.ql)
-        self.ql.macho_thread = MachoThread()
-        
+#        self.ql.thread_management = QlMachoThreadManagement(self.ql)
+        self.ql.macho_thread = QlMachoThread(self.ql)
+#        self.ql.thread_management.cur_thread = self.ql.macho_thread
+
         # load_commpage not wroking with QL_ARM64, yet
         if  self.ql.archtype== QL_X8664:
             load_commpage(self.ql)
-        
+
         if (self.ql.until_addr == 0):
             self.ql.until_addr = self.QL_EMU_END
         try:
@@ -131,7 +133,7 @@ class QlOsMacos(QlOsPosix):
                 buf = self.ql.mem.read(self.ql.pc, 8)
                 self.ql.nprint("[+] ", [hex(_) for _ in buf])
                 ql_hook_code_disasm(self.ql, self.ql.pc, 64)
-            raise QlErrorExecutionStop("[!] Execution Terminated")    
-        
+            raise QlErrorExecutionStop("[!] Execution Terminated")
+
         if self.ql.internal_exception != None:
-            raise self.ql.internal_exception  
+            raise self.ql.internal_exception

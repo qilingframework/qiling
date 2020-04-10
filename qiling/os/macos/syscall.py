@@ -506,8 +506,9 @@ def ql_syscall_bsdthread_register(ql, threadstart, wqthread, flags, stack_addr_h
 
 # 0x174
 def ql_syscall_thread_selfid(ql, *args, **kw):
-    ql_definesyscall_return(ql, ql.macho_thread.id)
-    ql.nprint("thread_selfid() = %d" % (ql.macho_thread.id))
+    id = ql.macho_thread.id
+    ql.nprint("thread_selfid() = %d" % (id))
+    ql_definesyscall_return(ql, id)
 
 # 0x18e
 def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
