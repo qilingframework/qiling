@@ -30,6 +30,7 @@ test.file
 *.d
 *.o
 core
+*.perf
 
 # dont keep raw malware
 wannacry.bin
