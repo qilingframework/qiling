@@ -93,11 +93,14 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
         ql.uc.emu_stop()
         return
 
-    if clone_flags & CLONE_PARENT_SETTID == CLONE_PARENT_SETTID:
-        set_child_tid_addr = clone_parent_tidptr
+    if clone_flags & CLONE_CHILD_SETTID == CLONE_CHILD_SETTID:
+        set_child_tid_addr = clone_child_tidptr
 
     th = ql.os.thread_class(ql, ql.thread_management, total_time = f_th.remaining_time(), set_child_tid_addr = set_child_tid_addr)
     th.set_current_path(f_th.get_current_path())
+
+    if clone_flags & CLONE_PARENT_SETTID == CLONE_PARENT_SETTID:
+        ql.mem.write(clone_parent_tidptr, ql.pack32(th.get_thread_id()))
 
     # Whether to set a new tls
     if clone_flags & CLONE_SETTLS == CLONE_SETTLS:

@@ -106,7 +106,7 @@ class QlLinuxThread(QlThread):
         elif mode == COUNT_MODE:
             thread_slice = count_slice
         else:
-            pass
+            raise
         
         # Initialize, stop event
         self.return_val = 0
@@ -124,7 +124,7 @@ class QlLinuxThread(QlThread):
         elif mode == COUNT_MODE:
             self.ql.uc.emu_start(self.start_address, self.until_addr, count = thread_slice)
         else:
-            pass
+            raise
 
         e_time = int(time.time() * 1000000)
         
@@ -175,8 +175,17 @@ class QlLinuxThread(QlThread):
         self.clear_child_tid_address = addr
     
     def _on_stop(self):
+        # CLONE_CHILD_CLEARTID (since Linux 2.5.49)
+        #       Clear (zero) the child thread ID at the location pointed to by
+        #       child_tid (clone()) or cl_args.child_tid (clone3()) in child
+        #       memory when the child exits, and do a wakeup on the futex at
+        #       that address.  The address involved may be changed by the
+        #       set_tid_address(2) system call.  This is used by threading
+        #       libraries.
+
         if self.clear_child_tid_address != None:
             self.ql.mem.write(self.clear_child_tid_address, self.ql.pack32(0))
+        self.ql.os.futexm.futex_wake(self.clear_child_tid_address, 1)
 
     def stop(self):
         self._on_stop()
@@ -220,6 +229,9 @@ class QlLinuxThread(QlThread):
         self.blocking_condition_arg = bc_arg
     
     def is_continue_blocking(self):
+        if self.blocking_condition_fuc == None:
+            return True
+
         if self.blocking_condition_arg == None:
             return self.blocking_condition_fuc(self.ql, self)
         else:
@@ -277,7 +289,7 @@ class QlLinuxX86Thread(QlLinuxThread):
             index = self.ql.gdtm.get_free_idx(12)
 
         if index == -1 or index < 12 or index > 14:
-            pass 
+            raise 
         else:
             self.ql.gdtm.register_gdt_segment(index, base, limit, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
             self.ql.mem.write(tls_addr, self.ql.pack32(index))
@@ -292,6 +304,20 @@ class QlLinuxX86Thread(QlLinuxThread):
     def restore(self):
         self.restore_regs()
         self.ql.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
+
+class QlLinuxX8664Thread(QlLinuxThread):
+    """docstring for X8664Thread"""
+    def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
+        super(QlLinuxX8664Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+
+    def clone_thread_tls(self, tls_addr):
+        self.ql.uc.msr_write(FSMSR, tls_addr)
+
+    def store(self):
+        self.store_regs()
+
+    def restore(self):
+        self.restore_regs()
 
 class QlLinuxThreadManagement(QlThreadManagement):
     def __init__(self, ql, time_slice = 1000, count_slice = 1000, mode = COUNT_MODE):
@@ -312,7 +338,7 @@ class QlLinuxThreadManagement(QlThreadManagement):
         elif mode == COUNT_MODE:
             self.thread_slice = count_slice
         else:
-            pass
+            raise
 
         self.total_time = ql.timeout
         self.runing_time = 0
@@ -427,7 +453,9 @@ class QlLinuxThreadManagement(QlThreadManagement):
         tmp_list = self.blocking_thread_list
         self.blocking_thread_list = []
         for t in tmp_list:
-            if t.is_continue_blocking():
+            if t.is_running():
+                self.add_running_thread(t)
+            elif t.is_continue_blocking():
                 self.add_blocking_thread(t)
             else:
                 self.add_running_thread(t)

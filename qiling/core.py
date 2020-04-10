@@ -577,6 +577,9 @@ class Qiling:
 
     def pack64(self, x):
         return struct.pack('Q', x)
+    
+    def pack64s(self, x):
+        return struct.pack('q', x)
 
     def unpack64s(self, x):
         return struct.unpack('q', x)[0]
@@ -625,6 +628,14 @@ class Qiling:
             return self.pack64(data)
         elif self.archbit == 32:
             return self.pack32(data)
+        else:
+            raise
+
+    def packs(self, data):
+        if self.archbit == 64:
+            return self.pack64s(data)
+        elif self.archbit == 32:
+            return self.pack32s(data)
         else:
             raise
 
