@@ -27,7 +27,6 @@ class QlOsLinux(QlOsPosix):
         self.ql = ql
         self.QL_LINUX_PREDEFINE_STACKSIZE = 0x21000
         self.QL_ARM_KERNEL_GET_TLS_ADDR = 0xFFFF0FE0
-        self.ql.os = self
         self.thread_class = None
         self.futexm = None
         self.load()
@@ -112,13 +111,8 @@ class QlOsLinux(QlOsPosix):
 
     
     def run(self):
-
-
         if (self.ql.until_addr == 0):
-            if self.ql.archbit == 32:
-                self.ql.until_addr = QL_ARCHBIT32_EMU_END
-            elif self.ql.archbit == 64:
-                self.ql.until_addr = QL_ARCHBIT64_EMU_END           
+            self.ql.until_addr = self.QL_EMU_END
 
         try:
             if self.ql.shellcoder:

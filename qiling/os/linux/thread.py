@@ -21,7 +21,6 @@ class QlLinuxThread(QlThread):
 
     def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
         super(QlLinuxThread, self).__init__(ql)
-        #global GLOBAL_THREAD_ID
         if ql.global_thread_id == 0:
             ql.global_thread_id = os.getpid() + 1000
 

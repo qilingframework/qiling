@@ -118,7 +118,7 @@ class QlOsMacos(QlOsPosix):
             load_commpage(self.ql)
         
         if (self.ql.until_addr == 0):
-            self.ql.until_addr = QL_ARCHBIT64_EMU_END
+            self.ql.until_addr = self.QL_EMU_END
         try:
             if self.ql.shellcoder:
                 self.ql.uc.emu_start(self.ql.stack_address, (self.ql.stack_address + len(self.ql.shellcoder)))
