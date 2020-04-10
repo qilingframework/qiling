@@ -312,20 +312,6 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
 
     ql.mem.write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
     
-    mem_s = mmap_base
-    mem_e = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
-    mem_info = ''
-    mem_p = []
-    prot_dict = {"PROT_READ": "r", "PROT_WRITE": "w", "PROT_EXEC": "x"}
-
-    for idx, val in prot_dict.items():
-        if idx in mmap_prot_mapping(mmap2_prot):
-            mem_p.append(val)
-        else:
-            mem_p.append("-")
-
-    mem_p = ''.join(mem_p)
-
     if ((mmap2_flags & MAP_ANONYMOUS) == 0) and mmap2_fd < 256 and ql.file_des[mmap2_fd] != 0:
         ql.file_des[mmap2_fd].lseek(mmap2_pgoffset)
         data = ql.file_des[mmap2_fd].read(mmap2_length)
@@ -336,8 +322,6 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
         
         mem_info = ql.file_des[mmap2_fd].name
         
-    ql.mem.add_mapinfo(mem_s, mem_e, mem_p ,mem_info)
-    
     if ql.output == QL_OUT_DEFAULT:
         ql.nprint("mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
     
