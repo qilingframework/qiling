@@ -470,7 +470,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
             elif ql.archtype== QL_X8664:
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
         if GDTTYPE == "CS":        
-            ql.dprint(0, "[+] FreeBSD %s GDT_ADDR is 0x%x" % (GDTTYPE, GDT_ADDR))
+            ql.dprint(D_PROT, "[+] FreeBSD %s GDT_ADDR is 0x%x" % (GDTTYPE, GDT_ADDR))
             ql.mem.map(GDT_ADDR, GDT_LIMIT)
     
     if ql.ostype == QL_MACOS:
@@ -481,7 +481,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
 
         if not ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT):
-            ql.dprint(0, "[+] GDT_ADDR is 0x%x" % (GDT_ADDR))
+            ql.dprint(D_PROT, "[+] GDT_ADDR is 0x%x" % (GDT_ADDR))
             ql.mem.map(GDT_ADDR, GDT_LIMIT)
     
     # create GDT entry, then write GDT entry into GDT table
@@ -494,7 +494,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
     # create segment index, point segment register to this selector
     selector = create_selector(index, RPORT)
-    ql.dprint(0, "[+] %s : 0x%x" % (GDTTYPE, selector))
+    ql.dprint(D_PROT, "[+] %s : 0x%x" % (GDTTYPE, selector))
     ql.register(seg_reg, selector)
 
 

@@ -12,7 +12,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-
+from qiling.const import *
 
 # HANDLE CreateToolhelp32Snapshot(
 #   DWORD dwFlags,
@@ -27,7 +27,7 @@ def hook_CreateToolhelp32Snapshot(self, address, params):
     # TODO thinking about implementing an handler, gonna see if is really necessary
     flag = params["dwFlags"]
     if flag == TH32CS_SNAPPROCESS:
-       self.ql.dprint(2, "[=] The sample is checking every process!")
+       self.ql.dprint(D_RPRT, "[=] The sample is checking every process!")
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 0xD10C

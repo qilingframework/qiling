@@ -397,12 +397,12 @@ def hook_VerifyVersionInfoW(self, address, params):
 
             # Just a print for analysts, will remove it from here in the future
             if key == VER_MAJORVERSION:
-                self.ql.dprint(2, "[=] The sample is checking the windows Version!")
+                self.ql.dprint(D_RPRT, "[=] The sample is checking the windows Version!")
                 version_asked = SYSTEMS_VERSION.get(concat, None)
                 if version_asked is None:
                     raise QlErrorNotImplemented("[!] API not implemented")
                 else:
-                    self.ql.dprint(2, "[=] The sample asks for %s" % version_asked)
+                    self.ql.dprint(D_RPRT, "[=] The sample asks for %s" % version_asked)
             # We can finally compare
             res = compare(self.profile.getint("SYSTEM", "os"), operator, int(concat))
         elif key == VER_SERVICEPACKMAJOR:

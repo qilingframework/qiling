@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+from qiling.const import *
+
 class Qldbg(object):
     def __init__(self):
         self.current_address = 0x0
@@ -56,8 +58,8 @@ class Qldbg(object):
                 self.last_bp = 0
             self.has_soft_bp = hit_soft_bp
             if self.current_address + size == self.exit_point:
-                self.ql.dprint(0, "gdb> emulation entrypoint at 0x%x" % (self.entry_point))
-                self.ql.dprint(0, "gdb> emulation exitpoint at 0x%x" % (self.exit_point))
+                self.ql.dprint(D_PROT, "gdb> emulation entrypoint at 0x%x" % (self.entry_point))
+                self.ql.dprint(D_PROT, "gdb> emulation exitpoint at 0x%x" % (self.exit_point))
         except KeyboardInterrupt as ex:
             self.ql.nprint("gdb> Paused at 0x%x, instruction size = %u\n" % (address, size))
             ql.stop()

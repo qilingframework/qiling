@@ -27,7 +27,6 @@ def catch_KeyboardInterrupt(ql):
             try:
                 return func(*args, **kw)
             except BaseException as e:
-                #ql.dprint(0, "Received a request from the user to stop!")
                 ql.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
                 ql.internal_exception = e
         return wrapper
@@ -50,7 +49,7 @@ class Qiling:
             stdout=0,
             stderr=0,
             output=None,
-            verbose=0,
+            verbose=1,
             log_console=True,
             log_dir=None,
             mmap_start=0,
@@ -130,7 +129,6 @@ class Qiling:
         """
         Qiling Framework Core Engine
         """
-
         # ostype string - int convertion
         if self.shellcoder:
             if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str ):
@@ -198,8 +196,6 @@ class Qiling:
             for _ in range(256):
                 self.sigaction_act.append(0)
 
-
-
         # double check supported architecture
         if not ql_is_valid_arch(self.archtype):
             raise QlErrorArch("[!] Invalid Arch")
@@ -238,8 +234,6 @@ class Qiling:
         # based on CPU bit and set pointer size
         if self.archbit:
             self.pointersize = (self.archbit // 8)            
-
-
 
         """
         Load memory module
@@ -326,14 +320,14 @@ class Qiling:
             elif isinstance(fd, logging.StreamHandler):
                 fd.flush()
 
-    # debug print out, always use with verbose level with dprint(0,"helloworld")
+    # debug print out, always use with verbose level with dprint(D_PROT,"helloworld")
     def dprint(self, level, *args, **kw):
         try:
             self.verbose = int(self.verbose)
         except:
             raise QlErrorOutput("[!] Verbose muse be int")    
         
-        if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
+        if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 1 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
             raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUT_DEBUG or else ql.verbose must be 0")
 
         if self.output == QL_OUT_DUMP:

@@ -37,7 +37,7 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
     base = ql.unpack32(u_info[4 : 8])
     limit = ql.unpack32(u_info[8 : 12])
 
-    ql.dprint(0, "[+] set_thread_area base : 0x%x limit is : 0x%x" % (base, limit))
+    ql.dprint(D_PROT, "[+] set_thread_area base : 0x%x limit is : 0x%x" % (base, limit))
     # ql_x86_setup_syscall_set_thread_area(ql, base, limit)
     if index == -1:
         index = ql.gdtm.get_free_idx(12)

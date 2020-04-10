@@ -5,7 +5,7 @@
 
 # reference to 《Mac OS X and IOS Internals: To the Apple's Core》
 from struct import pack, unpack
-
+from qiling.const import *
 
 # define in kernel osfmk/mach/message.h
 # mach_msg_header_t:
@@ -81,7 +81,7 @@ class MachMsg():
         return header
 
     def read_msg_content(self, addr, size):
-        self.ql.dprint(0, "0x{:X}, {}".format(addr, size))
+        self.ql.dprint(D_PROT, "0x{:X}, {}".format(addr, size))
         return self.ql.mem.read(addr, size)
 
 
@@ -129,7 +129,7 @@ class MachPortManager():
             self.ql.nprint("Error Mach Msgid {} can not handled".format(msg.header.msgh_id))
             raise Exception("Mach Msgid Not Found")
 
-        self.ql.dprint(0, "Reply-> Header: {}, Content: {}".format(out_msg.header, out_msg.content))
+        self.ql.dprint(D_PROT, "Reply-> Header: {}, Content: {}".format(out_msg.header, out_msg.content))
 
     def get_thread_port(self, MachoThread):
         return MachoThread.port.name

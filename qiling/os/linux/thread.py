@@ -8,6 +8,7 @@ import os, time
 from qiling.utils import ql_setup_logging_file, ql_setup_logging_stream, ql_setup_logger
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
+from qiling.const import *
 
 from abc import ABC, abstractmethod
 
@@ -318,11 +319,11 @@ class QlLinuxThreadManagement(QlThreadManagement):
 
     def run(self):
         if len(self.running_thread_list) == 0:
-            self.ql.dprint(0, '[!] No executable thread!')
+            self.ql.dprint(D_PROT, '[!] No executable thread!')
             return
         
         if self.main_thread not in self.running_thread_list:
-            self.ql.dprint(0, '[!] No main thread!')
+            self.ql.dprint(D_PROT, '[!] No main thread!')
             return
         
         while True:
@@ -336,7 +337,7 @@ class QlLinuxThreadManagement(QlThreadManagement):
             if running_thread_num != 0:
                 for i in range(running_thread_num):
                     self.cur_thread = self.running_thread_list[i]
-                    self.ql.dprint(0, "[+] Currently running pid is: %d; tid is: %d " % (
+                    self.ql.dprint(D_PROT, "[+] Currently running pid is: %d; tid is: %d " % (
                     os.getpid(), self.cur_thread.get_thread_id()))
                     
                     if self.mode == TIME_MODE:

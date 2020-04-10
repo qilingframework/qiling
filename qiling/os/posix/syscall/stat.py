@@ -90,9 +90,9 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
     ql.nprint("fstatat64(0x%x, %s) = %d" % (fstatat64_fd, relative_path, regreturn))
 
     if regreturn == 0:
-        ql.dprint(0, "[+] Directory Found: %s" % relative_path)
+        ql.dprint(D_PROT, "[+] Directory Found: %s" % relative_path)
     else:
-        ql.dprint(0, "[!] Directory Not Found: %s" % relative_path)
+        ql.dprint(D_PROT, "[!] Directory Not Found: %s" % relative_path)
 
     ql_definesyscall_return(ql, regreturn)
 
@@ -162,9 +162,9 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
 
     ql.nprint("fstat64(%d, 0x%x) = %d" % (fstat64_fd, fstat64_add, regreturn))
     if regreturn == 0:
-        ql.dprint(0, "[+] fstat64 write completed")
+        ql.dprint(D_PROT, "[+] fstat64 write completed")
     else:
-        ql.dprint(0, "[!] fstat64 read/write fail")
+        ql.dprint(D_PROT, "[!] fstat64 read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -237,9 +237,9 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
 
     ql.nprint("fstat(%d, 0x%x) = %d" % (fstat_fd, fstat_add, regreturn))
     if regreturn == 0:
-        ql.dprint(0, "[+] fstat write completed")
+        ql.dprint(D_PROT, "[+] fstat write completed")
     else:
-        ql.dprint(0, "[!] fstat read/write fail")
+        ql.dprint(D_PROT, "[!] fstat read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -310,9 +310,9 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
 
     ql.nprint("stat64(%s, 0x%x) = %d" % (relative_path, stat64_buf_ptr, regreturn))
     if regreturn == 0:
-        ql.dprint(0, "[+] stat64 write completed")
+        ql.dprint(D_PROT, "[+] stat64 write completed")
     else:
-        ql.dprint(0, "[!] stat64 read/write fail")
+        ql.dprint(D_PROT, "[!] stat64 read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -371,9 +371,9 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
 
     ql.nprint("stat(%s, 0x%x) = %d" % (relative_path, stat_buf_ptr, regreturn))
     if regreturn == 0:
-        ql.dprint(0, "[+] stat() write completed")
+        ql.dprint(D_PROT, "[+] stat() write completed")
     else:
-        ql.dprint(0, "[!] stat() read/write fail")
+        ql.dprint(D_PROT, "[!] stat() read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -431,9 +431,9 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
 
     ql.nprint("lstat(%s, 0x%x) = %d" % (relative_path, lstat_buf_ptr, regreturn))
     if regreturn == 0:
-        ql.dprint(0, "[+] lstat() write completed")
+        ql.dprint(D_PROT, "[+] lstat() write completed")
     else:
-        ql.dprint(0, "[!] lstat() read/write fail")
+        ql.dprint(D_PROT, "[!] lstat() read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):

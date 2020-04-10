@@ -24,6 +24,7 @@ from keystone import *
 from qiling.const import *
 from qiling.exception import *
 from qiling.utils import *
+from qiling.const import *
 
 from binascii import unhexlify
 import ipaddress, struct, os, ctypes
@@ -107,11 +108,11 @@ def ql_init_configuration(self):
     config = configparser.ConfigParser()
     config.read(self.profile)
     print(self.profile)
-    self.ql.dprint(2, "[+] Added configuration file")
+    self.ql.dprint(D_RPRT, "[+] Added configuration file")
     for section in config.sections():
-        self.ql.dprint(2, "[+] Section: %s" % section)
+        self.ql.dprint(D_RPRT, "[+] Section: %s" % section)
         for key in config[section]:
-            self.ql.dprint(2, "[-] %s %s" % (key, config[section][key]) )
+            self.ql.dprint(D_RPRT, "[-] %s %s" % (key, config[section][key]) )
     return config
 
 def ql_bin_to_ip(ip):
@@ -202,7 +203,7 @@ def ql_hook_code_disasm(ql, address, size):
             ql.reg_name = reg
             REG_NAME = ql.reg_name
             REG_VAL = ql.register(reg)
-            ql.dprint(3, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+            ql.dprint(D_PROT, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
             
 
 def ql_setup_output(ql):
@@ -499,7 +500,7 @@ def print_function(self, address, function_name, params, ret):
         self.ql.nprint(log + '\n')
 
     elif self.ql.output == QL_OUT_DEBUG:
-        self.ql.dprint(0, log + '\n')
+        self.ql.dprint(D_PROT, log + '\n')
 
 
 def read_cstring(self, address):
@@ -512,6 +513,6 @@ def read_cstring(self, address):
     return result
 
 def post_report(self):
-    self.ql.dprint(0, "[+] Syscalls and number of invocations")
-    self.ql.dprint(0, "[-] " + str(list(self.syscall_count.items())))
+    self.ql.dprint(D_PROT, "[+] Syscalls and number of invocations")
+    self.ql.dprint(D_PROT, "[-] " + str(list(self.syscall_count.items())))
 
