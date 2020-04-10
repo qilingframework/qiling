@@ -594,7 +594,6 @@ def ql_syscall_truncate(ql, path, length, *args, **kw):
 
 def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args, **kw):
     real_path = ql.file_des[ftrunc_fd].name
-    path = real_path.split('/')[-1]
     st_size = os.stat(real_path).st_size
 
     try:
@@ -637,7 +636,7 @@ def ql_syscall_unlink(ql, unlink_pathname, *args, **kw):
 
 
 def ql_syscall_unlinkat(ql, dirfd, pathname, flag, *args, **kw):
-    # fix me. dirfd(relative path) not implement.
+    #FIXME dirfd(relative path) not implement.
     file_path = ql_read_string(ql, pathname)
     real_path = ql_transform_to_real_path(ql, file_path)
     ql.nprint("unlinkat(%d, %s, 0%o)" % (dirfd, real_path, flag))

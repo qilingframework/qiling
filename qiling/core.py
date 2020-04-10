@@ -97,7 +97,6 @@ class Qiling:
         self.timeout = 0
         self.until_addr = 0
         self.byte = 0
-        self.currentpath = pyos.getcwd()
         self.log_file_fd = None
         self.current_path = '/'
         self.fs_mapper = []
@@ -123,7 +122,7 @@ class Qiling:
         self.entry_point = 0
         # syscall filter for strace-like functionality
         self.strace_filter = None
-        # generic append function
+        # generic append function, eg log file
         self.append = append
 
         """
@@ -154,30 +153,10 @@ class Qiling:
         else:    
             self.targetname = ntpath.basename(self.filename[0])
 
-        self.cur_pathname = pyos.path.abspath(os.getcwd())
-
         # Looger's configuration
         _logger = ql_setup_logging_stream(self)
-        
         if self.log_dir is not None and type(self.log_dir) == str:
-            _logger = ql_setup_logging_env(self, _logger)
-        
-        # if self.log_dir is not None and type(self.log_dir) == str:
-            
-        #     if not pyos.path.exists(self.log_dir):
-        #         pyos.makedirs(self.log_dir, 0o755)
-
-        #     pid = pyos.getpid()
-
-        #     if self.append:
-        #         self.log_filename = self.targetname + "_" + self.append          
-        #     else:
-        #         self.log_filename = self.targetname
-            
-        #     self.log_file = pyos.path.join(self.log_dir, self.log_filename) 
-
-        #     _logger = ql_setup_logging_file(self.output, self.log_file + "_" + str(pid), _logger)
-        
+            _logger = ql_setup_logging_env(self, _logger)    
         self.log_file_fd = _logger
             
         # OS dependent configuration for stdio
@@ -251,19 +230,16 @@ class Qiling:
         except:
             raise QlErrorArch("[!] Cannot load Memory Management module")    
 
-
         """
         Load architecture's and os module
         ql.pc, ql.sp and etc
         """
-
         self.arch = ql_arch_setup(self)
         self.os = ql_os_setup(self)
 
     def run(self):
         # setup strace filter for logger
         if self.strace_filter != None and self.output == QL_OUT_DEFAULT:
-
             self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
 
         # debugger init
