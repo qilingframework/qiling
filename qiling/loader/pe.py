@@ -234,136 +234,153 @@ class Process(QlLoader):
 
         self.ldr_list.append(ldr_table_entry)
 
-
-class Shellcode(Process, QlLoader):
-    def __init__(self, ql, dlls=[]):
-        super(Process, self).__init__(ql)
-        self.ql = ql
-        self.init_dlls = dlls
-        super().__init__(ql)
-
-    def load(self):
-        # setup stack memory
-        self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
-        if self.ql.archtype== QL_X86:
-            self.ql.register(UC_X86_REG_ESP, self.ql.stack_address + 0x3000)
-            self.ql.register(UC_X86_REG_EBP, self.ql.stack_address + 0x3000)
-        else:
-            self.ql.register(UC_X86_REG_RSP, self.ql.stack_address + 0x3000)
-            self.ql.register(UC_X86_REG_RBP, self.ql.stack_address + 0x3000)
-
-        # load shellcode in
-        self.ql.mem.map(self.ql.code_address, self.ql.code_size)
-        self.ql.mem.write(self.ql.code_address, self.ql.shellcoder)
-
-        # init tib/peb/ldr
-        super().init_tib()
-        super().init_peb()
-        super().init_ldr_data()
-
-        # load dlls
-        for each in self.init_dlls:
-            super().load_dll(each)
-
-
-class PE(Process, QlLoader):
-    def __init__(self, ql, path=""):
-        super(Process, self).__init__(ql)
+class LoaderPE(Process, QlLoader):
+    def __init__(self, ql, path=None, dlls=None):
+        super(QlLoader, self).__init__()
         self.ql = ql
         self.path = path
+        self.init_dlls = dlls
         self.filepath = ''
         self.PE_IMAGE_BASE = 0
         self.PE_IMAGE_SIZE = 0
         self.PE_ENTRY_POINT = 0
         self.sizeOfStackReserve = 0
-        
-
-    def load(self):
-        self.pe = pefile.PE(self.path, fast_load=True)
-
-        # for simplicity, no image base relocation
-        self.PE_IMAGE_BASE = self.PE_IMAGE_BASE = self.pe.OPTIONAL_HEADER.ImageBase
-        self.PE_IMAGE_SIZE = self.PE_IMAGE_SIZE = self.pe.OPTIONAL_HEADER.SizeOfImage
-
-        if self.PE_IMAGE_BASE + self.PE_IMAGE_SIZE > self.HEAP_BASE_ADDR:
-            # pe reloc
-            self.PE_IMAGE_BASE = self.PE_IMAGE_BASE = self.DEFAULT_IMAGE_BASE
-            self.pe.relocate_image(self.DEFAULT_IMAGE_BASE)
-
-        self.ql.entry_point = self.PE_ENTRY_POINT = self.PE_IMAGE_BASE + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
-        self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
-        self.ql.nprint("[+] Loading %s to 0x%x" % (self.path, self.PE_IMAGE_BASE))
-        self.ql.nprint("[+] PE entry point at 0x%x" % self.ql.entry_point)
-
-        # set stack pointer
-        self.ql.nprint("[+] Initiate stack address at 0x%x " % self.ql.stack_address)
-        self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
-
-        # Stack should not init at the very bottom. Will cause errors with Dlls
-        sp = self.ql.stack_address + self.ql.stack_size - 0x1000
 
         if self.ql.archtype== QL_X86:
-            self.ql.register(UC_X86_REG_ESP, sp)
-            self.ql.register(UC_X86_REG_EBP, sp)
-
-            if self.pe.is_dll():
-                self.ql.dprint(0, '[+] Setting up DllMain args')
-                load_addr_bytes = self.PE_IMAGE_BASE.to_bytes(length=4, byteorder='little')
-
-                self.ql.dprint(0, '[+] Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.PE_IMAGE_BASE, sp + 0x4))
-                self.ql.mem.write(sp + 0x4, load_addr_bytes)
-
-                self.ql.dprint(0, '[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp + 0x8))
-                self.ql.mem.write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
-
+            self.STRUCTERS_LAST_ADDR = FS_SEGMENT_ADDR
+            self.DEFAULT_IMAGE_BASE = 0x400000
+            self.DLL_BASE_ADDR = 0x10000000
+            self.HEAP_BASE_ADDR = 0x5000000
+            self.HEAP_SIZE = 0x5000000
+            
         elif self.ql.archtype== QL_X8664:
-            self.ql.register(UC_X86_REG_RSP, sp)
-            self.ql.register(UC_X86_REG_RBP, sp)
+            self.STRUCTERS_LAST_ADDR = GS_SEGMENT_ADDR 
+            self.DEFAULT_IMAGE_BASE = 0x400000
+            self.DLL_BASE_ADDR = 0x7ffff0000000
+            self.HEAP_BASE_ADDR = 0x500000000
+            self.HEAP_SIZE = 0x5000000
+            
+        self.cmdline = b"D:\\" + bytes(self.ql.path.replace("/", "\\"), "utf-8") + b"\x00"             
+        self.dlls = {}
+        self.import_symbols = {}
+        self.import_address_table = {}
+        self.ldr_list = []
+        self.PE_IMAGE_BASE = 0
+        self.PE_IMAGE_SIZE = 0
+        self.DLL_SIZE = 0
+        self.DLL_LAST_ADDR = self.DLL_BASE_ADDR        
+        
 
-            if self.pe.is_dll():
-                self.ql.dprint(0, '[+] Setting up DllMain args')
-
-                self.ql.dprint(0, '[+] Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.PE_IMAGE_BASE))
-                self.ql.register(UC_X86_REG_RCX, self.PE_IMAGE_BASE)
-
-                self.ql.dprint(0, '[+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
-                self.ql.register(UC_X86_REG_RDX, 1)
-        else:
-            raise QlErrorArch("[!] Unknown ql.arch")
-
+    def init_thread_information_block(self): 
         super().init_tib()
         super().init_peb()
         super().init_ldr_data()
 
-        # mmap PE file into memory
-        self.ql.mem.map(self.PE_IMAGE_BASE, self.PE_IMAGE_SIZE)
-        self.pe.parse_data_directories()
-        data = bytearray(self.pe.get_memory_mapped_image())
-        self.ql.mem.write(self.PE_IMAGE_BASE, bytes(data))
+    def load(self):
+        if self.path and not self.ql.shellcoder:
+            
+            self.pe = pefile.PE(self.path, fast_load=True)
+            # for simplicity, no image base relocation
+            self.PE_IMAGE_BASE = self.PE_IMAGE_BASE = self.pe.OPTIONAL_HEADER.ImageBase
+            self.PE_IMAGE_SIZE = self.PE_IMAGE_SIZE = self.pe.OPTIONAL_HEADER.SizeOfImage
 
-        # Add main PE to ldr_data_table
-        mod_name = os.path.basename(self.path)
-        self.dlls[mod_name] = self.PE_IMAGE_BASE
-        super().add_ldr_data_table_entry(mod_name)
+            if self.PE_IMAGE_BASE + self.PE_IMAGE_SIZE > self.HEAP_BASE_ADDR:
+                # pe reloc
+                self.PE_IMAGE_BASE = self.PE_IMAGE_BASE = self.DEFAULT_IMAGE_BASE
+                self.pe.relocate_image(self.DEFAULT_IMAGE_BASE)
 
-        # parse directory entry import
-        for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
-            dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')
-            super().load_dll(entry.dll)
-            for imp in entry.imports:
-                # fix IAT
-                # self.ql.nprint(imp.name)
-                # self.ql.nprint(self.import_address_table[imp.name])
-                if imp.name:
-                    addr = self.import_address_table[dll_name][imp.name]
-                else:
-                    addr = self.import_address_table[dll_name][imp.ordinal]
+            self.ql.entry_point = self.PE_ENTRY_POINT = self.PE_IMAGE_BASE + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
+            self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
+            self.ql.nprint("[+] Loading %s to 0x%x" % (self.path, self.PE_IMAGE_BASE))
+            self.ql.nprint("[+] PE entry point at 0x%x" % self.ql.entry_point)
 
-                if self.ql.archtype== QL_X86:
-                    address = self.ql.pack32(addr)
-                else:
-                    address = self.ql.pack64(addr)
-                self.ql.mem.write(imp.address, address)
+            # set stack pointer
+            self.ql.nprint("[+] Initiate stack address at 0x%x " % self.ql.stack_address)
+            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
 
-        self.ql.nprint("[+] Done with loading %s" % self.path)
-        self.filepath = b"D:\\" + bytes(self.path.replace("/", "\\"), "utf-8")
+            # Stack should not init at the very bottom. Will cause errors with Dlls
+            sp = self.ql.stack_address + self.ql.stack_size - 0x1000
+
+            if self.ql.archtype== QL_X86:
+                self.ql.register(UC_X86_REG_ESP, sp)
+                self.ql.register(UC_X86_REG_EBP, sp)
+
+                if self.pe.is_dll():
+                    self.ql.dprint(0, '[+] Setting up DllMain args')
+                    load_addr_bytes = self.PE_IMAGE_BASE.to_bytes(length=4, byteorder='little')
+
+                    self.ql.dprint(0, '[+] Writing 0x%08X (IMAGE_BASE) to [ESP+4](0x%08X)' % (self.PE_IMAGE_BASE, sp + 0x4))
+                    self.ql.mem.write(sp + 0x4, load_addr_bytes)
+
+                    self.ql.dprint(0, '[+] Writing 0x01 (DLL_PROCESS_ATTACH) to [ESP+8](0x%08X)' % (sp + 0x8))
+                    self.ql.mem.write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
+
+            elif self.ql.archtype== QL_X8664:
+                self.ql.register(UC_X86_REG_RSP, sp)
+                self.ql.register(UC_X86_REG_RBP, sp)
+
+                if self.pe.is_dll():
+                    self.ql.dprint(0, '[+] Setting up DllMain args')
+
+                    self.ql.dprint(0, '[+] Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.PE_IMAGE_BASE))
+                    self.ql.register(UC_X86_REG_RCX, self.PE_IMAGE_BASE)
+
+                    self.ql.dprint(0, '[+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
+                    self.ql.register(UC_X86_REG_RDX, 1)
+            else:
+                raise QlErrorArch("[!] Unknown ql.arch")
+
+            self.init_thread_information_block()
+
+            # mmap PE file into memory
+            self.ql.mem.map(self.PE_IMAGE_BASE, self.PE_IMAGE_SIZE)
+            self.pe.parse_data_directories()
+            data = bytearray(self.pe.get_memory_mapped_image())
+            self.ql.mem.write(self.PE_IMAGE_BASE, bytes(data))
+
+            # Add main PE to ldr_data_table
+            mod_name = os.path.basename(self.path)
+            self.dlls[mod_name] = self.PE_IMAGE_BASE
+            super().add_ldr_data_table_entry(mod_name)
+
+            # parse directory entry import
+            for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
+                dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')
+                super().load_dll(entry.dll)
+                for imp in entry.imports:
+                    # fix IAT
+                    # self.ql.nprint(imp.name)
+                    # self.ql.nprint(self.import_address_table[imp.name])
+                    if imp.name:
+                        addr = self.import_address_table[dll_name][imp.name]
+                    else:
+                        addr = self.import_address_table[dll_name][imp.ordinal]
+
+                    if self.ql.archtype== QL_X86:
+                        address = self.ql.pack32(addr)
+                    else:
+                        address = self.ql.pack64(addr)
+                    self.ql.mem.write(imp.address, address)
+
+            self.ql.nprint("[+] Done with loading %s" % self.path)
+            self.filepath = b"D:\\" + bytes(self.path.replace("/", "\\"), "utf-8")
+
+        elif self.ql.shellcoder:
+            # setup stack memory
+            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
+            if self.ql.archtype== QL_X86:
+                self.ql.register(UC_X86_REG_ESP, self.ql.stack_address + 0x3000)
+                self.ql.register(UC_X86_REG_EBP, self.ql.stack_address + 0x3000)
+            else:
+                self.ql.register(UC_X86_REG_RSP, self.ql.stack_address + 0x3000)
+                self.ql.register(UC_X86_REG_RBP, self.ql.stack_address + 0x3000)
+
+            # load shellcode in
+            self.ql.mem.map(self.ql.code_address, self.ql.code_size)
+            self.ql.mem.write(self.ql.code_address, self.ql.shellcoder)
+
+            self.init_thread_information_block()
+
+            # load dlls
+            for each in self.init_dlls:
+                super().load_dll(each)            

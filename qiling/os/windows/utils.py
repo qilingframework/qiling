@@ -18,7 +18,7 @@ from qiling.os.windows.thread import QlWindowsThreadManager, QlWindowsThread
 
 
 def setup(self):
-    self.ql.heap = Heap(self.ql, self.PE.HEAP_BASE_ADDR, self.PE.HEAP_BASE_ADDR + self.PE.HEAP_SIZE)
+    self.ql.heap = Heap(self.ql, self.LoaderPE.HEAP_BASE_ADDR, self.LoaderPE.HEAP_BASE_ADDR + self.LoaderPE.HEAP_SIZE)
     self.ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
     
     # setup gdt

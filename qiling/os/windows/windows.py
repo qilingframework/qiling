@@ -11,7 +11,7 @@ from qiling.arch.x86_const import *
 from qiling.os.utils import *
 from qiling.const import *
 
-from qiling.loader.pe import PE, Shellcode
+from qiling.loader.pe import LoaderPE
 from qiling.os.windows.dlls import *
 from qiling.os.windows.const import *
 from qiling.os.windows.const import Mapper
@@ -54,26 +54,31 @@ class QlOsWindows(QlOs):
         if self.ql.stack_size == 0:
             self.ql.stack_size = self.QL_WINDOWS_STACK_SIZE            
         
-        #setup(self)
+
 
         if self.ql.shellcoder:
-            self.PE = Shellcode(self.ql, [b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
+            self.LoaderPE = LoaderPE(self.ql, dlls= [b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
         else:
-            self.PE = PE(self.ql, self.ql.path)
+            self.LoaderPE = LoaderPE(self.ql, path =self.ql.path)
         
+        # due to init memory mapping
+        # setup() must come before loader
         setup(self)
 
-        self.PE.load()
+        self.LoaderPE.load()
+ 
+
+
         # hook win api
         self.ql.hook_code(self.hook_winapi)
 
 
     # hook WinAPI in PE EMU
     def hook_winapi(self, int, address, size):
-        if address in self.PE.import_symbols:
-            winapi_name = self.PE.import_symbols[address]['name']
+        if address in self.LoaderPE.import_symbols:
+            winapi_name = self.LoaderPE.import_symbols[address]['name']
             if winapi_name is None:
-                winapi_name = Mapper[self.PE.import_symbols[address]['dll']][self.PE.import_symbols[address]['ordinal']]
+                winapi_name = Mapper[self.LoaderPE.import_symbols[address]['dll']][self.LoaderPE.import_symbols[address]['ordinal']]
             else:
                 winapi_name = winapi_name.decode()
             winapi_func = None
