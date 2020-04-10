@@ -56,7 +56,6 @@ def ql_syscall_prlimit64(ql, prlimit64_pid, prlimit64_resource, prlimit64_new_li
     # setrlimit() and getrlimit()
     if prlimit64_pid == 0 and prlimit64_new_limit == 0:
         rlim = resource.getrlimit(prlimit64_resource)
-        print(rlim)
         ql.mem.write(prlimit64_old_limit, ql.packs(rlim[0]) + ql.packs(rlim[1]))
         regreturn = 0
     else:
