@@ -8,7 +8,7 @@ This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
 
-import sys, logging, importlib, pefile
+import sys, logging, importlib, pefile, os
 from qiling.exception import *
 from qiling.const import *
 from os.path import dirname, exists
@@ -315,6 +315,23 @@ def ql_setup_logger(logger_name=None):
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)
     return logger
+
+
+def ql_setup_logging_env(ql, logger=None):
+        if not os.path.exists(ql.log_dir):
+            os.makedirs(ql.log_dir, 0o755)
+
+        pid = os.getpid()
+
+        if ql.append:
+            ql.log_filename = ql.targetname + "_" + ql.append          
+        else:
+            ql.log_filename = ql.targetname
+        
+        ql.log_file = os.path.join(ql.log_dir, ql.log_filename) 
+
+        _logger = ql_setup_logging_file(ql.output, ql.log_file + "_" + str(pid), logger)
+        return _logger
 
 
 def ql_setup_logging_stream(ql, logger=None):

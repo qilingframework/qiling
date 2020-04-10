@@ -158,22 +158,25 @@ class Qiling:
 
         # Looger's configuration
         _logger = ql_setup_logging_stream(self)
-
+        
         if self.log_dir is not None and type(self.log_dir) == str:
+            _logger = ql_setup_logging_env(self, _logger)
+        
+        # if self.log_dir is not None and type(self.log_dir) == str:
             
-            if not pyos.path.exists(self.log_dir):
-                pyos.makedirs(self.log_dir, 0o755)
+        #     if not pyos.path.exists(self.log_dir):
+        #         pyos.makedirs(self.log_dir, 0o755)
 
-            pid = pyos.getpid()
+        #     pid = pyos.getpid()
 
-            if self.append:
-                self.log_filename = self.targetname + "_" + self.append          
-            else:
-                self.log_filename = self.targetname
+        #     if self.append:
+        #         self.log_filename = self.targetname + "_" + self.append          
+        #     else:
+        #         self.log_filename = self.targetname
             
-            self.log_file = pyos.path.join(self.log_dir, self.log_filename) 
+        #     self.log_file = pyos.path.join(self.log_dir, self.log_filename) 
 
-            _logger = ql_setup_logging_file(self.output, self.log_file + "_" + str(pid), _logger)
+        #     _logger = ql_setup_logging_file(self.output, self.log_file + "_" + str(pid), _logger)
         
         self.log_file_fd = _logger
             
