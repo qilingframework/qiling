@@ -3,8 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-from abc import   ABCMeta, abstractmethod
-
+from abc import ABCMeta, abstractmethod
 from qiling.const import *
 
 

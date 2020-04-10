@@ -23,7 +23,6 @@ from qiling.os.posix.posix import QlOsPosix
 class QlOsFreebsd(QlOsPosix):
     def __init__(self, ql):
         super(QlOsFreebsd, self).__init__(ql)
-        self.ql.os = self
         self.load()
         
     def load(self):   
@@ -77,7 +76,7 @@ class QlOsFreebsd(QlOsPosix):
 
 
     def hook_syscall(self, intno= None):
-        return self.ql.os.load_syscall()
+        return self.load_syscall()
 
 
     def run(self):

@@ -15,7 +15,7 @@ from qiling.os.windows.registry import RegistryManager
 from qiling.os.windows.clipboard import Clipboard
 from qiling.os.windows.fiber import FiberManager
 from qiling.os.windows.handle import HandleManager, Handle
-from qiling.os.windows.thread import QlWindowsThreadManager, QlWindowsThread
+from qiling.os.windows.thread import QlWindowsThreadManagement, QlWindowsThread
 
 
 def setup(self):
@@ -34,22 +34,17 @@ def setup(self):
     
     # user configuration
     self.profile = ql_init_configuration(self)
-
     # handle manager
     self.handle_manager = HandleManager()
-    
     # registry manger
     self.registry_manager = RegistryManager(self.ql)
-    
     # clipboard
-    self.ql.clipboard = Clipboard(self.ql)
-    
+    self.clipboard = Clipboard(self.ql)
     # fibers
-    self.ql.fiber_manager = FiberManager(self.ql)
-    
+    self.fiber_manager = FiberManager(self.ql)
     # thread manager
     main_thread = QlWindowsThread(self.ql)
-    self.ql.thread_manager = QlWindowsThreadManager(self.ql, main_thread)
+    self.thread_manager = QlWindowsThreadManagement(self.ql, main_thread)
     
     # more handle manager
     new_handle = Handle(thread=main_thread)
