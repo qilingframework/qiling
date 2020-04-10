@@ -27,7 +27,7 @@ def test_pe_win_x8664_hello():
 
 def test_pe_win_x86_hello():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows",
-                output="default", log_dir='.')
+                output="default", log_dir='test_qlog', append="test")
     ql.log_split = True            
     ql.run()
     del ql

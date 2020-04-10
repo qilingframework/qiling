@@ -28,7 +28,7 @@ class RegistryManager:
         self.ql = ql
 
         if self.ql.log_dir is None:
-            self.log_registry_dir = os.path.join(self.ql.cur_pathname, "qlog")
+            self.log_registry_dir = "qlog"
         else:
             self.log_registry_dir = self.ql.log_dir
 

@@ -155,14 +155,13 @@ class Qiling:
             self.targetname = "qilingshellcode"
         else:    
             self.targetname = ntpath.basename(self.filename[0])
-        
+
         self.cur_pathname = pyos.path.abspath(os.getcwd())
 
         # Looger's configuration
         _logger = ql_setup_logging_stream(self)
 
         if self.log_dir is not None and type(self.log_dir) == str:
-            self.log_dir = pyos.path.join(self.cur_pathname, self.log_dir)   
             
             if not pyos.path.exists(self.log_dir):
                 pyos.makedirs(self.log_dir, 0o755)
@@ -174,7 +173,8 @@ class Qiling:
             else:
                 self.log_filename = self.targetname
             
-            self.log_file = pyos.path.join(self.log_dir, self.log_filename)    
+            self.log_file = pyos.path.join(self.log_dir, self.log_filename) 
+
             _logger = ql_setup_logging_file(self.output, self.log_file + "_" + str(pid), _logger)
         
         self.log_file_fd = _logger
