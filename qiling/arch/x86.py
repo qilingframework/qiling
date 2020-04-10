@@ -375,10 +375,10 @@ class GDTManage:
         # self.gdt_used[index] = True
 
     def get_gdt_buf(self, start, end):
-        return ql.mem.read(self.gdt_addr + (start << 3), (start << 3) - (end << 3))
+        return self.ql.mem.read(self.gdt_addr + (start << 3), (end << 3) - (start << 3))
 
     def set_gdt_buf(self, start, end, buf):
-        return ql.mem.write(self.gdt_addr + (start << 3), buf[ : (start << 3) - (end << 3)])
+        return self.ql.mem.write(self.gdt_addr + (start << 3), buf[ : (end << 3) - (start << 3)])
 
     def get_free_idx(self, start = 0, end = -1):
         # The Linux kernel determines whether the segment is empty by judging whether the content in the current GDT segment is 0.

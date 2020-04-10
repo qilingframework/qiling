@@ -27,6 +27,7 @@ class QlOsLinux(QlOsPosix):
         self.QL_LINUX_PREDEFINE_STACKSIZE = 0x21000
         self.QL_ARM_KERNEL_GET_TLS_ADDR = 0xFFFF0FE0
         self.ql.os = self
+        self.thread_class = None
         self.load()
 
     def load(self):   
@@ -65,7 +66,8 @@ class QlOsLinux(QlOsPosix):
             ql_linux_x86_register_cs(self.ql)
             ql_linux_x86_register_ds_ss_es(self.ql)
             self.ql.hook_intr(self.hook_syscall)
-    
+            self.thread_class = QlLinuxX86Thread
+
         # X8664            
         elif  self.ql.archtype== QL_X8664:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
@@ -119,7 +121,7 @@ class QlOsLinux(QlOsPosix):
             else:
                 if self.ql.multithread == True:        
                     # start multithreading
-                    thread_management = QlLinuxThreadManagement(ql)
+                    thread_management = QlLinuxThreadManagement(self.ql)
                     self.ql.thread_management = thread_management
                     
                     if self.ql.archtype== QL_ARM:
@@ -131,9 +133,9 @@ class QlOsLinux(QlOsPosix):
                     else:
                         thread_set_tls = None
                     
-                    main_thread = QlLinuxThread(self.ql, thread_management, total_time = self.ql.timeout, special_settings_fuc = thread_set_tls)
+                    main_thread = self.thread_class(self.ql, thread_management, total_time = self.ql.timeout)
                     
-                    main_thread.save()
+                    main_thread.store_regs()
                     main_thread.set_start_address(self.ql.entry_point)
 
                     thread_management.set_main_thread(main_thread)
