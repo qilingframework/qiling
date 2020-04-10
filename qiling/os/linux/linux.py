@@ -19,6 +19,7 @@ from qiling.os.utils import *
 from qiling.os.posix.posix import QlOsPosix
 from qiling.os.linux.const import *
 from qiling.os.linux.utils import *
+from qiling.os.linux.futex import *
 
 class QlOsLinux(QlOsPosix):
     def __init__(self, ql):
@@ -28,6 +29,7 @@ class QlOsLinux(QlOsPosix):
         self.QL_ARM_KERNEL_GET_TLS_ADDR = 0xFFFF0FE0
         self.ql.os = self
         self.thread_class = None
+        self.futexm = None
         self.load()
 
     def load(self):   
@@ -36,6 +38,8 @@ class QlOsLinux(QlOsPosix):
         or else it will kill execve
         """
         self.ql.uc = self.ql.arch.init_uc
+
+        self.futexm = QlLinuxFutexManagement()
         
         # ARM
         if self.ql.archtype== QL_ARM:
