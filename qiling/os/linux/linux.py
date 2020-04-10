@@ -82,6 +82,7 @@ class QlOsLinux(QlOsPosix):
             ql_linux_x86_register_cs(self.ql)
             ql_linux_x86_register_ds_ss_es(self.ql)
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
+            self.thread_class = QlLinuxX8664Thread
         
         if self.ql.shellcoder:
             if (self.ql.stack_address == 0):

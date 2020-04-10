@@ -305,6 +305,20 @@ class QlLinuxX86Thread(QlLinuxThread):
         self.restore_regs()
         self.ql.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
 
+class QlLinuxX8664Thread(QlLinuxThread):
+    """docstring for X8664Thread"""
+    def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
+        super(QlLinuxX8664Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+
+    def clone_thread_tls(self, tls_addr):
+        self.ql.uc.msr_write(FSMSR, tls_addr)
+
+    def store(self):
+        self.store_regs()
+
+    def restore(self):
+        self.restore_regs()
+
 class QlLinuxThreadManagement(QlThreadManagement):
     def __init__(self, ql, time_slice = 1000, count_slice = 1000, mode = COUNT_MODE):
         super(QlLinuxThreadManagement, self).__init__(ql)
