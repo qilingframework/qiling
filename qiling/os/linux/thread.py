@@ -3,34 +3,23 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-from ..utils import ql_setup_logging_file, ql_setup_logging_stream, ql_setup_logger
 import os, time
 
+from qiling.utils import ql_setup_logging_file, ql_setup_logging_stream, ql_setup_logger
+from qiling.os.thread import *
 from qiling.arch.x86_const import *
 
 from abc import ABC, abstractmethod
-
-THREAD_EVENT_INIT_VAL = 0
-THREAD_EVENT_EXIT_EVENT = 1
-THREAD_EVENT_UNEXECPT_EVENT = 2
-THREAD_EVENT_EXECVE_EVENT = 3
-THREAD_EVENT_CREATE_THREAD = 4
-THREAD_EVENT_BLOCKING_EVENT = 5
-THREAD_EVENT_EXIT_GROUP_EVENT = 6
-
-THREAD_STATUS_RUNNING = 0
-THREAD_STATUS_BLOCKING = 1
-THREAD_STATUS_TERMINATED = 2
-THREAD_STATUS_TIMEOUT = 3
 
 TIME_MODE = 0
 COUNT_MODE = 1
 
 #GLOBAL_THREAD_ID = 0
 
-class Thread(ABC):
+class QlLinuxThread(QlThread):
 
     def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
+        super(QlLinuxThread, self).__init__(ql)
         #global GLOBAL_THREAD_ID
         if ql.global_thread_id == 0:
             ql.global_thread_id = os.getpid() + 1000
@@ -267,10 +256,10 @@ class Thread(ABC):
         self.current_path = path
         
 
-class X86Thread(Thread):
+class QlLinuxX86Thread(QlLinuxThread):
     """docstring for X86Thread"""
     def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
-        super(X86Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+        super(QlLinuxX86Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
         self.tls = bytes(b'\x00' * (8 * 3))
 
     def clone_thread_tls(self, tls_addr):
@@ -303,8 +292,9 @@ class X86Thread(Thread):
         self.restore_regs()
         self.ql.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
 
-class ThreadManagement:
+class QlLinuxThreadManagement(QlThreadManagement):
     def __init__(self, ql, time_slice = 1000, count_slice = 1000, mode = COUNT_MODE):
+        super(QlLinuxThreadManagement, self).__init__(ql)
         self.cur_thread = None
         self.running_thread_list = []
         self.ending_thread_list = []

@@ -16,10 +16,10 @@ from qiling.os.windows.const import *
 @winapi(cc=STDCALL, params={
     "pszPath": POINTER
 })
-def hook_PathFindExtensionA(ql, address, params):
+def hook_PathFindExtensionA(self, address, params):
     # Must return the address of the dot
     pointer = params["pszPath"]
-    pathname = read_cstring(ql, pointer)
+    pathname = read_cstring(self, pointer)
     size_before_dot = len(pathname.split(".")[0])
     pointer_dot = pointer + size_before_dot
     return pointer_dot
@@ -31,10 +31,10 @@ def hook_PathFindExtensionA(ql, address, params):
 @winapi(cc=STDCALL, params={
     "pszPath": POINTER
 })
-def hook_PathFindFileNameA(ql, address, params):
+def hook_PathFindFileNameA(self, address, params):
     # Must return the address of the start of the filename
     pointer = params["pszPath"]
-    pathname = read_cstring(ql, pointer)
+    pathname = read_cstring(self, pointer)
     size_before_last_slash = len("".join(pathname.split("\\")[:-1])) + pathname.count("\\")
     pointer_start = pointer + size_before_last_slash
     return pointer

@@ -112,9 +112,9 @@ def test_pe_win_x8664_customapi():
     @winapi(cc=CDECL, params={
         "str": STRING
     })
-    def my_puts64(ql, address, params):
+    def my_puts64(self, address, params):
         ret = 0
-        ql.nprint("\n+++++++++\nMy Windows 64bit Windows API\n+++++++++\n")
+        self.ql.nprint("\n+++++++++\nMy Windows 64bit Windows API\n+++++++++\n")
         string = params["str"]
         ret = len(string)
         return ret

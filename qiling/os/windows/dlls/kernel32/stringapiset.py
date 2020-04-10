@@ -26,7 +26,7 @@ from qiling.exception import *
     "cchSrc": INT,
     "lpCharType": POINTER
 })
-def hook_GetStringTypeW(ql, address, params):
+def hook_GetStringTypeW(self, address, params):
     # TODO implement
     ret = 1
     return ret
@@ -47,7 +47,7 @@ def hook_GetStringTypeW(ql, address, params):
     "count": INT,
     "chartype": POINTER
 })
-def hook_GetStringTypeExA(ql, address, params):
+def hook_GetStringTypeExA(self, address, params):
     # TODO implement
     ret = 1
     return ret
@@ -73,7 +73,7 @@ def hook_GetStringTypeExA(ql, address, params):
     "lpDefaultChar": POINTER,
     "lpUsedDefaultChar": POINTER
 })
-def hook_WideCharToMultiByte(ql, address, params):
+def hook_WideCharToMultiByte(self, address, params):
     ret = 0
 
     cbMultiByte = params["cbMultiByte"]
@@ -81,7 +81,7 @@ def hook_WideCharToMultiByte(ql, address, params):
     lpMultiByteStr = params["lpMultiByteStr"]
     s = (s_lpWideCharStr + "\x00").encode("utf-16le")
     if cbMultiByte != 0:
-        ql.mem.write(lpMultiByteStr, s)
+        self.ql.mem.write(lpMultiByteStr, s)
     ret = len(s)
 
     return ret
@@ -103,8 +103,8 @@ def hook_WideCharToMultiByte(ql, address, params):
     "lpWideCharStr": POINTER,
     "cchWideChar": INT
 })
-def hook_MultiByteToWideChar(ql, address, params):
+def hook_MultiByteToWideChar(self, address, params):
     wide_str = (params['lpMultiByteStr']+"\x00").encode('utf-16le')
     if params['cchWideChar'] != 0:
-        ql.mem.write(params['lpWideCharStr'], wide_str)
+        self.ql.mem.write(params['lpWideCharStr'], wide_str)
     return len(wide_str)

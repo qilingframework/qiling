@@ -89,7 +89,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     _struct = []
 
     for offset in range(0, 0x18, 4):
-        data =ql.mem.read(struct_mmap_args + offset, 4)
+        data = ql.mem.read(struct_mmap_args + offset, 4)
         _struct.append(int.from_bytes(data, 'little'))
 
     mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset = _struct

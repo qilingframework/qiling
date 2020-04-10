@@ -70,7 +70,7 @@ def spaced_hex(data):
 
 
 def disasm(count, ql, address, size):
-    buf =ql.mem.read(address, size)
+    buf = ql.mem.read(address, size)
     try:
         for i in md.disasm(buf, address):
             return "{:08X}\t{:08X}: {:24s} {:10s} {:16s}".format(count[0], i.address, spaced_hex(buf), i.mnemonic,

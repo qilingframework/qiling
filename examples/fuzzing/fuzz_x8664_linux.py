@@ -121,7 +121,7 @@ def main(input_file, enable_trace=False):
             return b' '.join(hexlify(data)[i:i+2] for i in range(0, len(hexlify(data)), 2)).decode('utf-8')
 
         def disasm(count, ql, address, size):
-            buf =ql.mem.read(address, size)
+            buf = ql.mem.read(address, size)
             try:
                 for i in md.disasm(buf, address):
                     return "{:08X}\t{:08X}: {:24s} {:10s} {:16s}".format(count[0], i.address, spaced_hex(buf), i.mnemonic,

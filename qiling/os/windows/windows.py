@@ -23,31 +23,14 @@ class QlOsWindows(QlOs):
         super(QlOsWindows, self).__init__(ql)
         self.ql = ql
         self.user_defined_api = {}
-        self.ql.os = self
-        self.load()
-        # variables used inside hooks
-        self.hooks_variables = {}
-
-    def load(self):        
-        if self.ql.archtype== QL_X86:
-            self.STRUCTERS_LAST_ADDR = FS_SEGMENT_ADDR
-            self.DEFAULT_IMAGE_BASE = 0x400000
-            self.HEAP_BASE_ADDR = 0x5000000
-            self.HEAP_SIZE = 0x5000000
-            self.DLL_BASE_ADDR = 0x10000000
-        elif self.ql.archtype== QL_X8664:
-            self.STRUCTERS_LAST_ADDR = GS_SEGMENT_ADDR 
-            self.DEFAULT_IMAGE_BASE = 0x400000
-            self.HEAP_BASE_ADDR = 0x500000000
-            self.HEAP_SIZE = 0x5000000
-            self.DLL_BASE_ADDR = 0x7ffff0000000
-            
-        self.PE_IMAGE_BASE = 0
-        self.PE_IMAGE_SIZE = 0
-        self.DLL_SIZE = 0
-        self.DLL_LAST_ADDR = self.DLL_BASE_ADDR
         self.PE_RUN = True
         self.last_error = 0
+        # variables used inside hooks
+        self.hooks_variables = {}
+        self.syscall_count = {}  
+        self.load()
+
+    def load(self):        
 
         """
         initiate UC needs to be in loader, or else it will kill execve
@@ -71,24 +54,26 @@ class QlOsWindows(QlOs):
         if self.ql.stack_size == 0:
             self.ql.stack_size = self.QL_WINDOWS_STACK_SIZE            
         
-        setup(self)
-        
+        #setup(self)
+
         if self.ql.shellcoder:
-            self.ql.PE = Shellcode(self.ql, [b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
+            self.PE = Shellcode(self.ql, [b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
         else:
-            self.ql.PE = PE(self.ql, self.ql.path)
-       
-        self.ql.PE.load()
+            self.PE = PE(self.ql, self.ql.path)
+        
+        setup(self)
+
+        self.PE.load()
         # hook win api
         self.ql.hook_code(self.hook_winapi)
 
 
     # hook WinAPI in PE EMU
     def hook_winapi(self, int, address, size):
-        if address in self.ql.PE.import_symbols:
-            winapi_name = self.ql.PE.import_symbols[address]['name']
+        if address in self.PE.import_symbols:
+            winapi_name = self.PE.import_symbols[address]['name']
             if winapi_name is None:
-                winapi_name = Mapper[self.ql.PE.import_symbols[address]['dll']][self.ql.PE.import_symbols[address]['ordinal']]
+                winapi_name = Mapper[self.PE.import_symbols[address]['dll']][self.PE.import_symbols[address]['ordinal']]
             else:
                 winapi_name = winapi_name.decode()
             winapi_func = None
@@ -98,15 +83,15 @@ class QlOsWindows(QlOs):
                     winapi_func = self.user_defined_api[winapi_name]
             else:
                 try:
-                    counter = self.ql.PE.syscall_count.get(winapi_name, 0) + 1
-                    self.ql.PE.syscall_count[winapi_name] = counter
+                    counter = self.syscall_count.get(winapi_name, 0) + 1
+                    self.syscall_count[winapi_name] = counter
                     winapi_func = globals()['hook_' + winapi_name]
                 except KeyError:
                     winapi_func = None
 
             if winapi_func:
                 try:
-                    winapi_func(self.ql, address, {})
+                    winapi_func(self, address, {})
                 except Exception:
                     self.ql.dprint(0, "[!] %s Exception Found" % winapi_name)
                     raise QlErrorSyscallError("[!] Windows API Implementation Error")
@@ -116,9 +101,9 @@ class QlOsWindows(QlOs):
                     raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
 
-
     def run(self):
         ql_setup_output(self.ql)
+
         if self.ql.until_addr == 0:
             if self.ql.archbit == 32:
                 self.ql.until_addr = QL_ARCHBIT32_EMU_END
@@ -144,7 +129,7 @@ class QlOsWindows(QlOs):
 
         self.ql.registry_manager.save()
 
-        post_report(self.ql)
+        post_report(self)
 
         if self.ql.internal_exception is not None:
             raise self.ql.internal_exception

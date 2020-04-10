@@ -10,17 +10,15 @@ from unicorn.x86_const import *
 from unicorn.arm64_const import *
 from unicorn.mips_const import *
 
+from qiling.const import *
+
 from qiling.loader.elf import *
 from qiling.arch.x86 import *
 
+from qiling.os.utils import *
+from qiling.os.posix.posix import QlOsPosix
 from qiling.os.linux.const import *
 from qiling.os.linux.utils import *
-from qiling.os.utils import *
-from qiling.const import *
-
-from qiling.arch.x86 import *
-
-from qiling.os.posix.posix import QlOsPosix
 
 class QlOsLinux(QlOsPosix):
     def __init__(self, ql):
@@ -68,7 +66,7 @@ class QlOsLinux(QlOsPosix):
             ql_linux_x86_register_cs(self.ql)
             ql_linux_x86_register_ds_ss_es(self.ql)
             self.ql.hook_intr(self.hook_syscall)
-            self.thread_class = X86Thread
+            self.thread_class = QlLinuxX86Thread
 
         # X8664            
         elif  self.ql.archtype== QL_X8664:
@@ -123,7 +121,7 @@ class QlOsLinux(QlOsPosix):
             else:
                 if self.ql.multithread == True:        
                     # start multithreading
-                    thread_management = ThreadManagement(self.ql)
+                    thread_management = QlLinuxThreadManagement(self.ql)
                     self.ql.thread_management = thread_management
                     
                     if self.ql.archtype== QL_ARM:
