@@ -4,8 +4,8 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 from qiling.const import *
+from qiling.arch.x86_const import *
 
 class QlLoader:
     def __init__(self, ql):
         self.ql = ql
-

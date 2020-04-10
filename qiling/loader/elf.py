@@ -432,19 +432,19 @@ class ELFLoader(ELFParse):
                 else:
                     _perms = int(bin(i["p_flags"])[:1:-1], 2) # reverse bit for perms bit mapping
 
-                ql.nprint("[+] load 0x%x - 0x%x" % (_mem_s, _mem_e))
                 ql.mem.map(_mem_s, _mem_e - _mem_s, perms=_perms, info=self.path)
-                ql.dprint(0, "[+] load 0x%x - 0x%x" % (_mem_s, _mem_e))
+                ql.nprint("[+] load 0x%x - 0x%x" % (_mem_s, _mem_e))
+                ql.dprint(D_PORT, "[+] load 0x%x - 0x%x" % (_mem_s, _mem_e))
                 ql.mem.write(loadbase + i['p_vaddr'], super().getelfdata(i['p_offset'], i['p_filesz']))
 
         if _mem_e < mem_end:
-            ql.nprint("[+] load 0x%x - 0x%x" % (_mem_e, mem_end - _mem_e))
-            ql.mem.map(_mem_e, mem_end - _mem_e)
-
-
+            ql.nprint("[+] load 0x%x - 0x%x" % (_mem_e, mem_end-_mem_e))
+            ql.dprint(D_PROT, "[+] load 0x%x - 0x%x" % (_mem_s, mem_end-_mem_e))
+            ql.mem.map(_mem_e, mem_end-_mem_e)
+            
         entry_point = elfhead['e_entry'] + loadbase
 
-        ql.dprint(0, "[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
+        ql.dprint(D_PROT, "[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
 
         ql.brk_address = mem_end + loadbase
 
@@ -455,7 +455,7 @@ class ELFLoader(ELFParse):
            
             interp = ELFParse(ql.rootfs + interp_path, ql)
             interphead = interp.parse_header(ql)
-            ql.dprint(0, "[+] interp is : %s" % (ql.rootfs + interp_path))
+            ql.dprint(D_PROT, "[+] interp is : %s" % (ql.rootfs + interp_path))
 
             interp_mem_size = -1
             for i in interp.parse_program_header(ql):
@@ -463,7 +463,7 @@ class ELFLoader(ELFParse):
                     if interp_mem_size < i['p_vaddr'] + i['p_memsz'] or interp_mem_size == -1:
                         interp_mem_size = i['p_vaddr'] + i['p_memsz']
             interp_mem_size = (interp_mem_size // 0x1000 + 1) * 0x1000
-            ql.dprint(0, "[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
+            ql.dprint(D_PROT, "[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
 
             if ql.interp_base == 0:
                 if ql.archbit == 64:
@@ -475,7 +475,7 @@ class ELFLoader(ELFParse):
                 else:
                     ql.interp_base = 0xff7d5000
 
-            ql.dprint(0, "[+] interp_base is : 0x%x" % (ql.interp_base))
+            ql.dprint(D_PROT, "[+] interp_base is : 0x%x" % (ql.interp_base))
             ql.mem.map(ql.interp_base, int(interp_mem_size), info=os.path.abspath(interp_path))
 
             for i in interp.parse_program_header(ql):
@@ -494,7 +494,7 @@ class ELFLoader(ELFParse):
             else:
                 ql.mmap_start = 0xf7fd6000 - 0x400000
 
-        ql.dprint(0, "[+] mmap_start is : 0x%x" % (ql.mmap_start))
+        ql.dprint(D_PROT, "[+] mmap_start is : 0x%x" % (ql.mmap_start))
 
         # Set elf table
         elf_table = b''
@@ -586,7 +586,7 @@ class ELFLoader(ELFParse):
         ql.mem.write(int(new_stack - len(elf_table)), elf_table)
         new_stack = new_stack - len(elf_table)
 
-        # ql.dprint(0, "rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
+        # ql.dprint(D_PROT, sssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
         # ql.register(UC_X86_REG_RDI, new_stack + 8)
 
         # for i in range(120):

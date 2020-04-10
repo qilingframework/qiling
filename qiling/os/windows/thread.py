@@ -4,13 +4,14 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 from unicorn.x86_const import *
-from qiling.os.windows.utils import *
 from qiling.exception import *
+from qiling.os.thread import *
+from qiling.os.windows.utils import *
 
 
 def thread_scheduler(ql, address, size):
     if ql.pc == ql.thread_manager.THREAD_RET_ADDR:
-        ql.thread_manager.current_thread.stop()
+        ql.thread_manager.cur_thread.stop()
         ql.thread_manager.do_schedule()
     else:
         ql.thread_manager.ins_count += 1
@@ -91,14 +92,15 @@ class Context:
 
 
 # A Simple Thread Manager
-class ThreadManager:
+class QlWindowsThreadManager(QlThread):
     TIME_SLICE = 10
 
-    def __init__(self, ql, current_thread):
+    def __init__(self, ql, cur_thread):
+        super(QlWindowsThreadManager, self).__init__(ql)
         self.ql = ql
         # main thread
-        self.current_thread = current_thread
-        self.threads = [self.current_thread]
+        self.cur_thread = cur_thread
+        self.threads = [self.cur_thread]
         self.ins_count = 0
         self.THREAD_RET_ADDR = self.ql.heap.mem_alloc(8)
         # write nop to THREAD_RET_ADDR
@@ -109,28 +111,28 @@ class ThreadManager:
         self.threads.append(thread)
 
     def need_schedule(self):
-        return self.current_thread.is_stop() or self.ins_count % ThreadManager.TIME_SLICE == 0
+        return self.cur_thread.is_stop() or self.ins_count % QlWindowsThreadManager.TIME_SLICE == 0
 
     def do_schedule(self):
-        if self.current_thread.is_stop() or self.ins_count % ThreadManager.TIME_SLICE == 0:
+        if self.cur_thread.is_stop() or self.ins_count % QlWindowsThreadManager.TIME_SLICE == 0:
             if len(self.threads) <= 1:
                 return
             else:
                 for i in range(1, len(self.threads)):
-                    next_id = (self.current_thread.id + i) % len(self.threads)
+                    next_id = (self.cur_thread.id + i) % len(self.threads)
                     next_thread = self.threads[next_id]
                     # find next thread
-                    if next_thread.status == Thread.RUNNING and (not next_thread.has_waitfor()):
-                        if self.current_thread.is_stop():
+                    if next_thread.status == QlWindowsThread.RUNNING and (not next_thread.has_waitfor()):
+                        if self.cur_thread.is_stop():
                             pass
                         else:
-                            self.current_thread.suspend()
+                            self.cur_thread.suspend()
                         next_thread.resume()
-                        self.current_thread = next_thread
+                        self.cur_thread = next_thread
                         break
 
 
-class Thread:
+class QlWindowsThread(QlThread):
     # static var
     ID = 0
     READY = 0
@@ -138,9 +140,10 @@ class Thread:
     TERMINATED = 2
 
     def __init__(self, ql, status=1, isFake=False):
+        super(QlWindowsThread, self).__init__(ql)
         self.ql = ql
-        self.id = Thread.ID
-        Thread.ID += 1
+        self.id = QlWindowsThread.ID
+        QlWindowsThread.ID += 1
         self.context = Context(ql)
         self.status = status
         self.waitforthreads = []
@@ -182,13 +185,13 @@ class Thread:
     def resume(self):
         self.context.restore()
         # self.context.print("restore")
-        self.status = Thread.RUNNING
+        self.status = QlWindowsThread.RUNNING
 
     def stop(self):
-        self.status = Thread.TERMINATED
+        self.status = QlWindowsThread.TERMINATED
 
     def is_stop(self):
-        return self.status == Thread.TERMINATED
+        return self.status == QlWindowsThread.TERMINATED
 
     def waitfor(self, thread):
         self.waitforthreads.append(thread)

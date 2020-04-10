@@ -25,7 +25,7 @@ class Clipboard:
         If hWnd is null default to current thead id
         """
         if h_wnd == 0:
-            hWnd = self.ql.thread_manager.current_thread.id
+            hWnd = self.ql.thread_manager.cur_thread.id
 
         if self.locked_by != NOT_LOCKED and self.locked_by != h_wnd:
             return 0
@@ -41,16 +41,16 @@ class Clipboard:
 
     def close(self):
         if self.locked_by == NOT_LOCKED:
-            self.ql.os.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
+            self.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
             return 0
         else:
             self.locked_by = NOT_LOCKED
             return 1
 
     def set_data(self, fmt, data):
-        hWnd = self.ql.thread_manager.current_thread.id
+        hWnd = self.ql.thread_manager.cur_thread.id
         if self.locked_by != hWnd:
-            self.ql.os.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
+            self.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
             return 0
         else:
             if fmt not in self.formats:
@@ -62,9 +62,9 @@ class Clipboard:
         if fmt not in self.formats:
             return 0
 
-        hWnd = self.ql.thread_manager.current_thread.id
+        hWnd = self.ql.thread_manager.cur_thread.id
         if self.locked_by != hWnd:
-            self.ql.os.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
+            self.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
             return 0
         else:
             return self.data

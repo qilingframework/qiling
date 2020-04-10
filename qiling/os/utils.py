@@ -24,6 +24,7 @@ from keystone import *
 from qiling.const import *
 from qiling.exception import *
 from qiling.utils import *
+from qiling.const import *
 
 from binascii import unhexlify
 import ipaddress, struct, os, ctypes
@@ -103,14 +104,15 @@ def ql_bin_to_ipv4(ip):
         (ip & 0xff))
 
 
-def ql_init_configuration(ql):
+def ql_init_configuration(self):
     config = configparser.ConfigParser()
-    config.read(ql.config)
-    ql.dprint(2, "[+] Added configuration file")
+    config.read(self.profile)
+    print(self.profile)
+    self.ql.dprint(D_RPRT, "[+] Added configuration file")
     for section in config.sections():
-        ql.dprint(2, "[+] Section: %s" % section)
+        self.ql.dprint(D_RPRT, "[+] Section: %s" % section)
         for key in config[section]:
-            ql.dprint(2, "[-] %s %s" % (key, config[section][key]) )
+            self.ql.dprint(D_RPRT, "[-] %s %s" % (key, config[section][key]) )
     return config
 
 def ql_bin_to_ip(ip):
@@ -201,7 +203,7 @@ def ql_hook_code_disasm(ql, address, size):
             ql.reg_name = reg
             REG_NAME = ql.reg_name
             REG_VAL = ql.register(reg)
-            ql.dprint(3, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+            ql.dprint(D_PROT, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
             
 
 def ql_setup_output(ql):
@@ -477,7 +479,7 @@ def ql_open_flag_mapping(flags, ql):
     return flag_mapping(flags, open_flags_name, f, t)
 
 
-def print_function(ql, address, function_name, params, ret):
+def print_function(self, address, function_name, params, ret):
     function_name = function_name.replace('hook_', '')
     if function_name in ("__stdio_common_vfprintf", "printf", "wsprintfW", "sprintf"):
         return
@@ -493,24 +495,24 @@ def print_function(ql, address, function_name, params, ret):
     if ret is not None:
         log += ' = 0x%x' % ret
 
-    if ql.output == QL_OUT_DEFAULT:
+    if self.ql.output == QL_OUT_DEFAULT:
         log = log.partition(" ")[-1]
-        ql.nprint(log + '\n')
+        self.ql.nprint(log + '\n')
 
-    elif ql.output == QL_OUT_DEBUG:
-        ql.dprint(0, log + '\n')
+    elif self.ql.output == QL_OUT_DEBUG:
+        self.ql.dprint(D_PROT, log + '\n')
 
 
-def read_cstring(ql, address):
+def read_cstring(self, address):
     result = ""
-    char = ql.mem.read(address, 1)
+    char = self.ql.mem.read(address, 1)
     while char.decode(errors="ignore") != "\x00":
         address += 1
         result += char.decode(errors="ignore")
-        char = ql.mem.read(address, 1)
+        char = self.ql.mem.read(address, 1)
     return result
 
+def post_report(self):
+    self.ql.dprint(D_PROT, "[+] Syscalls and number of invocations")
+    self.ql.dprint(D_PROT, "[-] " + str(list(self.syscall_count.items())))
 
-def post_report(ql):
-    ql.dprint(0, "[+] Syscalls and number of invocations")
-    ql.dprint(0, "[-] " + str(list(ql.PE.syscall_count.items())))

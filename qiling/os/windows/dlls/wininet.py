@@ -23,7 +23,7 @@ from qiling.os.windows.utils import *
     "lpszProxyBypass": STRING,
     "dwFlags": DWORD
 })
-def hook_InternetOpenA(ql, address, params):
+def hook_InternetOpenA(self, address, params):
     pass
 
 
@@ -41,7 +41,7 @@ def hook_InternetOpenA(ql, address, params):
     "lpszProxyBypass": WSTRING,
     "dwFlags": DWORD
 })
-def hook_InternetOpenW(ql, address, params):
+def hook_InternetOpenW(self, address, params):
     pass
 
 
@@ -61,7 +61,7 @@ def hook_InternetOpenW(ql, address, params):
     "dwFlags": DWORD,
     "dwContext": POINTER
 })
-def hook_InternetOpenUrlA(ql, address, params):
+def hook_InternetOpenUrlA(self, address, params):
     pass
 
 
@@ -81,7 +81,7 @@ def hook_InternetOpenUrlA(ql, address, params):
     "dwFlags": DWORD,
     "dwContext": POINTER
 })
-def hook_InternetOpenUrlW(ql, address, params):
+def hook_InternetOpenUrlW(self, address, params):
     pass
 
 
@@ -91,7 +91,7 @@ def hook_InternetOpenUrlW(ql, address, params):
 @winapi(cc=STDCALL, params={
     "hInternet": POINTER
 })
-def hook_InternetCloseHandle(ql, address, params):
+def hook_InternetCloseHandle(self, address, params):
     ret = 1
     return ret
 
@@ -116,7 +116,7 @@ def hook_InternetCloseHandle(ql, address, params):
     "dwFlags": DWORD,
     "dwContext": POINTER
 })
-def hook_InternetConnectA(ql, address, params):
+def hook_InternetConnectA(self, address, params):
     pass
 
 
@@ -140,7 +140,7 @@ def hook_InternetConnectA(ql, address, params):
     "dwFlags": DWORD,
     "dwContext": POINTER
 })
-def hook_InternetConnectW(ql, address, params):
+def hook_InternetConnectW(self, address, params):
     pass
 
 
@@ -154,7 +154,7 @@ def hook_InternetConnectW(ql, address, params):
     "dwFlags": DWORD,
     "dwContext": DWORD
 })
-def hook_InternetCheckConnectionA(ql, address, params):
+def hook_InternetCheckConnectionA(self, address, params):
     pass
 
 
@@ -178,7 +178,7 @@ def hook_InternetCheckConnectionA(ql, address, params):
     "dwFlags": DWORD,
     "dwContext": POINTER
 })
-def hook_HttpOpenRequestA(ql, address, params):
+def hook_HttpOpenRequestA(self, address, params):
     pass
 
 
@@ -196,7 +196,7 @@ def hook_HttpOpenRequestA(ql, address, params):
     "dwFlags": DWORD,
     "dwContext": POINTER
 })
-def hook_HttpSendRequestExA(ql, address, params):
+def hook_HttpSendRequestExA(self, address, params):
     pass
 
 
@@ -220,7 +220,7 @@ def hook_HttpSendRequestExA(ql, address, params):
     "dwFlags": DWORD,
     "dwContext": POINTER
 })
-def hook_HttpOpenRequestW(ql, address, params):
+def hook_HttpOpenRequestW(self, address, params):
     pass
 
 
@@ -236,7 +236,7 @@ def hook_HttpOpenRequestW(ql, address, params):
     "lpBuffer": POINTER,
     "dwBufferLength": DWORD
 })
-def hook_InternetSetOptionA(ql, address, params):
+def hook_InternetSetOptionA(self, address, params):
     return 1
 
 
@@ -252,7 +252,7 @@ def hook_InternetSetOptionA(ql, address, params):
     "lpBuffer": POINTER,
     "dwBufferLength": DWORD
 })
-def hook_InternetSetOptionW(ql, address, params):
+def hook_InternetSetOptionW(self, address, params):
     return 1
 
 
@@ -270,7 +270,7 @@ def hook_InternetSetOptionW(ql, address, params):
     "lpOptional": POINTER,
     "dwOptionalLength": DWORD
 })
-def hook_HttpSendRequestA(ql, address, params):
+def hook_HttpSendRequestA(self, address, params):
     return 1
 
 
@@ -288,7 +288,7 @@ def hook_HttpSendRequestA(ql, address, params):
     "lpOptional": POINTER,
     "dwOptionalLength": DWORD
 })
-def hook_HttpSendRequestW(ql, address, params):
+def hook_HttpSendRequestW(self, address, params):
     return 1
 
 
@@ -306,7 +306,7 @@ def hook_HttpSendRequestW(ql, address, params):
     "dwFlags": DWORD,
     "lppvData": POINTER
 })
-def hook_InternetErrorDlg(ql, address, params):
+def hook_InternetErrorDlg(self, address, params):
     pass
 
 
@@ -322,7 +322,7 @@ def hook_InternetErrorDlg(ql, address, params):
     "dwNumberOfBytesToRead": DWORD,
     "lpdwNumberOfBytesRead": POINTER
 })
-def hook_InternetReadFile(ql, address, params):
+def hook_InternetReadFile(self, address, params):
     return 1
 
 
@@ -338,7 +338,7 @@ def hook_InternetReadFile(ql, address, params):
     "dwNumberOfBytesToWrite": DWORD,
     "lpdwNumberOfBytesWritten": POINTER
 })
-def hook_InternetWriteFile(ql, address, params):
+def hook_InternetWriteFile(self, address, params):
     return 1
 
 
@@ -354,5 +354,5 @@ def hook_InternetWriteFile(ql, address, params):
     "dwFlags": DWORD,
     "dwContext": POINTER
 })
-def hook_HttpEndRequestA(ql, address, params):
+def hook_HttpEndRequestA(self, address, params):
     return 1

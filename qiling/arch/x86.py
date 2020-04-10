@@ -12,6 +12,8 @@ from qiling.const import *
 from unicorn import *
 from unicorn.arm_const import *
 
+from qiling.exception import *
+
 class QlArchX86(QlArch):
     def __init__(self, ql):
         super(QlArchX86, self).__init__(ql)
@@ -348,6 +350,93 @@ class QlArchX8664(QlArch):
         # invalid
         return None                       
 
+class GDTManage:
+    # Added GDT management module.
+    def __init__(self, ql, GDT_ADDR = QL_X86_GDT_ADDR, GDT_LIMIT =  QL_X86_GDT_LIMIT, GDT_ENTRY_ENTRIES = 15):
+        if ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT) == False:
+            ql.mem.map(GDT_ADDR, GDT_LIMIT)
+        else:
+            raise QlGDTError("[!] Ql GDT mem map error!")
+        # setup GDT by writing to GDTR
+        ql.register(UC_X86_REG_GDTR, (0, GDT_ADDR, GDT_LIMIT, 0x0))
+
+        self.ql = ql
+        self.gdt_number = GDT_ENTRY_ENTRIES
+        # self.gdt_used = [False] * GDT_ENTRY_ENTRIES
+        self.gdt_addr = GDT_ADDR
+        self.gdt_limit = GDT_LIMIT
+
+    def register_gdt_segment(self, index, SEGMENT_ADDR, SEGMENT_SIZE, SPORT, RPORT):
+        if index < 0 or index >= self.gdt_number:
+            raise QlGDTError("[!] Ql GDT register index error!")
+        # create GDT entry, then write GDT entry into GDT table
+        gdt_entry = self._create_gdt_entry(SEGMENT_ADDR, SEGMENT_SIZE, SPORT, QL_X86_F_PROT_32)
+        self.ql.mem.write(self.gdt_addr + (index << 3), gdt_entry)
+        # self.gdt_used[index] = True
+
+    def get_gdt_buf(self, start, end):
+        return self.ql.mem.read(self.gdt_addr + (start << 3), (end << 3) - (start << 3))
+
+    def set_gdt_buf(self, start, end, buf):
+        return self.ql.mem.write(self.gdt_addr + (start << 3), buf[ : (end << 3) - (start << 3)])
+
+    def get_free_idx(self, start = 0, end = -1):
+        # The Linux kernel determines whether the segment is empty by judging whether the content in the current GDT segment is 0.
+        if end == -1:
+            end = self.gdt_number
+
+        idx = -1
+        for i in range(start, end):
+            if self.ql.unpack64(self.ql.mem.read(self.gdt_addr + (i << 3), 8)) == 0:
+                idx = i
+                break
+
+        return idx
+
+    def _create_gdt_entry(self, base, limit, access, flags):
+        to_ret = limit & 0xffff
+        to_ret |= (base & 0xffffff) << 16
+        to_ret |= (access & 0xff) << 40
+        to_ret |= ((limit >> 16) & 0xf) << 48
+        to_ret |= (flags & 0xff) << 52
+        to_ret |= ((base >> 24) & 0xff) << 56
+        return pack('<Q', to_ret)
+
+    def _create_selector(self, idx, flags):
+        to_ret = flags
+        to_ret |= idx << 3
+        return to_ret
+
+    def create_selector(self, idx, flags):
+        return self._create_selector(idx, flags)
+
+def ql_linux_x86_register_cs(ql):
+    # While debugging the linux kernel segment, the cs segment was found on the third segment of gdt.
+    ql.gdtm.register_gdt_segment(3, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
+    ql.register(UC_X86_REG_CS, ql.gdtm.create_selector(3, QL_X86_S_GDT | QL_X86_S_PRIV_3))
+
+def ql_linux_x8664_register_cs(ql):
+    # While debugging the linux kernel segment, the cs segment was found on the sixth segment of gdt.
+    ql.gdtm.register_gdt_segment(6, 0, 0xfffffffffffff000, QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
+    ql.register(UC_X86_REG_CS, ql.gdtm.create_selector(6, QL_X86_S_GDT | QL_X86_S_PRIV_3))
+
+def ql_linux_x86_register_ds_ss_es(ql):
+    # TODO : The section permission here should be QL_X86_A_PRIV_3, but I do n’t know why it can only be set to QL_X86_A_PRIV_0.
+    # While debugging the Linux kernel segment, I found that the three segments DS, SS, and ES all point to the same location in the GDT table. 
+    # This position is the fifth segment table of GDT.
+    ql.gdtm.register_gdt_segment(5, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0)
+    ql.register(UC_X86_REG_DS, ql.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    ql.register(UC_X86_REG_SS, ql.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    ql.register(UC_X86_REG_ES, ql.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+
+def ql_linux_x8664_register_ds_ss_es(ql):
+    # TODO : The section permission here should be QL_X86_A_PRIV_3, but I do n’t know why it can only be set to QL_X86_A_PRIV_0.
+    # When I debug the Linux kernel, I find that only the SS is set to the fifth segment table, and the rest are not set.
+    ql.gdtm.register_gdt_segment(5, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0)
+    # ql.register(UC_X86_REG_DS, ql.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    ql.register(UC_X86_REG_SS, ql.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    # ql.register(UC_X86_REG_ES, ql.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+
 def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_ADDR, SEGMENT_SIZE, SPORT, RPORT, GDTTYPE):
     # create segment index
     def create_selector(idx, flags):
@@ -381,7 +470,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
             elif ql.archtype== QL_X8664:
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
         if GDTTYPE == "CS":        
-            ql.dprint(0, "[+] FreeBSD %s GDT_ADDR is 0x%x" % (GDTTYPE, GDT_ADDR))
+            ql.dprint(D_PROT, "[+] FreeBSD %s GDT_ADDR is 0x%x" % (GDTTYPE, GDT_ADDR))
             ql.mem.map(GDT_ADDR, GDT_LIMIT)
     
     if ql.ostype == QL_MACOS:
@@ -392,7 +481,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
                 GDT_ADDR = GDT_ADDR + QL_X8664_GDT_ADDR_PADDING
 
         if not ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT):
-            ql.dprint(0, "[+] GDT_ADDR is 0x%x" % (GDT_ADDR))
+            ql.dprint(D_PROT, "[+] GDT_ADDR is 0x%x" % (GDT_ADDR))
             ql.mem.map(GDT_ADDR, GDT_LIMIT)
     
     # create GDT entry, then write GDT entry into GDT table
@@ -405,7 +494,7 @@ def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_AD
 
     # create segment index, point segment register to this selector
     selector = create_selector(index, RPORT)
-    ql.dprint(0, "[+] %s : 0x%x" % (GDTTYPE, selector))
+    ql.dprint(D_PROT, "[+] %s : 0x%x" % (GDTTYPE, selector))
     ql.register(seg_reg, selector)
 
 

@@ -16,9 +16,9 @@ from qiling.os.windows.fncc import *
     "Target": POINTER,
     "Value": UINT
 })
-def hook_InterlockedExchange(ql, address, params):
-    old = int.from_bytes(ql.mem.read(params['Target'], ql.pointersize), byteorder='little')
-    ql.mem.write(params['Target'], params['Value'].to_bytes(length=ql.pointersize, byteorder='little'))
+def hook_InterlockedExchange(self, address, params):
+    old = int.from_bytes(self.ql.mem.read(params['Target'], self.ql.pointersize), byteorder='little')
+    self.ql.mem.write(params['Target'], params['Value'].to_bytes(length=self.ql.pointersize, byteorder='little'))
     return old
 
 
@@ -28,10 +28,10 @@ def hook_InterlockedExchange(ql, address, params):
 @winapi(cc=STDCALL, params={
     "Target": POINTER
 })
-def hook_InterlockedIncrement(ql, address, params):
-    val = int.from_bytes(ql.mem.read(params['Target'], ql.pointersize), byteorder='little')
-    val += 1 & (2 ** ql.pointersize * 8)  # increment and overflow back to 0 if applicable
-    ql.mem.write(params['Target'], val.to_bytes(length=ql.pointersize, byteorder='little'))
+def hook_InterlockedIncrement(self, address, params):
+    val = int.from_bytes(self.ql.mem.read(params['Target'], self.ql.pointersize), byteorder='little')
+    val += 1 & (2 ** self.ql.pointersize * 8)  # increment and overflow back to 0 if applicable
+    self.ql.mem.write(params['Target'], val.to_bytes(length=self.ql.pointersize, byteorder='little'))
     return val
 
 
@@ -45,11 +45,11 @@ def hook_InterlockedIncrement(ql, address, params):
     "TypeMask": DWORD,
     "Condition": BYTE
 })
-def hook_VerSetConditionMask(ql, address, params):
+def hook_VerSetConditionMask(self, address, params):
     # ConditionMask = params["ConditionMask"]
     TypeMask = params["TypeMask"]
     Condition = params["Condition"]
-    ConditionMask = ql.hooks_variables.get("ConditionMask", {})
+    ConditionMask = self.hooks_variables.get("ConditionMask", {})
     if TypeMask == 0:
         ret = ConditionMask
     else:
@@ -88,5 +88,5 @@ def hook_VerSetConditionMask(ql, address, params):
     # But since we don't have the pointer to the variable, an hack is to use the environment.
     # Feel free to push a better solution
     # Since I can't work with bits, and since we had to work with the environment anyway, let's use a dict
-    ql.hooks_variables["ConditionMask"] = ConditionMask
+    self.hooks_variables["ConditionMask"] = ConditionMask
     return ret

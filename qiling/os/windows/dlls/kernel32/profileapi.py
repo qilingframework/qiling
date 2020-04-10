@@ -20,6 +20,6 @@ from qiling.exception import *
 @winapi(cc=STDCALL, params={
     "lpPerformanceCount": POINTER
 })
-def hook_QueryPerformanceCounter(ql, address, params):
+def hook_QueryPerformanceCounter(self, address, params):
     ret = 0
     return ret

@@ -34,7 +34,7 @@ from qiling.exception import *
     "lpBytesReturned": POINTER,
     "lpOverlapped": POINTER
 })
-def hook_DeviceIoControl(ql, address, params):
+def hook_DeviceIoControl(self, address, params):
     operation = params["dwIoControlCode"]
     data = params["lpInBuffer"]
     output = params["lpOutBuffer"]

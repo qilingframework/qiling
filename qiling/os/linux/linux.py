@@ -10,17 +10,16 @@ from unicorn.x86_const import *
 from unicorn.arm64_const import *
 from unicorn.mips_const import *
 
+from qiling.const import *
+
 from qiling.loader.elf import *
 from qiling.arch.x86 import *
 
+from qiling.os.utils import *
+from qiling.os.posix.posix import QlOsPosix
 from qiling.os.linux.const import *
 from qiling.os.linux.utils import *
-from qiling.os.utils import *
-from qiling.const import *
-
-from qiling.arch.x86 import *
-
-from qiling.os.posix.posix import QlOsPosix
+from qiling.os.linux.futex import *
 
 class QlOsLinux(QlOsPosix):
     def __init__(self, ql):
@@ -29,6 +28,8 @@ class QlOsLinux(QlOsPosix):
         self.QL_LINUX_PREDEFINE_STACKSIZE = 0x21000
         self.QL_ARM_KERNEL_GET_TLS_ADDR = 0xFFFF0FE0
         self.ql.os = self
+        self.thread_class = None
+        self.futexm = None
         self.load()
 
     def load(self):   
@@ -37,6 +38,8 @@ class QlOsLinux(QlOsPosix):
         or else it will kill execve
         """
         self.ql.uc = self.ql.arch.init_uc
+
+        self.futexm = QlLinuxFutexManagement()
         
         # ARM
         if self.ql.archtype== QL_ARM:
@@ -60,17 +63,24 @@ class QlOsLinux(QlOsPosix):
         # X86        
         elif  self.ql.archtype== QL_X86:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfffdd000
-            ql_x86_setup_gdt_segment_ds(self.ql)
-            ql_x86_setup_gdt_segment_cs(self.ql)
-            ql_x86_setup_gdt_segment_ss(self.ql)
+            # ql_x86_setup_gdt_segment_ds(self.ql)
+            # ql_x86_setup_gdt_segment_cs(self.ql)
+            # ql_x86_setup_gdt_segment_ss(self.ql)
+            self.ql.gdtm = GDTManage(self.ql)
+            ql_linux_x86_register_cs(self.ql)
+            ql_linux_x86_register_ds_ss_es(self.ql)
             self.ql.hook_intr(self.hook_syscall)
-    
+            self.thread_class = QlLinuxX86Thread
+
         # X8664            
         elif  self.ql.archtype== QL_X8664:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
-            ql_x8664_setup_gdt_segment_ds(self.ql)
-            ql_x8664_setup_gdt_segment_cs(self.ql)
-            ql_x8664_setup_gdt_segment_ss(self.ql)
+            # ql_x8664_setup_gdt_segment_ds(self.ql)
+            # ql_x8664_setup_gdt_segment_cs(self.ql)
+            # ql_x8664_setup_gdt_segment_ss(self.ql)
+            self.ql.gdtm = GDTManage(self.ql)
+            ql_linux_x86_register_cs(self.ql)
+            ql_linux_x86_register_ds_ss_es(self.ql)
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
         
         if self.ql.shellcoder:
@@ -115,7 +125,7 @@ class QlOsLinux(QlOsPosix):
             else:
                 if self.ql.multithread == True:        
                     # start multithreading
-                    thread_management = ThreadManagement(ql)
+                    thread_management = QlLinuxThreadManagement(self.ql)
                     self.ql.thread_management = thread_management
                     
                     if self.ql.archtype== QL_ARM:
@@ -127,9 +137,9 @@ class QlOsLinux(QlOsPosix):
                     else:
                         thread_set_tls = None
                     
-                    main_thread = Thread(self.ql, thread_management, total_time = self.ql.timeout, special_settings_fuc = thread_set_tls)
+                    main_thread = self.thread_class(self.ql, thread_management, total_time = self.ql.timeout)
                     
-                    main_thread.save()
+                    main_thread.store_regs()
                     main_thread.set_start_address(self.ql.entry_point)
 
                     thread_management.set_main_thread(main_thread)

@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys, struct, platform, importlib
+import sys, struct, platform, ntpath
 import os as pyos
 from unicorn import *
 
@@ -13,7 +13,7 @@ from qiling.exception import *
 from qiling.utils import *
 from qiling.os.utils import *
 from qiling.arch.utils import *
-from qiling.os.linux.thread import *
+from qiling.os.thread import *
 from qiling.debugger.utils import *
 from qiling.os.memory import QlMemoryManager
 
@@ -27,7 +27,6 @@ def catch_KeyboardInterrupt(ql):
             try:
                 return func(*args, **kw)
             except BaseException as e:
-                #ql.dprint(0, "Received a request from the user to stop!")
                 ql.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
                 ql.internal_exception = e
         return wrapper
@@ -50,13 +49,14 @@ class Qiling:
             stdout=0,
             stderr=0,
             output=None,
-            verbose=0,
+            verbose=1,
             log_console=True,
             log_dir=None,
             mmap_start=0,
             stack_address=0,
             stack_size=0,
             interp_base=0,
+            append = None,
     ):
         # Define during ql=Qiling()
         self.output = output
@@ -108,7 +108,7 @@ class Qiling:
         self.global_thread_id = 0
         self.debugger = None
         self.automatize_input = False
-        self.config = None 
+        self.profile = None 
         # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
         self.multithread = False
         self.thread_management = None    
@@ -123,12 +123,12 @@ class Qiling:
         self.entry_point = 0
         # syscall filter for strace-like functionality
         self.strace_filter = None
-
+        # generic append function
+        self.append = append
 
         """
         Qiling Framework Core Engine
         """
-
         # ostype string - int convertion
         if self.shellcoder:
             if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str ):
@@ -149,24 +149,34 @@ class Qiling:
             elif not pyos.path.exists(str(self.filename[0])) or not pyos.path.exists(self.rootfs):
                 raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
 
+        if self.shellcoder:
+            self.targetname = "qilingshellcode"
+        else:    
+            self.targetname = ntpath.basename(self.filename[0])
+
+        self.cur_pathname = pyos.path.abspath(os.getcwd())
 
         # Looger's configuration
         _logger = ql_setup_logging_stream(self)
 
-
         if self.log_dir is not None and type(self.log_dir) == str:
-
-            self.log_dir = pyos.path.join(self.rootfs, self.log_dir)
+            
             if not pyos.path.exists(self.log_dir):
                 pyos.makedirs(self.log_dir, 0o755)
 
             pid = pyos.getpid()
-            # Is better to call the logfile as the binary we are testing instead of a pid with no logical value
-            self.log_file = pyos.path.join(self.log_dir, self.filename[0].split("/")[-1])
-            _logger = ql_setup_logging_file(self.output, self.log_file + "_" + str(pid), _logger)
 
-        self.log_file_fd = _logger
+            if self.append:
+                self.log_filename = self.targetname + "_" + self.append          
+            else:
+                self.log_filename = self.targetname
+            
+            self.log_file = pyos.path.join(self.log_dir, self.log_filename) 
+
+            _logger = ql_setup_logging_file(self.output, self.log_file + "_" + str(pid), _logger)
         
+        self.log_file_fd = _logger
+            
         # OS dependent configuration for stdio
         if self.ostype in (QL_LINUX, QL_FREEBSD, QL_MACOS):
             if stdin != 0:
@@ -185,9 +195,6 @@ class Qiling:
 
             for _ in range(256):
                 self.sigaction_act.append(0)
-
-        # define analysis enviroment profile
-        self.config = pyos.path.join(pyos.path.dirname(pyos.path.abspath(__file__)), "profiles", ql_ostype_convert_str(self.ostype) + ".ql")
 
         # double check supported architecture
         if not ql_is_valid_arch(self.archtype):
@@ -227,8 +234,6 @@ class Qiling:
         # based on CPU bit and set pointer size
         if self.archbit:
             self.pointersize = (self.archbit // 8)            
-
-
 
         """
         Load memory module
@@ -315,14 +320,14 @@ class Qiling:
             elif isinstance(fd, logging.StreamHandler):
                 fd.flush()
 
-    # debug print out, always use with verbose level with dprint(0,"helloworld")
+    # debug print out, always use with verbose level with dprint(D_PROT,"helloworld")
     def dprint(self, level, *args, **kw):
         try:
             self.verbose = int(self.verbose)
         except:
             raise QlErrorOutput("[!] Verbose muse be int")    
         
-        if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
+        if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 1 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
             raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUT_DEBUG or else ql.verbose must be 0")
 
         if self.output == QL_OUT_DUMP:

@@ -21,7 +21,7 @@ from qiling.exception import *
 @winapi(cc=STDCALL, params={
     "hFile": HANDLE
 })
-def hook_GetFileType(ql, address, params):
+def hook_GetFileType(self, address, params):
     hFile = params["hFile"]
     FILE_TYPE_CHAR = 0x0002
     if hFile == STD_INPUT_HANDLE or hFile == STD_OUTPUT_HANDLE or hFile == STD_ERROR_HANDLE:
@@ -39,7 +39,7 @@ def hook_GetFileType(ql, address, params):
     "lpFilename": POINTER,
     "lpFindFileData": POINTER
 })
-def hook_FindFirstFileA(ql, address, params):
+def hook_FindFirstFileA(self, address, params):
     pass
 
 
@@ -51,7 +51,7 @@ def hook_FindFirstFileA(ql, address, params):
     "lpFilename": POINTER,
     "lpFindFileData": POINTER
 })
-def hook_FindNextFileA(ql, address, params):
+def hook_FindNextFileA(self, address, params):
     pass
 
 
@@ -61,7 +61,7 @@ def hook_FindNextFileA(ql, address, params):
 @winapi(cc=STDCALL, params={
     "hFindFile": HANDLE,
 })
-def hook_FindClose(ql, address, params):
+def hook_FindClose(self, address, params):
     pass
 
 
@@ -79,7 +79,7 @@ def hook_FindClose(ql, address, params):
     "lpNumberOfBytesRead": POINTER,
     "lpOverlapped": POINTER
 })
-def hook_ReadFile(ql, address, params):
+def hook_ReadFile(self, address, params):
     ret = 1
     hFile = params["hFile"]
     lpBuffer = params["lpBuffer"]
@@ -87,24 +87,24 @@ def hook_ReadFile(ql, address, params):
     lpNumberOfBytesRead = params["lpNumberOfBytesRead"]
     lpOverlapped = params["lpOverlapped"]
     if hFile == STD_INPUT_HANDLE:
-        if ql.automatize_input:
+        if self.ql.automatize_input:
             # TODO maybe insert a good random generation input
             s = (b"A" * (nNumberOfBytesToRead - 1)) + b"\x00"
         else:
-            ql.dprint(0, "Insert input")
-            s = ql.stdin.read(nNumberOfBytesToRead)
+            self.ql.dprint(D_PROT, "Insert input")
+            s = self.ql.stdin.read(nNumberOfBytesToRead)
         slen = len(s)
         read_len = slen
         if slen > nNumberOfBytesToRead:
             s = s[:nNumberOfBytesToRead]
             read_len = nNumberOfBytesToRead
-        ql.mem.write(lpBuffer, s)
-        ql.mem.write(lpNumberOfBytesRead, ql.pack(read_len))
+        self.ql.mem.write(lpBuffer, s)
+        self.ql.mem.write(lpNumberOfBytesRead, self.ql.pack(read_len))
     else:
-        f = ql.handle_manager.get(hFile).file
+        f = self.handle_manager.get(hFile).file
         data = f.read(nNumberOfBytesToRead)
-        ql.mem.write(lpBuffer, data)
-        ql.mem.write(lpNumberOfBytesRead, ql.pack32(lpNumberOfBytesRead))
+        self.ql.mem.write(lpBuffer, data)
+        self.ql.mem.write(lpNumberOfBytesRead, self.ql.pack32(lpNumberOfBytesRead))
     return ret
 
 
@@ -122,7 +122,7 @@ def hook_ReadFile(ql, address, params):
     "lpNumberOfBytesWritten": POINTER,
     "lpOverlapped": POINTER
 })
-def hook_WriteFile(ql, address, params):
+def hook_WriteFile(self, address, params):
     ret = 1
     hFile = params["hFile"]
     lpBuffer = params["lpBuffer"]
@@ -130,24 +130,24 @@ def hook_WriteFile(ql, address, params):
     lpNumberOfBytesWritten = params["lpNumberOfBytesWritten"]
     lpOverlapped = params["lpOverlapped"]
     if hFile == STD_OUTPUT_HANDLE:
-        s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
-        ql.stdout.write(s)
-        ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
+        s = self.ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
+        self.ql.stdout.write(s)
+        self.ql.mem.write(lpNumberOfBytesWritten, self.ql.pack(nNumberOfBytesToWrite))
     else:
-        f = ql.handle_manager.get(hFile)
+        f = self.handle_manager.get(hFile)
         if f is None:
             # Invalid handle
-            ql.os.last_error  = ERROR_INVALID_HANDLE
+            self.last_error  = ERROR_INVALID_HANDLE
             return 0
         else:
             f = f.file
-        buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
+        buffer = self.ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         f.write(bytes(buffer))
-        ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
+        self.ql.mem.write(lpNumberOfBytesWritten, self.ql.pack32(nNumberOfBytesToWrite))
     return ret
 
 
-def _CreateFile(ql, address, params, name):
+def _CreateFile(self, address, params, name):
     ret = INVALID_HANDLE_VALUE
 
     s_lpFileName = params["lpFileName"]
@@ -166,10 +166,10 @@ def _CreateFile(ql, address, params, name):
         mode += "r"
 
     # create thread handle
-    s_lpFileName = ql_transform_to_real_path(ql, s_lpFileName)
+    s_lpFileName = ql_transform_to_real_path(self.ql, s_lpFileName)
     f = open(s_lpFileName.replace("\\", os.sep), mode)
     new_handle = Handle(file=f)
-    ql.handle_manager.append(new_handle)
+    self.handle_manager.append(new_handle)
     ret = new_handle.id
 
     return ret
@@ -193,8 +193,8 @@ def _CreateFile(ql, address, params, name):
     "dwFlagsAndAttributes": DWORD,
     "hTemplateFile": HANDLE
 })
-def hook_CreateFileA(ql, address, params):
-    ret = _CreateFile(ql, address, params, "CreateFileA")
+def hook_CreateFileA(self, address, params):
+    ret = _CreateFile(self, address, params, "CreateFileA")
     return ret
 
 
@@ -216,8 +216,8 @@ def hook_CreateFileA(ql, address, params):
     "dwFlagsAndAttributes": DWORD,
     "hTemplateFile": HANDLE
 })
-def hook_CreateFileW(ql, address, params):
-    ret = _CreateFile(ql, address, params, "CreateFileW")
+def hook_CreateFileW(self, address, params):
+    ret = _CreateFile(self, address, params, "CreateFileW")
     return ret
 
 
@@ -229,13 +229,13 @@ def hook_CreateFileW(ql, address, params):
     "nBufferLength": DWORD,
     "lpBuffer": POINTER
 })
-def hook_GetTempPathW(ql, address, params):
-    temp = (ql.config["PATHS"]["temp"] + "\\\x00").encode('utf-16le')
+def hook_GetTempPathW(self, address, params):
+    temp = (self.profile["PATHS"]["temp"] + "\\\x00").encode('utf-16le')
     dest = params["lpBuffer"]
-    temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
+    temp_path = os.path.join(self.ql.rootfs, "Windows", "Temp")
     if not os.path.exists(temp_path):
         os.makedirs(temp_path, 0o755)
-    ql.mem.write(dest, temp)
+    self.ql.mem.write(dest, temp)
     return len(temp)
 
 
@@ -249,7 +249,7 @@ def hook_GetTempPathW(ql, address, params):
     "lpszShortPath": POINTER,
     "cchBuffer": DWORD,
 })
-def hook_GetShortPathNameW(ql, address, params):
+def hook_GetShortPathNameW(self, address, params):
     paths = params["lpszLongPath"].split("\\")
     dst = params["lpszShortPath"]
     max_size = params["cchBuffer"]
@@ -266,7 +266,7 @@ def hook_GetShortPathNameW(ql, address, params):
     if max_size < len(res):
         return len(res)
     else:
-        ql.mem.write(dst, res)
+        self.ql.mem.write(dst, res)
     return len(res) - 1
 
 
@@ -290,30 +290,30 @@ def hook_GetShortPathNameW(ql, address, params):
     "lpFileSystemNameBuffer": POINTER,
     "nFileSystemNameSize": DWORD
 })
-def hook_GetVolumeInformationW(ql, address, params):
+def hook_GetVolumeInformationW(self, address, params):
     root_pt = params["lpRootPathName"]
     if root_pt != 0:
-        root = read_wstring(ql, root_pt)
+        root = read_wstring(self.ql, root_pt)
         pt_volume_name = params["lpVolumeNameBuffer"]
         if pt_volume_name != 0:
             # TODO implement
             volume_name = ("AAAABBBB"+"\x00").encode("utf-16le")
 
-            ql.mem.write(pt_volume_name, volume_name)
+            self.ql.mem.write(pt_volume_name, volume_name)
         pt_serial_number = params["lpVolumeSerialNumber"]
         if pt_serial_number != 0:
             # TODO maybe has to be int
-            serial_number = (ql.config["VOLUME"]["serial_number"] + "\x00").encode("utf-16le")
-            ql.mem.write(pt_serial_number, serial_number)
+            serial_number = (self.profile["VOLUME"]["serial_number"] + "\x00").encode("utf-16le")
+            self.ql.mem.write(pt_serial_number, serial_number)
         pt_system_type = params["lpFileSystemNameBuffer"]
         pt_flag = params["lpFileSystemFlags"]
         if pt_flag != 0:
             # TODO implement
             flag = 0x00020000.to_bytes(4, byteorder="little")
-            ql.mem.write(pt_flag, flag)
+            self.ql.mem.write(pt_flag, flag)
         if pt_system_type != 0:
-            system_type = (ql.config["VOLUME"]["type"] + "\x00").encode("utf-16le")
-            ql.mem.write(pt_system_type, system_type)
+            system_type = (self.profile["VOLUME"]["type"] + "\x00").encode("utf-16le")
+            self.ql.mem.write(pt_system_type, system_type)
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 1

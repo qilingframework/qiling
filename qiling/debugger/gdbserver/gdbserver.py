@@ -393,7 +393,7 @@ class GDBSERVERsession(object):
                         exit(1)
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
-                    file_contents = ("<threads>\r\n<thread id=\"2048\" core=\"3\" name=\"" + str(self.ql.filename[0].split('/')[-1]) + "\"/>\r\n</threads>")
+                    file_contents = ("<threads>\r\n<thread id=\"2048\" core=\"3\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
                     self.send("l" + file_contents)
 
                 elif subcmd.startswith('Xfer:auxv:read::'):
@@ -559,7 +559,7 @@ class GDBSERVERsession(object):
                         else:
                             self.lib_abspath = ql_transform_to_real_path(self.ql, self.lib_path) 
 
-                        self.ql.dprint(0, "gdb> target file: %s" % (self.lib_abspath))
+                        self.ql.dprint(D_PROT, "gdb> target file: %s" % (self.lib_abspath))
 
                         if os.path.exists(self.lib_abspath):
                             self.send("F5")
@@ -616,7 +616,7 @@ class GDBSERVERsession(object):
                     exit(1)
 
                 elif subcmd.startswith('Cont'):
-                    self.ql.dprint(0, "gdb> Cont command received: %s" % subcmd)
+                    self.ql.dprint(D_PROT, "gdb> Cont command received: %s" % subcmd)
                     if subcmd == 'Cont?':
                         if self.en_vcont == True:
                             self.send('vCont;c;C;s;S')
@@ -706,7 +706,7 @@ class GDBSERVERsession(object):
                 self.send('')
                 self.ql.nprint("gdb> Command not supported: %s\n" %(cmd))
                 continue
-            self.ql.dprint(0, "gdb> received: %s%s" % (cmd, subcmd))
+            self.ql.dprint(D_PROT, "gdb> received: %s%s" % (cmd, subcmd))
             commands[cmd](subcmd)
 
         self.close()
@@ -754,7 +754,7 @@ class GDBSERVERsession(object):
             self.clientsocket.send(b'$%s#%.2x' % (msg, checksum(msg)))
             self.netout.flush()
 
-        self.ql.dprint(0, "gdb> send: $%s#%.2x" % (msg, checksum(msg)))
+        self.ql.dprint(D_PROT, "gdb> send: $%s#%.2x" % (msg, checksum(msg)))
 
     def send_raw(self, r):
         self.netout.write(r)

@@ -13,6 +13,7 @@ language = 1093
 windir = C:\Windows
 appdata = C:\Users\Qiling\AppData
 temp = C:\Windows\Temp
+registry_diff = registry_diff.json
 
 [VOLUME]
 serial_number = 3224010732

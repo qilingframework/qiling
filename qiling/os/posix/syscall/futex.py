@@ -62,19 +62,22 @@ def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_
     FUTEX_PRIVATE_FLAG = 128
 
     if futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAIT:
-        def futex_wait_addr(ql, th, arg):
-            addr, val = arg
-            if ql.unpack32(ql.mem.read(addr, 4)) != val:
-                return False
-            else:
-                return True
-        ql.uc.emu_stop()
-        ql.thread_management.cur_thread.blocking()
-        ql.thread_management.cur_thread.set_blocking_condition(futex_wait_addr, [futex_uaddr, futex_val])
-        regreturn = 0
+        # def futex_wait_addr(ql, th, arg):
+        #     addr, val = arg
+        #     if ql.unpack32(ql.mem.read(addr, 4)) != val:
+        #         return False
+        #     else:
+        #         return True
+        if ql.unpack32(ql.mem.read(futex_uaddr, 4)) == futex_val:
+            ql.uc.emu_stop()
+            regreturn = 0
+            ql.os.futexm.futex_wait(futex_uaddr, ql.thread_management.cur_thread)
+        else:
+            regreturn = -1
         ql.nprint("futex(%x, %d, %d, %x) = %d" % (futex_uaddr, futex_op, futex_val, futex_timeout, regreturn))
     elif futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAKE:
         regreturn = 0
+        ql.os.futexm.futex_wake(futex_uaddr, futex_val)
         ql.nprint("futex(%x, %d, %d) = %d" % (futex_uaddr, futex_op, futex_val, regreturn))
     else:
         ql.nprint("futex(%x, %d, %d) = ?" % (futex_uaddr, futex_op, futex_val))

@@ -354,6 +354,7 @@ def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
     logger.addHandler(fh)
     return logger
 
+
 class Strace_filter(logging.Filter):
     def __init__(self, func_names):
         self.filter_list = func_names.split(",") if isinstance(func_names, str) else func_names

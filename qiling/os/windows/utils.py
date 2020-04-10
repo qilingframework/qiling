@@ -4,8 +4,9 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 import struct
 from unicorn.x86_const import *
-import random
 import string as st
+
+from qiling.const import *
 from qiling.os.const import *
 from qiling.os.utils import *
 from qiling.arch.x86 import *
@@ -14,46 +15,49 @@ from qiling.os.windows.registry import RegistryManager
 from qiling.os.windows.clipboard import Clipboard
 from qiling.os.windows.fiber import FiberManager
 from qiling.os.windows.handle import HandleManager, Handle
-from qiling.os.windows.thread import ThreadManager, Thread
+from qiling.os.windows.thread import QlWindowsThreadManager, QlWindowsThread
 
 
 def setup(self):
-    ql = self.ql
-    ql.heap = Heap(ql, ql.os.HEAP_BASE_ADDR, ql.os.HEAP_BASE_ADDR + ql.os.HEAP_SIZE)
-    ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
+    self.ql.heap = Heap(self.ql, self.LoaderPE.HEAP_BASE_ADDR, self.LoaderPE.HEAP_BASE_ADDR + self.LoaderPE.HEAP_SIZE)
+    self.ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
     
     # setup gdt
-    if ql.archtype== QL_X86:
-        ql_x86_setup_gdt_segment_fs(ql, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE)
-        ql_x86_setup_gdt_segment_gs(ql, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
-        ql_x86_setup_gdt_segment_ds(ql)
-        ql_x86_setup_gdt_segment_cs(ql)
-        ql_x86_setup_gdt_segment_ss(ql)
-    elif ql.archtype== QL_X8664:
-        ql_x8664_set_gs(ql)     
+    if self.ql.archtype== QL_X86:
+        ql_x86_setup_gdt_segment_fs(self.ql, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE)
+        ql_x86_setup_gdt_segment_gs(self.ql, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
+        ql_x86_setup_gdt_segment_ds(self.ql)
+        ql_x86_setup_gdt_segment_cs(self.ql)
+        ql_x86_setup_gdt_segment_ss(self.ql)
+    elif self.ql.archtype== QL_X8664:
+        ql_x8664_set_gs(self.ql)     
     
-    # handle manager
-    ql.handle_manager = HandleManager()
-    # registry manger
-    ql.registry_manager = RegistryManager(ql)
-    # clipboard
-    ql.clipboard = Clipboard(ql)
-    # fibers
-    ql.fiber_manager = FiberManager(ql)
-    # Place to set errors for retrieval by GetLastError()
-    # thread manager
-    main_thread = Thread(ql)
-    ql.thread_manager = ThreadManager(ql, main_thread)
-    new_handle = Handle(thread=main_thread)
-    ql.handle_manager.append(new_handle)
     # user configuration
-    ql.config = ql_init_configuration(ql)
-    # variables used inside hooks
-    ql.hooks_variables = {}
+    self.profile = ql_init_configuration(self)
 
+    # handle manager
+    self.handle_manager = HandleManager()
+    
+    # registry manger
+    self.registry_manager = RegistryManager(self.ql)
+    
+    # clipboard
+    self.ql.clipboard = Clipboard(self.ql)
+    
+    # fibers
+    self.ql.fiber_manager = FiberManager(self.ql)
+    
+    # thread manager
+    main_thread = QlWindowsThread(self.ql)
+    self.ql.thread_manager = QlWindowsThreadManager(self.ql, main_thread)
+    
+    # more handle manager
+    new_handle = Handle(thread=main_thread)
+    self.handle_manager.append(new_handle)
+    
 
-def ql_x86_windows_hook_mem_error(ql, addr, size, value):
-    ql.dprint(0, "[+] ERROR: unmapped memory access at 0x%x" % addr)
+def ql_x86_windows_hook_mem_error(self, addr, size, value):
+    self.ql.dprint(D_PROT, "[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
 
@@ -79,15 +83,11 @@ def env_dict_to_array(env_dict):
     return env_list
 
 
-def debug_print_stack(ql, num, message=None):
+def debug_print_stack(self, num, message=None):
     if message:
-        ql.dprint(0, "========== %s ==========" % message)
-    if ql.archtype== QL_X86:
-        sp = ql.register(UC_X86_REG_ESP)
-    else:
-        sp = ql.register(UC_X86_REG_RSP)
-    for i in range(num):
-        ql.dprint(0, hex(sp + ql.pointersize * i) + ": " + hex(ql.stack_read(i * ql.pointersize)))
+        self.ql.dprint(D_PROT, "========== %s ==========" % message)
+        sp = self.ql.sp
+        self.ql.dprint(D_PROT, hex(sp + self.ql.pointersize * i) + ": " + hex(self.ql.stack_read(i * self.ql.pointersize)))
 
 
 def is_file_library(string):
@@ -100,7 +100,7 @@ def string_to_hex(string):
     return ":".join("{:02x}".format(ord(c)) for c in string)
 
 
-def printf(ql, address, fmt, params_addr, name, wstring=False):
+def printf(self, address, fmt, params_addr, name, wstring=False):
     count = fmt.count("%")
     params = []
     if count > 0:
@@ -108,7 +108,7 @@ def printf(ql, address, fmt, params_addr, name, wstring=False):
             # We don't need to mem_read here, otherwise we have a problem with strings, since read_wstring/read_cstring
             #  already take a pointer, and we will have pointer -> pointer -> STRING instead of pointer -> STRING
             params.append(
-                params_addr + i * ql.pointersize,
+                params_addr + i * self.ql.pointersize,
             )
 
         formats = fmt.split("%")[1:]
@@ -116,9 +116,9 @@ def printf(ql, address, fmt, params_addr, name, wstring=False):
         for f in formats:
             if f.startswith("s"):
                 if wstring:
-                    params[index] = read_wstring(ql, params[index])
+                    params[index] = read_wstring(self.ql, params[index])
                 else:
-                    params[index] = read_cstring(ql, params[index])
+                    params[index] = read_cstring(self, params[index])
             else:
                 # if is not a string, then they are already values!
                 pass
@@ -137,46 +137,6 @@ def printf(ql, address, fmt, params_addr, name, wstring=False):
     else:
         output = '0x%0.2x: %s(format = %s) = 0x%x' % (address, name, repr(fmt), len(fmt))
         stdout = fmt
-    ql.nprint(output)
-    ql.stdout.write(bytes(stdout + "\n", 'utf-8'))
+    self.ql.nprint(output)
+    self.ql.stdout.write(bytes(stdout + "\n", 'utf-8'))
     return len(stdout), stdout
-
-
-def randomize_config_value(ql, key, subkey):
-    # https://en.wikipedia.org/wiki/Volume_serial_number
-    # https://www.digital-detective.net/documents/Volume%20Serial%20Numbers.pdf
-    if key == "VOLUME" and subkey == "serial_number":
-        month = random.randint(0, 12)
-        day = random.randint(0, 30)
-        first = hex(month)[2:] + hex(day)[2:]
-        seconds = random.randint(0, 60)
-        milli = random.randint(0, 100)
-        second = hex(seconds)[2:] + hex(milli)[2:]
-        first_half = int(first, 16) + int(second, 16)
-        hour = random.randint(0, 24)
-        minute = random.randint(0, 60)
-        third = hex(hour)[2:] + hex(minute)[2:]
-        year = random.randint(2000, 2020)
-        second_half = int(third, 16) + year
-        result = int(hex(first_half)[2:] + hex(second_half)[2:], 16)
-        ql.config[key][subkey] = str(result)
-    elif key == "USER" and subkey == "user":
-        length = random.randint(0, 15)
-        new_name = ""
-        for i in range(length):
-            new_name += random.choice(st.ascii_lowercase + st.ascii_uppercase)
-        old_name = ql.config[key][subkey]
-        # update paths
-        ql.config[key][subkey] = new_name
-        for path in ql.config["PATHS"]:
-            val = ql.config["PATHS"][path].replace(old_name, new_name)
-            ql.config["PATHS"][path] = val
-            ql.dprint(0, ql.config["PATHS"][path])
-    elif key == "SYSTEM" and subkey == "computer_name":
-        length = random.randint(0, 15)
-        new_name = ""
-        for i in range(length):
-            new_name += random.choice(st.ascii_lowercase + st.ascii_uppercase)
-        ql.config[key][subkey] = new_name
-    else:
-        raise QlErrorNotImplemented("[!] API not implemented")
