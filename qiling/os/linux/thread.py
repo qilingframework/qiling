@@ -6,6 +6,10 @@
 from ..utils import ql_setup_logging_file, ql_setup_logging_stream, ql_setup_logger
 import os, time
 
+from qiling.arch.x86_const import *
+
+from abc import ABC, abstractmethod
+
 THREAD_EVENT_INIT_VAL = 0
 THREAD_EVENT_EXIT_EVENT = 1
 THREAD_EVENT_UNEXECPT_EVENT = 2
@@ -19,10 +23,14 @@ THREAD_STATUS_BLOCKING = 1
 THREAD_STATUS_TERMINATED = 2
 THREAD_STATUS_TIMEOUT = 3
 
+TIME_MODE = 0
+COUNT_MODE = 1
+
 #GLOBAL_THREAD_ID = 0
 
-class Thread:
-    def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, special_settings_arg = None, special_settings_fuc = None, set_child_tid_addr = None):
+class Thread(ABC):
+
+    def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
         #global GLOBAL_THREAD_ID
         if ql.global_thread_id == 0:
             ql.global_thread_id = os.getpid() + 1000
@@ -31,8 +39,6 @@ class Thread:
         self.runing_time = 0
         self.context = context
         self.ql = ql
-        self.special_settings_arg = special_settings_arg
-        self.special_settings_fuc = special_settings_fuc
         self.until_addr = ql.until_addr
         self.start_address = start_address
         self.status = THREAD_STATUS_RUNNING
@@ -100,26 +106,36 @@ class Thread:
 
         ql.global_thread_id += 1
     
-    def run(self, timeout = 0):
+    def run(self, time_slice = 0, count_slice = 0, mode = COUNT_MODE):
         # Set the time of the current run
-        if timeout == 0 and self.total_time != 0:
-            time_slice = self.total_time - self.runing_time
+        if mode == TIME_MODE:
+            if time_slice == 0 and self.total_time != 0:
+                thread_slice = self.total_time - self.runing_time
+            else:
+                thread_slice = time_slice
+        elif mode == COUNT_MODE:
+            thread_slice = count_slice
         else:
-            time_slice = timeout
+            pass
         
         # Initialize, stop event
         self.return_val = 0
         self.stop_event = THREAD_EVENT_INIT_VAL
         
         # Restore the context of the currently executing thread and set tls
-        self.ql.uc.context_restore(self.context)
-        if self.special_settings_fuc != None and self.special_settings_arg != None:
-            self.special_settings_fuc(self.ql, self, self.special_settings_arg)
+        self.restore()
         
         # Run and log the run event
         s_time = int(time.time() * 1000000)
         self.start_address = self.ql.pc
-        self.ql.uc.emu_start(self.start_address, self.until_addr, time_slice)
+
+        if mode == TIME_MODE:
+            self.ql.uc.emu_start(self.start_address, self.until_addr, timeout = thread_slice)
+        elif mode == COUNT_MODE:
+            self.ql.uc.emu_start(self.start_address, self.until_addr, count = thread_slice)
+        else:
+            pass
+
         e_time = int(time.time() * 1000000)
         
         self.runing_time += (e_time - s_time)
@@ -133,28 +149,34 @@ class Thread:
         
         return (e_time - s_time)
     
+    @abstractmethod
+    def store(self):
+        pass
+
+    @abstractmethod
+    def restore(self):
+        pass
+
+    @abstractmethod
+    def clone_thread_tls(self, tls_addr):
+        pass
+
     def suspend(self):
-        self.context = self.ql.uc.context_save()
-        self.start_address = self.ql.arch.get_pc()
+        self.store()
     
-    def save(self):
+    def store_regs(self):
         self.context = self.ql.uc.context_save()
         self.start_address = self.ql.arch.get_pc()
+
+    def restore_regs(self):
+        self.ql.uc.context_restore(self.context)
     
     def set_start_address(self, addr):
         old_context = self.ql.uc.context_save()
-        self.ql.uc.context_restore(self.context)
+        self.restore_regs()
         self.ql.pc = addr
-        self.save()
+        self.store_regs()
         self.ql.uc.context_restore(old_context)
-    
-    def set_special_settings_arg(self, addr):
-        self.special_settings_arg = addr
-    
-    def set_special_settings_fuc(self, fuc):
-        #For generalization here, I define it as a special setting function, which will be called after restoring the context. 
-        #In x86 linux, it is used to set tls.
-        self.special_settings_fuc = fuc
     
     def set_context(self, con):
         self.context = con
@@ -245,15 +267,62 @@ class Thread:
         self.current_path = path
         
 
+class X86Thread(Thread):
+    """docstring for X86Thread"""
+    def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
+        super(X86Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+        self.tls = bytes(b'\x00' * (8 * 3))
+
+    def clone_thread_tls(self, tls_addr):
+        old_tls = bytes(self.ql.gdtm.get_gdt_buf(12, 14 + 1))
+
+        self.ql.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
+
+        u_info = self.ql.mem.read(tls_addr, 4 * 4)
+        index = self.ql.unpack32s(u_info[0 : 4])
+        base = self.ql.unpack32(u_info[4 : 8])
+        limit = self.ql.unpack32(u_info[8 : 12])
+
+        if index == -1:
+            index = self.ql.gdtm.get_free_idx(12)
+
+        if index == -1 or index < 12 or index > 14:
+            pass 
+        else:
+            self.ql.gdtm.register_gdt_segment(index, base, limit, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
+            self.ql.mem.write(tls_addr, self.ql.pack32(index))
+        
+        self.tls = bytes(self.ql.gdtm.get_gdt_buf(12, 14 + 1))
+        self.ql.gdtm.set_gdt_buf(12, 14 + 1, old_tls)
+
+    def store(self):
+        self.store_regs()
+        self.tls = bytes(self.ql.gdtm.get_gdt_buf(12, 14 + 1))
+
+    def restore(self):
+        self.restore_regs()
+        self.ql.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
+
 class ThreadManagement:
-    def __init__(self, ql, time_slice = 1000):
+    def __init__(self, ql, time_slice = 1000, count_slice = 1000, mode = COUNT_MODE):
         self.cur_thread = None
         self.running_thread_list = []
         self.ending_thread_list = []
         self.blocking_thread_list = []
         self.main_thread = None
         self.ql = ql
+
+        self.mode = mode
         self.time_slice = time_slice
+        self.count_slice = count_slice
+
+        if mode == TIME_MODE:
+            self.thread_slice = time_slice
+        elif mode == COUNT_MODE:
+            self.thread_slice = count_slice
+        else:
+            pass
+
         self.total_time = ql.timeout
         self.runing_time = 0
 
@@ -270,9 +339,9 @@ class ThreadManagement:
             running_thread_num = len(self.running_thread_list)
             blocking_thread_num = len(self.blocking_thread_list)
             if running_thread_num == 1 and blocking_thread_num == 0:
-                time_slice = 0
+                thread_slice = 0
             else:
-                time_slice = self.time_slice
+                thread_slice = self.thread_slice
             
             if running_thread_num != 0:
                 for i in range(running_thread_num):
@@ -280,36 +349,48 @@ class ThreadManagement:
                     self.ql.dprint(0, "[+] Currently running pid is: %d; tid is: %d " % (
                     os.getpid(), self.cur_thread.get_thread_id()))
                     
-                    self.runing_time += self.running_thread_list[i].run(time_slice)
+                    if self.mode == TIME_MODE:
+                        self.runing_time += self.cur_thread.run(time_slice = thread_slice, mode = TIME_MODE)
+                    elif self.mode == COUNT_MODE:
+                        self.runing_time += self.cur_thread.run(count_slice = thread_slice, mode = COUNT_MODE)
+                    else:
+                        raise
 
-                    if self.running_thread_list[i].is_running():
-                        if self.running_thread_list[i].stop_event == THREAD_EVENT_CREATE_THREAD:
+                    if self.cur_thread.is_running():
+                        if self.cur_thread.stop_event == THREAD_EVENT_CREATE_THREAD:
                             new_pc = self.ql.arch.get_pc()
                             self.cur_thread.stop_return_val.set_start_address(new_pc)
                             self.add_running_thread(self.cur_thread.stop_return_val)
                             self.cur_thread.stop_return_val = None
-                    elif self.running_thread_list[i].is_blocking():
+                    elif self.cur_thread.is_blocking():
                         pass
                     else:
                         if self.cur_thread == self.main_thread:
                             self.exit_world()
                             return
                         
-                        if self.running_thread_list[i].stop_event == THREAD_EVENT_EXIT_GROUP_EVENT:
+                        if self.cur_thread.stop_event == THREAD_EVENT_EXIT_GROUP_EVENT:
                             self.exit_world()
                             return
-                        elif self.running_thread_list[i].stop_event == THREAD_EVENT_UNEXECPT_EVENT:
-                            self.exit_world()
-                            return
-                        self.cur_thread = None
 
+                        elif self.cur_thread.stop_event == THREAD_EVENT_UNEXECPT_EVENT:
+                            self.exit_world()
+                            return
+
+                        self.cur_thread = None
                         continue
 
+                    self.cur_thread.suspend()
                     self.cur_thread = None
-                    self.running_thread_list[i].suspend()
             else:
-                self.runing_time += time_slice
-                time.sleep(time_slice / 1000000)
+                if self.mode == TIME_MODE:
+                    self.runing_time += thread_slice
+                    time.sleep(thread_slice / 1000000)
+                elif self.mode == COUNT_MODE:
+                    self.runing_time += (thread_slice * 1)
+                    time.sleep((thread_slice * 1) / 1000000)
+                else:
+                    raise 
 
             self.clean_running_thread()
             self.clean_blocking_thread()
@@ -320,6 +401,13 @@ class ThreadManagement:
     
     def set_time_slice(self, t):
         self.time_slice = t
+        if self.mode == TIME_MODE:
+            self.thread_slice = t
+
+    def set_count_slice(self, c):
+        self.count_slice = t
+        if self.mode == COUNT_MODE:
+            self.thread_slice = c
     
     def add_running_thread(self, t):
         if t not in self.running_thread_list:
@@ -359,11 +447,11 @@ class ThreadManagement:
             os._exit(0)
 
         for t in self.running_thread_list:
-            t.save()
+            t.store()
             t.stop()
             self.add_ending_thread(t)
         for t in self.blocking_thread_list:
-            t.save()
+            t.store()
             t.stop()
             self.add_blocking_thread(t)
         self.running_thread_list = []

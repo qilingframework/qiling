@@ -26,11 +26,13 @@ from qiling.const import *
 
 
 def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
+
+    GDT_ENTRY_TLS_MIN = 12
+    GDT_ENTRY_TLS_MAX = 14
+
     ql.nprint("set_thread_area(u_info_addr= 0x%x)" % u_info_addr)
     u_info = ql.mem.read(u_info_addr, 4 * 4)
 
-    if ql.thread_management != None and ql.multithread == True:
-        ql.thread_management.cur_thread.set_special_settings_arg(u_info)
     index = ql.unpack32s(u_info[0 : 4])
     base = ql.unpack32(u_info[4 : 8])
     limit = ql.unpack32(u_info[8 : 12])
@@ -40,7 +42,7 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
     if index == -1:
         index = ql.gdtm.get_free_idx(12)
 
-    if index == -1:
+    if index == -1 or index < 12 or index > 14:
         regreturn = -1 
     else:
         ql.gdtm.register_gdt_segment(index, base, limit, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
