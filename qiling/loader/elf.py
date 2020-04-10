@@ -61,7 +61,7 @@ class ELFParse(QlLoader):
         if self.ident[ : 4] != b'\x7fELF':
             raise QlErrorELFFormat("[!] ERROR: NOT a ELF")
 
-        self.elfhead = self.parse_header(ql)
+        self.elfhead = self.parse_header()
 
     def getident(self):
         return self.elfdata[0 : 19]
@@ -69,7 +69,7 @@ class ELFParse(QlLoader):
     def getelfdata(self, offest, size):
         return self.elfdata[offest : offest + size]
 
-    def parse_header32(self, ql):
+    def parse_header32(self):
         # typedef struct elf32_hdr{
         # unsigned char	e_ident[EI_NIDENT];
         # Elf32_Half	e_type;
@@ -113,7 +113,7 @@ class ELFParse(QlLoader):
         head['e_shstrndx']      = self.ql.unpack16(data[index : index + 2]);    index += 2
         return head
 
-    def parse_header64(self, ql):
+    def parse_header64(self):
         # typedef struct elf64_hdr {
         # unsigned char	e_ident[16];		/* ELF "magic number" */
         # Elf64_Half e_type;
@@ -145,28 +145,28 @@ class ELFParse(QlLoader):
         index = 0
         head = {}
         head['e_ident']         = data[index : index + 16];                 index += 16
-        head['e_type']          = ql.unpack16(data[index : index + 2]);     index += 2
-        head['e_machine']       = ql.unpack16(data[index : index + 2]);     index += 2
-        head['e_version']       = ql.unpack32(data[index : index + 4]);     index += 4
-        head['e_entry']         = ql.unpack64(data[index : index + 8]);     index += 8
-        head['e_phoff']         = ql.unpack64(data[index : index + 8]);     index += 8
-        head['e_shoff']         = ql.unpack64(data[index : index + 8]);     index += 8
-        head['e_flags']         = ql.unpack32(data[index : index + 4]);     index += 4
-        head['e_ehsize']        = ql.unpack16(data[index : index + 2]);     index += 2
-        head['e_phentsize']     = ql.unpack16(data[index : index + 2]);     index += 2
-        head['e_phnum']         = ql.unpack16(data[index : index + 2]);     index += 2
-        head['e_shentsize']     = ql.unpack16(data[index : index + 2]);     index += 2
-        head['e_shnum']         = ql.unpack16(data[index : index + 2]);     index += 2
-        head['e_shstrndx']      = ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_type']          = self.ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_machine']       = self.ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_version']       = self.ql.unpack32(data[index : index + 4]);     index += 4
+        head['e_entry']         = self.ql.unpack64(data[index : index + 8]);     index += 8
+        head['e_phoff']         = self.ql.unpack64(data[index : index + 8]);     index += 8
+        head['e_shoff']         = self.ql.unpack64(data[index : index + 8]);     index += 8
+        head['e_flags']         = self.ql.unpack32(data[index : index + 4]);     index += 4
+        head['e_ehsize']        = self.ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_phentsize']     = self.ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_phnum']         = self.ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_shentsize']     = self.ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_shnum']         = self.ql.unpack16(data[index : index + 2]);     index += 2
+        head['e_shstrndx']      = self.ql.unpack16(data[index : index + 2]);     index += 2
         return head
     
-    def parse_header(self, ql):
-        if ql.archbit == 64:
-            return self.parse_header64(ql)
-        elif ql.archbit == 32:
-            return self.parse_header32(ql)
+    def parse_header(self):
+        if self.ql.archbit == 64:
+            return self.parse_header64()
+        elif self.ql.archbit == 32:
+            return self.parse_header32()
 
-    def parse_section_header32(self, ql):
+    def parse_section_header32(self):
         # typedef struct elf32_shdr {
         # Elf32_Word	sh_name;
         # Elf32_Word	sh_type;
@@ -193,21 +193,21 @@ class ELFParse(QlLoader):
         
         for i in range(Snum):
             S = {}
-            S['sh_name']        = ql.unpack32(Sdata[i * Ssize : i * Ssize + 4])
-            S['sh_type']        = ql.unpack32(Sdata[i * Ssize + 4 : i * Ssize + 8])
-            S['sh_flags']       = ql.unpack32(Sdata[i * Ssize + 8 : i * Ssize + 12])
-            S['sh_addr']        = ql.unpack32(Sdata[i * Ssize + 12 : i * Ssize + 16])
-            S['sh_offset']      = ql.unpack32(Sdata[i * Ssize + 16 : i * Ssize + 20])
-            S['sh_size']        = ql.unpack32(Sdata[i * Ssize + 20 : i * Ssize + 24])
-            S['sh_link']        = ql.unpack32(Sdata[i * Ssize + 24 : i * Ssize + 28])
-            S['sh_info']        = ql.unpack32(Sdata[i * Ssize + 28 : i * Ssize + 32])
-            S['sh_addralign']   = ql.unpack32(Sdata[i * Ssize + 32 : i * Ssize + 36])
-            S['sh_entsize']     = ql.unpack32(Sdata[i * Ssize + 36 : i * Ssize + 40])
+            S['sh_name']        = self.ql.unpack32(Sdata[i * Ssize : i * Ssize + 4])
+            S['sh_type']        = self.ql.unpack32(Sdata[i * Ssize + 4 : i * Ssize + 8])
+            S['sh_flags']       = self.ql.unpack32(Sdata[i * Ssize + 8 : i * Ssize + 12])
+            S['sh_addr']        = self.ql.unpack32(Sdata[i * Ssize + 12 : i * Ssize + 16])
+            S['sh_offset']      = self.ql.unpack32(Sdata[i * Ssize + 16 : i * Ssize + 20])
+            S['sh_size']        = self.ql.unpack32(Sdata[i * Ssize + 20 : i * Ssize + 24])
+            S['sh_link']        = self.ql.unpack32(Sdata[i * Ssize + 24 : i * Ssize + 28])
+            S['sh_info']        = self.ql.unpack32(Sdata[i * Ssize + 28 : i * Ssize + 32])
+            S['sh_addralign']   = self.ql.unpack32(Sdata[i * Ssize + 32 : i * Ssize + 36])
+            S['sh_entsize']     = self.ql.unpack32(Sdata[i * Ssize + 36 : i * Ssize + 40])
             S['data']           = self.elfdata[S['sh_offset'] : S['sh_offset'] + S['sh_size']]
             yield S
         return
 
-    def parse_section_header64(self, ql):
+    def parse_section_header64(self):
         # typedef struct elf64_shdr {
         # Elf64_Word sh_name;		/* Section name, index in string tbl */
         # Elf64_Word sh_type;		/* Type of section */
@@ -237,27 +237,27 @@ class ELFParse(QlLoader):
 
         for i in range(Snum):
             S = {}
-            S['sh_name']        = ql.unpack32(Sdata[i * Ssize : i * Ssize + 4])
-            S['sh_type']        = ql.unpack32(Sdata[i * Ssize + 4 : i * Ssize + 8])
-            S['sh_flags']       = ql.unpack64(Sdata[i * Ssize + 8 : i * Ssize + 16])
-            S['sh_addr']        = ql.unpack64(Sdata[i * Ssize + 16 : i * Ssize + 24])
-            S['sh_offset']      = ql.unpack64(Sdata[i * Ssize + 24 : i * Ssize + 32])
-            S['sh_size']        = ql.unpack64(Sdata[i * Ssize + 32 : i * Ssize + 40])
-            S['sh_link']        = ql.unpack32(Sdata[i * Ssize + 40 : i * Ssize + 44])
-            S['sh_info']        = ql.unpack32(Sdata[i * Ssize + 44 : i * Ssize + 48])
-            S['sh_addralign']   = ql.unpack64(Sdata[i * Ssize + 48 : i * Ssize + 56])
-            S['sh_entsize']     = ql.unpack64(Sdata[i * Ssize + 56 : i * Ssize + 64])
+            S['sh_name']        = self.ql.unpack32(Sdata[i * Ssize : i * Ssize + 4])
+            S['sh_type']        = self.ql.unpack32(Sdata[i * Ssize + 4 : i * Ssize + 8])
+            S['sh_flags']       = self.ql.unpack64(Sdata[i * Ssize + 8 : i * Ssize + 16])
+            S['sh_addr']        = self.ql.unpack64(Sdata[i * Ssize + 16 : i * Ssize + 24])
+            S['sh_offset']      = self.ql.unpack64(Sdata[i * Ssize + 24 : i * Ssize + 32])
+            S['sh_size']        = self.ql.unpack64(Sdata[i * Ssize + 32 : i * Ssize + 40])
+            S['sh_link']        = self.ql.unpack32(Sdata[i * Ssize + 40 : i * Ssize + 44])
+            S['sh_info']        = self.ql.unpack32(Sdata[i * Ssize + 44 : i * Ssize + 48])
+            S['sh_addralign']   = self.ql.unpack64(Sdata[i * Ssize + 48 : i * Ssize + 56])
+            S['sh_entsize']     = self.ql.unpack64(Sdata[i * Ssize + 56 : i * Ssize + 64])
             S['data']           = self.elfdata[S['sh_offset'] : S['sh_offset'] + S['sh_size']]
             yield S
         return
 
-    def parse_section_header(self, ql):
-        if ql.archbit == 64:
-            return self.parse_section_header64(ql)
-        elif ql.archbit == 32:
-            return self.parse_section_header32(ql)
+    def parse_section_header(self):
+        if self.ql.archbit == 64:
+            return self.parse_section_header64()
+        elif self.ql.archbit == 32:
+            return self.parse_section_header32()
 
-    def parse_program_header32(self, ql):
+    def parse_program_header32(self):
         # typedef struct elf32_phdr{
         # Elf32_Word	p_type;
         # Elf32_Off	p_offset;
@@ -282,18 +282,18 @@ class ELFParse(QlLoader):
 
         for i in range(Pnum):
             P = {}
-            P['p_type']     = ql.unpack32(Pdata[i * Psize : i * Psize + 4 ])
-            P['p_offset']   = ql.unpack32(Pdata[i * Psize + 4 : i * Psize + 8 ])
-            P['p_vaddr']    = ql.unpack32(Pdata[i * Psize + 8 : i * Psize + 12 ])
-            P['p_paddr']    = ql.unpack32(Pdata[i * Psize + 12 : i * Psize + 16 ])
-            P['p_filesz']   = ql.unpack32(Pdata[i * Psize + 16 : i * Psize + 20 ])
-            P['p_memsz']    = ql.unpack32(Pdata[i * Psize + 20 : i * Psize + 24 ])
-            P['p_flags']    = ql.unpack32(Pdata[i * Psize + 24 : i * Psize + 28 ])
-            P['p_align']    = ql.unpack32(Pdata[i * Psize + 28 : i * Psize + 32])
+            P['p_type']     = self.ql.unpack32(Pdata[i * Psize : i * Psize + 4 ])
+            P['p_offset']   = self.ql.unpack32(Pdata[i * Psize + 4 : i * Psize + 8 ])
+            P['p_vaddr']    = self.ql.unpack32(Pdata[i * Psize + 8 : i * Psize + 12 ])
+            P['p_paddr']    = self.ql.unpack32(Pdata[i * Psize + 12 : i * Psize + 16 ])
+            P['p_filesz']   = self.ql.unpack32(Pdata[i * Psize + 16 : i * Psize + 20 ])
+            P['p_memsz']    = self.ql.unpack32(Pdata[i * Psize + 20 : i * Psize + 24 ])
+            P['p_flags']    = self.ql.unpack32(Pdata[i * Psize + 24 : i * Psize + 28 ])
+            P['p_align']    = self.ql.unpack32(Pdata[i * Psize + 28 : i * Psize + 32])
             yield P
         return
 
-    def parse_program_header64(self, ql):
+    def parse_program_header64(self):
         # typedef struct elf64_phdr {
         # Elf64_Word p_type;
         # Elf64_Word p_flags;
@@ -321,35 +321,35 @@ class ELFParse(QlLoader):
 
         for i in range(Pnum):
             P = {}
-            P['p_type']     = ql.unpack32(Pdata[i * Psize : i * Psize + 4 ])
-            P['p_flags']    = ql.unpack32(Pdata[i * Psize + 4 : i * Psize + 8 ])
-            P['p_offset']   = ql.unpack64(Pdata[i * Psize + 8 : i * Psize + 16 ])
-            P['p_vaddr']    = ql.unpack64(Pdata[i * Psize + 16 : i * Psize + 24 ])
-            P['p_paddr']    = ql.unpack64(Pdata[i * Psize + 24 : i * Psize + 32 ])
-            P['p_filesz']   = ql.unpack64(Pdata[i * Psize + 32 : i * Psize + 40 ])
-            P['p_memsz']    = ql.unpack64(Pdata[i * Psize + 40 : i * Psize + 48 ])
-            P['p_align']    = ql.unpack64(Pdata[i * Psize + 48 : i * Psize + 56])
+            P['p_type']     = self.ql.unpack32(Pdata[i * Psize : i * Psize + 4 ])
+            P['p_flags']    = self.ql.unpack32(Pdata[i * Psize + 4 : i * Psize + 8 ])
+            P['p_offset']   = self.ql.unpack64(Pdata[i * Psize + 8 : i * Psize + 16 ])
+            P['p_vaddr']    = self.ql.unpack64(Pdata[i * Psize + 16 : i * Psize + 24 ])
+            P['p_paddr']    = self.ql.unpack64(Pdata[i * Psize + 24 : i * Psize + 32 ])
+            P['p_filesz']   = self.ql.unpack64(Pdata[i * Psize + 32 : i * Psize + 40 ])
+            P['p_memsz']    = self.ql.unpack64(Pdata[i * Psize + 40 : i * Psize + 48 ])
+            P['p_align']    = self.ql.unpack64(Pdata[i * Psize + 48 : i * Psize + 56])
             yield P
         return
 
-    def parse_program_header(self, ql):
-        if ql.archbit == 64:
-            return self.parse_program_header64(ql)
-        elif ql.archbit == 32:
-            return self.parse_program_header32(ql)
+    def parse_program_header(self):
+        if self.ql.archbit == 64:
+            return self.parse_program_header64()
+        elif self.ql.archbit == 32:
+            return self.parse_program_header32()
 
 class ELFLoader(ELFParse):
     def __init__(self, path, ql):
         ELFParse.__init__(self, path, ql)
         self.ql = ql
 
-    def pack(self, data, ql):
-        if ql.archbit == 64:
-            return ql.pack64(data)
-        elif ql.archbit == 32:
-            return ql.pack32(data)
+    def pack(self, data):
+        if self.ql.archbit == 64:
+            return self.ql.pack64(data)
+        elif self.ql.archbit == 32:
+            return self.ql.pack32(data)
         else:
-            return ql.pack32(data)
+            return self.ql.pack32(data)
 
     def copy_str(self, uc, addr, l):
         l_addr = []
@@ -357,11 +357,11 @@ class ELFLoader(ELFParse):
         for i in l:
             s_addr = s_addr - len(i) - 1
             # if isinstance(i, bytes):
-            #     # ql.nprint(type(b'\x00'))
-            # ql.nprint(type(i))
-            # ql.nprint(i)
-            # ql.nprint(type(i.encode()))
-            # ql.nprint(type(addr))
+            #     # self.ql.nprint(type(b'\x00'))
+            # self.ql.nprint(type(i))
+            # self.ql.nprint(i)
+            # self.ql.nprint(type(i.encode()))
+            # self.ql.nprint(type(addr))
             #     uc.mem_write(s_addr, i + b'\x00')
             # else:
             
@@ -369,17 +369,17 @@ class ELFLoader(ELFParse):
             l_addr.append(s_addr)
         return l_addr, s_addr
 
-    def alignment(self, val, ql):
-        if ql.archbit == 64:
+    def alignment(self, val):
+        if self.ql.archbit == 64:
             return (val // 8) * 8
-        elif ql.archbit == 32:
+        elif self.ql.archbit == 32:
             return (val // 4) * 4
 
-    def NEW_AUX_ENT(self, key, val, ql):
-        if ql.archbit == 32:
-            return ql.pack32(int(key)) + ql.pack32(int(val))
-        elif ql.archbit == 64:
-            return ql.pack64(int(key)) + ql.pack64(int(val))
+    def NEW_AUX_ENT(self, key, val):
+        if self.ql.archbit == 32:
+            return self.ql.pack32(int(key)) + self.ql.pack32(int(val))
+        elif self.ql.archbit == 64:
+            return self.ql.pack64(int(key)) + self.ql.pack64(int(val))
 
     def NullStr(self, s):
         return s[ : s.find(b'\x00')]
@@ -387,20 +387,20 @@ class ELFLoader(ELFParse):
     def load_with_ld(self, ql, stack_addr, loadbase = -1, argv = [], env = {}):
 
         if loadbase <= 0:
-            if ql.archbit == 64:
+            if self.ql.archbit == 64:
                 loadbase = 0x555555554000
-            elif ql.archtype== QL_MIPS32:
+            elif self.ql.archtype== QL_MIPS32:
                 loadbase = 0x0000004fef000
             else:
                 loadbase = 0x56555000
 
-        elfhead = super().parse_header(ql)
+        elfhead = super().parse_header()
 
         # Determine the range of memory space opened up
         mem_start = -1
         mem_end = -1
         interp_path = ''
-        for i in super().parse_program_header(ql):
+        for i in super().parse_program_header():
             if i['p_type'] == PT_LOAD:
                 if mem_start > i['p_vaddr'] or mem_start == -1:
                     mem_start = i['p_vaddr']
@@ -415,23 +415,23 @@ class ELFLoader(ELFParse):
         if elfhead['e_type'] == ET_EXEC:
             loadbase = 0
         elif elfhead['e_type'] != ET_DYN:
-            ql.nprint("[+] Some error in head e_type: %u!" %elfhead['e_type'])
+            self.ql.nprint("[+] Some error in head e_type: %u!" %elfhead['e_type'])
             return -1
 
-        ql.mem.map(loadbase + mem_start, mem_end - mem_start)
-        ql.mem.add_mapinfo(loadbase + mem_start, loadbase + mem_end, 'r-x', self.path)
+        self.ql.mem.map(loadbase + mem_start, mem_end - mem_start)
+        self.ql.mem.add_mapinfo(loadbase + mem_start, loadbase + mem_end, 'r-x', self.path)
 
-        for i in super().parse_program_header(ql):
+        for i in super().parse_program_header():
             if i['p_type'] == PT_LOAD:
-                ql.mem.write(loadbase + i['p_vaddr'], super().getelfdata(i['p_offset'], i['p_filesz']))
-                ql.dprint(D_PROT,
+                self.ql.mem.write(loadbase + i['p_vaddr'], super().getelfdata(i['p_offset'], i['p_filesz']))
+                self.ql.dprint(D_PROT,
                           "[+] load 0x%x - 0x%x" % (loadbase + i['p_vaddr'], loadbase + i['p_vaddr'] + i['p_filesz']))
 
         entry_point = elfhead['e_entry'] + loadbase
 
-        ql.dprint(D_PROT, "[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
+        self.ql.dprint(D_PROT, "[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
 
-        ql.brk_address = mem_end + loadbase
+        self.ql.brk_address = mem_end + loadbase
 
         # Load interpreter if there is an interpreter
 
@@ -439,148 +439,148 @@ class ELFLoader(ELFParse):
             interp_path = str(interp_path, 'utf-8', errors="ignore")
            
             interp = ELFParse(ql.rootfs + interp_path, ql)
-            interphead = interp.parse_header(ql)
-            ql.dprint(D_PROT, "[+] interp is : %s" % (ql.rootfs + interp_path))
+            interphead = interp.parse_header()
+            self.ql.dprint(D_PROT, "[+] interp is : %s" % (ql.rootfs + interp_path))
 
             interp_mem_size = -1
-            for i in interp.parse_program_header(ql):
+            for i in interp.parse_program_header():
                 if i['p_type'] == PT_LOAD:
                     if interp_mem_size < i['p_vaddr'] + i['p_memsz'] or interp_mem_size == -1:
                         interp_mem_size = i['p_vaddr'] + i['p_memsz']
             interp_mem_size = (interp_mem_size // 0x1000 + 1) * 0x1000
-            ql.dprint(D_PROT, "[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
+            self.ql.dprint(D_PROT, "[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
 
-            if ql.interp_base == 0:
-                if ql.archbit == 64:
-                    ql.interp_base = 0x7ffff7dd5000
-                elif ql.archbit == 32 and ql.archtype!= QL_MIPS32:
-                    ql.interp_base = 0xfb7d3000
-                elif ql.archtype== QL_MIPS32:
-                    ql.interp_base = 0x00000047ba000
+            if self.ql.interp_base == 0:
+                if self.ql.archbit == 64:
+                    self.ql.interp_base = 0x7ffff7dd5000
+                elif self.ql.archbit == 32 and self.ql.archtype!= QL_MIPS32:
+                    self.ql.interp_base = 0xfb7d3000
+                elif self.ql.archtype== QL_MIPS32:
+                    self.ql.interp_base = 0x00000047ba000
                 else:
-                    ql.interp_base = 0xff7d5000
+                    self.ql.interp_base = 0xff7d5000
 
-            ql.dprint(D_PROT, "[+] interp_base is : 0x%x" % (ql.interp_base))
-            ql.mem.map(ql.interp_base, int(interp_mem_size))
-            ql.mem.add_mapinfo(ql.interp_base, ql.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
+            self.ql.dprint(D_PROT, "[+] interp_base is : 0x%x" % (ql.interp_base))
+            self.ql.mem.map(ql.interp_base, int(interp_mem_size))
+            self.ql.mem.add_mapinfo(ql.interp_base, self.ql.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
 
-            for i in interp.parse_program_header(ql):
+            for i in interp.parse_program_header():
                 if i['p_type'] == PT_LOAD:
-                    ql.mem.write(ql.interp_base + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
-            entry_point = interphead['e_entry'] + ql.interp_base
+                    self.ql.mem.write(ql.interp_base + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
+            entry_point = interphead['e_entry'] + self.ql.interp_base
 
         # Set MMAP addr
-        if ql.mmap_start == 0:
-            if ql.archbit == 64:
-                ql.mmap_start = 0x7ffff7dd6000 - 0x4000000
-            elif ql.archtype== QL_MIPS32:
-                ql.mmap_start = 0x7ffef000 - 0x400000
-                if ql.archendian == QL_ENDIAN_EB:
-                    ql.mmap_start  = 0x778bf000 - 0x400000
+        if self.ql.mmap_start == 0:
+            if self.ql.archbit == 64:
+                self.ql.mmap_start = 0x7ffff7dd6000 - 0x4000000
+            elif self.ql.archtype== QL_MIPS32:
+                self.ql.mmap_start = 0x7ffef000 - 0x400000
+                if self.ql.archendian == QL_ENDIAN_EB:
+                    self.ql.mmap_start  = 0x778bf000 - 0x400000
             else:
-                ql.mmap_start = 0xf7fd6000 - 0x400000
+                self.ql.mmap_start = 0xf7fd6000 - 0x400000
 
-        ql.dprint(D_PROT, "[+] mmap_start is : 0x%x" % (ql.mmap_start))
+        self.ql.dprint(D_PROT, "[+] mmap_start is : 0x%x" % (ql.mmap_start))
 
         # Set elf table
         elf_table = b''
         new_stack = stack_addr
 
         # Set argc
-        #if ql.archbit == 32:
-        #    elf_table += ql.pack32(len(argv))
+        #if self.ql.archbit == 32:
+        #    elf_table += self.ql.pack32(len(argv))
         #else:
-        elf_table += self.pack(len(argv),ql)
+        elf_table += self.pack(len(argv))
 
         # Set argv
         if len(argv) != 0:
             argv_addr, new_stack = self.copy_str(ql.uc, stack_addr, argv)
 
-            if ql.archbit == 32:
+            if self.ql.archbit == 32:
                 elf_table += b''.join([ql.pack32(_) for _ in argv_addr])
-            elif ql.archbit == 64:
+            elif self.ql.archbit == 64:
                 elf_table += b''.join([ql.pack64(_) for _ in argv_addr])
 
-        if ql.archbit == 32:
-            elf_table += ql.pack32(0)
-        elif ql.archbit == 64:
-            elf_table += ql.pack64(0)
+        if self.ql.archbit == 32:
+            elf_table += self.ql.pack32(0)
+        elif self.ql.archbit == 64:
+            elf_table += self.ql.pack64(0)
 
         # Set env
         if len(env) != 0:
             env_addr, new_stack = self.copy_str(ql.uc, new_stack, [key + '=' + value for key, value in env.items()])
-            if ql.archbit == 32:
+            if self.ql.archbit == 32:
                 elf_table += b''.join([ql.pack32(_) for _ in env_addr])
-            elif ql.archbit == 64:
+            elif self.ql.archbit == 64:
                 elf_table += b''.join([ql.pack64(_) for _ in env_addr])
 
-        if ql.archbit == 32:
-            elf_table += ql.pack32(0)
-        elif ql.archbit == 64:
-            elf_table += ql.pack64(0)
+        if self.ql.archbit == 32:
+            elf_table += self.ql.pack32(0)
+        elif self.ql.archbit == 64:
+            elf_table += self.ql.pack64(0)
 
-        new_stack = self.alignment(new_stack, ql)
+        new_stack = self.alignment(new_stack)
 
         randstr = 'a' * 0x10
         cpustr = 'i686'
         (addr, new_stack) = self.copy_str(ql.uc, new_stack, [randstr, cpustr])
-        new_stack = self.alignment(new_stack, ql)
+        new_stack = self.alignment(new_stack)
 
         # Set AUX
 
-        # ql.mem.write(int(new_stack) - 4, ql.pack32(0x11111111))
+        # self.ql.mem.write(int(new_stack) - 4, self.ql.pack32(0x11111111))
         # new_stack = new_stack - 4
         # rand_addr = new_stack - 4
 
-        ql.elf_phdr     = (loadbase + elfhead['e_phoff'])
-        ql.elf_phent    = (elfhead['e_phentsize'])
-        ql.elf_phnum    = (elfhead['e_phnum'])
-        ql.elf_pagesz   = 0x1000
-        if ql.archendian == QL_ENDIAN_EB:
-            ql.elf_pagesz   = 0x0010
-        ql.elf_guid     = 1000
-        ql.elf_flags    = 0
-        ql.elf_entry    = (loadbase + elfhead['e_entry'])
-        ql.randstraddr  = randstraddr = addr[0]
-        ql.cpustraddr   = cpustraddr = addr[1]
-        if ql.archbit == 64:
-            ql.elf_hwcap = 0x078bfbfd
-        elif ql.archbit == 32:
-            ql.elf_hwcap = 0x1fb8d7
-            if ql.archendian == QL_ENDIAN_EB:
-                ql.elf_hwcap = 0xd7b81f
+        self.ql.elf_phdr     = (loadbase + elfhead['e_phoff'])
+        self.ql.elf_phent    = (elfhead['e_phentsize'])
+        self.ql.elf_phnum    = (elfhead['e_phnum'])
+        self.ql.elf_pagesz   = 0x1000
+        if self.ql.archendian == QL_ENDIAN_EB:
+            self.ql.elf_pagesz   = 0x0010
+        self.ql.elf_guid     = 1000
+        self.ql.elf_flags    = 0
+        self.ql.elf_entry    = (loadbase + elfhead['e_entry'])
+        self.ql.randstraddr  = randstraddr = addr[0]
+        self.ql.cpustraddr   = cpustraddr = addr[1]
+        if self.ql.archbit == 64:
+            self.ql.elf_hwcap = 0x078bfbfd
+        elif self.ql.archbit == 32:
+            self.ql.elf_hwcap = 0x1fb8d7
+            if self.ql.archendian == QL_ENDIAN_EB:
+                self.ql.elf_hwcap = 0xd7b81f
 
-        elf_table += self.NEW_AUX_ENT(AT_PHDR, ql.elf_phdr + mem_start, ql)
-        elf_table += self.NEW_AUX_ENT(AT_PHENT, ql.elf_phent, ql)
-        elf_table += self.NEW_AUX_ENT(AT_PHNUM, ql.elf_phnum, ql)
-        elf_table += self.NEW_AUX_ENT(AT_PAGESZ, ql.elf_pagesz, ql)
-        elf_table += self.NEW_AUX_ENT(AT_BASE, ql.interp_base, ql)
-        elf_table += self.NEW_AUX_ENT(AT_FLAGS, ql.elf_flags, ql)
-        elf_table += self.NEW_AUX_ENT(AT_ENTRY,ql.elf_entry, ql)
-        elf_table += self.NEW_AUX_ENT(AT_UID, ql.elf_guid, ql)
-        elf_table += self.NEW_AUX_ENT(AT_EUID, ql.elf_guid, ql)
-        elf_table += self.NEW_AUX_ENT(AT_GID, ql.elf_guid, ql)
-        elf_table += self.NEW_AUX_ENT(AT_EGID, ql.elf_guid, ql)
-        elf_table += self.NEW_AUX_ENT(AT_HWCAP, ql.elf_hwcap, ql)
-        elf_table += self.NEW_AUX_ENT(AT_CLKTCK, 100, ql)
-        elf_table += self.NEW_AUX_ENT(AT_RANDOM, randstraddr, ql)
-        elf_table += self.NEW_AUX_ENT(AT_PLATFORM, cpustraddr, ql)
-        elf_table += self.NEW_AUX_ENT(AT_NULL, 0, ql)
+        elf_table += self.NEW_AUX_ENT(AT_PHDR, self.ql.elf_phdr + mem_start)
+        elf_table += self.NEW_AUX_ENT(AT_PHENT, self.ql.elf_phent)
+        elf_table += self.NEW_AUX_ENT(AT_PHNUM, self.ql.elf_phnum)
+        elf_table += self.NEW_AUX_ENT(AT_PAGESZ, self.ql.elf_pagesz)
+        elf_table += self.NEW_AUX_ENT(AT_BASE, self.ql.interp_base)
+        elf_table += self.NEW_AUX_ENT(AT_FLAGS, self.ql.elf_flags)
+        elf_table += self.NEW_AUX_ENT(AT_ENTRY,ql.elf_entry)
+        elf_table += self.NEW_AUX_ENT(AT_UID, self.ql.elf_guid)
+        elf_table += self.NEW_AUX_ENT(AT_EUID, self.ql.elf_guid)
+        elf_table += self.NEW_AUX_ENT(AT_GID, self.ql.elf_guid)
+        elf_table += self.NEW_AUX_ENT(AT_EGID, self.ql.elf_guid)
+        elf_table += self.NEW_AUX_ENT(AT_HWCAP, self.ql.elf_hwcap)
+        elf_table += self.NEW_AUX_ENT(AT_CLKTCK, 100)
+        elf_table += self.NEW_AUX_ENT(AT_RANDOM, randstraddr)
+        elf_table += self.NEW_AUX_ENT(AT_PLATFORM, cpustraddr)
+        elf_table += self.NEW_AUX_ENT(AT_NULL, 0)
 
         elf_table += b'\x00' * (0x10 - (new_stack - len(elf_table)) & 0xf)
 
-        ql.mem.write(int(new_stack - len(elf_table)), elf_table)
+        self.ql.mem.write(int(new_stack - len(elf_table)), elf_table)
         new_stack = new_stack - len(elf_table)
 
-        # ql.dprint(D_PROT, sssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
-        # ql.register(UC_X86_REG_RDI, new_stack + 8)
+        # self.ql.dprint(D_PROT, sssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
+        # self.ql.register(UC_X86_REG_RDI, new_stack + 8)
 
         # for i in range(120):
-        #     buf = ql.mem.read(new_stack + i * 0x8, 8)
-        #     ql.nprint("0x%08x : 0x%08x " % (new_stack + i * 0x4, ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
+        #     buf = self.ql.mem.read(new_stack + i * 0x8, 8)
+        #     self.ql.nprint("0x%08x : 0x%08x " % (new_stack + i * 0x4, self.ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
 
-        ql.entry_point = entry_point
-        ql.elf_entry = loadbase + elfhead['e_entry']
-        ql.new_stack = new_stack
-        ql.loadbase = loadbase
-        ql.mem.add_mapinfo(new_stack, ql.stack_address+ql.stack_size, 'rw-', '[stack]')
+        self.ql.entry_point = entry_point
+        self.ql.elf_entry = loadbase + elfhead['e_entry']
+        self.ql.new_stack = new_stack
+        self.ql.loadbase = loadbase
+        self.ql.mem.add_mapinfo(new_stack, self.ql.stack_address+ql.stack_size, 'rw-', '[stack]')
