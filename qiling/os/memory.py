@@ -65,11 +65,12 @@ class QlMemoryManager:
         map_info = []
         map_info.append(tmp_map_info[0])
 
-        for s, e, p, info in tmp_map_info[1:]:
-            if s == map_info[-1][1] and info == map_info[-1][3] and p == map_info[-1][2]:
-                map_info[-1][1] = e
-            else:
-                map_info.append([s, e, p, info])
+        # disable map_info merging, so we get more acurrate map_info perms
+        # for s, e, p, info in tmp_map_info[1:]:
+            # if s == map_info[-1][1] and info == map_info[-1][3] and p == map_info[-1][2]:
+                # map_info[-1][1] = e
+            # else:
+                # map_info.append([s, e, p, info])
 
         self.map_info = map_info
 
@@ -290,10 +291,9 @@ class QlMemoryManager:
         return address
 
     def protect(self, addr, size, perms):
-        # aligned_address = addr & 0xFFFFF000  # Address needs to align with
-        # aligned_size = self._align((addr & 0xFFF) + size)
-        # breakpoint()
-        # self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
+        aligned_address = addr & 0xFFFFF000  # Address needs to align with
+        aligned_size = self._align((addr & 0xFFF) + size)
+        self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
         self.ql.uc.mem_protect(addr, size, perms)
 
 
@@ -315,13 +315,10 @@ class QlMemoryManager:
         '''
         if ptr == None:
             if self.is_mapped(addr, size) == False:
-               self.ql.uc.mem_map(addr, size)
-               self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
+               self.ql.uc.mem_map(addr, size, perms)
+               self.add_mapinfo(addr, addr+size, perms, info if info else "[mapped]")
             else:
                 raise QlMemoryMappedError("[!] Memory Mapped")    
-            
-            if perms != UC_PROT_ALL:
-                self.protect(addr, size, perms)
         else:
             self.ql.uc.mem_map_ptr(addr, size, perms, ptr)
 
