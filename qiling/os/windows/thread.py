@@ -10,12 +10,12 @@ from qiling.os.windows.utils import *
 
 
 def thread_scheduler(ql, address, size):
-    if ql.pc == ql.os.thread_manager.THREAD_RET_ADDR:
-        ql.os.thread_manager.cur_thread.stop()
-        ql.os.thread_manager.do_schedule()
+    if ql.pc == ql.thread_manager.THREAD_RET_ADDR:
+        ql.thread_manager.cur_thread.stop()
+        ql.thread_manager.do_schedule()
     else:
-        ql.os.thread_manager.ins_count += 1
-        ql.os.thread_manager.do_schedule()
+        ql.thread_manager.ins_count += 1
+        ql.thread_manager.do_schedule()
 
 
 class Context():
@@ -157,12 +157,11 @@ class QlWindowsThread(QlThread):
         stack_size = 1024
         new_stack = self.ql.heap.mem_alloc(stack_size) + stack_size
 
-        # FIXME : self.ql.os this is ugly
         if self.ql.archtype == QL_X86:
-            self.ql.mem.write(new_stack - 4, self.ql.pack32(self.ql.os.thread_manager.THREAD_RET_ADDR))
+            self.ql.mem.write(new_stack - 4, self.ql.pack32(self.ql.thread_manager.THREAD_RET_ADDR))
             self.ql.mem.write(new_stack, self.ql.pack32(func_params))
         elif self.ql.archtype == QL_X8664:
-            self.ql.mem.write(new_stack - 8, self.ql.pack64(self.ql.os.thread_manager.THREAD_RET_ADDR))
+            self.ql.mem.write(new_stack - 8, self.ql.pack64(self.ql.thread_manager.THREAD_RET_ADDR))
             self.ql.mem.write(new_stack, self.ql.pack64(func_params))
 
         # set eip, ebp, esp
