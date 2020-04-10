@@ -78,7 +78,7 @@ class QlOsLinux(QlOsPosix):
                 self.ql.stack_address = 0x1000000
             if (self.ql.stack_size == 0): 
                 self.ql.stack_size = 10 * 1024 * 1024
-            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size) 
+            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size, info="[stack]")
             self.ql.stack_address  = (self.ql.stack_address + 0x200000 - 0x1000)
             self.ql.mem.write(self.ql.stack_address, self.ql.shellcoder)    
         else:
@@ -86,7 +86,7 @@ class QlOsLinux(QlOsPosix):
                 self.ql.stack_address = self.QL_LINUX_PREDEFINE_STACKADDRESS
             if (self.ql.stack_size == 0):  
                 self.ql.stack_size = self.QL_LINUX_PREDEFINE_STACKSIZE
-            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
+            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size, info="[stack]")
             loader = ELFLoader(self.ql.path, self.ql)
             if loader.load_with_ld(self.ql, self.ql.stack_address + self.ql.stack_size, argv = self.ql.argv,  env = self.ql.env):
                 raise QlErrorFileType("Unsupported FileType")
