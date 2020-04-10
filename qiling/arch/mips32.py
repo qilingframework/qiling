@@ -103,38 +103,38 @@ class QlArchMIPS32(QlArch):
 
     def get_reg_name_str(self, uc_reg):
         adapter = {
-            UC_MIPS_REG_0: "0", 
-            UC_MIPS_REG_1: "1", 
-            UC_MIPS_REG_2: "2",
-            UC_MIPS_REG_3: "3", 
-            UC_MIPS_REG_4: "4", 
-            UC_MIPS_REG_5: "5",
-            UC_MIPS_REG_6: "6", 
-            UC_MIPS_REG_7: "7", 
-            UC_MIPS_REG_8: "8",
-            UC_MIPS_REG_9: "9", 
-            UC_MIPS_REG_10: "10", 
-            UC_MIPS_REG_11: "11",
-            UC_MIPS_REG_12: "12", 
-            UC_MIPS_REG_13: "13", 
-            UC_MIPS_REG_14: "14",
-            UC_MIPS_REG_15: "15", 
-            UC_MIPS_REG_16: "16",
-            UC_MIPS_REG_17: "17",
-            UC_MIPS_REG_18: "18", 
-            UC_MIPS_REG_19: "19", 
-            UC_MIPS_REG_20: "20",
-            UC_MIPS_REG_21: "21", 
-            UC_MIPS_REG_22: "22", 
-            UC_MIPS_REG_23: "23",
-            UC_MIPS_REG_24: "24", 
-            UC_MIPS_REG_25: "25", 
-            UC_MIPS_REG_26: "26",
-            UC_MIPS_REG_27: "27", 
-            UC_MIPS_REG_28: "28", 
-            UC_MIPS_REG_29: "SP",
-            UC_MIPS_REG_30: "30", 
-            UC_MIPS_REG_31: "31", 
+            UC_MIPS_REG_0: "Z0", # permanently 0
+            UC_MIPS_REG_1: "AT",   # assebmler temporary (reserved)
+            UC_MIPS_REG_2: "V0",   # value returned by a subroutine
+            UC_MIPS_REG_3: "V1", 
+            UC_MIPS_REG_4: "A0",   # arguments to a subroutine
+            UC_MIPS_REG_5: "A1",
+            UC_MIPS_REG_6: "A2", 
+            UC_MIPS_REG_7: "A3", 
+            UC_MIPS_REG_8: "T0",   # temporary (not preserved across a function call)
+            UC_MIPS_REG_9: "T1", 
+            UC_MIPS_REG_10: "T2", 
+            UC_MIPS_REG_11: "T3",
+            UC_MIPS_REG_12: "T4", 
+            UC_MIPS_REG_13: "T5", 
+            UC_MIPS_REG_14: "T6",
+            UC_MIPS_REG_15: "T7", 
+            UC_MIPS_REG_16: "S0",  # saved registers (preserved across a function call)
+            UC_MIPS_REG_17: "S1",
+            UC_MIPS_REG_18: "S2", 
+            UC_MIPS_REG_19: "S3", 
+            UC_MIPS_REG_20: "S4",
+            UC_MIPS_REG_21: "S5", 
+            UC_MIPS_REG_22: "S6", 
+            UC_MIPS_REG_23: "S7",
+            UC_MIPS_REG_24: "T8",   # temporary
+            UC_MIPS_REG_25: "T9", 
+            UC_MIPS_REG_26: "K0",   # kernel (reserved for OS)
+            UC_MIPS_REG_27: "K1", 
+            UC_MIPS_REG_28: "GP",   # global pointer
+            UC_MIPS_REG_29: "SP",   # stack pointer
+            UC_MIPS_REG_30: "FP",   # frame pointer
+            UC_MIPS_REG_31: "RA",   # return address
             UC_MIPS_REG_INVALID: "INV",
             UC_MIPS_REG_LO: "LO", 
             UC_MIPS_REG_HI: "HI", 
@@ -142,10 +142,8 @@ class QlArchMIPS32(QlArch):
             UC_MIPS_REG_INVALID: "INV", 
             UC_MIPS_REG_PC: "PC"
         }
-        if uc_reg in adapter:
-            return adapter[uc_reg]
-        # invalid
-        return None         
+        # return None if uc_reg is invalid
+        return adapter.get(uc_reg, None)
 
 
     def get_register(self, register_str):
@@ -201,7 +199,5 @@ class QlArchMIPS32(QlArch):
             "INV":UC_MIPS_REG_INVALID,
             "PC": UC_MIPS_REG_PC,
         }
-        if uc_reg_name in adapter:
-            return adapter[uc_reg_name]
-        # invalid
-        return None
+        # return None if uc_reg_name is invalid
+        return adapter.get(uc_reg_name, None)
