@@ -114,16 +114,16 @@ class MachPortManager():
 
         if msg.header.msgh_id == 200:
             # host info
-            out_msg = self.ql.macho_host_server.host_info(msg.header, msg.content)
+            out_msg = self.ql.os.macho_host_server.host_info(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         elif msg.header.msgh_id == 206:
-            out_msg = self.ql.macho_host_server.host_get_clock_service(msg.header, msg.content)
+            out_msg = self.ql.os.macho_host_server.host_get_clock_service(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         elif msg.header.msgh_id == 3418:
-            out_msg = self.ql.macho_task_server.semaphore_create(msg.header, msg.content)
+            out_msg = self.ql.os.macho_task_server.semaphore_create(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         elif msg.header.msgh_id == 3409:
-            out_msg = self.ql.macho_task_server.get_special_port(msg.header, msg.content)
+            out_msg = self.ql.os.macho_task_server.get_special_port(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         else:
             self.ql.nprint("Error Mach Msgid {} can not handled".format(msg.header.msgh_id))

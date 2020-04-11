@@ -67,11 +67,11 @@ def ql_arm64_poll(ql, target, address, size, *args, **kw):
 # 0xa
 def ql_x86_syscall_kernelrpc_mach_vm_allocate_trap(ql, port, addr, size, flags, *args, **kw):
     ql.dprint(D_PROT, "[+] [mach] mach vm allocate trap(port: 0x%x, addr: 0x%x, size: 0x%x, flags: 0x%x" % (port, addr, size, flags))
-    mmap_start = ql.macho_task.min_offset
+    mmap_start = ql.os.macho_task.min_offset
     mmap_end = page_align_end(mmap_start + size, PAGE_SIZE)
     ql.mem.map(mmap_start, mmap_end - mmap_start)
     ql.mem.write(mmap_start, b'\x00'*(mmap_end - mmap_start))
-    ql.macho_task.min_offset = mmap_end
+    ql.os.macho_task.min_offset = mmap_end
     ql.dprint(D_PROT, "[+] vm alloc form 0x%x to 0x%0x" % (mmap_start, mmap_end))
     ql.mem.write(addr, struct.pack("<Q", mmap_start))
     ql_definesyscall_return(ql, 0)
@@ -120,24 +120,24 @@ def ql_x86_syscall_kernelrpc_mach_port_construct_trap(ql, target, options, conte
 
 # 0x1a
 def ql_x86_syscall_mach_reply_port(ql, *args, **kw):
-    ql_definesyscall_return(ql, ql.macho_mach_port.name)
-    ql.dprint(D_PROT, "[+] [mach] mach reply port , ret: %s" % (ql.macho_mach_port.name))
+    ql_definesyscall_return(ql, ql.os.macho_mach_port.name)
+    ql.dprint(D_PROT, "[+] [mach] mach reply port , ret: %s" % (ql.os.macho_mach_port.name))
 
 # 0x1b
 def ql_x86_syscall_thread_self_trap(ql, *args, **kw):
-    port_manager = ql.macho_port_manager
+    port_manager = ql.os.macho_port_manager
     thread_port = port_manager.get_thread_port(ql.os.macho_thread)
     ql.dprint(D_PROT, "[+] [mach] thread_self_trap: ret: %s" % (thread_port))
     ql_definesyscall_return(ql, thread_port)
 
 # 0x1c
 def ql_x86_syscall_task_self_trap(ql, *args, **kw):
-    ql_definesyscall_return(ql, ql.macho_task.id)
-    ql.dprint(D_PROT, "[+] [mach] task self trap, ret: %d" % (ql.macho_task.id))
+    ql_definesyscall_return(ql, ql.os.macho_task.id)
+    ql.dprint(D_PROT, "[+] [mach] task self trap, ret: %d" % (ql.os.macho_task.id))
 
 # 0x1d
 def ql_x86_syscall_host_self_trap(ql, *args, **kw):
-    port_manager = ql.macho_port_manager
+    port_manager = ql.os.macho_port_manager
     ql_definesyscall_return(ql, port_manager.host_port.name)
     ql.dprint(D_PROT, "[+] [mach] host_self_trap, ret: %s" % (666))
 
@@ -148,7 +148,7 @@ def ql_x86_syscall_mach_msg_trap(ql, args, opt, ssize, rsize, rname, timeout):
     mach_msg = MachMsg(ql)
     mach_msg.read_msg_from_mem(args, ssize)
     ql.dprint(D_PROT, "[+] Recv-> Header: %s, Content: %s" % (mach_msg.header, mach_msg.content))
-    ql.macho_port_manager.deal_with_msg(mach_msg, args)
+    ql.os.macho_port_manager.deal_with_msg(mach_msg, args)
     ql_definesyscall_return(ql, 0)
 
 
@@ -161,7 +161,7 @@ def ql_syscall_access_macos(ql, path, flags, *args, **kw):
     path_str = macho_read_string(ql, path, MAX_PATH_SIZE)
     ql.nprint("access(%s, 0x%x)" % (path_str, flags))
     ql.dprint(D_PROT, "[+] access(path: %s, flags: 0x%x)" % (path_str, flags))
-    if not ql.macho_fs.isexists(path_str):
+    if not ql.os.macho_fs.isexists(path_str):
         ql_definesyscall_return(ql, ENOENT)
     else:
         ql_definesyscall_return(ql, KERN_SUCCESS)
@@ -237,7 +237,7 @@ def ql_syscall_getattrlist(ql, path, alist, attributeBuffer, bufferSize, options
 
     attr = b''
     if attrlist["commonattr"] != 0:
-        commonattr = ql.macho_fs.get_common_attr(path_str, attrlist["commonattr"])
+        commonattr = ql.os.macho_fs.get_common_attr(path_str, attrlist["commonattr"])
         if not commonattr:
             ql.dprint(D_PROT, "Error File Not Exist: %s" % (path_str))
             raise QlErrorSyscallError("Error File Not Exist")
@@ -391,7 +391,7 @@ def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buff, buffer_size):
 def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
     stat64_file = (ql_read_string(ql, stat64_pathname))
 
-    real_path = ql.macho_fs.vm_to_real_path(stat64_file)
+    real_path = ql.os.macho_fs.vm_to_real_path(stat64_file)
     ql.dprint(D_PROT, "real_path: %s" % (real_path))
     if os.path.exists(real_path) == False:
         regreturn = -1

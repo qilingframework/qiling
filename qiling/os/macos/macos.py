@@ -62,12 +62,12 @@ class QlOsMacos(QlOsPosix):
             if (self.ql.stack_size == 0):
                 self.ql.stack_size = self.QL_MACOS_PREDEFINE_STACKSIZE
 
-        self.ql.macho_task = MachoTask()
-        self.ql.macho_fs = FileSystem(self.ql)
-        self.ql.macho_mach_port = MachPort(2187)
-        self.ql.macho_port_manager = MachPortManager(self.ql, self.ql.macho_mach_port)
-        self.ql.macho_host_server = MachHostServer(self.ql)
-        self.ql.macho_task_server = MachTaskServer(self.ql)
+        self.macho_task = MachoTask()
+        self.macho_fs = FileSystem(self.ql)
+        self.macho_mach_port = MachPort(2187)
+        self.macho_port_manager = MachPortManager(self.ql, self.macho_mach_port)
+        self.macho_host_server = MachHostServer(self.ql)
+        self.macho_task_server = MachTaskServer(self.ql)
 
         if self.ql.mmap_start == 0:
             self.ql.mmap_start = self.QL_MACOS_PREDEFINE_MMAPADDRESS
@@ -84,7 +84,7 @@ class QlOsMacos(QlOsPosix):
             apples = ql_real_to_vm_abspath(self.ql, self.ql.path)
             loader = Macho(self.ql, self.ql.path, stack_sp, [self.ql.path], envs, apples, 1)
             loader.loadMacho()
-            self.ql.macho_task.min_offset = page_align_end(loader.vm_end_addr, PAGE_SIZE)
+            self.macho_task.min_offset = page_align_end(loader.vm_end_addr, PAGE_SIZE)
             self.ql.stack_address = (int(self.ql.stack_sp))
 
 
