@@ -25,6 +25,18 @@ class ELFTest(unittest.TestCase):
         ql.run()
 
 
+    def test_multithread_elf_linux_arm(self):
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux", output="debug")
+        ql.multithread = True   
+        ql.run()
+
+
+    def test_multithread_elf_linux_arm64(self):
+        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux", output="debug")
+        ql.multithread = True   
+        ql.run()
+
+
     def test_elf_freebsd_x8664(self):     
         ql = Qiling(["../examples/rootfs/x8664_freebsd/bin/x8664_hello_asm"], "../examples/rootfs/x8664_freebsd", output = "disasm")
         ql.run()

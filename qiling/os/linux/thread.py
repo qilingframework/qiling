@@ -359,6 +359,20 @@ class QlLinuxARMThread(QlLinuxThread):
         self.restore_regs()
         self.ql.register(UC_ARM_REG_C13_C0_3, self.tls)
 
+class QlLinuxARM64Thread(QlLinuxThread):
+    """docstring for QlLinuxARM64Thread"""
+    def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
+        super(QlLinuxARM64Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+
+    def clone_thread_tls(self, tls_addr):
+        pass
+
+    def store(self):
+        self.store_regs()
+
+    def restore(self):
+        self.restore_regs()
+
 class QlLinuxThreadManagement(QlThreadManagement):
     def __init__(self, ql, time_slice = 1000, count_slice = 1000, mode = COUNT_MODE, ):
         super(QlLinuxThreadManagement, self).__init__(ql)
