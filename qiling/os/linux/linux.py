@@ -45,6 +45,7 @@ class QlOsLinux(QlOsPosix):
             self.ql.arch.enable_vfp()
             ql_arm_init_kernel_get_tls(self.ql)
             self.ql.hook_intr(self.hook_syscall)
+            self.thread_class = QlLinuxARMThread
 
         # MIPS32
         elif self.ql.archtype== QL_MIPS32:
