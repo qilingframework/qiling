@@ -86,10 +86,10 @@ class QlOsFreebsd(QlOsPosix):
             if self.ql.shellcoder:
                 self.ql.uc.emu_start(self.ql.stack_address, (self.ql.stack_address + len(self.ql.shellcoder)))
             else:
-                if self.ql.elf_entry != self.loader.entry_point:
-                    self.ql.uc.emu_start(self.loader.entry_point, self.ql.elf_entry, self.ql.timeout)
+                if self.loader.elf_entry != self.loader.entry_point:
+                    self.ql.uc.emu_start(self.loader.entry_point, self.loader.elf_entry, self.ql.timeout)
                     self.ql.enable_lib_patch()
-                self.ql.uc.emu_start(self.ql.elf_entry, self.ql.until_addr, self.ql.timeout) 
+                self.ql.uc.emu_start(self.loader.elf_entry, self.ql.until_addr, self.ql.timeout)
                 
         except UcError:
             if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM):
