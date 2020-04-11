@@ -69,9 +69,6 @@ class QlOsMacos(QlOsPosix):
         self.macho_host_server = MachHostServer(self.ql)
         self.macho_task_server = MachTaskServer(self.ql)
 
-        if self.ql.mmap_start == 0:
-            self.ql.mmap_start = self.QL_MACOS_PREDEFINE_MMAPADDRESS
-
         if self.ql.shellcoder:
             self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
             self.ql.stack_address = self.ql.stack_address  + 0x200000 - 0x1000

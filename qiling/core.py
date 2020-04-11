@@ -82,7 +82,6 @@ class Qiling:
         self.archbit = ''
         self.path = ''
         self.entry_point = 0
-        self.new_stack = 0
         self.shellcode_init = 0
         self.file_des = []
         self.stdin = ql_file('stdin', sys.stdin.fileno())
@@ -93,7 +92,6 @@ class Qiling:
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
-        self.loadbase = 0
         self.timeout = 0
         self.until_addr = 0
         self.byte = 0
@@ -726,7 +724,7 @@ class Qiling:
 
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:
-            self.mem.write(self.loadbase + addr, code)
+            self.mem.write(self.load.er.loadbase + addr, code)
 
     def enable_lib_patch(self):
         for addr, code, filename in self.patch_lib:

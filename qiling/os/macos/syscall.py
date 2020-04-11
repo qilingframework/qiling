@@ -293,11 +293,11 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
     mmap_base = mmap2_addr
     need_mmap = True
 
-    if mmap2_addr != 0 and mmap2_addr < ql.mmap_start:
+    if mmap2_addr != 0 and mmap2_addr < ql.load.er.mmap_start:
         need_mmap = False
     if mmap2_addr == 0:
-        mmap_base = ql.mmap_start
-        ql.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
+        mmap_base = ql.load.er.mmap_start
+        ql.load.er.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
 
     ql.dprint(D_PROT, "[+] log mmap - mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
     ql.dprint(D_PROT, "[+] log mmap - return addr : " + hex(mmap_base))

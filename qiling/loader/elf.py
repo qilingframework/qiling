@@ -343,6 +343,8 @@ class QlLoaderELF(ELFParse):
         ELFParse.__init__(self, path, ql)
         self.ql = ql
         self.interp_base = ql.interp_base
+        self.mmap_start = ql.mmap_start
+
 
     def pack(self, data):
         if self.ql.archbit == 64:
@@ -475,15 +477,17 @@ class QlLoaderELF(ELFParse):
         # Set MMAP addr
         if self.ql.mmap_start == 0:
             if self.ql.archbit == 64:
-                self.ql.mmap_start = 0x7ffff7dd6000 - 0x40000000
+                self.mmap_start = 0x7ffff7dd6000 - 0x40000000
             elif self.ql.archtype== QL_MIPS32:
-                self.ql.mmap_start = 0x7ffef000 - 0x4000000
+                self.mmap_start = 0x7ffef000 - 0x4000000
                 if self.ql.archendian == QL_ENDIAN_EB:
-                    self.ql.mmap_start  = 0x778bf000 - 0x400000
+                    self.mmap_start  = 0x778bf000 - 0x400000
             else:
-                self.ql.mmap_start = 0xf7fd6000 - 0x400000
+                self.mmap_start = 0xf7fd6000 - 0x400000
+        else:
+            self.mmap_start = self.ql.mmap_start
 
-        self.ql.dprint(D_PROT, "[+] mmap_start is : 0x%x" % (ql.mmap_start))
+        self.ql.dprint(D_PROT, "[+] mmap_start is : 0x%x" % (self.mmap_start))
 
         # Set elf table
         elf_table = b''
@@ -584,6 +588,6 @@ class QlLoaderELF(ELFParse):
 
         self.entry_point = entry_point
         self.elf_entry = loadbase + elfhead['e_entry']
-        self.ql.new_stack = new_stack
-        self.ql.loadbase = loadbase
+        self.new_stack = new_stack
+        self.loadbase = loadbase
         self.ql.mem.add_mapinfo(new_stack, self.ql.stack_address+ql.stack_size, 'rw-', '[stack]')
