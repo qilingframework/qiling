@@ -18,44 +18,9 @@ from qiling.os.windows.handle import HandleManager, Handle
 from qiling.os.windows.thread import QlWindowsThreadManagement, QlWindowsThread
 
 
-def setup(self):
-    self.ql.heap = Heap(self.ql, self.LoaderPE.HEAP_BASE_ADDR, self.LoaderPE.HEAP_BASE_ADDR + self.LoaderPE.HEAP_SIZE)
-    self.ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
-    
-    # setup gdt
-    if self.ql.archtype== QL_X86:
-        self.gdtm = GDTManage(self.ql)
-        ql_x86_register_cs(self)
-        ql_x86_register_ds_ss_es(self)
-        ql_x86_register_fs(self)
-        ql_x86_register_gs(self)
-
-    elif self.ql.archtype== QL_X8664:
-        ql_x8664_set_gs(self.ql)     
-    
-    # user configuration
-    self.profile = ql_init_configuration(self)
-    # handle manager
-    self.handle_manager = HandleManager()
-    # registry manger
-    self.registry_manager = RegistryManager(self.ql)
-    # clipboard
-    self.clipboard = Clipboard(self.ql)
-    # fibers
-    self.fiber_manager = FiberManager(self.ql)
-    # thread manager
-    main_thread = QlWindowsThread(self.ql)
-    self.thread_manager = QlWindowsThreadManagement(self.ql, main_thread)
-    
-    # more handle manager
-    new_handle = Handle(thread=main_thread)
-    self.handle_manager.append(new_handle)
-    
-
 def ql_x86_windows_hook_mem_error(self, addr, size, value):
     #self.ql.dprint(D_PROT, "[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
-
 
 def string_unpack(string):
     return string.decode().split("\x00")[0]

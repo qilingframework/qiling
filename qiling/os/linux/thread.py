@@ -10,6 +10,7 @@ from qiling.os.thread import *
 from qiling.arch.x86_const import *
 from qiling.const import *
 from unicorn.mips_const import *
+from unicorn.arm_const import *
 
 from abc import ABC, abstractmethod
 
@@ -323,7 +324,7 @@ class QlLinuxX8664Thread(QlLinuxThread):
         self.ql.uc.msr_write(FSMSR, self.tls)
 
 class QlLinuxMIPS32Thread(QlLinuxThread):
-    """docstring for X8664Thread"""
+    """docstring for QlLinuxMIPS32Thread"""
     def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
         super(QlLinuxMIPS32Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
         self.tls = 0
@@ -340,6 +341,23 @@ class QlLinuxMIPS32Thread(QlLinuxThread):
         CONFIG3_ULR = (1 << 13)
         self.ql.register(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
         self.ql.register(UC_MIPS_REG_CP0_USERLOCAL, self.tls)
+
+class QlLinuxARMThread(QlLinuxThread):
+    """docstring for QlLinuxARMThread"""
+    def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
+        super(QlLinuxARMThread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+        self.tls = 0
+
+    def clone_thread_tls(self, tls_addr):
+        self.tls = tls_addr
+
+    def store(self):
+        self.store_regs()
+        self.tls = self.ql.register(UC_ARM_REG_C13_C0_3)
+
+    def restore(self):
+        self.restore_regs()
+        self.ql.register(UC_ARM_REG_C13_C0_3, self.tls)
 
 class QlLinuxThreadManagement(QlThreadManagement):
     def __init__(self, ql, time_slice = 1000, count_slice = 1000, mode = COUNT_MODE, ):

@@ -350,7 +350,7 @@ class QlArchX8664(QlArch):
         # invalid
         return None                       
 
-class GDTManage:
+class GDTManager:
     # Added GDT management module.
     def __init__(self, ql, GDT_ADDR = QL_X86_GDT_ADDR, GDT_LIMIT =  QL_X86_GDT_LIMIT, GDT_ENTRY_ENTRIES = 16):
         if ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT) == False:

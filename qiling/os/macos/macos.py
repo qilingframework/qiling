@@ -103,7 +103,7 @@ class QlOsMacos(QlOsPosix):
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
         if  self.ql.archtype== QL_X8664:
-            self.gdtm = GDTManage(self.ql)
+            self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
 

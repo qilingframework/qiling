@@ -45,6 +45,7 @@ class QlOsLinux(QlOsPosix):
             self.ql.arch.enable_vfp()
             ql_arm_init_kernel_get_tls(self.ql)
             self.ql.hook_intr(self.hook_syscall)
+            self.thread_class = QlLinuxARMThread
 
         # MIPS32
         elif self.ql.archtype== QL_MIPS32:
@@ -62,7 +63,7 @@ class QlOsLinux(QlOsPosix):
         # X86
         elif  self.ql.archtype== QL_X86:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfffdd000
-            self.gdtm = GDTManage(self.ql)
+            self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
             self.ql.hook_intr(self.hook_syscall)
@@ -71,7 +72,7 @@ class QlOsLinux(QlOsPosix):
         # X8664
         elif  self.ql.archtype== QL_X8664:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
-            self.gdtm = GDTManage(self.ql)
+            self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
