@@ -62,10 +62,12 @@ def ql_syscall_mips32_set_thread_area(ql, sta_area, *args, **kw):
     ql.register(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
     ql.register(UC_MIPS_REG_CP0_USERLOCAL, sta_area)
 
-    if ql.archendian == QL_ENDIAN_EB:
-        exec_shellcode(ql, ql.pc + 4, bytes.fromhex('0000102500003825'))
-    else:    
-        exec_shellcode(ql, ql.pc + 4, bytes.fromhex('2510000025380000'))
+    ql.register(UC_MIPS_REG_V0, 0)
+    ql.register(UC_MIPS_REG_A3, 0)
+    # if ql.archendian == QL_ENDIAN_EB:
+    #     exec_shellcode(ql, ql.pc + 4, bytes.fromhex('0000102500003825'))
+    # else:    
+    #     exec_shellcode(ql, ql.pc + 4, bytes.fromhex('2510000025380000'))
 
 
 def ql_syscall_arm_settls(ql, address, *args, **kw):
