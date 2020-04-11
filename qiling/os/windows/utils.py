@@ -24,11 +24,12 @@ def setup(self):
     
     # setup gdt
     if self.ql.archtype== QL_X86:
-        ql_x86_setup_gdt_segment_fs(self.ql, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE)
-        ql_x86_setup_gdt_segment_gs(self.ql, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
-        ql_x86_setup_gdt_segment_ds(self.ql)
-        ql_x86_setup_gdt_segment_cs(self.ql)
-        ql_x86_setup_gdt_segment_ss(self.ql)
+        self.gdtm = GDTManage(self.ql)
+        ql_x86_register_cs(self)
+        ql_x86_register_ds_ss_es(self)
+        ql_x86_register_fs(self)
+        ql_x86_register_gs(self)
+
     elif self.ql.archtype== QL_X8664:
         ql_x8664_set_gs(self.ql)     
     
@@ -52,7 +53,7 @@ def setup(self):
     
 
 def ql_x86_windows_hook_mem_error(self, addr, size, value):
-    self.ql.dprint(D_PROT, "[+] ERROR: unmapped memory access at 0x%x" % addr)
+    #self.ql.dprint(D_PROT, "[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
 
