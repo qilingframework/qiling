@@ -118,11 +118,11 @@ class QlOsLinux(QlOsPosix):
                     self.ql.thread_management = thread_management
                     main_thread = self.thread_class(self.ql, thread_management, total_time = self.ql.timeout)
                     main_thread.store_regs()
-                    main_thread.set_start_address(self.ql.os.loader.entry_point)
+                    main_thread.set_start_address(self.loader.entry_point)
                     thread_management.set_main_thread(main_thread)
 
                     # enable lib patch
-                    if self.ql.elf_entry != self.ql.os.loader.entry_point:
+                    if self.ql.elf_entry != self.loader.entry_point:
                         main_thread.set_until_addr(self.ql.elf_entry)
                         thread_management.run()
                         self.ql.enable_lib_patch()
@@ -137,8 +137,8 @@ class QlOsLinux(QlOsPosix):
 
                     thread_management.run()
                 else:
-                    if self.ql.elf_entry != self.ql.os.loader.entry_point:
-                        self.ql.uc.emu_start(self.ql.os.loader.entry_point, self.ql.elf_entry, self.ql.timeout)
+                    if self.ql.elf_entry != self.loader.entry_point:
+                        self.ql.uc.emu_start(self.loader.entry_point, self.ql.elf_entry, self.ql.timeout)
                         self.ql.enable_lib_patch()
                     self.ql.uc.emu_start(self.ql.elf_entry, self.ql.until_addr, self.ql.timeout)
 
