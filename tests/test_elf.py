@@ -17,6 +17,14 @@ class ELFTest(unittest.TestCase):
         ql.multithread = True   
         ql.run()
 
+
+    def test_multithread_elf_linux_x8664(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", log_dir= "multi_log")
+        ql.log_split = True
+        ql.multithread = True   
+        ql.run()
+
+
     def test_elf_freebsd_x8664(self):     
         ql = Qiling(["../examples/rootfs/x8664_freebsd/bin/x8664_hello_asm"], "../examples/rootfs/x8664_freebsd", output = "disasm")
         ql.run()

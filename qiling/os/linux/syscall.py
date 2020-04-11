@@ -24,6 +24,12 @@ from qiling.os.linux.utils import *
 from qiling.os.utils import *
 from qiling.const import *
 
+from qiling.os.posix.syscall import *
+
+
+def ql_x8664_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_child_tidptr, clone_newtls, *args, **kw):
+    ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_newtls, clone_child_tidptr, *args, **kw)
+
 
 def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
 

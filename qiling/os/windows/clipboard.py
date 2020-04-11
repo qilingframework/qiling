@@ -28,7 +28,8 @@ class Clipboard:
         If hWnd is null default to current thead id
         """
         if h_wnd == 0:
-            hWnd = self.ql.thread_manager.cur_thread.id
+            # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
+            hWnd = self.ql.os.thread_manager.cur_thread.id
 
         if self.locked_by != NOT_LOCKED and self.locked_by != h_wnd:
             return 0
@@ -51,7 +52,8 @@ class Clipboard:
             return 1
 
     def set_data(self, fmt, data):
-        hWnd = self.ql.thread_manager.cur_thread.id
+        # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
+        hWnd = self.ql.os.thread_manager.cur_thread.id
         
         if self.locked_by != hWnd:
             self.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
@@ -65,8 +67,8 @@ class Clipboard:
     def get_data(self, fmt):
         if fmt not in self.formats:
             return 0
-
-        hWnd = self.ql.thread_manager.cur_thread.id
+        # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
+        hWnd = self.ql.os.thread_manager.cur_thread.id
         
         if self.locked_by != hWnd:
             self.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
