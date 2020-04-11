@@ -34,6 +34,9 @@ from qiling.os.posix.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
+def ql_x8664_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_child_tidptr, clone_newtls, *args, **kw):
+    ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_newtls, clone_child_tidptr, *args, **kw)
+
 def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_newtls, clone_child_tidptr, *args, **kw):
     CSIGNAL = 0x000000ff	
     CLONE_VM = 0x00000100	

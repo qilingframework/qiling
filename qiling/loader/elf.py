@@ -472,7 +472,7 @@ class ELFLoader(ELFParse):
         # Set MMAP addr
         if ql.mmap_start == 0:
             if ql.archbit == 64:
-                ql.mmap_start = 0x7ffff7dd6000 - 0x4000000
+                ql.mmap_start = 0x7ffff7dd6000 - 0x40000000
             elif ql.archtype== QL_MIPS32:
                 ql.mmap_start = 0x7ffef000 - 0x400000
                 if ql.archendian == QL_ENDIAN_EB:

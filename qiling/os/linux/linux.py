@@ -171,10 +171,10 @@ class QlOsLinux(QlOsPosix):
                 self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.pc))
                 self.ql.mem.show_mapinfo()
                 try:
-                    buf = self.ql.mem.read(ql.pc, 8)
+                    buf = self.ql.mem.read(self.ql.pc, 8)
                     self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
                     self.ql.nprint("\n")
-                    self.ql_hook_code_disasm(ql, ql.pc, 64)
+                    ql_hook_code_disasm(self.ql, self.ql.pc, 64)
                 except:
                     pass
             raise

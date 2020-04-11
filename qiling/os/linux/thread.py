@@ -309,15 +309,18 @@ class QlLinuxX8664Thread(QlLinuxThread):
     """docstring for X8664Thread"""
     def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
         super(QlLinuxX8664Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+        self.tls = 0
 
     def clone_thread_tls(self, tls_addr):
-        self.ql.uc.msr_write(FSMSR, tls_addr)
+        self.tls = tls_addr
 
     def store(self):
         self.store_regs()
+        self.tls = self.ql.uc.msr_read(FSMSR)
 
     def restore(self):
         self.restore_regs()
+        self.ql.uc.msr_write(FSMSR, self.tls)
 
 class QlLinuxThreadManagement(QlThreadManagement):
     def __init__(self, ql, time_slice = 1000, count_slice = 1000, mode = COUNT_MODE):
@@ -365,7 +368,7 @@ class QlLinuxThreadManagement(QlThreadManagement):
                     self.cur_thread = self.running_thread_list[i]
                     self.ql.dprint(D_PROT, "[+] Currently running pid is: %d; tid is: %d " % (
                     os.getpid(), self.cur_thread.get_thread_id()))
-                    
+
                     if self.mode == TIME_MODE:
                         self.runing_time += self.cur_thread.run(time_slice = thread_slice, mode = TIME_MODE)
                     elif self.mode == COUNT_MODE:
