@@ -431,7 +431,7 @@ class ELFLoader(ELFParse):
 
         self.ql.dprint(D_PROT, "[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
 
-        self.ql.brk_address = mem_end + loadbase
+        self.brk_address = mem_end + loadbase
 
         # Load interpreter if there is an interpreter
 
@@ -460,13 +460,13 @@ class ELFLoader(ELFParse):
                 else:
                     self.ql.interp_base = 0xff7d5000
 
-            self.ql.dprint(D_PROT, "[+] interp_base is : 0x%x" % (ql.interp_base))
-            self.ql.mem.map(ql.interp_base, int(interp_mem_size))
-            self.ql.mem.add_mapinfo(ql.interp_base, self.ql.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
+            self.ql.dprint(D_PROT, "[+] interp_base is : 0x%x" % (self.ql.interp_base))
+            self.ql.mem.map(self.ql.interp_base, int(interp_mem_size))
+            self.ql.mem.add_mapinfo(self.ql.interp_base, self.ql.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
 
             for i in interp.parse_program_header():
                 if i['p_type'] == PT_LOAD:
-                    self.ql.mem.write(ql.interp_base + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
+                    self.ql.mem.write(self.ql.interp_base + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
             entry_point = interphead['e_entry'] + self.ql.interp_base
 
         # Set MMAP addr
@@ -579,7 +579,7 @@ class ELFLoader(ELFParse):
         #     buf = self.ql.mem.read(new_stack + i * 0x8, 8)
         #     self.ql.nprint("0x%08x : 0x%08x " % (new_stack + i * 0x4, self.ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
 
-        self.ql.entry_point = entry_point
+        self.entry_point = entry_point
         self.ql.elf_entry = loadbase + elfhead['e_entry']
         self.ql.new_stack = new_stack
         self.ql.loadbase = loadbase
