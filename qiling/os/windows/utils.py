@@ -24,7 +24,7 @@ def setup(self):
     
     # setup gdt
     if self.ql.archtype== QL_X86:
-        self.gdtm = GDTManage(self.ql)
+        self.gdtm = GDTManager(self.ql)
         ql_x86_register_cs(self)
         ql_x86_register_ds_ss_es(self)
         ql_x86_register_fs(self)
