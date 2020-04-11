@@ -410,32 +410,32 @@ class GDTManage:
     def create_selector(self, idx, flags):
         return self._create_selector(idx, flags)
 
-def ql_linux_x86_register_cs(ql):
+def ql_linux_x86_register_cs(self):
     # While debugging the linux kernel segment, the cs segment was found on the third segment of gdt.
-    ql.gdtm.register_gdt_segment(3, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
-    ql.register(UC_X86_REG_CS, ql.gdtm.create_selector(3, QL_X86_S_GDT | QL_X86_S_PRIV_3))
+    self.gdtm.register_gdt_segment(3, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
+    self.ql.register(UC_X86_REG_CS, self.gdtm.create_selector(3, QL_X86_S_GDT | QL_X86_S_PRIV_3))
 
-def ql_linux_x8664_register_cs(ql):
+def ql_linux_x8664_register_cs(self):
     # While debugging the linux kernel segment, the cs segment was found on the sixth segment of gdt.
-    ql.gdtm.register_gdt_segment(6, 0, 0xfffffffffffff000, QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
-    ql.register(UC_X86_REG_CS, ql.gdtm.create_selector(6, QL_X86_S_GDT | QL_X86_S_PRIV_3))
+    self.gdtm.register_gdt_segment(6, 0, 0xfffffffffffff000, QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
+    self.ql.register(UC_X86_REG_CS, self.gdtm.create_selector(6, QL_X86_S_GDT | QL_X86_S_PRIV_3))
 
-def ql_linux_x86_register_ds_ss_es(ql):
+def ql_linux_x86_register_ds_ss_es(self):
     # TODO : The section permission here should be QL_X86_A_PRIV_3, but I do n’t know why it can only be set to QL_X86_A_PRIV_0.
     # While debugging the Linux kernel segment, I found that the three segments DS, SS, and ES all point to the same location in the GDT table. 
     # This position is the fifth segment table of GDT.
-    ql.gdtm.register_gdt_segment(5, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0)
-    ql.register(UC_X86_REG_DS, ql.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
-    ql.register(UC_X86_REG_SS, ql.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
-    ql.register(UC_X86_REG_ES, ql.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    self.gdtm.register_gdt_segment(5, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0)
+    self.ql.register(UC_X86_REG_DS, self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    self.ql.register(UC_X86_REG_SS, self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    self.ql.register(UC_X86_REG_ES, self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
 
-def ql_linux_x8664_register_ds_ss_es(ql):
+def ql_linux_x8664_register_ds_ss_es(self):
     # TODO : The section permission here should be QL_X86_A_PRIV_3, but I do n’t know why it can only be set to QL_X86_A_PRIV_0.
     # When I debug the Linux kernel, I find that only the SS is set to the fifth segment table, and the rest are not set.
-    ql.gdtm.register_gdt_segment(5, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0)
-    # ql.register(UC_X86_REG_DS, ql.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
-    ql.register(UC_X86_REG_SS, ql.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
-    # ql.register(UC_X86_REG_ES, ql.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    self.gdtm.register_gdt_segment(5, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0)
+    # ql.register(UC_X86_REG_DS, ql.os.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    self.ql.register(UC_X86_REG_SS, self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    # ql.register(UC_X86_REG_ES, ql.os.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
 
 def ql_x86_setup_gdt_segment(ql, GDT_ADDR, GDT_LIMIT, seg_reg, index, SEGMENT_ADDR, SEGMENT_SIZE, SPORT, RPORT, GDTTYPE):
     # create segment index

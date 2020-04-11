@@ -61,24 +61,18 @@ class QlOsLinux(QlOsPosix):
         # X86
         elif  self.ql.archtype== QL_X86:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfffdd000
-            # ql_x86_setup_gdt_segment_ds(self.ql)
-            # ql_x86_setup_gdt_segment_cs(self.ql)
-            # ql_x86_setup_gdt_segment_ss(self.ql)
-            self.ql.gdtm = GDTManage(self.ql)
-            ql_linux_x86_register_cs(self.ql)
-            ql_linux_x86_register_ds_ss_es(self.ql)
+            self.gdtm = GDTManage(self.ql)
+            ql_linux_x86_register_cs(self)
+            ql_linux_x86_register_ds_ss_es(self)
             self.ql.hook_intr(self.hook_syscall)
             self.thread_class = QlLinuxX86Thread
 
         # X8664
         elif  self.ql.archtype== QL_X8664:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
-            # ql_x8664_setup_gdt_segment_ds(self.ql)
-            # ql_x8664_setup_gdt_segment_cs(self.ql)
-            # ql_x8664_setup_gdt_segment_ss(self.ql)
-            self.ql.gdtm = GDTManage(self.ql)
-            ql_linux_x86_register_cs(self.ql)
-            ql_linux_x86_register_ds_ss_es(self.ql)
+            self.gdtm = GDTManage(self.ql)
+            ql_linux_x86_register_cs(self)
+            ql_linux_x86_register_ds_ss_es(self)
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
             self.thread_class = QlLinuxX8664Thread
 
