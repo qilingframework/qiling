@@ -15,7 +15,6 @@ from qiling.loader.loader import *
 # TODO: we maybe we should use a better way to load
 # reference to xnu source code /bsd/kern/mach_loader.c
 class QlLoaderMacho(QlLoader):
-
     # macho x8664 loader 
     def __init__(self, ql, file_path, stack_sp, argvs, envs, apples, argc, dyld_path=None):
 

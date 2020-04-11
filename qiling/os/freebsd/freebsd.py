@@ -48,13 +48,6 @@ class QlOsFreebsd(QlOsPosix):
         
         if self.ql.shellcoder:
             self.ql.stack_address = self.ql.stack_address  + 0x200000 - 0x1000
-        #else:
-            # loader = ELFLoader(self.ql.path, self.ql)
-            # if loader.load_with_ld(self.ql, self.ql.stack_address + self.ql.stack_size, argv = self.ql.argv, env = self.ql.env):
-            #     raise QlErrorFileType("Unsupported FileType")
-
-            # self.ql.stack_address = (int(self.ql.new_stack))
-
 
         init_rbp = self.ql.stack_address + 0x40
         init_rdi = self.ql.stack_address
@@ -86,10 +79,10 @@ class QlOsFreebsd(QlOsPosix):
             if self.ql.shellcoder:
                 self.ql.uc.emu_start(self.ql.stack_address, (self.ql.stack_address + len(self.ql.shellcoder)))
             else:
-                if self.loader.elf_entry != self.loader.entry_point:
-                    self.ql.uc.emu_start(self.loader.entry_point, self.loader.elf_entry, self.ql.timeout)
+                if self.ql.load.er.elf_entry != self.ql.load.er.entry_point:
+                    self.ql.uc.emu_start(self.ql.load.er.entry_point, self.ql.load.er.elf_entry, self.ql.timeout)
                     self.ql.enable_lib_patch()
-                self.ql.uc.emu_start(self.loader.elf_entry, self.ql.until_addr, self.ql.timeout)
+                self.ql.uc.emu_start(self.ql.load.er.elf_entry, self.ql.until_addr, self.ql.timeout)
                 
         except UcError:
             if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM):

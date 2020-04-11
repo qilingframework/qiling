@@ -7,6 +7,7 @@ from qiling.const import *
 from qiling.arch.x86_const import *
 from qiling.os.macos.utils import *
 from qiling.os.macos.const import *
+from qiling.os.memory import Heap
 
 
 class QlLoader:
@@ -16,16 +17,15 @@ class QlLoader:
 
     def load(self):
         if self.ql.ostype == QL_MACOS:
-            from qiling.loader.macho import QlLoaderMacho
-            self.er = QlLoaderMacho(self.ql, self.ql.path, self.ql.os.stack_sp, [self.ql.path], self.ql.os.envs, self.ql.os.apples, 1)
-            self.er.loadMacho()
-            self.ql.os.macho_task.min_offset = page_align_end(self.er.vm_end_addr, PAGE_SIZE)
-            self.ql.stack_address = (int(self.ql.stack_sp))
-        
+            if not self.ql.shellcoder:
+                from qiling.loader.macho import QlLoaderMacho
+                self.er = QlLoaderMacho(self.ql, self.ql.path, self.ql.os.stack_sp, [self.ql.path], self.ql.os.envs, self.ql.os.apples, 1)
+                self.er.loadMacho()
+                self.ql.os.macho_task.min_offset = page_align_end(self.er.vm_end_addr, PAGE_SIZE)
+                self.ql.stack_address = (int(self.ql.stack_sp))
+            
         elif self.ql.ostype == QL_WINDOWS:
             from qiling.loader.pe import QlLoaderPE
-            from qiling.os.memory import Heap
-
             if self.ql.path and not self.ql.shellcoder:
                 self.er = QlLoaderPE(self.ql, path=self.ql.path)
             else:
@@ -41,12 +41,12 @@ class QlLoader:
             self.er.load()
 
         elif self.ql.ostype in (QL_LINUX, QL_FREEBSD):
-            from qiling.loader.elf import QlLoaderELF
-            self.er = QlLoaderELF(self.ql.path, self.ql)
-            if self.er.load_with_ld(self.ql, self.ql.stack_address + self.ql.stack_size, argv = self.ql.argv, env = self.ql.env):
-                raise QlErrorFileType("Unsupported FileType")
-            self.ql.stack_address  = (int(self.ql.new_stack))
-            self.ql.sp = self.ql.stack_address
+            if not self.ql.shellcoder:
+                from qiling.loader.elf import QlLoaderELF
+                self.er = QlLoaderELF(self.ql.path, self.ql)
+                if self.er.load_with_ld(self.ql, self.ql.stack_address + self.ql.stack_size, argv = self.ql.argv, env = self.ql.env):
+                    raise QlErrorFileType("Unsupported FileType")
+                self.ql.stack_address  = (int(self.ql.new_stack))
 
 
 

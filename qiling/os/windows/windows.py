@@ -59,20 +59,6 @@ class QlOsWindows(QlOs):
         if self.ql.stack_size == 0:
             self.ql.stack_size = self.stack_size
 
-        # if self.ql.path and not self.ql.shellcoder:
-        #     self.ql.load.er = PELoader(self.ql, path=self.ql.path)
-        # else:
-        #     self.ql.load.er = PELoader(self.ql, dlls=[b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
-
-        # self.ql.heap = Heap(
-        #     self.ql,
-        #     self.ql.load.er.HEAP_BASE_ADDR,
-        #     self.ql.load.er.HEAP_BASE_ADDR + self.ql.load.er.HEAP_SIZE
-        # )
-
-        # due to init memory mapping
-        # setup() must come before loader.load() and after setting up loader
-
         self.setupGDT()
         # hook win api
         self.ql.hook_code(self.hook_winapi)

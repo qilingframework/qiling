@@ -83,7 +83,6 @@ class Qiling:
         self.path = ''
         self.entry_point = 0
         self.new_stack = 0
-#        self.brk_address = 0
         self.shellcode_init = 0
         self.file_des = []
         self.stdin = ql_file('stdin', sys.stdin.fileno())
