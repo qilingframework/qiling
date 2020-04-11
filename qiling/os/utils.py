@@ -107,7 +107,6 @@ def ql_bin_to_ipv4(ip):
 def ql_init_configuration(self):
     config = configparser.ConfigParser()
     config.read(self.profile)
-    print(self.profile)
     self.ql.dprint(D_RPRT, "[+] Added configuration file")
     for section in config.sections():
         self.ql.dprint(D_RPRT, "[+] Section: %s" % section)

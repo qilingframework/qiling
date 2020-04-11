@@ -100,13 +100,13 @@ def hook_GetDesktopWindow(self, address, params):
     "hWndNewOwner": HANDLE
 })
 def hook_OpenClipboard(self, address, params):
-    return self.ql.clipboard.open(params['hWndNewOwner'])
+    return self.clipboard.open(params['hWndNewOwner'])
 
 
 # BOOL CloseClipboard();
 @winapi(cc=STDCALL, params={})
 def hook_CloseClipboard(self, address, params):
-    return self.ql.clipboard.close()
+    return self.clipboard.close()
 
 
 # HANDLE SetClipboardData(
@@ -122,7 +122,7 @@ def hook_SetClipboardData(self, address, params):
         data = bytes(params['hMem'], 'ascii', 'ignore')
     except UnicodeEncodeError:
         data = b""
-    return self.ql.clipboard.set_data(params['uFormat'], data)
+    return self.clipboard.set_data(params['uFormat'], data)
 
 
 # HANDLE GetClipboardData(
@@ -132,7 +132,7 @@ def hook_SetClipboardData(self, address, params):
     "uFormat": UINT
 })
 def hook_GetClipboardData(self, address, params):
-    data = self.ql.clipboard.get_data(params['uFormat'])
+    data = self.clipboard.get_data(params['uFormat'])
     if data:
         addr = self.ql.heap.mem_alloc(len(data))
         self.ql.mem.write(addr, data)
@@ -149,7 +149,7 @@ def hook_GetClipboardData(self, address, params):
     "uFormat": UINT
 })
 def hook_IsClipboardFormatAvailable(self, address, params):
-    rtn = self.ql.clipboard.format_available(params['uFormat'])
+    rtn = self.clipboard.format_available(params['uFormat'])
     return rtn
 
 

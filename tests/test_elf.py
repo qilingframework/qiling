@@ -12,10 +12,10 @@ from qiling.os.posix import syscall
 class ELFTest(unittest.TestCase):
 
 
-    # Not Stable, not suitable to use it as test
-    # def test_multithread_elf_linux_x86(self):
-    #    ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", output="debug")
-    #    ql.run()
+    def test_multithread_elf_linux_x86(self):
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", output="debug")
+        ql.multithread = True   
+        ql.run()
 
     def test_elf_freebsd_x8664(self):     
         ql = Qiling(["../examples/rootfs/x8664_freebsd/bin/x8664_hello_asm"], "../examples/rootfs/x8664_freebsd", output = "disasm")
@@ -283,11 +283,19 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
-    # FIXME: Still having issue with test_elf_linux_mips32
     def test_elf_linux_mips32_static(self):
        ql = Qiling(["../examples/rootfs/mips32_linux/bin/mips32_hello_static"], "../examples/rootfs/mips32_linux")
        ql.run()
        del ql
+
+
+    def test_elf_linux_mips32(self):
+        def random_generator(size=6, chars=string.ascii_uppercase + string.digits):
+            return ''.join(random.choice(chars) for x in range(size))
+
+        ql = Qiling(["../examples/rootfs/mips32_linux/bin/mips32_hello", random_generator(random.randint(1,99))], "../examples/rootfs/mips32_linux")
+        ql.run()
+        del ql
 
 
     def test_elf_linux_arm64_posix_syscall(self):
@@ -392,14 +400,6 @@ class ELFTest(unittest.TestCase):
         ql.run()
         del ql
 
-
-    def test_elf_linux_mips32(self):
-        def random_generator(size=6, chars=string.ascii_uppercase + string.digits):
-            return ''.join(random.choice(chars) for x in range(size))
-
-        ql = Qiling(["../examples/rootfs/mips32_linux/bin/mips32_hello", random_generator(random.randint(1,99))], "../examples/rootfs/mips32_linux")
-        ql.run()
-        del ql
 
     def test_elf_linux_mips32el(self):
         def random_generator(size=6, chars=string.ascii_uppercase + string.digits):

@@ -260,9 +260,9 @@ def hook_GetCurrentProcess(self, address, params):
 def hook_TerminateProcess(self, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
-    if process == 0x0 or process == self.ql.load_os.DEFAULT_IMAGE_BASE:
+    if process == 0x0 or process == self.DEFAULT_IMAGE_BASE:
         self.ql.uc.emu_stop()
-        self.ql.load_os.PE_RUN = False
+        self.PE_RUN = False
     ret = 1
     return ret
 

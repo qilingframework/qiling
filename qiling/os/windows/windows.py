@@ -94,7 +94,7 @@ class QlOsWindows(QlOs):
                 try:
                     winapi_func(self, address, {})
                 except Exception:
-                    self.ql.dprint(D_PROT, "[!] %s Exception Found" % winapi_name)
+                    self.ql.nprint("[!] %s Exception Found" % winapi_name)
                     raise QlErrorSyscallError("[!] Windows API Implementation Error")
             else:
                 self.ql.nprint("[!] %s is not implemented\n" % winapi_name)
@@ -105,11 +105,8 @@ class QlOsWindows(QlOs):
     def run(self):
         ql_setup_output(self.ql)
 
-        if self.ql.until_addr == 0:
-            if self.ql.archbit == 32:
-                self.ql.until_addr = QL_ARCHBIT32_EMU_END
-            else:
-                self.ql.until_addr = QL_ARCHBIT64_EMU_END            
+        if (self.ql.until_addr == 0):
+            self.ql.until_addr = self.QL_EMU_END
         try:
             if self.ql.shellcoder:
                 self.ql.uc.emu_start(self.ql.code_address, self.ql.code_address + len(self.ql.shellcoder))

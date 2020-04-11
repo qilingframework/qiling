@@ -21,7 +21,7 @@ from qiling.exception import *
     "dwFlsIndex": UINT
 })
 def hook_FlsFree(self, address, params):
-    return self.ql.fiber_manager.free(params['dwFlsIndex'])
+    return self.fiber_manager.free(params['dwFlsIndex'])
 
 
 # LPVOID FlsGetValue(
@@ -30,7 +30,7 @@ def hook_FlsFree(self, address, params):
 @winapi(cc=STDCALL, params={
     "dwFlsIndex": UINT})
 def hook_FlsGetValue(self, address, params):
-    return self.ql.fiber_manager.get(params['dwFlsIndex'])
+    return self.fiber_manager.get(params['dwFlsIndex'])
 
 
 # LPVOID FlsSetValue(
@@ -41,7 +41,7 @@ def hook_FlsGetValue(self, address, params):
     "lpFlsValue": POINTER
 })
 def hook_FlsSetValue(self, address, params):
-    return self.ql.fiber_manager.set(params['dwFlsIndex'], params['lpFlsValue'])
+    return self.fiber_manager.set(params['dwFlsIndex'], params['lpFlsValue'])
 
 
 # DWORD FlsAlloc(
@@ -54,6 +54,6 @@ def hook_FlsAlloc(self, address, params):
     # global cb = params['lpCallback']
     cb = params['lpCallback']
     if cb:
-        return self.ql.fiber_manager.alloc(cb)
+        return self.fiber_manager.alloc(cb)
     else:
-        return self.ql.fiber_manager.alloc()
+        return self.fiber_manager.alloc()

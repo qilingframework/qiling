@@ -4,12 +4,15 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 # A Simple Windows Clipboard Simulation
 
+#from qiling.os.windows.windows import QlOsWindows
+
 NOT_LOCKED = -1
 
 
 class Clipboard:
 
     def __init__(self, ql):
+        #super(Clipboard, self).__init__(ql)
 
         self.locked_by = NOT_LOCKED
         self.data = b"Default Clipboard Data"
@@ -49,6 +52,7 @@ class Clipboard:
 
     def set_data(self, fmt, data):
         hWnd = self.ql.thread_manager.cur_thread.id
+        
         if self.locked_by != hWnd:
             self.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
             return 0
@@ -63,6 +67,7 @@ class Clipboard:
             return 0
 
         hWnd = self.ql.thread_manager.cur_thread.id
+        
         if self.locked_by != hWnd:
             self.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
             return 0

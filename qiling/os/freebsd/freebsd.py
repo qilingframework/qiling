@@ -23,7 +23,6 @@ from qiling.os.posix.posix import QlOsPosix
 class QlOsFreebsd(QlOsPosix):
     def __init__(self, ql):
         super(QlOsFreebsd, self).__init__(ql)
-        self.ql.os = self
         self.load()
         
     def load(self):   
@@ -77,12 +76,12 @@ class QlOsFreebsd(QlOsPosix):
 
 
     def hook_syscall(self, intno= None):
-        return self.ql.os.load_syscall()
+        return self.load_syscall()
 
 
     def run(self):
         if (self.ql.until_addr == 0):
-            self.ql.until_addr = QL_ARCHBIT64_EMU_END
+            self.ql.until_addr = self.QL_EMU_END
         try:
             if self.ql.shellcoder:
                 self.ql.uc.emu_start(self.ql.stack_address, (self.ql.stack_address + len(self.ql.shellcoder)))

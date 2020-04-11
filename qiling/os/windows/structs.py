@@ -319,11 +319,11 @@ class Token:
         # We create a Sid Structure, set its handle and return the value
         sid = Sid(ql)
         handle = Handle(sid=sid)
-        # FIXME:
-        # we need this to be in a more proper way
-        # not self.ql.os but maybe just self
+        
+        # FIXME : self.ql.os this is ugly
         self.ql.os.handle_manager.append(handle)
-        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = ql.pack(handle.id)
+
+        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = self.ql.pack(handle.id)
 
     def get(self, value):
         res = self.struct[value]

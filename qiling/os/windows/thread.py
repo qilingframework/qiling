@@ -18,7 +18,7 @@ def thread_scheduler(ql, address, size):
         ql.thread_manager.do_schedule()
 
 
-class Context:
+class Context():
     def __init__(self, ql):
         self.ql = ql
 
@@ -92,11 +92,11 @@ class Context:
 
 
 # A Simple Thread Manager
-class QlWindowsThreadManager(QlThread):
+class QlWindowsThreadManagement(QlThread):
     TIME_SLICE = 10
 
     def __init__(self, ql, cur_thread):
-        super(QlWindowsThreadManager, self).__init__(ql)
+        super(QlWindowsThreadManagement, self).__init__(ql)
         self.ql = ql
         # main thread
         self.cur_thread = cur_thread
@@ -111,10 +111,10 @@ class QlWindowsThreadManager(QlThread):
         self.threads.append(thread)
 
     def need_schedule(self):
-        return self.cur_thread.is_stop() or self.ins_count % QlWindowsThreadManager.TIME_SLICE == 0
+        return self.cur_thread.is_stop() or self.ins_count % QlWindowsThreadManagement.TIME_SLICE == 0
 
     def do_schedule(self):
-        if self.cur_thread.is_stop() or self.ins_count % QlWindowsThreadManager.TIME_SLICE == 0:
+        if self.cur_thread.is_stop() or self.ins_count % QlWindowsThreadManagement.TIME_SLICE == 0:
             if len(self.threads) <= 1:
                 return
             else:
