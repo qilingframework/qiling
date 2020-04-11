@@ -100,9 +100,8 @@ class Macho(QlLoader):
             else:
                 self.ql.entry_point = self.proc_entry + self.slide
             self.ql.nprint("[+] Binary Entry Point: 0x{:X}".format(self.binary_entry))
-            self.ql.macho_entry = self.binary_entry + self.slide
-            self.ql.loadbase = self.ql.macho_entry
-            self.ql.load_base =  self.slide
+            self.macho_entry = self.binary_entry + self.slide
+            self.ql.loadbase = self.macho_entry
 
         return self.proc_entry
         

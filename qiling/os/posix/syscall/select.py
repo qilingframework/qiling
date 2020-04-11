@@ -34,6 +34,7 @@ from qiling.os.posix.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
+
 def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, *args, **kw):
 
     regreturn = 0
