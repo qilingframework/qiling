@@ -63,8 +63,8 @@ class QlOsLinux(QlOsPosix):
         elif  self.ql.archtype== QL_X86:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfffdd000
             self.gdtm = GDTManage(self.ql)
-            ql_linux_x86_register_cs(self)
-            ql_linux_x86_register_ds_ss_es(self)
+            ql_x86_register_cs(self)
+            ql_x86_register_ds_ss_es(self)
             self.ql.hook_intr(self.hook_syscall)
             self.thread_class = QlLinuxX86Thread
 
@@ -72,8 +72,8 @@ class QlOsLinux(QlOsPosix):
         elif  self.ql.archtype== QL_X8664:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
             self.gdtm = GDTManage(self.ql)
-            ql_linux_x86_register_cs(self)
-            ql_linux_x86_register_ds_ss_es(self)
+            ql_x86_register_cs(self)
+            ql_x86_register_ds_ss_es(self)
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
             self.thread_class = QlLinuxX8664Thread
 
@@ -116,21 +116,9 @@ class QlOsLinux(QlOsPosix):
                     # start multithreading
                     thread_management = QlLinuxThreadManagement(self.ql)
                     self.ql.thread_management = thread_management
-
-                    if self.ql.archtype== QL_ARM:
-                        thread_set_tls = arm_thread_set_tls
-                    elif self.ql.archtype== QL_MIPS32:
-                        thread_set_tls = mips32_thread_set_tls
-                    elif self.ql.archtype== QL_X86:
-                        thread_set_tls = x86_thread_set_tls
-                    else:
-                        thread_set_tls = None
-
                     main_thread = self.thread_class(self.ql, thread_management, total_time = self.ql.timeout)
-
                     main_thread.store_regs()
                     main_thread.set_start_address(self.ql.entry_point)
-
                     thread_management.set_main_thread(main_thread)
 
                     # enable lib patch
