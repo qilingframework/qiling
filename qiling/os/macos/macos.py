@@ -114,9 +114,9 @@ class QlOsMacos(QlOsPosix):
         
         map_commpage(self.ql)
         
-        # self.thread_management = QlMachoThreadManagement(self.ql)
+        self.thread_management = QlMachoThreadManagement(self.ql)
         self.macho_thread = QlMachoThread(self.ql)
-        # self.thread_management.cur_thread = self.ql.macho_thread
+        self.thread_management.cur_thread = self.macho_thread
 
         # load_commpage not wroking with QL_ARM64, yet
         if  self.ql.archtype== QL_X8664:
