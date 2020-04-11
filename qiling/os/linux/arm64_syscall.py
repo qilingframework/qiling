@@ -22,6 +22,7 @@ def map_syscall(syscall_num):
         0x60 : "ql_syscall_set_tid_address",
         0x62 : "ql_syscall_futex",
         0x63 : "ql_syscall_set_robust_list",
+        0x65 : "ql_syscall_nanosleep",
         0x86 : "ql_syscall_rt_sigaction",
         0x87 : "ql_syscall_rt_sigprocmask",
         0xA0 : "ql_syscall_uname",

@@ -59,6 +59,7 @@ class QlOsLinux(QlOsPosix):
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
             self.ql.arch.enable_vfp()
             self.ql.hook_intr(self.hook_syscall)
+            self.thread_class = QlLinuxARM64Thread
 
         # X86
         elif  self.ql.archtype== QL_X86:
