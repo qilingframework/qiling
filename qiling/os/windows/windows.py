@@ -8,6 +8,7 @@ import types
 from unicorn import *
 
 from qiling.arch.x86_const import *
+from qiling.arch.x86 import *
 from qiling.os.utils import *
 from qiling.const import *
 
@@ -82,11 +83,11 @@ class QlOsWindows(QlOs):
     def setupGDT(self):
         # setup gdt
         if self.ql.archtype == QL_X86:
-            ql_x86_setup_gdt_segment_fs(self.ql, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE)
-            ql_x86_setup_gdt_segment_gs(self.ql, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
-            ql_x86_setup_gdt_segment_ds(self.ql)
-            ql_x86_setup_gdt_segment_cs(self.ql)
-            ql_x86_setup_gdt_segment_ss(self.ql)
+            self.gdtm = GDTManager(self.ql)
+            ql_x86_register_cs(self)
+            ql_x86_register_ds_ss_es(self)
+            ql_x86_register_fs(self)
+            ql_x86_register_gs(self)
         elif self.ql.archtype == QL_X8664:
             ql_x8664_set_gs(self.ql)
 

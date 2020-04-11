@@ -17,6 +17,7 @@ from qiling.os.windows.fiber import FiberManager
 from qiling.os.windows.handle import HandleManager, Handle
 from qiling.os.windows.thread import QlWindowsThreadManagement, QlWindowsThread
 
+
 def ql_x86_windows_hook_mem_error(self, addr, size, value):
     #self.ql.dprint(D_PROT, "[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
