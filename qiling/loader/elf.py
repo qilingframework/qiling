@@ -474,7 +474,7 @@ class ELFLoader(ELFParse):
             if self.ql.archbit == 64:
                 self.ql.mmap_start = 0x7ffff7dd6000 - 0x40000000
             elif self.ql.archtype== QL_MIPS32:
-                self.ql.mmap_start = 0x7ffef000 - 0x400000
+                self.ql.mmap_start = 0x7ffef000 - 0x4000000
                 if self.ql.archendian == QL_ENDIAN_EB:
                     self.ql.mmap_start  = 0x778bf000 - 0x400000
             else:

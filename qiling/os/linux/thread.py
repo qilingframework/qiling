@@ -381,7 +381,7 @@ class QlLinuxThreadManagement(QlThreadManagement):
                     self.cur_thread = self.running_thread_list[i]
                     self.ql.dprint(D_PROT, "[+] Currently running pid is: %d; tid is: %d " % (
                     os.getpid(), self.cur_thread.get_thread_id()))
-
+                    
                     if self.mode == TIME_MODE:
                         self.runing_time += self.cur_thread.run(time_slice = thread_slice, mode = TIME_MODE)
                     elif self.mode == COUNT_MODE:
