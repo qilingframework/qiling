@@ -82,43 +82,45 @@ def ql_syscall_arm_settls(ql, address, *args, **kw):
     if ql.thread_management != None and ql.multithread == True:
         ql.thread_management.cur_thread.special_settings_arg = address
 
-    mode = ql.arch.check_thumb()
-    if mode == UC_MODE_THUMB:
-        sc = '''
-            .THUMB
-             _start:
-                push {r1}
-                adr r1, main
-                bx r1
+    # mode = ql.arch.check_thumb()
+    # if mode == UC_MODE_THUMB:
+    #     sc = '''
+    #         .THUMB
+    #          _start:
+    #             push {r1}
+    #             adr r1, main
+    #             bx r1
 
-            .code 32
-            main:
-                mcr p15, 0, r0, c13, c0, 3
-                adr r1, ret_to
-                add r1, r1, #1
-                bx r1
-            .THUMB
-            ret_to:
-                pop {r1}
-                pop {pc}
-            '''
-        sc = b'\x02\xb4\x01\xa1\x08G\x00\x00p\x0f\r\xee\x04\x10\x8f\xe2\x01\x10\x81\xe2\x11\xff/\xe1\x02\xbc\x00\xbd'
-        # if ql.archendian == QL_ENDIAN_EB:
-        #    sc = ql_lsbmsb_convert(ql, sc, 2)
-    else:
-        sc = b'p\x0f\r\xee\x04\xf0\x9d\xe4'
-        # if ql.archendian == QL_ENDIAN_EB:
-        #    sc = ql_lsbmsb_convert(ql, sc)
+    #         .code 32
+    #         main:
+    #             mcr p15, 0, r0, c13, c0, 3
+    #             adr r1, ret_to
+    #             add r1, r1, #1
+    #             bx r1
+    #         .THUMB
+    #         ret_to:
+    #             pop {r1}
+    #             pop {pc}
+    #         '''
+    #     sc = b'\x02\xb4\x01\xa1\x08G\x00\x00p\x0f\r\xee\x04\x10\x8f\xe2\x01\x10\x81\xe2\x11\xff/\xe1\x02\xbc\x00\xbd'
+    #     # if ql.archendian == QL_ENDIAN_EB:
+    #     #    sc = ql_lsbmsb_convert(ql, sc, 2)
+    # else:
+    #     sc = b'p\x0f\r\xee\x04\xf0\x9d\xe4'
+    #     # if ql.archendian == QL_ENDIAN_EB:
+    #     #    sc = ql_lsbmsb_convert(ql, sc)
 
-    codestart = 4
-    ql_map_shellcode(ql, codestart, sc, QL_ARCHBIT32_SHELLCODE_ADDR, QL_ARCHBIT32_SHELLCODE_SIZE)
-    codelen = 0
-    if mode == UC_MODE_THUMB:
-        codelen = 1
+    # codestart = 4
+    # ql_map_shellcode(ql, codestart, sc, QL_ARCHBIT32_SHELLCODE_ADDR, QL_ARCHBIT32_SHELLCODE_SIZE)
+    # codelen = 0
+    # if mode == UC_MODE_THUMB:
+    #     codelen = 1
     
-    ql.mem.write(ql.sp - 4, ql.pack32(ql.pc))
-    ql.register(UC_ARM_REG_SP, ql.sp - 4)
-    ql.register(UC_ARM_REG_PC, QL_SHELLCODE_ADDR + codestart + codelen)
+    # ql.mem.write(ql.sp - 4, ql.pack32(ql.pc))
+    # ql.register(UC_ARM_REG_SP, ql.sp - 4)
+    # ql.register(UC_ARM_REG_PC, QL_SHELLCODE_ADDR + codestart + codelen)
+
+    ql.register(UC_ARM_REG_C13_C0_3, address)
 
     ql.mem.write(QL_ARM_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
     ql.register(UC_ARM_REG_R0, address)
