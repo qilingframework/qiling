@@ -204,7 +204,7 @@ def ql_hook_code_disasm(ql, address, size):
             REG_VAL = ql.register(reg)
             ql.dprint(D_PROT, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
     
-            
+
 def ql_setup_output(ql):
     if ql.output in (QL_OUT_DISASM, QL_OUT_DUMP):
         if ql.output == QL_OUT_DUMP:

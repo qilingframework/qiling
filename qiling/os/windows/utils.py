@@ -56,7 +56,6 @@ def ql_x86_windows_hook_mem_error(self, addr, size, value):
     #self.ql.dprint(D_PROT, "[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
-
 def string_unpack(string):
     return string.decode().split("\x00")[0]
 
