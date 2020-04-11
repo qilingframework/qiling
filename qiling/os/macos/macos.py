@@ -82,9 +82,9 @@ class QlOsMacos(QlOsPosix):
             stack_sp = self.QL_MACOS_PREDEFINE_STACKADDRESS + self.QL_MACOS_PREDEFINE_STACKSIZE
             envs = env_dict_to_array(self.ql.env)
             apples = ql_real_to_vm_abspath(self.ql, self.ql.path)
-            loader = Macho(self.ql, self.ql.path, stack_sp, [self.ql.path], envs, apples, 1)
-            loader.loadMacho()
-            self.macho_task.min_offset = page_align_end(loader.vm_end_addr, PAGE_SIZE)
+            self.loader = Macho(self.ql, self.ql.path, stack_sp, [self.ql.path], envs, apples, 1)
+            self.loader.loadMacho()
+            self.macho_task.min_offset = page_align_end(self.loader.vm_end_addr, PAGE_SIZE)
             self.ql.stack_address = (int(self.ql.stack_sp))
 
 

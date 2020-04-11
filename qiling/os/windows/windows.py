@@ -60,14 +60,14 @@ class QlOsWindows(QlOs):
             self.ql.stack_size = self.stack_size
 
         if self.ql.path and not self.ql.shellcoder:
-            self.PELoader = PELoader(self.ql, path=self.ql.path)
+            self.loader = PELoader(self.ql, path=self.ql.path)
         else:
-            self.PELoader = PELoader(self.ql, dlls=[b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
+            self.loader = PELoader(self.ql, dlls=[b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
 
         self.ql.heap = Heap(
             self.ql,
-            self.PELoader.HEAP_BASE_ADDR,
-            self.PELoader.HEAP_BASE_ADDR + self.PELoader.HEAP_SIZE
+            self.loader.HEAP_BASE_ADDR,
+            self.loader.HEAP_BASE_ADDR + self.loader.HEAP_SIZE
         )
 
         # due to init memory mapping
@@ -76,7 +76,7 @@ class QlOsWindows(QlOs):
         self.setupComponents()
 
         # after setup the ENV
-        self.PELoader.load()
+        self.loader.load()
         # hook win api
         self.ql.hook_code(self.hook_winapi)
 
@@ -112,10 +112,10 @@ class QlOsWindows(QlOs):
 
     # hook WinAPI in PE EMU
     def hook_winapi(self, int, address, size):
-        if address in self.PELoader.import_symbols:
-            winapi_name = self.PELoader.import_symbols[address]['name']
+        if address in self.loader.import_symbols:
+            winapi_name = self.loader.import_symbols[address]['name']
             if winapi_name is None:
-                winapi_name = Mapper[self.PELoader.import_symbols[address]['dll']][self.PELoader.import_symbols[address]['ordinal']]
+                winapi_name = Mapper[self.loader.import_symbols[address]['dll']][self.loader.import_symbols[address]['ordinal']]
             else:
                 winapi_name = winapi_name.decode()
             winapi_func = None
