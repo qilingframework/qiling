@@ -49,7 +49,7 @@ class QlLoader:
                 self.er = QlLoaderELF(self.ql.path, self.ql)
                 if self.er.load_with_ld(self.ql, self.ql.stack_address + self.ql.stack_size, argv = self.ql.argv, env = self.ql.env):
                     raise QlErrorFileType("Unsupported FileType")
-                self.ql.stack_address  = (int(self.ql.new_stack))
+                self.ql.stack_address  = (int(self.er.new_stack))
 
 
 

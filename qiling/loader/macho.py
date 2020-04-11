@@ -90,6 +90,11 @@ class QlLoaderMacho(QlLoader):
                             self.using_dyld = True
 
         if depth == 0:
+            if self.ql.mmap_start == 0:
+                self.mmap_start = self.ql.os.QL_MACOS_PREDEFINE_MMAPADDRESS
+            else:
+                slef.mmap_start = self.ql.mmap_start
+
             self.ql.stack_sp = self.loadStack()
             if self.using_dyld:
                 self.ql.nprint("[+] ProcEntry: {}".format(hex(self.proc_entry)))
@@ -99,7 +104,7 @@ class QlLoaderMacho(QlLoader):
                 self.ql.entry_point = self.proc_entry + self.slide
             self.ql.nprint("[+] Binary Entry Point: 0x{:X}".format(self.binary_entry))
             self.macho_entry = self.binary_entry + self.slide
-            self.ql.loadbase = self.macho_entry
+            self.loadbase = self.macho_entry
 
         return self.proc_entry
         
