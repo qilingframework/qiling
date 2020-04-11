@@ -1,5 +1,5 @@
-#### Pre-Loader settings
-In pre-loader(during initialization) state, there are few options can be configured
+#### Pre-Loader Settings
+In pre-loader(during initialization) state, there are multiple options that can be configured.
 
 required:
 ```
@@ -24,7 +24,7 @@ log_console
 log_dir = path to all the logs
 ```
 #### Pre-Execution Settings
-APIs allow users to instuments a executeable file/shellcode before executions
+APIs allow users to instuments an executeable file/shellcode before execution.
 ```
 ql.set_callback
 ql.patch

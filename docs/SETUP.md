@@ -1,6 +1,6 @@
 #### Detailed installation guide
 
-For this installation guide, we use Ubuntu desktop 18.04.3 LTS 64 bit. You can grab a copy of official Ubuntu ISO images from [Ubuntu CD mirrors](https://launchpad.net/ubuntu/+cdmirrors). Update the system and install pip3, git and cmake
+For this installation guide, we use Ubuntu desktop 18.04.3 LTS 64 bit. You can grab a copy of the official Ubuntu ISO images from [Ubuntu CD mirrors](https://launchpad.net/ubuntu/+cdmirrors). Update the system and install pip3, git and cmake
 ```
 sudo apt-get update
 sudo apt-get upgrade
@@ -26,14 +26,14 @@ python setup.py install
 
 #### Important note on Windows DLLs and registry
 
-Due to distribution restriction, Qiling Framework will not bundle Microsoft Windows DLL files and registry. Please copy respective DLLs and registry from Microsoft Windows System. For Windows 10 usually found in C:\Windows\system32 (64bit dll) and C:\Windows\SysWOW64 (32bits dll) and place them in $rootfs/dlls
+Due to distribution restriction, Qiling Framework will not bundle Microsoft Windows DLL files and registry. Please copy respective DLLs and registry from a Microsoft Windows System. For Windows 10, files found in C:\Windows\system32 (64bit dll) and C:\Windows\SysWOW64 (32bits dll) need to be place in $rootfs/dlls
 
-We also included a dlls "collector" script, copy into Windows and it will start to collect dlls and registrty
+We also included a dlls "collector" script, copy into Windows and it will start to collect dlls and registry
 ```
 qiling/examples/scripts/dllscollector.bat
 ```
 
-Any other dlls and registry references, as below:
+For other dlls and registry references, please refer below:
 
 For 32bit Windows dlls, please refer to [DLLX86.txt](https://github.com/qilingframework/qiling/blob/master/docs/DLLX86.txt) for Windows 32bit DLLs hashes and file version
 
@@ -85,10 +85,10 @@ Once completed workaround installation, run Qiling Framework setup.
 ---
 
 #### Setting Qiling Framework docker container
-If quick and easy way to deploy Qiling Framework is preferred, spin it with docker container.
+If a quick and easy way to deploy Qiling Framework is preferred, spin it up with a docker container.
 
 ##### Building Qiling Framework docker image
-Building the Qiling Framework docker by running command below within source directory.
+Build the Qiling Framework docker by running the command below within source directory.
 
 ```
 docker build -t qiling:1.0 .

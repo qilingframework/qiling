@@ -1,6 +1,6 @@
 # Qiling Gdbserver
 
-Qiling supports **GDB remote debugging**, meaning it will work with gdbserver compatible client (eg, IDApro). As of now, Qiling's gdbserver is not as complete as GDB's gdbserver, but we are very close to qemu-gdbserver. There are still some manual steps need to be done for more comprehensive debugging (eg, manually rebase the base address in IDAPro) 
+Qiling supports **GDB remote debugging**, it will work with gdbserver compatible clients (e.g., IDApro). Currently, Qiling's gdbserver is not as complete as GDB's gdbserver, however we are very close to qemu-gdbserver. There are still some manual steps required for more comprehensive debugging (e.g., manually rebase the base address in IDAPro) 
 
 ### Turning on gdbserver
 
@@ -25,20 +25,20 @@ if __name__ == "__main__":
     test_gdb(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux")
 ```
 
-By default, gdbserver listens at **localhost**, port **9999** and emulated code will pause at entrypoint.
+By default, gdbserver listens on **localhost**, port **9999** and emulated code will pause at entrypoint.
 
 ---
 
 ### Debug with IDA
 
-Only tested in IDAPro 7.4
+Only tested on IDAPro 7.4
 
-1. run Qiling code, with gdbserver enable, like in the sample script above.
-2. Configure IDAPro as below
+1. Run Qiling code, with gdbserver enable, as shown in the sample script above.
+2. Configure IDAPro like below
 
 ![GDB-IDA](./GDBSERVER-IDA.png)
 
-3. Make sure you select the architecture of target code
+3. Make sure to select the correct architecture of target code
 4. Make sure you rebase your code so breakpoint will work
 
 ---
@@ -151,11 +151,11 @@ x/10xg
 
 1. Add support for more architectures
 2. Added support for more GDB commands
-3. Make it more GDB gdbserver
+3. Make it similar to GDB gdbserver
 
 ---
 
 ## Credits
 
-- Steal some ideas from [uDdbg](https://github.com/iGio90/uDdbg)
+- Inspired by ideas from [uDdbg](https://github.com/iGio90/uDdbg)
 
