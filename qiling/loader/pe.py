@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct
 import sys
 import os
 import string
@@ -234,7 +233,8 @@ class Process(QlLoader):
 
         self.ldr_list.append(ldr_table_entry)
 
-class LoaderPE(Process, QlLoader):
+
+class PELoader(Process, QlLoader):
     def __init__(self, ql, path=None, dlls=None):
         super(QlLoader, self).__init__()
         self.ql = ql
