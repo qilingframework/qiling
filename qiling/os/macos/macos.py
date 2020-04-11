@@ -103,9 +103,9 @@ class QlOsMacos(QlOsPosix):
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
         if  self.ql.archtype== QL_X8664:
-            ql_x8664_setup_gdt_segment_ds(self.ql)
-            ql_x8664_setup_gdt_segment_cs(self.ql)
-            ql_x8664_setup_gdt_segment_ss(self.ql)
+            self.gdtm = GDTManage(self.ql)
+            ql_x86_register_cs(self)
+            ql_x86_register_ds_ss_es(self)
 
         ql_setup_output(self.ql)
         

@@ -71,10 +71,10 @@ class QlOsFreebsd(QlOsPosix):
         ql_setup_output(self.ql)
         self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
-        ql_x8664_setup_gdt_segment_cs(self.ql)
-        ql_x8664_setup_gdt_segment_ss(self.ql)
-
-
+        self.gdtm = GDTManage(self.ql)
+        ql_x86_register_cs(self)
+        ql_x86_register_ds_ss_es(self)
+        
     def hook_syscall(self, intno= None):
         return self.load_syscall()
 
