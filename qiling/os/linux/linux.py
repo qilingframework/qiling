@@ -93,8 +93,8 @@ class QlOsLinux(QlOsPosix):
             if (self.ql.stack_size == 0):
                 self.ql.stack_size = self.QL_LINUX_PREDEFINE_STACKSIZE
             self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
-            loader = ELFLoader(self.ql.path, self.ql)
-            if loader.load_with_ld(self.ql, self.ql.stack_address + self.ql.stack_size, argv = self.ql.argv, env = self.ql.env):
+            self.loader = ELFLoader(self.ql.path, self.ql)
+            if self.loader.load_with_ld(self.ql, self.ql.stack_address + self.ql.stack_size, argv = self.ql.argv, env = self.ql.env):
                 raise QlErrorFileType("Unsupported FileType")
             self.ql.stack_address  = (int(self.ql.new_stack))
 
@@ -120,16 +120,16 @@ class QlOsLinux(QlOsPosix):
                     self.ql.thread_management = thread_management
                     main_thread = self.thread_class(self.ql, thread_management, total_time = self.ql.timeout)
                     main_thread.store_regs()
-                    main_thread.set_start_address(self.ql.entry_point)
+                    main_thread.set_start_address(self.loader.entry_point)
                     thread_management.set_main_thread(main_thread)
 
                     # enable lib patch
-                    if self.ql.elf_entry != self.ql.entry_point:
-                        main_thread.set_until_addr(self.ql.elf_entry)
+                    if self.loader.elf_entry != self.loader.entry_point:
+                        main_thread.set_until_addr(self.loader.elf_entry)
                         thread_management.run()
                         self.ql.enable_lib_patch()
 
-                        main_thread.set_start_address(self.ql.elf_entry)
+                        main_thread.set_start_address(self.loader.elf_entry)
                         main_thread.set_until_addr(self.ql.until_addr)
                         main_thread.running()
 
@@ -139,10 +139,10 @@ class QlOsLinux(QlOsPosix):
 
                     thread_management.run()
                 else:
-                    if self.ql.elf_entry != self.ql.entry_point:
-                        self.ql.uc.emu_start(self.ql.entry_point, self.ql.elf_entry, self.ql.timeout)
+                    if self.loader.elf_entry != self.loader.entry_point:
+                        self.ql.uc.emu_start(self.loader.entry_point, self.loader.elf_entry, self.ql.timeout)
                         self.ql.enable_lib_patch()
-                    self.ql.uc.emu_start(self.ql.elf_entry, self.ql.until_addr, self.ql.timeout)
+                    self.ql.uc.emu_start(self.loader.elf_entry, self.ql.until_addr, self.ql.timeout)
 
         except:
             if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
