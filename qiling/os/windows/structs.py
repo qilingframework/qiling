@@ -320,7 +320,7 @@ class Token:
         sid = Sid(ql)
         handle = Handle(sid=sid)
         
-        # FIXME : self.ql.os this is ugly
+        # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
         self.ql.os.handle_manager.append(handle)
 
         self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = self.ql.pack(handle.id)

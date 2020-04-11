@@ -44,7 +44,7 @@ def setup(self):
     self.fiber_manager = FiberManager(self.ql)
     # thread manager
     main_thread = QlWindowsThread(self.ql)
-    self.ql.thread_manager = QlWindowsThreadManagement(self.ql, main_thread)
+    self.thread_manager = QlWindowsThreadManagement(self.ql, main_thread)
     
     # more handle manager
     new_handle = Handle(thread=main_thread)
