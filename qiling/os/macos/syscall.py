@@ -126,7 +126,7 @@ def ql_x86_syscall_mach_reply_port(ql, *args, **kw):
 # 0x1b
 def ql_x86_syscall_thread_self_trap(ql, *args, **kw):
     port_manager = ql.macho_port_manager
-    thread_port = port_manager.get_thread_port(ql.macho_thread)
+    thread_port = port_manager.get_thread_port(ql.os.macho_thread)
     ql.dprint(D_PROT, "[+] [mach] thread_self_trap: ret: %s" % (thread_port))
     ql_definesyscall_return(ql, thread_port)
 
@@ -506,9 +506,9 @@ def ql_syscall_bsdthread_register(ql, threadstart, wqthread, flags, stack_addr_h
 
 # 0x174
 def ql_syscall_thread_selfid(ql, *args, **kw):
-    id = ql.macho_thread.id
-    ql.nprint("thread_selfid() = %d" % (id))
-    ql_definesyscall_return(ql, id)
+    thread_id = ql.os.macho_thread.id
+    ql.nprint("thread_selfid() = %d" % (thread_id))
+    ql_definesyscall_return(ql, thread_id)
 
 # 0x18e
 def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
