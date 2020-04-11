@@ -245,6 +245,8 @@ class QlLoaderPE(Process, QlLoader):
         self.PE_IMAGE_SIZE = 0
         self.PE_ENTRY_POINT = 0
         self.sizeOfStackReserve = 0
+        # compatible with ql.__enable_bin_patch()
+        self.loadbase = 0
 
         if self.ql.archtype== QL_X86:
             self.STRUCTERS_LAST_ADDR = FS_SEGMENT_ADDR
