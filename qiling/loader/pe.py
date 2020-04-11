@@ -236,7 +236,7 @@ class Process(QlLoader):
 
 class QlLoaderPE(Process, QlLoader):
     def __init__(self, ql, path=None, dlls=None):
-        super(QlLoader, self).__init__()
+        super()
         self.ql = ql
         self.path = path
         self.init_dlls = dlls

@@ -17,7 +17,7 @@ from qiling.loader.loader import *
 class QlLoaderMacho(QlLoader):
     # macho x8664 loader 
     def __init__(self, ql, file_path, stack_sp, argvs, envs, apples, argc, dyld_path=None):
-
+        super()
         self.macho_file     = MachoParser(ql, file_path)
         self.loading_file   = self.macho_file
         self.slide          = 0x0000000000000000
@@ -39,7 +39,6 @@ class QlLoaderMacho(QlLoader):
         self.vm_end_addr    = 0x0
 
     def loadMacho(self, depth=0, isdyld=False):
-
         # MAX load depth 
         if depth > 5:
             return

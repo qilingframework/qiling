@@ -13,7 +13,6 @@ def ql_loader_setup(ql, function_name = None):
     if not ql_is_valid_arch(ql.archtype):
         raise QlErrorArch("[!] Invalid Arch %s" % ql.archtype)
 
-
     if function_name == None:
         loader_str = "loader"
         function_name = "QlLoader"

@@ -338,8 +338,9 @@ class ELFParse(QlLoader):
         elif self.ql.archbit == 32:
             return self.parse_program_header32()
 
-class QlLoaderELF(ELFParse):
+class QlLoaderELF(ELFParse, QlLoader):
     def __init__(self, path, ql):
+        super()
         ELFParse.__init__(self, path, ql)
         self.ql = ql
         self.interp_base = ql.interp_base
