@@ -12,7 +12,7 @@ from unicorn.mips_const import *
 
 from qiling.const import *
 
-from qiling.loader.elf import *
+
 from qiling.arch.x86 import *
 
 from qiling.os.utils import *
@@ -93,12 +93,7 @@ class QlOsLinux(QlOsPosix):
             if (self.ql.stack_size == 0):
                 self.ql.stack_size = self.QL_LINUX_PREDEFINE_STACKSIZE
             self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
-            loader = ELFLoader(self.ql.path, self.ql)
-            if loader.load_with_ld(self.ql, self.ql.stack_address + self.ql.stack_size, argv = self.ql.argv, env = self.ql.env):
-                raise QlErrorFileType("Unsupported FileType")
-            self.ql.stack_address  = (int(self.ql.new_stack))
 
-        self.ql.sp = self.ql.stack_address
         ql_setup_output(self.ql)
 
 

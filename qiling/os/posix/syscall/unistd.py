@@ -490,8 +490,9 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
         ql.env              = env
         ql.path             = real_path
         ql.mem.map_info     = []
-        
+
         ql.os.load()
+        ql.load.load() 
         ql.run()
 
     ql.nprint("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))

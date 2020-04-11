@@ -234,7 +234,7 @@ class Process(QlLoader):
         self.ldr_list.append(ldr_table_entry)
 
 
-class PELoader(Process, QlLoader):
+class QlLoaderPE(Process, QlLoader):
     def __init__(self, ql, path=None, dlls=None):
         super(QlLoader, self).__init__()
         self.ql = ql

@@ -48,12 +48,12 @@ class QlOsFreebsd(QlOsPosix):
         
         if self.ql.shellcoder:
             self.ql.stack_address = self.ql.stack_address  + 0x200000 - 0x1000
-        else:
-            loader = ELFLoader(self.ql.path, self.ql)
-            if loader.load_with_ld(self.ql, self.ql.stack_address + self.ql.stack_size, argv = self.ql.argv, env = self.ql.env):
-                raise QlErrorFileType("Unsupported FileType")
+        #else:
+            # loader = ELFLoader(self.ql.path, self.ql)
+            # if loader.load_with_ld(self.ql, self.ql.stack_address + self.ql.stack_size, argv = self.ql.argv, env = self.ql.env):
+            #     raise QlErrorFileType("Unsupported FileType")
 
-            self.ql.stack_address = (int(self.ql.new_stack))
+            # self.ql.stack_address = (int(self.ql.new_stack))
 
 
         init_rbp = self.ql.stack_address + 0x40

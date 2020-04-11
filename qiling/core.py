@@ -12,6 +12,7 @@ from qiling.os.posix.filestruct import *
 from qiling.exception import *
 from qiling.utils import *
 from qiling.os.utils import *
+from qiling.loader.utils import *
 from qiling.arch.utils import *
 from qiling.os.thread import *
 from qiling.debugger.utils import *
@@ -236,6 +237,7 @@ class Qiling:
         """
         self.arch = ql_arch_setup(self)
         self.os = ql_os_setup(self)
+        self.load = ql_loader_setup(self)
 
     def run(self):
         # setup strace filter for logger

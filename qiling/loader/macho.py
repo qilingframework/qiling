@@ -10,11 +10,11 @@ from qiling.loader.macho_parser.parser import *
 from qiling.loader.macho_parser.const import *
 from qiling.exception import *
 from qiling.const import *
-from qiling.loader.loader import QlLoader
+from qiling.loader.loader import *
 
 # TODO: we maybe we should use a better way to load
 # reference to xnu source code /bsd/kern/mach_loader.c
-class Macho(QlLoader):
+class QlLoaderMacho(QlLoader):
 
     # macho x8664 loader 
     def __init__(self, ql, file_path, stack_sp, argvs, envs, apples, argc, dyld_path=None):

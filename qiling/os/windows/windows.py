@@ -12,11 +12,11 @@ from qiling.arch.x86 import *
 from qiling.os.utils import *
 from qiling.const import *
 
-from qiling.loader.pe import PELoader
+#from qiling.loader.pe import PELoader
 from qiling.os.windows.dlls import *
 from qiling.os.windows.const import *
 from qiling.os.windows.const import Mapper
-from qiling.os.memory import Heap
+#from qiling.os.memory import Heap
 from qiling.os.windows.utils import *
 
 from qiling.os.os import QlOs
@@ -59,24 +59,21 @@ class QlOsWindows(QlOs):
         if self.ql.stack_size == 0:
             self.ql.stack_size = self.stack_size
 
-        if self.ql.path and not self.ql.shellcoder:
-            self.loader = PELoader(self.ql, path=self.ql.path)
-        else:
-            self.loader = PELoader(self.ql, dlls=[b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
+        # if self.ql.path and not self.ql.shellcoder:
+        #     self.ql.load.er = PELoader(self.ql, path=self.ql.path)
+        # else:
+        #     self.ql.load.er = PELoader(self.ql, dlls=[b"ntdll.dll", b"kernel32.dll", b"user32.dll"])
 
-        self.ql.heap = Heap(
-            self.ql,
-            self.loader.HEAP_BASE_ADDR,
-            self.loader.HEAP_BASE_ADDR + self.loader.HEAP_SIZE
-        )
+        # self.ql.heap = Heap(
+        #     self.ql,
+        #     self.ql.load.er.HEAP_BASE_ADDR,
+        #     self.ql.load.er.HEAP_BASE_ADDR + self.ql.load.er.HEAP_SIZE
+        # )
 
         # due to init memory mapping
         # setup() must come before loader.load() and after setting up loader
-        self.setupGDT()
-        self.setupComponents()
 
-        # after setup the ENV
-        self.loader.load()
+        self.setupGDT()
         # hook win api
         self.ql.hook_code(self.hook_winapi)
 
@@ -112,10 +109,10 @@ class QlOsWindows(QlOs):
 
     # hook WinAPI in PE EMU
     def hook_winapi(self, int, address, size):
-        if address in self.loader.import_symbols:
-            winapi_name = self.loader.import_symbols[address]['name']
+        if address in self.ql.load.er.import_symbols:
+            winapi_name = self.ql.load.er.import_symbols[address]['name']
             if winapi_name is None:
-                winapi_name = Mapper[self.loader.import_symbols[address]['dll']][self.loader.import_symbols[address]['ordinal']]
+                winapi_name = Mapper[self.ql.load.er.import_symbols[address]['dll']][self.ql.load.er.import_symbols[address]['ordinal']]
             else:
                 winapi_name = winapi_name.decode()
             winapi_func = None
@@ -143,6 +140,7 @@ class QlOsWindows(QlOs):
                     raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
     def run(self):
+
         ql_setup_output(self.ql)
 
         if (self.ql.until_addr == 0):

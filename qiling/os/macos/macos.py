@@ -9,7 +9,7 @@ from unicorn import *
 from unicorn.x86_const import *
 from unicorn.arm64_const import *
 
-from qiling.loader.macho import *
+
 from qiling.arch.x86 import *
 
 from qiling.os.macos.utils import *
@@ -79,13 +79,9 @@ class QlOsMacos(QlOsPosix):
         else:
             self.ql.macho_vmmap_end = self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS
             self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
-            stack_sp = self.QL_MACOS_PREDEFINE_STACKADDRESS + self.QL_MACOS_PREDEFINE_STACKSIZE
-            envs = env_dict_to_array(self.ql.env)
-            apples = ql_real_to_vm_abspath(self.ql, self.ql.path)
-            self.loader = Macho(self.ql, self.ql.path, stack_sp, [self.ql.path], envs, apples, 1)
-            self.loader.loadMacho()
-            self.macho_task.min_offset = page_align_end(self.loader.vm_end_addr, PAGE_SIZE)
-            self.ql.stack_address = (int(self.ql.stack_sp))
+            self.stack_sp = self.QL_MACOS_PREDEFINE_STACKADDRESS + self.QL_MACOS_PREDEFINE_STACKSIZE
+            self.envs = env_dict_to_array(self.ql.env)
+            self.apples = ql_real_to_vm_abspath(self.ql, self.ql.path)
 
 
     def hook_syscall(self, intno= None, int = None):
