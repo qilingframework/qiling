@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import sys, struct, platform, ntpath
+import sys
+import platform
+import ntpath
 import os as pyos
 from unicorn import *
 
@@ -178,7 +180,7 @@ class Qiling:
         if not ql_is_valid_arch(self.archtype):
             raise QlErrorArch("[!] Invalid Arch")
 
-        # chceck for supported OS type    
+        # chceck for supported OS type
         if self.ostype not in QL_OS:
             raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos'")
         
@@ -192,18 +194,16 @@ class Qiling:
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
         
-        """
-        Define file is 32 or 64bit and check file endian
-        QL_ENDIAN_EL = Little Endian || QL_ENDIAN_EB = Big Endian
-        QL_ENDIAN_EB is define during ql_elf_check_archtype()
-        """
+        ##############################################################
+        # Define file is 32 or 64bit and check file endian           #
+        # QL_ENDIAN_EL = Little Endian || QL_ENDIAN_EB = Big Endian  #
+        # QL_ENDIAN_EB is define during ql_elf_check_archtype()      #
+        ##############################################################
         self.archbit = ql_get_arch_bits(self.archtype)
         if self.archtype not in (QL_ENDINABLE):
             self.archendian = QL_ENDIAN_EL
         
-        """
-        Endian for shellcode needs to set manually
-        """
+        #Endian for shellcode needs to set manually
         if self.shellcoder and self.bigendian == True and self.archtype in (QL_ENDINABLE):
             self.archendian = QL_ENDIAN_EB
         elif self.shellcoder:
@@ -213,25 +213,27 @@ class Qiling:
         if self.archbit:
             self.pointersize = (self.archbit // 8)            
 
-        """
-        Load memory module
-        """
+        ##########
+        # Memory #
+        ##########
         self.mem = ql_os_setup(self, "mem")
   
-        """
-        Load architecture's and os module
-        ql.pc, ql.sp and etc
-        """
+        #####################################
+        # Architecture                      #
+        #####################################
+        # Load architecture's and os module #
+        # ql.pc, ql.sp and etc              #
+        #####################################
         self.arch = ql_arch_setup(self)
 
-        """
-        Load os module
-        """
+        ######
+        # OS #
+        ######
         self.os = ql_os_setup(self)
 
-        """
-        Load the loader
-        """
+        ##########
+        # Loader #
+        ##########
         self.loader = ql_loader_setup(self)
 
 
@@ -284,10 +286,10 @@ class Qiling:
             raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUT_DEBUG or else ql.verbose must be 0")
 
         if self.output == QL_OUT_DUMP:
-                self.verbose = 99
+            self.verbose = 99
 
         if int(self.verbose) >= level and self.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                self.nprint(*args, **kw)
+            self.nprint(*args, **kw)
 
 
     def addr_to_str(self, addr, short=False, endian="big"):
@@ -297,13 +299,10 @@ class Qiling:
     def asm2bytes(self, runasm, arm_thumb=None):
         return ql_asm2bytes(self, self.archtype, runasm, arm_thumb)
     
-
-    """
-    replace linux or windows syscall/api with custom api/syscall
-    if replace function name is needed, first syscall must be available
-    - ql.set_syscall(0x04, my_syscall_write)
-    - ql.set_syscall("write", my_syscall_write)
-    """
+    # replace linux or windows syscall/api with custom api/syscall
+    # if replace function name is needed, first syscall must be available
+    # - ql.set_syscall(0x04, my_syscall_write)
+    # - ql.set_syscall("write", my_syscall_write)
     def set_syscall(self, syscall_cur, syscall_new):
         if self.ostype in (QL_POSIX):
             if isinstance(syscall_cur, int):

@@ -8,13 +8,13 @@ This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
 
-import sys, logging, importlib, pefile, os
-import struct
+import logging
+import importlib
+import pefile
+import os
 from .os.const import *
 from .exception import *
 from .const import *
-from os.path import dirname, exists
-from os import makedirs
 
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
@@ -340,24 +340,24 @@ def ql_setup_logger(logger_name=None):
 
 
 def ql_setup_logging_env(ql, logger=None):
-        if not os.path.exists(ql.log_dir):
-            os.makedirs(ql.log_dir, 0o755)
+    if not os.path.exists(ql.log_dir):
+        os.makedirs(ql.log_dir, 0o755)
 
-        pid = os.getpid()
+    pid = os.getpid()
 
-        if ql.append:
-            ql.log_filename = ql.targetname + "_" + ql.append          
-        else:
-            ql.log_filename = ql.targetname
-        
-        ql.log_file = os.path.join(ql.log_dir, ql.log_filename) 
+    if ql.append:
+        ql.log_filename = ql.targetname + "_" + ql.append          
+    else:
+        ql.log_filename = ql.targetname
+    
+    ql.log_file = os.path.join(ql.log_dir, ql.log_filename) 
 
-        _logger = ql_setup_logging_file(ql.output, ql.log_file + "_" + str(pid), logger)
-        return _logger
+    _logger = ql_setup_logging_file(ql.output, ql.log_file + "_" + str(pid), logger)
+    return _logger
 
 
 def ql_setup_logging_stream(ql, logger=None):
-    ql_mode = ql.output
+    #ql_mode = ql.output
 
     # setup StreamHandler for logging to stdout
     if ql.log_console == True:
@@ -396,6 +396,8 @@ def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
 
 class Strace_filter(logging.Filter):
     def __init__(self, func_names):
+        super(Strace_filter, self).__init__()
         self.filter_list = func_names.split(",") if isinstance(func_names, str) else func_names
+
     def filter(self, record):
         return any((record.getMessage().startswith(each) for each in self.filter_list))
