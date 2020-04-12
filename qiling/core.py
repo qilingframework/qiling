@@ -249,41 +249,8 @@ class Qiling:
         if self.strace_filter != None and self.output == QL_OUT_DEFAULT:
             self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
 
-        # debugger init
-        if self.debugger is not None:
-            try:
-                remotedebugsrv, ip, port = '', '', ''
-                remotedebugsrv, ip, port = self.debugger.split(':')
-            except:
-                ip, port = '', ''
-
-            remotedebugsrv = "gdb"
-            
-            try:
-                ip, port = self.debugger.split(':')
-                # If only ip:port is defined, remotedebugsrv is always gdb
-            except:
-                if ip is None:
-                    ip = "127.0.0.0"
-                if port is None:
-                    port = "9999" 
-   
-
-            remotedebugsrv = debugger_convert(remotedebugsrv)
-
-            if remotedebugsrv not in (QL_DEBUGGER):
-                raise QlErrorOutput("[!] Error: Debugger not supported\n")       
-            else:
-                try:
-                    if self.debugger is True:
-                        ql_debugger(self, remotedebugsrv)
-                    else:
-                        ql_debugger(self, remotedebugsrv, ip, port)
-                
-                except KeyboardInterrupt:
-                    if self.remotedebugsession():
-                        self.remotedebugsession.close()
-                    raise QlErrorOutput("[!] Remote debugging session ended\n")
+        # init debugger
+        ql_debugger_init(self)
 
         # patch binary
         self.__enable_bin_patch()
