@@ -18,7 +18,7 @@ from qiling.loader.utils import *
 from qiling.arch.utils import *
 from qiling.os.thread import *
 from qiling.debugger.utils import *
-from qiling.os.memory import QlMemoryManager
+
 
 __version__ = "0.9"
 
@@ -158,7 +158,7 @@ class Qiling:
         self.log_file_fd = _logger
             
         # OS dependent configuration for stdio
-        if self.ostype in (QL_LINUX, QL_FREEBSD, QL_MACOS):
+        if self.ostype in QL_POSIX:
             if stdin != 0:
                 self.stdin = stdin
 
@@ -213,24 +213,29 @@ class Qiling:
         if self.archbit:
             self.pointersize = (self.archbit // 8)            
 
-        #Load memory module
-        #FIXME: We need to refactor this, maybe
-        if self.archbit == 64:
-            max_addr = 0xFFFFFFFFFFFFFFFF
-        elif self.archbit == 32:
-            max_addr = 0xFFFFFFFF
-            
-        try:
-            self.mem = QlMemoryManager(self, max_addr)
-        except:
-            raise QlErrorArch("[!] Cannot load Memory Management module")    
-
+<<<<<<< HEAD
+        ##########
+        # Memory #
+        ##########
+        self.mem = ql_os_setup(self, "mem")
+  
         #####################################
         # Architecture                      #
         #####################################
         # Load architecture's and os module #
         # ql.pc, ql.sp and etc              #
         #####################################
+=======
+        """
+        Load memory module
+        """
+        self.mem = ql_os_setup(self, "mem")
+  
+        """
+        Load architecture's and os module
+        ql.pc, ql.sp and etc
+        """
+>>>>>>> upstream/dev
         self.arch = ql_arch_setup(self)
 
         ######
@@ -249,41 +254,8 @@ class Qiling:
         if self.strace_filter != None and self.output == QL_OUT_DEFAULT:
             self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
 
-        # debugger init
-        if self.debugger is not None:
-            try:
-                remotedebugsrv, ip, port = '', '', ''
-                remotedebugsrv, ip, port = self.debugger.split(':')
-            except:
-                ip, port = '', ''
-
-            remotedebugsrv = "gdb"
-            
-            try:
-                ip, port = self.debugger.split(':')
-                # If only ip:port is defined, remotedebugsrv is always gdb
-            except:
-                if ip is None:
-                    ip = "127.0.0.0"
-                if port is None:
-                    port = "9999" 
-   
-
-            remotedebugsrv = debugger_convert(remotedebugsrv)
-
-            if remotedebugsrv not in (QL_DEBUGGER):
-                raise QlErrorOutput("[!] Error: Debugger not supported\n")       
-            else:
-                try:
-                    if self.debugger is True:
-                        ql_debugger(self, remotedebugsrv)
-                    else:
-                        ql_debugger(self, remotedebugsrv, ip, port)
-                
-                except KeyboardInterrupt:
-                    if self.remotedebugsession():
-                        self.remotedebugsession.close()
-                    raise QlErrorOutput("[!] Remote debugging session ended\n")
+        # init debugger
+        ql_debugger_init(self)
 
         # patch binary
         self.__enable_bin_patch()

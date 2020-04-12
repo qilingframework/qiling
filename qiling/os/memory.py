@@ -21,11 +21,17 @@ class QlMemoryManager:
     https://github.com/zeropointdynamics/zelos/blob/master/src/zelos/memory.py
     """
 
-    def __init__(self, ql, max_addr):
+    def __init__(self, ql):
         self.ql = ql
-        self.max_mem_addr = max_addr
-        self.max_addr = max_addr
         self.map_info = []
+        
+        if self.ql.archbit == 64:
+            max_addr = 0xFFFFFFFFFFFFFFFF
+        elif self.ql.archbit == 32:
+            max_addr = 0xFFFFFFFF
+
+        self.max_addr = max_addr
+        self.max_mem_addr = max_addr            
 
 
     def add_mapinfo(self, mem_s, mem_e, mem_p, mem_info):
