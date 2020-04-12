@@ -15,49 +15,34 @@ from .utils import catch_KeyboardInterrupt
 # Callback definitions #
 ########################
 def _callback_type3(uc, intno, pack_data):
-    # unpack what we packed for hook_add()
-    ql, user_data, callback = pack_data
+    ql, user_data, callback = pack_data     # unpack what we packed for hook_add()
     if user_data:
-        callback(ql, intno, user_data)
-    else:
-        # callback does not require user_data
-        callback(ql, intno)
+        return callback(ql, intno, user_data)
+    return callback(ql, intno)              # callback does not require user_data
 
 def _callback_type4(uc, addr, size, pack_data):
-    # unpack what we packed for hook_add()
     ql, user_data, callback = pack_data
     if user_data:
-        callback(ql, addr, size, user_data)
-    else:
-        # callback does not require user_data
-        callback(ql, addr, size)
+        return callback(ql, addr, size, user_data)
+    return callback(ql, addr, size)
 
 def _callback_type4a(uc, _addr, _size, pack_data):
-    # unpack what we packed for hook_add()
     ql, user_data, callback = pack_data
     if user_data:
-        callback(ql, user_data)
-    else:
-        # callback does not require user_data
-        callback(ql)
+        return callback(ql, user_data)
+    return callback(ql)
 
 def _callback_type6(uc, access, addr, size, value, pack_data):
-    # unpack what we packed for hook_add()
     ql, user_data, callback = pack_data
     if user_data:
-        callback(ql, addr, size, value, user_data)
-    else:
-        # callback does not require user_data
-        callback(ql, addr, size, value)
+        return callback(ql, addr, size, value, user_data)
+    return callback(ql, addr, size, value)
 
 def _callback_x86_syscall(uc, pack_data):
-    # unpack what we packed for hook_add()
     ql, user_data, callback = pack_data
     if user_data:
-        callback(ql, user_data)
-    else:
-        # callback does not require user_data
-        callback(ql)
+        return callback(ql, user_data)
+    return callback(ql)
 
 ###############
 # Class Hooks #
