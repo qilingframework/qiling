@@ -67,7 +67,8 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     if ql.archtype== QL_MIPS32:
         clone_child_tidptr = ql.unpack32(ql.mem.read(clone_child_tidptr, 4))
 
-
+    if ql.thread_management == None:
+        return
     f_th = ql.thread_management.cur_thread	
     newtls = None
     set_child_tid_addr = None
