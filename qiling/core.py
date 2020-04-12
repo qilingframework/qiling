@@ -215,7 +215,7 @@ class Qiling:
 
         """
         Load memory module
-        FIXME: We need to refactor this
+        FIXME: We need to refactor this, maybe
         """
         if self.archbit == 64:
             max_addr = 0xFFFFFFFFFFFFFFFF
@@ -234,10 +234,13 @@ class Qiling:
         self.arch = ql_arch_setup(self)
 
         """
-        Load and os module
+        Load os module
         """
         self.os = ql_os_setup(self)
 
+        """
+        Load the loader
+        """
         self.loader = ql_loader_setup(self)
 
 
