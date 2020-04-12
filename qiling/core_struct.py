@@ -9,7 +9,8 @@
 ##############################################
 
 import struct
-from .const import *
+from .const import QL_ENDIAN_EB
+from .exception import QlErrorStructConversion
 
 def unpack64(self, x):
     return struct.unpack('Q', x)[0]
@@ -67,29 +68,25 @@ def pack(self, data):
         return self.pack64(data)
     elif self.archbit == 32:
         return self.pack32(data)
-    else:
-        raise
+    raise QlErrorStructConversion("[!] Qiling pack conversion failed!")
 
 def packs(self, data):
     if self.archbit == 64:
         return self.pack64s(data)
     elif self.archbit == 32:
         return self.pack32s(data)
-    else:
-        raise
+    raise QlErrorStructConversion("[!] Qiling packs conversion failed!")
 
 def unpack(self, data):
     if self.archbit == 64:
         return self.unpack64(data)
     elif self.archbit == 32:
         return self.unpack32(data)
-    else:
-        raise
+    raise QlErrorStructConversion("[!] Qiling unpack conversion failed!")
 
 def unpacks(self, data):
     if self.archbit == 64:
         return self.unpack64s(data)
     elif self.archbit == 32:
         return self.unpack32s(data)
-    else:
-        raise
+    raise QlErrorStructConversion("[!] Qiling unpacks conversion failed!")

@@ -514,4 +514,3 @@ def read_cstring(self, address):
 def post_report(self):
     self.ql.dprint(D_INFO, "[+] Syscalls and number of invocations")
     self.ql.dprint(D_INFO, "[-] " + str(list(self.syscall_count.items())))
-

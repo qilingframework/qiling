@@ -14,6 +14,9 @@ class QlErrorBase(Exception):
     def __str__(self):
         return self.msg
 
+class QlErrorStructConversion(QlErrorBase):
+    pass
+
 class QlErrorFileNotFound(QlErrorBase):
     pass
 
@@ -69,6 +72,6 @@ class QlGDTError(QlErrorBase):
     pass
 
 def QlPrintException(msg):
-    exc_type, exc_value, exc_traceback = sys.exc_info()
+    _, _, exc_traceback = sys.exc_info()
     print(msg + repr(traceback.format_tb(exc_traceback, limit=1) ) )
     
