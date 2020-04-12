@@ -78,7 +78,7 @@ def test_pe_win_x86_gandcrab():
             for path in ql.os.profile["PATHS"]:
                 val = ql.os.profile["PATHS"][path].replace(old_name, new_name)
                 ql.os.profile["PATHS"][path] = val
-                ql.dprint(D_PROT, ql.os.profile["PATHS"][path])
+                ql.dprint(D_INFO, ql.os.profile["PATHS"][path])
         elif key == "SYSTEM" and subkey == "computer_name":
             length = random.randint(0, 15)
             new_name = ""

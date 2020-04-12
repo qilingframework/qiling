@@ -410,11 +410,11 @@ class QlLinuxThreadManagement(QlThreadManagement):
 
     def run(self):
         if len(self.running_thread_list) == 0:
-            self.ql.dprint(D_PROT, '[!] No executable thread!')
+            self.ql.dprint(D_INFO, '[!] No executable thread!')
             return
 
         if self.main_thread not in self.running_thread_list:
-            self.ql.dprint(D_PROT, '[!] No main thread!')
+            self.ql.dprint(D_INFO, '[!] No main thread!')
             return
 
         while True:
@@ -428,7 +428,7 @@ class QlLinuxThreadManagement(QlThreadManagement):
             if running_thread_num != 0:
                 for i in range(running_thread_num):
                     self.cur_thread = self.running_thread_list[i]
-                    self.ql.dprint(D_PROT, "[+] Currently running pid is: %d; tid is: %d " % (
+                    self.ql.dprint(D_INFO, "[+] Currently running pid is: %d; tid is: %d " % (
                     os.getpid(), self.cur_thread.get_thread_id()))
                     
                     if self.mode == TIME_MODE:

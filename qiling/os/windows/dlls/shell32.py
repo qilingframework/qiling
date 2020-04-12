@@ -34,7 +34,7 @@ def hook_SHGetFileInfoW(self, address, params):
     if flags == SHGFI_LARGEICON:
         return 1
     else:
-        self.dprint(D_PROT, flags)
+        self.dprint(D_INFO, flags)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -171,17 +171,17 @@ def hook_SHGetSpecialFolderPathW(self, address, params):
         path = self.profile["PATHS"]["appdata"]
         # We always create the directory
         appdata_dir = path.split("C:\\")[1].replace("\\", "/")
-        self.ql.dprint(D_PROT, "[+] dir path: %s" % path)
+        self.ql.dprint(D_INFO, "[+] dir path: %s" % path)
         path_emulated = os.path.join(self.ql.rootfs, appdata_dir)
-        self.ql.dprint(D_PROT, "[!] emulated path: %s" % path_emulated)
+        self.ql.dprint(D_INFO, "[!] emulated path: %s" % path_emulated)
         self.ql.mem.write(dst, (path + "\x00").encode("utf-16le"))
         # FIXME: Somehow winodws path is wrong
         if not os.path.exists(path_emulated):
             try:
                 os.makedirs(path_emulated, 0o755)
-                self.ql.dprint(D_PROT, "[!] os.makedirs completed")
+                self.ql.dprint(D_INFO, "[!] os.makedirs completed")
             except:
-                self.ql.dprint(D_PROT, "[!] os.makedirs fail")    
+                self.ql.dprint(D_INFO, "[!] os.makedirs fail")    
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 1

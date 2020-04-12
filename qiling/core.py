@@ -191,7 +191,7 @@ class Qiling:
         # check verbose, only can check after ouput being defined
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
-
+        
         """
         Define file is 32 or 64bit and check file endian
         QL_ENDIAN_EL = Little Endian || QL_ENDIAN_EB = Big Endian
@@ -316,7 +316,7 @@ class Qiling:
             elif isinstance(fd, logging.StreamHandler):
                 fd.flush()
 
-    # debug print out, always use with verbose level with dprint(D_PROT,"helloworld")
+    # debug print out, always use with verbose level with dprint(D_INFO,"helloworld")
     def dprint(self, level, *args, **kw):
         try:
             self.verbose = int(self.verbose)

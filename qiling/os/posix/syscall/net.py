@@ -78,7 +78,7 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, *args, **kw):
         socketcall_flags = ql.unpack(ql.mem.read(socketcall_args + ql.byte * 3, ql.byte))
         ql_syscall_recv(ql, socketcall_sockfd, socketcall_buf, socketcall_len, socketcall_flags, 0, 0)
     else:
-        ql.dprint(D_PROT, "[!] error call %d" % socketcall_call)
+        ql.dprint(D_INFO, "[!] error call %d" % socketcall_call)
         ql.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
 
 

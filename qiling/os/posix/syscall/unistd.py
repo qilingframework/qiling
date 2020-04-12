@@ -181,15 +181,15 @@ def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, 
     ql.nprint("facccessat (%d, 0x%x, 0x%x) = %d" %(faccessat_dfd, faccessat_filename, faccessat_mode, regreturn))
 
     if regreturn == -1:
-        ql.dprint(D_PROT, "[!] File Not Found or Skipped: %s" % access_path)
+        ql.dprint(D_INFO, "[!] File Not Found or Skipped: %s" % access_path)
     else:
-        ql.dprint(D_PROT, "[+] File Found: %s" % access_path)
+        ql.dprint(D_INFO, "[+] File Found: %s" % access_path)
 
 
 def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, *args, **kw):
     lseek_ofset = ql.unpacks(ql.pack(lseek_ofset))
     regreturn = 0
-    ql.dprint(D_PROT, "lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
+    ql.dprint(D_INFO, "lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
     try:
         regreturn = ql.file_des[lseek_fd].lseek(lseek_ofset, lseek_origin)
     except OSError:
@@ -237,7 +237,7 @@ def ql_syscall_brk(ql, brk_input, *args, **kw):
     regreturn = ql.loader.brk_address
 
     ql_definesyscall_return(ql, regreturn)
-    ql.dprint(D_PROT, "[+] brk return(0x%x)" % regreturn)
+    ql.dprint(D_INFO, "[+] brk return(0x%x)" % regreturn)
 
 
 def ql_syscall_access(ql, access_path, access_mode, *args, **kw):
@@ -255,9 +255,9 @@ def ql_syscall_access(ql, access_path, access_mode, *args, **kw):
 
     ql.nprint("access(%s, 0x%x) = %d " % (relative_path, access_mode, regreturn))
     if regreturn == 0:
-        ql.dprint(D_PROT, "[+] File found: %s" % relative_path)
+        ql.dprint(D_INFO, "[+] File found: %s" % relative_path)
     else:
-        ql.dprint(D_PROT, "[!] No such file or directory")
+        ql.dprint(D_INFO, "[!] No such file or directory")
 
 
 def ql_syscall_close(ql, close_fd, *args, **kw):
@@ -302,8 +302,8 @@ def ql_syscall_read(ql, read_fd, read_buf, read_len, *args, **kw):
     ql.nprint("read(%d, 0x%x, 0x%x) = %d" % (read_fd, read_buf, read_len, regreturn))
 
     if data:
-        ql.dprint(D_PROT, "[+] read() CONTENT:")
-        ql.dprint(D_PROT, "%s" % data)
+        ql.dprint(D_INFO, "[+] read() CONTENT:")
+        ql.dprint(D_INFO, "%s" % data)
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -315,8 +315,8 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
         buf = ql.mem.read(write_buf, write_count)
         ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         if buf:
-            ql.dprint(D_PROT, "[+] write() CONTENT:")
-            ql.dprint(D_PROT, "%s" % buf)
+            ql.dprint(D_INFO, "[+] write() CONTENT:")
+            ql.dprint(D_INFO, "%s" % buf)
         ql.file_des[write_fd].write(buf)
         regreturn = write_count
     except:
@@ -625,7 +625,7 @@ def ql_syscall_unlink(ql, unlink_pathname, *args, **kw):
             os.unlink(real_path)
             regreturn = 0
         except FileNotFoundError:
-            ql.dprint(D_PROT, '[!] No such file or directory')
+            ql.dprint(D_INFO, '[!] No such file or directory')
             regreturn = -1
         except:
             regreturn = -1
@@ -645,7 +645,7 @@ def ql_syscall_unlinkat(ql, dirfd, pathname, flag, *args, **kw):
         os.unlink(real_path)
         regreturn = 0
     except FileNotFoundError:
-        ql.dprint(D_PROT, "[!] No such file or directory")
+        ql.dprint(D_INFO, "[!] No such file or directory")
         regreturn = -1
     except:
         regreturn = -1
@@ -699,6 +699,6 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
         regreturn = 0
 
     ql.nprint("getdents(%d, 0x%x, 0x%x) = %d" % (fd, dirp, count, regreturn))
-    ql.dprint(D_PROT, "[+] getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
+    ql.dprint(D_INFO, "[+] getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
     ql_definesyscall_return(ql, regreturn)
 

@@ -58,8 +58,8 @@ class Qldbg(object):
                 self.last_bp = 0
             self.has_soft_bp = hit_soft_bp
             if self.current_address + size == self.exit_point:
-                self.ql.dprint(D_PROT, "gdb> emulation entrypoint at 0x%x" % (self.entry_point))
-                self.ql.dprint(D_PROT, "gdb> emulation exitpoint at 0x%x" % (self.exit_point))
+                self.ql.dprint(D_INFO, "gdb> emulation entrypoint at 0x%x" % (self.entry_point))
+                self.ql.dprint(D_INFO, "gdb> emulation exitpoint at 0x%x" % (self.exit_point))
         except KeyboardInterrupt as ex:
             self.ql.nprint("gdb> Paused at 0x%x, instruction size = %u\n" % (address, size))
             ql.stop()

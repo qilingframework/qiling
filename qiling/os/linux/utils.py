@@ -38,5 +38,5 @@ def ql_arm_init_kernel_get_tls(ql):
     #    sc = ql_lsbmsb_convert(ql, sc)
 
     ql.mem.write(QL_ARM_KERNEL_GET_TLS_ADDR, sc)
-    ql.dprint(D_PROT, "[+] Set init_kernel_get_tls")    
+    ql.dprint(D_INFO, "[+] Set init_kernel_get_tls")    
          

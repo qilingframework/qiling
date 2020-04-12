@@ -18,7 +18,7 @@ from qiling.os.windows.thread import QlWindowsThreadManagement, QlWindowsThread
 
 
 def ql_x86_windows_hook_mem_error(self, addr, size, value):
-    #self.ql.dprint(D_PROT, "[+] ERROR: unmapped memory access at 0x%x" % addr)
+    #self.ql.dprint(D_INFO, "[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
 def string_unpack(string):
@@ -45,9 +45,9 @@ def env_dict_to_array(env_dict):
 
 def debug_print_stack(self, num, message=None):
     if message:
-        self.ql.dprint(D_PROT, "========== %s ==========" % message)
+        self.ql.dprint(D_INFO, "========== %s ==========" % message)
         sp = self.ql.sp
-        self.ql.dprint(D_PROT, hex(sp + self.ql.pointersize * i) + ": " + hex(self.ql.stack_read(i * self.ql.pointersize)))
+        self.ql.dprint(D_INFO, hex(sp + self.ql.pointersize * i) + ": " + hex(self.ql.stack_read(i * self.ql.pointersize)))
 
 
 def is_file_library(string):

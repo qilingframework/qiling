@@ -62,7 +62,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
 
     socket_type = socket_type_mapping(socket_type, ql.archtype)
     socket_domain = socket_domain_mapping(socket_domain, ql.archtype)
-    ql.dprint(D_PROT, "[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
+    ql.dprint(D_INFO, "[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
 
     ql_definesyscall_return(ql, regreturn)
 
@@ -226,8 +226,8 @@ def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, *args, **kw
     if recv_sockfd < 256 and ql.file_des[recv_sockfd] != 0:
         tmp_buf = ql.file_des[recv_sockfd].recv(recv_len, recv_flags)
         if tmp_buf:
-            ql.dprint(D_PROT, "[+] recv() CONTENT:")
-            ql.dprint(D_PROT, "%s" % tmp_buf)
+            ql.dprint(D_INFO, "[+] recv() CONTENT:")
+            ql.dprint(D_INFO, "%s" % tmp_buf)
         ql.mem.write(recv_buf, tmp_buf)
         regreturn = len(tmp_buf)
     else:
@@ -240,18 +240,18 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
     regreturn = 0
     if send_sockfd < 256 and ql.file_des[send_sockfd] != 0:
         try:
-            ql.dprint(D_PROT, "[+] debug send() start")
+            ql.dprint(D_INFO, "[+] debug send() start")
             tmp_buf = ql.mem.read(send_buf, send_len)
-            ql.dprint(D_PROT, ql.file_des[send_sockfd])
-            ql.dprint(D_PROT, "[+] fd is " + str(send_sockfd))
-            ql.dprint(D_PROT, "[+] send() CONTENT:")
-            ql.dprint(D_PROT, "%s" % tmp_buf)
-            ql.dprint(D_PROT, "[+] send() flag is " + str(send_flags))
-            ql.dprint(D_PROT, "[+] send() len is " + str(send_len))
+            ql.dprint(D_INFO, ql.file_des[send_sockfd])
+            ql.dprint(D_INFO, "[+] fd is " + str(send_sockfd))
+            ql.dprint(D_INFO, "[+] send() CONTENT:")
+            ql.dprint(D_INFO, "%s" % tmp_buf)
+            ql.dprint(D_INFO, "[+] send() flag is " + str(send_flags))
+            ql.dprint(D_INFO, "[+] send() len is " + str(send_len))
             ql.file_des[send_sockfd].send(bytes(tmp_buf), send_flags)
             ql.dprint(ql.file_des[send_sockfd])
             regreturn = send_len
-            ql.dprint(D_PROT, "[+] debug send end")
+            ql.dprint(D_INFO, "[+] debug send end")
         except:
             ql.nprint(sys.exc_info()[0])
             if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):

@@ -202,7 +202,7 @@ def ql_hook_code_disasm(ql, address, size):
             ql.reg_name = reg
             REG_NAME = ql.reg_name
             REG_VAL = ql.register(reg)
-            ql.dprint(D_PROT, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+            ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
     
 
 def ql_setup_output(ql):
@@ -499,7 +499,7 @@ def print_function(self, address, function_name, params, ret):
         self.ql.nprint(log + '\n')
 
     elif self.ql.output == QL_OUT_DEBUG:
-        self.ql.dprint(D_PROT, log + '\n')
+        self.ql.dprint(D_INFO, log + '\n')
 
 
 def read_cstring(self, address):
@@ -512,6 +512,6 @@ def read_cstring(self, address):
     return result
 
 def post_report(self):
-    self.ql.dprint(D_PROT, "[+] Syscalls and number of invocations")
-    self.ql.dprint(D_PROT, "[-] " + str(list(self.syscall_count.items())))
+    self.ql.dprint(D_INFO, "[+] Syscalls and number of invocations")
+    self.ql.dprint(D_INFO, "[-] " + str(list(self.syscall_count.items())))
 

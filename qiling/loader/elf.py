@@ -434,12 +434,12 @@ class QlLoaderELF(ELFParse, QlLoader):
         for i in super().parse_program_header():
             if i['p_type'] == PT_LOAD:
                 self.ql.mem.write(loadbase + i['p_vaddr'], super().getelfdata(i['p_offset'], i['p_filesz']))
-                self.ql.dprint(D_PROT,
+                self.ql.dprint(D_INFO,
                           "[+] load 0x%x - 0x%x" % (loadbase + i['p_vaddr'], loadbase + i['p_vaddr'] + i['p_filesz']))
 
         entry_point = elfhead['e_entry'] + loadbase
 
-        self.ql.dprint(D_PROT, "[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
+        self.ql.dprint(D_INFO, "[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
 
         self.brk_address = mem_end + loadbase
 
@@ -450,7 +450,7 @@ class QlLoaderELF(ELFParse, QlLoader):
            
             interp = ELFParse(ql.rootfs + interp_path, ql)
             interphead = interp.parse_header()
-            self.ql.dprint(D_PROT, "[+] interp is : %s" % (ql.rootfs + interp_path))
+            self.ql.dprint(D_INFO, "[+] interp is : %s" % (ql.rootfs + interp_path))
 
             interp_mem_size = -1
             for i in interp.parse_program_header():
@@ -458,7 +458,7 @@ class QlLoaderELF(ELFParse, QlLoader):
                     if interp_mem_size < i['p_vaddr'] + i['p_memsz'] or interp_mem_size == -1:
                         interp_mem_size = i['p_vaddr'] + i['p_memsz']
             interp_mem_size = (interp_mem_size // 0x1000 + 1) * 0x1000
-            self.ql.dprint(D_PROT, "[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
+            self.ql.dprint(D_INFO, "[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
 
             if self.ql.interp_base == 0:
                 if self.ql.archbit == 64:
@@ -472,7 +472,7 @@ class QlLoaderELF(ELFParse, QlLoader):
             else:
                 self.interp_base = self.ql.interp_base
 
-            self.ql.dprint(D_PROT, "[+] interp_base is : 0x%x" % (self.interp_base))
+            self.ql.dprint(D_INFO, "[+] interp_base is : 0x%x" % (self.interp_base))
             self.ql.mem.map(self.interp_base, int(interp_mem_size))
             self.ql.mem.add_mapinfo(self.interp_base, self.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
 
@@ -494,7 +494,7 @@ class QlLoaderELF(ELFParse, QlLoader):
         else:
             self.mmap_start = self.ql.mmap_start
 
-        self.ql.dprint(D_PROT, "[+] mmap_start is : 0x%x" % (self.mmap_start))
+        self.ql.dprint(D_INFO, "[+] mmap_start is : 0x%x" % (self.mmap_start))
 
         # Set elf table
         elf_table = b''
@@ -586,7 +586,7 @@ class QlLoaderELF(ELFParse, QlLoader):
         self.ql.mem.write(int(new_stack - len(elf_table)), elf_table)
         new_stack = new_stack - len(elf_table)
 
-        # self.ql.dprint(D_PROT, sssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
+        # self.ql.dprint(D_INFO, sssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
         # self.ql.register(UC_X86_REG_RDI, new_stack + 8)
 
         # for i in range(120):

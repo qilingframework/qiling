@@ -47,8 +47,8 @@ def hook_CryptStringToBinaryA(self, address, params):
             string_src += "=" * add_pad
         output = base64.b64decode(string_src).decode("utf-16le") + "\x00"
     else:
-        self.ql.dprint(D_PROT, "Flag")
-        self.ql.dprint(D_PROT, flag_src)
+        self.ql.dprint(D_INFO, "Flag")
+        self.ql.dprint(D_INFO, flag_src)
         raise QlErrorNotImplemented("[!] API not implemented")
 
     if string_dst == 0:

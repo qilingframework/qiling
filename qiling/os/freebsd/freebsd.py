@@ -57,9 +57,9 @@ class QlOsFreebsd(QlOsPosix):
         self.ql.register(UC_X86_REG_RDI, init_rdi)
         self.ql.register(UC_X86_REG_R14, init_rdi)
 
-        #self.ql.dprint(D_PROT, "[+] RSP = 0x%x" % (self.ql.stack_address))
-        #self.ql.dprint(D_PROT, "[+] RBP = 0x%x" % (init_rbp))
-        #self.ql.dprint(D_PROT, "[+] RDI = 0x%x" % (init_rdi))
+        #self.ql.dprint(D_INFO, "[+] RSP = 0x%x" % (self.ql.stack_address))
+        #self.ql.dprint(D_INFO, "[+] RBP = 0x%x" % (init_rbp))
+        #self.ql.dprint(D_INFO, "[+] RDI = 0x%x" % (init_rdi))
 
         ql_setup_output(self.ql)
         self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
