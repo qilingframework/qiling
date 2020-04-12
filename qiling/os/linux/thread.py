@@ -16,6 +16,7 @@ from abc import ABC, abstractmethod
 
 TIME_MODE = 0
 COUNT_MODE = 1
+BBL_MODE = 2
 
 
 class QlLinuxThread(QlThread):
@@ -38,7 +39,7 @@ class QlLinuxThread(QlThread):
         self.return_val = 0
         self.blocking_condition_fuc = None
         self.blocking_condition_arg = None
-        self.thread_management = None
+        self.thread_management = thread_management
         self.current_path = ql.current_path
         self.log_file_fd = None
 
@@ -94,7 +95,7 @@ class QlLinuxThread(QlThread):
         if self.set_child_tid_address != None:
             self.ql.mem.write(self.set_child_tid_address, ql.pack32(self.thread_id))
 
-    def run(self, time_slice = 0, count_slice = 0, mode = COUNT_MODE):
+    def run(self, mode, time_slice = 0, count_slice = 0, bbl_slice = 0):
         # Set the time of the current run
         if mode == TIME_MODE:
             if time_slice == 0 and self.total_time != 0:
@@ -103,6 +104,8 @@ class QlLinuxThread(QlThread):
                 thread_slice = time_slice
         elif mode == COUNT_MODE:
             thread_slice = count_slice
+        elif mode == BBL_MODE:
+            thread_slice = bbl_slice
         else:
             raise
 
@@ -121,6 +124,9 @@ class QlLinuxThread(QlThread):
             self.ql.uc.emu_start(self.start_address, self.until_addr, timeout = thread_slice)
         elif mode == COUNT_MODE:
             self.ql.uc.emu_start(self.start_address, self.until_addr, count = thread_slice)
+        elif mode == BBL_MODE:
+            self.thread_management.set_bbl_count(thread_slice)
+            self.ql.uc.emu_start(self.start_address, self.until_addr)
         else:
             raise
 
@@ -374,7 +380,7 @@ class QlLinuxARM64Thread(QlLinuxThread):
         self.restore_regs()
 
 class QlLinuxThreadManagement(QlThreadManagement):
-    def __init__(self, ql, time_slice = 1000, count_slice = 1000, mode = COUNT_MODE, ):
+    def __init__(self, ql, time_slice = 1000, count_slice = 1000, bbl_slice = 300, mode = BBL_MODE, ):
         super(QlLinuxThreadManagement, self).__init__(ql)
         self.cur_thread = None
         self.running_thread_list = []
@@ -386,11 +392,17 @@ class QlLinuxThreadManagement(QlThreadManagement):
         self.mode = mode
         self.time_slice = time_slice
         self.count_slice = count_slice
+        self.bbl_slice = bbl_slice
 
         if mode == TIME_MODE:
             self.thread_slice = time_slice
         elif mode == COUNT_MODE:
             self.thread_slice = count_slice
+        elif mode == BBL_MODE:
+            self.thread_slice = bbl_slice
+            self.bbl_counter = 0
+            self.bbl_count = 0
+            self.setup_bbl_hook()
         else:
             raise
 
@@ -423,6 +435,8 @@ class QlLinuxThreadManagement(QlThreadManagement):
                         self.runing_time += self.cur_thread.run(time_slice = thread_slice, mode = TIME_MODE)
                     elif self.mode == COUNT_MODE:
                         self.runing_time += self.cur_thread.run(count_slice = thread_slice, mode = COUNT_MODE)
+                    elif self.mode == BBL_MODE:
+                        self.runing_time += self.cur_thread.run(bbl_slice = thread_slice, mode = BBL_MODE)
                     else:
                         raise
 
@@ -459,11 +473,33 @@ class QlLinuxThreadManagement(QlThreadManagement):
                 elif self.mode == COUNT_MODE:
                     self.runing_time += (thread_slice * 1)
                     time.sleep((thread_slice * 1) / 1000000)
+                elif self.mode == BBL_MODE:
+                    self.runing_time += (thread_slice * 3)
+                    time.sleep((thread_slice * 1) / 1000000)
                 else:
                     raise
 
             self.clean_running_thread()
             self.clean_blocking_thread()
+
+    def setup_bbl_hook(self):
+        def bbl_count_cb(ql, addr, size):
+            if self.bbl_count == 0:
+                return
+
+            self.bbl_counter += 1
+
+            if self.bbl_counter > self.bbl_count:
+                ql.uc.emu_stop()
+
+        self.ql.hook_block(bbl_count_cb)
+
+    def set_bbl_count(self, bbl_count):
+        self.bbl_count = bbl_count
+        self.clear_bbl_count()
+
+    def clear_bbl_count(self):
+        self.bbl_counter = 0
 
     def set_main_thread(self, mt):
         self.main_thread = mt
@@ -475,9 +511,14 @@ class QlLinuxThreadManagement(QlThreadManagement):
             self.thread_slice = t
 
     def set_count_slice(self, c):
-        self.count_slice = t
+        self.count_slice = c
         if self.mode == COUNT_MODE:
             self.thread_slice = c
+    
+    def set_bbl_slice(self, b):
+        self.bbl_slice = b
+        if self.mode == BBL_MODE:
+            self.thread_slice = b
 
     def add_running_thread(self, t):
         if t not in self.running_thread_list:

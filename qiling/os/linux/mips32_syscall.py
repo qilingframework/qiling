@@ -64,6 +64,7 @@ def map_syscall(syscall_num):
         4210 : "ql_syscall_mmap2",
         4213 : "ql_syscall_stat64",
         4215 : "ql_syscall_fstat64",
+        4218 : "ql_syscall_madvise",
         4220 : "ql_syscall_fcntl64",
         4222 : "ql_syscall_gettid",
         4237 : "ql_syscall_sendfile64",
