@@ -136,6 +136,41 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack64(0)
             fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
             fstat64_buf += ql.pack64(0)
+        elif ql.archtype == QL_MIPS32:
+            # struct stat is : a0 addr is : 0x7fffedc0
+            # buf.st_dev offest 0 4 2049
+            # buf.st_ino offest 10 8 2400362
+            # buf.st_mode offest 18 4 16893
+            # buf.st_nlink offest 1c 4 5
+            # buf.st_uid offest 20 4 1000
+            # buf.st_gid offest 24 4 1000
+            # buf.st_rdev offest 28 4 0
+            # buf.st_size offest 38 8 0
+            # buf.st_blksize offest 58 4 4096
+            # buf.st_blocks offest 60 8 136
+            # buf.st_atime offest 40 4 1586616689
+            # buf.st_mtime offest 48 4 1586616689
+            # buf.st_ctime offest 50 4 1586616689
+            fstat64_buf = ql.pack32(fstat64_info.st_dev)
+            fstat64_buf += b'\x00' * 12
+            fstat64_buf += ql.pack64(fstat64_info.st_ino)
+            fstat64_buf += ql.pack32(fstat64_info.st_mode)
+            fstat64_buf += ql.pack32(fstat64_info.st_nlink)
+            fstat64_buf += ql.pack32(1000)
+            fstat64_buf += ql.pack32(1000)
+            fstat64_buf += ql.pack32(fstat64_info.st_rdev)
+            fstat64_buf += b'\x00' * 12
+            fstat64_buf += ql.pack64(fstat64_info.st_size)
+            fstat64_buf += ql.pack64(int(fstat64_info.st_atime))
+            fstat64_buf += ql.pack64(0)
+            fstat64_buf += ql.pack64(int(fstat64_info.st_mtime))
+            fstat64_buf += ql.pack64(0)
+            fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
+            fstat64_buf += ql.pack64(0)
+            fstat64_buf += ql.pack32(fstat64_info.st_blksize)
+            fstat64_buf += ql.pack32(0)
+            fstat64_buf += ql.pack64(fstat64_info.st_blocks)
+
         else:
 
             # pack fstatinfo
