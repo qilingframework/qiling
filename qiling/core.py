@@ -26,7 +26,7 @@ class Qiling:
     from .core_struct import unpack32, pack32, unpack32s, unpack32s_ne, pack32s
     from .core_struct import unpack16, pack16, pack, packs, unpack, unpacks
 
-    from .core_hooks import hook_code, hook_intr, hook_block
+    from .core_hooks import ql_hook, hook_code, hook_intr, hook_block
     from .core_hooks import hook_mem_unmapped, hook_mem_read_invalid, hook_mem_write_invalid
     from .core_hooks import hook_mem_fetch_invalid, hook_mem_invalid, hook_address
     from .core_hooks import hook_mem_read, hook_mem_write, hook_mem_fetch, hook_insn
