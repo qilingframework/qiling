@@ -438,7 +438,7 @@ def ql_syscall_vfork(ql, *args, **kw):
         regreturn = pid
 
     if ql.thread_management != None:
-        ql.uc.emu_stop()
+        ql.emu_stop()
 
     ql.nprint("vfork() = %d" % regreturn)
     ql_definesyscall_return(ql, regreturn)
@@ -480,7 +480,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
             env[key] = val
             execve_envp += word_size
 
-    ql.uc.emu_stop()
+    ql.emu_stop()
 
     if ql.shellcoder:
         pass

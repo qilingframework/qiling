@@ -12,6 +12,7 @@ from binascii import unhexlify
 from qiling.debugger.gdbserver import qldbg
 from qiling.const import *
 from qiling.os.utils import *
+from qiling.arch.utils import *
 
 
 GDB_SIGNAL_INT  = 2
@@ -112,14 +113,14 @@ class GDBSERVERsession(object):
                     return adapter.get(arch)
 
                 idhex, spid, pcid  = gdbqmark_converter(self.ql.archtype)  
-                sp          = self.ql.addr_to_str(self.ql.sp)
-                pc          = self.ql.addr_to_str(self.ql.pc)
+                sp          = ql_addr_to_str(self.ql.sp)
+                pc          = ql_addr_to_str(self.ql.pc)
                 nullfill    = "0" * int(self.ql.archbit / 4)
 
                 if self.ql.archtype== QL_MIPS32:
                     if self.ql.archendian == QL_ENDIAN_EB:
-                        sp = self.ql.addr_to_str(self.ql.sp, endian ="little")
-                        pc = self.ql.addr_to_str(self.ql.pc, endian ="little")
+                        sp = ql_addr_to_str(self.ql.sp, endian ="little")
+                        pc = ql_addr_to_str(self.ql.pc, endian ="little")
                     self.send('T%.2x%.2x:%s;%.2x:%s;' %(GDB_SIGNAL_TRAP, idhex, sp, pcid, pc))
                 else:    
                     self.send('T%.2x%.2x:%s;%.2x:%s;%.2x:%s;' %(GDB_SIGNAL_TRAP, idhex, nullfill, spid, sp, pcid, pc))
@@ -141,38 +142,38 @@ class GDBSERVERsession(object):
                 if self.ql.archtype== QL_X86:
                     for reg in self.ql.reg_table[:16]:
                         r = self.ql.register(reg)
-                        tmp = self.ql.addr_to_str(r)
+                        tmp = ql_addr_to_str(r)
                         s += tmp
 
                 if self.ql.archtype== QL_X8664:
                     for reg in self.ql.reg_table[:17]:
                         r = self.ql.register(reg)
-                        tmp = self.ql.addr_to_str(r)
+                        tmp = ql_addr_to_str(r)
                         s += tmp
                     for reg in self.ql.reg_table[17:24]:
                         r = self.ql.register(reg)
-                        tmp = self.ql.addr_to_str(r, short = True)
+                        tmp = ql_addr_to_str(r, short = True)
                         s += tmp
                 
                 if self.ql.archtype== QL_ARM:
                     for reg in self.ql.reg_table[:17]:
                         r = self.ql.register(reg)
-                        tmp = self.ql.addr_to_str(r)
+                        tmp = ql_addr_to_str(r)
                         s += tmp
 
                 if self.ql.archtype== QL_ARM64:
                     for reg in self.ql.reg_table[:33]:
                         r = self.ql.register(reg)
-                        tmp = self.ql.addr_to_str(r)
+                        tmp = ql_addr_to_str(r)
                         s += tmp
 
                 if self.ql.archtype== QL_MIPS32:
                     for reg in self.ql.reg_table[:38]:
                         r = self.ql.register(reg)
                         if self.ql.archendian == QL_ENDIAN_EB:
-                            tmp = self.ql.addr_to_str(r, endian ="little")
+                            tmp = ql_addr_to_str(r, endian ="little")
                         else:
-                            tmp = self.ql.addr_to_str(r)    
+                            tmp = ql_addr_to_str(r)    
                         s += tmp
 
                 self.send(s)
@@ -269,7 +270,7 @@ class GDBSERVERsession(object):
                             reg_value = self.ql.register(registers_x86[reg_index-1])
                         else:
                             reg_value = 0
-                        reg_value = self.ql.addr_to_str(reg_value)
+                        reg_value = ql_addr_to_str(reg_value)
                     
                     if self.ql.archtype== QL_X8664:
                         if reg_index <= 32:
@@ -277,23 +278,23 @@ class GDBSERVERsession(object):
                         else:
                             reg_value = 0
                         if reg_index <= 17:
-                            reg_value = self.ql.addr_to_str(reg_value)
+                            reg_value = ql_addr_to_str(reg_value)
                         elif 17 < reg_index:
-                            reg_value = self.ql.addr_to_str(reg_value, short = True)
+                            reg_value = ql_addr_to_str(reg_value, short = True)
                     
                     if self.ql.archtype== QL_ARM:
                         if reg_index < 17:
                             reg_value = self.ql.register(registers_arm[reg_index - 1])
                         else:
                             reg_value = 0
-                        reg_value = self.ql.addr_to_str(reg_value)
+                        reg_value = ql_addr_to_str(reg_value)
 
                     if self.ql.archtype== QL_ARM64:
                         if reg_index <= 32:
                             reg_value = self.ql.register(registers_arm64[reg_index - 1])
                         else:
                             reg_value = 0
-                            reg_value = self.ql.addr_to_str(reg_value)
+                            reg_value = ql_addr_to_str(reg_value)
 
                     if self.ql.archtype== QL_MIPS32:
                         if reg_index <= 37:
@@ -301,12 +302,12 @@ class GDBSERVERsession(object):
                         else:
                             reg_value = 0
                         if self.ql.archendian == QL_ENDIAN_EL:
-                            reg_value = self.ql.addr_to_str(reg_value, endian="little")
+                            reg_value = ql_addr_to_str(reg_value, endian="little")
                         else:
-                            reg_value = self.ql.addr_to_str(reg_value)
+                            reg_value = ql_addr_to_str(reg_value)
                     
                     if type(reg_value) is not str:
-                        reg_value = self.ql.addr_to_str(reg_value)
+                        reg_value = ql_addr_to_str(reg_value)
 
                     self.send(reg_value)
                 except:
@@ -454,20 +455,20 @@ class GDBSERVERsession(object):
                             ID_AT_NULL      = "00000000"
                             AT_NULL         = "00000000"
 
-                        AT_HWCAP    = self.ql.addr_to_str(self.ql.loader.elf_hwcap)  # mock cpuid 0x1f8bfbff
-                        AT_PAGESZ   = self.ql.addr_to_str(self.ql.loader.elf_pagesz)  # System page size, fixed in qiling
-                        AT_PHDR     = self.ql.addr_to_str(self.ql.loader.elf_phdr)  # Program headers for program
-                        AT_PHENT    = self.ql.addr_to_str(self.ql.loader.elf_phent)  # Size of program header entry
-                        AT_PHNUM    = self.ql.addr_to_str(self.ql.loader.elf_phnum)  # Number of program headers
-                        AT_BASE     = self.ql.addr_to_str(self.ql.loader.interp_base)  # Base address of interpreter
-                        AT_FLAGS    = self.ql.addr_to_str(self.ql.loader.elf_flags)
-                        AT_ENTRY    = self.ql.addr_to_str(self.ql.loader.elf_entry)  # Entry point of program
-                        AT_UID      = self.ql.addr_to_str(self.ql.loader.elf_guid)  # UID at 1000 fixed in qiling
-                        AT_EUID     = self.ql.addr_to_str(self.ql.loader.elf_guid)  # EUID at 1000 fixed in qiling
-                        AT_GID      = self.ql.addr_to_str(self.ql.loader.elf_guid)  # GID at 1000 fixed in qiling
-                        AT_EGID     = self.ql.addr_to_str(self.ql.loader.elf_guid)  # EGID at 1000 fixed in qiling
-                        AT_RANDOM   = self.ql.addr_to_str(self.ql.loader.randstraddr)  # Address of 16 random bytes
-                        AT_PLATFORM = self.ql.addr_to_str(self.ql.loader.cpustraddr)  # String identifying platform
+                        AT_HWCAP    = ql_addr_to_str(self.ql.loader.elf_hwcap)  # mock cpuid 0x1f8bfbff
+                        AT_PAGESZ   = ql_addr_to_str(self.ql.loader.elf_pagesz)  # System page size, fixed in qiling
+                        AT_PHDR     = ql_addr_to_str(self.ql.loader.elf_phdr)  # Program headers for program
+                        AT_PHENT    = ql_addr_to_str(self.ql.loader.elf_phent)  # Size of program header entry
+                        AT_PHNUM    = ql_addr_to_str(self.ql.loader.elf_phnum)  # Number of program headers
+                        AT_BASE     = ql_addr_to_str(self.ql.loader.interp_base)  # Base address of interpreter
+                        AT_FLAGS    = ql_addr_to_str(self.ql.loader.elf_flags)
+                        AT_ENTRY    = ql_addr_to_str(self.ql.loader.elf_entry)  # Entry point of program
+                        AT_UID      = ql_addr_to_str(self.ql.loader.elf_guid)  # UID at 1000 fixed in qiling
+                        AT_EUID     = ql_addr_to_str(self.ql.loader.elf_guid)  # EUID at 1000 fixed in qiling
+                        AT_GID      = ql_addr_to_str(self.ql.loader.elf_guid)  # GID at 1000 fixed in qiling
+                        AT_EGID     = ql_addr_to_str(self.ql.loader.elf_guid)  # EGID at 1000 fixed in qiling
+                        AT_RANDOM   = ql_addr_to_str(self.ql.loader.randstraddr)  # Address of 16 random bytes
+                        AT_PLATFORM = ql_addr_to_str(self.ql.loader.cpustraddr)  # String identifying platform
 
                         auxvdata_c = (
                                         ANNEX + AT_SYSINFO_EHDR +

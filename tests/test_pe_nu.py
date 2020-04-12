@@ -47,7 +47,7 @@ def test_pe_win_x86_gandcrab():
         computer_memory = read_wstring(ql, 0x505ff40)
         assert(default_values[0] != user_memory)
         assert(default_values[1] != computer_memory)
-        ql.uc.emu_stop()
+        ql.emu_stop()
 
     def randomize_config_value(ql, key, subkey):
         # https://en.wikipedia.org/wiki/Volume_serial_number
@@ -140,7 +140,7 @@ def test_pe_win_x8664_fls():
 def test_pe_win_x86_wannacry():
     def stop(ql):
         print("killerswtichfound")
-        ql.uc.emu_stop()
+        ql.emu_stop()
 
     ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows")
     ql.hook_address(stop, 0x40819a)

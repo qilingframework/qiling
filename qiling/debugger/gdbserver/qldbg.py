@@ -107,4 +107,4 @@ class Qldbg(object):
                     except Exception as ex:
                         pass
             start_addr = self.current_address
-            self.ql.uc.emu_start(start_addr, self.exit_point)
+            self.ql.emu_start(start_addr, self.exit_point)

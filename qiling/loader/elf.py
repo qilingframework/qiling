@@ -367,14 +367,13 @@ class QlLoaderELF(ELFParse, QlLoader):
         for i in l:
             s_addr = s_addr - len(i) - 1
             # if isinstance(i, bytes):
-            #     # self.ql.nprint(type(b'\x00'))
-            # self.ql.nprint(type(i))
-            # self.ql.nprint(i)
-            # self.ql.nprint(type(i.encode()))
-            # self.ql.nprint(type(addr))
-            #     uc.mem_write(s_addr, i + b'\x00')
+            #   self.ql.nprint(type(b'\x00'))
+            #   self.ql.nprint(type(i))
+            #   self.ql.nprint(i)
+            #   self.ql.nprint(type(i.encode()))
+            #   self.ql.nprint(type(addr))
+            #   self.ql.mem.write(s_addr, i + b'\x00')
             # else:
-            
             self.ql.mem.write(s_addr, i.encode() + b'\x00')
             l_addr.append(s_addr)
         return l_addr, s_addr

@@ -69,7 +69,7 @@ def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_
         #     else:
         #         return True
         if ql.unpack32(ql.mem.read(futex_uaddr, 4)) == futex_val:
-            ql.uc.emu_stop()
+            ql.emu_stop()
             regreturn = 0
             ql.os.futexm.futex_wait(futex_uaddr, ql.thread_management.cur_thread)
         else:
@@ -81,7 +81,7 @@ def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_
         ql.nprint("futex(%x, %d, %d) = %d" % (futex_uaddr, futex_op, futex_val, regreturn))
     else:
         ql.nprint("futex(%x, %d, %d) = ?" % (futex_uaddr, futex_op, futex_val))
-        ql.uc.emu_stop()
+        ql.emu_stop()
         ql.thread_management.cur_thread.stop()
         ql.thread_management.cur_thread.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
         regreturn = 0

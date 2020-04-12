@@ -18,7 +18,7 @@ from qiling.os.windows.const import *
     "exitCode": DWORD
 })
 def hook_CorExitProcess(self, address, params):
-    self.uc.emu_stop()
+    self.emu_stop()
     self.PE_RUN = False
 
 

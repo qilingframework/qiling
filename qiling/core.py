@@ -290,14 +290,6 @@ class Qiling:
                 self.nprint(*args, **kw)
 
 
-    def addr_to_str(self, addr, short=False, endian="big"):
-        return ql_addr_to_str(self, addr, short, endian)
-
-
-    def asm2bytes(self, runasm, arm_thumb=None):
-        return ql_asm2bytes(self, self.archtype, runasm, arm_thumb)
-    
-
     """
     replace linux or windows syscall/api with custom api/syscall
     if replace function name is needed, first syscall must be available
@@ -321,6 +313,7 @@ class Qiling:
             self.os.user_defined_api[syscall_cur] = syscall_new
         elif self.ostype in (QL_POSIX):
             self.set_syscall(syscall_cur, syscall_new)
+
 
     def stack_push(self, data):
         self.arch.stack_push(data)
@@ -350,6 +343,28 @@ class Qiling:
             return self.arch.get_register(register_str)
         else:    
             return self.arch.set_register(register_str, value)
+
+    def msr(self, msr, addr= None):
+        if not addr:
+            return self.uc.msr_read(msr)
+        else:
+            self.uc.msr_write(msr, addr)
+
+
+    def context(self, saved_context= None):
+        if saved_context == None:
+            return self.uc.context_save()
+        else:
+            self.uc.context_restore(saved_context)
+
+
+    def emu_stop(self):
+        self.uc.emu_stop()
+
+
+    def emu_start(self, begin, end, timeout=0, count=0):
+        self.uc.emu_start(begin, end, timeout, count)
+
 
     # ql.reg_pc - PC register name getter
     @property
@@ -447,4 +462,4 @@ class Qiling:
             td = self.thread_management.cur_thread
             td.stop()
             td.stop_event = stop_event
-        self.uc.emu_stop()
+        self.emu_stop()

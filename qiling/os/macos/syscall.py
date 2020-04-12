@@ -584,7 +584,7 @@ def ql_syscall_terminate_with_payload(ql, pid, reason_namespace, reason_code, pa
             payload_size: 0x%x, reason_string: 0x%x)" % (pid, reason_namespace, reason_code,
             payload, payload_size, reason_string))
     ql_definesyscall_return(ql, KERN_SUCCESS)
-    ql.uc.emu_stop()
+    ql.emu_stop()
     raise QlErrorSyscallError("[!] Exit with Error")
 
 # 0x209
@@ -605,6 +605,6 @@ def ql_syscall_abort_with_payload(ql, reason_namespace, reason_code, payload, pa
 # thread_set_tsd_base
 def ql_x86_syscall_thread_fast_set_cthread_self64(ql, u_info_addr, *args, **kw):
     ql.dprint(D_INFO, "[+] [mdep] thread fast set cthread self64(tsd_base:0x%x)" % (u_info_addr))
-    ql.uc.msr_write(GSMSR, u_info_addr)
+    ql.msr(GSMSR, u_info_addr)
     ql_definesyscall_return(ql, KERN_SUCCESS)
     return 

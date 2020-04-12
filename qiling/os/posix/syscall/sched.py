@@ -97,7 +97,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
             regreturn = 0
             ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
             ql_definesyscall_return(ql, regreturn)
-        ql.uc.emu_stop()
+        ql.emu_stop()
         return
 
     if clone_flags & CLONE_CHILD_SETTID == CLONE_CHILD_SETTID:
@@ -138,7 +138,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     ql_definesyscall_return(ql, regreturn)
 
     # Break the parent process and enter the add new thread event
-    ql.uc.emu_stop()
+    ql.emu_stop()
     f_th.stop_event = THREAD_EVENT_CREATE_THREAD
     f_th.stop_return_val = th
 

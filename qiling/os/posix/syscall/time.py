@@ -57,7 +57,7 @@ def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, *args, **kw):
     if ql.thread_management == None:
         time.sleep(tv_sec)
     else:
-        ql.uc.emu_stop()
+        ql.emu_stop()
 
         th = ql.thread_management.cur_thread
         th.blocking()
