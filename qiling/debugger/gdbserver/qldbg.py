@@ -92,11 +92,14 @@ class Qldbg(object):
                     'memory': {},
                     'regs': {}
                 }
+                
                 map_list = self.mapping
                 for maps in map_list:
                     map_address = int(maps[0], 16)
                     map_len = maps[1]
-                    self.entry_context['memory'][map_address] = bytes(self.ql.mem.read(map_address, map_len))
+
+                    if map_address and self.ql.mem.is_mapped(map_address,map_len) == True:
+                        self.entry_context['memory'][map_address] = bytes(self.ql.mem.read(map_address, map_len))
 
                 for r in self.ql.reg_table:
                     try:
