@@ -17,7 +17,7 @@ def ql_debugger(ql, remotedebugsrv, ip=None, port=None):
         port = int(port) 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind((ip, port))
-        ql.nprint("\ndebugger> Initializing loadbase 0x%x\n" % (ql.load.er.loadbase))
+        ql.nprint("\ndebugger> Initializing loadbase 0x%x\n" % (ql.loader.loadbase))
         ql.nprint("debugger> Listening on %s:%u\n" % (ip, port))
         sock.listen(1)
         conn, addr = sock.accept()

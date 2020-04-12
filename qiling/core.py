@@ -18,7 +18,6 @@ from qiling.os.thread import *
 from qiling.debugger.utils import *
 from qiling.os.memory import QlMemoryManager
 
-
 __version__ = "0.9"
 
 
@@ -224,6 +223,7 @@ class Qiling:
             max_addr = 0xFFFFFFFF
         try:
             self.mem = QlMemoryManager(self, max_addr)
+
         except:
             raise QlErrorArch("[!] Cannot load Memory Management module")    
 
@@ -232,8 +232,15 @@ class Qiling:
         ql.pc, ql.sp and etc
         """
         self.arch = ql_arch_setup(self)
+
+        """
+        Load and os module
+        """
         self.os = ql_os_setup(self)
-        self.load = ql_loader_setup(self)
+
+        self.loader = ql_loader_setup(self)
+
+
 
     def run(self):
         # setup strace filter for logger
@@ -724,7 +731,7 @@ class Qiling:
 
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:
-            self.mem.write(self.load.er.loadbase + addr, code)
+            self.mem.write(self.loader.loadbase + addr, code)
 
     def enable_lib_patch(self):
         for addr, code, filename in self.patch_lib:

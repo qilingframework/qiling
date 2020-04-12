@@ -49,7 +49,7 @@ class GDBSERVERsession(object):
         self.gdb          = qldbg.Qldbg()
         self.gdb.initialize(self.ql, exit_point=exit_point, mappings=mappings)
         if self.ql.ostype in (QL_LINUX, QL_FREEBSD):
-            self.gdb.bp_insert(self.ql.load.er.elf_entry)
+            self.gdb.bp_insert(self.ql.loader.elf_entry)
         else:
             self.gdb.bp_insert(self.ql.entry_point)
 
@@ -127,7 +127,7 @@ class GDBSERVERsession(object):
 
             def handle_c(subcmd):
                 self.gdb.resume_emu(self.ql.register(self.pc_reg))
-                if self.gdb.bp_list in ([self.ql.load.er.elf_entry], [self.ql.entry_point]):
+                if self.gdb.bp_list in ([self.ql.loader.elf_entry], [self.ql.entry_point]):
                     self.send("W00")
                 else:
                     self.send(('S%.2x' % GDB_SIGNAL_TRAP))
@@ -454,20 +454,20 @@ class GDBSERVERsession(object):
                             ID_AT_NULL      = "00000000"
                             AT_NULL         = "00000000"
 
-                        AT_HWCAP    = self.ql.addr_to_str(self.ql.load.er.elf_hwcap)  # mock cpuid 0x1f8bfbff
-                        AT_PAGESZ   = self.ql.addr_to_str(self.ql.load.er.elf_pagesz)  # System page size, fixed in qiling
-                        AT_PHDR     = self.ql.addr_to_str(self.ql.load.er.elf_phdr)  # Program headers for program
-                        AT_PHENT    = self.ql.addr_to_str(self.ql.load.er.elf_phent)  # Size of program header entry
-                        AT_PHNUM    = self.ql.addr_to_str(self.ql.load.er.elf_phnum)  # Number of program headers
-                        AT_BASE     = self.ql.addr_to_str(self.ql.load.er.interp_base)  # Base address of interpreter
-                        AT_FLAGS    = self.ql.addr_to_str(self.ql.load.er.elf_flags)
-                        AT_ENTRY    = self.ql.addr_to_str(self.ql.load.er.elf_entry)  # Entry point of program
-                        AT_UID      = self.ql.addr_to_str(self.ql.load.er.elf_guid)  # UID at 1000 fixed in qiling
-                        AT_EUID     = self.ql.addr_to_str(self.ql.load.er.elf_guid)  # EUID at 1000 fixed in qiling
-                        AT_GID      = self.ql.addr_to_str(self.ql.load.er.elf_guid)  # GID at 1000 fixed in qiling
-                        AT_EGID     = self.ql.addr_to_str(self.ql.load.er.elf_guid)  # EGID at 1000 fixed in qiling
-                        AT_RANDOM   = self.ql.addr_to_str(self.ql.load.er.randstraddr)  # Address of 16 random bytes
-                        AT_PLATFORM = self.ql.addr_to_str(self.ql.load.er.cpustraddr)  # String identifying platform
+                        AT_HWCAP    = self.ql.addr_to_str(self.ql.loader.elf_hwcap)  # mock cpuid 0x1f8bfbff
+                        AT_PAGESZ   = self.ql.addr_to_str(self.ql.loader.elf_pagesz)  # System page size, fixed in qiling
+                        AT_PHDR     = self.ql.addr_to_str(self.ql.loader.elf_phdr)  # Program headers for program
+                        AT_PHENT    = self.ql.addr_to_str(self.ql.loader.elf_phent)  # Size of program header entry
+                        AT_PHNUM    = self.ql.addr_to_str(self.ql.loader.elf_phnum)  # Number of program headers
+                        AT_BASE     = self.ql.addr_to_str(self.ql.loader.interp_base)  # Base address of interpreter
+                        AT_FLAGS    = self.ql.addr_to_str(self.ql.loader.elf_flags)
+                        AT_ENTRY    = self.ql.addr_to_str(self.ql.loader.elf_entry)  # Entry point of program
+                        AT_UID      = self.ql.addr_to_str(self.ql.loader.elf_guid)  # UID at 1000 fixed in qiling
+                        AT_EUID     = self.ql.addr_to_str(self.ql.loader.elf_guid)  # EUID at 1000 fixed in qiling
+                        AT_GID      = self.ql.addr_to_str(self.ql.loader.elf_guid)  # GID at 1000 fixed in qiling
+                        AT_EGID     = self.ql.addr_to_str(self.ql.loader.elf_guid)  # EGID at 1000 fixed in qiling
+                        AT_RANDOM   = self.ql.addr_to_str(self.ql.loader.randstraddr)  # Address of 16 random bytes
+                        AT_PLATFORM = self.ql.addr_to_str(self.ql.loader.cpustraddr)  # String identifying platform
 
                         auxvdata_c = (
                                         ANNEX + AT_SYSINFO_EHDR +

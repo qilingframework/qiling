@@ -75,15 +75,15 @@ def hook_GetVersionExW(self, address, params):
 def hook_GetSystemInfo(self, address, params):
     pointer = params["lpSystemInfo"]
     system_info = {"dummy": 0x0.to_bytes(length=2 * 2 + 4, byteorder='little'),
-                   "dwPageSize": self.ql.heap.page_size.to_bytes(length=4, byteorder='little'),
-                   "lpMinimumApplicationAddress": self.ql.load.er.PE_IMAGE_BASE.to_bytes(length=self.ql.pointersize, byteorder='little'),
-                   "lpMaximumApplicationAddress": (self.ql.load.er.DLL_BASE_ADDR + self.ql.load.er.DLL_SIZE).to_bytes(length=self.ql.pointersize,
+                   "dwPageSize": self.ql.os.heap.page_size.to_bytes(length=4, byteorder='little'),
+                   "lpMinimumApplicationAddress": self.ql.loader.PE_IMAGE_BASE.to_bytes(length=self.ql.pointersize, byteorder='little'),
+                   "lpMaximumApplicationAddress": (self.ql.loader.DLL_BASE_ADDR + self.ql.loader.DLL_SIZE).to_bytes(length=self.ql.pointersize,
                                                                                             byteorder='little'),
                    "dwActiveProcessorMask": 0x3.to_bytes(length=self.ql.pointersize, byteorder='little'),
                    # TODO not sure from here, did not found variables inside the emulator
                    "dwNumberOfProcessors": 0x4.to_bytes(length=4, byteorder='little'),
                    "dwProcessorType": 0x24a.to_bytes(length=4, byteorder='little'),
-                   "dwAllocationGranularity": (self.ql.heap.page_size * 10).to_bytes(length=4, byteorder='little'),
+                   "dwAllocationGranularity": (self.ql.os.heap.page_size * 10).to_bytes(length=4, byteorder='little'),
                    "wProcessorLevel": 0x6.to_bytes(length=2, byteorder='little'),
                    "wProcessorRevision": 0x4601.to_bytes(length=2, byteorder='little')
                    }
@@ -169,15 +169,15 @@ def hook_GetWindowsDirectoryW(self, address, params):
 def hook_GetNativeSystemInfo(self, address, params):
     pointer = params["lpSystemInfo"]
     system_info = {"dummy": 0x0.to_bytes(length=8, byteorder='little'),
-                   "dwPageSize": self.ql.heap.page_size.to_bytes(length=4, byteorder='little'),
-                   "lpMinimumApplicationAddress": self.ql.load.er.PE_IMAGE_BASE.to_bytes(length=self.ql.pointersize, byteorder='little'),
-                   "lpMaximumApplicationAddress": (self.ql.load.er.DLL_BASE_ADDR + self.ql.load.er.DLL_SIZE).to_bytes(length=self.ql.pointersize,
+                   "dwPageSize": self.ql.os.heap.page_size.to_bytes(length=4, byteorder='little'),
+                   "lpMinimumApplicationAddress": self.ql.loader.PE_IMAGE_BASE.to_bytes(length=self.ql.pointersize, byteorder='little'),
+                   "lpMaximumApplicationAddress": (self.ql.loader.DLL_BASE_ADDR + self.ql.loader.DLL_SIZE).to_bytes(length=self.ql.pointersize,
                                                                                             byteorder='little'),
                    "dwActiveProcessorMask": 0x3.to_bytes(length=self.ql.pointersize, byteorder='little'),
                    # TODO not sure from here, did not found variables inside the emulator
                    "dwNumberOfProcessors": 0x4.to_bytes(length=4, byteorder='little'),
                    "dwProcessorType": 0x24a.to_bytes(length=4, byteorder='little'),
-                   "dwAllocationGranularity": (self.ql.heap.page_size * 10).to_bytes(length=4, byteorder='little'),
+                   "dwAllocationGranularity": (self.ql.os.heap.page_size * 10).to_bytes(length=4, byteorder='little'),
                    "wProcessorLevel": 0x6.to_bytes(length=2, byteorder='little'),
                    "wProcessorRevision": 0x4601.to_bytes(length=2, byteorder='little')
                    }

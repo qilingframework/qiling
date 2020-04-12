@@ -62,7 +62,7 @@ def hook_WinExec(self, address, params):
     "uBytes": SIZE_T
 })
 def hook_LocalAlloc(self, address, params):
-    ret = self.ql.heap.mem_alloc(params["uBytes"])
+    ret = self.ql.os.heap.mem_alloc(params["uBytes"])
     return ret
 
 
@@ -78,8 +78,8 @@ def hook_LocalAlloc(self, address, params):
 })
 def hook_LocalReAlloc(self, address, params):
     old_mem = params["hMem"]
-    self.ql.heap.mem_free(old_mem)
-    ret = self.ql.heap.mem_alloc(params["uBytes"])
+    self.ql.os.heap.mem_free(old_mem)
+    ret = self.ql.os.heap.mem_alloc(params["uBytes"])
     return ret
 
 
@@ -91,7 +91,7 @@ def hook_LocalReAlloc(self, address, params):
 })
 def hook_LocalFree(self, address, params):
     old_mem = params["hMem"]
-    self.ql.heap.mem_free(old_mem)
+    self.ql.os.heap.mem_free(old_mem)
     return 0
 
 
@@ -135,7 +135,7 @@ def hook_GlobalUnlock(self, address, params):
     "dwBytes": UINT
 })
 def hook_GlobalAlloc(self, address, params):
-    return self.ql.heap.mem_alloc(params["dwBytes"])
+    return self.ql.os.heap.mem_alloc(params["dwBytes"])
 
 
 # HGLOBAL GlobalFree(
@@ -146,7 +146,7 @@ def hook_GlobalAlloc(self, address, params):
 })
 def hook_GlobalFree(self, address, params):
     old_mem = params["hMem"]
-    self.ql.heap.mem_free(old_mem)
+    self.ql.os.heap.mem_free(old_mem)
     return 0
 
 

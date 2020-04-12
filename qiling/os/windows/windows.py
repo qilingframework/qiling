@@ -16,7 +16,7 @@ from qiling.const import *
 from qiling.os.windows.dlls import *
 from qiling.os.windows.const import *
 from qiling.os.windows.const import Mapper
-#from qiling.os.memory import Heap
+from qiling.os.memory import QlMemoryHeap
 from qiling.os.windows.utils import *
 
 from qiling.os.os import QlOs
@@ -48,16 +48,28 @@ class QlOsWindows(QlOs):
             self.stack_size = 0x40000
             self.ql.code_address = 0x140000000
             self.ql.code_size = 10 * 1024 * 1024
+            self.HEAP_BASE_ADDR = 0x500000000
+            self.HEAP_SIZE = 0x5000000            
         elif self.ql.archtype == QL_X86:
             self.stack_address = 0xfffdd000
             self.stack_size = 0x21000
             self.ql.code_address = 0x40000
             self.ql.code_size = 10 * 1024 * 1024
+            self.HEAP_BASE_ADDR = 0x5000000
+            self.HEAP_SIZE = 0x5000000
 
         if self.ql.stack_address == 0:
             self.ql.stack_address = self.stack_address
         if self.ql.stack_size == 0:
             self.ql.stack_size = self.stack_size
+        """
+        Load Heap module
+        FIXME: We need to refactor this
+        """
+        self.heap = QlMemoryHeap(
+                self.ql,
+                self.HEAP_BASE_ADDR,
+                self.HEAP_BASE_ADDR + self.HEAP_SIZE)
 
         self.setupGDT()
         # hook win api
@@ -95,10 +107,10 @@ class QlOsWindows(QlOs):
 
     # hook WinAPI in PE EMU
     def hook_winapi(self, int, address, size):
-        if address in self.ql.load.er.import_symbols:
-            winapi_name = self.ql.load.er.import_symbols[address]['name']
+        if address in self.ql.loader.import_symbols:
+            winapi_name = self.ql.loader.import_symbols[address]['name']
             if winapi_name is None:
-                winapi_name = Mapper[self.ql.load.er.import_symbols[address]['dll']][self.ql.load.er.import_symbols[address]['ordinal']]
+                winapi_name = Mapper[self.ql.loader.import_symbols[address]['dll']][self.ql.loader.import_symbols[address]['ordinal']]
             else:
                 winapi_name = winapi_name.decode()
             winapi_func = None

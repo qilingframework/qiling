@@ -41,7 +41,7 @@ def hook___getmainargs(self, address, params):
 # );
 @winapi(cc=CDECL, params={})
 def hook___p__fmode(self, address, params):
-    addr = self.ql.heap.mem_alloc(self.ql.pointersize)
+    addr = self.ql.os.heap.mem_alloc(self.ql.pointersize)
     return addr
 
 
@@ -49,7 +49,7 @@ def hook___p__fmode(self, address, params):
 #    );
 @winapi(cc=CDECL, params={})
 def hook___p__commode(self, address, params):
-    addr = self.ql.heap.mem_alloc(self.ql.pointersize)
+    addr = self.ql.os.heap.mem_alloc(self.ql.pointersize)
     return addr
 
 
@@ -80,12 +80,12 @@ def hook_atexit(self, address, params):
 # char*** __p__environ(void)
 @winapi(cc=CDECL, params={})
 def hook___p__environ(self, address, params):
-    ret = self.ql.heap.mem_alloc(self.ql.pointersize * len(self.ql.env))
+    ret = self.ql.os.heap.mem_alloc(self.ql.pointersize * len(self.ql.env))
     count = 0
     for key in self.ql.env:
-        pointer = self.ql.heap.mem_alloc(self.ql.pointersize)
+        pointer = self.ql.os.heap.mem_alloc(self.ql.pointersize)
         env = key + "=" + self.ql.env[key]
-        env_addr = self.ql.heap.mem_alloc(len(env) + 1)
+        env_addr = self.ql.os.heap.mem_alloc(len(env) + 1)
         self.ql.mem.write(env_addr, bytes(env, 'ascii') + b'\x00')
         self.ql.mem.write(pointer, self.ql.pack(env_addr))
         self.ql.mem.write(ret + count * self.ql.pointersize, self.ql.pack(pointer))
@@ -151,11 +151,11 @@ def hook__initterm_e(self, address, params):
 # char***    __cdecl __p___argv (void);
 @winapi(cc=CDECL, params={})
 def hook___p___argv(self, address, params):
-    ret = self.ql.heap.mem_alloc(self.ql.pointersize * len(self.ql.argv))
+    ret = self.ql.os.heap.mem_alloc(self.ql.pointersize * len(self.ql.argv))
     count = 0
     for each in self.ql.argv:
-        arg_pointer = self.ql.heap.mem_alloc(self.ql.pointersize)
-        arg = self.ql.heap.mem_alloc(len(each) + 1)
+        arg_pointer = self.ql.os.heap.mem_alloc(self.ql.pointersize)
+        arg = self.ql.os.heap.mem_alloc(len(each) + 1)
         self.ql.mem.write(arg, bytes(each, 'ascii') + b'\x00')
         self.ql.mem.write(arg_pointer, self.ql.pack(arg))
         self.ql.mem.write(ret + count * self.ql.pointersize, self.ql.pack(arg_pointer))
@@ -166,7 +166,7 @@ def hook___p___argv(self, address, params):
 # int* __p___argc(void)
 @winapi(cc=CDECL, params={})
 def hook___p___argc(self, address, params):
-    ret = self.ql.heap.mem_alloc(self.ql.pointersize)
+    ret = self.ql.os.heap.mem_alloc(self.ql.pointersize)
     self.ql.mem.write(ret, self.ql.pack(len(self.ql.argv)))
     return ret
 
@@ -177,7 +177,7 @@ def hook__get_initial_narrow_environment(self, address, params):
     count = 0
     for key in self.ql.env:
         value = key + "=" + self.ql.env[key]
-        env = self.ql.heap.mem_alloc(len(value) + 1)
+        env = self.ql.os.heap.mem_alloc(len(value) + 1)
         if count == 0:
             ret = env
         self.ql.mem.write(env, bytes(value, 'ascii') + b'\x00')
@@ -301,7 +301,7 @@ def hook_strncmp(self, address, params):
 })
 def hook_malloc(self, address, params):
     size = params['size']
-    addr = self.ql.heap.mem_alloc(size)
+    addr = self.ql.os.heap.mem_alloc(size)
     return addr
 
 
@@ -313,7 +313,7 @@ def hook_malloc(self, address, params):
 })
 def hook__onexit(self, address, params):
     function = params['function']
-    addr = self.ql.heap.mem_alloc(self.ql.pointersize)
+    addr = self.ql.os.heap.mem_alloc(self.ql.pointersize)
     self.ql.mem.write(addr, self.ql.pack(function))
     return addr
 
@@ -347,7 +347,7 @@ def hook_memset(self, address, params):
 def hook_calloc(self, address, params):
     num = params['num']
     size = params['size']
-    ret = self.ql.heap.mem_alloc(num * size)
+    ret = self.ql.os.heap.mem_alloc(num * size)
     return ret
 
 

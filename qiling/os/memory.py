@@ -323,7 +323,7 @@ class Chunk():
     def compare(chunk):
         return chunk.size
 
-class Heap:
+class QlMemoryHeap:
     def __init__(self, ql, start_address, end_address):
         self.ql = ql
         self.chunks = []
@@ -341,9 +341,9 @@ class Heap:
 
     def mem_alloc(self, size):
         
-        if self.ql.archtype== QL_X86:
+        if self.ql.archtype == QL_X86:
             size = self._align(size, 4)
-        elif self.ql.archtype== QL_X8664:
+        elif self.ql.archtype == QL_X8664:
             size = self._align(size, 8)
         else:
             raise QlErrorArch("[!] Unknown ql.arch")

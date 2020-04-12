@@ -117,16 +117,16 @@ class QlOsLinux(QlOsPosix):
                     self.ql.thread_management = thread_management
                     main_thread = self.thread_class(self.ql, thread_management, total_time = self.ql.timeout)
                     main_thread.store_regs()
-                    main_thread.set_start_address(self.ql.load.er.entry_point)
+                    main_thread.set_start_address(self.ql.loader.entry_point)
                     thread_management.set_main_thread(main_thread)
 
                     # enable lib patch
-                    if self.ql.load.er.elf_entry != self.ql.load.er.entry_point:
-                        main_thread.set_until_addr(self.ql.load.er.elf_entry)
+                    if self.ql.loader.elf_entry != self.ql.loader.entry_point:
+                        main_thread.set_until_addr(self.ql.loader.elf_entry)
                         thread_management.run()
                         self.ql.enable_lib_patch()
 
-                        main_thread.set_start_address(self.ql.load.er.elf_entry)
+                        main_thread.set_start_address(self.ql.loader.elf_entry)
                         main_thread.set_until_addr(self.ql.until_addr)
                         main_thread.running()
 
@@ -136,10 +136,10 @@ class QlOsLinux(QlOsPosix):
 
                     thread_management.run()
                 else:
-                    if self.ql.load.er.elf_entry != self.ql.load.er.entry_point:
-                        self.ql.uc.emu_start(self.ql.load.er.entry_point, self.ql.load.er.elf_entry, self.ql.timeout)
+                    if self.ql.loader.elf_entry != self.ql.loader.entry_point:
+                        self.ql.uc.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
                         self.ql.enable_lib_patch()
-                    self.ql.uc.emu_start(self.ql.load.er.elf_entry, self.ql.until_addr, self.ql.timeout)
+                    self.ql.uc.emu_start(self.ql.loader.elf_entry, self.ql.until_addr, self.ql.timeout)
 
         except:
             if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):

@@ -18,13 +18,13 @@ from os.path import *
 def _GetModuleHandle(self, address, params):
     lpModuleName = params["lpModuleName"]
     if lpModuleName == 0:
-        ret = self.ql.load.er.PE_IMAGE_BASE
+        ret = self.ql.loader.PE_IMAGE_BASE
     else:
         lpModuleName = lpModuleName.lower()
         if not is_file_library(lpModuleName):
             lpModuleName += ".dll"
-        if lpModuleName in self.ql.load.er.dlls:
-            ret = self.ql.load.er.dlls[lpModuleName]
+        if lpModuleName in self.ql.loader.dlls:
+            ret = self.ql.loader.dlls[lpModuleName]
         else:
             self.ql.dprint(D_PROT, "[!] Library %s not imported" % lpModuleName)
             # Let's try to import it if the sample think is default dll and was imported at the start
@@ -32,7 +32,7 @@ def _GetModuleHandle(self, address, params):
             # Probably we can optimize here since load_dll already do a lot of checks, but not a real problem
             path = os.path.join(self.ql.rootfs, self.ql.dlls, lpModuleName)
             if is_file_library(lpModuleName) and os.path.exists(path):
-                ret = self.ql.load.er.load_dll(lpModuleName.encode())
+                ret = self.ql.loader.load_dll(lpModuleName.encode())
             else:
                 self.ql.dprint(D_PROT, "[!] Library %s not found" % lpModuleName)
                 ret = 0
@@ -77,11 +77,11 @@ def hook_GetModuleFileNameA(self, address, params):
 
     # GetModuleHandle can return PE_IMAGE_BASE as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and PE_IMAGE_BASE value should do the same operations
-    if hModule == 0 or hModule == self.ql.load.er.PE_IMAGE_BASE:
-        filename = self.ql.load.er.filepath
+    if hModule == 0 or hModule == self.ql.loader.PE_IMAGE_BASE:
+        filename = self.ql.loader.filepath
         filename_len = len(filename)
         if filename_len > nSize - 1:
-            filename = self.ql.load.er.filepath[:nSize - 1]
+            filename = self.ql.loader.filepath[:nSize - 1]
             ret = nSize
         else:
             ret = filename_len
@@ -109,11 +109,11 @@ def hook_GetModuleFileNameW(self, address, params):
     nSize = params["nSize"]
     # GetModuleHandle can return PE_IMAGE_BASE as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and PE_IMAGE_BASE value should do the same operations
-    if hModule == 0 or hModule == self.ql.load.er.PE_IMAGE_BASE:
-        filename = self.ql.load.er.filepath.decode('ascii').encode('utf-16le')
+    if hModule == 0 or hModule == self.ql.loader.PE_IMAGE_BASE:
+        filename = self.ql.loader.filepath.decode('ascii').encode('utf-16le')
         filename_len = len(filename)
         if filename_len > nSize - 1:
-            filename = self.ql.load.er.filepath[:nSize - 1]
+            filename = self.ql.loader.filepath[:nSize - 1]
             ret = nSize
         else:
             ret = filename_len
@@ -135,13 +135,13 @@ def hook_GetProcAddress(self, address, params):
     lpProcName = bytes(params["lpProcName"], 'ascii')
     # Check if dll is loaded
     try:
-        dll_name = [key for key, value in self.ql.load.er.dlls.items() if value == params['hModule']][0]
+        dll_name = [key for key, value in self.ql.loader.dlls.items() if value == params['hModule']][0]
     except IndexError as ie:
         self.ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
         return 0
 
-    if lpProcName in self.ql.load.er.import_address_table[dll_name]:
-        return self.ql.load.er.import_address_table[dll_name][lpProcName]
+    if lpProcName in self.ql.loader.import_address_table[dll_name]:
+        return self.ql.loader.import_address_table[dll_name][lpProcName]
 
     return 0
 
@@ -154,7 +154,7 @@ def hook_GetProcAddress(self, address, params):
 })
 def hook_LoadLibraryA(self, address, params):
     lpLibFileName = params["lpLibFileName"]
-    dll_base = self.ql.load.er.load_dll(lpLibFileName.encode())
+    dll_base = self.ql.loader.load_dll(lpLibFileName.encode())
     return dll_base
 
 
@@ -170,7 +170,7 @@ def hook_LoadLibraryA(self, address, params):
 })
 def hook_LoadLibraryExA(self, address, params):
     lpLibFileName = params["lpLibFileName"]
-    dll_base = self.ql.load.er.load_dll(lpLibFileName.encode())
+    dll_base = self.ql.loader.load_dll(lpLibFileName.encode())
     return dll_base
 
 
@@ -182,7 +182,7 @@ def hook_LoadLibraryExA(self, address, params):
 })
 def hook_LoadLibraryW(self, address, params):
     lpLibFileName = bytes(bytes(params["lpLibFileName"], 'ascii').decode('utf-16le'), 'ascii')
-    dll_base = self.ql.load.er.load_dll(lpLibFileName)
+    dll_base = self.ql.loader.load_dll(lpLibFileName)
     return dll_base
 
 
@@ -198,7 +198,7 @@ def hook_LoadLibraryW(self, address, params):
 })
 def hook_LoadLibraryExW(self, address, params):
     lpLibFileName = params["lpLibFileName"].encode()
-    dll_base = self.ql.load.er.load_dll(lpLibFileName)
+    dll_base = self.ql.loader.load_dll(lpLibFileName)
     return dll_base
 
 

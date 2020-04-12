@@ -28,7 +28,7 @@ from qiling.exception import *
 })
 def hook_VirtualAlloc(self, address, params):
     dwSize = params["dwSize"]
-    addr = self.ql.heap.mem_alloc(dwSize)
+    addr = self.ql.os.heap.mem_alloc(dwSize)
     return addr
 
 
@@ -44,7 +44,7 @@ def hook_VirtualAlloc(self, address, params):
 })
 def hook_VirtualFree(self, address, params):
     lpAddress = params["lpAddress"]
-    addr = self.ql.heap.mem_free(lpAddress)
+    addr = self.ql.os.heap.mem_free(lpAddress)
     return 1
 
 

@@ -339,13 +339,19 @@ class ELFParse(QlLoader):
             return self.parse_program_header32()
 
 class QlLoaderELF(ELFParse, QlLoader):
-    def __init__(self, path, ql):
+    def __init__(self, ql):
         super()
-        ELFParse.__init__(self, path, ql)
         self.ql = ql
-        self.interp_base = ql.interp_base
-        self.mmap_start = ql.mmap_start
-
+        self.path = self.ql.path
+        if not self.ql.shellcoder:
+            ELFParse.__init__(self, self.path, self.ql)
+        self.interp_base = 0
+        self.mmap_start = 0
+        # specially for syscall_execve()
+        #self.load()
+        if not self.ql.shellcoder:
+            self.load_with_ld(self.ql, self.ql.stack_address + self.ql.stack_size, argv = self.ql.argv, env = self.ql.env)
+            self.ql.stack_address  = (int(self.new_stack))
 
     def pack(self, data):
         if self.ql.archbit == 64:

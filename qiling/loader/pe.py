@@ -85,7 +85,7 @@ class Process(QlLoader):
                 self.ql.nprint("[+] Cached %s" % path)
 
         dll_base = self.DLL_LAST_ADDR
-        dll_len = self.ql.heap._align(len(bytes(data)), 0x1000)
+        dll_len = self.ql.os.heap._align(len(bytes(data)), 0x1000)
         self.DLL_SIZE += dll_len
         self.ql.mem.map(dll_base, dll_len)
         self.ql.mem.write(dll_base, bytes(data))
@@ -99,10 +99,10 @@ class Process(QlLoader):
 
     def set_cmdline(self, name, address, memory):
         if self.ql.archtype== QL_X86:
-            addr = self.ql.heap.mem_alloc(len(self.cmdline))
+            addr = self.ql.os.heap.mem_alloc(len(self.cmdline))
             packed_addr = self.ql.pack32(addr)
         else:
-            addr = self.ql.heap.mem_alloc(2 * len(self.cmdline))
+            addr = self.ql.os.heap.mem_alloc(2 * len(self.cmdline))
             packed_addr = self.ql.pack64(addr)
 
         cmdline_entry = None
@@ -185,7 +185,7 @@ class Process(QlLoader):
         dll_base = self.dlls[dll_name]
         path = "C:\\Windows\\System32\\" + dll_name
         ldr_table_entry_size = len(LdrDataTableEntry(self.ql).bytes())
-        base = self.ql.heap.mem_alloc(ldr_table_entry_size)
+        base = self.ql.os.heap.mem_alloc(ldr_table_entry_size)
         ldr_table_entry = LdrDataTableEntry(self.ql,
                                             base=base,
                                             in_load_order_links={'Flink': 0, 'Blink': 0},
@@ -235,32 +235,26 @@ class Process(QlLoader):
 
 
 class QlLoaderPE(Process, QlLoader):
-    def __init__(self, ql, path=None, dlls=None):
+    def __init__(self, ql):
         super()
         self.ql = ql
-        self.path = path
-        self.init_dlls = dlls
+        self.path = self.ql.path
+        self.init_dlls = [b"ntdll.dll", b"kernel32.dll", b"user32.dll"]
         self.filepath = ''
         self.PE_IMAGE_BASE = 0
         self.PE_IMAGE_SIZE = 0
         self.PE_ENTRY_POINT = 0
         self.sizeOfStackReserve = 0
-        # compatible with ql.__enable_bin_patch()
-        self.loadbase = 0
 
         if self.ql.archtype== QL_X86:
             self.STRUCTERS_LAST_ADDR = FS_SEGMENT_ADDR
             self.DEFAULT_IMAGE_BASE = 0x400000
             self.DLL_BASE_ADDR = 0x10000000
-            self.HEAP_BASE_ADDR = 0x5000000
-            self.HEAP_SIZE = 0x5000000
             
         elif self.ql.archtype== QL_X8664:
             self.STRUCTERS_LAST_ADDR = GS_SEGMENT_ADDR 
             self.DEFAULT_IMAGE_BASE = 0x400000
             self.DLL_BASE_ADDR = 0x7ffff0000000
-            self.HEAP_BASE_ADDR = 0x500000000
-            self.HEAP_SIZE = 0x5000000
             
         self.cmdline = b"D:\\" + bytes(self.ql.path.replace("/", "\\"), "utf-8") + b"\x00"             
         self.dlls = {}
@@ -270,8 +264,11 @@ class QlLoaderPE(Process, QlLoader):
         self.PE_IMAGE_BASE = 0
         self.PE_IMAGE_SIZE = 0
         self.DLL_SIZE = 0
-        self.DLL_LAST_ADDR = self.DLL_BASE_ADDR        
-        
+        self.DLL_LAST_ADDR = self.DLL_BASE_ADDR      
+        # compatible with ql.__enable_bin_patch()
+        self.loadbase = 0  
+        self.ql.os.setupComponents()
+        self.load()
 
     def init_thread_information_block(self): 
         super().init_tib()
@@ -286,7 +283,7 @@ class QlLoaderPE(Process, QlLoader):
             self.PE_IMAGE_BASE = self.PE_IMAGE_BASE = self.pe.OPTIONAL_HEADER.ImageBase
             self.PE_IMAGE_SIZE = self.PE_IMAGE_SIZE = self.pe.OPTIONAL_HEADER.SizeOfImage
 
-            if self.PE_IMAGE_BASE + self.PE_IMAGE_SIZE > self.HEAP_BASE_ADDR:
+            if self.PE_IMAGE_BASE + self.PE_IMAGE_SIZE > self.ql.os.HEAP_BASE_ADDR:
                 # pe reloc
                 self.PE_IMAGE_BASE = self.PE_IMAGE_BASE = self.DEFAULT_IMAGE_BASE
                 self.pe.relocate_image(self.DEFAULT_IMAGE_BASE)

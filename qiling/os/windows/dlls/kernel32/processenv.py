@@ -23,8 +23,8 @@ def hook_GetStdHandle(self, address, params):
 # );
 @winapi(cc=STDCALL, params={})
 def hook_GetCommandLineA(self, address, params):
-    cmdline = self.ql.load.er.cmdline + b"\x00"
-    addr = self.ql.heap.mem_alloc(len(cmdline))
+    cmdline = self.ql.loader.cmdline + b"\x00"
+    addr = self.ql.os.heap.mem_alloc(len(cmdline))
     self.ql.mem.write(addr, cmdline)
     return addr
 
@@ -33,8 +33,8 @@ def hook_GetCommandLineA(self, address, params):
 # );
 @winapi(cc=STDCALL, params={})
 def hook_GetCommandLineW(self, address, params):
-    cmdline = self.ql.load.er.cmdline.decode('ascii').encode('utf-16le')
-    addr = self.ql.heap.mem_alloc(len(cmdline))
+    cmdline = self.ql.loader.cmdline.decode('ascii').encode('utf-16le')
+    addr = self.ql.os.heap.mem_alloc(len(cmdline))
     self.ql.mem.write(addr, cmdline)
     return addr
 
@@ -44,7 +44,7 @@ def hook_GetCommandLineW(self, address, params):
 @winapi(cc=STDCALL, params={})
 def hook_GetEnvironmentStrings(self, address, params):
     cmdline = b"\x00"
-    addr = self.ql.heap.mem_alloc(len(cmdline))
+    addr = self.ql.os.heap.mem_alloc(len(cmdline))
     self.ql.mem.write(addr, cmdline)
     return addr
 
@@ -54,7 +54,7 @@ def hook_GetEnvironmentStrings(self, address, params):
 @winapi(cc=STDCALL, params={})
 def hook_GetEnvironmentStringsW(self, address, params):
     cmdline = b"\x00\x00"
-    addr = self.ql.heap.mem_alloc(len(cmdline))
+    addr = self.ql.os.heap.mem_alloc(len(cmdline))
     self.ql.mem.write(addr, cmdline)
     return addr
 

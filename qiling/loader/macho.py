@@ -11,14 +11,13 @@ from qiling.loader.macho_parser.const import *
 from qiling.exception import *
 from qiling.const import *
 from qiling.loader.loader import *
+from qiling.os.macos.const import *
 
-# TODO: we maybe we should use a better way to load
-# reference to xnu source code /bsd/kern/mach_loader.c
-class QlLoaderMacho(QlLoader):
+class QlLoaderMACHO(QlLoader):
     # macho x8664 loader 
-    def __init__(self, ql, file_path, stack_sp, argvs, envs, apples, argc, dyld_path=None):
+    def __init__(self, ql, dyld_path=None):
         super()
-        self.macho_file     = MachoParser(ql, file_path)
+        self.macho_file     = MachoParser(ql, ql.path)
         self.loading_file   = self.macho_file
         self.slide          = 0x0000000000000000
         self.dyld_slide     = 0x0000000500000000
@@ -29,14 +28,17 @@ class QlLoaderMacho(QlLoader):
         self.uc             = ql.uc
         self.binary_entry   = 0x0
         self.proc_entry     = 0x0
-        self.stack_sp       = stack_sp
-        self.argvs          = argvs
-        self.envs           = envs
-        self.apples         = apples
-        self.argc           = argc
+        self.stack_sp       = self.ql.os.stack_sp
+        self.argvs          = [self.ql.path]
+        self.envs           = self.ql.os.envs
+        self.apples         = self.ql.os.apples
+        self.argc           = 1
         self.dyld_path      = dyld_path
         self.using_dyld     = False
         self.vm_end_addr    = 0x0
+        self.loadMacho()
+        self.ql.os.macho_task.min_offset = page_align_end(self.vm_end_addr, PAGE_SIZE)
+        self.ql.stack_address = (int(self.ql.stack_sp))
 
     def loadMacho(self, depth=0, isdyld=False):
         # MAX load depth 
@@ -93,7 +95,7 @@ class QlLoaderMacho(QlLoader):
             if self.ql.mmap_start == 0:
                 self.mmap_start = self.ql.os.QL_MACOS_PREDEFINE_MMAPADDRESS
             else:
-                slef.mmap_start = self.ql.mmap_start
+                self.mmap_start = self.ql.mmap_start
 
             self.ql.stack_sp = self.loadStack()
             if self.using_dyld:

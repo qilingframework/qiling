@@ -114,16 +114,16 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     else:
         mmap_fd = ql.unpack32s(ql.pack32(mmap_fd))
 
-    # initial ql.load.er.mmap_start
+    # initial ql.loader.mmap_start
     mmap_base = mmap_addr
     need_mmap = True
 
-    if mmap_addr != 0 and (mmap_addr < ql.load.er.mmap_start):
+    if mmap_addr != 0 and (mmap_addr < ql.loader.mmap_start):
         need_mmap = False
 
     if mmap_addr == 0:
-        mmap_base = ql.load.er.mmap_start
-        ql.load.er.mmap_start = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
+        mmap_base = ql.loader.mmap_start
+        ql.loader.mmap_start = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
 
     ql.dprint(D_PROT, "[+] log old_mmap - return addr : " + hex(mmap_base))
     ql.dprint(D_PROT, "[+] log old_mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
@@ -200,14 +200,14 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
     need_mmap = True
 
     
-    if mmap_addr != 0 and (mmap_addr < ql.load.er.mmap_start):
-        ql.dprint(D_PROT, "[+] mmap_addr 0x%x < ql.load.er.mmap_start 0x%x" %(mmap_addr, ql.load.er.mmap_start))
+    if mmap_addr != 0 and (mmap_addr < ql.loader.mmap_start):
+        ql.dprint(D_PROT, "[+] mmap_addr 0x%x < ql.loader.mmap_start 0x%x" %(mmap_addr, ql.loader.mmap_start))
         need_mmap = False
 
-    # initial ql.load.er.mmap_start
+    # initial ql.loader.mmap_start
     if mmap_addr == 0:
-        mmap_base = ql.load.er.mmap_start
-        ql.load.er.mmap_start = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
+        mmap_base = ql.loader.mmap_start
+        ql.loader.mmap_start = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
 
     ql.dprint(D_PROT, "[+] log mmap - return addr : " + hex(mmap_base))
     ql.dprint(D_PROT, "[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
@@ -283,11 +283,11 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     mmap_base = mmap2_addr
     need_mmap = True
 
-    if mmap2_addr != 0 and mmap2_addr < ql.load.er.mmap_start:
+    if mmap2_addr != 0 and mmap2_addr < ql.loader.mmap_start:
         need_mmap = False
     if mmap2_addr == 0:
-        mmap_base = ql.load.er.mmap_start
-        ql.load.er.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
+        mmap_base = ql.loader.mmap_start
+        ql.loader.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
 
     ql.dprint(D_PROT, "[+] log mmap2 - mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
     mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
