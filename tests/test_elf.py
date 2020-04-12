@@ -25,6 +25,12 @@ class ELFTest(unittest.TestCase):
         ql.run()
 
 
+    def test_multithread_elf_linux_mips32el(self):
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_multithreading"], "../examples/rootfs/mips32el_linux")
+        ql.multithread = True   
+        ql.run()
+
+
     def test_multithread_elf_linux_arm(self):
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux", output="debug")
         ql.multithread = True   
