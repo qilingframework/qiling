@@ -20,20 +20,17 @@ from qiling.os.memory import QlMemoryManager
 
 __version__ = "0.9"
 
-
-def catch_KeyboardInterrupt(ql):
-    def decorator(func):
-        def wrapper(*args, **kw):
-            try:
-                return func(*args, **kw)
-            except BaseException as e:
-                ql.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
-                ql.internal_exception = e
-        return wrapper
-    return decorator
-
-
 class Qiling:
+    #Import function into class
+    from .core_struct import unpack64, pack64, pack64s, unpack64s
+    from .core_struct import unpack32, pack32, unpack32s, unpack32s_ne, pack32s
+    from .core_struct import unpack16, pack16, pack, packs, unpack, unpacks
+
+    from .core_hooks import hook_code, hook_intr, hook_block
+    from .core_hooks import hook_mem_unmapped, hook_mem_read_invalid, hook_mem_write_invalid
+    from .core_hooks import hook_mem_fetch_invalid, hook_mem_invalid, hook_address
+    from .core_hooks import hook_mem_read, hook_mem_write, hook_mem_fetch, hook_insn
+    
     def __init__(
             self,
             filename=None,
@@ -141,8 +138,11 @@ class Qiling:
 
                 self.argv = self.filename
 
-            elif not pyos.path.exists(str(self.filename[0])) or not pyos.path.exists(self.rootfs):
-                raise QlErrorFileNotFound("[!] Target binary or rootfs not found")
+            else:
+                if not pyos.path.exists(str(self.filename[0])):
+                    raise QlErrorFileNotFound("[!] Target binary not found")
+                if not pyos.path.exists(self.rootfs):
+                    raise QlErrorFileNotFound("[!] Target rootfs not found")
 
         if self.shellcoder:
             self.targetname = "qilingshellcode"
@@ -242,7 +242,6 @@ class Qiling:
         Load the loader
         """
         self.loader = ql_loader_setup(self)
-
 
 
     def run(self):
@@ -365,195 +364,6 @@ class Qiling:
         elif self.ostype in (QL_POSIX):
             self.set_syscall(syscall_cur, syscall_new)
 
-
-    def hook_code(self, callback, user_data=None, begin=1, end=0):
-        @catch_KeyboardInterrupt(self)
-        def _callback(uc, addr, size, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, addr, size, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, addr, size)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_CODE, _callback, (user_data, callback), begin, end)
-
-
-    def hook_intr(self, callback, user_data=None, begin=1, end=0):
-        @catch_KeyboardInterrupt(self)
-        def _callback(uc, intno, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, intno, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, intno)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_INTR, _callback, (user_data, callback), begin, end)
-
-
-    def hook_block(self, callback, user_data=None, begin=1, end=0):
-        @catch_KeyboardInterrupt(self)
-        def _callback(uc, addr, size, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, addr, size, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, addr, size)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_BLOCK, _callback, (user_data, callback), begin, end)
-
-    def hook_mem_unmapped(self, callback, user_data=None, begin=1, end=0):
-        @catch_KeyboardInterrupt(self)
-        def _callback(uc, access, addr, size, value, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, addr, size, value, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, addr, size, value)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_MEM_UNMAPPED, _callback, (user_data, callback), begin, end)
-
-    def hook_mem_read_invalid(self, callback, user_data=None, begin=1, end=0):
-        @catch_KeyboardInterrupt(self)
-        def _callback(uc, access, addr, size, value, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, addr, size, value, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, addr, size, value)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_MEM_READ_INVALID, _callback, (user_data, callback), begin, end)
-
-    def hook_mem_write_invalid(self, callback, user_data=None, begin=1, end=0):
-        @catch_KeyboardInterrupt(self)
-        def _callback(uc, access, addr, size, value, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, addr, size, value, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, addr, size, value)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_MEM_WRITE_INVALID, _callback, (user_data, callback), begin, end)
-
-    def hook_mem_fetch_invalid(self, callback, user_data=None, begin=1, end=0):
-        @catch_KeyboardInterrupt(self)
-        def _callback(uc, access, addr, size, value, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, addr, size, value, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, addr, size, value)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_MEM_FETCH_INVALID, _callback, (user_data, callback), begin, end)
-
-    def hook_mem_invalid(self, callback, user_data=None, begin=1, end=0):
-        @catch_KeyboardInterrupt(self)
-        def _callback(uc, access, addr, size, value, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, addr, size, value, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, addr, size, value)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_MEM_VALID, _callback, (user_data, callback), begin, end)
-
-    # a convenient API to set callback for a single address
-    def hook_address(self, callback, address, user_data=None):
-        @catch_KeyboardInterrupt(self)
-        def _callback(uc, _addr, _size, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, user_data)
-            else:
-                # callback does not require user_data
-                callback(self)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_CODE, _callback, (user_data, callback), address, address)
-
-    def hook_mem_read(self, callback, user_data=None, begin=1, end=0):
-        @catch_KeyboardInterrupt(self)
-        def _callback(uc, access, addr, size, value, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, addr, size, value, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, addr, size, value)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_MEM_READ, _callback, (user_data, callback), begin, end)
-
-    def hook_mem_write(self, callback, user_data=None, begin=1, end=0):
-        @catch_KeyboardInterrupt(self)
-        def _callback(uc, access, addr, size, value, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, addr, size, value, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, addr, size, value)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_MEM_WRITE, _callback, (user_data, callback), begin, end)
-
-    def hook_mem_fetch(self, callback, user_data=None, begin=1, end=0):
-        @catch_KeyboardInterrupt(self)
-        def _callback(uc, access, addr, size, value, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, addr, size, value, user_data)
-            else:
-                # callback does not require user_data
-                callback(self, addr, size, value)
-
-        # pack user_data & callback for wrapper _callback
-        self.uc.hook_add(UC_HOOK_MEM_FETCH, _callback, (user_data, callback), begin, end)
-
-    def hook_insn(self, callback, arg1, user_data=None, begin=1, end=0):
-        @catch_KeyboardInterrupt(self)
-        def _callback_x86_syscall(uc, pack_data):
-            # unpack what we packed for hook_add()
-            user_data, callback = pack_data
-            if user_data:
-                callback(self, user_data)
-            else:
-                # callback does not require user_data
-                callback(self)
-
-        if arg1 == UC_X86_INS_SYSCALL:
-            # pack user_data & callback for wrapper _callback
-            self.uc.hook_add(UC_HOOK_INSN, _callback_x86_syscall, (user_data, callback), begin, end, arg1)
-        else:
-            self.uc.hook_add(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
-
     def stack_push(self, data):
         self.arch.stack_push(data)
 
@@ -567,90 +377,6 @@ class Qiling:
     # write to stack, at a given offset from stack bottom
     def stack_write(self, offset, data):
         self.arch.stack_write(offset, data)
-
-    def unpack64(self, x):
-        return struct.unpack('Q', x)[0]
-
-    def pack64(self, x):
-        return struct.pack('Q', x)
-    
-    def pack64s(self, x):
-        return struct.pack('q', x)
-
-    def unpack64s(self, x):
-        return struct.unpack('q', x)[0]
-
-    def unpack32(self, x):
-        if self.archendian == QL_ENDIAN_EB:
-            return struct.unpack('>I', x)[0]
-        else:
-            return struct.unpack('I', x)[0]
-
-    def pack32(self, x):
-        if self.archendian == QL_ENDIAN_EB:
-            return struct.pack('>I', x)
-        else:
-            return struct.pack('I', x)
-
-    def unpack32s(self, x):
-        if self.archendian == QL_ENDIAN_EB:
-            return struct.unpack('>i', x)[0]
-        else:
-            return struct.unpack('i', x)[0]
-
-    def unpack32s_ne(self, x):
-        return struct.unpack('i', x)[0]
-
-    def pack32s(self, x):
-        if self.archendian == QL_ENDIAN_EB:
-            return struct.pack('>i', x)
-        else:
-            return struct.pack('i', x)
-
-    def unpack16(self, x):
-        if self.archendian == QL_ENDIAN_EB:
-            return struct.unpack('>H', x)[0]
-        else:
-            return struct.unpack('H', x)[0]
-
-    def pack16(self, x):
-        if self.archendian == QL_ENDIAN_EB:
-            return struct.pack('>H', x)
-        else:
-            return struct.pack('H', x)
-
-    def pack(self, data):
-        if self.archbit == 64:
-            return self.pack64(data)
-        elif self.archbit == 32:
-            return self.pack32(data)
-        else:
-            raise
-
-    def packs(self, data):
-        if self.archbit == 64:
-            return self.pack64s(data)
-        elif self.archbit == 32:
-            return self.pack32s(data)
-        else:
-            raise
-
-    def unpack(self, data):
-        if self.archbit == 64:
-            return self.unpack64(data)
-        elif self.archbit == 32:
-            return self.unpack32(data)
-        else:
-            raise
-
-    def unpacks(self, data):
-        if self.archbit == 64:
-            return self.unpack64s(data)
-        elif self.archbit == 32:
-            return self.unpack32s(data)
-        else:
-            raise
-
 
     # patch @code to memory address @addr
     def patch(self, addr, code, file_name=b''):

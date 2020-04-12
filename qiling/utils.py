@@ -9,10 +9,23 @@ thoughout the qiling framework
 """
 
 import sys, logging, importlib, pefile, os
-from qiling.exception import *
-from qiling.const import *
+import struct
+from .os.const import *
+from .exception import *
+from .const import *
 from os.path import dirname, exists
 from os import makedirs
+
+def catch_KeyboardInterrupt(ql):
+    def decorator(func):
+        def wrapper(*args, **kw):
+            try:
+                return func(*args, **kw)
+            except BaseException as e:
+                ql.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
+                ql.internal_exception = e
+        return wrapper
+    return decorator
 
 def ql_get_arch_bits(arch):
     arch_32b = [QL_ARM, QL_MIPS32, QL_X86]

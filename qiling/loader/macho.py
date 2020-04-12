@@ -4,8 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import os
-
-from struct import pack
+import struct
 from qiling.loader.macho_parser.parser import *
 from qiling.loader.macho_parser.const import *
 from qiling.exception import *
@@ -256,7 +255,7 @@ class QlLoaderMACHO(QlLoader):
         if data == 0:
             content = b'\x00\x00\x00\x00\x00\x00\x00\x00'
         else:
-            content = pack('<Q', data)
+            content = struct.pack('<Q', data)
 
         if len(content) != align:
             self.ql.nprint('[!] stack align error')
