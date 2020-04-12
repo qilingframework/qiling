@@ -380,7 +380,7 @@ class QlLinuxARM64Thread(QlLinuxThread):
         self.restore_regs()
 
 class QlLinuxThreadManagement(QlThreadManagement):
-    def __init__(self, ql, time_slice = 1000, count_slice = 1000, bbl_slice = 300, mode = BBL_MODE, ):
+    def __init__(self, ql, time_slice = 2000, count_slice = 1000, bbl_slice = 300, mode = BBL_MODE, ):
         super(QlLinuxThreadManagement, self).__init__(ql)
         self.cur_thread = None
         self.running_thread_list = []
