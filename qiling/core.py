@@ -257,10 +257,19 @@ class Qiling:
                 remotedebugsrv, ip, port = self.debugger.split(':')
             except:
                 ip, port = '', ''
+
+            remotedebugsrv = "gdb"
+            
+            try:
                 ip, port = self.debugger.split(':')
                 # If only ip:port is defined, remotedebugsrv is always gdb
-                remotedebugsrv = "gdb"
-     
+            except:
+                if ip is None:
+                    ip = "127.0.0.0"
+                if port is None:
+                    port = "9999" 
+   
+
             remotedebugsrv = debugger_convert(remotedebugsrv)
 
             if remotedebugsrv not in (QL_DEBUGGER):
