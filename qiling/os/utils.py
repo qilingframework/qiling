@@ -25,6 +25,8 @@ from qiling.const import *
 from qiling.exception import *
 from qiling.utils import *
 from qiling.const import *
+#from qiling.os.memory import QlMemoryManager
+
 
 from binascii import unhexlify
 import ipaddress, struct, os, ctypes
@@ -43,7 +45,12 @@ def ql_os_setup(ql, function_name = None):
         function_name = "QlOs" + ostype_str
         module_name = ql_build_module_import_name("os", ql.ostype)
         return ql_get_module_function(module_name, function_name)(ql)
-    
+
+    elif function_name == "mem":
+        function_name = "QlMemoryManager"
+        module_name = "qiling.os.memory"
+        return ql_get_module_function(module_name, function_name)(ql)
+
     elif function_name == "map_syscall":
         ostype_str = ql_ostype_convert_str(ql.ostype)
         arch_str = ql_arch_convert_str(ql.archtype)
