@@ -213,7 +213,6 @@ class Qiling:
         if self.archbit:
             self.pointersize = (self.archbit // 8)            
 
-<<<<<<< HEAD
         ##########
         # Memory #
         ##########
@@ -225,17 +224,6 @@ class Qiling:
         # Load architecture's and os module #
         # ql.pc, ql.sp and etc              #
         #####################################
-=======
-        """
-        Load memory module
-        """
-        self.mem = ql_os_setup(self, "mem")
-  
-        """
-        Load architecture's and os module
-        ql.pc, ql.sp and etc
-        """
->>>>>>> upstream/dev
         self.arch = ql_arch_setup(self)
 
         ######
