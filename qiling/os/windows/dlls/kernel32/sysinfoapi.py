@@ -76,8 +76,8 @@ def hook_GetSystemInfo(self, address, params):
     pointer = params["lpSystemInfo"]
     system_info = {"dummy": 0x0.to_bytes(length=2 * 2 + 4, byteorder='little'),
                    "dwPageSize": self.ql.heap.page_size.to_bytes(length=4, byteorder='little'),
-                   "lpMinimumApplicationAddress": self.PELoader.PE_IMAGE_BASE.to_bytes(length=self.ql.pointersize, byteorder='little'),
-                   "lpMaximumApplicationAddress": (self.PELoader.DLL_BASE_ADDR + self.PELoader.DLL_SIZE).to_bytes(length=self.ql.pointersize,
+                   "lpMinimumApplicationAddress": self.ql.load.er.PE_IMAGE_BASE.to_bytes(length=self.ql.pointersize, byteorder='little'),
+                   "lpMaximumApplicationAddress": (self.ql.load.er.DLL_BASE_ADDR + self.ql.load.er.DLL_SIZE).to_bytes(length=self.ql.pointersize,
                                                                                             byteorder='little'),
                    "dwActiveProcessorMask": 0x3.to_bytes(length=self.ql.pointersize, byteorder='little'),
                    # TODO not sure from here, did not found variables inside the emulator
@@ -170,8 +170,8 @@ def hook_GetNativeSystemInfo(self, address, params):
     pointer = params["lpSystemInfo"]
     system_info = {"dummy": 0x0.to_bytes(length=8, byteorder='little'),
                    "dwPageSize": self.ql.heap.page_size.to_bytes(length=4, byteorder='little'),
-                   "lpMinimumApplicationAddress": self.PELoader.PE_IMAGE_BASE.to_bytes(length=self.ql.pointersize, byteorder='little'),
-                   "lpMaximumApplicationAddress": (self.PELoader.DLL_BASE_ADDR + self.PELoader.DLL_SIZE).to_bytes(length=self.ql.pointersize,
+                   "lpMinimumApplicationAddress": self.ql.load.er.PE_IMAGE_BASE.to_bytes(length=self.ql.pointersize, byteorder='little'),
+                   "lpMaximumApplicationAddress": (self.ql.load.er.DLL_BASE_ADDR + self.ql.load.er.DLL_SIZE).to_bytes(length=self.ql.pointersize,
                                                                                             byteorder='little'),
                    "dwActiveProcessorMask": 0x3.to_bytes(length=self.ql.pointersize, byteorder='little'),
                    # TODO not sure from here, did not found variables inside the emulator

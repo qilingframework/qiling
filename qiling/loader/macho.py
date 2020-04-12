@@ -10,15 +10,14 @@ from qiling.loader.macho_parser.parser import *
 from qiling.loader.macho_parser.const import *
 from qiling.exception import *
 from qiling.const import *
-from qiling.loader.loader import QlLoader
+from qiling.loader.loader import *
 
 # TODO: we maybe we should use a better way to load
 # reference to xnu source code /bsd/kern/mach_loader.c
-class Macho(QlLoader):
-
+class QlLoaderMacho(QlLoader):
     # macho x8664 loader 
     def __init__(self, ql, file_path, stack_sp, argvs, envs, apples, argc, dyld_path=None):
-
+        super()
         self.macho_file     = MachoParser(ql, file_path)
         self.loading_file   = self.macho_file
         self.slide          = 0x0000000000000000
@@ -40,7 +39,6 @@ class Macho(QlLoader):
         self.vm_end_addr    = 0x0
 
     def loadMacho(self, depth=0, isdyld=False):
-
         # MAX load depth 
         if depth > 5:
             return
@@ -92,6 +90,11 @@ class Macho(QlLoader):
                             self.using_dyld = True
 
         if depth == 0:
+            if self.ql.mmap_start == 0:
+                self.mmap_start = self.ql.os.QL_MACOS_PREDEFINE_MMAPADDRESS
+            else:
+                slef.mmap_start = self.ql.mmap_start
+
             self.ql.stack_sp = self.loadStack()
             if self.using_dyld:
                 self.ql.nprint("[+] ProcEntry: {}".format(hex(self.proc_entry)))
@@ -101,7 +104,7 @@ class Macho(QlLoader):
                 self.ql.entry_point = self.proc_entry + self.slide
             self.ql.nprint("[+] Binary Entry Point: 0x{:X}".format(self.binary_entry))
             self.macho_entry = self.binary_entry + self.slide
-            self.ql.loadbase = self.macho_entry
+            self.loadbase = self.macho_entry
 
         return self.proc_entry
         

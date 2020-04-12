@@ -47,6 +47,15 @@ def ql_ostype_convert_str(ostype):
 
     return adapter.get(ostype)
 
+def ql_loadertype_convert_str(ostype):
+    adapter = {
+        QL_LINUX: "ELF",
+        QL_MACOS: "MACHO",
+        QL_FREEBSD: "ELF",
+        QL_WINDOWS: "PE",
+    }
+
+    return adapter.get(ostype)
 
 def ostype_convert(ostype):
     adapter = {
@@ -277,7 +286,7 @@ def ql_build_module_import_name(module, ostype, arch = None):
     if type(ostype) is int:
         ostype_str = ql_ostype_convert_str(ostype)
     
-    if ostype_str:
+    if ostype_str and "loader" not in ret_str:
         ret_str += "." + ostype_str
 
     if arch:

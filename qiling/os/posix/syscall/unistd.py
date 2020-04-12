@@ -224,17 +224,17 @@ def ql_syscall_brk(ql, brk_input, *args, **kw):
     if brk_input != 0:
         new_brk_addr = ((brk_input + 0xfff) // 0x1000) * 0x1000
 
-        if brk_input > ql.brk_address: # increase current brk_address if brk_input is greater
-            ql.mem.map(ql.brk_address, new_brk_addr - ql.brk_address)
-            ql.mem.add_mapinfo(ql.brk_address, new_brk_addr, "rw-", "[mapped]")
+        if brk_input > ql.load.er.brk_address: # increase current brk_address if brk_input is greater
+            ql.mem.map(ql.load.er.brk_address, new_brk_addr - ql.load.er.brk_address)
+            ql.mem.add_mapinfo(ql.load.er.brk_address, new_brk_addr, "rw-", "[mapped]")
 
-        elif brk_input < ql.brk_address: # shrink current bkr_address to brk_input if its smaller
-            ql.mem.unmap(new_brk_addr, ql.brk_address - new_brk_addr)
-            ql.mem.del_mapinfo(new_brk_addr, ql.brk_address)
+        elif brk_input < ql.load.er.brk_address: # shrink current bkr_address to brk_input if its smaller
+            ql.mem.unmap(new_brk_addr, ql.load.er.brk_address - new_brk_addr)
+            ql.mem.del_mapinfo(new_brk_addr, ql.load.er.brk_address)
 
-        ql.brk_address = new_brk_addr
+        ql.load.er.brk_address = new_brk_addr
 
-    regreturn = ql.brk_address
+    regreturn = ql.load.er.brk_address
 
     ql_definesyscall_return(ql, regreturn)
     ql.dprint(D_PROT, "[+] brk return(0x%x)" % regreturn)
@@ -490,8 +490,9 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
         ql.env              = env
         ql.path             = real_path
         ql.mem.map_info     = []
-        
+
         ql.os.load()
+        ql.load.load() 
         ql.run()
 
     ql.nprint("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))

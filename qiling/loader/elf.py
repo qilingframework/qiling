@@ -338,10 +338,14 @@ class ELFParse(QlLoader):
         elif self.ql.archbit == 32:
             return self.parse_program_header32()
 
-class ELFLoader(ELFParse):
+class QlLoaderELF(ELFParse, QlLoader):
     def __init__(self, path, ql):
+        super()
         ELFParse.__init__(self, path, ql)
         self.ql = ql
+        self.interp_base = ql.interp_base
+        self.mmap_start = ql.mmap_start
+
 
     def pack(self, data):
         if self.ql.archbit == 64:
@@ -431,7 +435,7 @@ class ELFLoader(ELFParse):
 
         self.ql.dprint(D_PROT, "[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
 
-        self.ql.brk_address = mem_end + loadbase
+        self.brk_address = mem_end + loadbase
 
         # Load interpreter if there is an interpreter
 
@@ -452,35 +456,39 @@ class ELFLoader(ELFParse):
 
             if self.ql.interp_base == 0:
                 if self.ql.archbit == 64:
-                    self.ql.interp_base = 0x7ffff7dd5000
+                    self.interp_base = 0x7ffff7dd5000
                 elif self.ql.archbit == 32 and self.ql.archtype!= QL_MIPS32:
-                    self.ql.interp_base = 0xfb7d3000
+                    self.interp_base = 0xfb7d3000
                 elif self.ql.archtype== QL_MIPS32:
-                    self.ql.interp_base = 0x00000047ba000
+                    self.interp_base = 0x00000047ba000
                 else:
-                    self.ql.interp_base = 0xff7d5000
+                    self.interp_base = 0xff7d5000
+            else:
+                self.interp_base = self.ql.interp_base
 
-            self.ql.dprint(D_PROT, "[+] interp_base is : 0x%x" % (ql.interp_base))
-            self.ql.mem.map(ql.interp_base, int(interp_mem_size))
-            self.ql.mem.add_mapinfo(ql.interp_base, self.ql.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
+            self.ql.dprint(D_PROT, "[+] interp_base is : 0x%x" % (self.interp_base))
+            self.ql.mem.map(self.interp_base, int(interp_mem_size))
+            self.ql.mem.add_mapinfo(self.interp_base, self.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
 
             for i in interp.parse_program_header():
                 if i['p_type'] == PT_LOAD:
-                    self.ql.mem.write(ql.interp_base + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
-            entry_point = interphead['e_entry'] + self.ql.interp_base
+                    self.ql.mem.write(self.interp_base + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
+            entry_point = interphead['e_entry'] + self.interp_base
 
         # Set MMAP addr
         if self.ql.mmap_start == 0:
             if self.ql.archbit == 64:
-                self.ql.mmap_start = 0x7ffff7dd6000 - 0x40000000
+                self.mmap_start = 0x7ffff7dd6000 - 0x40000000
             elif self.ql.archtype== QL_MIPS32:
-                self.ql.mmap_start = 0x7ffef000 - 0x4000000
+                self.mmap_start = 0x7ffef000 - 0x4000000
                 if self.ql.archendian == QL_ENDIAN_EB:
-                    self.ql.mmap_start  = 0x778bf000 - 0x400000
+                    self.mmap_start  = 0x778bf000 - 0x400000
             else:
-                self.ql.mmap_start = 0xf7fd6000 - 0x400000
+                self.mmap_start = 0xf7fd6000 - 0x400000
+        else:
+            self.mmap_start = self.ql.mmap_start
 
-        self.ql.dprint(D_PROT, "[+] mmap_start is : 0x%x" % (ql.mmap_start))
+        self.ql.dprint(D_PROT, "[+] mmap_start is : 0x%x" % (self.mmap_start))
 
         # Set elf table
         elf_table = b''
@@ -532,39 +540,39 @@ class ELFLoader(ELFParse):
         # new_stack = new_stack - 4
         # rand_addr = new_stack - 4
 
-        self.ql.elf_phdr     = (loadbase + elfhead['e_phoff'])
-        self.ql.elf_phent    = (elfhead['e_phentsize'])
-        self.ql.elf_phnum    = (elfhead['e_phnum'])
-        self.ql.elf_pagesz   = 0x1000
+        self.elf_phdr     = (loadbase + elfhead['e_phoff'])
+        self.elf_phent    = (elfhead['e_phentsize'])
+        self.elf_phnum    = (elfhead['e_phnum'])
+        self.elf_pagesz   = 0x1000
         if self.ql.archendian == QL_ENDIAN_EB:
-            self.ql.elf_pagesz   = 0x0010
-        self.ql.elf_guid     = 1000
-        self.ql.elf_flags    = 0
-        self.ql.elf_entry    = (loadbase + elfhead['e_entry'])
-        self.ql.randstraddr  = randstraddr = addr[0]
-        self.ql.cpustraddr   = cpustraddr = addr[1]
+            self.elf_pagesz   = 0x0010
+        self.elf_guid     = 1000
+        self.elf_flags    = 0
+        self.elf_entry    = (loadbase + elfhead['e_entry'])
+        self.randstraddr  = addr[0]
+        self.cpustraddr   = addr[1]
         if self.ql.archbit == 64:
-            self.ql.elf_hwcap = 0x078bfbfd
+            self.elf_hwcap = 0x078bfbfd
         elif self.ql.archbit == 32:
-            self.ql.elf_hwcap = 0x1fb8d7
+            self.elf_hwcap = 0x1fb8d7
             if self.ql.archendian == QL_ENDIAN_EB:
-                self.ql.elf_hwcap = 0xd7b81f
+                self.elf_hwcap = 0xd7b81f
 
-        elf_table += self.NEW_AUX_ENT(AT_PHDR, self.ql.elf_phdr + mem_start)
-        elf_table += self.NEW_AUX_ENT(AT_PHENT, self.ql.elf_phent)
-        elf_table += self.NEW_AUX_ENT(AT_PHNUM, self.ql.elf_phnum)
-        elf_table += self.NEW_AUX_ENT(AT_PAGESZ, self.ql.elf_pagesz)
-        elf_table += self.NEW_AUX_ENT(AT_BASE, self.ql.interp_base)
-        elf_table += self.NEW_AUX_ENT(AT_FLAGS, self.ql.elf_flags)
-        elf_table += self.NEW_AUX_ENT(AT_ENTRY,ql.elf_entry)
-        elf_table += self.NEW_AUX_ENT(AT_UID, self.ql.elf_guid)
-        elf_table += self.NEW_AUX_ENT(AT_EUID, self.ql.elf_guid)
-        elf_table += self.NEW_AUX_ENT(AT_GID, self.ql.elf_guid)
-        elf_table += self.NEW_AUX_ENT(AT_EGID, self.ql.elf_guid)
-        elf_table += self.NEW_AUX_ENT(AT_HWCAP, self.ql.elf_hwcap)
+        elf_table += self.NEW_AUX_ENT(AT_PHDR, self.elf_phdr + mem_start)
+        elf_table += self.NEW_AUX_ENT(AT_PHENT, self.elf_phent)
+        elf_table += self.NEW_AUX_ENT(AT_PHNUM, self.elf_phnum)
+        elf_table += self.NEW_AUX_ENT(AT_PAGESZ, self.elf_pagesz)
+        elf_table += self.NEW_AUX_ENT(AT_BASE, self.interp_base)
+        elf_table += self.NEW_AUX_ENT(AT_FLAGS, self.elf_flags)
+        elf_table += self.NEW_AUX_ENT(AT_ENTRY, self.elf_entry)
+        elf_table += self.NEW_AUX_ENT(AT_UID, self.elf_guid)
+        elf_table += self.NEW_AUX_ENT(AT_EUID, self.elf_guid)
+        elf_table += self.NEW_AUX_ENT(AT_GID, self.elf_guid)
+        elf_table += self.NEW_AUX_ENT(AT_EGID, self.elf_guid)
+        elf_table += self.NEW_AUX_ENT(AT_HWCAP, self.elf_hwcap)
         elf_table += self.NEW_AUX_ENT(AT_CLKTCK, 100)
-        elf_table += self.NEW_AUX_ENT(AT_RANDOM, randstraddr)
-        elf_table += self.NEW_AUX_ENT(AT_PLATFORM, cpustraddr)
+        elf_table += self.NEW_AUX_ENT(AT_RANDOM, self.randstraddr)
+        elf_table += self.NEW_AUX_ENT(AT_PLATFORM, self.cpustraddr)
         elf_table += self.NEW_AUX_ENT(AT_NULL, 0)
 
         elf_table += b'\x00' * (0x10 - (new_stack - len(elf_table)) & 0xf)
@@ -579,8 +587,8 @@ class ELFLoader(ELFParse):
         #     buf = self.ql.mem.read(new_stack + i * 0x8, 8)
         #     self.ql.nprint("0x%08x : 0x%08x " % (new_stack + i * 0x4, self.ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
 
-        self.ql.entry_point = entry_point
-        self.ql.elf_entry = loadbase + elfhead['e_entry']
-        self.ql.new_stack = new_stack
-        self.ql.loadbase = loadbase
+        self.entry_point = entry_point
+        self.elf_entry = loadbase + elfhead['e_entry']
+        self.new_stack = new_stack
+        self.loadbase = loadbase
         self.ql.mem.add_mapinfo(new_stack, self.ql.stack_address+ql.stack_size, 'rw-', '[stack]')
