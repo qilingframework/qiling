@@ -189,12 +189,10 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         # Architecture                      #
         #####################################
         # Load architecture's and os module #
-        # ql.reg.pc, ql.reg.sp and etc              #
+        # ql.reg.pc, ql.reg.sp and etc      #
         #####################################
         self.arch = ql_arch_setup(self)
-       
 
-    def run(self):
         ######
         # OS #
         ######
@@ -204,7 +202,9 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         # Loader #
         ##########
         self.loader = ql_loader_setup(self)
+       
 
+    def run(self):
         # setup strace filter for logger
         if self.strace_filter != None and self.output == QL_OUT_DEFAULT:
             self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
