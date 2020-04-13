@@ -23,7 +23,6 @@ class QlOsPosix(QlOs):
         self.ql = ql
         self.sigaction_act = []
         self.file_des = []
-        self.current_path = '/'
         self.dict_posix_syscall = dict()
         self.dict_posix_syscall_by_num = dict()
 

@@ -104,6 +104,7 @@ matrix:
         - cd $TRAVIS_BUILD_DIR/tests
       script:
         - python test_pe_nu.py
+        - python test_windows_stdio.py
         - python test_peshellcode_nu.py
 
     - name: "Python 3.6 on Docker"

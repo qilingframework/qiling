@@ -15,6 +15,7 @@ class QlOs:
         self.ql = ql
         self.child_processes = False
         self.thread_management = None
+        self.current_path = '/'
         self.stdin = ql_file('stdin', sys.stdin.fileno())
         self.stdout = ql_file('stdout', sys.stdout.fileno())
         self.stderr = ql_file('stderr', sys.stderr.fileno())

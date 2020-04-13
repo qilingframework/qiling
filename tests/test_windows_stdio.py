@@ -36,7 +36,7 @@ def instruction_count(ql, address, size, user_data):
 
 
 def get_count(flag):
-    ql = Qiling(["rootfs/x86_windows/bin/crackme.exe"], "rootfs/x86_windows", libcache=True, output="off")
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/crackme.exe"], "../examples/rootfs/x86_windows", libcache=True, output="off")
     ql.stdin = StringBuffer()
     ql.stdout = StringBuffer()
     ql.stdin.write(bytes("".join(flag) + "\n", 'utf-8'))
@@ -57,7 +57,7 @@ def solve():
 
     try:
         for i in range(len(flag)):
-            for j in "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-{}":
+            for j in "}5353535353":
                 flag[i] = j
                 data = get_count(prefix + flag)
                 if data > base:

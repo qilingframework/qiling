@@ -11,9 +11,8 @@ from qiling.os.posix import syscall
 
 class ELFTest(unittest.TestCase):
 
-
     def test_multithread_elf_linux_x86(self):
-        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux")
         ql.multithread = True   
         ql.run()
 
@@ -32,13 +31,13 @@ class ELFTest(unittest.TestCase):
 
 
     def test_multithread_elf_linux_arm(self):
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux")
         ql.multithread = True   
         ql.run()
 
 
     def test_multithread_elf_linux_arm64(self):
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux", output="debug")
+        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux")
         ql.multithread = True   
         ql.run()
 
