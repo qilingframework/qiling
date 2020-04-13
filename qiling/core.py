@@ -18,21 +18,12 @@ from qiling.loader.utils import *
 from qiling.arch.utils import *
 from qiling.os.thread import *
 from qiling.debugger.utils import *
-
+from .core_struct import QLCoreStructs
+from .core_hooks import QLCoreHooks
 
 __version__ = "0.9"
 
-class Qiling:
-    #Import function into class
-    from .core_struct import unpack64, pack64, pack64s, unpack64s
-    from .core_struct import unpack32, pack32, unpack32s, unpack32s_ne, pack32s
-    from .core_struct import unpack16, pack16, pack, packs, unpack, unpacks
-
-    from .core_hooks import ql_hook, hook_code, hook_intr, hook_block
-    from .core_hooks import hook_mem_unmapped, hook_mem_read_invalid, hook_mem_write_invalid
-    from .core_hooks import hook_mem_fetch_invalid, hook_mem_invalid, hook_address
-    from .core_hooks import hook_mem_read, hook_mem_write, hook_mem_fetch, hook_insn
-    
+class Qiling(QLCoreStructs, QLCoreHooks):    
     def __init__(
             self,
             filename=None,
