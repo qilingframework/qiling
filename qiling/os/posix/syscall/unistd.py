@@ -39,7 +39,7 @@ def ql_syscall_exit(ql, exit_code, *args, **kw):
 
     ql.nprint("exit(%u) = %u" % (exit_code, exit_code))
 
-    if ql.child_processes == True:
+    if ql.os.child_processes == True:
         os._exit(0)
 
     ql.stop(stop_event = THREAD_EVENT_EXIT_EVENT)
@@ -50,7 +50,7 @@ def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
 
     ql.nprint("exit_group(%u)" % ql.exit_code)
 
-    if ql.child_processes == True:
+    if ql.os.child_processes == True:
         os._exit(0)
 
     ql.stop()
@@ -373,7 +373,7 @@ def ql_syscall_chdir(ql, path_name, *args, **kw):
     relative_path = ql_transform_to_relative_path(ql, pathname)
 
     if os.path.exists(real_path) and os.path.isdir(real_path):
-        if ql.multithread == True:
+        if ql.thread_management != None:
             pass
         else:
             ql.current_path = relative_path + '/'
@@ -422,10 +422,10 @@ def ql_syscall_vfork(ql, *args, **kw):
     pid = os.fork()
 
     if pid == 0:
-        ql.child_processes = True
-        ql.dprint (0, "[+] vfork(): is this a child process: %r" % (ql.child_processes))
+        ql.os.child_processes = True
+        ql.dprint (0, "[+] vfork(): is this a child process: %r" % (ql.os.child_processes))
         regreturn = 0
-        if ql.multithread == True:
+        if ql.thread_management != None:
             ql.thread_management.cur_thread.set_thread_log_file(ql.log_dir)
         else:
             if ql.log_split:
@@ -437,7 +437,7 @@ def ql_syscall_vfork(ql, *args, **kw):
     else:
         regreturn = pid
 
-    if ql.multithread == True:
+    if ql.thread_management != None:
         ql.emu_stop()
 
     ql.nprint("vfork() = %d" % regreturn)
@@ -524,7 +524,7 @@ def ql_syscall_dup3(ql, dup3_oldfd, dup3_newfd, dup3_flags, null2, null3, null4)
     ql_definesyscall_return(ql, regreturn)
 
 def ql_syscall_set_tid_address(ql, set_tid_address_tidptr, *args, **kw):
-    if ql.multithread == False:
+    if ql.thread_management == None:
         regreturn = os.getpid()
     else:
         ql.thread_management.cur_thread.set_clear_child_tid_addr(set_tid_address_tidptr)

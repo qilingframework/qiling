@@ -80,7 +80,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
             ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
             ql_definesyscall_return(ql, regreturn)
         else:
-            ql.child_processes = True
+            ql.os.child_processes = True
 
             f_th.update_global_thread_id()
             f_th.new_thread_id()

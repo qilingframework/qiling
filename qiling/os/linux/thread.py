@@ -556,7 +556,7 @@ class QlLinuxThreadManagement(QlThreadManagement):
                 t.running()
 
     def exit_world(self):
-        if self.ql.child_processes == True:
+        if self.ql.os.child_processes == True:
             os._exit(0)
 
         for t in self.running_thread_list:

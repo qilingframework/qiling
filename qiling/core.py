@@ -71,13 +71,11 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.archbit = ''
         self.path = ''
         self.entry_point = 0
-        self.shellcode_init = 0
         self.file_des = []
         self.stdin = ql_file('stdin', sys.stdin.fileno())
         self.stdout = ql_file('stdout', sys.stdout.fileno())
         self.stderr = ql_file('stderr', sys.stderr.fileno())
         self.sigaction_act = []
-        self.child_processes = False
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
@@ -91,7 +89,6 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.debug_stop = False
         self.internal_exception = None
         self.platform = platform.system()
-        self.global_thread_id = 0
         self.debugger = None
         self.automatize_input = False
         self.profile = None 
@@ -105,7 +102,6 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         # by turning this on, you must run your analysis with sudo
         self.root = True
         self.log_split = False
-        self.shellcode_init = 0
         # syscall filter for strace-like functionality
         self.strace_filter = None
         # generic append function, eg log file

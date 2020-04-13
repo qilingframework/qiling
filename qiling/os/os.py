@@ -12,6 +12,7 @@ from qiling.os.const import *
 class QlOs:
     def __init__(self, ql):
         self.ql = ql
+        self.child_processes = False
 
         # define analysis enviroment profile
         if not self.ql.profile:
