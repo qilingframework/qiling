@@ -1,4 +1,3 @@
-    
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
@@ -29,12 +28,12 @@ class QlRegisterManager:
     # ql.reg.name_pc - PC register name getter
     @property
     def name_pc(self):
-        return self.ql.arch.get_reg_pc()
+        return self.ql.arch.get_name_pc()
 
     # ql.reg.name_sp - SP register name getter
     @property
     def name_sp(self):
-        return self.ql.arch.get_reg_sp()
+        return self.ql.arch.get_name_sp()
 
     # ql.reg.tables - Register table getter
     @property

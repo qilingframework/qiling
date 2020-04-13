@@ -70,12 +70,12 @@ class QlArchX86(QlArch):
 
 
     # get stack pointer register
-    def get_reg_sp(self):
+    def get_name_sp(self):
         return UC_X86_REG_ESP
 
 
     # get pc register pointer
-    def get_reg_pc(self):
+    def get_name_pc(self):
         return UC_X86_REG_EIP
 
 
@@ -228,12 +228,12 @@ class QlArchX8664(QlArch):
 
 
     # get stack pointer register
-    def get_reg_sp(self):
+    def get_name_sp(self):
         return UC_X86_REG_RSP
 
 
     # get pc register pointer
-    def get_reg_pc(self):
+    def get_name_pc(self):
         return UC_X86_REG_RIP
 
 
