@@ -191,7 +191,7 @@ def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, *args, **kw):
     regreturn = 0
     ql.dprint(D_INFO, "lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
     try:
-        regreturn = ql.file_des[lseek_fd].lseek(lseek_ofset, lseek_origin)
+        regreturn = ql.os.file_des[lseek_fd].lseek(lseek_ofset, lseek_origin)
     except OSError:
         regreturn = -1
     ql.nprint("lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
@@ -204,7 +204,7 @@ def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, *args, *
     regreturn = 0
     ql.nprint("_llseek(%d, 0x%x, 0x%x, 0x%x = %d)" % (fd, offset_high, offset_low, origin, regreturn))
     try:
-        ret = ql.file_des[fd].lseek(offset, origin)
+        ret = ql.os.file_des[fd].lseek(offset, origin)
     except OSError:
         regreturn = -1
     #regreturn = 0 if ret >= 0 else -1
@@ -262,9 +262,9 @@ def ql_syscall_access(ql, access_path, access_mode, *args, **kw):
 
 def ql_syscall_close(ql, close_fd, *args, **kw):
     regreturn = -1
-    if close_fd < 256 and ql.file_des[close_fd] != 0:
-        ql.file_des[close_fd].close()
-        ql.file_des[close_fd] = 0
+    if close_fd < 256 and ql.os.file_des[close_fd] != 0:
+        ql.os.file_des[close_fd].close()
+        ql.os.file_des[close_fd] = 0
         regreturn = 0
     ql.nprint("close(%d) = %d" % (close_fd, regreturn))
     ql_definesyscall_return(ql, regreturn)
@@ -272,12 +272,12 @@ def ql_syscall_close(ql, close_fd, *args, **kw):
 
 def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, *args, **kw):
     data = None
-    if read_fd < 256 and ql.file_des[read_fd] != 0:
+    if read_fd < 256 and ql.os.file_des[read_fd] != 0:
         try:
-            pos = ql.file_des[read_fd].tell()
-            ql.file_des[read_fd].lseek(read_offt)
-            data = ql.file_des[read_fd].read(read_len)
-            ql.file_des[read_fd].lseek(pos)
+            pos = ql.os.file_des[read_fd].tell()
+            ql.os.file_des[read_fd].lseek(read_offt)
+            data = ql.os.file_des[read_fd].read(read_len)
+            ql.os.file_des[read_fd].lseek(pos)
             ql.mem.write(read_buf, data)
             regreturn = len(data)
         except:
@@ -290,9 +290,9 @@ def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, *args, **kw):
 
 def ql_syscall_read(ql, read_fd, read_buf, read_len, *args, **kw):
     data = None
-    if read_fd < 256 and ql.file_des[read_fd] != 0:
+    if read_fd < 256 and ql.os.file_des[read_fd] != 0:
         try:
-            data = ql.file_des[read_fd].read(read_len)
+            data = ql.os.file_des[read_fd].read(read_len)
             ql.mem.write(read_buf, data)
             regreturn = len(data)
         except:
@@ -317,7 +317,7 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
         if buf:
             ql.dprint(D_INFO, "[+] write() CONTENT:")
             ql.dprint(D_INFO, "%s" % buf)
-        ql.file_des[write_fd].write(buf)
+        ql.os.file_des[write_fd].write(buf)
         regreturn = write_count
     except:
         regreturn = -1
@@ -376,7 +376,7 @@ def ql_syscall_chdir(ql, path_name, *args, **kw):
         if ql.os.thread_management != None:
             pass
         else:
-            ql.current_path = relative_path + '/'
+            ql.os.current_path = relative_path + '/'
         ql.nprint("chdir(%s) = %d"% (relative_path, regreturn))
     else:
         regreturn = -1
@@ -500,8 +500,8 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
 
 def ql_syscall_dup2(ql, dup2_oldfd, dup2_newfd, *args, **kw):
     if 0 <= dup2_newfd < 256 and 0 <= dup2_oldfd < 256:
-        if ql.file_des[dup2_oldfd] != 0:
-            ql.file_des[dup2_newfd] = ql.file_des[dup2_oldfd].dup()
+        if ql.os.file_des[dup2_oldfd] != 0:
+            ql.os.file_des[dup2_newfd] = ql.os.file_des[dup2_oldfd].dup()
             regreturn = dup2_newfd
         else:
             regreturn = -1
@@ -513,8 +513,8 @@ def ql_syscall_dup2(ql, dup2_oldfd, dup2_newfd, *args, **kw):
 
 def ql_syscall_dup3(ql, dup3_oldfd, dup3_newfd, dup3_flags, null2, null3, null4):
     if 0 <= dup3_newfd < 256 and 0 <= dup3_oldfd < 256:
-        if ql.file_des[dup3_oldfd] != 0:
-            ql.file_des[dup3_newfd] = ql.file_des[dup3_oldfd].dup()
+        if ql.os.file_des[dup3_oldfd] != 0:
+            ql.os.file_des[dup3_newfd] = ql.os.file_des[dup3_oldfd].dup()
             regreturn = dup3_newfd
         else:
             regreturn = -1
@@ -538,7 +538,7 @@ def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
 
     idx1 = -1
     for i in range(256):
-        if ql.file_des[i] == 0:
+        if ql.os.file_des[i] == 0:
             idx1 = i
             break
     if idx1 == -1:
@@ -546,14 +546,14 @@ def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
     else:
         idx2 = -1
         for i in range(256):
-            if ql.file_des[i] == 0 and i != idx1:
+            if ql.os.file_des[i] == 0 and i != idx1:
                 idx2 = i
                 break
         if idx2 == -1:
             regreturn = -1
         else:
-            ql.file_des[idx1] = rd
-            ql.file_des[idx2] = wd
+            ql.os.file_des[idx1] = rd
+            ql.os.file_des[idx2] = wd
             if ql.archtype== QL_MIPS32:
                 ql.register(UC_MIPS_REG_V1, idx2)
                 regreturn = idx1
@@ -594,7 +594,7 @@ def ql_syscall_truncate(ql, path, length, *args, **kw):
 
 
 def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args, **kw):
-    real_path = ql.file_des[ftrunc_fd].name
+    real_path = ql.os.file_des[ftrunc_fd].name
     st_size = os.stat(real_path).st_size
 
     try:
@@ -617,7 +617,7 @@ def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args, **kw):
 def ql_syscall_unlink(ql, unlink_pathname, *args, **kw):
     pathname = ql_read_string(ql, unlink_pathname)
     real_path = ql_transform_to_real_path(ql, pathname)
-    opened_fds = [getattr(ql.file_des[i], 'name', None) for i in range(256) if ql.file_des[i] != 0]
+    opened_fds = [getattr(ql.os.file_des[i], 'name', None) for i in range(256) if ql.os.file_des[i] != 0]
     path = pathlib.Path(real_path)
 
     if any((real_path not in opened_fds, path.is_block_device(), path.is_fifo(), path.is_socket(), path.is_symlink())):
@@ -669,10 +669,10 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
 
         return bytes([t])
 
-    if ql.file_des[fd].tell() == 0:
+    if ql.os.file_des[fd].tell() == 0:
         n = ql.archbit // 8
         total_size = 0
-        results = os.scandir(ql.file_des[fd].name)
+        results = os.scandir(ql.os.file_des[fd].name)
         _ent_count = 0
 
         for result in itertools.chain((pathlib.Path('.'), pathlib.Path('..')), results): # chain speical directories with the results
@@ -693,7 +693,7 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
             _ent_count += 1
 
         regreturn = total_size
-        ql.file_des[fd].lseek(0, os.SEEK_END) # mark as end of file for dir_fd
+        ql.os.file_des[fd].lseek(0, os.SEEK_END) # mark as end of file for dir_fd
     else:
         _ent_count = 0
         regreturn = 0

@@ -10,7 +10,6 @@ import os as pyos
 from unicorn import *
 
 from qiling.const import *
-from qiling.os.posix.filestruct import *
 from qiling.exception import *
 from qiling.utils import *
 from qiling.os.utils import *
@@ -73,11 +72,6 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.archbit = ''
         self.path = ''
         self.entry_point = 0
-        self.file_des = []
-        self.stdin = ql_file('stdin', sys.stdin.fileno())
-        self.stdout = ql_file('stdout', sys.stdout.fileno())
-        self.stderr = ql_file('stderr', sys.stderr.fileno())
-        self.sigaction_act = []
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
@@ -85,7 +79,6 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.until_addr = 0
         self.byte = 0
         self.log_file_fd = None
-        self.current_path = '/'
         self.fs_mapper = []
         self.exit_code = 0
         self.debug_stop = False
@@ -146,23 +139,9 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.log_file_fd = _logger
             
         # OS dependent configuration for stdio
-        if self.ostype in QL_POSIX:
-            if stdin != 0:
-                self.stdin = stdin
-
-            if stdout != 0:
-                self.stdout = stdout
-
-            if stderr != 0:
-                self.stderr = stderr
-
-            self.file_des = [0] * 256
-            self.file_des[0] = self.stdin
-            self.file_des[1] = self.stdout
-            self.file_des[2] = self.stderr
-
-            for _ in range(256):
-                self.sigaction_act.append(0)
+        self.stdin = stdin
+        self.stdout = stdout
+        self.stderr = stderr
 
         # double check supported architecture
         if not ql_is_valid_arch(self.archtype):

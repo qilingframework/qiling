@@ -40,7 +40,7 @@ class QlLinuxThread(QlThread):
         self.blocking_condition_fuc = None
         self.blocking_condition_arg = None
         self.thread_management = thread_management
-        self.current_path = ql.current_path
+        self.current_path = ql.os.current_path
         self.log_file_fd = None
 
         _logger = ql_setup_logger(str(self.thread_id)) if ql.log_split else ql_setup_logger()

@@ -25,7 +25,7 @@ class Qldbg(object):
 
     def initialize(self, ql, exit_point=None, mappings=None):
         self.ql = ql
-        self.current_address = self.entry_point = self.ql.entry_point
+        self.current_address = self.entry_point = self.ql.loader.entry_point
         self.exit_point = exit_point
         self.mapping = mappings
         self.ql.hook_code(self.dbg_hook)

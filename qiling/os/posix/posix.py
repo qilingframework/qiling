@@ -21,9 +21,21 @@ class QlOsPosix(QlOs):
     def __init__(self, ql):
         super(QlOsPosix, self).__init__(ql)
         self.ql = ql
+        self.sigaction_act = []
+        self.file_des = []
+        self.current_path = '/'
         self.dict_posix_syscall = dict()
         self.dict_posix_syscall_by_num = dict()
 
+        if self.ql.ostype in QL_POSIX:
+
+            self.file_des = [0] * 256
+            self.file_des[0] = self.ql.stdin
+            self.file_des[1] = self.ql.stdout
+            self.file_des[2] = self.ql.stderr
+
+        for _ in range(256):
+            self.sigaction_act.append(0)
 
     # ql.syscall - get syscall for all posix series
     @property

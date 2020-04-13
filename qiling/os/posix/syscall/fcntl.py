@@ -43,7 +43,7 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
     mode = mode & 0xffffffff
 
     for i in range(256):
-        if ql.file_des[i] == 0:
+        if ql.os.file_des[i] == 0:
             idx = i
             break
     else:
@@ -57,7 +57,7 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
                 mode = 0
 
             flags = ql_open_flag_mapping(flags, ql)
-            ql.file_des[idx] = ql_file.open(real_path, flags, mode)
+            ql.os.file_des[idx] = ql_file.open(real_path, flags, mode)
             regreturn = idx
         except:
             regreturn = -1
@@ -83,7 +83,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
     openat_mode = openat_mode & 0xffffffff
 
     for i in range(256):
-        if ql.file_des[i] == 0:
+        if ql.os.file_des[i] == 0:
             idx = i
             break
     else:
@@ -97,7 +97,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
                 mode = 0
 
             openat_flags = ql_open_flag_mapping(openat_flags, ql)
-            ql.file_des[idx] = ql_file.open(real_path, openat_flags, openat_mode)
+            ql.os.file_des[idx] = ql_file.open(real_path, openat_flags, openat_mode)
             regreturn = idx
         except:
             regreturn = -1

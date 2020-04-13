@@ -288,10 +288,10 @@ class QlLoaderPE(Process, QlLoader):
                 self.PE_IMAGE_BASE = self.PE_IMAGE_BASE = self.DEFAULT_IMAGE_BASE
                 self.pe.relocate_image(self.DEFAULT_IMAGE_BASE)
 
-            self.ql.entry_point = self.PE_ENTRY_POINT = self.PE_IMAGE_BASE + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
+            self.entry_point = self.PE_ENTRY_POINT = self.PE_IMAGE_BASE + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
             self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
             self.ql.nprint("[+] Loading %s to 0x%x" % (self.path, self.PE_IMAGE_BASE))
-            self.ql.nprint("[+] PE entry point at 0x%x" % self.ql.entry_point)
+            self.ql.nprint("[+] PE entry point at 0x%x" % self.entry_point)
 
             # set stack pointer
             self.ql.nprint("[+] Initiate stack address at 0x%x " % self.ql.stack_address)

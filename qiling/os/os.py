@@ -8,12 +8,16 @@ import os
 from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.const import *
+from qiling.os.posix.filestruct import *
 
 class QlOs:
     def __init__(self, ql):
         self.ql = ql
         self.child_processes = False
-        self.thread_management = None 
+        self.thread_management = None
+        self.stdin = ql_file('stdin', sys.stdin.fileno())
+        self.stdout = ql_file('stdout', sys.stdout.fileno())
+        self.stderr = ql_file('stderr', sys.stderr.fileno())
 
         # define analysis enviroment profile
         if not self.ql.profile:

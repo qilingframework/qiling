@@ -295,7 +295,7 @@ def ql_transform_to_link_path(ql, path):
     if ql.multithread == True:
         cur_path = ql.os.thread_management.cur_thread.get_current_path()
     else:
-        cur_path = ql.current_path
+        cur_path = ql.os.current_path
 
     rootfs = ql.rootfs
 
@@ -325,7 +325,7 @@ def ql_transform_to_real_path(ql, path):
     if ql.multithread == True:
         cur_path = ql.os.thread_management.cur_thread.get_current_path()
     else:
-        cur_path = ql.current_path
+        cur_path = ql.os.current_path
 
     rootfs = ql.rootfs
 
@@ -364,7 +364,7 @@ def ql_transform_to_relative_path(ql, path):
     if ql.multithread == True:
         cur_path = ql.os.thread_management.cur_thread.get_current_path()
     else:
-        cur_path = ql.current_path
+        cur_path = ql.os.current_path
 
     if path[0] == '/':
         relative_path = os.path.abspath(path)
@@ -406,7 +406,7 @@ def ql_get_vm_current_path(ql):
     if ql.multithread == True:
         return ql.os.thread_management.cur_thread.get_current_path()
     else:
-        return ql.current_path
+        return ql.os.current_path
 
 
 def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
