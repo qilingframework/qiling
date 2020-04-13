@@ -22,7 +22,7 @@ def catch_KeyboardInterrupt(ql):
             try:
                 return func(*args, **kw)
             except BaseException as e:
-                ql.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
+                ql.os.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
                 ql.internal_exception = e
         return wrapper
     return decorator

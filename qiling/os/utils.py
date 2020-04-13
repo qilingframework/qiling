@@ -293,7 +293,7 @@ def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
 
 def ql_transform_to_link_path(ql, path):
     if ql.multithread == True:
-        cur_path = ql.thread_management.cur_thread.get_current_path()
+        cur_path = ql.os.thread_management.cur_thread.get_current_path()
     else:
         cur_path = ql.current_path
 
@@ -323,7 +323,7 @@ def ql_transform_to_link_path(ql, path):
 
 def ql_transform_to_real_path(ql, path):
     if ql.multithread == True:
-        cur_path = ql.thread_management.cur_thread.get_current_path()
+        cur_path = ql.os.thread_management.cur_thread.get_current_path()
     else:
         cur_path = ql.current_path
 
@@ -362,7 +362,7 @@ def ql_transform_to_real_path(ql, path):
 
 def ql_transform_to_relative_path(ql, path):
     if ql.multithread == True:
-        cur_path = ql.thread_management.cur_thread.get_current_path()
+        cur_path = ql.os.thread_management.cur_thread.get_current_path()
     else:
         cur_path = ql.current_path
 
@@ -404,7 +404,7 @@ def ql_real_to_vm_abspath(ql, path):
 
 def ql_get_vm_current_path(ql):
     if ql.multithread == True:
-        return ql.thread_management.cur_thread.get_current_path()
+        return ql.os.thread_management.cur_thread.get_current_path()
     else:
         return ql.current_path
 

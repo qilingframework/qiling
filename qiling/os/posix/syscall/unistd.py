@@ -42,7 +42,7 @@ def ql_syscall_exit(ql, exit_code, *args, **kw):
     if ql.os.child_processes == True:
         os._exit(0)
 
-    ql.stop(stop_event = THREAD_EVENT_EXIT_EVENT)
+    ql.os.stop(stop_event = THREAD_EVENT_EXIT_EVENT)
 
 
 def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
@@ -53,7 +53,7 @@ def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
     if ql.os.child_processes == True:
         os._exit(0)
 
-    ql.stop()
+    ql.os.stop()
 
 
 def ql_syscall_alarm(ql, alarm_seconds, *args, **kw):
@@ -373,7 +373,7 @@ def ql_syscall_chdir(ql, path_name, *args, **kw):
     relative_path = ql_transform_to_relative_path(ql, pathname)
 
     if os.path.exists(real_path) and os.path.isdir(real_path):
-        if ql.thread_management != None:
+        if ql.os.thread_management != None:
             pass
         else:
             ql.current_path = relative_path + '/'
@@ -425,8 +425,8 @@ def ql_syscall_vfork(ql, *args, **kw):
         ql.os.child_processes = True
         ql.dprint (0, "[+] vfork(): is this a child process: %r" % (ql.os.child_processes))
         regreturn = 0
-        if ql.thread_management != None:
-            ql.thread_management.cur_thread.set_thread_log_file(ql.log_dir)
+        if ql.os.thread_management != None:
+            ql.os.thread_management.cur_thread.set_thread_log_file(ql.log_dir)
         else:
             if ql.log_split:
                 _logger = ql.log_file_fd
@@ -437,7 +437,7 @@ def ql_syscall_vfork(ql, *args, **kw):
     else:
         regreturn = pid
 
-    if ql.thread_management != None:
+    if ql.os.thread_management != None:
         ql.emu_stop()
 
     ql.nprint("vfork() = %d" % regreturn)
@@ -524,11 +524,11 @@ def ql_syscall_dup3(ql, dup3_oldfd, dup3_newfd, dup3_flags, null2, null3, null4)
     ql_definesyscall_return(ql, regreturn)
 
 def ql_syscall_set_tid_address(ql, set_tid_address_tidptr, *args, **kw):
-    if ql.thread_management == None:
+    if ql.os.thread_management == None:
         regreturn = os.getpid()
     else:
-        ql.thread_management.cur_thread.set_clear_child_tid_addr(set_tid_address_tidptr)
-        regreturn = ql.thread_management.cur_thread.get_thread_id()
+        ql.os.thread_management.cur_thread.set_clear_child_tid_addr(set_tid_address_tidptr)
+        regreturn = ql.os.thread_management.cur_thread.get_thread_id()
     ql.nprint("set_tid_address(%x) = %d" % (set_tid_address_tidptr, regreturn))
     ql_definesyscall_return(ql, regreturn)
 

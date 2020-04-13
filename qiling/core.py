@@ -21,7 +21,7 @@ from qiling.debugger.utils import *
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 
-__version__ = "0.9"
+__version__ = "1.0"
 
 class Qiling(QLCoreStructs, QLCoreHooks):    
     def __init__(
@@ -66,6 +66,8 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.stack_address = stack_address
         self.stack_size = stack_size
         self.interp_base = interp_base
+        # generic append function, eg log file        
+        self.append = append
 
         # Define after ql=Qiling(), either defined by Qiling Framework or user defined
         self.archbit = ''
@@ -94,7 +96,6 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.profile = None 
         # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
         self.multithread = False
-        self.thread_management = None    
         # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
         self.ipv6 = False        
         # Bind to localhost
@@ -104,8 +105,8 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.log_split = False
         # syscall filter for strace-like functionality
         self.strace_filter = None
-        # generic append function, eg log file
-        self.append = append
+
+
 
         """
         Qiling Framework Core Engine
@@ -246,8 +247,8 @@ class Qiling(QLCoreStructs, QLCoreHooks):
 
     # normal print out
     def nprint(self, *args, **kw):
-        if self.multithread == True and self.thread_management is not None and self.thread_management.cur_thread is not None:
-            fd = self.thread_management.cur_thread.log_file_fd
+        if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
+            fd = self.os.thread_management.cur_thread.log_file_fd
         else:
             fd = self.log_file_fd
 
@@ -375,10 +376,3 @@ class Qiling(QLCoreStructs, QLCoreHooks):
 
     def add_fs_mapper(self, fm, to):
         self.fs_mapper.append([fm, to])
-
-    def stop(self, stop_event=THREAD_EVENT_EXIT_GROUP_EVENT):
-        if self.multithread == True:
-            td = self.thread_management.cur_thread
-            td.stop()
-            td.stop_event = stop_event
-        self.emu_stop()
