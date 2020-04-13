@@ -30,9 +30,9 @@ class QlOsPosix(QlOs):
         if self.ql.ostype in QL_POSIX:
 
             self.file_des = [0] * 256
-            self.file_des[0] = self.ql.stdin
-            self.file_des[1] = self.ql.stdout
-            self.file_des[2] = self.ql.stderr
+            self.file_des[0] = self.stdin
+            self.file_des[1] = self.stdout
+            self.file_des[2] = self.stderr
 
         for _ in range(256):
             self.sigaction_act.append(0)

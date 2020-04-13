@@ -19,6 +19,16 @@ class QlOs:
         self.stdout = ql_file('stdout', sys.stdout.fileno())
         self.stderr = ql_file('stderr', sys.stderr.fileno())
 
+        if ql.stdin != 0:
+            self.stdin = ql.stdin
+        
+        if ql.stdout != 0:
+            self.stdout = ql.stdout
+        
+        if ql.stderr != 0:
+            self.stderr = ql.stderr
+
+
         # define analysis enviroment profile
         if not self.ql.profile:
             self.profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".." ,"profiles", ql_ostype_convert_str(self.ql.ostype) + ".ql")
