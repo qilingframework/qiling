@@ -204,16 +204,18 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         if self.archbit:
             self.pointersize = (self.archbit // 8)            
 
-        ##########
-        # Memory #
-        ##########
-        self.mem = ql_os_setup(self, "mem")
+        #############
+        # Component #
+        #############
+        self.mem = ql_component_setup(self, "memory")
+        self.reg = ql_component_setup(self, "register")
+
   
         #####################################
         # Architecture                      #
         #####################################
         # Load architecture's and os module #
-        # ql.pc, ql.sp and etc              #
+        # ql.reg.pc, ql.reg.sp and etc              #
         #####################################
         self.arch = ql_arch_setup(self)
 
@@ -297,14 +299,12 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         elif self.ostype == QL_WINDOWS:
             self.set_api(syscall_cur, syscall_new)
 
-
     # replace Windows API with custom syscall
     def set_api(self, syscall_cur, syscall_new):
         if self.ostype == QL_WINDOWS:
             self.os.user_defined_api[syscall_cur] = syscall_new
         elif self.ostype in (QL_POSIX):
             self.set_syscall(syscall_cur, syscall_new)
-
 
     def stack_push(self, data):
         self.arch.stack_push(data)
@@ -327,20 +327,9 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         else:
             self.patch_lib.append((addr, code, file_name.decode()))
     
-
     # ql.register - read and write register 
-    def register(self, register_str, value= None):
-        if value is None:
-            return self.arch.get_register(register_str)
-        else:    
-            return self.arch.set_register(register_str, value)
-
-    def msr(self, msr, addr= None):
-        if not addr:
-            return self.uc.msr_read(msr)
-        else:
-            self.uc.msr_write(msr, addr)
-
+    def register(self, register_str= None, value= None):
+        return self.reg.rw(register_str, value)
 
     def context(self, saved_context= None):
         if saved_context == None:
@@ -348,59 +337,11 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         else:
             self.uc.context_restore(saved_context)
 
-
     def emu_stop(self):
         self.uc.emu_stop()
 
-
     def emu_start(self, begin, end, timeout=0, count=0):
         self.uc.emu_start(begin, end, timeout, count)
-
-
-    # ql.reg_pc - PC register name getter
-    @property
-    def reg_pc(self):
-        return self.arch.get_reg_pc()
-
-    # ql.reg_sp - SP register name getter
-    @property
-    def reg_sp(self):
-        return self.arch.get_reg_sp()
-
-    # ql.reg_tables - Register table getter
-    @property
-    def reg_table(self):
-        return self.arch.get_reg_table()
-
-    # ql.reg_name - Register name converter getter
-    @property
-    def reg_name(self):
-        return self.arch.get_reg_name_str(self.uc_reg_name)
-
-    # ql.reg_name - Register name converter setter
-    @reg_name.setter
-    def reg_name(self, uc_reg):
-        self.uc_reg_name = uc_reg
-
-    # ql.pc - PC register value getter
-    @property
-    def pc(self):
-        return self.arch.get_pc()
-
-    # ql.pc - PC register value setter
-    @pc.setter
-    def pc(self, value):
-        self.arch.set_pc(value)
-
-    # ql.sp - SP register value getter
-    @property
-    def sp(self):
-        return self.arch.get_sp()
-
-    # ql.sp - SP register value setter
-    @sp.setter
-    def sp(self, value):
-        self.arch.set_sp(value)
 
     # ql.output var getter
     @property

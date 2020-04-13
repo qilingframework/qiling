@@ -71,7 +71,7 @@ class QlOsPosix(QlOs):
                 self.ql.nprint("[!] Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
                 raise
         else:
-            self.ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implemented" %(self.ql.pc, self.syscall, self.syscall))
+            self.ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implemented" %(self.ql.reg.pc, self.syscall, self.syscall))
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Syscall Not Found")
 

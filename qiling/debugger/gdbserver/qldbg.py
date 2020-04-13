@@ -101,7 +101,7 @@ class Qldbg(object):
                     if map_address and self.ql.mem.is_mapped(map_address,map_len) == True:
                         self.entry_context['memory'][map_address] = bytes(self.ql.mem.read(map_address, map_len))
 
-                for r in self.ql.reg_table:
+                for r in self.ql.reg.table:
                     try:
                         self.entry_context['regs'][r] = self.ql.register(r)
                     except Exception as ex:

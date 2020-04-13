@@ -455,16 +455,16 @@ def ql_x86_register_fs(self):
 def ql_x8664_set_gs(ql):
     if ql.mem.is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE) == False:
         ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
-    ql.msr(GSMSR, GS_SEGMENT_ADDR)
+    ql.reg.msr(GSMSR, GS_SEGMENT_ADDR)
 
 
 def ql_x8664_get_gs(ql):
-    return ql.msr(GSMSR)
+    return ql.reg.msr(GSMSR)
 
 
 def ql_x8664_set_fs(ql, addr):
-    ql.msr(FSMSR, addr)
+    ql.reg.msr(FSMSR, addr)
 
 
 def ql_x8664_get_fs(ql):
-    return ql.msr(FSMSR)
+    return ql.reg.msr(FSMSR)

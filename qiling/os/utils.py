@@ -46,11 +46,6 @@ def ql_os_setup(ql, function_name = None):
         module_name = ql_build_module_import_name("os", ql.ostype)
         return ql_get_module_function(module_name, function_name)(ql)
 
-    elif function_name == "mem":
-        function_name = "QlMemoryManager"
-        module_name = "qiling.os.memory"
-        return ql_get_module_function(module_name, function_name)(ql)
-
     elif function_name == "map_syscall":
         ostype_str = ql_ostype_convert_str(ql.ostype)
         arch_str = ql_arch_convert_str(ql.archtype)
@@ -61,6 +56,31 @@ def ql_os_setup(ql, function_name = None):
     else:
         module_name = ql_build_module_import_name("os", ql.ostype, ql.archtype)
         return ql_get_module_function(module_name, function_name)
+
+
+def ql_component_setup(ql, function_name = None):
+    if not ql_is_valid_ostype(ql.ostype):
+        raise QlErrorOsType("[!] Invalid OSType")
+
+    if not ql_is_valid_arch(ql.archtype):
+        raise QlErrorArch("[!] Invalid Arch %s" % ql.archtype)
+
+    if function_name == "register":
+        function_name = "QlRegisterManager"
+        module_name = "qiling.arch.register"
+        return ql_get_module_function(module_name, function_name)(ql)
+
+    elif function_name == "memory":
+        function_name = "QlMemoryManager"
+        module_name = "qiling.os.memory"
+        return ql_get_module_function(module_name, function_name)(ql)
+    
+    else:
+        module_name = ql_build_module_import_name("os", ql.ostype, ql.archtype)
+        return ql_get_module_function(module_name, function_name)
+
+
+
 
 
 def ql_lsbmsb_convert(ql, sc, size=4):
@@ -205,9 +225,9 @@ def ql_hook_code_disasm(ql, address, size):
         ql.nprint ("%s %s" % (i.mnemonic, i.op_str))
     
     if ql.output == QL_OUT_DUMP:
-        for reg in ql.reg_table:
-            ql.reg_name = reg
-            REG_NAME = ql.reg_name
+        for reg in ql.reg.table:
+            ql.reg.name = reg
+            REG_NAME = ql.reg.name
             REG_VAL = ql.register(reg)
             ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
     

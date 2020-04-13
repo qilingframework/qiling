@@ -36,7 +36,7 @@ from qiling.utils import *
 
 def ql_syscall_arch_prctl(ql, ARCHX, ARCH_SET_FS, *args, **kw):
     FSMSR = 0xC0000100
-    ql.msr(FSMSR, ARCH_SET_FS)
+    ql.reg.msr(FSMSR, ARCH_SET_FS)
     regreturn = 0
     ql.nprint("arch_prctl(0x%x) = %d" % (ARCH_SET_FS, regreturn))
     ql_definesyscall_return(ql, regreturn)

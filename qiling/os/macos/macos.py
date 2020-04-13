@@ -124,11 +124,11 @@ class QlOsMacos(QlOsPosix):
                 self.ql.emu_start(self.ql.entry_point, self.ql.until_addr, self.ql.timeout)
         except UcError:
             if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                self.ql.nprint("[+] PC= " + hex(self.ql.pc))
+                self.ql.nprint("[+] PC= " + hex(self.ql.reg.pc))
                 self.ql.mem.show_mapinfo()
-                buf = self.ql.mem.read(self.ql.pc, 8)
+                buf = self.ql.mem.read(self.ql.reg.pc, 8)
                 self.ql.nprint("[+] ", [hex(_) for _ in buf])
-                ql_hook_code_disasm(self.ql, self.ql.pc, 64)
+                ql_hook_code_disasm(self.ql, self.ql.reg.pc, 64)
             raise QlErrorExecutionStop("[!] Execution Terminated")
 
         if self.ql.internal_exception != None:

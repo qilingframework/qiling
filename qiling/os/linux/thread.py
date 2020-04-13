@@ -118,7 +118,7 @@ class QlLinuxThread(QlThread):
 
         # Run and log the run event
         s_time = int(time.time() * 1000000)
-        self.start_address = self.ql.pc
+        self.start_address = self.ql.reg.pc
 
         if mode == TIME_MODE:
             self.ql.emu_start(self.start_address, self.until_addr, timeout = thread_slice)
@@ -168,7 +168,7 @@ class QlLinuxThread(QlThread):
     def set_start_address(self, addr):
         old_context = self.ql.context()
         self.restore_regs()
-        self.ql.pc = addr
+        self.ql.reg.pc = addr
         self.store_regs()
         self.ql.context(old_context)
 
@@ -323,11 +323,11 @@ class QlLinuxX8664Thread(QlLinuxThread):
 
     def store(self):
         self.store_regs()
-        self.tls = self.ql.msr(FSMSR)
+        self.tls = self.ql.reg.msr(FSMSR)
 
     def restore(self):
         self.restore_regs()
-        self.ql.msr(FSMSR, self.tls)
+        self.ql.reg.msr(FSMSR, self.tls)
 
 class QlLinuxMIPS32Thread(QlLinuxThread):
     """docstring for QlLinuxMIPS32Thread"""

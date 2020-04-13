@@ -197,7 +197,7 @@ def hook_printf(self, address, _):
 
     format_string = read_cstring(self, format_string)
 
-    param_addr = self.ql.sp + self.ql.pointersize * 2
+    param_addr = self.ql.reg.sp + self.ql.pointersize * 2
     ret, _ = printf(self, address, format_string, param_addr, "printf")
 
     set_return_value(self, ret)

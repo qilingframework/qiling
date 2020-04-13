@@ -605,6 +605,6 @@ def ql_syscall_abort_with_payload(ql, reason_namespace, reason_code, payload, pa
 # thread_set_tsd_base
 def ql_x86_syscall_thread_fast_set_cthread_self64(ql, u_info_addr, *args, **kw):
     ql.dprint(D_INFO, "[+] [mdep] thread fast set cthread self64(tsd_base:0x%x)" % (u_info_addr))
-    ql.msr(GSMSR, u_info_addr)
+    ql.reg.msr(GSMSR, u_info_addr)
     ql_definesyscall_return(ql, KERN_SUCCESS)
     return 
