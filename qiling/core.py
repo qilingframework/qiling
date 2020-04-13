@@ -250,7 +250,7 @@ class Qiling(QLCoreStructs, QLCoreHooks):
 
     # normal print out
     def nprint(self, *args, **kw):
-        if self.thread_management is not None and self.thread_management.cur_thread is not None:
+        if self.multithread == True and self.thread_management is not None and self.thread_management.cur_thread is not None:
             fd = self.thread_management.cur_thread.log_file_fd
         else:
             fd = self.log_file_fd
@@ -390,7 +390,7 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.fs_mapper.append([fm, to])
 
     def stop(self, stop_event=THREAD_EVENT_EXIT_GROUP_EVENT):
-        if self.thread_management != None:
+        if self.multithread == True:
             td = self.thread_management.cur_thread
             td.stop()
             td.stop_event = stop_event

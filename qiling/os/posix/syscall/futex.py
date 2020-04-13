@@ -35,9 +35,7 @@ from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
 def ql_syscall_set_robust_list(ql, set_robust_list_head_ptr, set_robust_list_head_len, *args, **kw):
-    if ql.thread_management == None:
-        regreturn = 0
-    else:
+    if ql.multithread == True:
         ql.thread_management.cur_thread.robust_list_head_ptr = set_robust_list_head_ptr
         ql.thread_management.cur_thread.robust_list_head_len = set_robust_list_head_len
     regreturn = 0

@@ -54,7 +54,7 @@ def ql_syscall_nanosleep(ql, nanosleep_req, nanosleep_rem, *args, **kw):
     tv_sec = ql.unpack(ql.mem.read(nanosleep_req, n))
     tv_sec += ql.unpack(ql.mem.read(nanosleep_req + n, n)) / 1000000000
 
-    if ql.thread_management == None:
+    if ql.multithread == False:
         time.sleep(tv_sec)
     else:
         ql.emu_stop()
