@@ -56,9 +56,6 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
 
 def ql_syscall_mips32_set_thread_area(ql, sta_area, *args, **kw):
     ql.nprint ("set_thread_area(0x%x)" % sta_area)
-
-    if ql.thread_management != None and ql.multithread == True:
-        ql.thread_management.cur_thread.special_settings_arg = sta_area
     
     CONFIG3_ULR = (1 << 13)
     ql.register(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
@@ -69,9 +66,6 @@ def ql_syscall_mips32_set_thread_area(ql, sta_area, *args, **kw):
 
 def ql_syscall_arm_settls(ql, address, *args, **kw):
     #ql.nprint("settls(0x%x)" % address)
-    
-    if ql.thread_management != None and ql.multithread == True:
-        ql.thread_management.cur_thread.special_settings_arg = address
 
     ql.register(UC_ARM_REG_C13_C0_3, address)
     ql.mem.write(QL_ARM_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
