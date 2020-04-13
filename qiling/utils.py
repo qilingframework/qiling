@@ -74,6 +74,7 @@ def ostype_convert(ostype):
     adapter = {
         "linux": QL_LINUX,
         "macos": QL_MACOS,
+        "darwin": QL_MACOS,
         "freebsd": QL_FREEBSD,
         "windows": QL_WINDOWS,
     }

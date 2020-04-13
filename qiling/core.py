@@ -361,16 +361,7 @@ class Qiling(QLCoreStructs, QLCoreHooks):
     # ql.platform - platform var = host os setter eg. QL_LINUX and etc
     @platform.setter
     def platform(self, value):
-        if value == 'Linux':
-            self._platform = QL_LINUX
-        elif value == 'Darwin':
-            self._platform = QL_MACOS
-        elif value == 'Windows':
-            self._platform = QL_WINDOWS
-        elif value == 'FreeBSD':
-            self._platform = QL_FREEBSD
-        else:
-            self._platform = None
+        self._platform = ostype_convert(value.lower())
 
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:
