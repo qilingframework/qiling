@@ -52,7 +52,7 @@ class GDBSERVERsession(object):
         if self.ql.ostype in (QL_LINUX, QL_FREEBSD):
             self.gdb.bp_insert(self.ql.loader.elf_entry)
         else:
-            self.gdb.bp_insert(self.ql.entry_point)
+            self.gdb.bp_insert(self.ql.loader.entry_point)
 
 
     def bin_to_escstr(self, rawbin):
@@ -128,7 +128,7 @@ class GDBSERVERsession(object):
 
             def handle_c(subcmd):
                 self.gdb.resume_emu(self.ql.register(self.pc_reg))
-                if self.gdb.bp_list in ([self.ql.loader.elf_entry], [self.ql.entry_point]):
+                if self.gdb.bp_list in ([self.ql.loader.elf_entry], [self.ql.loader.entry_point]):
                     self.send("W00")
                 else:
                     self.send(('S%.2x' % GDB_SIGNAL_TRAP))

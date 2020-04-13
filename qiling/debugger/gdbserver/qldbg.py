@@ -25,7 +25,7 @@ class Qldbg(object):
 
     def initialize(self, ql, exit_point=None, mappings=None):
         self.ql = ql
-        self.current_address = self.entry_point = self.ql.entry_point
+        self.current_address = self.entry_point = self.ql.loader.entry_point
         self.exit_point = exit_point
         self.mapping = mappings
         self.ql.hook_code(self.dbg_hook)
@@ -50,7 +50,7 @@ class Qldbg(object):
                     self.skip_bp_count -= 1
                 else:
                     self.breakpoint_count += 1
-                    ql.stop()
+                    ql.os.stop()
 
                     self.last_bp = address
                     self.ql.nprint("gdb> Breakpoint: 0x%x\n" % address)
@@ -62,7 +62,7 @@ class Qldbg(object):
                 self.ql.dprint(D_INFO, "gdb> emulation exitpoint at 0x%x" % (self.exit_point))
         except KeyboardInterrupt as ex:
             self.ql.nprint("gdb> Paused at 0x%x, instruction size = %u\n" % (address, size))
-            ql.stop()
+            ql.os.stop()
 
 
     def bp_insert(self, addr):

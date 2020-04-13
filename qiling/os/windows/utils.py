@@ -98,5 +98,5 @@ def printf(self, address, fmt, params_addr, name, wstring=False):
         output = '0x%0.2x: %s(format = %s) = 0x%x' % (address, name, repr(fmt), len(fmt))
         stdout = fmt
     self.ql.nprint(output)
-    self.ql.stdout.write(bytes(stdout + "\n", 'utf-8'))
+    self.ql.os.stdout.write(bytes(stdout + "\n", 'utf-8'))
     return len(stdout), stdout

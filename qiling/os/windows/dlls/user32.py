@@ -48,8 +48,8 @@ def hook_GetDlgItemTextA(self, address, params):
     lpString = params["lpString"]
     cchMax = params["cchMax"]
 
-    self.ql.stdout.write(b"Input DlgItemText :\n")
-    string = self.ql.stdin.readline().strip()[:cchMax]
+    self.ql.os.stdout.write(b"Input DlgItemText :\n")
+    string = self.ql.os.stdin.readline().strip()[:cchMax]
     ret = len(string)
     self.ql.mem.write(lpString, string)
 

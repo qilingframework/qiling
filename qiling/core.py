@@ -10,7 +10,6 @@ import os as pyos
 from unicorn import *
 
 from qiling.const import *
-from qiling.os.posix.filestruct import *
 from qiling.exception import *
 from qiling.utils import *
 from qiling.os.utils import *
@@ -21,7 +20,7 @@ from qiling.debugger.utils import *
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 
-__version__ = "0.9"
+__version__ = "1.0"
 
 class Qiling(QLCoreStructs, QLCoreHooks):    
     def __init__(
@@ -66,18 +65,13 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.stack_address = stack_address
         self.stack_size = stack_size
         self.interp_base = interp_base
+        # generic append function, eg log file        
+        self.append = append
 
         # Define after ql=Qiling(), either defined by Qiling Framework or user defined
         self.archbit = ''
         self.path = ''
         self.entry_point = 0
-        self.shellcode_init = 0
-        self.file_des = []
-        self.stdin = ql_file('stdin', sys.stdin.fileno())
-        self.stdout = ql_file('stdout', sys.stdout.fileno())
-        self.stderr = ql_file('stderr', sys.stderr.fileno())
-        self.sigaction_act = []
-        self.child_processes = False
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
@@ -85,19 +79,16 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.until_addr = 0
         self.byte = 0
         self.log_file_fd = None
-        self.current_path = '/'
         self.fs_mapper = []
         self.exit_code = 0
         self.debug_stop = False
         self.internal_exception = None
         self.platform = platform.system()
-        self.global_thread_id = 0
         self.debugger = None
         self.automatize_input = False
         self.profile = None 
         # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
         self.multithread = False
-        self.thread_management = None    
         # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
         self.ipv6 = False        
         # Bind to localhost
@@ -105,11 +96,9 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         # by turning this on, you must run your analysis with sudo
         self.root = True
         self.log_split = False
-        self.shellcode_init = 0
         # syscall filter for strace-like functionality
         self.strace_filter = None
-        # generic append function, eg log file
-        self.append = append
+
 
         """
         Qiling Framework Core Engine
@@ -149,23 +138,9 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.log_file_fd = _logger
             
         # OS dependent configuration for stdio
-        if self.ostype in QL_POSIX:
-            if stdin != 0:
-                self.stdin = stdin
-
-            if stdout != 0:
-                self.stdout = stdout
-
-            if stderr != 0:
-                self.stderr = stderr
-
-            self.file_des = [0] * 256
-            self.file_des[0] = self.stdin
-            self.file_des[1] = self.stdout
-            self.file_des[2] = self.stderr
-
-            for _ in range(256):
-                self.sigaction_act.append(0)
+        self.stdin = stdin
+        self.stdout = stdout
+        self.stderr = stderr
 
         # double check supported architecture
         if not ql_is_valid_arch(self.archtype):
@@ -210,12 +185,11 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.mem = ql_component_setup(self, "memory")
         self.reg = ql_component_setup(self, "register")
 
-  
         #####################################
         # Architecture                      #
         #####################################
         # Load architecture's and os module #
-        # ql.reg.pc, ql.reg.sp and etc              #
+        # ql.reg.pc, ql.reg.sp and etc      #
         #####################################
         self.arch = ql_arch_setup(self)
 
@@ -228,7 +202,7 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         # Loader #
         ##########
         self.loader = ql_loader_setup(self)
-
+       
 
     def run(self):
         # setup strace filter for logger
@@ -250,8 +224,8 @@ class Qiling(QLCoreStructs, QLCoreHooks):
 
     # normal print out
     def nprint(self, *args, **kw):
-        if self.multithread == True and self.thread_management is not None and self.thread_management.cur_thread is not None:
-            fd = self.thread_management.cur_thread.log_file_fd
+        if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
+            fd = self.os.thread_management.cur_thread.log_file_fd
         else:
             fd = self.log_file_fd
 
@@ -379,10 +353,3 @@ class Qiling(QLCoreStructs, QLCoreHooks):
 
     def add_fs_mapper(self, fm, to):
         self.fs_mapper.append([fm, to])
-
-    def stop(self, stop_event=THREAD_EVENT_EXIT_GROUP_EVENT):
-        if self.multithread == True:
-            td = self.thread_management.cur_thread
-            td.stop()
-            td.stop_event = stop_event
-        self.emu_stop()

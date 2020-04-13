@@ -40,7 +40,7 @@ class QlLinuxThread(QlThread):
         self.blocking_condition_fuc = None
         self.blocking_condition_arg = None
         self.thread_management = thread_management
-        self.current_path = ql.current_path
+        self.current_path = ql.os.current_path
         self.log_file_fd = None
 
         _logger = ql_setup_logger(str(self.thread_id)) if ql.log_split else ql_setup_logger()
@@ -556,7 +556,7 @@ class QlLinuxThreadManagement(QlThreadManagement):
                 t.running()
 
     def exit_world(self):
-        if self.ql.child_processes == True:
+        if self.ql.os.child_processes == True:
             os._exit(0)
 
         for t in self.running_thread_list:

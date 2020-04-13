@@ -63,8 +63,8 @@ def ql_debugger(ql, remotedebugsrv, ip=None, port=None):
         ql.nprint("debugger> Error: Address already in use\n")
         raise
     try:
-        mappings = [(hex(ql.entry_point), 0x10)]
-        exit_point = ql.entry_point + os.path.getsize(path)
+        mappings = [(hex(ql.loader.entry_point), 0x10)]
+        exit_point = ql.loader.entry_point + os.path.getsize(path)
         remotedebugsrv = debugger_convert_str(remotedebugsrv)
         remotedebugsrv = str(remotedebugsrv) + "server" 
         DEBUGSESSION = str.upper(remotedebugsrv) + "session"
