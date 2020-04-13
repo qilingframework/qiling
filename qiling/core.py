@@ -100,7 +100,6 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.strace_filter = None
 
 
-
         """
         Qiling Framework Core Engine
         """
@@ -186,7 +185,6 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.mem = ql_component_setup(self, "memory")
         self.reg = ql_component_setup(self, "register")
 
-  
         #####################################
         # Architecture                      #
         #####################################
@@ -194,7 +192,9 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         # ql.reg.pc, ql.reg.sp and etc              #
         #####################################
         self.arch = ql_arch_setup(self)
+       
 
+    def run(self):
         ######
         # OS #
         ######
@@ -205,8 +205,6 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         ##########
         self.loader = ql_loader_setup(self)
 
-
-    def run(self):
         # setup strace filter for logger
         if self.strace_filter != None and self.output == QL_OUT_DEFAULT:
             self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
