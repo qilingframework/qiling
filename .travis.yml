@@ -7,6 +7,7 @@ matrix:
       dist: bionic
       language: python
       python: "3.6"
+      cache: pip
       install:
         - pip3 install -r requirements.txt
         - python3 setup.py install
@@ -21,6 +22,7 @@ matrix:
       dist: bionic
       language: python
       python: "3.7"
+      cache: pip
       install:
         - pip3 install -r requirements.txt
         - python3 setup.py install
@@ -34,6 +36,9 @@ matrix:
       os: osx
       osx_image: xcode10.1
       language: shell
+      cache:
+        directories:
+          - $HOME/Library/Caches/pip
       before_install:
         - pip3 install --upgrade pip
       install:
@@ -64,13 +69,21 @@ matrix:
       language: shell
       env:
         - PATH="/c/Python36:/c/Python36/Scripts:$PATH"
+#
+# Slower with cache
+#
+#      cache:
+#        directories:
+#          - $HOME/AppData/Local/Temp/chocolatey
+#          - $HOME/AppData/Local/pip/Cache
+#          - $HOME/AppData/Local/NuGet/Cache
       before_install:
         - choco install python --version=3.6.8
         #- choco install python
         #- choco install kb2999226
         #- python -m pip install --upgrade pip
       install:
-        - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
+        - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc3'
         - git clone https://github.com/keystone-engine/keystone
         - cd keystone
         - mkdir build
@@ -96,10 +109,21 @@ matrix:
     - name: "Python 3.6 on Docker"
       services:
         - docker
+      cache:
+        bundler: true
+        directories:
+          - $HOME/docker
+      before_cache:
+          - docker save -o $HOME/docker/images.tar qiling:latest
       before_install:
-        - docker build -t qiling:1.0 .
+        - docker load -i $HOME/docker/images.tar || true
+        - docker image inspect qiling:latest >/dev/null 2>&1 || docker build -t qiling:latest .
+        - docker run -dt --name qiling -v ${TRAVIS_BUILD_DIR}:/qiling qiling:latest
+        - docker exec qiling pip3 install -r requirements.txt
+        - docker exec qiling python3 setup.py install
       script:
-        - docker run qiling:1.0 /bin/bash -c "cd tests && ./test_nix.sh"
+        - docker exec qiling bash -c "cd tests && ./test_nix.sh"
+        - docker commit qiling qiling:latest
 
 #    - name: "Python 3.6 on WSL1 Ubuntu"
 #      os: windows
