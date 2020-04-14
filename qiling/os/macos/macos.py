@@ -30,6 +30,7 @@ class QlOsMacos(QlOsPosix):
         super(QlOsMacos, self).__init__(ql)
         self.ql = ql
         self.ql.os = self
+
         self.load()
 
 
@@ -53,14 +54,14 @@ class QlOsMacos(QlOsPosix):
 
         if self.ql.shellcoder:
             if (self.ql.stack_address == 0):
-                self.ql.stack_address = 0x1000000
+                self.stack_address = 0x1000000
             if (self.ql.stack_size == 0):
-                self.ql.stack_size = 10 * 1024 * 1024
+                self.stack_size = 10 * 1024 * 1024
         else:
             if (self.ql.stack_address == 0):
-                self.ql.stack_address = self.QL_MACOS_PREDEFINE_STACKADDRESS
+                self.stack_address = self.QL_MACOS_PREDEFINE_STACKADDRESS
             if (self.ql.stack_size == 0):
-                self.ql.stack_size = self.QL_MACOS_PREDEFINE_STACKSIZE
+                self.stack_size = self.QL_MACOS_PREDEFINE_STACKSIZE
 
         self.macho_task = MachoTask()
         self.macho_fs = FileSystem(self.ql)
@@ -70,12 +71,12 @@ class QlOsMacos(QlOsPosix):
         self.macho_task_server = MachTaskServer(self.ql)
 
         if self.ql.shellcoder:
-            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
-            self.ql.stack_address = self.ql.stack_address  + 0x200000 - 0x1000
-            self.ql.mem.write(self.ql.stack_address, self.ql.shellcoder)
+            self.ql.mem.map(self.stack_address, self.stack_size)
+            self.ql.stack_address = self.stack_address  + 0x200000 - 0x1000
+            self.ql.mem.write(self.stack_address, self.ql.shellcoder)
         else:
             self.ql.macho_vmmap_end = self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS
-            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
+            self.ql.mem.map(self.stack_address, self.stack_size)
             self.stack_sp = self.QL_MACOS_PREDEFINE_STACKADDRESS + self.QL_MACOS_PREDEFINE_STACKSIZE
             self.envs = env_dict_to_array(self.ql.env)
             self.apples = ql_real_to_vm_abspath(self.ql, self.ql.path)
@@ -87,19 +88,20 @@ class QlOsMacos(QlOsPosix):
 
     def run(self):
         if self.ql.archtype== QL_ARM64:
-            self.ql.register(UC_ARM64_REG_SP, self.ql.stack_address)
+            self.ql.register(UC_ARM64_REG_SP, self.ql.loader.stack_address)
             self.ql.arch.enable_vfp()
             self.ql.hook_intr(self.hook_syscall)
 
         elif self.ql.archtype== QL_X8664:
-            self.ql.register(UC_X86_REG_RSP, self.ql.stack_address)
+            self.ql.register(UC_X86_REG_RSP, self.ql.loader.stack_address)
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
         if  self.ql.archtype== QL_X8664:
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
-
+        
+        self.macho_task.min_offset = page_align_end(self.ql.loader.vm_end_addr, PAGE_SIZE)
         ql_setup_output(self.ql)
         
         # FIXME: Not working due to overlarge mapping, need to fix it

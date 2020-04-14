@@ -8,8 +8,7 @@ import string
 
 from qiling.const import *
 from qiling.exception import *
-
-from qiling.loader.loader import QlLoader
+from .loader import QlLoader
 
 PT_LOAD = 1
 PT_DYNAMIC = 2

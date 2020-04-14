@@ -2,14 +2,13 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 from unicorn import *
 from unicorn.arm64_const import *
-from struct import pack
-from .arch import QlArch
 
 from qiling.const import *
-from unicorn import *
-from unicorn.arm_const import *
+from .arch import QlArch
+
 
 class QlArchARM64(QlArch):
     def __init__(self, ql):

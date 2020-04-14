@@ -5,7 +5,11 @@
 
 import os, socket
 
+from qiling.const import *
 from qiling.utils import *
+
+from qiling.exception import *
+
 
 def ql_debugger_init(ql):
         # debugger init
@@ -74,3 +78,23 @@ def ql_debugger(ql, remotedebugsrv, ip=None, port=None):
         ql.nprint("debugger> Error: Not able to initialize GDBServer\n")
         raise
 
+def debugger_convert(debugger):
+    adapter = {
+        "gdb": QL_GDB,
+        "ida": QL_IDAPRO,
+    }
+    if debugger in adapter:
+        return adapter[debugger]
+    # invalid
+    return None, None
+
+def debugger_convert_str(debugger_id):
+    adapter = {
+        None : "gdb",
+        QL_GDB : "gdb",
+        QL_IDAPRO: "ida",
+    }
+    if debugger_id in adapter:
+        return adapter[debugger_id]
+    # invalid
+    return None, None

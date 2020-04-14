@@ -6,6 +6,7 @@
 import sys, unittest, subprocess, string, random
 sys.path.append("..")
 from qiling import *
+from qiling.os.utils import *
 from qiling.exception import *
 from qiling.os.posix import syscall
 

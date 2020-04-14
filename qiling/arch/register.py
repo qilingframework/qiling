@@ -3,10 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-from qiling.const import *
-from qiling.exception import *
-from qiling.os.utils import *
-
 class QlRegisterManager:
     def __init__(self, ql):
         self.ql = ql

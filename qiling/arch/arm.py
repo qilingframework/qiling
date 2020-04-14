@@ -2,20 +2,13 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 from unicorn import *
 from unicorn.arm_const import *
-from struct import pack
-from .arch import QlArch
 
 from qiling.const import *
-from unicorn import *
-from unicorn.arm_const import *
+from .arch import QlArch
 
-# def ql_arm_check_thumb(uc, reg_cpsr):
-#     mode = UC_MODE_ARM
-#     if reg_cpsr & 0b100000 != 0:
-#         mode = UC_MODE_THUMB
-#         return mode
 
 class QlArchARM(QlArch):
     def __init__(self, ql):
