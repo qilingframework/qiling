@@ -18,10 +18,12 @@ def parse_args(parser, commands):
             split_argv.append([c])
         else:
             split_argv[-1].append(c)
+    
     # Initialize namespace
     args = argparse.Namespace()
     for c in commands.choices:
         setattr(args, c, None)
+
     # Parse each command
     parser.parse_args(split_argv[0], namespace=args)  # Without command
     for argv in split_argv[1:]:  # Commands
@@ -30,28 +32,6 @@ def parse_args(parser, commands):
         parser.parse_args(argv, namespace=n)
     return args
 
-
-def compile_instructions(fname, archtype, archmode):
-    f = open(fname, 'rb')
-    assembly = f.read()
-    f.close()
-
-    ks = Ks(archtype, archmode)
-
-    shellcode = ''
-    try:
-        # Initialize engine in X86-32bit mode
-        encoding, count = ks.asm(assembly)
-        shellcode = ''.join('%02x'%i for i in encoding)
-        shellcode = unhexlify(shellcode)
-
-    except KsError as e:
-        print("ERROR Keystone Compile Error: %s" % e)
-        exit
-
-    return shellcode
-
-
 # read shellcode from file
 def read_shellcode(fname):
     with open(fname,"rb") as f:
@@ -59,9 +39,62 @@ def read_shellcode(fname):
         f.close
         return shellcode
 
+def ql_asm2bytes(fname, archtype, archmode = None):
+    
+    def ks_convert(arch, archmode):
+        if archmode != None:
+            arch = "armthumb"
+        
+        if options.bigendian == True:
+            adapter = {
+                'x86': (KS_ARCH_X86, KS_MODE_32),
+                'x8664': (KS_ARCH_X86, KS_MODE_64),
+                'mips32': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
+                'arm': (KS_ARCH_ARM, KS_MODE_ARM, + KS_MODE_BIG_ENDIAN),
+                'armthumb': (KS_ARCH_ARM, KS_MODE_THUMB | KS_MODE_BIG_ENDIAN),
+                'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
+            }
+        else:    
+            adapter = {
+                'x86': (KS_ARCH_X86, KS_MODE_32),
+                'x8664': (KS_ARCH_X86, KS_MODE_64),
+                'mips32el': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
+                'arm': (KS_ARCH_ARM, KS_MODE_ARM),
+                'armthumb': (KS_ARCH_ARM, KS_MODE_THUMB),
+                'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
+            }                
+
+            if arch in adapter:
+                return adapter[arch]
+        # invalid
+        return None, None
+
+    def compile_instructions(fname, archtype, archmode):
+        f = open(fname, 'rb')
+        assembly = f.read()
+        f.close()
+
+        ks = Ks(archtype, archmode)
+
+        shellcode = ''
+        try:
+            # Initialize engine in X86-32bit mode
+            encoding, count = ks.asm(assembly)
+            shellcode = ''.join('%02x'%i for i in encoding)
+            shellcode = unhexlify(shellcode)
+
+        except KsError as e:
+            print("ERROR Keystone Compile Error: %s" % e)
+            exit
+
+        return shellcode
+
+
+    archtype, archmode = ks_convert(archtype, archmode)
+    return compile_instructions(fname, archtype, archmode)
+
 
 def run_shellcode(options):
-
     if not options.os in ("linux", "windows", "freebsd", "macos"):
             print("ERROR: -os required: either linux, windows, freebsd, macos")
             exit(1)
@@ -74,36 +107,6 @@ def run_shellcode(options):
             print("ERROR: -bigendian only takes in boolean, True or False")
             exit(1)
 
-
-    elif options.asm == True:
-        # convert arch to arch/mode that Keystone can consume
-        def ks_convert(arch):
-            if options.bigendian == True:
-                adapter = {
-                    'x86': (KS_ARCH_X86, KS_MODE_32),
-                    'x8664': (KS_ARCH_X86, KS_MODE_64),
-                    'mips32': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
-                    'armeb': (KS_ARCH_ARM, KS_MODE_ARM, + KS_MODE_BIG_ENDIAN),
-                    'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
-                }
-            else:    
-                adapter = {
-                    'x86': (KS_ARCH_X86, KS_MODE_32),
-                    'x8664': (KS_ARCH_X86, KS_MODE_64),
-                    'mips32el': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
-                    'arm': (KS_ARCH_ARM, KS_MODE_ARM),
-                    'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
-                }                
-
-            if arch in adapter:
-                return adapter[arch]
-
-            # invalid
-            return None, None
-
-        print ("[+] Load ASM from FILE")
-        archtype, archmode = ks_convert(options.arch)
-        shellcoder = compile_instructions(options.filename, archtype, archmode)
     elif options.hex == True:
         if options.input is not None:
             print ("[+] Load HEX from ARGV")
@@ -119,7 +122,11 @@ def run_shellcode(options):
         else:
             print("ERROR: File not found")
             exit(1)
-       
+
+    elif options.asm == True:
+        print ("[+] Load ASM from FILE")
+        shellcoder = ql_asm2bytes(options.filename, options.arch)
+
     else:
         print ("[+] Load BIN from FILE")
         if options.filename is None:
@@ -127,17 +134,7 @@ def run_shellcode(options):
             exit(1)
         shellcoder = read_shellcode(options.filename)
 
-    if options.strace:
-        options.output = "default"
-    elif options.trace:
-        options.output = "disasm"   
-
-    ql = Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output)
-
-    if options.strace_filter != None:
-        ql.strace_filter = options.strace_filter
-
-    ql.run()
+    return Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output)
 
 
 def usage():
@@ -167,30 +164,17 @@ def usage():
 
 
 if __name__ == '__main__':
+
+    #
+    # argparse setup
+    #
+
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(title='subcommands', description='valid subcommands', help='additional help', dest='subparser_name')
-
+    
     run_parser = commands.add_parser('run', help = 'run')
     run_parser.add_argument('-f', '--filename', required=False, default='', metavar="FILE", dest="filename", help="filename")
     run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
-    run_parser.add_argument('-o', '--output', required=False, default='default',
-                            help='output mode, options are off, debug , disasm, dump')
-    run_parser.add_argument('-v', '--verbose', required=False, default=1, dest='verbose',
-                            help='verbose mode, must be int and use with --debug or --dump')
-    run_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
-    run_parser.add_argument('--profile', required=False, default='', metavar="FILE", dest="profile", help="Defile OS profile")
-    run_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
-    run_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
-    run_parser.add_argument('-e', '--strace-filter', metavar="FUNCTION NAME", required=False, dest="strace_filter", default=None, help="Only work with strace mode, you can choose what to be printout, for multiple function calls should be separated by comma")
-    run_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')
-    run_parser.add_argument('--log_dir', required=False, default=None, dest='log_dir', help='log file dir')
-    run_parser.add_argument('--log_split', action='store_true', default=False, dest='log_split', help='split log file')
-    run_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
-    run_parser.add_argument('--disasm', action='store_true', default=False, dest='disasm', help='Run in disassemble mode')
-    run_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', help='Stop running while encounter any error (only use it with debug mode)')
-    run_parser.add_argument('--en_root', action='store_true', default=False, dest='en_root', help='Enable sudo required mode')
-    run_parser.add_argument('--dump', action='store_true', default=False, dest='dump', help='Enable Debug + Diassembler mode')
-    run_parser.add_argument('--debug', action='store_true', default=False, dest='debug', help='Enable Debug mode')
     run_parser.add_argument('--args', required=False, default=[], nargs=argparse.REMAINDER, dest="args", help="args")
     run_parser.add_argument('run_args', default=[], nargs=argparse.REMAINDER)
 
@@ -204,48 +188,77 @@ if __name__ == '__main__':
     shellcode_parser.add_argument('--asm', action='store_true', default=False, dest='asm', help='input file format, -asm')
     shellcode_parser.add_argument('--hex', action='store_true', default=False, dest='hex', help='input file format, -hex')
     shellcode_parser.add_argument('--bin', action='store_true', default=True, dest='bin', help='input file format, -bin')
-    shellcode_parser.add_argument('--output', required=False, default='default', help='output mode, options are off, debug , disasm, dump')
-    shellcode_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
-    shellcode_parser.add_argument('-e', '--strace-filter', metavar="FUNCTION NAME", required=False, dest="strace_filter", default=None, help="Only work with strace mode, you can choose what to be printout, for multiple function calls should be separated by comma")
-    shellcode_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')    
+    
+    if (sys.argv[1] == 'run'):
+        comm_parser = run_parser
+    elif (sys.argv[1] == 'shellcode'):
+        comm_parser = shellcode_parser
+    else:
+        usage()    
+
+    comm_parser.add_argument('-o', '--output', required=False, default='default',
+                            help='output mode, options are off, debug , disasm, dump')
+    comm_parser.add_argument('-v', '--verbose', required=False, default=1, dest='verbose',
+                            help='verbose mode, must be int and use with --debug or --dump')
+    comm_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
+    comm_parser.add_argument('--profile', required=False, default='', metavar="FILE", dest="profile", help="Defile OS profile")
+    comm_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
+    comm_parser.add_argument('--dump', action='store_true', default=False, dest='dump', help='Enable Debug + Diassembler mode')
+    comm_parser.add_argument('--debug', action='store_true', default=False, dest='debug', help='Enable Debug mode')
+    comm_parser.add_argument('--disasm', action='store_true', default=False, dest='disasm', help='Run in disassemble mode')
+    comm_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')  
+    comm_parser.add_argument('-e', '--strace-filter', metavar="FUNCTION NAME", required=False, dest="strace_filter", default=None, 
+                            help="Only work with strace mode, you can choose what to be printout, for multiple function calls should be separated by comma")
+    comm_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
+    comm_parser.add_argument('--en_root', action='store_true', default=False, dest='en_root', help='Enable sudo required mode')
+    comm_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', 
+                            help='Stop running while encounter any error (only use it with debug mode)')
+    comm_parser.add_argument('--log_dir', required=False, default=None, dest='log_dir', help='log file dir')
+    comm_parser.add_argument('--log_split', action='store_true', default=False, dest='log_split', help='split log file')
+    comm_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
 
     options = parser.parse_args()
 
+
+    #
+    # var check
+    #
+
+    if options.strace:
+        options.output = "default"
+    elif options.trace:
+        options.output = "disasm"
+    elif options.dump:
+        options.output = "dump"
+    elif options.debug:
+        options.output = "debug"
+    elif options.disasm:
+        options.output = "disasm"            
+
+    if options.console == "False":
+        options.console = False
+
+    if options.log_split:
+        options.console = True
+
+    if type(options.verbose) != int and options.output not in ("debug", "dump"):
+        print("ERROR: verbose mode, must be int and use with --debug or --dump")
+        usage()
+        exit(1)
+
+    if options.debug_stop and not (options.dump or options.debug):
+        print("ERROR: debug_stop must use with either dump or debug mode")
+        usage()
+        exit(1)
+    
+    #
+    # ql setup
+    #
+
     if (options.subparser_name == 'run'):
-
-        if options.strace:
-            options.output = "default"
-        elif options.trace:
-            options.output = "disasm"
-        elif options.dump:
-            options.output = "dump"
-        elif options.debug:
-            options.output = "debug"
-        elif options.disasm:
-            options.output = "disasm"            
-
-        if options.console == "False":
-            options.console = False
-
-        if options.log_split:
-            options.console = True
-
-        if type(options.verbose) != int and options.output not in ("debug", "dump"):
-            print("ERROR: verbose mode, must be int and use with --debug or --dump")
-            usage()
-            exit(1)
-
-        if options.debug_stop and not (options.dump or options.debug):
-            print("ERROR: debug_stop must use with either dump or debug mode")
-            usage()
-            exit(1)
-
         if options.filename != '' and options.run_args == []:
             ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, 
                         output=options.output, log_console = options.console, log_dir=options.log_dir)
-
-            if options.strace and options.strace_filter != None:
-                ql.strace_filter = options.strace_filter
 
         elif options.filename == '' and options.args == [] and options.run_args != []:
             ql = Qiling(filename=options.run_args, rootfs=options.rootfs, output=options.output, 
@@ -254,38 +267,51 @@ if __name__ == '__main__':
             print("ERROR: Command error!")
             usage()
             exit(1)
-
-        if options.gdb:
-            ql.debugger = options.gdb
-
-        if options.debug_stop and (options.dump or options.debug):
-            ql.debug_stop = True
-         
-        if options.en_root:
-            ql.root = True
-
-        if options.log_split:
-            ql.log_split = True
-
-        if options.multithread:
-            ql.multithread = True
-
-        if options.profile:
-            if os.path.exists(options.profile):
-                ql.config = options.config
-            else:
-                print("File Not Found!!!")
-                exit(1)        
-
-        if options.verbose:
-            ql.verbose = options.verbose   
-
-        ql.run()
-        exit(ql.exit_code)
-
     elif (options.subparser_name == 'shellcode'):
-        run_shellcode(options)
+        ql = run_shellcode(options)
+    
     else:
         print("ERROR: Unknown command")
         usage()
         exit(1)
+
+    #
+    # ql execute additional options
+    #
+
+    if options.gdb:
+        ql.debugger = options.gdb
+
+    if options.debug_stop and (options.dump or options.debug):
+        ql.debug_stop = True
+        
+    if options.en_root:
+        ql.root = True
+
+    if options.log_split:
+        ql.log_split = True
+
+    if options.multithread:
+        ql.multithread = True
+
+    if options.profile:
+        if os.path.exists(options.profile):
+            ql.config = options.config
+        else:
+            print("File Not Found!!!")
+            exit(1)        
+
+    if options.verbose:
+        ql.verbose = options.verbose   
+
+    if options.strace_filter != None:
+       ql.strace_filter = options.strace_filter
+    
+    #
+    # ql run
+    #
+
+    ql.run()
+    exit(ql.exit_code)
+
+

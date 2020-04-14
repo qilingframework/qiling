@@ -239,7 +239,7 @@ def ql_setup_output(ql):
         ql.hook_code(ql_hook_code_disasm)
 
 
-def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
+def ql_compile_asm(ql, archtype, runcode, arm_thumb= None):
     def ks_convert(arch):
         if ql.archendian == QL_ENDIAN_EB:
             adapter = {
@@ -284,7 +284,7 @@ def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
 
         return shellcode
 
-    if arm_thumb == 1 and archtype == QL_ARM:
+    if arm_thumb == True and archtype == QL_ARM:
         archtype = QL_ARM_THUMB
 
     archtype, archmode = ks_convert(archtype)
