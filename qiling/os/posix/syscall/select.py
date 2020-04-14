@@ -90,7 +90,7 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
     except KeyboardInterrupt:
         raise
     except:
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+        if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             raise
     ql.nprint("_newselect(%d, %x, %x, %x, %x) = %d" % (_newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, regreturn))
     ql_definesyscall_return(ql, regreturn)

@@ -9,7 +9,7 @@
 ##############################################
 
 import struct
-from .const import QL_ENDIAN_EB
+from .const import QL_ENDIAN
 from .exception import QlErrorStructConversion
 
 class QLCoreStructs:
@@ -26,19 +26,19 @@ class QLCoreStructs:
         return struct.unpack('q', x)[0]
 
     def unpack32(self, x):
-        if self.archendian == QL_ENDIAN_EB:
+        if self.archendian == QL_ENDIAN.EB:
             return struct.unpack('>I', x)[0]
         else:
             return struct.unpack('I', x)[0]
 
     def pack32(self, x):
-        if self.archendian == QL_ENDIAN_EB:
+        if self.archendian == QL_ENDIAN.EB:
             return struct.pack('>I', x)
         else:
             return struct.pack('I', x)
 
     def unpack32s(self, x):
-        if self.archendian == QL_ENDIAN_EB:
+        if self.archendian == QL_ENDIAN.EB:
             return struct.unpack('>i', x)[0]
         else:
             return struct.unpack('i', x)[0]
@@ -47,19 +47,19 @@ class QLCoreStructs:
         return struct.unpack('i', x)[0]
 
     def pack32s(self, x):
-        if self.archendian == QL_ENDIAN_EB:
+        if self.archendian == QL_ENDIAN.EB:
             return struct.pack('>i', x)
         else:
             return struct.pack('i', x)
 
     def unpack16(self, x):
-        if self.archendian == QL_ENDIAN_EB:
+        if self.archendian == QL_ENDIAN.EB:
             return struct.unpack('>H', x)[0]
         else:
             return struct.unpack('H', x)[0]
 
     def pack16(self, x):
-        if self.archendian == QL_ENDIAN_EB:
+        if self.archendian == QL_ENDIAN.EB:
             return struct.pack('>H', x)
         else:
             return struct.pack('H', x)

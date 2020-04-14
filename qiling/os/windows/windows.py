@@ -157,7 +157,7 @@ class QlOsWindows(QlOs):
             else:
                 self.ql.emu_start(self.ql.loader.entry_point, self.ql.until_addr, self.ql.timeout)
         except UcError:
-            if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+            if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                 self.ql.nprint("[+] PC = 0x%x\n" % (self.ql.reg.pc))
                 self.ql.mem.show_mapinfo()
                 try:
