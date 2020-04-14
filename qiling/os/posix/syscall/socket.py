@@ -60,6 +60,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
 
     ql.nprint("socket(%d, %d, %d) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
 
+
     socket_type = socket_type_mapping(socket_type, ql.archtype)
     socket_domain = socket_domain_mapping(socket_domain, ql.archtype)
     ql.dprint(D_INFO, "[+] socket(%s, %s, %s) = %d" % (socket_domain, socket_type, socket_protocol, regreturn))
@@ -249,7 +250,7 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
             ql.dprint(D_INFO, "[+] send() flag is " + str(send_flags))
             ql.dprint(D_INFO, "[+] send() len is " + str(send_len))
             ql.os.file_des[send_sockfd].send(bytes(tmp_buf), send_flags)
-            ql.dprint(ql.os.file_des[send_sockfd])
+            ql.dprint(D_INFO, ql.os.file_des[send_sockfd])
             regreturn = send_len
             ql.dprint(D_INFO, "[+] debug send end")
         except:
