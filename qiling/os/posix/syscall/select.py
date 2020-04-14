@@ -50,8 +50,8 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
             if idx % 32 == 0:
                 tmp = ql.unpack32(ql.mem.read(struct_addr + idx, 4))
             if tmp & 0x1 != 0:
-                fd_list.append(ql.file_des[idx].socket)
-                fd_map[ql.file_des[idx].socket] = idx
+                fd_list.append(ql.os.file_des[idx].socket)
+                fd_map[ql.os.file_des[idx].socket] = idx
             tmp = tmp >> 1
             idx += 1
         return fd_list, fd_map
@@ -93,4 +93,4 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             raise
     ql.nprint("_newselect(%d, %x, %x, %x, %x) = %d" % (_newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)

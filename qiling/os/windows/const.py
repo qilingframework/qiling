@@ -535,3 +535,5 @@ Mapper = {
         175: "SHGetSpecialFolderPathW"
     }
 }
+
+MAXUSHORT = 0xffff

@@ -38,7 +38,7 @@ def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     regreturn = 0
     filename = ql_read_string(ql, filename)
     ql.nprint("chmod(%s,%d) = %d" % (filename, mode, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstatat64_flag, *args, **kw):
@@ -94,13 +94,13 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
     else:
         ql.dprint(D_INFO, "[!] Directory Not Found: %s" % relative_path)
 
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
-    if fstat64_fd < 256 and ql.file_des[fstat64_fd] != 0:
+    if fstat64_fd < 256 and ql.os.file_des[fstat64_fd] != 0:
         user_fileno = fstat64_fd
-        fstat64_info = ql.file_des[user_fileno].fstat()
+        fstat64_info = ql.os.file_des[user_fileno].fstat()
 
         if ql.archtype== QL_ARM64:
             # struct stat is : 80 addr is : 0x4000811bc8
@@ -200,14 +200,14 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
         ql.dprint(D_INFO, "[+] fstat64 write completed")
     else:
         ql.dprint(D_INFO, "[!] fstat64 read/write fail")
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
 
-    if fstat_fd < 256 and ql.file_des[fstat_fd] != 0:
+    if fstat_fd < 256 and ql.os.file_des[fstat_fd] != 0:
         user_fileno = fstat_fd
-        fstat_info = ql.file_des[user_fileno].fstat()
+        fstat_info = ql.os.file_des[user_fileno].fstat()
 
         if ql.archtype== QL_MIPS32:
             # pack fstatinfo
@@ -275,7 +275,7 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
         ql.dprint(D_INFO, "[+] fstat write completed")
     else:
         ql.dprint(D_INFO, "[!] fstat read/write fail")
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 # int stat64(const char *pathname, struct stat64 *buf);
@@ -348,7 +348,7 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
         ql.dprint(D_INFO, "[+] stat64 write completed")
     else:
         ql.dprint(D_INFO, "[!] stat64 read/write fail")
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 # int stat(const char *path, struct stat *buf);
@@ -409,7 +409,7 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
         ql.dprint(D_INFO, "[+] stat() write completed")
     else:
         ql.dprint(D_INFO, "[!] stat() read/write fail")
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
@@ -469,7 +469,7 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
         ql.dprint(D_INFO, "[+] lstat() write completed")
     else:
         ql.dprint(D_INFO, "[!] lstat() read/write fail")
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
     # fix me. dirfd(relative path) not implement.
@@ -481,7 +481,7 @@ def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
         regreturn = 0
     except:
         regreturn = -1
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
@@ -494,11 +494,11 @@ def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
         regreturn = 0
     except:
         regreturn = -1
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_umask(ql, mode, *args, **kw):
     oldmask = os.umask(mode)
     ql.nprint("umask(0%o) return oldmask 0%o" % (mode, oldmask))
     regreturn = oldmask
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)

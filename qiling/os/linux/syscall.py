@@ -51,14 +51,11 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
         ql.os.gdtm.register_gdt_segment(index, base, limit, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
         ql.mem.write(u_info_addr, ql.pack32(index))
         regreturn = 0
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_mips32_set_thread_area(ql, sta_area, *args, **kw):
     ql.nprint ("set_thread_area(0x%x)" % sta_area)
-
-    if ql.thread_management != None and ql.multithread == True:
-        ql.thread_management.cur_thread.special_settings_arg = sta_area
     
     CONFIG3_ULR = (1 << 13)
     ql.register(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
@@ -69,9 +66,6 @@ def ql_syscall_mips32_set_thread_area(ql, sta_area, *args, **kw):
 
 def ql_syscall_arm_settls(ql, address, *args, **kw):
     #ql.nprint("settls(0x%x)" % address)
-    
-    if ql.thread_management != None and ql.multithread == True:
-        ql.thread_management.cur_thread.special_settings_arg = address
 
     ql.register(UC_ARM_REG_C13_C0_3, address)
     ql.mem.write(QL_ARM_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))

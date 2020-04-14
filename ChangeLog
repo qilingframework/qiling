@@ -1,0 +1,8 @@
+This file details the changelog of Qiling Framework.
+
+----------------------------------
+[Version 1.0-rc1]: April 12nd, 2020
+
+- Support debugger.
+- Support OS profile to customize API output
+

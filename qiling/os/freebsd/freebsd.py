@@ -3,22 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-from unicorn import *
-from unicorn.x86_const import *
-
-from qiling.loader.elf import *
 from qiling.arch.x86 import *
-
-#from qiling.os.freebsd.x8664_syscall import map_syscall
-# from qiling.os.posix.syscall import *
-# from qiling.os.freebsd.syscall import *
-
-from qiling.os.utils import *
 from qiling.const import *
-from qiling.os.freebsd.const import *
 from qiling.os.const import *
-
+from qiling.os.utils import *
 from qiling.os.posix.posix import QlOsPosix
+from .const import *
 
 class QlOsFreebsd(QlOsPosix):
     def __init__(self, ql):
@@ -77,22 +67,22 @@ class QlOsFreebsd(QlOsPosix):
             self.ql.until_addr = self.QL_EMU_END
         try:
             if self.ql.shellcoder:
-                self.ql.uc.emu_start(self.ql.stack_address, (self.ql.stack_address + len(self.ql.shellcoder)))
+                self.ql.emu_start(self.ql.stack_address, (self.ql.stack_address + len(self.ql.shellcoder)))
             else:
                 if self.ql.loader.elf_entry != self.ql.loader.entry_point:
-                    self.ql.uc.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
+                    self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
                     self.ql.enable_lib_patch()
-                self.ql.uc.emu_start(self.ql.loader.elf_entry, self.ql.until_addr, self.ql.timeout)
+                self.ql.emu_start(self.ql.loader.elf_entry, self.ql.until_addr, self.ql.timeout)
                 
         except UcError:
-            if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM):
-                self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.pc))
+            if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP, QL_OUTPUT.DISASM):
+                self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.reg.pc))
                 self.ql.mem.show_mapinfo()
                 try:
-                    buf = self.ql.mem.read(self.ql.pc, 8)
+                    buf = self.ql.mem.read(self.ql.reg.pc, 8)
                     self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
                     self.ql.nprint("\n")
-                    ql_hook_code_disasm(ql, self.ql.pc, 64)
+                    ql_hook_code_disasm(ql, self.ql.reg.pc, 64)
                 except:
                     pass
             raise

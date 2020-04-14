@@ -5,12 +5,15 @@
 
 import os, time
 
+from unicorn.mips_const import *
+from unicorn.arm_const import *
+
 from qiling.utils import ql_setup_logging_file, ql_setup_logging_stream, ql_setup_logger
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
 from qiling.const import *
-from unicorn.mips_const import *
-from unicorn.arm_const import *
+from qiling.os.const import *
+
 
 from abc import ABC, abstractmethod
 
@@ -40,7 +43,7 @@ class QlLinuxThread(QlThread):
         self.blocking_condition_fuc = None
         self.blocking_condition_arg = None
         self.thread_management = thread_management
-        self.current_path = ql.current_path
+        self.current_path = ql.os.current_path
         self.log_file_fd = None
 
         _logger = ql_setup_logger(str(self.thread_id)) if ql.log_split else ql_setup_logger()
@@ -118,15 +121,15 @@ class QlLinuxThread(QlThread):
 
         # Run and log the run event
         s_time = int(time.time() * 1000000)
-        self.start_address = self.ql.pc
+        self.start_address = self.ql.reg.pc
 
         if mode == TIME_MODE:
-            self.ql.uc.emu_start(self.start_address, self.until_addr, timeout = thread_slice)
+            self.ql.emu_start(self.start_address, self.until_addr, timeout = thread_slice)
         elif mode == COUNT_MODE:
-            self.ql.uc.emu_start(self.start_address, self.until_addr, count = thread_slice)
+            self.ql.emu_start(self.start_address, self.until_addr, count = thread_slice)
         elif mode == BBL_MODE:
             self.thread_management.set_bbl_count(thread_slice)
-            self.ql.uc.emu_start(self.start_address, self.until_addr)
+            self.ql.emu_start(self.start_address, self.until_addr)
         else:
             raise
 
@@ -159,18 +162,18 @@ class QlLinuxThread(QlThread):
         self.store()
 
     def store_regs(self):
-        self.context = self.ql.uc.context_save()
+        self.context = self.ql.context()
         self.start_address = self.ql.arch.get_pc()
 
     def restore_regs(self):
-        self.ql.uc.context_restore(self.context)
+        self.ql.context(self.context)
 
     def set_start_address(self, addr):
-        old_context = self.ql.uc.context_save()
+        old_context = self.ql.context()
         self.restore_regs()
-        self.ql.pc = addr
+        self.ql.reg.pc = addr
         self.store_regs()
-        self.ql.uc.context_restore(old_context)
+        self.ql.context(old_context)
 
     def set_context(self, con):
         self.context = con
@@ -323,11 +326,11 @@ class QlLinuxX8664Thread(QlLinuxThread):
 
     def store(self):
         self.store_regs()
-        self.tls = self.ql.uc.msr_read(FSMSR)
+        self.tls = self.ql.reg.msr(FSMSR)
 
     def restore(self):
         self.restore_regs()
-        self.ql.uc.msr_write(FSMSR, self.tls)
+        self.ql.reg.msr(FSMSR, self.tls)
 
 class QlLinuxMIPS32Thread(QlLinuxThread):
     """docstring for QlLinuxMIPS32Thread"""
@@ -380,7 +383,7 @@ class QlLinuxARM64Thread(QlLinuxThread):
         self.restore_regs()
 
 class QlLinuxThreadManagement(QlThreadManagement):
-    def __init__(self, ql, time_slice = 2000, count_slice = 1000, bbl_slice = 300, mode = BBL_MODE, ):
+    def __init__(self, ql, time_slice = 1000, count_slice = 1000, bbl_slice = 300, mode = BBL_MODE, ):
         super(QlLinuxThreadManagement, self).__init__(ql)
         self.cur_thread = None
         self.running_thread_list = []
@@ -490,7 +493,7 @@ class QlLinuxThreadManagement(QlThreadManagement):
             self.bbl_counter += 1
 
             if self.bbl_counter > self.bbl_count:
-                ql.uc.emu_stop()
+                ql.emu_stop()
 
         self.ql.hook_block(bbl_count_cb)
 
@@ -556,7 +559,7 @@ class QlLinuxThreadManagement(QlThreadManagement):
                 t.running()
 
     def exit_world(self):
-        if self.ql.child_processes == True:
+        if self.ql.os.child_processes == True:
             os._exit(0)
 
         for t in self.running_thread_list:

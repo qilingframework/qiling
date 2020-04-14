@@ -138,6 +138,14 @@ class QlOsWindows(QlOs):
                     raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
     def run(self):
+        if self.ql.stdin != 0:
+            self.stdin = self.ql.stdin
+        
+        if self.ql.stdout != 0:
+            self.stdout = self.ql.stdout
+        
+        if self.ql.stderr != 0:
+            self.stderr = self.ql.stderr 
 
         ql_setup_output(self.ql)
 
@@ -145,18 +153,18 @@ class QlOsWindows(QlOs):
             self.ql.until_addr = self.QL_EMU_END
         try:
             if self.ql.shellcoder:
-                self.ql.uc.emu_start(self.ql.code_address, self.ql.code_address + len(self.ql.shellcoder))
+                self.ql.emu_start(self.ql.code_address, self.ql.code_address + len(self.ql.shellcoder))
             else:
-                self.ql.uc.emu_start(self.ql.entry_point, self.ql.until_addr, self.ql.timeout)
+                self.ql.emu_start(self.ql.loader.entry_point, self.ql.until_addr, self.ql.timeout)
         except UcError:
-            if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                self.ql.nprint("[+] PC = 0x%x\n" % (self.ql.pc))
+            if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+                self.ql.nprint("[+] PC = 0x%x\n" % (self.ql.reg.pc))
                 self.ql.mem.show_mapinfo()
                 try:
-                    buf = self.ql.mem.read(self.ql.pc, 8)
+                    buf = self.ql.mem.read(self.ql.reg.pc, 8)
                     self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
                     self.ql.nprint("\n")
-                    ql_hook_code_disasm(self.ql, self.ql.pc, 64)
+                    ql_hook_code_disasm(self.ql, self.ql.reg.pc, 64)
                 except:
                     pass
             raise

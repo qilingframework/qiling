@@ -36,11 +36,11 @@ from qiling.utils import *
 
 def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, *args, **kw):
     if rt_sigaction_oldact != 0:
-        if ql.sigaction_act[rt_sigaction_signum] == 0:
+        if ql.os.sigaction_act[rt_sigaction_signum] == 0:
             ql.mem.write(rt_sigaction_oldact, b'\x00' * 20)
         else:
             data = b''
-            for key in ql.sigaction_act[rt_sigaction_signum]:
+            for key in ql.os.sigaction_act[rt_sigaction_signum]:
                 data += ql.pack32(key)
             ql.mem.write(rt_sigaction_oldact, data)
 
@@ -48,11 +48,11 @@ def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigact
         data = []
         for key in range(5):
             data.append(ql.unpack32(ql.mem.read(rt_sigaction_act + 4 * key, 4)))
-        ql.sigaction_act[rt_sigaction_signum] = data
+        ql.os.sigaction_act[rt_sigaction_signum] = data
 
     regreturn = 0
     ql.nprint("rt_sigaction(0x%x, 0x%x, = 0x%x) = %d" % (rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_sigprocmask_oset, rt_sigprocmask_sigsetsize, *args, **kw):
@@ -64,10 +64,10 @@ def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_si
 
     regreturn = 0
     ql.nprint("rt_sigprocmask(0x%x, 0x%x, 0x%x, 0x%x) = %d" % (rt_sigprocmask_how, rt_sigprocmask_nset, rt_sigprocmask_oset, rt_sigprocmask_sigsetsize, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_signal(ql, sig, __sighandler_t, *args, **kw):
     regreturn = 0
     ql.nprint("signal(%d, 0x%x) = %d" % (sig, __sighandler_t,regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)

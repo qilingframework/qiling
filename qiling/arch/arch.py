@@ -3,10 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-
-from qiling.const import *
-from qiling.utils import *
-
 class QlArch:
     def __init__(self, ql):
         self.ql = ql
@@ -58,12 +54,12 @@ class QlArch:
 
 
     # get stack pointer register
-    def get_reg_sp(self):
+    def get_name_sp(self):
         pass
 
 
     # get PC register
-    def get_reg_pc(self):
+    def get_name_pc(self):
         pass
 
     # get PC register

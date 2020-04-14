@@ -3,14 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import os
-import struct
-from qiling.loader.macho_parser.parser import *
-from qiling.loader.macho_parser.const import *
+import os, struct
+
 from qiling.exception import *
 from qiling.const import *
-from qiling.loader.loader import *
 from qiling.os.macos.const import *
+from .loader import *
+from .macho_parser.parser import *
+from .macho_parser.const import *
 
 class QlLoaderMACHO(QlLoader):
     # macho x8664 loader 
@@ -20,7 +20,6 @@ class QlLoaderMACHO(QlLoader):
         self.loading_file   = self.macho_file
         self.slide          = 0x0000000000000000
         self.dyld_slide     = 0x0000000500000000
-        # self.dyld_slide     = 0x0000000100020000
         self.string_align   = 8
         self.ptr_align      = 8
         self.ql             = ql
@@ -36,8 +35,8 @@ class QlLoaderMACHO(QlLoader):
         self.using_dyld     = False
         self.vm_end_addr    = 0x0
         self.loadMacho()
-        self.ql.os.macho_task.min_offset = page_align_end(self.vm_end_addr, PAGE_SIZE)
-        self.ql.stack_address = (int(self.ql.stack_sp))
+        self.stack_address = (int(self.stack_sp))
+
 
     def loadMacho(self, depth=0, isdyld=False):
         # MAX load depth 
@@ -96,13 +95,13 @@ class QlLoaderMACHO(QlLoader):
             else:
                 self.mmap_start = self.ql.mmap_start
 
-            self.ql.stack_sp = self.loadStack()
+            self.stack_sp = self.loadStack()
             if self.using_dyld:
                 self.ql.nprint("[+] ProcEntry: {}".format(hex(self.proc_entry)))
-                self.ql.entry_point = self.proc_entry + self.dyld_slide
-                self.ql.nprint("[+] Dyld entry point: {}".format(hex(self.ql.entry_point)))
+                self.entry_point = self.proc_entry + self.dyld_slide
+                self.ql.nprint("[+] Dyld entry point: {}".format(hex(self.entry_point)))
             else:
-                self.ql.entry_point = self.proc_entry + self.slide
+                self.entry_point = self.proc_entry + self.slide
             self.ql.nprint("[+] Binary Entry Point: 0x{:X}".format(self.binary_entry))
             self.macho_entry = self.binary_entry + self.slide
             self.loadbase = self.macho_entry

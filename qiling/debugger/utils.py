@@ -5,7 +5,11 @@
 
 import os, socket
 
+from qiling.const import *
 from qiling.utils import *
+
+from qiling.exception import *
+
 
 def ql_debugger_init(ql):
         # debugger init
@@ -63,8 +67,8 @@ def ql_debugger(ql, remotedebugsrv, ip=None, port=None):
         ql.nprint("debugger> Error: Address already in use\n")
         raise
     try:
-        mappings = [(hex(ql.entry_point), 0x10)]
-        exit_point = ql.entry_point + os.path.getsize(path)
+        mappings = [(hex(ql.loader.entry_point), 0x10)]
+        exit_point = ql.loader.entry_point + os.path.getsize(path)
         remotedebugsrv = debugger_convert_str(remotedebugsrv)
         remotedebugsrv = str(remotedebugsrv) + "server" 
         DEBUGSESSION = str.upper(remotedebugsrv) + "session"
@@ -74,3 +78,23 @@ def ql_debugger(ql, remotedebugsrv, ip=None, port=None):
         ql.nprint("debugger> Error: Not able to initialize GDBServer\n")
         raise
 
+def debugger_convert(debugger):
+    adapter = {
+        "gdb": QL_GDB,
+        "ida": QL_IDAPRO,
+    }
+    if debugger in adapter:
+        return adapter[debugger]
+    # invalid
+    return None, None
+
+def debugger_convert_str(debugger_id):
+    adapter = {
+        None : "gdb",
+        QL_GDB : "gdb",
+        QL_IDAPRO: "ida",
+    }
+    if debugger_id in adapter:
+        return adapter[debugger_id]
+    # invalid
+    return None, None

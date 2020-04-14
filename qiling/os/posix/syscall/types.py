@@ -35,7 +35,7 @@ from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
 def ql_syscall_gettid(ql, *args, **kw):
-    th = ql.thread_management.cur_thread
+    th = ql.os.thread_management.cur_thread
     regreturn = th.get_thread_id()
     ql.nprint("gettid() = %d" % regreturn)
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)

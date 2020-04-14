@@ -21,7 +21,7 @@ from qiling.os.windows.structs import *
     "uExitCode": DWORD
 })
 def hook_ExitProcess(self, address, params):
-    self.ql.uc.emu_stop()
+    self.ql.emu_stop()
     self.PE_RUN = False
 
 
@@ -261,7 +261,7 @@ def hook_TerminateProcess(self, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
     if process == 0x0 or process == self.DEFAULT_IMAGE_BASE:
-        self.ql.uc.emu_stop()
+        self.ql.emu_stop()
         self.PE_RUN = False
     ret = 1
     return ret

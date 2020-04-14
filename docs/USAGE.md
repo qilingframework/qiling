@@ -13,11 +13,11 @@ output = ("off", "default", "disasm", "debug", "dump")
 
 ```
 log_console = (True, False)
-    Normally this option will be used with log_file
-        case 1: log_file defined and log_console is False
+    Normally this option will be used with log_dir
+        case 1: log_dir defined and log_console is False
             - No stdio output
-        case 2: log_file defined and log_console is True
-            - Log dump to file and also print stdio
+        case 2: log_dir defined and log_console is True
+            - Log dump to folder and also print stdio
 ```
 
 ---
@@ -26,7 +26,7 @@ log_console = (True, False)
 
 - How to run Netgear R6220 Firmware with
     - ql.add_fs_mapper, "host File System Mapping"
-    - log_file redirect
+    - log_dir redirect logs to defined folder
     - log_console stdio display
     - ql.root, avoid host root privillage requirement and return to userland
 
@@ -35,7 +35,7 @@ import sys
 from qiling import *
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, output="debug", log_file = 'logfile', log_console = True)
+    ql = Qiling(path, rootfs, output="debug", log_dir = 'qlog', log_console = True)
     ql.log_split= True,
     ql.root = False
     ql.add_fs_mapper('/proc', '/proc')
@@ -68,7 +68,7 @@ from qiling import *
 
 def force_call_dialog_func(ql):
     # get DialogFunc address
-    lpDialogFunc = ql.unpack32(ql.mem.read(ql.sp - 0x8, 4))
+    lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.sp - 0x8, 4))
     # setup stack for DialogFunc
     ql.stack_push(0)
     ql.stack_push(1001)
@@ -76,7 +76,7 @@ def force_call_dialog_func(ql):
     ql.stack_push(0)
     ql.stack_push(0x0401018)
     # force EIP to DialogFunc
-    ql.pc = lpDialogFunc
+    ql.reg.pc = lpDialogFunc
 
 
 def my_sandbox(path, rootfs):

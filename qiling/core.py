@@ -1,36 +1,23 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import sys, struct, platform, ntpath
+import sys
+import platform
+import ntpath
 import os as pyos
-from unicorn import *
 
-from qiling.const import *
-from qiling.os.posix.filestruct import *
-from qiling.exception import *
-from qiling.utils import *
-from qiling.os.utils import *
-from qiling.loader.utils import *
-from qiling.arch.utils import *
-from qiling.os.thread import *
-from qiling.debugger.utils import *
+from .const import *
+from .exception import *
+from .utils import *
+from .debugger.utils import *
+from .core_struct import QLCoreStructs
+from .core_hooks import QLCoreHooks
 
+__version__ = "1.0"
 
-__version__ = "0.9"
-
-class Qiling:
-    #Import function into class
-    from .core_struct import unpack64, pack64, pack64s, unpack64s
-    from .core_struct import unpack32, pack32, unpack32s, unpack32s_ne, pack32s
-    from .core_struct import unpack16, pack16, pack, packs, unpack, unpacks
-
-    from .core_hooks import ql_hook, hook_code, hook_intr, hook_block
-    from .core_hooks import hook_mem_unmapped, hook_mem_read_invalid, hook_mem_write_invalid
-    from .core_hooks import hook_mem_fetch_invalid, hook_mem_invalid, hook_address
-    from .core_hooks import hook_mem_read, hook_mem_write, hook_mem_fetch, hook_insn
-    
+class Qiling(QLCoreStructs, QLCoreHooks):    
     def __init__(
             self,
             filename=None,
@@ -73,18 +60,13 @@ class Qiling:
         self.stack_address = stack_address
         self.stack_size = stack_size
         self.interp_base = interp_base
+        # generic append function, eg log file        
+        self.append = append
 
         # Define after ql=Qiling(), either defined by Qiling Framework or user defined
         self.archbit = ''
         self.path = ''
         self.entry_point = 0
-        self.shellcode_init = 0
-        self.file_des = []
-        self.stdin = ql_file('stdin', sys.stdin.fileno())
-        self.stdout = ql_file('stdout', sys.stdout.fileno())
-        self.stderr = ql_file('stderr', sys.stderr.fileno())
-        self.sigaction_act = []
-        self.child_processes = False
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
@@ -92,19 +74,16 @@ class Qiling:
         self.until_addr = 0
         self.byte = 0
         self.log_file_fd = None
-        self.current_path = '/'
         self.fs_mapper = []
         self.exit_code = 0
         self.debug_stop = False
         self.internal_exception = None
         self.platform = platform.system()
-        self.global_thread_id = 0
         self.debugger = None
         self.automatize_input = False
         self.profile = None 
         # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
         self.multithread = False
-        self.thread_management = None    
         # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
         self.ipv6 = False        
         # Bind to localhost
@@ -112,11 +91,9 @@ class Qiling:
         # by turning this on, you must run your analysis with sudo
         self.root = True
         self.log_split = False
-        self.shellcode_init = 0
         # syscall filter for strace-like functionality
         self.strace_filter = None
-        # generic append function, eg log file
-        self.append = append
+
 
         """
         Qiling Framework Core Engine
@@ -156,29 +133,15 @@ class Qiling:
         self.log_file_fd = _logger
             
         # OS dependent configuration for stdio
-        if self.ostype in QL_POSIX:
-            if stdin != 0:
-                self.stdin = stdin
-
-            if stdout != 0:
-                self.stdout = stdout
-
-            if stderr != 0:
-                self.stderr = stderr
-
-            self.file_des = [0] * 256
-            self.file_des[0] = self.stdin
-            self.file_des[1] = self.stdout
-            self.file_des[2] = self.stderr
-
-            for _ in range(256):
-                self.sigaction_act.append(0)
+        self.stdin = stdin
+        self.stdout = stdout
+        self.stderr = stderr
 
         # double check supported architecture
         if not ql_is_valid_arch(self.archtype):
             raise QlErrorArch("[!] Invalid Arch")
 
-        # chceck for supported OS type    
+        # chceck for supported OS type
         if self.ostype not in QL_OS:
             raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos'")
         
@@ -189,55 +152,56 @@ class Qiling:
                 raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
 
         # check verbose, only can check after ouput being defined
-        if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
+        if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
         
-        """
-        Define file is 32 or 64bit and check file endian
-        QL_ENDIAN_EL = Little Endian || QL_ENDIAN_EB = Big Endian
-        QL_ENDIAN_EB is define during ql_elf_check_archtype()
-        """
+        ##############################################################
+        # Define file is 32 or 64bit and check file endian           #
+        # QL_ENDIAN.EL = Little Endian || QL_ENDIAN.EB = Big Endian  #
+        # QL_ENDIAN.EB is define during ql_elf_check_archtype()      #
+        ##############################################################
         self.archbit = ql_get_arch_bits(self.archtype)
         if self.archtype not in (QL_ENDINABLE):
-            self.archendian = QL_ENDIAN_EL
+            self.archendian = QL_ENDIAN.EL
         
-        """
-        Endian for shellcode needs to set manually
-        """
+        #Endian for shellcode needs to set manually
         if self.shellcoder and self.bigendian == True and self.archtype in (QL_ENDINABLE):
-            self.archendian = QL_ENDIAN_EB
+            self.archendian = QL_ENDIAN.EB
         elif self.shellcoder:
-            self.archendian = QL_ENDIAN_EL
+            self.archendian = QL_ENDIAN.EL
 
         # based on CPU bit and set pointer size
         if self.archbit:
             self.pointersize = (self.archbit // 8)            
 
-        """
-        Load memory module
-        """
-        self.mem = ql_os_setup(self, "mem")
-  
-        """
-        Load architecture's and os module
-        ql.pc, ql.sp and etc
-        """
+        #############
+        # Component #
+        #############
+        self.mem = ql_component_setup(self, "memory")
+        self.reg = ql_component_setup(self, "register")
+
+        #####################################
+        # Architecture                      #
+        #####################################
+        # Load architecture's and os module #
+        # ql.reg.pc, ql.reg.sp and etc      #
+        #####################################
         self.arch = ql_arch_setup(self)
 
-        """
-        Load os module
-        """
+        ######
+        # OS #
+        ######
         self.os = ql_os_setup(self)
 
-        """
-        Load the loader
-        """
+        ##########
+        # Loader #
+        ##########
         self.loader = ql_loader_setup(self)
-
+       
 
     def run(self):
         # setup strace filter for logger
-        if self.strace_filter != None and self.output == QL_OUT_DEFAULT:
+        if self.strace_filter != None and self.output == QL_OUTPUT.DEFAULT:
             self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
 
         # init debugger
@@ -255,8 +219,8 @@ class Qiling:
 
     # normal print out
     def nprint(self, *args, **kw):
-        if self.thread_management is not None and self.thread_management.cur_thread is not None:
-            fd = self.thread_management.cur_thread.log_file_fd
+        if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
+            fd = self.os.thread_management.cur_thread.log_file_fd
         else:
             fd = self.log_file_fd
 
@@ -280,30 +244,20 @@ class Qiling:
         except:
             raise QlErrorOutput("[!] Verbose muse be int")    
         
-        if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 1 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
-            raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUT_DEBUG or else ql.verbose must be 0")
+        if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 1 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
+            raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUTPUT.DEBUG or else ql.verbose must be 0")
 
-        if self.output == QL_OUT_DUMP:
-                self.verbose = 99
+        if self.output == QL_OUTPUT.DUMP:
+            self.verbose = 99
 
-        if int(self.verbose) >= level and self.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                self.nprint(*args, **kw)
+        if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+            self.nprint(*args, **kw)
 
-
-    def addr_to_str(self, addr, short=False, endian="big"):
-        return ql_addr_to_str(self, addr, short, endian)
-
-
-    def asm2bytes(self, runasm, arm_thumb=None):
-        return ql_asm2bytes(self, self.archtype, runasm, arm_thumb)
-    
-
-    """
-    replace linux or windows syscall/api with custom api/syscall
-    if replace function name is needed, first syscall must be available
-    - ql.set_syscall(0x04, my_syscall_write)
-    - ql.set_syscall("write", my_syscall_write)
-    """
+   
+    # replace linux or windows syscall/api with custom api/syscall
+    # if replace function name is needed, first syscall must be available
+    # - ql.set_syscall(0x04, my_syscall_write)
+    # - ql.set_syscall("write", my_syscall_write)
     def set_syscall(self, syscall_cur, syscall_new):
         if self.ostype in (QL_POSIX):
             if isinstance(syscall_cur, int):
@@ -313,7 +267,6 @@ class Qiling:
                 self.os.dict_posix_syscall[syscall_name] = syscall_new
         elif self.ostype == QL_WINDOWS:
             self.set_api(syscall_cur, syscall_new)
-
 
     # replace Windows API with custom syscall
     def set_api(self, syscall_cur, syscall_new):
@@ -343,65 +296,28 @@ class Qiling:
         else:
             self.patch_lib.append((addr, code, file_name.decode()))
     
-
     # ql.register - read and write register 
-    def register(self, register_str, value= None):
-        if value is None:
-            return self.arch.get_register(register_str)
-        else:    
-            return self.arch.set_register(register_str, value)
+    def register(self, register_str= None, value= None):
+        return self.reg.rw(register_str, value)
 
-    # ql.reg_pc - PC register name getter
-    @property
-    def reg_pc(self):
-        return self.arch.get_reg_pc()
+    def context(self, saved_context= None):
+        if saved_context == None:
+            return self.uc.context_save()
+        else:
+            self.uc.context_restore(saved_context)
 
-    # ql.reg_sp - SP register name getter
-    @property
-    def reg_sp(self):
-        return self.arch.get_reg_sp()
+    def emu_stop(self):
+        self.uc.emu_stop()
 
-    # ql.reg_tables - Register table getter
-    @property
-    def reg_table(self):
-        return self.arch.get_reg_table()
-
-    # ql.reg_name - Register name converter getter
-    @property
-    def reg_name(self):
-        return self.arch.get_reg_name_str(self.uc_reg_name)
-
-    # ql.reg_name - Register name converter setter
-    @reg_name.setter
-    def reg_name(self, uc_reg):
-        self.uc_reg_name = uc_reg
-
-    # ql.pc - PC register value getter
-    @property
-    def pc(self):
-        return self.arch.get_pc()
-
-    # ql.pc - PC register value setter
-    @pc.setter
-    def pc(self, value):
-        self.arch.set_pc(value)
-
-    # ql.sp - SP register value getter
-    @property
-    def sp(self):
-        return self.arch.get_sp()
-
-    # ql.sp - SP register value setter
-    @sp.setter
-    def sp(self, value):
-        self.arch.set_sp(value)
+    def emu_start(self, begin, end, timeout=0, count=0):
+        self.uc.emu_start(begin, end, timeout, count)
 
     # ql.output var getter
     @property
     def output(self):
         return self._output
 
-    # ql.output - output var setter eg. QL_OUT_DEFAULT and etc
+    # ql.output - output var setter eg. QL_OUTPUT.DEFAULT and etc
     @output.setter
     def output(self, output):
         self._output = output_convert(output)
@@ -414,16 +330,7 @@ class Qiling:
     # ql.platform - platform var = host os setter eg. QL_LINUX and etc
     @platform.setter
     def platform(self, value):
-        if value == 'Linux':
-            self._platform = QL_LINUX
-        elif value == 'Darwin':
-            self._platform = QL_MACOS
-        elif value == 'Windows':
-            self._platform = QL_WINDOWS
-        elif value == 'FreeBSD':
-            self._platform = QL_FREEBSD
-        else:
-            self._platform = None
+        self._platform = ostype_convert(value.lower())
 
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:
@@ -441,10 +348,3 @@ class Qiling:
 
     def add_fs_mapper(self, fm, to):
         self.fs_mapper.append([fm, to])
-
-    def stop(self, stop_event=THREAD_EVENT_EXIT_GROUP_EVENT):
-        if self.thread_management != None:
-            td = self.thread_management.cur_thread
-            td.stop()
-            td.stop_event = stop_event
-        self.uc.emu_stop()
