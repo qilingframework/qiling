@@ -44,34 +44,6 @@ def ql_lsbmsb_convert(ql, sc, size=4):
     return ebsc    
 
 
-def ql_definesyscall_return(ql, regreturn):
-    if (ql.archtype== QL_ARM):  # QL_ARM
-        ql.register(UC_ARM_REG_R0, regreturn)
-        # ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
-
-    elif (ql.archtype== QL_ARM64):  # QL_ARM64
-        ql.register(UC_ARM64_REG_X0, regreturn)
-
-    elif (ql.archtype== QL_X86):  # QL_X86
-        ql.register(UC_X86_REG_EAX, regreturn)
-
-    elif (ql.archtype== QL_X8664):  # QL_X86_64
-        ql.register(UC_X86_REG_RAX, regreturn)
-
-    elif (ql.archtype== QL_MIPS32):  # QL_MIPSE32EL
-        if regreturn == -1:
-            a3return = 1
-        elif regreturn == 2:
-            regreturn = 2
-            a3return = 1
-        else:
-            a3return = 0
-        # if ql.output == QL_OUTPUT.DEBUG:
-        #    print("[+] A3 is %d" % a3return)
-        ql.register(UC_MIPS_REG_V0, regreturn)
-        ql.register(UC_MIPS_REG_A3, a3return)
-
-
 def ql_bin_to_ipv4(ip):
     return "%d.%d.%d.%d" % (
         (ip & 0xff000000) >> 24,
@@ -89,6 +61,7 @@ def ql_init_configuration(self):
         for key in config[section]:
             self.ql.dprint(D_RPRT, "[-] %s %s" % (key, config[section][key]) )
     return config
+
 
 def ql_bin_to_ip(ip):
     return ipaddress.ip_address(ip).compressed

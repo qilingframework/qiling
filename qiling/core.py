@@ -7,15 +7,11 @@ import sys
 import platform
 import ntpath
 import os as pyos
-from unicorn import *
 
-from qiling.const import *
-from qiling.exception import *
-from qiling.utils import *
-#from qiling.os.utils import *
-#from qiling.loader.utils import *
-#from qiling.arch.utils import *
-from qiling.debugger.utils import *
+from .const import *
+from .exception import *
+from .utils import *
+from .debugger.utils import *
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 

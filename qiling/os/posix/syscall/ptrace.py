@@ -37,4 +37,4 @@ from qiling.utils import *
 def ql_syscall_ptrace(ql, request, pid, addr, data, *args, **kw):
     regreturn = 0
     ql.nprint("ptrace(0x%x, 0x%x, 0x%x, 0x%x) = %d" % (request, pid, addr, data, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)

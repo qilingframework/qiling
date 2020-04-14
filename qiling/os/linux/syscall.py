@@ -51,7 +51,7 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
         ql.os.gdtm.register_gdt_segment(index, base, limit, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
         ql.mem.write(u_info_addr, ql.pack32(index))
         regreturn = 0
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_mips32_set_thread_area(ql, sta_area, *args, **kw):

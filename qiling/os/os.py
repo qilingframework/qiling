@@ -39,6 +39,7 @@ class QlOs:
         elif self.ql.archbit == 64:
             self.QL_EMU_END = QL_ARCHBIT64_EMU_END           
 
+
     def stop(self, stop_event=THREAD_EVENT_EXIT_GROUP_EVENT):
         if self.ql.multithread == True:
             td = self.thread_management.cur_thread

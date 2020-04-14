@@ -104,7 +104,35 @@ class QlOsPosix(QlOs):
             syscall_num = UC_X86_REG_RAX           
 
         return self.ql.register(syscall_num)
-    
+
+    def definesyscall_return(self, regreturn):
+        if (self.ql.archtype== QL_ARM):  # QL_ARM
+            self.ql.register(UC_ARM_REG_R0, regreturn)
+            # ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
+
+        elif (self.ql.archtype== QL_ARM64):  # QL_ARM64
+            self.ql.register(UC_ARM64_REG_X0, regreturn)
+
+        elif (self.ql.archtype== QL_X86):  # QL_X86
+            self.ql.register(UC_X86_REG_EAX, regreturn)
+
+        elif (self.ql.archtype== QL_X8664):  # QL_X86_64
+            self.ql.register(UC_X86_REG_RAX, regreturn)
+
+        elif (self.ql.archtype== QL_MIPS32):  # QL_MIPSE32EL
+            if regreturn == -1:
+                a3return = 1
+            elif regreturn == 2:
+                regreturn = 2
+                a3return = 1
+            else:
+                a3return = 0
+            # if ql.output == QL_OUTPUT.DEBUG:
+            #    print("[+] A3 is %d" % a3return)
+            self.ql.register(UC_MIPS_REG_V0, regreturn)
+            self.ql.register(UC_MIPS_REG_A3, a3return)
+
+
     # get syscall
     def get_syscall_param(self):
         if self.ql.archtype== QL_ARM64:

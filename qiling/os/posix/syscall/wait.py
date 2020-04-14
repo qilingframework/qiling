@@ -39,4 +39,4 @@ def ql_syscall_wait4(ql, wait4_pid, wait4_wstatus, wait4_options, wait4_rusage, 
     ql.mem.write(wait4_wstatus, ql.pack32(status))
     regreturn = spid
     ql.nprint("wait4(%d, %d) = %d"% (wait4_pid, wait4_options, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
