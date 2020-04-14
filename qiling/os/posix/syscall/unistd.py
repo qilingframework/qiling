@@ -163,25 +163,6 @@ def ql_syscall_setuid(ql, *args, **kw):
     ql.os.definesyscall_return(regreturn)
 
 
-def ql_syscall_stat64(ql, stat_path, *args, **kw):
-    regreturn = 0
-
-    pathname = ql_read_string(ql, stat_path)
-    real_path = ql_transform_to_real_path(ql, pathname)
-    relative_path = ql_transform_to_relative_path(ql, pathname)
-
-    if os.path.exists(real_path) == False:
-        regreturn = -1
-        ql.nprint("[+] stat64(%s) = %d : Not Found" % (real_path, regreturn))
-    elif stat.S_ISREG(os.stat(real_path).st_mode):
-        regreturn = 0
-        ql.nprint("[+] stat64(%s) = %d"% (relative_path, regreturn))
-    else:
-        regreturn = -1
-        ql.nprint("[+] stat64(%s) = %d : Not Found" % (relative_path, regreturn))
-    ql_definesyscall_return(ql, regreturn)
-
-
 def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, *args, **kw):
 
     access_path = ql_read_string(ql, faccessat_filename)
