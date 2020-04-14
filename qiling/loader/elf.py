@@ -427,8 +427,7 @@ class QlLoaderELF(ELFParse, QlLoader):
             self.ql.nprint("[+] Some error in head e_type: %u!" %elfhead['e_type'])
             return -1
 
-        self.ql.mem.map(loadbase + mem_start, mem_end - mem_start)
-        self.ql.mem.add_mapinfo(loadbase + mem_start, loadbase + mem_end, 'r-x', self.path)
+        self.ql.mem.map(loadbase + mem_start, mem_end - mem_start, info=self.path)
 
         for i in super().parse_program_header():
             if i['p_type'] == PT_LOAD:
@@ -472,8 +471,7 @@ class QlLoaderELF(ELFParse, QlLoader):
                 self.interp_base = self.ql.interp_base
 
             self.ql.dprint(D_INFO, "[+] interp_base is : 0x%x" % (self.interp_base))
-            self.ql.mem.map(self.interp_base, int(interp_mem_size))
-            self.ql.mem.add_mapinfo(self.interp_base, self.interp_base + int(interp_mem_size), 'r-x',os.path.abspath(interp_path))
+            self.ql.mem.map(self.interp_base, int(interp_mem_size), info=os.path.abspath(interp_path))
 
             for i in interp.parse_program_header():
                 if i['p_type'] == PT_LOAD:
@@ -597,4 +595,3 @@ class QlLoaderELF(ELFParse, QlLoader):
         self.elf_entry = loadbase + elfhead['e_entry']
         self.new_stack = new_stack
         self.loadbase = loadbase
-        self.ql.mem.add_mapinfo(new_stack, self.ql.stack_address+ql.stack_size, 'rw-', '[stack]')
