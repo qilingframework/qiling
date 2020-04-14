@@ -163,7 +163,7 @@ def ql_syscall_setuid(ql, *args, **kw):
     ql.os.definesyscall_return(regreturn)
 
 
-def ql_syscall_stat64(ql, stat_path, *rest):
+def ql_syscall_stat64(ql, stat_path, *args, **kw):
     regreturn = 0
 
     pathname = ql_read_string(ql, stat_path)
