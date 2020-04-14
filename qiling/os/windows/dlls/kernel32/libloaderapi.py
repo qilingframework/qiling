@@ -129,10 +129,17 @@ def hook_GetModuleFileNameW(self, address, params):
 # );
 @winapi(cc=STDCALL, params={
     "hModule": POINTER,
-    "lpProcName": STRING
+    "lpProcName": POINTER
 })
 def hook_GetProcAddress(self, address, params):
-    lpProcName = bytes(params["lpProcName"], 'ascii')
+    if params["lpProcName"] > MAXUSHORT:
+        # Look up by name
+        params["lpProcName"] = read_cstring(self, params["lpProcName"])
+        lpProcName = bytes(params["lpProcName"], "ascii")
+    else:
+        # Look up by ordinal
+        lpProcName = params["lpProcName"]
+
     # Check if dll is loaded
     try:
         dll_name = [key for key, value in self.ql.loader.dlls.items() if value == params['hModule']][0]

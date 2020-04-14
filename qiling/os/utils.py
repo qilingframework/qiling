@@ -523,10 +523,10 @@ def print_function(self, address, function_name, params, ret):
 
     if self.ql.output == QL_OUT_DEFAULT:
         log = log.partition(" ")[-1]
-        self.ql.nprint(log + '\n')
+        self.ql.nprint(log)
 
     elif self.ql.output == QL_OUT_DEBUG:
-        self.ql.dprint(D_INFO, log + '\n')
+        self.ql.dprint(D_INFO, log)
 
 
 def read_cstring(self, address):
