@@ -79,6 +79,11 @@ def ql_read_string(ql, address):
     return ret
 
 
+def ql_write_string(ql, address, usr_string):
+    string_bytes = bytes(usr_string, 'utf-8') + b'\x00'
+    ql.mem.write(address, string_bytes)
+
+    
 def ql_parse_sock_address(sock_addr):
     sin_family, = struct.unpack("<h", sock_addr[:2])
 
