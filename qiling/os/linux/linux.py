@@ -3,21 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-from unicorn import *
-
-from unicorn.arm_const import *
-from unicorn.x86_const import *
-from unicorn.arm64_const import *
-from unicorn.mips_const import *
-
 from qiling.const import *
 from qiling.arch.x86 import *
 
 from qiling.os.utils import *
 from qiling.os.posix.posix import QlOsPosix
-from qiling.os.linux.const import *
-from qiling.os.linux.utils import *
-from qiling.os.linux.futex import *
+from .const import *
+from .utils import *
+from .futex import *
+from .thread import *
+
 
 class QlOsLinux(QlOsPosix):
     def __init__(self, ql):

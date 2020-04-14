@@ -3,17 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-from unicorn import *
-from unicorn.arm_const import *
-from unicorn.mips_const import *
-
-from qiling.os.linux.thread import *
+from .const import *
 from qiling.const import *
-from qiling.os.linux.const import *
-from qiling.exception import *
-from qiling.os.const import *
-from qiling.os.utils import *
-
 
 """
 set_tls
