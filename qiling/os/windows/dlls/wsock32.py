@@ -51,20 +51,22 @@ def hook_WSASocketA(ql, address, params):
 #  int            namelen
 # );
 @winapi(cc=STDCALL, params={"s": INT, "name": POINTER, "namelen": INT})
-def hook_connect(ql, address, params):
-    sin_family =ql.mem.read(params["name"], 1)[0]
-    sin_port = int.from_bytes(ql.mem.read(params["name"] + 2, 2), byteorder="big")
+def hook_connect(self, address, params):
+    sin_family = self.ql.mem.read(params["name"], 1)[0]
+    sin_port = int.from_bytes(self.ql.mem.read(params["name"] + 2, 2), byteorder="big")
+
     if sin_family == 0x17:  # IPv6
-        segments = list(map("{:02x}".format,ql.mem.read(params["name"] + 8, 16)))
+        segments = list(map("{:02x}".format, self.ql.mem.read(params["name"] + 8, 16)))
         sin_addr = ":".join(["".join(x) for x in zip(segments[0::2], segments[1::2])])
     elif sin_family == 0x2:  # IPv4
         sin_addr = ".".join(
-            [str(octet) for octet in ql.mem.read(params["name"] + 4, 4)]
+            [str(octet) for octet in self.ql.mem.read(params["name"] + 4, 4)]
         )
     else:
-        ql.dprint(0, "[!] sockaddr sin_family unhandled variant")
+        self.ql.dprint(D_INFO, "[!] sockaddr sin_family unhandled variant")
         return 0
-    ql.dprint(0,
+    
+    self.ql.dprint(D_INFO,
         f"0x{params['name']:08x}: sockaddr_in{6 if sin_family == 0x17 else ''}",
         f"{{sin_family=0x{sin_family:02x}, sin_port={sin_port}, sin_addr={sin_addr}}}",
         sep="",

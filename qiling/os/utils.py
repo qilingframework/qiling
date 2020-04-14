@@ -24,6 +24,9 @@ from keystone import *
 from qiling.const import *
 from qiling.exception import *
 from qiling.utils import *
+from qiling.const import *
+#from qiling.os.memory import QlMemoryManager
+
 
 from binascii import unhexlify
 import ipaddress, struct, os, ctypes
@@ -42,7 +45,7 @@ def ql_os_setup(ql, function_name = None):
         function_name = "QlOs" + ostype_str
         module_name = ql_build_module_import_name("os", ql.ostype)
         return ql_get_module_function(module_name, function_name)(ql)
-    
+
     elif function_name == "map_syscall":
         ostype_str = ql_ostype_convert_str(ql.ostype)
         arch_str = ql_arch_convert_str(ql.archtype)
@@ -53,6 +56,31 @@ def ql_os_setup(ql, function_name = None):
     else:
         module_name = ql_build_module_import_name("os", ql.ostype, ql.archtype)
         return ql_get_module_function(module_name, function_name)
+
+
+def ql_component_setup(ql, function_name = None):
+    if not ql_is_valid_ostype(ql.ostype):
+        raise QlErrorOsType("[!] Invalid OSType")
+
+    if not ql_is_valid_arch(ql.archtype):
+        raise QlErrorArch("[!] Invalid Arch %s" % ql.archtype)
+
+    if function_name == "register":
+        function_name = "QlRegisterManager"
+        module_name = "qiling.arch.register"
+        return ql_get_module_function(module_name, function_name)(ql)
+
+    elif function_name == "memory":
+        function_name = "QlMemoryManager"
+        module_name = "qiling.os.memory"
+        return ql_get_module_function(module_name, function_name)(ql)
+    
+    else:
+        module_name = ql_build_module_import_name("os", ql.ostype, ql.archtype)
+        return ql_get_module_function(module_name, function_name)
+
+
+
 
 
 def ql_lsbmsb_convert(ql, sc, size=4):
@@ -103,14 +131,14 @@ def ql_bin_to_ipv4(ip):
         (ip & 0xff))
 
 
-def ql_init_configuration(ql):
+def ql_init_configuration(self):
     config = configparser.ConfigParser()
-    config.read(ql.config)
-    ql.dprint(2, "[+] Added configuration file")
+    config.read(self.profile)
+    self.ql.dprint(D_RPRT, "[+] Added configuration file")
     for section in config.sections():
-        ql.dprint(2, "[+] Section: %s" % section)
+        self.ql.dprint(D_RPRT, "[+] Section: %s" % section)
         for key in config[section]:
-            ql.dprint(2, "[-] %s %s" % (key, config[section][key]) )
+            self.ql.dprint(D_RPRT, "[-] %s %s" % (key, config[section][key]) )
     return config
 
 def ql_bin_to_ip(ip):
@@ -197,12 +225,12 @@ def ql_hook_code_disasm(ql, address, size):
         ql.nprint ("%s %s" % (i.mnemonic, i.op_str))
     
     if ql.output == QL_OUT_DUMP:
-        for reg in ql.reg_table:
-            ql.reg_name = reg
-            REG_NAME = ql.reg_name
+        for reg in ql.reg.table:
+            ql.reg.name = reg
+            REG_NAME = ql.reg.name
             REG_VAL = ql.register(reg)
-            ql.dprint(3, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
-            
+            ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+    
 
 def ql_setup_output(ql):
     if ql.output in (QL_OUT_DISASM, QL_OUT_DUMP):
@@ -264,10 +292,10 @@ def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
 
 
 def ql_transform_to_link_path(ql, path):
-    if ql.thread_management != None:
-        cur_path = ql.thread_management.cur_thread.get_current_path()
+    if ql.multithread == True:
+        cur_path = ql.os.thread_management.cur_thread.get_current_path()
     else:
-        cur_path = ql.current_path
+        cur_path = ql.os.current_path
 
     rootfs = ql.rootfs
 
@@ -294,10 +322,10 @@ def ql_transform_to_link_path(ql, path):
 
 
 def ql_transform_to_real_path(ql, path):
-    if ql.thread_management != None:
-        cur_path = ql.thread_management.cur_thread.get_current_path()
+    if ql.multithread == True:
+        cur_path = ql.os.thread_management.cur_thread.get_current_path()
     else:
-        cur_path = ql.current_path
+        cur_path = ql.os.current_path
 
     rootfs = ql.rootfs
 
@@ -333,10 +361,10 @@ def ql_transform_to_real_path(ql, path):
 
 
 def ql_transform_to_relative_path(ql, path):
-    if ql.thread_management != None:
-        cur_path = ql.thread_management.cur_thread.get_current_path()
+    if ql.multithread == True:
+        cur_path = ql.os.thread_management.cur_thread.get_current_path()
     else:
-        cur_path = ql.current_path
+        cur_path = ql.os.current_path
 
     if path[0] == '/':
         relative_path = os.path.abspath(path)
@@ -375,10 +403,10 @@ def ql_real_to_vm_abspath(ql, path):
 
 
 def ql_get_vm_current_path(ql):
-    if ql.thread_management is not None:
-        return ql.thread_management.cur_thread.get_current_path()
+    if ql.multithread == True:
+        return ql.os.thread_management.cur_thread.get_current_path()
     else:
-        return ql.current_path
+        return ql.os.current_path
 
 
 def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
@@ -477,7 +505,7 @@ def ql_open_flag_mapping(flags, ql):
     return flag_mapping(flags, open_flags_name, f, t)
 
 
-def print_function(ql, address, function_name, params, ret):
+def print_function(self, address, function_name, params, ret):
     function_name = function_name.replace('hook_', '')
     if function_name in ("__stdio_common_vfprintf", "printf", "wsprintfW", "sprintf"):
         return
@@ -493,24 +521,23 @@ def print_function(ql, address, function_name, params, ret):
     if ret is not None:
         log += ' = 0x%x' % ret
 
-    if ql.output == QL_OUT_DEFAULT:
+    if self.ql.output == QL_OUT_DEFAULT:
         log = log.partition(" ")[-1]
-        ql.nprint(log + '\n')
+        self.ql.nprint(log + '\n')
 
-    elif ql.output == QL_OUT_DEBUG:
-        ql.dprint(0, log + '\n')
+    elif self.ql.output == QL_OUT_DEBUG:
+        self.ql.dprint(D_INFO, log + '\n')
 
 
-def read_cstring(ql, address):
+def read_cstring(self, address):
     result = ""
-    char = ql.mem.read(address, 1)
+    char = self.ql.mem.read(address, 1)
     while char.decode(errors="ignore") != "\x00":
         address += 1
         result += char.decode(errors="ignore")
-        char = ql.mem.read(address, 1)
+        char = self.ql.mem.read(address, 1)
     return result
 
-
-def post_report(ql):
-    ql.dprint(0, "[+] Syscalls and number of invocations")
-    ql.dprint(0, "[-] " + str(list(ql.PE.syscall_count.items())))
+def post_report(self):
+    self.ql.dprint(D_INFO, "[+] Syscalls and number of invocations")
+    self.ql.dprint(D_INFO, "[-] " + str(list(self.syscall_count.items())))

@@ -70,12 +70,12 @@ class QlArchMIPS32(QlArch):
 
 
     # get stack pointer register
-    def get_reg_sp(self):
+    def get_name_sp(self):
         return UC_MIPS_REG_SP
 
 
     # get pc register pointer
-    def get_reg_pc(self):
+    def get_name_pc(self):
         return UC_MIPS_REG_PC
 
 

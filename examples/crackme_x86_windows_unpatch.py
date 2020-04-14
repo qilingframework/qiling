@@ -11,7 +11,7 @@ from qiling import *
 
 def force_call_dialog_func(ql):
     # get DialogFunc address
-    lpDialogFunc = ql.unpack32(ql.mem.read(ql.sp - 0x8, 4))
+    lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.sp - 0x8, 4))
     # setup stack for DialogFunc
     ql.stack_push(0)
     ql.stack_push(1001)
@@ -19,7 +19,7 @@ def force_call_dialog_func(ql):
     ql.stack_push(0)
     ql.stack_push(0x0401018)
     # force EIP to DialogFunc
-    ql.pc = lpDialogFunc
+    ql.reg.pc = lpDialogFunc
 
 
 def our_sandbox(path, rootfs):

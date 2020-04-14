@@ -9,24 +9,32 @@ from unicorn.mips_const import *
 from unicorn.x86_const import *
 
 from qiling.const import *
-from qiling.utils import *
-
-from qiling.os.utils import *
-
-from qiling.os.macos.syscall import *
-from qiling.os.posix.syscall import *
-from qiling.os.freebsd.syscall import *
-from qiling.os.linux.syscall import *
-
 from qiling.os.os import QlOs
+from qiling.os.utils import *
+from qiling.os.posix.syscall import *
+from qiling.os.linux.syscall import *
+from qiling.os.macos.syscall import *
+from qiling.os.freebsd.syscall import *
+
 
 class QlOsPosix(QlOs):
     def __init__(self, ql):
         super(QlOsPosix, self).__init__(ql)
         self.ql = ql
+        self.sigaction_act = []
+        self.file_des = []
         self.dict_posix_syscall = dict()
         self.dict_posix_syscall_by_num = dict()
 
+        if self.ql.ostype in QL_POSIX:
+
+            self.file_des = [0] * 256
+            self.file_des[0] = self.stdin
+            self.file_des[1] = self.stdout
+            self.file_des[2] = self.stderr
+
+        for _ in range(256):
+            self.sigaction_act.append(0)
 
     # ql.syscall - get syscall for all posix series
     @property
@@ -74,7 +82,7 @@ class QlOsPosix(QlOs):
                 self.ql.nprint("[!] Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
                 raise
         else:
-            self.ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implemented" %(self.ql.pc, self.syscall, self.syscall))
+            self.ql.nprint("[!] 0x%x: syscall number = 0x%x(%d) not implemented" %(self.ql.reg.pc, self.syscall, self.syscall))
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Syscall Not Found")
 

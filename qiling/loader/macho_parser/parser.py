@@ -9,6 +9,7 @@ from .data import *
 from .const import *
 from .utils import *
 from struct import unpack
+from qiling.const import *
 
 class MachoParser:
     
@@ -53,17 +54,17 @@ class MachoParser:
         self.magic = self.getMagic(self.binary_file)
         
         if self.magic in MAGIC_64:
-            self.ql.dprint(0, "[+] Got a 64bit Header ")
+            self.ql.dprint(D_INFO, "[+] Got a 64bit Header ")
             self.header = BinaryHeader(self.binary_file)
 
         #elif self.magic in MAGIC_X86:
         #    # x86
-        #    self.ql.dprint(0,"[+] Got a x86 Header") 
+        #    self.ql.dprint(D_INFO,"[+] Got a x86 Header") 
         #    self.header = BinaryHeader(self.binary_file)
 
         elif self.magic in MAGIC_FAT:
             # fat 
-            self.ql.dprint(0, "[+] Got a fat header")
+            self.ql.dprint(D_INFO, "[+] Got a fat header")
             fat = FatHeader(self.binary_file)
             file_info = fat.getBinary(self.archtype)
             self.binary_file = self.binary_file[file_info.offset : file_info.offset + file_info.size]
@@ -80,7 +81,7 @@ class MachoParser:
 
     def parseLoadCommand(self):
 
-        self.ql.dprint(0, "[+] Parse LoadCommand")
+        self.ql.dprint(D_INFO, "[+] Parse LoadCommand")
         if not self.header.lc_num or not self.header.lc_size or not self.header.header_size:
             return False
 

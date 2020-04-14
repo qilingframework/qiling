@@ -29,6 +29,7 @@ def map_syscall(syscall_num):
         4055 : "ql_syscall_fcntl",
         4063 : "ql_syscall_dup2",
         4066 : "ql_syscall_setsid",
+        4076 : "ql_syscall_ugetrlimit",
         4078 : "ql_syscall_gettimeofday",
         4081 : "ql_syscall_setgroups",
         4085 : "ql_syscall_readlink",
@@ -63,10 +64,14 @@ def map_syscall(syscall_num):
         4210 : "ql_syscall_mmap2",
         4213 : "ql_syscall_stat64",
         4215 : "ql_syscall_fstat64",
+        4218 : "ql_syscall_madvise",
         4220 : "ql_syscall_fcntl64",
+        4222 : "ql_syscall_gettid",
         4237 : "ql_syscall_sendfile64",
+        4238 : "ql_syscall_futex",
         4246 : "ql_syscall_exit_group",
         4252 : "ql_syscall_set_tid_address",
         4283 : "ql_syscall_mips32_set_thread_area",
+        4309 : "ql_syscall_set_robust_list",
     }
     return adapter.get(syscall_num)

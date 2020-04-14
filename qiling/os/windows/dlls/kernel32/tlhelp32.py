@@ -12,7 +12,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-
+from qiling.const import *
 
 # HANDLE CreateToolhelp32Snapshot(
 #   DWORD dwFlags,
@@ -23,11 +23,11 @@ from qiling.exception import *
     "th32ProcessID": DWORD
 
 })
-def hook_CreateToolhelp32Snapshot(ql, address, params):
+def hook_CreateToolhelp32Snapshot(self, address, params):
     # TODO thinking about implementing an handler, gonna see if is really necessary
     flag = params["dwFlags"]
     if flag == TH32CS_SNAPPROCESS:
-       ql.dprint(2, "[=] The sample is checking every process!")
+       self.ql.dprint(D_RPRT, "[=] The sample is checking every process!")
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 0xD10C
@@ -42,7 +42,7 @@ def hook_CreateToolhelp32Snapshot(ql, address, params):
     "lppe": POINTER
 
 })
-def hook_Process32FirstW(ql, address, params):
+def hook_Process32FirstW(self, address, params):
     return 0x1
 
 
@@ -55,8 +55,8 @@ def hook_Process32FirstW(ql, address, params):
     "lppe": POINTER
 
 })
-def hook_Process32NextW(ql, address, params):
+def hook_Process32NextW(self, address, params):
     # Return True if more process, 0 else
-    if ql.PE.syscall_count["Process32NextW"] >= 3:  # I don' know how many process the sample want's to cycle
+    if self.syscall_count["Process32NextW"] >= 3:  # I don' know how many process the sample want's to cycle
         return 0x0
     return 0x1

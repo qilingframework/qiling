@@ -34,6 +34,7 @@ from qiling.os.posix.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
+
 def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, *args, **kw):
 
     regreturn = 0
@@ -49,8 +50,8 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
             if idx % 32 == 0:
                 tmp = ql.unpack32(ql.mem.read(struct_addr + idx, 4))
             if tmp & 0x1 != 0:
-                fd_list.append(ql.file_des[idx].socket)
-                fd_map[ql.file_des[idx].socket] = idx
+                fd_list.append(ql.os.file_des[idx].socket)
+                fd_map[ql.os.file_des[idx].socket] = idx
             tmp = tmp >> 1
             idx += 1
         return fd_list, fd_map
@@ -71,7 +72,7 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
         if _newselect_readfds != 0:
             tmp_buf = b'\x00' * (_newselect_nfds // 8 + 1)
             for i in ans[0]:
-                ql.dprint(0, "debug : " + str(tmp_r_map[i]))
+                ql.dprint(D_INFO, "debug : " + str(tmp_r_map[i]))
                 tmp_buf = set_fd_set(tmp_buf, tmp_r_map[i])
             ql.mem.write(_newselect_readfds, tmp_buf)
 

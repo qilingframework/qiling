@@ -24,9 +24,9 @@ from qiling.exception import *
     "dwInitialSize": SIZE_T,
     "dwMaximumSize": SIZE_T
 })
-def hook_HeapCreate(ql, address, params):
+def hook_HeapCreate(self, address, params):
     dwInitialSize = params["dwInitialSize"]
-    addr = ql.heap.mem_alloc(dwInitialSize)
+    addr = self.ql.os.heap.mem_alloc(dwInitialSize)
     return addr
 
 
@@ -40,8 +40,8 @@ def hook_HeapCreate(ql, address, params):
     "dwFlags": DWORD,
     "dwBytes": SIZE_T
 })
-def hook_HeapAlloc(ql, address, params):
-    ret = ql.heap.mem_alloc(params["dwBytes"])
+def hook_HeapAlloc(self, address, params):
+    ret = self.ql.os.heap.mem_alloc(params["dwBytes"])
     return ret
 
 
@@ -55,9 +55,9 @@ def hook_HeapAlloc(ql, address, params):
     "dwFlags": DWORD,
     "lpMem": POINTER
 })
-def hook_HeapSize(ql, address, params):
+def hook_HeapSize(self, address, params):
     pointer = params["lpMem"]
-    return ql.heap.mem_size(pointer)
+    return self.ql.os.heap.mem_size(pointer)
 
 
 # BOOL HeapFree(
@@ -70,8 +70,8 @@ def hook_HeapSize(ql, address, params):
     "dwFlags": DWORD,
     "lpMem": POINTER
 })
-def hook_HeapFree(ql, address, params):
-    return ql.heap.mem_free(params['lpMem'])
+def hook_HeapFree(self, address, params):
+    return self.ql.os.heap.mem_free(params['lpMem'])
 
 
 # BOOL HeapSetInformation(
@@ -86,13 +86,13 @@ def hook_HeapFree(ql, address, params):
     "HeapInformation": POINTER,
     "HeapInformationLength": UINT
 })
-def hook_HeapSetInformation(ql, address, params):
+def hook_HeapSetInformation(self, address, params):
     return 1
 
 
 # HANDLE GetProcessHeap(
 # );
 @winapi(cc=STDCALL, params={})
-def hook_GetProcessHeap(ql, address, params):
-    ret = ql.heap.start_address
+def hook_GetProcessHeap(self, address, params):
+    ret = self.ql.os.heap.start_address
     return ret

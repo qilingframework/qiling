@@ -52,17 +52,16 @@ def ql_syscall_setrlimit(ql, setrlimit_resource, setrlimit_rlim, *args, **kw):
     ql_definesyscall_return(ql, regreturn)
 
 
-def ql_syscall_prlimit64(ql, pid, resource, new_limit, old_limit, *args, **kw):
+def ql_syscall_prlimit64(ql, prlimit64_pid, prlimit64_resource, prlimit64_new_limit, prlimit64_old_limit, *args, **kw):
     # setrlimit() and getrlimit()
-    #if pid == 0:
-    #    ql_syscall_setrlimit(ql, resource, new_limit, 0, 0, 0, 0);
-    #    ql_syscall_ugetrlimit(ql, resource, old_limit, 0, 0, 0, 0);
-    #    regreturn = 0;
-    #else:
+    if prlimit64_pid == 0 and prlimit64_new_limit == 0:
+        rlim = resource.getrlimit(prlimit64_resource)
+        ql.mem.write(prlimit64_old_limit, ql.packs(rlim[0]) + ql.packs(rlim[1]))
+        regreturn = 0
+    else:
         # set other process which pid != 0
-    #    regreturn = 0
-    regreturn = 0
-    #ql.nprint("prlimit64(%d, %d, 0x%x, 0x%x) = %d" % (pid, resource, new_limit, old_limit, regreturn))
+       regreturn = -1
+    ql.nprint("prlimit64(%d, %d, 0x%x, 0x%x) = %d" % (prlimit64_pid, prlimit64_resource, prlimit64_new_limit, prlimit64_old_limit, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
 

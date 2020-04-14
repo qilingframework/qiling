@@ -10,7 +10,7 @@ import sys
 from Registry import Registry
 from qiling.os.windows.const import *
 from qiling.exception import *
-
+from qiling.const import *
 
 # Registry Manager reads data from two places
 # 1. config.json
@@ -27,29 +27,31 @@ class RegistryManager:
     def __init__(self, ql, hive=None):
         self.ql = ql
 
-        if ql.log_dir is None:
-            ql.log_reg_dir = os.path.join(ql.rootfs, "qlog")
+        if self.ql.log_dir is None:
+            self.log_registry_dir = "qlog"
         else:
-            ql.log_reg_dir = ql.log_dir
+            self.log_registry_dir = self.ql.log_dir
 
-        if hasattr(ql, 'regdiff'):
-            self.regdiff = self.ql.regdiff
+        if self.ql.append:
+            self.registry_diff = self.ql.targetname + "_" + self.ql.append + ".json"
         else:
-            self.regdiff = os.path.join(ql.log_reg_dir, "registry", "registry_diff.json")    
+            self.registry_diff = self.ql.targetname + ".json"
+
+        self.regdiff = os.path.join(self.log_registry_dir, "registry", self.registry_diff)    
 
         # hive dir
         if hive:
             self.hive = hive
         else:
             self.hive = os.path.join(ql.rootfs, "Windows", "registry")
-            ql.dprint(0, "[+] Windows Registry PATH: %s" % self.hive)
+            ql.dprint(D_INFO, "[+] Windows Registry PATH: %s" % self.hive)
             if not os.path.exists(self.hive) and not self.ql.shellcoder:
                 raise QlPrintException("Error: Registry files not found!")
 
         if not os.path.exists(self.regdiff):
             self.registry_config = {}
             try:
-                os.makedirs(os.path.join(ql.log_reg_dir, "registry"), 0o755)
+                os.makedirs(os.path.join(self.log_registry_dir, "registry"), 0o755)
             except Exception:
                 pass
         else:

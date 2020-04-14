@@ -29,7 +29,7 @@ from qiling.os.windows.const import *
     "pdwSkip": POINTER,
     "pdwFlags": POINTER
 })
-def hook_CryptStringToBinaryA(ql, address, params):
+def hook_CryptStringToBinaryA(self, address, params):
     flag_src = params["dwFlags"]
     string_src = params["pszString"]
     size_src = params["cchString"]
@@ -37,7 +37,7 @@ def hook_CryptStringToBinaryA(ql, address, params):
     string_dst = params["pbBinary"]
     flag_dst = params["pdwFlags"]
 
-    size_dst = int.from_bytes(ql.mem.read(size_dst_pointer, 4), byteorder="little")
+    size_dst = int.from_bytes(self.mem.read(size_dst_pointer, 4), byteorder="little")
     if size_dst != 0 and size_dst < size_src:
         raise QlErrorNotImplemented("[!] API not implemented")
     if flag_src == CRYPT_STRING_BASE64:
@@ -47,8 +47,8 @@ def hook_CryptStringToBinaryA(ql, address, params):
             string_src += "=" * add_pad
         output = base64.b64decode(string_src).decode("utf-16le") + "\x00"
     else:
-        ql.dprint(0, "Flag")
-        ql.dprint(0, flag_src)
+        self.ql.dprint(D_INFO, "Flag")
+        self.ql.dprint(D_INFO, flag_src)
         raise QlErrorNotImplemented("[!] API not implemented")
 
     if string_dst == 0:
@@ -57,9 +57,9 @@ def hook_CryptStringToBinaryA(ql, address, params):
     else:
         if flag_dst != 0:
             # Is optional
-            ql.mem.write(flag_dst, flag_src.to_bytes(length=4, byteorder='little'))
+            self.ql.mem.write(flag_dst, flag_src.to_bytes(length=4, byteorder='little'))
         # Write size
-        ql.mem.write(size_dst_pointer, len(output).to_bytes(length=4, byteorder='little'))
+        self.ql.mem.write(size_dst_pointer, len(output).to_bytes(length=4, byteorder='little'))
         # Write result
-        ql.mem.write(string_dst, bytes(output, encoding="utf-16le"))
+        self.ql.mem.write(string_dst, bytes(output, encoding="utf-16le"))
     return 1

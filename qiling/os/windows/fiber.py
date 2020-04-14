@@ -7,6 +7,7 @@
 from unicorn import *
 from unicorn.x86_const import *
 
+from qiling.const import *
 
 class Fiber:
     def __init__(self, idx, cb=None):
@@ -29,17 +30,17 @@ class FiberManager:
 
     def free(self, idx):
         if idx not in self.fibers:
-            self.ql.os.last_error = 0x57  # ERROR_INVALID_PARAMETER
+            self.last_error = 0x57  # ERROR_INVALID_PARAMETER
             return 0
         else:
             fiber = self.fibers[idx]
             if fiber.cb:
-                self.ql.dprint(0, "Skipping emulation of callback function 0x%X for fiber 0x%X" % (fiber.cb, fiber.idx))
+                self.ql.dprint(D_INFO, "Skipping emulation of callback function 0x%X for fiber 0x%X" % (fiber.cb, fiber.idx))
                 """
                 ret_addr = self.ql.register(UC_X86_REG_RIP + 6 ) #FIXME, use capstone to get addr of next instr?
 
                 # Write Fls data to memory to be accessed by cb
-                addr = self.ql.heap.mem_alloc(self.ql.pointersize)
+                addr = self.ql.os.heap.mem_alloc(self.ql.pointersize)
                 data = fiber.data.to_bytes(self.ql.pointersize, byteorder='little')
                 self.ql.mem.write(addr, data)
 
@@ -49,7 +50,7 @@ class FiberManager:
                 else:
                     self.ql.stack_push(ret_addr)
                 self.ql.stack_push(ret_addr)
-                self.ql.dprint(0,"Jumping to callback @ 0x%X" % fiber.cb)
+                self.ql.dprint(D_INFO,"Jumping to callback @ 0x%X" % fiber.cb)
                 self.ql.register(UC_X86_REG_RIP, fiber.cb)
                 # All of this gets overwritten by the rest of the code in fncc.py
                 # Not sure how to actually make unicorn emulate the callback function due to that
@@ -60,7 +61,7 @@ class FiberManager:
 
     def set(self, idx, data):
         if idx not in self.fibers:
-            self.ql.os.last_error = 0x57  # ERROR_INVALID_PARAMETER
+            self.last_error = 0x57  # ERROR_INVALID_PARAMETER
             return 0
         else:
             self.fibers[idx].data = data
@@ -68,7 +69,7 @@ class FiberManager:
 
     def get(self, idx):
         if idx not in self.fibers:
-            self.ql.os.last_error = 0x57  # ERROR_INVALID_PARAMETER
+            self.last_error = 0x57  # ERROR_INVALID_PARAMETER
             return 0
         else:
             return self.fibers[idx].data

@@ -175,7 +175,7 @@ if __name__ == '__main__':
     run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
     run_parser.add_argument('-o', '--output', required=False, default='default',
                             help='output mode, options are off, debug , disasm, dump')
-    run_parser.add_argument('-v', '--verbose', required=False, default=0, dest='verbose',
+    run_parser.add_argument('-v', '--verbose', required=False, default=1, dest='verbose',
                             help='verbose mode, must be int and use with --debug or --dump')
     run_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
     run_parser.add_argument('--profile', required=False, default='', metavar="FILE", dest="profile", help="Defile OS profile")

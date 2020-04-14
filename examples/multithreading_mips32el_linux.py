@@ -14,4 +14,4 @@ def my_sandbox(path, rootfs):
 
 
 if __name__ == "__main__":
-    my_sandbox(["rootfs/x86_linux/bin/x86_multithreading"], "rootfs/x86_linux")
+    my_sandbox(["rootfs/mips32el_linux/bin/mips32el_multithreading"], "rootfs/mips32el_linux")

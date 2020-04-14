@@ -4,20 +4,21 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 from unicorn.x86_const import *
-from qiling.os.windows.utils import *
 from qiling.exception import *
+from qiling.os.thread import *
+from qiling.os.windows.utils import *
 
 
 def thread_scheduler(ql, address, size):
-    if ql.pc == ql.thread_manager.THREAD_RET_ADDR:
-        ql.thread_manager.current_thread.stop()
-        ql.thread_manager.do_schedule()
+    if ql.reg.pc == ql.os.thread_manager.THREAD_RET_ADDR:
+        ql.os.thread_manager.cur_thread.stop()
+        ql.os.thread_manager.do_schedule()
     else:
-        ql.thread_manager.ins_count += 1
-        ql.thread_manager.do_schedule()
+        ql.os.thread_manager.ins_count += 1
+        ql.os.thread_manager.do_schedule()
 
 
-class Context:
+class Context():
     def __init__(self, ql):
         self.ql = ql
 
@@ -91,16 +92,17 @@ class Context:
 
 
 # A Simple Thread Manager
-class ThreadManager:
+class QlWindowsThreadManagement(QlThread):
     TIME_SLICE = 10
 
-    def __init__(self, ql, current_thread):
+    def __init__(self, ql, cur_thread):
+        super(QlWindowsThreadManagement, self).__init__(ql)
         self.ql = ql
         # main thread
-        self.current_thread = current_thread
-        self.threads = [self.current_thread]
+        self.cur_thread = cur_thread
+        self.threads = [self.cur_thread]
         self.ins_count = 0
-        self.THREAD_RET_ADDR = self.ql.heap.mem_alloc(8)
+        self.THREAD_RET_ADDR = self.ql.os.heap.mem_alloc(8)
         # write nop to THREAD_RET_ADDR
         self.ql.mem.write(self.THREAD_RET_ADDR, b"\x90"*8)
         self.ql.hook_code(thread_scheduler)
@@ -109,28 +111,28 @@ class ThreadManager:
         self.threads.append(thread)
 
     def need_schedule(self):
-        return self.current_thread.is_stop() or self.ins_count % ThreadManager.TIME_SLICE == 0
+        return self.cur_thread.is_stop() or self.ins_count % QlWindowsThreadManagement.TIME_SLICE == 0
 
     def do_schedule(self):
-        if self.current_thread.is_stop() or self.ins_count % ThreadManager.TIME_SLICE == 0:
+        if self.cur_thread.is_stop() or self.ins_count % QlWindowsThreadManagement.TIME_SLICE == 0:
             if len(self.threads) <= 1:
                 return
             else:
                 for i in range(1, len(self.threads)):
-                    next_id = (self.current_thread.id + i) % len(self.threads)
+                    next_id = (self.cur_thread.id + i) % len(self.threads)
                     next_thread = self.threads[next_id]
                     # find next thread
-                    if next_thread.status == Thread.RUNNING and (not next_thread.has_waitfor()):
-                        if self.current_thread.is_stop():
+                    if next_thread.status == QlWindowsThread.RUNNING and (not next_thread.has_waitfor()):
+                        if self.cur_thread.is_stop():
                             pass
                         else:
-                            self.current_thread.suspend()
+                            self.cur_thread.suspend()
                         next_thread.resume()
-                        self.current_thread = next_thread
+                        self.cur_thread = next_thread
                         break
 
 
-class Thread:
+class QlWindowsThread(QlThread):
     # static var
     ID = 0
     READY = 0
@@ -138,9 +140,10 @@ class Thread:
     TERMINATED = 2
 
     def __init__(self, ql, status=1, isFake=False):
+        super(QlWindowsThread, self).__init__(ql)
         self.ql = ql
-        self.id = Thread.ID
-        Thread.ID += 1
+        self.id = QlWindowsThread.ID
+        QlWindowsThread.ID += 1
         self.context = Context(ql)
         self.status = status
         self.waitforthreads = []
@@ -152,13 +155,14 @@ class Thread:
     def create(self, func_addr, func_params, status):
         # create new stack
         stack_size = 1024
-        new_stack = self.ql.heap.mem_alloc(stack_size) + stack_size
-
+        new_stack = self.ql.os.heap.mem_alloc(stack_size) + stack_size
+        
+        # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
         if self.ql.archtype == QL_X86:
-            self.ql.mem.write(new_stack - 4, self.ql.pack32(self.ql.thread_manager.THREAD_RET_ADDR))
+            self.ql.mem.write(new_stack - 4, self.ql.pack32(self.ql.os.thread_manager.THREAD_RET_ADDR))
             self.ql.mem.write(new_stack, self.ql.pack32(func_params))
         elif self.ql.archtype == QL_X8664:
-            self.ql.mem.write(new_stack - 8, self.ql.pack64(self.ql.thread_manager.THREAD_RET_ADDR))
+            self.ql.mem.write(new_stack - 8, self.ql.pack64(self.ql.os.thread_manager.THREAD_RET_ADDR))
             self.ql.mem.write(new_stack, self.ql.pack64(func_params))
 
         # set eip, ebp, esp
@@ -182,13 +186,13 @@ class Thread:
     def resume(self):
         self.context.restore()
         # self.context.print("restore")
-        self.status = Thread.RUNNING
+        self.status = QlWindowsThread.RUNNING
 
     def stop(self):
-        self.status = Thread.TERMINATED
+        self.status = QlWindowsThread.TERMINATED
 
     def is_stop(self):
-        return self.status == Thread.TERMINATED
+        return self.status == QlWindowsThread.TERMINATED
 
     def waitfor(self, thread):
         self.waitforthreads.append(thread)

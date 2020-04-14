@@ -21,11 +21,17 @@ class QlMemoryManager:
     https://github.com/zeropointdynamics/zelos/blob/master/src/zelos/memory.py
     """
 
-    def __init__(self, ql, max_addr):
+    def __init__(self, ql):
         self.ql = ql
-        self.max_mem_addr = max_addr
-        self.max_addr = max_addr
         self.map_info = []
+        
+        if self.ql.archbit == 64:
+            max_addr = 0xFFFFFFFFFFFFFFFF
+        elif self.ql.archbit == 32:
+            max_addr = 0xFFFFFFFF
+
+        self.max_addr = max_addr
+        self.max_mem_addr = max_addr            
 
 
     def add_mapinfo(self, mem_s, mem_e, mem_p, mem_info):
@@ -323,7 +329,7 @@ class Chunk():
     def compare(chunk):
         return chunk.size
 
-class Heap:
+class QlMemoryHeap:
     def __init__(self, ql, start_address, end_address):
         self.ql = ql
         self.chunks = []
@@ -341,9 +347,9 @@ class Heap:
 
     def mem_alloc(self, size):
         
-        if self.ql.archtype== QL_X86:
+        if self.ql.archtype == QL_X86:
             size = self._align(size, 4)
-        elif self.ql.archtype== QL_X8664:
+        elif self.ql.archtype == QL_X8664:
             size = self._align(size, 8)
         else:
             raise QlErrorArch("[!] Unknown ql.arch")

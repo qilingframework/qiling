@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys
+import sys, random
 
 sys.path.insert(0, "..")
 
@@ -27,7 +27,7 @@ def test_pe_win_x8664_hello():
 
 def test_pe_win_x86_hello():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/x86_hello.exe"], "../examples/rootfs/x86_windows",
-                output="default", log_dir='.')
+                output="default", log_dir='test_qlog', append="test")
     ql.log_split = True            
     ql.run()
     del ql
@@ -47,12 +47,52 @@ def test_pe_win_x86_gandcrab():
         computer_memory = read_wstring(ql, 0x505ff40)
         assert(default_values[0] != user_memory)
         assert(default_values[1] != computer_memory)
-        ql.uc.emu_stop()
+        ql.emu_stop()
+
+    def randomize_config_value(ql, key, subkey):
+        # https://en.wikipedia.org/wiki/Volume_serial_number
+        # https://www.digital-detective.net/documents/Volume%20Serial%20Numbers.pdf
+        if key == "VOLUME" and subkey == "serial_number":
+            month = random.randint(0, 12)
+            day = random.randint(0, 30)
+            first = hex(month)[2:] + hex(day)[2:]
+            seconds = random.randint(0, 60)
+            milli = random.randint(0, 100)
+            second = hex(seconds)[2:] + hex(milli)[2:]
+            first_half = int(first, 16) + int(second, 16)
+            hour = random.randint(0, 24)
+            minute = random.randint(0, 60)
+            third = hex(hour)[2:] + hex(minute)[2:]
+            year = random.randint(2000, 2020)
+            second_half = int(third, 16) + year
+            result = int(hex(first_half)[2:] + hex(second_half)[2:], 16)
+            ql.os.profile[key][subkey] = str(result)
+        elif key == "USER" and subkey == "user":
+            length = random.randint(0, 15)
+            new_name = ""
+            for i in range(length):
+                new_name += random.choice(st.ascii_lowercase + st.ascii_uppercase)
+            old_name = ql.os.profile[key][subkey]
+            # update paths
+            ql.os.profile[key][subkey] = new_name
+            for path in ql.os.profile["PATHS"]:
+                val = ql.os.profile["PATHS"][path].replace(old_name, new_name)
+                ql.os.profile["PATHS"][path] = val
+                ql.dprint(D_INFO, ql.os.profile["PATHS"][path])
+        elif key == "SYSTEM" and subkey == "computer_name":
+            length = random.randint(0, 15)
+            new_name = ""
+            for i in range(length):
+                new_name += random.choice(st.ascii_lowercase + st.ascii_uppercase)
+            ql.os.profile[key][subkey] = new_name
+        else:
+            raise QlErrorNotImplemented("[!] API not implemented")
+
 
     ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                 output="debug")
-    default_user = ql.config["USER"]["user"]
-    default_computer = ql.config["SYSTEM"]["computer_name"]
+    default_user = ql.os.profile["USER"]["user"]
+    default_computer = ql.os.profile["SYSTEM"]["computer_name"]
 
     ql.hook_address(stop, 0x40860f, user_data=(default_user, default_computer))
     randomize_config_value(ql, "USER", "user")
@@ -100,7 +140,7 @@ def test_pe_win_x8664_fls():
 def test_pe_win_x86_wannacry():
     def stop(ql):
         print("killerswtichfound")
-        ql.uc.emu_stop()
+        ql.emu_stop()
 
     ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows")
     ql.hook_address(stop, 0x40819a)
@@ -112,9 +152,9 @@ def test_pe_win_x8664_customapi():
     @winapi(cc=CDECL, params={
         "str": STRING
     })
-    def my_puts64(ql, address, params):
+    def my_puts64(self, address, params):
         ret = 0
-        ql.nprint("\n+++++++++\nMy Windows 64bit Windows API\n+++++++++\n")
+        self.ql.nprint("\n+++++++++\nMy Windows 64bit Windows API\n+++++++++\n")
         string = params["str"]
         ret = len(string)
         return ret
@@ -153,7 +193,7 @@ def test_pe_win_x86_crackme():
 
     def force_call_dialog_func(ql):
         # get DialogFunc address
-        lpDialogFunc = ql.unpack32(ql.mem.read(ql.sp - 0x8, 4))
+        lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.sp - 0x8, 4))
         # setup stack for DialogFunc
         ql.stack_push(0)
         ql.stack_push(1001)
@@ -161,7 +201,7 @@ def test_pe_win_x86_crackme():
         ql.stack_push(0)
         ql.stack_push(0x0401018)
         # force EIP to DialogFunc
-        ql.pc = lpDialogFunc
+        ql.reg.pc = lpDialogFunc
 
     def our_sandbox(path, rootfs):
         ql = Qiling(path, rootfs)

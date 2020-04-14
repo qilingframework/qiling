@@ -43,7 +43,7 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
     mode = mode & 0xffffffff
 
     for i in range(256):
-        if ql.file_des[i] == 0:
+        if ql.os.file_des[i] == 0:
             idx = i
             break
     else:
@@ -57,18 +57,18 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
                 mode = 0
 
             flags = ql_open_flag_mapping(flags, ql)
-            ql.file_des[idx] = ql_file.open(real_path, flags, mode)
+            ql.os.file_des[idx] = ql_file.open(real_path, flags, mode)
             regreturn = idx
         except:
             regreturn = -1
 
     ql.nprint("open(%s, 0x%x, 0o%o) = %d" % (relative_path, flags, mode, regreturn))
-    ql.dprint(1, "[+] open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
+    ql.dprint(D_INFO, "[+] open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
-        ql.dprint(0, "[+] File Found: %s" % relative_path)
+        ql.dprint(D_INFO, "[+] File Found: %s" % relative_path)
     else:
-        ql.dprint(0, "[!] File Not Found %s" % relative_path)
+        ql.dprint(D_INFO, "[!] File Not Found %s" % relative_path)
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -83,7 +83,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
     openat_mode = openat_mode & 0xffffffff
 
     for i in range(256):
-        if ql.file_des[i] == 0:
+        if ql.os.file_des[i] == 0:
             idx = i
             break
     else:
@@ -97,19 +97,19 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
                 mode = 0
 
             openat_flags = ql_open_flag_mapping(openat_flags, ql)
-            ql.file_des[idx] = ql_file.open(real_path, openat_flags, openat_mode)
+            ql.os.file_des[idx] = ql_file.open(real_path, openat_flags, openat_mode)
             regreturn = idx
         except:
             regreturn = -1
 
     ql.nprint("openat(%d, %s, 0x%x, 0o%o) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))
-    ql.dprint(1, "[+] openat(%d, %s, %s, 0o%o) = %d" % (
+    ql.dprint(D_INFO, "[+] openat(%d, %s, %s, 0o%o) = %d" % (
     openat_fd, relative_path, open_flags_mapping(openat_flags, ql.archtype), openat_mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
-        ql.dprint(0, "[+] File Found: %s" % relative_path)
+        ql.dprint(D_INFO, "[+] File Found: %s" % relative_path)
     else:
-        ql.dprint(0, "[!] File Not Found %s" % relative_path)
+        ql.dprint(D_INFO, "[!] File Not Found %s" % relative_path)
     ql_definesyscall_return(ql, regreturn)
 
 

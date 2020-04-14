@@ -8,11 +8,24 @@ This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
 
-import sys, logging, importlib, pefile
-from qiling.exception import *
-from qiling.const import *
-from os.path import dirname, exists
-from os import makedirs
+import logging
+import importlib
+import pefile
+import os
+from .os.const import *
+from .exception import *
+from .const import *
+
+def catch_KeyboardInterrupt(ql):
+    def decorator(func):
+        def wrapper(*args, **kw):
+            try:
+                return func(*args, **kw)
+            except BaseException as e:
+                ql.os.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
+                ql.internal_exception = e
+        return wrapper
+    return decorator
 
 def ql_get_arch_bits(arch):
     arch_32b = [QL_ARM, QL_MIPS32, QL_X86]
@@ -47,11 +60,21 @@ def ql_ostype_convert_str(ostype):
 
     return adapter.get(ostype)
 
+def ql_loadertype_convert_str(ostype):
+    adapter = {
+        QL_LINUX: "ELF",
+        QL_MACOS: "MACHO",
+        QL_FREEBSD: "ELF",
+        QL_WINDOWS: "PE",
+    }
+
+    return adapter.get(ostype)
 
 def ostype_convert(ostype):
     adapter = {
         "linux": QL_LINUX,
         "macos": QL_MACOS,
+        "darwin": QL_MACOS,
         "freebsd": QL_FREEBSD,
         "windows": QL_WINDOWS,
     }
@@ -277,7 +300,7 @@ def ql_build_module_import_name(module, ostype, arch = None):
     if type(ostype) is int:
         ostype_str = ql_ostype_convert_str(ostype)
     
-    if ostype_str:
+    if ostype_str and "loader" not in ret_str:
         ret_str += "." + ostype_str
 
     if arch:
@@ -317,8 +340,25 @@ def ql_setup_logger(logger_name=None):
     return logger
 
 
+def ql_setup_logging_env(ql, logger=None):
+    if not os.path.exists(ql.log_dir):
+        os.makedirs(ql.log_dir, 0o755)
+
+    pid = os.getpid()
+
+    if ql.append:
+        ql.log_filename = ql.targetname + "_" + ql.append          
+    else:
+        ql.log_filename = ql.targetname
+    
+    ql.log_file = os.path.join(ql.log_dir, ql.log_filename) 
+
+    _logger = ql_setup_logging_file(ql.output, ql.log_file + "_" + str(pid), logger)
+    return _logger
+
+
 def ql_setup_logging_stream(ql, logger=None):
-    ql_mode = ql.output
+    #ql_mode = ql.output
 
     # setup StreamHandler for logging to stdout
     if ql.log_console == True:
@@ -354,8 +394,11 @@ def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
     logger.addHandler(fh)
     return logger
 
+
 class Strace_filter(logging.Filter):
     def __init__(self, func_names):
+        super(Strace_filter, self).__init__()
         self.filter_list = func_names.split(",") if isinstance(func_names, str) else func_names
+
     def filter(self, record):
         return any((record.getMessage().startswith(each) for each in self.filter_list))

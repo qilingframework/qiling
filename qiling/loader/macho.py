@@ -4,22 +4,19 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import os
-
-from struct import pack
+import struct
 from qiling.loader.macho_parser.parser import *
 from qiling.loader.macho_parser.const import *
 from qiling.exception import *
+from qiling.const import *
+from qiling.loader.loader import *
+from qiling.os.macos.const import *
 
-from qiling.loader.loader import QlLoader
-
-# TODO: we maybe we should use a better way to load
-# reference to xnu source code /bsd/kern/mach_loader.c
-class Macho(QlLoader):
-
+class QlLoaderMACHO(QlLoader):
     # macho x8664 loader 
-    def __init__(self, ql, file_path, stack_sp, argvs, envs, apples, argc, dyld_path=None):
-
-        self.macho_file     = MachoParser(ql, file_path)
+    def __init__(self, ql, dyld_path=None):
+        super()
+        self.macho_file     = MachoParser(ql, ql.path)
         self.loading_file   = self.macho_file
         self.slide          = 0x0000000000000000
         self.dyld_slide     = 0x0000000500000000
@@ -30,17 +27,19 @@ class Macho(QlLoader):
         self.uc             = ql.uc
         self.binary_entry   = 0x0
         self.proc_entry     = 0x0
-        self.stack_sp       = stack_sp
-        self.argvs          = argvs
-        self.envs           = envs
-        self.apples         = apples
-        self.argc           = argc
+        self.stack_sp       = self.ql.os.stack_sp
+        self.argvs          = [self.ql.path]
+        self.envs           = self.ql.os.envs
+        self.apples         = self.ql.os.apples
+        self.argc           = 1
         self.dyld_path      = dyld_path
         self.using_dyld     = False
         self.vm_end_addr    = 0x0
+        self.loadMacho()
+        self.ql.os.macho_task.min_offset = page_align_end(self.vm_end_addr, PAGE_SIZE)
+        self.ql.stack_address = (int(self.ql.stack_sp))
 
     def loadMacho(self, depth=0, isdyld=False):
-
         # MAX load depth 
         if depth > 5:
             return
@@ -92,17 +91,21 @@ class Macho(QlLoader):
                             self.using_dyld = True
 
         if depth == 0:
+            if self.ql.mmap_start == 0:
+                self.mmap_start = self.ql.os.QL_MACOS_PREDEFINE_MMAPADDRESS
+            else:
+                self.mmap_start = self.ql.mmap_start
+
             self.ql.stack_sp = self.loadStack()
             if self.using_dyld:
                 self.ql.nprint("[+] ProcEntry: {}".format(hex(self.proc_entry)))
-                self.ql.entry_point = self.proc_entry + self.dyld_slide
-                self.ql.nprint("[+] Dyld entry point: {}".format(hex(self.ql.entry_point)))
+                self.entry_point = self.proc_entry + self.dyld_slide
+                self.ql.nprint("[+] Dyld entry point: {}".format(hex(self.entry_point)))
             else:
-                self.ql.entry_point = self.proc_entry + self.slide
+                self.entry_point = self.proc_entry + self.slide
             self.ql.nprint("[+] Binary Entry Point: 0x{:X}".format(self.binary_entry))
-            self.ql.macho_entry = self.binary_entry + self.slide
-            self.ql.loadbase = self.ql.macho_entry
-            self.ql.load_base =  self.slide
+            self.macho_entry = self.binary_entry + self.slide
+            self.loadbase = self.macho_entry
 
         return self.proc_entry
         
@@ -119,13 +122,13 @@ class Macho(QlLoader):
         seg_data = bytes(self.loading_file.get_segment(seg_name).content)
 
         if seg_name[:10] == "__PAGEZERO":
-            self.ql.dprint(0, "[+] Now loading {}, VM[{}:{}] for pagezero actually it only got a page size".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
+            self.ql.dprint(D_INFO, "[+] Now loading {}, VM[{}:{}] for pagezero actually it only got a page size".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
             self.ql.mem.map(vaddr_start, PAGE_SIZE)
             self.ql.mem.write(vaddr_start, b'\x00' * PAGE_SIZE)
             if self.vm_end_addr < vaddr_end:
                 self.vm_end_addr = vaddr_end
         else:
-            self.ql.dprint(0, "[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
+            self.ql.dprint(D_INFO, "[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
             self.ql.mem.map(vaddr_start, seg_size)
             self.ql.mem.write(vaddr_start, seg_data)
             if self.vm_end_addr < vaddr_end:
@@ -136,7 +139,7 @@ class Macho(QlLoader):
             self.binary_entry = cmd.entry
  
         self.proc_entry = cmd.entry
-        self.ql.dprint(0, "[+] Binary Thread Entry: {}".format(hex(cmd.entry)))
+        self.ql.dprint(D_INFO, "[+] Binary Thread Entry: {}".format(hex(cmd.entry)))
 
 
     def loadUuid(self):
@@ -182,17 +185,17 @@ class Macho(QlLoader):
 
         for item in self.argvs[::-1]:
             argvs_ptr.append(ptr)  # need pack and tostring
-            self.ql.dprint(0, '[+] add argvs ptr {}'.format(hex(ptr)))
+            self.ql.dprint(D_INFO, '[+] add argvs ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
         
         for item in self.envs[::-1]:
             envs_ptr.append(ptr)
-            self.ql.dprint(0, '[+] add envs ptr {}'.format(hex(ptr)))
+            self.ql.dprint(D_INFO, '[+] add envs ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
 
         for item in self.apples[::-1]:
             apple_ptr.append(ptr)
-            self.ql.dprint(0, '[+] add apple ptr {}'.format(hex(ptr)))
+            self.ql.dprint(D_INFO, '[+] add apple ptr {}'.format(hex(ptr)))
             ptr += len(item) + 1
 
         ptr = self.stack_sp
@@ -216,12 +219,12 @@ class Macho(QlLoader):
         for item in argvs_ptr:
             ptr -= 4
             self.push_stack_addr(item)
-            self.ql.dprint(0, "[+] SP 0x%x, content 0x%x" % (self.stack_sp, item))
+            self.ql.dprint(D_INFO, "[+] SP 0x%x, content 0x%x" % (self.stack_sp, item))
         argvs_ptr_ptr = ptr 
 
         self.push_stack_addr(self.argc)
         ptr -= 4
-        self.ql.dprint(0, "[+] SP 0x%x, content 0x%x" % (self.stack_sp, self.argc))
+        self.ql.dprint(D_INFO, "[+] SP 0x%x, content 0x%x" % (self.stack_sp, self.argc))
        
         if self.using_dyld:
             ptr -= 4
@@ -242,7 +245,7 @@ class Macho(QlLoader):
         
         self.stack_sp -= length
         self.ql.mem.write(self.stack_sp, data)
-        self.ql.dprint(0, "[+] SP {} write data len {}".format(hex(self.stack_sp), length))
+        self.ql.dprint(D_INFO, "[+] SP {} write data len {}".format(hex(self.stack_sp), length))
         
         return self.stack_sp
     
@@ -252,7 +255,7 @@ class Macho(QlLoader):
         if data == 0:
             content = b'\x00\x00\x00\x00\x00\x00\x00\x00'
         else:
-            content = pack('<Q', data)
+            content = struct.pack('<Q', data)
 
         if len(content) != align:
             self.ql.nprint('[!] stack align error')

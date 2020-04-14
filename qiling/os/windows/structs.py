@@ -186,12 +186,12 @@ class LdrDataTableEntry:
 
         full_dll_name = full_dll_name.encode("utf-16le")
         self.FullDllName = {'Length': len(full_dll_name), 'MaximumLength': len(full_dll_name) + 2}
-        self.FullDllName['BufferPtr'] = ql.heap.mem_alloc(self.FullDllName['MaximumLength'])
+        self.FullDllName['BufferPtr'] = self.ql.os.heap.mem_alloc(self.FullDllName['MaximumLength'])
         ql.mem.write(self.FullDllName['BufferPtr'], full_dll_name + b"\x00\x00")
 
         base_dll_name = base_dll_name.encode("utf-16le")
         self.BaseDllName = {'Length': len(base_dll_name), 'MaximumLength': len(base_dll_name) + 2}
-        self.BaseDllName['BufferPtr'] = ql.heap.mem_alloc(self.BaseDllName['MaximumLength'])
+        self.BaseDllName['BufferPtr'] = self.ql.os.heap.mem_alloc(self.BaseDllName['MaximumLength'])
         ql.mem.write(self.BaseDllName['BufferPtr'], base_dll_name + b"\x00\x00")
 
         self.Flags = flags
@@ -319,8 +319,11 @@ class Token:
         # We create a Sid Structure, set its handle and return the value
         sid = Sid(ql)
         handle = Handle(sid=sid)
-        ql.handle_manager.append(handle)
-        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = ql.pack(handle.id)
+        
+        # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
+        self.ql.os.handle_manager.append(handle)
+
+        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = self.ql.pack(handle.id)
 
     def get(self, value):
         res = self.struct[value]
@@ -354,7 +357,7 @@ class Sid:
             "SubAuthority": 0x12345678.to_bytes(length=ql.pointersize, byteorder="little")
         }
         values = b"".join(self.struct.values())
-        self.addr = ql.heap.mem_alloc(len(values))
+        self.addr = ql.os.heap.mem_alloc(len(values))
         ql.mem.write(self.addr, values)
 
 

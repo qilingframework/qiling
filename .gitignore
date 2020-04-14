@@ -21,6 +21,8 @@ examples/**/Windows/
 # test and logs
 jexamples/
 logs/
+test_qlog/
+qlog/
 test_syscall_*.txt
 *.no.py
 .gitkeep
@@ -30,6 +32,7 @@ test.file
 *.d
 *.o
 core
+*.perf
 
 # dont keep raw malware
 wannacry.bin

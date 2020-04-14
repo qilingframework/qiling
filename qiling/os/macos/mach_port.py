@@ -5,7 +5,7 @@
 
 # reference to 《Mac OS X and IOS Internals: To the Apple's Core》
 from struct import pack, unpack
-
+from qiling.const import *
 
 # define in kernel osfmk/mach/message.h
 # mach_msg_header_t:
@@ -81,7 +81,7 @@ class MachMsg():
         return header
 
     def read_msg_content(self, addr, size):
-        self.ql.dprint(0, "0x{:X}, {}".format(addr, size))
+        self.ql.dprint(D_INFO, "0x{:X}, {}".format(addr, size))
         return self.ql.mem.read(addr, size)
 
 
@@ -114,22 +114,22 @@ class MachPortManager():
 
         if msg.header.msgh_id == 200:
             # host info
-            out_msg = self.ql.macho_host_server.host_info(msg.header, msg.content)
+            out_msg = self.ql.os.macho_host_server.host_info(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         elif msg.header.msgh_id == 206:
-            out_msg = self.ql.macho_host_server.host_get_clock_service(msg.header, msg.content)
+            out_msg = self.ql.os.macho_host_server.host_get_clock_service(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         elif msg.header.msgh_id == 3418:
-            out_msg = self.ql.macho_task_server.semaphore_create(msg.header, msg.content)
+            out_msg = self.ql.os.macho_task_server.semaphore_create(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         elif msg.header.msgh_id == 3409:
-            out_msg = self.ql.macho_task_server.get_special_port(msg.header, msg.content)
+            out_msg = self.ql.os.macho_task_server.get_special_port(msg.header, msg.content)
             out_msg.write_msg_to_mem(addr)
         else:
             self.ql.nprint("Error Mach Msgid {} can not handled".format(msg.header.msgh_id))
             raise Exception("Mach Msgid Not Found")
 
-        self.ql.dprint(0, "Reply-> Header: {}, Content: {}".format(out_msg.header, out_msg.content))
+        self.ql.dprint(D_INFO, "Reply-> Header: {}, Content: {}".format(out_msg.header, out_msg.content))
 
     def get_thread_port(self, MachoThread):
         return MachoThread.port.name

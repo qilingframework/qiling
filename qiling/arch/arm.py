@@ -83,12 +83,12 @@ class QlArchARM(QlArch):
 
 
     # get stack pointer register
-    def get_reg_sp(self):
+    def get_name_sp(self):
         return UC_ARM_REG_SP
 
 
     # get pc register pointer
-    def get_reg_pc(self):
+    def get_name_pc(self):
         return UC_ARM_REG_PC
 
     def enable_vfp(self):
@@ -101,7 +101,7 @@ class QlArchARM(QlArch):
         else:
             enable_vfp = 0x40000000
         self.ql.register(UC_ARM_REG_FPEXC, enable_vfp)
-        self.ql.dprint(0, "[+] Enable ARM VFP")
+        self.ql.dprint(D_INFO, "[+] Enable ARM VFP")
 
 
     def check_thumb(self):
@@ -116,7 +116,7 @@ class QlArchARM(QlArch):
         mode = UC_MODE_ARM
         if (reg_cpsr & reg_cpsr_v) != 0:
             mode = UC_MODE_THUMB
-            self.ql.dprint(0, "[+] Enable ARM THUMB")
+            self.ql.dprint(D_INFO, "[+] Enable ARM THUMB")
         return mode
 
     def get_reg_table(self):

@@ -12,7 +12,7 @@
 from struct import pack, unpack
 from qiling.os.macos.mach_port import *
 from qiling.os.macos.const import *
-
+from qiling.const import *
 
 class MachHostServer():
 
@@ -28,7 +28,7 @@ class MachHostServer():
         # parse request
         out_msg = MachMsg(self.ql)
         if len(in_content) < 16:
-            self.ql.dprint(0, "Error in Host info SubSystem -hostinfo()")
+            self.ql.dprint(D_INFO, "Error in Host info SubSystem -hostinfo()")
             raise
         ndr = unpack("<Q", in_content[:8])[0]
         flavor = unpack("<L", in_content[8:12])[0]
@@ -40,7 +40,7 @@ class MachHostServer():
             out_msg.header.msgh_bits = 4608
             out_msg.header.msgh_size = 88
             out_msg.header.msgh_remote_port = 0
-            out_msg.header.msgh_local_port = self.ql.macho_mach_port.name
+            out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
             out_msg.header.msgh_voucher_port = 0
             out_msg.header.msgh_id = 300
 
@@ -66,7 +66,7 @@ class MachHostServer():
             out_msg.header.msgh_bits = 4608
             out_msg.header.msgh_size = 72
             out_msg.header.msgh_remote_port = 0
-            out_msg.header.msgh_local_port = self.ql.macho_mach_port.name
+            out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
             out_msg.header.msgh_voucher_port = 0
             out_msg.header.msgh_id = 300
 
@@ -83,7 +83,7 @@ class MachHostServer():
             out_msg.content += pack("<L", 0x0)              # minimum_priority = MINPRI_USER;
             out_msg.content += pack("<L", 0x4f)             # maximum_priority = MAXPRI_RESERVED
         else:
-            self.ql.dprint(0, "Host flavor not support")
+            self.ql.dprint(D_INFO, "Host flavor not support")
             raise
         return out_msg
 
@@ -93,14 +93,14 @@ class MachHostServer():
         out_msg.header.msgh_bits = 0x80001200
         out_msg.header.msgh_size = 0x00000028
         out_msg.header.msgh_remote_port = 0x00000000
-        out_msg.header.msgh_local_port = self.ql.macho_mach_port.name
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
         out_msg.header.msgh_voucher_port = 0
         out_msg.header.msgh_id = 306
 
         out_msg.content = pack("<L", 0x1)
 
         out_msg.trailer = b''
-        out_msg.trailer += pack("<L", self.ql.macho_port_manager.clock_port.name)       # clock port name 
+        out_msg.trailer += pack("<L", self.ql.os.macho_port_manager.clock_port.name)       # clock port name 
         out_msg.trailer += pack("<L", 0x0)                                              # pad1
         out_msg.trailer += pack("<H", 0x0)                                              # pad2
         out_msg.trailer += pack("<B", 0x11)                                             # disposition
@@ -121,14 +121,14 @@ class MachTaskServer():
         out_msg.header.msgh_bits = 0x80001200
         out_msg.header.msgh_size = 0x00000028
         out_msg.header.msgh_remote_port = 0x00000000
-        out_msg.header.msgh_local_port = self.ql.macho_mach_port.name
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
         out_msg.header.msgh_voucher_port = 0
         out_msg.header.msgh_id = 3518
 
         out_msg.content = pack("<L", 0x1)
 
         out_msg.trailer = b''
-        out_msg.trailer += pack("<L", self.ql.macho_port_manager.semaphore_port.name)       # clock port name 
+        out_msg.trailer += pack("<L", self.ql.os.macho_port_manager.semaphore_port.name)       # clock port name 
         out_msg.trailer += pack("<L", 0x0)                                                  # pad1
         out_msg.trailer += pack("<H", 0x0)                                                  # pad2
         out_msg.trailer += pack("<B", 0x11)                                                 # disposition
@@ -142,14 +142,14 @@ class MachTaskServer():
         out_msg.header.msgh_bits = 0x80001200
         out_msg.header.msgh_size = 0x00000028
         out_msg.header.msgh_remote_port = 0x00000000
-        out_msg.header.msgh_local_port = self.ql.macho_mach_port.name
+        out_msg.header.msgh_local_port = self.ql.os.macho_mach_port.name
         out_msg.header.msgh_voucher_port = 0
         out_msg.header.msgh_id = 3509
 
         out_msg.content = pack("<L", 0x1)
 
         out_msg.trailer = b''
-        out_msg.trailer += pack("<L", self.ql.macho_port_manager.special_port.name)         # special port name 
+        out_msg.trailer += pack("<L", self.ql.os.macho_port_manager.special_port.name)         # special port name 
         out_msg.trailer += pack("<L", 0x0)                                                  # pad1
         out_msg.trailer += pack("<H", 0x0)                                                  # pad2
         out_msg.trailer += pack("<B", 0x11)                                                 # disposition

@@ -90,17 +90,17 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
     ql.nprint("fstatat64(0x%x, %s) = %d" % (fstatat64_fd, relative_path, regreturn))
 
     if regreturn == 0:
-        ql.dprint(0, "[+] Directory Found: %s" % relative_path)
+        ql.dprint(D_INFO, "[+] Directory Found: %s" % relative_path)
     else:
-        ql.dprint(0, "[!] Directory Not Found: %s" % relative_path)
+        ql.dprint(D_INFO, "[!] Directory Not Found: %s" % relative_path)
 
     ql_definesyscall_return(ql, regreturn)
 
 
 def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
-    if fstat64_fd < 256 and ql.file_des[fstat64_fd] != 0:
+    if fstat64_fd < 256 and ql.os.file_des[fstat64_fd] != 0:
         user_fileno = fstat64_fd
-        fstat64_info = ql.file_des[user_fileno].fstat()
+        fstat64_info = ql.os.file_des[user_fileno].fstat()
 
         if ql.archtype== QL_ARM64:
             # struct stat is : 80 addr is : 0x4000811bc8
@@ -136,6 +136,41 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack64(0)
             fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
             fstat64_buf += ql.pack64(0)
+        elif ql.archtype == QL_MIPS32:
+            # struct stat is : a0 addr is : 0x7fffedc0
+            # buf.st_dev offest 0 4 2049
+            # buf.st_ino offest 10 8 2400362
+            # buf.st_mode offest 18 4 16893
+            # buf.st_nlink offest 1c 4 5
+            # buf.st_uid offest 20 4 1000
+            # buf.st_gid offest 24 4 1000
+            # buf.st_rdev offest 28 4 0
+            # buf.st_size offest 38 8 0
+            # buf.st_blksize offest 58 4 4096
+            # buf.st_blocks offest 60 8 136
+            # buf.st_atime offest 40 4 1586616689
+            # buf.st_mtime offest 48 4 1586616689
+            # buf.st_ctime offest 50 4 1586616689
+            fstat64_buf = ql.pack32(fstat64_info.st_dev)
+            fstat64_buf += b'\x00' * 12
+            fstat64_buf += ql.pack64(fstat64_info.st_ino)
+            fstat64_buf += ql.pack32(fstat64_info.st_mode)
+            fstat64_buf += ql.pack32(fstat64_info.st_nlink)
+            fstat64_buf += ql.pack32(1000)
+            fstat64_buf += ql.pack32(1000)
+            fstat64_buf += ql.pack32(fstat64_info.st_rdev)
+            fstat64_buf += b'\x00' * 12
+            fstat64_buf += ql.pack64(fstat64_info.st_size)
+            fstat64_buf += ql.pack64(int(fstat64_info.st_atime))
+            fstat64_buf += ql.pack64(0)
+            fstat64_buf += ql.pack64(int(fstat64_info.st_mtime))
+            fstat64_buf += ql.pack64(0)
+            fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
+            fstat64_buf += ql.pack64(0)
+            fstat64_buf += ql.pack32(fstat64_info.st_blksize)
+            fstat64_buf += ql.pack32(0)
+            fstat64_buf += ql.pack64(fstat64_info.st_blocks)
+
         else:
 
             # pack fstatinfo
@@ -162,17 +197,17 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
 
     ql.nprint("fstat64(%d, 0x%x) = %d" % (fstat64_fd, fstat64_add, regreturn))
     if regreturn == 0:
-        ql.dprint(0, "[+] fstat64 write completed")
+        ql.dprint(D_INFO, "[+] fstat64 write completed")
     else:
-        ql.dprint(0, "[!] fstat64 read/write fail")
+        ql.dprint(D_INFO, "[!] fstat64 read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 
 def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
 
-    if fstat_fd < 256 and ql.file_des[fstat_fd] != 0:
+    if fstat_fd < 256 and ql.os.file_des[fstat_fd] != 0:
         user_fileno = fstat_fd
-        fstat_info = ql.file_des[user_fileno].fstat()
+        fstat_info = ql.os.file_des[user_fileno].fstat()
 
         if ql.archtype== QL_MIPS32:
             # pack fstatinfo
@@ -237,9 +272,9 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
 
     ql.nprint("fstat(%d, 0x%x) = %d" % (fstat_fd, fstat_add, regreturn))
     if regreturn == 0:
-        ql.dprint(0, "[+] fstat write completed")
+        ql.dprint(D_INFO, "[+] fstat write completed")
     else:
-        ql.dprint(0, "[!] fstat read/write fail")
+        ql.dprint(D_INFO, "[!] fstat read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -310,9 +345,9 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
 
     ql.nprint("stat64(%s, 0x%x) = %d" % (relative_path, stat64_buf_ptr, regreturn))
     if regreturn == 0:
-        ql.dprint(0, "[+] stat64 write completed")
+        ql.dprint(D_INFO, "[+] stat64 write completed")
     else:
-        ql.dprint(0, "[!] stat64 read/write fail")
+        ql.dprint(D_INFO, "[!] stat64 read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -371,9 +406,9 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
 
     ql.nprint("stat(%s, 0x%x) = %d" % (relative_path, stat_buf_ptr, regreturn))
     if regreturn == 0:
-        ql.dprint(0, "[+] stat() write completed")
+        ql.dprint(D_INFO, "[+] stat() write completed")
     else:
-        ql.dprint(0, "[!] stat() read/write fail")
+        ql.dprint(D_INFO, "[!] stat() read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 
@@ -431,9 +466,9 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
 
     ql.nprint("lstat(%s, 0x%x) = %d" % (relative_path, lstat_buf_ptr, regreturn))
     if regreturn == 0:
-        ql.dprint(0, "[+] lstat() write completed")
+        ql.dprint(D_INFO, "[+] lstat() write completed")
     else:
-        ql.dprint(0, "[!] lstat() read/write fail")
+        ql.dprint(D_INFO, "[!] lstat() read/write fail")
     ql_definesyscall_return(ql, regreturn)
 
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):

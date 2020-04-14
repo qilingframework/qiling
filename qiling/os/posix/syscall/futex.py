@@ -35,11 +35,9 @@ from qiling.os.posix.const_mapping import *
 from qiling.utils import *
 
 def ql_syscall_set_robust_list(ql, set_robust_list_head_ptr, set_robust_list_head_len, *args, **kw):
-    if ql.thread_management == None:
-        regreturn = 0
-    else:
-        ql.thread_management.cur_thread.robust_list_head_ptr = set_robust_list_head_ptr
-        ql.thread_management.cur_thread.robust_list_head_len = set_robust_list_head_len
+    if ql.multithread == True:
+        ql.os.thread_management.cur_thread.robust_list_head_ptr = set_robust_list_head_ptr
+        ql.os.thread_management.cur_thread.robust_list_head_len = set_robust_list_head_len
     regreturn = 0
     ql.nprint("set_robust_list(%x, %x) = %d"%(set_robust_list_head_ptr, set_robust_list_head_len, regreturn))
     ql_definesyscall_return(ql, regreturn)
@@ -62,25 +60,28 @@ def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_
     FUTEX_PRIVATE_FLAG = 128
 
     if futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAIT:
-        def futex_wait_addr(ql, th, arg):
-            addr, val = arg
-            if ql.unpack32(ql.mem.read(addr, 4)) != val:
-                return False
-            else:
-                return True
-        ql.uc.emu_stop()
-        ql.thread_management.cur_thread.blocking()
-        ql.thread_management.cur_thread.set_blocking_condition(futex_wait_addr, [futex_uaddr, futex_val])
-        regreturn = 0
+        # def futex_wait_addr(ql, th, arg):
+        #     addr, val = arg
+        #     if ql.unpack32(ql.mem.read(addr, 4)) != val:
+        #         return False
+        #     else:
+        #         return True
+        if ql.unpack32(ql.mem.read(futex_uaddr, 4)) == futex_val:
+            ql.emu_stop()
+            regreturn = 0
+            ql.os.futexm.futex_wait(futex_uaddr, ql.os.thread_management.cur_thread)
+        else:
+            regreturn = -1
         ql.nprint("futex(%x, %d, %d, %x) = %d" % (futex_uaddr, futex_op, futex_val, futex_timeout, regreturn))
     elif futex_op & (FUTEX_PRIVATE_FLAG - 1) == FUTEX_WAKE:
         regreturn = 0
+        ql.os.futexm.futex_wake(futex_uaddr, futex_val)
         ql.nprint("futex(%x, %d, %d) = %d" % (futex_uaddr, futex_op, futex_val, regreturn))
     else:
         ql.nprint("futex(%x, %d, %d) = ?" % (futex_uaddr, futex_op, futex_val))
-        ql.uc.emu_stop()
-        ql.thread_management.cur_thread.stop()
-        ql.thread_management.cur_thread.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
+        ql.emu_stop()
+        ql.os.thread_management.cur_thread.stop()
+        ql.os.thread_management.cur_thread.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
         regreturn = 0
 
     ql_definesyscall_return(ql, regreturn)
