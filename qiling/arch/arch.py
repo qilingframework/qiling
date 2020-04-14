@@ -58,12 +58,12 @@ class QlArch:
 
 
     # get stack pointer register
-    def get_reg_sp(self):
+    def get_name_sp(self):
         pass
 
 
     # get PC register
-    def get_reg_pc(self):
+    def get_name_pc(self):
         pass
 
     # get PC register

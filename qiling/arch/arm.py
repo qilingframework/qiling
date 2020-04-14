@@ -83,12 +83,12 @@ class QlArchARM(QlArch):
 
 
     # get stack pointer register
-    def get_reg_sp(self):
+    def get_name_sp(self):
         return UC_ARM_REG_SP
 
 
     # get pc register pointer
-    def get_reg_pc(self):
+    def get_name_pc(self):
         return UC_ARM_REG_PC
 
     def enable_vfp(self):

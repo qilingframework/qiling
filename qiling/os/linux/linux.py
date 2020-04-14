@@ -11,8 +11,6 @@ from unicorn.arm64_const import *
 from unicorn.mips_const import *
 
 from qiling.const import *
-
-
 from qiling.arch.x86 import *
 
 from qiling.os.utils import *
@@ -103,18 +101,18 @@ class QlOsLinux(QlOsPosix):
 
 
     def run(self):
-        self.ql.sp = self.ql.stack_address
+        self.ql.reg.sp = self.ql.stack_address
         if (self.ql.until_addr == 0):
             self.ql.until_addr = self.QL_EMU_END
 
         try:
             if self.ql.shellcoder:
-                self.ql.uc.emu_start(self.ql.stack_address, (self.ql.stack_address + len(self.ql.shellcoder)))
+                self.ql.emu_start(self.ql.stack_address, (self.ql.stack_address + len(self.ql.shellcoder)))
             else:
                 if self.ql.multithread == True:
                     # start multithreading
                     thread_management = QlLinuxThreadManagement(self.ql)
-                    self.ql.thread_management = thread_management
+                    self.ql.os.thread_management = thread_management
                     main_thread = self.thread_class(self.ql, thread_management, total_time = self.ql.timeout)
                     main_thread.store_regs()
                     main_thread.set_start_address(self.ql.loader.entry_point)
@@ -137,19 +135,19 @@ class QlOsLinux(QlOsPosix):
                     thread_management.run()
                 else:
                     if self.ql.loader.elf_entry != self.ql.loader.entry_point:
-                        self.ql.uc.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
+                        self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
                         self.ql.enable_lib_patch()
-                    self.ql.uc.emu_start(self.ql.loader.elf_entry, self.ql.until_addr, self.ql.timeout)
+                    self.ql.emu_start(self.ql.loader.elf_entry, self.ql.until_addr, self.ql.timeout)
 
         except:
             if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
-                self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.pc))
+                self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.reg.pc))
                 self.ql.mem.show_mapinfo()
                 try:
-                    buf = self.ql.mem.read(self.ql.pc, 8)
+                    buf = self.ql.mem.read(self.ql.reg.pc, 8)
                     self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
                     self.ql.nprint("\n")
-                    ql_hook_code_disasm(self.ql, self.ql.pc, 64)
+                    ql_hook_code_disasm(self.ql, self.ql.reg.pc, 64)
                 except:
                     pass
             raise

@@ -68,7 +68,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
         clone_child_tidptr = ql.unpack32(ql.mem.read(clone_child_tidptr, 4))
 
 
-    f_th = ql.thread_management.cur_thread	
+    f_th = ql.os.thread_management.cur_thread	
     newtls = None
     set_child_tid_addr = None
 
@@ -80,7 +80,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
             ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
             ql_definesyscall_return(ql, regreturn)
         else:
-            ql.child_processes = True
+            ql.os.child_processes = True
 
             f_th.update_global_thread_id()
             f_th.new_thread_id()
@@ -97,13 +97,13 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
             regreturn = 0
             ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
             ql_definesyscall_return(ql, regreturn)
-        ql.uc.emu_stop()
+        ql.emu_stop()
         return
 
     if clone_flags & CLONE_CHILD_SETTID == CLONE_CHILD_SETTID:
         set_child_tid_addr = clone_child_tidptr
 
-    th = ql.os.thread_class(ql, ql.thread_management, total_time = f_th.remaining_time(), set_child_tid_addr = set_child_tid_addr)
+    th = ql.os.thread_class(ql, ql.os.thread_management, total_time = f_th.remaining_time(), set_child_tid_addr = set_child_tid_addr)
     th.set_current_path(f_th.get_current_path())
 
     if clone_flags & CLONE_PARENT_SETTID == CLONE_PARENT_SETTID:
@@ -126,9 +126,9 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     ql.arch.set_sp(clone_child_stack)
     th.store_regs()
 
-    ql.thread_management.cur_thread = th
+    ql.os.thread_management.cur_thread = th
     ql.dprint(D_INFO, "[+] Currently running pid is: %d; tid is: %d " % (
-    os.getpid(), ql.thread_management.cur_thread.get_thread_id()))
+    os.getpid(), ql.os.thread_management.cur_thread.get_thread_id()))
     ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
 
@@ -138,12 +138,12 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     ql_definesyscall_return(ql, regreturn)
 
     # Break the parent process and enter the add new thread event
-    ql.uc.emu_stop()
+    ql.emu_stop()
     f_th.stop_event = THREAD_EVENT_CREATE_THREAD
     f_th.stop_return_val = th
 
-    ql.thread_management.cur_thread = f_th
+    ql.os.thread_management.cur_thread = f_th
     ql.dprint(D_INFO, "[+] Currently running pid is: %d; tid is: %d " % (
-    os.getpid(), ql.thread_management.cur_thread.get_thread_id()))
+    os.getpid(), ql.os.thread_management.cur_thread.get_thread_id()))
     ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (
     clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))

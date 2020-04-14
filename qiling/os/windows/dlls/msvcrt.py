@@ -102,7 +102,7 @@ def hook___p__environ(self, address, params):
 def hook_puts(self, address, params):
     ret = 0
     string = params["str"]
-    self.ql.stdout.write(bytes(string + "\n", "utf-8"))
+    self.ql.os.stdout.write(bytes(string + "\n", "utf-8"))
     ret = len(string) + 1
     return ret
 
@@ -132,7 +132,7 @@ def hook__initterm(self, address, params):
     "status": INT
 })
 def hook_exit(self, address, params):
-    self.ql.uc.emu_stop()
+    self.ql.emu_stop()
     self.PE_RUN = False
 
 
@@ -197,7 +197,7 @@ def hook_printf(self, address, _):
 
     format_string = read_cstring(self, format_string)
 
-    param_addr = self.ql.sp + self.ql.pointersize * 2
+    param_addr = self.ql.reg.sp + self.ql.pointersize * 2
     ret, _ = printf(self, address, format_string, param_addr, "printf")
 
     set_return_value(self, ret)

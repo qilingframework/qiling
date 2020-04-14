@@ -154,15 +154,15 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
 
     mem_p = ''.join(mem_p)
 
-    if ((mmap_flags & MAP_ANONYMOUS) == 0) and mmap_fd < 256 and ql.file_des[mmap_fd] != 0:
-        ql.file_des[mmap_fd].lseek(mmap_offset)
-        data = ql.file_des[mmap_fd].read(mmap_length)
+    if ((mmap_flags & MAP_ANONYMOUS) == 0) and mmap_fd < 256 and ql.os.file_des[mmap_fd] != 0:
+        ql.os.file_des[mmap_fd].lseek(mmap_offset)
+        data = ql.os.file_des[mmap_fd].read(mmap_length)
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
-        ql.dprint(D_INFO, "[+] log mem mmap  : " + str(ql.file_des[mmap_fd].name))
+        ql.dprint(D_INFO, "[+] log mem mmap  : " + str(ql.os.file_des[mmap_fd].name))
 
         ql.mem.write(mmap_base, data)
-        mem_info = ql.file_des[mmap_fd].name
+        mem_info = ql.os.file_des[mmap_fd].name
 
     ql.mem.add_mapinfo(mem_s, mem_e, mem_p, mem_info)
 
@@ -243,15 +243,15 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
 
     mem_p = ''.join(mem_p)
 
-    if ((mmap_flags & MAP_ANONYMOUS) == 0) and mmap_fd < 256 and ql.file_des[mmap_fd] != 0:
-        ql.file_des[mmap_fd].lseek(mmap_pgoffset)
-        data = ql.file_des[mmap_fd].read(mmap_length)
+    if ((mmap_flags & MAP_ANONYMOUS) == 0) and mmap_fd < 256 and ql.os.file_des[mmap_fd] != 0:
+        ql.os.file_des[mmap_fd].lseek(mmap_pgoffset)
+        data = ql.os.file_des[mmap_fd].read(mmap_length)
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
-        ql.dprint(D_INFO, "[+] log mem mmap  : " + str(ql.file_des[mmap_fd].name))
+        ql.dprint(D_INFO, "[+] log mem mmap  : " + str(ql.os.file_des[mmap_fd].name))
 
         ql.mem.write(mmap_base, data)
-        mem_info = ql.file_des[mmap_fd].name
+        mem_info = ql.os.file_des[mmap_fd].name
 
     ql.mem.add_mapinfo(mem_s, mem_e, mem_p, mem_info)
 
@@ -321,15 +321,15 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
 
     mem_p = ''.join(mem_p)
 
-    if ((mmap2_flags & MAP_ANONYMOUS) == 0) and mmap2_fd < 256 and ql.file_des[mmap2_fd] != 0:
-        ql.file_des[mmap2_fd].lseek(mmap2_pgoffset)
-        data = ql.file_des[mmap2_fd].read(mmap2_length)
+    if ((mmap2_flags & MAP_ANONYMOUS) == 0) and mmap2_fd < 256 and ql.os.file_des[mmap2_fd] != 0:
+        ql.os.file_des[mmap2_fd].lseek(mmap2_pgoffset)
+        data = ql.os.file_des[mmap2_fd].read(mmap2_length)
 
         ql.dprint(D_INFO, "[+] log2 mem wirte : " + hex(len(data)))
-        ql.dprint(D_INFO, "[+] log2 mem mmap  : " + str(ql.file_des[mmap2_fd].name))
+        ql.dprint(D_INFO, "[+] log2 mem mmap  : " + str(ql.os.file_des[mmap2_fd].name))
         ql.mem.write(mmap_base, data)
 
-        mem_info = ql.file_des[mmap2_fd].name
+        mem_info = ql.os.file_des[mmap2_fd].name
 
     ql.mem.add_mapinfo(mem_s, mem_e, mem_p, mem_info)
 

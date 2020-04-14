@@ -367,14 +367,13 @@ class QlLoaderELF(ELFParse, QlLoader):
         for i in l:
             s_addr = s_addr - len(i) - 1
             # if isinstance(i, bytes):
-            #     # self.ql.nprint(type(b'\x00'))
-            # self.ql.nprint(type(i))
-            # self.ql.nprint(i)
-            # self.ql.nprint(type(i.encode()))
-            # self.ql.nprint(type(addr))
-            #     uc.mem_write(s_addr, i + b'\x00')
+            #   self.ql.nprint(type(b'\x00'))
+            #   self.ql.nprint(type(i))
+            #   self.ql.nprint(i)
+            #   self.ql.nprint(type(i.encode()))
+            #   self.ql.nprint(type(addr))
+            #   self.ql.mem.write(s_addr, i + b'\x00')
             # else:
-            
             self.ql.mem.write(s_addr, i.encode() + b'\x00')
             l_addr.append(s_addr)
         return l_addr, s_addr
@@ -586,13 +585,14 @@ class QlLoaderELF(ELFParse, QlLoader):
         self.ql.mem.write(int(new_stack - len(elf_table)), elf_table)
         new_stack = new_stack - len(elf_table)
 
-        # self.ql.dprint(D_INFO, sssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
+        # self.ql.dprint(D_INFO, "rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
         # self.ql.register(UC_X86_REG_RDI, new_stack + 8)
 
         # for i in range(120):
         #     buf = self.ql.mem.read(new_stack + i * 0x8, 8)
         #     self.ql.nprint("0x%08x : 0x%08x " % (new_stack + i * 0x4, self.ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
 
+        
         self.entry_point = entry_point
         self.elf_entry = loadbase + elfhead['e_entry']
         self.new_stack = new_stack

@@ -17,7 +17,7 @@ from qiling.exception import *
     "ExitCode": INT
 })
 def hook_FatalExit(self, address, params):
-    self.ql.uc.emu_stop()
+    self.ql.emu_stop()
     self.PE_RUN = False
 
 

@@ -16,15 +16,6 @@ from qiling.os.utils import *
 
 
 """
-common utils 
-"""
-def ql_map_shellcode(ql, start, shellcode, shellcode_addr, shellcode_addr_size):
-    if ql.shellcode_init == 0:
-        ql.mem.map(shellcode_addr, shellcode_addr_size)
-        ql.shellcode_init = 1
-    ql.mem.write(shellcode_addr + start, shellcode)
-
-"""
 set_tls
 """
 def ql_arm_init_kernel_get_tls(ql):

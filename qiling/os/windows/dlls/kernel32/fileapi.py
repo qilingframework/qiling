@@ -92,7 +92,7 @@ def hook_ReadFile(self, address, params):
             s = (b"A" * (nNumberOfBytesToRead - 1)) + b"\x00"
         else:
             self.ql.dprint(D_INFO, "Insert input")
-            s = self.ql.stdin.read(nNumberOfBytesToRead)
+            s = self.ql.os.stdin.read(nNumberOfBytesToRead)
         slen = len(s)
         read_len = slen
         if slen > nNumberOfBytesToRead:
@@ -131,7 +131,7 @@ def hook_WriteFile(self, address, params):
     lpOverlapped = params["lpOverlapped"]
     if hFile == STD_OUTPUT_HANDLE:
         s = self.ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
-        self.ql.stdout.write(s)
+        self.ql.os.stdout.write(s)
         self.ql.mem.write(lpNumberOfBytesWritten, self.ql.pack(nNumberOfBytesToWrite))
     else:
         f = self.handle_manager.get(hFile)

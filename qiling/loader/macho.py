@@ -4,8 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import os
-
-from struct import pack
+import struct
 from qiling.loader.macho_parser.parser import *
 from qiling.loader.macho_parser.const import *
 from qiling.exception import *
@@ -100,10 +99,10 @@ class QlLoaderMACHO(QlLoader):
             self.ql.stack_sp = self.loadStack()
             if self.using_dyld:
                 self.ql.nprint("[+] ProcEntry: {}".format(hex(self.proc_entry)))
-                self.ql.entry_point = self.proc_entry + self.dyld_slide
-                self.ql.nprint("[+] Dyld entry point: {}".format(hex(self.ql.entry_point)))
+                self.entry_point = self.proc_entry + self.dyld_slide
+                self.ql.nprint("[+] Dyld entry point: {}".format(hex(self.entry_point)))
             else:
-                self.ql.entry_point = self.proc_entry + self.slide
+                self.entry_point = self.proc_entry + self.slide
             self.ql.nprint("[+] Binary Entry Point: 0x{:X}".format(self.binary_entry))
             self.macho_entry = self.binary_entry + self.slide
             self.loadbase = self.macho_entry
@@ -256,7 +255,7 @@ class QlLoaderMACHO(QlLoader):
         if data == 0:
             content = b'\x00\x00\x00\x00\x00\x00\x00\x00'
         else:
-            content = pack('<Q', data)
+            content = struct.pack('<Q', data)
 
         if len(content) != align:
             self.ql.nprint('[!] stack align error')

@@ -29,7 +29,7 @@ def ql_arch_setup(ql):
     return ql_get_module_function(module_name, archmanager)(ql)
     
 
-def ql_addr_to_str(ql, addr, short, endian):
+def ql_addr_to_str(ql, addr, short=False, endian="big"):
     if ql.archbit == 64 and short == False:
         addr = (hex(int.from_bytes(struct.pack('<Q', addr), byteorder=endian)))
         addr = '{:0>16}'.format(addr[2:])

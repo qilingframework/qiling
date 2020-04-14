@@ -77,22 +77,22 @@ class QlOsFreebsd(QlOsPosix):
             self.ql.until_addr = self.QL_EMU_END
         try:
             if self.ql.shellcoder:
-                self.ql.uc.emu_start(self.ql.stack_address, (self.ql.stack_address + len(self.ql.shellcoder)))
+                self.ql.emu_start(self.ql.stack_address, (self.ql.stack_address + len(self.ql.shellcoder)))
             else:
                 if self.ql.loader.elf_entry != self.ql.loader.entry_point:
-                    self.ql.uc.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
+                    self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
                     self.ql.enable_lib_patch()
-                self.ql.uc.emu_start(self.ql.loader.elf_entry, self.ql.until_addr, self.ql.timeout)
+                self.ql.emu_start(self.ql.loader.elf_entry, self.ql.until_addr, self.ql.timeout)
                 
         except UcError:
             if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM):
-                self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.pc))
+                self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.reg.pc))
                 self.ql.mem.show_mapinfo()
                 try:
-                    buf = self.ql.mem.read(self.ql.pc, 8)
+                    buf = self.ql.mem.read(self.ql.reg.pc, 8)
                     self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
                     self.ql.nprint("\n")
-                    ql_hook_code_disasm(ql, self.ql.pc, 64)
+                    ql_hook_code_disasm(ql, self.ql.reg.pc, 64)
                 except:
                     pass
             raise
