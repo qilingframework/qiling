@@ -49,7 +49,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
         if idx == -1:
             regreturn = -1
         else:
-            if ql.output == QL_OUT_DEBUG: # set REUSEADDR options under debug mode
+            if ql.output == QL_OUTPUT.DEBUG: # set REUSEADDR options under debug mode
                 ql.os.file_des[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol, (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1))
             else:
                 ql.os.file_des[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
@@ -177,7 +177,7 @@ def ql_syscall_listen(ql, listen_sockfd, listen_backlog, *args, **kw):
             ql.os.file_des[listen_sockfd].listen(listen_backlog)
             regreturn = 0
         except:
-            if ql.output == QL_OUT_DEBUG:
+            if ql.output == QL_OUTPUT.DEBUG:
                 raise
             regreturn = -1
     else:
@@ -216,7 +216,7 @@ def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, *args, **k
             ql.mem.write(accept_addr, tmp_buf)
             ql.mem.write(accept_addrlen, ql.pack32(16))
     except:
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+        if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             raise
         regreturn = -1
     ql.nprint("accep(%d, %x, %x) = %d" %(accept_sockfd, accept_addr, accept_addrlen, regreturn))
@@ -255,7 +255,7 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
             ql.dprint(D_INFO, "[+] debug send end")
         except:
             ql.nprint(sys.exc_info()[0])
-            if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+            if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                 raise
     else:
         regreturn = -1

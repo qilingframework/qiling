@@ -43,7 +43,7 @@ class QlArchMIPS32(QlArch):
     # get initialized unicorn engine
     def get_init_uc(self):
         if self.ql.archtype== QL_MIPS32:
-            if self.ql.archendian == QL_ENDIAN_EB:
+            if self.ql.archendian == QL_ENDIAN.EB:
                 uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_BIG_ENDIAN)
             else:
                 uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)
