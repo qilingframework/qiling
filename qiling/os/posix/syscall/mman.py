@@ -39,8 +39,6 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, *args, **kw):
     ql.mem.unmap(munmap_addr, munmap_len)
     regreturn = 0
 
-    ql.mem.del_mapinfo(munmap_addr, munmap_addr + munmap_len)
-
     ql.nprint("munmap(0x%x, 0x%x) = %d" % (munmap_addr , munmap_len, regreturn))
     ql_definesyscall_return(ql, regreturn)
 
