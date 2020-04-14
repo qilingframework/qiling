@@ -22,7 +22,8 @@ matrix:
       language: python
       python: "3.7"
       install:
-        - pip3 install -r requirements.txt
+        - pip3 install flake8 -r requirements.txt
+        - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         - python3 setup.py install
       before_script:
         - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
