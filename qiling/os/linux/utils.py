@@ -25,7 +25,7 @@ def ql_arm_init_kernel_get_tls(ql):
     """
     sc = b'\x04\x00\x8f\xe2\x00\x00\x90\xe5\x0e\xf0\xa0\xe1\x00\x00\x00\x00'
 
-    # if ql.archendian == QL_ENDIAN_EB:
+    # if ql.archendian == QL_ENDIAN.EB:
     #    sc = ql_lsbmsb_convert(ql, sc)
 
     ql.mem.write(QL_ARM_KERNEL_GET_TLS_ADDR, sc)

@@ -486,7 +486,7 @@ class QlLoaderELF(ELFParse, QlLoader):
                 self.mmap_start = 0x7ffff7dd6000 - 0x40000000
             elif self.ql.archtype== QL_MIPS32:
                 self.mmap_start = 0x7ffef000 - 0x4000000
-                if self.ql.archendian == QL_ENDIAN_EB:
+                if self.ql.archendian == QL_ENDIAN.EB:
                     self.mmap_start  = 0x778bf000 - 0x400000
             else:
                 self.mmap_start = 0xf7fd6000 - 0x400000
@@ -549,7 +549,7 @@ class QlLoaderELF(ELFParse, QlLoader):
         self.elf_phent    = (elfhead['e_phentsize'])
         self.elf_phnum    = (elfhead['e_phnum'])
         self.elf_pagesz   = 0x1000
-        if self.ql.archendian == QL_ENDIAN_EB:
+        if self.ql.archendian == QL_ENDIAN.EB:
             self.elf_pagesz   = 0x0010
         self.elf_guid     = 1000
         self.elf_flags    = 0
@@ -560,7 +560,7 @@ class QlLoaderELF(ELFParse, QlLoader):
             self.elf_hwcap = 0x078bfbfd
         elif self.ql.archbit == 32:
             self.elf_hwcap = 0x1fb8d7
-            if self.ql.archendian == QL_ENDIAN_EB:
+            if self.ql.archendian == QL_ENDIAN.EB:
                 self.elf_hwcap = 0xd7b81f
 
         elf_table += self.NEW_AUX_ENT(AT_PHDR, self.elf_phdr + mem_start)

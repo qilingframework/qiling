@@ -121,11 +121,11 @@ def arch_convert(arch):
 
 def output_convert(output):
     adapter = {
-        None: QL_OUT_DEFAULT,
-        "default": QL_OUT_DEFAULT,
-        "disasm": QL_OUT_DISASM,
-        "debug": QL_OUT_DEBUG,
-        "dump": QL_OUT_DUMP,
+        None: QL_OUTPUT.DEFAULT,
+        "default": QL_OUTPUT.DEFAULT,
+        "disasm": QL_OUTPUT.DISASM,
+        "debug": QL_OUTPUT.DEBUG,
+        "dump": QL_OUTPUT.DUMP,
     }
     if output in adapter:
         return adapter[output]
@@ -183,16 +183,16 @@ def ql_elf_check_archtype(self):
         if e_machine == b"\x03\x00":
             arch = QL_X86
         elif e_machine == b"\x08\x00" and endian == 1 and elfbit == 1:
-            self.archendian = QL_ENDIAN_EL
+            self.archendian = QL_ENDIAN.EL
             arch = QL_MIPS32
         elif e_machine == b"\x00\x08" and endian == 2 and elfbit == 1:
-            self.archendian = QL_ENDIAN_EB
+            self.archendian = QL_ENDIAN.EB
             arch = QL_MIPS32
         elif e_machine == b"\x28\x00" and endian == 1 and elfbit == 1:
-            self.archendian = QL_ENDIAN_EL
+            self.archendian = QL_ENDIAN.EL
             arch = QL_ARM
         elif e_machine == b"\x00\x28" and endian == 2 and elfbit == 1:
-            self.archendian = QL_ENDIAN_EB
+            self.archendian = QL_ENDIAN.EB
             arch = QL_ARM            
         elif e_machine == b"\xB7\x00":
             arch = QL_ARM64

@@ -49,7 +49,7 @@ class QlArchARM(QlArch):
 
     # get initialized unicorn engine
     def get_init_uc(self):
-        if self.ql.archendian == QL_ENDIAN_EB:
+        if self.ql.archendian == QL_ENDIAN.EB:
             uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)
             # FIXME: unicorn engine not able to choose ARM or Thumb automatically
             #uc = Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_BIG_ENDIAN)
@@ -95,7 +95,7 @@ class QlArchARM(QlArch):
         tmp_val = self.ql.register(UC_ARM_REG_C1_C0_2)
         tmp_val = tmp_val | (0xf << 20)
         self.ql.register(UC_ARM_REG_C1_C0_2, tmp_val)
-        if self.ql.archendian == QL_ENDIAN_EB:
+        if self.ql.archendian == QL_ENDIAN.EB:
             enable_vfp = 0x40000000
             #enable_vfp = 0x00000040
         else:
@@ -107,7 +107,7 @@ class QlArchARM(QlArch):
     def check_thumb(self):
     
         reg_cpsr = self.ql.register(UC_ARM_REG_CPSR)
-        if self.ql.archendian == QL_ENDIAN_EB:
+        if self.ql.archendian == QL_ENDIAN.EB:
             reg_cpsr_v = 0b100000
             # reg_cpsr_v = 0b000000
         else:
