@@ -290,7 +290,7 @@ class QlMemoryManager:
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
 
 
-    def map(self, addr, size, perms=UC_PROT_ALL, ptr = None):
+    def map(self, addr, size, perms=UC_PROT_ALL, info=None, ptr=None):
         '''
 	    The main function of mem_mmap is to implement memory allocation in unicorn, 
 	    which is slightly similar to the function of syscall_mmap. 
@@ -308,8 +308,8 @@ class QlMemoryManager:
         '''
         if ptr == None:
             if self.is_mapped(addr, size) == False:
-               self.add_mapinfo(addr, addr + size, 'rw-', "[mapped]")
                self.ql.uc.mem_map(addr, size)
+               self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
             else:
                 raise QlMemoryMappedError("[!] Memory Mapped")    
             
