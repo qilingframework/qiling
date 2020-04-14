@@ -138,13 +138,13 @@ class QlOsWindows(QlOs):
                     raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
     def run(self):
-        if self.ql.stdin is not 0:
+        if self.ql.stdin != 0:
             self.stdin = self.ql.stdin
         
-        if self.ql.stdout is not 0:
+        if self.ql.stdout != 0:
             self.stdout = self.ql.stdout
         
-        if self.ql.stderr is not 0:
+        if self.ql.stderr != 0:
             self.stderr = self.ql.stderr 
 
         ql_setup_output(self.ql)
