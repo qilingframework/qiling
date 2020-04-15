@@ -42,7 +42,6 @@ def ql_lsbmsb_convert(ql, sc, size=4):
     return ebsc    
 
 
-
 def ql_init_configuration(self):
     config = configparser.ConfigParser()
     config.read(self.profile)
@@ -189,70 +188,6 @@ def ql_transform_to_relative_path(ql, path):
     return relative_path
 
 
-def ql_vm_to_vm_abspath(ql, relative_path):
-    if relative_path[0] == '/':
-        # abspath input
-        abspath = relative_path
-        return os.path.abspath(abspath)
-    else:
-        # relative path input
-        cur_path = ql_get_vm_current_path(ql)
-        return os.path.abspath(cur_path + '/' + relative_path)
-
-
-def ql_vm_to_real_abspath(ql, path):
-    # TODO:// check Directory traversal, we have the vul
-    if path[0] != '/':
-        # relative path input
-        cur_path = ql_get_vm_current_path(ql)
-        path = cur_path + '/' + path
-    return os.path.abspath(ql.rootfs + path)
-
-
-def ql_real_to_vm_abspath(ql, path):
-    # rm ".." in path
-    abs_path = os.path.abspath(path)
-    abs_rootfs = os.path.abspath(ql.rootfs)
-
-    return '/' + abs_path.lstrip(abs_rootfs)
-
-
-def ql_get_vm_current_path(ql):
-    if ql.multithread == True:
-        return ql.os.thread_management.cur_thread.get_current_path()
-    else:
-        return ql.os.current_path
-
-
-
-
-
-def print_function(self, address, function_name, params, ret):
-    function_name = function_name.replace('hook_', '')
-    if function_name in ("__stdio_common_vfprintf", "printf", "wsprintfW", "sprintf"):
-        return
-    log = '0x%0.2x: %s(' % (address, function_name)
-    for each in params:
-        value = params[each]
-        if type(value) == str or type(value) == bytearray:
-            log += '%s = "%s", ' % (each, value)
-        else:
-            log += '%s = 0x%x, ' % (each, value)
-    log = log.strip(", ")
-    log += ')'
-    if ret is not None:
-        log += ' = 0x%x' % ret
-
-    if self.ql.output == QL_OUTPUT.DEFAULT:
-        log = log.partition(" ")[-1]
-        self.ql.nprint(log)
-
-    elif self.ql.output == QL_OUTPUT.DEBUG:
-        self.ql.dprint(D_INFO, log)
-
-
-
-
-def post_report(self):
+def ql_post_report(self):
     self.ql.dprint(D_INFO, "[+] Syscalls and number of invocations")
-    self.ql.dprint(D_INFO, "[-] " + str(list(self.syscall_count.items())))
+    self.ql.dprint(D_INFO, "[-] " + str(list(self.ql.os.syscall_count.items())))

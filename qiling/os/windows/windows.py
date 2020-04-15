@@ -166,8 +166,7 @@ class QlOsWindows(QlOs):
             raise
 
         self.registry_manager.save()
-
-        post_report(self)
+        self.post_report()
 
         if self.ql.internal_exception is not None:
             raise self.ql.internal_exception
