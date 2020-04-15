@@ -120,11 +120,9 @@ class QlOsPosix(QlOs):
             self.ql.register(UC_X86_REG_RAX, regreturn)
 
         elif (self.ql.archtype== QL_MIPS32):  # QL_MIPSE32EL
-            if regreturn == -1:
+            if regreturn < 0 and regreturn > -1134:
                 a3return = 1
-            elif regreturn == 2:
-                regreturn = 2
-                a3return = 1
+                regreturn = - regreturn
             else:
                 a3return = 0
             # if ql.output == QL_OUTPUT.DEBUG:
