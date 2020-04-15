@@ -32,7 +32,7 @@ class QLCoreStructs:
             return struct.unpack('I', x)[0]
 
     def pack32(self, x):
-        if self.archendian == QL_ENDIAN.EB:
+        if self.ql.archendian == QL_ENDIAN.EB:
             return struct.pack('>I', x)
         else:
             return struct.pack('I', x)

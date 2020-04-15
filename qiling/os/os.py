@@ -48,7 +48,7 @@ class QlOs:
         def ql_hook_code_disasm(ql, address, size):
             tmp = ql.mem.read(address, size)
 
-            if (ql.archtype== QL_ARM):  # QL_ARM
+            if (ql.archtype== QL_ARCH.ARM):  # QL_ARM
                 reg_cpsr = ql.register(UC_ARM_REG_CPSR)
                 mode = CS_MODE_ARM
                 if ql.archendian == QL_ENDIAN.EB:
@@ -66,16 +66,16 @@ class QlOs:
                 else:
                     md = Cs(CS_ARCH_ARM, mode)
 
-            elif (ql.archtype== QL_X86):  # QL_X86
+            elif (ql.archtype == QL_ARCH.X86):  # QL_X86
                 md = Cs(CS_ARCH_X86, CS_MODE_32)
 
-            elif (ql.archtype== QL_X8664):  # QL_X86_64
+            elif (ql.archtype == QL_ARCH.X8664):  # QL_X86_64
                 md = Cs(CS_ARCH_X86, CS_MODE_64)
 
-            elif (ql.archtype== QL_ARM64):  # QL_ARM64
+            elif (ql.archtype == QL_ARCH.ARM64):  # QL_ARM64
                 md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 
-            elif (ql.archtype== QL_MIPS32):  # QL_MIPS32
+            elif (ql.archtype == QL_ARCH.MIPS32):  # QL_MIPS32
                 if ql.archendian == QL_ENDIAN.EB:
                     md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
                 else:
