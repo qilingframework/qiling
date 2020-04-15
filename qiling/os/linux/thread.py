@@ -5,12 +5,15 @@
 
 import os, time
 
+from unicorn.mips_const import *
+from unicorn.arm_const import *
+
 from qiling.utils import ql_setup_logging_file, ql_setup_logging_stream, ql_setup_logger
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
 from qiling.const import *
-from unicorn.mips_const import *
-from unicorn.arm_const import *
+from qiling.os.const import *
+
 
 from abc import ABC, abstractmethod
 

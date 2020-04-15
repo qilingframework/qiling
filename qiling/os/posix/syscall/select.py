@@ -93,4 +93,4 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
         if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
             raise
     ql.nprint("_newselect(%d, %x, %x, %x, %x) = %d" % (_newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)

@@ -33,6 +33,7 @@ from qiling.const import *
 from qiling.os.posix.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.utils import *
+from qiling.exception import *
 
 def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
     path = ql_read_string(ql, filename)
@@ -50,7 +51,8 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
         idx = -1
 
     if idx == -1:
-        regreturn = -1
+        # errno ENOMEM Insufficient kernel memory was available.
+        regreturn = -12 
     else:
         try:
             if ql.archtype== QL_ARM:
@@ -59,8 +61,8 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
             flags = ql_open_flag_mapping(flags, ql)
             ql.os.file_des[idx] = ql_file.open(real_path, flags, mode)
             regreturn = idx
-        except:
-            regreturn = -1
+        except QlSyscallError as e:
+            regreturn = - e.errno
 
     ql.nprint("open(%s, 0x%x, 0o%o) = %d" % (relative_path, flags, mode, regreturn))
     ql.dprint(D_INFO, "[+] open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
@@ -69,7 +71,7 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
         ql.dprint(D_INFO, "[+] File Found: %s" % relative_path)
     else:
         ql.dprint(D_INFO, "[!] File Not Found %s" % relative_path)
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args, **kw):
@@ -110,7 +112,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
         ql.dprint(D_INFO, "[+] File Found: %s" % relative_path)
     else:
         ql.dprint(D_INFO, "[!] File Not Found %s" % relative_path)
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, *args, **kw):
@@ -126,7 +128,7 @@ def ql_syscall_fcntl(ql, fcntl_fd, fcntl_cmd, *args, **kw):
         regreturn = 0
 
     ql.nprint("fcntl(%d, %d) = %d" % (fcntl_fd, fcntl_cmd, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, null1, null2, null3):
@@ -148,4 +150,4 @@ def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, null1, null2, null3):
         regreturn = 0
 
     ql.nprint("fcntl64(%d, %d, %d) = %d" % (fcntl_fd, fcntl_cmd, fcntl_arg, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)

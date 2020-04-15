@@ -6,6 +6,7 @@
 import sys, unittest, subprocess, string, random
 sys.path.append("..")
 from qiling import *
+from qiling.os.utils import *
 from qiling.exception import *
 from qiling.os.posix import syscall
 
@@ -559,9 +560,9 @@ class ELFTest(unittest.TestCase):
             except:
                 regreturn = -1
                 ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
-                if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+                if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                     raise
-            ql_definesyscall_return(ql, regreturn)
+            ql.os.definesyscall_return(regreturn)
 
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux")
         ql.set_syscall(0x04, my_syscall_write)

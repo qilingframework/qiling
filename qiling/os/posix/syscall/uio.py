@@ -45,4 +45,4 @@ def ql_syscall_writev(ql, writev_fd, writev_vec, writev_vien, *args, **kw):
             addr = ql.unpack(iov[i * size_t_len * 2 : i * size_t_len * 2 + size_t_len])
             l = ql.unpack(iov[i * size_t_len * 2 + size_t_len : i * size_t_len * 2 + size_t_len * 2])
             ql.dprint(D_INFO, "%s" % str(ql.mem.read(addr, l)))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)

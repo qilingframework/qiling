@@ -7,16 +7,11 @@ import sys
 import platform
 import ntpath
 import os as pyos
-from unicorn import *
 
-from qiling.const import *
-from qiling.exception import *
-from qiling.utils import *
-from qiling.os.utils import *
-from qiling.loader.utils import *
-from qiling.arch.utils import *
-from qiling.os.thread import *
-from qiling.debugger.utils import *
+from .const import *
+from .exception import *
+from .utils import *
+from .debugger.utils import *
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 
@@ -157,23 +152,23 @@ class Qiling(QLCoreStructs, QLCoreHooks):
                 raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
 
         # check verbose, only can check after ouput being defined
-        if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
+        if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
         
         ##############################################################
         # Define file is 32 or 64bit and check file endian           #
-        # QL_ENDIAN_EL = Little Endian || QL_ENDIAN_EB = Big Endian  #
-        # QL_ENDIAN_EB is define during ql_elf_check_archtype()      #
+        # QL_ENDIAN.EL = Little Endian || QL_ENDIAN.EB = Big Endian  #
+        # QL_ENDIAN.EB is define during ql_elf_check_archtype()      #
         ##############################################################
         self.archbit = ql_get_arch_bits(self.archtype)
         if self.archtype not in (QL_ENDINABLE):
-            self.archendian = QL_ENDIAN_EL
+            self.archendian = QL_ENDIAN.EL
         
         #Endian for shellcode needs to set manually
         if self.shellcoder and self.bigendian == True and self.archtype in (QL_ENDINABLE):
-            self.archendian = QL_ENDIAN_EB
+            self.archendian = QL_ENDIAN.EB
         elif self.shellcoder:
-            self.archendian = QL_ENDIAN_EL
+            self.archendian = QL_ENDIAN.EL
 
         # based on CPU bit and set pointer size
         if self.archbit:
@@ -206,7 +201,7 @@ class Qiling(QLCoreStructs, QLCoreHooks):
 
     def run(self):
         # setup strace filter for logger
-        if self.strace_filter != None and self.output == QL_OUT_DEFAULT:
+        if self.strace_filter != None and self.output == QL_OUTPUT.DEFAULT:
             self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
 
         # init debugger
@@ -249,13 +244,13 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         except:
             raise QlErrorOutput("[!] Verbose muse be int")    
         
-        if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 1 and self.output not in (QL_OUT_DEBUG, QL_OUT_DUMP)):
-            raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUT_DEBUG or else ql.verbose must be 0")
+        if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 1 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
+            raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUTPUT.DEBUG or else ql.verbose must be 0")
 
-        if self.output == QL_OUT_DUMP:
+        if self.output == QL_OUTPUT.DUMP:
             self.verbose = 99
 
-        if int(self.verbose) >= level and self.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+        if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             self.nprint(*args, **kw)
 
    
@@ -322,7 +317,7 @@ class Qiling(QLCoreStructs, QLCoreHooks):
     def output(self):
         return self._output
 
-    # ql.output - output var setter eg. QL_OUT_DEFAULT and etc
+    # ql.output - output var setter eg. QL_OUTPUT.DEFAULT and etc
     @output.setter
     def output(self, output):
         self._output = output_convert(output)

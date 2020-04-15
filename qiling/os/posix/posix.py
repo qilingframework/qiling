@@ -3,14 +3,15 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-from unicorn.arm64_const import *
-from unicorn.arm_const import *
-from unicorn.mips_const import *
-from unicorn.x86_const import *
+# from unicorn.arm64_const import *
+# from unicorn.arm_const import *
+# from unicorn.mips_const import *
+# from unicorn.x86_const import *
 
 from qiling.const import *
+from qiling.utils import *
 from qiling.os.os import QlOs
-from qiling.os.utils import *
+
 from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *
 from qiling.os.macos.syscall import *
@@ -103,7 +104,33 @@ class QlOsPosix(QlOs):
             syscall_num = UC_X86_REG_RAX           
 
         return self.ql.register(syscall_num)
-    
+
+    def definesyscall_return(self, regreturn):
+        if (self.ql.archtype== QL_ARM):  # QL_ARM
+            self.ql.register(UC_ARM_REG_R0, regreturn)
+            # ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
+
+        elif (self.ql.archtype== QL_ARM64):  # QL_ARM64
+            self.ql.register(UC_ARM64_REG_X0, regreturn)
+
+        elif (self.ql.archtype== QL_X86):  # QL_X86
+            self.ql.register(UC_X86_REG_EAX, regreturn)
+
+        elif (self.ql.archtype== QL_X8664):  # QL_X86_64
+            self.ql.register(UC_X86_REG_RAX, regreturn)
+
+        elif (self.ql.archtype== QL_MIPS32):  # QL_MIPSE32EL
+            if regreturn < 0 and regreturn > -1134:
+                a3return = 1
+                regreturn = - regreturn
+            else:
+                a3return = 0
+            # if ql.output == QL_OUTPUT.DEBUG:
+            #    print("[+] A3 is %d" % a3return)
+            self.ql.register(UC_MIPS_REG_V0, regreturn)
+            self.ql.register(UC_MIPS_REG_A3, a3return)
+
+
     # get syscall
     def get_syscall_param(self):
         if self.ql.archtype== QL_ARM64:

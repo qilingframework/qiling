@@ -40,7 +40,7 @@ def ql_syscall_set_robust_list(ql, set_robust_list_head_ptr, set_robust_list_hea
         ql.os.thread_management.cur_thread.robust_list_head_len = set_robust_list_head_len
     regreturn = 0
     ql.nprint("set_robust_list(%x, %x) = %d"%(set_robust_list_head_ptr, set_robust_list_head_len, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_uaddr2, futex_val3):
@@ -84,4 +84,4 @@ def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_
         ql.os.thread_management.cur_thread.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
         regreturn = 0
 
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)

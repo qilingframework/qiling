@@ -52,7 +52,7 @@ def ql_syscall_rt_sigaction(ql, rt_sigaction_signum, rt_sigaction_act, rt_sigact
 
     regreturn = 0
     ql.nprint("rt_sigaction(0x%x, 0x%x, = 0x%x) = %d" % (rt_sigaction_signum, rt_sigaction_act, rt_sigaction_oldact, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_sigprocmask_oset, rt_sigprocmask_sigsetsize, *args, **kw):
@@ -64,10 +64,10 @@ def ql_syscall_rt_sigprocmask(ql, rt_sigprocmask_how, rt_sigprocmask_nset, rt_si
 
     regreturn = 0
     ql.nprint("rt_sigprocmask(0x%x, 0x%x, 0x%x, 0x%x) = %d" % (rt_sigprocmask_how, rt_sigprocmask_nset, rt_sigprocmask_oset, rt_sigprocmask_sigsetsize, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_signal(ql, sig, __sighandler_t, *args, **kw):
     regreturn = 0
     ql.nprint("signal(%d, 0x%x) = %d" % (sig, __sighandler_t,regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)

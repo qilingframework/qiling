@@ -25,62 +25,10 @@ from qiling.const import *
 from qiling.exception import *
 from qiling.utils import *
 from qiling.const import *
-#from qiling.os.memory import QlMemoryManager
-
 
 from binascii import unhexlify
 import ipaddress, struct, os, ctypes
 import configparser
-
-def ql_os_setup(ql, function_name = None):
-    if not ql_is_valid_ostype(ql.ostype):
-        raise QlErrorOsType("[!] Invalid OSType")
-
-    if not ql_is_valid_arch(ql.archtype):
-        raise QlErrorArch("[!] Invalid Arch %s" % ql.archtype)
-
-    if function_name == None:
-        ostype_str = ql_ostype_convert_str(ql.ostype)
-        ostype_str = ostype_str.capitalize()
-        function_name = "QlOs" + ostype_str
-        module_name = ql_build_module_import_name("os", ql.ostype)
-        return ql_get_module_function(module_name, function_name)(ql)
-
-    elif function_name == "map_syscall":
-        ostype_str = ql_ostype_convert_str(ql.ostype)
-        arch_str = ql_arch_convert_str(ql.archtype)
-        arch_str = arch_str + "_syscall"
-        module_name = ql_build_module_import_name("os", ostype_str, arch_str)
-        return ql_get_module_function(module_name, function_name)
-    
-    else:
-        module_name = ql_build_module_import_name("os", ql.ostype, ql.archtype)
-        return ql_get_module_function(module_name, function_name)
-
-
-def ql_component_setup(ql, function_name = None):
-    if not ql_is_valid_ostype(ql.ostype):
-        raise QlErrorOsType("[!] Invalid OSType")
-
-    if not ql_is_valid_arch(ql.archtype):
-        raise QlErrorArch("[!] Invalid Arch %s" % ql.archtype)
-
-    if function_name == "register":
-        function_name = "QlRegisterManager"
-        module_name = "qiling.arch.register"
-        return ql_get_module_function(module_name, function_name)(ql)
-
-    elif function_name == "memory":
-        function_name = "QlMemoryManager"
-        module_name = "qiling.os.memory"
-        return ql_get_module_function(module_name, function_name)(ql)
-    
-    else:
-        module_name = ql_build_module_import_name("os", ql.ostype, ql.archtype)
-        return ql_get_module_function(module_name, function_name)
-
-
-
 
 
 def ql_lsbmsb_convert(ql, sc, size=4):
@@ -94,33 +42,6 @@ def ql_lsbmsb_convert(ql, sc, size=4):
         ebsc += i
 
     return ebsc    
-
-def ql_definesyscall_return(ql, regreturn):
-    if (ql.archtype== QL_ARM):  # QL_ARM
-        ql.register(UC_ARM_REG_R0, regreturn)
-        # ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
-
-    elif (ql.archtype== QL_ARM64):  # QL_ARM64
-        ql.register(UC_ARM64_REG_X0, regreturn)
-
-    elif (ql.archtype== QL_X86):  # QL_X86
-        ql.register(UC_X86_REG_EAX, regreturn)
-
-    elif (ql.archtype== QL_X8664):  # QL_X86_64
-        ql.register(UC_X86_REG_RAX, regreturn)
-
-    elif (ql.archtype== QL_MIPS32):  # QL_MIPSE32EL
-        if regreturn == -1:
-            a3return = 1
-        elif regreturn == 2:
-            regreturn = 2
-            a3return = 1
-        else:
-            a3return = 0
-        # if ql.output == QL_OUT_DEBUG:
-        #    print("[+] A3 is %d" % a3return)
-        ql.register(UC_MIPS_REG_V0, regreturn)
-        ql.register(UC_MIPS_REG_A3, a3return)
 
 
 def ql_bin_to_ipv4(ip):
@@ -140,6 +61,7 @@ def ql_init_configuration(self):
         for key in config[section]:
             self.ql.dprint(D_RPRT, "[-] %s %s" % (key, config[section][key]) )
     return config
+
 
 def ql_bin_to_ip(ip):
     return ipaddress.ip_address(ip).compressed
@@ -177,7 +99,7 @@ def ql_hook_code_disasm(ql, address, size):
     if (ql.archtype== QL_ARM):  # QL_ARM
         reg_cpsr = ql.register(UC_ARM_REG_CPSR)
         mode = CS_MODE_ARM
-        if ql.archendian == QL_ENDIAN_EB:
+        if ql.archendian == QL_ENDIAN.EB:
             reg_cpsr_v = 0b100000
             # reg_cpsr_v = 0b000000
         else:
@@ -186,7 +108,7 @@ def ql_hook_code_disasm(ql, address, size):
         if reg_cpsr & reg_cpsr_v != 0:
             mode = CS_MODE_THUMB
 
-        if ql.archendian == QL_ENDIAN_EB:
+        if ql.archendian == QL_ENDIAN.EB:
             md = Cs(CS_ARCH_ARM, mode)
             # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
         else:
@@ -202,7 +124,7 @@ def ql_hook_code_disasm(ql, address, size):
         md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 
     elif (ql.archtype== QL_MIPS32):  # QL_MIPS32
-        if ql.archendian == QL_ENDIAN_EB:
+        if ql.archendian == QL_ENDIAN.EB:
             md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
         else:
             md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)
@@ -224,7 +146,7 @@ def ql_hook_code_disasm(ql, address, size):
     for i in insn:
         ql.nprint ("%s %s" % (i.mnemonic, i.op_str))
     
-    if ql.output == QL_OUT_DUMP:
+    if ql.output == QL_OUTPUT.DUMP:
         for reg in ql.reg.table:
             ql.reg.name = reg
             REG_NAME = ql.reg.name
@@ -233,15 +155,15 @@ def ql_hook_code_disasm(ql, address, size):
     
 
 def ql_setup_output(ql):
-    if ql.output in (QL_OUT_DISASM, QL_OUT_DUMP):
-        if ql.output == QL_OUT_DUMP:
+    if ql.output in (QL_OUTPUT.DISASM, QL_OUTPUT.DUMP):
+        if ql.output == QL_OUTPUT.DUMP:
             ql.hook_block(ql_hook_block_disasm)
         ql.hook_code(ql_hook_code_disasm)
 
 
-def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
+def ql_compile_asm(ql, archtype, runcode, arm_thumb= None):
     def ks_convert(arch):
-        if ql.archendian == QL_ENDIAN_EB:
+        if ql.archendian == QL_ENDIAN.EB:
             adapter = {
                 QL_X86: (KS_ARCH_X86, KS_MODE_32),
                 QL_X8664: (KS_ARCH_X86, KS_MODE_64),
@@ -284,7 +206,7 @@ def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
 
         return shellcode
 
-    if arm_thumb == 1 and archtype == QL_ARM:
+    if arm_thumb == True and archtype == QL_ARM:
         archtype = QL_ARM_THUMB
 
     archtype, archmode = ks_convert(archtype)
@@ -521,11 +443,11 @@ def print_function(self, address, function_name, params, ret):
     if ret is not None:
         log += ' = 0x%x' % ret
 
-    if self.ql.output == QL_OUT_DEFAULT:
+    if self.ql.output == QL_OUTPUT.DEFAULT:
         log = log.partition(" ")[-1]
         self.ql.nprint(log)
 
-    elif self.ql.output == QL_OUT_DEBUG:
+    elif self.ql.output == QL_OUTPUT.DEBUG:
         self.ql.dprint(D_INFO, log)
 
 

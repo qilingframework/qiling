@@ -38,4 +38,4 @@ def ql_syscall__sysctl(ql, sysctl_name, sysctl_namelen, sysctl_bytes_oldlenp, sy
     # sysctl (name=0x7fffffffe3d8, namelen=2, oldp=0x7fffffffe3d4, oldlenp=0x7fffffffe3e0, newp=0x0, newlen=<optimized out>)
     regreturn = 0
     ql.nprint("_sysctl(0x%x) = %i" % (sysctl_name, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)

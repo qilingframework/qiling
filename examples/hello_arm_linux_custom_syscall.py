@@ -20,10 +20,10 @@ def my_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
     except:
         regreturn = -1
         ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+        if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             raise
 
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 if __name__ == "__main__":

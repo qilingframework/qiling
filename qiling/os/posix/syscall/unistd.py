@@ -59,7 +59,7 @@ def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
 def ql_syscall_alarm(ql, alarm_seconds, *args, **kw):
     regreturn = 0
     ql.nprint("alarm(%d) = %d" % (alarm_seconds, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_issetugid(ql, *args, **kw):
@@ -69,7 +69,7 @@ def ql_syscall_issetugid(ql, *args, **kw):
         UGID = 1000
     ql.nprint("issetugid(%i)" % UGID)
     regreturn = UGID
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getuid(ql, *args, **kw):
@@ -79,7 +79,7 @@ def ql_syscall_getuid(ql, *args, **kw):
         UID = 1000
     ql.nprint("getuid(%i)" % UID)
     regreturn = UID
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getuid32(ql, *args, **kw):
@@ -89,7 +89,7 @@ def ql_syscall_getuid32(ql, *args, **kw):
         UID = 1000
     ql.nprint("getuid32(%i)" % UID)
     regreturn = UID
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getgid32(ql, *args, **kw):
@@ -99,7 +99,7 @@ def ql_syscall_getgid32(ql, *args, **kw):
         GID = 1000
     ql.nprint("getgid32(%i)" % GID)
     regreturn = GID
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_geteuid(ql, *args, **kw):
@@ -109,7 +109,7 @@ def ql_syscall_geteuid(ql, *args, **kw):
         EUID = 1000
     ql.nprint("geteuid(%i)" % EUID)
     regreturn = EUID
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getegid(ql, *args, **kw):
@@ -119,7 +119,7 @@ def ql_syscall_getegid(ql, *args, **kw):
         EGID = 1000
     ql.nprint("getegid(%i)" % EGID)
     regreturn = EGID
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getgid(ql, *args, **kw):
@@ -129,7 +129,7 @@ def ql_syscall_getgid(ql, *args, **kw):
         GID = 1000
     ql.nprint("getgid(%i)" % GID)
     regreturn = GID
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_setgroups(ql, gidsetsize, grouplist, *args, **kw):
@@ -140,7 +140,7 @@ def ql_syscall_setgroups(ql, gidsetsize, grouplist, *args, **kw):
 
     regreturn = GID
     ql.nprint("setgroups(0x%x, 0x%x) = %d" % (gidsetsize, grouplist, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_setgid(ql, *args, **kw):
@@ -150,7 +150,7 @@ def ql_syscall_setgid(ql, *args, **kw):
         GID = 1000
     ql.nprint("setgid(%i)" % GID)
     regreturn = GID
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_setuid(ql, *args, **kw):
@@ -160,7 +160,7 @@ def ql_syscall_setuid(ql, *args, **kw):
         UID = 1000
     ql.nprint("setuid(%i)" % UID)
     regreturn = UID
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, *args, **kw):
@@ -177,7 +177,7 @@ def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, 
     else:
         regreturn = -1
 
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
     ql.nprint("facccessat (%d, 0x%x, 0x%x) = %d" %(faccessat_dfd, faccessat_filename, faccessat_mode, regreturn))
 
     if regreturn == -1:
@@ -195,7 +195,7 @@ def ql_syscall_lseek(ql, lseek_fd, lseek_ofset, lseek_origin, *args, **kw):
     except OSError:
         regreturn = -1
     ql.nprint("lseek(%d, 0x%x, 0x%x) = %d" % (lseek_fd, lseek_ofset, lseek_origin, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, *args, **kw):
@@ -212,7 +212,7 @@ def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, *args, *
         ql.mem.write(result, ql.pack64(ret))
 
     ql.nprint("_llseek(%d, 0x%x, 0x%x, 0x%x = %d)" % (fd, offset_high, offset_low, origin, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_brk(ql, brk_input, *args, **kw):
@@ -234,7 +234,7 @@ def ql_syscall_brk(ql, brk_input, *args, **kw):
 
     regreturn = ql.loader.brk_address
 
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
     ql.dprint(D_INFO, "[+] brk return(0x%x)" % regreturn)
 
 
@@ -249,7 +249,7 @@ def ql_syscall_access(ql, access_path, access_mode, *args, **kw):
     else:
         regreturn = 0
 
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
     ql.nprint("access(%s, 0x%x) = %d " % (relative_path, access_mode, regreturn))
     if regreturn == 0:
@@ -265,7 +265,7 @@ def ql_syscall_close(ql, close_fd, *args, **kw):
         ql.os.file_des[close_fd] = 0
         regreturn = 0
     ql.nprint("close(%d) = %d" % (close_fd, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, *args, **kw):
@@ -283,7 +283,7 @@ def ql_syscall_pread64(ql, read_fd, read_buf, read_len, read_offt, *args, **kw):
     else:
         regreturn = -1
     ql.nprint("pread(%d, 0x%x, 0x%x, 0x%x) = 0x%x" % (read_fd, read_buf, read_len, read_offt, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_read(ql, read_fd, read_buf, read_len, *args, **kw):
@@ -302,7 +302,7 @@ def ql_syscall_read(ql, read_fd, read_buf, read_len, *args, **kw):
     if data:
         ql.dprint(D_INFO, "[+] read() CONTENT:")
         ql.dprint(D_INFO, "%s" % data)
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
@@ -320,12 +320,12 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
     except:
         regreturn = -1
         ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+        if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             raise
     #ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
     #if buf:
     #    ql.nprint(buf.decode(errors='ignore'))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_readlink(ql, path_name, path_buff, path_buffsize, *args, **kw):
@@ -347,7 +347,7 @@ def ql_syscall_readlink(ql, path_name, path_buff, path_buffsize, *args, **kw):
         regreturn = 0x0
 
     ql.nprint("readlink(%s, 0x%x, 0x%x) = %d" % (relative_path, path_buff, path_buffsize, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getcwd(ql, path_buff, path_buffsize, *args, **kw):
@@ -360,7 +360,7 @@ def ql_syscall_getcwd(ql, path_buff, path_buffsize, *args, **kw):
     pathname = str(pathname, 'utf-8', errors="ignore")
 
     ql.nprint("getcwd(%s, 0x%x) = %d" % (pathname, path_buffsize, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_chdir(ql, path_name, *args, **kw):
@@ -379,7 +379,7 @@ def ql_syscall_chdir(ql, path_name, *args, **kw):
     else:
         regreturn = -1
         ql.nprint("chdir(%s) = %d : Not Found" % (relative_path, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_readlinkat(ql, readlinkat_dfd, readlinkat_path, readlinkat_buf, readlinkat_bufsiz, *args, **kw):
@@ -401,19 +401,19 @@ def ql_syscall_readlinkat(ql, readlinkat_dfd, readlinkat_path, readlinkat_buf, r
         regreturn = 0x0
 
     ql.nprint("readlinkat(0x%x, 0x%x, 0x%x, 0x%x) = %d" % (readlinkat_dfd, readlinkat_path, readlinkat_buf, readlinkat_bufsiz, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getpid(ql, *args, **kw):
     regreturn= 0x512
     ql.nprint("getpid() = %d" % (regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getppid(ql, *args, **kw):
     regreturn= 0x1024
     ql.nprint("getpid() = %d" % (regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_vfork(ql, *args, **kw):
@@ -439,13 +439,13 @@ def ql_syscall_vfork(ql, *args, **kw):
         ql.emu_stop()
 
     ql.nprint("vfork() = %d" % regreturn)
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_setsid(ql, *args, **kw):
     regreturn = os.getpid()
     ql.nprint("setsid() = %d" % regreturn)
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw):
@@ -506,7 +506,7 @@ def ql_syscall_dup2(ql, dup2_oldfd, dup2_newfd, *args, **kw):
     else:
         regreturn = -1
     ql.nprint("dup2(%d, %d) = %d" % (dup2_oldfd, dup2_newfd, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_dup3(ql, dup3_oldfd, dup3_newfd, dup3_flags, null2, null3, null4):
@@ -519,7 +519,7 @@ def ql_syscall_dup3(ql, dup3_oldfd, dup3_newfd, dup3_flags, null2, null3, null4)
     else:
         regreturn = -1
     ql.nprint("dup3(%d, %d, %d) = %d" % (dup3_oldfd, dup3_newfd, dup3_flags, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 def ql_syscall_set_tid_address(ql, set_tid_address_tidptr, *args, **kw):
     if ql.os.thread_management == None:
@@ -528,7 +528,7 @@ def ql_syscall_set_tid_address(ql, set_tid_address_tidptr, *args, **kw):
         ql.os.thread_management.cur_thread.set_clear_child_tid_addr(set_tid_address_tidptr)
         regreturn = ql.os.thread_management.cur_thread.get_thread_id()
     ql.nprint("set_tid_address(%x) = %d" % (set_tid_address_tidptr, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
@@ -560,13 +560,13 @@ def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
                 regreturn = 0
 
     ql.nprint("pipe(%x, [%d, %d]) = %d" % (pipe_pipefd, idx1, idx2, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_nice(ql, nice_inc, *args, **kw):
     regreturn = 0
     ql.nprint("nice(%d) = %d" % (nice_inc, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_truncate(ql, path, length, *args, **kw):
@@ -588,7 +588,7 @@ def ql_syscall_truncate(ql, path, length, *args, **kw):
         regreturn = -1
 
     ql.nprint('truncate(%s, 0x%x) = %d' % (path, length, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args, **kw):
@@ -609,7 +609,7 @@ def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args, **kw):
         regreturn = -1
 
     ql.nprint('ftruncate(%d, 0x%x) = %d' % (ftrunc_fd, ftrunc_length, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_unlink(ql, unlink_pathname, *args, **kw):
@@ -631,7 +631,7 @@ def ql_syscall_unlink(ql, unlink_pathname, *args, **kw):
         regreturn = -1
 
     ql.nprint('unlink(%s) = %d' % (pathname, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_unlinkat(ql, dirfd, pathname, flag, *args, **kw):
@@ -647,7 +647,7 @@ def ql_syscall_unlinkat(ql, dirfd, pathname, flag, *args, **kw):
         regreturn = -1
     except:
         regreturn = -1
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
@@ -698,5 +698,5 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
 
     ql.nprint("getdents(%d, 0x%x, 0x%x) = %d" % (fd, dirp, count, regreturn))
     ql.dprint(D_INFO, "[+] getdents(%d, /* %d entries */, 0x%x) = %d" % (fd, _ent_count, count, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 

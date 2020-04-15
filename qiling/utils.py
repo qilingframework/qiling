@@ -121,38 +121,17 @@ def arch_convert(arch):
 
 def output_convert(output):
     adapter = {
-        None: QL_OUT_DEFAULT,
-        "default": QL_OUT_DEFAULT,
-        "disasm": QL_OUT_DISASM,
-        "debug": QL_OUT_DEBUG,
-        "dump": QL_OUT_DUMP,
+        None: QL_OUTPUT.DEFAULT,
+        "default": QL_OUTPUT.DEFAULT,
+        "disasm": QL_OUTPUT.DISASM,
+        "debug": QL_OUTPUT.DEBUG,
+        "dump": QL_OUTPUT.DUMP,
     }
     if output in adapter:
         return adapter[output]
     # invalid
     return None, None
 
-
-def debugger_convert(debugger):
-    adapter = {
-        "gdb": QL_GDB,
-        "ida": QL_IDAPRO,
-    }
-    if debugger in adapter:
-        return adapter[debugger]
-    # invalid
-    return None, None
-
-def debugger_convert_str(debugger_id):
-    adapter = {
-        None : "gdb",
-        QL_GDB : "gdb",
-        QL_IDAPRO: "ida",
-    }
-    if debugger_id in adapter:
-        return adapter[debugger_id]
-    # invalid
-    return None, None
 
 def ql_elf_check_archtype(self):
     path = self.path
@@ -183,16 +162,16 @@ def ql_elf_check_archtype(self):
         if e_machine == b"\x03\x00":
             arch = QL_X86
         elif e_machine == b"\x08\x00" and endian == 1 and elfbit == 1:
-            self.archendian = QL_ENDIAN_EL
+            self.archendian = QL_ENDIAN.EL
             arch = QL_MIPS32
         elif e_machine == b"\x00\x08" and endian == 2 and elfbit == 1:
-            self.archendian = QL_ENDIAN_EB
+            self.archendian = QL_ENDIAN.EB
             arch = QL_MIPS32
         elif e_machine == b"\x28\x00" and endian == 1 and elfbit == 1:
-            self.archendian = QL_ENDIAN_EL
+            self.archendian = QL_ENDIAN.EL
             arch = QL_ARM
         elif e_machine == b"\x00\x28" and endian == 2 and elfbit == 1:
-            self.archendian = QL_ENDIAN_EB
+            self.archendian = QL_ENDIAN.EB
             arch = QL_ARM            
         elif e_machine == b"\xB7\x00":
             arch = QL_ARM64
@@ -402,3 +381,76 @@ class Strace_filter(logging.Filter):
 
     def filter(self, record):
         return any((record.getMessage().startswith(each) for each in self.filter_list))
+
+
+def ql_arch_setup(ql):
+    if not ql_is_valid_arch(ql.archtype):
+        raise QlErrorArch("[!] Invalid Arch")
+    
+    archmanager = ql_arch_convert_str(ql.archtype).upper()
+    archmanager = ("QlArch" + archmanager)
+
+    module_name = ql_build_module_import_name("arch", None, ql.archtype)
+    return ql_get_module_function(module_name, archmanager)(ql)
+
+
+def ql_os_setup(ql, function_name = None):
+    if not ql_is_valid_ostype(ql.ostype):
+        raise QlErrorOsType("[!] Invalid OSType")
+
+    if not ql_is_valid_arch(ql.archtype):
+        raise QlErrorArch("[!] Invalid Arch %s" % ql.archtype)
+
+    if function_name == None:
+        ostype_str = ql_ostype_convert_str(ql.ostype)
+        ostype_str = ostype_str.capitalize()
+        function_name = "QlOs" + ostype_str
+        module_name = ql_build_module_import_name("os", ql.ostype)
+        return ql_get_module_function(module_name, function_name)(ql)
+
+    elif function_name == "map_syscall":
+        ostype_str = ql_ostype_convert_str(ql.ostype)
+        arch_str = ql_arch_convert_str(ql.archtype)
+        arch_str = arch_str + "_syscall"
+        module_name = ql_build_module_import_name("os", ostype_str, arch_str)
+        return ql_get_module_function(module_name, function_name)
+    
+    else:
+        module_name = ql_build_module_import_name("os", ql.ostype, ql.archtype)
+        return ql_get_module_function(module_name, function_name)
+
+
+def ql_component_setup(ql, function_name = None):
+    if not ql_is_valid_ostype(ql.ostype):
+        raise QlErrorOsType("[!] Invalid OSType")
+
+    if not ql_is_valid_arch(ql.archtype):
+        raise QlErrorArch("[!] Invalid Arch %s" % ql.archtype)
+
+    if function_name == "register":
+        function_name = "QlRegisterManager"
+        module_name = "qiling.arch.register"
+        return ql_get_module_function(module_name, function_name)(ql)
+
+    elif function_name == "memory":
+        function_name = "QlMemoryManager"
+        module_name = "qiling.os.memory"
+        return ql_get_module_function(module_name, function_name)(ql)
+    
+    else:
+        module_name = ql_build_module_import_name("os", ql.ostype, ql.archtype)
+        return ql_get_module_function(module_name, function_name)
+
+
+def ql_loader_setup(ql, function_name = None):
+    if not ql_is_valid_ostype(ql.ostype):
+        raise QlErrorOsType("[!] Invalid OSType")
+
+    if not ql_is_valid_arch(ql.archtype):
+        raise QlErrorArch("[!] Invalid Arch %s" % ql.archtype)
+
+    if function_name == None:
+        loadertype_str = ql_loadertype_convert_str(ql.ostype)
+        function_name = "QlLoader" + loadertype_str
+        module_name = ql_build_module_import_name("loader", loadertype_str.lower())
+        return ql_get_module_function(module_name, function_name)(ql)        

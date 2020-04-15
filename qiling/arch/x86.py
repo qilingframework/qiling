@@ -4,14 +4,12 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 from unicorn import *
 from unicorn.x86_const import *
+
 from struct import pack
+
 from .arch import QlArch
-from qiling.arch.x86_const import *
-
+from .x86_const import *
 from qiling.const import *
-from unicorn import *
-from unicorn.arm_const import *
-
 from qiling.exception import *
 
 class QlArchX86(QlArch):
