@@ -11,7 +11,7 @@ thoughout the qiling framework
 import logging, importlib, pefile, os, socket
 from .os.const import *
 from .exception import *
-from .const import QL_ARCH, QL_ARCH_ALL, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_ENDIAN
+from .const import QL_ARCH, QL_ARCH_ALL, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_ENDIAN, QL_DEBUGGER
 
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
@@ -132,8 +132,8 @@ def output_convert(output):
 
 def debugger_convert(debugger):
     adapter = {
-        "gdb": QL_GDB,
-        "ida": QL_IDAPRO,
+        "gdb": QL_DEBUGGER.GDB,
+        "ida": QL_DEBUGGER.IDAPRO,
     }
     if debugger in adapter:
         return adapter[debugger]
@@ -143,8 +143,8 @@ def debugger_convert(debugger):
 def debugger_convert_str(debugger_id):
     adapter = {
         None : "gdb",
-        QL_GDB : "gdb",
-        QL_IDAPRO: "ida",
+        QL_DEBUGGER.GDB : "gdb",
+        QL_DEBUGGER.IDAPRO: "ida",
     }
     if debugger_id in adapter:
         return adapter[debugger_id]
