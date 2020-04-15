@@ -63,7 +63,21 @@ class ELFTest(unittest.TestCase):
 
 
     def test_tcp_elf_linux_x8664(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/tcp_test"], "../examples/rootfs/x8664_linux")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_tcp_test"], "../examples/rootfs/x8664_linux")
+        ql.multithread = True
+        ql.run()
+        del ql
+
+
+    def test_tcp_elf_linux_arm(self):
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_tcp_test"], "../examples/rootfs/arm_linux")
+        ql.multithread = True
+        ql.run()
+        del ql
+
+
+    def test_tcp_elf_linux_mips32el(self):
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_tcp_test"], "../examples/rootfs/mips32el_linux")
         ql.multithread = True
         ql.run()
         del ql
