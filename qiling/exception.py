@@ -71,6 +71,14 @@ class QlMemoryMappedError(QlErrorBase):
 class QlGDTError(QlErrorBase):
     pass
 
+class QlSyscallError(QlErrorBase):
+    def __init__(self, errno, msg):
+        super(QlErrorBase, self).__init__(msg)
+        self.errno = errno
+    
+    def __str__(self):
+        return "[ Errno " + str(self.errno) + "] " + self.msg
+
 def QlPrintException(msg):
     _, _, exc_traceback = sys.exc_info()
     print(msg + repr(traceback.format_tb(exc_traceback, limit=1) ) )

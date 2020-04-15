@@ -3,6 +3,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 import os
+
+from qiling.exception import *
+
 try:
     import fcntl
 except ImportError:
@@ -17,7 +20,10 @@ class ql_file:
     @classmethod
     def open(self, open_path, open_flags, open_mode):
         open_mode &= 0x7fffffff
-        fd = os.open(open_path, open_flags, open_mode)
+        try:
+            fd = os.open(open_path, open_flags, open_mode)
+        except OSError as e:
+            raise QlSyscallError(e.errno, e.args[1] + ' : ' + e.filename)
         return self(open_path, fd)
 
     def read(self, read_len):
