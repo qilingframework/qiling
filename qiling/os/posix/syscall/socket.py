@@ -2,42 +2,26 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
-import struct
-import sys
-import os
-import stat
-import string
-import resource
-import socket
-import time
-import io
-import select
-import pathlib
-import logging
-import itertools
 
-# Remove import fcntl due to Windows Limitation
-#import fcntl
+import struct, ipaddress
 
-from unicorn import *
-from unicorn.arm_const import *
-from unicorn.x86_const import *
-from unicorn.arm64_const import *
-from unicorn.mips_const import *
-
-# impport read_string and other commom utils.
-from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
+from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
-from qiling.utils import *
+from qiling.exception import *
+
+
+def ql_bin_to_ip(ip):
+    return ipaddress.ip_address(ip).compressed
+
 
 def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **kw):
-    if ql.archtype== QL_MIPS32 and socket_type == 2:
+    if ql.archtype== QL_ARCH.MIPS32 and socket_type == 2:
         socket_type = 1
-    elif ql.archtype== QL_MIPS32 and socket_type == 1:
+    elif ql.archtype== QL_ARCH.MIPS32 and socket_type == 1:
         socket_type = 1
 
     idx = -1
@@ -81,7 +65,7 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, *args,
         if s.family == family:
             if s.family == AF_UNIX:
                 sun_path = sock_addr[2 : ].split(b"\x00")[0]
-                sun_path = ql_transform_to_real_path(ql, sun_path.decode())
+                sun_path = ql.os.transform_to_real_path(sun_path.decode())
                 s.connect(sun_path)
                 regreturn = 0
             elif s.family == AF_INET:
@@ -125,7 +109,7 @@ def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, *args, **kw):
 def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
     regreturn = 0
 
-    if ql.archtype== QL_X8664:
+    if ql.archtype== QL_ARCH.X8664:
         data = ql.mem.read(bind_addr, 8)
     else:
         data = ql.mem.read(bind_addr, bind_addrlen)
@@ -139,7 +123,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
 
     if sin_family == 1:
         path = data[2 : ].split(b'\x00')[0]
-        path = ql_transform_to_real_path(ql, path.decode())
+        path = ql.os.transform_to_real_path(path.decode())
         ql.nprint(path)
         ql.os.file_des[bind_fd].bind(path)
 

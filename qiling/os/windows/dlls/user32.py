@@ -5,7 +5,7 @@
 
 import struct
 from qiling.os.windows.fncc import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.const import *
 from qiling.const import *
@@ -506,7 +506,7 @@ def hook_wsprintfW(self, address, params):
     size, string = printf(self, address, format_string, p_args, "wsprintfW", wstring=True)
 
     count = format_string.count('%')
-    if self.ql.archtype== QL_X8664:
+    if self.ql.archtype== QL_ARCH.X8664:
         # We must pop the stack correctly
         raise QlErrorNotImplemented("[!] API not implemented")
 
@@ -525,7 +525,7 @@ def hook_sprintf(self, address, params):
     size, string = printf(self, address, format_string, p_args, "sprintf", wstring=True)
 
     count = format_string.count('%')
-    if self.ql.archtype== QL_X8664:
+    if self.ql.archtype== QL_ARCH.X8664:
         # We must pop the stack correctly
         raise QlErrorNotImplemented("[!] API not implemented")
 

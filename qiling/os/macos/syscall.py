@@ -4,33 +4,18 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import struct
-import sys
-import os
-import string
-import resource
-import socket
-import time
-import io
-import select
-import random
-
-from unicorn import *
-from unicorn.arm_const import *
-from unicorn.x86_const import *
-from unicorn.arm64_const import *
-from unicorn.mips_const import *
 
 from qiling.exception import *
-from qiling.os.utils import *
-from qiling.os.macos.const import *
-from qiling.os.macos.thread import *
-from qiling.os.macos.mach_port import *
-from qiling.os.macos.kernel_func import *
-from qiling.os.macos.utils import *
 from qiling.const import *
-from qiling.arch.x86 import *
+from qiling.arch.x86_const import *
 from qiling.os.posix.const_mapping import *
+from qiling.os.filestruct import *
 
+from .const import *
+from .thread import *
+from .mach_port import *
+from .kernel_func import *
+from .utils import *
 
 # TODO: We need to finish these syscall
 # there are three kinds of syscall, we often use posix syscall, mach syscall is used by handle mach msg
@@ -279,10 +264,10 @@ def ql_syscall_getrlimit(ql, which, rlp, *args, **kw):
 def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
     MAP_ANONYMOUS=32
 
-    if (ql.archtype== QL_ARM64) or (ql.archtype== QL_X8664):
+    if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
 
-    elif (ql.archtype== QL_MIPS32):
+    elif (ql.archtype== QL_ARCH.MIPS32):
         mmap2_fd = ql.unpack32s(ql.mem.read(mmap2_fd, 4))
         mmap2_pgoffset = ql.unpack32(ql.mem.read(mmap2_pgoffset, 4)) * 4096
         MAP_ANONYMOUS=2048
@@ -312,20 +297,6 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
 
     ql.mem.write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
     
-    mem_s = mmap_base
-    mem_e = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
-    mem_info = ''
-    mem_p = []
-    prot_dict = {"PROT_READ": "r", "PROT_WRITE": "w", "PROT_EXEC": "x"}
-
-    for idx, val in prot_dict.items():
-        if idx in mmap_prot_mapping(mmap2_prot):
-            mem_p.append(val)
-        else:
-            mem_p.append("-")
-
-    mem_p = ''.join(mem_p)
-
     if ((mmap2_flags & MAP_ANONYMOUS) == 0) and mmap2_fd < 256 and ql.os.file_des[mmap2_fd] != 0:
         ql.os.file_des[mmap2_fd].lseek(mmap2_pgoffset)
         data = ql.os.file_des[mmap2_fd].read(mmap2_length)
@@ -335,9 +306,7 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
         ql.mem.write(mmap_base, data)
         
         mem_info = ql.os.file_des[mmap2_fd].name
-        
-    ql.mem.add_mapinfo(mem_s, mem_e, mem_p ,mem_info)
-    
+
     if ql.output == QL_OUTPUT.DEFAULT:
         ql.nprint("mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
     
@@ -389,7 +358,7 @@ def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buff, buffer_size):
 
 # 0x152
 def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
-    stat64_file = (ql_read_string(ql, stat64_pathname))
+    stat64_file = (ql.mem.string(stat64_pathname))
 
     real_path = ql.os.macho_fs.vm_to_real_path(stat64_file)
     ql.dprint(D_INFO, "real_path: %s" % (real_path))
@@ -410,7 +379,7 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
         stat64_buf += ql.pack64(0x0)                            # st_mtimensec      64 byte
         stat64_buf += ql.pack64(int(stat64_info.st_ctime))      # st_ctime          64 byte
         stat64_buf += ql.pack64(0x0)                            # st_ctimensec      64 byte
-        if ql.platform == QL_MACOS:
+        if ql.platform == QL_OS.MACOS:
             stat64_buf += ql.pack64(int(stat64_info.st_birthtime))  # st_birthtime      64 byte
         else:
             stat64_buf += ql.pack64(int(stat64_info.st_ctime))  # st_birthtime      64 byte
@@ -418,11 +387,11 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
         stat64_buf += ql.pack64(stat64_info.st_size)            # st_size           64 byte
         stat64_buf += ql.pack64(stat64_info.st_blocks)          # st_blocks         64 byte
         stat64_buf += ql.pack32(stat64_info.st_blksize)         # st_blksize        32 byte
-        if ql.platform == QL_MACOS:
+        if ql.platform == QL_OS.MACOS:
             stat64_buf += ql.pack32(stat64_info.st_flags)       # st_flags          32 byte
         else:    
             stat64_buf += ql.pack32(0x0)          
-        if ql.platform == QL_MACOS:
+        if ql.platform == QL_OS.MACOS:
             stat64_buf += ql.pack32(stat64_info.st_gen)         # st_gen            32 byte
         else:    
             stat64_buf += ql.pack32(0x0)
@@ -446,7 +415,7 @@ def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
         user_fileno = fstat64_fd
         fstat64_info = ql.os.file_des[user_fileno].fstat()
         
-        if ql.archtype== QL_ARM64:
+        if ql.archtype== QL_ARCH.ARM64:
             fstat64_buf = ql.pack64(fstat64_info.st_dev)
             fstat64_buf += ql.pack64(fstat64_info.st_ino)
             fstat64_buf += ql.pack32(fstat64_info.st_mode)
@@ -512,9 +481,9 @@ def ql_syscall_thread_selfid(ql, *args, **kw):
 
 # 0x18e
 def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
-    path = ql_read_string(ql, filename)
-    real_path = ql_transform_to_real_path(ql, path)
-    relative_path = ql_transform_to_relative_path(ql, path)
+    path = ql.mem.string(filename)
+    real_path = ql.os.transform_to_real_path(path)
+    relative_path = ql.os.transform_to_relative_path(path)
 
     flags = flags & 0xffffffff
     mode = mode & 0xffffffff
@@ -528,16 +497,16 @@ def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
         regreturn = -1
     else:
         try:
-            if ql.archtype== QL_ARM:
+            if ql.archtype== QL_ARCH.ARM:
                 mode = 0
 
-            flags = open_flag_mapping(flags, ql)
+            flags = open_flags_mapping(flags, ql.archtype)
             ql.os.file_des[idx] = ql_file.open(real_path, flags, mode)
             regreturn = idx
         except:
             regreturn = -1
 
-    ql.nprint("open(%s, 0x%x, 0x%x) = %d" % (relative_path, flags, mode, regreturn))
+    ql.nprint("open(%s, 0x%s, 0x%x) = %d" % (relative_path, flags, mode, regreturn))
     if regreturn >= 0 and regreturn != 2:
         ql.dprint(D_INFO, "[+] File Found: %s" % relative_path)
     else:

@@ -9,7 +9,6 @@
 # from unicorn.x86_const import *
 
 from qiling.const import *
-from qiling.utils import *
 from qiling.os.os import QlOs
 
 from qiling.os.posix.syscall import *
@@ -23,12 +22,12 @@ class QlOsPosix(QlOs):
         super(QlOsPosix, self).__init__(ql)
         self.ql = ql
         self.sigaction_act = []
+
         self.file_des = []
         self.dict_posix_syscall = dict()
         self.dict_posix_syscall_by_num = dict()
 
         if self.ql.ostype in QL_POSIX:
-
             self.file_des = [0] * 256
             self.file_des[0] = self.stdin
             self.file_des[1] = self.stdout
@@ -36,7 +35,9 @@ class QlOsPosix(QlOs):
 
         for _ in range(256):
             self.sigaction_act.append(0)
+        
 
+    
     # ql.syscall - get syscall for all posix series
     @property
     def syscall(self):
@@ -52,7 +53,7 @@ class QlOsPosix(QlOs):
     def load_syscall(self, intno = None):
         map_syscall = ql_os_setup(self.ql, function_name = "map_syscall")
         
-        if self.ql.archtype== QL_MIPS32:   
+        if self.ql.archtype== QL_ARCH.MIPS32:   
            if intno != 0x11:
                raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)        
         
@@ -89,42 +90,40 @@ class QlOsPosix(QlOs):
 
     # get syscall
     def get_syscall(self):
-        if self.ql.archtype== QL_ARM64:
-            if self.ql.ostype == QL_MACOS:
+        if self.ql.archtype== QL_ARCH.ARM64:
+            if self.ql.ostype == QL_OS.MACOS:
                 syscall_num = UC_ARM64_REG_X16
             else:
                 syscall_num = UC_ARM64_REG_X8
-        elif self.ql.archtype== QL_ARM:
+        elif self.ql.archtype== QL_ARCH.ARM:
             syscall_num = UC_ARM_REG_R7
-        elif self.ql.archtype== QL_MIPS32:
+        elif self.ql.archtype== QL_ARCH.MIPS32:
             syscall_num = UC_MIPS_REG_V0        
-        elif self.ql.archtype== QL_X86:
+        elif self.ql.archtype== QL_ARCH.X86:
             syscall_num = UC_X86_REG_EAX
-        elif self.ql.archtype== QL_X8664:
+        elif self.ql.archtype== QL_ARCH.X8664:
             syscall_num = UC_X86_REG_RAX           
 
         return self.ql.register(syscall_num)
 
     def definesyscall_return(self, regreturn):
-        if (self.ql.archtype== QL_ARM):  # QL_ARM
+        if (self.ql.archtype== QL_ARCH.ARM):  # ARM
             self.ql.register(UC_ARM_REG_R0, regreturn)
             # ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
 
-        elif (self.ql.archtype== QL_ARM64):  # QL_ARM64
+        elif (self.ql.archtype== QL_ARCH.ARM64):  # ARM64
             self.ql.register(UC_ARM64_REG_X0, regreturn)
 
-        elif (self.ql.archtype== QL_X86):  # QL_X86
+        elif (self.ql.archtype== QL_ARCH.X86):  # X86
             self.ql.register(UC_X86_REG_EAX, regreturn)
 
-        elif (self.ql.archtype== QL_X8664):  # QL_X86_64
+        elif (self.ql.archtype== QL_ARCH.X8664):  # X8664
             self.ql.register(UC_X86_REG_RAX, regreturn)
 
-        elif (self.ql.archtype== QL_MIPS32):  # QL_MIPSE32EL
-            if regreturn == -1:
+        elif (self.ql.archtype== QL_ARCH.MIPS32):  # MIPSE32EL
+            if regreturn < 0 and regreturn > -1134:
                 a3return = 1
-            elif regreturn == 2:
-                regreturn = 2
-                a3return = 1
+                regreturn = - regreturn
             else:
                 a3return = 0
             # if ql.output == QL_OUTPUT.DEBUG:
@@ -132,24 +131,23 @@ class QlOsPosix(QlOs):
             self.ql.register(UC_MIPS_REG_V0, regreturn)
             self.ql.register(UC_MIPS_REG_A3, a3return)
 
-
     # get syscall
     def get_syscall_param(self):
-        if self.ql.archtype== QL_ARM64:
+        if self.ql.archtype== QL_ARCH.ARM64:
             param0 = self.ql.register(UC_ARM64_REG_X0)
             param1 = self.ql.register(UC_ARM64_REG_X1)
             param2 = self.ql.register(UC_ARM64_REG_X2)
             param3 = self.ql.register(UC_ARM64_REG_X3)
             param4 = self.ql.register(UC_ARM64_REG_X4)
             param5 = self.ql.register(UC_ARM64_REG_X5)
-        elif self.ql.archtype== QL_ARM:
+        elif self.ql.archtype== QL_ARCH.ARM:
             param0 = self.ql.register(UC_ARM_REG_R0)
             param1 = self.ql.register(UC_ARM_REG_R1)
             param2 = self.ql.register(UC_ARM_REG_R2)
             param3 = self.ql.register(UC_ARM_REG_R3)
             param4 = self.ql.register(UC_ARM_REG_R4)
             param5 = self.ql.register(UC_ARM_REG_R5)
-        elif self.ql.archtype== QL_MIPS32:
+        elif self.ql.archtype== QL_ARCH.MIPS32:
             param0 = self.ql.register(UC_MIPS_REG_A0)
             param1 = self.ql.register(UC_MIPS_REG_A1)
             param2 = self.ql.register(UC_MIPS_REG_A2)
@@ -158,14 +156,14 @@ class QlOsPosix(QlOs):
             param4 = param4 + 0x10
             param5 = self.ql.register(UC_MIPS_REG_SP)
             param5 = param5 + 0x14
-        elif self.ql.archtype== QL_X86:
+        elif self.ql.archtype== QL_ARCH.X86:
             param0 = self.ql.register(UC_X86_REG_EBX)
             param1 = self.ql.register(UC_X86_REG_ECX)
             param2 = self.ql.register(UC_X86_REG_EDX)
             param3 = self.ql.register(UC_X86_REG_ESI)
             param4 = self.ql.register(UC_X86_REG_EDI)
             param5 = self.ql.register(UC_X86_REG_EBP)
-        elif self.ql.archtype== QL_X8664:
+        elif self.ql.archtype== QL_ARCH.X8664:
             param0 = self.ql.register(UC_X86_REG_RDI)
             param1 = self.ql.register(UC_X86_REG_RSI)
             param2 = self.ql.register(UC_X86_REG_RDX)

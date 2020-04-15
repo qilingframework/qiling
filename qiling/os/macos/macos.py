@@ -12,18 +12,20 @@ from unicorn.arm64_const import *
 
 from qiling.arch.x86 import *
 
-from qiling.os.macos.utils import *
-from qiling.os.macos.kernel_func import *
-from qiling.os.macos.thread import *
-from qiling.os.macos.subsystems import *
-from qiling.os.macos.task import *
-from qiling.os.macos.mach_port import *
+
 from qiling.os.posix.syscall import *
 from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.const import *
-from qiling.os.macos.const import *
 from qiling.os.posix.posix import QlOsPosix
+
+from .utils import *
+from .kernel_func import *
+from .thread import *
+from .subsystems import *
+from .task import *
+from .mach_port import *
+from .const import *
 
 class QlOsMacos(QlOsPosix):
     def __init__(self, ql):
@@ -41,12 +43,12 @@ class QlOsMacos(QlOsPosix):
         """
         self.ql.uc = self.ql.arch.init_uc
 
-        if self.ql.archtype== QL_ARM64:
+        if self.ql.archtype== QL_ARCH.ARM64:
             self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x0000000160503000
             self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x21000
             self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
             self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS  = 0x4000000f4000
-        elif  self.ql.archtype== QL_X8664:
+        elif  self.ql.archtype== QL_ARCH.X8664:
             self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x7ffcf0000000
             self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x19a00000
             self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
@@ -87,22 +89,22 @@ class QlOsMacos(QlOsPosix):
 
 
     def run(self):
-        if self.ql.archtype== QL_ARM64:
+        if self.ql.archtype== QL_ARCH.ARM64:
             self.ql.register(UC_ARM64_REG_SP, self.ql.loader.stack_address)
             self.ql.arch.enable_vfp()
             self.ql.hook_intr(self.hook_syscall)
 
-        elif self.ql.archtype== QL_X8664:
+        elif self.ql.archtype== QL_ARCH.X8664:
             self.ql.register(UC_X86_REG_RSP, self.ql.loader.stack_address)
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
-        if  self.ql.archtype== QL_X8664:
+        if  self.ql.archtype== QL_ARCH.X8664:
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
         
         self.macho_task.min_offset = page_align_end(self.ql.loader.vm_end_addr, PAGE_SIZE)
-        ql_setup_output(self.ql)
+        self.setup_output()
         
         # FIXME: Not working due to overlarge mapping, need to fix it
         # vm_shared_region_enter(self.ql)
@@ -113,8 +115,8 @@ class QlOsMacos(QlOsPosix):
         self.macho_thread = QlMachoThread(self.ql)
         self.thread_management.cur_thread = self.macho_thread
 
-        # load_commpage not wroking with QL_ARM64, yet
-        if  self.ql.archtype== QL_X8664:
+        # load_commpage not wroking with ARM64, yet
+        if  self.ql.archtype== QL_ARCH.X8664:
             load_commpage(self.ql)
 
         if (self.ql.until_addr == 0):

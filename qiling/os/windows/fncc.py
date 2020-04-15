@@ -5,7 +5,7 @@
 import struct
 from unicorn.x86_const import *
 from qiling.os.utils import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.const import *
 
@@ -40,9 +40,9 @@ def _x8664_get_params_by_index(self, index):
 
 
 def _get_param_by_index(self, index):
-    if self.ql.archtype== QL_X86:
+    if self.ql.archtype== QL_ARCH.X86:
         return _x86_get_params_by_index(self, index)
-    elif self.ql.archtype== QL_X8664:
+    elif self.ql.archtype== QL_ARCH.X8664:
         return _x8664_get_params_by_index(self, index)
 
 
@@ -81,7 +81,7 @@ def set_function_params(self, in_params, out_params):
         if in_params[each] == DWORD or in_params[each] == POINTER:
             out_params[each] = _get_param_by_index(self, index)
         elif in_params[each] == ULONGLONG:
-            if self.ql.archtype== QL_X86:
+            if self.ql.archtype== QL_ARCH.X86:
                 low = _get_param_by_index(self, index)
                 index += 1
                 high = _get_param_by_index(self, index)
@@ -105,23 +105,23 @@ def set_function_params(self, in_params, out_params):
 
 
 def get_function_param(self, number):
-    if self.ql.archtype== QL_X86:
+    if self.ql.archtype== QL_ARCH.X86:
         return _x86_get_args(self, number)
-    elif self.ql.archtype== QL_X8664:
+    elif self.ql.archtype== QL_ARCH.X8664:
         return _x8664_get_args(self, number)
 
 
 def set_return_value(self, ret):
-    if self.ql.archtype== QL_X86:
+    if self.ql.archtype== QL_ARCH.X86:
         self.ql.register(UC_X86_REG_EAX, ret)
-    elif self.ql.archtype== QL_X8664:
+    elif self.ql.archtype== QL_ARCH.X8664:
         self.ql.register(UC_X86_REG_RAX, ret)
 
 
 def get_return_value(self):
-    if self.ql.archtype== QL_X86:
+    if self.ql.archtype== QL_ARCH.X86:
         return self.ql.register(UC_X86_REG_EAX)
-    elif self.ql.archtype== QL_X8664:
+    elif self.ql.archtype== QL_ARCH.X8664:
         return self.ql.register(UC_X86_REG_RAX)
 
 
@@ -183,12 +183,12 @@ def winapi(cc, param_num=None, params=None):
     def decorator(func):
         def wrapper(*args, **kwargs):
             self = args[0]
-            if self.ql.archtype== QL_X86:
+            if self.ql.archtype== QL_ARCH.X86:
                 if cc == STDCALL:
                     return x86_stdcall(self, param_num, params, func, args, kwargs)
                 elif cc == CDECL:
                     return x86_cdecl(self, param_num, params, func, args, kwargs)
-            elif self.ql.archtype== QL_X8664:
+            elif self.ql.archtype== QL_ARCH.X8664:
                 return x8664_fastcall(self, param_num, params, func, args, kwargs)
             else:
                 raise QlErrorArch("[!] Unknown self.ql.arch")

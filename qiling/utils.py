@@ -8,13 +8,10 @@ This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
 
-import logging
-import importlib
-import pefile
-import os
+import logging, importlib, pefile, os, socket
 from .os.const import *
 from .exception import *
-from .const import *
+from .const import QL_ARCH, QL_ARCH_ALL, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_ENDIAN, QL_DEBUGGER
 
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
@@ -28,8 +25,8 @@ def catch_KeyboardInterrupt(ql):
     return decorator
 
 def ql_get_arch_bits(arch):
-    arch_32b = [QL_ARM, QL_MIPS32, QL_X86]
-    arch_64b = [QL_ARM64, QL_X8664]
+    arch_32b = [QL_ARCH.ARM, QL_ARCH.MIPS32, QL_ARCH.X86]
+    arch_64b = [QL_ARCH.ARM64, QL_ARCH.X8664]
 
     if arch in arch_32b:
         return 32
@@ -39,44 +36,44 @@ def ql_get_arch_bits(arch):
 
 
 def ql_is_valid_ostype(ostype):
-    if ostype not in QL_OS:
+    if ostype not in QL_OS_ALL:
         return False
     return True
 
 
 def ql_is_valid_arch(arch):
-    if arch not in QL_ARCH:
+    if arch not in QL_ARCH_ALL:
         return False
     return True
 
 
 def ql_ostype_convert_str(ostype):
     adapter = {
-        QL_LINUX: "linux",
-        QL_MACOS: "macos",
-        QL_FREEBSD: "freebsd",
-        QL_WINDOWS: "windows",
+        QL_OS.LINUX: "linux",
+        QL_OS.MACOS: "macos",
+        QL_OS.FREEBSD: "freebsd",
+        QL_OS.WINDOWS: "windows",
     }
 
     return adapter.get(ostype)
 
 def ql_loadertype_convert_str(ostype):
     adapter = {
-        QL_LINUX: "ELF",
-        QL_MACOS: "MACHO",
-        QL_FREEBSD: "ELF",
-        QL_WINDOWS: "PE",
+        QL_OS.LINUX: "ELF",
+        QL_OS.MACOS: "MACHO",
+        QL_OS.FREEBSD: "ELF",
+        QL_OS.WINDOWS: "PE",
     }
 
     return adapter.get(ostype)
 
 def ostype_convert(ostype):
     adapter = {
-        "linux": QL_LINUX,
-        "macos": QL_MACOS,
-        "darwin": QL_MACOS,
-        "freebsd": QL_FREEBSD,
-        "windows": QL_WINDOWS,
+        "linux": QL_OS.LINUX,
+        "macos": QL_OS.MACOS,
+        "darwin": QL_OS.MACOS,
+        "freebsd": QL_OS.FREEBSD,
+        "windows": QL_OS.WINDOWS,
     }
     if ostype in adapter:
         return adapter[ostype]
@@ -86,32 +83,32 @@ def ostype_convert(ostype):
 
 def ql_arch_convert_str(arch):
     adapter = {
-        QL_X86: "x86",
-        QL_X8664: "x8664",
-        QL_MIPS32: "mips32",
-        QL_ARM: "arm",
-        QL_ARM64: "arm64",
+        QL_ARCH.X86: "x86",
+        QL_ARCH.X8664: "x8664",
+        QL_ARCH.MIPS32: "mips32",
+        QL_ARCH.ARM: "arm",
+        QL_ARCH.ARM64: "arm64",
     }
     return adapter.get(arch)
 
 
 def ql_archmanager_convert_str(arch):
     adapter = {
-        QL_X86: "QlArchX86Manager",
-        QL_X8664: "QlArchX8664Manager",
-        QL_MIPS32: "QlArchMIPS32Manager",
-        QL_ARM: "QlArchARMManager",
-        QL_ARM64: "QlArchARM64Manager",
+        QL_ARCH.X86: "QlArchX86Manager",
+        QL_ARCH.X8664: "QlArchX8664Manager",
+        QL_ARCH.MIPS32: "QlArchMIPS32Manager",
+        QL_ARCH.ARM64: "QlArchARMManager",
+        QL_ARCH.ARM64: "QlArchARM64Manager",
     }
     return adapter.get(arch)
 
 def arch_convert(arch):
     adapter = {
-        "x86": QL_X86,
-        "x8664": QL_X8664,
-        "mips32": QL_MIPS32,
-        "arm": QL_ARM,
-        "arm64": QL_ARM64,
+        "x86": QL_ARCH.X86,
+        "x8664": QL_ARCH.X8664,
+        "mips32": QL_ARCH.MIPS32,
+        "arm": QL_ARCH.ARM64,
+        "arm64": QL_ARCH.ARM64,
     }
     if arch in adapter:
         return adapter[arch]
@@ -131,6 +128,93 @@ def output_convert(output):
         return adapter[output]
     # invalid
     return None, None
+
+
+def debugger_convert(debugger):
+    adapter = {
+        "gdb": QL_DEBUGGER.GDB,
+        "ida": QL_DEBUGGER.IDAPRO,
+    }
+    if debugger in adapter:
+        return adapter[debugger]
+    # invalid
+    return None, None
+
+def debugger_convert_str(debugger_id):
+    adapter = {
+        None : "gdb",
+        QL_DEBUGGER.GDB : "gdb",
+        QL_DEBUGGER.IDAPRO: "ida",
+    }
+    if debugger_id in adapter:
+        return adapter[debugger_id]
+    # invalid
+    return None, None
+
+def ql_debugger_init(ql):
+
+    def ql_debugger(ql, remotedebugsrv, ip=None, port=None):
+        path = ql.path
+        try:
+            if ip is None:
+                ip = '127.0.0.1'
+            if port is None:
+                port = 9999
+            port = int(port) 
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.bind((ip, port))
+            ql.nprint("\ndebugger> Initializing loadbase 0x%x\n" % (ql.loader.loadbase))
+            ql.nprint("debugger> Listening on %s:%u\n" % (ip, port))
+            sock.listen(1)
+            conn, addr = sock.accept()
+        except:
+            ql.nprint("debugger> Error: Address already in use\n")
+            raise
+        try:
+            mappings = [(hex(ql.loader.entry_point), 0x10)]
+            exit_point = ql.loader.entry_point + os.path.getsize(path)
+            remotedebugsrv = debugger_convert_str(remotedebugsrv)
+            remotedebugsrv = str(remotedebugsrv) + "server" 
+            DEBUGSESSION = str.upper(remotedebugsrv) + "session"
+            DEBUGSESSION = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, DEBUGSESSION)
+            ql.remotedebugsession = DEBUGSESSION(ql, conn, exit_point, mappings)
+        except:
+            ql.nprint("debugger> Error: Not able to initialize Debugging Server\n")
+            raise
+
+    try:
+        remotedebugsrv, ip, port = '', '', ''
+        remotedebugsrv, ip, port = ql.debugger.split(':')
+    except:
+        ip, port = '', ''
+
+    remotedebugsrv = "gdb"
+    
+    try:
+        ip, port = ql.debugger.split(':')
+        # If only ip:port is defined, remotedebugsrv is always gdb
+    except:
+        if ip is None:
+            ip = "127.0.0.0"
+        if port is None:
+            port = "9999" 
+
+    remotedebugsrv = debugger_convert(remotedebugsrv)
+
+    if remotedebugsrv not in (QL_DEBUGGER):
+        raise QlErrorOutput("[!] Error: Debugger not supported\n")       
+    else:
+        try:
+            if ql.debugger is True:
+                ql_debugger(ql, remotedebugsrv)
+            else:
+                ql_debugger(ql, remotedebugsrv, ip, port)
+        
+        except KeyboardInterrupt:
+            if ql.remotedebugsession():
+                ql.remotedebugsession.close()
+            raise QlErrorOutput("[!] Remote debugging session ended\n")
+                
 
 
 def ql_elf_check_archtype(self):
@@ -153,30 +237,30 @@ def ql_elf_check_archtype(self):
         e_machine = ident[0x12:0x14]
 
         if osabi == 0x11 or osabi == 0x03 or osabi == 0x0:
-            ostype = QL_LINUX
+            ostype = QL_OS.LINUX
         elif osabi == 0x09:
-            ostype = QL_FREEBSD
+            ostype = QL_OS.FREEBSD
         else:
             ostype = None
 
         if e_machine == b"\x03\x00":
-            arch = QL_X86
+            arch = QL_ARCH.X86
         elif e_machine == b"\x08\x00" and endian == 1 and elfbit == 1:
             self.archendian = QL_ENDIAN.EL
-            arch = QL_MIPS32
+            arch = QL_ARCH.MIPS32
         elif e_machine == b"\x00\x08" and endian == 2 and elfbit == 1:
             self.archendian = QL_ENDIAN.EB
-            arch = QL_MIPS32
+            arch = QL_ARCH.MIPS32
         elif e_machine == b"\x28\x00" and endian == 1 and elfbit == 1:
             self.archendian = QL_ENDIAN.EL
-            arch = QL_ARM
+            arch = QL_ARCH.ARM
         elif e_machine == b"\x00\x28" and endian == 2 and elfbit == 1:
             self.archendian = QL_ENDIAN.EB
-            arch = QL_ARM            
+            arch = QL_ARCH.ARM            
         elif e_machine == b"\xB7\x00":
-            arch = QL_ARM64
+            arch = QL_ARCH.ARM64
         elif e_machine == b"\x3E\x00":
-            arch = QL_X8664
+            arch = QL_ARCH.X8664
         else:
             arch = None
 
@@ -200,17 +284,17 @@ def ql_macho_check_archtype(path):
     arch = None
 
     if ident[: 4] in (macho_macos_sig32, macho_macos_sig64, macho_macos_fat):
-        ostype = QL_MACOS
+        ostype = QL_OS.MACOS
     else:
         ostype = None
 
     if ostype:
         # if ident[0x7] == 0: # 32 bit
-        #    arch = QL_X86
+        #    arch = QL_ARCH.X86
         if ident[0x4] == 7 and ident[0x7] == 1:  # X86 64 bit
-            arch = QL_X8664
+            arch = QL_ARCH.X8664
         elif ident[0x4] == 12 and ident[0x7] == 1:  # ARM64  ident[0x4] = 0x0C
-            arch = QL_ARM64
+            arch = QL_ARCH.ARM64
         else:
             arch = None
 
@@ -223,19 +307,19 @@ def ql_pe_check_archtype(path):
     arch = None
 
     machine_map = {
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_I386']: QL_X86,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_AMD64']: QL_X8664,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM']: QL_ARM,
-        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_THUMB']: QL_ARM,
-        # pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM64']     :   QL_ARM64       #pefile does not have the definition
+        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_I386']: QL_ARCH.X86,
+        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_AMD64']: QL_ARCH.X8664,
+        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM']: QL_ARCH.ARM,
+        pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_THUMB']: QL_ARCH.ARM,
+        # pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_ARM64']     :   QL_ARCH.ARM64       #pefile does not have the definition
         # for IMAGE_FILE_MACHINE_ARM64
-        0xAA64: QL_ARM64  # Temporary workaround for Issues #21 till pefile gets updated
+        0xAA64: QL_ARCH.ARM64  # Temporary workaround for Issues #21 till pefile gets updated
     }
     # get arch
     arch = machine_map.get(pe.FILE_HEADER.Machine)
 
     if arch:
-        ostype = QL_WINDOWS
+        ostype = QL_OS.WINDOWS
     else:
         ostype = None
 
@@ -250,13 +334,13 @@ def ql_checkostype(self):
 
     arch, ostype = ql_elf_check_archtype(self)
 
-    if ostype not in (QL_LINUX, QL_FREEBSD):
+    if ostype not in (QL_OS.LINUX, QL_OS.FREEBSD):
         arch, ostype = ql_macho_check_archtype(path)
 
-    if ostype not in (QL_LINUX, QL_FREEBSD, QL_MACOS):
+    if ostype not in (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS):
         arch, ostype = ql_pe_check_archtype(path)
 
-    if ostype not in (QL_OS):
+    if ostype not in (QL_OS_ALL):
         raise QlErrorOsType("[!] File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios'")
 
     return arch, ostype
@@ -276,7 +360,7 @@ def ql_build_module_import_name(module, ostype, arch = None):
     ostype_str = ostype
     arch_str = arch
 
-    if type(ostype) is int:
+    if type(ostype) is QL_OS:
         ostype_str = ql_ostype_convert_str(ostype)
     
     if ostype_str and "loader" not in ret_str:
@@ -284,9 +368,9 @@ def ql_build_module_import_name(module, ostype, arch = None):
 
     if arch:
         # This is because X86_64 is bundled into X86 in arch
-        if module == "arch" and arch == QL_X8664:  
+        if module == "arch" and arch == QL_ARCH.X8664:  
             arch_str = "x86"
-        elif type(arch) is int:
+        elif type(arch) is QL_ARCH:
             arch_str = ql_arch_convert_str(arch)
     else:
         arch_str = ostype_str

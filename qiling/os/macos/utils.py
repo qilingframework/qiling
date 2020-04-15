@@ -7,7 +7,6 @@ from unicorn.x86_const import *
 from unicorn.arm_const import *
 
 from qiling.os.const import *
-from qiling.os.utils import *
 
 def env_dict_to_array(env_dict):
     env_list = []

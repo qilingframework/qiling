@@ -6,7 +6,6 @@
 from qiling.arch.x86 import *
 from qiling.const import *
 from qiling.os.const import *
-from qiling.os.utils import *
 from qiling.os.posix.posix import QlOsPosix
 from .const import *
 
@@ -51,7 +50,7 @@ class QlOsFreebsd(QlOsPosix):
         #self.ql.dprint(D_INFO, "[+] RBP = 0x%x" % (init_rbp))
         #self.ql.dprint(D_INFO, "[+] RDI = 0x%x" % (init_rdi))
 
-        ql_setup_output(self.ql)
+        self.setup_output()
         self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
         self.gdtm = GDTManager(self.ql)

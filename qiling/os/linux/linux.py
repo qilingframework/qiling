@@ -33,29 +33,28 @@ class QlOsLinux(QlOsPosix):
         self.futexm = QlLinuxFutexManagement()
 
         # ARM
-        if self.ql.archtype== QL_ARM:
+        if self.ql.archtype== QL_ARCH.ARM:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfff0d000
             self.ql.arch.enable_vfp()
-            ql_arm_init_kernel_get_tls(self.ql)
             self.ql.hook_intr(self.hook_syscall)
             self.thread_class = QlLinuxARMThread
 
         # MIPS32
-        elif self.ql.archtype== QL_MIPS32:
+        elif self.ql.archtype== QL_ARCH.MIPS32:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000
             self.QL_LINUX_PREDEFINE_STACKSIZE = 0x30000
             self.ql.hook_intr(self.hook_syscall)
             self.thread_class = QlLinuxMIPS32Thread
 
         # ARM64
-        elif self.ql.archtype== QL_ARM64:
+        elif self.ql.archtype== QL_ARCH.ARM64:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
             self.ql.arch.enable_vfp()
             self.ql.hook_intr(self.hook_syscall)
             self.thread_class = QlLinuxARM64Thread
 
         # X86
-        elif  self.ql.archtype== QL_X86:
+        elif  self.ql.archtype== QL_ARCH.X86:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfffdd000
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
@@ -64,7 +63,7 @@ class QlOsLinux(QlOsPosix):
             self.thread_class = QlLinuxX86Thread
 
         # X8664
-        elif  self.ql.archtype== QL_X8664:
+        elif  self.ql.archtype== QL_ARCH.X8664:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
@@ -77,7 +76,7 @@ class QlOsLinux(QlOsPosix):
                 self.ql.stack_address = 0x1000000
             if (self.ql.stack_size == 0):
                 self.ql.stack_size = 10 * 1024 * 1024
-            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
+            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size, info="[stack]")
             self.ql.stack_address  = (self.ql.stack_address + 0x200000 - 0x1000)
             self.ql.mem.write(self.ql.stack_address, self.ql.shellcoder)
             
@@ -86,9 +85,9 @@ class QlOsLinux(QlOsPosix):
                 self.ql.stack_address = self.QL_LINUX_PREDEFINE_STACKADDRESS
             if (self.ql.stack_size == 0):
                 self.ql.stack_size = self.QL_LINUX_PREDEFINE_STACKSIZE
-            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
+            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size, info="[stack]")
 
-        ql_setup_output(self.ql)
+        self.setup_output()
 
 
     def hook_syscall(self, int= None, intno= None):
@@ -96,6 +95,9 @@ class QlOsLinux(QlOsPosix):
 
 
     def run(self):
+        if self.ql.archtype== QL_ARCH.ARM:
+            ql_arm_init_kernel_get_tls(self.ql)
+        
         self.ql.reg.sp = self.ql.stack_address
         if (self.ql.until_addr == 0):
             self.ql.until_addr = self.QL_EMU_END

@@ -11,7 +11,6 @@ import os as pyos
 from .const import *
 from .exception import *
 from .utils import *
-from .debugger.utils import *
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 
@@ -142,7 +141,7 @@ class Qiling(QLCoreStructs, QLCoreHooks):
             raise QlErrorArch("[!] Invalid Arch")
 
         # chceck for supported OS type
-        if self.ostype not in QL_OS:
+        if self.ostype not in QL_OS_ALL:
             raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos'")
         
         # qiling output method conversion
@@ -205,7 +204,8 @@ class Qiling(QLCoreStructs, QLCoreHooks):
             self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
 
         # init debugger
-        ql_debugger_init(self)
+        if self.debugger is not None:
+            ql_debugger_init(self)
 
         # patch binary
         self.__enable_bin_patch()
@@ -265,12 +265,12 @@ class Qiling(QLCoreStructs, QLCoreHooks):
             else:
                 syscall_name = "ql_syscall_" + str(syscall_cur)
                 self.os.dict_posix_syscall[syscall_name] = syscall_new
-        elif self.ostype == QL_WINDOWS:
+        elif self.ostype == QL_OS.WINDOWS:
             self.set_api(syscall_cur, syscall_new)
 
     # replace Windows API with custom syscall
     def set_api(self, syscall_cur, syscall_new):
-        if self.ostype == QL_WINDOWS:
+        if self.ostype == QL_OS.WINDOWS:
             self.os.user_defined_api[syscall_cur] = syscall_new
         elif self.ostype in (QL_POSIX):
             self.set_syscall(syscall_cur, syscall_new)
@@ -322,12 +322,12 @@ class Qiling(QLCoreStructs, QLCoreHooks):
     def output(self, output):
         self._output = output_convert(output)
     
-    # ql.platform - platform var = host os getter eg. QL_LINUX and etc
+    # ql.platform - platform var = host os getter eg. LINUX and etc
     @property
     def platform(self):
         return self._platform
 
-    # ql.platform - platform var = host os setter eg. QL_LINUX and etc
+    # ql.platform - platform var = host os setter eg. LINUX and etc
     @platform.setter
     def platform(self, value):
         self._platform = ostype_convert(value.lower())

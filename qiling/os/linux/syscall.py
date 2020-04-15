@@ -3,29 +3,25 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 #  
-import struct
-import sys
-import os
-import string
-import resource
-import socket
-import time
-import io
-import select
+# import struct
+# import sys
+# import os
+# import string
+# import resource
+# import socket
+# import time
+# import io
+# import select
 
 from unicorn.arm_const import *
 from unicorn.x86_const import *
-from unicorn.arm64_const import *
 from unicorn.mips_const import *
-from qiling.arch.x86 import *
-from qiling.os.linux.const import *
-from qiling.os.linux.utils import *
-from qiling.os.utils import *
+from qiling.arch.x86_const import *
 from qiling.const import *
-from qiling.os.posix.syscall import *
 
 
 def ql_x8664_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_child_tidptr, clone_newtls, *args, **kw):
+    from qiling.os.posix.syscall import ql_syscall_clone
     ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_newtls, clone_child_tidptr, *args, **kw)
 
 
@@ -55,19 +51,15 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
 
 
 def ql_syscall_mips32_set_thread_area(ql, sta_area, *args, **kw):
-    ql.nprint ("set_thread_area(0x%x)" % sta_area)
-    
     CONFIG3_ULR = (1 << 13)
     ql.register(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
     ql.register(UC_MIPS_REG_CP0_USERLOCAL, sta_area)
     ql.register(UC_MIPS_REG_V0, 0)
     ql.register(UC_MIPS_REG_A3, 0)
-
+    ql.nprint ("set_thread_area(0x%x)" % sta_area)
 
 def ql_syscall_arm_settls(ql, address, *args, **kw):
-    #ql.nprint("settls(0x%x)" % address)
-
     ql.register(UC_ARM_REG_C13_C0_3, address)
-    ql.mem.write(QL_ARM_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
+    ql.mem.write(ql.os.QL_ARM_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
     ql.register(UC_ARM_REG_R0, address)
     ql.nprint("settls(0x%x)" % address)
