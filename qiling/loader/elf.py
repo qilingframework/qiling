@@ -397,7 +397,7 @@ class QlLoaderELF(ELFParse, QlLoader):
         if loadbase <= 0:
             if self.ql.archbit == 64:
                 loadbase = 0x555555554000
-            elif self.ql.archtype== QL_MIPS32:
+            elif self.ql.archtype== QL_ARCH.MIPS32:
                 loadbase = 0x0000004fef000
             else:
                 loadbase = 0x56555000
@@ -468,9 +468,9 @@ class QlLoaderELF(ELFParse, QlLoader):
             if self.ql.interp_base == 0:
                 if self.ql.archbit == 64:
                     self.interp_base = 0x7ffff7dd5000
-                elif self.ql.archbit == 32 and self.ql.archtype!= QL_MIPS32:
+                elif self.ql.archbit == 32 and self.ql.archtype!= QL_ARCH.MIPS32:
                     self.interp_base = 0xfb7d3000
-                elif self.ql.archtype== QL_MIPS32:
+                elif self.ql.archtype== QL_ARCH.MIPS32:
                     self.interp_base = 0x00000047ba000
                 else:
                     self.interp_base = 0xff7d5000
@@ -489,7 +489,7 @@ class QlLoaderELF(ELFParse, QlLoader):
         if self.ql.mmap_start == 0:
             if self.ql.archbit == 64:
                 self.mmap_start = 0x7ffff7dd6000 - 0x40000000
-            elif self.ql.archtype== QL_MIPS32:
+            elif self.ql.archtype== QL_ARCH.MIPS32:
                 self.mmap_start = 0x7ffef000 - 0x4000000
                 if self.ql.archendian == QL_ENDIAN.EB:
                     self.mmap_start  = 0x778bf000 - 0x400000

@@ -96,7 +96,7 @@ def ql_hook_block_disasm(ql, address, size):
 def ql_hook_code_disasm(ql, address, size):
     tmp = ql.mem.read(address, size)
 
-    if (ql.archtype== QL_ARM):  # QL_ARM
+    if (ql.archtype== QL_ARCH.ARM):  # ARM
         reg_cpsr = ql.register(UC_ARM_REG_CPSR)
         mode = CS_MODE_ARM
         if ql.archendian == QL_ENDIAN.EB:
@@ -114,16 +114,16 @@ def ql_hook_code_disasm(ql, address, size):
         else:
             md = Cs(CS_ARCH_ARM, mode)
 
-    elif (ql.archtype== QL_X86):  # QL_X86
+    elif (ql.archtype== QL_ARCH.X86):  # X86
         md = Cs(CS_ARCH_X86, CS_MODE_32)
 
-    elif (ql.archtype== QL_X8664):  # QL_X86_64
+    elif (ql.archtype== QL_ARCH.X8664):  # X8664
         md = Cs(CS_ARCH_X86, CS_MODE_64)
 
-    elif (ql.archtype== QL_ARM64):  # QL_ARM64
+    elif (ql.archtype== QL_ARCH.ARM64):  # ARM64
         md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 
-    elif (ql.archtype== QL_MIPS32):  # QL_MIPS32
+    elif (ql.archtype== QL_ARCH.MIPS32):  # MIPS32
         if ql.archendian == QL_ENDIAN.EB:
             md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
         else:
@@ -165,21 +165,21 @@ def ql_compile_asm(ql, archtype, runcode, arm_thumb= None):
     def ks_convert(arch):
         if ql.archendian == QL_ENDIAN.EB:
             adapter = {
-                QL_X86: (KS_ARCH_X86, KS_MODE_32),
-                QL_X8664: (KS_ARCH_X86, KS_MODE_64),
-                QL_MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
-                QL_ARM: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_BIG_ENDIAN),
-                QL_ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                QL_ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
+                QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
+                QL_ARCH.MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
+                QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_BIG_ENDIAN),
+                QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
+                QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
             }
         else:
             adapter = {
-                QL_X86: (KS_ARCH_X86, KS_MODE_32),
-                QL_X8664: (KS_ARCH_X86, KS_MODE_64),
-                QL_MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
-                QL_ARM: (KS_ARCH_ARM, KS_MODE_ARM),
-                QL_ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                QL_ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
+                QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
+                QL_ARCH.MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
+                QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM),
+                QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
+                QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
             }
 
         if arch in adapter:
@@ -206,8 +206,8 @@ def ql_compile_asm(ql, archtype, runcode, arm_thumb= None):
 
         return shellcode
 
-    if arm_thumb == True and archtype == QL_ARM:
-        archtype = QL_ARM_THUMB
+    if arm_thumb == True and archtype == QL_ARCH.ARM:
+        archtype = QL_ARCH.ARM_THUMB
 
     archtype, archmode = ks_convert(archtype)
     return compile_instructions(runcode, archtype, archmode)
@@ -404,23 +404,23 @@ def ql_open_flag_mapping(flags, ql):
         'O_DIRECTORY': 0x100000,
     }
 
-    if ql.archtype!= QL_MIPS32:
+    if ql.archtype!= QL_ARCH.MIPS32:
         if ql.platform == None or ql.platform == ql.ostype:
             return flags
 
-        if ql.platform == QL_MACOS and ql.ostype == QL_LINUX:
+        if ql.platform == QL_OS.MACOS and ql.ostype == QL_OS.LINUX:
             f = linux_open_flags
             t = mac_open_flags
 
-        elif ql.platform == QL_LINUX and ql.ostype == QL_MACOS:
+        elif ql.platform == QL_OS.LINUX and ql.ostype == QL_OS.MACOS:
             f = mac_open_flags
             t = linux_open_flags
 
-    elif ql.archtype== QL_MIPS32 and ql.platform == QL_LINUX:
+    elif ql.archtype== QL_ARCH.MIPS32 and ql.platform == QL_OS.LINUX:
         f = mips32el_open_flags
         t = linux_open_flags
 
-    elif ql.archtype== QL_MIPS32 and ql.platform == QL_MACOS:
+    elif ql.archtype== QL_ARCH.MIPS32 and ql.platform == QL_OS.MACOS:
         f = mips32el_open_flags
         t = mac_open_flags
 
