@@ -453,8 +453,8 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
     real_path = ql_transform_to_real_path(ql, pathname)
     relative_path = ql_transform_to_relative_path(ql, pathname)
 
-    word_size = 8 if (ql.archtype== QL_ARM64) or (ql.archtype== QL_X8664) else 4
-    unpack = ql.unpack64 if (ql.archtype== QL_ARM64) or (ql.archtype== QL_X8664) else ql.unpack32
+    word_size = 8 if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664) else 4
+    unpack = ql.unpack64 if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664) else ql.unpack32
 
     argv = []
     if execve_argv != 0:
@@ -552,7 +552,7 @@ def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
         else:
             ql.os.file_des[idx1] = rd
             ql.os.file_des[idx2] = wd
-            if ql.archtype== QL_MIPS32:
+            if ql.archtype== QL_ARCH.MIPS32:
                 ql.register(UC_MIPS_REG_V1, idx2)
                 regreturn = idx1
             else:

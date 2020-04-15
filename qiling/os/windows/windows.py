@@ -43,14 +43,14 @@ class QlOsWindows(QlOs):
 
         self.ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
 
-        if self.ql.archtype == QL_X8664:
+        if self.ql.archtype == QL_ARCH.X8664:
             self.stack_address = 0x7ffffffde000
             self.stack_size = 0x40000
             self.ql.code_address = 0x140000000
             self.ql.code_size = 10 * 1024 * 1024
             self.HEAP_BASE_ADDR = 0x500000000
             self.HEAP_SIZE = 0x5000000            
-        elif self.ql.archtype == QL_X86:
+        elif self.ql.archtype == QL_ARCH.X86:
             self.stack_address = 0xfffdd000
             self.stack_size = 0x21000
             self.ql.code_address = 0x40000
@@ -77,13 +77,13 @@ class QlOsWindows(QlOs):
 
     def setupGDT(self):
         # setup gdt
-        if self.ql.archtype == QL_X86:
+        if self.ql.archtype == QL_ARCH.X86:
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
             ql_x86_register_fs(self)
             ql_x86_register_gs(self)
-        elif self.ql.archtype == QL_X8664:
+        elif self.ql.archtype == QL_ARCH.X8664:
             ql_x8664_set_gs(self.ql)
 
     def setupComponents(self):

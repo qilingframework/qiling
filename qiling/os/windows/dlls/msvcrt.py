@@ -205,7 +205,7 @@ def hook_printf(self, address, _):
     count = format_string.count('%')
     # x8664 fastcall donnot known the real number of parameters
     # so you need to manually pop the stack
-    if self.ql.archtype== QL_X8664:
+    if self.ql.archtype== QL_ARCH.X8664:
         # if number of params > 4
         if count + 1 > 4:
             rsp = self.ql.register(UC_X86_REG_RSP)
