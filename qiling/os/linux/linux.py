@@ -95,7 +95,7 @@ class QlOsLinux(QlOsPosix):
 
 
     def run(self):
-        if self.ql.archtype== QL_ARM:
+        if self.ql.archtype== QL_ARCH.ARM:
             ql_arm_init_kernel_get_tls(self.ql)
         
         self.ql.reg.sp = self.ql.stack_address
