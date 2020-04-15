@@ -42,7 +42,6 @@ def ql_lsbmsb_convert(ql, sc, size=4):
     return ebsc    
 
 
-
 def ql_init_configuration(self):
     config = configparser.ConfigParser()
     config.read(self.profile)
@@ -54,107 +53,6 @@ def ql_init_configuration(self):
     return config
 
 
-<<<<<<< HEAD
-def ql_bin_to_ip(ip):
-    return ipaddress.ip_address(ip).compressed
-
-
-def ql_read_string(ql, address):
-    ret = ""
-    c = ql.mem.read(address, 1)[0]
-    read_bytes = 1
-
-    while c != 0x0:
-        ret += chr(c)
-        c = ql.mem.read(address + read_bytes, 1)[0]
-        read_bytes += 1
-    return ret
-
-    
-def ql_parse_sock_address(sock_addr):
-    sin_family, = struct.unpack("<h", sock_addr[:2])
-
-    if sin_family == 2:  # AF_INET
-        port, host = struct.unpack(">HI", sock_addr[2:8])
-        return "%s:%d" % (ql_bin_to_ip(host), port)
-    elif sin_family == 6:  # AF_INET6
-        return ""
-
-
-def ql_hook_block_disasm(ql, address, size):
-    ql.nprint("\n[+] Tracing basic block at 0x%x" % (address))
-
-
-def ql_hook_code_disasm(ql, address, size):
-    tmp = ql.mem.read(address, size)
-
-    if (ql.archtype== QL_ARM):  # QL_ARM
-        reg_cpsr = ql.register(UC_ARM_REG_CPSR)
-        mode = CS_MODE_ARM
-        if ql.archendian == QL_ENDIAN.EB:
-            reg_cpsr_v = 0b100000
-            # reg_cpsr_v = 0b000000
-        else:
-            reg_cpsr_v = 0b100000
-
-        if reg_cpsr & reg_cpsr_v != 0:
-            mode = CS_MODE_THUMB
-
-        if ql.archendian == QL_ENDIAN.EB:
-            md = Cs(CS_ARCH_ARM, mode)
-            # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
-        else:
-            md = Cs(CS_ARCH_ARM, mode)
-
-    elif (ql.archtype== QL_X86):  # QL_X86
-        md = Cs(CS_ARCH_X86, CS_MODE_32)
-
-    elif (ql.archtype== QL_X8664):  # QL_X86_64
-        md = Cs(CS_ARCH_X86, CS_MODE_64)
-
-    elif (ql.archtype== QL_ARM64):  # QL_ARM64
-        md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
-
-    elif (ql.archtype== QL_MIPS32):  # QL_MIPS32
-        if ql.archendian == QL_ENDIAN.EB:
-            md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
-        else:
-            md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)
-
-    else:
-        raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
-
-    insn = md.disasm(tmp, address)
-    opsize = int(size)
-
-    ql.nprint("[+] 0x%x\t" % (address), end="")
-
-    for i in tmp:
-        ql.nprint (" %02x " % i, end="")
-
-    if opsize <= 6:
-        ql.nprint ("\t", end="")
-    
-    for i in insn:
-        ql.nprint ("%s %s" % (i.mnemonic, i.op_str))
-    
-    if ql.output == QL_OUTPUT.DUMP:
-        for reg in ql.reg.table:
-            ql.reg.name = reg
-            REG_NAME = ql.reg.name
-            REG_VAL = ql.register(reg)
-            ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
-    
-
-def ql_setup_output(ql):
-    if ql.output in (QL_OUTPUT.DISASM, QL_OUTPUT.DUMP):
-        if ql.output == QL_OUTPUT.DUMP:
-            ql.hook_block(ql_hook_block_disasm)
-        ql.hook_code(ql_hook_code_disasm)
-
-
-=======
->>>>>>> upstream/dev
 def ql_compile_asm(ql, archtype, runcode, arm_thumb= None):
     def ks_convert(arch):
         if ql.archendian == QL_ENDIAN.EB:
@@ -290,70 +188,6 @@ def ql_transform_to_relative_path(ql, path):
     return relative_path
 
 
-def ql_vm_to_vm_abspath(ql, relative_path):
-    if relative_path[0] == '/':
-        # abspath input
-        abspath = relative_path
-        return os.path.abspath(abspath)
-    else:
-        # relative path input
-        cur_path = ql_get_vm_current_path(ql)
-        return os.path.abspath(cur_path + '/' + relative_path)
-
-
-def ql_vm_to_real_abspath(ql, path):
-    # TODO:// check Directory traversal, we have the vul
-    if path[0] != '/':
-        # relative path input
-        cur_path = ql_get_vm_current_path(ql)
-        path = cur_path + '/' + path
-    return os.path.abspath(ql.rootfs + path)
-
-
-def ql_real_to_vm_abspath(ql, path):
-    # rm ".." in path
-    abs_path = os.path.abspath(path)
-    abs_rootfs = os.path.abspath(ql.rootfs)
-
-    return '/' + abs_path.lstrip(abs_rootfs)
-
-
-def ql_get_vm_current_path(ql):
-    if ql.multithread == True:
-        return ql.os.thread_management.cur_thread.get_current_path()
-    else:
-        return ql.os.current_path
-
-
-
-
-
-def print_function(self, address, function_name, params, ret):
-    function_name = function_name.replace('hook_', '')
-    if function_name in ("__stdio_common_vfprintf", "printf", "wsprintfW", "sprintf"):
-        return
-    log = '0x%0.2x: %s(' % (address, function_name)
-    for each in params:
-        value = params[each]
-        if type(value) == str or type(value) == bytearray:
-            log += '%s = "%s", ' % (each, value)
-        else:
-            log += '%s = 0x%x, ' % (each, value)
-    log = log.strip(", ")
-    log += ')'
-    if ret is not None:
-        log += ' = 0x%x' % ret
-
-    if self.ql.output == QL_OUTPUT.DEFAULT:
-        log = log.partition(" ")[-1]
-        self.ql.nprint(log)
-
-    elif self.ql.output == QL_OUTPUT.DEBUG:
-        self.ql.dprint(D_INFO, log)
-
-
-
-
-def post_report(self):
+def ql_post_report(self):
     self.ql.dprint(D_INFO, "[+] Syscalls and number of invocations")
-    self.ql.dprint(D_INFO, "[-] " + str(list(self.syscall_count.items())))
+    self.ql.dprint(D_INFO, "[-] " + str(list(self.ql.os.syscall_count.items())))
