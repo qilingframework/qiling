@@ -311,12 +311,16 @@ class QlMemoryManager:
         '''
         if ptr == None:
             if self.is_mapped(addr, size) == False:
-               self.ql.uc.mem_map(addr, size)
+               self.ql.uc.mem_map(addr, size, perms)
                self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
             else:
                 raise QlMemoryMappedError("[!] Memory Mapped")    
         else:
             self.ql.uc.mem_map_ptr(addr, size, perms, ptr)
+
+    def get_mapped(self):
+        for idx, val in enumerate(self.ql.uc.mem_regions()):
+            print(idx, list(map(hex, val)))
 
 # A Simple Heap Implementation
 class Chunk():

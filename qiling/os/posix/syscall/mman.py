@@ -55,30 +55,6 @@ def ql_syscall_mprotect(ql, mprotect_start, mprotect_len, mprotect_prot, *args, 
     ql.dprint(D_INFO, "[+] mprotect(0x%x, 0x%x, %s) = %d" % (
     mprotect_start, mprotect_len, mmap_prot_mapping(mprotect_prot), regreturn))
 
-    new_prot = []
-    prot_dict = {"PROT_READ": "r", "PROT_WRITE": "w", "PROT_EXEC": "x"}
-    mapped_prot = mmap_prot_mapping(mprotect_prot)
-
-    for idx, val in prot_dict.items():
-        if "PROT_NONE" in mapped_prot:
-            new_prot = "---"
-            break
-        elif idx in mapped_prot:
-            new_prot.append(val)
-        else:
-            new_prot.append("-")
-
-    new_prot = ''.join(new_prot)
-
-    map_info = ql.mem.map_info
-
-    for idx, val in enumerate(map_info):
-        start, end, prot, info = val
-        if start < mprotect_start+mprotect_len-1 < end:
-            map_info[idx] = [start, end, new_prot, info]
-
-    ql.mem.map_info = map_info
-
     ql_definesyscall_return(ql, regreturn)
 
 
