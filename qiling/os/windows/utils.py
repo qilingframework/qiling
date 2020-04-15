@@ -21,6 +21,29 @@ def string_unpack(string):
     return string.decode().split("\x00")[0]
 
 
+def print_function(self, address, function_name, params, ret):
+    function_name = function_name.replace('hook_', '')
+    if function_name in ("__stdio_common_vfprintf", "printf", "wsprintfW", "sprintf"):
+        return
+    log = '0x%0.2x: %s(' % (address, function_name)
+    for each in params:
+        value = params[each]
+        if type(value) == str or type(value) == bytearray:
+            log += '%s = "%s", ' % (each, value)
+        else:
+            log += '%s = 0x%x, ' % (each, value)
+    log = log.strip(", ")
+    log += ')'
+    if ret is not None:
+        log += ' = 0x%x' % ret
+
+    if self.ql.output == QL_OUTPUT.DEFAULT:
+        log = log.partition(" ")[-1]
+        self.ql.nprint(log)
+
+    elif self.ql.output == QL_OUTPUT.DEBUG:
+        self.ql.dprint(D_INFO, log)
+
 def read_wstring(ql, address):
     result = ""
     char = ql.mem.read(address, 2)

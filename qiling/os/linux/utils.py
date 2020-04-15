@@ -5,6 +5,7 @@
 
 from .const import *
 from qiling.const import *
+from qiling.os.utils import *
 
 """
 set_tls

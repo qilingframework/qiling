@@ -49,8 +49,10 @@ class QlOs:
     def transform_to_link_path(self, path):
         return ql_transform_to_link_path(self.ql, path)
 
-    def setup_output(self):
+    def post_report(self):
+        ql_post_report(self)
 
+    def setup_output(self):
         def ql_hook_block_disasm(ql, address, size):
             self.ql.nprint("\n[+] Tracing basic block at 0x%x" % (address))
 
