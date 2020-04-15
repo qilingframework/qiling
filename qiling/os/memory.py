@@ -32,18 +32,24 @@ class QlMemoryManager:
 
         self.max_addr = max_addr
         self.max_mem_addr = max_addr            
-    
-    def string(self, address, value = None):
+
+
+    def string(self, addr, value=None ,encoding='utf-8'): 
         if value == None:
             ret = ""
-            c = self.ql.mem.read(address, 1)[0]
+            c = self.read(addr, 1)[0]
             read_bytes = 1
 
             while c != 0x0:
                 ret += chr(c)
-                c = self.ql.mem.read(address + read_bytes, 1)[0]
+                c = self.read(addr + read_bytes, 1)[0]
                 read_bytes += 1
             return ret
+        else:
+            string_bytes = bytes(value, encoding) + b'\x00'
+            self.write(addr, string_bytes)
+            return None
+
 
     def add_mapinfo(self, mem_s, mem_e, mem_p, mem_info):
         tmp_map_info = []
