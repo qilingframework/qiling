@@ -68,16 +68,8 @@ class QlMemoryManager:
                     pass
             if insert_flag == 0:
                 tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
-        map_info = []
-        map_info.append(tmp_map_info[0])
 
-        for s, e, p, info in tmp_map_info[1:]:
-            if s == map_info[-1][1] and info == map_info[-1][3] and p == map_info[-1][2]:
-                map_info[-1][1] = e
-            else:
-                map_info.append([s, e, p, info])
-
-        self.map_info = map_info
+        self.map_info = tmp_map_info
 
 
     def del_mapinfo(self, mem_s, mem_e):
@@ -108,9 +100,20 @@ class QlMemoryManager:
 
 
     def show_mapinfo(self):
+        def _perms_mapping(ps):
+            perms_d = {1: "r", 2: "w", 4: "x"}
+            perms_sym = []
+            for idx, val in perms_d.items():
+                if idx & ps != 0:
+                    perms_sym.append(val)
+                else:
+                    perms_sym.append("-")
+            return "".join(perms_sym)
+
         self.ql.nprint("[+] Start      End        Perm.  Path\n")
         for s, e, p, info in self.map_info:
-            self.ql.nprint("[+] %08x - %08x - %s    %s\n" % (s, e, p, info))
+            _p = _perms_mapping(p)
+            self.ql.nprint("[+] %08x - %08x - %s    %s\n" % (s, e, _p, info))
 
 
     def get_lib_base(self, filename):
@@ -290,7 +293,7 @@ class QlMemoryManager:
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
 
 
-    def map(self, addr, size, perms=UC_PROT_ALL, ptr = None):
+    def map(self, addr, size, perms=UC_PROT_ALL, info=None, ptr=None):
         '''
 	    The main function of mem_mmap is to implement memory allocation in unicorn, 
 	    which is slightly similar to the function of syscall_mmap. 
@@ -308,15 +311,16 @@ class QlMemoryManager:
         '''
         if ptr == None:
             if self.is_mapped(addr, size) == False:
-               self.add_mapinfo(addr, addr + size, 'rw-', "[mapped]")
-               self.ql.uc.mem_map(addr, size)
+               self.ql.uc.mem_map(addr, size, perms)
+               self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
             else:
                 raise QlMemoryMappedError("[!] Memory Mapped")    
-            
-            if perms != UC_PROT_ALL:
-                self.protect(addr, size, perms)
         else:
             self.ql.uc.mem_map_ptr(addr, size, perms, ptr)
+
+    def get_mapped(self):
+        for idx, val in enumerate(self.ql.uc.mem_regions()):
+            print(idx, list(map(hex, val)))
 
 # A Simple Heap Implementation
 class Chunk():
