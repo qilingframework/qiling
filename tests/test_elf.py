@@ -16,6 +16,7 @@ class ELFTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux")
         ql.multithread = True   
         ql.run()
+        del ql
 
 
     def test_multithread_elf_linux_x8664(self):
@@ -23,24 +24,28 @@ class ELFTest(unittest.TestCase):
         ql.log_split = True
         ql.multithread = True   
         ql.run()
+        del ql
 
 
     def test_multithread_elf_linux_mips32el(self):
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_multithreading"], "../examples/rootfs/mips32el_linux")
         ql.multithread = True   
         ql.run()
+        del ql
 
 
     def test_multithread_elf_linux_arm(self):
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux")
         ql.multithread = True   
         ql.run()
+        del ql
 
 
     def test_multithread_elf_linux_arm64(self):
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux")
         ql.multithread = True   
         ql.run()
+        del ql
 
 
     def test_elf_freebsd_x8664(self):     
@@ -53,6 +58,13 @@ class ELFTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
         addr = ql.mem.map_anywhere(0x100000)
         ql.nprint("0x%x" %  addr)
+        ql.run()
+        del ql
+
+
+    def test_tcp_elf_linux_x8664(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/tcp_test"], "../examples/rootfs/x8664_linux")
+        ql.multithread = True
         ql.run()
         del ql
 
