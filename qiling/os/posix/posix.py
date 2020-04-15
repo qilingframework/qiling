@@ -3,13 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-# from unicorn.arm64_const import *
-# from unicorn.arm_const import *
-# from unicorn.mips_const import *
-# from unicorn.x86_const import *
+# For syscall_num
+from unicorn.arm64_const import *
+from unicorn.arm_const import *
+from unicorn.mips_const import *
+from unicorn.x86_const import *
 
 from qiling.const import *
 from qiling.os.os import QlOs
+from qiling.utils import *
+from qiling.exception import *
 
 from qiling.os.posix.syscall import *
 from qiling.os.linux.syscall import *

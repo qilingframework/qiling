@@ -5,7 +5,7 @@
 
 from .const import *
 from qiling.const import *
-from qiling.os.utils import *
+from qiling.os.utils import ql_lsbmsb_convert
 
 """
 set_tls

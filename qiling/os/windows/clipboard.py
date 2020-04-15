@@ -4,8 +4,6 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 # A Simple Windows Clipboard Simulation
 
-#from qiling.os.windows.windows import QlOsWindows
-
 NOT_LOCKED = -1
 
 

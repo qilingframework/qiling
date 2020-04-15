@@ -7,13 +7,11 @@ import struct, time, os
 
 from qiling.os.windows.const import *
 from qiling.os.const import *
-from qiling.os.utils import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-
 
 # DWORD GetFileType(
 #   HANDLE hFile
@@ -166,7 +164,7 @@ def _CreateFile(self, address, params, name):
         mode += "r"
 
     # create thread handle
-    s_lpFileName = ql_transform_to_real_path(self.ql, s_lpFileName)
+    s_lpFileName = self.ql.os.transform_to_real_path(s_lpFileName)
     f = open(s_lpFileName.replace("\\", os.sep), mode)
     new_handle = Handle(file=f)
     self.handle_manager.append(new_handle)

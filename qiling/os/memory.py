@@ -5,7 +5,6 @@
 
 from qiling.const import *
 from qiling.exception import *
-from qiling.os.utils import *
 
 from unicorn import (
     UC_PROT_ALL,
