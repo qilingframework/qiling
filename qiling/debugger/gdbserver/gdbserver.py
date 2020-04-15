@@ -558,7 +558,7 @@ class GDBSERVERsession(object):
                         if self.lib_path.startswith(self.rootfs_abspath):
                             self.lib_abspath = self.lib_path
                         else:
-                            self.lib_abspath = ql_transform_to_real_path(self.ql, self.lib_path) 
+                            self.lib_abspath = self.ql.os.transform_to_real_path(self.lib_path)
 
                         self.ql.dprint(D_INFO, "gdb> target file: %s" % (self.lib_abspath))
 

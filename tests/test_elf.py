@@ -112,7 +112,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
             target = False
-            pathname = ql_read_string(ql, openat_path)
+            pathname = ql.mem.string(openat_path)
 
             if pathname == "test_syscall_open.txt":
                 print("test => openat(%d, %s, 0x%x, 0%o)" % (openat_fd, pathname, openat_flags, openat_mode))
@@ -121,13 +121,13 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
 
             if target:
-                real_path = ql_transform_to_real_path(ql, pathname)
+                real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
                 os.remove(real_path)
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
-            pathname = ql_read_string(ql, unlink_pathname)
+            pathname = ql.mem.string(unlink_pathname)
 
             if pathname == "test_syscall_unlink.txt":
                 print("test => unlink(%s)" % (pathname))
@@ -136,12 +136,12 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
-                real_path = ql_transform_to_real_path(ql, pathname)
+                real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
-            pathname = ql_read_string(ql, trunc_pathname)
+            pathname = ql.mem.string(trunc_pathname)
 
             if pathname == "test_syscall_truncate.txt":
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
@@ -150,7 +150,7 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
-                real_path = ql_transform_to_real_path(ql, pathname)
+                real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
                 os.remove(real_path)
 
@@ -165,7 +165,7 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
-                real_path = ql_transform_to_real_path(ql, pathname)
+                real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
                 os.remove(real_path)
 
@@ -229,7 +229,7 @@ class ELFTest(unittest.TestCase):
 
         # def test_syscall_open(ql, open_pathname, open_flags, open_mode, *args):
             # target = False
-            # pathname = ql_read_string(ql, open_pathname)
+            # pathname = ql.mem.string(open_pathname)
 
             # if pathname == "test_syscall_open.txt":
                 # print("test => open(%s, 0x%x, 0%o)" % (pathname, open_flags, open_mode))
@@ -238,13 +238,13 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_open(ql, open_pathname, open_flags, open_mode, *args)
 
             # if target:
-                # real_path = ql_transform_to_real_path(ql, pathname)
+                # real_path = ql.os.transform_to_real_path(pathname)
                 # assert os.path.isfile(real_path) == True
                 # os.remove(real_path)
 
         # def test_syscall_unlink(ql, unlink_pathname, *args):
             # target = False
-            # pathname = ql_read_string(ql, unlink_pathname)
+            # pathname = ql.mem.string(unlink_pathname)
 
             # if pathname == "test_syscall_unlink.txt":
                 # print("test => unlink(%s)" % (pathname))
@@ -253,12 +253,12 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             # if target:
-                # real_path = ql_transform_to_real_path(ql, pathname)
+                # real_path = ql.os.transform_to_real_path(pathname)
                 # assert os.path.isfile(real_path) == False
 
         # def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             # target = False
-            # pathname = ql_read_string(ql, trunc_pathname)
+            # pathname = ql.mem.string(trunc_pathname)
 
             # if pathname == "test_syscall_truncate.txt":
                 # print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
@@ -267,7 +267,7 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             # if target:
-                # real_path = ql_transform_to_real_path(ql, pathname)
+                # real_path = ql.os.transform_to_real_path(pathname)
                 # assert os.stat(real_path).st_size == 0
                 # os.remove(real_path)
 
@@ -282,7 +282,7 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             # if target:
-                # real_path = ql_transform_to_real_path(ql, pathname)
+                # real_path = ql.os.transform_to_real_path(pathname)
                 # assert os.stat(real_path).st_size == 0x10
                 # os.remove(real_path)
 
@@ -359,7 +359,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
             target = False
-            pathname = ql_read_string(ql, openat_path)
+            pathname = ql.mem.string(openat_path)
 
             if pathname == "test_syscall_open.txt":
                 print("test => openat(%d, %s, 0x%x, 0%o)" % (openat_fd, pathname, openat_flags, openat_mode))
@@ -368,13 +368,13 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args)
 
             if target:
-                real_path = ql_transform_to_real_path(ql, pathname)
+                real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
                 os.remove(real_path)
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
-            pathname = ql_read_string(ql, unlink_pathname)
+            pathname = ql.mem.string(unlink_pathname)
 
             if pathname == "test_syscall_unlink.txt":
                 print("test => unlink(%s)" % (pathname))
@@ -383,12 +383,12 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
-                real_path = ql_transform_to_real_path(ql, pathname)
+                real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
-            pathname = ql_read_string(ql, trunc_pathname)
+            pathname = ql.mem.string(trunc_pathname)
 
             if pathname == "test_syscall_truncate.txt":
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
@@ -397,7 +397,7 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
-                real_path = ql_transform_to_real_path(ql, pathname)
+                real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
                 os.remove(real_path)
 
@@ -412,7 +412,7 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
-                real_path = ql_transform_to_real_path(ql, pathname)
+                real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
                 os.remove(real_path)
 
@@ -480,7 +480,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_open(ql, open_pathname, open_flags, open_mode, *args):
             target = False
-            pathname = ql_read_string(ql, open_pathname)
+            pathname = ql.mem.string(open_pathname)
 
             if pathname == "test_syscall_open.txt":
                 print("test => open(%s, 0x%x, 0%o)" % (pathname, open_flags, open_mode))
@@ -489,13 +489,13 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_open(ql, open_pathname, open_flags, open_mode, *args)
 
             if target:
-                real_path = ql_transform_to_real_path(ql, pathname)
+                real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
                 os.remove(real_path)
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
-            pathname = ql_read_string(ql, unlink_pathname)
+            pathname = ql.mem.string(unlink_pathname)
 
             if pathname == "test_syscall_unlink.txt":
                 print("test => unlink(%s)" % (pathname))
@@ -504,12 +504,12 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_unlink(ql, unlink_pathname, *args)
 
             if target:
-                real_path = ql_transform_to_real_path(ql, pathname)
+                real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
-            pathname = ql_read_string(ql, trunc_pathname)
+            pathname = ql.mem.string(trunc_pathname)
 
             if pathname == "test_syscall_truncate.txt":
                 print("test => truncate(%s, 0x%x)" % (pathname, trunc_length))
@@ -518,7 +518,7 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_truncate(ql, trunc_pathname, trunc_length, *args)
 
             if target:
-                real_path = ql_transform_to_real_path(ql, pathname)
+                real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
                 os.remove(real_path)
 
@@ -533,7 +533,7 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args)
 
             if target:
-                real_path = ql_transform_to_real_path(ql, pathname)
+                real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
                 os.remove(real_path)
 

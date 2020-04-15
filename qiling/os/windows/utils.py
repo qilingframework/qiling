@@ -2,19 +2,15 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
-import struct
-from unicorn.x86_const import *
-import string as st
 
 from qiling.const import *
 from qiling.os.const import *
-from qiling.os.utils import *
-from qiling.arch.x86 import *
-from qiling.os.windows.registry import RegistryManager
-from qiling.os.windows.clipboard import Clipboard
-from qiling.os.windows.fiber import FiberManager
-from qiling.os.windows.handle import HandleManager, Handle
-from qiling.os.windows.thread import QlWindowsThreadManagement, QlWindowsThread
+
+from .registry import RegistryManager
+from .clipboard import Clipboard
+from .fiber import FiberManager
+from .handle import HandleManager, Handle
+from .thread import QlWindowsThreadManagement, QlWindowsThread
 
 
 def ql_x86_windows_hook_mem_error(self, addr, size, value):
@@ -34,6 +30,16 @@ def read_wstring(ql, address):
         char = ql.mem.read(address, 2)
     # We need to remove \x00 inside the string. Compares do not work otherwise
     return result.replace("\x00", "")
+
+
+def read_cstring(self, address):
+    result = ""
+    char = self.ql.mem.read(address, 1)
+    while char.decode(errors="ignore") != "\x00":
+        address += 1
+        result += char.decode(errors="ignore")
+        char = self.ql.mem.read(address, 1)
+    return result
 
 
 def env_dict_to_array(env_dict):

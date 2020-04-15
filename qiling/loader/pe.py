@@ -14,6 +14,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.structs import *
 from qiling.exception import *
 from qiling.const import *
+from qiling.arch.x86_const import *
 from .loader import QlLoader
 
 class Process(QlLoader):

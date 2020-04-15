@@ -9,7 +9,6 @@
 # from unicorn.x86_const import *
 
 from qiling.const import *
-from qiling.utils import *
 from qiling.os.os import QlOs
 
 from qiling.os.posix.syscall import *

@@ -30,6 +30,103 @@ def _constant_mapping(bits, d_map, ret=None, single_mapping=False):
 
     return " | ".join(ret)
 
+#
+#
+
+def ql_open_flag_mapping(ql, flags):
+    def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
+        ret = 0
+        for n in mapping_name:
+            if mapping_from[n] & flags == mapping_from[n]:
+                ret = ret | mapping_to[n]
+        return ret
+
+    open_flags_name = [
+        "O_RDONLY",
+        "O_WRONLY",
+        "O_RDWR",
+        "O_NONBLOCK",
+        "O_APPEND",
+        "O_ASYNC",
+        "O_SYNC",
+        "O_NOFOLLOW",
+        "O_CREAT",
+        "O_TRUNC",
+        "O_EXCL",
+        "O_NOCTTY",
+        "O_DIRECTORY",
+    ]
+
+    mac_open_flags = {
+        "O_RDONLY": 0x0000,
+        "O_WRONLY": 0x0001,
+        "O_RDWR": 0x0002,
+        "O_NONBLOCK": 0x0004,
+        "O_APPEND": 0x0008,
+        "O_ASYNC": 0x0040,
+        "O_SYNC": 0x0080,
+        "O_NOFOLLOW": 0x0100,
+        "O_CREAT": 0x0200,
+        "O_TRUNC": 0x0400,
+        "O_EXCL": 0x0800,
+        "O_NOCTTY": 0x20000,
+        "O_DIRECTORY": 0x100000
+    }
+
+    linux_open_flags = {
+        'O_RDONLY': 0,
+        'O_WRONLY': 1,
+        'O_RDWR': 2,
+        'O_NONBLOCK': 2048,
+        'O_APPEND': 1024,
+        'O_ASYNC': 8192,
+        'O_SYNC': 1052672,
+        'O_NOFOLLOW': 131072,
+        'O_CREAT': 64,
+        'O_TRUNC': 512,
+        'O_EXCL': 128,
+        'O_NOCTTY': 256,
+        'O_DIRECTORY': 65536
+    }
+
+    mips32el_open_flags = {
+        'O_RDONLY': 0x0,
+        'O_WRONLY': 0x1,
+        'O_RDWR': 0x2,
+        'O_NONBLOCK': 0x80,
+        'O_APPEND': 0x8,
+        'O_ASYNC': 0x1000,
+        'O_SYNC': 0x4000,
+        'O_NOFOLLOW': 0x20000,
+        'O_CREAT': 0x100,
+        'O_TRUNC': 0x200,
+        'O_EXCL': 0x400,
+        'O_NOCTTY': 0x800,
+        'O_DIRECTORY': 0x100000,
+    }
+
+    if ql.archtype!= QL_ARCH.MIPS32:
+        if ql.platform == None or ql.platform == ql.ostype:
+            return flags
+
+        if ql.platform == QL_OS.MACOS and ql.ostype == QL_OS.LINUX:
+            f = linux_open_flags
+            t = mac_open_flags
+
+        elif ql.platform == QL_OS.LINUX and ql.ostype == QL_OS.MACOS:
+            f = mac_open_flags
+            t = linux_open_flags
+
+    elif ql.archtype== QL_ARCH.MIPS32 and ql.platform == QL_OS.LINUX:
+        f = mips32el_open_flags
+        t = linux_open_flags
+
+    elif ql.archtype== QL_ARCH.MIPS32 and ql.platform == QL_OS.MACOS:
+        f = mips32el_open_flags
+        t = mac_open_flags
+
+    return flag_mapping(flags, open_flags_name, f, t)
+
 
 def open_flags_mapping(flags, arch):
 

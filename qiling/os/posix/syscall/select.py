@@ -2,38 +2,14 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
-import struct
-import sys
-import os
-import stat
-import string
-import resource
-import socket
-import time
-import io
-import select
-import pathlib
-import logging
-import itertools
 
-# Remove import fcntl due to Windows Limitation
-#import fcntl
-
-from unicorn import *
-from unicorn.arm_const import *
-from unicorn.x86_const import *
-from unicorn.arm64_const import *
-from unicorn.mips_const import *
-
-# impport read_string and other commom utils.
-from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
+from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
-from qiling.utils import *
-
+from qiling.exception import *
 
 def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, *args, **kw):
 
@@ -90,7 +66,7 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
     except KeyboardInterrupt:
         raise
     except:
-        if ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
+        if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             raise
     ql.nprint("_newselect(%d, %x, %x, %x, %x) = %d" % (_newselect_nfds, _newselect_readfds, _newselect_writefds, _newselect_exceptfds, _newselect_timeout, regreturn))
     ql.os.definesyscall_return(regreturn)

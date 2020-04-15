@@ -11,16 +11,12 @@ from qiling.arch.x86_const import *
 from qiling.arch.x86 import *
 from qiling.os.utils import *
 from qiling.const import *
-
-#from qiling.loader.pe import PELoader
-from qiling.os.windows.dlls import *
-from qiling.os.windows.const import *
-from qiling.os.windows.const import Mapper
 from qiling.os.memory import QlMemoryHeap
-from qiling.os.windows.utils import *
-
 from qiling.os.os import QlOs
 
+from .dlls import *
+from .const import *
+from .utils import *
 
 class QlOsWindows(QlOs):
     def __init__(self, ql):

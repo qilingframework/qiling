@@ -2,44 +2,19 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
-import struct
-import sys
-import os
-import stat
-import string
-import resource
-import socket
-import time
-import io
-import select
-import pathlib
-import logging
-import itertools
 
-# Remove import fcntl due to Windows Limitation
-#import fcntl
-
-from unicorn import *
-from unicorn.arm_const import *
-from unicorn.x86_const import *
-from unicorn.arm64_const import *
-from unicorn.mips_const import *
-
-# impport read_string and other commom utils.
-from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
-from qiling.utils import *
 from qiling.exception import *
 
 def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
-    path = ql_read_string(ql, filename)
-    real_path = ql_transform_to_real_path(ql, path)
-    relative_path = ql_transform_to_relative_path(ql, path)
+    path = ql.mem.string(filename)
+    real_path = ql.os.transform_to_real_path(path)
+    relative_path = ql.os.transform_to_relative_path(path)
 
     flags = flags & 0xffffffff
     mode = mode & 0xffffffff
@@ -59,7 +34,8 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
             if ql.archtype== QL_ARCH.ARM:
                 mode = 0
 
-            flags = ql_open_flag_mapping(flags, ql)
+
+            flags = ql_open_flag_mapping(ql, flags)
             ql.os.file_des[idx] = ql_file.open(real_path, flags, mode)
             regreturn = idx
         except QlSyscallError as e:
@@ -77,10 +53,10 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
 
 def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args, **kw):
     openat_fd = ql.unpacks(ql.pack(openat_fd))
-    openat_path = ql_read_string(ql, openat_path)
+    openat_path = ql.mem.string(openat_path)
 
-    real_path = ql_transform_to_real_path(ql, openat_path)
-    relative_path = ql_transform_to_relative_path(ql, openat_path)
+    real_path = ql.os.transform_to_real_path(openat_path)
+    relative_path = ql.os.transform_to_relative_path(openat_path)
 
     openat_flags = openat_flags & 0xffffffff
     openat_mode = openat_mode & 0xffffffff
@@ -99,7 +75,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
             if ql.archtype== QL_ARCH.ARM:
                 mode = 0
 
-            openat_flags = ql_open_flag_mapping(openat_flags, ql)
+            openat_flags = ql_open_flag_mapping(ql, openat_flags)
             ql.os.file_des[idx] = ql_file.open(real_path, openat_flags, openat_mode)
             regreturn = idx
         except:

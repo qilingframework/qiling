@@ -1,41 +1,17 @@
 #!/usr/bin/env python3
-# 
+#
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
-import struct
-import sys
-import os
-import stat
-import string
-import resource
-import socket
-import time
-import io
-import select
-import pathlib
-import logging
-import itertools
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-# Remove import fcntl due to Windows Limitation
-#import fcntl
-
-from unicorn import *
-from unicorn.arm_const import *
-from unicorn.x86_const import *
-from unicorn.arm64_const import *
-from unicorn.mips_const import *
-
-# impport read_string and other commom utils.
-from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
-from qiling.os.posix.syscall.socket import ql_syscall_socket, ql_syscall_connect, ql_syscall_recv, ql_syscall_bind, ql_syscall_listen, ql_syscall_accept
-
+from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
-from qiling.utils import *
+from qiling.exception import *
 
+from qiling.os.posix.syscall.socket import ql_syscall_socket, ql_syscall_connect, ql_syscall_recv, ql_syscall_bind, ql_syscall_listen, ql_syscall_accept
 
 def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, *args, **kw):
     SOCKETCALL_SYS_SOCKET = 1

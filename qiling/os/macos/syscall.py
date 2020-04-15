@@ -356,7 +356,7 @@ def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buff, buffer_size):
 
 # 0x152
 def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
-    stat64_file = (ql_read_string(ql, stat64_pathname))
+    stat64_file = (ql.mem.string(stat64_pathname))
 
     real_path = ql.os.macho_fs.vm_to_real_path(stat64_file)
     ql.dprint(D_INFO, "real_path: %s" % (real_path))
@@ -479,9 +479,9 @@ def ql_syscall_thread_selfid(ql, *args, **kw):
 
 # 0x18e
 def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
-    path = ql_read_string(ql, filename)
-    real_path = ql_transform_to_real_path(ql, path)
-    relative_path = ql_transform_to_relative_path(ql, path)
+    path = ql.mem.string(filename)
+    real_path = ql.os.transform_to_real_path(path)
+    relative_path = ql.os.transform_to_relative_path(path)
 
     flags = flags & 0xffffffff
     mode = mode & 0xffffffff
@@ -498,13 +498,13 @@ def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
             if ql.archtype== QL_ARCH.ARM:
                 mode = 0
 
-            flags = open_flag_mapping(flags, ql)
+            flags = open_flags_mapping(flags, ql.archtype)
             ql.os.file_des[idx] = ql_file.open(real_path, flags, mode)
             regreturn = idx
         except:
             regreturn = -1
 
-    ql.nprint("open(%s, 0x%x, 0x%x) = %d" % (relative_path, flags, mode, regreturn))
+    ql.nprint("open(%s, 0x%s, 0x%x) = %d" % (relative_path, flags, mode, regreturn))
     if regreturn >= 0 and regreturn != 2:
         ql.dprint(D_INFO, "[+] File Found: %s" % relative_path)
     else:

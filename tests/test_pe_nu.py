@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import sys, random
+import string as st
 
 sys.path.insert(0, "..")
 

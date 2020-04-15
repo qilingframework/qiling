@@ -6,6 +6,9 @@
 QL_ARCHBIT32_EMU_END = 0x8fffffff
 QL_ARCHBIT64_EMU_END = 0xffffffffffffffff
 
+STDCALL = 1
+CDECL = 2
+
 #OS Threading Constants
 THREAD_EVENT_INIT_VAL = 0
 THREAD_EVENT_EXIT_EVENT = 1

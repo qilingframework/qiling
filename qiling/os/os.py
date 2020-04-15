@@ -6,6 +6,8 @@
 import os
 
 from qiling.const import *
+from qiling.utils import *
+
 from .utils import *
 from .const import *
 from .filestruct import ql_file
@@ -38,7 +40,14 @@ class QlOs:
         elif self.ql.archbit == 64:
             self.QL_EMU_END = QL_ARCHBIT64_EMU_END           
 
+    def transform_to_real_path(self, path):
+        return ql_transform_to_real_path(self.ql, path)
 
+    def transform_to_relative_path(self, path):
+        return ql_transform_to_relative_path(self.ql, path)
+    
+    def transform_to_link_path(self, path):
+        return ql_transform_to_link_path(self.ql, path)
 
     def setup_output(self):
 
