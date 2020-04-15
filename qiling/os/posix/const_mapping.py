@@ -36,13 +36,13 @@ def open_flags_mapping(flags, arch):
     arm64_open_flags = arm_open_flags
 
     mapping_dict = {
-            QL_X86: linux_open_flags,
-            QL_X8664: linux_open_flags,
-            QL_ARM: arm_open_flags,
-            QL_ARM64: arm64_open_flags,
-            QL_MIPS32: mips32_open_flags,
-            #FIXME: QL_MACOS is QL_OS
-            #QL_MACOS: mac_open_flags,
+            QL_ARCH.X86: linux_open_flags,
+            QL_ARCH.X8664: linux_open_flags,
+            QL_ARCH.ARM: arm_open_flags,
+            QL_ARCH.ARM64: arm64_open_flags,
+            QL_ARCH.MIPS32: mips32_open_flags,
+            #FIXME: QL_OS.MACOS is QL_OS
+            #QL_OS.MACOS: mac_open_flags,
             }.get(arch)
 
     ret = ["O_RDONLY"]
@@ -78,14 +78,14 @@ def mmap_prot_mapping(prots):
 
 def socket_type_mapping(t, arch):
     socket_type_map = {
-            QL_X86: linux_socket_types,
-            QL_X8664: linux_socket_types,
-            QL_ARM: arm_socket_types,
-            QL_ARM_THUMB: arm_socket_types,
-            QL_ARM64: arm_socket_types,
-            QL_MIPS32: mips32_socket_types,
-            #FIXME: QL_MACOS is QL_OS
-            #QL_MACOS: linux_socket_types,
+            QL_ARCH.X86: linux_socket_types,
+            QL_ARCH.X8664: linux_socket_types,
+            QL_ARCH.ARM: arm_socket_types,
+            QL_ARCH.ARM_THUMB: arm_socket_types,
+            QL_ARCH.ARM64: arm_socket_types,
+            QL_ARCH.MIPS32: mips32_socket_types,
+            #FIXME: QL_OS.MACOS is QL_OS
+            #QL_OS.MACOS: linux_socket_types,
             }.get(arch)
 
     return _constant_mapping(t, socket_type_map)
@@ -93,14 +93,14 @@ def socket_type_mapping(t, arch):
 
 def socket_domain_mapping(p, arch):
     socket_domain_map = {
-            QL_X86: linux_socket_domain,
-            QL_X8664: linux_socket_domain,
-            QL_ARM: arm_socket_domain,
-            QL_ARM_THUMB: arm_socket_domain,
-            QL_ARM64: arm_socket_domain,
-            QL_MIPS32: mips32_socket_domain,
-            #FIXME: QL_MACOS is QL_OS
-            #QL_MACOS: "macos_socket_domain",
+            QL_ARCH.X86: linux_socket_domain,
+            QL_ARCH.X8664: linux_socket_domain,
+            QL_ARCH.ARM: arm_socket_domain,
+            QL_ARCH.ARM_THUMB: arm_socket_domain,
+            QL_ARCH.ARM64: arm_socket_domain,
+            QL_ARCH.MIPS32: mips32_socket_domain,
+            #FIXME: QL_OS.MACOS is QL_OS
+            #QL_OS.MACOS: "macos_socket_domain",
             }.get(arch)
     
     return _constant_mapping(p, socket_domain_map, single_mapping=True)

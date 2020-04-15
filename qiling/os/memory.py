@@ -351,9 +351,9 @@ class QlMemoryHeap:
 
     def mem_alloc(self, size):
         
-        if self.ql.archtype == QL_X86:
+        if self.ql.archtype == QL_ARCH.X86:
             size = self._align(size, 4)
-        elif self.ql.archtype == QL_X8664:
+        elif self.ql.archtype == QL_ARCH.X8664:
             size = self._align(size, 8)
         else:
             raise QlErrorArch("[!] Unknown ql.arch")

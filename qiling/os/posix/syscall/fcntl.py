@@ -56,7 +56,7 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
         regreturn = -12 
     else:
         try:
-            if ql.archtype== QL_ARM:
+            if ql.archtype== QL_ARCH.ARM:
                 mode = 0
 
             flags = ql_open_flag_mapping(flags, ql)
@@ -96,7 +96,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
         regreturn = -1
     else:
         try:
-            if ql.archtype== QL_ARM:
+            if ql.archtype== QL_ARCH.ARM:
                 mode = 0
 
             openat_flags = ql_open_flag_mapping(openat_flags, ql)

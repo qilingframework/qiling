@@ -262,10 +262,10 @@ def ql_syscall_getrlimit(ql, which, rlp, *args, **kw):
 def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset):
     MAP_ANONYMOUS=32
 
-    if (ql.archtype== QL_ARM64) or (ql.archtype== QL_X8664):
+    if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
 
-    elif (ql.archtype== QL_MIPS32):
+    elif (ql.archtype== QL_ARCH.MIPS32):
         mmap2_fd = ql.unpack32s(ql.mem.read(mmap2_fd, 4))
         mmap2_pgoffset = ql.unpack32(ql.mem.read(mmap2_pgoffset, 4)) * 4096
         MAP_ANONYMOUS=2048
@@ -377,7 +377,7 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
         stat64_buf += ql.pack64(0x0)                            # st_mtimensec      64 byte
         stat64_buf += ql.pack64(int(stat64_info.st_ctime))      # st_ctime          64 byte
         stat64_buf += ql.pack64(0x0)                            # st_ctimensec      64 byte
-        if ql.platform == QL_MACOS:
+        if ql.platform == QL_OS.MACOS:
             stat64_buf += ql.pack64(int(stat64_info.st_birthtime))  # st_birthtime      64 byte
         else:
             stat64_buf += ql.pack64(int(stat64_info.st_ctime))  # st_birthtime      64 byte
@@ -385,11 +385,11 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
         stat64_buf += ql.pack64(stat64_info.st_size)            # st_size           64 byte
         stat64_buf += ql.pack64(stat64_info.st_blocks)          # st_blocks         64 byte
         stat64_buf += ql.pack32(stat64_info.st_blksize)         # st_blksize        32 byte
-        if ql.platform == QL_MACOS:
+        if ql.platform == QL_OS.MACOS:
             stat64_buf += ql.pack32(stat64_info.st_flags)       # st_flags          32 byte
         else:    
             stat64_buf += ql.pack32(0x0)          
-        if ql.platform == QL_MACOS:
+        if ql.platform == QL_OS.MACOS:
             stat64_buf += ql.pack32(stat64_info.st_gen)         # st_gen            32 byte
         else:    
             stat64_buf += ql.pack32(0x0)
@@ -413,7 +413,7 @@ def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
         user_fileno = fstat64_fd
         fstat64_info = ql.os.file_des[user_fileno].fstat()
         
-        if ql.archtype== QL_ARM64:
+        if ql.archtype== QL_ARCH.ARM64:
             fstat64_buf = ql.pack64(fstat64_info.st_dev)
             fstat64_buf += ql.pack64(fstat64_info.st_ino)
             fstat64_buf += ql.pack32(fstat64_info.st_mode)
@@ -495,7 +495,7 @@ def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
         regreturn = -1
     else:
         try:
-            if ql.archtype== QL_ARM:
+            if ql.archtype== QL_ARCH.ARM:
                 mode = 0
 
             flags = open_flag_mapping(flags, ql)

@@ -102,7 +102,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
         user_fileno = fstat64_fd
         fstat64_info = ql.os.file_des[user_fileno].fstat()
 
-        if ql.archtype== QL_ARM64:
+        if ql.archtype== QL_ARCH.ARM64:
             # struct stat is : 80 addr is : 0x4000811bc8
             # buf.st_dev offest 0 8 0
             # buf.st_ino offest 8 8 0
@@ -136,7 +136,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack64(0)
             fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
             fstat64_buf += ql.pack64(0)
-        elif ql.archtype == QL_MIPS32:
+        elif ql.archtype == QL_ARCH.MIPS32:
             # struct stat is : a0 addr is : 0x7fffedc0
             # buf.st_dev offest 0 4 2049
             # buf.st_ino offest 10 8 2400362
@@ -209,7 +209,7 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
         user_fileno = fstat_fd
         fstat_info = ql.os.file_des[user_fileno].fstat()
 
-        if ql.archtype== QL_MIPS32:
+        if ql.archtype== QL_ARCH.MIPS32:
             # pack fstatinfo
             fstat_buf = ql.pack32(fstat_info.st_dev)
             fstat_buf += ql.pack32(0) * 3
@@ -231,7 +231,7 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
             fstat_buf += ql.pack32(fstat_info.st_blksize)
             fstat_buf += ql.pack32(fstat_info.st_blocks)
             fstat_buf = fstat_buf.ljust(0x90, b'\x00')
-        elif ql.archtype== QL_X8664:
+        elif ql.archtype== QL_ARCH.X8664:
             fstat_buf = ql.pack64(fstat_info.st_dev)
             fstat_buf += ql.pack(fstat_info.st_ino)
             fstat_buf += ql.pack64(fstat_info.st_nlink)
@@ -289,7 +289,7 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
     else:
         stat64_info = os.stat(real_path)
 
-        if ql.archtype== QL_MIPS32:
+        if ql.archtype== QL_ARCH.MIPS32:
             # packfstatinfo
             # name offset size
             # struct stat is : a0
@@ -363,7 +363,7 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
     else:
         stat_info = os.stat(real_path)
 
-        if ql.archtype== QL_MIPS32:
+        if ql.archtype== QL_ARCH.MIPS32:
             # pack fstatinfo
             stat_buf = ql.pack32(stat_info.st_dev)
             stat_buf += ql.pack32(0) * 3
@@ -423,7 +423,7 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
     else:
         lstat_info = os.lstat(real_path)
 
-        if ql.archtype== QL_MIPS32:
+        if ql.archtype== QL_ARCH.MIPS32:
             # pack fstatinfo
             lstat_buf = ql.pack32(lstat_info.st_dev)
             lstat_buf += ql.pack32(0) * 3

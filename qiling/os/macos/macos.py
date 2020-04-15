@@ -43,12 +43,12 @@ class QlOsMacos(QlOsPosix):
         """
         self.ql.uc = self.ql.arch.init_uc
 
-        if self.ql.archtype== QL_ARM64:
+        if self.ql.archtype== QL_ARCH.ARM64:
             self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x0000000160503000
             self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x21000
             self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
             self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS  = 0x4000000f4000
-        elif  self.ql.archtype== QL_X8664:
+        elif  self.ql.archtype== QL_ARCH.X8664:
             self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x7ffcf0000000
             self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x19a00000
             self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
@@ -89,16 +89,16 @@ class QlOsMacos(QlOsPosix):
 
 
     def run(self):
-        if self.ql.archtype== QL_ARM64:
+        if self.ql.archtype== QL_ARCH.ARM64:
             self.ql.register(UC_ARM64_REG_SP, self.ql.loader.stack_address)
             self.ql.arch.enable_vfp()
             self.ql.hook_intr(self.hook_syscall)
 
-        elif self.ql.archtype== QL_X8664:
+        elif self.ql.archtype== QL_ARCH.X8664:
             self.ql.register(UC_X86_REG_RSP, self.ql.loader.stack_address)
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
 
-        if  self.ql.archtype== QL_X8664:
+        if  self.ql.archtype== QL_ARCH.X8664:
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
@@ -115,8 +115,8 @@ class QlOsMacos(QlOsPosix):
         self.macho_thread = QlMachoThread(self.ql)
         self.thread_management.cur_thread = self.macho_thread
 
-        # load_commpage not wroking with QL_ARM64, yet
-        if  self.ql.archtype== QL_X8664:
+        # load_commpage not wroking with ARM64, yet
+        if  self.ql.archtype== QL_ARCH.X8664:
             load_commpage(self.ql)
 
         if (self.ql.until_addr == 0):

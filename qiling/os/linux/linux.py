@@ -33,28 +33,28 @@ class QlOsLinux(QlOsPosix):
         self.futexm = QlLinuxFutexManagement()
 
         # ARM
-        if self.ql.archtype== QL_ARM:
+        if self.ql.archtype== QL_ARCH.ARM:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfff0d000
             self.ql.arch.enable_vfp()
             self.ql.hook_intr(self.hook_syscall)
             self.thread_class = QlLinuxARMThread
 
         # MIPS32
-        elif self.ql.archtype== QL_MIPS32:
+        elif self.ql.archtype== QL_ARCH.MIPS32:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000
             self.QL_LINUX_PREDEFINE_STACKSIZE = 0x30000
             self.ql.hook_intr(self.hook_syscall)
             self.thread_class = QlLinuxMIPS32Thread
 
         # ARM64
-        elif self.ql.archtype== QL_ARM64:
+        elif self.ql.archtype== QL_ARCH.ARM64:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
             self.ql.arch.enable_vfp()
             self.ql.hook_intr(self.hook_syscall)
             self.thread_class = QlLinuxARM64Thread
 
         # X86
-        elif  self.ql.archtype== QL_X86:
+        elif  self.ql.archtype== QL_ARCH.X86:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfffdd000
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
@@ -63,7 +63,7 @@ class QlOsLinux(QlOsPosix):
             self.thread_class = QlLinuxX86Thread
 
         # X8664
-        elif  self.ql.archtype== QL_X8664:
+        elif  self.ql.archtype== QL_ARCH.X8664:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
