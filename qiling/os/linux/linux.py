@@ -36,7 +36,6 @@ class QlOsLinux(QlOsPosix):
         if self.ql.archtype== QL_ARM:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfff0d000
             self.ql.arch.enable_vfp()
-            ql_arm_init_kernel_get_tls(self.ql)
             self.ql.hook_intr(self.hook_syscall)
             self.thread_class = QlLinuxARMThread
 
@@ -96,6 +95,9 @@ class QlOsLinux(QlOsPosix):
 
 
     def run(self):
+        if self.ql.archtype== QL_ARM:
+            ql_arm_init_kernel_get_tls(self.ql)
+        
         self.ql.reg.sp = self.ql.stack_address
         if (self.ql.until_addr == 0):
             self.ql.until_addr = self.QL_EMU_END

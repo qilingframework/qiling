@@ -3,11 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-"""
-ARM
-"""
-QL_ARM_KERNEL_GET_TLS_ADDR = 0xFFFF0FE0
-
 
 """
 SYS INIT SHELLCODE
