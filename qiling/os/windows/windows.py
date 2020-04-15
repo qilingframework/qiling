@@ -147,7 +147,7 @@ class QlOsWindows(QlOs):
         if self.ql.stderr != 0:
             self.stderr = self.ql.stderr 
 
-        ql_setup_output(self.ql)
+        self.setup_output()
 
         if (self.ql.until_addr == 0):
             self.ql.until_addr = self.QL_EMU_END

@@ -23,12 +23,12 @@ class QlOsPosix(QlOs):
         super(QlOsPosix, self).__init__(ql)
         self.ql = ql
         self.sigaction_act = []
+
         self.file_des = []
         self.dict_posix_syscall = dict()
         self.dict_posix_syscall_by_num = dict()
 
         if self.ql.ostype in QL_POSIX:
-
             self.file_des = [0] * 256
             self.file_des[0] = self.stdin
             self.file_des[1] = self.stdout
@@ -36,7 +36,9 @@ class QlOsPosix(QlOs):
 
         for _ in range(256):
             self.sigaction_act.append(0)
+        
 
+    
     # ql.syscall - get syscall for all posix series
     @property
     def syscall(self):
@@ -129,7 +131,6 @@ class QlOsPosix(QlOs):
             #    print("[+] A3 is %d" % a3return)
             self.ql.register(UC_MIPS_REG_V0, regreturn)
             self.ql.register(UC_MIPS_REG_A3, a3return)
-
 
     # get syscall
     def get_syscall_param(self):

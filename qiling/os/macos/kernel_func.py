@@ -3,11 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-from qiling.os.macos.const import *
-from qiling.os.macos.mach_port import *
-from qiling.const import *
+
 from struct import *
 import os
+
+from qiling.const import *
+from .const import *
+from .mach_port import *
+
 
 # commpage is a shared mem space which is in a static address
 # start at 0x7FFFFFE00000

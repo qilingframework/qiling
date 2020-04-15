@@ -12,18 +12,20 @@ from unicorn.arm64_const import *
 
 from qiling.arch.x86 import *
 
-from qiling.os.macos.utils import *
-from qiling.os.macos.kernel_func import *
-from qiling.os.macos.thread import *
-from qiling.os.macos.subsystems import *
-from qiling.os.macos.task import *
-from qiling.os.macos.mach_port import *
+
 from qiling.os.posix.syscall import *
 from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.const import *
-from qiling.os.macos.const import *
 from qiling.os.posix.posix import QlOsPosix
+
+from .utils import *
+from .kernel_func import *
+from .thread import *
+from .subsystems import *
+from .task import *
+from .mach_port import *
+from .const import *
 
 class QlOsMacos(QlOsPosix):
     def __init__(self, ql):
@@ -102,7 +104,7 @@ class QlOsMacos(QlOsPosix):
             ql_x86_register_ds_ss_es(self)
         
         self.macho_task.min_offset = page_align_end(self.ql.loader.vm_end_addr, PAGE_SIZE)
-        ql_setup_output(self.ql)
+        self.setup_output()
         
         # FIXME: Not working due to overlarge mapping, need to fix it
         # vm_shared_region_enter(self.ql)

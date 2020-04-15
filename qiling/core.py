@@ -11,7 +11,6 @@ import os as pyos
 from .const import *
 from .exception import *
 from .utils import *
-from .debugger.utils import *
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 
@@ -205,7 +204,8 @@ class Qiling(QLCoreStructs, QLCoreHooks):
             self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
 
         # init debugger
-        ql_debugger_init(self)
+        if self.debugger is not None:
+            ql_debugger_init(self)
 
         # patch binary
         self.__enable_bin_patch()

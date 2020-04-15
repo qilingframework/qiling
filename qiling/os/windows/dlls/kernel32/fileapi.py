@@ -3,8 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct
-import time
+import struct, time, os
+
 from qiling.os.windows.const import *
 from qiling.os.fncc import *
 from qiling.os.utils import *

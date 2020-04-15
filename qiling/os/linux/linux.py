@@ -87,7 +87,7 @@ class QlOsLinux(QlOsPosix):
                 self.ql.stack_size = self.QL_LINUX_PREDEFINE_STACKSIZE
             self.ql.mem.map(self.ql.stack_address, self.ql.stack_size, info="[stack]")
 
-        ql_setup_output(self.ql)
+        self.setup_output()
 
 
     def hook_syscall(self, int= None, intno= None):

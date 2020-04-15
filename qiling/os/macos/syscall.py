@@ -3,34 +3,17 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import struct
-import sys
-import os
-import string
-import resource
-import socket
-import time
-import io
-import select
-import random
-
-from unicorn import *
-from unicorn.arm_const import *
-from unicorn.x86_const import *
-from unicorn.arm64_const import *
-from unicorn.mips_const import *
-
 from qiling.exception import *
-from qiling.os.utils import *
-from qiling.os.macos.const import *
-from qiling.os.macos.thread import *
-from qiling.os.macos.mach_port import *
-from qiling.os.macos.kernel_func import *
-from qiling.os.macos.utils import *
 from qiling.const import *
-from qiling.arch.x86 import *
+from qiling.arch.x86_const import *
 from qiling.os.posix.const_mapping import *
+from qiling.os.filestruct import *
 
+from .const import *
+from .thread import *
+from .mach_port import *
+from .kernel_func import *
+from .utils import *
 
 # TODO: We need to finish these syscall
 # there are three kinds of syscall, we often use posix syscall, mach syscall is used by handle mach msg
