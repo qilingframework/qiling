@@ -10,8 +10,8 @@ import struct, os, re, socket
 from binascii import unhexlify
 
 from qiling.debugger.gdbserver import qldbg
-from qiling.const import QL_ARCH
-from qiling.os.utils import *
+from qiling.const import *
+from qiling.utils import *
 from qiling.arch.utils import *
 
 
