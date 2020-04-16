@@ -142,7 +142,7 @@ def hook_WriteFile(self, address, params):
             self.last_error  = ERROR_INVALID_HANDLE
             return 0
         else:
-            f = f.file
+            f = f.obj
         buffer = self.ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         f.write(bytes(buffer))
         self.ql.mem.write(lpNumberOfBytesWritten, self.ql.pack32(nNumberOfBytesToWrite))

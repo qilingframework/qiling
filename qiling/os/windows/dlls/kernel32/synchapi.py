@@ -160,7 +160,7 @@ def hook_OpenMutexW(self, address, params):
         if handle is None:
             return 0xD10C
         else:
-            mutex = handle.mutex
+            mutex = handle.obj
             if mutex.isFree():
                 mutex.lock()
             else:
