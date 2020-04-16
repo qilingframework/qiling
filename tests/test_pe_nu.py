@@ -149,6 +149,12 @@ def test_pe_win_x86_wannacry():
     del ql
 
 
+def test_pe_win_al_khaser():
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
+    ql.run()
+    del ql
+
+
 def test_pe_win_x8664_customapi():
     @winapi(cc=CDECL, params={
         "str": STRING
