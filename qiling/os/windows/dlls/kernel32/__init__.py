@@ -20,3 +20,4 @@ from .wow64apiset import *
 from .interlockedapi import *
 from .consoleapi2 import *
 from .consoleapi3 import *
+from .debugapi import *

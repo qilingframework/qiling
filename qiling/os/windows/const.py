@@ -537,3 +537,14 @@ Mapper = {
 }
 
 MAXUSHORT = 0xffff
+
+# https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
+FILE_TYPE_CHAR = 0x2
+FILE_TYPE_DISK = 0x1
+FILE_TYPE_PIPE = 0x3
+FILE_TYPE_REMOTE = 0x800
+FILE_TYPE_UNKNOWN = 0x0
+
+# https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-isprocessorfeaturepresent
+PF_XSAVE_ENABLED = 0x17
+# ...

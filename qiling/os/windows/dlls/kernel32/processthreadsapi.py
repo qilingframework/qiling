@@ -179,8 +179,12 @@ def hook_GetCurrentProcessId(self, address, params):
     "ProcessorFeature": DWORD
 })
 def hook_IsProcessorFeaturePresent(self, address, params):
-    ret = 1
-    return ret
+    feature = params["ProcessorFeature"]
+    if feature == PF_XSAVE_ENABLED:
+        # it seems like unicorn can't recognize the instruction
+        return 0
+    else:
+        return 1
 
 
 # HANDLE CreateThread(
@@ -261,7 +265,8 @@ def hook_GetCurrentProcess(self, address, params):
 def hook_TerminateProcess(self, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
-    if process == 0x0 or process == self.DEFAULT_IMAGE_BASE:
+    # TODO i have no idea on how to find the old ql.pe.DEFAULT_IMAGE_BASE
+    if process == 0x1:  # or process == self.ql.os.DEFAULT_IMAGE_BASE:
         self.ql.emu_stop()
         self.PE_RUN = False
     ret = 1

@@ -23,11 +23,15 @@ from qiling.exception import *
 })
 def hook_GetFileType(self, address, params):
     hFile = params["hFile"]
-    FILE_TYPE_CHAR = 0x0002
     if hFile == STD_INPUT_HANDLE or hFile == STD_OUTPUT_HANDLE or hFile == STD_ERROR_HANDLE:
         ret = FILE_TYPE_CHAR
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        obj = self.handle_manager.get(hFile)
+        if obj is None:
+            raise QlErrorNotImplemented("[!] API not implemented")
+        else:
+            # technically is not always a type_char but.. almost
+            ret = FILE_TYPE_CHAR
     return ret
 
 
