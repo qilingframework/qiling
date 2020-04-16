@@ -6,7 +6,7 @@ from Registry import Registry
 
 # ERRORS CODE
 # https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
-ERROR_SUCCESS = 0x0
+ERROR_SUCCESS = STATUS_SUCCESS = 0x0
 ERROR_INVALID_FUNCTION = 0x1
 ERROR_FILE_NOT_FOUND = 0x2
 ERROR_PATH_NOT_FOUND = 0x3

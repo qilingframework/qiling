@@ -1,6 +1,8 @@
 [SYSTEM]
 # Major Minor ProductType
-os = 1001
+majorVersion = 10
+minorVersion = 0
+productType = 1
 language = 1093
 VER_SERVICEPACKMAJOR = 0
 computer_name = qilingpc

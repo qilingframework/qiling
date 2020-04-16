@@ -538,3 +538,24 @@ def hook_sprintf(self, address, params):
 })
 def hook_GetForegroundWindow(self, address, params):
     return 0xF02E620D  # Value so we can recognize inside dumps
+
+
+# BOOL MoveWindow(
+#   HWND hWnd,
+#   int  X,
+#   int  Y,
+#   int  nWidth,
+#   int  nHeight,
+#   BOOL bRepaint
+# )
+@winapi(cc=STDCALL, params={
+    "hWnd": HANDLE,
+    "X": INT,
+    "Y": INT,
+    "nWidth": INT,
+    "nHeight": INT,
+    "bRepaint": BOOL
+
+})
+def hook_MoveWindow(self, address, params):
+    return 1
