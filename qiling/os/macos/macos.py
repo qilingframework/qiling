@@ -9,12 +9,8 @@ from unicorn import *
 from unicorn.x86_const import *
 from unicorn.arm64_const import *
 
-
 from qiling.arch.x86 import *
 
-
-from qiling.os.posix.syscall import *
-from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.const import *
 from qiling.os.posix.posix import QlOsPosix

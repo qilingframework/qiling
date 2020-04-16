@@ -2,12 +2,14 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 import struct
 from unicorn.x86_const import *
-from qiling.os.utils import *
+
 from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.const import *
+from qiling.exception import *
 
 DWORD = 1
 UINT = 1

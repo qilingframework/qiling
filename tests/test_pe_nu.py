@@ -5,6 +5,7 @@
 
 import sys, random
 import string as st
+from binascii import unhexlify
 
 sys.path.insert(0, "..")
 

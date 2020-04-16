@@ -4,9 +4,9 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import sys, unittest, subprocess, string, random
-sys.path.append("..")
+import os as pyos
 from qiling import *
-from qiling.os.utils import *
+from qiling.const import *
 from qiling.exception import *
 from qiling.os.posix import syscall
 
@@ -63,7 +63,21 @@ class ELFTest(unittest.TestCase):
 
 
     def test_tcp_elf_linux_x8664(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/tcp_test"], "../examples/rootfs/x8664_linux")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_tcp_test","20001"], "../examples/rootfs/x8664_linux")
+        ql.multithread = True
+        ql.run()
+        del ql
+
+
+    def test_tcp_elf_linux_arm(self):
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_tcp_test","20002"], "../examples/rootfs/arm_linux")
+        ql.multithread = True
+        ql.run()
+        del ql
+
+
+    def test_tcp_elf_linux_mips32el(self):
+        ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_tcp_test","20003"], "../examples/rootfs/mips32el_linux")
         ql.multithread = True
         ql.run()
         del ql
@@ -104,7 +118,7 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.file_des[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                os.remove(real_path)
+                pyos.remove(real_path)
 
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             target = False
@@ -120,7 +134,7 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.file_des[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                os.remove(real_path)
+                pyos.remove(real_path)
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
             target = False
@@ -134,8 +148,8 @@ class ELFTest(unittest.TestCase):
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
-                assert os.path.isfile(real_path) == True
-                os.remove(real_path)
+                assert pyos.path.isfile(real_path) == True
+                pyos.remove(real_path)
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
@@ -149,7 +163,7 @@ class ELFTest(unittest.TestCase):
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
-                assert os.path.isfile(real_path) == False
+                assert pyos.path.isfile(real_path) == False
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
@@ -163,8 +177,8 @@ class ELFTest(unittest.TestCase):
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
-                assert os.stat(real_path).st_size == 0
-                os.remove(real_path)
+                assert pyos.stat(real_path).st_size == 0
+                pyos.remove(real_path)
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             target = False
@@ -178,8 +192,8 @@ class ELFTest(unittest.TestCase):
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
-                assert os.stat(real_path).st_size == 0x10
-                os.remove(real_path)
+                assert pyos.stat(real_path).st_size == 0x10
+                pyos.remove(real_path)
 
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_posix_syscall"], "../examples/rootfs/x86_linux", output="debug")
         ql.set_syscall(0x3, test_syscall_read)
@@ -251,7 +265,7 @@ class ELFTest(unittest.TestCase):
 
             # if target:
                 # real_path = ql.os.transform_to_real_path(pathname)
-                # assert os.path.isfile(real_path) == True
+                # assert pyos.path.isfile(real_path) == True
                 # os.remove(real_path)
 
         # def test_syscall_unlink(ql, unlink_pathname, *args):
@@ -266,7 +280,7 @@ class ELFTest(unittest.TestCase):
 
             # if target:
                 # real_path = ql.os.transform_to_real_path(pathname)
-                # assert os.path.isfile(real_path) == False
+                # assert pyos.path.isfile(real_path) == False
 
         # def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             # target = False
@@ -351,7 +365,7 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.file_des[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                os.remove(real_path)
+                pyos.remove(real_path)
  
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             target = False
@@ -367,7 +381,7 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.file_des[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                os.remove(real_path)
+                pyos.remove(real_path)
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
             target = False
@@ -381,8 +395,8 @@ class ELFTest(unittest.TestCase):
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
-                assert os.path.isfile(real_path) == True
-                os.remove(real_path)
+                assert pyos.path.isfile(real_path) == True
+                pyos.remove(real_path)
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
@@ -396,7 +410,7 @@ class ELFTest(unittest.TestCase):
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
-                assert os.path.isfile(real_path) == False
+                assert pyos.path.isfile(real_path) == False
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
@@ -410,8 +424,8 @@ class ELFTest(unittest.TestCase):
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
-                assert os.stat(real_path).st_size == 0
-                os.remove(real_path)
+                assert pyos.stat(real_path).st_size == 0
+                pyos.remove(real_path)
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             target = False
@@ -425,8 +439,8 @@ class ELFTest(unittest.TestCase):
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
-                assert os.stat(real_path).st_size == 0x10
-                os.remove(real_path)
+                assert pyos.stat(real_path).st_size == 0x10
+                pyos.remove(real_path)
 
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_posix_syscall"], "../examples/rootfs/arm64_linux", output="debug")
         ql.set_syscall(0x3f, test_syscall_read)
@@ -472,7 +486,7 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.file_des[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                os.remove(real_path)
+                pyos.remove(real_path)
  
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             target = False
@@ -488,7 +502,7 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.file_des[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                os.remove(real_path)
+                pyos.remove(real_path)
 
         def test_syscall_open(ql, open_pathname, open_flags, open_mode, *args):
             target = False
@@ -502,8 +516,8 @@ class ELFTest(unittest.TestCase):
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
-                assert os.path.isfile(real_path) == True
-                os.remove(real_path)
+                assert pyos.path.isfile(real_path) == True
+                pyos.remove(real_path)
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
@@ -517,7 +531,7 @@ class ELFTest(unittest.TestCase):
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
-                assert os.path.isfile(real_path) == False
+                assert pyos.path.isfile(real_path) == False
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
@@ -531,8 +545,8 @@ class ELFTest(unittest.TestCase):
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
-                assert os.stat(real_path).st_size == 0
-                os.remove(real_path)
+                assert pyos.stat(real_path).st_size == 0
+                pyos.remove(real_path)
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             target = False
@@ -546,8 +560,8 @@ class ELFTest(unittest.TestCase):
 
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
-                assert os.stat(real_path).st_size == 0x10
-                os.remove(real_path)
+                assert pyos.stat(real_path).st_size == 0x10
+                pyos.remove(real_path)
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_posix_syscall"], "../examples/rootfs/mips32el_linux", output="debug")
         ql.set_syscall(4003, test_syscall_read)
@@ -603,7 +617,7 @@ class ELFTest(unittest.TestCase):
                 return 0
 
             def fstat(self):
-                return os.fstat(sys.stdin.fileno())
+                return pyos.fstat(sys.stdin.fileno())
  
             def show(self):
                 pass

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
+
 import struct
-from qiling.os.utils import *
+
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.const import *
-
 
 # void __set_app_type (
 #    int at

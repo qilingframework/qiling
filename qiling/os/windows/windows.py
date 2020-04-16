@@ -9,8 +9,8 @@ from unicorn import *
 
 from qiling.arch.x86_const import *
 from qiling.arch.x86 import *
-from qiling.os.utils import *
 from qiling.const import *
+from qiling.os.utils import ql_init_configuration
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs
 

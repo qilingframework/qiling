@@ -6,7 +6,6 @@
 from qiling.const import *
 from qiling.arch.x86 import *
 
-from qiling.os.utils import *
 from qiling.os.posix.posix import QlOsPosix
 from .const import *
 from .utils import *
