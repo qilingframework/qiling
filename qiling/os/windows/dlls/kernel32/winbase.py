@@ -249,7 +249,7 @@ def hook_lstrcatW(self, address, params):
     src = params["lpString2"]
     pointer = params["lpString1"]
     string_base = read_wstring(self.ql, pointer)
-    result = string_base + src + "\x00"
+    result = str(string_base) + str(src) + "\x00"
     self.ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
     return pointer
 

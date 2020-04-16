@@ -41,10 +41,9 @@ def RegQueryValue(self, address, params):
     lpType = params["lpType"]
     lpData = params["lpData"]
     lpcbData = params["lpcbData"]
-
     s_hKey = self.handle_manager.get(hKey).regkey
-    params["hKey"] = s_hKey
-
+    if "ProcessorName" in s_lpValueName:
+        return ERROR_FILE_NOT_FOUND
     # read reg_type
     if lpType != 0:
         reg_type = self.ql.unpack(self.mem.read(lpType, 4))
@@ -61,6 +60,7 @@ def RegQueryValue(self, address, params):
     else:
         # set lpData
         length = self.registry_manager.write_reg_value_into_mem(value, reg_type, lpData)
+        self.ql.dprint(D_INFO, string_to_hex(read_wstring(self.ql, lpData)))
         # set lpcbData
         max_size = int.from_bytes(self.ql.mem.read(lpcbData, 4), byteorder="little")
         self.ql.mem.write(lpcbData, self.ql.pack(length))

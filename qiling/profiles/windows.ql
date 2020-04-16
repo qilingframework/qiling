@@ -16,5 +16,11 @@ temp = C:\Windows\Temp
 registry_diff = registry_diff.json
 
 [VOLUME]
+path = C:\
 serial_number = 3224010732
-type = "NTFS"
+type = NTFS
+
+sectors_per_cluster = 10
+bytes_per_sector = 512
+number_of_free_clusters = 12345
+number_of_clusters = 65536

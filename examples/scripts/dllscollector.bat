@@ -15,6 +15,7 @@ echo f | xcopy /f /y C:\Users\Default\NTUSER.DAT examples\rootfs\x8664_windows\W
 reg save hklm\system examples\rootfs\x8664_windows\Windows\registry\SYSTEM
 reg save hklm\security examples\rootfs\x8664_windows\Windows\registry\SECURITY
 reg save hklm\software examples\rootfs\x8664_windows\Windows\registry\SOFTWARE
+reg save hklm\hardware examples\rootfs\x8664_windows\Windows\registry\HARDWARE
 reg save hklm\SAM examples\rootfs\x8664_windows\Windows\registry\SAM
 xcopy /d /y examples\rootfs\x8664_windows\Windows\registry\* examples\rootfs\x86_windows\Windows\registry\
 

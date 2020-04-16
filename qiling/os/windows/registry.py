@@ -77,6 +77,7 @@ class RegistryManager:
             self.hklm['SAM'] = Registry.Registry(os.path.join(self.hive, 'SAM'))
             self.hklm['SOFTWARE'] = Registry.Registry(os.path.join(self.hive, 'SOFTWARE'))
             self.hklm['SYSTEM'] = Registry.Registry(os.path.join(self.hive, 'SYSTEM'))
+            self.hklm['HARDWARE'] = Registry.Registry(os.path.join(self.hive, 'HARDWARE'))
             # hkey current user
             self.hkcu = Registry.Registry(os.path.join(self.hive, 'NTUSER.DAT'))
         except FileNotFoundError:
