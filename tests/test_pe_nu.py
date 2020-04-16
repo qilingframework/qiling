@@ -151,6 +151,9 @@ def test_pe_win_x86_wannacry():
 
 def test_pe_win_al_khaser():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
+    ql.patch(0x00401198, b'\x90' * 5)
+    ql.patch(0x004011b1, b'\x90' * 5)
+    ql.patch(0x004011d5, b'\x90' * 5)
     ql.run()
     del ql
 

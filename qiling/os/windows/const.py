@@ -548,3 +548,12 @@ FILE_TYPE_UNKNOWN = 0x0
 # https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-isprocessorfeaturepresent
 PF_XSAVE_ENABLED = 0x17
 # ...
+
+
+# https://docs.microsoft.com/en-us/windows/win32/procthread/zwqueryinformationprocess
+ProcessBasicInformation = 0
+ProcessDebugPort = 7
+ProcessWow64Information = 26
+ProcessImageFileName = 27
+ProcessBreakOnTermination = 29
+ProcessProtectionInformation = 61
