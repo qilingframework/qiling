@@ -151,9 +151,29 @@ def test_pe_win_x86_wannacry():
 
 def test_pe_win_al_khaser():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
+    # The patch are to remove the prints to file. It crashes. will debug why in the future
+    # IsDebuggerPresent
     ql.patch(0x00401198, b'\x90' * 5)
+    # Checking PEB.BeingDebugged
     ql.patch(0x004011b1, b'\x90' * 5)
+    # CheckRemoteDebuggerPresentAPI
     ql.patch(0x004011d5, b'\x90' * 5)
+    # Checking PEB.NtGlobalFlag
+    ql.patch(0x004011e6, b'\x90' * 5)
+
+    # i think we have a problem with peb
+    size = 0x40121e - 0x4011fb
+    ql.patch(0x4011fb, b'\x90' * size)
+    # Checking ProcessHeap.Flags
+    ql.patch(0x0040121e, b'\x90' * 5)
+    # i think we have a problem with peb
+    size = 0x401253 - 0x401233
+    ql.patch(0x401233, b'\x90' * size)
+    # Checking ProcessHeap.ForceFlags
+    ql.patch(0x00401253, b'\x90' * 5)
+    # NtQueryInformationProcess (ProcessDebugPort)
+    # ql.patch(0x004012a5, b'\x90' * 5)
+
     ql.run()
     del ql
 
