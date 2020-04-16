@@ -103,7 +103,7 @@ def hook_ReadFile(self, address, params):
         self.ql.mem.write(lpBuffer, s)
         self.ql.mem.write(lpNumberOfBytesRead, self.ql.pack(read_len))
     else:
-        f = self.handle_manager.get(hFile).file
+        f = self.handle_manager.get(hFile).obj
         data = f.read(nNumberOfBytesToRead)
         self.ql.mem.write(lpBuffer, data)
         self.ql.mem.write(lpNumberOfBytesRead, self.ql.pack32(lpNumberOfBytesRead))
