@@ -250,7 +250,7 @@ def hook_CreateThread(self, address, params):
 # );
 @winapi(cc=STDCALL, params={})
 def hook_GetCurrentProcess(self, address, params):
-    ret = 1
+    ret = 0
     return ret
 
 
@@ -266,7 +266,7 @@ def hook_TerminateProcess(self, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
     # TODO i have no idea on how to find the old ql.pe.DEFAULT_IMAGE_BASE
-    if process == 0x1:  # or process == self.ql.os.DEFAULT_IMAGE_BASE:
+    if process == 0x0:  # or process == self.ql.os.DEFAULT_IMAGE_BASE:
         self.ql.emu_stop()
         self.PE_RUN = False
     ret = 1
