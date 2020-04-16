@@ -17,3 +17,4 @@ from .winbase import *
 from .winnls import *
 from .winnt import *
 from .wow64apiset import *
+from .interlockedapi import *

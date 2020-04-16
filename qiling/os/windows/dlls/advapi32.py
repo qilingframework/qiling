@@ -26,7 +26,7 @@ def _RegOpenKey(self, address, params):
         return ERROR_FILE_NOT_FOUND
 
     # new handle
-    new_handle = Handle(regkey=s_hKey + "\\" + s_lpSubKey)
+    new_handle = Handle(obj=s_hKey + "\\" + s_lpSubKey)
     self.handle_manager.append(new_handle)
     if phkResult != 0:
         self.ql.mem.write(phkResult, self.ql.pack(new_handle.id))
@@ -215,7 +215,7 @@ def hook_RegCreateKeyA(self, address, params):
 
     # new handle
     if ret == ERROR_SUCCESS:
-        new_handle = Handle(regkey=s_hKey + "\\" + s_lpSubKey)
+        new_handle = Handle(obj=s_hKey + "\\" + s_lpSubKey)
         self.handle_manager.append(new_handle)
         if phkResult != 0:
             self.ql.mem.write(phkResult, self.ql.pack(new_handle.id))

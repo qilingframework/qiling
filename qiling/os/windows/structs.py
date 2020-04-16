@@ -318,7 +318,7 @@ class Token:
                                                                                     byteorder='little')
         # We create a Sid Structure, set its handle and return the value
         sid = Sid(ql)
-        handle = Handle(sid=sid)
+        handle = Handle(obj=sid)
         
         # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
         self.ql.os.handle_manager.append(handle)

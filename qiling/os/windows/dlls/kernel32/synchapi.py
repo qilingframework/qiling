@@ -195,7 +195,7 @@ def hook_CreateMutexW(self, address, params):
         mutex = Mutex(name, type)
         if owning:
             mutex.lock()
-        handle = Handle(mutex=mutex, name=name)
+        handle = Handle(obj=mutex, name=name)
         self.handle_manager.append(handle)
 
     return handle.ID

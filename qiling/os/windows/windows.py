@@ -98,7 +98,7 @@ class QlOsWindows(QlOs):
         self.thread_manager = QlWindowsThreadManagement(self.ql, main_thread)
 
         # more handle manager
-        new_handle = Handle(thread=main_thread)
+        new_handle = Handle(obj=main_thread)
         self.handle_manager.append(new_handle)
 
     # hook WinAPI in PE EMU

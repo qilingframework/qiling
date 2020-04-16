@@ -64,7 +64,7 @@ def _ShellExecute(self, dic: dict):
     if operation == "runas":
         self.ql.dprint(D_RPRT, "[=] Sample is executing shell command as administrator!")
     process = QlWindowsThread(self, status=0, isFake=True)
-    handle = Handle(thread=process)
+    handle = Handle(obj=process)
     self.handle_manager.append(handle)
     return handle
 

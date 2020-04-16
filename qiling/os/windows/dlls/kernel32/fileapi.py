@@ -168,7 +168,7 @@ def _CreateFile(self, address, params, name):
     # create thread handle
     s_lpFileName = ql_transform_to_real_path(self.ql, s_lpFileName)
     f = open(s_lpFileName.replace("\\", os.sep), mode)
-    new_handle = Handle(file=f)
+    new_handle = Handle(obj=f)
     self.handle_manager.append(new_handle)
     ret = new_handle.id
 

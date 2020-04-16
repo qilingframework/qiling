@@ -14,6 +14,7 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 from qiling.os.windows.structs import *
 
+
 # void ExitProcess(
 #   UINT uExitCode
 # );
@@ -211,7 +212,7 @@ def hook_CreateThread(self, address, params):
     lpThreadId = params["lpThreadId"]
 
     # new thread obj
-    new_thread = QlWindowsThread(self. ql)
+    new_thread = QlWindowsThread(self.ql)
 
     if dwCreationFlags & CREATE_SUSPENDED == CREATE_SUSPENDED:
         thread_status = QlWindowsThread.READY
@@ -229,7 +230,7 @@ def hook_CreateThread(self, address, params):
     self.thread_manager.append(new_thread)
 
     # create thread handle
-    new_handle = Handle(thread=new_thread)
+    new_handle = Handle(obj=new_thread)
     self.handle_manager.append(new_handle)
     ret = new_handle.id
 
@@ -290,7 +291,7 @@ def hook_OpenProcess(self, address, params):
     # If the specified process is the System Process (0x00000000),
     # the function fails and the last error code is ERROR_INVALID_PARAMETER
     if proc == 0:
-        self.last_error  = ERROR_INVALID_PARAMETER
+        self.last_error = ERROR_INVALID_PARAMETER
         return 0
     return 0xD10C
 
@@ -308,7 +309,7 @@ def hook_OpenProcess(self, address, params):
 def hook_OpenProcessToken(self, address, params):
     token_pointer = params["TokenHandle"]
     token = Token(self.ql)
-    new_handle = Handle(token=token)
+    new_handle = Handle(obj=token)
     self.handle_manager.append(new_handle)
     self.ql.mem.write(token_pointer, self.ql.pack(new_handle.id))
     return 1
