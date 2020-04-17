@@ -85,8 +85,9 @@ def hook_SetErrorMode(self, address, params):
 def hook_RaiseException(self, address, params):
     address = self.handle_manager.search("TopLevelExceptionHandler").obj
     old_pc = self.ql.reg.pc
-    # TODO EXECUTE CODE FROM ADDRESS
-    self.ql.reg.pc = old_pc
+    # TODO we should jump on the code
+    # self.ql.stack_write(0, address)
+
     return 0
 
 

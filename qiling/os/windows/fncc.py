@@ -142,10 +142,11 @@ def __x86_cc(self, param_num, params, func, args, kwargs):
 
 
 def x86_stdcall(self, param_num, params, func, args, kwargs):
+    # if we check ret_addr before the call, we can't modify the ret_addr from inside the hook
+    result, param_num = __x86_cc(self, param_num, params, func, args, kwargs)
+
     # get ret addr
     ret_addr = self.ql.stack_read(0)
-
-    result, param_num = __x86_cc(self, param_num, params, func, args, kwargs)
 
     # update stack pointer
     self.ql.reg.sp = self.ql.reg.sp + ((param_num + 1) * 4)
