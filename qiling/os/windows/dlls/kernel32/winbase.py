@@ -387,7 +387,7 @@ def hook_VerifyVersionInfoW(self, address, params):
         elif value == VER_GREATER_EQUAL:
             operator = ">="
         else:
-            raise QlErrorNotImplemented("[!] API not implemented")
+            raise QlErrorNotImplemented("[!] API not implemented with operator %d" % value)
         # Versions should be compared together
         if key == VER_MAJORVERSION or key == VER_MINORVERSION or key == VER_PRODUCT_TYPE:
             major_version_asked = os_version_info_asked[VER_MAJORVERSION]
@@ -400,9 +400,9 @@ def hook_VerifyVersionInfoW(self, address, params):
                 self.ql.dprint(D_RPRT, "[=] The sample is checking the windows Version!")
                 version_asked = SYSTEMS_VERSION.get(concat, None)
                 if version_asked is None:
-                    raise QlErrorNotImplemented("[!] API not implemented")
+                    raise QlErrorNotImplemented("[!] API not implemented for version %s" % concat)
                 else:
-                    self.ql.dprint(D_RPRT, "[=] The sample asks for %s" % version_asked)
+                    self.ql.dprint(D_RPRT, "[=] The sample asks for version %s %s" % (operator, version_asked))
             # We can finally compare
             qiling_os = str(self.profile.get("SYSTEM", "majorVersion")) + \
                         str(self.profile.get("SYSTEM", "minorVersion")) + str(self.profile.get("SYSTEM", "productType"))
@@ -410,12 +410,12 @@ def hook_VerifyVersionInfoW(self, address, params):
         elif key == VER_SERVICEPACKMAJOR:
             res = compare(self.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_version_info_asked[key])
         else:
-            raise QlErrorNotImplemented("[!] API not implemented")
+            raise QlErrorNotImplemented("[!] API not implemented for key %s" % key)
         # The result is a AND between every value, so if we find a False we just exit from the loop
         if not res:
             self.last_error = ERROR_OLD_WIN_VERSION
             return 0
-    return 1
+    return res
 
 
 # BOOL GetUserNameW(

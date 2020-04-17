@@ -532,8 +532,12 @@ SYSTEMS_VERSION = {
     "610": "Windows Server 2008 R2",
 
     "601": "Windows Vista",
-    "600": "Windows Server 2008"
-    # ..
+    "600": "Windows Server 2008",
+
+    # ...
+
+    "510": "Windows XP"
+    # ...
 }
 
 # Mapper for ordinal syscalls

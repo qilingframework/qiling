@@ -22,8 +22,12 @@ from qiling.exception import *
 })
 def hook_SetUnhandledExceptionFilter(self, address, params):
     addr = params["lpTopLevelExceptionFilter"]
-    handle = Handle(name="TopLevelExceptionHandler", obj=addr)
-    self.handle_manager.append(handle)
+    handle = self.handle_manager.search("TopLevelExceptionHandler")
+    if handle is None:
+        handle = Handle(name="TopLevelExceptionHandler", obj=addr)
+        self.handle_manager.append(handle)
+    else:
+        handle.obj = addr
     return 0
 
 
@@ -76,11 +80,42 @@ def hook_SetErrorMode(self, address, params):
     "dwExceptionCode": DWORD,
     "dwExceptionFlags": DWORD,
     "nNumberOfArguments": DWORD,
-    "lpArguments": POINTER,
+    "lpArguments": POINTER
 })
 def hook_RaiseException(self, address, params):
     address = self.handle_manager.search("TopLevelExceptionHandler").obj
     old_pc = self.ql.reg.pc
     # TODO EXECUTE CODE FROM ADDRESS
     self.ql.reg.pc = old_pc
+    return 0
+
+
+# PVOID AddVectoredExceptionHandler(
+#   ULONG                       First,
+#   PVECTORED_EXCEPTION_HANDLER Handler
+# );
+@winapi(cc=STDCALL, params={
+    "First": UINT,
+    "Handler": HANDLE
+})
+def hook_AddVectoredExceptionHandler(self, address, params):
+    addr = params["Handler"]
+    handle = self.handle_manager.search("VectoredHandler")
+    if handle is None:
+        handle = Handle(name="VectoredHandler", obj=addr)
+        self.handle_manager.append(handle)
+    else:
+        handle.obj = addr
+    return 0
+
+
+# ULONG RemoveVectoredExceptionHandler(
+#   PVOID Handle
+# );
+@winapi(cc=STDCALL, params={
+    "Handler": HANDLE
+})
+def hook_RemoveVectoredExceptionHandler(self, address, params):
+    handle = self.handle_manager.search("VectoredHandler")
+    self.handle_manager.delete(handle.id)
     return 0

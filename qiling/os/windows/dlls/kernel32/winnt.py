@@ -49,7 +49,11 @@ def hook_VerSetConditionMask(self, address, params):
     # ConditionMask = params["ConditionMask"]
     TypeMask = params["TypeMask"]
     Condition = params["Condition"]
-    ConditionMask = self.hooks_variables.get("ConditionMask", {})
+    mask = params["ConditionMask"]
+    if mask == 0:
+        ConditionMask = {}
+    else:
+        ConditionMask = self.hooks_variables.get("ConditionMask", {})
     if TypeMask == 0:
         ret = ConditionMask
     else:
