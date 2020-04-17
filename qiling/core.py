@@ -114,7 +114,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             if pyos.path.exists(str(self.filename[0])) and pyos.path.exists(self.rootfs):
                 self.path = (str(self.filename[0]))
                 if self.ostype is None or self.archtype is None:
-                    self.archtype, self.ostype = ql_checkostype(self)
+                    self.archtype, self.ostype = self.ql_checkostype()
 
                 self.argv = self.filename
 
@@ -180,8 +180,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         #############
         # Component #
         #############
-        self.mem = ql_component_setup(self, "memory")
-        self.reg = ql_component_setup(self, "register")
+        self.mem = self.ql_component_setup("memory")
+        self.reg = self.ql_component_setup("register")
 
         #####################################
         # Architecture                      #
@@ -189,17 +189,17 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # Load architecture's and os module #
         # ql.reg.pc, ql.reg.sp and etc      #
         #####################################
-        self.arch = ql_arch_setup(self)
+        self.arch = self.ql_arch_setup()
 
         ######
         # OS #
         ######
-        self.os = ql_os_setup(self)
+        self.os = self.ql_os_setup()
 
         ##########
         # Loader #
         ##########
-        self.loader = ql_loader_setup(self)
+        self.loader = self.ql_loader_setup()
        
 
     def run(self):
