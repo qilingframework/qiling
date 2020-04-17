@@ -186,7 +186,7 @@ def hook_LoadLibraryExA(self, address, params):
     "lpLibFileName": WSTRING
 })
 def hook_LoadLibraryW(self, address, params):
-    lpLibFileName = bytes(bytes(params["lpLibFileName"], 'ascii').decode('utf-16le'), 'ascii')
+    lpLibFileName = params["lpLibFileName"].encode()
     dll_base = self.ql.loader.load_dll(lpLibFileName)
     return dll_base
 

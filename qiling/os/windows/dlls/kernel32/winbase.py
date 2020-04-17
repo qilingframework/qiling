@@ -404,14 +404,16 @@ def hook_VerifyVersionInfoW(self, address, params):
                 else:
                     self.ql.dprint(D_RPRT, "[=] The sample asks for %s" % version_asked)
             # We can finally compare
-            res = compare(self.profile.getint("SYSTEM", "os"), operator, int(concat))
+            qiling_os = str(self.profile.get("SYSTEM", "majorVersion")) + \
+                        str(self.profile.get("SYSTEM", "minorVersion")) + str(self.profile.get("SYSTEM", "productType"))
+            res = compare(int(qiling_os), operator, int(concat))
         elif key == VER_SERVICEPACKMAJOR:
             res = compare(self.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_version_info_asked[key])
         else:
             raise QlErrorNotImplemented("[!] API not implemented")
         # The result is a AND between every value, so if we find a False we just exit from the loop
         if not res:
-            self.last_error  = ERROR_OLD_WIN_VERSION
+            self.last_error = ERROR_OLD_WIN_VERSION
             return 0
     return 1
 

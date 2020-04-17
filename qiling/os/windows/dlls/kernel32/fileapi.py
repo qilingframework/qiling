@@ -21,11 +21,15 @@ from qiling.exception import *
 })
 def hook_GetFileType(self, address, params):
     hFile = params["hFile"]
-    FILE_TYPE_CHAR = 0x0002
     if hFile == STD_INPUT_HANDLE or hFile == STD_OUTPUT_HANDLE or hFile == STD_ERROR_HANDLE:
         ret = FILE_TYPE_CHAR
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        obj = self.handle_manager.get(hFile)
+        if obj is None:
+            raise QlErrorNotImplemented("[!] API not implemented")
+        else:
+            # technically is not always a type_char but.. almost
+            ret = FILE_TYPE_CHAR
     return ret
 
 
@@ -99,7 +103,7 @@ def hook_ReadFile(self, address, params):
         self.ql.mem.write(lpBuffer, s)
         self.ql.mem.write(lpNumberOfBytesRead, self.ql.pack(read_len))
     else:
-        f = self.handle_manager.get(hFile).file
+        f = self.handle_manager.get(hFile).obj
         data = f.read(nNumberOfBytesToRead)
         self.ql.mem.write(lpBuffer, data)
         self.ql.mem.write(lpNumberOfBytesRead, self.ql.pack32(lpNumberOfBytesRead))
@@ -138,7 +142,7 @@ def hook_WriteFile(self, address, params):
             self.last_error  = ERROR_INVALID_HANDLE
             return 0
         else:
-            f = f.file
+            f = f.obj
         buffer = self.ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         f.write(bytes(buffer))
         self.ql.mem.write(lpNumberOfBytesWritten, self.ql.pack32(nNumberOfBytesToWrite))
@@ -166,7 +170,7 @@ def _CreateFile(self, address, params, name):
     # create thread handle
     s_lpFileName = self.ql.os.transform_to_real_path(s_lpFileName)
     f = open(s_lpFileName.replace("\\", os.sep), mode)
-    new_handle = Handle(file=f)
+    new_handle = Handle(obj=f)
     self.handle_manager.append(new_handle)
     ret = new_handle.id
 
