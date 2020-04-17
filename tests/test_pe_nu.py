@@ -173,7 +173,38 @@ def test_pe_win_al_khaser():
     # Checking ProcessHeap.ForceFlags
     ql.patch(0x00401253, b'\x90' * 5)
     # NtQueryInformationProcess (ProcessDebugPort)
-    # ql.patch(0x004012a5, b'\x90' * 5)
+    ql.patch(0x004012a5, b'\x90' * 5)
+    # NtQueryInformationProcess(ProcessDebugFlags)
+    ql.patch(0x004012e9, b'\x90' * 5)
+    # NtQueryInformationProcess (ProcessDebugObject)
+    ql.patch(0x00401331, b'\x90' * 5)
+    # NtSetInformationThread (HideThreadFromDebugger)
+    ql.patch(0x0040136b, b'\x90' * 5)
+    # CloseHanlde (NtClose) Invalide Handle
+    ql.patch(0x0040137c, b'\x90' * 5)
+    # UnhandledExceptionFilter
+    ql.patch(0x004013af, b'\x90' * 5)
+    # OutputDebugString (GetLastError())
+    ql.patch(0x004013f3, b'\x90' * 5)
+
+    # the program allocs 4 bytes and then tries to write 0x2cc bytes.
+    # I have no idea of why this code should work without this patch
+    ql.patch(0x00401984, b'\xb8\x04\x00\x00\x00')
+    # Hardware breakpoint print
+    ql.patch(0x00401404, b'\x90' * 5)
+    # Software breakpoint print
+    ql.patch(0x0040143c, b'\x90' * 5)
+
+    # This should call an interrupt. Other than we don't listen to interrupts, this interrupt is shit.
+    ql.patch(0x0040145c, b'\x90' * 5)
+    # Interrupt print
+    ql.patch(0x00401475, b'\x90' * 5)
+
+    def end(ql):
+        print("We are finally done")
+        ql.emu_stop()
+
+    ql.hook_address(end, 0x0040148d)
 
     ql.run()
     del ql
