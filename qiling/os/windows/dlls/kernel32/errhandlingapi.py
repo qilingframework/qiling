@@ -21,8 +21,10 @@ from qiling.exception import *
     "lpTopLevelExceptionFilter": DWORD
 })
 def hook_SetUnhandledExceptionFilter(self, address, params):
-    ret = 0x4
-    return ret
+    addr = params["lpTopLevelExceptionFilter"]
+    handle = Handle(name="TopLevelExceptionHandler", obj=addr)
+    self.handle_manager.append(handle)
+    return 0
 
 
 # _Post_equals_last_error_ DWORD GetLastError();
@@ -61,4 +63,24 @@ def hook_UnhandledExceptionFilter(self, address, params):
 })
 def hook_SetErrorMode(self, address, params):
     # TODO maybe this need a better implementation
+    return 0
+
+
+# __analysis_noreturn VOID RaiseException(
+#   DWORD           dwExceptionCode,
+#   DWORD           dwExceptionFlags,
+#   DWORD           nNumberOfArguments,
+#   const ULONG_PTR *lpArguments
+# );
+@winapi(cc=STDCALL, params={
+    "dwExceptionCode": DWORD,
+    "dwExceptionFlags": DWORD,
+    "nNumberOfArguments": DWORD,
+    "lpArguments": POINTER,
+})
+def hook_RaiseException(self, address, params):
+    address = self.handle_manager.search("TopLevelExceptionHandler").obj
+    old_pc = self.ql.reg.pc
+    # TODO EXECUTE CODE FROM ADDRESS
+    self.ql.reg.pc = old_pc
     return 0

@@ -44,3 +44,53 @@ def hook_RtlGetVersion(self, address, params):
 
     self.ql.dprint(D_RPRT, "[=] The sample is checking the windows Version!")
     return STATUS_SUCCESS
+
+
+# NTSYSAPI NTSTATUS ZwSetInformationThread(
+#   HANDLE          ThreadHandle,
+#   THREADINFOCLASS ThreadInformationClass,
+#   PVOID           ThreadInformation,
+#   ULONG           ThreadInformationLength
+# );
+@winapi(cc=CDECL, params={
+    "ThreadHandle": HANDLE,
+    "ThreadInformationClass": INT,
+    "ThreadInformation": POINTER,
+    "ThreadInformationLength": ULONGLONG,
+
+})
+def hook_ZwSetInformationThread(self, address, params):
+    thread = params["ThreadHandle"]
+    if thread == self.thread_manager.cur_thread.id:
+        size = params["ThreadInformationLength"]
+        if size == 0:
+            return STATUS_INFO_LENGTH_MISMATCH
+        dst = params["ThreadInformation"]
+        if dst == 0:
+            return STATUS_INFO_LENGTH_MISMATCH
+
+        information = params["ThreadInformationClass"]
+        if information == ThreadHideFromDebugger:
+            self.ql.dprint(D_RPRT, "[=] Sample is checking debugger via SetInformationThread")
+            self.ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
+        else:
+            raise QlErrorNotImplemented("[!] API not implemented")
+
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")
+    return STATUS_SUCCESS
+
+
+# NTSYSAPI NTSTATUS ZwClose(
+#   HANDLE Handle
+# );
+@winapi(cc=CDECL, params={
+    "Handle": HANDLE
+
+})
+def hook_ZwClose(self, address, params):
+    value = params["Handle"]
+    handle = self.handle_manager.get(value)
+    if handle is None:
+        return STATUS_INVALID_HANDLE
+    return STATUS_SUCCESS

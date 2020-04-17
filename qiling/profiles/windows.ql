@@ -19,4 +19,4 @@ registry_diff = registry_diff.json
 
 [VOLUME]
 serial_number = 3224010732
-type = "NTFS"
+type = NTFS

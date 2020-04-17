@@ -277,7 +277,7 @@ def hook_TerminateProcess(self, address, params):
 @winapi(cc=STDCALL, params={
 })
 def hook_GetCurrentThread(self, address, params):
-    ret = 1
+    ret = self.thread_manager.cur_thread.id
     return ret
 
 

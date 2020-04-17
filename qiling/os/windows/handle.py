@@ -50,19 +50,15 @@ class HandleManager:
         self.handles[handle.id] = handle
 
     def get(self, id):
-        handle = self.handles.get(id, None)
-        if handle is not None:
-            return handle
+        return self.handles.get(id, None)
 
     def delete(self, id):
         key = self.handles.get(id, None)
         if key is not None:
             del self.handles[id]
 
-
     def search(self, name):
-        for handle in self.handles:
-            if not isinstance(handle, int):
-                if handle.name == name:
-                    return handle
+        for handle in self.handles.values():
+            if handle.name == name:
+                return handle
         return None
