@@ -5,7 +5,8 @@
 
 ##############################################
 # These are part of the core.py Qiling class #
-# Functions below are imported at runtime    #
+# handling structure packing and unpacking   #
+# for different architecture bits            #
 ##############################################
 
 import struct
@@ -13,6 +14,10 @@ from .const import QL_ENDIAN
 from .exception import QlErrorStructConversion
 
 class QLCoreStructs:
+    def __init__(self):
+        self.archendian = None
+        self.archbit = 0
+
     def unpack64(self, x):
         return struct.unpack('Q', x)[0]
 

@@ -3,26 +3,31 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import sys
 import platform
 import ntpath
 import os as pyos
+import logging
 
-from .const import *
-from .exception import *
-from .utils import *
+from .const import QL_ENDINABLE, QL_ENDIAN, QL_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
+from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
+from .utils import arch_convert, ostype_convert, output_convert
+from .utils import ql_is_valid_arch, ql_get_arch_bits
+from .utils import ql_setup_logging_stream, ql_setup_logging_env
+from .utils import Strace_filter
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
+from .core_utils import QLCoreUtils
+from .debugger import ql_debugger_init
 
 __version__ = "1.0"
 
-class Qiling(QLCoreStructs, QLCoreHooks):    
+class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):    
     def __init__(
             self,
             filename=None,
             rootfs=None,
-            argv=[],
-            env={},
+            argv=None,
+            env=None,
             shellcoder=None,
             ostype=None,
             archtype=None,
@@ -41,6 +46,8 @@ class Qiling(QLCoreStructs, QLCoreHooks):
             interp_base=0,
             append = None,
     ):
+        super(Qiling, self).__init__()
+
         # Define during ql=Qiling()
         self.output = output
         self.verbose = verbose
@@ -50,8 +57,8 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.shellcoder = shellcoder
         self.filename = filename
         self.rootfs = rootfs
-        self.argv = argv
-        self.env = env
+        self.argv = argv if argv else []
+        self.env = env if env else {}
         self.libcache = libcache
         self.log_console = log_console
         self.log_dir = log_dir
@@ -92,7 +99,8 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.log_split = False
         # syscall filter for strace-like functionality
         self.strace_filter = None
-
+        self.uc = None
+        self.remotedebugsession = None
 
         """
         Qiling Framework Core Engine
@@ -110,7 +118,7 @@ class Qiling(QLCoreStructs, QLCoreHooks):
             if pyos.path.exists(str(self.filename[0])) and pyos.path.exists(self.rootfs):
                 self.path = (str(self.filename[0]))
                 if self.ostype is None or self.archtype is None:
-                    self.archtype, self.ostype = ql_checkostype(self)
+                    self.archtype, self.ostype = self.ql_checkostype()
 
                 self.argv = self.filename
 
@@ -176,8 +184,8 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         #############
         # Component #
         #############
-        self.mem = ql_component_setup(self, "memory")
-        self.reg = ql_component_setup(self, "register")
+        self.mem = self.ql_component_setup("memory")
+        self.reg = self.ql_component_setup("register")
 
         #####################################
         # Architecture                      #
@@ -185,17 +193,17 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         # Load architecture's and os module #
         # ql.reg.pc, ql.reg.sp and etc      #
         #####################################
-        self.arch = ql_arch_setup(self)
+        self.arch = self.ql_arch_setup()
 
         ######
         # OS #
         ######
-        self.os = ql_os_setup(self)
+        self.os = self.ql_os_setup()
 
         ##########
         # Loader #
         ##########
-        self.loader = ql_loader_setup(self)
+        self.loader = self.ql_loader_setup()
        
 
     def run(self):

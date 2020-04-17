@@ -29,6 +29,9 @@ class QlOsPosix(QlOs):
         self.file_des = []
         self.dict_posix_syscall = dict()
         self.dict_posix_syscall_by_num = dict()
+        
+        self.syscall_map = None
+        self.syscall_name = None
 
         if self.ql.ostype in QL_POSIX:
             self.file_des = [0] * 256
@@ -39,8 +42,6 @@ class QlOsPosix(QlOs):
         for _ in range(256):
             self.sigaction_act.append(0)
         
-
-    
     # ql.syscall - get syscall for all posix series
     @property
     def syscall(self):
@@ -54,11 +55,11 @@ class QlOsPosix(QlOs):
 
 
     def load_syscall(self, intno = None):
-        map_syscall = ql_os_setup(self.ql, function_name = "map_syscall")
+        map_syscall = self.ql.ql_os_setup(function_name = "map_syscall")
         
         if self.ql.archtype== QL_ARCH.MIPS32:   
-           if intno != 0x11:
-               raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)        
+            if intno != 0x11:
+                raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)        
         
         param0 , param1, param2, param3, param4, param5 = self.syscall_param
 
