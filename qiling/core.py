@@ -13,6 +13,7 @@ from .utils import *
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 from .core_utils import QLCoreUtils
+from .debugger import ql_debugger_init
 
 __version__ = "1.0"
 
