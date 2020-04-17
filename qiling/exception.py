@@ -73,7 +73,7 @@ class QlGDTError(QlErrorBase):
 
 class QlSyscallError(QlErrorBase):
     def __init__(self, errno, msg):
-        super(QlErrorBase, self).__init__(msg)
+        super(QlSyscallError, self).__init__(msg)
         self.errno = errno
     
     def __str__(self):
