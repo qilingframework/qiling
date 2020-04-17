@@ -5,13 +5,16 @@
 
 ##############################################
 # These are part of the core.py Qiling class #
-# Functions below are imported at runtime    #
+# handling hooks                             #
 ##############################################
 from unicorn import *
 from unicorn.x86_const import *
 from .utils import catch_KeyboardInterrupt
 
 class QLCoreHooks:
+    def __init__(self):
+        self.uc = None
+
     ########################
     # Callback definitions #
     ########################

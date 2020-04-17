@@ -3,7 +3,6 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import sys
 import platform
 import ntpath
 import os as pyos
@@ -13,16 +12,17 @@ from .exception import *
 from .utils import *
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
+from .core_utils import QLCoreUtils
 
 __version__ = "1.0"
 
-class Qiling(QLCoreStructs, QLCoreHooks):    
+class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):    
     def __init__(
             self,
             filename=None,
             rootfs=None,
-            argv=[],
-            env={},
+            argv=None,
+            env=None,
             shellcoder=None,
             ostype=None,
             archtype=None,
@@ -41,6 +41,8 @@ class Qiling(QLCoreStructs, QLCoreHooks):
             interp_base=0,
             append = None,
     ):
+        super(Qiling, self).__init__()
+
         # Define during ql=Qiling()
         self.output = output
         self.verbose = verbose
@@ -50,8 +52,8 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.shellcoder = shellcoder
         self.filename = filename
         self.rootfs = rootfs
-        self.argv = argv
-        self.env = env
+        self.argv = argv if argv else []
+        self.env = env if env else {}
         self.libcache = libcache
         self.log_console = log_console
         self.log_dir = log_dir
@@ -92,7 +94,8 @@ class Qiling(QLCoreStructs, QLCoreHooks):
         self.log_split = False
         # syscall filter for strace-like functionality
         self.strace_filter = None
-
+        self.uc = None
+        self.remotedebugsession = None
 
         """
         Qiling Framework Core Engine
