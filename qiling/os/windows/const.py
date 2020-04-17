@@ -6,7 +6,7 @@ from Registry import Registry
 
 # ERRORS CODE
 # https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
-ERROR_SUCCESS = 0x0
+ERROR_SUCCESS = STATUS_SUCCESS = 0x0
 ERROR_INVALID_FUNCTION = 0x1
 ERROR_FILE_NOT_FOUND = 0x2
 ERROR_PATH_NOT_FOUND = 0x3
@@ -537,3 +537,23 @@ Mapper = {
 }
 
 MAXUSHORT = 0xffff
+
+# https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
+FILE_TYPE_CHAR = 0x2
+FILE_TYPE_DISK = 0x1
+FILE_TYPE_PIPE = 0x3
+FILE_TYPE_REMOTE = 0x800
+FILE_TYPE_UNKNOWN = 0x0
+
+# https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-isprocessorfeaturepresent
+PF_XSAVE_ENABLED = 0x17
+# ...
+
+
+# https://docs.microsoft.com/en-us/windows/win32/procthread/zwqueryinformationprocess
+ProcessBasicInformation = 0
+ProcessDebugPort = 7
+ProcessWow64Information = 26
+ProcessImageFileName = 27
+ProcessBreakOnTermination = 29
+ProcessProtectionInformation = 61

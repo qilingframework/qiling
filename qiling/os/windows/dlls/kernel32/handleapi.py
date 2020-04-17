@@ -33,6 +33,7 @@ from qiling.exception import *
     "dwOptions": DWORD
 })
 def hook_DuplicateHandle(self, address, params):
+    # TODO for how we manage handle, i think this doesn't work
     content = params["hSourceHandle"]
     dst = params["lpTargetHandle"]
     self.ql.mem.write(dst, content.to_bytes(length= self.ql.pointersize, byteorder='little'))

@@ -14,6 +14,7 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 from qiling.os.windows.structs import *
 
+
 # void ExitProcess(
 #   UINT uExitCode
 # );
@@ -178,8 +179,12 @@ def hook_GetCurrentProcessId(self, address, params):
     "ProcessorFeature": DWORD
 })
 def hook_IsProcessorFeaturePresent(self, address, params):
-    ret = 1
-    return ret
+    feature = params["ProcessorFeature"]
+    if feature == PF_XSAVE_ENABLED:
+        # it seems like unicorn can't recognize the instruction
+        return 0
+    else:
+        return 1
 
 
 # HANDLE CreateThread(
@@ -211,7 +216,7 @@ def hook_CreateThread(self, address, params):
     lpThreadId = params["lpThreadId"]
 
     # new thread obj
-    new_thread = QlWindowsThread(self. ql)
+    new_thread = QlWindowsThread(self.ql)
 
     if dwCreationFlags & CREATE_SUSPENDED == CREATE_SUSPENDED:
         thread_status = QlWindowsThread.READY
@@ -229,7 +234,7 @@ def hook_CreateThread(self, address, params):
     self.thread_manager.append(new_thread)
 
     # create thread handle
-    new_handle = Handle(thread=new_thread)
+    new_handle = Handle(obj=new_thread)
     self.handle_manager.append(new_handle)
     ret = new_handle.id
 
@@ -245,7 +250,7 @@ def hook_CreateThread(self, address, params):
 # );
 @winapi(cc=STDCALL, params={})
 def hook_GetCurrentProcess(self, address, params):
-    ret = 1
+    ret = 0
     return ret
 
 
@@ -260,7 +265,8 @@ def hook_GetCurrentProcess(self, address, params):
 def hook_TerminateProcess(self, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
-    if process == 0x0 or process == self.DEFAULT_IMAGE_BASE:
+    # TODO i have no idea on how to find the old ql.pe.DEFAULT_IMAGE_BASE
+    if process == 0x0:  # or process == self.ql.os.DEFAULT_IMAGE_BASE:
         self.ql.emu_stop()
         self.PE_RUN = False
     ret = 1
@@ -290,7 +296,7 @@ def hook_OpenProcess(self, address, params):
     # If the specified process is the System Process (0x00000000),
     # the function fails and the last error code is ERROR_INVALID_PARAMETER
     if proc == 0:
-        self.last_error  = ERROR_INVALID_PARAMETER
+        self.last_error = ERROR_INVALID_PARAMETER
         return 0
     return 0xD10C
 
@@ -308,7 +314,7 @@ def hook_OpenProcess(self, address, params):
 def hook_OpenProcessToken(self, address, params):
     token_pointer = params["TokenHandle"]
     token = Token(self.ql)
-    new_handle = Handle(token=token)
+    new_handle = Handle(obj=token)
     self.handle_manager.append(new_handle)
     self.ql.mem.write(token_pointer, self.ql.pack(new_handle.id))
     return 1

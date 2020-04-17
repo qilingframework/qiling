@@ -26,7 +26,7 @@ def _RegOpenKey(self, address, params):
         return ERROR_FILE_NOT_FOUND
 
     # new handle
-    new_handle = Handle(regkey=s_hKey + "\\" + s_lpSubKey)
+    new_handle = Handle(obj=s_hKey + "\\" + s_lpSubKey)
     self.handle_manager.append(new_handle)
     if phkResult != 0:
         self.ql.mem.write(phkResult, self.ql.pack(new_handle.id))
@@ -42,7 +42,7 @@ def RegQueryValue(self, address, params):
     lpData = params["lpData"]
     lpcbData = params["lpcbData"]
 
-    s_hKey = self.handle_manager.get(hKey).regkey
+    s_hKey = self.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
 
     # read reg_type
@@ -215,7 +215,7 @@ def hook_RegCreateKeyA(self, address, params):
 
     # new handle
     if ret == ERROR_SUCCESS:
-        new_handle = Handle(regkey=s_hKey + "\\" + s_lpSubKey)
+        new_handle = Handle(obj=s_hKey + "\\" + s_lpSubKey)
         self.handle_manager.append(new_handle)
         if phkResult != 0:
             self.ql.mem.write(phkResult, self.ql.pack(new_handle.id))
@@ -248,7 +248,7 @@ def hook_RegSetValueA(self, address, params):
     s_lpData = params["lpData"]
     cbData = params["cbData"]
 
-    s_hKey = self.handle_manager.get(hKey).regkey
+    s_hKey = self.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
 
     self.registry_manager.write(s_hKey, s_lpSubKey, dwType, s_lpData)
@@ -281,7 +281,7 @@ def hook_RegSetValueExW(self, address, params):
     s_lpData = params["lpData"]
     cbData = params["cbData"]
 
-    s_hKey = self.handle_manager.get(hKey).regkey
+    s_hKey = self.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
 
     self.registry_manager.write(s_hKey, s_lpValueName, dwType, s_lpData)
@@ -303,7 +303,7 @@ def hook_RegDeleteKeyA(self, address, params):
     hKey = params["hKey"]
     s_lpSubKey = params["lpSubKey"]
 
-    s_hKey = self.handle_manager.get(hKey).regkey
+    s_hKey = self.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
 
     self.registry_manager.delete(s_hKey, s_lpSubKey)
@@ -325,7 +325,7 @@ def hook_RegDeleteValueW(self, address, params):
     hKey = params["hKey"]
     s_lpValueName = params["lpValueName"]
 
-    s_hKey = self.handle_manager.get(hKey).regkey
+    s_hKey = self.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
 
     self.registry_manager.delete(s_hKey, s_lpValueName)
@@ -353,7 +353,7 @@ def hook_GetTokenInformation(self, address, params):
     max_size = params["TokenInformationLength"]
     return_point = params["ReturnLength"]
     dst = params["TokenInformation"]
-    token = self.handle_manager.get(id).token
+    token = self.handle_manager.get(id).obj
     information_value = token.get(information)
     self.ql.mem.write(return_point, len(information_value).to_bytes(4, byteorder="little"))
     return_size = int.from_bytes(self.ql.mem.read(return_point, 4), byteorder="little")
@@ -374,7 +374,7 @@ def hook_GetTokenInformation(self, address, params):
     "pSid": HANDLE
 })
 def hook_GetSidSubAuthorityCount(self, address, params):
-    sid = self.handle_manager.get(params["pSid"]).sid
+    sid = self.handle_manager.get(params["pSid"]).obj
     addr_authority_count = sid.addr + 1  # +1 because the first byte is revision
     return addr_authority_count
 
@@ -389,6 +389,6 @@ def hook_GetSidSubAuthorityCount(self, address, params):
 })
 def hook_GetSidSubAuthority(self, address, params):
     num = params["nSubAuthority"]
-    sid = self.handle_manager.get(params["pSid"]).sid
+    sid = self.handle_manager.get(params["pSid"]).obj
     addr_authority = sid.addr + 8 + (self.ql.pointersize * num)
     return addr_authority

@@ -5,6 +5,7 @@
 
 import struct
 import time
+from datetime import datetime
 from qiling.os.windows.const import *
 from qiling.os.const import *
 from qiling.os.windows.fncc import *
@@ -134,6 +135,7 @@ def hook_GetLocalTime(self, address, params):
     "lpSystemTimeAsFileTime": POINTER
 })
 def hook_GetSystemTimeAsFileTime(self, address, params):
+    # TODO
     pass
 
 
@@ -183,4 +185,23 @@ def hook_GetNativeSystemInfo(self, address, params):
                    }
     values = b"".join(system_info.values())
     self.ql.mem.write(pointer, values)
+    return 0
+
+
+# typedef struct _FILETIME {
+#   DWORD dwLowDateTime;
+#   DWORD dwHighDateTime;
+# } FILETIME, *PFILETIME, *LPFILETIME;
+
+# void GetSystemTimePreciseAsFileTime(
+#   LPFILETIME lpSystemTimeAsFileTime
+# );
+@winapi(cc=STDCALL, params={
+    "lpSystemTimeAsFileTime": POINTER
+})
+def hook_GetSystemTimePreciseAsFileTime(self, address, params):
+    # todo check if the value is correct
+    dt = datetime.now().microsecond.to_bytes(8, byteorder="little")
+    pointer = params["lpSystemTimeAsFileTime"]
+    self.ql.mem.write(pointer, dt)
     return 0
