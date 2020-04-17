@@ -557,3 +557,5 @@ ProcessWow64Information = 26
 ProcessImageFileName = 27
 ProcessBreakOnTermination = 29
 ProcessProtectionInformation = 61
+ProcessDebugObjectHandle = 0x1E
+ProcessDebugFlags = 0x1F
