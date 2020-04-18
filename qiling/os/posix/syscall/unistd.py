@@ -204,7 +204,7 @@ def ql_syscall_brk(ql, brk_input, *args, **kw):
         new_brk_addr = ((brk_input + 0xfff) // 0x1000) * 0x1000
 
         if brk_input > ql.loader.brk_address: # increase current brk_address if brk_input is greater
-            ql.mem.map(ql.loader.brk_address, new_brk_addr - ql.loader.brk_address)
+            ql.mem.map(ql.loader.brk_address, new_brk_addr - ql.loader.brk_address, info="[brk]")
 
         elif brk_input < ql.loader.brk_address: # shrink current bkr_address to brk_input if its smaller
             ql.mem.unmap(new_brk_addr, ql.loader.brk_address - new_brk_addr)

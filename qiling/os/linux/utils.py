@@ -11,7 +11,7 @@ from qiling.os.utils import ql_lsbmsb_convert
 set_tls
 """
 def ql_arm_init_kernel_get_tls(ql):
-    ql.mem.map(0xFFFF0000, 0x1000)
+    ql.mem.map(0xFFFF0000, 0x1000, info="[arm_tls]")
     """
     'adr r0, data; ldr r0, [r0]; mov pc, lr; data:.ascii "\x00\x00"'
     """

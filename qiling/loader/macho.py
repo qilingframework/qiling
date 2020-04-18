@@ -122,13 +122,13 @@ class QlLoaderMACHO(QlLoader):
 
         if seg_name[:10] == "__PAGEZERO":
             self.ql.dprint(D_INFO, "[+] Now loading {}, VM[{}:{}] for pagezero actually it only got a page size".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
-            self.ql.mem.map(vaddr_start, PAGE_SIZE)
+            self.ql.mem.map(vaddr_start, PAGE_SIZE, info="[__PAGEZERO]")
             self.ql.mem.write(vaddr_start, b'\x00' * PAGE_SIZE)
             if self.vm_end_addr < vaddr_end:
                 self.vm_end_addr = vaddr_end
         else:
             self.ql.dprint(D_INFO, "[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
-            self.ql.mem.map(vaddr_start, seg_size)
+            self.ql.mem.map(vaddr_start, seg_size,  info="[loadSegment64]")
             self.ql.mem.write(vaddr_start, seg_data)
             if self.vm_end_addr < vaddr_end:
                 self.vm_end_addr = vaddr_end
