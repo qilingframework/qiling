@@ -349,8 +349,8 @@ class QlLoaderELF(ELFParse, QlLoader):
         # specially for syscall_execve()
         #self.load()
         if not self.ql.shellcoder:
-            self.load_with_ld(self.ql, self.ql.stack_address + self.ql.stack_size, argv = self.ql.argv, env = self.ql.env)
-            self.ql.stack_address  = (int(self.new_stack))
+            self.load_with_ld(self.ql, self.ql.os.stack_address + self.ql.os.stack_size, argv = self.ql.argv, env = self.ql.env)
+            self.ql.os.stack_address  = (int(self.new_stack))
 
     def pack(self, data):
         if self.ql.archbit == 64:

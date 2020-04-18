@@ -86,22 +86,12 @@ def ql_arch_convert_str(arch):
     }
     return adapter.get(arch)
 
-def ql_archmanager_convert_str(arch):
-    adapter = {
-        QL_ARCH.X86: "QlArchX86Manager",
-        QL_ARCH.X8664: "QlArchX8664Manager",
-        QL_ARCH.MIPS32: "QlArchMIPS32Manager",
-        QL_ARCH.ARM64: "QlArchARMManager",
-        QL_ARCH.ARM64: "QlArchARM64Manager",
-    }
-    return adapter.get(arch)
-
 def arch_convert(arch):
     adapter = {
         "x86": QL_ARCH.X86,
         "x8664": QL_ARCH.X8664,
         "mips32": QL_ARCH.MIPS32,
-        "arm": QL_ARCH.ARM64,
+        "arm": QL_ARCH.ARM,
         "arm64": QL_ARCH.ARM64,
     }
     if arch in adapter:

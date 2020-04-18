@@ -251,12 +251,15 @@ class QlLoaderPE(Process, QlLoader):
             self.STRUCTERS_LAST_ADDR = FS_SEGMENT_ADDR
             self.DEFAULT_IMAGE_BASE = 0x400000
             self.DLL_BASE_ADDR = 0x10000000
-            
+            self.code_address = 0x40000  
+             
         elif self.ql.archtype== QL_ARCH.X8664:
             self.STRUCTERS_LAST_ADDR = GS_SEGMENT_ADDR 
             self.DEFAULT_IMAGE_BASE = 0x400000
             self.DLL_BASE_ADDR = 0x7ffff0000000
+            self.code_address = 0x140000000
             
+        self.code_size = 10 * 1024 * 1024            
         self.cmdline = b"D:\\" + bytes(self.ql.path.replace("/", "\\"), "utf-8") + b"\x00"             
         self.dlls = {}
         self.import_symbols = {}
@@ -376,8 +379,8 @@ class QlLoaderPE(Process, QlLoader):
                 self.ql.register(UC_X86_REG_RBP, self.ql.stack_address + 0x3000)
 
             # load shellcode in
-            self.ql.mem.map(self.ql.code_address, self.ql.code_size)
-            self.ql.mem.write(self.ql.code_address, self.ql.shellcoder)
+            self.ql.mem.map(self.code_address, self.code_size)
+            self.ql.mem.write(self.code_address, self.ql.shellcoder)
 
             self.init_thread_information_block()
 

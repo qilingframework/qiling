@@ -50,16 +50,18 @@ class QlOsMacos(QlOsPosix):
             self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
             self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS  = 0x4000000f4000
 
-        if self.ql.shellcoder:
-            if (self.ql.stack_address == 0):
-                self.stack_address = 0x1000000
-            if (self.ql.stack_size == 0):
-                self.stack_size = 10 * 1024 * 1024
-        else:
-            if (self.ql.stack_address == 0):
+        if self.ql.shellcoder and not self.ql.stack_address and not self.ql.stack_size:
+            self.stack_address = 0x1000000
+            self.stack_size = 10 * 1024 * 1024
+        
+        elif not self.ql.shellcoder and not self.ql.stack_address and not self.ql.stack_size:
                 self.stack_address = self.QL_MACOS_PREDEFINE_STACKADDRESS
-            if (self.ql.stack_size == 0):
                 self.stack_size = self.QL_MACOS_PREDEFINE_STACKSIZE
+        
+        elif self.ql.stack_address and self.ql.stack_size:
+            self.stack_address = self.ql.stack_address
+            self.stack_address = self.ql.stack_size
+
 
         self.macho_task = MachoTask()
         self.macho_fs = FileSystem(self.ql)
@@ -67,14 +69,13 @@ class QlOsMacos(QlOsPosix):
         self.macho_port_manager = MachPortManager(self.ql, self.macho_mach_port)
         self.macho_host_server = MachHostServer(self.ql)
         self.macho_task_server = MachTaskServer(self.ql)
+        self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
 
-        if self.ql.shellcoder:
-            self.ql.mem.map(self.stack_address, self.stack_size)
-            self.ql.stack_address = self.stack_address  + 0x200000 - 0x1000
+        if self.ql.shellcoder:    
+            self.stack_address = self.stack_address  + 0x200000 - 0x1000
             self.ql.mem.write(self.stack_address, self.ql.shellcoder)
         else:
             self.ql.macho_vmmap_end = self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS
-            self.ql.mem.map(self.stack_address, self.stack_size)
             self.stack_sp = self.QL_MACOS_PREDEFINE_STACKADDRESS + self.QL_MACOS_PREDEFINE_STACKSIZE
             self.envs = env_dict_to_array(self.ql.env)
             self.apples = ql_real_to_vm_abspath(self.ql, self.ql.path)

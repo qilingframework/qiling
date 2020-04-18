@@ -21,8 +21,10 @@ examples/**/Windows/
 # test and logs
 jexamples/
 logs/
+log/
 test_qlog/
 qlog/
+qlogs/
 test_syscall_*.txt
 *.no.py
 .gitkeep
@@ -39,6 +41,5 @@ wannacry.bin
 UselessDisk.bin
 GandCrab.bin
 GandCrab502.bin
-
-
+al-khaser.bin
 
