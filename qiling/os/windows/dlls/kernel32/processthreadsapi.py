@@ -277,7 +277,7 @@ def hook_TerminateProcess(self, address, params):
 @winapi(cc=STDCALL, params={
 })
 def hook_GetCurrentThread(self, address, params):
-    ret = 1
+    ret = self.thread_manager.cur_thread.id
     return ret
 
 
@@ -318,3 +318,15 @@ def hook_OpenProcessToken(self, address, params):
     self.handle_manager.append(new_handle)
     self.ql.mem.write(token_pointer, self.ql.pack(new_handle.id))
     return 1
+
+
+# BOOL GetThreadContext(
+#   HANDLE    hThread,
+#   LPCONTEXT lpContext
+# );
+@winapi(cc=STDCALL, params={
+    "hThread": HANDLE,
+    "lpContext": POINTER
+})
+def hook_GetThreadContext(self, address, params):
+    pass

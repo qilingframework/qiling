@@ -21,8 +21,14 @@ from qiling.exception import *
     "lpTopLevelExceptionFilter": DWORD
 })
 def hook_SetUnhandledExceptionFilter(self, address, params):
-    ret = 0x4
-    return ret
+    addr = params["lpTopLevelExceptionFilter"]
+    handle = self.handle_manager.search("TopLevelExceptionHandler")
+    if handle is None:
+        handle = Handle(name="TopLevelExceptionHandler", obj=addr)
+        self.handle_manager.append(handle)
+    else:
+        handle.obj = addr
+    return 0
 
 
 # _Post_equals_last_error_ DWORD GetLastError();
@@ -61,4 +67,56 @@ def hook_UnhandledExceptionFilter(self, address, params):
 })
 def hook_SetErrorMode(self, address, params):
     # TODO maybe this need a better implementation
+    return 0
+
+
+# __analysis_noreturn VOID RaiseException(
+#   DWORD           dwExceptionCode,
+#   DWORD           dwExceptionFlags,
+#   DWORD           nNumberOfArguments,
+#   const ULONG_PTR *lpArguments
+# );
+@winapi(cc=STDCALL, params={
+    "dwExceptionCode": DWORD,
+    "dwExceptionFlags": DWORD,
+    "nNumberOfArguments": DWORD,
+    "lpArguments": POINTER
+})
+def hook_RaiseException(self, address, params):
+    address = self.handle_manager.search("TopLevelExceptionHandler").obj
+    old_pc = self.ql.reg.pc
+    # TODO we should jump on the code
+    # self.ql.stack_write(0, address)
+
+    return 0
+
+
+# PVOID AddVectoredExceptionHandler(
+#   ULONG                       First,
+#   PVECTORED_EXCEPTION_HANDLER Handler
+# );
+@winapi(cc=STDCALL, params={
+    "First": UINT,
+    "Handler": HANDLE
+})
+def hook_AddVectoredExceptionHandler(self, address, params):
+    addr = params["Handler"]
+    handle = self.handle_manager.search("VectoredHandler")
+    if handle is None:
+        handle = Handle(name="VectoredHandler", obj=addr)
+        self.handle_manager.append(handle)
+    else:
+        handle.obj = addr
+    return 0
+
+
+# ULONG RemoveVectoredExceptionHandler(
+#   PVOID Handle
+# );
+@winapi(cc=STDCALL, params={
+    "Handler": HANDLE
+})
+def hook_RemoveVectoredExceptionHandler(self, address, params):
+    handle = self.handle_manager.search("VectoredHandler")
+    self.handle_manager.delete(handle.id)
     return 0

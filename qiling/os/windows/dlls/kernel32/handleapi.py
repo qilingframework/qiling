@@ -36,7 +36,7 @@ def hook_DuplicateHandle(self, address, params):
     # TODO for how we manage handle, i think this doesn't work
     content = params["hSourceHandle"]
     dst = params["lpTargetHandle"]
-    self.ql.mem.write(dst, content.to_bytes(length= self.ql.pointersize, byteorder='little'))
+    self.ql.mem.write(dst, content.to_bytes(length=self.ql.pointersize, byteorder='little'))
     return 1
 
 
@@ -47,5 +47,9 @@ def hook_DuplicateHandle(self, address, params):
     "hObject": HANDLE
 })
 def hook_CloseHandle(self, address, params):
-    ret = 0
-    return ret
+    value = params["hObject"]
+    handle = self.handle_manager.get(value)
+    if handle is None:
+        self.last_error = ERROR_INVALID_HANDLE
+        return 0
+    return 1

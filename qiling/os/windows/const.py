@@ -6,7 +6,7 @@ from Registry import Registry
 
 # ERRORS CODE
 # https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-
-ERROR_SUCCESS = STATUS_SUCCESS = 0x0
+ERROR_SUCCESS = 0x0
 ERROR_INVALID_FUNCTION = 0x1
 ERROR_FILE_NOT_FOUND = 0x2
 ERROR_PATH_NOT_FOUND = 0x3
@@ -17,6 +17,13 @@ ERROR_MORE_DATA = 0xEA
 ERROR_INVALID_HANDLE = 0x6
 # ...
 
+# https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
+STATUS_SUCCESS = 0
+# ...
+STATUS_INFO_LENGTH_MISMATCH = 0xC0000004
+STATUS_INVALID_PARAMETER = 0xC000000D
+STATUS_INVALID_HANDLE = 0xC0000008
+# ...
 
 INVALID_HANDLE_VALUE = -1
 
@@ -525,8 +532,12 @@ SYSTEMS_VERSION = {
     "610": "Windows Server 2008 R2",
 
     "601": "Windows Vista",
-    "600": "Windows Server 2008"
-    # ..
+    "600": "Windows Server 2008",
+
+    # ...
+
+    "510": "Windows XP"
+    # ...
 }
 
 # Mapper for ordinal syscalls
@@ -557,3 +568,13 @@ ProcessWow64Information = 26
 ProcessImageFileName = 27
 ProcessBreakOnTermination = 29
 ProcessProtectionInformation = 61
+ProcessDebugObjectHandle = 0x1E
+ProcessDebugFlags = 0x1F
+
+# https://www.geoffchappell.com/studies/windows/km/ntoskrnl/api/ps/psquery/class.htm
+ThreadBasicInformation = 0x0
+ThreadTimes = 0x1
+ThreadPriority = 0x2
+# ...
+ThreadHideFromDebugger = 0x11
+# ...

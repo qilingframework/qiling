@@ -34,15 +34,18 @@ def hook_memcpy(self, address, params):
     return params['dest']
 
 
-def _QueryInforationProcess(self, address, params):
+def _QueryInformationProcess(self, address, params):
     # TODO have no idea if is cdecl or stdcall
     flag = params["ProcessInformationClass"]
     dst = params["ProcessInformation"]
     pt_res = params["ReturnLength"]
-    if flag == ProcessDebugPort:
+    if flag == ProcessDebugPort or flag == ProcessDebugObjectHandle or flag == ProcessDebugFlags:
+        self.ql.dprint(D_RPRT, "[=] The sample is checking the debugger via QueryInformationProcess ")
         self.ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
-        self.ql.mem.write(pt_res, 0x1.to_bytes(1, byteorder="little"))
+        if pt_res != 0:
+            self.ql.mem.write(pt_res, 0x1.to_bytes(1, byteorder="little"))
     else:
+        self.ql.dprint(D_INFO, str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
     return STATUS_SUCCESS
 
@@ -62,7 +65,7 @@ def _QueryInforationProcess(self, address, params):
     "ReturnLength": POINTER
 })
 def hook_ZwQueryInformationProcess(self, address, params):
-    _QueryInforationProcess(self, address, params)
+    _QueryInformationProcess(self, address, params)
 
 
 # __kernel_entry NTSTATUS NtQueryInformationProcess(
@@ -80,4 +83,4 @@ def hook_ZwQueryInformationProcess(self, address, params):
     "ReturnLength": POINTER
 })
 def hook_NtQueryInformationProcess(self, address, params):
-    _QueryInforationProcess(self, address, params)
+    _QueryInformationProcess(self, address, params)

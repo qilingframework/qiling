@@ -35,3 +35,15 @@ def hook_CheckRemoteDebuggerPresent(self, address, params):
     pointer = params["pbDebuggerPresent"]
     self.ql.mem.write(pointer, 0x0.to_bytes(1, byteorder="little"))
     return 1
+
+
+# void OutputDebugStringW(
+#   LPCWSTR lpOutputString
+# );
+@winapi(cc=STDCALL, params={
+    "lpOutputString": WSTRING
+})
+def hook_OutputDebugStringW(self, address, params):
+    string = params["lpOutputString"]
+    self.ql.os.stdout.write(string.encode())
+    return 0
