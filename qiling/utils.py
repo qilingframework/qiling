@@ -7,10 +7,7 @@
 This module is intended for general purpose functions that can be used
 thoughout the qiling framework
 """
-import os
-import logging
-import importlib
-from .os.const import *
+import importlib, logging, os
 from .exception import *
 from .const import QL_ARCH, QL_ARCH_ALL, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER
 

@@ -5,7 +5,7 @@
 
 import platform
 import ntpath
-import os as pyos
+import os
 import logging
 
 from .const import QL_ENDINABLE, QL_ENDIAN, QL_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
@@ -115,7 +115,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
         # read file propeties, not shellcoder
         if self.rootfs and self.shellcoder is None:
-            if pyos.path.exists(str(self.filename[0])) and pyos.path.exists(self.rootfs):
+            if os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs):
                 self.path = (str(self.filename[0]))
                 if self.ostype is None or self.archtype is None:
                     self.archtype, self.ostype = self.ql_checkostype()
@@ -123,9 +123,9 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
                 self.argv = self.filename
 
             else:
-                if not pyos.path.exists(str(self.filename[0])):
+                if not os.path.exists(str(self.filename[0])):
                     raise QlErrorFileNotFound("[!] Target binary not found")
-                if not pyos.path.exists(self.rootfs):
+                if not os.path.exists(self.rootfs):
                     raise QlErrorFileNotFound("[!] Target rootfs not found")
 
         if self.shellcoder:
@@ -235,7 +235,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         msg = args[0]
 
         # support keyword "end" in ql.print functions, use it as terminator or default newline character by OS
-        msg += kw["end"] if kw.get("end", None) != None else pyos.linesep
+        msg += kw["end"] if kw.get("end", None) != None else os.linesep
 
         fd.info(msg)
 
