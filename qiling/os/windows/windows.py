@@ -28,6 +28,8 @@ class QlOsWindows(QlOs):
         self.user_defined_api = {}
         self.hooks_variables = {}
         self.syscall_count = {}
+        self.argv = self.ql.argv
+        self.env = self.ql.env
         self.load()
 
     def load(self):

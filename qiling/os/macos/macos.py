@@ -27,10 +27,9 @@ class QlOsMacos(QlOsPosix):
     def __init__(self, ql):
         super(QlOsMacos, self).__init__(ql)
         self.ql = ql
-        self.ql.os = self
-
+        self.env = self.ql.env
+        self.argv = self.ql.argv
         self.load()
-
 
     def load(self):
         """
@@ -77,7 +76,7 @@ class QlOsMacos(QlOsPosix):
         else:
             self.ql.macho_vmmap_end = self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS
             self.stack_sp = self.QL_MACOS_PREDEFINE_STACKADDRESS + self.QL_MACOS_PREDEFINE_STACKSIZE
-            self.envs = env_dict_to_array(self.ql.env)
+            self.envs = env_dict_to_array(self.env)
             self.apples = ql_real_to_vm_abspath(self.ql, self.ql.path)
 
 
