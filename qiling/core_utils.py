@@ -1,9 +1,9 @@
-import pefile
+import pefile, os, logging
 from .utils import ql_build_module_import_name, ql_get_module_function
 from .utils import ql_is_valid_arch, ql_is_valid_ostype
 from .utils import ql_loadertype_convert_str, ql_ostype_convert_str, ql_arch_convert_str
-from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN
-from .exception import QlErrorArch, QlErrorOsType
+from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
+from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 
 class QLCoreUtils:
     def __init__(self):
@@ -11,6 +11,56 @@ class QLCoreUtils:
         self.ostype = None
         self.path = None
         self.archendian = None
+
+    # normal print out
+    def nprint(self, *args, **kw):
+        if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
+            fd = self.os.thread_management.cur_thread.log_file_fd
+        else:
+            fd = self.log_file_fd
+
+        msg = args[0]
+
+        # support keyword "end" in ql.print functions, use it as terminator or default newline character by OS
+        msg += kw["end"] if kw.get("end", None) != None else os.linesep
+
+        fd.info(msg)
+
+        if fd is not None:
+            if isinstance(fd, logging.FileHandler):
+                fd.emit()
+            elif isinstance(fd, logging.StreamHandler):
+                fd.flush()
+
+    # debug print out, always use with verbose level with dprint(D_INFO,"helloworld")
+    def dprint(self, level, *args, **kw):
+        try:
+            self.verbose = int(self.verbose)
+        except:
+            raise QlErrorOutput("[!] Verbose muse be int")    
+        
+        if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 1 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
+            raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUTPUT.DEBUG or else ql.verbose must be 0")
+
+        if self.output == QL_OUTPUT.DUMP:
+            self.verbose = 99
+
+        if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+            self.nprint(*args, **kw)
+
+    def stack_push(self, data):
+        self.arch.stack_push(data)
+
+    def stack_pop(self):
+        return self.arch.stack_pop()
+
+    # read from stack, at a given offset from stack bottom
+    def stack_read(self, offset):
+        return self.arch.stack_read(offset)
+
+    # write to stack, at a given offset from stack bottom
+    def stack_write(self, offset, data):
+        self.arch.stack_write(offset, data)
 
     def ql_arch_setup(self):
         if not ql_is_valid_arch(self.archtype):
