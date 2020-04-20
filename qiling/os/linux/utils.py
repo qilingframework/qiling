@@ -5,7 +5,6 @@
 
 from .const import *
 from qiling.const import *
-from qiling.os.utils import ql_lsbmsb_convert
 
 """
 set_tls
@@ -18,7 +17,7 @@ def ql_arm_init_kernel_get_tls(ql):
     sc = b'\x04\x00\x8f\xe2\x00\x00\x90\xe5\x0e\xf0\xa0\xe1\x00\x00\x00\x00'
 
     # if ql.archendian == QL_ENDIAN.EB:
-    #    sc = ql_lsbmsb_convert(ql, sc)
+    #    sc = ql.os.lsbmsb_convert(ql, sc)
 
     ql.mem.write(ql.os.QL_ARM_KERNEL_GET_TLS_ADDR, sc)
     ql.dprint(D_INFO, "[+] Set init_kernel_get_tls")    

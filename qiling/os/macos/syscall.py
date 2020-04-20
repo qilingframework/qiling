@@ -29,10 +29,8 @@ from .utils import *
 
 def ql_arm64_fgetattrlist(ql, fd, attrlist, attrbuff, attrsizebuff, options, *args, **kw):
     ql.nprint("fgetattrlist(fd: %d, attrlist: 0x%x, attrbuff: 0x%x, attrsizebuff: 0x%x, options: 0x%x)" % (
-            fd, attrlist, attrbuf, attrsizebuff, options))
+            fd, attrlist, attrbuff, attrsizebuff, options))
 
-    ql.dprint(D_INFO, "[+] fgetattrlist(fd: %d, attrlist: 0x%x, attrbuff: 0x%x, attrsizebuff: 0x%x, options: 0x%x)") % (
-            fd, attrlist, attrbuf, attrsizebuff, options)
     ql.dprint(D_INFO, "[+] addr: 0x%x, path: %s" % (attrlist ,attrbuff))
     KERN_SUCCESS = 1
     ql.os.definesyscall_return(KERN_SUCCESS)
@@ -42,7 +40,7 @@ def ql_arm64_poll(ql, target, address, size, *args, **kw):
     ql.os.definesyscall_return(KERN_SUCCESS)
     # FIXME:
     ql.nprint("FIXME: syscall[poll] >> exit for now")
-    #exit()
+    exit()
 
 
 ################
