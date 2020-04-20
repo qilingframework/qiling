@@ -68,6 +68,7 @@ class TEB:
         s += self.ql.pack(self.HardErrorMode)  # 0x40
         return s
 
+# https://www.geoffchappell.com/studies/windows/win32/ntdll/structs/peb/index.htm
 
 class PEB:
     def __init__(self, ql, base=0,

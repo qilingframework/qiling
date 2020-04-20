@@ -151,10 +151,14 @@ class Process(QlLoader):
     def init_peb(self):
         peb_addr = self.STRUCTERS_LAST_ADDR
 
-        self.ql.nprint("[+] PEB addr is 0x%x" %peb_addr)
+        self.ql.nprint("[+] PEB addr is 0x%x" % peb_addr)
 
         peb_size = len(PEB(self.ql).bytes())
-        peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size)
+
+        # we must set an heap, will try to retrieve this value. Is ok to be all \x00
+        process_heap = self.ql.os.heap.mem_alloc(0x50)
+
+        peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size, process_heap=process_heap)
         self.ql.mem.write(peb_addr, peb_data.bytes())
         self.STRUCTERS_LAST_ADDR += peb_size
         self.PEB = self.ql.PEB = peb_data
