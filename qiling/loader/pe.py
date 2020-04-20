@@ -88,7 +88,7 @@ class Process(QlLoader):
         dll_base = self.DLL_LAST_ADDR
         dll_len = self.ql.os.heap._align(len(bytes(data)), 0x1000)
         self.DLL_SIZE += dll_len
-        self.ql.mem.map(dll_base, dll_len)
+        self.ql.mem.map(dll_base, dll_len, info="[dlls]")
         self.ql.mem.write(dll_base, bytes(data))
         self.DLL_LAST_ADDR += dll_len
 
@@ -251,12 +251,15 @@ class QlLoaderPE(Process, QlLoader):
             self.STRUCTERS_LAST_ADDR = FS_SEGMENT_ADDR
             self.DEFAULT_IMAGE_BASE = 0x400000
             self.DLL_BASE_ADDR = 0x10000000
-            
+            self.code_address = 0x40000  
+             
         elif self.ql.archtype== QL_ARCH.X8664:
             self.STRUCTERS_LAST_ADDR = GS_SEGMENT_ADDR 
             self.DEFAULT_IMAGE_BASE = 0x400000
             self.DLL_BASE_ADDR = 0x7ffff0000000
+            self.code_address = 0x140000000
             
+        self.code_size = 10 * 1024 * 1024            
         self.cmdline = b"D:\\" + bytes(self.ql.path.replace("/", "\\"), "utf-8") + b"\x00"             
         self.dlls = {}
         self.import_symbols = {}
@@ -296,7 +299,7 @@ class QlLoaderPE(Process, QlLoader):
 
             # set stack pointer
             self.ql.nprint("[+] Initiate stack address at 0x%x " % self.ql.stack_address)
-            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
+            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size, info="[stack]")
 
             # Stack should not init at the very bottom. Will cause errors with Dlls
             sp = self.ql.stack_address + self.ql.stack_size - 0x1000
@@ -333,7 +336,7 @@ class QlLoaderPE(Process, QlLoader):
             self.init_thread_information_block()
 
             # mmap PE file into memory
-            self.ql.mem.map(self.PE_IMAGE_BASE, self.PE_IMAGE_SIZE)
+            self.ql.mem.map(self.PE_IMAGE_BASE, self.PE_IMAGE_SIZE, info="[PE]")
             self.pe.parse_data_directories()
             data = bytearray(self.pe.get_memory_mapped_image())
             self.ql.mem.write(self.PE_IMAGE_BASE, bytes(data))
@@ -367,7 +370,7 @@ class QlLoaderPE(Process, QlLoader):
 
         elif self.ql.shellcoder:
             # setup stack memory
-            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
+            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size, info="[stack]")
             if self.ql.archtype== QL_ARCH.X86:
                 self.ql.register(UC_X86_REG_ESP, self.ql.stack_address + 0x3000)
                 self.ql.register(UC_X86_REG_EBP, self.ql.stack_address + 0x3000)
@@ -376,8 +379,8 @@ class QlLoaderPE(Process, QlLoader):
                 self.ql.register(UC_X86_REG_RBP, self.ql.stack_address + 0x3000)
 
             # load shellcode in
-            self.ql.mem.map(self.ql.code_address, self.ql.code_size)
-            self.ql.mem.write(self.ql.code_address, self.ql.shellcoder)
+            self.ql.mem.map(self.code_address, self.code_size, info="[shellcode_base]")
+            self.ql.mem.write(self.code_address, self.ql.shellcoder)
 
             self.init_thread_information_block()
 

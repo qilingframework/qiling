@@ -388,7 +388,7 @@ class QlMemoryHeap:
             # If the heap is not enough
             if self.start_address + self.current_use + real_size > self.end_address:
                 return 0
-            self.ql.mem.map(self.start_address + self.current_alloc, real_size)
+            self.ql.mem.map(self.start_address + self.current_alloc, real_size, info="[heap]")
             chunk = Chunk(self.start_address + self.current_use, size)
             self.current_alloc += real_size
             self.current_use += size

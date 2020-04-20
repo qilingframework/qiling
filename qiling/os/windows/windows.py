@@ -28,6 +28,8 @@ class QlOsWindows(QlOs):
         self.user_defined_api = {}
         self.hooks_variables = {}
         self.syscall_count = {}
+        self.argv = self.ql.argv
+        self.env = self.ql.env
         self.load()
 
     def load(self):
@@ -42,17 +44,15 @@ class QlOsWindows(QlOs):
         if self.ql.archtype == QL_ARCH.X8664:
             self.stack_address = 0x7ffffffde000
             self.stack_size = 0x40000
-            self.ql.code_address = 0x140000000
-            self.ql.code_size = 10 * 1024 * 1024
             self.HEAP_BASE_ADDR = 0x500000000
             self.HEAP_SIZE = 0x5000000            
         elif self.ql.archtype == QL_ARCH.X86:
             self.stack_address = 0xfffdd000
             self.stack_size = 0x21000
-            self.ql.code_address = 0x40000
-            self.ql.code_size = 10 * 1024 * 1024
             self.HEAP_BASE_ADDR = 0x5000000
             self.HEAP_SIZE = 0x5000000
+
+        
 
         if self.ql.stack_address == 0:
             self.ql.stack_address = self.stack_address
@@ -149,7 +149,7 @@ class QlOsWindows(QlOs):
             self.ql.until_addr = self.QL_EMU_END
         try:
             if self.ql.shellcoder:
-                self.ql.emu_start(self.ql.code_address, self.ql.code_address + len(self.ql.shellcoder))
+                self.ql.emu_start(self.ql.loader.code_address, self.ql.loader.code_address + len(self.ql.shellcoder))
             else:
                 self.ql.emu_start(self.ql.loader.entry_point, self.ql.until_addr, self.ql.timeout)
         except UcError:

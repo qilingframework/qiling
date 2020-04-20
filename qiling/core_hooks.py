@@ -7,9 +7,11 @@
 # These are part of the core.py Qiling class #
 # handling hooks                             #
 ##############################################
+
 from unicorn import *
 from unicorn.x86_const import *
 from .utils import catch_KeyboardInterrupt
+from .const import QL_POSIX, QL_OS
 
 class QLCoreHooks:
     def __init__(self):
@@ -102,3 +104,24 @@ class QLCoreHooks:
             #TODO: Need to write test code to reach this code path and trigger
             #TODO: need to convert this to ql_hook style code
             self.uc.hook_add(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
+    
+    # replace linux or windows syscall/api with custom api/syscall
+    # if replace function name is needed, first syscall must be available
+    # - ql.set_syscall(0x04, my_syscall_write)
+    # - ql.set_syscall("write", my_syscall_write)
+    def set_syscall(self, syscall_cur, syscall_new):
+        if self.ostype in (QL_POSIX):
+            if isinstance(syscall_cur, int):
+                self.os.dict_posix_syscall_by_num[syscall_cur] = syscall_new
+            else:
+                syscall_name = "ql_syscall_" + str(syscall_cur)
+                self.os.dict_posix_syscall[syscall_name] = syscall_new
+        elif self.ostype == QL_OS.WINDOWS:
+            self.set_api(syscall_cur, syscall_new)
+
+    # replace Windows API with custom syscall
+    def set_api(self, syscall_cur, syscall_new):
+        if self.ostype == QL_OS.WINDOWS:
+            self.os.user_defined_api[syscall_cur] = syscall_new
+        elif self.ostype in (QL_POSIX):
+            self.set_syscall(syscall_cur, syscall_new)

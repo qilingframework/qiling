@@ -33,7 +33,7 @@ class TestShellcode(unittest.TestCase):
 
     def test_linux_mips32(self):
         print("Linux MIPS 32bit EL Shellcode")
-        ql = Qiling(shellcoder = MIPS32EL_LIN, archtype = "mips32el", ostype = "linux", output = "off")
+        ql = Qiling(shellcoder = MIPS32EL_LIN, archtype = "mips32", ostype = "linux", output = "off")
         ql.run()
 
     #This shellcode needs to be changed to something non-blocking

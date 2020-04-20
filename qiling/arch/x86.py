@@ -352,7 +352,7 @@ class GDTManager:
     # Added GDT management module.
     def __init__(self, ql, GDT_ADDR = QL_X86_GDT_ADDR, GDT_LIMIT =  QL_X86_GDT_LIMIT, GDT_ENTRY_ENTRIES = 16):
         if ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT) == False:
-            ql.mem.map(GDT_ADDR, GDT_LIMIT)
+            ql.mem.map(GDT_ADDR, GDT_LIMIT, info="[GDT]")
         else:
             raise QlGDTError("[!] Ql GDT mem map error!")
         # setup GDT by writing to GDTR
@@ -369,7 +369,7 @@ class GDTManager:
         # FIXME: Temp fix for FS and GS
         if index in (14,15):
             if self.ql.mem.is_mapped(SEGMENT_ADDR, SEGMENT_ADDR) == False:
-                self.ql.mem.map(SEGMENT_ADDR, SEGMENT_ADDR)
+                self.ql.mem.map(SEGMENT_ADDR, SEGMENT_ADDR, info="[FS/GS]")
 
         if index < 0 or index >= self.gdt_number:
             raise QlGDTError("[!] Ql GDT register index error!")
@@ -452,7 +452,7 @@ def ql_x86_register_fs(self):
 
 def ql_x8664_set_gs(ql):
     if ql.mem.is_mapped(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE) == False:
-        ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE)
+        ql.mem.map(GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, info="[GS]")
     ql.reg.msr(GSMSR, GS_SEGMENT_ADDR)
 
 

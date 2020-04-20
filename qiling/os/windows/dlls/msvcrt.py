@@ -80,11 +80,11 @@ def hook_atexit(self, address, params):
 # char*** __p__environ(void)
 @winapi(cc=CDECL, params={})
 def hook___p__environ(self, address, params):
-    ret = self.ql.os.heap.mem_alloc(self.ql.pointersize * len(self.ql.env))
+    ret = self.ql.os.heap.mem_alloc(self.ql.pointersize * len(self.env))
     count = 0
-    for key in self.ql.env:
+    for key in self.env:
         pointer = self.ql.os.heap.mem_alloc(self.ql.pointersize)
-        env = key + "=" + self.ql.env[key]
+        env = key + "=" + self.env[key]
         env_addr = self.ql.os.heap.mem_alloc(len(env) + 1)
         self.ql.mem.write(env_addr, bytes(env, 'ascii') + b'\x00')
         self.ql.mem.write(pointer, self.ql.pack(env_addr))
@@ -151,9 +151,9 @@ def hook__initterm_e(self, address, params):
 # char***    __cdecl __p___argv (void);
 @winapi(cc=CDECL, params={})
 def hook___p___argv(self, address, params):
-    ret = self.ql.os.heap.mem_alloc(self.ql.pointersize * len(self.ql.argv))
+    ret = self.ql.os.heap.mem_alloc(self.ql.pointersize * len(self.argv))
     count = 0
-    for each in self.ql.argv:
+    for each in self.argv:
         arg_pointer = self.ql.os.heap.mem_alloc(self.ql.pointersize)
         arg = self.ql.os.heap.mem_alloc(len(each) + 1)
         self.ql.mem.write(arg, bytes(each, 'ascii') + b'\x00')
@@ -167,7 +167,7 @@ def hook___p___argv(self, address, params):
 @winapi(cc=CDECL, params={})
 def hook___p___argc(self, address, params):
     ret = self.ql.os.heap.mem_alloc(self.ql.pointersize)
-    self.ql.mem.write(ret, self.ql.pack(len(self.ql.argv)))
+    self.ql.mem.write(ret, self.ql.pack(len(self.argv)))
     return ret
 
 
@@ -175,8 +175,8 @@ def hook___p___argc(self, address, params):
 def hook__get_initial_narrow_environment(self, address, params):
     ret = 0
     count = 0
-    for key in self.ql.env:
-        value = key + "=" + self.ql.env[key]
+    for key in self.env:
+        value = key + "=" + self.env[key]
         env = self.ql.os.heap.mem_alloc(len(value) + 1)
         if count == 0:
             ret = env

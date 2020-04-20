@@ -70,21 +70,23 @@ class QlOsLinux(QlOsPosix):
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
             self.thread_class = QlLinuxX8664Thread
 
+        if self.ql.shellcoder and not self.ql.stack_address and not self.ql.stack_size:
+            self.stack_address = 0x1000000
+            self.stack_size = 10 * 1024 * 1024
+
+        elif not self.ql.shellcoder and not self.ql.stack_address and not self.ql.stack_size:
+            self.stack_address = self.QL_LINUX_PREDEFINE_STACKADDRESS
+            self.stack_size = self.QL_LINUX_PREDEFINE_STACKSIZE
+
+        elif self.ql.stack_address and self.ql.stack_size:
+            self.stack_address = self.ql.stack_address
+            self.stack_address = self.ql.stack_size                
+        
+        self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
+        
         if self.ql.shellcoder:
-            if (self.ql.stack_address == 0):
-                self.ql.stack_address = 0x1000000
-            if (self.ql.stack_size == 0):
-                self.ql.stack_size = 10 * 1024 * 1024
-            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size, info="[stack]")
-            self.ql.stack_address  = (self.ql.stack_address + 0x200000 - 0x1000)
-            self.ql.mem.write(self.ql.stack_address, self.ql.shellcoder)
-            
-        else:
-            if (self.ql.stack_address == 0):
-                self.ql.stack_address = self.QL_LINUX_PREDEFINE_STACKADDRESS
-            if (self.ql.stack_size == 0):
-                self.ql.stack_size = self.QL_LINUX_PREDEFINE_STACKSIZE
-            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size, info="[stack]")
+            self.stack_address  = (self.stack_address + 0x200000 - 0x1000)
+            self.ql.mem.write(self.stack_address, self.ql.shellcoder)
 
         self.setup_output()
 
@@ -97,13 +99,14 @@ class QlOsLinux(QlOsPosix):
         if self.ql.archtype== QL_ARCH.ARM:
             ql_arm_init_kernel_get_tls(self.ql)
         
-        self.ql.reg.sp = self.ql.stack_address
+        self.ql.reg.sp = self.stack_address
+
         if (self.ql.until_addr == 0):
             self.ql.until_addr = self.QL_EMU_END
 
         try:
             if self.ql.shellcoder:
-                self.ql.emu_start(self.ql.stack_address, (self.ql.stack_address + len(self.ql.shellcoder)))
+                self.ql.emu_start(self.stack_address, (self.stack_address + len(self.ql.shellcoder)))
             else:
                 if self.ql.multithread == True:
                     # start multithreading

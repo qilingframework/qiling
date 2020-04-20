@@ -171,6 +171,25 @@ def ql_transform_to_real_path(ql, path):
             else:
                 real_path = ql.os.transform_to_real_path(os.path.dirname(relative_path) + '/' + link_path)
 
+        if not os.path.exists(real_path):
+            real_path = os.path.abspath(rootfs + '/' + relative_path)
+            if os.path.islink(real_path):
+                link_path = os.readlink(real_path)
+            else:
+                link_path = relative_path
+
+            path_dirs = link_path.split(os.path.sep)
+            if link_path[0] == '/':
+                path_dirs = path_dirs[1:]
+
+            for i in range(0, len(path_dirs)-1):
+                path_prefix = os.path.sep.join(path_dirs[:i+1])
+                real_path_prefix = ql.os.transform_to_real_path(path_prefix)
+                path_remain = os.path.sep.join(path_dirs[i+1:])
+                real_path = os.path.join(real_path_prefix, path_remain)
+                if os.path.exists(real_path):
+                    break
+
     return real_path
 
 

@@ -5,7 +5,7 @@
 
 import platform
 import ntpath
-import os as pyos
+import os
 import logging
 
 from .const import QL_ENDINABLE, QL_ENDIAN, QL_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
@@ -115,7 +115,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
         # read file propeties, not shellcoder
         if self.rootfs and self.shellcoder is None:
-            if pyos.path.exists(str(self.filename[0])) and pyos.path.exists(self.rootfs):
+            if os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs):
                 self.path = (str(self.filename[0]))
                 if self.ostype is None or self.archtype is None:
                     self.archtype, self.ostype = self.ql_checkostype()
@@ -123,9 +123,9 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
                 self.argv = self.filename
 
             else:
-                if not pyos.path.exists(str(self.filename[0])):
+                if not os.path.exists(str(self.filename[0])):
                     raise QlErrorFileNotFound("[!] Target binary not found")
-                if not pyos.path.exists(self.rootfs):
+                if not os.path.exists(self.rootfs):
                     raise QlErrorFileNotFound("[!] Target rootfs not found")
 
         if self.shellcoder:
@@ -204,7 +204,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # Loader #
         ##########
         self.loader = self.ql_loader_setup()
-       
 
     def run(self):
         # setup strace filter for logger
@@ -224,78 +223,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # resume with debugger
         if self.debugger is not None:
             self.remotedebugsession.run()
-
-    # normal print out
-    def nprint(self, *args, **kw):
-        if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
-            fd = self.os.thread_management.cur_thread.log_file_fd
-        else:
-            fd = self.log_file_fd
-
-        msg = args[0]
-
-        # support keyword "end" in ql.print functions, use it as terminator or default newline character by OS
-        msg += kw["end"] if kw.get("end", None) != None else pyos.linesep
-
-        fd.info(msg)
-
-        if fd is not None:
-            if isinstance(fd, logging.FileHandler):
-                fd.emit()
-            elif isinstance(fd, logging.StreamHandler):
-                fd.flush()
-
-    # debug print out, always use with verbose level with dprint(D_INFO,"helloworld")
-    def dprint(self, level, *args, **kw):
-        try:
-            self.verbose = int(self.verbose)
-        except:
-            raise QlErrorOutput("[!] Verbose muse be int")    
-        
-        if type(self.verbose) != int or self.verbose > 99 or (self.verbose > 1 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
-            raise QlErrorOutput("[!] Verbose > 1 must use with QL_OUTPUT.DEBUG or else ql.verbose must be 0")
-
-        if self.output == QL_OUTPUT.DUMP:
-            self.verbose = 99
-
-        if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
-            self.nprint(*args, **kw)
-
-   
-    # replace linux or windows syscall/api with custom api/syscall
-    # if replace function name is needed, first syscall must be available
-    # - ql.set_syscall(0x04, my_syscall_write)
-    # - ql.set_syscall("write", my_syscall_write)
-    def set_syscall(self, syscall_cur, syscall_new):
-        if self.ostype in (QL_POSIX):
-            if isinstance(syscall_cur, int):
-                self.os.dict_posix_syscall_by_num[syscall_cur] = syscall_new
-            else:
-                syscall_name = "ql_syscall_" + str(syscall_cur)
-                self.os.dict_posix_syscall[syscall_name] = syscall_new
-        elif self.ostype == QL_OS.WINDOWS:
-            self.set_api(syscall_cur, syscall_new)
-
-    # replace Windows API with custom syscall
-    def set_api(self, syscall_cur, syscall_new):
-        if self.ostype == QL_OS.WINDOWS:
-            self.os.user_defined_api[syscall_cur] = syscall_new
-        elif self.ostype in (QL_POSIX):
-            self.set_syscall(syscall_cur, syscall_new)
-
-    def stack_push(self, data):
-        self.arch.stack_push(data)
-
-    def stack_pop(self):
-        return self.arch.stack_pop()
-
-    # read from stack, at a given offset from stack bottom
-    def stack_read(self, offset):
-        return self.arch.stack_read(offset)
-
-    # write to stack, at a given offset from stack bottom
-    def stack_write(self, offset, data):
-        self.arch.stack_write(offset, data)
 
     # patch @code to memory address @addr
     def patch(self, addr, code, file_name=b''):
