@@ -329,4 +329,4 @@ def hook_OpenProcessToken(self, address, params):
     "lpContext": POINTER
 })
 def hook_GetThreadContext(self, address, params):
-    pass
+    return 1
