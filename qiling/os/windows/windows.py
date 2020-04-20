@@ -10,7 +10,6 @@ from unicorn import *
 from qiling.arch.x86_const import *
 from qiling.arch.x86 import *
 from qiling.const import *
-from qiling.os.utils import ql_init_configuration
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs
 
@@ -84,7 +83,7 @@ class QlOsWindows(QlOs):
 
     def setupComponents(self):
         # user configuration
-        self.profile = ql_init_configuration(self)
+        self.profile = self.init_configuration()
         # handle manager
         self.handle_manager = HandleManager()
         # registry manger

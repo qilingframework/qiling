@@ -224,6 +224,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if self.debugger is not None:
             self.remotedebugsession.run()
 
+
     # patch @code to memory address @addr
     def patch(self, addr, code, file_name=b''):
         if file_name == b'':

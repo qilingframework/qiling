@@ -131,22 +131,4 @@ def printf(self, address, fmt, params_addr, name, wstring=False):
     return len(stdout), stdout
 
 
-def execute_arbitrary_code_from_hook(ql, start, end):
-    old_sp = ql.reg.sp
 
-    # we read where this hook is supposed to return
-    ret = ql.stack_read(0)
-
-    def restore(ql):
-        ql.dprint(D_INFO, "[+] Executed code from %d to %d " % (start, end))
-        # now we can restore the register to be where we were supposed to
-        old_hook_addr = ql.reg.pc
-        ql.reg.sp = old_sp
-        ql.reg.pc = ret
-        # we want to execute the code once, not more
-        ql.hook_address(lambda q: None, old_hook_addr)
-
-    # we have to set an address to restore the registers
-    ql.hook_address(restore, end, )
-    # we want to rewrite the return address to the function
-    ql.stack_write(0, start)
