@@ -83,10 +83,20 @@ def hook_SetErrorMode(self, address, params):
     "lpArguments": POINTER
 })
 def hook_RaiseException(self, address, params):
-    address = self.handle_manager.search("TopLevelExceptionHandler").obj
-    old_pc = self.ql.reg.pc
-    # TODO we should jump on the code
-    # self.ql.stack_write(0, address)
+    func_addr = self.handle_manager.search("TopLevelExceptionHandler").obj
+
+    # We have to retrieve the return address position
+    code = self.ql.mem.read(func_addr, 0x100)
+    if b"\xc3" in code:
+        code = code[:code.index(b"\xc3")]
+    if b"\xc2" in code:
+        code = code[:code.index(b"\xc2")]
+    if b"\xcb" in code:
+        code = code[:code.index(b"\xcb")]
+    if b"\xca" in code:
+        code = code[:code.index(b"\xca")]
+
+    execute_arbitrary_code_from_hook(self.ql, func_addr, func_addr + len(code))
 
     return 0
 
