@@ -96,7 +96,7 @@ def hook_RaiseException(self, address, params):
     if b"\xca" in code:
         code = code[:code.index(b"\xca")]
 
-    self.ql.os.arbitrary_exec(func_addr, func_addr + len(code))
+    self.ql.os.exec_arbitrary(func_addr, func_addr + len(code))
 
     return 0
 

@@ -83,7 +83,7 @@ class QlOsWindows(QlOs):
 
     def setupComponents(self):
         # user configuration
-        self.profile = self.init_configuration()
+        self.profile = self.init_profile()
         # handle manager
         self.handle_manager = HandleManager()
         # registry manger
