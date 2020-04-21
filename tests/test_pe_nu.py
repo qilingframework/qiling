@@ -154,48 +154,22 @@ def test_pe_win_al_khaser():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
 
     # The hooks are to remove the prints to file. It crashes. will debug why in the future
-    def results(ql, function_name):
-        UC_X86_REG_EAX = 19
+    def results(ql):
+        UC_X86_REG_EBX = 21
 
-        if ql.register(UC_X86_REG_EAX) == 1:
-            print("[=] %s : IS BAD  " % function_name)
-        elif ql.register(UC_X86_REG_EAX) == 0:
-            print("[=] %s : IS GOOD " % function_name)
+        if ql.register(UC_X86_REG_EBX) == 1:
+            print("[=] BAD")
         else:
-            print("[=] %s : IS TO FIX" % function_name)
-        ql.reg.pc += 5
+            print("[=] GOOD ")
+        ql.reg.pc = 0x402ee4
 
-    ql.hook_address(results, 0x00401198, user_data="IsDebuggerPresent")
-    ql.hook_address(results, 0x004011b1, user_data="PEB.BeingDebugged")
-    ql.hook_address(results, 0x004011d5, user_data="CheckRemoteDebuggerPresentAPI")
-    ql.hook_address(results, 0x004011e6, user_data="Checking PEB.NtGlobalFlag")
-
-    # i think we have a problem with peb
-    size = 0x40121e - 0x4011fb
-    ql.patch(0x4011fb, b'\x90' * size)
-    ql.hook_address(results, 0x0040121e, user_data="ProcessHeap.Flags")
-
-    # i think we have a problem with peb
-    size = 0x401253 - 0x401233
-    ql.patch(0x401233, b'\x90' * size)  # TODO IT FAILS
-    ql.hook_address(results, 0x00401253, user_data="ProcessHeap.ForceFlags")
-
-    ql.hook_address(results, 0x004012a5, user_data="NtQueryInformationProcess (ProcessDebugPort)")
-    ql.hook_address(results, 0x004012e9, user_data="NtQueryInformationProcess(ProcessDebugFlags)")
-    ql.hook_address(results, 0x00401331, user_data="NtQueryInformationProcess (ProcessDebugObject)")
-    ql.hook_address(results, 0x0040136b, user_data="NtSetInformationThread (HideThreadFromDebugger)")
-    ql.hook_address(results, 0x0040137c, user_data="CloseHandle (NtClose) Invalid Handle")
-    ql.hook_address(results, 0x004013af, user_data="UnhandledExceptionFilter")
-    ql.hook_address(results, 0x004013f3, user_data="OutputDebugString (GetLastError())")
+    ql.hook_address(results, 0x00402e66)
     # the program alloc 4 bytes and then tries to write 0x2cc bytes.
     # I have no idea of why this code should work without this patch
     ql.patch(0x00401984, b'\xb8\x04\x00\x00\x00')
-    ql.hook_address(results, 0x00401404, user_data="Hardware breakpoint")
-    ql.hook_address(results, 0x0040143c, user_data="Software breakpoint")
 
     # This should call an interrupt. Other than we don't listen to interrupts, this interrupt is shit.
     ql.patch(0x0040145c, b'\x90' * 5)
-    ql.hook_address(results, 0x00401475, user_data="Interrupt print")
 
     def end(ql):
         print("We are finally done")

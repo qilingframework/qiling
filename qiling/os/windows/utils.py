@@ -147,6 +147,6 @@ def execute_arbitrary_code_from_hook(ql, start, end):
         ql.hook_address(lambda q: None, old_hook_addr)
 
     # we have to set an address to restore the registers
-    ql.hook_address(restore, end, )
+    ql.hook_address(restore, end )
     # we want to rewrite the return address to the function
     ql.stack_write(0, start)
