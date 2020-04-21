@@ -50,6 +50,7 @@ def loadertype_convert_str(ostype):
         QL_OS.MACOS: "MACHO",
         QL_OS.FREEBSD: "ELF",
         QL_OS.WINDOWS: "PE",
+        QL_OS.UEFI: "PE_UEFI",
     }
     return adapter.get(ostype)
 
@@ -65,6 +66,7 @@ def ostype_convert(ostype):
         ostype = "macos"
     adapter = {}
     adapter.update(os_map)
+
     if ostype in adapter:
         return adapter[ostype]
     # invalid

@@ -3,68 +3,39 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-from enum import IntEnum
+QL_X86 = 1
+QL_X8664 = 2
+QL_ARM = 3
+QL_ARM_THUMB = 4
+QL_ARM64 = 5
+QL_MIPS32 = 6
 
-class QL_ENDIAN(IntEnum):
-    EL = 1
-    EB = 2
+QL_ENDIAN_EB = 2
+QL_ENDIAN_EL = 1
 
-class QL_ARCH(IntEnum):
-    X86 = 1
-    X8664 = 2
-    ARM = 3
-    ARM_THUMB = 4
-    ARM64 = 5
-    MIPS = 6
+QL_LINUX = 1
+QL_FREEBSD = 2
+QL_MACOS = 3
+QL_WINDOWS = 4
+QL_POSIX = 5
+QL_EFI = 6
 
-class QL_OS(IntEnum):
-    LINUX = 1
-    FREEBSD = 2
-    MACOS = 3
-    WINDOWS = 4
-    POSIX = 5
+QL_OUT_DEFAULT = 1
+QL_OUT_DISASM = 2
+QL_OUT_DEBUG = 3
+QL_OUT_DUMP = 99
 
-class QL_OUTPUT(IntEnum):
-    OFF = 1
-    DEFAULT = 2
-    DISASM = 3
-    DEBUG = 4
-    DUMP = 5
-
-class QL_DEBUGGER(IntEnum):
-    GDB = 1
-    IDAPRO = 2
+QL_GDB = 1
+QL_IDAPRO = 2
 
 D_INFO = 1 # GENERAL DEBUG INFO
 D_PROT = 2 # FLAG, PROTOCOL DEBUG INFO
 D_CONT = 3 # Print out content
 D_RPRT = 4 # Extrame OUTPUT
 
-QL_DEBUGGER_ALL = [QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB]
-QL_ARCH_ALL = [QL_ARCH.X86, QL_ARCH.X8664, QL_ARCH.ARM, QL_ARCH.ARM64, QL_ARCH.MIPS]
-QL_ENDINABLE = [QL_ARCH.MIPS, QL_ARCH.ARM]
-QL_OS_ALL = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.WINDOWS, QL_OS.POSIX]
-QL_POSIX = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS]
-
-FUNC_HOOK_BLOCK = 0b1
-FUNC_CALL_BLOCK = 0b10
-
-debugger_map = {
-        "gdb": QL_DEBUGGER.GDB,
-        "ida": QL_DEBUGGER.IDAPRO,
-    }
-
-arch_map = {
-        "x86": QL_ARCH.X86,
-        "x8664": QL_ARCH.X8664,
-        "mips": QL_ARCH.MIPS,
-        "arm": QL_ARCH.ARM,
-        "arm64": QL_ARCH.ARM64,
-    }
-
-os_map = {
-        "linux": QL_OS.LINUX,
-        "macos": QL_OS.MACOS,
-        "freebsd": QL_OS.FREEBSD,
-        "windows": QL_OS.WINDOWS,
-}
+QL_DEBUGGER = [QL_IDAPRO, QL_GDB]
+QL_ARCH = [QL_ARM, QL_ARM64, QL_MIPS32, QL_X86, QL_X8664]
+QL_ENDINABLE = [QL_MIPS32, QL_ARM]
+QL_OS = [QL_LINUX, QL_FREEBSD, QL_MACOS, QL_WINDOWS, QL_EFI]
+QL_POSIX = [QL_LINUX, QL_FREEBSD, QL_MACOS]
+QL_OUTPUT = [QL_OUT_DEFAULT, QL_OUT_DEBUG, QL_OUT_DUMP, QL_OUT_DISASM]
