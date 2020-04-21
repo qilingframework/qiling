@@ -62,7 +62,7 @@ class QLCoreUtils:
     def stack_write(self, offset, data):
         self.arch.stack_write(offset, data)
 
-    def ql_arch_setup(self):
+    def arch_setup(self):
         if not ql_is_valid_arch(self.archtype):
             raise QlErrorArch("[!] Invalid Arch")
         
@@ -72,7 +72,7 @@ class QLCoreUtils:
         module_name = ql_build_module_import_name("arch", None, self.archtype)
         return ql_get_module_function(module_name, archmanager)(self)
 
-    def ql_os_setup(self, function_name = None):
+    def os_setup(self, function_name = None):
         if not ql_is_valid_ostype(self.ostype):
             raise QlErrorOsType("[!] Invalid OSType")
 
@@ -97,7 +97,7 @@ class QLCoreUtils:
             module_name = ql_build_module_import_name("os", self.ostype, self.archtype)
             return ql_get_module_function(module_name, function_name)
 
-    def ql_loader_setup(self, function_name = None):
+    def loader_setup(self, function_name = None):
         if not ql_is_valid_ostype(self.ostype):
             raise QlErrorOsType("[!] Invalid OSType")
 
@@ -110,7 +110,7 @@ class QLCoreUtils:
             module_name = ql_build_module_import_name("loader", loadertype_str.lower())
             return ql_get_module_function(module_name, function_name)(self)
 
-    def ql_component_setup(self, function_name = None):
+    def component_setup(self, function_name = None):
         if not ql_is_valid_ostype(self.ostype):
             raise QlErrorOsType("[!] Invalid OSType")
 
@@ -131,7 +131,7 @@ class QLCoreUtils:
             module_name = ql_build_module_import_name("os", self.ostype, self.archtype)
             return ql_get_module_function(module_name, function_name)
 
-    def ql_checkostype(self):
+    def checkostype(self):
         path = self.path
 
         arch = None

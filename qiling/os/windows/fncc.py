@@ -7,7 +7,7 @@ import struct
 from unicorn.x86_const import *
 
 from qiling.os.const import *
-from qiling.os.windows.utils import *
+from .utils import *
 from qiling.const import *
 from qiling.exception import *
 
