@@ -52,7 +52,7 @@ def hook_RtlGetVersion(self, address, params):
 #   PVOID           ThreadInformation,
 #   ULONG           ThreadInformationLength
 # );
-@winapi(cc=CDECL, params={
+@winapi(cc=STDCALL, params={
     "ThreadHandle": HANDLE,
     "ThreadInformationClass": INT,
     "ThreadInformation": POINTER,
@@ -63,16 +63,12 @@ def hook_ZwSetInformationThread(self, address, params):
     thread = params["ThreadHandle"]
     if thread == self.thread_manager.cur_thread.id:
         size = params["ThreadInformationLength"]
-        if size == 0:
-            return STATUS_INFO_LENGTH_MISMATCH
         dst = params["ThreadInformation"]
-        if dst == 0:
-            return STATUS_INFO_LENGTH_MISMATCH
-
         information = params["ThreadInformationClass"]
         if information == ThreadHideFromDebugger:
             self.ql.dprint(D_RPRT, "[=] Sample is checking debugger via SetInformationThread")
-            self.ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
+            if dst != 0:
+                self.ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
         else:
             raise QlErrorNotImplemented("[!] API not implemented")
 
@@ -84,7 +80,7 @@ def hook_ZwSetInformationThread(self, address, params):
 # NTSYSAPI NTSTATUS ZwClose(
 #   HANDLE Handle
 # );
-@winapi(cc=CDECL, params={
+@winapi(cc=STDCALL, params={
     "Handle": HANDLE
 
 })
