@@ -118,7 +118,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             if os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs):
                 self.path = (str(self.filename[0]))
                 if self.ostype is None or self.archtype is None:
-                    self.archtype, self.ostype = self.ql_checkostype()
+                    self.archtype, self.ostype = self.checkostype()
 
                 self.argv = self.filename
 
@@ -184,8 +184,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         #############
         # Component #
         #############
-        self.mem = self.ql_component_setup("memory")
-        self.reg = self.ql_component_setup("register")
+        self.mem = self.component_setup("memory")
+        self.reg = self.component_setup("register")
 
         #####################################
         # Architecture                      #
@@ -193,17 +193,17 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # Load architecture's and os module #
         # ql.reg.pc, ql.reg.sp and etc      #
         #####################################
-        self.arch = self.ql_arch_setup()
+        self.arch = self.arch_setup()
 
         ######
         # OS #
         ######
-        self.os = self.ql_os_setup()
+        self.os = self.os_setup()
 
         ##########
         # Loader #
         ##########
-        self.loader = self.ql_loader_setup()
+        self.loader = self.loader_setup()
 
     def run(self):
         # setup strace filter for logger

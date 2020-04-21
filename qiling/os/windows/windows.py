@@ -51,12 +51,11 @@ class QlOsWindows(QlOs):
             self.HEAP_BASE_ADDR = 0x5000000
             self.HEAP_SIZE = 0x5000000
 
-        
-
         if self.ql.stack_address == 0:
             self.ql.stack_address = self.stack_address
         if self.ql.stack_size == 0:
             self.ql.stack_size = self.stack_size
+
         """
         Load Heap module
         FIXME: We need to refactor this
