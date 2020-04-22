@@ -39,16 +39,18 @@ def _QueryInformationProcess(self, address, params):
     dst = params["ProcessInformation"]
     pt_res = params["ReturnLength"]
     if flag == ProcessDebugFlags:
-        value = b"\x01"*0x8
-    elif flag == ProcessDebugObjectHandle or flag == ProcessDebugPort :
-        value = b"\x00"*0x8
+        value = b"\x01"*0x4
+    elif flag == ProcessDebugPort:
+        value = b"\x00"*0x4
+    elif flag == ProcessDebugObjectHandle:
+        return STATUS_PORT_NOT_SET
     else:
         self.ql.dprint(D_INFO, str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
     self.ql.dprint(D_RPRT, "[=] The sample is checking the debugger via QueryInformationProcess ")
     self.ql.mem.write(dst, value)
     if pt_res != 0:
-        self.ql.mem.write(pt_res, 0x8.to_bytes(1, byteorder="little"))
+        self.ql.mem.write(pt_res, 0x4.to_bytes(1, byteorder="little"))
 
     return STATUS_SUCCESS
 

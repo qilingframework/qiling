@@ -331,6 +331,10 @@ def compare(p1, operator, p2):
         return p1 > p2
     elif operator == ">=":
         return p1 >= p2
+    elif operator == "<":
+        return p1 < p2
+    elif operator == "<=":
+        return p1 <= p2
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
 
@@ -386,6 +390,10 @@ def hook_VerifyVersionInfoW(self, address, params):
             operator = ">"
         elif value == VER_GREATER_EQUAL:
             operator = ">="
+        elif value == VER_LESS:
+            operator = "<"
+        elif value == VER_LESS_EQUAL:
+            operator = "<="
         else:
             raise QlErrorNotImplemented("[!] API not implemented with operator %d" % value)
         # Versions should be compared together

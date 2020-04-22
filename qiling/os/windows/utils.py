@@ -23,7 +23,7 @@ def string_unpack(string):
 
 def print_function(self, address, function_name, params, ret):
     function_name = function_name.replace('hook_', '')
-    if function_name in ("__stdio_common_vfprintf", "printf", "wsprintfW", "sprintf"):
+    if function_name in ("__stdio_common_vfprintf","__stdio_common_vfwprintf", "printf", "wsprintfW", "sprintf"):
         return
     log = '0x%0.2x: %s(' % (address, function_name)
     for each in params:
@@ -43,6 +43,7 @@ def print_function(self, address, function_name, params, ret):
 
     elif self.ql.output == QL_OUTPUT.DEBUG:
         self.ql.dprint(D_INFO, log)
+
 
 def read_wstring(ql, address):
     result = ""
@@ -105,7 +106,9 @@ def printf(self, address, fmt, params_addr, name, wstring=False):
         for f in formats:
             if f.startswith("s"):
                 if wstring:
-                    params[index] = read_wstring(self.ql, params[index])
+                    mem = self.ql.unpack32(self.ql.mem.read(params[index], self.ql.pointersize))
+                    params[index] = read_wstring(self.ql, mem)
+
                 else:
                     params[index] = read_cstring(self, params[index])
             else:
@@ -127,7 +130,7 @@ def printf(self, address, fmt, params_addr, name, wstring=False):
         output = '0x%0.2x: %s(format = %s) = 0x%x' % (address, name, repr(fmt), len(fmt))
         stdout = fmt
     self.ql.nprint(output)
-    self.ql.os.stdout.write(bytes(stdout + "\n", 'utf-8'))
+    self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
     return len(stdout), stdout
 
 

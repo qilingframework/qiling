@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct
+import struct, os
 
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
@@ -235,6 +235,28 @@ def hook___stdio_common_vfprintf(self, address, _):
     return ret
 
 
+@winapi(cc=CDECL, param_num=4)
+def hook___stdio_common_vfwprintf(self, address, _):
+    ret = 0
+    _, _, _, p_format, _, p_args = get_function_param(self, 6)
+    fmt = read_wstring(self.ql, p_format)
+
+    printf(self, address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True)
+    return ret
+
+
+@winapi(cc=CDECL, param_num=4)
+def hook___stdio_common_vswprintf_s(self, address, _):
+    ret = 0
+    _, size, p_format, p_args = get_function_param(self, 4)
+
+    printf(self, address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True)
+
+    return ret
+
+
+
+
 # int lstrlenW(
 #   LPCWSTR lpString
 # );
@@ -381,3 +403,25 @@ def hook__ismbblead(self, address, params):
         return 0
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
+
+
+# errno_t _wfopen_s(
+#    FILE** pFile,
+#    const wchar_t *filename,
+#    const wchar_t *mode
+# );
+@winapi(cc=CDECL, params={
+    "pFile": POINTER,
+    "filename": WSTRING,
+    "mode": WSTRING
+})
+def hook__wfopen_s(self, address, params):
+    dst = params["pFile"]
+    filename = params["filename"]
+    mode = params["mode"]
+    s_lpFileName = self.ql.os.transform_to_real_path(filename)
+    f = open(s_lpFileName.replace("\\", os.sep), mode)
+    new_handle = Handle(obj=f)
+    self.handle_manager.append(new_handle)
+    self.ql.mem.write(dst, self.ql.pack(new_handle.id))
+    return 0

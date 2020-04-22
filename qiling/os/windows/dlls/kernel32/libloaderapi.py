@@ -57,6 +57,23 @@ def hook_GetModuleHandleW(self, address, params):
     return _GetModuleHandle(self, address, params)
 
 
+# BOOL GetModuleHandleExW(
+#   DWORD   dwFlags,
+#   LPCWSTR lpModuleName,
+#   HMODULE *phModule
+# );
+@winapi(cc=STDCALL, params={
+    "dwFlags": DWORD,
+    "lpModuleName": WSTRING,
+    "phModule": HANDLE
+})
+def hook_GetModuleHandleExW(self, address, params):
+    res = _GetModuleHandle(self, address, params)
+    dst = params["phModule"]
+    self.ql.mem.write(dst, res.to_bytes(4, byteorder="little"))
+    return 1
+
+
 # DWORD GetModuleFileNameA(
 #   HMODULE hModule,
 #   LPSTR   lpFilename,
