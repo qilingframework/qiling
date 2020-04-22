@@ -44,7 +44,7 @@ def hook_VirtualAlloc(self, address, params):
 })
 def hook_VirtualFree(self, address, params):
     lpAddress = params["lpAddress"]
-    addr = self.ql.os.heap.mem_free(lpAddress)
+    self.ql.os.heap.mem_free(lpAddress)
     return 1
 
 
