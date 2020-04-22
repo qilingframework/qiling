@@ -230,7 +230,7 @@ def hook_lstrcatA(self, address, params):
     # Copy String2 into String
     src = params["lpString2"]
     pointer = params["lpString1"]
-    string_base = read_cstring(self, pointer)
+    string_base = read_cstring(self.ql, pointer)
     result = string_base + src + "\x00"
     self.ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
     return pointer

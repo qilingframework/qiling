@@ -195,7 +195,7 @@ def hook_printf(self, address, _):
         self.ql.nprint('0x%0.2x: printf(format = 0x0) = 0x%x' % (address, ret))
         return ret
 
-    format_string = read_cstring(self, format_string)
+    format_string = read_cstring(self.ql, format_string)
 
     param_addr = self.ql.reg.sp + self.ql.pointersize * 2
     ret, _ = printf(self, address, format_string, param_addr, "printf")
@@ -230,7 +230,7 @@ def hook___stdio_common_vfprintf(self, address, _):
         _, _, p_format, _, p_args = get_function_param(self, 5)
     else:
         _, _, _, p_format, _, p_args = get_function_param(self, 6)
-    fmt = read_cstring(self, p_format)
+    fmt = read_cstring(self.ql, p_format)
     printf(self, address, fmt, p_args, '__stdio_common_vfprintf')
     return ret
 

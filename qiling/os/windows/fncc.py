@@ -95,7 +95,7 @@ def set_function_params(self, in_params, out_params):
             if ptr == 0:
                 out_params[each] = 0
             else:
-                out_params[each] = read_cstring(self, ptr)
+                out_params[each] = read_cstring(self.ql, ptr)
         elif in_params[each] == WSTRING:
             ptr = _get_param_by_index(self, index)
             if ptr == 0:

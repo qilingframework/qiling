@@ -55,13 +55,13 @@ def read_wstring(ql, address):
     return result.replace("\x00", "")
 
 
-def read_cstring(self, address):
+def read_cstring(ql, address):
     result = ""
-    char = self.ql.mem.read(address, 1)
+    char = ql.mem.read(address, 1)
     while char.decode(errors="ignore") != "\x00":
         address += 1
         result += char.decode(errors="ignore")
-        char = self.ql.mem.read(address, 1)
+        char = ql.mem.read(address, 1)
     return result
 
 
@@ -107,7 +107,7 @@ def printf(self, address, fmt, params_addr, name, wstring=False):
                 if wstring:
                     params[index] = read_wstring(self.ql, params[index])
                 else:
-                    params[index] = read_cstring(self, params[index])
+                    params[index] = read_cstring(self.ql, params[index])
             else:
                 # if is not a string, then they are already values!
                 pass
