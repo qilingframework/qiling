@@ -201,15 +201,8 @@ def ql_setup_logging_env(ql, logger=None):
     return _logger
 
 def ql_setup_logging_stream(ql, logger=None):
-    #ql_mode = ql.output
-
-    # setup StreamHandler for logging to stdout
-    if ql.log_console == True:
-        ch = logging.StreamHandler()
-    else:
-        # not print out to stdout by using NullHandler
-        ch = logging.NullHandler()
-
+    # FIXME: will be back for this, dont want logger to handle stdout
+    ch = logging.NullHandler()
     ch.setLevel(logging.DEBUG)
     
     # use empty character for string terminator by default

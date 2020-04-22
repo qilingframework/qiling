@@ -14,19 +14,24 @@ class QLCoreUtils:
 
     # normal print out
     def nprint(self, *args, **kw):
-        if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
-            fd = self.os.thread_management.cur_thread.log_file_fd
+        if self.log_console == True:
+            print (*args, **kw)
+        elif type(self.log_console) is bool:
+            pass
         else:
-            fd = self.log_file_fd
+            raise QlErrorOutput("[!] log_consnsole must be True or False")     
+        
+        # FIXME: this is due to log_console must be able to update duirng runtime
+        if self.log_file_fd is not None:
+            if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
+                fd = self.os.thread_management.cur_thread.log_file_fd
+            else:
+                fd = self.log_file_fd
 
-        msg = args[0]
+            msg = args[0]
+            msg += kw["end"] if kw.get("end", None) != None else os.linesep
+            fd.info(msg)
 
-        # support keyword "end" in ql.print functions, use it as terminator or default newline character by OS
-        msg += kw["end"] if kw.get("end", None) != None else os.linesep
-
-        fd.info(msg)
-
-        if fd is not None:
             if isinstance(fd, logging.FileHandler):
                 fd.emit()
             elif isinstance(fd, logging.StreamHandler):

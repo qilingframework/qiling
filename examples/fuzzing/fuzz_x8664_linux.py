@@ -71,7 +71,6 @@ def main(input_file, enable_trace=False):
     stdin = MyPipe()
     ql = Qiling(["./x8664_fuzz"], "../rootfs/x8664_linux",
                 stdin=stdin,
-                log_console=enable_trace,
                 stdout=1 if enable_trace else None,
                 stderr=1 if enable_trace else None,
                 output="out" if enable_trace else "off")

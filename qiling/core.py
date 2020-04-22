@@ -12,7 +12,7 @@ from .const import QL_ENDINABLE, QL_ENDIAN, QL_POSIX, QL_OS_ALL, QL_OUTPUT, QL_O
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import arch_convert, ostype_convert, output_convert
 from .utils import ql_is_valid_arch, ql_get_arch_bits
-from .utils import ql_setup_logging_stream, ql_setup_logging_env
+from .utils import ql_setup_logging_stream,ql_setup_logging_env
 from .utils import Strace_filter
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
@@ -134,10 +134,10 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             self.targetname = ntpath.basename(self.filename[0])
 
         # Looger's configuration
-        _logger = ql_setup_logging_stream(self)
         if self.log_dir is not None and type(self.log_dir) == str:
+            _logger = ql_setup_logging_stream(self)
             _logger = ql_setup_logging_env(self, _logger)    
-        self.log_file_fd = _logger
+            self.log_file_fd = _logger
             
         # OS dependent configuration for stdio
         self.stdin = stdin
@@ -156,8 +156,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if self.output and type(self.output) == str:
             self.output = self.output.lower()
             if self.output not in QL_OUTPUT:
-                raise QlErrorOutput("[!] OUTPUT required: either 'default', 'off', 'disasm', 'debug', 'dump'")
-
+                raise QlErrorOutput("[!] OUTPUT required: either 'default', 'disasm', 'debug', 'dump'")
+            
         # check verbose, only can check after ouput being defined
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
@@ -207,7 +207,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
     def run(self):
         # setup strace filter for logger
-        if self.strace_filter != None and self.output == QL_OUTPUT.DEFAULT:
+        # FIXME: only works for logging due to we might need runtime disable nprint
+        if self.strace_filter != None and self.output == QL_OUTPUT.DEFAULT and self.log_file_fd:
             self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
 
         # init debugger
