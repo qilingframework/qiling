@@ -506,12 +506,13 @@ def hook_wsprintfW(self, address, params):
     size, string = printf(self, address, format_string, p_args, "wsprintfW", wstring=True)
 
     count = format_string.count('%')
-    if self.ql.archtype== QL_ARCH.X8664:
+    if self.ql.archtype == QL_ARCH.X8664:
         # We must pop the stack correctly
         raise QlErrorNotImplemented("[!] API not implemented")
 
     self.ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
     return size
+
 
 # int WINAPIV sprintf(
 #   LPWSTR  ,
