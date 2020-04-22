@@ -132,7 +132,7 @@ def hook_GetModuleFileNameW(self, address, params):
 def hook_GetProcAddress(self, address, params):
     if params["lpProcName"] > MAXUSHORT:
         # Look up by name
-        params["lpProcName"] = read_cstring(self, params["lpProcName"])
+        params["lpProcName"] = read_cstring(self.ql, params["lpProcName"])
         lpProcName = bytes(params["lpProcName"], "ascii")
     else:
         # Look up by ordinal
