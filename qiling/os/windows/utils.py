@@ -37,11 +37,10 @@ def print_function(ql, address, function_name, params, ret):
     if ret is not None:
         log += ' = 0x%x' % ret
 
-    if ql.output == QL_OUTPUT.DEFAULT:
+    if ql.output != QL_OUTPUT.DEBUG:
         log = log.partition(" ")[-1]
         ql.nprint(log)
-
-    elif ql.output == QL_OUTPUT.DEBUG:
+    else:
         ql.dprint(D_INFO, log)
 
 def read_wstring(ql, address):
