@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct, os
+import struct, os, time
 
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
@@ -241,7 +241,7 @@ def hook___stdio_common_vfwprintf(self, address, _):
     _, _, _, p_format, _, p_args = get_function_param(self, 6)
     fmt = read_wstring(self.ql, p_format)
 
-    printf(self, address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True)
+    printf(self, address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True, double_pointer=True)
     return ret
 
 
@@ -250,7 +250,8 @@ def hook___stdio_common_vswprintf_s(self, address, _):
     ret = 0
     _, size, p_format, p_args = get_function_param(self, 4)
 
-    printf(self, address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True)
+    fmt = read_wstring(self.ql, p_format)
+    printf(self, address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True, double_pointer=True)
 
     return ret
 
@@ -424,4 +425,16 @@ def hook__wfopen_s(self, address, params):
     new_handle = Handle(obj=f)
     self.handle_manager.append(new_handle)
     self.ql.mem.write(dst, self.ql.pack(new_handle.id))
-    return 0
+    return 1
+
+
+# time_t time( time_t *destTime );
+@winapi(cc=CDECL, params={
+    "destTime": POINTER
+})
+def hook__time64(self, address, params):
+    dst = params["destTime"]
+    time_wasted = int(time.time())
+    if dst != 0:
+        self.ql.mem.write(dst, time_wasted.to_bytes(8, "little"))
+    return time_wasted

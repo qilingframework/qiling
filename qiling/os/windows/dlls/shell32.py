@@ -99,34 +99,34 @@ def _ShellExecute(self, dic: dict):
 def hook_ShellExecuteExW(self, address, params):
     pointer = params["pExecInfo"]
 
-    shell_execute_info = {"cbSize": self.mem.read(pointer, 4),
-                          "fMask": self.mem.read(pointer + 4, 4),
-                          "hwnd": self.mem.read(pointer + 8, self.pointersize),
-                          "lpVerb": self.mem.read(pointer + 8 + self.pointersize, self.pointersize),
-                          "lpFile": self.mem.read(pointer + 8 + self.pointersize * 2, self.pointersize),
-                          "lpParameters": self.mem.read(pointer + 8 + self.pointersize * 3, self.pointersize),
-                          "lpDirectory": self.mem.read(pointer + 8 + self.pointersize * 4, self.pointersize),
-                          "nShow": self.mem.read(pointer + 8 + self.pointersize * 5, 4),
-                          "hInstApp": self.mem.read(pointer + 12 + self.pointersize * 5, 4),  # Must be > 32 for success
-                          "lpIDList": self.mem.read(pointer + 16 + self.pointersize * 5, self.pointersize),
-                          "lpClass": self.mem.read(pointer + 16 + self.pointersize * 6, self.pointersize),
-                          "hkeyClass": self.mem.read(pointer + 16 + self.pointersize * 7, self.pointersize),
-                          "dwHotKey": self.mem.read(pointer + 16 + self.pointersize * 8, 4),
-                          "dummy": self.mem.read(pointer + 20 + self.pointersize * 8, self.pointersize),
-                          "hprocess": self.mem.read(pointer + 20 + self.pointersize * 9, self.pointersize),
+    shell_execute_info = {"cbSize": self.ql.mem.read(pointer, 4),
+                          "fMask": self.ql.mem.read(pointer + 4, 4),
+                          "hwnd": self.ql.mem.read(pointer + 8, self.ql.pointersize),
+                          "lpVerb": self.ql.mem.read(pointer + 8 + self.ql.pointersize, self.ql.pointersize),
+                          "lpFile": self.ql.mem.read(pointer + 8 + self.ql.pointersize * 2, self.ql.pointersize),
+                          "lpParameters": self.ql.mem.read(pointer + 8 + self.ql.pointersize * 3, self.ql.pointersize),
+                          "lpDirectory": self.ql.mem.read(pointer + 8 + self.ql.pointersize * 4, self.ql.pointersize),
+                          "nShow": self.ql.mem.read(pointer + 8 + self.ql.pointersize * 5, 4),
+                          "hInstApp": self.ql.mem.read(pointer + 12 + self.ql.pointersize * 5, 4),  # Must be > 32 for success
+                          "lpIDList": self.ql.mem.read(pointer + 16 + self.ql.pointersize * 5, self.ql.pointersize),
+                          "lpClass": self.ql.mem.read(pointer + 16 + self.ql.pointersize * 6, self.ql.pointersize),
+                          "hkeyClass": self.ql.mem.read(pointer + 16 + self.ql.pointersize * 7, self.ql.pointersize),
+                          "dwHotKey": self.ql.mem.read(pointer + 16 + self.ql.pointersize * 8, 4),
+                          "dummy": self.ql.mem.read(pointer + 20 + self.ql.pointersize * 8, self.ql.pointersize),
+                          "hprocess": self.ql.mem.read(pointer + 20 + self.ql.pointersize * 9, self.ql.pointersize),
                           }
 
     handle = _ShellExecute(self, shell_execute_info)
 
     # Write results
     shell_execute_info["hInstApp"] = 0x21.to_bytes(4, byteorder="little")
-    shell_execute_info["hprocess"] = self.pack(handle.id)
+    shell_execute_info["hprocess"] = self.ql.pack(handle.id)
     # Check everything is correct
     values = b"".join(shell_execute_info.values())
     assert len(values) == shell_execute_info["cbSize"][0]
 
     # Rewrite memory
-    self.mem.write(pointer, values)
+    self.ql.mem.write(pointer, values)
     return 1
 
 

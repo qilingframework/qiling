@@ -90,7 +90,7 @@ def string_to_hex(string):
     return ":".join("{:02x}".format(ord(c)) for c in string)
 
 
-def printf(self, address, fmt, params_addr, name, wstring=False):
+def printf(self, address, fmt, params_addr, name, wstring=False, double_pointer = False):
     count = fmt.count("%")
     params = []
     if count > 0:
@@ -106,8 +106,9 @@ def printf(self, address, fmt, params_addr, name, wstring=False):
         for f in formats:
             if f.startswith("s"):
                 if wstring:
-                    mem = self.ql.unpack32(self.ql.mem.read(params[index], self.ql.pointersize))
-                    params[index] = read_wstring(self.ql, mem)
+                    if double_pointer:
+                        params[index] = self.ql.unpack32(self.ql.mem.read(params[index], self.ql.pointersize))
+                    params[index] = read_wstring(self.ql, params[index])
 
                 else:
                     params[index] = read_cstring(self, params[index])
