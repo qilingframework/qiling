@@ -14,7 +14,7 @@ from .thread import QlWindowsThreadManagement, QlWindowsThread
 
 
 def ql_x86_windows_hook_mem_error(ql, addr, size, value):
-    #self.ql.dprint(D_INFO, "[+] ERROR: unmapped memory access at 0x%x" % addr)
+    #ql.dprint(D_INFO, "[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
 def string_unpack(string):
