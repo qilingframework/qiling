@@ -170,10 +170,10 @@ def hook_MapVirtualKeyW(ql, address, params):
         if code is not None:
             return code
         else:
-            ql.dprint(D_INFO, "Code value %x" % info)
+            ql.dprint(D_INFO, "Code value %x" % code_value)
             raise QlErrorNotImplemented("[!] API not implemented")
     else:
-        ql.dprint(D_INFO, "Map value %x" % info)
+        ql.dprint(D_INFO, "Map value %x" % map_value)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 

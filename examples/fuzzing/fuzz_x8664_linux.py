@@ -16,8 +16,10 @@ import unicornafl
 # Make sure Qiling uses our patched unicorn instead of it's own, second so without instrumentation!
 unicornafl.monkeypatch()
 
-import sys
+import sys, os
 from binascii import hexlify
+
+from capstone.x86_const import *
 
 sys.path.append("../..")
 from qiling import *
@@ -73,7 +75,7 @@ def main(input_file, enable_trace=False):
                 stdin=stdin,
                 stdout=1 if enable_trace else None,
                 stderr=1 if enable_trace else None,
-                output="out" if enable_trace else "off")
+                log_console = True if enable_trace else False)
 
     # or this for output:
     # ... stdout=sys.stdout, stderr=sys.stderr)

@@ -188,8 +188,6 @@ def ql_setup_logging_env(ql, logger=None):
     if not os.path.exists(ql.log_dir):
         os.makedirs(ql.log_dir, 0o755)
 
-    pid = os.getpid()
-
     if ql.append:
         ql.log_filename = ql.targetname + "_" + ql.append          
     else:
@@ -197,22 +195,10 @@ def ql_setup_logging_env(ql, logger=None):
     
     ql.log_file = os.path.join(ql.log_dir, ql.log_filename) 
 
-    _logger = ql_setup_logging_file(ql.output, ql.log_file + "_" + str(pid), logger)
+    #_logger = ql_setup_logging_file(ql.output, ql.log_file + "_" + str(pid), logger)
+    _logger = ql_setup_logging_file(ql.output, ql.log_file, logger)
     return _logger
 
-def ql_setup_logging_stream(ql, logger=None):
-    # FIXME: will be back for this, dont want logger to handle stdout
-    ch = logging.NullHandler()
-    ch.setLevel(logging.DEBUG)
-    
-    # use empty character for string terminator by default
-    ch.terminator = ""
-
-    if logger is None:
-        logger = ql_setup_logger()
-
-    logger.addHandler(ch)
-    return logger
 
 def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
 

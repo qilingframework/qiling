@@ -12,7 +12,7 @@ from .const import QL_ENDINABLE, QL_ENDIAN, QL_POSIX, QL_OS_ALL, QL_OUTPUT, QL_O
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import arch_convert, ostype_convert, output_convert
 from .utils import ql_is_valid_arch, ql_get_arch_bits
-from .utils import ql_setup_logging_stream,ql_setup_logging_env
+from .utils import ql_setup_logging_env
 from .utils import Strace_filter
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
@@ -135,8 +135,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
         # Looger's configuration
         if self.log_dir is not None and type(self.log_dir) == str:
-            _logger = ql_setup_logging_stream(self)
-            _logger = ql_setup_logging_env(self, _logger)    
+            _logger = ql_setup_logging_env(self)    
             self.log_file_fd = _logger
             
         # OS dependent configuration for stdio
@@ -184,8 +183,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         #############
         # Component #
         #############
-        self.mem = self.component_setup("memory")
-        self.reg = self.component_setup("register")
+        self.mem = self.component_setup("os", "memory")
+        self.reg = self.component_setup("arch", "register")
 
         #####################################
         # Architecture                      #

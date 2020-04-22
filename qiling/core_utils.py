@@ -115,19 +115,14 @@ class QLCoreUtils:
             module_name = ql_build_module_import_name("loader", loadertype_str.lower())
             return ql_get_module_function(module_name, function_name)(self)
 
-    def component_setup(self, function_name = None):
+    def component_setup(self, component_type, function_name):
         if not ql_is_valid_ostype(self.ostype):
             raise QlErrorOsType("[!] Invalid OSType")
 
         if not ql_is_valid_arch(self.archtype):
             raise QlErrorArch("[!] Invalid Arch %s" % self.archtype)
 
-        if function_name == "register":
-            folder = "qiling.arch."
-        elif function_name == "memory":
-            folder = "qiling.os."    
-
-        module_name = folder + function_name
+        module_name = "qiling." + component_type + "." + function_name
         function_name = "Ql" + function_name.capitalize() + "Manager"
         return ql_get_module_function(module_name, function_name)(self)
 
