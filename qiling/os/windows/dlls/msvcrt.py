@@ -192,7 +192,7 @@ def hook_printf(ql, address, _):
     format_string = get_function_param(ql, 1)
 
     if format_string == 0:
-        ql.nprint('0x%0.2x: printf(format = 0x0) = 0x%x' % (address, ret))
+        ql.nprint('printf(format = 0x0) = 0x%x' % (ret))
         return ret
 
     format_string = read_cstring(ql, format_string)

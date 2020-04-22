@@ -88,7 +88,7 @@ class Process(QlLoader):
         dll_base = self.DLL_LAST_ADDR
         dll_len = self.ql.os.heap._align(len(bytes(data)), 0x1000)
         self.DLL_SIZE += dll_len
-        self.ql.mem.map(dll_base, dll_len, info="[dlls]")
+        self.ql.mem.map(dll_base, dll_len, info=dll_name)
         self.ql.mem.write(dll_base, bytes(data))
         self.DLL_LAST_ADDR += dll_len
 
@@ -263,8 +263,8 @@ class QlLoaderPE(Process, QlLoader):
             self.DLL_BASE_ADDR = 0x7ffff0000000
             self.code_address = 0x140000000
             
-        self.code_size = 10 * 1024 * 1024            
-        self.cmdline = b"D:\\" + bytes(self.ql.path.replace("/", "\\"), "utf-8") + b"\x00"             
+        self.code_size = 10 * 1024 * 1024
+        self.cmdline =  b"D:\\" + bytes(self.ql.targetname, "utf-8") + b"\x00"             
         self.dlls = {}
         self.import_symbols = {}
         self.import_address_table = {}

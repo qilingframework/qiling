@@ -113,7 +113,7 @@ def printf(ql, address, fmt, params_addr, name, wstring=False):
                 pass
             index += 1
 
-        output = '0x%0.2x: %s(format = %s' % (address, name, repr(fmt))
+        output = '%s(format = %s' % (name, repr(fmt))
         for each in params:
             if type(each) == str:
                 output += ', "%s"' % each
@@ -124,7 +124,7 @@ def printf(ql, address, fmt, params_addr, name, wstring=False):
         stdout = fmt % tuple(params)
         output += " = 0x%x" % len(stdout)
     else:
-        output = '0x%0.2x: %s(format = %s) = 0x%x' % (address, name, repr(fmt), len(fmt))
+        output = '%s(format = %s) = 0x%x' % (name, repr(fmt), len(fmt))
         stdout = fmt
     ql.nprint(output)
     ql.os.stdout.write(bytes(stdout + "\n", 'utf-8'))
