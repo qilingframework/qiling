@@ -13,7 +13,7 @@ from .handle import HandleManager, Handle
 from .thread import QlWindowsThreadManagement, QlWindowsThread
 
 
-def ql_x86_windows_hook_mem_error(self, addr, size, value):
+def ql_x86_windows_hook_mem_error(ql, addr, size, value):
     #self.ql.dprint(D_INFO, "[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
@@ -21,7 +21,7 @@ def string_unpack(string):
     return string.decode().split("\x00")[0]
 
 
-def print_function(self, address, function_name, params, ret):
+def print_function(ql, address, function_name, params, ret):
     function_name = function_name.replace('hook_', '')
     if function_name in ("__stdio_common_vfprintf", "printf", "wsprintfW", "sprintf"):
         return
@@ -37,12 +37,12 @@ def print_function(self, address, function_name, params, ret):
     if ret is not None:
         log += ' = 0x%x' % ret
 
-    if self.ql.output == QL_OUTPUT.DEFAULT:
+    if ql.output == QL_OUTPUT.DEFAULT:
         log = log.partition(" ")[-1]
-        self.ql.nprint(log)
+        ql.nprint(log)
 
-    elif self.ql.output == QL_OUTPUT.DEBUG:
-        self.ql.dprint(D_INFO, log)
+    elif ql.output == QL_OUTPUT.DEBUG:
+        ql.dprint(D_INFO, log)
 
 def read_wstring(ql, address):
     result = ""
@@ -55,7 +55,7 @@ def read_wstring(ql, address):
     return result.replace("\x00", "")
 
 
-def read_cstring(self, address):
+def read_cstring(ql, address):
     result = ""
     char = self.ql.mem.read(address, 1)
     while char.decode(errors="ignore") != "\x00":
