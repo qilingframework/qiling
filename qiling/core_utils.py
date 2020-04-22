@@ -123,18 +123,14 @@ class QLCoreUtils:
             raise QlErrorArch("[!] Invalid Arch %s" % self.archtype)
 
         if function_name == "register":
-            function_name = "QlRegisterManager"
-            module_name = "qiling.arch.register"
-            return ql_get_module_function(module_name, function_name)(self)
-
+            folder = "qiling.arch."
         elif function_name == "memory":
-            function_name = "QlMemoryManager"
-            module_name = "qiling.os.memory"
-            return ql_get_module_function(module_name, function_name)(self)
-        
-        else:
-            module_name = ql_build_module_import_name("os", self.ostype, self.archtype)
-            return ql_get_module_function(module_name, function_name)
+            folder = "qiling.os."    
+
+        module_name = folder + function_name
+        function_name = "Ql" + function_name.capitalize() + "Manager"
+        return ql_get_module_function(module_name, function_name)(self)
+
 
     def checkostype(self):
         path = self.path
