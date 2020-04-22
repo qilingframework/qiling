@@ -20,12 +20,12 @@ from qiling.exception import *
 @winapi(cc=STDCALL, params={
     "lpTopLevelExceptionFilter": DWORD
 })
-def hook_SetUnhandledExceptionFilter(self, address, params):
+def hook_SetUnhandledExceptionFilter(ql, address, params):
     addr = params["lpTopLevelExceptionFilter"]
-    handle = self.handle_manager.search("TopLevelExceptionHandler")
+    handle = ql.os.handle_manager.search("TopLevelExceptionHandler")
     if handle is None:
         handle = Handle(name="TopLevelExceptionHandler", obj=addr)
-        self.handle_manager.append(handle)
+        ql.os.handle_manager.append(handle)
     else:
         handle.obj = addr
     return 0
@@ -33,8 +33,8 @@ def hook_SetUnhandledExceptionFilter(self, address, params):
 
 # _Post_equals_last_error_ DWORD GetLastError();
 @winapi(cc=STDCALL, params={})
-def hook_GetLastError(self, address, params):
-    return self.last_error 
+def hook_GetLastError(ql, address, params):
+    return ql.os.last_error 
 
 
 # void SetLastError(
@@ -43,8 +43,8 @@ def hook_GetLastError(self, address, params):
 @winapi(cc=STDCALL, params={
     "dwErrCode": UINT
 })
-def hook_SetLastError(self, address, params):
-    self.last_error  = params['dwErrCode']
+def hook_SetLastError(ql, address, params):
+    ql.os.last_error  = params['dwErrCode']
     return 0
 
 
@@ -54,7 +54,7 @@ def hook_SetLastError(self, address, params):
 @winapi(cc=STDCALL, params={
     "ExceptionInfo": POINTER
 })
-def hook_UnhandledExceptionFilter(self, address, params):
+def hook_UnhandledExceptionFilter(ql, address, params):
     ret = 1
     return ret
 
@@ -65,7 +65,7 @@ def hook_UnhandledExceptionFilter(self, address, params):
 @winapi(cc=STDCALL, params={
     "uMode": UINT
 })
-def hook_SetErrorMode(self, address, params):
+def hook_SetErrorMode(ql, address, params):
     # TODO maybe this need a better implementation
     return 0
 
@@ -82,11 +82,11 @@ def hook_SetErrorMode(self, address, params):
     "nNumberOfArguments": DWORD,
     "lpArguments": POINTER
 })
-def hook_RaiseException(self, address, params):
-    func_addr = self.handle_manager.search("TopLevelExceptionHandler").obj
+def hook_RaiseException(ql, address, params):
+    func_addr = ql.os.handle_manager.search("TopLevelExceptionHandler").obj
 
     # We have to retrieve the return address position
-    code = self.ql.mem.read(func_addr, 0x100)
+    code = ql.mem.read(func_addr, 0x100)
     if b"\xc3" in code:
         code = code[:code.index(b"\xc3")]
     if b"\xc2" in code:
@@ -96,7 +96,7 @@ def hook_RaiseException(self, address, params):
     if b"\xca" in code:
         code = code[:code.index(b"\xca")]
 
-    self.ql.os.exec_arbitrary(func_addr, func_addr + len(code))
+    ql.os.exec_arbitrary(func_addr, func_addr + len(code))
 
     return 0
 
@@ -109,12 +109,12 @@ def hook_RaiseException(self, address, params):
     "First": UINT,
     "Handler": HANDLE
 })
-def hook_AddVectoredExceptionHandler(self, address, params):
+def hook_AddVectoredExceptionHandler(ql, address, params):
     addr = params["Handler"]
-    handle = self.handle_manager.search("VectoredHandler")
+    handle = ql.os.handle_manager.search("VectoredHandler")
     if handle is None:
         handle = Handle(name="VectoredHandler", obj=addr)
-        self.handle_manager.append(handle)
+        ql.os.handle_manager.append(handle)
     else:
         handle.obj = addr
     return 0
@@ -126,7 +126,7 @@ def hook_AddVectoredExceptionHandler(self, address, params):
 @winapi(cc=STDCALL, params={
     "Handler": HANDLE
 })
-def hook_RemoveVectoredExceptionHandler(self, address, params):
-    handle = self.handle_manager.search("VectoredHandler")
-    self.handle_manager.delete(handle.id)
+def hook_RemoveVectoredExceptionHandler(ql, address, params):
+    handle = ql.os.handle_manager.search("VectoredHandler")
+    ql.os.handle_manager.delete(handle.id)
     return 0

@@ -23,10 +23,10 @@ from qiling.exception import *
     "src": POINTER,
     "count": UINT
 })
-def hook_memcpy(self, address, params):
+def hook_memcpy(ql, address, params):
     try:
-        data = bytes(self.ql.mem.read(params['src'], params['count']))
-        self.ql.mem.write(params['dest'], data)
+        data = bytes(ql.mem.read(params['src'], params['count']))
+        ql.mem.write(params['dest'], data)
     except Exception as e:
         import traceback
         print(traceback.format_exc())
@@ -34,7 +34,7 @@ def hook_memcpy(self, address, params):
     return params['dest']
 
 
-def _QueryInformationProcess(self, address, params):
+def _QueryInformationProcess(ql, address, params):
     flag = params["ProcessInformationClass"]
     dst = params["ProcessInformation"]
     pt_res = params["ReturnLength"]
@@ -43,12 +43,12 @@ def _QueryInformationProcess(self, address, params):
     elif flag == ProcessDebugObjectHandle or flag == ProcessDebugPort :
         value = b"\x00"*0x8
     else:
-        self.ql.dprint(D_INFO, str(flag))
+        ql.dprint(D_INFO, str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
-    self.ql.dprint(D_RPRT, "[=] The sample is checking the debugger via QueryInformationProcess ")
-    self.ql.mem.write(dst, value)
+    ql.dprint(D_RPRT, "[=] The sample is checking the debugger via QueryInformationProcess ")
+    ql.mem.write(dst, value)
     if pt_res != 0:
-        self.ql.mem.write(pt_res, 0x8.to_bytes(1, byteorder="little"))
+        ql.mem.write(pt_res, 0x8.to_bytes(1, byteorder="little"))
 
     return STATUS_SUCCESS
 
@@ -67,10 +67,10 @@ def _QueryInformationProcess(self, address, params):
     "ProcessInformationLength": UINT,
     "ReturnLength": POINTER
 })
-def hook_ZwQueryInformationProcess(self, address, params):
+def hook_ZwQueryInformationProcess(ql, address, params):
     # TODO have no idea if is cdecl or stdcall
 
-    _QueryInformationProcess(self, address, params)
+    _QueryInformationProcess(ql, address, params)
 
 
 # __kernel_entry NTSTATUS NtQueryInformationProcess(
@@ -87,7 +87,7 @@ def hook_ZwQueryInformationProcess(self, address, params):
     "ProcessInformationLength": UINT,
     "ReturnLength": POINTER
 })
-def hook_NtQueryInformationProcess(self, address, params):
+def hook_NtQueryInformationProcess(ql, address, params):
     # TODO have no idea if is cdecl or stdcall
 
-    _QueryInformationProcess(self, address, params)
+    _QueryInformationProcess(ql, address, params)

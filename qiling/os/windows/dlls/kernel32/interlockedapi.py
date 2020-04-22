@@ -20,8 +20,8 @@ from qiling.exception import *
 @winapi(cc=STDCALL, params={
     "ListHead": POINTER
 })
-def hook_InitializeSListHead(self, address, params):
+def hook_InitializeSListHead(ql, address, params):
     addr = params["ListHead"]
     handle = Handle(obj=[], id=addr)
-    self.handle_manager.append(handle)
+    ql.os.handle_manager.append(handle)
     return 0

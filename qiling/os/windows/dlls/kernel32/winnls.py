@@ -20,14 +20,14 @@ from qiling.const import *
 @winapi(cc=STDCALL, params={
     "Locale": UINT
 })
-def hook_SetThreadLocale(self, address, params):
+def hook_SetThreadLocale(ql, address, params):
     return 0xC000  # LOCALE_CUSTOM_DEFAULT
 
 
 # UINT GetACP(
 # );
 @winapi(cc=STDCALL, params={})
-def hook_GetACP(self, address, params):
+def hook_GetACP(ql, address, params):
     return OEM_US
 
 
@@ -39,7 +39,7 @@ def hook_GetACP(self, address, params):
     "CodePage": UINT,
     "lpCPInfo": POINTER
 })
-def hook_GetCPInfo(self, address, params):
+def hook_GetCPInfo(ql, address, params):
     ret = 1
     return ret
 
@@ -56,7 +56,7 @@ def hook_GetCPInfo(self, address, params):
     "lpLCData": POINTER,
     "cchData": INT,
 })
-def hook_GetLocaleInfoA(self, address, params):
+def hook_GetLocaleInfoA(ql, address, params):
     locale_value = params["Locale"]
     lctype_value = params["LCType"]
     cchData = params["cchData"]
@@ -68,7 +68,7 @@ def hook_GetLocaleInfoA(self, address, params):
 
     if cchData != 0:
         lplcdata = params["lpLCData"]
-        self.ql.mem.write(lplcdata, lctype.encode("utf16-le"))
+        ql.mem.write(lplcdata, lctype.encode("utf16-le"))
     return len(lctype)
 
 
@@ -78,17 +78,17 @@ def hook_GetLocaleInfoA(self, address, params):
 @winapi(cc=STDCALL, params={
     "CodePage": UINT
 })
-def hook_IsValidCodePage(self, address, params):
+def hook_IsValidCodePage(ql, address, params):
     return 1
 
 
-def _LCMapString(self, address, params):
+def _LCMapString(ql, address, params):
     cchDest = params["cchDest"]
     result = (params["lpSrcStr"] +"\x00").encode("utf-16le")
     dst = params["lpDestStr"]
     if cchDest != 0:
         # TODO maybe do some other check, for now is working
-        self.ql.mem.write(dst, result)
+        ql.mem.write(dst, result)
     return len(result)
 
 
@@ -108,8 +108,8 @@ def _LCMapString(self, address, params):
     "lpDestStr": POINTER,
     "cchDest": INT
 })
-def hook_LCMapStringW(self, address, params):
-    return _LCMapString(self, address, params)
+def hook_LCMapStringW(ql, address, params):
+    return _LCMapString(ql, address, params)
 
 
 # int LCMapStringA(
@@ -128,8 +128,8 @@ def hook_LCMapStringW(self, address, params):
     "lpDestStr": POINTER,
     "cchDest": INT
 })
-def hook_LCMapStringA(self, address, params):
-    return _LCMapString(self, address, params)
+def hook_LCMapStringA(ql, address, params):
+    return _LCMapString(ql, address, params)
 
 
 # int LCMapStringEx(
@@ -155,25 +155,25 @@ def hook_LCMapStringA(self, address, params):
     "sortHandle": UINT
 
 })
-def hook_LCMapStringEx(self, address, params):
-    return _LCMapString(self, address, params)
+def hook_LCMapStringEx(ql, address, params):
+    return _LCMapString(ql, address, params)
 
 
 # LANGID GetUserDefaultUILanguage();
 @winapi(cc=STDCALL, params={
 })
-def hook_GetUserDefaultUILanguage(self, address, params):
+def hook_GetUserDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
-    self.ql.dprint(D_RPRT, "[=] Sample is checking user language!")
-    return self.profile.getint("USER", "language")
+    ql.dprint(D_RPRT, "[=] Sample is checking user language!")
+    return ql.os.profile.getint("USER", "language")
 
 
 # LANGID GetSystemDefaultUILanguage();
 @winapi(cc=STDCALL, params={
 })
-def hook_GetSystemDefaultUILanguage(self, address, params):
+def hook_GetSystemDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
-    self.ql.dprint(D_RPRT, "[=] Sample is checking system language!")
-    return self.profile.getint("SYSTEM", "language")
+    ql.dprint(D_RPRT, "[=] Sample is checking system language!")
+    return ql.os.profile.getint("SYSTEM", "language")
