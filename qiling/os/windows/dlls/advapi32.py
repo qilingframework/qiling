@@ -24,6 +24,9 @@ def _RegOpenKey(self, address, params):
     if not self.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
         self.ql.dprint(D_INFO, "[!] Value key %s\%s not present" % (s_hKey, s_lpSubKey))
         return ERROR_FILE_NOT_FOUND
+    # TODO fix for gandcrab, to remove when it works
+    if s_lpSubKey == "HARDWARE\DESCRIPTION\System\CentralProcessor\\0":
+        return ERROR_FILE_NOT_FOUND
 
     # new handle
     new_handle = Handle(obj=s_hKey + "\\" + s_lpSubKey)
@@ -44,7 +47,6 @@ def RegQueryValue(self, address, params):
 
     s_hKey = self.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
-
     # read reg_type
     if lpType != 0:
         reg_type = self.ql.unpack(self.mem.read(lpType, 4))
@@ -60,6 +62,7 @@ def RegQueryValue(self, address, params):
         return ERROR_FILE_NOT_FOUND
     else:
         # set lpData
+
         length = self.registry_manager.write_reg_value_into_mem(value, reg_type, lpData)
         # set lpcbData
         max_size = int.from_bytes(self.ql.mem.read(lpcbData, 4), byteorder="little")

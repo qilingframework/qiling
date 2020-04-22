@@ -153,7 +153,9 @@ def hook_GetProcAddress(self, address, params):
     else:
         # Look up by ordinal
         lpProcName = params["lpProcName"]
-
+    # TODO fix for gandcrab
+    if params["lpProcName"] == "RtlComputeCrc32":
+        return 0
     # Check if dll is loaded
     try:
         dll_name = [key for key, value in self.ql.loader.dlls.items() if value == params['hModule']][0]
