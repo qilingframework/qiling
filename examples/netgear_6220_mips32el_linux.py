@@ -30,7 +30,6 @@ def my_netgear(path, rootfs):
                 rootfs, 
                 output      = "debug", 
                 log_dir     = "qlog",
-                log_console = True,
                 mmap_start  = 0x7ffee000 - 0x800000,
                 )
 

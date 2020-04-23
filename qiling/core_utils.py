@@ -14,19 +14,24 @@ class QLCoreUtils:
 
     # normal print out
     def nprint(self, *args, **kw):
-        if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
-            fd = self.os.thread_management.cur_thread.log_file_fd
+        if self.log_console == True:
+            print (*args, **kw)
+        elif type(self.log_console) is bool:
+            pass
         else:
-            fd = self.log_file_fd
+            raise QlErrorOutput("[!] log_consnsole must be True or False")     
+        
+        # FIXME: this is due to log_console must be able to update duirng runtime
+        if self.log_file_fd is not None:
+            if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
+                fd = self.os.thread_management.cur_thread.log_file_fd
+            else:
+                fd = self.log_file_fd
 
-        msg = args[0]
+            msg = args[0]
+            msg += kw["end"] if kw.get("end", None) != None else os.linesep
+            fd.info(msg)
 
-        # support keyword "end" in ql.print functions, use it as terminator or default newline character by OS
-        msg += kw["end"] if kw.get("end", None) != None else os.linesep
-
-        fd.info(msg)
-
-        if fd is not None:
             if isinstance(fd, logging.FileHandler):
                 fd.emit()
             elif isinstance(fd, logging.StreamHandler):
@@ -62,7 +67,7 @@ class QLCoreUtils:
     def stack_write(self, offset, data):
         self.arch.stack_write(offset, data)
 
-    def ql_arch_setup(self):
+    def arch_setup(self):
         if not ql_is_valid_arch(self.archtype):
             raise QlErrorArch("[!] Invalid Arch")
         
@@ -72,7 +77,7 @@ class QLCoreUtils:
         module_name = ql_build_module_import_name("arch", None, self.archtype)
         return ql_get_module_function(module_name, archmanager)(self)
 
-    def ql_os_setup(self, function_name = None):
+    def os_setup(self, function_name = None):
         if not ql_is_valid_ostype(self.ostype):
             raise QlErrorOsType("[!] Invalid OSType")
 
@@ -97,7 +102,7 @@ class QLCoreUtils:
             module_name = ql_build_module_import_name("os", self.ostype, self.archtype)
             return ql_get_module_function(module_name, function_name)
 
-    def ql_loader_setup(self, function_name = None):
+    def loader_setup(self, function_name = None):
         if not ql_is_valid_ostype(self.ostype):
             raise QlErrorOsType("[!] Invalid OSType")
 
@@ -110,28 +115,19 @@ class QLCoreUtils:
             module_name = ql_build_module_import_name("loader", loadertype_str.lower())
             return ql_get_module_function(module_name, function_name)(self)
 
-    def ql_component_setup(self, function_name = None):
+    def component_setup(self, component_type, function_name):
         if not ql_is_valid_ostype(self.ostype):
             raise QlErrorOsType("[!] Invalid OSType")
 
         if not ql_is_valid_arch(self.archtype):
             raise QlErrorArch("[!] Invalid Arch %s" % self.archtype)
 
-        if function_name == "register":
-            function_name = "QlRegisterManager"
-            module_name = "qiling.arch.register"
-            return ql_get_module_function(module_name, function_name)(self)
+        module_name = "qiling." + component_type + "." + function_name
+        function_name = "Ql" + function_name.capitalize() + "Manager"
+        return ql_get_module_function(module_name, function_name)(self)
 
-        elif function_name == "memory":
-            function_name = "QlMemoryManager"
-            module_name = "qiling.os.memory"
-            return ql_get_module_function(module_name, function_name)(self)
-        
-        else:
-            module_name = ql_build_module_import_name("os", self.ostype, self.archtype)
-            return ql_get_module_function(module_name, function_name)
 
-    def ql_checkostype(self):
+    def checkostype(self):
         path = self.path
 
         arch = None

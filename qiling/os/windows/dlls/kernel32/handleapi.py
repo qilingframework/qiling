@@ -32,11 +32,11 @@ from qiling.exception import *
     "bInheritHandle": BOOL,
     "dwOptions": DWORD
 })
-def hook_DuplicateHandle(self, address, params):
+def hook_DuplicateHandle(ql, address, params):
     # TODO for how we manage handle, i think this doesn't work
     content = params["hSourceHandle"]
     dst = params["lpTargetHandle"]
-    self.ql.mem.write(dst, content.to_bytes(length=self.ql.pointersize, byteorder='little'))
+    ql.mem.write(dst, content.to_bytes(length=ql.pointersize, byteorder='little'))
     return 1
 
 
@@ -46,10 +46,10 @@ def hook_DuplicateHandle(self, address, params):
 @winapi(cc=STDCALL, params={
     "hObject": HANDLE
 })
-def hook_CloseHandle(self, address, params):
+def hook_CloseHandle(ql, address, params):
     value = params["hObject"]
-    handle = self.handle_manager.get(value)
+    handle = ql.os.handle_manager.get(value)
     if handle is None:
-        self.last_error = ERROR_INVALID_HANDLE
+        ql.os.last_error = ERROR_INVALID_HANDLE
         return 0
     return 1

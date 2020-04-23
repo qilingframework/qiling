@@ -29,20 +29,20 @@ from qiling.exception import *
 @winapi(cc=CDECL, params={
     "lpVersionInformation": POINTER
 })
-def hook_RtlGetVersion(self, address, params):
+def hook_RtlGetVersion(ql, address, params):
     pointer = params["lpVersionInformation"]
-    size = int.from_bytes(self.ql.mem.read(pointer, 4), byteorder="little")
+    size = int.from_bytes(ql.mem.read(pointer, 4), byteorder="little")
     os_version_info_asked = {"dwOSVersionInfoSize": size,
-                             VER_MAJORVERSION: int.from_bytes(self.ql.mem.read(pointer + 4, 4), byteorder="little"),
-                             VER_MINORVERSION: int.from_bytes(self.ql.mem.read(pointer + 8, 4), byteorder="little"),
-                             VER_BUILDNUMBER: int.from_bytes(self.ql.mem.read(pointer + 12, 4), byteorder="little"),
-                             VER_PLATFORMID: int.from_bytes(self.ql.mem.read(pointer + 16, 4), byteorder="little"),
-                             "szCSDVersion": int.from_bytes(self.ql.mem.read(pointer + 20, 128), byteorder="little"),
+                             VER_MAJORVERSION: int.from_bytes(ql.mem.read(pointer + 4, 4), byteorder="little"),
+                             VER_MINORVERSION: int.from_bytes(ql.mem.read(pointer + 8, 4), byteorder="little"),
+                             VER_BUILDNUMBER: int.from_bytes(ql.mem.read(pointer + 12, 4), byteorder="little"),
+                             VER_PLATFORMID: int.from_bytes(ql.mem.read(pointer + 16, 4), byteorder="little"),
+                             "szCSDVersion": int.from_bytes(ql.mem.read(pointer + 20, 128), byteorder="little"),
                              }
-    self.ql.mem.write(pointer + 4, self.profile.getint("SYSTEM", "majorVersion").to_bytes(4, byteorder="little"))
-    self.ql.mem.write(pointer + 8, self.profile.getint("SYSTEM", "minorVersion").to_bytes(4, byteorder="little"))
+    ql.mem.write(pointer + 4, ql.os.profile.getint("SYSTEM", "majorVersion").to_bytes(4, byteorder="little"))
+    ql.mem.write(pointer + 8, ql.os.profile.getint("SYSTEM", "minorVersion").to_bytes(4, byteorder="little"))
 
-    self.ql.dprint(D_RPRT, "[=] The sample is checking the windows Version!")
+    ql.dprint(D_RPRT, "[=] The sample is checking the windows Version!")
     return STATUS_SUCCESS
 
 
@@ -52,27 +52,23 @@ def hook_RtlGetVersion(self, address, params):
 #   PVOID           ThreadInformation,
 #   ULONG           ThreadInformationLength
 # );
-@winapi(cc=CDECL, params={
+@winapi(cc=STDCALL, params={
     "ThreadHandle": HANDLE,
     "ThreadInformationClass": INT,
     "ThreadInformation": POINTER,
     "ThreadInformationLength": ULONGLONG,
 
 })
-def hook_ZwSetInformationThread(self, address, params):
+def hook_ZwSetInformationThread(ql, address, params):
     thread = params["ThreadHandle"]
-    if thread == self.thread_manager.cur_thread.id:
+    if thread == ql.os.thread_manager.cur_thread.id:
         size = params["ThreadInformationLength"]
-        if size == 0:
-            return STATUS_INFO_LENGTH_MISMATCH
         dst = params["ThreadInformation"]
-        if dst == 0:
-            return STATUS_INFO_LENGTH_MISMATCH
-
         information = params["ThreadInformationClass"]
         if information == ThreadHideFromDebugger:
-            self.ql.dprint(D_RPRT, "[=] Sample is checking debugger via SetInformationThread")
-            self.ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
+            ql.dprint(D_RPRT, "[=] Sample is checking debugger via SetInformationThread")
+            if dst != 0:
+                ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
         else:
             raise QlErrorNotImplemented("[!] API not implemented")
 
@@ -84,13 +80,13 @@ def hook_ZwSetInformationThread(self, address, params):
 # NTSYSAPI NTSTATUS ZwClose(
 #   HANDLE Handle
 # );
-@winapi(cc=CDECL, params={
+@winapi(cc=STDCALL, params={
     "Handle": HANDLE
 
 })
-def hook_ZwClose(self, address, params):
+def hook_ZwClose(ql, address, params):
     value = params["Handle"]
-    handle = self.handle_manager.get(value)
+    handle = ql.os.handle_manager.get(value)
     if handle is None:
         return STATUS_INVALID_HANDLE
     return STATUS_SUCCESS

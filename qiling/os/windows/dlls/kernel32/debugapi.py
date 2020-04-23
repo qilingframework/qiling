@@ -17,8 +17,8 @@ from qiling.exception import *
 # BOOL IsDebuggerPresent();
 @winapi(cc=STDCALL, params={
 })
-def hook_IsDebuggerPresent(self, address, params):
-    self.ql.dprint(D_RPRT, "[=] Sample is checking debugger!")
+def hook_IsDebuggerPresent(ql, address, params):
+    ql.dprint(D_RPRT, "[=] Sample is checking debugger!")
     return 0
 
 
@@ -30,10 +30,10 @@ def hook_IsDebuggerPresent(self, address, params):
     "hProcess": HANDLE,
     "pbDebuggerPresent": POINTER
 })
-def hook_CheckRemoteDebuggerPresent(self, address, params):
-    self.ql.dprint(D_RPRT, "[=] Sample is checking debugger!")
+def hook_CheckRemoteDebuggerPresent(ql, address, params):
+    ql.dprint(D_RPRT, "[=] Sample is checking debugger!")
     pointer = params["pbDebuggerPresent"]
-    self.ql.mem.write(pointer, 0x0.to_bytes(1, byteorder="little"))
+    ql.mem.write(pointer, 0x0.to_bytes(1, byteorder="little"))
     return 1
 
 
@@ -43,7 +43,7 @@ def hook_CheckRemoteDebuggerPresent(self, address, params):
 @winapi(cc=STDCALL, params={
     "lpOutputString": WSTRING
 })
-def hook_OutputDebugStringW(self, address, params):
+def hook_OutputDebugStringW(ql, address, params):
     string = params["lpOutputString"]
-    self.ql.os.stdout.write(string.encode())
+    ql.os.stdout.write(string.encode())
     return 0

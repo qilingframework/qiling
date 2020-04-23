@@ -19,8 +19,24 @@ class QlRegisterManager:
             return self.ql.uc.msr_read(msr)
         else:
             self.ql.uc.msr_write(msr, addr)
-    
 
+    # ql.reg.store - store all register
+    def store(self):
+        reg_dict = {}
+
+        for reg in self.ql.reg.table:
+            self.ql.reg.name = reg
+            reg_v = self.rw(self.ql.reg.name, value = None)
+            reg_dict[self.ql.reg.name] = reg_v
+        return reg_dict
+
+    # ql.reg.restore - restore all stored register
+    def restore(self, value = {}):
+        for reg in self.ql.reg.table:
+            self.ql.reg.name = reg
+            reg_v= value[self.ql.reg.name]
+            self.rw(self.ql.reg.name, reg_v)
+            
     # ql.reg.name_pc - PC register name getter
     @property
     def name_pc(self):

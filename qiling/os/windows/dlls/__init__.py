@@ -17,4 +17,4 @@ from .mscoree import *
 from .msvbvm60 import *
 from .shell32 import *
 from .ntoskrnl import *
-from qiling.os.windows.dlls.kernel32 import *
+from .kernel32 import *

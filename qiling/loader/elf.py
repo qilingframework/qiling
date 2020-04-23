@@ -584,6 +584,7 @@ class QlLoaderELF(ELFParse, QlLoader):
         elf_table += self.NEW_AUX_ENT(AT_CLKTCK, 100)
         elf_table += self.NEW_AUX_ENT(AT_RANDOM, self.randstraddr)
         elf_table += self.NEW_AUX_ENT(AT_PLATFORM, self.cpustraddr)
+        elf_table += self.NEW_AUX_ENT(AT_SECURE, 0)
         elf_table += self.NEW_AUX_ENT(AT_NULL, 0)
 
         elf_table += b'\x00' * (0x10 - (new_stack - len(elf_table)) & 0xf)

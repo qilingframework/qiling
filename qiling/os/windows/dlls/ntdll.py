@@ -23,10 +23,10 @@ from qiling.exception import *
     "src": POINTER,
     "count": UINT
 })
-def hook_memcpy(self, address, params):
+def hook_memcpy(ql, address, params):
     try:
-        data = bytes(self.ql.mem.read(params['src'], params['count']))
-        self.ql.mem.write(params['dest'], data)
+        data = bytes(ql.mem.read(params['src'], params['count']))
+        ql.mem.write(params['dest'], data)
     except Exception as e:
         import traceback
         print(traceback.format_exc())
@@ -34,19 +34,22 @@ def hook_memcpy(self, address, params):
     return params['dest']
 
 
-def _QueryInformationProcess(self, address, params):
-    # TODO have no idea if is cdecl or stdcall
+def _QueryInformationProcess(ql, address, params):
     flag = params["ProcessInformationClass"]
     dst = params["ProcessInformation"]
     pt_res = params["ReturnLength"]
-    if flag == ProcessDebugPort or flag == ProcessDebugObjectHandle or flag == ProcessDebugFlags:
-        self.ql.dprint(D_RPRT, "[=] The sample is checking the debugger via QueryInformationProcess ")
-        self.ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
-        if pt_res != 0:
-            self.ql.mem.write(pt_res, 0x1.to_bytes(1, byteorder="little"))
+    if flag == ProcessDebugFlags:
+        value = b"\x01"*0x8
+    elif flag == ProcessDebugObjectHandle or flag == ProcessDebugPort :
+        value = b"\x00"*0x8
     else:
-        self.ql.dprint(D_INFO, str(flag))
+        ql.dprint(D_INFO, str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
+    ql.dprint(D_RPRT, "[=] The sample is checking the debugger via QueryInformationProcess ")
+    ql.mem.write(dst, value)
+    if pt_res != 0:
+        ql.mem.write(pt_res, 0x8.to_bytes(1, byteorder="little"))
+
     return STATUS_SUCCESS
 
 
@@ -57,15 +60,17 @@ def _QueryInformationProcess(self, address, params):
 #   _In_      ULONG            ProcessInformationLength,
 #   _Out_opt_ PULONG           ReturnLength
 # );
-@winapi(cc=CDECL, params={
+@winapi(cc=STDCALL, params={
     "ProcessHandle": HANDLE,
     "ProcessInformationClass": INT,
     "ProcessInformation": POINTER,
-    "ProcessInformationLength": ULONGLONG,
+    "ProcessInformationLength": UINT,
     "ReturnLength": POINTER
 })
-def hook_ZwQueryInformationProcess(self, address, params):
-    _QueryInformationProcess(self, address, params)
+def hook_ZwQueryInformationProcess(ql, address, params):
+    # TODO have no idea if is cdecl or stdcall
+
+    _QueryInformationProcess(ql, address, params)
 
 
 # __kernel_entry NTSTATUS NtQueryInformationProcess(
@@ -75,12 +80,14 @@ def hook_ZwQueryInformationProcess(self, address, params):
 #   IN ULONG            ProcessInformationLength,
 #   OUT PULONG          ReturnLength
 # );
-@winapi(cc=CDECL, params={
+@winapi(cc=STDCALL, params={
     "ProcessHandle": HANDLE,
     "ProcessInformationClass": INT,
     "ProcessInformation": POINTER,
-    "ProcessInformationLength": ULONGLONG,
+    "ProcessInformationLength": UINT,
     "ReturnLength": POINTER
 })
-def hook_NtQueryInformationProcess(self, address, params):
-    _QueryInformationProcess(self, address, params)
+def hook_NtQueryInformationProcess(ql, address, params):
+    # TODO have no idea if is cdecl or stdcall
+
+    _QueryInformationProcess(ql, address, params)

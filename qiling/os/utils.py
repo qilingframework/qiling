@@ -50,7 +50,7 @@ class QLOsUtils:
         return ebsc    
 
 
-    def init_configuration(self):
+    def init_profile(self):
         config = configparser.ConfigParser()
         config.read(self.profile)
         self.ql.dprint(D_RPRT, "[+] Added configuration file")
@@ -220,7 +220,7 @@ class QLOsUtils:
         self.ql.dprint(D_INFO, "[-] " + str(list(self.ql.os.syscall_count.items())))
 
 
-    def arbitrary_exec(self, start, end):
+    def exec_arbitrary(self, start, end):
         old_sp = self.ql.reg.sp
 
         # we read where this hook is supposed to return

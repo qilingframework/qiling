@@ -109,30 +109,30 @@ static int process_server(const char *port)
         sockfd = socket_server("127.0.0.1", port);
         if (sockfd == -1) {
             fprintf(stderr, "server port %s error.\n", port);
-            sleep(1);
-            continue;
+            return 1;
         }
-accept_loop:
         client = accept(sockfd, NULL, NULL);
         if (client == -1) {
-            //goto accept_loop;
-            break;
+            close(sockfd);
+            fprintf(stderr, "+++ accept %d error, close %d.\n", client, sockfd);
+            return 1;
         }
         for(;;) {
             len = read(client, buf, sizeof(buf));
             fprintf(stderr, "server read() return %d.\n", len);
             if (len <= 0) {
+                fprintf(stderr, "read %d error.\n", len);
+                close(sockfd);
                 close(client);
-                break;
-                //goto accept_loop;
+                return 1;
             } else {
                 /* echo */
                 ret = write(client, buf, len);
                 fprintf(stderr, "server write() %d return %d.\n", len, ret);
                 if (ret != len) {
+                    close(sockfd);
                     close(client);
-                    break;
-                    //goto accept_loop;
+                    return 1;
                 }
             }
             close(client);
@@ -158,27 +158,28 @@ static int process_client(const char *port)
         sockfd = socket_client("127.0.0.1", port);
         if (sockfd == -1) {
             fprintf(stderr, "connect port %s error.\n", port);
-            sleep(1);
-            continue;
+            return 1;
         }
         for(;;) {
             ret = write(sockfd, "hello, world.\n", 14);
-            fprintf(stderr, "client write() %d return %d.\n", 14, ret);
-            exit(0);
+            fprintf(stderr, "--- client write() %d return %d, close %d.\n", 14, ret, sockfd);
+            close(sockfd);
+            return 1;
+            
             if (ret != 14) {
                 close(sockfd);
+                return 1;
             }
             len = read(sockfd, buf, sizeof(buf));
             fprintf(stderr, "client read() return %d.\n", len);
             if (len <= 0) {
                 close(sockfd);
-                break;
+                return 1;
             }
             break;
         }
         close(sockfd);
-        exit(0);
-        //break;
+        break;
     }
 
     return 0;

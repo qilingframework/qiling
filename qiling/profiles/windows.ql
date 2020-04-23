@@ -8,14 +8,21 @@ VER_SERVICEPACKMAJOR = 0
 computer_name = qilingpc
 
 [USER]
-user = Qiling
+username = Qiling
 language = 1093
 
-[PATHS]
-windir = C:\Windows
-appdata = C:\Users\Qiling\AppData
-temp = C:\Windows\Temp
+[PATH]
+username = Qiling
+cdrive = C:\
+windir = %(cdrive)sWindows\
+userdir = %(cdrive)sUsers\
+appdata = %(userdir)s\%(username)s\AppData\
+userhome = %(cdrive)sUsers\%(username)s\
+temp = %(windir)sTemp\
+
+[REGISTRY]
 registry_diff = registry_diff.json
+
 
 [VOLUME]
 serial_number = 3224010732

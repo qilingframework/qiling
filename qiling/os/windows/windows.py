@@ -51,12 +51,11 @@ class QlOsWindows(QlOs):
             self.HEAP_BASE_ADDR = 0x5000000
             self.HEAP_SIZE = 0x5000000
 
-        
-
         if self.ql.stack_address == 0:
             self.ql.stack_address = self.stack_address
         if self.ql.stack_size == 0:
             self.ql.stack_size = self.stack_size
+
         """
         Load Heap module
         FIXME: We need to refactor this
@@ -83,7 +82,7 @@ class QlOsWindows(QlOs):
 
     def setupComponents(self):
         # user configuration
-        self.profile = self.init_configuration()
+        self.profile = self.init_profile()
         # handle manager
         self.handle_manager = HandleManager()
         # registry manger
@@ -123,7 +122,7 @@ class QlOsWindows(QlOs):
 
             if winapi_func:
                 try:
-                    winapi_func(self, address, {})
+                    winapi_func(self.ql, address, {})
                 except Exception:
                     self.ql.nprint("[!] %s Exception Found" % winapi_name)
                     raise QlErrorSyscallError("[!] Windows API Implementation Error")
