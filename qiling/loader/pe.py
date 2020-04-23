@@ -359,7 +359,10 @@ class QlLoaderPE(Process, QlLoader):
                     # self.ql.nprint(imp.name)
                     # self.ql.nprint(self.import_address_table[imp.name])
                     if imp.name:
-                        addr = self.import_address_table[dll_name][imp.name]
+                        try:
+                            addr = self.import_address_table[dll_name][imp.name]
+                        except KeyError:
+                            self.ql.dprint(D_INFO,"[!] Error in loading function %s" % imp.name.decode())
                     else:
                         addr = self.import_address_table[dll_name][imp.ordinal]
 

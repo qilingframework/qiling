@@ -53,7 +53,7 @@ class QLOsUtils:
     def init_profile(self):
         config = configparser.ConfigParser()
         config.read(self.profile)
-        self.ql.dprint(D_RPRT, "[+] Added configuration file")
+        self.ql.dprint(D_RPRT, "[+] Added configuration file %s" % self.profile)
         for section in config.sections():
             self.ql.dprint(D_RPRT, "[+] Section: %s" % section)
             for key in config[section]:

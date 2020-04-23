@@ -26,7 +26,6 @@ def _GetModuleHandle(ql, address, params):
         else:
             ql.dprint(D_INFO, "[!] Library %s not imported" % lpModuleName)
             # Let's try to import it if the sample think is default dll and was imported at the start
-
             # Probably we can optimize here since load_dll already do a lot of checks, but not a real problem
             path = os.path.join(ql.rootfs, ql.dlls, lpModuleName)
             if is_file_library(lpModuleName) and os.path.exists(path):
@@ -55,6 +54,23 @@ def hook_GetModuleHandleA(ql, address, params):
 })
 def hook_GetModuleHandleW(ql, address, params):
     return _GetModuleHandle(ql, address, params)
+
+
+# BOOL GetModuleHandleExW(
+#   DWORD   dwFlags,
+#   LPCWSTR lpModuleName,
+#   HMODULE *phModule
+# );
+@winapi(cc=STDCALL, params={
+    "dwFlags": DWORD,
+    "lpModuleName": WSTRING,
+    "phModule": HANDLE
+})
+def hook_GetModuleHandleExW(ql, address, params):
+    res = _GetModuleHandle(ql, address, params)
+    dst = params["phModule"]
+    ql.mem.write(dst, res.to_bytes(4, byteorder="little"))
+    return 1
 
 
 # DWORD GetModuleFileNameA(
@@ -137,7 +153,9 @@ def hook_GetProcAddress(ql, address, params):
     else:
         # Look up by ordinal
         lpProcName = params["lpProcName"]
-
+    # TODO fix for gandcrab
+    if params["lpProcName"] == "RtlComputeCrc32":
+        return 0
     # Check if dll is loaded
     try:
         dll_name = [key for key, value in ql.loader.dlls.items() if value == params['hModule']][0]

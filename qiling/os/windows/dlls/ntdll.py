@@ -39,9 +39,11 @@ def _QueryInformationProcess(ql, address, params):
     dst = params["ProcessInformation"]
     pt_res = params["ReturnLength"]
     if flag == ProcessDebugFlags:
-        value = b"\x01"*0x8
-    elif flag == ProcessDebugObjectHandle or flag == ProcessDebugPort :
-        value = b"\x00"*0x8
+        value = b"\x01"*0x4
+    elif flag == ProcessDebugPort:
+        value = b"\x00"*0x4
+    elif flag == ProcessDebugObjectHandle:
+        return STATUS_PORT_NOT_SET
     else:
         ql.dprint(D_INFO, str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")

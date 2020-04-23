@@ -23,7 +23,7 @@ def string_unpack(string):
 
 def print_function(ql, address, function_name, params, ret):
     function_name = function_name.replace('hook_', '')
-    if function_name in ("__stdio_common_vfprintf", "printf", "wsprintfW", "sprintf"):
+    if function_name in ("__stdio_common_vfprintf","__stdio_common_vfwprintf", "printf", "wsprintfW", "sprintf"):
         return
     log = '0x%0.2x: %s(' % (address, function_name)
     for each in params:
@@ -42,6 +42,7 @@ def print_function(ql, address, function_name, params, ret):
         ql.nprint(log)
     else:
         ql.dprint(D_INFO, log)
+
 
 def read_wstring(ql, address):
     result = ""
@@ -88,7 +89,7 @@ def string_to_hex(string):
     return ":".join("{:02x}".format(ord(c)) for c in string)
 
 
-def printf(ql, address, fmt, params_addr, name, wstring=False):
+def printf(ql, address, fmt, params_addr, name, wstring=False, double_pointer = False):
     count = fmt.count("%")
     params = []
     if count > 0:
@@ -104,6 +105,8 @@ def printf(ql, address, fmt, params_addr, name, wstring=False):
         for f in formats:
             if f.startswith("s"):
                 if wstring:
+                    if double_pointer:
+                        params[index] = ql.unpack32(ql.mem.read(params[index], ql.pointersize))
                     params[index] = read_wstring(ql, params[index])
                 else:
                     params[index] = read_cstring(ql, params[index])
@@ -126,7 +129,7 @@ def printf(ql, address, fmt, params_addr, name, wstring=False):
         output = '%s(format = %s) = 0x%x' % (name, repr(fmt), len(fmt))
         stdout = fmt
     ql.nprint(output)
-    ql.os.stdout.write(bytes(stdout + "\n", 'utf-8'))
+    ql.os.stdout.write(bytes(stdout , 'utf-8'))
     return len(stdout), stdout
 
 

@@ -302,6 +302,10 @@ def hook_GetVolumeInformationW(ql, address, params):
             volume_name = ("AAAABBBB"+"\x00").encode("utf-16le")
 
             ql.mem.write(pt_volume_name, volume_name)
+
+        lpMaximumComponentLength = params["lpMaximumComponentLength"]
+        if lpMaximumComponentLength != 0:
+            ql.mem.write(lpMaximumComponentLength, (255).to_bytes(2, byteorder="little"))
         pt_serial_number = params["lpVolumeSerialNumber"]
         if pt_serial_number != 0:
             # TODO maybe has to be int
@@ -319,3 +323,55 @@ def hook_GetVolumeInformationW(ql, address, params):
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 1
+
+
+# UINT GetDriveTypeW(
+#   LPCWSTR lpRootPathName
+# );
+@winapi(cc=STDCALL, params={
+    "lpRootPathName": POINTER
+})
+def hook_GetDriveTypeW(ql, address, params):
+    pointer = params["lpRootPathName"]
+    if pointer != 0:
+        path = read_wstring(ql, pointer)
+        if path == ql.os.profile["VOLUME"]["PATH"]:
+            return DRIVE_FIXED
+        # TODO add configuration for drives
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")
+    return DRIVE_NO_ROOT_DIR
+
+
+# BOOL GetDiskFreeSpaceW(
+#   LPCWSTR lpRootPathName,
+#   LPDWORD lpSectorsPerCluster,
+#   LPDWORD lpBytesPerSector,
+#   LPDWORD lpNumberOfFreeClusters,
+#   LPDWORD lpTotalNumberOfClusters
+# );
+@winapi(cc=STDCALL, params={
+    "lpRootPathName": WSTRING,
+    "lpSectorsPerCluster": POINTER,
+    "lpBytesPerSector": POINTER,
+    "lpNumberOfFreeClusters": POINTER,
+    "lpTotalNumberOfClusters": POINTER
+})
+def hook_GetDiskFreeSpaceW(ql, address, params):
+    path = params["lpRootPathName"]
+    if path == ql.os.profile["VOLUME"]["PATH"]:
+        pt_sectors = params["lpSectorsPerCluster"]
+        pt_bytes = params["lpBytesPerSector"]
+        pt_free_clust = params["lpNumberOfFreeClusters"]
+        pt_total_clust = params["lpTotalNumberOfClusters"]
+        sectors = ql.os.profile.getint("VOLUME", "sectors_per_cluster").to_bytes(4, byteorder="little")
+        bytes = ql.os.profile.getint("VOLUME", "bytes_per_sector").to_bytes(4, byteorder="little")
+        free_clust = ql.os.profile.getint("VOLUME", "number_of_free_clusters").to_bytes(4, byteorder="little")
+        total_clust = ql.os.profile.getint("VOLUME", "number_of_clusters").to_bytes(4, byteorder="little")
+        ql.mem.write(pt_sectors, sectors)
+        ql.mem.write(pt_bytes, bytes)
+        ql.mem.write(pt_free_clust, free_clust)
+        ql.mem.write(pt_total_clust, total_clust)
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")
+    return 0
