@@ -19,12 +19,12 @@ from qiling.exception import *
 @winapi(cc=STDCALL, params={
     "hFile": HANDLE
 })
-def hook_GetFileType(self, address, params):
+def hook_GetFileType(ql, address, params):
     hFile = params["hFile"]
     if hFile == STD_INPUT_HANDLE or hFile == STD_OUTPUT_HANDLE or hFile == STD_ERROR_HANDLE:
         ret = FILE_TYPE_CHAR
     else:
-        obj = self.handle_manager.get(hFile)
+        obj = ql.os.handle_manager.get(hFile)
         if obj is None:
             raise QlErrorNotImplemented("[!] API not implemented")
         else:
@@ -41,7 +41,7 @@ def hook_GetFileType(self, address, params):
     "lpFilename": POINTER,
     "lpFindFileData": POINTER
 })
-def hook_FindFirstFileA(self, address, params):
+def hook_FindFirstFileA(ql, address, params):
     pass
 
 
@@ -53,7 +53,7 @@ def hook_FindFirstFileA(self, address, params):
     "lpFilename": POINTER,
     "lpFindFileData": POINTER
 })
-def hook_FindNextFileA(self, address, params):
+def hook_FindNextFileA(ql, address, params):
     pass
 
 
@@ -63,7 +63,7 @@ def hook_FindNextFileA(self, address, params):
 @winapi(cc=STDCALL, params={
     "hFindFile": HANDLE,
 })
-def hook_FindClose(self, address, params):
+def hook_FindClose(ql, address, params):
     pass
 
 
@@ -81,7 +81,7 @@ def hook_FindClose(self, address, params):
     "lpNumberOfBytesRead": POINTER,
     "lpOverlapped": POINTER
 })
-def hook_ReadFile(self, address, params):
+def hook_ReadFile(ql, address, params):
     ret = 1
     hFile = params["hFile"]
     lpBuffer = params["lpBuffer"]
@@ -89,24 +89,24 @@ def hook_ReadFile(self, address, params):
     lpNumberOfBytesRead = params["lpNumberOfBytesRead"]
     lpOverlapped = params["lpOverlapped"]
     if hFile == STD_INPUT_HANDLE:
-        if self.ql.automatize_input:
+        if ql.automatize_input:
             # TODO maybe insert a good random generation input
             s = (b"A" * (nNumberOfBytesToRead - 1)) + b"\x00"
         else:
-            self.ql.dprint(D_INFO, "Insert input")
-            s = self.ql.os.stdin.read(nNumberOfBytesToRead)
+            ql.dprint(D_INFO, "Insert input")
+            s = ql.os.stdin.read(nNumberOfBytesToRead)
         slen = len(s)
         read_len = slen
         if slen > nNumberOfBytesToRead:
             s = s[:nNumberOfBytesToRead]
             read_len = nNumberOfBytesToRead
-        self.ql.mem.write(lpBuffer, s)
-        self.ql.mem.write(lpNumberOfBytesRead, self.ql.pack(read_len))
+        ql.mem.write(lpBuffer, s)
+        ql.mem.write(lpNumberOfBytesRead, ql.pack(read_len))
     else:
-        f = self.handle_manager.get(hFile).obj
+        f = ql.os.handle_manager.get(hFile).obj
         data = f.read(nNumberOfBytesToRead)
-        self.ql.mem.write(lpBuffer, data)
-        self.ql.mem.write(lpNumberOfBytesRead, self.ql.pack32(lpNumberOfBytesRead))
+        ql.mem.write(lpBuffer, data)
+        ql.mem.write(lpNumberOfBytesRead, ql.pack32(lpNumberOfBytesRead))
     return ret
 
 
@@ -124,7 +124,7 @@ def hook_ReadFile(self, address, params):
     "lpNumberOfBytesWritten": POINTER,
     "lpOverlapped": POINTER
 })
-def hook_WriteFile(self, address, params):
+def hook_WriteFile(ql, address, params):
     ret = 1
     hFile = params["hFile"]
     lpBuffer = params["lpBuffer"]
@@ -132,24 +132,24 @@ def hook_WriteFile(self, address, params):
     lpNumberOfBytesWritten = params["lpNumberOfBytesWritten"]
     lpOverlapped = params["lpOverlapped"]
     if hFile == STD_OUTPUT_HANDLE:
-        s = self.ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
-        self.ql.os.stdout.write(s)
-        self.ql.mem.write(lpNumberOfBytesWritten, self.ql.pack(nNumberOfBytesToWrite))
+        s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
+        ql.os.stdout.write(s)
+        ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
     else:
-        f = self.handle_manager.get(hFile)
+        f = ql.os.handle_manager.get(hFile)
         if f is None:
             # Invalid handle
-            self.last_error  = ERROR_INVALID_HANDLE
+            ql.os.last_error  = ERROR_INVALID_HANDLE
             return 0
         else:
             f = f.obj
-        buffer = self.ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
+        buffer = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         f.write(bytes(buffer))
-        self.ql.mem.write(lpNumberOfBytesWritten, self.ql.pack32(nNumberOfBytesToWrite))
+        ql.mem.write(lpNumberOfBytesWritten, ql.pack32(nNumberOfBytesToWrite))
     return ret
 
 
-def _CreateFile(self, address, params, name):
+def _CreateFile(ql, address, params, name):
     ret = INVALID_HANDLE_VALUE
 
     s_lpFileName = params["lpFileName"]
@@ -168,10 +168,10 @@ def _CreateFile(self, address, params, name):
         mode += "r"
 
     # create thread handle
-    s_lpFileName = self.ql.os.transform_to_real_path(s_lpFileName)
+    s_lpFileName = ql.os.transform_to_real_path(s_lpFileName)
     f = open(s_lpFileName.replace("\\", os.sep), mode)
     new_handle = Handle(obj=f)
-    self.handle_manager.append(new_handle)
+    ql.os.handle_manager.append(new_handle)
     ret = new_handle.id
 
     return ret
@@ -195,8 +195,8 @@ def _CreateFile(self, address, params, name):
     "dwFlagsAndAttributes": DWORD,
     "hTemplateFile": HANDLE
 })
-def hook_CreateFileA(self, address, params):
-    ret = _CreateFile(self, address, params, "CreateFileA")
+def hook_CreateFileA(ql, address, params):
+    ret = _CreateFile(ql, address, params, "CreateFileA")
     return ret
 
 
@@ -218,8 +218,8 @@ def hook_CreateFileA(self, address, params):
     "dwFlagsAndAttributes": DWORD,
     "hTemplateFile": HANDLE
 })
-def hook_CreateFileW(self, address, params):
-    ret = _CreateFile(self, address, params, "CreateFileW")
+def hook_CreateFileW(ql, address, params):
+    ret = _CreateFile(ql, address, params, "CreateFileW")
     return ret
 
 
@@ -231,13 +231,13 @@ def hook_CreateFileW(self, address, params):
     "nBufferLength": DWORD,
     "lpBuffer": POINTER
 })
-def hook_GetTempPathW(self, address, params):
-    temp = (self.profile["PATHS"]["temp"] + "\\\x00").encode('utf-16le')
+def hook_GetTempPathW(ql, address, params):
+    temp = (ql.os.profile["PATHS"]["drive"]+ ql.os.profile["PATHS"]["windir"] + ql.os.profile["PATHS"]["temp"] + "\\\x00").encode('utf-16le')
     dest = params["lpBuffer"]
-    temp_path = os.path.join(self.ql.rootfs, "Windows", "Temp")
+    temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
     if not os.path.exists(temp_path):
         os.makedirs(temp_path, 0o755)
-    self.ql.mem.write(dest, temp)
+    ql.mem.write(dest, temp)
     return len(temp)
 
 
@@ -251,7 +251,7 @@ def hook_GetTempPathW(self, address, params):
     "lpszShortPath": POINTER,
     "cchBuffer": DWORD,
 })
-def hook_GetShortPathNameW(self, address, params):
+def hook_GetShortPathNameW(ql, address, params):
     paths = params["lpszLongPath"].split("\\")
     dst = params["lpszShortPath"]
     max_size = params["cchBuffer"]
@@ -268,7 +268,7 @@ def hook_GetShortPathNameW(self, address, params):
     if max_size < len(res):
         return len(res)
     else:
-        self.ql.mem.write(dst, res)
+        ql.mem.write(dst, res)
     return len(res) - 1
 
 
@@ -292,34 +292,34 @@ def hook_GetShortPathNameW(self, address, params):
     "lpFileSystemNameBuffer": POINTER,
     "nFileSystemNameSize": DWORD
 })
-def hook_GetVolumeInformationW(self, address, params):
+def hook_GetVolumeInformationW(ql, address, params):
     root_pt = params["lpRootPathName"]
     if root_pt != 0:
-        root = read_wstring(self.ql, root_pt)
+        root = read_wstring(ql, root_pt)
         pt_volume_name = params["lpVolumeNameBuffer"]
         if pt_volume_name != 0:
             # TODO implement
             volume_name = ("AAAABBBB"+"\x00").encode("utf-16le")
 
-            self.ql.mem.write(pt_volume_name, volume_name)
+            ql.mem.write(pt_volume_name, volume_name)
 
         lpMaximumComponentLength = params["lpMaximumComponentLength"]
         if lpMaximumComponentLength != 0:
-            self.ql.mem.write(lpMaximumComponentLength, (255).to_bytes(2, byteorder="little"))
+            ql.mem.write(lpMaximumComponentLength, (255).to_bytes(2, byteorder="little"))
         pt_serial_number = params["lpVolumeSerialNumber"]
         if pt_serial_number != 0:
             # TODO maybe has to be int
-            serial_number = (self.profile["VOLUME"]["serial_number"] + "\x00").encode("utf-16le")
-            self.ql.mem.write(pt_serial_number, serial_number)
+            serial_number = (ql.os.profile["VOLUME"]["serial_number"] + "\x00").encode("utf-16le")
+            ql.mem.write(pt_serial_number, serial_number)
         pt_system_type = params["lpFileSystemNameBuffer"]
         pt_flag = params["lpFileSystemFlags"]
         if pt_flag != 0:
             # TODO implement
             flag = 0x00020000.to_bytes(4, byteorder="little")
-            self.ql.mem.write(pt_flag, flag)
+            ql.mem.write(pt_flag, flag)
         if pt_system_type != 0:
-            system_type = (self.profile["VOLUME"]["type"] + "\x00").encode("utf-16le")
-            self.ql.mem.write(pt_system_type, system_type)
+            system_type = (ql.os.profile["VOLUME"]["type"] + "\x00").encode("utf-16le")
+            ql.mem.write(pt_system_type, system_type)
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 1
@@ -331,11 +331,11 @@ def hook_GetVolumeInformationW(self, address, params):
 @winapi(cc=STDCALL, params={
     "lpRootPathName": POINTER
 })
-def hook_GetDriveTypeW(self, address, params):
+def hook_GetDriveTypeW(ql, address, params):
     pointer = params["lpRootPathName"]
     if pointer != 0:
-        path = read_wstring(self.ql, pointer)
-        if path == self.profile["VOLUME"]["PATH"]:
+        path = read_wstring(ql, pointer)
+        if path == ql.os.profile["VOLUME"]["PATH"]:
             return DRIVE_FIXED
         # TODO add configuration for drives
     else:
@@ -357,21 +357,21 @@ def hook_GetDriveTypeW(self, address, params):
     "lpNumberOfFreeClusters": POINTER,
     "lpTotalNumberOfClusters": POINTER
 })
-def hook_GetDiskFreeSpaceW(self, address, params):
+def hook_GetDiskFreeSpaceW(ql, address, params):
     path = params["lpRootPathName"]
-    if path == self.profile["VOLUME"]["PATH"]:
+    if path == ql.os.profile["VOLUME"]["PATH"]:
         pt_sectors = params["lpSectorsPerCluster"]
         pt_bytes = params["lpBytesPerSector"]
         pt_free_clust = params["lpNumberOfFreeClusters"]
         pt_total_clust = params["lpTotalNumberOfClusters"]
-        sectors = self.profile.getint("VOLUME", "sectors_per_cluster").to_bytes(4, byteorder="little")
-        bytes = self.profile.getint("VOLUME", "bytes_per_sector").to_bytes(4, byteorder="little")
-        free_clust = self.profile.getint("VOLUME", "number_of_free_clusters").to_bytes(4, byteorder="little")
-        total_clust = self.profile.getint("VOLUME", "number_of_clusters").to_bytes(4, byteorder="little")
-        self.ql.mem.write(pt_sectors, sectors)
-        self.ql.mem.write(pt_bytes, bytes)
-        self.ql.mem.write(pt_free_clust, free_clust)
-        self.ql.mem.write(pt_total_clust, total_clust)
+        sectors = ql.os.profile.getint("VOLUME", "sectors_per_cluster").to_bytes(4, byteorder="little")
+        bytes = ql.os.profile.getint("VOLUME", "bytes_per_sector").to_bytes(4, byteorder="little")
+        free_clust = ql.os.profile.getint("VOLUME", "number_of_free_clusters").to_bytes(4, byteorder="little")
+        total_clust = ql.os.profile.getint("VOLUME", "number_of_clusters").to_bytes(4, byteorder="little")
+        ql.mem.write(pt_sectors, sectors)
+        ql.mem.write(pt_bytes, bytes)
+        ql.mem.write(pt_free_clust, free_clust)
+        ql.mem.write(pt_total_clust, total_clust)
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 0

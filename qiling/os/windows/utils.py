@@ -13,15 +13,15 @@ from .handle import HandleManager, Handle
 from .thread import QlWindowsThreadManagement, QlWindowsThread
 
 
-def ql_x86_windows_hook_mem_error(self, addr, size, value):
-    #self.ql.dprint(D_INFO, "[+] ERROR: unmapped memory access at 0x%x" % addr)
+def ql_x86_windows_hook_mem_error(ql, addr, size, value):
+    #ql.dprint(D_INFO, "[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
 def string_unpack(string):
     return string.decode().split("\x00")[0]
 
 
-def print_function(self, address, function_name, params, ret):
+def print_function(ql, address, function_name, params, ret):
     function_name = function_name.replace('hook_', '')
     if function_name in ("__stdio_common_vfprintf","__stdio_common_vfwprintf", "printf", "wsprintfW", "sprintf"):
         return
@@ -37,12 +37,11 @@ def print_function(self, address, function_name, params, ret):
     if ret is not None:
         log += ' = 0x%x' % ret
 
-    if self.ql.output == QL_OUTPUT.DEFAULT:
+    if ql.output != QL_OUTPUT.DEBUG:
         log = log.partition(" ")[-1]
-        self.ql.nprint(log)
-
-    elif self.ql.output == QL_OUTPUT.DEBUG:
-        self.ql.dprint(D_INFO, log)
+        ql.nprint(log)
+    else:
+        ql.dprint(D_INFO, log)
 
 
 def read_wstring(ql, address):
@@ -56,13 +55,13 @@ def read_wstring(ql, address):
     return result.replace("\x00", "")
 
 
-def read_cstring(self, address):
+def read_cstring(ql, address):
     result = ""
-    char = self.ql.mem.read(address, 1)
+    char = ql.mem.read(address, 1)
     while char.decode(errors="ignore") != "\x00":
         address += 1
         result += char.decode(errors="ignore")
-        char = self.ql.mem.read(address, 1)
+        char = ql.mem.read(address, 1)
     return result
 
 
@@ -73,11 +72,11 @@ def env_dict_to_array(env_dict):
     return env_list
 
 
-def debug_print_stack(self, num, message=None):
+def debug_print_stack(ql, num, message=None):
     if message:
-        self.ql.dprint(D_INFO, "========== %s ==========" % message)
-        sp = self.ql.reg.sp
-        self.ql.dprint(D_INFO, hex(sp + self.ql.pointersize * i) + ": " + hex(self.ql.stack_read(i * self.ql.pointersize)))
+        ql.dprint(D_INFO, "========== %s ==========" % message)
+        sp = ql.reg.sp
+        ql.dprint(D_INFO, hex(sp + ql.pointersize * i) + ": " + hex(ql.stack_read(i * ql.pointersize)))
 
 
 def is_file_library(string):
@@ -90,7 +89,7 @@ def string_to_hex(string):
     return ":".join("{:02x}".format(ord(c)) for c in string)
 
 
-def printf(self, address, fmt, params_addr, name, wstring=False, double_pointer = False):
+def printf(ql, address, fmt, params_addr, name, wstring=False, double_pointer = False):
     count = fmt.count("%")
     params = []
     if count > 0:
@@ -98,7 +97,7 @@ def printf(self, address, fmt, params_addr, name, wstring=False, double_pointer 
             # We don't need to mem_read here, otherwise we have a problem with strings, since read_wstring/read_cstring
             #  already take a pointer, and we will have pointer -> pointer -> STRING instead of pointer -> STRING
             params.append(
-                params_addr + i * self.ql.pointersize,
+                params_addr + i * ql.pointersize,
             )
 
         formats = fmt.split("%")[1:]
@@ -107,17 +106,16 @@ def printf(self, address, fmt, params_addr, name, wstring=False, double_pointer 
             if f.startswith("s"):
                 if wstring:
                     if double_pointer:
-                        params[index] = self.ql.unpack32(self.ql.mem.read(params[index], self.ql.pointersize))
-                    params[index] = read_wstring(self.ql, params[index])
-
+                        params[index] = ql.unpack32(ql.mem.read(params[index], ql.pointersize))
+                    params[index] = read_wstring(ql, params[index])
                 else:
-                    params[index] = read_cstring(self, params[index])
+                    params[index] = read_cstring(ql, params[index])
             else:
                 # if is not a string, then they are already values!
                 pass
             index += 1
 
-        output = '0x%0.2x: %s(format = %s' % (address, name, repr(fmt))
+        output = '%s(format = %s' % (name, repr(fmt))
         for each in params:
             if type(each) == str:
                 output += ', "%s"' % each
@@ -128,10 +126,10 @@ def printf(self, address, fmt, params_addr, name, wstring=False, double_pointer 
         stdout = fmt % tuple(params)
         output += " = 0x%x" % len(stdout)
     else:
-        output = '0x%0.2x: %s(format = %s) = 0x%x' % (address, name, repr(fmt), len(fmt))
+        output = '%s(format = %s) = 0x%x' % (name, repr(fmt), len(fmt))
         stdout = fmt
-    self.ql.nprint(output)
-    self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
+    ql.nprint(output)
+    ql.os.stdout.write(bytes(stdout , 'utf-8'))
     return len(stdout), stdout
 
 

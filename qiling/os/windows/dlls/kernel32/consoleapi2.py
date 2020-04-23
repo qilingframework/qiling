@@ -20,7 +20,7 @@ from qiling.exception import *
 @winapi(cc=STDCALL, params={
     "lpConsoleTitle": WSTRING
 })
-def hook_SetConsoleTitleW(self, address, params):
+def hook_SetConsoleTitleW(ql, address, params):
     return 1
 
 
@@ -32,7 +32,7 @@ def hook_SetConsoleTitleW(self, address, params):
     "hConsoleOutput": HANDLE,
     "lpConsoleScreenBufferInfo": POINTER
 })
-def hook_GetConsoleScreenBufferInfo(self, address, params):
+def hook_GetConsoleScreenBufferInfo(ql, address, params):
     # Todo should we really?
     return 1
 
@@ -45,5 +45,5 @@ def hook_GetConsoleScreenBufferInfo(self, address, params):
     "hConsoleOutput": HANDLE,
     "wAttributes": INT
 })
-def hook_SetConsoleTextAttribute(self, address, params):
+def hook_SetConsoleTextAttribute(ql, address, params):
     return 1

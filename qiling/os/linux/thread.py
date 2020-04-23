@@ -8,7 +8,7 @@ import os, time
 from unicorn.mips_const import *
 from unicorn.arm_const import *
 
-from qiling.utils import ql_setup_logging_file, ql_setup_logging_stream, ql_setup_logger
+from qiling.utils import ql_setup_logging_file, ql_setup_logger
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
 from qiling.const import *
@@ -47,7 +47,6 @@ class QlLinuxThread(QlThread):
         self.log_file_fd = None
 
         _logger = ql_setup_logger(str(self.thread_id)) if ql.log_split else ql_setup_logger()
-        _logger = ql_setup_logging_stream(self.ql, _logger)
 
         if ql.log_dir and ql.log_file != None:
             if ql.log_split:

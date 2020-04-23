@@ -16,9 +16,9 @@ from qiling.exception import *
 @winapi(cc=STDCALL, params={
     "ExitCode": INT
 })
-def hook_FatalExit(self, address, params):
-    self.ql.emu_stop()
-    self.PE_RUN = False
+def hook_FatalExit(ql, address, params):
+    ql.emu_stop()
+    ql.os.PE_RUN = False
 
 
 # PVOID EncodePointer(
@@ -27,7 +27,7 @@ def hook_FatalExit(self, address, params):
 @winapi(cc=STDCALL, params={
     "Ptr": POINTER
 })
-def hook_EncodePointer(self, address, params):
+def hook_EncodePointer(ql, address, params):
     return params['Ptr']
 
 
@@ -37,7 +37,7 @@ def hook_EncodePointer(self, address, params):
 @winapi(cc=STDCALL, params={
     "Ptr": POINTER
 })
-def hook_DecodePointer(self, address, params):
+def hook_DecodePointer(ql, address, params):
     return params['Ptr']
 
 
@@ -49,7 +49,7 @@ def hook_DecodePointer(self, address, params):
     "lpCmdLine": STRING,
     "uCmdShow": UINT
 })
-def hook_WinExec(self, address, params):
+def hook_WinExec(ql, address, params):
     return 33
 
 
@@ -61,8 +61,8 @@ def hook_WinExec(self, address, params):
     "uFlags": UINT,
     "uBytes": SIZE_T
 })
-def hook_LocalAlloc(self, address, params):
-    ret = self.ql.os.heap.mem_alloc(params["uBytes"])
+def hook_LocalAlloc(ql, address, params):
+    ret = ql.os.heap.mem_alloc(params["uBytes"])
     return ret
 
 
@@ -76,10 +76,10 @@ def hook_LocalAlloc(self, address, params):
     "uBytes": SIZE_T,
     "uFlags": UINT
 })
-def hook_LocalReAlloc(self, address, params):
+def hook_LocalReAlloc(ql, address, params):
     old_mem = params["hMem"]
-    self.ql.os.heap.mem_free(old_mem)
-    ret = self.ql.os.heap.mem_alloc(params["uBytes"])
+    ql.os.heap.mem_free(old_mem)
+    ret = ql.os.heap.mem_alloc(params["uBytes"])
     return ret
 
 
@@ -89,9 +89,9 @@ def hook_LocalReAlloc(self, address, params):
 @winapi(cc=STDCALL, params={
     "hMem": POINTER
 })
-def hook_LocalFree(self, address, params):
+def hook_LocalFree(ql, address, params):
     old_mem = params["hMem"]
-    self.ql.os.heap.mem_free(old_mem)
+    ql.os.heap.mem_free(old_mem)
     return 0
 
 
@@ -101,7 +101,7 @@ def hook_LocalFree(self, address, params):
 @winapi(cc=STDCALL, params={
     "uNumber": UINT
 })
-def hook_SetHandleCount(self, address, params):
+def hook_SetHandleCount(ql, address, params):
     uNumber = params["uNumber"]
     return uNumber
 
@@ -112,7 +112,7 @@ def hook_SetHandleCount(self, address, params):
 @winapi(cc=STDCALL, params={
     "hMem": POINTER
 })
-def hook_GlobalLock(self, address, params):
+def hook_GlobalLock(ql, address, params):
     return params['hMem']
 
 
@@ -122,7 +122,7 @@ def hook_GlobalLock(self, address, params):
 @winapi(cc=STDCALL, params={
     "hMem": POINTER
 })
-def hook_GlobalUnlock(self, address, params):
+def hook_GlobalUnlock(ql, address, params):
     return 1
 
 
@@ -134,8 +134,8 @@ def hook_GlobalUnlock(self, address, params):
     "uFlags": UINT,
     "dwBytes": UINT
 })
-def hook_GlobalAlloc(self, address, params):
-    return self.ql.os.heap.mem_alloc(params["dwBytes"])
+def hook_GlobalAlloc(ql, address, params):
+    return ql.os.heap.mem_alloc(params["dwBytes"])
 
 
 # HGLOBAL GlobalFree(
@@ -144,9 +144,9 @@ def hook_GlobalAlloc(self, address, params):
 @winapi(cc=STDCALL, params={
     "hMem": POINTER
 })
-def hook_GlobalFree(self, address, params):
+def hook_GlobalFree(ql, address, params):
     old_mem = params["hMem"]
-    self.ql.os.heap.mem_free(old_mem)
+    ql.os.heap.mem_free(old_mem)
     return 0
 
 
@@ -156,7 +156,7 @@ def hook_GlobalFree(self, address, params):
 @winapi(cc=STDCALL, params={
     "pMem": POINTER
 })
-def hook_GlobalHandle(self, address, params):
+def hook_GlobalHandle(ql, address, params):
     return params["pMem"]
 
 
@@ -170,14 +170,14 @@ def hook_GlobalHandle(self, address, params):
     "lpString2": STRING,
     "iMaxLength": INT
 })
-def hook_lstrcpynA(self, address, params):
+def hook_lstrcpynA(ql, address, params):
     # Copy String2 into String for max iMaxLength chars
     src = params["lpString2"]
     dst = params["lpString1"]
     max_length = params["iMaxLength"]
     if len(src) > max_length:
         src = src[:max_length]
-    self.ql.mem.write(dst, bytes(src, encoding="utf-16le"))
+    ql.mem.write(dst, bytes(src, encoding="utf-16le"))
     return dst
 
 
@@ -191,14 +191,14 @@ def hook_lstrcpynA(self, address, params):
     "lpString2": WSTRING,
     "iMaxLength": INT
 })
-def hook_lstrcpynW(self, address, params):
+def hook_lstrcpynW(ql, address, params):
     # Copy String2 into String for max iMaxLength chars
     src = params["lpString2"]
     dst = params["lpString1"]
     max_length = params["iMaxLength"]
     if len(src) > max_length:
         src = src[:max_length]
-    self.ql.mem.write(dst, bytes(src, encoding="utf-16le"))
+    ql.mem.write(dst, bytes(src, encoding="utf-16le"))
     return dst
 
 
@@ -210,11 +210,11 @@ def hook_lstrcpynW(self, address, params):
     "lpString1": POINTER,
     "lpString2": STRING,
 })
-def hook_lstrcpyA(self, address, params):
+def hook_lstrcpyA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
     dst = params["lpString1"]
-    self.ql.mem.write(dst, bytes(src, encoding="utf-16le"))
+    ql.mem.write(dst, bytes(src, encoding="utf-16le"))
     return dst
 
 
@@ -226,13 +226,13 @@ def hook_lstrcpyA(self, address, params):
     "lpString1": POINTER,
     "lpString2": STRING,
 })
-def hook_lstrcatA(self, address, params):
+def hook_lstrcatA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
     pointer = params["lpString1"]
-    string_base = read_cstring(self, pointer)
+    string_base = read_cstring(ql, pointer)
     result = string_base + src + "\x00"
-    self.ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
+    ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
     return pointer
 
 
@@ -244,13 +244,13 @@ def hook_lstrcatA(self, address, params):
     "lpString1": POINTER,
     "lpString2": WSTRING,
 })
-def hook_lstrcatW(self, address, params):
+def hook_lstrcatW(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
     pointer = params["lpString1"]
-    string_base = read_wstring(self.ql, pointer)
-    result = str(string_base) + str(src) + "\x00"
-    self.ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
+    string_base = read_wstring(ql, pointer)
+    result = string_base + src + "\x00"
+    ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
     return pointer
 
 
@@ -262,7 +262,7 @@ def hook_lstrcatW(self, address, params):
     "lpString1": WSTRING,
     "lpString2": WSTRING,
 })
-def hook_lstrcmpiW(self, address, params):
+def hook_lstrcmpiW(ql, address, params):
     # Copy String2 into String
     str1 = params["lpString1"]
     str2 = params["lpString2"]
@@ -285,7 +285,7 @@ def hook_lstrcmpiW(self, address, params):
     "lpName": POINTER,
     "lpType": POINTER
 })
-def hook_FindResourceA(self, address, params):
+def hook_FindResourceA(ql, address, params):
     # Retrieve a resource
     # Name e Type can be int or strings, this can be a problem
     name = params["lpName"]
@@ -302,7 +302,7 @@ def hook_FindResourceA(self, address, params):
     "lp": POINTER,
     "ucb": POINTER
 })
-def hook_IsBadReadPtr(self, address, params):
+def hook_IsBadReadPtr(ql, address, params):
     # Check read permission for size of memory
     ACCESS_TRUE = 0
     ACCESS_FALSE = 1
@@ -317,7 +317,7 @@ def hook_IsBadReadPtr(self, address, params):
     "lp": POINTER,
     "ucb": POINTER
 })
-def hook_IsBadWritePtr(self, address, params):
+def hook_IsBadWritePtr(ql, address, params):
     # Check read permission for size of memory
     ACCESS_TRUE = 0
     ACCESS_FALSE = 1
@@ -364,24 +364,24 @@ def compare(p1, operator, p2):
     "dwTypeMask": DWORD,
     "dwlConditionMask": ULONGLONG
 })
-def hook_VerifyVersionInfoW(self, address, params):
+def hook_VerifyVersionInfoW(ql, address, params):
     #  https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow2
     pointer = params["lpVersionInformation"]
-    os_version_info_asked = {"dwOSVersionInfoSize": int.from_bytes(self.ql.mem.read(pointer, 4), byteorder="little"),
-                             VER_MAJORVERSION: int.from_bytes(self.ql.mem.read(pointer + 4, 4), byteorder="little"),
-                             VER_MINORVERSION: int.from_bytes(self.ql.mem.read(pointer + 8, 4), byteorder="little"),
-                             VER_BUILDNUMBER: int.from_bytes(self.ql.mem.read(pointer + 12, 4), byteorder="little"),
-                             VER_PLATFORMID: int.from_bytes(self.ql.mem.read(pointer + 16, 4), byteorder="little"),
-                             "szCSDVersion": int.from_bytes(self.ql.mem.read(pointer + 20, 128), byteorder="little"),
-                             VER_SERVICEPACKMAJOR: int.from_bytes(self.ql.mem.read(pointer + 20 + 128, 2),
+    os_version_info_asked = {"dwOSVersionInfoSize": int.from_bytes(ql.mem.read(pointer, 4), byteorder="little"),
+                             VER_MAJORVERSION: int.from_bytes(ql.mem.read(pointer + 4, 4), byteorder="little"),
+                             VER_MINORVERSION: int.from_bytes(ql.mem.read(pointer + 8, 4), byteorder="little"),
+                             VER_BUILDNUMBER: int.from_bytes(ql.mem.read(pointer + 12, 4), byteorder="little"),
+                             VER_PLATFORMID: int.from_bytes(ql.mem.read(pointer + 16, 4), byteorder="little"),
+                             "szCSDVersion": int.from_bytes(ql.mem.read(pointer + 20, 128), byteorder="little"),
+                             VER_SERVICEPACKMAJOR: int.from_bytes(ql.mem.read(pointer + 20 + 128, 2),
                                                                   byteorder="little"),
-                             VER_SERVICEPACKMINOR: int.from_bytes(self.ql.mem.read(pointer + 22 + 128, 2),
+                             VER_SERVICEPACKMINOR: int.from_bytes(ql.mem.read(pointer + 22 + 128, 2),
                                                                   byteorder="little"),
-                             VER_SUITENAME: int.from_bytes(self.ql.mem.read(pointer + 152, 2), byteorder="little"),
-                             VER_PRODUCT_TYPE: int.from_bytes(self.ql.mem.read(pointer + 154, 1), byteorder="little"),
-                             "wReserved": int.from_bytes(self.ql.mem.read(pointer + 155, 1), byteorder="little"),
+                             VER_SUITENAME: int.from_bytes(ql.mem.read(pointer + 152, 2), byteorder="little"),
+                             VER_PRODUCT_TYPE: int.from_bytes(ql.mem.read(pointer + 154, 1), byteorder="little"),
+                             "wReserved": int.from_bytes(ql.mem.read(pointer + 155, 1), byteorder="little"),
                              }
-    ConditionMask: dict = self.hooks_variables["ConditionMask"]
+    ConditionMask: dict = ql.os.hooks_variables["ConditionMask"]
     res = True
     for key, value in ConditionMask.items():
         if value == VER_EQUAL:
@@ -405,23 +405,23 @@ def hook_VerifyVersionInfoW(self, address, params):
 
             # Just a print for analysts, will remove it from here in the future
             if key == VER_MAJORVERSION:
-                self.ql.dprint(D_RPRT, "[=] The sample is checking the windows Version!")
+                ql.dprint(D_RPRT, "[=] The sample is checking the windows Version!")
                 version_asked = SYSTEMS_VERSION.get(concat, None)
                 if version_asked is None:
                     raise QlErrorNotImplemented("[!] API not implemented for version %s" % concat)
                 else:
-                    self.ql.dprint(D_RPRT, "[=] The sample asks for version %s %s" % (operator, version_asked))
+                    ql.dprint(D_RPRT, "[=] The sample asks for version %s %s" % (operator, version_asked))
             # We can finally compare
-            qiling_os = str(self.profile.get("SYSTEM", "majorVersion")) + \
-                        str(self.profile.get("SYSTEM", "minorVersion")) + str(self.profile.get("SYSTEM", "productType"))
+            qiling_os = str(ql.os.profile.get("SYSTEM", "majorVersion")) + \
+                        str(ql.os.profile.get("SYSTEM", "minorVersion")) + str(ql.os.profile.get("SYSTEM", "productType"))
             res = compare(int(qiling_os), operator, int(concat))
         elif key == VER_SERVICEPACKMAJOR:
-            res = compare(self.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_version_info_asked[key])
+            res = compare(ql.os.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_version_info_asked[key])
         else:
             raise QlErrorNotImplemented("[!] API not implemented for key %s" % key)
         # The result is a AND between every value, so if we find a False we just exit from the loop
         if not res:
-            self.last_error = ERROR_OLD_WIN_VERSION
+            ql.os.last_error = ERROR_OLD_WIN_VERSION
             return 0
     return res
 
@@ -434,16 +434,16 @@ def hook_VerifyVersionInfoW(self, address, params):
     "lpBuffer": POINTER,
     "pcbBuffer": POINTER
 })
-def hook_GetUserNameW(self, address, params):
-    username = (self.profile["USER"]["user"]+"\x00").encode("utf-16le")
+def hook_GetUserNameW(ql, address, params):
+    username = (ql.os.profile["USER"]["user"]+"\x00").encode("utf-16le")
     dst = params["lpBuffer"]
     max_size = params["pcbBuffer"]
-    self.ql.mem.write(max_size, len(username).to_bytes(4, byteorder="little"))
+    ql.mem.write(max_size, len(username).to_bytes(4, byteorder="little"))
     if len(username) > max_size:
-        self.ql.last_error = ERROR_INSUFFICIENT_BUFFER
+        ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
         return 0
     else:
-        self.ql.mem.write(dst, username)
+        ql.mem.write(dst, username)
     return 1
 
 
@@ -455,14 +455,14 @@ def hook_GetUserNameW(self, address, params):
     "lpBuffer": POINTER,
     "nSize": POINTER
 })
-def hook_GetComputerNameW(self, address, params):
-    computer = (self.profile["SYSTEM"]["computer_name"] + "\x00").encode("utf-16le")
+def hook_GetComputerNameW(ql, address, params):
+    computer = (ql.os.profile["SYSTEM"]["computer_name"] + "\x00").encode("utf-16le")
     dst = params["lpBuffer"]
     max_size = params["nSize"]
-    self.ql.mem.write(max_size, (len(computer)-2).to_bytes(4, byteorder="little"))
+    ql.mem.write(max_size, (len(computer)-2).to_bytes(4, byteorder="little"))
     if len(computer) > max_size:
-        #self.last_error = ERROR_BUFFER_OVERFLOW
+        #ql.os.last_error = ERROR_BUFFER_OVERFLOW
         return 0
     else:
-        self.ql.mem.write(dst, computer)
+        ql.mem.write(dst, computer)
     return 1

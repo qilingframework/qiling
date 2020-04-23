@@ -88,7 +88,7 @@ class Process(QlLoader):
         dll_base = self.DLL_LAST_ADDR
         dll_len = self.ql.os.heap._align(len(bytes(data)), 0x1000)
         self.DLL_SIZE += dll_len
-        self.ql.mem.map(dll_base, dll_len, info="[dlls]")
+        self.ql.mem.map(dll_base, dll_len, info=dll_name)
         self.ql.mem.write(dll_base, bytes(data))
         self.DLL_LAST_ADDR += dll_len
 
@@ -156,9 +156,9 @@ class Process(QlLoader):
         peb_size = len(PEB(self.ql).bytes())
 
         # we must set an heap, will try to retrieve this value. Is ok to be all \x00
-        process_heap = self.ql.os.heap.mem_alloc(0x50)
-
+        process_heap = self.ql.os.heap.mem_alloc(0x1000)
         peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size, process_heap=process_heap)
+
         self.ql.mem.write(peb_addr, peb_data.bytes())
         self.STRUCTERS_LAST_ADDR += peb_size
         self.PEB = self.ql.PEB = peb_data
@@ -263,8 +263,7 @@ class QlLoaderPE(Process, QlLoader):
             self.DLL_BASE_ADDR = 0x7ffff0000000
             self.code_address = 0x140000000
             
-        self.code_size = 10 * 1024 * 1024            
-        self.cmdline = b"D:\\" + bytes(self.ql.path.replace("/", "\\"), "utf-8") + b"\x00"             
+        self.code_size = 10 * 1024 * 1024
         self.dlls = {}
         self.import_symbols = {}
         self.import_address_table = {}
@@ -276,6 +275,7 @@ class QlLoaderPE(Process, QlLoader):
         # compatible with ql.__enable_bin_patch()
         self.loadbase = 0  
         self.ql.os.setupComponents()
+        self.cmdline = bytes(((str(self.ql.os.profile["PATHS"]["drive"])) + "Users\\" + (str(self.ql.os.profile["USER"]["user"])) + "\\" + "Desktop\\" + (self.ql.targetname) + "\x00"), "utf-8")
         self.load()
 
     def init_thread_information_block(self): 

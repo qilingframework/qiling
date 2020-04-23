@@ -25,10 +25,11 @@ class QL_OS(IntEnum):
     POSIX = 5
 
 class QL_OUTPUT(IntEnum):
-    DEFAULT = 1
-    DISASM = 2
-    DEBUG = 3
-    DUMP = 99
+    OFF = 1
+    DEFAULT = 2
+    DISASM = 3
+    DEBUG = 4
+    DUMP = 5
 
 class QL_DEBUGGER(IntEnum):
     GDB = 1

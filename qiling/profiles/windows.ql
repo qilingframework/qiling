@@ -12,10 +12,13 @@ user = Qiling
 language = 1093
 
 [PATHS]
-windir = C:\Windows
-appdata = C:\Users\Qiling\AppData
-temp = C:\Windows\Temp
+drive = C:\
+windir = Windows\
+appdata = AppData\
+user = Users\
+temp = Temp\
 registry_diff = registry_diff.json
+
 
 [VOLUME]
 path = C:\
