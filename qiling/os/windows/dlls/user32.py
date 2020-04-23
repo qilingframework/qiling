@@ -560,3 +560,22 @@ def hook_GetForegroundWindow(ql, address, params):
 })
 def hook_MoveWindow(ql, address, params):
     return 1
+
+#int GetKeyboardType(
+#  int nTypeFlag
+#);
+@winapi(cc=STDCALL, params={
+    "nTypeFlag": UINT
+})
+def hook_GetKeyboardType(ql, address, params):
+    """ 
+    See https://salsa.debian.org/wine-team/wine/-/blob/master/dlls/user32/input.c 
+    """
+    _type = params['nTypeFlag']
+    if _type == 0: #0: Keyboard Type, 1: Keyboard subtype, 2: num func keys
+        return 7
+    elif _type == 1:
+        return 0
+    elif _type == 2:
+        return 12
+    return 0

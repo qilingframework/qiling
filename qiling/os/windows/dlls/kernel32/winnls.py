@@ -23,6 +23,10 @@ from qiling.const import *
 def hook_SetThreadLocale(ql, address, params):
     return 0xC000  # LOCALE_CUSTOM_DEFAULT
 
+#LCID GetThreadLocale();
+@winapi(cc=STDCALL, params={})
+def hook_GetThreadLocale(ql, address, params):
+    return 0xC000 #LOCALE_CUSTOM_DEFAULT
 
 # UINT GetACP(
 # );

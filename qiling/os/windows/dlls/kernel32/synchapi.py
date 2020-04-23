@@ -105,9 +105,41 @@ def hook_WaitForSingleObject(ql, address, params):
     hHandle = params["hHandle"]
     dwMilliseconds = params["dwMilliseconds"]
 
-    target_thread: Thread = ql.os.handle_manager.get(hHandle).obj
+    try:
+        target_thread: Thread = self.handle_manager.get(hHandle).thread
+    except AttributeError:
+        self.last_error = ERROR_INVALID_HANDLE
+        return 0xFFFFFFFF #WAIT_FAILED
+
     if not target_thread.fake:
         ql.os.thread_manager.cur_thread.waitfor(target_thread)
+
+    return ret
+
+# DWORD WaitForSingleObjectEx(
+#   HANDLE hHandle,
+#   DWORD  dwMilliseconds
+#   BOOL   bAlertable
+# );
+@winapi(cc=STDCALL, params={
+    "hHandle": HANDLE,
+    "dwMilliseconds": DWORD,
+    "bAlertable": BOOL
+})
+def hook_WaitForSingleObjectEx(self, address, params):
+    ret = 0
+    hHandle = params["hHandle"]
+    dwMilliseconds = params["dwMilliseconds"]
+    alertable = params["bAlertable"]
+
+    try:
+        target_thread: Thread = self.handle_manager.get(hHandle).thread
+    except AttributeError:
+        self.last_error = ERROR_INVALID_HANDLE
+        return 0xFFFFFFFF #WAIT_FAILED
+
+    if not target_thread.fake:
+        self.thread_manager.cur_thread.waitfor(target_thread)
 
     return ret
 
@@ -199,3 +231,20 @@ def hook_CreateMutexW(ql, address, params):
         ql.os.handle_manager.append(handle)
 
     return handle.ID
+
+#HANDLE CreateEventA(
+#  LPSECURITY_ATTRIBUTES lpEventAttributes,
+#  BOOL                  bManualReset,
+#  BOOL                  bInitialState,
+#  LPCSTR                lpName
+#);
+@winapi(cc=STDCALL, params={
+    "lpEventAttributes": POINTER, 
+    "bManualReset": BOOL,
+    "bInitialState": BOOL,
+    "lpName": STRING 
+})
+def hook_CreateEventA(ql, address, params):
+    new_handle = Handle(mutex=params['lpName'])
+    ql.handle_manager.append(new_handle)
+    ret = new_handle.id

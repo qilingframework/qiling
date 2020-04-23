@@ -93,3 +93,47 @@ def hook_NtQueryInformationProcess(ql, address, params):
     # TODO have no idea if is cdecl or stdcall
 
     _QueryInformationProcess(ql, address, params)
+
+# NTSTATUS LdrGetProcedureAddress(
+#  IN HMODULE              ModuleHandle,
+#  IN PANSI_STRING         FunctionName OPTIONAL,
+#  IN WORD                 Oridinal OPTIONAL,
+#  OUT PVOID               *FunctionAddress );
+@winapi(cc=STDCALL, params={
+    "ModuleHandle": POINTER,
+    "FunctionName": STRING,
+    "Ordinal": UINT,
+    "FunctionAddress": POINTER
+})
+def hook_LdrGetProcedureAddress(ql, address, params):
+    if params['FunctionName']:
+        identifier = bytes(params["lpProcName"], 'ascii')
+    else:
+        identifier = params['Ordinal']
+    #Check if dll is loaded
+    try:
+        dll_name = [key for key, value in ql.PE.dlls.items() if value == params['ModuleHandle']][0]
+    except IndexError as ie:
+        ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['ModuleHandle']))
+        return 0
+
+    if identifier in ql.PE.import_address_table[dll_name]:
+        addr = ql.PE.import_address_table[dll_name][identifier]
+        ql.mem.write(addr.to_bytes(length=ql.pointersize, byteorder='little'), params['FunctionAddress'])
+        return 0
+
+    return 0xFFFFFFFF
+
+#NTSYSAPI PVOID RtlAllocateHeap(
+#  PVOID  HeapHandle,
+#  ULONG  Flags,
+#  SIZE_T Size
+#);
+@winapi(cc=STDCALL, params={
+    "HeapHandle": POINTER,
+    "Flags": UINT,
+    "Size": SIZE_T
+})
+def hook_RtlAllocateHeap(ql, address, params):
+    ret = ql.heap.mem_alloc(params["Size"])
+    return ret
