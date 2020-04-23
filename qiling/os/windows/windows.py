@@ -81,8 +81,6 @@ class QlOsWindows(QlOs):
             ql_x8664_set_gs(self.ql)
 
     def setupComponents(self):
-        # user configuration
-        self.profile = self.init_profile()
         # handle manager
         self.handle_manager = HandleManager()
         # registry manger

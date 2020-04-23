@@ -341,6 +341,8 @@ class QlLoaderELF(ELFParse, QlLoader):
     def __init__(self, ql):
         super()
         self.ql = ql
+
+    def run(self):
         self.path = self.ql.path
         if not self.ql.shellcoder:
             ELFParse.__init__(self, self.path, self.ql)

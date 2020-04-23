@@ -40,10 +40,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             verbose=1,
             log_console=True,
             log_dir=None,
-            mmap_start=0,
-            stack_address=0,
-            stack_size=0,
-            interp_base=0,
             append = None,
             profile=None
     ):
@@ -63,10 +59,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.libcache = libcache
         self.log_console = log_console
         self.log_dir = log_dir
-        self.mmap_start = mmap_start
-        self.stack_address = stack_address
-        self.stack_size = stack_size
-        self.interp_base = interp_base
         # generic append function, eg log file        
         self.append = append
         self.profile = profile
@@ -102,6 +94,10 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.uc = None
         self.remotedebugsession = None
         self.automatize_input = False
+        self.mmap_start = 0
+        self.stack_address = 0
+        self.stack_size = 0
+        self.interp_base = 0
 
         """
         Qiling Framework Core Engine
@@ -204,6 +200,12 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.loader = self.loader_setup()
 
     def run(self):
+
+        ##########
+        # Loader #
+        ##########
+        self.loader.run()
+        
         # setup strace filter for logger
         # FIXME: only works for logging due to we might need runtime disable nprint
         if self.strace_filter != None and self.output == QL_OUTPUT.DEFAULT and self.log_file_fd:

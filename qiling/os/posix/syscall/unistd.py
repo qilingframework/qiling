@@ -471,7 +471,8 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
         ql.mem.map_info     = []
 
         ql.os.load()
-        ql.loader.__init__(ql)
+        #ql.loader.__init__(ql)
+        ql.loader.run
         ql.run()
 
 
