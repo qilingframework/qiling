@@ -69,7 +69,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.interp_base = interp_base
         # generic append function, eg log file        
         self.append = append
-        self.automatize_input = False
+        self.profile = profile
 
         # Define after ql=Qiling(), either defined by Qiling Framework or user defined
         self.archbit = ''
@@ -88,7 +88,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.internal_exception = None
         self.platform = platform.system()
         self.debugger = None
-        self.profile = profile
         # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
         self.multithread = False
         # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
@@ -102,6 +101,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.strace_filter = None
         self.uc = None
         self.remotedebugsession = None
+        self.automatize_input = False
 
         """
         Qiling Framework Core Engine
@@ -118,11 +118,9 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if self.rootfs and self.shellcoder is None:
             if os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs):
                 self.path = (str(self.filename[0]))
+                self.argv = self.filename
                 if self.ostype is None or self.archtype is None:
                     self.archtype, self.ostype = self.checkostype()
-
-                self.argv = self.filename
-
             else:
                 if not os.path.exists(str(self.filename[0])):
                     raise QlErrorFileNotFound("[!] Target binary not found")

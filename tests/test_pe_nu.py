@@ -46,10 +46,10 @@ def test_pe_win_x86_uselessdisk():
 def test_pe_win_x86_gandcrab():
     def stop(ql, default_values):
         print("Ok for now")
-        # user_memory = read_wstring(ql, 0x505f134)
-        # computer_memory = read_wstring(ql, 0x505ff40)
-        # assert (default_values[0] != user_memory)
-        # assert (default_values[1] != computer_memory)
+        user_memory = read_wstring(ql, 0x505f134)
+        computer_memory = read_wstring(ql, 0x505ff40)
+        assert (default_values[0] != user_memory)
+        assert (default_values[1] != computer_memory)
         ql.emu_stop()
 
     def randomize_config_value(ql, key, subkey):
