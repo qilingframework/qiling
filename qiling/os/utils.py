@@ -51,7 +51,7 @@ class QLOsUtils:
 
 
     def init_profile(self):
-        config = configparser.ConfigParser()
+        config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
         config.read(self.profile)
         self.ql.dprint(D_RPRT, "[+] Added configuration file")
         for section in config.sections():

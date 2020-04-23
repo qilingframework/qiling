@@ -167,7 +167,7 @@ def hook_SHGetSpecialFolderPathW(ql, address, params):
     directory_id = params["csidl"]
     dst = params["pszPath"]
     if directory_id == CSIDL_COMMON_APPDATA:
-        path = str(ql.os.profile["PATHS"]["drive"]) + str(ql.os.profile["PATHS"]["user"]) + str(ql.os.profile["USER"]["user"]) + "\\" + str(ql.os.profile["PATHS"]["appdata"])
+        path = str(ql.os.profile["PATHS"]["cdrive"]) + str(ql.os.profile["PATHS"]["user"]) + str(ql.os.profile["USER"]["user"]) + "\\" + str(ql.os.profile["PATHS"]["appdata"])
         # We always create the directory
         appdata_dir = path.split("C:\\")[1].replace("\\", "/")
         ql.dprint(D_INFO, "[+] dir path: %s" % path)

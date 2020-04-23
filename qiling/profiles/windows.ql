@@ -12,7 +12,7 @@ user = Qiling
 language = 1093
 
 [PATHS]
-drive = C:\
+cdrive = C:\
 windir = Windows\
 appdata = AppData\
 user = Users\
