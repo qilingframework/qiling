@@ -437,7 +437,7 @@ def hook_VerifyVersionInfoW(ql, address, params):
     "pcbBuffer": POINTER
 })
 def hook_GetUserNameW(ql, address, params):
-    username = (ql.os.profile["USER"]["user"]+"\x00").encode("utf-16le")
+    username = (ql.os.profile["USER"]["username"]+"\x00").encode("utf-16le")
     dst = params["lpBuffer"]
     max_size = params["pcbBuffer"]
     ql.mem.write(max_size, len(username).to_bytes(4, byteorder="little"))

@@ -10,17 +10,20 @@ permission = root
 
 
 [USER]
-user = Qiling
+username = Qiling
 language = 1093
 
-[PATHS]
-drive = C:\
-windir = Windows\
-appdata = AppData\
-user = Users\
-temp = Temp\
-registry_diff = registry_diff.json
+[PATH]
+username = Qiling
+cdrive = C:\
+windir = %(cdrive)sWindows\
+userdir = %(cdrive)sUsers\
+appdata = %(userdir)s\%(username)s\AppData\
+userhome = %(cdrive)sUsers\%(username)s\
+temp = %(windir)sTemp\
 
+[REGISTRY]
+registry_diff = registry_diff.json
 
 [VOLUME]
 path = C:\
@@ -32,5 +35,3 @@ bytes_per_sector = 512
 number_of_free_clusters = 12345
 number_of_clusters = 65536
 
-[REGISTRY]
-HKEY_CURRENT_USER\Keyboard Layout\Preload = 00000419

@@ -156,7 +156,7 @@ class Process(QlLoader):
         peb_size = len(PEB(self.ql).bytes())
 
         # we must set an heap, will try to retrieve this value. Is ok to be all \x00
-        process_heap = self.ql.os.heap.mem_alloc(0x1000)
+        process_heap = self.ql.os.heap.mem_alloc(0x100)
         peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size, process_heap=process_heap)
 
         self.ql.mem.write(peb_addr, peb_data.bytes())
@@ -275,7 +275,7 @@ class QlLoaderPE(Process, QlLoader):
         # compatible with ql.__enable_bin_patch()
         self.loadbase = 0  
         self.ql.os.setupComponents()
-        self.cmdline = bytes(((str(self.ql.os.profile["PATHS"]["drive"])) + "Users\\" + (str(self.ql.os.profile["USER"]["user"])) + "\\" + "Desktop\\" + (self.ql.targetname) + "\x00"), "utf-8")
+        self.cmdline = bytes(((str(self.ql.os.profile["PATH"]["userhome"])) + "Desktop\\" + (self.ql.targetname) + "\x00"), "utf-8")
         self.load()
 
     def init_thread_information_block(self): 

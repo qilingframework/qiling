@@ -369,12 +369,10 @@ class QlMemoryHeap:
 
     def mem_alloc(self, size):
         
-        if self.ql.archtype == QL_ARCH.X86:
+        if self.ql.archbit == 32:
             size = self._align(size, 4)
-        elif self.ql.archtype == QL_ARCH.X8664:
+        elif self.ql.archbit == 64:
             size = self._align(size, 8)
-        else:
-            raise QlErrorArch("[!] Unknown ql.arch")
 
         # Find the heap chunks that best matches size 
         self.chunks.sort(key=Chunk.compare)
@@ -401,7 +399,7 @@ class QlMemoryHeap:
             self.chunks.append(chunk)
 
         chunk.inuse = True
-        # print("heap.mem_alloc addresss: " + hex(chunk.address))
+        #self.ql.dprint("heap.mem_alloc addresss: " + hex(chunk.address))
         return chunk.address
 
     def mem_size(self, addr):
