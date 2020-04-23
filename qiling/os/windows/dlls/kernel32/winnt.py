@@ -50,10 +50,7 @@ def hook_VerSetConditionMask(ql, address, params):
     TypeMask = params["TypeMask"]
     Condition = params["Condition"]
     mask = params["ConditionMask"]
-    if mask == 0:
-        ConditionMask = {}
-    else:
-        ConditionMask = ql.os.hooks_variables.get("ConditionMask", {})
+    ConditionMask = ql.os.hooks_variables.get("ConditionMask", {})
     if TypeMask == 0:
         ret = ConditionMask
     else:

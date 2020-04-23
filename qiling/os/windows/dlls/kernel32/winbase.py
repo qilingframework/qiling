@@ -423,6 +423,8 @@ def hook_VerifyVersionInfoW(ql, address, params):
         if not res:
             ql.os.last_error = ERROR_OLD_WIN_VERSION
             return 0
+    # reset mask
+    ql.os.hooks_variables["ConditionMask"]= {}
     return res
 
 

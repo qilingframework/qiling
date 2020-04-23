@@ -52,9 +52,14 @@ def RegQueryValue(ql, address, params):
         reg_type = ql.unpack(ql.mem.read(lpType, 4))
     else:
         reg_type = Registry.RegNone
+    try:
+        value = ql.os.profile["REGISTRY"][s_hKey]
+        # TODO fix in profile
+        reg_type = 0x0001
+    except KeyError:
+        reg_type, value = ql.os.registry_manager.read(s_hKey, s_lpValueName, reg_type)
 
     # read registy
-    reg_type, value = ql.os.registry_manager.read(s_hKey, s_lpValueName, reg_type)
 
     # error key
     if reg_type is None or value is None:
@@ -359,6 +364,7 @@ def hook_GetTokenInformation(ql, address, params):
     information_value = token.get(information)
     ql.mem.write(return_point, len(information_value).to_bytes(4, byteorder="little"))
     return_size = int.from_bytes(ql.mem.read(return_point, 4), byteorder="little")
+    ql.dprint(D_RPRT, "[=] The sample is checking for its permissions")
     if return_size > max_size:
         ql.os.last_error  = ERROR_INSUFFICIENT_BUFFER
         return 0
