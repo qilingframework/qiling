@@ -18,8 +18,6 @@ class QlLoaderMACHO(QlLoader):
         super()
         self.dyld_path      = dyld_path
         self.ql             = ql
-
-    def run(self):        
         self.macho_file     = MachoParser(self.ql, self.ql.path)
         self.loading_file   = self.macho_file
         self.slide          = 0x0000000000000000

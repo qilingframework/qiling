@@ -194,17 +194,12 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         ######
         self.os = self.os_setup()
 
-        ##########
-        # Loader #
-        ##########
-        self.loader = self.loader_setup()
-
     def run(self):
 
         ##########
         # Loader #
         ##########
-        self.loader.run()
+        self.loader = self.loader_setup()
         
         # setup strace filter for logger
         # FIXME: only works for logging due to we might need runtime disable nprint

@@ -243,8 +243,6 @@ class QlLoaderPE(Process, QlLoader):
     def __init__(self, ql):
         super()
         self.ql = ql
-        
-    def run(self):        
         self.path = self.ql.path
         self.init_dlls = [b"ntdll.dll", b"kernel32.dll", b"user32.dll"]
         self.filepath = ''
