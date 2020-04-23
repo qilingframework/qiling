@@ -144,8 +144,8 @@ class QLOsUtils:
 
 
     def transform_to_real_path(self, path):
-        if self.ql.os.thread_management != None:
-            cur_path = self.ql.ps.thread_management.cur_thread.get_current_path()
+        if self.ql.multithread == True:
+            cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
             cur_path = self.ql.os.current_path
 
@@ -175,9 +175,9 @@ class QLOsUtils:
             if os.path.islink(real_path):
                 link_path = os.readlink(real_path)
                 if link_path[0] == '/':
-                    real_path = self.ql.os.transform_to_real_path(self.ql, link_path)
+                    real_path = self.ql.os.transform_to_real_path(link_path)
                 else:
-                    real_path = self.ql.os.transform_to_real_path(self.ql, os.path.dirname(relative_path) + '/' + link_path)
+                    real_path = self.ql.os.transform_to_real_path(os.path.dirname(relative_path) + '/' + link_path)
 
         return real_path
 
