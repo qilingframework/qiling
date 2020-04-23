@@ -8,15 +8,19 @@ VER_SERVICEPACKMAJOR = 0
 computer_name = qilingpc
 
 [USER]
-user = Qiling
+username = Qiling
 language = 1093
 
-[PATHS]
+[PATH]
+username = Qiling
 cdrive = C:\
-windir = Windows\
-appdata = AppData\
-user = Users\
-temp = Temp\
+windir = %(cdrive)sWindows\
+userdir = %(cdrive)sUsers\
+appdata = %(userdir)s\%(username)s\AppData\
+userhome = %(cdrive)sUsers\%(username)s\
+temp = %(windir)sTemp\
+
+[REGISTRY]
 registry_diff = registry_diff.json
 
 

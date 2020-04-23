@@ -70,7 +70,7 @@ def test_pe_win_x86_gandcrab():
             second_half = int(third, 16) + year
             result = int(hex(first_half)[2:] + hex(second_half)[2:], 16)
             ql.os.profile[key][subkey] = str(result)
-        elif key == "USER" and subkey == "user":
+        elif key == "USER" and subkey == "username":
             length = random.randint(0, 15)
             new_name = ""
             for i in range(length):
@@ -78,10 +78,10 @@ def test_pe_win_x86_gandcrab():
             old_name = ql.os.profile[key][subkey]
             # update paths
             ql.os.profile[key][subkey] = new_name
-            for path in ql.os.profile["PATHS"]:
-                val = ql.os.profile["PATHS"][path].replace(old_name, new_name)
-                ql.os.profile["PATHS"][path] = val
-                ql.dprint(D_INFO, ql.os.profile["PATHS"][path])
+            for path in ql.os.profile["PATH"]:
+                val = ql.os.profile["PATH"][path].replace(old_name, new_name)
+                ql.os.profile["PATH"][path] = val
+                ql.dprint(D_INFO, ql.os.profile["PATH"][path])
         elif key == "SYSTEM" and subkey == "computer_name":
             length = random.randint(0, 15)
             new_name = ""
@@ -93,11 +93,11 @@ def test_pe_win_x86_gandcrab():
 
     ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                 output="debug")
-    default_user = ql.os.profile["USER"]["user"]
+    default_user = ql.os.profile["USER"]["username"]
     default_computer = ql.os.profile["SYSTEM"]["computer_name"]
 
     ql.hook_address(stop, 0x40860f, user_data=(default_user, default_computer))
-    randomize_config_value(ql, "USER", "user")
+    randomize_config_value(ql, "USER", "username")
     randomize_config_value(ql, "SYSTEM", "computer_name")
     randomize_config_value(ql, "VOLUME", "serial_number")
     ql.run()
