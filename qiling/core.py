@@ -45,6 +45,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             stack_size=0,
             interp_base=0,
             append = None,
+            profile = None,
     ):
         super(Qiling, self).__init__()
 
@@ -68,6 +69,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.interp_base = interp_base
         # generic append function, eg log file        
         self.append = append
+        self.profile = profile
 
         # Define after ql=Qiling(), either defined by Qiling Framework or user defined
         self.archbit = ''
@@ -86,8 +88,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.internal_exception = None
         self.platform = platform.system()
         self.debugger = None
-        self.automatize_input = False
-        self.profile = None 
+        self.automatize_input = False 
         # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
         self.multithread = False
         # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
