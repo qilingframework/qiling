@@ -370,14 +370,14 @@ class Sid:
 class Mutex:
     def __init__(self, name, type):
         self.name = name
-        self.lock = False
+        self.locked = False
         self.type = type
 
     def lock(self):
-        self.lock = True
+        self.locked = True
 
     def unlock(self):
-        self.lock = False
+        self.locked = False
 
     def isFree(self):
-        return not self.lock
+        return not self.locked

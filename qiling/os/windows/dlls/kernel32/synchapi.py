@@ -217,14 +217,19 @@ def hook_OpenMutexW(ql, address, params):
     "lpName": WSTRING
 })
 def hook_CreateMutexW(ql, address, params):
-    type, name = params["lpName"].split("\\")
+    try:
+        _type, name = params["lpName"].split("\\")
+    except:
+        name = params["lpName"]
+        _type = ""
+
     owning = params["bInitialOwner"]
     handle = ql.os.handle_manager.search(name)
     if handle is not None:
         #ql.os.last_error = ERROR_ALREADY_EXISTS
         return 0
     else:
-        mutex = Mutex(name, type)
+        mutex = Mutex(name, _type)
         if owning:
             mutex.lock()
         handle = Handle(obj=mutex, name=name)
@@ -245,6 +250,21 @@ def hook_CreateMutexW(ql, address, params):
     "lpName": STRING 
 })
 def hook_CreateEventA(ql, address, params):
-    new_handle = Handle(mutex=params['lpName'])
-    ql.handle_manager.append(new_handle)
-    ret = new_handle.id
+    """ 
+    Implementation seems similar enough to Mutex to just use it
+    """
+    try:
+        namespace, name = params["lpName"].split("\\")
+    except:
+        name = params["lpName"]
+        namespace = ""
+    handle = ql.os.handle_manager.search(name)
+    if handle is not None:
+        ql.os.last_error = ERROR_ALREADY_EXISTS
+    else:
+        mutex = Mutex(name, namespace)
+        if params['bInitialState']:
+            mutex.lock()
+        handle = Handle(obj=mutex, name=name)
+        ql.os.handle_manager.append(handle)
+    return handle.ID

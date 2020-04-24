@@ -86,7 +86,7 @@ class QlOsWindows(QlOs):
         # registry manger
         self.registry_manager = RegistryManager(self.ql)
         # clipboard
-        self.clipboard = Clipboard(self.ql)
+        self.clipboard = Clipboard(self.ql.os)
         # fibers
         self.fiber_manager = FiberManager(self.ql)
         # thread manager

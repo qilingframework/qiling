@@ -67,7 +67,10 @@ def hook_GetLocaleInfoA(ql, address, params):
 
     local_dict = LOCALE.get(locale_value, None)
     if local_dict is None:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        #raise QlErrorNotImplemented("[!] API not implemented")
+        ql.os.last_error = ERROR_INVALID_PARAMETER
+        return 0
+
     lctype = local_dict[lctype_value] + "\x00"
 
     if cchData != 0:

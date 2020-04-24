@@ -45,7 +45,7 @@ def hook_CheckRemoteDebuggerPresent(ql, address, params):
 })
 def hook_OutputDebugStringW(ql, address, params):
     string = params["lpOutputString"]
-    ql.os.stdout.write(string.encode())
+    ql.nprint('OutputDebugStringW: "%s"' % (string.encode()))
     return 0
 
 #void OutputDebugStringA(
@@ -55,5 +55,5 @@ def hook_OutputDebugStringW(ql, address, params):
     "lpOutputString": STRING
 })
 def hook_OutputDebugStringA(ql, address, params):
-    ql.os.stdout.write('OutputDebugStringA: "%s"' % (params['lpOutputString']))
+    ql.nprint('OutputDebugStringA: "%s"' % (params['lpOutputString']))
     return 0

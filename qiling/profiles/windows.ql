@@ -35,3 +35,5 @@ bytes_per_sector = 512
 number_of_free_clusters = 12345
 number_of_clusters = 65536
 
+[NETWORK]
+dns_response_ip = 10.20.30.40

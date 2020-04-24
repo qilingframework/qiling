@@ -169,7 +169,11 @@ def _CreateFile(ql, address, params, name):
 
     # create thread handle
     s_lpFileName = ql.os.transform_to_real_path(s_lpFileName)
-    f = open(s_lpFileName.replace("\\", os.sep), mode)
+    try:
+        f = open(s_lpFileName.replace("\\", os.sep), mode)
+    except FileNotFoundError:
+        ql.os.last_error = ERROR_FILE_NOT_FOUND
+        return INVALID_HANDLE_VALUE
     new_handle = Handle(obj=f)
     ql.os.handle_manager.append(new_handle)
     ret = new_handle.id
