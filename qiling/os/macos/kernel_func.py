@@ -134,7 +134,7 @@ class FileSystem():
         if cmn_flags & ATTR_CMN_OBJTYPE != 0:
             if os.path.isdir(path):
                 attr += pack("<L", VDIR)
-                self.ql.dprint("ObjType: DIR")
+                self.ql.dprint(D_INFO, "ObjType: DIR")
             elif os.path.islink(path):
                 attr += pack("<L", VLINK)
                 self.ql.dprint(D_INFO, "ObjType: LINK")

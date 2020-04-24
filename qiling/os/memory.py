@@ -399,7 +399,7 @@ class QlMemoryHeap:
             self.chunks.append(chunk)
 
         chunk.inuse = True
-        #self.ql.dprint("heap.mem_alloc addresss: " + hex(chunk.address))
+        #self.ql.dprint(D_INFO,"heap.mem_alloc addresss: " + hex(chunk.address))
         return chunk.address
 
     def mem_size(self, addr):
