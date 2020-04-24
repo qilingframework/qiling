@@ -19,7 +19,6 @@ class Hook:
         self.user_data = user_data
         self.begin = begin
         self.end = end
-        print(callback, user_data, begin, end)
     
     def bound_check(self, pc):
         if self.end < self.begin or (self.begin <= pc and self.end >= pc):
@@ -94,7 +93,7 @@ class QLCoreHooks(object):
         if hook_type in self._insn_hook.keys():
             for h in self._insn_hook[hook_type]:
                 if h.bound_check(ql.reg.pc):
-                    ret = h.call(ql, *args)
+                    ret = h.call(ql, *args[ : -1])
                     if ret == False:
                         break
 
