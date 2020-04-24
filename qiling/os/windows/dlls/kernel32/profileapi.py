@@ -23,3 +23,13 @@ from qiling.exception import *
 def hook_QueryPerformanceCounter(ql, address, params):
     ret = 0
     return ret
+
+#BOOL QueryPerformanceFrequency(
+#  LARGE_INTEGER *lpFrequency
+#);
+@winapi(cc=STDCALL, params={
+    "lpFrequency": POINTER    
+})
+def hook_QueryPerformanceFrequency(ql, address, params):
+    ql.mem.write(params['lpFrequency'], (10000000).to_bytes(length=8, byteorder='little'))
+    return 1

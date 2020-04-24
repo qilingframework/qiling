@@ -169,7 +169,11 @@ def _CreateFile(ql, address, params, name):
 
     # create thread handle
     s_lpFileName = ql.os.transform_to_real_path(s_lpFileName)
-    f = open(s_lpFileName.replace("\\", os.sep), mode)
+    try:
+        f = open(s_lpFileName.replace("\\", os.sep), mode)
+    except FileNotFoundError:
+        ql.os.last_error = ERROR_FILE_NOT_FOUND
+        return INVALID_HANDLE_VALUE
     new_handle = Handle(obj=f)
     ql.os.handle_manager.append(new_handle)
     ret = new_handle.id
@@ -375,3 +379,38 @@ def hook_GetDiskFreeSpaceW(ql, address, params):
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 0
+
+
+#BOOL CreateDirectoryA(
+#  LPCSTR                lpPathName,
+#  LPSECURITY_ATTRIBUTES lpSecurityAttributes
+#);
+@winapi(cc=STDCALL, params={
+    "lpPathName": STRING,
+    "lpSecurityAttributes": POINTER
+})
+def hook_CreateDirectoryA(ql, address, params):
+    try:
+        os.mkdir(os.path.join(ql.rootfs, lpPathName.replace("\\", os.sep)))
+        return 1
+    except FileExistsError:
+        ql.os.last_error = ERROR_ALREADY_EXISTS
+        return 0
+    finally:
+        return 0
+
+#DWORD GetFileSize(
+#  HANDLE  hFile,
+#  LPDWORD lpFileSizeHigh
+#);
+@winapi(cc=STDCALL, params={
+    "hFile": HANDLE,
+    "lpFileSizeHigh": DWORD,
+})
+def hook_GetFileSize(ql, address, params):
+    try:
+        handle = ql.handle_manager.get(params['hFile'].file)
+        return os.path.getsize(handle.name)
+    except:
+        ql.os.last_error = ERROR_INVALID_HANDLE 
+        return 0xFFFFFFFF #INVALID_FILE_SIZE

@@ -5,6 +5,7 @@
 
 import argparse
 import sys
+from capstone import *
 
 sys.path.insert(0, "..")
 
@@ -17,6 +18,7 @@ from pprint import pprint as pp
 from binascii import hexlify, unhexlify
 import re
 import pefile
+import os
 
 
 class colors:

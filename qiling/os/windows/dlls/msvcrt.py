@@ -52,6 +52,12 @@ def hook___p__commode(ql, address, params):
     addr = ql.os.heap.mem_alloc(ql.pointersize)
     return addr
 
+# int * __p__commode(
+#    );
+@winapi(cc=CDECL, params={})
+def hook___p__acmdln(self, address, params):
+    addr = self.ql.loader.import_address_table['msvcrt.dll'][b'_acmdln']
+    return addr
 
 # unsigned int _controlfp(
 #    unsigned int new,
