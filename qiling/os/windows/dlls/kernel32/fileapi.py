@@ -391,8 +391,16 @@ def hook_GetDiskFreeSpaceW(ql, address, params):
 })
 def hook_CreateDirectoryA(ql, address, params):
     try:
-        os.mkdir(os.path.join(ql.rootfs, lpPathName.replace("\\", os.sep)))
-        return 1
+        target_dir = os.path.join(ql.rootfs, lpPathName.replace("\\", os.sep))
+        print('TARGET_DIR = %s' % target_dir)
+        ql.os.transform_to_real_path(lpPathName) 
+        # Verify the directory is in ql.rootfs to ensure no path traversal has taken place
+        if os.path.commonprefix(target_dir, ql.rootfs) != ql.rootfs:
+            ql.dprint(D_INFO, 'CreateDirectoryA attempted to create dir outside of rootfs: "%s". Not creating.' % (target_dir))
+            return 0
+        else:
+            os.mkdir()
+            return 1
     except FileExistsError:
         ql.os.last_error = ERROR_ALREADY_EXISTS
         return 0

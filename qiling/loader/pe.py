@@ -243,8 +243,8 @@ class QlLoaderPE(Process, QlLoader):
     def __init__(self, ql):
         super()
         self.ql = ql
-    
-    def run(self):    
+
+    def run(self):
         self.path = self.ql.path
         self.init_dlls = [b"ntdll.dll", b"kernel32.dll", b"user32.dll"]
         self.filepath = ''
@@ -353,26 +353,27 @@ class QlLoaderPE(Process, QlLoader):
             super().add_ldr_data_table_entry(mod_name)
 
             # parse directory entry import
-            for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
-                dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')
-                super().load_dll(entry.dll)
-                for imp in entry.imports:
-                    # fix IAT
-                    # self.ql.nprint(imp.name)
-                    # self.ql.nprint(self.import_address_table[imp.name])
-                    if imp.name:
-                        try:
-                            addr = self.import_address_table[dll_name][imp.name]
-                        except KeyError:
-                            self.ql.dprint(D_INFO,"[!] Error in loading function %s" % imp.name.decode())
-                    else:
-                        addr = self.import_address_table[dll_name][imp.ordinal]
+            if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress != 0:
+                for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
+                    dll_name = str(entry.dll.lower(), 'utf-8', 'ignore')
+                    super().load_dll(entry.dll)
+                    for imp in entry.imports:
+                        # fix IAT
+                        # self.ql.nprint(imp.name)
+                        # self.ql.nprint(self.import_address_table[imp.name])
+                        if imp.name:
+                            try:
+                                addr = self.import_address_table[dll_name][imp.name]
+                            except KeyError:
+                                self.ql.dprint(D_INFO,"[!] Error in loading function %s" % imp.name.decode())
+                        else:
+                            addr = self.import_address_table[dll_name][imp.ordinal]
 
-                    if self.ql.archtype== QL_ARCH.X86:
-                        address = self.ql.pack32(addr)
-                    else:
-                        address = self.ql.pack64(addr)
-                    self.ql.mem.write(imp.address, address)
+                        if self.ql.archtype== QL_ARCH.X86:
+                            address = self.ql.pack32(addr)
+                        else:
+                            address = self.ql.pack64(addr)
+                        self.ql.mem.write(imp.address, address)
 
             self.ql.nprint("[+] Done with loading %s" % self.path)
             self.filepath = b"D:\\" + bytes(self.path.replace("/", "\\"), "utf-8")
