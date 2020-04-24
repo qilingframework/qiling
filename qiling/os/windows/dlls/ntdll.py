@@ -112,13 +112,13 @@ def hook_LdrGetProcedureAddress(ql, address, params):
         identifier = params['Ordinal']
     #Check if dll is loaded
     try:
-        dll_name = [key for key, value in ql.PE.dlls.items() if value == params['ModuleHandle']][0]
+        dll_name = [key for key, value in ql.loader.dlls.items() if value == params['ModuleHandle']][0]
     except IndexError as ie:
         ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['ModuleHandle']))
         return 0
 
-    if identifier in ql.PE.import_address_table[dll_name]:
-        addr = ql.PE.import_address_table[dll_name][identifier]
+    if identifier in ql.loader.import_address_table[dll_name]:
+        addr = ql.loader.import_address_table[dll_name][identifier]
         ql.mem.write(addr.to_bytes(length=ql.pointersize, byteorder='little'), params['FunctionAddress'])
         return 0
 
