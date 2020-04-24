@@ -56,14 +56,9 @@ class QlOsPosix(QlOs):
 
     def load_syscall(self, intno = None):
         map_syscall = self.ql.os_setup(function_name = "map_syscall")
-        
-        if self.ql.archtype== QL_ARCH.MIPS32:   
-            if intno != 0x11:
-                raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno)        
-        
         param0 , param1, param2, param3, param4, param5 = self.syscall_param
-
         self.syscall_map = self.dict_posix_syscall_by_num.get(self.syscall)
+        
         if self.syscall_map != None:
             self.syscall_name = self.syscall_map.__name__
         else:

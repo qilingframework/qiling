@@ -39,6 +39,7 @@ class QlOsLinux(QlOsPosix):
         elif self.ql.archtype== QL_ARCH.MIPS32:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000
             self.QL_LINUX_PREDEFINE_STACKSIZE = 0x30000
+            self.ql.hook_intr(self.hook_intr)
             self.ql.hook_intno(self.hook_syscall, 17)
             self.thread_class = QlLinuxMIPS32Thread
 
@@ -91,6 +92,10 @@ class QlOsLinux(QlOsPosix):
     def hook_syscall(self, int= None, intno= None):
         return self.load_syscall(intno)
 
+    def hook_intr(self, int= None, intno= None):
+        if self.ql.archtype== QL_ARCH.MIPS32:   
+            if intno != 0x11:
+                raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno) 
 
     def run(self):
         if self.ql.archtype== QL_ARCH.ARM:
