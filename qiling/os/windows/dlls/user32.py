@@ -120,7 +120,7 @@ def hook_CloseClipboard(ql, address, params):
 def hook_SetClipboardData(ql, address, params):
     try:
         data = bytes(params['hMem'], 'ascii', 'ignore')
-    except UnicodeEncodeError:
+    except (UnicodeEncodeError, TypeError):
         data = b""
     return ql.os.clipboard.set_data(params['uFormat'], data)
 

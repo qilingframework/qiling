@@ -95,7 +95,7 @@ def hook_VirtualQuery(ql, address, params):
         
     if not base and not size:
         # Page not found
-        ql.last_error = ERROR_INVALID_PARAMETER
+        ql.os.last_error = ERROR_INVALID_PARAMETER
         return 0
  
     mbi = params['lpBuffer']

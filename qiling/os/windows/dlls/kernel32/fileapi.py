@@ -390,7 +390,7 @@ def hook_CreateDirectoryA(ql, address, params):
         os.mkdir(os.path.join(ql.rootfs, lpPathName.replace("\\", os.sep)))
         return 1
     except FileExistsError:
-        ql.last_error = ERROR_ALREADY_EXISTS
+        ql.os.last_error = ERROR_ALREADY_EXISTS
         return 0
     finally:
         return 0
@@ -408,5 +408,5 @@ def hook_GetFileSize(ql, address, params):
         handle = ql.handle_manager.get(params['hFile'].file)
         return os.path.getsize(handle.name)
     except:
-        ql.last_error = ERROR_INVALID_HANDLE 
+        ql.os.last_error = ERROR_INVALID_HANDLE 
         return 0xFFFFFFFF #INVALID_FILE_SIZE

@@ -43,7 +43,7 @@ class Clipboard:
 
     def close(self):
         if self.locked_by == NOT_LOCKED:
-            self.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
+            self.ql.os.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
             return 0
         else:
             self.locked_by = NOT_LOCKED
@@ -54,7 +54,7 @@ class Clipboard:
         hWnd = self.ql.os.thread_manager.cur_thread.id
         
         if self.locked_by != hWnd:
-            self.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
+            self.ql.os.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
             return 0
         else:
             if fmt not in self.formats:
@@ -69,7 +69,7 @@ class Clipboard:
         hWnd = self.ql.os.thread_manager.cur_thread.id
         
         if self.locked_by != hWnd:
-            self.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
+            self.ql.os.last_error = 0x58A  # ERROR_CLIPBOARD_NOT_OPEN
             return 0
         else:
             return self.data
