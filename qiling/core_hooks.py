@@ -257,7 +257,7 @@ class QLCoreHooks(object):
 
     # a convenient API to set callback for a single address
     def hook_address(self, callback, address, user_data=None):
-        h = HookAddr(callback, user_data, address, address)
+        h = HookAddr(callback, user_data, address)
         self._ql_hook(UC_HOOK_CODE, h)
 
     def hook_mem_read(self, callback, user_data=None, begin=1, end=0):
