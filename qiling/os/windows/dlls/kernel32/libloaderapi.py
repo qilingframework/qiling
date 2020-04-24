@@ -166,8 +166,6 @@ def hook_GetProcAddress(ql, address, params):
 
     #Handle case where module is self
     if dll_name == os.path.basename(ql.loader.path):
-        from pprint import pprint
-        pprint(ql.loader.export_symbols)
         for addr, export in ql.loader.export_symbols.items():
             if export['name'] == lpProcName:
                 return addr
