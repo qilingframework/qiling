@@ -25,6 +25,9 @@ class Hook:
             return True
         return False
     
+    def check(self, *args):
+        return True
+    
     def call(self, ql, *args):
         if self.user_data == None:
             return self.callback(ql, *args)
@@ -38,6 +41,16 @@ class HookAddr(Hook):
         if self.user_data == None:
             return self.callback(ql)
         return self.callback(ql, self.user_data)
+
+class HookIntr(Hook):
+    def __init__(self, callback, intno, user_data=None):
+        super(HookIntr, self).__init__(callback, user_data, 0, -1)
+        self.intno = intno
+    
+    def check(self, ql, intno):
+        if intno < 0 or self.intno == intno:
+            return True
+        return False
 
 class QLCoreHooks(object):
     def __init__(self):
@@ -79,10 +92,11 @@ class QLCoreHooks(object):
         catched = False
         if hook_type in self._hook.keys():
             for h in self._hook[hook_type]:
-                catched = True
-                ret = h.call(ql, intno)
-                if ret == False:
-                    break
+                if h.check(ql, intno):
+                    catched = True
+                    ret = h.call(ql, intno)
+                    if ret == False:
+                        break
         
         if catched == False:
             raise
@@ -259,6 +273,10 @@ class QLCoreHooks(object):
     def hook_address(self, callback, address, user_data=None):
         h = HookAddr(callback, address, user_data)
         self._ql_hook(UC_HOOK_CODE, h)
+    
+    def hook_intno(self, callback, intno, user_data=None):
+        h = HookIntr(callback, intno, user_data)
+        self._ql_hook(UC_HOOK_INTR, h)
 
     def hook_mem_read(self, callback, user_data=None, begin=1, end=0):
         self.ql_hook(UC_HOOK_MEM_READ, callback, user_data, begin, end)

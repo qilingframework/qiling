@@ -39,7 +39,7 @@ class QlOsLinux(QlOsPosix):
         elif self.ql.archtype== QL_ARCH.MIPS32:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000
             self.QL_LINUX_PREDEFINE_STACKSIZE = 0x30000
-            self.ql.hook_intr(self.hook_syscall)
+            self.ql.hook_intno(self.hook_syscall, 17)
             self.thread_class = QlLinuxMIPS32Thread
 
         # ARM64
