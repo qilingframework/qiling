@@ -77,7 +77,6 @@ def test_pe_win_x86_gandcrab():
             for path in ql.os.profile["PATH"]:
                 val = ql.os.profile["PATH"][path].replace(old_name, new_name)
                 ql.os.profile["PATH"][path] = val
-                ql.dprint(D_INFO, ql.os.profile["PATH"][path])
         elif key == "SYSTEM" and subkey == "computer_name":
             length = random.randint(0, 15)
             new_name = ""
@@ -262,5 +261,5 @@ if __name__ == "__main__":
     test_pe_win_x8664_customapi()
     test_pe_win_x86_uselessdisk()
     test_pe_win_x86_crackme()
-    #test_pe_win_x86_gandcrab()
+    test_pe_win_x86_gandcrab()
     test_pe_win_al_khaser()

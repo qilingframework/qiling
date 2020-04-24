@@ -15,10 +15,7 @@ class QlOsFreebsd(QlOsPosix):
         self.load()
         
     def load(self):   
-        """
-        initiate UC needs to be in loader,
-        or else it will kill execve
-        """
+        
         self.ql.uc = self.ql.arch.init_uc
 
         if self.ql.shellcoder and not self.ql.stack_address and not self.ql.stack_size:

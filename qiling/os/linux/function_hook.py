@@ -555,7 +555,7 @@ class FunctionHook:
         for r in rel:
             if (r.r_type == JMP_SLOT or r.r_type == GLOB_DAT) and r.r_sym != 0:
                 fuc_name = self.strtab[self.symtab[r.r_sym].st_name]
-                print('[+] rel fuc name ' + str(fuc_name))
+                self.ql.nprint('[+] rel fuc name ' + str(fuc_name))
 
 
     def _load_import(self):

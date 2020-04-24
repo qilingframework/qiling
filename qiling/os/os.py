@@ -37,6 +37,7 @@ class QlOs(QLOsUtils):
             self.profile = self.ql.profile
         # user configuration
         self.profile = self.init_profile()
+        
         if self.ql.archbit == 32:
             self.QL_EMU_END = QL_ARCHBIT32_EMU_END
         elif self.ql.archbit == 64:

@@ -29,15 +29,7 @@ class QlOsWindows(QlOs):
         self.syscall_count = {}
         self.argv = self.ql.argv
         self.env = self.ql.env
-        self.load()
-
-    def load(self):
-        """
-        initiate UC needs to be in loader, or else it will kill execve
-        Note: This is Windows, but for the sake of same with others OS
-        """
         self.ql.uc = self.ql.arch.init_uc
-
         self.ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
 
         if self.ql.archtype == QL_ARCH.X8664:
