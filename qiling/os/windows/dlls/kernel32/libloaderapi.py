@@ -156,12 +156,22 @@ def hook_GetProcAddress(ql, address, params):
     # TODO fix for gandcrab
     if params["lpProcName"] == "RtlComputeCrc32":
         return 0
+
     # Check if dll is loaded
     try:
         dll_name = [key for key, value in ql.loader.dlls.items() if value == params['hModule']][0]
     except IndexError as ie:
         ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
         return 0
+
+    #Handle case where module is self
+    if dll_name == os.path.basename(ql.loader.path):
+        from pprint import pprint
+        pprint(ql.loader.export_symbols)
+        for addr, export in ql.loader.export_symbols.items():
+            if export['name'] == lpProcName:
+                return addr
+    
 
     if lpProcName in ql.loader.import_address_table[dll_name]:
         return ql.loader.import_address_table[dll_name][lpProcName]
@@ -177,6 +187,9 @@ def hook_GetProcAddress(ql, address, params):
 })
 def hook_LoadLibraryA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
+    if lpLibFileName == ql.loader.filepath.decode():
+        #Loading self
+        return ql.loader.PE_IMAGE_BASE
     dll_base = ql.loader.load_dll(lpLibFileName.encode())
     return dll_base
 

@@ -238,6 +238,25 @@ class Process(QlLoader):
 
         self.ldr_list.append(ldr_table_entry)
 
+    def init_exports(self):
+        if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_EXPORT']].VirtualAddress != 0:
+            # Do a full load if IMAGE_DIRECTORY_ENTRY_EXPORT is present so we can load the exports
+            self.pe.full_load()
+        else:
+            return
+
+        try:
+            # parse directory entry export
+            dll_name = os.path.basename(self.path)
+            self.import_address_table[dll_name] = {} 
+            for entry in self.pe.DIRECTORY_ENTRY_EXPORT.symbols:
+                self.export_symbols[self.PE_IMAGE_BASE + entry.address] = {'name': entry.name, 'ordinal': entry.ordinal}
+                self.import_address_table[dll_name][entry.name] = self.PE_IMAGE_BASE + entry.address
+                self.import_address_table[dll_name][entry.ordinal] = self.PE_IMAGE_BASE + entry.address
+        except:
+            import traceback
+            self.ql.nprint('Failed to load exports for %s:\n%s' % (self.name, traceback.format_exc()))
+
 
 class QlLoaderPE(Process, QlLoader):
     def __init__(self, ql):
@@ -268,6 +287,7 @@ class QlLoaderPE(Process, QlLoader):
         self.code_size = 10 * 1024 * 1024
         self.dlls = {}
         self.import_symbols = {}
+        self.export_symbols = {}
         self.import_address_table = {}
         self.ldr_list = []
         self.PE_IMAGE_BASE = 0
@@ -284,6 +304,7 @@ class QlLoaderPE(Process, QlLoader):
         super().init_tib()
         super().init_peb()
         super().init_ldr_data()
+        super().init_exports()
 
     def load(self):
         if self.path and not self.ql.shellcoder:
