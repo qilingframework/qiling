@@ -62,6 +62,10 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # generic append function, eg log file        
         self.append = append
         self.profile = profile
+        # OS dependent configuration for stdio
+        self.stdin = stdin
+        self.stdout = stdout
+        self.stderr = stderr
 
         # Define after ql=Qiling(), either defined by Qiling Framework or user defined
         self.archbit = ''
@@ -132,11 +136,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if self.log_dir is not None and type(self.log_dir) == str:
             _logger = ql_setup_logging_env(self)    
             self.log_file_fd = _logger
-            
-        # OS dependent configuration for stdio
-        self.stdin = stdin
-        self.stdout = stdout
-        self.stderr = stderr
 
         # double check supported architecture
         if not ql_is_valid_arch(self.archtype):
@@ -195,7 +194,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.os = self.os_setup()
 
     def run(self):
-
         ##########
         # Loader #
         ##########
