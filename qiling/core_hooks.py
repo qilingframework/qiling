@@ -292,3 +292,19 @@ class QLCoreHooks(object):
             self.os.user_defined_api[syscall_cur] = syscall_new
         elif self.ostype in (QL_POSIX):
             self.set_syscall(syscall_cur, syscall_new)
+    
+    def clear_hooks(self):
+        for i in self._hook_fuc.keys():
+            self.uc.hook_del(self._hook_fuc[i])
+        
+
+        for i in self._insn_hook_fuc.keys():
+            self.uc.hook_del(self._insn_hook_fuc[i])
+
+        self.clear_ql_hooks()
+    
+    def clear_ql_hooks(self):
+        self._hook = {}
+        self._hook_fuc = {}
+        self._insn_hook = {}
+        self._insn_hook_fuc = {}
