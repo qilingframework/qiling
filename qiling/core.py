@@ -106,47 +106,39 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         """
         Qiling Framework Core Engine
         """
-        # ostype string - int convertion
+        # shellcoder or file settings
         if self.shellcoder:
             if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str ):
                 self.ostype = self.ostype.lower()
                 self.ostype = ostype_convert(self.ostype)
                 self.archtype = self.archtype.lower()
                 self.archtype = arch_convert(self.archtype)
+                self.targetname = "qilingshellcode"
 
-        # read file propeties, not shellcoder
-        if self.rootfs and self.shellcoder is None:
+        elif self.shellcoder is None:
             if os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs):
                 self.path = (str(self.filename[0]))
                 self.argv = self.filename
-                if self.ostype is None or self.archtype is None:
-                    self.archtype, self.ostype = self.checkostype()
+                self.targetname = ntpath.basename(self.filename[0])
             else:
                 if not os.path.exists(str(self.filename[0])):
                     raise QlErrorFileNotFound("[!] Target binary not found")
                 if not os.path.exists(self.rootfs):
                     raise QlErrorFileNotFound("[!] Target rootfs not found")
-
-        if self.shellcoder:
-            self.targetname = "qilingshellcode"
-        else:    
-            self.targetname = ntpath.basename(self.filename[0])
+        
+        ##########
+        # Loader #
+        ##########        
+        self.loader = self.loader_setup()
 
         # Looger's configuration
         if self.log_dir is not None and type(self.log_dir) == str:
             _logger = ql_setup_logging_env(self)    
             self.log_file_fd = _logger
-
-        # double check supported architecture
-        if not ql_is_valid_arch(self.archtype):
-            raise QlErrorArch("[!] Invalid Arch")
-
-        # chceck for supported OS type
-        if self.ostype not in QL_OS_ALL:
-            raise QlErrorOsType("[!] OSTYPE required: either 'linux', 'windows', 'freebsd', 'macos'")
         
         # qiling output method conversion
         if self.output and type(self.output) == str:
+            # setter / getter for output
             self.output = self.output.lower()
             if self.output not in QL_OUTPUT:
                 raise QlErrorOutput("[!] OUTPUT required: either 'default', 'disasm', 'debug', 'dump'")
@@ -155,24 +147,18 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
         
-        ##############################################################
-        # Define file is 32 or 64bit and check file endian           #
-        # QL_ENDIAN.EL = Little Endian || QL_ENDIAN.EB = Big Endian  #
-        # QL_ENDIAN.EB is define during ql_elf_check_archtype()      #
-        ##############################################################
+        ##############################
+        # Define file is 32 or 64bit #
+        # Define pointersize         #
+        ##############################
         self.archbit = ql_get_arch_bits(self.archtype)
-        if self.archtype not in (QL_ENDINABLE):
-            self.archendian = QL_ENDIAN.EL
+        self.pointersize = (self.archbit // 8)  
         
         #Endian for shellcode needs to set manually
         if self.shellcoder and self.bigendian == True and self.archtype in (QL_ENDINABLE):
             self.archendian = QL_ENDIAN.EB
         elif self.shellcoder:
             self.archendian = QL_ENDIAN.EL
-
-        # based on CPU bit and set pointer size
-        if self.archbit:
-            self.pointersize = (self.archbit // 8)            
 
         #############
         # Component #
@@ -194,10 +180,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.os = self.os_setup()
 
     def run(self):
-        ##########
-        # Loader #
-        ##########
-        self.loader = self.loader_setup()
+        # load the loader
+        self.loader.run()
         
         # setup strace filter for logger
         # FIXME: only works for logging due to we might need runtime disable nprint
@@ -218,7 +202,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if self.debugger is not None:
             self.remotedebugsession.run()
 
-
     # patch @code to memory address @addr
     def patch(self, addr, code, file_name=b''):
         if file_name == b'':
@@ -226,22 +209,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         else:
             self.patch_lib.append((addr, code, file_name.decode()))
     
-    # ql.register - read and write register 
-    def register(self, register_str= None, value= None):
-        return self.reg.rw(register_str, value)
-
-    def context(self, saved_context= None):
-        if saved_context == None:
-            return self.uc.context_save()
-        else:
-            self.uc.context_restore(saved_context)
-
-    def emu_stop(self):
-        self.uc.emu_stop()
-
-    def emu_start(self, begin, end, timeout=0, count=0):
-        self.uc.emu_start(begin, end, timeout, count)
-
     # ql.output var getter
     @property
     def output(self):
@@ -270,11 +237,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         for addr, code, filename in self.patch_lib:
             self.mem.write(self.mem.get_lib_base(filename) + addr, code)
 
-    def set_timeout(self, microseconds):
-        self.timeout = microseconds
+    def emu_stop(self):
+        self.uc.emu_stop()
 
-    def set_exit(self, until_addr):
-        self.until_addr = until_addr
-
-    def add_fs_mapper(self, fm, to):
-        self.fs_mapper.append([fm, to])
+    def emu_start(self, begin, end, timeout=0, count=0):
+        self.uc.emu_start(begin, end, timeout, count)
