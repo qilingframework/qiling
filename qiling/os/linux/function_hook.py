@@ -242,8 +242,9 @@ class ELF_Strtab:
         return self.strtab[idx: self.strtab.index(b'\x00', idx)]
 
 class FunctionHook:
-    def __init__(self, ql, phoff, phnum, phentsize, load_base):
+    def __init__(self, ql, phoff, phnum, phentsize, load_base, hook_mem):
         self.ql = ql
+        self.hook_mem = hook_mem
         self.phoff = phoff
         self.phnum = phnum
         self.phentsize = phentsize
@@ -280,9 +281,13 @@ class FunctionHook:
         self.rel_size = None
         self.relent = ELF32_Rel.Rel_SIZE if ql.archbit == 32 else ELF64_Rel.Rel_SIZE
 
+        self.rel_list = []
+
 
         self.endian = 0 if ql.archendian == QL_ENDIAN.EL else 1
 
+        global JMP_SLOT
+        global GLOB_DAT
         # ARM
         if self.ql.archtype== QL_ARCH.ARM:
             pass
@@ -297,14 +302,14 @@ class FunctionHook:
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
-            # global JMP_SLOT
-            # JMP_SLOT = 7
+            GLOB_DAT = 6
+            JMP_SLOT = 7
             pass
 
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
-            # global JMP_SLOT
-            # JMP_SLOT = 7
+            GLOB_DAT = 6
+            JMP_SLOT = 7
             pass
 
         self._parse()
@@ -312,10 +317,14 @@ class FunctionHook:
             self.show_relocation(self.rel)
 
         if self.rela != None:
+            self.rel_list += self.rela
             self.show_relocation(self.rela)
 
         if self.plt_rel != None:
+            self.rel_list += self.plt_rel
             self.show_relocation(self.plt_rel)
+        
+        # self.ql.mem.map(hook_mem, 0x1000, perms=7, info="hook mem")
 
     def parse_program_header32(self):
         # typedef struct elf32_phdr{
@@ -557,9 +566,28 @@ class FunctionHook:
                 fuc_name = self.strtab[self.symtab[r.r_sym].st_name]
                 print('[+] rel fuc name ' + str(fuc_name))
 
+    def _hook_fuction(self, fn, r, cb, userdata):
+        if fn in self.hook_list.keys():
+            self.hook_list[fn].append((cb, userdata))
+            return
+        else:
+            self.hook_list[fn] = []
+            self.hook_list[fn].append((cb, userdata))
+        
+
+
+    def add_fuction_hook(self, fucname, cb, userdata = None):
+        if type(fucname) != bytes:
+            raise
+
+        for r in self.rel_list:
+            if (r.r_type == JMP_SLOT or r.r_type == GLOB_DAT) and r.r_sym != 0:
+                tmp_name = self.strtab[self.symtab[r.r_sym].st_name]
+                if tmp_name == fucname.encode():
+                    self._hook_fuction(tmp_name, r, cb, userdata)
+
 
     def _load_import(self):
         pass
     
     
-        

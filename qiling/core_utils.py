@@ -5,8 +5,9 @@ from .utils import ql_loadertype_convert_str, ql_ostype_convert_str, ql_arch_con
 from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 
-class QLCoreUtils:
+class QLCoreUtils(object):
     def __init__(self):
+        super().__init__()
         self.archtype = None
         self.ostype = None
         self.path = None

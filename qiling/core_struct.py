@@ -13,8 +13,9 @@ import struct
 from .const import QL_ENDIAN
 from .exception import QlErrorStructConversion
 
-class QLCoreStructs:
+class QLCoreStructs(object):
     def __init__(self):
+        super().__init__()
         self.archendian = None
         self.archbit = 0
 
