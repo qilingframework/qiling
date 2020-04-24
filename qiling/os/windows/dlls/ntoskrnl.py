@@ -56,24 +56,27 @@ def hook_RtlGetVersion(ql, address, params):
     "ThreadHandle": HANDLE,
     "ThreadInformationClass": INT,
     "ThreadInformation": POINTER,
-    "ThreadInformationLength": ULONGLONG,
+    "ThreadInformationLength": UINT,
 
 })
 def hook_ZwSetInformationThread(ql, address, params):
     thread = params["ThreadHandle"]
+    information = params["ThreadInformationClass"]
+    dst = params["ThreadInformation"]
+    size = params["ThreadInformationLength"]
+
     if thread == ql.os.thread_manager.cur_thread.id:
-        size = params["ThreadInformationLength"]
-        dst = params["ThreadInformation"]
-        information = params["ThreadInformationClass"]
+        if size >= 100:
+            return STATUS_INFO_LENGTH_MISMATCH
         if information == ThreadHideFromDebugger:
             ql.dprint(D_RPRT, "[=] Sample is checking debugger via SetInformationThread")
             if dst != 0:
                 ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
         else:
-            raise QlErrorNotImplemented("[!] API not implemented")
+            raise QlErrorNotImplemented("[!] API not implemented %d " % information)
 
     else:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        return STATUS_INVALID_HANDLE
     return STATUS_SUCCESS
 
 

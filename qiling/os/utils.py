@@ -53,7 +53,7 @@ class QLOsUtils:
     def init_profile(self):
         config = configparser.ConfigParser()
         config.read(self.profile)
-        self.ql.dprint(D_RPRT, "[+] Added configuration file")
+        self.ql.dprint(D_RPRT, "[+] Added configuration file %s" % self.profile)
         for section in config.sections():
             self.ql.dprint(D_RPRT, "[+] Section: %s" % section)
             for key in config[section]:
@@ -150,8 +150,8 @@ class QLOsUtils:
             cur_path = self.ql.os.current_path
 
         rootfs = self.ql.rootfs
-                
-        if path.startswith == '/':
+
+        if path[0] == '/':
             relative_path = os.path.abspath(path)
         else:
             relative_path = os.path.abspath(cur_path + '/' + path)
@@ -178,25 +178,27 @@ class QLOsUtils:
                     real_path = self.ql.os.transform_to_real_path(link_path)
                 else:
                     real_path = self.ql.os.transform_to_real_path(os.path.dirname(relative_path) + '/' + link_path)
+            
+                # FIXME: Quick and dirty fix. Need to check more
+                if not os.path.exists(real_path):
+                    real_path = os.path.abspath(rootfs + '/' + relative_path)
 
-            if not os.path.exists(real_path):
-                real_path = os.path.abspath(rootfs + '/' + relative_path)
-                if os.path.islink(real_path):
-                    link_path = os.readlink(real_path)
-                else:
-                    link_path = relative_path
+                    if os.path.islink(real_path):
+                        link_path = os.readlink(real_path)
+                    else:
+                        link_path = relative_path
 
-                path_dirs = link_path.split(os.path.sep)
-                if link_path[0] == '/':
-                    path_dirs = path_dirs[1:]
+                    path_dirs = link_path.split(os.path.sep)
+                    if link_path[0] == '/':
+                        path_dirs = path_dirs[1:]
 
-                for i in range(0, len(path_dirs)-1):
-                    path_prefix = os.path.sep.join(path_dirs[:i+1])
-                    real_path_prefix = self.ql.os.transform_to_real_path(path_prefix)
-                    path_remain = os.path.sep.join(path_dirs[i+1:])
-                    real_path = os.path.join(real_path_prefix, path_remain)
-                    if os.path.exists(real_path):
-                        break
+                    for i in range(0, len(path_dirs)-1):
+                        path_prefix = os.path.sep.join(path_dirs[:i+1])
+                        real_path_prefix = self.ql.os.transform_to_real_path(path_prefix)
+                        path_remain = os.path.sep.join(path_dirs[i+1:])
+                        real_path = os.path.join(real_path_prefix, path_remain)
+                        if os.path.exists(real_path):
+                            break
 
         return real_path
 

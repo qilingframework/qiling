@@ -105,7 +105,39 @@ def hook_WaitForSingleObject(ql, address, params):
     hHandle = params["hHandle"]
     dwMilliseconds = params["dwMilliseconds"]
 
-    target_thread: Thread = ql.os.handle_manager.get(hHandle).obj
+    try:
+        target_thread: Thread = ql.os.handle_manager.get(hHandle).thread
+    except AttributeError:
+        ql.os.last_error = ERROR_INVALID_HANDLE
+        return 0xFFFFFFFF #WAIT_FAILED
+
+    if not target_thread.fake:
+        ql.os.thread_manager.cur_thread.waitfor(target_thread)
+
+    return ret
+
+# DWORD WaitForSingleObjectEx(
+#   HANDLE hHandle,
+#   DWORD  dwMilliseconds
+#   BOOL   bAlertable
+# );
+@winapi(cc=STDCALL, params={
+    "hHandle": HANDLE,
+    "dwMilliseconds": DWORD,
+    "bAlertable": BOOL
+})
+def hook_WaitForSingleObjectEx(ql, address, params):
+    ret = 0
+    hHandle = params["hHandle"]
+    dwMilliseconds = params["dwMilliseconds"]
+    alertable = params["bAlertable"]
+
+    try:
+        target_thread: Thread = ql.os.handle_manager.get(hHandle).thread
+    except AttributeError:
+        ql.os.last_error = ERROR_INVALID_HANDLE
+        return 0xFFFFFFFF #WAIT_FAILED
+
     if not target_thread.fake:
         ql.os.thread_manager.cur_thread.waitfor(target_thread)
 
@@ -185,17 +217,54 @@ def hook_OpenMutexW(ql, address, params):
     "lpName": WSTRING
 })
 def hook_CreateMutexW(ql, address, params):
-    type, name = params["lpName"].split("\\")
+    try:
+        _type, name = params["lpName"].split("\\")
+    except:
+        name = params["lpName"]
+        _type = ""
+
     owning = params["bInitialOwner"]
     handle = ql.os.handle_manager.search(name)
     if handle is not None:
         #ql.os.last_error = ERROR_ALREADY_EXISTS
         return 0
     else:
-        mutex = Mutex(name, type)
+        mutex = Mutex(name, _type)
         if owning:
             mutex.lock()
         handle = Handle(obj=mutex, name=name)
         ql.os.handle_manager.append(handle)
 
+    return handle.ID
+
+#HANDLE CreateEventA(
+#  LPSECURITY_ATTRIBUTES lpEventAttributes,
+#  BOOL                  bManualReset,
+#  BOOL                  bInitialState,
+#  LPCSTR                lpName
+#);
+@winapi(cc=STDCALL, params={
+    "lpEventAttributes": POINTER, 
+    "bManualReset": BOOL,
+    "bInitialState": BOOL,
+    "lpName": STRING 
+})
+def hook_CreateEventA(ql, address, params):
+    """ 
+    Implementation seems similar enough to Mutex to just use it
+    """
+    try:
+        namespace, name = params["lpName"].split("\\")
+    except:
+        name = params["lpName"]
+        namespace = ""
+    handle = ql.os.handle_manager.search(name)
+    if handle is not None:
+        ql.os.last_error = ERROR_ALREADY_EXISTS
+    else:
+        mutex = Mutex(name, namespace)
+        if params['bInitialState']:
+            mutex.lock()
+        handle = Handle(obj=mutex, name=name)
+        ql.os.handle_manager.append(handle)
     return handle.ID

@@ -338,7 +338,7 @@ class QlMemoryManager:
 
     def get_mapped(self):
         for idx, val in enumerate(self.ql.uc.mem_regions()):
-            print(idx, list(map(hex, val)))
+            self.ql.nprint(idx, list(map(hex, val)))
 
 # A Simple Heap Implementation
 class Chunk():

@@ -14,22 +14,18 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
-# BOOL QueryPerformanceCounter(
-#   LARGE_INTEGER *lpPerformanceCount
+# BOOL GetModuleInformation(
+#   HANDLE       hProcess,
+#   HMODULE      hModule,
+#   LPMODULEINFO lpmodinfo,
+#   DWORD        cb
 # );
 @winapi(cc=STDCALL, params={
-    "lpPerformanceCount": POINTER
+    "hProcess": HANDLE,
+    "hModule": HANDLE,
+    "lpmodinfo": POINTER,
+    "cb":DWORD
 })
-def hook_QueryPerformanceCounter(ql, address, params):
-    ret = 0
-    return ret
-
-#BOOL QueryPerformanceFrequency(
-#  LARGE_INTEGER *lpFrequency
-#);
-@winapi(cc=STDCALL, params={
-    "lpFrequency": POINTER    
-})
-def hook_QueryPerformanceFrequency(ql, address, params):
-    ql.mem.write(params['lpFrequency'], (10000000).to_bytes(length=8, byteorder='little'))
-    return 1
+def hook_K32GetModuleInformation(self, address, params):
+    # TODO
+    return 0

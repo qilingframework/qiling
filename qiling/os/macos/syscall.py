@@ -432,11 +432,12 @@ def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack64(0)
             fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
             fstat64_buf += ql.pack64(0)
-        else:
+        elif ql.archtype == QL_ARCH.X8664:
+            # struct user64_stat64 
             fstat64_buf += ql.pack32(fstat64_info.st_dev)                   # dev_t	 	st_dev
-            fstat64_buf += ql.pack32(fstat64_info.st_ino)                   # ino_t	  	st_ino
             fstat64_buf += ql.pack32(fstat64_info.st_mode)                  # mode_t	 	st_mode
             fstat64_buf += ql.pack32(fstat64_info.st_nlink)                 # nlink_t		st_nlink
+            fstat64_buf += ql.pack32(fstat64_info.st_ino)                   # ino_t	  	st_ino
             fstat64_buf += ql.pack32(fstat64_info.st_uid)                   # uid_t		st_uid
             fstat64_buf += ql.pack32(fstat64_info.st_gid)                   # gid_t		st_gid
             fstat64_buf += ql.pack32(0x8800)                                # dev_t		st_rdev
@@ -446,6 +447,8 @@ def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack32(0x0)                                   # user64_long_t	st_mtimensec
             fstat64_buf += ql.pack32(int(fstat64_info.st_ctime))            # user64_time_t	st_ctime
             fstat64_buf += ql.pack32(0x0)                                   # user64_long_t	st_ctimensec
+            fstat64_buf += ql.pack32(0x0)                                   # user64_time_t	st_birthtime
+            fstat64_buf += ql.pack32(0x0)                                   # user64_long_t	st_birthtimesec
             fstat64_buf += ql.pack32(fstat64_info.st_size)                  # off_t		st_size
             fstat64_buf += ql.pack32(0x0)                                   # blkcnt_t	st_blocks
             fstat64_buf += ql.pack32(0x0)                                   # blksize_t	st_blksize
@@ -453,6 +456,8 @@ def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack32(0x0)                                   # __uint32_t	st_gen
             fstat64_buf += ql.pack32(0x0)                                   # __int32_t	st_lspare
             fstat64_buf += ql.pack32(0x0)                                   # __int64_t	st_qspare[2]
+        else :
+            raise QlErrorArch("[!] Arch not support in syscall fstat64")
 
         ql.mem.write(fstat64_add, fstat64_buf)
         regreturn = 0

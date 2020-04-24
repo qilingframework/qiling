@@ -29,8 +29,8 @@ def hook_memcpy(ql, address, params):
         ql.mem.write(params['dest'], data)
     except Exception as e:
         import traceback
-        print(traceback.format_exc())
-        print(e)
+        ql.print(traceback.format_exc())
+        ql.print(e)
     return params['dest']
 
 
@@ -39,9 +39,11 @@ def _QueryInformationProcess(ql, address, params):
     dst = params["ProcessInformation"]
     pt_res = params["ReturnLength"]
     if flag == ProcessDebugFlags:
-        value = b"\x01"*0x8
-    elif flag == ProcessDebugObjectHandle or flag == ProcessDebugPort :
-        value = b"\x00"*0x8
+        value = b"\x01"*0x4
+    elif flag == ProcessDebugPort:
+        value = b"\x00"*0x4
+    elif flag == ProcessDebugObjectHandle:
+        return STATUS_PORT_NOT_SET
     else:
         ql.dprint(D_INFO, str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
@@ -91,3 +93,47 @@ def hook_NtQueryInformationProcess(ql, address, params):
     # TODO have no idea if is cdecl or stdcall
 
     _QueryInformationProcess(ql, address, params)
+
+# NTSTATUS LdrGetProcedureAddress(
+#  IN HMODULE              ModuleHandle,
+#  IN PANSI_STRING         FunctionName OPTIONAL,
+#  IN WORD                 Oridinal OPTIONAL,
+#  OUT PVOID               *FunctionAddress );
+@winapi(cc=STDCALL, params={
+    "ModuleHandle": POINTER,
+    "FunctionName": STRING,
+    "Ordinal": UINT,
+    "FunctionAddress": POINTER
+})
+def hook_LdrGetProcedureAddress(ql, address, params):
+    if params['FunctionName']:
+        identifier = bytes(params["lpProcName"], 'ascii')
+    else:
+        identifier = params['Ordinal']
+    #Check if dll is loaded
+    try:
+        dll_name = [key for key, value in ql.loader.dlls.items() if value == params['ModuleHandle']][0]
+    except IndexError as ie:
+        ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['ModuleHandle']))
+        return 0
+
+    if identifier in ql.loader.import_address_table[dll_name]:
+        addr = ql.loader.import_address_table[dll_name][identifier]
+        ql.mem.write(addr.to_bytes(length=ql.pointersize, byteorder='little'), params['FunctionAddress'])
+        return 0
+
+    return 0xFFFFFFFF
+
+#NTSYSAPI PVOID RtlAllocateHeap(
+#  PVOID  HeapHandle,
+#  ULONG  Flags,
+#  SIZE_T Size
+#);
+@winapi(cc=STDCALL, params={
+    "HeapHandle": POINTER,
+    "Flags": UINT,
+    "Size": SIZE_T
+})
+def hook_RtlAllocateHeap(ql, address, params):
+    ret = ql.heap.mem_alloc(params["Size"])
+    return ret

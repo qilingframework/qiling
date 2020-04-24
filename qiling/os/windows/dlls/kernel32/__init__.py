@@ -21,3 +21,4 @@ from .interlockedapi import *
 from .consoleapi2 import *
 from .consoleapi3 import *
 from .debugapi import *
+from .psapi import *

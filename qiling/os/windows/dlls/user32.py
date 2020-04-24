@@ -120,7 +120,7 @@ def hook_CloseClipboard(ql, address, params):
 def hook_SetClipboardData(ql, address, params):
     try:
         data = bytes(params['hMem'], 'ascii', 'ignore')
-    except UnicodeEncodeError:
+    except (UnicodeEncodeError, TypeError):
         data = b""
     return ql.os.clipboard.set_data(params['uFormat'], data)
 
@@ -513,6 +513,7 @@ def hook_wsprintfW(ql, address, params):
     ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
     return size
 
+
 # int WINAPIV sprintf(
 #   LPWSTR  ,
 #   LPCWSTR ,
@@ -525,7 +526,7 @@ def hook_sprintf(ql, address, params):
     size, string = printf(ql, address, format_string, p_args, "sprintf", wstring=True)
 
     count = format_string.count('%')
-    if ql.archtype== QL_ARCH.X8664:
+    if ql.archtype == QL_ARCH.X8664:
         # We must pop the stack correctly
         raise QlErrorNotImplemented("[!] API not implemented")
 
@@ -559,3 +560,22 @@ def hook_GetForegroundWindow(ql, address, params):
 })
 def hook_MoveWindow(ql, address, params):
     return 1
+
+#int GetKeyboardType(
+#  int nTypeFlag
+#);
+@winapi(cc=STDCALL, params={
+    "nTypeFlag": UINT
+})
+def hook_GetKeyboardType(ql, address, params):
+    """ 
+    See https://salsa.debian.org/wine-team/wine/-/blob/master/dlls/user32/input.c 
+    """
+    _type = params['nTypeFlag']
+    if _type == 0: #0: Keyboard Type, 1: Keyboard subtype, 2: num func keys
+        return 7
+    elif _type == 1:
+        return 0
+    elif _type == 2:
+        return 12
+    return 0

@@ -29,15 +29,7 @@ class QlOsWindows(QlOs):
         self.syscall_count = {}
         self.argv = self.ql.argv
         self.env = self.ql.env
-        self.load()
-
-    def load(self):
-        """
-        initiate UC needs to be in loader, or else it will kill execve
-        Note: This is Windows, but for the sake of same with others OS
-        """
         self.ql.uc = self.ql.arch.init_uc
-
         self.ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
 
         if self.ql.archtype == QL_ARCH.X8664:
@@ -81,14 +73,12 @@ class QlOsWindows(QlOs):
             ql_x8664_set_gs(self.ql)
 
     def setupComponents(self):
-        # user configuration
-        self.profile = self.init_profile()
         # handle manager
         self.handle_manager = HandleManager()
         # registry manger
         self.registry_manager = RegistryManager(self.ql)
         # clipboard
-        self.clipboard = Clipboard(self.ql)
+        self.clipboard = Clipboard(self.ql.os)
         # fibers
         self.fiber_manager = FiberManager(self.ql)
         # thread manager

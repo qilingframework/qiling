@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct
+import struct, os, time
 
 from qiling.os.windows.fncc import *
 from qiling.os.const import *
@@ -52,6 +52,12 @@ def hook___p__commode(ql, address, params):
     addr = ql.os.heap.mem_alloc(ql.pointersize)
     return addr
 
+# int * __p__commode(
+#    );
+@winapi(cc=CDECL, params={})
+def hook___p__acmdln(self, address, params):
+    addr = self.ql.loader.import_address_table['msvcrt.dll'][b'_acmdln']
+    return addr
 
 # unsigned int _controlfp(
 #    unsigned int new,
@@ -235,6 +241,29 @@ def hook___stdio_common_vfprintf(ql, address, _):
     return ret
 
 
+@winapi(cc=CDECL, param_num=4)
+def hook___stdio_common_vfwprintf(ql, address, _):
+    ret = 0
+    _, _, _, p_format, _, p_args = get_function_param(ql, 6)
+    fmt = read_wstring(ql, p_format)
+
+    printf(ql, address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True, double_pointer=True)
+    return ret
+
+
+@winapi(cc=CDECL, param_num=4)
+def hook___stdio_common_vswprintf_s(ql, address, _):
+    ret = 0
+    _, size, p_format, p_args = get_function_param(ql, 4)
+
+    fmt = read_wstring(ql, p_format)
+    printf(ql, address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True, double_pointer=True)
+
+    return ret
+
+
+
+
 # int lstrlenW(
 #   LPCWSTR lpString
 # );
@@ -381,3 +410,37 @@ def hook__ismbblead(ql, address, params):
         return 0
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
+
+
+# errno_t _wfopen_s(
+#    FILE** pFile,
+#    const wchar_t *filename,
+#    const wchar_t *mode
+# );
+@winapi(cc=CDECL, params={
+    "pFile": POINTER,
+    "filename": WSTRING,
+    "mode": WSTRING
+})
+def hook__wfopen_s(ql, address, params):
+    dst = params["pFile"]
+    filename = params["filename"]
+    mode = params["mode"]
+    s_lpFileName = ql.os.transform_to_real_path(filename)
+    f = open(s_lpFileName.replace("\\", os.sep), mode)
+    new_handle = Handle(obj=f)
+    ql.os.handle_manager.append(new_handle)
+    ql.mem.write(dst, ql.pack(new_handle.id))
+    return 1
+
+
+# time_t time( time_t *destTime );
+@winapi(cc=CDECL, params={
+    "destTime": POINTER
+})
+def hook__time64(ql, address, params):
+    dst = params["destTime"]
+    time_wasted = int(time.time())
+    if dst != 0:
+        ql.mem.write(dst, time_wasted.to_bytes(8, "little"))
+    return time_wasted

@@ -24,10 +24,7 @@ class QlOsLinux(QlOsPosix):
         self.load()
 
     def load(self):
-        """
-        initiate UC needs to be in loader,
-        or else it will kill execve
-        """
+
         self.ql.uc = self.ql.arch.init_uc
         self.futexm = QlLinuxFutexManagement()
 
