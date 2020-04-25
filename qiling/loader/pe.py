@@ -239,6 +239,8 @@ class Process(QlLoader):
         self.ldr_list.append(ldr_table_entry)
 
     def init_exports(self):
+        if self.ql.shellcoder:
+            return
         if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_EXPORT']].VirtualAddress != 0:
             # Do a full load if IMAGE_DIRECTORY_ENTRY_EXPORT is present so we can load the exports
             self.pe.full_load()
