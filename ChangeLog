@@ -1,8 +1,17 @@
 This file details the changelog of Qiling Framework.
 
-----------------------------------
+-------------------------------
+[Version 1.0]: April 26th, 2020
+
+- Windows anti anti-debugger, tested with Al-Khaser
+- Support ARM64 Android binary
+
+
+-----------------------------------
 [Version 1.0-rc1]: April 12nd, 2020
 
-- Support debugger.
-- Support OS profile to customize API output
-
+- Support debugger: GDB, IDAPro, Radare
+- Support OS profile to customize API output (Windows)
+- Support more Linux syscalls
+- Support more Windows APIs
+- Support MacOS dyld

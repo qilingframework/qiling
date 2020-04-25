@@ -3,9 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+import os
+
 from qiling.const import *
 from qiling.exception import *
-from qiling.os.utils import *
 
 from unicorn import (
     UC_PROT_ALL,
@@ -21,11 +22,34 @@ class QlMemoryManager:
     https://github.com/zeropointdynamics/zelos/blob/master/src/zelos/memory.py
     """
 
-    def __init__(self, ql, max_addr):
+    def __init__(self, ql):
         self.ql = ql
-        self.max_mem_addr = max_addr
-        self.max_addr = max_addr
         self.map_info = []
+        
+        if self.ql.archbit == 64:
+            max_addr = 0xFFFFFFFFFFFFFFFF
+        elif self.ql.archbit == 32:
+            max_addr = 0xFFFFFFFF
+
+        self.max_addr = max_addr
+        self.max_mem_addr = max_addr            
+
+
+    def string(self, addr, value=None ,encoding='utf-8'): 
+        if value == None:
+            ret = ""
+            c = self.read(addr, 1)[0]
+            read_bytes = 1
+
+            while c != 0x0:
+                ret += chr(c)
+                c = self.read(addr + read_bytes, 1)[0]
+                read_bytes += 1
+            return ret
+        else:
+            string_bytes = bytes(value, encoding) + b'\x00'
+            self.write(addr, string_bytes)
+            return None
 
 
     def add_mapinfo(self, mem_s, mem_e, mem_p, mem_info):
@@ -62,16 +86,8 @@ class QlMemoryManager:
                     pass
             if insert_flag == 0:
                 tmp_map_info.append([mem_s, mem_e, mem_p, mem_info])
-        map_info = []
-        map_info.append(tmp_map_info[0])
 
-        for s, e, p, info in tmp_map_info[1:]:
-            if s == map_info[-1][1] and info == map_info[-1][3] and p == map_info[-1][2]:
-                map_info[-1][1] = e
-            else:
-                map_info.append([s, e, p, info])
-
-        self.map_info = map_info
+        self.map_info = tmp_map_info
 
 
     def del_mapinfo(self, mem_s, mem_e):
@@ -102,9 +118,20 @@ class QlMemoryManager:
 
 
     def show_mapinfo(self):
+        def _perms_mapping(ps):
+            perms_d = {1: "r", 2: "w", 4: "x"}
+            perms_sym = []
+            for idx, val in perms_d.items():
+                if idx & ps != 0:
+                    perms_sym.append(val)
+                else:
+                    perms_sym.append("-")
+            return "".join(perms_sym)
+
         self.ql.nprint("[+] Start      End        Perm.  Path\n")
         for s, e, p, info in self.map_info:
-            self.ql.nprint("[+] %08x - %08x - %s    %s\n" % (s, e, p, info))
+            _p = _perms_mapping(p)
+            self.ql.nprint("[+] %08x - %08x - %s    %s\n" % (s, e, _p, info))
 
 
     def get_lib_base(self, filename):
@@ -284,7 +311,7 @@ class QlMemoryManager:
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
 
 
-    def map(self, addr, size, perms=UC_PROT_ALL, ptr = None):
+    def map(self, addr, size, perms=UC_PROT_ALL, info=None, ptr=None):
         '''
 	    The main function of mem_mmap is to implement memory allocation in unicorn, 
 	    which is slightly similar to the function of syscall_mmap. 
@@ -302,15 +329,16 @@ class QlMemoryManager:
         '''
         if ptr == None:
             if self.is_mapped(addr, size) == False:
-               self.add_mapinfo(addr, addr + size, 'rw-', "[mapped]")
-               self.ql.uc.mem_map(addr, size)
+               self.ql.uc.mem_map(addr, size, perms)
+               self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
             else:
                 raise QlMemoryMappedError("[!] Memory Mapped")    
-            
-            if perms != UC_PROT_ALL:
-                self.protect(addr, size, perms)
         else:
             self.ql.uc.mem_map_ptr(addr, size, perms, ptr)
+
+    def get_mapped(self):
+        for idx, val in enumerate(self.ql.uc.mem_regions()):
+            self.ql.nprint(idx, list(map(hex, val)))
 
 # A Simple Heap Implementation
 class Chunk():
@@ -341,12 +369,10 @@ class QlMemoryHeap:
 
     def mem_alloc(self, size):
         
-        if self.ql.archtype == QL_X86:
+        if self.ql.archbit == 32:
             size = self._align(size, 4)
-        elif self.ql.archtype == QL_X8664:
+        elif self.ql.archbit == 64:
             size = self._align(size, 8)
-        else:
-            raise QlErrorArch("[!] Unknown ql.arch")
 
         # Find the heap chunks that best matches size 
         self.chunks.sort(key=Chunk.compare)
@@ -362,7 +388,7 @@ class QlMemoryHeap:
             # If the heap is not enough
             if self.start_address + self.current_use + real_size > self.end_address:
                 return 0
-            self.ql.mem.map(self.start_address + self.current_alloc, real_size)
+            self.ql.mem.map(self.start_address + self.current_alloc, real_size, info="[heap]")
             chunk = Chunk(self.start_address + self.current_use, size)
             self.current_alloc += real_size
             self.current_use += size
@@ -373,7 +399,7 @@ class QlMemoryHeap:
             self.chunks.append(chunk)
 
         chunk.inuse = True
-        # print("heap.mem_alloc addresss: " + hex(chunk.address))
+        #self.ql.dprint(D_INFO,"heap.mem_alloc addresss: " + hex(chunk.address))
         return chunk.address
 
     def mem_size(self, addr):

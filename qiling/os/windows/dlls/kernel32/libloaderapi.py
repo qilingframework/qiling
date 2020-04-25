@@ -3,38 +3,35 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct
-import time
+import struct, time, os
+
 from qiling.os.windows.const import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-from os.path import *
 
-
-def _GetModuleHandle(self, address, params):
+def _GetModuleHandle(ql, address, params):
     lpModuleName = params["lpModuleName"]
     if lpModuleName == 0:
-        ret = self.ql.loader.PE_IMAGE_BASE
+        ret = ql.loader.PE_IMAGE_BASE
     else:
         lpModuleName = lpModuleName.lower()
         if not is_file_library(lpModuleName):
             lpModuleName += ".dll"
-        if lpModuleName in self.ql.loader.dlls:
-            ret = self.ql.loader.dlls[lpModuleName]
+        if lpModuleName in ql.loader.dlls:
+            ret = ql.loader.dlls[lpModuleName]
         else:
-            self.ql.dprint(D_INFO, "[!] Library %s not imported" % lpModuleName)
+            ql.dprint(D_INFO, "[!] Library %s not imported" % lpModuleName)
             # Let's try to import it if the sample think is default dll and was imported at the start
-
             # Probably we can optimize here since load_dll already do a lot of checks, but not a real problem
-            path = os.path.join(self.ql.rootfs, self.ql.dlls, lpModuleName)
+            path = os.path.join(ql.rootfs, ql.dlls, lpModuleName)
             if is_file_library(lpModuleName) and os.path.exists(path):
-                ret = self.ql.loader.load_dll(lpModuleName.encode())
+                ret = ql.loader.load_dll(lpModuleName.encode())
             else:
-                self.ql.dprint(D_INFO, "[!] Library %s not found" % lpModuleName)
+                ql.dprint(D_INFO, "[!] Library %s not found" % lpModuleName)
                 ret = 0
     return ret
 
@@ -45,8 +42,8 @@ def _GetModuleHandle(self, address, params):
 @winapi(cc=STDCALL, params={
     "lpModuleName": STRING
 })
-def hook_GetModuleHandleA(self, address, params):
-    return _GetModuleHandle(self, address, params)
+def hook_GetModuleHandleA(ql, address, params):
+    return _GetModuleHandle(ql, address, params)
 
 
 # HMODULE GetModuleHandleW(
@@ -55,8 +52,25 @@ def hook_GetModuleHandleA(self, address, params):
 @winapi(cc=STDCALL, params={
     "lpModuleName": WSTRING
 })
-def hook_GetModuleHandleW(self, address, params):
-    return _GetModuleHandle(self, address, params)
+def hook_GetModuleHandleW(ql, address, params):
+    return _GetModuleHandle(ql, address, params)
+
+
+# BOOL GetModuleHandleExW(
+#   DWORD   dwFlags,
+#   LPCWSTR lpModuleName,
+#   HMODULE *phModule
+# );
+@winapi(cc=STDCALL, params={
+    "dwFlags": DWORD,
+    "lpModuleName": WSTRING,
+    "phModule": HANDLE
+})
+def hook_GetModuleHandleExW(ql, address, params):
+    res = _GetModuleHandle(ql, address, params)
+    dst = params["phModule"]
+    ql.mem.write(dst, res.to_bytes(4, byteorder="little"))
+    return 1
 
 
 # DWORD GetModuleFileNameA(
@@ -69,7 +83,7 @@ def hook_GetModuleHandleW(self, address, params):
     "lpFilename": POINTER,
     "nSize": DWORD
 })
-def hook_GetModuleFileNameA(self, address, params):
+def hook_GetModuleFileNameA(ql, address, params):
     ret = 0
     hModule = params["hModule"]
     lpFilename = params["lpFilename"]
@@ -77,17 +91,17 @@ def hook_GetModuleFileNameA(self, address, params):
 
     # GetModuleHandle can return PE_IMAGE_BASE as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and PE_IMAGE_BASE value should do the same operations
-    if hModule == 0 or hModule == self.ql.loader.PE_IMAGE_BASE:
-        filename = self.ql.loader.filepath
+    if hModule == 0 or hModule == ql.loader.PE_IMAGE_BASE:
+        filename = ql.loader.filepath
         filename_len = len(filename)
         if filename_len > nSize - 1:
-            filename = self.ql.loader.filepath[:nSize - 1]
+            filename = ql.loader.filepath[:nSize - 1]
             ret = nSize
         else:
             ret = filename_len
-        self.ql.mem.write(lpFilename, filename + b"\x00")
+        ql.mem.write(lpFilename, filename + b"\x00")
     else:
-        self.ql.dprint(D_INFO, "hModule %x" % hModule)
+        ql.dprint(D_INFO, "hModule %x" % hModule)
         raise QlErrorNotImplemented("[!] API not implemented")
     return ret
 
@@ -102,22 +116,22 @@ def hook_GetModuleFileNameA(self, address, params):
     "lpFilename": POINTER,
     "nSize": DWORD
 })
-def hook_GetModuleFileNameW(self, address, params):
+def hook_GetModuleFileNameW(ql, address, params):
     ret = 0
     hModule = params["hModule"]
     lpFilename = params["lpFilename"]
     nSize = params["nSize"]
     # GetModuleHandle can return PE_IMAGE_BASE as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and PE_IMAGE_BASE value should do the same operations
-    if hModule == 0 or hModule == self.ql.loader.PE_IMAGE_BASE:
-        filename = self.ql.loader.filepath.decode('ascii').encode('utf-16le')
+    if hModule == 0 or hModule == ql.loader.PE_IMAGE_BASE:
+        filename = ql.loader.filepath.decode('ascii').encode('utf-16le')
         filename_len = len(filename)
         if filename_len > nSize - 1:
-            filename = self.ql.loader.filepath[:nSize - 1]
+            filename = ql.loader.filepath[:nSize - 1]
             ret = nSize
         else:
             ret = filename_len
-        self.ql.mem.write(lpFilename, filename + b"\x00")
+        ql.mem.write(lpFilename, filename + b"\x00")
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return ret
@@ -129,19 +143,36 @@ def hook_GetModuleFileNameW(self, address, params):
 # );
 @winapi(cc=STDCALL, params={
     "hModule": POINTER,
-    "lpProcName": STRING
+    "lpProcName": POINTER
 })
-def hook_GetProcAddress(self, address, params):
-    lpProcName = bytes(params["lpProcName"], 'ascii')
-    # Check if dll is loaded
-    try:
-        dll_name = [key for key, value in self.ql.loader.dlls.items() if value == params['hModule']][0]
-    except IndexError as ie:
-        self.ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
+def hook_GetProcAddress(ql, address, params):
+    if params["lpProcName"] > MAXUSHORT:
+        # Look up by name
+        params["lpProcName"] = read_cstring(ql, params["lpProcName"])
+        lpProcName = bytes(params["lpProcName"], "ascii")
+    else:
+        # Look up by ordinal
+        lpProcName = params["lpProcName"]
+    # TODO fix for gandcrab
+    if params["lpProcName"] == "RtlComputeCrc32":
         return 0
 
-    if lpProcName in self.ql.loader.import_address_table[dll_name]:
-        return self.ql.loader.import_address_table[dll_name][lpProcName]
+    # Check if dll is loaded
+    try:
+        dll_name = [key for key, value in ql.loader.dlls.items() if value == params['hModule']][0]
+    except IndexError as ie:
+        ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
+        return 0
+
+    #Handle case where module is self
+    if dll_name == os.path.basename(ql.loader.path):
+        for addr, export in ql.loader.export_symbols.items():
+            if export['name'] == lpProcName:
+                return addr
+    
+
+    if lpProcName in ql.loader.import_address_table[dll_name]:
+        return ql.loader.import_address_table[dll_name][lpProcName]
 
     return 0
 
@@ -152,9 +183,12 @@ def hook_GetProcAddress(self, address, params):
 @winapi(cc=STDCALL, params={
     "lpLibFileName": STRING
 })
-def hook_LoadLibraryA(self, address, params):
+def hook_LoadLibraryA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
-    dll_base = self.ql.loader.load_dll(lpLibFileName.encode())
+    if lpLibFileName == ql.loader.filepath.decode():
+        #Loading self
+        return ql.loader.PE_IMAGE_BASE
+    dll_base = ql.loader.load_dll(lpLibFileName.encode())
     return dll_base
 
 
@@ -168,9 +202,9 @@ def hook_LoadLibraryA(self, address, params):
     "hFile": POINTER,
     "dwFlags": DWORD
 })
-def hook_LoadLibraryExA(self, address, params):
+def hook_LoadLibraryExA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
-    dll_base = self.ql.loader.load_dll(lpLibFileName.encode())
+    dll_base = ql.loader.load_dll(lpLibFileName.encode())
     return dll_base
 
 
@@ -180,9 +214,9 @@ def hook_LoadLibraryExA(self, address, params):
 @winapi(cc=STDCALL, params={
     "lpLibFileName": WSTRING
 })
-def hook_LoadLibraryW(self, address, params):
-    lpLibFileName = bytes(bytes(params["lpLibFileName"], 'ascii').decode('utf-16le'), 'ascii')
-    dll_base = self.ql.loader.load_dll(lpLibFileName)
+def hook_LoadLibraryW(ql, address, params):
+    lpLibFileName = params["lpLibFileName"].encode()
+    dll_base = ql.loader.load_dll(lpLibFileName)
     return dll_base
 
 
@@ -196,9 +230,9 @@ def hook_LoadLibraryW(self, address, params):
     "hFile": POINTER,
     "dwFlags": DWORD
 })
-def hook_LoadLibraryExW(self, address, params):
+def hook_LoadLibraryExW(ql, address, params):
     lpLibFileName = params["lpLibFileName"].encode()
-    dll_base = self.ql.loader.load_dll(lpLibFileName)
+    dll_base = ql.loader.load_dll(lpLibFileName)
     return dll_base
 
 
@@ -210,7 +244,7 @@ def hook_LoadLibraryExW(self, address, params):
     "hModule": POINTER,
     "hResInfo": POINTER
 })
-def hook_SizeofResource(self, address, params):
+def hook_SizeofResource(ql, address, params):
     # Return size of resource
     # TODO set a valid value. More tests have to be made to find it.
     return 0x8
@@ -224,7 +258,7 @@ def hook_SizeofResource(self, address, params):
     "hModule": POINTER,
     "hResInfo": POINTER
 })
-def hook_LoadResource(self, address, params):
+def hook_LoadResource(ql, address, params):
     pointer = params["hResInfo"]
     return pointer
 
@@ -235,6 +269,6 @@ def hook_LoadResource(self, address, params):
 @winapi(cc=STDCALL, params={
     "hResData": POINTER
 })
-def hook_LockResource(self, address, params):
+def hook_LockResource(ql, address, params):
     pointer = params["hResData"]
     return pointer

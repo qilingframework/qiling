@@ -2,50 +2,27 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
-import struct
-import sys
-import os
-import stat
-import string
-import resource
-import socket
-import time
-import io
-import select
-import pathlib
-import logging
-import itertools
 
-# Remove import fcntl due to Windows Limitation
-#import fcntl
-
-from unicorn import *
-from unicorn.arm_const import *
-from unicorn.x86_const import *
-from unicorn.arm64_const import *
-from unicorn.mips_const import *
-
-# impport read_string and other commom utils.
-from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
+from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
-from qiling.utils import *
+from qiling.exception import *
 
 def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     regreturn = 0
-    filename = ql_read_string(ql, filename)
+    filename = ql.mem.string(filename)
     ql.nprint("chmod(%s,%d) = %d" % (filename, mode, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstatat64_flag, *args, **kw):
-    fstatat64_fname = ql_read_string(ql, fstatat64_fname)
+    fstatat64_fname = ql.mem.string(fstatat64_fname)
 
-    real_path = ql_transform_to_real_path(ql, fstatat64_fname)
-    relative_path = ql_transform_to_relative_path(ql, fstatat64_fname)
+    real_path = ql.os.transform_to_real_path(fstatat64_fname)
+    relative_path = ql.os.transform_to_relative_path(fstatat64_fname)
 
     regreturn = -1
     if os.path.exists(real_path) == True:
@@ -94,15 +71,15 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
     else:
         ql.dprint(D_INFO, "[!] Directory Not Found: %s" % relative_path)
 
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
-    if fstat64_fd < 256 and ql.file_des[fstat64_fd] != 0:
+    if fstat64_fd < 256 and ql.os.file_des[fstat64_fd] != 0:
         user_fileno = fstat64_fd
-        fstat64_info = ql.file_des[user_fileno].fstat()
+        fstat64_info = ql.os.file_des[user_fileno].fstat()
 
-        if ql.archtype== QL_ARM64:
+        if ql.archtype== QL_ARCH.ARM64:
             # struct stat is : 80 addr is : 0x4000811bc8
             # buf.st_dev offest 0 8 0
             # buf.st_ino offest 8 8 0
@@ -136,7 +113,7 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack64(0)
             fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
             fstat64_buf += ql.pack64(0)
-        elif ql.archtype == QL_MIPS32:
+        elif ql.archtype == QL_ARCH.MIPS32:
             # struct stat is : a0 addr is : 0x7fffedc0
             # buf.st_dev offest 0 4 2049
             # buf.st_ino offest 10 8 2400362
@@ -200,16 +177,16 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
         ql.dprint(D_INFO, "[+] fstat64 write completed")
     else:
         ql.dprint(D_INFO, "[!] fstat64 read/write fail")
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
 
-    if fstat_fd < 256 and ql.file_des[fstat_fd] != 0:
+    if fstat_fd < 256 and ql.os.file_des[fstat_fd] != 0:
         user_fileno = fstat_fd
-        fstat_info = ql.file_des[user_fileno].fstat()
+        fstat_info = ql.os.file_des[user_fileno].fstat()
 
-        if ql.archtype== QL_MIPS32:
+        if ql.archtype== QL_ARCH.MIPS32:
             # pack fstatinfo
             fstat_buf = ql.pack32(fstat_info.st_dev)
             fstat_buf += ql.pack32(0) * 3
@@ -231,7 +208,7 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
             fstat_buf += ql.pack32(fstat_info.st_blksize)
             fstat_buf += ql.pack32(fstat_info.st_blocks)
             fstat_buf = fstat_buf.ljust(0x90, b'\x00')
-        elif ql.archtype== QL_X8664:
+        elif ql.archtype== QL_ARCH.X8664:
             fstat_buf = ql.pack64(fstat_info.st_dev)
             fstat_buf += ql.pack(fstat_info.st_ino)
             fstat_buf += ql.pack64(fstat_info.st_nlink)
@@ -275,21 +252,21 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
         ql.dprint(D_INFO, "[+] fstat write completed")
     else:
         ql.dprint(D_INFO, "[!] fstat read/write fail")
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 # int stat64(const char *pathname, struct stat64 *buf);
 def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
-    stat64_file = (ql_read_string(ql, stat64_pathname))
+    stat64_file = (ql.mem.string(stat64_pathname))
 
-    real_path = ql_transform_to_real_path(ql, stat64_file)
-    relative_path = ql_transform_to_relative_path(ql, stat64_file)
+    real_path = ql.os.transform_to_real_path(stat64_file)
+    relative_path = ql.os.transform_to_relative_path(stat64_file)
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
         stat64_info = os.stat(real_path)
 
-        if ql.archtype== QL_MIPS32:
+        if ql.archtype== QL_ARCH.MIPS32:
             # packfstatinfo
             # name offset size
             # struct stat is : a0
@@ -348,22 +325,22 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
         ql.dprint(D_INFO, "[+] stat64 write completed")
     else:
         ql.dprint(D_INFO, "[!] stat64 read/write fail")
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 # int stat(const char *path, struct stat *buf);
 def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
-    stat_file = (ql_read_string(ql, stat_path))
+    stat_file = (ql.mem.string(stat_path))
 
-    real_path = ql_transform_to_real_path(ql, stat_file)
-    relative_path = ql_transform_to_relative_path(ql, stat_file)
+    real_path = ql.os.transform_to_real_path(stat_file)
+    relative_path = ql.os.transform_to_relative_path(stat_file)
 
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
         stat_info = os.stat(real_path)
 
-        if ql.archtype== QL_MIPS32:
+        if ql.archtype== QL_ARCH.MIPS32:
             # pack fstatinfo
             stat_buf = ql.pack32(stat_info.st_dev)
             stat_buf += ql.pack32(0) * 3
@@ -409,21 +386,21 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
         ql.dprint(D_INFO, "[+] stat() write completed")
     else:
         ql.dprint(D_INFO, "[!] stat() read/write fail")
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
-    lstat_file = (ql_read_string(ql, lstat_path))
+    lstat_file = (ql.mem.string(lstat_path))
 
-    real_path = ql_transform_to_real_path(ql, lstat_file)
-    relative_path = ql_transform_to_relative_path(ql, lstat_file)
+    real_path = ql.os.transform_to_real_path(lstat_file)
+    relative_path = ql.os.transform_to_relative_path(lstat_file)
 
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
         lstat_info = os.lstat(real_path)
 
-        if ql.archtype== QL_MIPS32:
+        if ql.archtype== QL_ARCH.MIPS32:
             # pack fstatinfo
             lstat_buf = ql.pack32(lstat_info.st_dev)
             lstat_buf += ql.pack32(0) * 3
@@ -469,24 +446,24 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
         ql.dprint(D_INFO, "[+] lstat() write completed")
     else:
         ql.dprint(D_INFO, "[!] lstat() read/write fail")
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 def ql_syscall_mknodat(ql, dirfd, pathname, mode, dev, *args, **kw):
     # fix me. dirfd(relative path) not implement.
-    file_path = ql_read_string(ql, pathname)
-    real_path = ql_transform_to_real_path(ql, file_path)
+    file_path = ql.mem.string(pathname)
+    real_path = ql.os.transform_to_real_path(file_path)
     ql.nprint("mknodat(%d, %s, 0%o, %d)" % (dirfd, real_path, mode, dev))
     try:
         os.mknod(real_path, mode, dev)
         regreturn = 0
     except:
         regreturn = -1
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
-    file_path = ql_read_string(ql, pathname)
-    real_path = ql_transform_to_real_path(ql, file_path)
+    file_path = ql.mem.string(pathname)
+    real_path = ql.os.transform_to_real_path(file_path)
     ql.nprint("mkdir(%s, 0%o)" % (real_path, mode))
     try:
         if not os.path.exists(real_path):
@@ -494,11 +471,11 @@ def ql_syscall_mkdir(ql, pathname, mode, *args, **kw):
         regreturn = 0
     except:
         regreturn = -1
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_umask(ql, mode, *args, **kw):
     oldmask = os.umask(mode)
     ql.nprint("umask(0%o) return oldmask 0%o" % (mode, oldmask))
     regreturn = oldmask
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)

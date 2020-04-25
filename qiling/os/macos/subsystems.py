@@ -9,10 +9,12 @@
 # Now we havent finish the server it self, only return the fixed data
 # TODO: finish the servers
 # find Release source code in https://github.com/doadam/xnu-4570.1.46/master/BUILD/obj/RELEASE_X86_64/osfmk/RELEASE/mach/mach_host_server.c
+
 from struct import pack, unpack
-from qiling.os.macos.mach_port import *
-from qiling.os.macos.const import *
 from qiling.const import *
+
+from .mach_port import *
+from .const import *
 
 class MachHostServer():
 

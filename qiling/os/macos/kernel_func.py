@@ -3,11 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-from qiling.os.macos.const import *
-from qiling.os.macos.mach_port import *
-from qiling.const import *
+
 from struct import *
 import os
+
+from qiling.const import *
+from .const import *
+from .mach_port import *
+
 
 # commpage is a shared mem space which is in a static address
 # start at 0x7FFFFFE00000
@@ -49,19 +52,19 @@ def load_commpage(ql):
 
 
 def vm_shared_region_enter(ql):
-    ql.mem.map(SHARED_REGION_BASE_X86_64, SHARED_REGION_SIZE_X86_64)
+    ql.mem.map(SHARED_REGION_BASE_X86_64, SHARED_REGION_SIZE_X86_64, info="[shared_region]")
     ql.macos_shared_region = True
     ql.macos_shared_region_port = MachPort(9999)        # random port name
 
 
 def map_commpage(ql):
-    if ql.archtype== QL_X8664:
+    if ql.archtype== QL_ARCH.X8664:
         addr_base = COMM_PAGE_START_ADDRESS
         addr_size = 0x100000
-    elif ql.archtype== QL_ARM64:
+    elif ql.archtype== QL_ARCH.ARM64:
         addr_base = 0x0000000FFFFFC000
         addr_size = 0x1000        
-    ql.mem.map(addr_base, addr_size)
+    ql.mem.map(addr_base, addr_size, info="[commpage]")
     time_lock_slide = 0x68
     ql.mem.write(addr_base+time_lock_slide, ql.pack32(0x1))
 
@@ -131,7 +134,7 @@ class FileSystem():
         if cmn_flags & ATTR_CMN_OBJTYPE != 0:
             if os.path.isdir(path):
                 attr += pack("<L", VDIR)
-                self.ql.dprint("ObjType: DIR")
+                self.ql.dprint(D_INFO, "ObjType: DIR")
             elif os.path.islink(path):
                 attr += pack("<L", VLINK)
                 self.ql.dprint(D_INFO, "ObjType: LINK")

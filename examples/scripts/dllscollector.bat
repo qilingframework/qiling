@@ -15,6 +15,7 @@ echo f | xcopy /f /y C:\Users\Default\NTUSER.DAT examples\rootfs\x8664_windows\W
 reg save hklm\system examples\rootfs\x8664_windows\Windows\registry\SYSTEM
 reg save hklm\security examples\rootfs\x8664_windows\Windows\registry\SECURITY
 reg save hklm\software examples\rootfs\x8664_windows\Windows\registry\SOFTWARE
+reg save hklm\hardware examples\rootfs\x8664_windows\Windows\registry\HARDWARE
 reg save hklm\SAM examples\rootfs\x8664_windows\Windows\registry\SAM
 xcopy /d /y examples\rootfs\x8664_windows\Windows\registry\* examples\rootfs\x86_windows\Windows\registry\
 
@@ -57,6 +58,11 @@ if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-crt-runtime-l1-1-0.dll xcopy /f 
 if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-crt-math-l1-1-0.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-crt-math-l1-1-0.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-crt-locale-l1-1-0.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-crt-locale-l1-1-0.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-crt-heap-l1-1-0.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-crt-heap-l1-1-0.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
+if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-core-synch-l1-2-0.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-core-synch-l1-2-0.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
+if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-core-fibers-l1-1-1.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-core-fibers-l1-1-1.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
+if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-core-localization-l1-2-1.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-core-localization-l1-2-1.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
+if exist %WINDIR%\SysWOW64\shlwapi.dll xcopy /f /y %WINDIR%\SysWOW64\shlwapi.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
+if exist %WINDIR%\SysWOW64\setupapi.dll xcopy /f /y %WINDIR%\SysWOW64\setupapi.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\System32\advapi32.dll xcopy /f /y %WINDIR%\System32\advapi32.dll "examples\rootfs\x8664_windows\Windows\System32\"
 if exist %WINDIR%\System32\kernel32.dll xcopy /f /y %WINDIR%\System32\kernel32.dll "examples\rootfs\x8664_windows\Windows\System32\"
 if exist %WINDIR%\System32\KernelBase.dll xcopy /f /y %WINDIR%\System32\KernelBase.dll "examples\rootfs\x8664_windows\Windows\System32\"

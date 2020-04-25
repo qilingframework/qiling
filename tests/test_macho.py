@@ -11,7 +11,7 @@ from qiling.exception import *
 
 class MACHOTest(unittest.TestCase):
     def test_macho_macos_x8664(self):
-        ql = Qiling(["../examples/rootfs/x8664_macos/bin/x8664_hello_usercorn"], "../examples/rootfs/x8664_macos", output = "debug")
+        ql = Qiling(["../examples/rootfs/x8664_macos/bin/x8664_hello_usercorn"], "../examples/rootfs/x8664_macos", log_console= False, output = "disasm")
         ql.run()
 
 if __name__ == "__main__":

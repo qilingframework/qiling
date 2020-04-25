@@ -2,47 +2,22 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
-import struct
-import sys
-import os
-import stat
-import string
-import resource
-import socket
-import time
-import io
-import select
-import pathlib
-import logging
-import itertools
 
-# Remove import fcntl due to Windows Limitation
-#import fcntl
-
-from unicorn import *
-from unicorn.arm_const import *
-from unicorn.x86_const import *
-from unicorn.arm64_const import *
-from unicorn.mips_const import *
-
-# impport read_string and other commom utils.
-from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.linux.thread import *
 from qiling.const import *
 from qiling.os.posix.filestruct import *
+from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
-from qiling.utils import *
+from qiling.exception import *
 
 def ql_syscall_set_robust_list(ql, set_robust_list_head_ptr, set_robust_list_head_len, *args, **kw):
-    if ql.thread_management == None:
-        regreturn = 0
-    else:
-        ql.thread_management.cur_thread.robust_list_head_ptr = set_robust_list_head_ptr
-        ql.thread_management.cur_thread.robust_list_head_len = set_robust_list_head_len
+    if ql.multithread == True:
+        ql.os.thread_management.cur_thread.robust_list_head_ptr = set_robust_list_head_ptr
+        ql.os.thread_management.cur_thread.robust_list_head_len = set_robust_list_head_len
     regreturn = 0
     ql.nprint("set_robust_list(%x, %x) = %d"%(set_robust_list_head_ptr, set_robust_list_head_len, regreturn))
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_uaddr2, futex_val3):
@@ -69,9 +44,9 @@ def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_
         #     else:
         #         return True
         if ql.unpack32(ql.mem.read(futex_uaddr, 4)) == futex_val:
-            ql.uc.emu_stop()
+            ql.emu_stop()
             regreturn = 0
-            ql.os.futexm.futex_wait(futex_uaddr, ql.thread_management.cur_thread)
+            ql.os.futexm.futex_wait(futex_uaddr, ql.os.thread_management.cur_thread)
         else:
             regreturn = -1
         ql.nprint("futex(%x, %d, %d, %x) = %d" % (futex_uaddr, futex_op, futex_val, futex_timeout, regreturn))
@@ -81,9 +56,9 @@ def ql_syscall_futex(ql, futex_uaddr, futex_op, futex_val, futex_timeout, futex_
         ql.nprint("futex(%x, %d, %d) = %d" % (futex_uaddr, futex_op, futex_val, regreturn))
     else:
         ql.nprint("futex(%x, %d, %d) = ?" % (futex_uaddr, futex_op, futex_val))
-        ql.uc.emu_stop()
-        ql.thread_management.cur_thread.stop()
-        ql.thread_management.cur_thread.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
+        ql.emu_stop()
+        ql.os.thread_management.cur_thread.stop()
+        ql.os.thread_management.cur_thread.stop_event = THREAD_EVENT_EXIT_GROUP_EVENT
         regreturn = 0
 
-    ql_definesyscall_return(ql, regreturn)
+    ql.os.definesyscall_return(regreturn)

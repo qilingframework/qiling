@@ -6,11 +6,11 @@
 from unicorn.x86_const import *
 from qiling.exception import *
 from qiling.os.thread import *
-from qiling.os.windows.utils import *
+from .utils import *
 
 
 def thread_scheduler(ql, address, size):
-    if ql.pc == ql.os.thread_manager.THREAD_RET_ADDR:
+    if ql.reg.pc == ql.os.thread_manager.THREAD_RET_ADDR:
         ql.os.thread_manager.cur_thread.stop()
         ql.os.thread_manager.do_schedule()
     else:
@@ -18,80 +18,7 @@ def thread_scheduler(ql, address, size):
         ql.os.thread_manager.do_schedule()
 
 
-class Context():
-    def __init__(self, ql):
-        self.ql = ql
-
-    def save(self):
-        if self.ql.archtype == QL_X86:
-            self.edi = self.ql.register(UC_X86_REG_EDI)
-            self.esi = self.ql.register(UC_X86_REG_ESI)
-            self.ebx = self.ql.register(UC_X86_REG_EBX)
-            self.edx = self.ql.register(UC_X86_REG_EDX)
-            self.ecx = self.ql.register(UC_X86_REG_ECX)
-            self.eax = self.ql.register(UC_X86_REG_EAX)
-            self.ebp = self.ql.register(UC_X86_REG_EBP)
-            self.eip = self.ql.register(UC_X86_REG_EIP)
-            self.esp = self.ql.register(UC_X86_REG_ESP)
-            self.eflags = self.ql.register(UC_X86_REG_EFLAGS)
-        elif self.ql.archtype == QL_X8664:
-            self.rdi = self.ql.register(UC_X86_REG_RDI)
-            self.rsi = self.ql.register(UC_X86_REG_RSI)
-            self.rbx = self.ql.register(UC_X86_REG_RBX)
-            self.rdx = self.ql.register(UC_X86_REG_RDX)
-            self.rcx = self.ql.register(UC_X86_REG_RCX)
-            self.rax = self.ql.register(UC_X86_REG_RAX)
-            self.rbp = self.ql.register(UC_X86_REG_RBP)
-            self.rip = self.ql.register(UC_X86_REG_RIP)
-            self.rsp = self.ql.register(UC_X86_REG_RSP)
-            self.r8 = self.ql.register(UC_X86_REG_R8)
-            self.r9 = self.ql.register(UC_X86_REG_R9)
-            self.r10 = self.ql.register(UC_X86_REG_R10)
-            self.r11 = self.ql.register(UC_X86_REG_R11)
-            self.r12 = self.ql.register(UC_X86_REG_R12)
-            self.r13 = self.ql.register(UC_X86_REG_R13)
-            self.r14 = self.ql.register(UC_X86_REG_R14)
-            self.r15 = self.ql.register(UC_X86_REG_R15)
-            self.eflags = self.ql.register(UC_X86_REG_EFLAGS)
-        else:
-            raise QlErrorArch("[!] unknown ql.arch")
-
-    def restore(self):
-        if self.ql.archtype == QL_X86:
-            self.ql.register(UC_X86_REG_EDI, self.edi)
-            self.ql.register(UC_X86_REG_ESI, self.esi)
-            self.ql.register(UC_X86_REG_EBX, self.ebx)
-            self.ql.register(UC_X86_REG_EDX, self.edx)
-            self.ql.register(UC_X86_REG_ECX, self.ecx)
-            self.ql.register(UC_X86_REG_EAX, self.eax)
-            self.ql.register(UC_X86_REG_EBP, self.ebp)
-            self.ql.register(UC_X86_REG_EIP, self.eip)
-            self.ql.register(UC_X86_REG_ESP, self.esp)
-            self.ql.register(UC_X86_REG_EFLAGS, self.eflags)
-        elif self.ql.archtype == QL_X8664:
-            self.ql.register(UC_X86_REG_RDI, self.rdi)
-            self.ql.register(UC_X86_REG_RSI, self.rsi)
-            self.ql.register(UC_X86_REG_RBX, self.rbx)
-            self.ql.register(UC_X86_REG_RDX, self.rdx)
-            self.ql.register(UC_X86_REG_RCX, self.rcx)
-            self.ql.register(UC_X86_REG_RAX, self.rax)
-            self.ql.register(UC_X86_REG_RBP, self.rbp)
-            self.ql.register(UC_X86_REG_RIP, self.rip)
-            self.ql.register(UC_X86_REG_RSP, self.rsp)
-            self.ql.register(UC_X86_REG_R8, self.r8)
-            self.ql.register(UC_X86_REG_R9, self.r9)
-            self.ql.register(UC_X86_REG_R10, self.r10)
-            self.ql.register(UC_X86_REG_R11, self.r11)
-            self.ql.register(UC_X86_REG_R12, self.r12)
-            self.ql.register(UC_X86_REG_R13, self.r13)
-            self.ql.register(UC_X86_REG_R14, self.r14)
-            self.ql.register(UC_X86_REG_R15, self.r15)
-            self.ql.register(UC_X86_REG_EFLAGS, self.eflags)
-        else:
-            raise QlErrorArch("[!] unknown ql.arch")
-
-
-# A Simple Thread Manager
+# Simple Thread Manager
 class QlWindowsThreadManagement(QlThread):
     TIME_SLICE = 10
 
@@ -111,10 +38,10 @@ class QlWindowsThreadManagement(QlThread):
         self.threads.append(thread)
 
     def need_schedule(self):
-        return self.cur_thread.is_stop() or self.ins_count % QlWindowsThreadManagement.TIME_SLICE == 0
+        return self.cur_thread.is_stop() or self.ins_count %  QlWindowsThreadManagement.TIME_SLICE == 0
 
     def do_schedule(self):
-        if self.cur_thread.is_stop() or self.ins_count % QlWindowsThreadManagement.TIME_SLICE == 0:
+        if self.cur_thread.is_stop() or self.ins_count %  QlWindowsThreadManagement.TIME_SLICE == 0:
             if len(self.threads) <= 1:
                 return
             else:
@@ -142,9 +69,8 @@ class QlWindowsThread(QlThread):
     def __init__(self, ql, status=1, isFake=False):
         super(QlWindowsThread, self).__init__(ql)
         self.ql = ql
-        self.id = QlWindowsThread.ID
+        self.id =  QlWindowsThread.ID
         QlWindowsThread.ID += 1
-        self.context = Context(ql)
         self.status = status
         self.waitforthreads = []
         self.tls = {}
@@ -158,34 +84,33 @@ class QlWindowsThread(QlThread):
         new_stack = self.ql.os.heap.mem_alloc(stack_size) + stack_size
         
         # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
-        if self.ql.archtype == QL_X86:
+        if self.ql.archtype == QL_ARCH.X86:
             self.ql.mem.write(new_stack - 4, self.ql.pack32(self.ql.os.thread_manager.THREAD_RET_ADDR))
             self.ql.mem.write(new_stack, self.ql.pack32(func_params))
-        elif self.ql.archtype == QL_X8664:
+        elif self.ql.archtype == QL_ARCH.X8664:
             self.ql.mem.write(new_stack - 8, self.ql.pack64(self.ql.os.thread_manager.THREAD_RET_ADDR))
             self.ql.mem.write(new_stack, self.ql.pack64(func_params))
 
         # set eip, ebp, esp
-        self.context.save()
-        if self.ql.archtype == QL_X86:
-            self.context.eip = func_addr
-            self.context.ebp = new_stack - 4
-            self.context.esp = new_stack - 4
-        elif self.ql.archtype == QL_X8664:
-            self.context.rip = func_addr
-            self.context.rbp = new_stack - 8
-            self.context.rsp = new_stack - 8
+        self.saved_context = self.ql.reg.store()
+
+        if self.ql.archtype == QL_ARCH.X86:
+            self.saved_context["EIP"] = func_addr
+            self.saved_context["EBP"] = new_stack - 4
+            self.saved_context["ESP"] = new_stack - 4
+        elif self.ql.archtype == QL_ARCH.X8664:
+            self.saved_context["RIP"] = func_addr
+            self.saved_context["RBP"] = new_stack - 8
+            self.saved_context["RSP"] = new_stack - 8
 
         self.status = status
         return self.id
 
     def suspend(self):
-        self.context.save()
-        # self.context.print("save")
+        self.saved_context = self.ql.reg.store()
 
     def resume(self):
-        self.context.restore()
-        # self.context.print("restore")
+        self.ql.reg.restore(self.saved_context)
         self.status = QlWindowsThread.RUNNING
 
     def stop(self):

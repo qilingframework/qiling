@@ -7,6 +7,7 @@ matrix:
       dist: bionic
       language: python
       python: "3.6"
+      cache: pip
       install:
         - pip3 install -r requirements.txt
         - python3 setup.py install
@@ -14,92 +15,135 @@ matrix:
         - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
         - cd tests
       script:
-        - ./test_nix.sh
+        - ./test_elf.sh
 
     - name: "Python 3.7 on Linux"
       os: linux
       dist: bionic
       language: python
       python: "3.7"
+      cache: pip
       install:
-        - pip3 install -r requirements.txt
+        - pip3 install flake8 -r requirements.txt
+        - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         - python3 setup.py install
       before_script:
         - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
         - cd tests
       script:
-        - ./test_nix.sh
+        - ./test_elf.sh
 
     - name: "Python 3.7 on OSX"
       os: osx
       osx_image: xcode10.1
       language: shell
+      cache:
+        directories:
+          - $HOME/Library/Caches/pip
+          - $HOME/dist/
       before_install:
         - pip3 install --upgrade pip
       install:
-        #- travis_wait pip3 install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn==1.0.2rc1'
-        - travis_wait pip3 install -r requirements.txt
-        - git clone https://github.com/keystone-engine/keystone
-        - cd keystone
-        - mkdir build
-        - cd build
-        - ../make-share.sh
-        - make -j8
-        - sudo make install
-        - cd ../bindings/python
-        - sudo make install
-        - python3 setup.py install
-        - cd $TRAVIS_BUILD_DIR
-        - python3 setup.py install
+        - pip3 install wheel 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn==1.0.2rc3'
+#        - pip3 install -r requirements.txt
+        - |
+          if [ ! -f $HOME/dist/keystone*.zip ]; then
+               git clone https://github.com/keystone-engine/keystone && \
+               cd keystone && \
+               mkdir build && \
+               cd build && \
+               ../make-share.sh && \
+               make -j8 && \
+               sudo make install && \
+               cd ../bindings/python && \
+               sudo make install && \
+               python3 setup.py install && \
+               sudo python3 setup.py bdist --formats=zip && \
+               cp dist/*.zip $HOME/dist/ && \
+               cp /usr/local/lib/libkeystone.0.dylib $HOME/dist/ && \
+               cp /usr/local/lib/libkeystone.dylib $HOME/dist/;
+          else
+              unzip $HOME/dist/*.zip -d / && \
+              cp $HOME/dist/*.dylib /usr/local/lib/;
+          fi
+        - cd $TRAVIS_BUILD_DIR 
+        - python3 setup.py install 
       before_script:
         - ./examples/scripts/collectdylib.sh
         - cd tests
       script:
-        - python3 test_macho_macos.py
-        - python3 test_macho.py
-        #- ./test_nix.sh
+        - ./test_macho.sh
         
     - name: "Python 3.6.8 on Windows"
       os: windows
       language: shell
       env:
         - PATH="/c/Python36:/c/Python36/Scripts:$PATH"
+      cache:
+        directories:
+#          - $HOME/AppData/Local/Temp/chocolatey
+          - $HOME/AppData/Local/pip/Cache
+          - $HOME/dist
+#          - $HOME/AppData/Local/NuGet/Cache
       before_install:
         - choco install python --version=3.6.8
         #- choco install python
         #- choco install kb2999226
         #- python -m pip install --upgrade pip
       install:
-        - pip install 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc1'
-        - git clone https://github.com/keystone-engine/keystone
-        - cd keystone
-        - mkdir build
-        - cd build
-        - cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64 '&' cmd.exe //C '..\nmake-dll.bat' '&&' nmake install
-        - cd ../bindings/python
-        - python setup.py install
+        - pip3 install wheel 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc3'
+#`        - pip3 install -r requirements.txt
+        - |
+          if [ ! -f $HOME/dist/keystone*.zip ]; then
+               git clone https://github.com/keystone-engine/keystone && \
+               cd keystone && \
+               mkdir build && \
+               cd build && \
+               cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64 '&' cmd.exe //C '..\nmake-dll.bat' '&&' nmake instalL && \
+               cd ../bindings/python && \
+               python setup.py install && \
+               python setup.py bdist --formats=zip && \
+               cp dist/*.zip $HOME/dist/ && \
+               cp /c/Program\ Files\ \(x86\)/keystone/lib/keystone.dll /c/Python36/Lib/site-packages/keystone/ && \
+               cp /c/Program\ Files\ \(x86\)/keystone/lib/keystone.dll $HOME/dist/;
+          else
+              unzip $HOME/dist/*.zip -d /c && \
+              cp $HOME/dist/keystone.dll /c/Python36/Lib/site-packages/keystone/;
+          fi
         - cd $TRAVIS_BUILD_DIR
         - python setup.py install
-        - cp /c/Program\ Files\ \(x86\)/keystone/lib/keystone.dll /c/Python36/Lib/site-packages/keystone/
+#        - cp /c/Program\ Files\ \(x86\)/keystone/lib/keystone.dll /c/Python36/Lib/site-packages/keystone/
       before_script:
         - cmd.exe //C 'examples\scripts\dllscollector.bat'
         - cd $TRAVIS_BUILD_DIR/examples/rootfs/x86_windows/bin
         - unzip -Pinfected wannacry.bin.zip
         - unzip -Pinfected UselessDisk.bin.zip
-        #- unzip -Pinfected GandCrab.bin.zip
         - unzip -Pinfected GandCrab502.bin.zip
+        - unzip -Pinfected al-khaser.bin.zip
         - cd $TRAVIS_BUILD_DIR/tests
       script:
-        - python test_pe_nu.py
-        - python test_peshellcode_nu.py
+        - cmd.exe //C '.\test_pe.bat' 
 
     - name: "Python 3.6 on Docker"
       services:
         - docker
-      before_install:
-        - docker build -t qiling:1.0 .
+      cache:
+        bundler: true
+        directories:
+          - $HOME/docker
+#      before_cache:
+#          - docker save -o $HOME/docker/images.tar qiling:1.0
+      before_script:
+        - docker load -i $HOME/docker/images.tar || true
+        - |
+          if [[ ! $(docker images -q qiling:1.0) ]]; then
+              docker build -t qiling:1.0 . && docker save -o $HOME/docker/images.tar qiling:1.0;
+          fi
+        - docker run -dt --name qiling -v ${TRAVIS_BUILD_DIR}:/qiling qiling:1.0
+        - docker exec qiling pip3 install -r requirements.txt
+        - docker exec qiling python3 setup.py install
       script:
-        - docker run qiling:1.0 /bin/bash -c "cd tests && ./test_nix.sh"
+        - docker exec qiling bash -c "cd tests && ./test_elf.sh"
 
 #    - name: "Python 3.6 on WSL1 Ubuntu"
 #      os: windows

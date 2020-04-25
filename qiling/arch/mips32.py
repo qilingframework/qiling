@@ -2,14 +2,13 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 from unicorn import *
 from unicorn.mips_const import *
-from struct import pack
-from .arch import QlArch
 
 from qiling.const import *
-from unicorn import *
-from unicorn.arm_const import *
+from .arch import QlArch
+
 
 class QlArchMIPS32(QlArch):
     def __init__(self, ql):
@@ -42,8 +41,8 @@ class QlArchMIPS32(QlArch):
 
     # get initialized unicorn engine
     def get_init_uc(self):
-        if self.ql.archtype== QL_MIPS32:
-            if self.ql.archendian == QL_ENDIAN_EB:
+        if self.ql.archtype== QL_ARCH.MIPS32:
+            if self.ql.archendian == QL_ENDIAN.EB:
                 uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_BIG_ENDIAN)
             else:
                 uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_LITTLE_ENDIAN)
@@ -70,12 +69,12 @@ class QlArchMIPS32(QlArch):
 
 
     # get stack pointer register
-    def get_reg_sp(self):
+    def get_name_sp(self):
         return UC_MIPS_REG_SP
 
 
     # get pc register pointer
-    def get_reg_pc(self):
+    def get_name_pc(self):
         return UC_MIPS_REG_PC
 
 

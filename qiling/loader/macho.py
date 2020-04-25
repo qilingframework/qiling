@@ -3,29 +3,29 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import os
+import os, struct
 
-from struct import pack
-from qiling.loader.macho_parser.parser import *
-from qiling.loader.macho_parser.const import *
 from qiling.exception import *
 from qiling.const import *
-from qiling.loader.loader import *
 from qiling.os.macos.const import *
+from .loader import *
+from .macho_parser.parser import *
+from .macho_parser.const import *
 
 class QlLoaderMACHO(QlLoader):
     # macho x8664 loader 
     def __init__(self, ql, dyld_path=None):
         super()
-        self.macho_file     = MachoParser(ql, ql.path)
+        self.dyld_path      = dyld_path
+        self.ql             = ql
+    
+    def run(self):        
+        self.macho_file     = MachoParser(self.ql, self.ql.path)
         self.loading_file   = self.macho_file
         self.slide          = 0x0000000000000000
         self.dyld_slide     = 0x0000000500000000
-        # self.dyld_slide     = 0x0000000100020000
         self.string_align   = 8
         self.ptr_align      = 8
-        self.ql             = ql
-        self.uc             = ql.uc
         self.binary_entry   = 0x0
         self.proc_entry     = 0x0
         self.stack_sp       = self.ql.os.stack_sp
@@ -33,12 +33,11 @@ class QlLoaderMACHO(QlLoader):
         self.envs           = self.ql.os.envs
         self.apples         = self.ql.os.apples
         self.argc           = 1
-        self.dyld_path      = dyld_path
         self.using_dyld     = False
         self.vm_end_addr    = 0x0
         self.loadMacho()
-        self.ql.os.macho_task.min_offset = page_align_end(self.vm_end_addr, PAGE_SIZE)
-        self.ql.stack_address = (int(self.ql.stack_sp))
+        self.stack_address = (int(self.stack_sp))
+
 
     def loadMacho(self, depth=0, isdyld=False):
         # MAX load depth 
@@ -97,13 +96,13 @@ class QlLoaderMACHO(QlLoader):
             else:
                 self.mmap_start = self.ql.mmap_start
 
-            self.ql.stack_sp = self.loadStack()
+            self.stack_sp = self.loadStack()
             if self.using_dyld:
                 self.ql.nprint("[+] ProcEntry: {}".format(hex(self.proc_entry)))
-                self.ql.entry_point = self.proc_entry + self.dyld_slide
-                self.ql.nprint("[+] Dyld entry point: {}".format(hex(self.ql.entry_point)))
+                self.entry_point = self.proc_entry + self.dyld_slide
+                self.ql.nprint("[+] Dyld entry point: {}".format(hex(self.entry_point)))
             else:
-                self.ql.entry_point = self.proc_entry + self.slide
+                self.entry_point = self.proc_entry + self.slide
             self.ql.nprint("[+] Binary Entry Point: 0x{:X}".format(self.binary_entry))
             self.macho_entry = self.binary_entry + self.slide
             self.loadbase = self.macho_entry
@@ -124,13 +123,13 @@ class QlLoaderMACHO(QlLoader):
 
         if seg_name[:10] == "__PAGEZERO":
             self.ql.dprint(D_INFO, "[+] Now loading {}, VM[{}:{}] for pagezero actually it only got a page size".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
-            self.ql.mem.map(vaddr_start, PAGE_SIZE)
+            self.ql.mem.map(vaddr_start, PAGE_SIZE, info="[__PAGEZERO]")
             self.ql.mem.write(vaddr_start, b'\x00' * PAGE_SIZE)
             if self.vm_end_addr < vaddr_end:
                 self.vm_end_addr = vaddr_end
         else:
             self.ql.dprint(D_INFO, "[+] Now loading {}, VM[{}:{}]".format(seg_name, hex(vaddr_start), hex(vaddr_end)))
-            self.ql.mem.map(vaddr_start, seg_size)
+            self.ql.mem.map(vaddr_start, seg_size,  info="[loadSegment64]")
             self.ql.mem.write(vaddr_start, seg_data)
             if self.vm_end_addr < vaddr_end:
                 self.vm_end_addr = vaddr_end
@@ -256,7 +255,7 @@ class QlLoaderMACHO(QlLoader):
         if data == 0:
             content = b'\x00\x00\x00\x00\x00\x00\x00\x00'
         else:
-            content = pack('<Q', data)
+            content = struct.pack('<Q', data)
 
         if len(content) != align:
             self.ql.nprint('[!] stack align error')

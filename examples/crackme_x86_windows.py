@@ -50,7 +50,7 @@ def get_count(flag):
 
 def solve():
     # BJWXB_CTF{C5307D46-E70E-4038-B6F9-8C3F698B7C53}
-    prefix = list("BJWXB_CTF{")
+    prefix = list("BJWXB_CTF{C5307D46-E70E-4038-B6F9-8C3F698B7C")
     flag = list("\x00" * 100)
     base = get_count(prefix + flag)
     i = 0

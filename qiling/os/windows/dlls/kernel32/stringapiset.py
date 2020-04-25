@@ -6,7 +6,7 @@
 import struct
 import time
 from qiling.os.windows.const import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
@@ -26,7 +26,7 @@ from qiling.exception import *
     "cchSrc": INT,
     "lpCharType": POINTER
 })
-def hook_GetStringTypeW(self, address, params):
+def hook_GetStringTypeW(ql, address, params):
     # TODO implement
     ret = 1
     return ret
@@ -47,7 +47,7 @@ def hook_GetStringTypeW(self, address, params):
     "count": INT,
     "chartype": POINTER
 })
-def hook_GetStringTypeExA(self, address, params):
+def hook_GetStringTypeExA(ql, address, params):
     # TODO implement
     ret = 1
     return ret
@@ -73,7 +73,7 @@ def hook_GetStringTypeExA(self, address, params):
     "lpDefaultChar": POINTER,
     "lpUsedDefaultChar": POINTER
 })
-def hook_WideCharToMultiByte(self, address, params):
+def hook_WideCharToMultiByte(ql, address, params):
     ret = 0
 
     cbMultiByte = params["cbMultiByte"]
@@ -81,7 +81,7 @@ def hook_WideCharToMultiByte(self, address, params):
     lpMultiByteStr = params["lpMultiByteStr"]
     s = (s_lpWideCharStr + "\x00").encode("utf-16le")
     if cbMultiByte != 0:
-        self.ql.mem.write(lpMultiByteStr, s)
+        ql.mem.write(lpMultiByteStr, s)
     ret = len(s)
 
     return ret
@@ -103,8 +103,8 @@ def hook_WideCharToMultiByte(self, address, params):
     "lpWideCharStr": POINTER,
     "cchWideChar": INT
 })
-def hook_MultiByteToWideChar(self, address, params):
+def hook_MultiByteToWideChar(ql, address, params):
     wide_str = (params['lpMultiByteStr']+"\x00").encode('utf-16le')
     if params['cchWideChar'] != 0:
-        self.ql.mem.write(params['lpWideCharStr'], wide_str)
+        ql.mem.write(params['lpWideCharStr'], wide_str)
     return len(wide_str)

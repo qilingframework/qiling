@@ -7,6 +7,11 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
+import struct, os, configparser
+
+from binascii import unhexlify
+from keystone import *
+
 from unicorn import *
 from unicorn.arm_const import *
 from unicorn.x86_const import *
@@ -19,499 +24,297 @@ from capstone.x86_const import *
 from capstone.arm64_const import *
 from capstone.mips_const import *
 
-from keystone import *
-
 from qiling.const import *
 from qiling.exception import *
-from qiling.utils import *
-from qiling.const import *
-
-from binascii import unhexlify
-import ipaddress, struct, os, ctypes
-import configparser
-
-def ql_os_setup(ql, function_name = None):
-    if not ql_is_valid_ostype(ql.ostype):
-        raise QlErrorOsType("[!] Invalid OSType")
-
-    if not ql_is_valid_arch(ql.archtype):
-        raise QlErrorArch("[!] Invalid Arch %s" % ql.archtype)
-
-    if function_name == None:
-        ostype_str = ql_ostype_convert_str(ql.ostype)
-        ostype_str = ostype_str.capitalize()
-        function_name = "QlOs" + ostype_str
-        module_name = ql_build_module_import_name("os", ql.ostype)
-        return ql_get_module_function(module_name, function_name)(ql)
-    
-    elif function_name == "map_syscall":
-        ostype_str = ql_ostype_convert_str(ql.ostype)
-        arch_str = ql_arch_convert_str(ql.archtype)
-        arch_str = arch_str + "_syscall"
-        module_name = ql_build_module_import_name("os", ostype_str, arch_str)
-        return ql_get_module_function(module_name, function_name)
-    
-    else:
-        module_name = ql_build_module_import_name("os", ql.ostype, ql.archtype)
-        return ql_get_module_function(module_name, function_name)
-
-
-def ql_lsbmsb_convert(ql, sc, size=4):
-    split_bytes = []
-    n = size
-    for index in range(0, len(sc), n):
-        split_bytes.append((sc[index: index + n])[::-1])
-
-    ebsc = b""
-    for i in split_bytes:
-        ebsc += i
-
-    return ebsc    
-
-def ql_definesyscall_return(ql, regreturn):
-    if (ql.archtype== QL_ARM):  # QL_ARM
-        ql.register(UC_ARM_REG_R0, regreturn)
-        # ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
-
-    elif (ql.archtype== QL_ARM64):  # QL_ARM64
-        ql.register(UC_ARM64_REG_X0, regreturn)
-
-    elif (ql.archtype== QL_X86):  # QL_X86
-        ql.register(UC_X86_REG_EAX, regreturn)
-
-    elif (ql.archtype== QL_X8664):  # QL_X86_64
-        ql.register(UC_X86_REG_RAX, regreturn)
-
-    elif (ql.archtype== QL_MIPS32):  # QL_MIPSE32EL
-        if regreturn == -1:
-            a3return = 1
-        elif regreturn == 2:
-            regreturn = 2
-            a3return = 1
-        else:
-            a3return = 0
-        # if ql.output == QL_OUT_DEBUG:
-        #    print("[+] A3 is %d" % a3return)
-        ql.register(UC_MIPS_REG_V0, regreturn)
-        ql.register(UC_MIPS_REG_A3, a3return)
-
-
-def ql_bin_to_ipv4(ip):
-    return "%d.%d.%d.%d" % (
-        (ip & 0xff000000) >> 24,
-        (ip & 0xff0000) >> 16,
-        (ip & 0xff00) >> 8,
-        (ip & 0xff))
-
-
-def ql_init_configuration(self):
-    config = configparser.ConfigParser()
-    config.read(self.profile)
-    self.ql.dprint(D_RPRT, "[+] Added configuration file")
-    for section in config.sections():
-        self.ql.dprint(D_RPRT, "[+] Section: %s" % section)
-        for key in config[section]:
-            self.ql.dprint(D_RPRT, "[-] %s %s" % (key, config[section][key]) )
-    return config
-
-def ql_bin_to_ip(ip):
-    return ipaddress.ip_address(ip).compressed
-
-
-def ql_read_string(ql, address):
-    ret = ""
-    c = ql.mem.read(address, 1)[0]
-    read_bytes = 1
-
-    while c != 0x0:
-        ret += chr(c)
-        c = ql.mem.read(address + read_bytes, 1)[0]
-        read_bytes += 1
-    return ret
-
-
-def ql_parse_sock_address(sock_addr):
-    sin_family, = struct.unpack("<h", sock_addr[:2])
-
-    if sin_family == 2:  # AF_INET
-        port, host = struct.unpack(">HI", sock_addr[2:8])
-        return "%s:%d" % (ql_bin_to_ip(host), port)
-    elif sin_family == 6:  # AF_INET6
-        return ""
-
-
-def ql_hook_block_disasm(ql, address, size):
-    ql.nprint("\n[+] Tracing basic block at 0x%x" % (address))
-
-
-def ql_hook_code_disasm(ql, address, size):
-    tmp = ql.mem.read(address, size)
-
-    if (ql.archtype== QL_ARM):  # QL_ARM
-        reg_cpsr = ql.register(UC_ARM_REG_CPSR)
-        mode = CS_MODE_ARM
-        if ql.archendian == QL_ENDIAN_EB:
-            reg_cpsr_v = 0b100000
-            # reg_cpsr_v = 0b000000
-        else:
-            reg_cpsr_v = 0b100000
-
-        if reg_cpsr & reg_cpsr_v != 0:
-            mode = CS_MODE_THUMB
-
-        if ql.archendian == QL_ENDIAN_EB:
-            md = Cs(CS_ARCH_ARM, mode)
-            # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
-        else:
-            md = Cs(CS_ARCH_ARM, mode)
-
-    elif (ql.archtype== QL_X86):  # QL_X86
-        md = Cs(CS_ARCH_X86, CS_MODE_32)
-
-    elif (ql.archtype== QL_X8664):  # QL_X86_64
-        md = Cs(CS_ARCH_X86, CS_MODE_64)
-
-    elif (ql.archtype== QL_ARM64):  # QL_ARM64
-        md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
-
-    elif (ql.archtype== QL_MIPS32):  # QL_MIPS32
-        if ql.archendian == QL_ENDIAN_EB:
-            md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
-        else:
-            md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)
-
-    else:
-        raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
-
-    insn = md.disasm(tmp, address)
-    opsize = int(size)
-
-    ql.nprint("[+] 0x%x\t" % (address), end="")
-
-    for i in tmp:
-        ql.nprint (" %02x " % i, end="")
-
-    if opsize <= 6:
-        ql.nprint ("\t", end="")
-    
-    for i in insn:
-        ql.nprint ("%s %s" % (i.mnemonic, i.op_str))
-    
-    if ql.output == QL_OUT_DUMP:
-        for reg in ql.reg_table:
-            ql.reg_name = reg
-            REG_NAME = ql.reg_name
-            REG_VAL = ql.register(reg)
-            ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
-    
-
-def ql_setup_output(ql):
-    if ql.output in (QL_OUT_DISASM, QL_OUT_DUMP):
-        if ql.output == QL_OUT_DUMP:
-            ql.hook_block(ql_hook_block_disasm)
-        ql.hook_code(ql_hook_code_disasm)
-
-
-def ql_asm2bytes(ql, archtype, runcode, arm_thumb):
-    def ks_convert(arch):
-        if ql.archendian == QL_ENDIAN_EB:
-            adapter = {
-                QL_X86: (KS_ARCH_X86, KS_MODE_32),
-                QL_X8664: (KS_ARCH_X86, KS_MODE_64),
-                QL_MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
-                QL_ARM: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_BIG_ENDIAN),
-                QL_ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                QL_ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
-            }
-        else:
-            adapter = {
-                QL_X86: (KS_ARCH_X86, KS_MODE_32),
-                QL_X8664: (KS_ARCH_X86, KS_MODE_64),
-                QL_MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
-                QL_ARM: (KS_ARCH_ARM, KS_MODE_ARM),
-                QL_ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                QL_ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
-            }
-
-        if arch in adapter:
-            return adapter[arch]
-        # invalid
-        return None, None
-
-    def compile_instructions(fname, archtype, archmode):
-        f = open(fname, 'rb')
-        assembly = f.read()
-        f.close()
-
-        ks = Ks(archtype, archmode)
-
-        shellcode = ''
-        try:
-            # Initialize engine in X86-32bit mode
-            encoding, count = ks.asm(assembly)
-            shellcode = ''.join('%02x' % i for i in encoding)
-            shellcode = unhexlify(shellcode)
-
-        except KsError as e:
-            raise
-
-        return shellcode
-
-    if arm_thumb == 1 and archtype == QL_ARM:
-        archtype = QL_ARM_THUMB
-
-    archtype, archmode = ks_convert(archtype)
-    return compile_instructions(runcode, archtype, archmode)
-
-
-def ql_transform_to_link_path(ql, path):
-    if ql.thread_management != None:
-        cur_path = ql.thread_management.cur_thread.get_current_path()
-    else:
-        cur_path = ql.current_path
-
-    rootfs = ql.rootfs
-
-    if path[0] == '/':
-        relative_path = os.path.abspath(path)
-    else:
-        relative_path = os.path.abspath(cur_path + '/' + path)
-
-    from_path = None
-    to_path = None
-    for fm, to in ql.fs_mapper:
-        fm_l = len(fm)
-        if len(relative_path) >= fm_l and relative_path[: fm_l] == fm:
-            from_path = fm
-            to_path = to
-            break
-
-    if from_path != None:
-        real_path = os.path.abspath(to_path + relative_path[fm_l:])
-    else:
-        real_path = os.path.abspath(rootfs + '/' + relative_path)
-
-    return real_path
-
-
-def ql_transform_to_real_path(ql, path):
-    if ql.thread_management != None:
-        cur_path = ql.thread_management.cur_thread.get_current_path()
-    else:
-        cur_path = ql.current_path
-
-    rootfs = ql.rootfs
-
-    if path[0] == '/':
-        relative_path = os.path.abspath(path)
-    else:
-        relative_path = os.path.abspath(cur_path + '/' + path)
-
-    from_path = None
-    to_path = None
-    for fm, to in ql.fs_mapper:
-        fm_l = len(fm)
-        if len(relative_path) >= fm_l and relative_path[: fm_l] == fm:
-            from_path = fm
-            to_path = to
-            break
-
-    if from_path != None:
-        real_path = os.path.abspath(to_path + relative_path[fm_l:])
-    else:
-        if rootfs == None:
-            rootfs = ""
-        real_path = os.path.abspath(rootfs + '/' + relative_path)
-
-        if os.path.islink(real_path):
-            link_path = os.readlink(real_path)
-            if link_path[0] == '/':
-                real_path = ql_transform_to_real_path(ql, link_path)
+from .const import *
+
+class QLOsUtils:
+    def __init__(self, ql):
+        self.ql = ql
+        self.archtype = None
+        self.ostype = None
+        self.path = None
+        self.archendian = None
+
+
+    def lsbmsb_convert(self, sc, size=4):
+        split_bytes = []
+        n = size
+        for index in range(0, len(sc), n):
+            split_bytes.append((sc[index: index + n])[::-1])
+
+        ebsc = b""
+        for i in split_bytes:
+            ebsc += i
+
+        return ebsc    
+
+
+    def init_profile(self):
+        config = configparser.ConfigParser()
+        config.read(self.profile)
+        self.ql.dprint(D_RPRT, "[+] Added configuration file %s" % self.profile)
+        for section in config.sections():
+            self.ql.dprint(D_RPRT, "[+] Section: %s" % section)
+            for key in config[section]:
+                self.ql.dprint(D_RPRT, "[-] %s %s" % (key, config[section][key]) )
+        return config
+
+
+    def compile_asm(self, archtype, runcode, arm_thumb= None):
+        def ks_convert(arch):
+            if self.ql.archendian == QL_ENDIAN.EB:
+                adapter = {
+                    QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
+                    QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
+                    QL_ARCH.MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
+                    QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_BIG_ENDIAN),
+                    QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
+                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                }
             else:
-                real_path = ql_transform_to_real_path(ql, os.path.dirname(relative_path) + '/' + link_path)
+                adapter = {
+                    QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
+                    QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
+                    QL_ARCH.MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
+                    QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM),
+                    QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
+                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                }
 
-    return real_path
+            if arch in adapter:
+                return adapter[arch]
+            # invalid
+            return None, None
 
+        def compile_instructions(fname, archtype, archmode):
+            f = open(fname, 'rb')
+            assembly = f.read()
+            f.close()
 
-def ql_transform_to_relative_path(ql, path):
-    if ql.thread_management != None:
-        cur_path = ql.thread_management.cur_thread.get_current_path()
-    else:
-        cur_path = ql.current_path
+            ks = Ks(archtype, archmode)
 
-    if path[0] == '/':
-        relative_path = os.path.abspath(path)
-    else:
-        relative_path = os.path.abspath(cur_path + '/' + path)
+            shellcode = ''
+            try:
+                # Initialize engine in X86-32bit mode
+                encoding, count = ks.asm(assembly)
+                shellcode = ''.join('%02x' % i for i in encoding)
+                shellcode = unhexlify(shellcode)
 
-    return relative_path
+            except KsError as e:
+                raise
 
+            return shellcode
 
-def ql_vm_to_vm_abspath(ql, relative_path):
-    if relative_path[0] == '/':
-        # abspath input
-        abspath = relative_path
-        return os.path.abspath(abspath)
-    else:
-        # relative path input
-        cur_path = ql_get_vm_current_path(ql)
-        return os.path.abspath(cur_path + '/' + relative_path)
+        if arm_thumb == True and archtype == QL_ARCH.ARM:
+            archtype = QL_ARCH.ARM_THUMB
 
-
-def ql_vm_to_real_abspath(ql, path):
-    # TODO:// check Directory traversal, we have the vul
-    if path[0] != '/':
-        # relative path input
-        cur_path = ql_get_vm_current_path(ql)
-        path = cur_path + '/' + path
-    return os.path.abspath(ql.rootfs + path)
-
-
-def ql_real_to_vm_abspath(ql, path):
-    # rm ".." in path
-    abs_path = os.path.abspath(path)
-    abs_rootfs = os.path.abspath(ql.rootfs)
-
-    return '/' + abs_path.lstrip(abs_rootfs)
+        archtype, archmode = ks_convert(archtype)
+        return compile_instructions(runcode, archtype, archmode)
 
 
-def ql_get_vm_current_path(ql):
-    if ql.thread_management is not None:
-        return ql.thread_management.cur_thread.get_current_path()
-    else:
-        return ql.current_path
-
-
-def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
-    ret = 0
-    for n in mapping_name:
-        if mapping_from[n] & flags == mapping_from[n]:
-            ret = ret | mapping_to[n]
-    return ret
-
-
-def ql_open_flag_mapping(flags, ql):
-    open_flags_name = [
-        "O_RDONLY",
-        "O_WRONLY",
-        "O_RDWR",
-        "O_NONBLOCK",
-        "O_APPEND",
-        "O_ASYNC",
-        "O_SYNC",
-        "O_NOFOLLOW",
-        "O_CREAT",
-        "O_TRUNC",
-        "O_EXCL",
-        "O_NOCTTY",
-        "O_DIRECTORY",
-    ]
-
-    mac_open_flags = {
-        "O_RDONLY": 0x0000,
-        "O_WRONLY": 0x0001,
-        "O_RDWR": 0x0002,
-        "O_NONBLOCK": 0x0004,
-        "O_APPEND": 0x0008,
-        "O_ASYNC": 0x0040,
-        "O_SYNC": 0x0080,
-        "O_NOFOLLOW": 0x0100,
-        "O_CREAT": 0x0200,
-        "O_TRUNC": 0x0400,
-        "O_EXCL": 0x0800,
-        "O_NOCTTY": 0x20000,
-        "O_DIRECTORY": 0x100000
-    }
-
-    linux_open_flags = {
-        'O_RDONLY': 0,
-        'O_WRONLY': 1,
-        'O_RDWR': 2,
-        'O_NONBLOCK': 2048,
-        'O_APPEND': 1024,
-        'O_ASYNC': 8192,
-        'O_SYNC': 1052672,
-        'O_NOFOLLOW': 131072,
-        'O_CREAT': 64,
-        'O_TRUNC': 512,
-        'O_EXCL': 128,
-        'O_NOCTTY': 256,
-        'O_DIRECTORY': 65536
-    }
-
-    mips32el_open_flags = {
-        'O_RDONLY': 0x0,
-        'O_WRONLY': 0x1,
-        'O_RDWR': 0x2,
-        'O_NONBLOCK': 0x80,
-        'O_APPEND': 0x8,
-        'O_ASYNC': 0x1000,
-        'O_SYNC': 0x4000,
-        'O_NOFOLLOW': 0x20000,
-        'O_CREAT': 0x100,
-        'O_TRUNC': 0x200,
-        'O_EXCL': 0x400,
-        'O_NOCTTY': 0x800,
-        'O_DIRECTORY': 0x100000,
-    }
-
-    if ql.archtype!= QL_MIPS32:
-        if ql.platform == None or ql.platform == ql.ostype:
-            return flags
-
-        if ql.platform == QL_MACOS and ql.ostype == QL_LINUX:
-            f = linux_open_flags
-            t = mac_open_flags
-
-        elif ql.platform == QL_LINUX and ql.ostype == QL_MACOS:
-            f = mac_open_flags
-            t = linux_open_flags
-
-    elif ql.archtype== QL_MIPS32 and ql.platform == QL_LINUX:
-        f = mips32el_open_flags
-        t = linux_open_flags
-
-    elif ql.archtype== QL_MIPS32 and ql.platform == QL_MACOS:
-        f = mips32el_open_flags
-        t = mac_open_flags
-
-    return flag_mapping(flags, open_flags_name, f, t)
-
-
-def print_function(self, address, function_name, params, ret):
-    function_name = function_name.replace('hook_', '')
-    if function_name in ("__stdio_common_vfprintf", "printf", "wsprintfW", "sprintf"):
-        return
-    log = '0x%0.2x: %s(' % (address, function_name)
-    for each in params:
-        value = params[each]
-        if type(value) == str or type(value) == bytearray:
-            log += '%s = "%s", ' % (each, value)
+    def transform_to_link_path(self, path):
+        if self.ql.multithread == True:
+            cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
-            log += '%s = 0x%x, ' % (each, value)
-    log = log.strip(", ")
-    log += ')'
-    if ret is not None:
-        log += ' = 0x%x' % ret
+            cur_path = self.ql.os.current_path
 
-    if self.ql.output == QL_OUT_DEFAULT:
-        log = log.partition(" ")[-1]
-        self.ql.nprint(log + '\n')
+        rootfs = self.ql.rootfs
 
-    elif self.ql.output == QL_OUT_DEBUG:
-        self.ql.dprint(D_INFO, log + '\n')
+        if path[0] == '/':
+            relative_path = os.path.abspath(path)
+        else:
+            relative_path = os.path.abspath(cur_path + '/' + path)
+
+        from_path = None
+        to_path = None
+        for fm, to in self.ql.fs_mapper:
+            fm_l = len(fm)
+            if len(relative_path) >= fm_l and relative_path[: fm_l] == fm:
+                from_path = fm
+                to_path = to
+                break
+
+        if from_path != None:
+            real_path = os.path.abspath(to_path + relative_path[fm_l:])
+        else:
+            real_path = os.path.abspath(rootfs + '/' + relative_path)
+
+        return real_path
 
 
-def read_cstring(self, address):
-    result = ""
-    char = self.ql.mem.read(address, 1)
-    while char.decode(errors="ignore") != "\x00":
-        address += 1
-        result += char.decode(errors="ignore")
-        char = self.ql.mem.read(address, 1)
-    return result
+    def transform_to_real_path(self, path):
+        if self.ql.multithread == True:
+            cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
+        else:
+            cur_path = self.ql.os.current_path
 
-def post_report(self):
-    self.ql.dprint(D_INFO, "[+] Syscalls and number of invocations")
-    self.ql.dprint(D_INFO, "[-] " + str(list(self.syscall_count.items())))
+        rootfs = self.ql.rootfs
 
+        if path[0] == '/':
+            relative_path = os.path.abspath(path)
+        else:
+            relative_path = os.path.abspath(cur_path + '/' + path)
+
+        from_path = None
+        to_path = None
+        for fm, to in self.ql.fs_mapper:
+            fm_l = len(fm)
+            if len(relative_path) >= fm_l and relative_path[: fm_l] == fm:
+                from_path = fm
+                to_path = to
+                break
+
+        if from_path != None:
+            real_path = os.path.abspath(to_path + relative_path[fm_l:])
+        else:
+            if rootfs == None:
+                rootfs = ""
+            real_path = os.path.abspath(rootfs + '/' + relative_path)
+
+            if os.path.islink(real_path):
+                link_path = os.readlink(real_path)
+                if link_path[0] == '/':
+                    real_path = self.ql.os.transform_to_real_path(link_path)
+                else:
+                    real_path = self.ql.os.transform_to_real_path(os.path.dirname(relative_path) + '/' + link_path)
+            
+                # FIXME: Quick and dirty fix. Need to check more
+                if not os.path.exists(real_path):
+                    real_path = os.path.abspath(rootfs + '/' + relative_path)
+
+                    if os.path.islink(real_path):
+                        link_path = os.readlink(real_path)
+                    else:
+                        link_path = relative_path
+
+                    path_dirs = link_path.split(os.path.sep)
+                    if link_path[0] == '/':
+                        path_dirs = path_dirs[1:]
+
+                    for i in range(0, len(path_dirs)-1):
+                        path_prefix = os.path.sep.join(path_dirs[:i+1])
+                        real_path_prefix = self.ql.os.transform_to_real_path(path_prefix)
+                        path_remain = os.path.sep.join(path_dirs[i+1:])
+                        real_path = os.path.join(real_path_prefix, path_remain)
+                        if os.path.exists(real_path):
+                            break
+
+        return real_path
+
+
+    def transform_to_relative_path(self, path):
+        if self.ql.multithread == True:
+            cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
+        else:
+            cur_path = self.ql.os.current_path
+
+        if path[0] == '/':
+            relative_path = os.path.abspath(path)
+        else:
+            relative_path = os.path.abspath(cur_path + '/' + path)
+
+        return relative_path
+
+
+    def post_report(self):
+        self.ql.dprint(D_INFO, "[+] Syscalls and number of invocations")
+        self.ql.dprint(D_INFO, "[-] " + str(list(self.ql.os.syscall_count.items())))
+
+
+    def exec_arbitrary(self, start, end):
+        old_sp = self.ql.reg.sp
+
+        # we read where this hook is supposed to return
+        ret = self.ql.stack_read(0)
+
+        def restore(ql):
+            ql.dprint(D_INFO, "[+] Executed code from %d to %d " % (start, end))
+            # now we can restore the register to be where we were supposed to
+            old_hook_addr = ql.reg.pc
+            ql.reg.sp = old_sp
+            ql.reg.pc = ret
+            # we want to execute the code once, not more
+            ql.hook_address(lambda q: None, old_hook_addr)
+
+        # we have to set an address to restore the registers
+        self.ql.hook_address(restore, end, )
+        # we want to rewrite the return address to the function
+        self.ql.stack_write(0, start)
+
+    def setup_output(self):
+        def ql_hook_block_disasm(ql, address, size):
+            self.ql.nprint("\n[+] Tracing basic block at 0x%x" % (address))
+
+        def ql_hook_code_disasm(ql, address, size):
+            tmp = ql.mem.read(address, size)
+
+            if (ql.archtype== QL_ARCH.ARM):  # QL_ARM
+                reg_cpsr = ql.register(UC_ARM_REG_CPSR)
+                mode = CS_MODE_ARM
+                if ql.archendian == QL_ENDIAN.EB:
+                    reg_cpsr_v = 0b100000
+                    # reg_cpsr_v = 0b000000
+                else:
+                    reg_cpsr_v = 0b100000
+
+                if reg_cpsr & reg_cpsr_v != 0:
+                    mode = CS_MODE_THUMB
+
+                if ql.archendian == QL_ENDIAN.EB:
+                    md = Cs(CS_ARCH_ARM, mode)
+                    # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
+                else:
+                    md = Cs(CS_ARCH_ARM, mode)
+
+            elif (ql.archtype == QL_ARCH.X86):  # QL_X86
+                md = Cs(CS_ARCH_X86, CS_MODE_32)
+
+            elif (ql.archtype == QL_ARCH.X8664):  # QL_X86_64
+                md = Cs(CS_ARCH_X86, CS_MODE_64)
+
+            elif (ql.archtype == QL_ARCH.ARM64):  # QL_ARM64
+                md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
+
+            elif (ql.archtype == QL_ARCH.MIPS32):  # QL_MIPS32
+                if ql.archendian == QL_ENDIAN.EB:
+                    md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
+                else:
+                    md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)
+
+            else:
+                raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
+
+            insn = md.disasm(tmp, address)
+            opsize = int(size)
+
+            ql.nprint("[+] 0x%x\t" % (address), end="")
+
+            for i in tmp:
+                ql.nprint (" %02x " % i, end="")
+
+            if opsize <= 6:
+                ql.nprint ("\t", end="")
+            
+            for i in insn:
+                ql.nprint ("%s %s" % (i.mnemonic, i.op_str))
+            
+            if ql.output == QL_OUTPUT.DUMP:
+                for reg in ql.reg.table:
+                    ql.reg.name = reg
+                    REG_NAME = ql.reg.name
+                    REG_VAL = ql.register(reg)
+                    ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+        
+        if self.ql.output in (QL_OUTPUT.DISASM, QL_OUTPUT.DUMP):
+            if self.ql.output == QL_OUTPUT.DUMP:
+                self.ql.hook_block(ql_hook_block_disasm)
+            self.ql.hook_code(ql_hook_code_disasm)
+
+
+    def stop(self, stop_event=THREAD_EVENT_EXIT_GROUP_EVENT):
+        if self.ql.multithread == True:
+            td = self.thread_management.cur_thread
+            td.stop()
+            td.stop_event = stop_event
+        self.ql.emu_stop()        

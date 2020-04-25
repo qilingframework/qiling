@@ -5,7 +5,7 @@
 import struct
 import base64
 from qiling.os.windows.fncc import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
@@ -17,14 +17,14 @@ from qiling.os.windows.const import *
 @winapi(cc=STDCALL, params={
     "exitCode": DWORD
 })
-def hook_CorExitProcess(self, address, params):
-    self.uc.emu_stop()
-    self.PE_RUN = False
+def hook_CorExitProcess(ql, address, params):
+    ql.emu_stop()
+    ql.os.PE_RUN = False
 
 
 # __int32 STDMETHODCALLTYPE _CorExeMain ();
 @winapi(cc=STDCALL, params={
 })
-def hook__CorExeMain(self, address, params):
+def hook__CorExeMain(ql, address, params):
     # TODO implement + check call type
     pass

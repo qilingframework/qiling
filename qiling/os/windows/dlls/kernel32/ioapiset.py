@@ -6,7 +6,7 @@
 import struct
 import time
 from qiling.os.windows.const import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
@@ -34,7 +34,7 @@ from qiling.exception import *
     "lpBytesReturned": POINTER,
     "lpOverlapped": POINTER
 })
-def hook_DeviceIoControl(self, address, params):
+def hook_DeviceIoControl(ql, address, params):
     operation = params["dwIoControlCode"]
     data = params["lpInBuffer"]
     output = params["lpOutBuffer"]

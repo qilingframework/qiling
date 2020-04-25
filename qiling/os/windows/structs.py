@@ -68,6 +68,7 @@ class TEB:
         s += self.ql.pack(self.HardErrorMode)  # 0x40
         return s
 
+# https://www.geoffchappell.com/studies/windows/win32/ntdll/structs/peb/index.htm
 
 class PEB:
     def __init__(self, ql, base=0,
@@ -230,12 +231,12 @@ class LdrDataTableEntry:
         s += self.ql.pack(self.SizeOfImage)  # 0x20
         s += self.ql.pack16(self.FullDllName['Length'])  # 0x24
         s += self.ql.pack16(self.FullDllName['MaximumLength'])  # 0x26
-        if self.ql.archtype== QL_X8664:
+        if self.ql.archtype== QL_ARCH.X8664:
             s += self.ql.pack32(0)
         s += self.ql.pack(self.FullDllName['BufferPtr'])  # 0x28
         s += self.ql.pack16(self.BaseDllName['Length'])
         s += self.ql.pack16(self.BaseDllName['MaximumLength'])
-        if self.ql.archtype== QL_X8664:
+        if self.ql.archtype== QL_ARCH.X8664:
             s += self.ql.pack32(0)
         s += self.ql.pack(self.BaseDllName['BufferPtr'])
         s += self.ql.pack(self.Flags)
@@ -318,7 +319,7 @@ class Token:
                                                                                     byteorder='little')
         # We create a Sid Structure, set its handle and return the value
         sid = Sid(ql)
-        handle = Handle(sid=sid)
+        handle = Handle(obj=sid)
         
         # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
         self.ql.os.handle_manager.append(handle)
@@ -350,11 +351,16 @@ class Sid:
     # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/c6ce4275-3d90-4890-ab3a-514745e4637e
     def __init__(self, ql):
         # TODO find better documentation
+        perm = ql.os.profile["SYSTEM"]["permission"]
+        if perm == "root":
+            perm = 0x123456
+        else:
+            perm = 0
         self.struct = {
             "Revision": 0x1.to_bytes(length=1, byteorder="little"),  # ADD
             "SubAuthorityCount": 0x1.to_bytes(length=1, byteorder="little"),
             "IdentifierAuthority": 0x5.to_bytes(length=6, byteorder="little"),
-            "SubAuthority": 0x12345678.to_bytes(length=ql.pointersize, byteorder="little")
+            "SubAuthority": perm.to_bytes(length=ql.pointersize, byteorder="little")
         }
         values = b"".join(self.struct.values())
         self.addr = ql.os.heap.mem_alloc(len(values))
@@ -364,14 +370,14 @@ class Sid:
 class Mutex:
     def __init__(self, name, type):
         self.name = name
-        self.lock = False
+        self.locked = False
         self.type = type
 
     def lock(self):
-        self.lock = True
+        self.locked = True
 
     def unlock(self):
-        self.lock = False
+        self.locked = False
 
     def isFree(self):
-        return not self.lock
+        return not self.locked
