@@ -315,7 +315,6 @@ class QLCoreHooks(object):
         for i in self._hook_fuc.keys():
             self.uc.hook_del(self._hook_fuc[i])
         
-
         for i in self._insn_hook_fuc.keys():
             self.uc.hook_del(self._insn_hook_fuc[i])
 

@@ -82,9 +82,10 @@ class RegistryManager:
             self.hkcu = Registry.Registry(os.path.join(self.hive, 'NTUSER.DAT'))
         except FileNotFoundError:
             if not ql.shellcoder:
-                QlPrintException("WARNING: Registry files not found!")
+                QlErrorFileNotFound("WARNING: Registry files not found!")
         except Exception:
-            QlPrintException("WARNING: Registry files format error")
+            if not ql.shellcoder:
+                QlErrorFileNotFound("WARNING: Registry files format error")
 
     def exists(self, key):
         if key in self.regdiff:
