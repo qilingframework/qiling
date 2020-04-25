@@ -91,11 +91,6 @@ class QlOsLinux(QlOsPosix):
     def hook_syscall(self, int= None, intno= None):
         return self.load_syscall(intno)
 
-    def hook_intr(self, int= None, intno= None):
-        if self.ql.archtype== QL_ARCH.MIPS32:   
-            if intno != 0x11:
-                raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno) 
-
     def run(self):
         if self.ql.archtype== QL_ARCH.ARM:
             ql_arm_init_kernel_get_tls(self.ql)
