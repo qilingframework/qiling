@@ -180,7 +180,7 @@ See [EN](docs/GDBSERVER.md)|[CN](docs/GDBSERVER_CN.md)  for more details
 
 #### Contact
 
-Get the latest info from out webiste https://www.qiling.io
+Get the latest info from our webiste https://www.qiling.io
 
 Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.com/qiling_io)
 
