@@ -87,7 +87,8 @@ def hook_connect(ql, address, params):
     "name": STRING
 })
 def hook_gethostbyname(ql, address, params):
-    dummy_ip = b"\x40\x30\x20\x10" #10.20.30.40
+    ip_str = ql.os.profile.getint("NETWORK", "dns_response_ip")
+    ip = bytes([int(octet) for octet in ip_str.split('.')[::-1]])
     hostnet = ql.heap.mem_alloc(ql.pointersize*3+4)
     ip_ptr = ql.heap.mem_alloc(len(params['name']))
     ql.uc.mem.write(ip_ptr, params['name'].encode('latin1'))
@@ -96,5 +97,5 @@ def hook_gethostbyname(ql, address, params):
     ql.mem.write(hostnet+ql.pointersize, (0).to_bytes(length=ql.pointersize, byteorder='little'))
     ql.mem.write(hostnet+2*ql.pointersize, (2).to_bytes(length=2, byteorder='little'))
     ql.mem.write(hostnet+2*ql.pointersize+2, (4).to_bytes(length=2, byteorder='little'))
-    ql.mem.write(hostnet+2*ql.pointersize+4, dummy_ip)
+    ql.mem.write(hostnet+2*ql.pointersize+4, ip)
     return hostnet
