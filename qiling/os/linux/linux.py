@@ -32,7 +32,7 @@ class QlOsLinux(QlOsPosix):
         if self.ql.archtype== QL_ARCH.ARM:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0xfff0d000
             self.ql.arch.enable_vfp()
-            self.ql.hook_intr(self.hook_syscall)
+            self.ql.hook_intno(self.hook_syscall, 2)
             self.thread_class = QlLinuxARMThread
 
         # MIPS32
@@ -46,7 +46,7 @@ class QlOsLinux(QlOsPosix):
         elif self.ql.archtype== QL_ARCH.ARM64:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ffffffde000
             self.ql.arch.enable_vfp()
-            self.ql.hook_intr(self.hook_syscall)
+            self.ql.hook_intno(self.hook_syscall, 2)
             self.thread_class = QlLinuxARM64Thread
 
         # X86
@@ -55,7 +55,7 @@ class QlOsLinux(QlOsPosix):
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
-            self.ql.hook_intr(self.hook_syscall)
+            self.ql.hook_intno(self.hook_syscall, 0x80)
             self.thread_class = QlLinuxX86Thread
 
         # X8664
