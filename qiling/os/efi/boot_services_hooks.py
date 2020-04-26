@@ -32,7 +32,7 @@ def hook_AllocatePages(self, address, params):
         address = self.read_int(params["Memory"])
         self.ql.mem.map(address, params["Pages"]*PageSize)
     else:
-        address = self.ql.heap.mem_alloc(params["Size"])
+        address = self.ql.heap.mem_alloc(params["Pages"]*PageSize)
         self.write_int(params["Memory"], address)
     return address
 

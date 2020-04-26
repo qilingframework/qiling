@@ -43,8 +43,7 @@ class QlOsEfi(QlOs):
         self.ql.events = []
         self.ql.handle_dict = {}
         self.ql.var_store = {}
-        self.last_error = 0
-        # variables used inside hooks
+        self.ql.elf_entry = 0 # We don't use elf, but gdbserver breaks if it's missing
         self.HEAP_BASE_ADDR = 0x500000000
         self.HEAP_SIZE = 0x5000000
         self.ql.heap = Heap(self.ql, self.HEAP_BASE_ADDR, self.HEAP_BASE_ADDR + self.HEAP_SIZE)
@@ -64,6 +63,9 @@ class QlOsEfi(QlOs):
                 self.ql.mem.write(IMAGE_BASE, bytes(data))
                 self.ql.nprint("[+] Loading %s to 0x%x" % (path, IMAGE_BASE))
                 entry_point = IMAGE_BASE + pe.OPTIONAL_HEADER.AddressOfEntryPoint
+                if self.ql.entry_point == 0:
+                    # Setting entrypoint to the first loaded module entrypoint, so the debugger can break.
+                    self.ql.entry_point = entry_point
                 self.ql.nprint("[+] PE entry point at 0x%x" % entry_point)
                 self.ql.modules.append((path, entry_point, pe))
                 return True
@@ -73,6 +75,9 @@ class QlOsEfi(QlOs):
                     pe.relocate_image(IMAGE_BASE)
                 else:
                     raise
+            except QlMemoryMappedError:
+                IMAGE_BASE += 0x10000
+                pe.relocate_image(IMAGE_BASE)
         return False
     
     def get_vars(self, variables):
@@ -180,13 +185,33 @@ class QlOsEfi(QlOs):
         system_table_heap_ptr += ctypes.sizeof(EFI_BOOT_SERVICES)
         system_table_heap_ptr, boot_services = hook_EFI_BOOT_SERVICES(system_table_heap_ptr, self.ql)
 
+        efi_configuration_table_ptr = system_table_heap_ptr
+        system_table.ConfigurationTable = efi_configuration_table_ptr
+        system_table_heap_ptr += ctypes.sizeof(EFI_CONFIGURATION_TABLE)
+        efi_configuration_table = EFI_CONFIGURATION_TABLE()
+
+        #   0x7739f24c, 0x93d7, 0x11d4, {0x9a, 0x3a, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d } \
+        efi_configuration_table.VendorGuid.Data1 = 0x7739f24c
+        efi_configuration_table.VendorGuid.Data2 = 0x93d7
+        efi_configuration_table.VendorGuid.Data3 = 0x11d4
+        efi_configuration_table.VendorGuid.Data4[0] = 0x9a
+        efi_configuration_table.VendorGuid.Data4[1] = 0x3a
+        efi_configuration_table.VendorGuid.Data4[2] = 0
+        efi_configuration_table.VendorGuid.Data4[3] = 0x90
+        efi_configuration_table.VendorGuid.Data4[4] = 0x27
+        efi_configuration_table.VendorGuid.Data4[5] = 0x3f
+        efi_configuration_table.VendorGuid.Data4[6] = 0xc1
+        efi_configuration_table.VendorGuid.Data4[7] = 0x4d
+        efi_configuration_table.VendorTable = 0
 
         self.ql.mem.write(runtime_services_ptr, convert_struct_to_bytes(runtime_services))
         self.ql.mem.write(boot_services_ptr, convert_struct_to_bytes(boot_services))
+        self.ql.mem.write(efi_configuration_table_ptr, convert_struct_to_bytes(efi_configuration_table))
         self.ql.mem.write(self.ql.system_table_ptr, convert_struct_to_bytes(system_table))
 
         #return address
         self.ql.end_of_execution_ptr = system_table_heap_ptr
+        self.ql.mem.write(self.ql.end_of_execution_ptr, b'\xcc')
         system_table_heap_ptr += pointer_size
         self.ql.hook_address(hook_EndOfExecution, self.ql.end_of_execution_ptr)
 
@@ -200,26 +225,16 @@ class QlOsEfi(QlOs):
                 self.ql.uc.emu_start(self.ql.code_address, self.ql.code_address + len(self.ql.shellcoder))
             else:
                 path, entry_point, pe = self.ql.modules.pop(0)
-                self.ql.entry_point = entry_point
                 self.ql.stack_push(self.ql.end_of_execution_ptr)
                 self.ql.register(UC_X86_REG_RDX, self.ql.system_table_ptr)
                 print(f'Running from 0x{entry_point:x} of {path} to 0x{self.ql.until_addr:x}')
-                self.ql.uc.emu_start(entry_point, self.ql.until_addr, self.ql.timeout)
+                self.ql.uc.emu_start(entry_point, self.ql.until_addr, 1000*1000)
         except UcError:
             if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.pc))
                 self.ql.mem.show_mapinfo()
-                try:
-                    buf = ql.mem.read(ql.pc, 8)
-                    self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                    self.ql.nprint("\n")
-                    ql_hook_code_disasm(ql, ql.pc, 64)
-                except:
-                    pass
+                ql_hook_code_disasm(self.ql, self.ql.pc, 64)
             raise
-
-
-        # post_report(self)
 
         if self.ql.internal_exception is not None:
             raise self.ql.internal_exception

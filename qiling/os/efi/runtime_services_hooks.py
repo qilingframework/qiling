@@ -58,10 +58,12 @@ def hook_GetVariable(self, address, params):
     if params['VariableName'] in self.ql.var_store:
         var = self.ql.var_store[params['VariableName']]
         read_len = self.read_int(params['DataSize'])
-        self.write_int(params['DataSize'], min(len(var), read_len))
+        read_len = min(len(var), read_len)
+        self.write_int(params['DataSize'], read_len)
         if params['Data'] != 0:
             self.ql.mem.write(params['Data'], var[:read_len])
         return read_len
+    return -1
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(ctypes.c_uint64)
