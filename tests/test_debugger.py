@@ -36,7 +36,7 @@ class DebuggerTest(unittest.TestCase):
             time.sleep(DELAY) 
             send_raw('$%s#%.2x' % (msg, checksum(msg)))
 
-        # refer to https://github.com/qilingframework/qiling/issues/112
+        # some random command test just to make sure we covered most of the command
         self.gdb_client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.netin      = self.gdb_client.makefile('r')
         self.netout     = self.gdb_client.makefile('w')
@@ -52,7 +52,10 @@ class DebuggerTest(unittest.TestCase):
         send("qC")
         send("g")
         send("m555555554040,1f8")
-        send("Z0,7ffff7dd94d1,1")
+        send("m555555554000,100")
+        send("m200,100")
+        send("p10")
+        send("Z0,555555554ada,1")
         send("c")
         send("")
         self.gdb_client.close()
