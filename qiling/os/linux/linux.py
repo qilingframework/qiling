@@ -93,11 +93,6 @@ class QlOsLinux(QlOsPosix):
     def hook_syscall(self, int= None, intno= None):
         return self.load_syscall(intno)
 
-    def hook_intr(self, int= None, intno= None):
-        if self.ql.archtype== QL_ARCH.MIPS32:   
-            if intno != 0x11:
-                raise QlErrorExecutionStop("[!] got interrupt 0x%x ???" %intno) 
-
     def add_function_hook(self, fn, cb, userdata = None):
         self.fh_tmp.append((fn, cb, userdata))
 

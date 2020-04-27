@@ -264,14 +264,14 @@ class GDBSERVERsession(object):
                 try:
                     if self.ql.archtype== QL_ARCH.X86:
                         if reg_index <= 24:
-                            reg_value = self.ql.register(registers_x86[reg_index-1])
+                            reg_value = self.ql.register(self.ql.reg.table[reg_index-1])
                         else:
                             reg_value = 0
                         reg_value = self.ql.arch.addr_to_str(reg_value)
                     
                     elif self.ql.archtype== QL_ARCH.X8664:
                         if reg_index <= 32:
-                            reg_value = self.ql.register(registers_x8664[reg_index-1])
+                            reg_value = self.ql.register(self.ql.reg.table[reg_index-1])
                         else:
                             reg_value = 0
                         if reg_index <= 17:
@@ -281,21 +281,21 @@ class GDBSERVERsession(object):
                     
                     elif self.ql.archtype== QL_ARCH.ARM:
                         if reg_index < 17:
-                            reg_value = self.ql.register(registers_arm[reg_index - 1])
+                            reg_value = self.ql.register(self.ql.reg.table[reg_index - 1])
                         else:
                             reg_value = 0
                         reg_value = self.ql.arch.addr_to_str(reg_value)
 
                     elif self.ql.archtype== QL_ARCH.ARM64:
                         if reg_index <= 32:
-                            reg_value = self.ql.register(registers_arm64[reg_index - 1])
+                            reg_value = self.ql.register(self.ql.reg.table[reg_index - 1])
                         else:
                             reg_value = 0
                             reg_value = self.ql.arch.addr_to_str(reg_value)
 
                     elif self.ql.archtype== QL_ARCH.MIPS32:
                         if reg_index <= 37:
-                            reg_value = self.ql.register(registers_mips[reg_index - 1])
+                            reg_value = self.ql.register(self.ql.reg.table[reg_index - 1])
                         else:
                             reg_value = 0
                         if self.ql.archendian == QL_ENDIAN.EL:
