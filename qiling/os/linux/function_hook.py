@@ -350,7 +350,9 @@ class FunctionHook:
 
         # MIPS32
         elif self.ql.archtype== QL_ARCH.MIPS32:
-            pass
+            GLOB_DAT = 21
+            JMP_SLOT = 22
+            ins = b'\xa0\x00\x00\xef\x1e\xff/\xe1'
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
