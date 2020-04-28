@@ -39,8 +39,9 @@ class QlOsEfi(QlOs):
     def __init__(self, ql):
         super(QlOsEfi, self).__init__(ql)
         self.ql = ql
+        self.ql.tpl = 4 # TPL_APPLICATION
         self.ql.modules = []
-        self.ql.events = []
+        self.ql.events = {}
         self.ql.handle_dict = {}
         self.ql.var_store = {}
         self.ql.elf_entry = 0 # We don't use elf, but gdbserver breaks if it's missing

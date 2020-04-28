@@ -8,13 +8,13 @@ from qiling.os.windows.fncc import *
     "a1": POINTER, #POINTER_T(struct_EFI_TIME_CAPABILITIES)
 })
 def hook_GetTime(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(struct_EFI_TIME)
 })
 def hook_SetTime(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(ctypes.c_ubyte)
@@ -22,14 +22,14 @@ def hook_SetTime(self, address, params):
     "a2": POINTER, #POINTER_T(struct_EFI_TIME)
 })
 def hook_GetWakeupTime(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
     "a1": POINTER, #POINTER_T(struct_EFI_TIME)
 })
 def hook_SetWakeupTime(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
@@ -38,14 +38,14 @@ def hook_SetWakeupTime(self, address, params):
     "a3": POINTER, #POINTER_T(struct_EFI_MEMORY_DESCRIPTOR)
 })
 def hook_SetVirtualAddressMap(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
     "a1": POINTER, #POINTER_T(POINTER_T(None))
 })
 def hook_ConvertPointer(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "VariableName": WSTRING,
@@ -71,7 +71,7 @@ def hook_GetVariable(self, address, params):
     "a2": GUID,
 })
 def hook_GetNextVariableName(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(ctypes.c_uint16)
@@ -81,13 +81,13 @@ def hook_GetNextVariableName(self, address, params):
     "a4": POINTER, #POINTER_T(None)
 })
 def hook_SetVariable(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(ctypes.c_uint32)
 })
 def hook_GetNextHighMonotonicCount(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
@@ -96,7 +96,7 @@ def hook_GetNextHighMonotonicCount(self, address, params):
     "a3": POINTER, #POINTER_T(None)
 })
 def hook_ResetSystem(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(POINTER_T(struct_EFI_CAPSULE_HEADER))
@@ -104,7 +104,7 @@ def hook_ResetSystem(self, address, params):
     "a2": ULONGLONG,
 })
 def hook_UpdateCapsule(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(POINTER_T(struct_EFI_CAPSULE_HEADER))
@@ -113,7 +113,7 @@ def hook_UpdateCapsule(self, address, params):
     "a3": POINTER, #POINTER_T(enum_73)
 })
 def hook_QueryCapsuleCapabilities(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": UINT,
@@ -122,7 +122,7 @@ def hook_QueryCapsuleCapabilities(self, address, params):
     "a3": POINTER, #POINTER_T(ctypes.c_uint64)
 })
 def hook_QueryVariableInfo(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 
 

@@ -6,16 +6,18 @@ from qiling.os.windows.fncc import _get_param_by_index
 
 
 @dxeapi(params={
-    "a0": ULONGLONG,
+    "NewTpl": ULONGLONG,
 })
 def hook_RaiseTPL(self, address, params):
-    pass
+    tpl = self.ql.tpl
+    self.ql.tpl = params["NewTpl"]
+    return tpl
 
 @dxeapi(params={
-    "a0": ULONGLONG,
+    "OldTpl": ULONGLONG,
 })
 def hook_RestoreTPL(self, address, params):
-    pass
+    self.ql.tpl = params["OldTpl"]
 
 @dxeapi(params={
     "type": ULONGLONG,
@@ -37,11 +39,11 @@ def hook_AllocatePages(self, address, params):
     return address
 
 @dxeapi(params={
-    "a0": ULONGLONG,
-    "a1": ULONGLONG,
+    "Memory": ULONGLONG,
+    "Pages": ULONGLONG,
 })
 def hook_FreePages(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(ctypes.c_uint64)
@@ -51,7 +53,7 @@ def hook_FreePages(self, address, params):
     "a4": POINTER, #POINTER_T(ctypes.c_uint32)
 })
 def hook_GetMemoryMap(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "PoolType": UINT,
@@ -64,12 +66,22 @@ def hook_AllocatePool(self, address, params):
     return address
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(None)
+    "Buffer": POINTER, #POINTER_T(None)
 })
 def hook_FreePool(self, address, params):
-    address = params["a0"]
+    address = params["Buffer"]
     self.ql.heap.mem_free(address)
-    pass
+    return self.EFI_SUCCESS
+
+def CreateEvent(wrapper, address, params):
+    event_id = len(wrapper.ql.events)
+    event_dic = {"NotifyFunction": params["NotifyFunction"], "NotifyContext": params["NotifyContext"], "Set": False}
+    if "EventGroup" in params:
+        event_dic["NotifyContext"] =  params["EventGroup"]
+    
+    wrapper.ql.events[event_id] = event_dic
+    wrapper.write_int(params["Event"], event_id)
+    return event_id
 
 @dxeapi(params={
     "Type": UINT,
@@ -78,10 +90,7 @@ def hook_FreePool(self, address, params):
     "NotifyContext": POINTER,
     "Event": POINTER})
 def hook_CreateEvent(self, address, params):
-    event_id = len(self.ql.events)+1
-    self.ql.events.append((params["NotifyFunction"], params["NotifyContext"]))
-    self.write_int(params["Event"], event_id)
-    return event_id
+    return CreateEvent(self, address, params)
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -89,7 +98,7 @@ def hook_CreateEvent(self, address, params):
     "a2": ULONGLONG,
 })
 def hook_SetTimer(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
@@ -97,44 +106,59 @@ def hook_SetTimer(self, address, params):
     "a2": POINTER, #POINTER_T(ctypes.c_uint64)
 })
 def hook_WaitForEvent(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(None)
+    "Event": POINTER, #POINTER_T(None)
 })
 def hook_SignalEvent(self, address, params):
-    pass
+    self.ql.events[params["Event"]]["Set"] = True
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(None)
+    "Event": POINTER, #POINTER_T(None)
 })
 def hook_CloseEvent(self, address, params):
-    self.ql.events.remove(params['a0'])
-    pass
+    del self.ql.events[params["Event"]]
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(None)
+    "Event": POINTER, #POINTER_T(None)
 })
 def hook_CheckEvent(self, address, params):
-    pass
+    return self.EFI_SUCCESS if self.ql.events[params["Event"]]["Set"] else self.EFI_NOT_READY
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(POINTER_T(None))
-    "a1": GUID,
-    "a2": ULONGLONG,
-    "a3": POINTER, #POINTER_T(None)
+    "Handle": POINTER, #POINTER_T(POINTER_T(None))
+    "Protocol": GUID,
+    "InterfaceType": ULONGLONG,
+    "Interface": POINTER, #POINTER_T(None)
 })
 def hook_InstallProtocolInterface(self, address, params):
-    pass
+    dic = {}
+    handle = params["Handle"]
+    if handle in self.ql.handle_dict:
+        dic = self.ql.handle_dict[handle]
+    dic[params["Protocol"]] = params["Interface"]
+    self.ql.handle_dict[handle] = dic
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(None)
-    "a1": GUID,
-    "a2": POINTER, #POINTER_T(None)
-    "a3": POINTER, #POINTER_T(None)
+    "Handle": POINTER, #POINTER_T(None)
+    "Protocol": GUID,
+    "OldInterface": POINTER, #POINTER_T(None)
+    "NewInterface": POINTER, #POINTER_T(None)
 })
 def hook_ReinstallProtocolInterface(self, address, params):
-    pass
+    handle = params["Handle"]
+    if handle not in self.ql.handle_dict:
+        return self.EFI_NOT_FOUND
+    dic = self.ql.handle_dict[handle]
+    protocol = params["Protocol"]
+    if protocol not in dic:
+        return self.EFI_NOT_FOUND
+    dic[protocol] = params["NewInterface"]
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -142,7 +166,7 @@ def hook_ReinstallProtocolInterface(self, address, params):
     "a2": POINTER, #POINTER_T(None)
 })
 def hook_UninstallProtocolInterface(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -150,24 +174,42 @@ def hook_UninstallProtocolInterface(self, address, params):
     "a2": POINTER, #POINTER_T(POINTER_T(None))
 })
 def hook_HandleProtocol(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "Protocol": GUID,
     "Event": POINTER,
     "Registration": POINTER})
 def hook_RegisterProtocolNotify(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": ULONGLONG,
-    "a1": GUID,
-    "a2": POINTER, #POINTER_T(None)
-    "a3": POINTER, #POINTER_T(ctypes.c_uint64)
-    "a4": POINTER, #POINTER_T(POINTER_T(None))
+    "SearchType": ULONGLONG,
+    "Protocol": GUID,
+    "SearchKey": POINTER, #POINTER_T(None)
+    "BufferSize": POINTER, #POINTER_T(ctypes.c_uint64)
+    "Buffer": POINTER, #POINTER_T(POINTER_T(None))
 })
 def hook_LocateHandle(self, address, params):
-    pass
+    handles = []
+    if params["SearchKey"] == self.SEARCHTYPE_AllHandles:
+        handles = self.ql.handle_dict.keys()
+    elif params["SearchKey"] == self.SEARCHTYPE_ByProtoco:
+        for handle, guid_dic in self.ql.handle_dict.items():
+            for guid, protocol_ptr in guid_dic.items():
+                if guid == protocol:
+                    handles.append(handle)
+    if len(handles) == 0:
+        return self.EFI_NOT_FOUND
+    ret = self.EFI_BUFFER_TOO_SMALL
+    if self.read_int(params["BufferSize"]) >= len(handles) * ctypes.sizeof(POINTER_T(None)):
+        ptr = params["Buffer"]
+        for handle in handles:
+            self.write_int(ptr, handle)
+            ptr += ctypes.sizeof(POINTER_T(None))
+        ret = self.EFI_SUCCESS
+    self.write_int(params["BufferSize"], len(handles) * ctypes.sizeof(POINTER_T(None)))
+    return ret
 
 @dxeapi(params={
     "a0": GUID,
@@ -175,14 +217,14 @@ def hook_LocateHandle(self, address, params):
     "a2": POINTER, #POINTER_T(POINTER_T(None))
 })
 def hook_LocateDevicePath(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": GUID,
     "a1": POINTER, #POINTER_T(None)
 })
 def hook_InstallConfigurationTable(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
@@ -193,7 +235,7 @@ def hook_InstallConfigurationTable(self, address, params):
     "a5": POINTER, #POINTER_T(POINTER_T(None))
 })
 def hook_LoadImage(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -201,7 +243,7 @@ def hook_LoadImage(self, address, params):
     "a2": POINTER, #POINTER_T(POINTER_T(ctypes.c_uint16))
 })
 def hook_StartImage(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -210,32 +252,32 @@ def hook_StartImage(self, address, params):
     "a3": POINTER, #POINTER_T(ctypes.c_uint16)
 })
 def hook_Exit(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
 })
 def hook_UnloadImage(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
     "a1": ULONGLONG,
 })
 def hook_ExitBootServices(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(ctypes.c_uint64)
 })
 def hook_GetNextMonotonicCount(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
 })
 def hook_Stall(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
@@ -244,7 +286,7 @@ def hook_Stall(self, address, params):
     "a3": POINTER, #POINTER_T(ctypes.c_uint16)
 })
 def hook_SetWatchdogTimer(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -253,7 +295,7 @@ def hook_SetWatchdogTimer(self, address, params):
     "a3": ULONGLONG,
 })
 def hook_ConnectController(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -261,18 +303,18 @@ def hook_ConnectController(self, address, params):
     "a2": POINTER, #POINTER_T(None)
 })
 def hook_DisconnectController(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(None)
-    "a1": GUID,
-    "a2": POINTER, #POINTER_T(POINTER_T(None))
-    "a3": POINTER, #POINTER_T(None)
-    "a4": POINTER, #POINTER_T(None)
-    "a5": UINT,
+    "Handle": POINTER, #POINTER_T(None)
+    "Protocol": GUID,
+    "Interface": POINTER, #POINTER_T(POINTER_T(None))
+    "AgentHandle": POINTER, #POINTER_T(None)
+    "ControllerHandle": POINTER, #POINTER_T(None)
+    "Attributes": UINT,
 })
 def hook_OpenProtocol(self, address, params):
-    pass
+    return LocateProtocol(self, address, params)
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -281,7 +323,7 @@ def hook_OpenProtocol(self, address, params):
     "a3": POINTER, #POINTER_T(None)
 })
 def hook_CloseProtocol(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -290,7 +332,7 @@ def hook_CloseProtocol(self, address, params):
     "a3": POINTER, #POINTER_T(ctypes.c_uint64)
 })
 def hook_OpenProtocolInformation(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -298,17 +340,28 @@ def hook_OpenProtocolInformation(self, address, params):
     "a2": POINTER, #POINTER_T(ctypes.c_uint64)
 })
 def hook_ProtocolsPerHandle(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": ULONGLONG,
-    "a1": GUID,
-    "a2": POINTER, #POINTER_T(None)
-    "a3": POINTER, #POINTER_T(ctypes.c_uint64)
-    "a4": POINTER, #POINTER_T(POINTER_T(POINTER_T(None)))
+    "SearchType": ULONGLONG,
+    "Protocol": GUID,
+    "SearchKey": POINTER, #POINTER_T(None)
+    "NoHandles": POINTER, #POINTER_T(ctypes.c_uint64)
+    "Buffer": POINTER, #POINTER_T(POINTER_T(POINTER_T(None)))
 })
 def hook_LocateHandleBuffer(self, address, params):
-    pass
+    return self.EFI_SUCCESS
+
+def LocateProtocol(self, address, params):
+    protocol = params['Protocol']
+    for handle, guid_dic in self.ql.handle_dict.items():
+        if "Handle" in params and params["Handle"] != handle:
+            continue
+        for guid, protocol_ptr in guid_dic.items():
+            if guid == protocol:
+                self.write_int(params['Interface'], protocol_ptr)
+                return protocol_ptr
+    return self.EFI_NOT_FOUND
 
 @dxeapi(params={
     "Protocol": GUID,
@@ -316,15 +369,8 @@ def hook_LocateHandleBuffer(self, address, params):
     "Interface": POINTER, #POINTER_T(POINTER_T(None))
 })
 def hook_LocateProtocol(self, address, params):
-    protocol = params['Protocol']
-    for handle, guid_dic in self.ql.handle_dict.items():
-        for guid, protocol_ptr in guid_dic.items():
-            from binascii import hexlify
-            if guid == protocol:
-                addr = self.read_int(params['Interface'])
-                self.write_int(params['Interface'], protocol_ptr)
-                return protocol_ptr
-    return -1
+    return LocateProtocol(self, address, params)
+
 
 @dxeapi(params={
     "Handle": POINTER})
@@ -349,7 +395,7 @@ def hook_InstallMultipleProtocolInterfaces(self, address, params):
     "a0": POINTER, #POINTER_T(None)
 })
 def hook_UninstallMultipleProtocolInterfaces(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -357,7 +403,7 @@ def hook_UninstallMultipleProtocolInterfaces(self, address, params):
     "a2": POINTER, #POINTER_T(ctypes.c_uint32)
 })
 def hook_CalculateCrc32(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
     "Destination": POINTER, #POINTER_T(None)
@@ -380,18 +426,18 @@ def hook_CopyMem(self, address, params):
     "a2": ULONGLONG,
 })
 def hook_SetMem(self, address, params):
-    pass
+    return self.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": UINT,
-    "a1": ULONGLONG,
-    "a2": POINTER, #POINTER_T(ctypes.CFUNCTYPE(None, POINTER_T(None), POINTER_T(None)))
-    "a3": POINTER, #POINTER_T(None)
-    "a4": GUID,
-    "a5": POINTER, #POINTER_T(POINTER_T(None))
+    "Type": UINT,
+    "NotifyTpl": ULONGLONG,
+    "NotifyFunction": POINTER, #POINTER_T(ctypes.CFUNCTYPE(None, POINTER_T(None), POINTER_T(None)))
+    "NotifyContext": POINTER, #POINTER_T(None)
+    "EventGroup": GUID,
+    "Event": POINTER, #POINTER_T(POINTER_T(None))
 })
 def hook_CreateEventEx(self, address, params):
-    pass
+    return CreateEvent(self, address, params)
 
 
 
