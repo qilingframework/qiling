@@ -161,6 +161,7 @@ def usage():
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e open")
+    exit(0)
 
 
 if __name__ == '__main__':
@@ -189,6 +190,9 @@ if __name__ == '__main__':
     shellcode_parser.add_argument('--hex', action='store_true', default=False, dest='hex', help='input file format, -hex')
     shellcode_parser.add_argument('--bin', action='store_true', default=True, dest='bin', help='input file format, -bin')
     
+    if len(sys.argv) <= 1:
+        usage()
+
     if (sys.argv[1] == 'run'):
         comm_parser = run_parser
     elif (sys.argv[1] == 'shellcode'):
