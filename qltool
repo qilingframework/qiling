@@ -85,7 +85,7 @@ def ql_asm2bytes(fname, archtype, archmode = None):
 
         except KsError as e:
             print("ERROR Keystone Compile Error: %s" % e)
-            exit
+            exit(1)
 
         return shellcode
 
@@ -150,18 +150,16 @@ def usage():
     print("\t ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples/rootfs/x8664_linux/")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux")
 
-    print("\n\nWith binary gdbserver:")
+    print("\n\nWith binary file and gdbserver:")
     print("\t ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --gdb 127.0.0.1:9999 --rootfs examples/rootfs/x8664_linux")
 
-    print("\n\nWith binary file and argv:")
+    print("\n\nWith binary file and additional argv:")
     print("\t ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_args --rootfs examples/rootfs/x8664_linux --args test1 test2 test3")
-    print("\t ./qltool run --rootfs examples/rootfs/x8664_linux examples/rootfs/x8664_linux/bin/x8664_args test1 test2 test3")
 
     print("\n\nwith binary file and various output format:")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm")
-    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e open")
-    exit(0)
+    exit(1)
 
 
 if __name__ == '__main__':
@@ -248,12 +246,10 @@ if __name__ == '__main__':
     if type(options.verbose) != int and options.output not in ("debug", "dump"):
         print("ERROR: verbose mode, must be int and use with --debug or --dump")
         usage()
-        exit(1)
 
     if options.debug_stop and not (options.dump or options.debug):
         print("ERROR: debug_stop must use with either dump or debug mode")
         usage()
-        exit(1)
     
     #
     # ql setup
@@ -270,14 +266,14 @@ if __name__ == '__main__':
         else:
             print("ERROR: Command error!")
             usage()
-            exit(1)
+
     elif (options.subparser_name == 'shellcode'):
         ql = run_shellcode(options)
     
     else:
         print("ERROR: Unknown command")
         usage()
-        exit(1)
+
 
     #
     # ql execute additional options
