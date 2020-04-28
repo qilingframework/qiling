@@ -136,14 +136,28 @@ def __x86_cc(ql, param_num, params, func, args, kwargs):
         param_num = set_function_params(ql, params, args[2])
     # call function
     result = func(*args, **kwargs)
+
+
     # set return value
     if result is not None:
         set_return_value(ql, result)
     # print
     print_function(ql, args[1], func.__name__, args[2], result)
+
     return result, param_num
 
 
+def set_syscall(ql, name, params, result, address, return_address):
+
+    ql.os.syscalls.setdefault(name, []).append({
+            "params": params,
+            "result": result,
+            "address": address,
+            "return_address": return_address,
+            "position": ql.os.syscalls_counter
+        })
+
+    ql.os.syscalls_counter += 1
 
 def x86_stdcall(ql, param_num, params, func, args, kwargs):
     # if we check ret_addr before the call, we can't modify the ret_addr from inside the hook
@@ -151,6 +165,9 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
 
     # get ret addr
     ret_addr = ql.stack_read(0)
+
+    # append syscall to list
+    set_syscall(ql, func.__name__.split("_", 1)[1], params, result, ql.reg.pc, ret_addr)
 
     # update stack pointer
     ql.reg.sp = ql.reg.sp + ((param_num + 1) * 4)
@@ -163,18 +180,26 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
 
 def x86_cdecl(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
+    old_pc = ql.reg.pc
 
     if ql.os.PE_RUN:
         ql.reg.pc = ql.stack_pop()
+
+    # append syscall to list
+    set_syscall(ql, func.__name__.split("_", 1)[1], params, result, old_pc, ql.reg.pc)
 
     return result
 
 
 def x8664_fastcall(ql,  param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
+    old_pc = ql.reg.pc
 
     if ql.os.PE_RUN:
         ql.reg.pc = ql.stack_pop()
+
+    # append syscall to list
+    set_syscall(ql, func.__name__.split("hook_", 1)[1], params, result, old_pc, ql.reg.pc)
 
     return result
 
