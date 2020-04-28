@@ -382,13 +382,13 @@ class GDBSERVERsession(object):
                     xml_folder      = ql_arch_convert_str(self.ql.archtype)
                     xfercmd_file    = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
-                    if os.path.exists(xfercmd_file):
+                    if os.path.exists(xfercmd_file) and self.ql.ostype is not QL_OS.WINDOWS:
                         f = open(xfercmd_file, 'r')
                         file_contents = f.read()
                         self.send("l%s" % file_contents)
                     else:
                         self.ql.nprint("gdb> Xml file not found: %s\n" % (xfercmd_file))
-                        exit(1)
+
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
                     file_contents = ("<threads>\r\n<thread id=\"2048\" core=\"3\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
@@ -718,7 +718,6 @@ class GDBSERVERsession(object):
         try:
             while True:
                 c = self.netin.read(1)
-                # self.ql.dprint(c)
                 if c == '\x03':
                     return 'Error: CTRL+C'
 
