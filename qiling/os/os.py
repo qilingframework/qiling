@@ -41,5 +41,9 @@ class QlOs(QLOsUtils):
         if self.ql.archbit == 32:
             self.QL_EMU_END = QL_ARCHBIT32_EMU_END
         elif self.ql.archbit == 64:
-            self.QL_EMU_END = QL_ARCHBIT64_EMU_END           
+            self.QL_EMU_END = QL_ARCHBIT64_EMU_END
+
+        # We can save every syscall called
+        self.syscalls = {}
+        self.syscalls_counter = 0
 
