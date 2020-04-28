@@ -148,7 +148,8 @@ def __x86_cc(ql, param_num, params, func, args, kwargs):
 
 
 def set_syscall(ql, name, params, result, address, return_address):
-
+    if name.startswith("hook_"):
+        name = name.split("hook_", 1)[1]
     ql.os.syscalls.setdefault(name, []).append({
             "params": params,
             "result": result,
@@ -167,7 +168,7 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
     ret_addr = ql.stack_read(0)
 
     # append syscall to list
-    set_syscall(ql, func.__name__.split("_", 1)[1], params, result, ql.reg.pc, ret_addr)
+    set_syscall(ql, func.__name__, params, result, ql.reg.pc, ret_addr)
 
     # update stack pointer
     ql.reg.sp = ql.reg.sp + ((param_num + 1) * 4)
@@ -186,7 +187,7 @@ def x86_cdecl(ql, param_num, params, func, args, kwargs):
         ql.reg.pc = ql.stack_pop()
 
     # append syscall to list
-    set_syscall(ql, func.__name__.split("_", 1)[1], params, result, old_pc, ql.reg.pc)
+    set_syscall(ql, func.__name__, params, result, old_pc, ql.reg.pc)
 
     return result
 
@@ -198,8 +199,9 @@ def x8664_fastcall(ql,  param_num, params, func, args, kwargs):
     if ql.os.PE_RUN:
         ql.reg.pc = ql.stack_pop()
 
+
     # append syscall to list
-    set_syscall(ql, func.__name__.split("hook_", 1)[1], params, result, old_pc, ql.reg.pc)
+    set_syscall(ql, func.__name__, params, result, old_pc, ql.reg.pc)
 
     return result
 
