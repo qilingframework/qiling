@@ -125,7 +125,7 @@ class GDBSERVERsession(object):
 
             def handle_c(subcmd):
                 self.gdb.resume_emu(self.ql.register(self.pc_reg))
-                if self.gdb.bp_list in ([self.ql.loader.elf_entry], [self.ql.loader.entry_point]):
+                if (self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and self.gdb.bp_list in ([self.ql.loader.elf_entry], [self.ql.loader.entry_point])) or self.gdb.bp_list in ([self.ql.loader.entry_point]):
                     self.send("W00")
                 else:
                     self.send(('S%.2x' % GDB_SIGNAL_TRAP))
