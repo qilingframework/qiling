@@ -9,6 +9,7 @@ import string
 from qiling.const import *
 from qiling.exception import *
 from .loader import QlLoader
+from qiling.os.linux.function_hook import FunctionHook
 
 PT_LOAD = 1
 PT_DYNAMIC = 2
@@ -448,7 +449,7 @@ class QlLoaderELF(ELFParse, QlLoader):
 
         self.ql.dprint(D_INFO, "[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
 
-        self.brk_address = mem_end + loadbase
+        self.brk_address = mem_end + loadbase + 0x2000
 
         # Load interpreter if there is an interpreter
 
@@ -606,3 +607,5 @@ class QlLoaderELF(ELFParse, QlLoader):
         self.elf_entry = loadbase + elfhead['e_entry']
         self.new_stack = new_stack
         self.loadbase = loadbase
+
+        self.ql.os.fh = FunctionHook(ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, loadbase, loadbase + mem_end)

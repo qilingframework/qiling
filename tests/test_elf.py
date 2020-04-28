@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import sys, unittest, subprocess, string, random, os
+sys.path.append("..")
 from qiling import *
 from qiling.const import *
 from qiling.exception import *

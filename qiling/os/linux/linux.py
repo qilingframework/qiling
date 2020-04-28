@@ -21,6 +21,8 @@ class QlOsLinux(QlOsPosix):
         self.QL_ARM_KERNEL_GET_TLS_ADDR = 0xFFFF0FE0
         self.thread_class = None
         self.futexm = None
+        self.fh_tmp = []
+        self.fh = None
         self.load()
 
     def load(self):
@@ -91,7 +93,13 @@ class QlOsLinux(QlOsPosix):
     def hook_syscall(self, int= None, intno= None):
         return self.load_syscall(intno)
 
+    def add_function_hook(self, fn, cb, userdata = None):
+        self.fh_tmp.append((fn, cb, userdata))
+
     def run(self):
+        for fn, cb, userdata in self.fh_tmp:
+            self.fh.add_function_hook(fn, cb, userdata)
+
         if self.ql.archtype== QL_ARCH.ARM:
             ql_arm_init_kernel_get_tls(self.ql)
         

@@ -47,9 +47,11 @@ class GDBSERVERsession(object):
         self.gdb          = qldbg.Qldbg()
         self.gdb.initialize(self.ql, exit_point=exit_point, mappings=mappings)
         if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD):
-            self.gdb.bp_insert(self.ql.loader.elf_entry)
+            self.entry_point = self.ql.loader.elf_entry
         else:
-            self.gdb.bp_insert(self.ql.loader.entry_point)
+            self.entry_point = self.ql.loader.entry_point
+        
+        self.gdb.bp_insert(self.entry_point)
 
 
     def bin_to_escstr(self, rawbin):
@@ -125,7 +127,7 @@ class GDBSERVERsession(object):
 
             def handle_c(subcmd):
                 self.gdb.resume_emu(self.ql.register(self.pc_reg))
-                if (self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and self.gdb.bp_list in ([self.ql.loader.elf_entry], [self.ql.loader.entry_point])) or self.gdb.bp_list in ([self.ql.loader.entry_point]):
+                if self.gdb.bp_list is ([self.entry_point]):
                     self.send("W00")
                 else:
                     self.send(('S%.2x' % GDB_SIGNAL_TRAP))
@@ -382,13 +384,13 @@ class GDBSERVERsession(object):
                     xml_folder      = ql_arch_convert_str(self.ql.archtype)
                     xfercmd_file    = os.path.join(xfercmd_abspath,"xml",xml_folder, xfercmd_file)                        
 
-                    if os.path.exists(xfercmd_file):
+                    if os.path.exists(xfercmd_file) and self.ql.ostype is not QL_OS.WINDOWS:
                         f = open(xfercmd_file, 'r')
                         file_contents = f.read()
                         self.send("l%s" % file_contents)
                     else:
                         self.ql.nprint("gdb> Xml file not found: %s\n" % (xfercmd_file))
-                        exit(1)
+
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
                     file_contents = ("<threads>\r\n<thread id=\"2048\" core=\"3\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
@@ -718,7 +720,6 @@ class GDBSERVERsession(object):
         try:
             while True:
                 c = self.netin.read(1)
-                # self.ql.dprint(c)
                 if c == '\x03':
                     return 'Error: CTRL+C'
 
