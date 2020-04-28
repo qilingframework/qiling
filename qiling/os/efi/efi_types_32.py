@@ -27,7 +27,7 @@ import _ctypes
 ctypes._pointer_t_type_cache = {}
 def POINTER_T(pointee):
     # a pointer should have the same length as LONG
-    fake_ptr_base_type = ctypes.c_uint64 
+    fake_ptr_base_type = ctypes.c_uint32 
     # specific case for c_void_p
     if pointee is None: # VOID pointer type. c_void_p.
         pointee = type(None) # ctypes.c_void_p # ctypes.c_ulong
@@ -37,7 +37,7 @@ def POINTER_T(pointee):
     if clsname in ctypes._pointer_t_type_cache:
         return ctypes._pointer_t_type_cache[clsname]
     # make template
-    _class = type('LP_%d_%s'%(4, clsname), (ctypes.c_int,),{}) 
+    _class = type('LP_%d_%s'%(4, clsname), (fake_ptr_base_type,),{}) 
     ctypes._pointer_t_type_cache[clsname] = _class
     return _class
 

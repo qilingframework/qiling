@@ -37,7 +37,7 @@ def POINTER_T(pointee):
     if clsname in ctypes._pointer_t_type_cache:
         return ctypes._pointer_t_type_cache[clsname]
     # make template
-    _class = type('LP_%d_%s'%(8, clsname), (ctypes.c_long,),{}) 
+    _class = type('LP_%d_%s'%(8, clsname), (fake_ptr_base_type,),{}) 
     ctypes._pointer_t_type_cache[clsname] = _class
     return _class
 

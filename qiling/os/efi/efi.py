@@ -187,6 +187,7 @@ class QlOsEfi(QlOs):
 
         efi_configuration_table_ptr = system_table_heap_ptr
         system_table.ConfigurationTable = efi_configuration_table_ptr
+        system_table.NumberOfTableEntries = 1
         system_table_heap_ptr += ctypes.sizeof(EFI_CONFIGURATION_TABLE)
         efi_configuration_table = EFI_CONFIGURATION_TABLE()
 
