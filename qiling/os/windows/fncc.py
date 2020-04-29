@@ -148,10 +148,12 @@ def __x86_cc(ql, param_num, params, func, args, kwargs):
 
 
 def call_api(ql, name, params, result, address, return_address):
+    params_with_values = {}
     if name.startswith("hook_"):
         name = name.split("hook_", 1)[1]
-        params_with_values = {}
-        set_function_params(ql, params, params_with_values)
+        # printfs are shit
+        if params is not None:
+            set_function_params(ql, params, params_with_values)
     ql.os.syscalls.setdefault(name, []).append({
             "params": params_with_values,
             "result": result,
