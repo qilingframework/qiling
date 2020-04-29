@@ -80,15 +80,6 @@ class QlOsEfi(QlOs):
                 IMAGE_BASE += 0x10000
                 pe.relocate_image(IMAGE_BASE)
         return False
-    
-    def get_vars(self, variables):
-        vars = {}
-        for var in variables:
-            if len(var.variables) > 0:
-                vars.update(self.get_vars(var.variables))
-            if var.name is not None:
-                vars[var.name.decode('utf-8')] = var.data
-        return vars
 
     def load(self):
 
@@ -138,10 +129,8 @@ class QlOsEfi(QlOs):
                         raise QlErrorFileType("Can't map dependency")
             if len(self.ql.argv) > 1:
                 import pickle
-                print(self.ql.argv[-1])
                 with open(self.ql.argv[-1], 'rb') as f:
-                    var_store = pickle.load(f)
-                    self.ql.var_store = self.get_vars(var_store.variables)
+                    self.ql.var_store = pickle.load(f)
 
             # Load main module
             self.map_and_load(self.ql.path)
