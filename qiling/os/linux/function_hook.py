@@ -671,8 +671,6 @@ class FunctionHook:
 
         if self.hook_int == False:
             self.ql.hook_intno(self._hook_int, 0xa0)
-        
-        
 
 
     def add_function_hook(self, fucname, cb, userdata = None):
@@ -688,5 +686,3 @@ class FunctionHook:
 
     def _load_import(self):
         pass
-    
-    

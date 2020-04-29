@@ -6,7 +6,10 @@
 
 import argparse, os, string, sys
 from binascii import unhexlify
-from keystone import *
+try:
+    from keystone import *
+except:
+    pass    
 from qiling import *
 
 
@@ -40,7 +43,12 @@ def read_shellcode(fname):
         return shellcode
 
 def ql_asm2bytes(fname, archtype, archmode = None):
-    
+    try:
+        loadarch = KS_ARCH_X86
+    except:
+        print ("Please install Keystone Engine")
+        raise
+
     def ks_convert(arch, archmode):
         if archmode != None:
             arch = "armthumb"
