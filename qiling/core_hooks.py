@@ -304,12 +304,12 @@ class QLCoreHooks(object):
         elif self.ostype == QL_OS.WINDOWS:
             self.set_api(syscall_cur, syscall_new)
 
-    # replace Windows API with custom syscall
+    # replace Windows API with custom syscall or posix based api (eg, libc)
     def set_api(self, syscall_cur, syscall_new):
         if self.ostype == QL_OS.WINDOWS:
             self.os.user_defined_api[syscall_cur] = syscall_new
-        elif self.ostype in (QL_POSIX):
-            self.set_syscall(syscall_cur, syscall_new)
+        else:
+            self.os.add_function_hook(syscall_cur, syscall_new)
     
     def clear_hooks(self):
         for i in self._hook_fuc.keys():

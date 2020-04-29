@@ -10,7 +10,10 @@ This module is intended for general purpose functions that are only used in qili
 import struct, os, configparser
 
 from binascii import unhexlify
-from keystone import *
+try:
+    from keystone import *
+except:
+    pass
 
 from unicorn import *
 from unicorn.arm_const import *
@@ -62,6 +65,11 @@ class QLOsUtils:
 
 
     def compile_asm(self, archtype, runcode, arm_thumb= None):
+        try:
+            loadarch = KS_ARCH_X86
+        except:
+            raise QlErrorOutput("Please install Keystone Engine")
+        
         def ks_convert(arch):
             if self.ql.archendian == QL_ENDIAN.EB:
                 adapter = {

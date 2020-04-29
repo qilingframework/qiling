@@ -55,7 +55,12 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_x8664(self):
+        def my_puts(ql, fn, ori_val):
+            rdi = ql.register('RDI')
+            print("puts(%s)" % ql.mem.string(rdi))
+            ql.reg.pc = ori_val
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
+        ql.set_api('puts', my_puts)
         ql.run()
         del ql
 
