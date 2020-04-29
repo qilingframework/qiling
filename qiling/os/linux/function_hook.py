@@ -59,7 +59,7 @@ class HookFunc:
         self.hook.append((cb, userdata))
     
     def call(self):
-        ori_val = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
+        next_pc = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
         for cb, userdata in self.hook:
             if userdata == None:
                 ret = cb(self.ql)
@@ -70,7 +70,7 @@ class HookFunc:
                 ret = 0
             
             if ret & FUNC_CALL_BLOCK == 0:
-                self.ql.reg.pc = ori_val
+                self.ql.reg.pc = next_pc
             
             if ret & FUNC_HOOK_BLOCK != 0:
                 break
