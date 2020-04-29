@@ -6,10 +6,9 @@ import sys
 sys.path.append("..")
 from qiling import *
 
-def my_puts(ql, fn, next_pc):
+def my_puts(ql):
     addr = ql.func_arg[0]
     print("puts(%s)" % ql.mem.string(addr))
-    ql.reg.pc = next_pc
 
 if __name__ == "__main__":
     ql = Qiling(["rootfs/x8664_linux/bin/x8664_hello"], "rootfs/x8664_linux")

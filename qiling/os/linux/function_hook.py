@@ -62,10 +62,17 @@ class HookFunc:
         ori_val = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
         for cb, userdata in self.hook:
             if userdata == None:
-                ret = cb(self.ql, self.fucname, ori_val)
+                ret = cb(self.ql)
             else:
-                ret = cb(self.ql, self.fucname, ori_val, userdata)
-            if ret == False:
+                ret = cb(self.ql, userdata)
+
+            if type(ret) != int:
+                ret = 0
+            
+            if ret & FUNC_CALL_BLOCK == 0:
+                self.ql.reg.pc = ori_val
+            
+            if ret & FUNC_HOOK_BLOCK != 0:
                 break
     
     def enable(self):
