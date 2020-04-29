@@ -310,7 +310,14 @@ class QLCoreHooks(object):
             self.os.user_defined_api[syscall_cur] = syscall_new
         else:
             self.os.add_function_hook(syscall_cur, syscall_new)
-    
+
+    # ql.func_arg - get syscall for all posix series
+    @property
+    def func_arg(self):
+        if self.ostype in (QL_POSIX):
+            return self.os.get_func_arg()    
+
+
     def clear_hooks(self):
         for i in self._hook_fuc.keys():
             self.uc.hook_del(self._hook_fuc[i])

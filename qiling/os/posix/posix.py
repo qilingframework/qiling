@@ -47,14 +47,8 @@ class QlOsPosix(QlOs):
     def syscall(self):
         return self.get_syscall()
 
-    # ql.syscall_param - get syscall for all posix series
-    @property
-    def syscall_param(self):
-        return self.get_syscall_param()
-
     def load_syscall(self, intno=None):
         map_syscall = self.ql.os_setup(function_name="map_syscall")
-        param0, param1, param2, param3, param4, param5 = self.syscall_param
         self.syscall_map = self.dict_posix_syscall_by_num.get(self.syscall)
         if self.syscall_map is not None:
             self.syscall_name = self.syscall_map.__name__
@@ -75,12 +69,12 @@ class QlOsPosix(QlOs):
             try:
                 self.syscalls.setdefault(self.syscall_name, []).append({
                     "params": {
-                        "param0": param0,
-                        "param1": param1,
-                        "param2": param2,
-                        "param3": param3,
-                        "param4": param4,
-                        "param5": param5
+                        "param0": self.get_func_arg()[0],
+                        "param1": self.get_func_arg()[1],
+                        "param2": self.get_func_arg()[2],
+                        "param3": self.get_func_arg()[3],
+                        "param4": self.get_func_arg()[4],
+                        "param5": self.get_func_arg()[5]
                     },
                     "result": None,
                     "address": self.ql.reg.pc,
@@ -90,7 +84,7 @@ class QlOsPosix(QlOs):
 
                 self.syscalls_counter += 1
 
-                self.syscall_map(self.ql, param0, param1, param2, param3, param4, param5)
+                self.syscall_map(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
             except KeyboardInterrupt:
                 raise
             except Exception as e:
@@ -148,7 +142,7 @@ class QlOsPosix(QlOs):
             self.ql.register(UC_MIPS_REG_A3, a3return)
 
     # get syscall
-    def get_syscall_param(self):
+    def get_func_arg(self):
         if self.ql.archtype == QL_ARCH.ARM64:
             param0 = self.ql.register(UC_ARM64_REG_X0)
             param1 = self.ql.register(UC_ARM64_REG_X1)
@@ -187,4 +181,4 @@ class QlOsPosix(QlOs):
             param4 = self.ql.register(UC_X86_REG_R8)
             param5 = self.ql.register(UC_X86_REG_R9)
 
-        return param0, param1, param2, param3, param4, param5
+        return [param0, param1, param2, param3, param4, param5]
