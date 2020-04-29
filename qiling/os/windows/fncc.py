@@ -148,10 +148,14 @@ def __x86_cc(ql, param_num, params, func, args, kwargs):
 
 
 def call_api(ql, name, params, result, address, return_address):
+    params_with_values = {}
     if name.startswith("hook_"):
         name = name.split("hook_", 1)[1]
+        # printfs are shit
+        if params is not None:
+            set_function_params(ql, params, params_with_values)
     ql.os.syscalls.setdefault(name, []).append({
-            "params": params,
+            "params": params_with_values,
             "result": result,
             "address": address,
             "return_address": return_address,
@@ -182,12 +186,12 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
 def x86_cdecl(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
     old_pc = ql.reg.pc
+    # append syscall to list
+    call_api(ql, func.__name__, params, result, old_pc, ql.stack_read(0))
 
     if ql.os.PE_RUN:
         ql.reg.pc = ql.stack_pop()
 
-    # append syscall to list
-    call_api(ql, func.__name__, params, result, old_pc, ql.reg.pc)
 
     return result
 
@@ -195,13 +199,13 @@ def x86_cdecl(ql, param_num, params, func, args, kwargs):
 def x8664_fastcall(ql,  param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
     old_pc = ql.reg.pc
+    # append syscall to list
+    call_api(ql, func.__name__, params, result, old_pc, ql.stack_read(0))
 
     if ql.os.PE_RUN:
         ql.reg.pc = ql.stack_pop()
 
 
-    # append syscall to list
-    call_api(ql, func.__name__, params, result, old_pc, ql.reg.pc)
 
     return result
 
