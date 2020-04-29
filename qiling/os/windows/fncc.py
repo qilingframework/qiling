@@ -186,12 +186,12 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
 def x86_cdecl(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
     old_pc = ql.reg.pc
+    # append syscall to list
+    call_api(ql, func.__name__, params, result, old_pc, ql.stack_read(0))
 
     if ql.os.PE_RUN:
         ql.reg.pc = ql.stack_pop()
 
-    # append syscall to list
-    call_api(ql, func.__name__, params, result, old_pc, ql.reg.pc)
 
     return result
 
@@ -199,13 +199,13 @@ def x86_cdecl(ql, param_num, params, func, args, kwargs):
 def x8664_fastcall(ql,  param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
     old_pc = ql.reg.pc
+    # append syscall to list
+    call_api(ql, func.__name__, params, result, old_pc, ql.stack_read(0))
 
     if ql.os.PE_RUN:
         ql.reg.pc = ql.stack_pop()
 
 
-    # append syscall to list
-    call_api(ql, func.__name__, params, result, old_pc, ql.reg.pc)
 
     return result
 
