@@ -56,6 +56,11 @@ def RegQueryValue(ql, address, params):
         value = ql.os.profile["REGISTRY"][s_hKey]
         # TODO fix in profile
         reg_type = 0x0001
+        ql.os.registry_manager.accessed[s_hKey].append({
+                        "subkey": s_lpValueName,
+                        "value": value,
+                        "type": reg_type
+                    })
     except KeyError:
         reg_type, value = ql.os.registry_manager.read(s_hKey, s_lpValueName, reg_type)
 

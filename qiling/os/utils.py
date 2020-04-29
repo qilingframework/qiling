@@ -11,6 +11,7 @@ import struct, os, configparser
 from json import dumps
 
 from binascii import unhexlify
+
 try:
     from keystone import *
 except:
@@ -32,6 +33,7 @@ from qiling.const import *
 from qiling.exception import *
 from .const import *
 
+
 class QLOsUtils:
     def __init__(self, ql):
         self.ql = ql
@@ -39,7 +41,6 @@ class QLOsUtils:
         self.ostype = None
         self.path = None
         self.archendian = None
-
 
     def lsbmsb_convert(self, sc, size=4):
         split_bytes = []
@@ -51,8 +52,7 @@ class QLOsUtils:
         for i in split_bytes:
             ebsc += i
 
-        return ebsc    
-
+        return ebsc
 
     def init_profile(self):
         config = configparser.ConfigParser()
@@ -61,16 +61,15 @@ class QLOsUtils:
         for section in config.sections():
             self.ql.dprint(D_RPRT, "[+] Section: %s" % section)
             for key in config[section]:
-                self.ql.dprint(D_RPRT, "[-] %s %s" % (key, config[section][key]) )
+                self.ql.dprint(D_RPRT, "[-] %s %s" % (key, config[section][key]))
         return config
 
-
-    def compile_asm(self, archtype, runcode, arm_thumb= None):
+    def compile_asm(self, archtype, runcode, arm_thumb=None):
         try:
             loadarch = KS_ARCH_X86
         except:
             raise QlErrorOutput("Please install Keystone Engine")
-        
+
         def ks_convert(arch):
             if self.ql.archendian == QL_ENDIAN.EB:
                 adapter = {
@@ -115,15 +114,14 @@ class QLOsUtils:
 
             return shellcode
 
-        if arm_thumb == True and archtype == QL_ARCH.ARM:
+        if arm_thumb1 and archtype == QL_ARCH.ARM:
             archtype = QL_ARCH.ARM_THUMB
 
         archtype, archmode = ks_convert(archtype)
         return compile_instructions(runcode, archtype, archmode)
 
-
     def transform_to_link_path(self, path):
-        if self.ql.multithread == True:
+        if self.ql.multithread:
             cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
             cur_path = self.ql.os.current_path
@@ -144,16 +142,15 @@ class QLOsUtils:
                 to_path = to
                 break
 
-        if from_path != None:
+        if from_path is not None:
             real_path = os.path.abspath(to_path + relative_path[fm_l:])
         else:
             real_path = os.path.abspath(rootfs + '/' + relative_path)
 
         return real_path
 
-
     def transform_to_real_path(self, path):
-        if self.ql.multithread == True:
+        if self.ql.multithread:
             cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
             cur_path = self.ql.os.current_path
@@ -174,10 +171,10 @@ class QLOsUtils:
                 to_path = to
                 break
 
-        if from_path != None:
+        if from_path is not None:
             real_path = os.path.abspath(to_path + relative_path[fm_l:])
         else:
-            if rootfs == None:
+            if rootfs is None:
                 rootfs = ""
             real_path = os.path.abspath(rootfs + '/' + relative_path)
 
@@ -187,7 +184,7 @@ class QLOsUtils:
                     real_path = self.ql.os.transform_to_real_path(link_path)
                 else:
                     real_path = self.ql.os.transform_to_real_path(os.path.dirname(relative_path) + '/' + link_path)
-            
+
                 # FIXME: Quick and dirty fix. Need to check more
                 if not os.path.exists(real_path):
                     real_path = os.path.abspath(rootfs + '/' + relative_path)
@@ -201,19 +198,18 @@ class QLOsUtils:
                     if link_path[0] == '/':
                         path_dirs = path_dirs[1:]
 
-                    for i in range(0, len(path_dirs)-1):
-                        path_prefix = os.path.sep.join(path_dirs[:i+1])
+                    for i in range(0, len(path_dirs) - 1):
+                        path_prefix = os.path.sep.join(path_dirs[:i + 1])
                         real_path_prefix = self.ql.os.transform_to_real_path(path_prefix)
-                        path_remain = os.path.sep.join(path_dirs[i+1:])
+                        path_remain = os.path.sep.join(path_dirs[i + 1:])
                         real_path = os.path.join(real_path_prefix, path_remain)
                         if os.path.exists(real_path):
                             break
 
         return real_path
 
-
     def transform_to_relative_path(self, path):
-        if self.ql.multithread == True:
+        if self.ql.multithread:
             cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
             cur_path = self.ql.os.current_path
@@ -225,14 +221,17 @@ class QLOsUtils:
 
         return relative_path
 
-
     def post_report(self):
         self.ql.dprint(D_INFO, "[+] Syscalls called")
         for key, values in self.ql.os.syscalls.items():
             self.ql.dprint(D_INFO, "[-] %s:" % key)
             for value in values:
-                self.ql.dprint(D_INFO, "[-] %s "% str(dumps(value)))
-
+                self.ql.dprint(D_INFO, "[-] %s " % str(dumps(value)))
+        self.ql.dprint(D_INFO, "[+] Registries accessed")
+        for key, values in self.ql.os.registry_manager.accessed.items():
+            self.ql.dprint(D_INFO, "[-] %s:" % key)
+            for value in values:
+                self.ql.dprint(D_INFO, "[-] %s " % str(dumps(value)))
 
     def exec_arbitrary(self, start, end):
         old_sp = self.ql.reg.sp
@@ -261,7 +260,7 @@ class QLOsUtils:
         def ql_hook_code_disasm(ql, address, size):
             tmp = ql.mem.read(address, size)
 
-            if (ql.archtype== QL_ARCH.ARM):  # QL_ARM
+            if ql.archtype == QL_ARCH.ARM:  # QL_ARM
                 reg_cpsr = ql.register(UC_ARM_REG_CPSR)
                 mode = CS_MODE_ARM
                 if ql.archendian == QL_ENDIAN.EB:
@@ -279,16 +278,16 @@ class QLOsUtils:
                 else:
                     md = Cs(CS_ARCH_ARM, mode)
 
-            elif (ql.archtype == QL_ARCH.X86):  # QL_X86
+            elif ql.archtype == QL_ARCH.X86:  # QL_X86
                 md = Cs(CS_ARCH_X86, CS_MODE_32)
 
-            elif (ql.archtype == QL_ARCH.X8664):  # QL_X86_64
+            elif ql.archtype == QL_ARCH.X8664:  # QL_X86_64
                 md = Cs(CS_ARCH_X86, CS_MODE_64)
 
-            elif (ql.archtype == QL_ARCH.ARM64):  # QL_ARM64
+            elif ql.archtype == QL_ARCH.ARM64:  # QL_ARM64
                 md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 
-            elif (ql.archtype == QL_ARCH.MIPS32):  # QL_MIPS32
+            elif ql.archtype == QL_ARCH.MIPS32:  # QL_MIPS32
                 if ql.archendian == QL_ENDIAN.EB:
                     md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
                 else:
@@ -303,30 +302,29 @@ class QLOsUtils:
             ql.nprint("[+] 0x%x\t" % (address), end="")
 
             for i in tmp:
-                ql.nprint (" %02x " % i, end="")
+                ql.nprint(" %02x " % i, end="")
 
             if opsize <= 6:
-                ql.nprint ("\t", end="")
-            
+                ql.nprint("\t", end="")
+
             for i in insn:
-                ql.nprint ("%s %s" % (i.mnemonic, i.op_str))
-            
+                ql.nprint("%s %s" % (i.mnemonic, i.op_str))
+
             if ql.output == QL_OUTPUT.DUMP:
                 for reg in ql.reg.table:
                     ql.reg.name = reg
                     REG_NAME = ql.reg.name
                     REG_VAL = ql.register(reg)
                     ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
-        
+
         if self.ql.output in (QL_OUTPUT.DISASM, QL_OUTPUT.DUMP):
             if self.ql.output == QL_OUTPUT.DUMP:
                 self.ql.hook_block(ql_hook_block_disasm)
             self.ql.hook_code(ql_hook_code_disasm)
 
-
     def stop(self, stop_event=THREAD_EVENT_EXIT_GROUP_EVENT):
-        if self.ql.multithread == True:
+        if self.ql.multithread:
             td = self.thread_management.cur_thread
             td.stop()
             td.stop_event = stop_event
-        self.ql.emu_stop()        
+        self.ql.emu_stop()
