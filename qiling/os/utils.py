@@ -8,6 +8,7 @@ This module is intended for general purpose functions that are only used in qili
 """
 
 import struct, os, configparser
+from json import dumps
 
 from binascii import unhexlify
 try:
@@ -226,8 +227,11 @@ class QLOsUtils:
 
 
     def post_report(self):
-        self.ql.dprint(D_INFO, "[+] Syscalls and number of invocations")
-        self.ql.dprint(D_INFO, "[-] " + str(list(self.ql.os.syscall_count.items())))
+        self.ql.dprint(D_INFO, "[+] Syscalls called")
+        for key, values in self.ql.os.syscalls.items():
+            self.ql.dprint(D_INFO, "[-] %s:" % key)
+            for value in values:
+                self.ql.dprint(D_INFO, "[-] %s "% str(dumps(value)))
 
 
     def exec_arbitrary(self, start, end):
