@@ -17,7 +17,7 @@ class QlOsLinux(QlOsPosix):
     def __init__(self, ql):
         super(QlOsLinux, self).__init__(ql)
         self.ql = ql
-        self.QL_LINUX_PREDEFINE_STACKSIZE = 0x21000
+
         self.QL_ARM_KERNEL_GET_TLS_ADDR = 0xFFFF0FE0
         self.thread_class = None
         self.futexm = None
@@ -26,9 +26,9 @@ class QlOsLinux(QlOsPosix):
         self.load()
 
     def load(self):
-
         self.ql.uc = self.ql.arch.init_uc
         self.futexm = QlLinuxFutexManagement()
+        self.QL_LINUX_PREDEFINE_STACKSIZE = 0x21000
 
         # ARM
         if self.ql.archtype== QL_ARCH.ARM:
@@ -40,7 +40,7 @@ class QlOsLinux(QlOsPosix):
         # MIPS32
         elif self.ql.archtype== QL_ARCH.MIPS32:
             self.QL_LINUX_PREDEFINE_STACKADDRESS = 0x7ff0d000
-            self.QL_LINUX_PREDEFINE_STACKSIZE = 0x30000
+            self.QL_LINUX_PREDEFINE_STACKSIZE = 0x30000            
             self.ql.hook_intno(self.hook_syscall, 17)
             self.thread_class = QlLinuxMIPS32Thread
 
@@ -69,23 +69,21 @@ class QlOsLinux(QlOsPosix):
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
             self.thread_class = QlLinuxX8664Thread
 
-        if self.ql.shellcoder and not self.ql.stack_address and not self.ql.stack_size:
-            self.stack_address = 0x1000000
-            self.stack_size = 10 * 1024 * 1024
-
-        elif not self.ql.shellcoder and not self.ql.stack_address and not self.ql.stack_size:
-            self.stack_address = self.QL_LINUX_PREDEFINE_STACKADDRESS
-            self.stack_size = self.QL_LINUX_PREDEFINE_STACKSIZE
-
-        elif self.ql.stack_address and self.ql.stack_size:
-            self.stack_address = self.ql.stack_address
-            self.stack_address = self.ql.stack_size                
-        
-        self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
-        
         if self.ql.shellcoder:
-            self.stack_address  = (self.stack_address + 0x200000 - 0x1000)
-            self.ql.mem.write(self.stack_address, self.ql.shellcoder)
+            self.entry_point = 0x1000000
+            self.shellcoder_ram = 10 * 1024 * 1024
+            self.ql.mem.map(self.entry_point, self.shellcoder_ram, info="[shellcode_stack]")
+            self.entry_point  = (self.entry_point + 0x200000 - 0x1000)
+            self.ql.mem.write(self.entry_point, self.ql.shellcoder)
+        else:
+            if not self.ql.stack_address and not self.ql.stack_size:
+                self.stack_address = self.QL_LINUX_PREDEFINE_STACKADDRESS
+                self.stack_size = self.QL_LINUX_PREDEFINE_STACKSIZE
+            elif self.ql.stack_address and self.ql.stack_size:
+                self.stack_address = self.ql.stack_address
+                self.stack_address = self.ql.stack_size    
+
+            self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")            
 
         self.setup_output()
 
@@ -103,14 +101,17 @@ class QlOsLinux(QlOsPosix):
         if self.ql.archtype== QL_ARCH.ARM:
             ql_arm_init_kernel_get_tls(self.ql)
         
-        self.ql.reg.sp = self.stack_address
+        if self.ql.shellcoder:
+            self.ql.reg.sp = self.entry_point
+        else:            
+            self.ql.reg.sp = self.stack_address
 
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
 
         try:
             if self.ql.shellcoder:
-                self.ql.emu_start(self.stack_address, (self.stack_address + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)
+                self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)
             else:
                 if self.ql.multithread == True:
                     # start multithreading

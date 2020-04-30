@@ -19,7 +19,9 @@ class QlLoaderMACHO(QlLoader):
         self.dyld_path      = dyld_path
         self.ql             = ql
     
-    def run(self):        
+    def run(self):
+        if self.ql.shellcoder:
+            return  
         self.macho_file     = MachoParser(self.ql, self.ql.path)
         self.loading_file   = self.macho_file
         self.slide          = 0x0000000000000000

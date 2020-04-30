@@ -342,19 +342,19 @@ class QlLoaderELF(ELFParse, QlLoader):
     def __init__(self, ql):
         super()
         self.ql = ql
-        
+              
     def run(self):
+        if self.ql.shellcoder:
+            self.entry_point = self.ql.os.entry_point
+            return
         self.path = self.ql.path
-        if not self.ql.shellcoder:
-            ELFParse.__init__(self, self.path, self.ql)
+        ELFParse.__init__(self, self.path, self.ql)
         self.interp_base = 0
         self.mmap_start = 0
         self.argv = self.ql.argv
         self.env = self.ql.env
-
-        if not self.ql.shellcoder:
-            self.load_with_ld(self.ql, self.ql.os.stack_address + self.ql.os.stack_size, argv = self.argv, env = self.env)
-            self.ql.os.stack_address  = (int(self.new_stack))
+        self.load_with_ld(self.ql, self.ql.os.stack_address + self.ql.os.stack_size, argv = self.argv, env = self.env)
+        self.ql.os.stack_address  = (int(self.new_stack))
 
     def pack(self, data):
         if self.ql.archbit == 64:

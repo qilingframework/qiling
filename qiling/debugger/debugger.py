@@ -18,10 +18,21 @@ def ql_debugger_init(ql):
                 ip = '127.0.0.1'
             if port is None:
                 port = 9999
-            port = int(port) 
+
+            port = int(port)
+            
+            if ql.shellcoder:
+                loadbase = ql.loader.entry_point
+                mappings = [(hex(ql.loader.entry_point), 0x0)]
+                exit_point = ql.loader.entry_point + len(ql.shellcoder)
+            else:
+                loadbase = ql.loader.loadbase
+                mappings = [(hex(ql.loader.entry_point), 0x10)]
+                exit_point = ql.loader.entry_point + os.path.getsize(path)
+
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind((ip, port))
-            ql.nprint("\ndebugger> Initializing loadbase 0x%x\n" % (ql.loader.loadbase))
+            ql.nprint("\ndebugger> Initializing loadbase 0x%x\n" % (loadbase))
             ql.nprint("debugger> Listening on %s:%u\n" % (ip, port))
             sock.listen(1)
             conn, addr = sock.accept()
@@ -29,8 +40,7 @@ def ql_debugger_init(ql):
             ql.nprint("debugger> Error: Address already in use\n")
             raise
         try:
-            mappings = [(hex(ql.loader.entry_point), 0x10)]
-            exit_point = ql.loader.entry_point + os.path.getsize(path)
+
             remotedebugsrv = debugger_convert_str(remotedebugsrv)
             remotedebugsrv = str(remotedebugsrv) + "server" 
             DEBUGSESSION = str.upper(remotedebugsrv) + "session"

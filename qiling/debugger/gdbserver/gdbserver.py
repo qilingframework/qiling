@@ -42,15 +42,21 @@ class GDBSERVERsession(object):
         self.en_vcont       = False
         self.pc_reg         = self.ql.reg.name_pc
         self.sp_reg         = self.ql.reg.name_sp
-        self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
-        self.rootfs_abspath = (os.path.abspath(self.ql.rootfs))
         self.gdb          = qldbg.Qldbg()
         self.gdb.initialize(self.ql, exit_point=exit_point, mappings=mappings)
-        if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD):
-            self.entry_point = self.ql.loader.elf_entry
-        else:
+ 
+        if self.ql.shellcoder:
             self.entry_point = self.ql.loader.entry_point
-        
+            self.exe_abspath    = "/root/qiling/shellcoder"
+            self.rootfs_abspath = "/"  
+        else:    
+            self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
+            self.rootfs_abspath = (os.path.abspath(self.ql.rootfs)) 
+            if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD):
+                self.entry_point = self.ql.loader.elf_entry
+            else:
+                self.entry_point = self.ql.loader.entry_point
+
         self.gdb.bp_insert(self.entry_point)
 
 
@@ -397,7 +403,9 @@ class GDBSERVERsession(object):
                     self.send("l" + file_contents)
 
                 elif subcmd.startswith('Xfer:auxv:read::'):
-                    if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD):
+                    if self.ql.shellcoder:
+                        return
+                    if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) :
                         if self.ql.archbit == 64:
                             ANNEX               = "00000000000000"
                             AT_SYSINFO_EHDR     = "0000000000000000" # System-supplied DSO's ELF header
@@ -501,6 +509,7 @@ class GDBSERVERsession(object):
 
                 elif subcmd.startswith('Xfer:exec-file:read:'):
                     self.send("l%s" % str(self.exe_abspath))
+
 
                 elif subcmd.startswith('Xfer:libraries-svr4:read:'):
                     if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD):

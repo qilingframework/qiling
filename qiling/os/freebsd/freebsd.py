@@ -17,32 +17,34 @@ class QlOsFreebsd(QlOsPosix):
     def load(self):   
         
         self.ql.uc = self.ql.arch.init_uc
+        self.QL_FREEBSD_PREDEFINE_STACKADDRESS = 0x7ffffffde000
+        self.QL_FREEBSD_PREDEFINE_STACKSIZE = 0x21000
 
-        if self.ql.shellcoder and not self.ql.stack_address and not self.ql.stack_size:
-            self.stack_address = 0x1000000
-            self.stack_size = 10 * 1024 * 1024
+        if self.ql.shellcoder:
+            self.entry_point = 0x1000000
+            self.shellcoder_ram = 10 * 1024 * 1024
+            self.ql.mem.map(self.entry_point, self.shellcoder_ram, info="[shellcode_stack]")
+            self.entry_point  = (self.entry_point + 0x200000 - 0x1000)
+            self.ql.mem.write(self.entry_point, self.ql.shellcoder)
+        else:
+            if not self.ql.stack_address and not self.ql.stack_size:
+                self.stack_address = self.QL_FREEBSD_PREDEFINE_STACKADDRESS
+                self.stack_size = self.QL_FREEBSD_PREDEFINE_STACKSIZE
+            elif self.ql.stack_address and self.ql.stack_size:
+                self.stack_address = self.ql.stack_address
+                self.stack_address = self.ql.stack_size    
 
-        elif not self.ql.shellcoder and not self.ql.stack_address and not self.ql.stack_size:
-            self.stack_address = QL_X8664_FREEBSD_PREDEFINE_STACKADDRESS
-            self.stack_size = QL_X8664_FREEBSD_PREDEFINE_STACKSIZE
-        
-        elif self.ql.stack_address and self.ql.stack_size:
-            self.stack_address = self.ql.stack_address
-            self.stack_address = self.ql.stack_size                  
-        
-        self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
+            self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")                    
         
         if self.ql.shellcoder:
-            self.stack_address  = (self.stack_address + 0x200000 - 0x1000)
-            self.ql.mem.write(self.stack_address, self.ql.shellcoder)
-
-        init_rbp = self.stack_address + 0x40
-        init_rdi = self.stack_address
-
-        self.ql.register(UC_X86_REG_RSP, self.stack_address)
-        self.ql.register(UC_X86_REG_RBP, init_rbp)
-        self.ql.register(UC_X86_REG_RDI, init_rdi)
-        self.ql.register(UC_X86_REG_R14, init_rdi)
+            self.ql.reg.sp = self.entry_point
+        else:            
+            self.ql.reg.sp = self.stack_address
+            init_rbp = self.stack_address + 0x40
+            init_rdi = self.stack_address
+            self.ql.register(UC_X86_REG_RBP, init_rbp)
+            self.ql.register(UC_X86_REG_RDI, init_rdi)
+            self.ql.register(UC_X86_REG_R14, init_rdi)
 
         self.setup_output()
         self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
@@ -64,7 +66,7 @@ class QlOsFreebsd(QlOsPosix):
         
         try:
             if self.ql.shellcoder:
-                self.ql.emu_start(self.stack_address, (self.stack_address + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)
+                self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)
             else:
                 if self.ql.loader.elf_entry != self.ql.loader.entry_point:
                     self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
