@@ -253,74 +253,74 @@ class QLOsUtils:
         # we want to rewrite the return address to the function
         self.ql.stack_write(0, start)
 
+    def disassembler(self, ql, address, size):
+        tmp = self.ql.mem.read(address, size)
+
+        if self.ql.archtype == QL_ARCH.ARM:  # QL_ARM
+            reg_cpsr = self.ql.register(UC_ARM_REG_CPSR)
+            mode = CS_MODE_ARM
+            if self.ql.archendian == QL_ENDIAN.EB:
+                reg_cpsr_v = 0b100000
+                # reg_cpsr_v = 0b000000
+            else:
+                reg_cpsr_v = 0b100000
+
+            if reg_cpsr & reg_cpsr_v != 0:
+                mode = CS_MODE_THUMB
+
+            if self.ql.archendian == QL_ENDIAN.EB:
+                md = Cs(CS_ARCH_ARM, mode)
+                # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
+            else:
+                md = Cs(CS_ARCH_ARM, mode)
+
+        elif self.ql.archtype == QL_ARCH.X86:  # QL_X86
+            md = Cs(CS_ARCH_X86, CS_MODE_32)
+
+        elif self.ql.archtype == QL_ARCH.X8664:  # QL_X86_64
+            md = Cs(CS_ARCH_X86, CS_MODE_64)
+
+        elif self.ql.archtype == QL_ARCH.ARM64:  # QL_ARM64
+            md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
+
+        elif self.ql.archtype == QL_ARCH.MIPS32:  # QL_MIPS32
+            if self.ql.archendian == QL_ENDIAN.EB:
+                md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
+            else:
+                md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)
+
+        else:
+            raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
+
+        insn = md.disasm(tmp, address)
+        opsize = int(size)
+
+        self.ql.nprint("[+] 0x%x\t" % (address), end="")
+
+        for i in tmp:
+            self.ql.nprint(" %02x " % i, end="")
+
+        if opsize <= 6:
+            self.ql.nprint("\t", end="")
+
+        for i in insn:
+            self.ql.nprint("%s %s" % (i.mnemonic, i.op_str))
+
+        if self.ql.output == QL_OUTPUT.DUMP:
+            for reg in self.ql.reg.table:
+                self.ql.reg.name = reg
+                REG_NAME = self.ql.reg.name
+                REG_VAL = self.ql.register(reg)
+                self.ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+
     def setup_output(self):
         def ql_hook_block_disasm(ql, address, size):
             self.ql.nprint("\n[+] Tracing basic block at 0x%x" % (address))
 
-        def ql_hook_code_disasm(ql, address, size):
-            tmp = ql.mem.read(address, size)
-
-            if ql.archtype == QL_ARCH.ARM:  # QL_ARM
-                reg_cpsr = ql.register(UC_ARM_REG_CPSR)
-                mode = CS_MODE_ARM
-                if ql.archendian == QL_ENDIAN.EB:
-                    reg_cpsr_v = 0b100000
-                    # reg_cpsr_v = 0b000000
-                else:
-                    reg_cpsr_v = 0b100000
-
-                if reg_cpsr & reg_cpsr_v != 0:
-                    mode = CS_MODE_THUMB
-
-                if ql.archendian == QL_ENDIAN.EB:
-                    md = Cs(CS_ARCH_ARM, mode)
-                    # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
-                else:
-                    md = Cs(CS_ARCH_ARM, mode)
-
-            elif ql.archtype == QL_ARCH.X86:  # QL_X86
-                md = Cs(CS_ARCH_X86, CS_MODE_32)
-
-            elif ql.archtype == QL_ARCH.X8664:  # QL_X86_64
-                md = Cs(CS_ARCH_X86, CS_MODE_64)
-
-            elif ql.archtype == QL_ARCH.ARM64:  # QL_ARM64
-                md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
-
-            elif ql.archtype == QL_ARCH.MIPS32:  # QL_MIPS32
-                if ql.archendian == QL_ENDIAN.EB:
-                    md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
-                else:
-                    md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)
-
-            else:
-                raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
-
-            insn = md.disasm(tmp, address)
-            opsize = int(size)
-
-            ql.nprint("[+] 0x%x\t" % (address), end="")
-
-            for i in tmp:
-                ql.nprint(" %02x " % i, end="")
-
-            if opsize <= 6:
-                ql.nprint("\t", end="")
-
-            for i in insn:
-                ql.nprint("%s %s" % (i.mnemonic, i.op_str))
-
-            if ql.output == QL_OUTPUT.DUMP:
-                for reg in ql.reg.table:
-                    ql.reg.name = reg
-                    REG_NAME = ql.reg.name
-                    REG_VAL = ql.register(reg)
-                    ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
-
         if self.ql.output in (QL_OUTPUT.DISASM, QL_OUTPUT.DUMP):
             if self.ql.output == QL_OUTPUT.DUMP:
                 self.ql.hook_block(ql_hook_block_disasm)
-            self.ql.hook_code(ql_hook_code_disasm)
+            self.ql.hook_code(self.disassembler)
 
     def stop(self, stop_event=THREAD_EVENT_EXIT_GROUP_EVENT):
         if self.ql.multithread:

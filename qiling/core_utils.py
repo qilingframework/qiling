@@ -68,8 +68,8 @@ class QLCoreUtils(object):
     def set_timeout(self, microseconds):
         self.timeout = microseconds
 
-    def set_exit(self, until_addr):
-        self.until_addr = until_addr
+    def set_exit(self, exit_point):
+        self.exit_point = exit_point
 
     def add_fs_mapper(self, fm, to):
         self.fs_mapper.append([fm, to])

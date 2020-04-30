@@ -93,7 +93,7 @@ def main(input_file, enable_trace=False):
             #print("Starting afl_fuzz().")
             if not _ql.uc.afl_fuzz(input_file=input_file,
                         place_input_callback=place_input_callback,
-                        exits=[ql.until_addr]):
+                        exits=[ql.exit_point]):
                 print("Ran once without AFL attached.")
                 os._exit(0)  # that's a looot faster than tidying up.
         except unicornafl.UcAflError as ex:

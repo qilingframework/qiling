@@ -133,24 +133,25 @@ class QlOsWindows(QlOs):
 
         self.setup_output()
 
-        if (self.ql.until_addr == 0):
-            self.ql.until_addr = self.QL_EMU_END
+        if self.ql.exit_point:
+            self.exit_point = self.ql.exit_point
+        
+        if  self.ql.entry_point:
+            self.ql.loader.entry_point = self.ql.entry_point
+        
         try:
             if self.ql.shellcoder:
                 self.ql.emu_start(self.ql.loader.code_address, self.ql.loader.code_address + len(self.ql.shellcoder))
             else:
-                self.ql.emu_start(self.ql.loader.entry_point, self.ql.until_addr, self.ql.timeout)
+                self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout)
         except UcError:
             if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                 self.ql.nprint("[+] PC = 0x%x\n" % (self.ql.reg.pc))
                 self.ql.mem.show_mapinfo()
-                try:
-                    buf = self.ql.mem.read(self.ql.reg.pc, 8)
-                    self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                    self.ql.nprint("\n")
-                    ql_hook_code_disasm(self.ql, self.ql.reg.pc, 64)
-                except:
-                    pass
+                buf = self.ql.mem.read(self.ql.reg.pc, 8)
+                self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                self.ql.nprint("\n")
+                self.disassembler(self.ql, self.ql.reg.pc, 64)
             raise
 
         self.registry_manager.save()

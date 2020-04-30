@@ -34,7 +34,7 @@ class QlOsFreebsd(QlOsPosix):
         
         if self.ql.shellcoder:
             self.stack_address  = (self.stack_address + 0x200000 - 0x1000)
-            self.ql.mem.write(self.stack_address, self.shellcoder)
+            self.ql.mem.write(self.stack_address, self.ql.shellcoder)
 
         init_rbp = self.stack_address + 0x40
         init_rdi = self.stack_address
@@ -56,8 +56,9 @@ class QlOsFreebsd(QlOsPosix):
 
 
     def run(self):
-        if (self.ql.until_addr == 0):
-            self.ql.until_addr = self.QL_EMU_END
+        if self.ql.exit_point:
+            self.exit_point = self.ql.exit_point
+        
         try:
             if self.ql.shellcoder:
                 self.ql.emu_start(self.stack_address, (self.stack_address + len(self.ql.shellcoder)))
@@ -65,19 +66,20 @@ class QlOsFreebsd(QlOsPosix):
                 if self.ql.loader.elf_entry != self.ql.loader.entry_point:
                     self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
                     self.ql.enable_lib_patch()
-                self.ql.emu_start(self.ql.loader.elf_entry, self.ql.until_addr, self.ql.timeout)
+                
+                if  self.ql.entry_point:
+                    self.ql.loader.elf_entry = self.ql.entry_point
+                                        
+                self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout)
                 
         except UcError:
             if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP, QL_OUTPUT.DISASM):
                 self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.reg.pc))
                 self.ql.mem.show_mapinfo()
-                try:
-                    buf = self.ql.mem.read(self.ql.reg.pc, 8)
-                    self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                    self.ql.nprint("\n")
-                    ql_hook_code_disasm(ql, self.ql.reg.pc, 64)
-                except:
-                    pass
+                buf = self.ql.mem.read(self.ql.reg.pc, 8)
+                self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                self.ql.nprint("\n")
+                self.disassembler(self.ql, self.ql.reg.pc, 64)
             raise
         
         if self.ql.internal_exception != None:

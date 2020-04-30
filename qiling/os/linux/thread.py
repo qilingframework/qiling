@@ -34,7 +34,7 @@ class QlLinuxThread(QlThread):
         self.runing_time = 0
         self.context = context
         self.ql = ql
-        self.until_addr = ql.until_addr
+        self.exit_point = ql.exit_point
         self.start_address = start_address
         self.status = THREAD_STATUS_RUNNING
         self.stop_event = THREAD_EVENT_INIT_VAL
@@ -123,12 +123,12 @@ class QlLinuxThread(QlThread):
         self.start_address = self.ql.reg.pc
 
         if mode == TIME_MODE:
-            self.ql.emu_start(self.start_address, self.until_addr, timeout = thread_slice)
+            self.ql.emu_start(self.start_address, self.exit_point, timeout = thread_slice)
         elif mode == COUNT_MODE:
-            self.ql.emu_start(self.start_address, self.until_addr, count = thread_slice)
+            self.ql.emu_start(self.start_address, self.exit_point, count = thread_slice)
         elif mode == BBL_MODE:
             self.thread_management.set_bbl_count(thread_slice)
-            self.ql.emu_start(self.start_address, self.until_addr)
+            self.ql.emu_start(self.start_address, self.exit_point)
         else:
             raise
 
@@ -139,7 +139,7 @@ class QlLinuxThread(QlThread):
         if self.total_time != 0 and self.runing_time >= self.total_time:
             self.status = THREAD_STATUS_TIMEOUT
 
-        if self.ql.arch.get_pc() == self.until_addr:
+        if self.ql.arch.get_pc() == self.exit_point:
             self.stop()
             self.stop_event = THREAD_EVENT_EXIT_EVENT
 
@@ -251,8 +251,8 @@ class QlLinuxThread(QlThread):
             return 0
         return self.total_time - self.runing_time
 
-    def set_until_addr(self, until_addr):
-        self.until_addr = until_addr
+    def set_exit_point(self, exit_point):
+        self.exit_point = exit_point
 
     def new_thread_id(self):
         self.thread_id = QlLinuxThread.LINUX_THREAD_ID

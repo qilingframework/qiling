@@ -112,20 +112,25 @@ class QlOsMacos(QlOsPosix):
         if  self.ql.archtype== QL_ARCH.X8664:
             load_commpage(self.ql)
 
-        if (self.ql.until_addr == 0):
-            self.ql.until_addr = self.QL_EMU_END
+        if (self.ql.exit_point == 0):
+            self.exit_point = self.QL_EMU_END
+
+        if self.ql.exit_point:
+            self.exit_point = self.ql.exit_point
+
         try:
             if self.ql.shellcoder:
                 self.ql.emu_start(self.ql.stack_address, (self.ql.stack_address + len(self.ql.shellcoder)))
             else:
-                self.ql.emu_start(self.ql.loader.entry_point, self.ql.until_addr, self.ql.timeout)
+                self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout)
         except UcError:
             if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                 self.ql.nprint("[+] PC= " + hex(self.ql.reg.pc))
                 self.ql.mem.show_mapinfo()
                 buf = self.ql.mem.read(self.ql.reg.pc, 8)
-                self.ql.nprint("[+] ", [hex(_) for _ in buf])
-                ql_hook_code_disasm(self.ql, self.ql.reg.pc, 64)
+                self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                self.ql.nprint("\n")
+                self.disassembler(self.ql, self.ql.reg.pc, 64)
             raise QlErrorExecutionStop("[!] Execution Terminated")
 
         if self.ql.internal_exception != None:

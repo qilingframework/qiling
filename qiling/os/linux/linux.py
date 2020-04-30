@@ -105,8 +105,8 @@ class QlOsLinux(QlOsPosix):
         
         self.ql.reg.sp = self.stack_address
 
-        if (self.ql.until_addr == 0):
-            self.ql.until_addr = self.QL_EMU_END
+        if self.ql.exit_point:
+            self.exit_point = self.ql.exit_point
 
         try:
             if self.ql.shellcoder:
@@ -123,12 +123,12 @@ class QlOsLinux(QlOsPosix):
 
                     # enable lib patch
                     if self.ql.loader.elf_entry != self.ql.loader.entry_point:
-                        main_thread.set_until_addr(self.ql.loader.elf_entry)
+                        main_thread.set_exit_point(self.ql.loader.elf_entry)
                         thread_management.run()
                         self.ql.enable_lib_patch()
 
                         main_thread.set_start_address(self.ql.loader.elf_entry)
-                        main_thread.set_until_addr(self.ql.until_addr)
+                        main_thread.set_exit_point(self.exit_point)
                         main_thread.running()
 
                         thread_management.clean_world()
@@ -140,19 +140,20 @@ class QlOsLinux(QlOsPosix):
                     if self.ql.loader.elf_entry != self.ql.loader.entry_point:
                         self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
                         self.ql.enable_lib_patch()
-                    self.ql.emu_start(self.ql.loader.elf_entry, self.ql.until_addr, self.ql.timeout)
+                    
+                    if  self.ql.entry_point:
+                        self.ql.loader.elf_entry = self.ql.entry_point
+                    
+                    self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout)
 
         except:
             if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                 self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.reg.pc))
                 self.ql.mem.show_mapinfo()
-                try:
-                    buf = self.ql.mem.read(self.ql.reg.pc, 8)
-                    self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                    self.ql.nprint("\n")
-                    ql_hook_code_disasm(self.ql, self.ql.reg.pc, 64)
-                except:
-                    pass
+                buf = self.ql.mem.read(self.ql.reg.pc, 8)
+                self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                self.ql.nprint("\n")
+                self.disassembler(self.ql, self.ql.reg.pc, 64)
             raise
 
         if self.ql.internal_exception != None:

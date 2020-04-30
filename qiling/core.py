@@ -70,12 +70,15 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # Define after ql=Qiling(), either defined by Qiling Framework or user defined
         self.archbit = ''
         self.path = ''
+        # replace the original entry point, allow user to choose where is the new entry point
         self.entry_point = 0
+        # when to exit
+        self.exit_point = 0
+        self.timeout = 0
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
-        self.timeout = 0
-        self.until_addr = 0
+
         self.byte = 0
         self.log_file_fd = None
         self.fs_mapper = []
