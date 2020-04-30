@@ -122,7 +122,7 @@ class QlOsMacos(QlOsPosix):
             if self.ql.shellcoder:
                 self.ql.emu_start(self.ql.stack_address, (self.ql.stack_address + len(self.ql.shellcoder)))
             else:
-                self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout)
+                self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:
             if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                 self.ql.nprint("[+] PC= " + hex(self.ql.reg.pc))

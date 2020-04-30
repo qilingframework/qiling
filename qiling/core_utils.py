@@ -65,12 +65,6 @@ class QLCoreUtils(object):
         else:
             self.uc.context_restore(saved_context)
 
-    def set_timeout(self, microseconds):
-        self.timeout = microseconds
-
-    def set_exit(self, exit_point):
-        self.exit_point = exit_point
-
     def add_fs_mapper(self, fm, to):
         self.fs_mapper.append([fm, to])
     

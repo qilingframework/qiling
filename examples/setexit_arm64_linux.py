@@ -9,8 +9,7 @@ from qiling import *
 def run_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, output = "debug")
     # if 0x555555566260 is being written, exit
-    ql.set_exit(0x555555566260)
-    ql.run()
+    ql.run(end = 0x7fffb7e98af4)
 
 
 if __name__ == "__main__":

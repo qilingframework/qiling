@@ -144,7 +144,7 @@ class QlOsLinux(QlOsPosix):
                     if  self.ql.entry_point:
                         self.ql.loader.elf_entry = self.ql.entry_point
                     
-                    self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout)
+                    self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
 
         except:
             if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):

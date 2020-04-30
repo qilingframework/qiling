@@ -67,19 +67,15 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.stdout = stdout
         self.stderr = stderr
 
-        # Define after ql=Qiling(), either defined by Qiling Framework or user defined
+        ##################################
+        # Defination after ql=Qiling()   #
+        ##################################
+        
         self.archbit = ''
         self.path = ''
-        # replace the original entry point, allow user to choose where is the new entry point
-        self.entry_point = 0
-        # when to exit
-        self.exit_point = 0
-        self.timeout = 0
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
-
-        self.byte = 0
         self.log_file_fd = None
         self.fs_mapper = []
         self.exit_code = 0
@@ -98,7 +94,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.log_split = False
         # syscall filter for strace-like functionality
         self.strace_filter = None
-        self.uc = None
         self.remotedebugsession = None
         self.automatize_input = False
         self.mmap_start = 0
@@ -182,7 +177,13 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         ######
         self.os = self.os_setup()
 
-    def run(self):
+    def run(self, begin=0, end=0, timeout=0, count=0):
+        # replace the original entry point, exit point, timeout and count
+        self.entry_point = begin
+        self.exit_point = end
+        self.timeout = timeout
+        self.count = count
+
         # load the loader
         self.loader.run()
         
