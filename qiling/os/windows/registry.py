@@ -92,7 +92,7 @@ class RegistryManager:
         if key in self.regdiff:
             return True
         keys = key.split("\\")
-        self.new_access(key)
+        self.access(key)
         try:
             if keys[0] == "HKEY_LOCAL_MACHINE":
                 reg = self.hklm[keys[1]]
@@ -140,17 +140,17 @@ class RegistryManager:
                 if value.name() == subkey and (reg_type == Registry.RegNone or
                                                value.value_type() == reg_type):
 
-                    self.new_access(key, subkey=subkey, value=value.value(), type=value.value_type())
+                    self.access(key, subkey=subkey, value=value.value(), type=value.value_type())
                     return value.value_type(), value.value()
 
         except Registry.RegistryKeyNotFoundException:
             pass
 
-        self.new_access(key, subkey=subkey, value=None, type=None)
+        self.access(key, subkey=subkey, value=None, type=None)
 
         return None, None
 
-    def new_access(self, key, subkey=None, value=None, type=None):
+    def access(self, key, subkey=None, value=None, type=None):
         if subkey is None:
             if key not in self.accessed:
                 self.accessed[key] = []
