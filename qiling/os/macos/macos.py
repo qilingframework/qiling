@@ -82,6 +82,12 @@ class QlOsMacos(QlOsPosix):
 
 
     def run(self):
+        if self.ql.exit_point is not None:
+            self.exit_point = self.ql.exit_point
+        
+        if  self.ql.entry_point is not None:
+                self.ql.loader.elf_entry = self.ql.entry_point    
+
         if self.ql.archtype== QL_ARCH.ARM64:
             self.ql.register(UC_ARM64_REG_SP, self.ql.loader.stack_address)
             self.ql.arch.enable_vfp()
@@ -111,12 +117,6 @@ class QlOsMacos(QlOsPosix):
         # load_commpage not wroking with ARM64, yet
         if  self.ql.archtype== QL_ARCH.X8664:
             load_commpage(self.ql)
-
-        if (self.ql.exit_point == 0):
-            self.exit_point = self.QL_EMU_END
-
-        if self.ql.exit_point:
-            self.exit_point = self.ql.exit_point
 
         try:
             if self.ql.shellcoder:

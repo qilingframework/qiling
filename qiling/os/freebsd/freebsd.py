@@ -56,8 +56,11 @@ class QlOsFreebsd(QlOsPosix):
 
 
     def run(self):
-        if self.ql.exit_point:
+        if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
+
+        if  self.ql.entry_point is not None:
+            self.ql.loader.elf_entry = self.ql.entry_point            
         
         try:
             if self.ql.shellcoder:
@@ -67,8 +70,7 @@ class QlOsFreebsd(QlOsPosix):
                     self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
                     self.ql.enable_lib_patch()
                 
-                if  self.ql.entry_point:
-                    self.ql.loader.elf_entry = self.ql.entry_point
+
                                         
                 self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
                 

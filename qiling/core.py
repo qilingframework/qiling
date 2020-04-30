@@ -177,7 +177,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         ######
         self.os = self.os_setup()
 
-    def run(self, begin=0, end=0, timeout=0, count=0):
+    def run(self, begin=None, end=None, timeout=0, count=0):
         # replace the original entry point, exit point, timeout and count
         self.entry_point = begin
         self.exit_point = end

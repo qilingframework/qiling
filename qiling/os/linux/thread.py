@@ -34,7 +34,7 @@ class QlLinuxThread(QlThread):
         self.runing_time = 0
         self.context = context
         self.ql = ql
-        self.exit_point = ql.exit_point
+        self.exit_point = self.ql.os.exit_point
         self.start_address = start_address
         self.status = THREAD_STATUS_RUNNING
         self.stop_event = THREAD_EVENT_INIT_VAL
