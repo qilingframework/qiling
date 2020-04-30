@@ -92,8 +92,7 @@ class RegistryManager:
         if key in self.regdiff:
             return True
         keys = key.split("\\")
-        self.accessed[key] = []
-
+        self.new_access(key)
         try:
             if keys[0] == "HKEY_LOCAL_MACHINE":
                 reg = self.hklm[keys[1]]
@@ -140,23 +139,29 @@ class RegistryManager:
             for value in data.values():
                 if value.name() == subkey and (reg_type == Registry.RegNone or
                                                value.value_type() == reg_type):
-                    # we save the value too
-                    self.accessed[key].append({
-                        "subkey": subkey,
-                        "value": value.value(),
-                        "type": value.value_type()
-                    })
+
+                    self.new_access(key, subkey=subkey, value=value.value(), type=value.value_type())
                     return value.value_type(), value.value()
 
         except Registry.RegistryKeyNotFoundException:
             pass
-        self.accessed[key].append({
-            "subkey": subkey,
-            "value": None,
-            "type": None
-        })
+
+        self.new_access(key, subkey=subkey, value=None, type=None)
+
         return None, None
 
+    def new_access(self, key, subkey=None, value=None, type=None):
+        if subkey is None:
+            if key not in self.accessed:
+                self.accessed[key] = []
+        else:
+            self.accessed[key].append({
+                "subkey": subkey,
+                "value": value,
+                "type": type,
+                "position": self.ql.os.syscalls_counter
+            })
+            # we don't have to increase the counter since we are technically inside a hook
 
     def create(self, key):
         self.registry_config[key] = dict()
