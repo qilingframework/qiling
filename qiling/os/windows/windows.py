@@ -141,7 +141,7 @@ class QlOsWindows(QlOs):
         
         try:
             if self.ql.shellcoder:
-                self.ql.emu_start(self.ql.loader.code_address, self.ql.loader.code_address + len(self.ql.shellcoder))
+                self.ql.emu_start(self.ql.loader.code_address, (self.ql.loader.code_address + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)
             else:
                 self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:
