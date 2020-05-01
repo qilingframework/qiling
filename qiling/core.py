@@ -46,7 +46,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         super(Qiling, self).__init__()
 
         ##################################
-        # Defination during ql=Qiling()  #
+        # Definition during ql=Qiling()  #
         ##################################
         self.output = output
         self.verbose = verbose
@@ -61,8 +61,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.libcache = libcache
         self.log_console = log_console
         self.log_dir = log_dir
-        # generic append function, eg log file        
-        self.append = append
+
+        self.append = append# generic append function, eg log file
         self.profile = profile
         # OS dependent configuration for stdio
         self.stdin = stdin
@@ -70,7 +70,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.stderr = stderr
 
         ##################################
-        # Defination after ql=Qiling()   #
+        # Definition after ql=Qiling()   #
         ##################################
         self.archbit = ''
         self.path = ''
@@ -87,7 +87,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
         self.multithread = False
         # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
-        self.ipv6 = False        
+        self.ipv6 = False
         # Bind to localhost
         self.bindtolocalhost = False
         # by turning this on, you must run your analysis with sudo
@@ -149,14 +149,13 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
         
-        ##############################
-        # Define file is 32 or 64bit #
-        # Define pointersize         #
-        ##############################
+        ####################################
+        # Set pointersize (32bit or 64bit) #
+        ####################################
         self.archbit = ql_get_arch_bits(self.archtype)
         self.pointersize = (self.archbit // 8)  
         
-        #Endian for shellcode needs to set manually
+        # Endian for shellcode needs to set manually
         if self.shellcoder and self.bigendian == True and self.archtype in (QL_ENDINABLE):
             self.archendian = QL_ENDIAN.EB
         elif self.shellcoder:
@@ -181,6 +180,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         ######
         self.os = self.os_setup()
 
+    # Emulate the binary from begin until @end, with timeout in @timeout and
+    # number of emulated instructions in @count
     def run(self, begin=None, end=None, timeout=0, count=0):
         # replace the original entry point, exit point, timeout and count
         self.entry_point = begin
@@ -188,7 +189,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.timeout = timeout
         self.count = count
 
-        # load the loader
+        # Run the loader
         self.loader.run()
         
         # setup strace filter for logger
@@ -203,7 +204,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # patch binary
         self.__enable_bin_patch()
 
-        # run the binary
+        # emulate the binary
         self.os.run()     
 
         # resume with debugger
@@ -245,8 +246,10 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         for addr, code, filename in self.patch_lib:
             self.mem.write(self.mem.get_lib_base(filename) + addr, code)
 
+    # stop emulation
     def emu_stop(self):
         self.uc.emu_stop()
 
+    # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):
         self.uc.emu_start(begin, end, timeout, count)
