@@ -8,14 +8,14 @@ VER_SERVICEPACKMAJOR = 0
 computer_name = qilingpc
 permission = root
 
-[PATH]
+[USER]
 username = Qiling
-cdrive = C:\
-windir = %(cdrive)sWindows\
-userdir = %(cdrive)sUsers\
-appdata = %(userdir)s\%(username)s\AppData\
-userhome = %(cdrive)sUsers\%(username)s\
-temp = %(windir)sTemp\
+language = 1093
+
+[PATH]
+drive = C:\
+windir = Windows\
+
 
 [REGISTRY]
 registry_diff = registry_diff.json
