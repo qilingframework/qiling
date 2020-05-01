@@ -66,7 +66,7 @@ def test_pe_win_x86_gandcrab():
             second_half = int(third, 16) + year
             result = int(hex(first_half)[2:] + hex(second_half)[2:], 16)
             ql.os.profile[key][subkey] = str(result)
-        elif key == "USER" and subkey == "username":
+        elif key == "PATH" and subkey == "username":
             length = random.randint(0, 15)
             new_name = ""
             for i in range(length):
@@ -88,11 +88,11 @@ def test_pe_win_x86_gandcrab():
 
     ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                 output="debug")
-    default_user = ql.os.profile["USER"]["username"]
+    default_user = ql.os.profile["PATH"]["username"]
     default_computer = ql.os.profile["SYSTEM"]["computer_name"]
 
     ql.hook_address(stop, 0x40860f, user_data=(default_user, default_computer))
-    randomize_config_value(ql, "USER", "username")
+    randomize_config_value(ql, "PATH", "username")
     randomize_config_value(ql, "SYSTEM", "computer_name")
     randomize_config_value(ql, "VOLUME", "serial_number")
     ql.run()

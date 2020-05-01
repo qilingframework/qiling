@@ -8,11 +8,6 @@ VER_SERVICEPACKMAJOR = 0
 computer_name = qilingpc
 permission = root
 
-
-[USER]
-username = Qiling
-language = 1093
-
 [PATH]
 username = Qiling
 cdrive = C:\
