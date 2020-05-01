@@ -55,9 +55,7 @@ class QlOsMacos(QlOsPosix):
             self.stack_size = self.QL_MACOS_PREDEFINE_STACKSIZE            
 
         if self.ql.shellcoder:    
-            self.entry_point = 0x1000000
-            shellcoder_ram = 10 * 1024 * 1024
-            self.ql.mem.map(self.entry_point, shellcoder_ram, info="[shellcode_stack]")
+            self.ql.mem.map(self.entry_point, self.shellcoder_ram, info="[shellcode_stack]")
             self.entry_point  = (self.entry_point + 0x200000 - 0x1000)
             self.ql.mem.write(self.entry_point, self.ql.shellcoder)
         else:

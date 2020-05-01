@@ -45,6 +45,11 @@ class QlOs(QLOsUtils):
 
         # defult exit point
         self.exit_point = self.QL_EMU_END
+        if self.ql.shellcoder:
+            self.shellcoder_ram = 10 * 1024 * 1024
+            # this shellcode entrypoint does not work for windows
+            # windows shellcode entry point will comes from pe loader
+            self.entry_point = 0x1000000
 
         # We can save every syscall called
         self.syscalls = {}

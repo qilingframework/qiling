@@ -411,10 +411,10 @@ class QlLoaderPE(Process, QlLoader):
                 self.ql.register(UC_X86_REG_RBP, self.ql.stack_address + 0x3000)
 
             # load shellcode in
-            shellcoder_ram = 10 * 1024 * 1024
-            self.ql.os.entry_point = self.entry_point
-            self.ql.mem.map(self.entry_point, shellcoder_ram, info="[shellcode_base]")
+            self.ql.mem.map(self.entry_point, self.ql.os.shellcoder_ram, info="[shellcode_base]")
             self.ql.mem.write(self.entry_point, self.ql.shellcoder)
+            # rewrite entrypoint for windows shellcode
+            self.ql.os.entry_point = self.entry_point
 
             self.init_thread_information_block()
             # load dlls
