@@ -64,7 +64,6 @@ class DebuggerTest(unittest.TestCase):
 
     def test_gdbdebug_shellcode_server(self):
         X8664_LIN = unhexlify('31c048bbd19d9691d08c97ff48f7db53545f995257545eb03b0f05')
-        DELAY = 0.1
         ql = Qiling(shellcoder = X8664_LIN, archtype = "x8664", ostype = "linux")
         ql.debugger = True
 
