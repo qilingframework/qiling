@@ -13,14 +13,13 @@ username = Qiling
 language = 1093
 
 [PATH]
-drive = C:\
+systemdrive = C:\
 windir = Windows\
 
 [REGISTRY]
 registry_diff = registry_diff.json
 
 [VOLUME]
-path = C:\
 serial_number = 3224010732
 type = NTFS
 

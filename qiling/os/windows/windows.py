@@ -32,8 +32,8 @@ class QlOsWindows(QlOs):
         self.ql.uc = self.ql.arch.init_uc
         self.ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
         self.username = self.profile["USER"]["username"]
-        self.windir = self.profile["PATH"]["drive"] + self.profile["PATH"]["windir"]
-        self.userhomedir = self.profile["PATH"]["drive"] + "Users\\" + self.profile["USER"]["username"] + "\\"
+        self.windir = self.profile["PATH"]["systemdrive"] + self.profile["PATH"]["windir"]
+        self.userprofile = self.profile["PATH"]["systemdrive"] + "Users\\" + self.profile["USER"]["username"] + "\\"
 
         if self.ql.archtype == QL_ARCH.X8664:
             self.stack_address = 0x7ffffffde000

@@ -298,7 +298,7 @@ class QlLoaderPE(Process, QlLoader):
         # compatible with ql.__enable_bin_patch()
         self.loadbase = 0  
         self.ql.os.setupComponents()
-        self.cmdline = bytes(((str(self.ql.os.userhomedir)) + "Desktop\\" + (self.ql.targetname) + "\x00"), "utf-8")
+        self.cmdline = bytes(((str(self.ql.os.userprofile)) + "Desktop\\" + (self.ql.targetname) + "\x00"), "utf-8")
         self.load()
 
     def init_thread_information_block(self): 

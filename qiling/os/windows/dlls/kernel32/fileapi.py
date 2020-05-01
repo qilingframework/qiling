@@ -339,7 +339,7 @@ def hook_GetDriveTypeW(ql, address, params):
     pointer = params["lpRootPathName"]
     if pointer != 0:
         path = read_wstring(ql, pointer)
-        if path == ql.os.profile["VOLUME"]["PATH"]:
+        if path == ql.os.profile["PATH"]["systemdrive"]:
             return DRIVE_FIXED
         # TODO add configuration for drives
     else:
@@ -363,7 +363,7 @@ def hook_GetDriveTypeW(ql, address, params):
 })
 def hook_GetDiskFreeSpaceW(ql, address, params):
     path = params["lpRootPathName"]
-    if path == ql.os.profile["VOLUME"]["PATH"]:
+    if path == ql.os.profile["PATH"]["systemdrive"]:
         pt_sectors = params["lpSectorsPerCluster"]
         pt_bytes = params["lpBytesPerSector"]
         pt_free_clust = params["lpNumberOfFreeClusters"]
