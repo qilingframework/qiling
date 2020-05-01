@@ -43,7 +43,6 @@ class QlOsEfi(QlOs):
         self.ql.modules = []
         self.ql.events = {}
         self.ql.handle_dict = {}
-        self.ql.var_store = {}
         self.ql.elf_entry = 0 # We don't use elf, but gdbserver breaks if it's missing
         self.HEAP_BASE_ADDR = 0x500000000
         self.HEAP_SIZE = 0x5000000
@@ -123,14 +122,10 @@ class QlOsEfi(QlOs):
             else:
                 raise QlErrorArch("[!] Unknown ql.arch")
 
-            if len(self.ql.argv) > 2:
-                for dependency in self.ql.argv[1:-1]:
+            if len(self.ql.argv) > 1:
+                for dependency in self.ql.argv[1:]:
                     if not self.map_and_load(dependency):
                         raise QlErrorFileType("Can't map dependency")
-            if len(self.ql.argv) > 1:
-                import pickle
-                with open(self.ql.argv[-1], 'rb') as f:
-                    self.ql.var_store = pickle.load(f)
 
             # Load main module
             self.map_and_load(self.ql.path)

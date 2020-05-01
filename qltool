@@ -178,6 +178,7 @@ if __name__ == '__main__':
     
     run_parser = commands.add_parser('run', help = 'run')
     run_parser.add_argument('-f', '--filename', required=False, default='', metavar="FILE", dest="filename", help="filename")
+    run_parser.add_argument('--env', required=False, default='', metavar="FILE", dest="env_filename", help="Pickle file containing an environment dictionary")
     run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
     run_parser.add_argument('--args', required=False, default=[], nargs=argparse.REMAINDER, dest="args", help="args")
     run_parser.add_argument('run_args', default=[], nargs=argparse.REMAINDER)
@@ -301,6 +302,11 @@ if __name__ == '__main__':
 
     if options.strace_filter != None:
        ql.strace_filter = options.strace_filter
+
+    if options.env_filename != '':
+        import pickle
+        with open(options.env_filename, 'rb') as f:
+            ql.env = pickle.load(f)
     
     # ql run
     ql.run()
