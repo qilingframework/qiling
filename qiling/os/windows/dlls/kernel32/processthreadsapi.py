@@ -48,7 +48,7 @@ def hook_ExitProcess(ql, address, params):
 # } STARTUPINFO, *LPSTARTUPINFO;
 def GetStartupInfo(ql, address, params):
     startup_info = {
-        "cb": 0x44.to_bytes(length=4, byteorder='little'),
+        "cb": (0x34 + 4*ql.pointersize).to_bytes(length=4, byteorder='little'),
         "lpReserved": 0x0.to_bytes(length=ql.pointersize, byteorder='little'),
         "lpDesktop": 0xc3c930.to_bytes(length=ql.pointersize, byteorder='little'),
         "lpTitle": 0x0.to_bytes(length=ql.pointersize, byteorder='little'),

@@ -272,3 +272,12 @@ def hook_LoadResource(ql, address, params):
 def hook_LockResource(ql, address, params):
     pointer = params["hResData"]
     return pointer
+
+#BOOL DisableThreadLibraryCalls(
+#  HMODULE hLibModule
+#);
+@winapi(cc=STDCALL, params={
+    "hLibModule": POINTER
+})
+def hook_DisableThreadLibraryCalls(ql, address, params):
+    return 1
