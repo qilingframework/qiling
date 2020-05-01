@@ -458,7 +458,7 @@ def hook_GetUserNameW(ql, address, params):
     "nSize": POINTER
 })
 def hook_GetComputerNameW(ql, address, params):
-    computer = (ql.os.profile["SYSTEM"]["computer_name"] + "\x00").encode("utf-16le")
+    computer = (ql.os.profile["SYSTEM"]["computername"] + "\x00").encode("utf-16le")
     dst = params["lpBuffer"]
     max_size = params["nSize"]
     ql.mem.write(max_size, (len(computer)-2).to_bytes(4, byteorder="little"))

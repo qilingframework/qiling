@@ -5,7 +5,7 @@ minorVersion = 0
 productType = 1
 language = 1093
 VER_SERVICEPACKMAJOR = 0
-computer_name = qilingpc
+computername = qilingpc
 permission = root
 
 [USER]
