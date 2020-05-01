@@ -16,7 +16,6 @@ language = 1093
 drive = C:\
 windir = Windows\
 
-
 [REGISTRY]
 registry_diff = registry_diff.json
 
