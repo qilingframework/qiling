@@ -345,7 +345,6 @@ class QlLoaderELF(ELFParse, QlLoader):
               
     def run(self):
         if self.ql.shellcoder:
-            self.entry_point = self.ql.os.entry_point
             return
         self.path = self.ql.path
         ELFParse.__init__(self, self.path, self.ql)
@@ -603,8 +602,8 @@ class QlLoaderELF(ELFParse, QlLoader):
         #     self.ql.nprint("0x%08x : 0x%08x " % (new_stack + i * 0x4, self.ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
 
         
-        self.entry_point = entry_point
-        self.elf_entry = loadbase + elfhead['e_entry']
+        self.ql.os.entry_point = self.entry_point = entry_point
+        self.ql.os.elf_entry = self.elf_entry = loadbase + elfhead['e_entry']
         self.new_stack = new_stack
         self.loadbase = loadbase
 

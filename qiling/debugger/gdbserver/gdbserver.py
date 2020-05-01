@@ -42,20 +42,15 @@ class GDBSERVERsession(object):
         self.en_vcont       = False
         self.pc_reg         = self.ql.reg.name_pc
         self.sp_reg         = self.ql.reg.name_sp
-        self.gdb          = qldbg.Qldbg()
+        self.gdb            = qldbg.Qldbg()
         self.gdb.initialize(self.ql, exit_point=exit_point, mappings=mappings)
- 
-        if self.ql.shellcoder:
-            self.entry_point = self.ql.loader.entry_point
-            self.exe_abspath    = "/root/qiling/shellcoder"
-            self.rootfs_abspath = "/"  
-        else:    
-            self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
-            self.rootfs_abspath = (os.path.abspath(self.ql.rootfs)) 
-            if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD):
-                self.entry_point = self.ql.loader.elf_entry
-            else:
-                self.entry_point = self.ql.loader.entry_point
+        self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
+        self.rootfs_abspath = (os.path.abspath(self.ql.rootfs)) 
+        
+        if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.shellcoder:
+            self.entry_point = self.ql.os.elf_entry
+        else:
+            self.entry_point = self.ql.os.entry_point
 
         self.gdb.bp_insert(self.entry_point)
 

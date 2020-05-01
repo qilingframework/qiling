@@ -286,7 +286,6 @@ class QlLoaderPE(Process, QlLoader):
             self.DLL_BASE_ADDR = 0x7ffff0000000
             self.entry_point = 0x140000000
             
-        self.shellcoder_ram = 10 * 1024 * 1024
         self.dlls = {}
         self.import_symbols = {}
         self.export_symbols = {}
@@ -309,6 +308,11 @@ class QlLoaderPE(Process, QlLoader):
         super().init_exports()
 
     def load(self):
+
+        # set stack pointer
+        self.ql.nprint("[+] Initiate stack address at 0x%x " % self.ql.stack_address)
+        self.ql.mem.map(self.ql.stack_address, self.ql.stack_size, info="[stack]")
+
         if self.path and not self.ql.shellcoder:
             
             self.pe = pefile.PE(self.path, fast_load=True)
@@ -326,9 +330,6 @@ class QlLoaderPE(Process, QlLoader):
             self.ql.nprint("[+] Loading %s to 0x%x" % (self.path, self.PE_IMAGE_BASE))
             self.ql.nprint("[+] PE entry point at 0x%x" % self.entry_point)
 
-            # set stack pointer
-            self.ql.nprint("[+] Initiate stack address at 0x%x " % self.ql.stack_address)
-            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size, info="[stack]")
 
             # Stack should not init at the very bottom. Will cause errors with Dlls
             sp = self.ql.stack_address + self.ql.stack_size - 0x1000
@@ -402,8 +403,6 @@ class QlLoaderPE(Process, QlLoader):
             self.filepath = b"D:\\" + bytes(self.path.replace("/", "\\"), "utf-8")
 
         elif self.ql.shellcoder:
-            # setup stack memory
-            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size, info="[stack]")
             if self.ql.archtype== QL_ARCH.X86:
                 self.ql.register(UC_X86_REG_ESP, self.ql.stack_address + 0x3000)
                 self.ql.register(UC_X86_REG_EBP, self.ql.stack_address + 0x3000)
@@ -412,11 +411,12 @@ class QlLoaderPE(Process, QlLoader):
                 self.ql.register(UC_X86_REG_RBP, self.ql.stack_address + 0x3000)
 
             # load shellcode in
-            self.ql.mem.map(self.entry_point, self.shellcoder_ram, info="[shellcode_base]")
+            shellcoder_ram = 10 * 1024 * 1024
+            self.ql.os.entry_point = self.entry_point
+            self.ql.mem.map(self.entry_point, shellcoder_ram, info="[shellcode_base]")
             self.ql.mem.write(self.entry_point, self.ql.shellcoder)
 
             self.init_thread_information_block()
-
             # load dlls
             for each in self.init_dlls:
-                super().load_dll(each)            
+                super().load_dll(each)

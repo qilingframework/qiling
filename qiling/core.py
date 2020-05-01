@@ -45,7 +45,9 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
     ):
         super(Qiling, self).__init__()
 
-        # Define during ql=Qiling()
+        ##################################
+        # Defination during ql=Qiling()  #
+        ##################################
         self.output = output
         self.verbose = verbose
         self.ostype = ostype
@@ -70,7 +72,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         ##################################
         # Defination after ql=Qiling()   #
         ##################################
-        
         self.archbit = ''
         self.path = ''
         self.patch_bin = []
@@ -104,15 +105,18 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         """
         Qiling Framework Core Engine
         """
-        # shellcoder or file settings
+        # shellcoder settings
         if self.shellcoder:
             if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str ):
                 self.ostype = self.ostype.lower()
                 self.ostype = ostype_convert(self.ostype)
                 self.archtype = self.archtype.lower()
                 self.archtype = arch_convert(self.archtype)
+                self.filename = ["qilingshellcode"]
                 self.targetname = "qilingshellcode"
-
+                if self.rootfs is None:
+                    self.rootfs = "."
+        # file settings
         elif self.shellcoder is None:
             if os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs):
                 self.path = (str(self.filename[0]))
