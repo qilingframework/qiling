@@ -245,61 +245,36 @@ class QlArchX8664(QlArch):
         return UC_X86_REG_RIP
 
 
+    def get_reg_bit(self, register_str):
+        if type(register_str) == str:
+            register_str = self.get_reg_name(register_str)
+        if register_str in ({v for k, v in reg_map_64.items()}):
+            return 64
+        else:
+            return 32    
+
+
     def get_reg_table(self):
-        registers_table = [
-            UC_X86_REG_RAX, UC_X86_REG_RBX, UC_X86_REG_RCX,
-            UC_X86_REG_RDX, UC_X86_REG_RSI, UC_X86_REG_RDI,
-            UC_X86_REG_RBP, UC_X86_REG_RSP, UC_X86_REG_R8,
-            UC_X86_REG_R9, UC_X86_REG_R10, UC_X86_REG_R11,
-            UC_X86_REG_R12, UC_X86_REG_R13, UC_X86_REG_R14,
-            UC_X86_REG_R15, UC_X86_REG_RIP, UC_X86_REG_EFLAGS,
-            UC_X86_REG_CS, UC_X86_REG_SS, UC_X86_REG_DS,
-            UC_X86_REG_ES, UC_X86_REG_FS, UC_X86_REG_GS,
-            UC_X86_REG_ST0, UC_X86_REG_ST1,
-            UC_X86_REG_ST2, UC_X86_REG_ST3, UC_X86_REG_ST4,
-            UC_X86_REG_ST5, UC_X86_REG_ST6, UC_X86_REG_ST7
-            ]
-        return registers_table  
+        registers_table = []
+        reg_map_64.update(reg_map_misc)
+        reg_map_64.update(reg_map_st)
+        registers = {v for k, v in reg_map_64.items()}
+
+        for reg in registers:
+            registers_table += [reg]
+     
+        return registers_table
 
     # set register name
     def set_reg_name_str(self):
         pass  
 
-    def get_reg_name_str(self, uc_reg):
-        adapter = {
-            UC_X86_REG_RAX: "RAX", 
-            UC_X86_REG_RCX: "RCX", 
-            UC_X86_REG_RDX: "RDX",
-            UC_X86_REG_RBX: "RBX", 
-            UC_X86_REG_RSP: "RSP", 
-            UC_X86_REG_RBP: "RBP",
-            UC_X86_REG_RSI: "RSI", 
-            UC_X86_REG_RDI: "RDI", 
-            UC_X86_REG_RIP: "RIP",
-            UC_X86_REG_R8: "R8",
-            UC_X86_REG_R9: "R9", 
-            UC_X86_REG_R10: "R10",
-            UC_X86_REG_R11: "R11",
-            UC_X86_REG_R12: "R12", 
-            UC_X86_REG_R13: "R13", 
-            UC_X86_REG_R14: "R14",
-            UC_X86_REG_R15: "R15",
-            UC_X86_REG_EFLAGS: "EF", 
-            UC_X86_REG_CS: "CS", 
-            UC_X86_REG_SS: "SS",
-            UC_X86_REG_DS: "DS", 
-            UC_X86_REG_ES: "ES", 
-            UC_X86_REG_FS: "FS",
-            UC_X86_REG_GS: "GS", 
-            UC_X86_REG_ST0: "ST0", 
-            UC_X86_REG_ST1: "ST1",
-            UC_X86_REG_ST2: "ST2", 
-            UC_X86_REG_ST3: "ST3", 
-            UC_X86_REG_ST4: "ST4",
-            UC_X86_REG_ST5: "ST5", 
-            UC_X86_REG_ST6: "ST6", 
-            UC_X86_REG_ST7: "ST7"
-        }
+    def get_reg_name_str(self, uc_reg): 
+        adapter = reg_map_64
+        adapter.update(reg_map_misc)
+        adapter.update(reg_map_st)
+        adapter = {v: k for k, v in adapter.items()}
+
         if uc_reg in adapter:
             return adapter[uc_reg]
         # invalid
@@ -319,40 +294,10 @@ class QlArchX8664(QlArch):
 
 
     def get_reg_name(self, uc_reg_name):
-        adapter = {
-            "RAX": UC_X86_REG_RAX, 
-            "RCX": UC_X86_REG_RCX, 
-            "RDX": UC_X86_REG_RDX,
-            "RBX": UC_X86_REG_RBX, 
-            "RSP": UC_X86_REG_RSP, 
-            "RBP": UC_X86_REG_RBP,
-            "RSI": UC_X86_REG_RSI, 
-            "RDI": UC_X86_REG_RDI, 
-            "RIP": UC_X86_REG_RIP,
-            "R8": UC_X86_REG_R8,
-            "R9": UC_X86_REG_R9, 
-            "R10": UC_X86_REG_R10,
-            "R11": UC_X86_REG_R11,
-            "R12": UC_X86_REG_R12, 
-            "R13": UC_X86_REG_R13, 
-            "R14": UC_X86_REG_R14,
-            "R15": UC_X86_REG_R15,
-            "EF" :UC_X86_REG_EFLAGS, 
-            "CS": UC_X86_REG_CS, 
-            "SS": UC_X86_REG_SS,
-            "DS": UC_X86_REG_DS, 
-            "ES": UC_X86_REG_ES, 
-            "FS": UC_X86_REG_FS,
-            "GS": UC_X86_REG_GS, 
-            "ST0": UC_X86_REG_ST0, 
-            "ST1": UC_X86_REG_ST1,
-            "ST2": UC_X86_REG_ST2, 
-            "ST3": UC_X86_REG_ST3, 
-            "ST4": UC_X86_REG_ST4,
-            "ST5": UC_X86_REG_ST5, 
-            "ST6": UC_X86_REG_ST6, 
-            "ST7": UC_X86_REG_ST7
-        }
+        adapter = reg_map_64
+        adapter.update(reg_map_misc)
+        adapter.update(reg_map_st)
+
         if uc_reg_name in adapter:
             return adapter[uc_reg_name]
         # invalid

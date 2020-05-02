@@ -40,8 +40,6 @@ class GDBSERVERsession(object):
         self.netout         = clientsocket.makefile('w')
         self.last_pkt       = None
         self.en_vcont       = False
-        self.pc_reg         = self.ql.reg.name_pc
-        self.sp_reg         = self.ql.reg.name_sp
         self.gdb            = qldbg.Qldbg()
         self.gdb.initialize(self.ql, exit_point=exit_point, mappings=mappings)
         self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
@@ -127,7 +125,7 @@ class GDBSERVERsession(object):
 
 
             def handle_c(subcmd):
-                self.gdb.resume_emu(self.ql.register(self.pc_reg))
+                self.gdb.resume_emu(self.ql.reg.pc)
                 if self.gdb.bp_list is ([self.entry_point]):
                     self.send("W00")
                 else:
@@ -146,13 +144,13 @@ class GDBSERVERsession(object):
                         s += tmp
 
                 elif self.ql.archtype== QL_ARCH.X8664:
-                    for reg in self.ql.reg.table[:17]:
+                    for reg in self.ql.reg.table:
                         r = self.ql.register(reg)
-                        tmp = self.ql.arch.addr_to_str(r)
-                        s += tmp
-                    for reg in self.ql.reg.table[17:24]:
-                        r = self.ql.register(reg)
-                        tmp = self.ql.arch.addr_to_str(r, short = True)
+                        self.ql.reg.bit = reg
+                        if self.ql.reg.bit == 64:
+                            tmp = self.ql.arch.addr_to_str(r)
+                        elif self.ql.reg.bit == 32:    
+                            tmp = self.ql.arch.addr_to_str(r, short = True)
                         s += tmp
                 
                 elif self.ql.archtype== QL_ARCH.ARM:

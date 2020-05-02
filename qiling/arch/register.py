@@ -36,6 +36,9 @@ class QlRegisterManager:
 
 
     def rw(self, register_str, value):
+        if type(register_str) == str:
+            register_str = register_str.lower()
+            
         if register_str is not None and value is None:
             return self.ql.arch.get_register(register_str)
         elif register_str is not None and value is not None:
@@ -46,11 +49,10 @@ class QlRegisterManager:
             return self.ql.uc.msr_read(msr)
         else:
             self.ql.uc.msr_write(msr, addr)
-
+    
     # ql.reg.store - store all register
     def store(self):
         reg_dict = {}
-
         for reg in self.ql.reg.table:
             self.ql.reg.name = reg
             reg_v = self.rw(self.ql.reg.name, value = None)
@@ -69,6 +71,7 @@ class QlRegisterManager:
     def name_pc(self):
         return self.ql.arch.get_name_pc()
 
+
     # ql.reg.name_sp - SP register name getter
     @property
     def name_sp(self):
@@ -78,6 +81,17 @@ class QlRegisterManager:
     @property
     def table(self):
         return self.ql.arch.get_reg_table()
+
+
+    # ql.reg.bit - Register bit
+    @property
+    def bit(self):
+        return self.ql.arch.get_reg_bit(self.uc_reg_name)
+
+    # ql.reg.bit - Register bit
+    @bit.setter
+    def bit(self, uc_reg):
+        self.uc_reg_name = uc_reg
 
     # ql.reg.name - Register name converter getter
     @property
