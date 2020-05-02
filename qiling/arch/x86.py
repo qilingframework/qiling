@@ -96,7 +96,7 @@ class QlArchX86(QlArch):
         adapter.update(reg_map_32)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
-        registers = {v for k, v in adapter.items()}
+        registers = {k:v for k, v in adapter.items()}
 
         for reg in registers:
             registers_table += [reg]
@@ -230,7 +230,7 @@ class QlArchX8664(QlArch):
         adapter.update(reg_map_64)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
-        registers = {k: v for k, v in adapter.items()}
+        registers = {k:v for k, v in adapter.items()}
         for reg in registers:
             registers_table += [reg]
         return registers_table

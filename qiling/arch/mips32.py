@@ -90,7 +90,8 @@ class QlArchMIPS32(QlArch):
         registers_table = []
         adapter = {}
         adapter.update(reg_map)
-        registers = {k: v for k, v in adapter.items()}
+        registers = {k for k, v in adapter.items()}
+
         for reg in registers:
             registers_table += [reg]
         return registers_table  

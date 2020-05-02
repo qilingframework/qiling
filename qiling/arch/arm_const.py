@@ -22,5 +22,5 @@ reg_map = {
             "sp": UC_ARM_REG_SP, 
             "lr": UC_ARM_REG_LR,
             "pc": UC_ARM_REG_PC, 
-            "cspr": UC_ARM_REG_CPSR,
+            "cpsr": UC_ARM_REG_CPSR,
 }

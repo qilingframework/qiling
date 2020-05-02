@@ -308,8 +308,7 @@ class QLOsUtils:
 
         if self.ql.output == QL_OUTPUT.DUMP:
             for reg in self.ql.reg.table:
-                self.ql.reg.name = reg
-                REG_NAME = self.ql.reg.name
+                REG_NAME = reg
                 REG_VAL = self.ql.register(reg)
                 self.ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
 

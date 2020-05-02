@@ -84,8 +84,8 @@ class QlArchARM64(QlArch):
         registers_table = []
         adapter = {}
         adapter.update(reg_map)
-        registers = {k: v for k, v in adapter.items()}
-        #print({k:v for k, v in adapter.items()})
+        registers = {k:v for k, v in adapter.items()}
+
         for reg in registers:
             registers_table += [reg]
         return registers_table
