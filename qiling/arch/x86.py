@@ -50,6 +50,12 @@ class QlArchX86(QlArch):
         SP = self.ql.register(UC_X86_REG_ESP)
         return self.ql.mem.write(SP + offset, self.ql.pack32(data))
 
+    # get register big, mostly use for x86    
+    def get_reg_bit(self, register_str):
+        if type(register_str) == str:
+            register_str = self.get_reg_name(register_str)
+        if register_str in ({v for k, v in reg_map_32.items()}):
+            return 32 
 
     # get initialized unicorn engine
     def get_init_uc(self):
@@ -86,12 +92,6 @@ class QlArchX86(QlArch):
     def get_name_pc(self):
         return UC_X86_REG_EIP
 
-
-    def get_reg_bit(self, register_str):
-        if type(register_str) == str:
-            register_str = self.get_reg_name(register_str)
-        if register_str in ({v for k, v in reg_map_32.items()}):
-            return 32 
 
     def get_reg_table(self):
         registers_table = []
@@ -205,7 +205,7 @@ class QlArchX8664(QlArch):
     def get_name_pc(self):
         return UC_X86_REG_RIP
 
-
+    # get register big, mostly use for x86  
     def get_reg_bit(self, register_str):
         if type(register_str) == str:
             register_str = self.get_reg_name(register_str)
