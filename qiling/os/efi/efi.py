@@ -22,7 +22,19 @@ from qiling.os.windows.fncc import _get_param_by_index
 
 import pefile
 
+def check_and_notify_protocols(ql):
+    if len(ql.notify_list) > 0:
+        event_id, notify_func, notify_context = ql.notify_list.pop(0)
+        print(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
+        ql.stack_push(ql.end_of_execution_ptr)
+        ql.register(UC_X86_REG_RCX, notify_context)
+        ql.register(UC_X86_REG_RIP, notify_func)
+        return True
+    return False
+
 def hook_EndOfExecution(ql):
+    if check_and_notify_protocols(ql):
+        return
     if len(ql.modules) < 1:
         print(f'No more modules to run')
         ql.uc.emu_stop()
@@ -43,6 +55,7 @@ class QlOsEfi(QlOs):
         self.ql.modules = []
         self.ql.events = {}
         self.ql.handle_dict = {}
+        self.ql.notify_list = []
         self.ql.elf_entry = 0 # We don't use elf, but gdbserver breaks if it's missing
         self.HEAP_BASE_ADDR = 0x500000000
         self.HEAP_SIZE = 0x5000000
@@ -214,7 +227,7 @@ class QlOsEfi(QlOs):
                 self.ql.stack_push(self.ql.end_of_execution_ptr)
                 self.ql.register(UC_X86_REG_RDX, self.ql.system_table_ptr)
                 print(f'Running from 0x{entry_point:x} of {path} to 0x{self.ql.until_addr:x}')
-                self.ql.uc.emu_start(entry_point, self.ql.until_addr, 1000*1000)
+                self.ql.uc.emu_start(entry_point, self.ql.until_addr, 10*1000*1000)
         except UcError:
             if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.pc))

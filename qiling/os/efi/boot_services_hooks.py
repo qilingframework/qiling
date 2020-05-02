@@ -4,6 +4,7 @@ from qiling.os.efi.efi_types_64 import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.fncc import _get_param_by_index
 
+pointer_size = 8
 
 @dxeapi(params={
     "NewTpl": ULONGLONG,
@@ -75,9 +76,9 @@ def hook_FreePool(self, address, params):
 
 def CreateEvent(wrapper, address, params):
     event_id = len(wrapper.ql.events)
-    event_dic = {"NotifyFunction": params["NotifyFunction"], "NotifyContext": params["NotifyContext"], "Set": False}
+    event_dic = {"NotifyFunction": params["NotifyFunction"], "NotifyContext": params["NotifyContext"], "Guid": "", "Set": False}
     if "EventGroup" in params:
-        event_dic["NotifyContext"] =  params["EventGroup"]
+        event_dic["EventGroup"] =  params["EventGroup"]
     
     wrapper.ql.events[event_id] = event_dic
     wrapper.write_int(params["Event"], event_id)
@@ -108,12 +109,22 @@ def hook_SetTimer(self, address, params):
 def hook_WaitForEvent(self, address, params):
     return self.EFI_SUCCESS
 
+def SignalEvent(self, event_id):
+    if event_id in self.ql.events:
+        event = self.ql.events[event_id]
+        if not event["Set"]:
+            event["Set"] = True
+            self.ql.notify_list.append((event_id, event['NotifyFunction'], event['NotifyContext']))
+        return self.EFI_SUCCESS
+    else:
+        return self.EFI_INVALID_PARAMETER
+
 @dxeapi(params={
     "Event": POINTER, #POINTER_T(None)
 })
 def hook_SignalEvent(self, address, params):
-    self.ql.events[params["Event"]]["Set"] = True
-    return self.EFI_SUCCESS
+    event_id = params["Event"]
+    return SignalEvent(self, event_id)
 
 @dxeapi(params={
     "Event": POINTER, #POINTER_T(None)
@@ -128,6 +139,13 @@ def hook_CloseEvent(self, address, params):
 def hook_CheckEvent(self, address, params):
     return self.EFI_SUCCESS if self.ql.events[params["Event"]]["Set"] else self.EFI_NOT_READY
 
+def check_and_notify_protocols(self):
+    for handle in self.ql.handle_dict:
+        for protocol in self.ql.handle_dict[handle]:
+            for event_id, event_dic in self.ql.events.items():
+                if event_dic["Guid"] == protocol:
+                    SignalEvent(self, event_id)
+
 @dxeapi(params={
     "Handle": POINTER, #POINTER_T(POINTER_T(None))
     "Protocol": GUID,
@@ -141,6 +159,7 @@ def hook_InstallProtocolInterface(self, address, params):
         dic = self.ql.handle_dict[handle]
     dic[params["Protocol"]] = params["Interface"]
     self.ql.handle_dict[handle] = dic
+    check_and_notify_protocols(self)
     return self.EFI_SUCCESS
 
 @dxeapi(params={
@@ -169,19 +188,41 @@ def hook_UninstallProtocolInterface(self, address, params):
     return self.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(None)
-    "a1": GUID,
-    "a2": POINTER, #POINTER_T(POINTER_T(None))
+    "Handle": POINTER, #POINTER_T(None)
+    "Protocol": GUID,
+    "Interface": POINTER, #POINTER_T(POINTER_T(None))
 })
 def hook_HandleProtocol(self, address, params):
-    return self.EFI_SUCCESS
+    handle = params["Handle"]
+    protocol = params["Protocol"]
+    interface = params['Interface']
+    if handle in self.ql.handle_dict:
+        if protocol in self.ql.handle_dict[handle]:
+            self.write_int(interface, self.ql.handle_dict[handle][protocol])
+            return self.EFI_SUCCESS
+    return self.EFI_NOT_FOUND
 
 @dxeapi(params={
     "Protocol": GUID,
     "Event": POINTER,
     "Registration": POINTER})
 def hook_RegisterProtocolNotify(self, address, params):
-    return self.EFI_SUCCESS
+    if params['Event'] in self.ql.events:
+        self.ql.events[params['Event']]['Guid'] = params["Protocol"]
+        check_and_notify_protocols(self)
+        return self.EFI_SUCCESS
+    return self.EFI_INVALID_PARAMETER
+
+def LocateHandles(self, address, params):
+    handles = []
+    if params["SearchKey"] == self.SEARCHTYPE_AllHandles:
+        handles = self.ql.handle_dict.keys()
+    elif params["SearchKey"] == self.SEARCHTYPE_ByProtoco:
+        for handle, guid_dic in self.ql.handle_dict.items():
+            if params["Protocol"] in guid_dic:
+                handles.append(handle)
+                    
+    return len(handles) * pointer_size, handles
 
 @dxeapi(params={
     "SearchType": ULONGLONG,
@@ -191,25 +232,19 @@ def hook_RegisterProtocolNotify(self, address, params):
     "Buffer": POINTER, #POINTER_T(POINTER_T(None))
 })
 def hook_LocateHandle(self, address, params):
-    handles = []
-    if params["SearchKey"] == self.SEARCHTYPE_AllHandles:
-        handles = self.ql.handle_dict.keys()
-    elif params["SearchKey"] == self.SEARCHTYPE_ByProtoco:
-        for handle, guid_dic in self.ql.handle_dict.items():
-            for guid, protocol_ptr in guid_dic.items():
-                if guid == protocol:
-                    handles.append(handle)
+    buffer_size, handles = LocateHandles(self, address, params)
     if len(handles) == 0:
         return self.EFI_NOT_FOUND
     ret = self.EFI_BUFFER_TOO_SMALL
-    if self.read_int(params["BufferSize"]) >= len(handles) * ctypes.sizeof(POINTER_T(None)):
+    if self.read_int(params["BufferSize"]) >= buffer_size:
         ptr = params["Buffer"]
         for handle in handles:
             self.write_int(ptr, handle)
-            ptr += ctypes.sizeof(POINTER_T(None))
+            ptr += pointer_size
         ret = self.EFI_SUCCESS
-    self.write_int(params["BufferSize"], len(handles) * ctypes.sizeof(POINTER_T(None)))
+    self.write_int(params["BufferSize"], buffer_size)
     return ret
+    
 
 @dxeapi(params={
     "a0": GUID,
@@ -350,6 +385,15 @@ def hook_ProtocolsPerHandle(self, address, params):
     "Buffer": POINTER, #POINTER_T(POINTER_T(POINTER_T(None)))
 })
 def hook_LocateHandleBuffer(self, address, params):
+    buffer_size, handles = LocateHandles(self, address, params)
+    self.write_int(params["NoHandles"], len(handles))
+    if len(handles) == 0:
+        return self.EFI_NOT_FOUND
+    address = self.ql.heap.mem_alloc(buffer_size)
+    self.write_int(params["Buffer"], address)
+    for handle in handles:
+            self.write_int(address, handle)
+            address += pointer_size
     return self.EFI_SUCCESS
 
 def LocateProtocol(self, address, params):
@@ -357,10 +401,9 @@ def LocateProtocol(self, address, params):
     for handle, guid_dic in self.ql.handle_dict.items():
         if "Handle" in params and params["Handle"] != handle:
             continue
-        for guid, protocol_ptr in guid_dic.items():
-            if guid == protocol:
-                self.write_int(params['Interface'], protocol_ptr)
-                return protocol_ptr
+        if protocol in guid_dic:
+            self.write_int(params['Interface'], guid_dic[protocol])
+            return self.EFI_SUCCESS
     return self.EFI_NOT_FOUND
 
 @dxeapi(params={
@@ -390,6 +433,7 @@ def hook_InstallMultipleProtocolInterfaces(self, address, params):
         dic[GUID] = protocol_ptr
         index +=2
     self.ql.handle_dict[handle] = dic
+    check_and_notify_protocols(self)
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -444,7 +488,6 @@ def hook_CreateEventEx(self, address, params):
 def hook_EFI_BOOT_SERVICES(start_ptr, ql):
     efi_boot_services = EFI_BOOT_SERVICES()
     ptr = start_ptr
-    pointer_size = 8
     efi_boot_services.RaiseTPL = ptr
     ql.hook_address(hook_RaiseTPL, ptr)
     ptr += pointer_size
