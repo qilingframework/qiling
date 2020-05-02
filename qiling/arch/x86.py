@@ -87,54 +87,37 @@ class QlArchX86(QlArch):
         return UC_X86_REG_EIP
 
 
+    def get_reg_bit(self, register_str):
+        if type(register_str) == str:
+            register_str = self.get_reg_name(register_str)
+        if register_str in ({v for k, v in reg_map_32.items()}):
+            return 32 
+
     def get_reg_table(self):
-        registers_table = [
-            UC_X86_REG_EAX, UC_X86_REG_ECX, UC_X86_REG_EDX,
-            UC_X86_REG_EBX, UC_X86_REG_ESP, UC_X86_REG_EBP,
-            UC_X86_REG_ESI, UC_X86_REG_EDI, UC_X86_REG_EIP,
-            UC_X86_REG_EFLAGS, UC_X86_REG_CS, UC_X86_REG_SS,
-            UC_X86_REG_DS, UC_X86_REG_ES, UC_X86_REG_FS,
-            UC_X86_REG_GS, UC_X86_REG_ST0, UC_X86_REG_ST1,
-            UC_X86_REG_ST2, UC_X86_REG_ST3, UC_X86_REG_ST4,
-            UC_X86_REG_ST5, UC_X86_REG_ST6, UC_X86_REG_ST7
-            ]
+        registers_table = []
+        reg_map_32.update(reg_map_misc)
+        reg_map_32.update(reg_map_st)
+        registers = {v for k, v in reg_map_32.items()}
+
+        for reg in registers:
+            registers_table += [reg]
+     
         return registers_table
 
     # set register name
     def set_reg_name_str(self):
         pass  
 
-    def get_reg_name_str(self, uc_reg):
-        adapter = {
-            UC_X86_REG_EAX: "EAX", 
-            UC_X86_REG_ECX: "ECX", 
-            UC_X86_REG_EDX: "EDX",
-            UC_X86_REG_EBX: "EBX", 
-            UC_X86_REG_ESP: "ESP", 
-            UC_X86_REG_EBP: "EBP",
-            UC_X86_REG_ESI: "ESI", 
-            UC_X86_REG_EDI: "EDI", 
-            UC_X86_REG_EIP: "EIP",
-            UC_X86_REG_EFLAGS: "EF", 
-            UC_X86_REG_CS: "CS", 
-            UC_X86_REG_SS: "SS",
-            UC_X86_REG_DS: "DS", 
-            UC_X86_REG_ES: "ES", 
-            UC_X86_REG_FS: "FS",
-            UC_X86_REG_GS: "GS", 
-            UC_X86_REG_ST0: "ST0", 
-            UC_X86_REG_ST1: "ST1",
-            UC_X86_REG_ST2: "ST2", 
-            UC_X86_REG_ST3: "ST3", 
-            UC_X86_REG_ST4: "ST4",
-            UC_X86_REG_ST5: "ST5", 
-            UC_X86_REG_ST6: "ST6", 
-            UC_X86_REG_ST7: "ST7"
-        }
+    def get_reg_name_str(self, uc_reg): 
+        adapter = reg_map_32
+        adapter.update(reg_map_misc)
+        adapter.update(reg_map_st)
+        adapter = {v: k for k, v in adapter.items()}
+
         if uc_reg in adapter:
             return adapter[uc_reg]
         # invalid
-        return None
+        return None 
 
     def get_register(self, register_str):
         if type(register_str) == str:
@@ -149,32 +132,10 @@ class QlArchX86(QlArch):
 
 
     def get_reg_name(self, uc_reg_name):
-        adapter = {
-            "EAX": UC_X86_REG_EAX, 
-            "ECX": UC_X86_REG_ECX, 
-            "EDX": UC_X86_REG_EDX,
-            "EBX": UC_X86_REG_EBX, 
-            "ESP": UC_X86_REG_ESP, 
-            "EBP": UC_X86_REG_EBP,
-            "ESI": UC_X86_REG_ESI, 
-            "EDI": UC_X86_REG_EDI, 
-            "EIP": UC_X86_REG_EIP,
-            "EF" :UC_X86_REG_EFLAGS, 
-            "CS": UC_X86_REG_CS, 
-            "SS": UC_X86_REG_SS,
-            "DS": UC_X86_REG_DS, 
-            "ES": UC_X86_REG_ES, 
-            "FS": UC_X86_REG_FS,
-            "GS": UC_X86_REG_GS, 
-            "ST0": UC_X86_REG_ST0, 
-            "ST1": UC_X86_REG_ST1,
-            "ST2": UC_X86_REG_ST2, 
-            "ST3": UC_X86_REG_ST3, 
-            "ST4": UC_X86_REG_ST4,
-            "ST5": UC_X86_REG_ST5, 
-            "ST6": UC_X86_REG_ST6, 
-            "ST7": UC_X86_REG_ST7
-        }
+        adapter = reg_map_32
+        adapter.update(reg_map_misc)
+        adapter.update(reg_map_st)
+
         if uc_reg_name in adapter:
             return adapter[uc_reg_name]
         # invalid
