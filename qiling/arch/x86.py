@@ -8,15 +8,25 @@ from unicorn.x86_const import *
 from struct import pack
 
 from .arch import QlArch
+from .register import QlArchRegisters
 from .x86_const import *
 from qiling.const import *
 from qiling.exception import *
 
 class QlArchX86(QlArch):
+
     def __init__(self, ql):
         super(QlArchX86, self).__init__(ql)
+        self.ql.registers = QlArchRegisters(ql)
 
+        x86_register_mappings = [
+            reg_map_8, reg_map_16, reg_map_32,
+            reg_map_cr, reg_map_st, reg_map_misc
+        ]
 
+        for reg_map in x86_register_mappings:
+            self.ql.registers.expand_mapping(reg_map)
+        
     def stack_push(self, value):
         SP = self.ql.register(UC_X86_REG_ESP)
         SP -= 4
