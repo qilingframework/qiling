@@ -25,7 +25,7 @@ import pefile
 def check_and_notify_protocols(ql):
     if len(ql.notify_list) > 0:
         event_id, notify_func, notify_context = ql.notify_list.pop(0)
-        print(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
+        ql.nprint(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
         ql.stack_push(ql.end_of_execution_ptr)
         ql.register(UC_X86_REG_RCX, notify_context)
         ql.register(UC_X86_REG_RIP, notify_func)
@@ -36,13 +36,13 @@ def hook_EndOfExecution(ql):
     if check_and_notify_protocols(ql):
         return
     if len(ql.modules) < 1:
-        print(f'No more modules to run')
+        ql.nprint(f'No more modules to run')
         ql.uc.emu_stop()
     else:
         path, entry_point, pe = ql.modules.pop(0)
         ql.stack_push(ql.end_of_execution_ptr)
         ql.register(UC_X86_REG_RDX, ql.system_table_ptr)
-        print(f'Running {path} module entrypoint: 0x{entry_point:x}')
+        ql.nprint(f'Running {path} module entrypoint: 0x{entry_point:x}')
         ql.register(UC_X86_REG_RIP, entry_point)
 
 
@@ -226,8 +226,8 @@ class QlOsEfi(QlOs):
                 path, entry_point, pe = self.ql.modules.pop(0)
                 self.ql.stack_push(self.ql.end_of_execution_ptr)
                 self.ql.register(UC_X86_REG_RDX, self.ql.system_table_ptr)
-                print(f'Running from 0x{entry_point:x} of {path} to 0x{self.ql.until_addr:x}')
-                self.ql.uc.emu_start(entry_point, self.ql.until_addr, 10*1000*1000)
+                self.ql.nprint(f'Running from 0x{entry_point:x} of {path}')
+                self.ql.uc.emu_start(entry_point, self.ql.until_addr, 1000*1000)
         except UcError:
             if self.ql.output in (QL_OUT_DEBUG, QL_OUT_DUMP):
                 self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.pc))

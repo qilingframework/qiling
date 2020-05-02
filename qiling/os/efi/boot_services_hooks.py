@@ -419,7 +419,7 @@ def hook_LocateProtocol(self, address, params):
     "Handle": POINTER})
 def hook_InstallMultipleProtocolInterfaces(self, address, params):
     handle = params["Handle"]
-    print(f'hook_InstallMultipleProtocolInterfaces {handle:x}')
+    self.ql.nprint(f'hook_InstallMultipleProtocolInterfaces {handle:x}')
     dic = {}
     if handle in self.ql.handle_dict:
         dic = self.ql.handle_dict[handle]
@@ -429,7 +429,7 @@ def hook_InstallMultipleProtocolInterfaces(self, address, params):
         GUID_ptr = _get_param_by_index(self, index)
         protocol_ptr = _get_param_by_index(self, index+1)
         GUID = str(read_guid(self.ql, GUID_ptr))
-        print(f'\t {GUID}, {protocol_ptr:x}')
+        self.ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
         dic[GUID] = protocol_ptr
         index +=2
     self.ql.handle_dict[handle] = dic
@@ -455,21 +455,20 @@ def hook_CalculateCrc32(self, address, params):
     "Length": ULONGLONG,
 })
 def hook_CopyMem(self, address, params):
-    try:
-        data = bytes(self.ql.mem.read(params['Source'], params['Length']))
-        self.ql.mem.write(params['Destination'], data)
-    except Exception as e:
-        import traceback
-        print(traceback.format_exc())
-        print(e)
-    return params['Length']
+    data = bytes(self.ql.mem.read(params['Source'], params['Length']))
+    self.ql.mem.write(params['Destination'], data)
+    return params['Destination']
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(None)
-    "a1": ULONGLONG,
-    "a2": ULONGLONG,
+    "Buffer": POINTER, #POINTER_T(None)
+    "Size": ULONGLONG,
+    "Value": BYTE,
 })
 def hook_SetMem(self, address, params):
+    ptr = params["Buffer"]
+    value = struct.pack('B',params["Value"])
+    for i in range(0, params["Size"]):
+        self.ql.mem.write(ptr, value)
     return self.EFI_SUCCESS
 
 @dxeapi(params={
