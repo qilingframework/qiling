@@ -34,11 +34,11 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
-    def test_multithread_elf_linux_arm(self):
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux")
-        ql.multithread = True   
-        ql.run()
-        del ql
+    # def test_multithread_elf_linux_arm(self):
+    #     ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux")
+    #     ql.multithread = True   
+    #     ql.run()
+    #     del ql
 
 
     def test_multithread_elf_linux_arm64(self):
@@ -56,12 +56,12 @@ class ELFTest(unittest.TestCase):
 
     def test_elf_linux_x8664(self):
         def my_puts(ql):
-            rdi = ql.register('RDI')
-            print("puts(%s)" % ql.mem.string(rdi))
+            addr = ql.func_arg[0]
+            print("puts(%s)" % ql.mem.string(addr))
             
             reg = ql.register("rax")
             print("reg : 0x%x" % reg)
-            ql.regs.rax = reg 
+            ql.reg.rax = reg 
         
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
         ql.set_api('puts', my_puts)
@@ -191,7 +191,7 @@ class ELFTest(unittest.TestCase):
             
             reg = ql.register("eax")
             print("reg : 0x%x" % reg)
-            ql.regs.eax = reg 
+            ql.reg.eax = reg 
 
             if pathname == "test_syscall_ftruncate.txt":
                 print("test => ftruncate(%d, 0x%x)" % (ftrunc_fd, ftrunc_length))
@@ -366,7 +366,7 @@ class ELFTest(unittest.TestCase):
             
             reg = ql.register("x0")
             print("reg : 0x%x" % reg)
-            ql.regs.x0 = reg  
+            ql.reg.x0 = reg  
         
             if pathname == "test_syscall_read.txt":
                 print("test => read(%d, %s, %d)" % (read_fd, pathname, read_count))
@@ -491,7 +491,7 @@ class ELFTest(unittest.TestCase):
             
             reg = ql.register("v0")
             print("reg : 0x%x" % reg)
-            ql.regs.v0 = reg  
+            ql.reg.v0 = reg  
             
             if pathname == "test_syscall_read.txt":
                 print("test => read(%d, %s, %d)" % (read_fd, pathname, read_count))
@@ -599,7 +599,7 @@ class ELFTest(unittest.TestCase):
             
             reg = ql.register("r0")
             print("reg : 0x%x" % reg)
-            ql.regs.r0 = reg  
+            ql.reg.r0 = reg  
             
             try:
                 buf = ql.mem.read(write_buf, write_count)

@@ -3,36 +3,31 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-class QlArchRegisters():
+class QlRegisterManager():
     def __init__(self, ql):
         self.register_mapping = {}
         self.ql = ql
 
     def __getattribute__(self, name):
         if name in ("register_mapping", "ql"):
-            return super(QlArchRegisters, self).__getattribute__(name)
+            return super(QlRegisterManager, self).__getattribute__(name)
         
         if name in self.register_mapping:
             return self.ql.uc.reg_read(self.register_mapping[name])
 
-        return super(QlArchRegisters, self).__getattribute__(name)
+        return super(QlRegisterManager, self).__getattribute__(name)
 
     def __setattr__(self, name, value):
         if name in ("register_mapping", "ql"):
-            super(QlArchRegisters, self).__setattr__(name, value)
+            super(QlRegisterManager, self).__setattr__(name, value)
 
         if name in self.register_mapping:
             self.ql.uc.reg_write(self.register_mapping[name], value)
         else:
-            super(QlArchRegisters, self).__setattr__(name, value)
+            super(QlRegisterManager, self).__setattr__(name, value)
 
     def expand_mapping(self, expanded_map):
         self.register_mapping = {**self.register_mapping, **expanded_map}
-
-
-class QlRegisterManager:
-    def __init__(self, ql):
-        self.ql = ql
 
 
     def rw(self, register_str, value):
@@ -96,23 +91,3 @@ class QlRegisterManager:
     @name.setter
     def name(self, uc_reg):
         self.uc_reg_name = uc_reg
-
-    # ql.reg.pc - PC register value getter
-    @property
-    def pc(self):
-        return self.ql.arch.get_pc()
-
-    # ql.reg.pc - PC register value setter
-    @pc.setter
-    def pc(self, value):
-        self.ql.arch.set_pc(value)
-
-    # ql.reg.sp - SP register value getter
-    @property
-    def sp(self):
-        return self.ql.arch.get_sp()
-
-    # ql.reg.sp - SP register value setter
-    @sp.setter
-    def sp(self, value):
-        self.ql.arch.set_sp(value)
