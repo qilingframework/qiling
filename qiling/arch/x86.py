@@ -93,11 +93,13 @@ class QlArchX86(QlArch):
         return UC_X86_REG_EIP
 
 
-    def get_reg_table(self):
+    def get_reg_table(self): 
         registers_table = []
-        reg_map_32.update(reg_map_misc)
-        reg_map_32.update(reg_map_st)
-        registers = {v for k, v in reg_map_32.items()}
+        adapter = {}
+        adapter.update(reg_map_32)
+        adapter.update(reg_map_misc)
+        adapter.update(reg_map_st)
+        registers = {v for k, v in adapter.items()}
 
         for reg in registers:
             registers_table += [reg]
@@ -109,7 +111,8 @@ class QlArchX86(QlArch):
         pass  
 
     def get_reg_name_str(self, uc_reg): 
-        adapter = reg_map_32
+        adapter = {}
+        adapter.update(reg_map_32)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
         adapter = {v: k for k, v in adapter.items()}
@@ -132,7 +135,8 @@ class QlArchX86(QlArch):
 
 
     def get_reg_name(self, uc_reg_name):
-        adapter = reg_map_32
+        adapter = {}
+        adapter.update(reg_map_32)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
 
@@ -217,13 +221,13 @@ class QlArchX8664(QlArch):
 
     def get_reg_table(self):
         registers_table = []
-        reg_map_64.update(reg_map_misc)
-        reg_map_64.update(reg_map_st)
-        registers = {v for k, v in reg_map_64.items()}
-
+        adapter = {}
+        adapter.update(reg_map_64)
+        adapter.update(reg_map_misc)
+        adapter.update(reg_map_st)
+        registers = {k: v for k, v in adapter.items()}
         for reg in registers:
             registers_table += [reg]
-     
         return registers_table
 
     # set register name
@@ -231,7 +235,8 @@ class QlArchX8664(QlArch):
         pass  
 
     def get_reg_name_str(self, uc_reg): 
-        adapter = reg_map_64
+        adapter = {}
+        adapter.update(reg_map_64)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
         adapter = {v: k for k, v in adapter.items()}
@@ -255,7 +260,8 @@ class QlArchX8664(QlArch):
 
 
     def get_reg_name(self, uc_reg_name):
-        adapter = reg_map_64
+        adapter = {}
+        adapter.update(reg_map_64)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
 

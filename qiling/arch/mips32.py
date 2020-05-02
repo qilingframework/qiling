@@ -81,11 +81,11 @@ class QlArchMIPS32(QlArch):
 
     def get_reg_table(self):
         registers_table = []
-        registers = {v for k, v in reg_map.items()}
-
+        adapter = {}
+        adapter.update(reg_map)
+        registers = {k: v for k, v in adapter.items()}
         for reg in registers:
             registers_table += [reg]
-     
         return registers_table  
 
     # set register name
@@ -93,46 +93,10 @@ class QlArchMIPS32(QlArch):
         pass  
 
     def get_reg_name_str(self, uc_reg):
-        adapter = {
-            UC_MIPS_REG_0: "0", 
-            UC_MIPS_REG_1: "1", 
-            UC_MIPS_REG_2: "2",
-            UC_MIPS_REG_3: "3", 
-            UC_MIPS_REG_4: "4", 
-            UC_MIPS_REG_5: "5",
-            UC_MIPS_REG_6: "6", 
-            UC_MIPS_REG_7: "7", 
-            UC_MIPS_REG_8: "8",
-            UC_MIPS_REG_9: "9", 
-            UC_MIPS_REG_10: "10", 
-            UC_MIPS_REG_11: "11",
-            UC_MIPS_REG_12: "12", 
-            UC_MIPS_REG_13: "13", 
-            UC_MIPS_REG_14: "14",
-            UC_MIPS_REG_15: "15", 
-            UC_MIPS_REG_16: "16",
-            UC_MIPS_REG_17: "17",
-            UC_MIPS_REG_18: "18", 
-            UC_MIPS_REG_19: "19", 
-            UC_MIPS_REG_20: "20",
-            UC_MIPS_REG_21: "21", 
-            UC_MIPS_REG_22: "22", 
-            UC_MIPS_REG_23: "23",
-            UC_MIPS_REG_24: "24", 
-            UC_MIPS_REG_25: "25", 
-            UC_MIPS_REG_26: "26",
-            UC_MIPS_REG_27: "27", 
-            UC_MIPS_REG_28: "28", 
-            UC_MIPS_REG_29: "SP",
-            UC_MIPS_REG_30: "30", 
-            UC_MIPS_REG_31: "31", 
-            UC_MIPS_REG_INVALID: "INV",
-            UC_MIPS_REG_LO: "LO", 
-            UC_MIPS_REG_HI: "HI", 
-            UC_MIPS_REG_INVALID: "INV",
-            UC_MIPS_REG_INVALID: "INV", 
-            UC_MIPS_REG_PC: "PC"
-        }
+        adapter = {}
+        adapter.update(reg_map)
+        adapter = {v: k for k, v in adapter.items()}
+
         if uc_reg in adapter:
             return adapter[uc_reg]
         # invalid
@@ -152,46 +116,8 @@ class QlArchMIPS32(QlArch):
 
 
     def get_reg_name(self, uc_reg_name):
-        adapter = {
-            "0": UC_MIPS_REG_0, 
-            "1": UC_MIPS_REG_1, 
-            "2": UC_MIPS_REG_2,
-            "3": UC_MIPS_REG_3, 
-            "4": UC_MIPS_REG_4, 
-            "5": UC_MIPS_REG_5,
-            "6": UC_MIPS_REG_6, 
-            "7": UC_MIPS_REG_7, 
-            "8": UC_MIPS_REG_8,
-            "9": UC_MIPS_REG_9, 
-            "10": UC_MIPS_REG_10, 
-            "11": UC_MIPS_REG_11,
-            "12": UC_MIPS_REG_12, 
-            "13": UC_MIPS_REG_13, 
-            "14": UC_MIPS_REG_14,
-            "15": UC_MIPS_REG_15, 
-            "16": UC_MIPS_REG_16,
-            "17": UC_MIPS_REG_17,
-            "18": UC_MIPS_REG_18, 
-            "19": UC_MIPS_REG_19, 
-            "20": UC_MIPS_REG_20,
-            "21": UC_MIPS_REG_21, 
-            "22": UC_MIPS_REG_22, 
-            "23": UC_MIPS_REG_23,
-            "24": UC_MIPS_REG_24, 
-            "25": UC_MIPS_REG_25, 
-            "26": UC_MIPS_REG_26,
-            "27": UC_MIPS_REG_27, 
-            "28": UC_MIPS_REG_28, 
-            "SP": UC_MIPS_REG_29,
-            "30": UC_MIPS_REG_30, 
-            "31": UC_MIPS_REG_31, 
-            "INV": UC_MIPS_REG_INVALID,
-            "LO": UC_MIPS_REG_LO, 
-            "HI": UC_MIPS_REG_HI, 
-            "INV": UC_MIPS_REG_INVALID,
-            "INV":UC_MIPS_REG_INVALID,
-            "PC": UC_MIPS_REG_PC,
-        }
+        adapter = {}
+        adapter.update(reg_map)
         if uc_reg_name in adapter:
             return adapter[uc_reg_name]
         # invalid

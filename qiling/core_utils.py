@@ -1,7 +1,7 @@
 import os, logging
 from .utils import ql_build_module_import_name, ql_get_module_function
 from .utils import ql_is_valid_arch, ql_is_valid_ostype
-from .utils import ql_loadertype_convert_str, ql_ostype_convert_str, ql_arch_convert_str
+from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
 from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 from .loader.utils import ql_checkostype
@@ -86,7 +86,7 @@ class QLCoreUtils(object):
         if not ql_is_valid_arch(self.archtype):
             raise QlErrorArch("[!] Invalid Arch")
         
-        archmanager = ql_arch_convert_str(self.archtype).upper()
+        archmanager = arch_convert_str(self.archtype).upper()
         archmanager = ("QlArch" + archmanager)
 
         module_name = ql_build_module_import_name("arch", None, self.archtype)
@@ -100,15 +100,15 @@ class QLCoreUtils(object):
             raise QlErrorArch("[!] Invalid Arch %s" % self.archtype)
 
         if function_name == None:
-            ostype_str = ql_ostype_convert_str(self.ostype)
+            ostype_str = ostype_convert_str(self.ostype)
             ostype_str = ostype_str.capitalize()
             function_name = "QlOs" + ostype_str
             module_name = ql_build_module_import_name("os", self.ostype)
             return ql_get_module_function(module_name, function_name)(self)
 
         elif function_name == "map_syscall":
-            ostype_str = ql_ostype_convert_str(self.ostype)
-            arch_str = ql_arch_convert_str(self.archtype)
+            ostype_str = ostype_convert_str(self.ostype)
+            arch_str = arch_convert_str(self.archtype)
             arch_str = arch_str + "_syscall"
             module_name = ql_build_module_import_name("os", ostype_str, arch_str)
             return ql_get_module_function(module_name, function_name)
@@ -128,7 +128,7 @@ class QLCoreUtils(object):
             raise QlErrorArch("[!] Invalid Arch %s" % self.archtype)
 
         if function_name == None:
-            loadertype_str = ql_loadertype_convert_str(self.ostype)
+            loadertype_str = loadertype_convert_str(self.ostype)
             function_name = "QlLoader" + loadertype_str
             module_name = ql_build_module_import_name("loader", loadertype_str.lower())
             return ql_get_module_function(module_name, function_name)(self)

@@ -98,7 +98,6 @@ class QlArchARM(QlArch):
 
 
     def check_thumb(self):
-    
         reg_cpsr = self.ql.register(UC_ARM_REG_CPSR)
         if self.ql.archendian == QL_ENDIAN.EB:
             reg_cpsr_v = 0b100000
@@ -114,19 +113,21 @@ class QlArchARM(QlArch):
 
     def get_reg_table(self):
         registers_table = []
-        registers = {v for k, v in reg_map.items()}
-
+        adapter = {}
+        adapter.update(reg_map)
+        registers = {k: v for k, v in adapter.items()}
+        #print({k:v for k, v in adapter.items()})
         for reg in registers:
             registers_table += [reg]
-     
-        return registers_table
+        return registers_table  
 
     # set register name
     def set_reg_name_str(self):
         pass  
 
     def get_reg_name_str(self, uc_reg):
-        adapter = reg_map
+        adapter = {}
+        adapter.update(reg_map)
         adapter = {v: k for k, v in adapter.items()}
 
         if uc_reg in adapter:
@@ -148,8 +149,8 @@ class QlArchARM(QlArch):
 
 
     def get_reg_name(self, uc_reg_name):
-        adapter = reg_map
-
+        adapter = {}
+        adapter.update(reg_map)
         if uc_reg_name in adapter:
             return adapter[uc_reg_name]
         # invalid

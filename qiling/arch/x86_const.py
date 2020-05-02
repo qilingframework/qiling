@@ -89,15 +89,14 @@ reg_map_32 = {
 }
 
 reg_map_64 = {
-    "rax": UC_X86_REG_RAX, 
+    "rax": UC_X86_REG_RAX,
+    "rbx": UC_X86_REG_RBX, 
     "rcx": UC_X86_REG_RCX, 
     "rdx": UC_X86_REG_RDX,
-    "rbx": UC_X86_REG_RBX, 
-    "rsp": UC_X86_REG_RSP, 
-    "rbp": UC_X86_REG_RBP,
     "rsi": UC_X86_REG_RSI, 
-    "rdi": UC_X86_REG_RDI, 
-    "rip": UC_X86_REG_RIP,
+    "rdi": UC_X86_REG_RDI,
+    "rbp": UC_X86_REG_RBP,
+    "rsp": UC_X86_REG_RSP, 
     "r8": UC_X86_REG_R8,
     "r9": UC_X86_REG_R9, 
     "r10": UC_X86_REG_R10,
@@ -106,6 +105,7 @@ reg_map_64 = {
     "r13": UC_X86_REG_R13, 
     "r14": UC_X86_REG_R14,
     "r15": UC_X86_REG_R15,
+    "rip": UC_X86_REG_RIP,
 }
 
 reg_map_cr = {

@@ -8,6 +8,7 @@ from unicorn.arm64_const import *
 
 from qiling.const import *
 from .arch import QlArch
+from .arm64_const import *
 
 
 class QlArchARM64(QlArch):
@@ -74,19 +75,13 @@ class QlArchARM64(QlArch):
         
 
     def get_reg_table(self):
-        registers_table = [
-            UC_ARM64_REG_X0, UC_ARM64_REG_X1, UC_ARM64_REG_X2,
-            UC_ARM64_REG_X3, UC_ARM64_REG_X4, UC_ARM64_REG_X5,
-            UC_ARM64_REG_X6, UC_ARM64_REG_X7, UC_ARM64_REG_X8,
-            UC_ARM64_REG_X9, UC_ARM64_REG_X10, UC_ARM64_REG_X11,
-            UC_ARM64_REG_X12, UC_ARM64_REG_X13, UC_ARM64_REG_X14,
-            UC_ARM64_REG_X15, UC_ARM64_REG_X16, UC_ARM64_REG_X17,
-            UC_ARM64_REG_X18, UC_ARM64_REG_X19, UC_ARM64_REG_X20,
-            UC_ARM64_REG_X21, UC_ARM64_REG_X22, UC_ARM64_REG_X23,
-            UC_ARM64_REG_X24, UC_ARM64_REG_X25, UC_ARM64_REG_X26,
-            UC_ARM64_REG_X27, UC_ARM64_REG_X28, UC_ARM64_REG_X29,
-            UC_ARM64_REG_X30, UC_ARM64_REG_SP, UC_ARM64_REG_PC
-            ]
+        registers_table = []
+        adapter = {}
+        adapter.update(reg_map)
+        registers = {k: v for k, v in adapter.items()}
+        #print({k:v for k, v in adapter.items()})
+        for reg in registers:
+            registers_table += [reg]
         return registers_table
 
     # set register name
@@ -94,41 +89,10 @@ class QlArchARM64(QlArch):
         pass  
     
     def get_reg_name_str(self, uc_reg):
-        adapter = {
-            UC_ARM64_REG_X0: "X0", 
-            UC_ARM64_REG_X1: "X1", 
-            UC_ARM64_REG_X2: "X2",
-            UC_ARM64_REG_X3: "X3", 
-            UC_ARM64_REG_X4: "X4", 
-            UC_ARM64_REG_X5: "X5",
-            UC_ARM64_REG_X6: "X6", 
-            UC_ARM64_REG_X7: "X7", 
-            UC_ARM64_REG_X8: "X8",
-            UC_ARM64_REG_X9: "X9", 
-            UC_ARM64_REG_X10: "X10", 
-            UC_ARM64_REG_X11: "X11",
-            UC_ARM64_REG_X12: "X12", 
-            UC_ARM64_REG_X13: "X13", 
-            UC_ARM64_REG_X14: "X14",
-            UC_ARM64_REG_X15: "X15", 
-            UC_ARM64_REG_X16: "X16", 
-            UC_ARM64_REG_X17: "X17",
-            UC_ARM64_REG_X18: "X18", 
-            UC_ARM64_REG_X19: "X19", 
-            UC_ARM64_REG_X20: "X20",
-            UC_ARM64_REG_X21: "X21", 
-            UC_ARM64_REG_X22: "X22", 
-            UC_ARM64_REG_X23: "X23",
-            UC_ARM64_REG_X24: "X24", 
-            UC_ARM64_REG_X25: "X25", 
-            UC_ARM64_REG_X26: "X26",
-            UC_ARM64_REG_X27: "X27", 
-            UC_ARM64_REG_X28: "X28", 
-            UC_ARM64_REG_X29: "X29",
-            UC_ARM64_REG_X30: "X30", 
-            UC_ARM64_REG_SP: "SP", 
-            UC_ARM64_REG_PC: "PC"
-        }
+        adapter = {}
+        adapter.update(reg_map)
+        adapter = {v: k for k, v in adapter.items()}
+
         if uc_reg in adapter:
             return adapter[uc_reg]
         # invalid
@@ -152,41 +116,8 @@ class QlArchARM64(QlArch):
         self.ql.register(UC_ARM64_REG_CPACR_EL1, ARM64FP)
 
     def get_reg_name(self, uc_reg_name):
-        adapter = {
-            "X0": UC_ARM64_REG_X0, 
-            "X1": UC_ARM64_REG_X1, 
-            "X2": UC_ARM64_REG_X2,
-            "X3": UC_ARM64_REG_X3, 
-            "X4": UC_ARM64_REG_X4, 
-            "X5": UC_ARM64_REG_X5,
-            "X6": UC_ARM64_REG_X6, 
-            "X7": UC_ARM64_REG_X7, 
-            "X8": UC_ARM64_REG_X8,
-            "X9": UC_ARM64_REG_X9, 
-            "X10": UC_ARM64_REG_X10, 
-            "X11": UC_ARM64_REG_X11,
-            "X12": UC_ARM64_REG_X12, 
-            "X13": UC_ARM64_REG_X13, 
-            "X14": UC_ARM64_REG_X14,
-            "X15": UC_ARM64_REG_X15, 
-            "X16": UC_ARM64_REG_X16, 
-            "X17": UC_ARM64_REG_X17,
-            "X18": UC_ARM64_REG_X18, 
-            "X19": UC_ARM64_REG_X19, 
-            "X20": UC_ARM64_REG_X20,
-            "X21": UC_ARM64_REG_X21, 
-            "X22": UC_ARM64_REG_X22, 
-            "X23": UC_ARM64_REG_X23,
-            "X24": UC_ARM64_REG_X24, 
-            "X25": UC_ARM64_REG_X25, 
-            "X26": UC_ARM64_REG_X26,
-            "X27": UC_ARM64_REG_X27, 
-            "X28": UC_ARM64_REG_X28, 
-            "X29": UC_ARM64_REG_X29,
-            "X30": UC_ARM64_REG_X30, 
-            "SP": UC_ARM64_REG_SP, 
-            "PC": UC_ARM64_REG_PC,
-        }
+        adapter = {}
+        adapter.update(reg_map)
         if uc_reg_name in adapter:
             return adapter[uc_reg_name]
         # invalid

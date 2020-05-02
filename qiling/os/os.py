@@ -5,7 +5,7 @@
 
 import os, sys
 
-from qiling.utils import ql_ostype_convert_str
+from qiling.utils import ostype_convert_str
 from .utils import QLOsUtils
 from .const import *
 from .filestruct import ql_file
@@ -32,7 +32,7 @@ class QlOs(QLOsUtils):
 
         # define analysis enviroment profile
         if self.ql.profile is None:
-            self.profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".." ,"profiles", ql_ostype_convert_str(self.ql.ostype) + ".ql")
+            self.profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".." ,"profiles", ostype_convert_str(self.ql.ostype) + ".ql")
         else:
             self.profile = self.ql.profile
         # user configuration
