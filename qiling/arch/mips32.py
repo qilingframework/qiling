@@ -9,11 +9,20 @@ from unicorn.mips_const import *
 from qiling.const import *
 from .arch import QlArch
 from .mips32_const import *
+from .register import QlArchRegisters
 
 
 class QlArchMIPS32(QlArch):
     def __init__(self, ql):
         super(QlArchMIPS32, self).__init__(ql)
+        self.ql.regs = QlArchRegisters(ql)
+
+        register_mappings = [
+            reg_map
+        ]
+
+        for reg_maper in register_mappings:
+            self.ql.regs.expand_mapping(reg_maper)        
 
 
     def stack_push(self, value):

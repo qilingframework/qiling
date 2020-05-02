@@ -9,10 +9,19 @@ from unicorn.arm_const import *
 from qiling.const import *
 from .arch import QlArch
 from .arm_const import *
+from .register import QlArchRegisters
 
 class QlArchARM(QlArch):
     def __init__(self, ql):
         super(QlArchARM, self).__init__(ql)
+        self.ql.regs = QlArchRegisters(ql)
+
+        register_mappings = [
+            reg_map
+        ]
+
+        for reg_maper in register_mappings:
+            self.ql.regs.expand_mapping(reg_maper)
 
 
     def stack_push(self, value):
