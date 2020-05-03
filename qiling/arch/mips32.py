@@ -16,7 +16,7 @@ class QlArchMIPS32(QlArch):
         super(QlArchMIPS32, self).__init__(ql)
 
         register_mappings = [
-            reg_map
+            reg_map, reg_map_afpr128
         ]
 
         for reg_maper in register_mappings:

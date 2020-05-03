@@ -138,8 +138,9 @@ class QlOsPosix(QlOs):
                 a3return = 0
             # if ql.output == QL_OUTPUT.DEBUG:
             #    print("[+] A3 is %d" % a3return)
-            self.ql.register(UC_MIPS_REG_V0, regreturn)
-            self.ql.register(UC_MIPS_REG_A3, a3return)
+            self.ql.reg.v0 = regreturn
+            self.ql.reg.a3 = a3return
+
 
     # get syscall
     def get_func_arg(self):
