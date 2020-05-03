@@ -52,6 +52,7 @@ class QlOsEfi(QlOs):
         super(QlOsEfi, self).__init__(ql)
         self.ql = ql
         self.ql.tpl = 4 # TPL_APPLICATION
+        self.ql.hook_override = {}
         self.ql.modules = []
         self.ql.events = {}
         self.ql.handle_dict = {}
