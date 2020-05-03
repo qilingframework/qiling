@@ -121,9 +121,7 @@ class QlArchARM64(QlArch):
 
 
     def enable_vfp(self):
-        ARM64FP = self.ql.register(UC_ARM64_REG_CPACR_EL1)
-        ARM64FP |= 0x300000
-        self.ql.register(UC_ARM64_REG_CPACR_EL1, ARM64FP)
+        self.ql.reg.cpacr_el1 = self.ql.reg.cpacr_el1 | 0x300000
 
 
     def get_reg_name(self, uc_reg_name):
