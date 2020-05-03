@@ -594,8 +594,8 @@ class QlLoaderELF(ELFParse, QlLoader):
         self.ql.mem.write(int(new_stack - len(elf_table)), elf_table)
         new_stack = new_stack - len(elf_table)
 
-        # self.ql.dprint(D_INFO, "rdi is : " + hex(ql.register(UC_X86_REG_RDI)))
-        # self.ql.register(UC_X86_REG_RDI, new_stack + 8)
+        # self.ql.dprint(D_INFO, "rdi is : " + hex(ql.reg.read(UC_X86_REG_RDI)))
+        # self.ql.reg.write(UC_X86_REG_RDI, new_stack + 8)
 
         # for i in range(120):
         #     buf = self.ql.mem.read(new_stack + i * 0x8, 8)

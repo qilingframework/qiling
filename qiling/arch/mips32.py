@@ -109,16 +109,16 @@ class QlArchMIPS32(QlArch):
         return None         
 
 
-    def get_register(self, register_str):
-        if type(register_str) == str:
-            register_str = self.get_reg_name(register_str)  
-        return self.ql.uc.reg_read(register_str)
+    def get_register(self, register):
+        if type(register) == str:
+            register = self.get_reg_name(register)  
+        return self.ql.uc.reg_read(register)
 
 
-    def set_register(self, register_str, value):
-        if type(register_str) == str:
-            register_str = self.get_reg_name(register_str)  
-        return self.ql.uc.reg_write(register_str, value)
+    def set_register(self, register, value):
+        if type(register) == str:
+            register = self.get_reg_name(register)  
+        return self.ql.uc.reg_write(register, value)
 
 
     def get_reg_name(self, uc_reg_name):

@@ -112,7 +112,7 @@ class QlOsPosix(QlOs):
         elif self.ql.archtype == QL_ARCH.X8664:
             syscall_num = UC_X86_REG_RAX
 
-        return self.ql.register(syscall_num)
+        return self.ql.reg.read(syscall_num)
 
     def definesyscall_return(self, regreturn):
         # each name has a list of calls, we want the last one and we want to update the return value
