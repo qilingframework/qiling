@@ -4,8 +4,8 @@ from efi_types_64 import *
 def generate_hooks(cls_name, stram):
     cls = eval(cls_name)
     print('from qiling.const import *\n', file=stram)
-    print('from qiling.os.efi.fncc import *\n', file=stram)
-    print('from qiling.os.efi.efi_types_64 import *\n', file=stram)
+    print('from qiling.os.uefi.fncc import *\n', file=stram)
+    print('from qiling.os.uefi.uefi_types_64 import *\n', file=stram)
     print('from qiling.os.windows.fncc import *\n', file=stram)
 
     gen_func_str = f'\n\ndef hook_{cls_name}(start_ptr, ql):\n'
@@ -30,7 +30,7 @@ def generate_hooks(cls_name, stram):
                 t = 'ULONGLONG,'
             func_str += f'\t"a{i}": {t}\n'
         func_str += '})\n'
-        func_str += f'def hook_{f_name}(self, address, params):\n\tpass\n'
+        func_str += f'def hook_{f_name}(ctx, address, params):\n\tpass\n'
         gen_func_str += f'\t{class_instance_name}.{f_name} = ptr\n'
         gen_func_str += f'\tql.hook_address(hook_{f_name}, ptr)\n'
         gen_func_str += '\tptr += pointer_size\n'

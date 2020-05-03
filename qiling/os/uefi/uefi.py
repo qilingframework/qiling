@@ -12,10 +12,10 @@ from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.os import QlOs
 from qiling.os.memory import Heap
-from qiling.os.efi.efi_types_64 import *
-from qiling.os.efi.fncc import *
-from qiling.os.efi.boot_services_hooks import *
-from qiling.os.efi.runtime_services_hooks import *
+from qiling.os.uefi.uefi_types_64 import *
+from qiling.os.uefi.fncc import *
+from qiling.os.uefi.boot_services_hooks import *
+from qiling.os.uefi.runtime_services_hooks import *
 
 from qiling.os.windows.fncc import *
 from qiling.os.windows.fncc import _get_param_by_index
@@ -47,9 +47,9 @@ def hook_EndOfExecution(ql):
 
 
 
-class QlOsEfi(QlOs):
+class QlOsUefi(QlOs):
     def __init__(self, ql):
-        super(QlOsEfi, self).__init__(ql)
+        super(QlOsUefi, self).__init__(ql)
         self.ql = ql
         self.ql.tpl = 4 # TPL_APPLICATION
         self.ql.hook_override = {}
@@ -103,17 +103,17 @@ class QlOsEfi(QlOs):
         self.ql.uc = self.ql.arch.init_uc
 
         if self.ql.archtype== QL_X8664:
-            self.QL_EFI_STACK_ADDRESS = 0x7ffffffde000
-            self.QL_EFI_STACK_SIZE = 0x40000
+            self.QL_UEFI_STACK_ADDRESS = 0x7ffffffde000
+            self.QL_UEFI_STACK_SIZE = 0x40000
             
         elif self.ql.archtype== QL_X86:        
-            self.QL_EFI_STACK_ADDRESS = 0xfffdd000
-            self.QL_EFI_STACK_SIZE =0x21000 
+            self.QL_UEFI_STACK_ADDRESS = 0xfffdd000
+            self.QL_UEFI_STACK_SIZE =0x21000 
 
         if self.ql.stack_address == 0:
-            self.ql.stack_address = self.QL_EFI_STACK_ADDRESS
+            self.ql.stack_address = self.QL_UEFI_STACK_ADDRESS
         if self.ql.stack_size == 0:
-            self.ql.stack_size = self.QL_EFI_STACK_SIZE
+            self.ql.stack_size = self.QL_UEFI_STACK_SIZE
 
         if self.ql.path and not self.ql.shellcoder:
             
