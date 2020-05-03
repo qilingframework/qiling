@@ -34,11 +34,11 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
-    # def test_multithread_elf_linux_arm(self):
-    #     ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux")
-    #     ql.multithread = True   
-    #     ql.run()
-    #     del ql
+    def test_multithread_elf_linux_arm(self):
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux")
+        ql.multithread = True   
+        ql.run()
+        del ql
 
 
     def test_multithread_elf_linux_arm64(self):

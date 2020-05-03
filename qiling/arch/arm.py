@@ -68,6 +68,7 @@ class QlArchARM(QlArch):
             append = 1
         else:
             append = 0
+            
         return self.ql.reg.pc + append
 
 
