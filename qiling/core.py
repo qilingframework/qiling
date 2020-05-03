@@ -171,7 +171,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # Architecture                      #
         #####################################
         # Load architecture's and os module #
-        # ql.reg.pc, ql.reg.sp and etc      #
+        # ql.reg.arch_pc, ql.reg.arch_sp    #
+        # and other important stuff         #
         #####################################
         self.arch = self.arch_setup()
 

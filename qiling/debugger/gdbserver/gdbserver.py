@@ -111,21 +111,21 @@ class GDBSERVERsession(object):
                     return adapter.get(arch)
 
                 idhex, spid, pcid  = gdbqmark_converter(self.ql.archtype)  
-                sp          = self.ql.arch.addr_to_str(self.ql.reg.sp)
-                pc          = self.ql.arch.addr_to_str(self.ql.reg.pc)
+                sp          = self.ql.arch.addr_to_str(self.ql.reg.arch_sp)
+                pc          = self.ql.arch.addr_to_str(self.ql.reg.arch_pc)
                 nullfill    = "0" * int(self.ql.archbit / 4)
 
                 if self.ql.archtype== QL_ARCH.MIPS32:
                     if self.ql.archendian == QL_ENDIAN.EB:
-                        sp = self.ql.arch.addr_to_str(self.ql.reg.sp, endian ="little")
-                        pc = self.ql.arch.addr_to_str(self.ql.reg.pc, endian ="little")
+                        sp = self.ql.arch.addr_to_str(self.ql.reg.arch_sp, endian ="little")
+                        pc = self.ql.arch.addr_to_str(self.ql.reg.arch_pc, endian ="little")
                     self.send('T%.2x%.2x:%s;%.2x:%s;' %(GDB_SIGNAL_TRAP, idhex, sp, pcid, pc))
                 else:    
                     self.send('T%.2x%.2x:%s;%.2x:%s;%.2x:%s;' %(GDB_SIGNAL_TRAP, idhex, nullfill, spid, sp, pcid, pc))
 
 
             def handle_c(subcmd):
-                self.gdb.resume_emu(self.ql.reg.pc)
+                self.gdb.resume_emu(self.ql.reg.arch_pc)
                 #self.gdb.resume_emu(self.ql.register(self.pc_reg))
                 if self.gdb.bp_list is ([self.entry_point]):
                     self.send("W00")

@@ -154,11 +154,11 @@ def test_pe_win_al_khaser():
     # The hooks are to remove the prints to file. It crashes. will debug why in the future
     def results(ql):
 
-        if ql.register(UC_X86_REG_EBX) == 1:
+        if ql.reg.ebx == 1:
             print("[=] BAD")
         else:
             print("[=] GOOD ")
-        ql.reg.pc = 0x402ee4
+        ql.reg.eip = 0x402ee4
 
     ql.hook_address(results, 0x00402e66)
     # the program alloc 4 bytes and then tries to write 0x2cc bytes.
@@ -223,7 +223,7 @@ def test_pe_win_x86_crackme():
 
     def force_call_dialog_func(ql):
         # get DialogFunc address
-        lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.sp - 0x8, 4))
+        lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.esp - 0x8, 4))
         # setup stack for DialogFunc
         ql.stack_push(0)
         ql.stack_push(1001)
@@ -231,7 +231,7 @@ def test_pe_win_x86_crackme():
         ql.stack_push(0)
         ql.stack_push(0x0401018)
         # force EIP to DialogFunc
-        ql.reg.pc = lpDialogFunc
+        ql.reg.eip = lpDialogFunc
 
     def our_sandbox(path, rootfs):
         ql = Qiling(path, rootfs)

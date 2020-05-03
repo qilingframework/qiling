@@ -22,30 +22,27 @@ class QlArchMIPS32(QlArch):
         for reg_maper in register_mappings:
             self.ql.reg.expand_mapping(reg_maper)        
 
+        self.ql.reg.register_sp(reg_map["sp"])
+        self.ql.reg.register_pc(reg_map["pc"])
 
     def stack_push(self, value):
-        SP = self.ql.register(UC_MIPS_REG_SP)
-        SP -= 4
-        self.ql.mem.write(SP, self.ql.pack32(value))
-        self.ql.register(UC_MIPS_REG_SP, SP)
-        return SP
+        self.ql.reg.sp -= 4
+        self.ql.mem.write(self.ql.reg.sp, self.ql.pack32(value))
+        return self.ql.reg.sp
 
 
     def stack_pop(self):
-        SP = self.ql.register(UC_MIPS_REG_SP)
-        data = self.ql.unpack32(self.ql.mem.read(SP, 4))
-        self.ql.register(UC_MIPS_REG_SP, SP + 4)
+        data = data = self.ql.unpack32(self.ql.mem.read(self.ql.reg.sp, 4))
+        self.ql.reg.sp += 4
         return data
-
+        
 
     def stack_read(self, offset):
-        SP = self.ql.register(UC_MIPS_REG_SP)
-        return self.ql.unpack32(self.ql.mem.read(SP + offset, 4))
+        return self.ql.unpack32(self.ql.mem.read(self.ql.reg.sp + offset, 4))
 
 
     def stack_write(self, offset, data):
-        SP = self.ql.register(UC_MIPS_REG_SP)
-        return self.ql.mem.write(SP + offset, self.ql.pack32(data))
+        return self.ql.mem.write(self.ql.reg.sp + offset, self.ql.pack32(data))
 
     # get initialized unicorn engine
     def get_init_uc(self):
@@ -58,32 +55,32 @@ class QlArchMIPS32(QlArch):
 
     # set PC
     def set_pc(self, value):
-        self.ql.register(UC_MIPS_REG_PC, value)
+        self.ql.reg.pc = value
 
 
     # get PC
     def get_pc(self):
-        return self.ql.register(UC_MIPS_REG_PC)
+        return self.ql.reg.pc
 
 
     # set stack pointer
     def set_sp(self, value):
-        self.ql.register(UC_MIPS_REG_SP, value)
+        self.ql.reg.sp = value
 
 
     # get stack pointer
     def get_sp(self):
-        return self.ql.register(UC_MIPS_REG_SP)
+        return self.ql.reg.sp
 
 
     # get stack pointer register
     def get_name_sp(self):
-        return UC_MIPS_REG_SP
+        return reg_map["sp"]
 
 
     # get pc register pointer
     def get_name_pc(self):
-        return UC_MIPS_REG_PC
+        return reg_map["pc"]
 
 
     def get_reg_table(self):

@@ -120,7 +120,7 @@ class QlLinuxThread(QlThread):
 
         # Run and log the run event
         s_time = int(time.time() * 1000000)
-        self.start_address = self.ql.arch.get_pc()
+        self.start_address = self.ql.reg.arch_pc
 
         if mode == TIME_MODE:
             self.ql.emu_start(self.start_address, self.exit_point, timeout = thread_slice)
@@ -170,7 +170,7 @@ class QlLinuxThread(QlThread):
     def set_start_address(self, addr):
         old_context = self.ql.context()
         self.restore_regs()
-        self.ql.reg.pc = addr
+        self.ql.reg.arch_pc = addr
         self.store_regs()
         self.ql.context(old_context)
 

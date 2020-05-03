@@ -77,7 +77,7 @@ class QlOsPosix(QlOs):
                         "param5": self.get_func_arg()[5]
                     },
                     "result": None,
-                    "address": self.ql.reg.pc,
+                    "address": self.ql.reg.arch_pc,
                     "return_address": None,
                     "position": self.syscalls_counter
                 })
@@ -92,7 +92,7 @@ class QlOsPosix(QlOs):
                 raise
         else:
             self.ql.nprint(
-                "[!] 0x%x: syscall number = 0x%x(%d) not implemented" % (self.ql.reg.pc, self.syscall, self.syscall))
+                "[!] 0x%x: syscall number = 0x%x(%d) not implemented" % (self.ql.reg.arch_pc, self.syscall, self.syscall))
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Syscall Not Found")
 
@@ -144,41 +144,41 @@ class QlOsPosix(QlOs):
     # get syscall
     def get_func_arg(self):
         if self.ql.archtype == QL_ARCH.ARM64:
-            param0 = self.ql.register(UC_ARM64_REG_X0)
-            param1 = self.ql.register(UC_ARM64_REG_X1)
-            param2 = self.ql.register(UC_ARM64_REG_X2)
-            param3 = self.ql.register(UC_ARM64_REG_X3)
-            param4 = self.ql.register(UC_ARM64_REG_X4)
-            param5 = self.ql.register(UC_ARM64_REG_X5)
+            param0 = self.ql.reg.x0
+            param1 = self.ql.reg.x1
+            param2 = self.ql.reg.x2
+            param3 = self.ql.reg.x3
+            param4 = self.ql.reg.x4
+            param5 = self.ql.reg.x5
         elif self.ql.archtype == QL_ARCH.ARM:
-            param0 = self.ql.register(UC_ARM_REG_R0)
-            param1 = self.ql.register(UC_ARM_REG_R1)
-            param2 = self.ql.register(UC_ARM_REG_R2)
-            param3 = self.ql.register(UC_ARM_REG_R3)
-            param4 = self.ql.register(UC_ARM_REG_R4)
-            param5 = self.ql.register(UC_ARM_REG_R5)
+            param0 = self.ql.reg.r0
+            param1 = self.ql.reg.r1
+            param2 = self.ql.reg.r2
+            param3 = self.ql.reg.r3
+            param4 = self.ql.reg.r4
+            param5 = self.ql.reg.r5
         elif self.ql.archtype == QL_ARCH.MIPS32:
-            param0 = self.ql.register(UC_MIPS_REG_A0)
-            param1 = self.ql.register(UC_MIPS_REG_A1)
-            param2 = self.ql.register(UC_MIPS_REG_A2)
-            param3 = self.ql.register(UC_MIPS_REG_A3)
-            param4 = self.ql.register(UC_MIPS_REG_SP)
+            param0 = self.ql.reg.a0
+            param1 = self.ql.reg.a1
+            param2 = self.ql.reg.a2
+            param3 = self.ql.reg.a3
+            param4 = self.ql.reg.sp
             param4 = param4 + 0x10
-            param5 = self.ql.register(UC_MIPS_REG_SP)
+            param5 = self.ql.reg.sp
             param5 = param5 + 0x14
         elif self.ql.archtype == QL_ARCH.X86:
-            param0 = self.ql.register(UC_X86_REG_EBX)
-            param1 = self.ql.register(UC_X86_REG_ECX)
-            param2 = self.ql.register(UC_X86_REG_EDX)
-            param3 = self.ql.register(UC_X86_REG_ESI)
-            param4 = self.ql.register(UC_X86_REG_EDI)
-            param5 = self.ql.register(UC_X86_REG_EBP)
+            param0 = self.ql.reg.ebx
+            param1 = self.ql.reg.ecx
+            param2 = self.ql.reg.edx
+            param3 = self.ql.reg.esi
+            param4 = self.ql.reg.edi
+            param5 = self.ql.reg.ebp
         elif self.ql.archtype == QL_ARCH.X8664:
-            param0 = self.ql.register(UC_X86_REG_RDI)
-            param1 = self.ql.register(UC_X86_REG_RSI)
-            param2 = self.ql.register(UC_X86_REG_RDX)
-            param3 = self.ql.register(UC_X86_REG_R10)
-            param4 = self.ql.register(UC_X86_REG_R8)
-            param5 = self.ql.register(UC_X86_REG_R9)
+            param0 = self.ql.reg.rdi
+            param1 = self.ql.reg.rsi
+            param2 = self.ql.reg.rdx
+            param3 = self.ql.reg.r10
+            param4 = self.ql.reg.r8
+            param5 = self.ql.reg.r9
 
         return [param0, param1, param2, param3, param4, param5]

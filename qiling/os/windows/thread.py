@@ -10,7 +10,7 @@ from .utils import *
 
 
 def thread_scheduler(ql, address, size):
-    if ql.reg.pc == ql.os.thread_manager.THREAD_RET_ADDR:
+    if ql.reg.arch_pc == ql.os.thread_manager.THREAD_RET_ADDR:
         ql.os.thread_manager.cur_thread.stop()
         ql.os.thread_manager.do_schedule()
     else:

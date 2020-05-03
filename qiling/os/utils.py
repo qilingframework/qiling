@@ -234,7 +234,7 @@ class QLOsUtils:
                 self.ql.dprint(D_INFO, "[-] %s " % str(dumps(value)))
 
     def exec_arbitrary(self, start, end):
-        old_sp = self.ql.reg.sp
+        old_sp = self.ql.reg.arch_sp
 
         # we read where this hook is supposed to return
         ret = self.ql.stack_read(0)
@@ -242,9 +242,9 @@ class QLOsUtils:
         def restore(ql):
             ql.dprint(D_INFO, "[+] Executed code from %d to %d " % (start, end))
             # now we can restore the register to be where we were supposed to
-            old_hook_addr = ql.reg.pc
-            ql.reg.sp = old_sp
-            ql.reg.pc = ret
+            old_hook_addr = ql.reg.arch_pc
+            ql.reg.arch_sp = old_sp
+            ql.reg.arch_pc = ret
             # we want to execute the code once, not more
             ql.hook_address(lambda q: None, old_hook_addr)
 
@@ -257,7 +257,7 @@ class QLOsUtils:
         tmp = self.ql.mem.read(address, size)
 
         if self.ql.archtype == QL_ARCH.ARM:  # QL_ARM
-            reg_cpsr = self.ql.register(UC_ARM_REG_CPSR)
+            reg_cpsr = self.ql.reg.cpsr
             mode = CS_MODE_ARM
             if self.ql.archendian == QL_ENDIAN.EB:
                 reg_cpsr_v = 0b100000

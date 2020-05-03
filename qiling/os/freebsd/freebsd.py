@@ -35,14 +35,14 @@ class QlOsFreebsd(QlOsPosix):
             self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")                    
         
         if self.ql.shellcoder:
-            self.ql.reg.sp = self.entry_point
+            self.ql.reg.arch_sp = self.entry_point
         else:            
-            self.ql.reg.sp = self.stack_address
+            self.ql.reg.arch_sp = self.stack_address
             init_rbp = self.stack_address + 0x40
             init_rdi = self.stack_address
-            self.ql.register(UC_X86_REG_RBP, init_rbp)
-            self.ql.register(UC_X86_REG_RDI, init_rdi)
-            self.ql.register(UC_X86_REG_R14, init_rdi)
+            self.ql.reg.rbp = init_rbp
+            self.ql.reg.rdi = init_rdi
+            self.ql.reg.r14 = init_rdi
 
         self.setup_output()
         self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
@@ -76,12 +76,12 @@ class QlOsFreebsd(QlOsPosix):
                 
         except UcError:
             if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP, QL_OUTPUT.DISASM):
-                self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.reg.pc))
+                self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.reg.arch_pc))
                 self.ql.mem.show_mapinfo()
-                buf = self.ql.mem.read(self.ql.reg.pc, 8)
+                buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
                 self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
                 self.ql.nprint("\n")
-                self.disassembler(self.ql, self.ql.reg.pc, 64)
+                self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
             raise
         
         if self.ql.internal_exception != None:

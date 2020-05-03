@@ -106,7 +106,7 @@ class QLCoreHooks(object):
 
         if hook_type in self._insn_hook.keys():
             for h in self._insn_hook[hook_type]:
-                if h.bound_check(ql.reg.pc):
+                if h.bound_check(ql.reg.arch_pc):
                     ret = h.call(ql, *args[ : -1])
                     if ret == False:
                         break
@@ -127,7 +127,7 @@ class QLCoreHooks(object):
         ql, hook_type = pack_data
         if hook_type in self._hook.keys():
             for h in self._hook[hook_type]:
-                if h.bound_check(ql.reg.pc):
+                if h.bound_check(ql.reg.arch_pc):
                     ret = h.call(ql, addr, size)
                     if ret == False:
                         break
@@ -143,7 +143,7 @@ class QLCoreHooks(object):
         handled = False
         if hook_type in self._hook.keys():
             for h in self._hook[hook_type]:
-                if h.bound_check(ql.reg.pc):
+                if h.bound_check(ql.reg.arch_pc):
                     handled = True
                     ret = h.call(ql, access, addr, size, value)
                     if ret == False:

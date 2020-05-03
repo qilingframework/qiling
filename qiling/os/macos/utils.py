@@ -23,10 +23,8 @@ def page_align_end(addr, page_size):
         return int(((addr / page_size) + 1) * page_size)
 
 def set_eflags_cf(ql, target_cf):
-    tmp_flags = ql.register(UC_X86_REG_EFLAGS)
-    tmp_flags = tmp_flags & 0xfffffffe
-    tmp_flags = tmp_flags | target_cf
-    return ql.register(UC_X86_REG_EFLAGS, tmp_flags)
+    ql.reg.ef = ( ql.reg.ef & 0xfffffffe ) | target_cf
+    return ql.reg.ef
 
 def ql_real_to_vm_abspath(ql, path):
     # rm ".." in path

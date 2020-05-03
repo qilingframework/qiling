@@ -75,7 +75,7 @@ def env_dict_to_array(env_dict):
 def debug_print_stack(ql, num, message=None):
     if message:
         ql.dprint(D_INFO, "========== %s ==========" % message)
-        sp = ql.reg.sp
+        sp = ql.reg.arch_sp
         ql.dprint(D_INFO, hex(sp + ql.pointersize * i) + ": " + hex(ql.stack_read(i * ql.pointersize)))
 
 

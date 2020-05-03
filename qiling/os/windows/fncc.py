@@ -115,16 +115,16 @@ def get_function_param(ql, number):
 
 def set_return_value(ql, ret):
     if ql.archtype== QL_ARCH.X86:
-        ql.register(UC_X86_REG_EAX, ret)
+        ql.reg.eax = ret
     elif ql.archtype== QL_ARCH.X8664:
-        ql.register(UC_X86_REG_RAX, ret)
+        ql.reg.rax = ret
 
 
 def get_return_value(ql):
     if ql.archtype== QL_ARCH.X86:
-        return ql.register(UC_X86_REG_EAX)
+        return ql.reg.eax
     elif ql.archtype== QL_ARCH.X8664:
-        return ql.register(UC_X86_REG_RAX)
+        return ql.reg.rax
 
 #
 # stdcall cdecl fastcall cc
@@ -172,25 +172,25 @@ def x86_stdcall(ql, param_num, params, func, args, kwargs):
     ret_addr = ql.stack_read(0)
 
     # append syscall to list
-    _call_api(ql, func.__name__, params, result, ql.reg.pc, ret_addr)
+    _call_api(ql, func.__name__, params, result, ql.reg.arch_pc, ret_addr)
 
     # update stack pointer
-    ql.reg.sp = ql.reg.sp + ((param_num + 1) * 4)
+    ql.reg.arch_sp = ql.reg.arch_sp + ((param_num + 1) * 4)
 
     if ql.os.PE_RUN:
-        ql.reg.pc = ret_addr
+        ql.reg.arch_pc = ret_addr
 
     return result
 
 
 def x86_cdecl(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
-    old_pc = ql.reg.pc
+    old_pc = ql.reg.arch_pc
     # append syscall to list
     _call_api(ql, func.__name__, params, result, old_pc, ql.stack_read(0))
 
     if ql.os.PE_RUN:
-        ql.reg.pc = ql.stack_pop()
+        ql.reg.arch_pc = ql.stack_pop()
 
 
     return result
@@ -198,12 +198,12 @@ def x86_cdecl(ql, param_num, params, func, args, kwargs):
 
 def x8664_fastcall(ql,  param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
-    old_pc = ql.reg.pc
+    old_pc = ql.reg.arch_pc
     # append syscall to list
     _call_api(ql, func.__name__, params, result, old_pc, ql.stack_read(0))
 
     if ql.os.PE_RUN:
-        ql.reg.pc = ql.stack_pop()
+        ql.reg.arch_pc = ql.stack_pop()
 
 
 

@@ -73,7 +73,7 @@ class HookFunc:
                 ret = 0
             
             if ret & FUNC_CALL_BLOCK == 0:
-                self.ql.reg.pc = next_pc
+                self.ql.reg.arch_pc = next_pc
             
             if ret & FUNC_HOOK_BLOCK != 0:
                 break
@@ -650,7 +650,7 @@ class FunctionHook:
                 self.ql.nprint('[+] rel fuc name ' + str(fuc_name))
 
     def _hook_int(self, ql, intno):
-        idx = (self.ql.reg.pc - self.hook_mem) // 0x10
+        idx = (self.ql.reg.arch_pc - self.hook_mem) // 0x10
 
         if idx not in self.use_list.keys():
             raise

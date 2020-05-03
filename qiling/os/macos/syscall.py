@@ -339,7 +339,7 @@ def ql_syscall_shared_region_check_np(ql, p, uap, retvalp, *args, **kw):
 
 # 0x150
 def ql_syscall_proc_info(ql, callnum, pid, flavor, arg, buff, buffer_size):
-    retval = struct.unpack("<Q", ql.mem.read(ql.register(UC_X86_REG_RSP), 8))[0]
+    retval = struct.unpack("<Q", ql.mem.read(ql.reg.rsp, 8))[0]
     ql.nprint("proc_info(0x%x, %d, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x)" % (
         callnum, pid, flavor, arg, buff, buffer_size, retval
     ))

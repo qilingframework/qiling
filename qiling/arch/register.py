@@ -7,9 +7,11 @@ class QlRegisterManager():
     def __init__(self, ql):
         self.register_mapping = {}
         self.ql = ql
+        self.uc_pc = 0
+        self.uc_sp = 0
 
     def __getattribute__(self, name):
-        if name in ("register_mapping", "ql"):
+        if name in ("register_mapping", "ql", "uc_pc", "uc_sp"):
             return super(QlRegisterManager, self).__getattribute__(name)
         
         if name in self.register_mapping:
@@ -18,7 +20,7 @@ class QlRegisterManager():
         return super(QlRegisterManager, self).__getattribute__(name)
 
     def __setattr__(self, name, value):
-        if name in ("register_mapping", "ql"):
+        if name in ("register_mapping", "ql", "uc_pc", "uc_sp"):
             super(QlRegisterManager, self).__setattr__(name, value)
 
         if name in self.register_mapping:
@@ -91,3 +93,28 @@ class QlRegisterManager():
     @name.setter
     def name(self, uc_reg):
         self.uc_reg_name = uc_reg
+
+    # Generic methods to get SP and IP across Arch's #
+    # These functions should only be used if the     #
+    # caller is dealing with multiple Arch's         #
+    def register_sp(self, sp_id):
+        self.uc_sp = sp_id
+
+    def register_pc(self, pc_id):
+        self.uc_pc = pc_id
+
+    @property
+    def arch_pc(self):
+        return self.ql.uc.reg_read(self.uc_pc)
+
+    @arch_pc.setter
+    def arch_pc(self, value):
+        return self.ql.uc.reg_write(self.uc_pc, value)
+
+    @property
+    def arch_sp(self):
+        return self.ql.uc.reg_read(self.uc_sp)
+
+    @arch_sp.setter
+    def arch_sp(self, value):
+        return self.ql.uc.reg_write(self.uc_sp, value)

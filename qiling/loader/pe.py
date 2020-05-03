@@ -335,8 +335,8 @@ class QlLoaderPE(Process, QlLoader):
             sp = self.ql.stack_address + self.ql.stack_size - 0x1000
 
             if self.ql.archtype== QL_ARCH.X86:
-                self.ql.register(UC_X86_REG_ESP, sp)
-                self.ql.register(UC_X86_REG_EBP, sp)
+                self.ql.reg.esp = sp
+                self.ql.reg.ebp = sp
 
                 if self.pe.is_dll():
                     self.ql.dprint(D_INFO, '[+] Setting up DllMain args')
@@ -349,17 +349,17 @@ class QlLoaderPE(Process, QlLoader):
                     self.ql.mem.write(sp + 0x8, int(1).to_bytes(length=4, byteorder='little'))
 
             elif self.ql.archtype== QL_ARCH.X8664:
-                self.ql.register(UC_X86_REG_RSP, sp)
-                self.ql.register(UC_X86_REG_RBP, sp)
+                self.ql.reg.rsp = sp
+                self.ql.reg.rbp = sp
 
                 if self.pe.is_dll():
                     self.ql.dprint(D_INFO, '[+] Setting up DllMain args')
 
                     self.ql.dprint(D_INFO, '[+] Setting RCX (arg1) to %16X (IMAGE_BASE)' % (self.PE_IMAGE_BASE))
-                    self.ql.register(UC_X86_REG_RCX, self.PE_IMAGE_BASE)
+                    self.ql.reg.rcx = self.PE_IMAGE_BASE
 
                     self.ql.dprint(D_INFO, '[+] Setting RDX (arg2) to 1 (DLL_PROCESS_ATTACH)')
-                    self.ql.register(UC_X86_REG_RDX, 1)
+                    self.ql.reg.rdx = 1
             else:
                 raise QlErrorArch("[!] Unknown ql.arch")
 
@@ -404,11 +404,11 @@ class QlLoaderPE(Process, QlLoader):
 
         elif self.ql.shellcoder:
             if self.ql.archtype== QL_ARCH.X86:
-                self.ql.register(UC_X86_REG_ESP, self.ql.stack_address + 0x3000)
-                self.ql.register(UC_X86_REG_EBP, self.ql.stack_address + 0x3000)
+                self.ql.reg.esp = self.ql.stack_address + 0x3000
+                self.ql.reg.ebp = self.ql.reg.esp
             else:
-                self.ql.register(UC_X86_REG_RSP, self.ql.stack_address + 0x3000)
-                self.ql.register(UC_X86_REG_RBP, self.ql.stack_address + 0x3000)
+                self.ql.reg.rsp = self.ql.stack_address + 0x3000
+                self.ql.reg.rbp = self.ql.reg.rsp
 
             # load shellcode in
             self.ql.mem.map(self.entry_point, self.ql.os.shellcoder_ram, info="[shellcode_base]")

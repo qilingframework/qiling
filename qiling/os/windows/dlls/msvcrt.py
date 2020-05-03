@@ -203,7 +203,7 @@ def hook_printf(ql, address, _):
 
     format_string = read_cstring(ql, format_string)
 
-    param_addr = ql.reg.sp + ql.pointersize * 2
+    param_addr = ql.reg.arch_sp + ql.pointersize * 2
     ret, _ = printf(ql, address, format_string, param_addr, "printf")
 
     set_return_value(ql, ret)
@@ -214,8 +214,7 @@ def hook_printf(ql, address, _):
     if ql.archtype== QL_ARCH.X8664:
         # if number of params > 4
         if count + 1 > 4:
-            rsp = ql.register(UC_X86_REG_RSP)
-            ql.register(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
+            ql.reg.rsp = ql.reg.rsp + ( (count - 4 + 1) * 8 )
 
     return None
 
