@@ -118,17 +118,17 @@ class QlOsPosix(QlOs):
         # each name has a list of calls, we want the last one and we want to update the return value
         self.syscalls[self.syscall_name][-1]["result"] = regreturn
         if self.ql.archtype == QL_ARCH.ARM:  # ARM
-            self.ql.register(UC_ARM_REG_R0, regreturn)
+            self.ql.reg.r0 = regreturn
             # ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
 
         elif self.ql.archtype == QL_ARCH.ARM64:  # ARM64
-            self.ql.register(UC_ARM64_REG_X0, regreturn)
+            self.ql.reg.x0 = regreturn
 
         elif self.ql.archtype == QL_ARCH.X86:  # X86
-            self.ql.register(UC_X86_REG_EAX, regreturn)
+            self.ql.reg.eax = regreturn
 
         elif self.ql.archtype == QL_ARCH.X8664:  # X8664
-            self.ql.register(UC_X86_REG_RAX, regreturn)
+            self.ql.reg.rax = regreturn
 
         elif self.ql.archtype == QL_ARCH.MIPS32:  # MIPSE32EL
             if regreturn < 0 and regreturn > -1134:
