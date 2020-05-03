@@ -177,8 +177,7 @@ class QlArchX8664(QlArch):
 
 
     def stack_read(self, offset):
-        SP = self.ql.register(UC_X86_REG_RSP)
-        return self.ql.unpack64(self.ql.mem.read(SP + offset, 8))
+        return self.ql.unpack64(self.ql.mem.read(self.ql.reg.rsp + offset, 8))
 
 
     def stack_write(self, offset, data):
@@ -361,13 +360,13 @@ class GDTManager:
 def ql_x86_register_cs(self):
     # While debugging the linux kernel segment, the cs segment was found on the third segment of gdt.
     self.gdtm.register_gdt_segment(3, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
-    self.ql.register(UC_X86_REG_CS, self.gdtm.create_selector(3, QL_X86_S_GDT | QL_X86_S_PRIV_3))
+    self.ql.reg.cs = self.gdtm.create_selector(3, QL_X86_S_GDT | QL_X86_S_PRIV_3)
 
 
 def ql_x8664_register_cs(self):
     # While debugging the linux kernel segment, the cs segment was found on the sixth segment of gdt.
     self.gdtm.register_gdt_segment(6, 0, 0xfffffffffffff000, QL_X86_A_PRESENT | QL_X86_A_CODE | QL_X86_A_CODE_READABLE | QL_X86_A_PRIV_3 | QL_X86_A_EXEC | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
-    self.ql.register(UC_X86_REG_CS, self.gdtm.create_selector(6, QL_X86_S_GDT | QL_X86_S_PRIV_3))
+    self.ql.reg.cs = self.gdtm.create_selector(6, QL_X86_S_GDT | QL_X86_S_PRIV_3)
 
 
 def ql_x86_register_ds_ss_es(self):
@@ -375,9 +374,9 @@ def ql_x86_register_ds_ss_es(self):
     # While debugging the Linux kernel segment, I found that the three segments DS, SS, and ES all point to the same location in the GDT table. 
     # This position is the fifth segment table of GDT.
     self.gdtm.register_gdt_segment(5, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0)
-    self.ql.register(UC_X86_REG_DS, self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
-    self.ql.register(UC_X86_REG_SS, self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
-    self.ql.register(UC_X86_REG_ES, self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    self.ql.reg.ds = self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0)
+    self.ql.reg.ss = self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0)
+    self.ql.reg.es = self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0)
 
 
 def ql_x8664_register_ds_ss_es(self):
@@ -385,18 +384,18 @@ def ql_x8664_register_ds_ss_es(self):
     # When I debug the Linux kernel, I find that only the SS is set to the fifth segment table, and the rest are not set.
     self.gdtm.register_gdt_segment(5, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0)
     # ql.register(UC_X86_REG_DS, ql.os.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
-    self.ql.register(UC_X86_REG_SS, self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    self.ql.reg.ss = self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0)
     # ql.register(UC_X86_REG_ES, ql.os.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
 
 
 def ql_x86_register_gs(self):
     self.gdtm.register_gdt_segment(15, GS_SEGMENT_ADDR, GS_SEGMENT_SIZE, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT |  QL_X86_S_PRIV_3)
-    self.ql.register(UC_X86_REG_GS, self.gdtm.create_selector(15, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    self.ql.reg.gs = self.gdtm.create_selector(15, QL_X86_S_GDT | QL_X86_S_PRIV_0)
 
 
 def ql_x86_register_fs(self):
     self.gdtm.register_gdt_segment(14, FS_SEGMENT_ADDR, FS_SEGMENT_SIZE, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT |  QL_X86_S_PRIV_3)
-    self.ql.register(UC_X86_REG_FS, self.gdtm.create_selector(14,  QL_X86_S_GDT |  QL_X86_S_PRIV_3))
+    self.ql.reg.fs = self.gdtm.create_selector(14,  QL_X86_S_GDT |  QL_X86_S_PRIV_3)
 
 
 def ql_x8664_set_gs(ql):
