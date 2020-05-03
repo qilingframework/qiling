@@ -62,6 +62,9 @@ class HookFunc:
         self.hook.append((cb, userdata))
     
     def call(self):
+        if self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
+            self.ql.reg.arch_pc = self.ql.reg.arch_pc + 4
+            
         next_pc = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
         for cb, userdata in self.hook:
             if userdata == None:
@@ -372,8 +375,8 @@ class FunctionHook:
         elif self.ql.archtype== QL_ARCH.ARM64:
             GLOB_DAT = 1025
             JMP_SLOT = 1026
-
-            ins = b'\x01\x14\x00\xd4\xc0\x03_\xd6'
+            #brk 0; ret
+            ins = b'\x00\x00 \xd4\xc0\x03_\xd6'
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
