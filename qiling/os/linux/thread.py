@@ -337,18 +337,22 @@ class QlLinuxMIPS32Thread(QlLinuxThread):
         super(QlLinuxMIPS32Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
         self.tls = 0
 
+
     def clone_thread_tls(self, tls_addr):
         self.tls = tls_addr
 
+
     def store(self):
         self.store_regs()
-        self.tls = self.ql.register(UC_MIPS_REG_CP0_USERLOCAL)
+        self.tls = self.ql.reg.cp0_userlocal 
+
 
     def restore(self):
         self.restore_regs()
         CONFIG3_ULR = (1 << 13)
-        self.ql.register(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
-        self.ql.register(UC_MIPS_REG_CP0_USERLOCAL, self.tls)
+        self.ql.reg.cp0_config3 = CONFIG3_ULR
+        self.ql.reg.cp0_userlocal = self.tls
+
 
 class QlLinuxARMThread(QlLinuxThread):
     """docstring for QlLinuxARMThread"""
@@ -356,16 +360,20 @@ class QlLinuxARMThread(QlLinuxThread):
         super(QlLinuxARMThread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
         self.tls = 0
 
+
     def clone_thread_tls(self, tls_addr):
         self.tls = tls_addr
 
+
     def store(self):
         self.store_regs()
-        self.tls = self.ql.register(UC_ARM_REG_C13_C0_3)
+        self.tls = self.ql.reg.c13_c0_3
+
 
     def restore(self):
         self.restore_regs()
-        self.ql.register(UC_ARM_REG_C13_C0_3, self.tls)
+        self.ql.reg.c13_c0_3 = self.tls
+
 
 class QlLinuxARM64Thread(QlLinuxThread):
     """docstring for QlLinuxARM64Thread"""

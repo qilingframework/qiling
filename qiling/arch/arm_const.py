@@ -24,5 +24,6 @@ reg_map = {
             "pc": UC_ARM_REG_PC, 
             "cpsr": UC_ARM_REG_CPSR,
             "c1_c0_2": UC_ARM_REG_C1_C0_2,
+            "c13_c0_3": UC_ARM_REG_C13_C0_3,
             "fpexc": UC_ARM_REG_FPEXC,
 }
