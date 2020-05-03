@@ -86,7 +86,10 @@ class HookFunc:
         self.rel.r_offset = self.hook_data_ptr - self.load_base        
         self.ql.mem.write(self.rel.ptr, self.rel.pack())
 
+        ori_data = self.ql.mem.read(self.ori_offest + self.load_base, self.ql.pointersize)
+
         self.ql.mem.write(self.ori_offest + self.load_base, self.ql.pack(self.hook_fuc_ptr))
+        self.ql.mem.write(self.hook_data_ptr, bytes(ori_data))
         
 
 class ELF_Phdr:
@@ -356,7 +359,8 @@ class FunctionHook:
         if self.ql.archtype== QL_ARCH.ARM:
             GLOB_DAT = 21
             JMP_SLOT = 22
-            ins = b'\xa0\x00\x00\xef\x1e\xff/\xe1'
+            # bkpt 0; bx lr
+            ins = b'p\x00 \xe1\x1e\xff/\xe1'
 
         # MIPS32
         elif self.ql.archtype== QL_ARCH.MIPS32:
@@ -368,18 +372,21 @@ class FunctionHook:
         elif self.ql.archtype== QL_ARCH.ARM64:
             GLOB_DAT = 1025
             JMP_SLOT = 1026
+
             ins = b'\x01\x14\x00\xd4\xc0\x03_\xd6'
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
             GLOB_DAT = 6
             JMP_SLOT = 7
+            # int 0xa0; ret
             ins = b'\xcd\xa0\xc3'.ljust(8, b'\x90')
 
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
             GLOB_DAT = 6
             JMP_SLOT = 7
+            # int 0xa0; ret
             ins = b'\xcd\xa0\xc3'.ljust(8, b'\x90')
 
         self._parse()
@@ -680,7 +687,10 @@ class FunctionHook:
         hf.enable()
 
         if self.hook_int == False:
-            self.ql.hook_intno(self._hook_int, 0xa0)
+            if self.ql.archtype == QL_ARCH.X86 or self.ql.archtype == QL_ARCH.X8664:
+                self.ql.hook_intno(self._hook_int, 0xa0)
+            elif self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
+                self.ql.hook_intno(self._hook_int, 7)
 
 
     def add_function_hook(self, fucname, cb, userdata = None):
