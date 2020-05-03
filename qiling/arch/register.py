@@ -4,6 +4,13 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 class QlRegisterManager():
+    """
+    This class exposes the ql.reg features that allows you to directly access
+    or assign values to CPU registers of a particular architecture.
+
+    Registers exposed are listed in the *_const.py files in the respective
+    arch directories and are mapped to Unicorn Engine's definitions
+    """
     def __init__(self, ql):
         self.register_mapping = {}
         self.ql = ql
