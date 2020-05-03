@@ -154,7 +154,7 @@ def test_pe_win_al_khaser():
     # The hooks are to remove the prints to file. It crashes. will debug why in the future
     def results(ql):
 
-        if ql.register(UC_X86_REG_EBX) == 1:
+        if ql.reg.ebx == 1:
             print("[=] BAD")
         else:
             print("[=] GOOD ")

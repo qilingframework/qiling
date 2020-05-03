@@ -115,16 +115,16 @@ def get_function_param(ql, number):
 
 def set_return_value(ql, ret):
     if ql.archtype== QL_ARCH.X86:
-        ql.register(UC_X86_REG_EAX, ret)
+        ql.reg.eax = ret
     elif ql.archtype== QL_ARCH.X8664:
-        ql.register(UC_X86_REG_RAX, ret)
+        ql.reg.rax = ret
 
 
 def get_return_value(ql):
     if ql.archtype== QL_ARCH.X86:
-        return ql.register(UC_X86_REG_EAX)
+        return ql.reg.eax
     elif ql.archtype== QL_ARCH.X8664:
-        return ql.register(UC_X86_REG_RAX)
+        return ql.reg.rax
 
 #
 # stdcall cdecl fastcall cc

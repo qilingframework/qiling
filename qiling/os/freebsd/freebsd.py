@@ -40,9 +40,9 @@ class QlOsFreebsd(QlOsPosix):
             self.ql.reg.arch_sp = self.stack_address
             init_rbp = self.stack_address + 0x40
             init_rdi = self.stack_address
-            self.ql.register(UC_X86_REG_RBP, init_rbp)
-            self.ql.register(UC_X86_REG_RDI, init_rdi)
-            self.ql.register(UC_X86_REG_R14, init_rdi)
+            self.ql.reg.rbp = init_rbp
+            self.ql.reg.rdi = init_rdi
+            self.ql.reg.r14 = init_rdi
 
         self.setup_output()
         self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)

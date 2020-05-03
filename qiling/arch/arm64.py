@@ -24,62 +24,61 @@ class QlArchARM64(QlArch):
         self.ql.reg.register_sp(reg_map["sp"])
         self.ql.reg.register_pc(reg_map["pc"])
 
+
     def stack_push(self, value):
-        SP = self.ql.register(UC_ARM64_REG_SP)
-        SP -= 8
-        self.ql.mem.write(SP, self.ql.pack64(value))
-        self.ql.register(UC_ARM64_REG_SP, SP)
-        return SP
+        self.ql.reg.sp -= 8
+        self.ql.mem.write(self.ql.reg.sp, self.ql.pack64(value))
+        return self.ql.reg.sp
 
 
     def stack_pop(self):
-        SP = self.ql.register(UC_ARM64_REG_SP)
-        data = self.ql.unpack64(self.ql.mem.read(SP, 8))
-        self.ql.register(UC_ARM64_REG_SP, SP + 8)
+        data = self.ql.unpack64(self.ql.mem.read(self.ql.reg.sp, 8))
+        self.ql.reg.sp += 8
         return data
 
 
     def stack_read(self, offset):
-        SP = self.ql.register(UC_ARM64_REG_SP)
-        return self.ql.unpack64(self.ql.mem.read(SP + offset, 8))
+        return self.ql.unpack64(self.ql.mem.read(self.ql.reg.sp + offset, 8))
 
 
     def stack_write(self, offset, data):
-        SP = self.ql.register(UC_ARM64_REG_SP)
-        return self.ql.mem.write(SP + offset, self.ql.pack64(data))
+        return self.ql.mem.write(self.ql.reg.sp + offset, self.ql.pack64(data))
+
 
     # get initialized unicorn engine
     def get_init_uc(self):
         uc = Uc(UC_ARCH_ARM64, UC_MODE_ARM)   
         return uc
 
+
     # set PC
     def set_pc(self, value):
-        self.ql.register(UC_ARM64_REG_PC, value)
+        self.ql.reg.pc = value
+
 
     # get PC
     def get_pc(self):
-        return self.ql.register(UC_ARM64_REG_PC)
+        return self.ql.reg.pc
 
 
     # set stack pointer
     def set_sp(self, value):
-        self.ql.register(UC_ARM64_REG_SP, value)
+        self.ql.reg.sp = value
 
 
     # get stack pointer
     def get_sp(self):
-        return self.ql.register(UC_ARM64_REG_SP)
+        return self.ql.reg.sp
 
 
     # get stack pointer register
     def get_name_sp(self):
-        return UC_ARM64_REG_SP
+        return reg_map["sp"]
 
 
     # get pc register pointer
     def get_name_pc(self):
-        return UC_ARM64_REG_PC
+        return reg_map["pc"]
         
 
     def get_reg_table(self):
@@ -92,10 +91,12 @@ class QlArchARM64(QlArch):
             registers_table += [reg]
         return registers_table
 
+
     # set register name
     def set_reg_name_str(self):
         pass  
     
+
     def get_reg_name_str(self, uc_reg):
         adapter = {}
         adapter.update(reg_map)
@@ -118,10 +119,12 @@ class QlArchARM64(QlArch):
             register_str = self.get_reg_name(register_str)  
         return self.ql.uc.reg_write(register_str, value)
 
+
     def enable_vfp(self):
         ARM64FP = self.ql.register(UC_ARM64_REG_CPACR_EL1)
         ARM64FP |= 0x300000
         self.ql.register(UC_ARM64_REG_CPACR_EL1, ARM64FP)
+
 
     def get_reg_name(self, uc_reg_name):
         adapter = {}

@@ -257,7 +257,7 @@ class QLOsUtils:
         tmp = self.ql.mem.read(address, size)
 
         if self.ql.archtype == QL_ARCH.ARM:  # QL_ARM
-            reg_cpsr = self.ql.register(UC_ARM_REG_CPSR)
+            reg_cpsr = self.ql.reg.cpsr
             mode = CS_MODE_ARM
             if self.ql.archendian == QL_ENDIAN.EB:
                 reg_cpsr_v = 0b100000
