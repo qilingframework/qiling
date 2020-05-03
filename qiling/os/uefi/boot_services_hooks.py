@@ -109,12 +109,28 @@ def hook_SetTimer(ctx, address, params):
 def hook_WaitForEvent(ctx, address, params):
     return ctx.EFI_SUCCESS
 
+
+def hook_EndOfNotify(ql):
+    ql.nprint(f'Back from event notify returning to:{ql.notify_return_address:x}')
+    ql.register(UC_X86_REG_RIP, ql.notify_return_address)
+    return 0
+
 def SignalEvent(ctx, event_id):
     if event_id in ctx.ql.events:
         event = ctx.ql.events[event_id]
         if not event["Set"]:
             event["Set"] = True
-            ctx.ql.notify_list.append((event_id, event['NotifyFunction'], event['NotifyContext']))
+            notify_func = event["NotifyFunction"]
+            notify_context = event["NotifyContext"]
+            if ctx.ql.notify_immediately:
+                ctx.ql.hook_address(hook_EndOfNotify, ctx.ql.notify_ptr)
+                ctx.ql.nprint(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
+                ctx.ql.notify_return_address = ctx.ql.stack_pop()
+                ctx.ql.stack_push(ctx.ql.notify_ptr) # Return address from the notify function
+                ctx.ql.stack_push(notify_func) # Return address from here -> the notify function.
+                ctx.ql.register(UC_X86_REG_RCX, notify_context)
+            else:
+                ctx.ql.notify_list.append((event_id, notify_func, notify_context))
         return ctx.EFI_SUCCESS
     else:
         return ctx.EFI_INVALID_PARAMETER

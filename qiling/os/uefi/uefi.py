@@ -57,6 +57,7 @@ class QlOsUefi(QlOs):
         self.ql.events = {}
         self.ql.handle_dict = {}
         self.ql.notify_list = []
+        self.ql.notify_immediately = False
         self.ql.elf_entry = 0 # We don't use elf, but gdbserver breaks if it's missing
         self.HEAP_BASE_ADDR = 0x500000000
         self.HEAP_SIZE = 0x5000000
@@ -162,14 +163,15 @@ class QlOsUefi(QlOs):
             self.ql.mem.write(self.ql.code_address, self.ql.shellcoder)
         
         # set SystemTable to image base for now
-        #TODO: init a real 
         import ctypes
         pointer_size = ctypes.sizeof(ctypes.c_void_p)
         def convert_struct_to_bytes(st):
             buffer = ctypes.create_string_buffer(ctypes.sizeof(st))
             ctypes.memmove(buffer, ctypes.addressof(st), ctypes.sizeof(st))
             return buffer.raw
-        system_table_heap = self.ql.heap.mem_alloc(1024*1024)
+        system_table_heap_size = 1024*1024
+        system_table_heap = self.ql.heap.mem_alloc(system_table_heap_size)
+        self.ql.mem.write(system_table_heap, b'\x90'*system_table_heap_size)
         self.ql.system_table_ptr = system_table_heap
         system_table = EFI_SYSTEM_TABLE()
         system_table_heap_ptr = system_table_heap + ctypes.sizeof(EFI_SYSTEM_TABLE)
@@ -214,6 +216,8 @@ class QlOsUefi(QlOs):
         self.ql.mem.write(self.ql.end_of_execution_ptr, b'\xcc')
         system_table_heap_ptr += pointer_size
         self.ql.hook_address(hook_EndOfExecution, self.ql.end_of_execution_ptr)
+        self.ql.notify_ptr = system_table_heap_ptr
+        system_table_heap_ptr += pointer_size
 
     def run(self):
         ql_setup_output(self.ql)
