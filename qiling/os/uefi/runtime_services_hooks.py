@@ -57,8 +57,8 @@ def hook_ConvertPointer(ctx, address, params):
 def hook_GetVariable(ctx, address, params):
     if params['VariableName'] in ctx.ql.env:
         var = ctx.ql.env[params['VariableName']]
-        read_len = ctx.read_int(params['DataSize'])
-        ctx.write_int(params['DataSize'], len(var))
+        read_len = ctx.read_int64(params['DataSize'])
+        ctx.write_int64(params['DataSize'], len(var))
         if read_len < len(var):
             return ctx.EFI_BUFFER_TOO_SMALL
         if params['Data'] != 0:
@@ -72,7 +72,7 @@ def hook_GetVariable(ctx, address, params):
     "VendorGuid": GUID,
 })
 def hook_GetNextVariableName(ctx, address, params):
-    name_size = ctx.read_int(params["VariableNameSize"])
+    name_size = ctx.read_int64(params["VariableNameSize"])
     last_name = read_wstring(ctx.ql, params["VariableName"])
     vars = ctx.ql.env['Names'] # This is a list of variable names in correct order.
     if last_name in vars and vars.index(last_name) < len(vars) - 1:
@@ -101,9 +101,13 @@ def hook_SetVariable(ctx, address, params):
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(ctypes.c_uint32)
+    "Count": POINTER, #POINTER_T(ctypes.c_uint32)
 })
 def hook_GetNextHighMonotonicCount(ctx, address, params):
+    ctx.ql.monotonic_count += 0x0000000100000000
+    hmc = ctx.ql.monotonic_count
+    hmc = (hmc >> 32) & 0xffffffff
+    ctx.write_int32(params["Count"], hmc)
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
@@ -113,6 +117,8 @@ def hook_GetNextHighMonotonicCount(ctx, address, params):
     "a3": POINTER, #POINTER_T(None)
 })
 def hook_ResetSystem(ctx, address, params):
+    ctx.ql.nprint(f'hook_ResetSystem')
+    ctx.ql.uc.emu_stop()
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={

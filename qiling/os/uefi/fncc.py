@@ -50,12 +50,17 @@ def dxeapi(param_num=None, params=None):
                 def __init__(self, ql):
                     self.ql = ql
                     self.PE_RUN = True
-                def write_int(self, address, num):
+                def write_int32(self, address, num):
+                    if self.ql.archendian == QL_ENDIAN_EL:
+                        self.ql.mem.write(address, struct.pack('<I',(num)))
+                    else:
+                        self.ql.mem.write(address, struct.pack('>I',(num)))
+                def write_int64(self, address, num):
                     if self.ql.archendian == QL_ENDIAN_EL:
                         self.ql.mem.write(address, struct.pack('<Q',(num)))
                     else:
                         self.ql.mem.write(address, struct.pack('>Q',(num)))
-                def read_int(self, address):
+                def read_int64(self, address):
                     if self.ql.archendian == QL_ENDIAN_EL:
                         return struct.unpack('<Q', self.ql.mem.read(address, 8))[0]
                     else:

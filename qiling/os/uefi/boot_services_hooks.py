@@ -1,3 +1,4 @@
+from binascii import crc32
 from qiling.const import *
 from qiling.os.uefi.fncc import *
 from qiling.os.uefi.uefi_types_64 import *
@@ -32,11 +33,11 @@ def hook_AllocatePages(ctx, address, params):
     AllocateAddress = 2
     PageSize = 4096
     if params['type'] == AllocateAddress:
-        address = ctx.read_int(params["Memory"])
+        address = ctx.read_int64(params["Memory"])
         ctx.ql.mem.map(address, params["Pages"]*PageSize)
     else:
         address = ctx.ql.heap.mem_alloc(params["Pages"]*PageSize)
-        ctx.write_int(params["Memory"], address)
+        ctx.write_int64(params["Memory"], address)
     return address
 
 @dxeapi(params={
@@ -63,7 +64,7 @@ def hook_GetMemoryMap(ctx, address, params):
 })
 def hook_AllocatePool(ctx, address, params):
     address = ctx.ql.heap.mem_alloc(params["Size"])
-    ctx.write_int(params["Buffer"], address)
+    ctx.write_int64(params["Buffer"], address)
     return address
 
 @dxeapi(params={
@@ -81,7 +82,7 @@ def CreateEvent(wrapper, address, params):
         event_dic["EventGroup"] =  params["EventGroup"]
     
     wrapper.ql.events[event_id] = event_dic
-    wrapper.write_int(params["Event"], event_id)
+    wrapper.write_int64(params["Event"], event_id)
     return event_id
 
 @dxeapi(params={
@@ -196,11 +197,19 @@ def hook_ReinstallProtocolInterface(ctx, address, params):
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(None)
-    "a1": GUID,
-    "a2": POINTER, #POINTER_T(None)
+    "Handle": POINTER, #POINTER_T(None)
+    "Protocol": GUID,
+    "Interface": POINTER, #POINTER_T(None)
 })
 def hook_UninstallProtocolInterface(ctx, address, params):
+    handle = params["Handle"]
+    if handle not in ctx.ql.handle_dict:
+        return ctx.EFI_NOT_FOUND
+    dic = ctx.ql.handle_dict[handle]
+    protocol = params["Protocol"]
+    if protocol not in dic:
+        return ctx.EFI_NOT_FOUND
+    del dic[protocol]
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
@@ -214,7 +223,7 @@ def hook_HandleProtocol(ctx, address, params):
     interface = params['Interface']
     if handle in ctx.ql.handle_dict:
         if protocol in ctx.ql.handle_dict[handle]:
-            ctx.write_int(interface, ctx.ql.handle_dict[handle][protocol])
+            ctx.write_int64(interface, ctx.ql.handle_dict[handle][protocol])
             return ctx.EFI_SUCCESS
     return ctx.EFI_NOT_FOUND
 
@@ -252,13 +261,13 @@ def hook_LocateHandle(ctx, address, params):
     if len(handles) == 0:
         return ctx.EFI_NOT_FOUND
     ret = ctx.EFI_BUFFER_TOO_SMALL
-    if ctx.read_int(params["BufferSize"]) >= buffer_size:
+    if ctx.read_int64(params["BufferSize"]) >= buffer_size:
         ptr = params["Buffer"]
         for handle in handles:
-            ctx.write_int(ptr, handle)
+            ctx.write_int64(ptr, handle)
             ptr += pointer_size
         ret = ctx.EFI_SUCCESS
-    ctx.write_int(params["BufferSize"], buffer_size)
+    ctx.write_int64(params["BufferSize"], buffer_size)
     return ret
     
 
@@ -303,6 +312,8 @@ def hook_StartImage(ctx, address, params):
     "a3": POINTER, #POINTER_T(ctypes.c_uint16)
 })
 def hook_Exit(ctx, address, params):
+    ctx.ql.nprint(f'hook_Exit')
+    ctx.ql.uc.emu_stop()
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
@@ -316,12 +327,16 @@ def hook_UnloadImage(ctx, address, params):
     "a1": ULONGLONG,
 })
 def hook_ExitBootServices(ctx, address, params):
+    ctx.ql.nprint(f'hook_ExitBootServices')
+    ctx.ql.uc.emu_stop()
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(ctypes.c_uint64)
+    "Count": POINTER, #POINTER_T(ctypes.c_uint64)
 })
 def hook_GetNextMonotonicCount(ctx, address, params):
+    ctx.ql.monotonic_count += 1
+    ctx.write_int64(params["Count"], ctx.ql.monotonic_count)
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
@@ -368,22 +383,22 @@ def hook_OpenProtocol(ctx, address, params):
     return LocateProtocol(ctx, address, params)
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(None)
-    "a1": GUID,
-    "a2": POINTER, #POINTER_T(None)
-    "a3": POINTER, #POINTER_T(None)
+    "Handle": POINTER, #POINTER_T(None)
+    "Protocol": GUID,
+    "AgentHandle": POINTER, #POINTER_T(None)
+    "ControllerHandle": POINTER, #POINTER_T(None)
 })
 def hook_CloseProtocol(ctx, address, params):
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(None)
-    "a1": GUID,
-    "a2": POINTER, #POINTER_T(POINTER_T(struct_EFI_OPEN_PROTOCOL_INFORMATION_ENTRY))
-    "a3": POINTER, #POINTER_T(ctypes.c_uint64)
+    "Handle": POINTER, #POINTER_T(None)
+    "Protocol": GUID,
+    "EntryBuffer": POINTER, #POINTER_T(POINTER_T(struct_EFI_OPEN_PROTOCOL_INFORMATION_ENTRY))
+    "EntryCount": POINTER, #POINTER_T(ctypes.c_uint64)
 })
 def hook_OpenProtocolInformation(ctx, address, params):
-    return ctx.EFI_SUCCESS
+    return ctx.EFI_NOT_FOUND
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -402,13 +417,13 @@ def hook_ProtocolsPerHandle(ctx, address, params):
 })
 def hook_LocateHandleBuffer(ctx, address, params):
     buffer_size, handles = LocateHandles(ctx, address, params)
-    ctx.write_int(params["NoHandles"], len(handles))
+    ctx.write_int64(params["NoHandles"], len(handles))
     if len(handles) == 0:
         return ctx.EFI_NOT_FOUND
     address = ctx.ql.heap.mem_alloc(buffer_size)
-    ctx.write_int(params["Buffer"], address)
+    ctx.write_int64(params["Buffer"], address)
     for handle in handles:
-            ctx.write_int(address, handle)
+            ctx.write_int64(address, handle)
             address += pointer_size
     return ctx.EFI_SUCCESS
 
@@ -418,7 +433,7 @@ def LocateProtocol(ctx, address, params):
         if "Handle" in params and params["Handle"] != handle:
             continue
         if protocol in guid_dic:
-            ctx.write_int(params['Interface'], guid_dic[protocol])
+            ctx.write_int64(params['Interface'], guid_dic[protocol])
             return ctx.EFI_SUCCESS
     return ctx.EFI_NOT_FOUND
 
@@ -450,19 +465,38 @@ def hook_InstallMultipleProtocolInterfaces(ctx, address, params):
         index +=2
     ctx.ql.handle_dict[handle] = dic
     check_and_notify_protocols(ctx)
-
-@dxeapi(params={
-    "a0": POINTER, #POINTER_T(None)
-})
-def hook_UninstallMultipleProtocolInterfaces(ctx, address, params):
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": POINTER, #POINTER_T(None)
-    "a1": ULONGLONG,
-    "a2": POINTER, #POINTER_T(ctypes.c_uint32)
+    "Handle": POINTER, #POINTER_T(None)
+})
+def hook_UninstallMultipleProtocolInterfaces(ctx, address, params):
+    handle = params["Handle"]
+    ctx.ql.nprint(f'hook_UninstallMultipleProtocolInterfaces {handle:x}')
+    if handle not in ctx.ql.handle_dict:
+        return ctx.EFI_NOT_FOUND
+    index = 1
+    while _get_param_by_index(ctx, index) != 0:
+        GUID_ptr = _get_param_by_index(ctx, index)
+        protocol_ptr = _get_param_by_index(ctx, index+1)
+        GUID = str(read_guid(ctx.ql, GUID_ptr))
+        ctx.ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
+        dic = ctx.ql.handle_dict[handle]
+        protocol = params["Protocol"]
+        if protocol not in dic:
+            return ctx.EFI_INVALID_PARAMETER
+        del dic[protocol]
+        index +=2
+    return ctx.EFI_SUCCESS
+
+@dxeapi(params={
+    "Data": POINTER, #POINTER_T(None)
+    "DataSize": ULONGLONG,
+    "Crc32": POINTER, #POINTER_T(ctypes.c_uint32)
 })
 def hook_CalculateCrc32(ctx, address, params):
+    data = bytes(ctx.ql.mem.read(params['Data'], params['DataSize']))
+    ctx.write_int32(params['Crc32'], crc32(data))
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
@@ -501,6 +535,8 @@ def hook_CreateEventEx(ctx, address, params):
 
 
 def hook_EFI_BOOT_SERVICES(start_ptr, ql):
+    ql.monotonic_count = 0
+
     efi_boot_services = EFI_BOOT_SERVICES()
     ptr = start_ptr
     efi_boot_services.RaiseTPL = ptr
