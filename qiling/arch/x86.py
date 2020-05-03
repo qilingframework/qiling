@@ -49,10 +49,10 @@ class QlArchX86(QlArch):
 
 
     # get register big, mostly use for x86    
-    def get_reg_bit(self, register_str):
-        if type(register_str) == str:
-            register_str = self.get_reg_name(register_str)
-        if register_str in ({v for k, v in reg_map_32.items()}):
+    def get_reg_bit(self, register):
+        if type(register) == str:
+            register = self.get_reg_name(register)
+        if register in ({v for k, v in reg_map_32.items()}):
             return 32 
 
 
@@ -124,16 +124,16 @@ class QlArchX86(QlArch):
         return None 
 
 
-    def get_register(self, register_str):
-        if type(register_str) == str:
-            register_str = self.get_reg_name(register_str)  
-        return self.ql.uc.reg_read(register_str)
+    def get_register(self, register):
+        if type(register) == str:
+            register = self.get_reg_name(register)  
+        return self.ql.uc.reg_read(register)
 
 
-    def set_register(self, register_str, value):
-        if type(register_str) == str:
-            register_str = self.get_reg_name(register_str)  
-        return self.ql.uc.reg_write(register_str, value)
+    def set_register(self, register, value):
+        if type(register) == str:
+            register = self.get_reg_name(register)  
+        return self.ql.uc.reg_write(register, value)
 
 
     def get_reg_name(self, uc_reg_name):
@@ -221,10 +221,10 @@ class QlArchX8664(QlArch):
 
 
     # get register big, mostly use for x86  
-    def get_reg_bit(self, register_str):
-        if type(register_str) == str:
-            register_str = self.get_reg_name(register_str)
-        if register_str in ({v for k, v in reg_map_64.items()}):
+    def get_reg_bit(self, register):
+        if type(register) == str:
+            register = self.get_reg_name(register)
+        if register in ({v for k, v in reg_map_64.items()}):
             return 64
         else:
             return 32    
@@ -260,16 +260,16 @@ class QlArchX8664(QlArch):
         return None 
 
 
-    def get_register(self, register_str):
-        if type(register_str) == str:
-            register_str = self.get_reg_name(register_str)  
-        return self.ql.uc.reg_read(register_str)
+    def get_register(self, register):
+        if type(register) == str:
+            register = self.get_reg_name(register)  
+        return self.ql.uc.reg_read(register)
 
 
-    def set_register(self, register_str, value):
-        if type(register_str) == str:
-            register_str = self.get_reg_name(register_str)  
-        return self.ql.uc.reg_write(register_str, value)
+    def set_register(self, register, value):
+        if type(register) == str:
+            register = self.get_reg_name(register)  
+        return self.ql.uc.reg_write(register, value)
 
 
     def get_reg_name(self, uc_reg_name):
@@ -292,7 +292,7 @@ class GDTManager:
         else:
             raise QlGDTError("[!] Ql GDT mem map error!")
         # setup GDT by writing to GDTR
-        ql.register(UC_X86_REG_GDTR, (0, GDT_ADDR, GDT_LIMIT, 0x0))
+        ql.reg.write(UC_X86_REG_GDTR, (0, GDT_ADDR, GDT_LIMIT, 0x0))
 
         self.ql = ql
         self.gdt_number = GDT_ENTRY_ENTRIES
@@ -383,9 +383,9 @@ def ql_x8664_register_ds_ss_es(self):
     # TODO : The section permission here should be QL_X86_A_PRIV_3, but I do n’t know why it can only be set to QL_X86_A_PRIV_0.
     # When I debug the Linux kernel, I find that only the SS is set to the fifth segment table, and the rest are not set.
     self.gdtm.register_gdt_segment(5, 0, 0xfffff000, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_0 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_0)
-    # ql.register(UC_X86_REG_DS, ql.os.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    # ql.reg.write(UC_X86_REG_DS, ql.os.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
     self.ql.reg.ss = self.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0)
-    # ql.register(UC_X86_REG_ES, ql.os.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
+    # ql.reg.write(UC_X86_REG_ES, ql.os.gdtm.create_selector(5, QL_X86_S_GDT | QL_X86_S_PRIV_0))
 
 
 def ql_x86_register_gs(self):

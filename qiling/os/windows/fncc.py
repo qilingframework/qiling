@@ -34,7 +34,7 @@ def _x8664_get_params_by_index(ql, index):
     #self.ql = ql
     reg_list = [UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9]
     if index < 4:
-        return ql.register(reg_list[index])
+        return ql.reg.read(reg_list[index])
 
     index -= 4
     # skip ret_addr
@@ -67,7 +67,7 @@ def _x8664_get_args(ql, number):
         reg_num = 4
     number -= reg_num
     for i in reg_list[:reg_num]:
-        arg_list.append(ql.register(i))
+        arg_list.append(ql.reg.read(i))
     for i in range(number):
         # skip ret_addr and 32 byte home space
         arg_list.append(ql.stack_read((i + 5) * 8))

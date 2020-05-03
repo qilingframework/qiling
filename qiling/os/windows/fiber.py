@@ -37,7 +37,7 @@ class FiberManager:
             if fiber.cb:
                 self.ql.dprint(D_INFO, "Skipping emulation of callback function 0x%X for fiber 0x%X" % (fiber.cb, fiber.idx))
                 """
-                ret_addr = self.ql.register(UC_X86_REG_RIP + 6 ) #FIXME, use capstone to get addr of next instr?
+                ret_addr = self.ql.reg.read(UC_X86_REG_RIP + 6 ) #FIXME, use capstone to get addr of next instr?
 
                 # Write Fls data to memory to be accessed by cb
                 addr = self.ql.os.heap.mem_alloc(self.ql.pointersize)
@@ -46,12 +46,12 @@ class FiberManager:
 
                 # set up params and return address then jump to callback
                 if self.ql.pointersize == 8:
-                    self.ql.register(UC_X86_REG_RCX, addr)
+                    self.ql.reg.write(UC_X86_REG_RCX, addr)
                 else:
                     self.ql.stack_push(ret_addr)
                 self.ql.stack_push(ret_addr)
                 self.ql.dprint(D_INFO,"Jumping to callback @ 0x%X" % fiber.cb)
-                self.ql.register(UC_X86_REG_RIP, fiber.cb)
+                self.ql.reg.write(UC_X86_REG_RIP, fiber.cb)
                 # All of this gets overwritten by the rest of the code in fncc.py
                 # Not sure how to actually make unicorn emulate the callback function due to that
                 """

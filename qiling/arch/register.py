@@ -4,6 +4,13 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 class QlRegisterManager():
+    """
+    This class exposes the ql.reg features that allows you to directly access
+    or assign values to CPU registers of a particular architecture.
+
+    Registers exposed are listed in the *_const.py files in the respective
+    arch directories and are mapped to Unicorn Engine's definitions
+    """
     def __init__(self, ql):
         self.register_mapping = {}
         self.ql = ql
@@ -35,14 +42,17 @@ class QlRegisterManager():
         self.register_mapping = {**self.register_mapping, **expanded_map}
 
 
-    def rw(self, register_str, value):
-        if type(register_str) == str:
-            register_str = register_str.lower()
+    # read register
+    def read(self, register):
+        if type(register) == str:
+            register = register.lower()
+        return self.ql.arch.get_register(register)
 
-        if register_str is not None and value is None:
-            return self.ql.arch.get_register(register_str)
-        elif register_str is not None and value is not None:
-            return self.ql.arch.set_register(register_str, value)
+
+    def write(self, register, value):
+        if type(register) == str:
+            register = register.lower()
+        return self.ql.arch.set_register(register, value)
 
 
     def msr(self, msr, addr= None):
@@ -56,18 +66,16 @@ class QlRegisterManager():
     def store(self):
         reg_dict = {}
         for reg in self.ql.reg.table:
-            self.ql.reg.name = reg
-            reg_v = self.rw(self.ql.reg.name, value = None)
-            reg_dict[self.ql.reg.name] = reg_v
+            reg_v = self.read(reg)
+            reg_dict[reg] = reg_v
         return reg_dict
 
 
     # ql.reg.restore - restore all stored register
     def restore(self, value = {}):
         for reg in self.ql.reg.table:
-            self.ql.reg.name = reg
-            reg_v= value[self.ql.reg.name]
-            self.rw(self.ql.reg.name, reg_v)
+            reg_v= value[reg]
+            self.write(reg, reg_v)
 
 
     # ql.reg.bit() - Register bit

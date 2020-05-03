@@ -55,10 +55,6 @@ class QLCoreUtils(object):
         if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             self.nprint(*args, **kw)
 
-    # ql.register - read and write register 
-    def register(self, register_str= None, value= None):
-        return self.reg.rw(register_str, value)
-
     def context(self, saved_context= None):
         if saved_context == None:
             return self.uc.context_save()

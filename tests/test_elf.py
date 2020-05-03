@@ -59,7 +59,7 @@ class ELFTest(unittest.TestCase):
             addr = ql.func_arg[0]
             print("puts(%s)" % ql.mem.string(addr))
             
-            reg = ql.register("rax")
+            reg = ql.reg.read("rax")
             print("reg : 0x%x" % reg)
             ql.reg.rax = reg 
         
@@ -189,7 +189,7 @@ class ELFTest(unittest.TestCase):
             target = False
             pathname = ql.os.file_des[ftrunc_fd].name.split('/')[-1]
             
-            reg = ql.register("eax")
+            reg = ql.reg.read("eax")
             print("reg : 0x%x" % reg)
             ql.reg.eax = reg 
 
@@ -364,7 +364,7 @@ class ELFTest(unittest.TestCase):
             target = False
             pathname = ql.os.file_des[read_fd].name.split('/')[-1]
             
-            reg = ql.register("x0")
+            reg = ql.reg.read("x0")
             print("reg : 0x%x" % reg)
             ql.reg.x0 = reg  
         
@@ -489,7 +489,7 @@ class ELFTest(unittest.TestCase):
             target = False
             pathname = ql.os.file_des[read_fd].name.split('/')[-1]
             
-            reg = ql.register("v0")
+            reg = ql.reg.read("v0")
             print("reg : 0x%x" % reg)
             ql.reg.v0 = reg  
             
@@ -597,7 +597,7 @@ class ELFTest(unittest.TestCase):
             mapaddr = ql.mem.map_anywhere(0x100000)
             ql.nprint("0x%x" %  mapaddr)
             
-            reg = ql.register("r0")
+            reg = ql.reg.read("r0")
             print("reg : 0x%x" % reg)
             ql.reg.r0 = reg  
             

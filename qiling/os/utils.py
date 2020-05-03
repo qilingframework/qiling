@@ -309,7 +309,7 @@ class QLOsUtils:
         if self.ql.output == QL_OUTPUT.DUMP:
             for reg in self.ql.reg.table:
                 REG_NAME = reg
-                REG_VAL = self.ql.register(reg)
+                REG_VAL = self.ql.reg.read(reg)
                 self.ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
 
     def setup_output(self):
