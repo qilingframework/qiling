@@ -24,10 +24,12 @@ class QlArchARM(QlArch):
         self.ql.reg.register_sp(reg_map["sp"])
         self.ql.reg.register_pc(reg_map["pc"])
 
+
     def stack_push(self, value):
         self.ql.reg.sp -= 4
         self.ql.mem.write(self.ql.reg.sp, self.ql.pack32(value))
         return self.ql.reg.sp
+
 
     def stack_pop(self):
         data = self.ql.unpack32(self.ql.mem.read(self.ql.reg.sp, 4))
@@ -88,21 +90,19 @@ class QlArchARM(QlArch):
     def get_name_pc(self):
         return reg_map["pc"]
 
+
     def enable_vfp(self):
-        tmp_val = self.ql.register(UC_ARM_REG_C1_C0_2)
-        tmp_val = tmp_val | (0xf << 20)
-        self.ql.register(UC_ARM_REG_C1_C0_2, tmp_val)
+        self.ql.reg.c1_c0_2 = self.ql.reg.c1_c0_2 | (0xf << 20)
         if self.ql.archendian == QL_ENDIAN.EB:
-            enable_vfp = 0x40000000
-            #enable_vfp = 0x00000040
+            self.ql.reg.fpexc = 0x40000000
+            #self.ql.reg.fpexc = 0x00000040
         else:
-            enable_vfp = 0x40000000
-        self.ql.register(UC_ARM_REG_FPEXC, enable_vfp)
+            self.ql.reg.fpexc = 0x40000000
         self.ql.dprint(D_INFO, "[+] Enable ARM VFP")
 
 
     def check_thumb(self):
-        reg_cpsr = self.ql.register(UC_ARM_REG_CPSR)
+        reg_cpsr = self.ql.reg.cpsr
         if self.ql.archendian == QL_ENDIAN.EB:
             reg_cpsr_v = 0b100000
             # reg_cpsr_v = 0b000000
@@ -114,6 +114,7 @@ class QlArchARM(QlArch):
             mode = UC_MODE_THUMB
             self.ql.dprint(D_INFO, "[+] Enable ARM THUMB")
         return mode
+
 
     def get_reg_table(self):
         registers_table = []
