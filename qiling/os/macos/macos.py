@@ -83,9 +83,9 @@ class QlOsMacos(QlOsPosix):
                 self.ql.loader.elf_entry = self.ql.entry_point    
 
         if self.ql.shellcoder:
-            self.ql.reg.sp = self.entry_point
+            self.ql.reg.arch_sp = self.entry_point
         else:            
-            self.ql.reg.sp = self.ql.loader.stack_address
+            self.ql.reg.arch_sp = self.ql.loader.stack_address
 
         if self.ql.archtype== QL_ARCH.ARM64:
             self.ql.arch.enable_vfp()
@@ -122,12 +122,12 @@ class QlOsMacos(QlOsPosix):
                 self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:
             if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
-                self.ql.nprint("[+] PC= " + hex(self.ql.reg.pc))
+                self.ql.nprint("[+] PC= " + hex(self.ql.reg.arch_pc))
                 self.ql.mem.show_mapinfo()
-                buf = self.ql.mem.read(self.ql.reg.pc, 8)
+                buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
                 self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
                 self.ql.nprint("\n")
-                self.disassembler(self.ql, self.ql.reg.pc, 64)
+                self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
             raise QlErrorExecutionStop("[!] Execution Terminated")
 
         if self.ql.internal_exception != None:

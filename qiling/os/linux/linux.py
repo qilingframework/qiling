@@ -100,9 +100,9 @@ class QlOsLinux(QlOsPosix):
             ql_arm_init_kernel_get_tls(self.ql)
         
         if self.ql.shellcoder:
-            self.ql.reg.sp = self.entry_point
+            self.ql.reg.arch_sp = self.entry_point
         else:            
-            self.ql.reg.sp = self.stack_address
+            self.ql.reg.arch_sp = self.stack_address
 
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
@@ -147,12 +147,12 @@ class QlOsLinux(QlOsPosix):
 
         except:
             if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
-                self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.reg.pc))
+                self.ql.nprint("[+] PC = 0x%x\n" %(self.ql.reg.arch_pc))
                 self.ql.mem.show_mapinfo()
-                buf = self.ql.mem.read(self.ql.reg.pc, 8)
+                buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
                 self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
                 self.ql.nprint("\n")
-                self.disassembler(self.ql, self.ql.reg.pc, 64)
+                self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
             raise
 
         if self.ql.internal_exception != None:

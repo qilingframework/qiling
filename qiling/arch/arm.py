@@ -21,6 +21,9 @@ class QlArchARM(QlArch):
             self.ql.reg.expand_mapping(reg_maper)
 
 
+        self.ql.reg.register_sp(reg_map["sp"])
+        self.ql.reg.register_pc(reg_map["pc"])
+
     def stack_push(self, value):
         SP = self.ql.register(UC_ARM_REG_SP)
         SP -= 4

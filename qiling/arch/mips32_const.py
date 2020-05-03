@@ -44,4 +44,5 @@ reg_map = {
             "inv1": UC_MIPS_REG_INVALID,
             "inv2":UC_MIPS_REG_INVALID,
             "pc": UC_MIPS_REG_PC,
+            "sp": UC_MIPS_REG_SP
 }

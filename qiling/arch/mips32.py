@@ -22,6 +22,8 @@ class QlArchMIPS32(QlArch):
         for reg_maper in register_mappings:
             self.ql.reg.expand_mapping(reg_maper)        
 
+        self.ql.reg.register_sp(reg_map["sp"])
+        self.ql.reg.register_pc(reg_map["pc"])
 
     def stack_push(self, value):
         SP = self.ql.register(UC_MIPS_REG_SP)

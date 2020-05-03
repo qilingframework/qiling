@@ -77,7 +77,7 @@ class QlOsPosix(QlOs):
                         "param5": self.get_func_arg()[5]
                     },
                     "result": None,
-                    "address": self.ql.reg.pc,
+                    "address": self.ql.reg.arch_pc,
                     "return_address": None,
                     "position": self.syscalls_counter
                 })
@@ -92,7 +92,7 @@ class QlOsPosix(QlOs):
                 raise
         else:
             self.ql.nprint(
-                "[!] 0x%x: syscall number = 0x%x(%d) not implemented" % (self.ql.reg.pc, self.syscall, self.syscall))
+                "[!] 0x%x: syscall number = 0x%x(%d) not implemented" % (self.ql.reg.arch_pc, self.syscall, self.syscall))
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Syscall Not Found")
 

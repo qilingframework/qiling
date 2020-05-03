@@ -158,7 +158,7 @@ def test_pe_win_al_khaser():
             print("[=] BAD")
         else:
             print("[=] GOOD ")
-        ql.reg.pc = 0x402ee4
+        ql.reg.eip = 0x402ee4
 
     ql.hook_address(results, 0x00402e66)
     # the program alloc 4 bytes and then tries to write 0x2cc bytes.
@@ -223,7 +223,7 @@ def test_pe_win_x86_crackme():
 
     def force_call_dialog_func(ql):
         # get DialogFunc address
-        lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.sp - 0x8, 4))
+        lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.esp - 0x8, 4))
         # setup stack for DialogFunc
         ql.stack_push(0)
         ql.stack_push(1001)
@@ -231,7 +231,7 @@ def test_pe_win_x86_crackme():
         ql.stack_push(0)
         ql.stack_push(0x0401018)
         # force EIP to DialogFunc
-        ql.reg.pc = lpDialogFunc
+        ql.reg.eip = lpDialogFunc
 
     def our_sandbox(path, rootfs):
         ql = Qiling(path, rootfs)
