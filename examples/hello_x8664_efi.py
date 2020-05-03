@@ -11,17 +11,17 @@ from qiling import *
 #     "Protocol": GUID,
 #     "Event": POINTER,
 #     "Registration": POINTER})
-def force_notify_RegisterProtocolNotify(self, address, params):
+def force_notify_RegisterProtocolNotify(ctx, address, params):
     event_id = params['Event']
-    if event_id in self.ql.events:
-        self.ql.events[event_id]['Guid'] = params["Protocol"]
+    if event_id in ctx.ql.events:
+        ctx.ql.events[event_id]['Guid'] = params["Protocol"]
         # let's force notify
-        event = self.ql.events[event_id]
+        event = ctx.ql.events[event_id]
         event["Set"] = True
-        self.ql.notify_list.append((event_id, event['NotifyFunction'], event['NotifyContext']))
+        ctx.ql.notify_list.append((event_id, event['NotifyFunction'], event['NotifyContext']))
         ######
-        return self.EFI_SUCCESS
-    return self.EFI_INVALID_PARAMETER
+        return ctx.EFI_SUCCESS
+    return ctx.EFI_INVALID_PARAMETER
 
 
 if __name__ == "__main__":

@@ -60,12 +60,12 @@ def dxeapi(param_num=None, params=None):
                         return struct.unpack('<Q', self.ql.mem.read(address, 8))[0]
                     else:
                         return struct.unpack('>Q',self.ql.mem.read(address, 8))[0]
-            self = hook_context(args[0])
-            arg = (self, self.ql.pc, {})
+            ctx = hook_context(args[0])
+            arg = (ctx, ctx.ql.pc, {})
             f = func
-            if func.__name__ in self.ql.hook_override:
-                f = self.ql.hook_override[func.__name__]
-            return x8664_fastcall(self, param_num, params, f, arg, kwargs)
+            if func.__name__ in ctx.ql.hook_override:
+                f = ctx.ql.hook_override[func.__name__]
+            return x8664_fastcall(ctx, param_num, params, f, arg, kwargs)
 
         return wrapper
 
