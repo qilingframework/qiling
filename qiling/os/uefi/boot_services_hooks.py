@@ -1,5 +1,7 @@
+from uuid import UUID
 from binascii import crc32
 from qiling.const import *
+from qiling.os.uefi.utils import *
 from qiling.os.uefi.fncc import *
 from qiling.os.uefi.uefi_types_64 import *
 from qiling.os.windows.fncc import *
@@ -280,10 +282,29 @@ def hook_LocateDevicePath(ctx, address, params):
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
-    "a0": GUID,
-    "a1": POINTER, #POINTER_T(None)
+    "Guid": GUID,
+    "Table": POINTER, #POINTER_T(None)
 })
 def hook_InstallConfigurationTable(ctx, address, params):
+    guid = params["Guid"]
+    uuid = UUID(guid)
+    efi_configuration_table = EFI_CONFIGURATION_TABLE()
+    if guid in ctx.ql.efi_configuration_table:
+        index = ctx.ql.efi_configuration_table.index(guid)
+    else:
+        index = len(ctx.ql.efi_configuration_table)
+        ctx.ql.efi_configuration_table.append(guid)
+    
+    address = (index * ctypes.sizeof(efi_configuration_table)) + ctx.ql.efi_configuration_table_ptr
+    efi_configuration_table.VendorGuid.Data1 = uuid.fields[0]
+    efi_configuration_table.VendorGuid.Data2 = uuid.fields[1]
+    efi_configuration_table.VendorGuid.Data3 = uuid.fields[2]
+    guid_last_bytes = uuid.bytes_le[8:]
+    for i in range(len(guid_last_bytes)):
+        efi_configuration_table.VendorGuid.Data4[i] = guid_last_bytes[i]
+    
+    efi_configuration_table.VendorTable = params["Table"]
+    ctx.ql.mem.write(address, convert_struct_to_bytes(efi_configuration_table))
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={

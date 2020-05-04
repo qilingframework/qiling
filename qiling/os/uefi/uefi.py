@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+import ctypes
 import types
 import struct
 from unicorn import *
@@ -12,6 +13,7 @@ from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.os import QlOs
 from qiling.os.memory import Heap
+from qiling.os.uefi.utils import *
 from qiling.os.uefi.uefi_types_64 import *
 from qiling.os.uefi.fncc import *
 from qiling.os.uefi.boot_services_hooks import *
@@ -163,12 +165,7 @@ class QlOsUefi(QlOs):
             self.ql.mem.write(self.ql.code_address, self.ql.shellcoder)
         
         # set SystemTable to image base for now
-        import ctypes
         pointer_size = ctypes.sizeof(ctypes.c_void_p)
-        def convert_struct_to_bytes(st):
-            buffer = ctypes.create_string_buffer(ctypes.sizeof(st))
-            ctypes.memmove(buffer, ctypes.addressof(st), ctypes.sizeof(st))
-            return buffer.raw
         system_table_heap_size = 1024*1024
         system_table_heap = self.ql.heap.mem_alloc(system_table_heap_size)
         self.ql.mem.write(system_table_heap, b'\x90'*system_table_heap_size)
@@ -186,10 +183,10 @@ class QlOsUefi(QlOs):
         system_table_heap_ptr += ctypes.sizeof(EFI_BOOT_SERVICES)
         system_table_heap_ptr, boot_services = hook_EFI_BOOT_SERVICES(system_table_heap_ptr, self.ql)
 
-        efi_configuration_table_ptr = system_table_heap_ptr
-        system_table.ConfigurationTable = efi_configuration_table_ptr
+        self.ql.efi_configuration_table_ptr = system_table_heap_ptr
+        system_table.ConfigurationTable = self.ql.efi_configuration_table_ptr
         system_table.NumberOfTableEntries = 1
-        system_table_heap_ptr += ctypes.sizeof(EFI_CONFIGURATION_TABLE)
+        system_table_heap_ptr += ctypes.sizeof(EFI_CONFIGURATION_TABLE) * 100 # We don't expect more then a few entries.
         efi_configuration_table = EFI_CONFIGURATION_TABLE()
 
         #   0x7739f24c, 0x93d7, 0x11d4, {0x9a, 0x3a, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d } \
@@ -205,10 +202,11 @@ class QlOsUefi(QlOs):
         efi_configuration_table.VendorGuid.Data4[6] = 0xc1
         efi_configuration_table.VendorGuid.Data4[7] = 0x4d
         efi_configuration_table.VendorTable = 0
+        self.ql.efi_configuration_table = ['7739f24c-93d7-11d4-9a3a-0090273fc14d']
 
         self.ql.mem.write(runtime_services_ptr, convert_struct_to_bytes(runtime_services))
         self.ql.mem.write(boot_services_ptr, convert_struct_to_bytes(boot_services))
-        self.ql.mem.write(efi_configuration_table_ptr, convert_struct_to_bytes(efi_configuration_table))
+        self.ql.mem.write(self.ql.efi_configuration_table_ptr, convert_struct_to_bytes(efi_configuration_table))
         self.ql.mem.write(self.ql.system_table_ptr, convert_struct_to_bytes(system_table))
 
         #return address
