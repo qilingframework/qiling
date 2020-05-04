@@ -142,7 +142,7 @@ def run_shellcode(options):
             exit(1)
         shellcoder = read_shellcode(options.filename)
 
-    return Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output)
+    return Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output, profile = options.profile)
 
 
 def usage():
@@ -268,13 +268,12 @@ if __name__ == '__main__':
     #
 
     if (options.subparser_name == 'run'):
-        if options.filename != '' and options.run_args == []:
-            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, 
-                        output=options.output, log_console = options.console, log_dir=options.log_dir, profile = options.profile)
+        if options.filename is not None and options.run_args == []:
+            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile = options.profile, output=options.output, log_console = options.console, log_dir=options.log_dir)
 
-        elif options.filename == '' and options.args == [] and options.run_args != []:
-            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, output=options.output, 
-                        log_console = options.console, log_dir=options.log_dir, profile = options.profile)
+        elif options.filename is None and options.args == [] and options.run_args != []:
+            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, profile = options.profile, output=options.output, log_console = options.console, log_dir=options.log_dir)
+        
         else:
             print("ERROR: Command error!")
             usage()

@@ -8,7 +8,7 @@ from .utils import ql_build_module_import_name, ql_get_module_function
 from .utils import ql_is_valid_arch, ql_is_valid_ostype
 from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
 from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
-from .const import D_RPRT
+from .const import D_INFO
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 from .loader.utils import ql_checkostype
 
@@ -147,6 +147,9 @@ class QLCoreUtils(object):
         return ql_get_module_function(module_name, function_name)(self)
 
     def profile_setup(self):
+        if self.profile:
+            self.dprint(D_INFO, "[+] Customized profile: %s" % self.profile)
+        
         os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(self.ostype) + ".ql")
         qlos_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", "os" + ".ql") 
         loader_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", loadertype_convert_str(self.ostype) + ".ql")
@@ -166,9 +169,4 @@ class QLCoreUtils(object):
 
         config = configparser.ConfigParser()
         config.read(profiles)
-        self.dprint(D_RPRT, "[+] Added profile %s" % self.profile)
-        for section in config.sections():
-            self.dprint(D_RPRT, "[+] Section: %s" % section)
-            for key in config[section]:
-                self.dprint(D_RPRT, "[-] %s %s" % (key, config[section][key]))
-        return config        
+        return config
