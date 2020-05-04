@@ -13,12 +13,16 @@ ostype
 arch
 ```
 
-additional options
+ql.profile settings
 ```
 stack_address = 0xhexaddress
 stack_size = 0xhexaddress
-interp_base = 0xhexaddress
-mmap_start = 0xhexaddress
+interp_address = 0xhexaddress
+mmap_address = 0xhexaddress
+```
+
+additional options
+```
 output = ["debug","off","disasm","dump"] // dump=(disam + debug)
 log_console
 log_dir = path to all the logs

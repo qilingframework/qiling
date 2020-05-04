@@ -99,7 +99,7 @@ class QlLoaderMACHO(QlLoader):
                             self.using_dyld = True
 
         if depth == 0:
-            self.mmap_start = mmap_address
+            self.mmap_address = mmap_address
             self.stack_sp = self.loadStack()
             if self.using_dyld:
                 self.ql.nprint("[+] ProcEntry: {}".format(hex(self.proc_entry)))
@@ -109,7 +109,7 @@ class QlLoaderMACHO(QlLoader):
                 self.entry_point = self.proc_entry + self.slide
             self.ql.nprint("[+] Binary Entry Point: 0x{:X}".format(self.binary_entry))
             self.macho_entry = self.binary_entry + self.slide
-            self.loadbase = self.macho_entry
+            self.load_address = self.macho_entry
 
         return self.proc_entry
         
