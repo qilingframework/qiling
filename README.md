@@ -196,6 +196,7 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 - SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
 - CHEN huitao (null) <null@qiling.io>
 - YU tong (sp1ke) <spikeinhouse@gmail.com>
+- Earl Marcus (klks84) klks84@gmail.com 
 
 #### Travis-CI, Docker and Website
 - FOO Kevin (chfl4gs) <chbsd64@qiling.io>
