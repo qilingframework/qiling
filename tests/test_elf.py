@@ -216,8 +216,13 @@ class ELFTest(unittest.TestCase):
 
 
     def test_elf_linux_arm(self):     
+        def my_puts(ql):
+            addr = ql.func_arg[0]
+            print("puts(%s)" % ql.mem.string(addr))
+            
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", log_dir='logs')
         ql.log_split=True
+        ql.set_api('puts', my_puts)
         ql.run()
         del ql
 
