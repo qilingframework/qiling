@@ -5,6 +5,7 @@
 
 import struct
 from unicorn.x86_const import *
+from functools import wraps
 
 from qiling.os.const import *
 from .utils import *
@@ -219,6 +220,7 @@ def winapi(cc, param_num=None, params=None):
     """
 
     def decorator(func):
+        @wraps(func)
         def wrapper(*args, **kwargs):
             ql = args[0]
             if ql.archtype== QL_ARCH.X86:

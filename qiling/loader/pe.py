@@ -257,7 +257,7 @@ class Process(QlLoader):
                 self.import_address_table[dll_name][entry.ordinal] = self.PE_IMAGE_BASE + entry.address
         except:
             import traceback
-            self.ql.nprint('Failed to load exports for %s:\n%s' % (self.name, traceback.format_exc()))
+            self.ql.nprint('Failed to load exports for %s:\n%s' % (self.ql.filename, traceback.format_exc()))
 
 
 class QlLoaderPE(Process, QlLoader):

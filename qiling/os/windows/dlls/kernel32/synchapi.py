@@ -183,10 +183,16 @@ def hook_WaitForMultipleObjects(ql, address, params):
     "lpName": WSTRING
 })
 def hook_OpenMutexW(ql, address, params):
-    type, name = params["lpName"].split("\\")
     # The name can have a "Global" or "Local" prefix to explicitly open an object in the global or session namespace.
+    # It can also have no prefix
+    try:
+        _type, name = params["lpName"].split("\\")
+    except:
+        name = params["lpName"]
+        _type = ""
+
     handle = ql.os.handle_manager.search(name)
-    if type == "Global":
+    if _type == "Global":
         # if is global is a Windows lock. We always return a valid handle because we have no way to emulate them
         # example sample: Gandcrab e42431d37561cc695de03b85e8e99c9e31321742
         if handle is None:
@@ -204,6 +210,19 @@ def hook_OpenMutexW(ql, address, params):
             return 0
         else:
             raise QlErrorNotImplemented("[!] API not implemented")
+
+# HANDLE OpenMutexA(
+#   DWORD   dwDesiredAccess,
+#   BOOL    bInheritHandle,
+#   LPCSTR lpName
+# );
+@winapi(cc=STDCALL, params={
+    "dwDesiredAccess": DWORD,
+    "bInheritHandle": BOOL,
+    "lpName": STRING
+})
+def hook_OpenMutexA(ql, address, params):
+    return hook_OpenMutexW.__wrapped__(ql, address, params)
 
 
 # HANDLE CreateMutexW(
@@ -237,6 +256,20 @@ def hook_CreateMutexW(ql, address, params):
 
     return handle.ID
 
+# HANDLE CreateMutexA(
+#   LPSECURITY_ATTRIBUTES lpMutexAttributes,
+#   BOOL                  bInitialOwner,
+#   LPCSTR               lpName
+# );
+@winapi(cc=STDCALL, params={
+    "lpMutexAttributes": POINTER,
+    "bInitialOwner": BOOL,
+    "lpName": STRING
+})
+def hook_CreateMutexA(ql, address, params):
+    return hook_CreateMutexW.__wrapped__(ql, address, params)
+
+
 #HANDLE CreateEventA(
 #  LPSECURITY_ATTRIBUTES lpEventAttributes,
 #  BOOL                  bManualReset,
@@ -268,3 +301,18 @@ def hook_CreateEventA(ql, address, params):
         handle = Handle(obj=mutex, name=name)
         ql.os.handle_manager.append(handle)
     return handle.ID
+
+#HANDLE CreateEventW(
+#  LPSECURITY_ATTRIBUTES lpEventAttributes,
+#  BOOL                  bManualReset,
+#  BOOL                  bInitialState,
+#  LPCWSTR               lpName
+#);
+@winapi(cc=STDCALL, params={
+    "lpEventAttributes": POINTER, 
+    "bManualReset": BOOL,
+    "bInitialState": BOOL,
+    "lpName": WSTRING 
+})
+def hook_CreateEventW(ql, address, params):
+    return hook_CreateEventA.__wrapped__(ql, address, params)

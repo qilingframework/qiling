@@ -13,8 +13,8 @@ from .handle import HandleManager, Handle
 from .thread import QlWindowsThreadManagement, QlWindowsThread
 
 
-def ql_x86_windows_hook_mem_error(ql, addr, size, value):
-    #ql.dprint(D_INFO, "[+] ERROR: unmapped memory access at 0x%x" % addr)
+def ql_x86_windows_hook_mem_error(ql, access, addr, size, value):
+    ql.dprint(D_INFO, "[+] ERROR: unmapped memory access at 0x%x" % addr)
     return False
 
 def string_unpack(string):
