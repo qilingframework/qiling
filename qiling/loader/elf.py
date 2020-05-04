@@ -400,11 +400,11 @@ class QlLoaderELF(ELFParse, QlLoader):
 
         if loadbase <= 0:
             if self.ql.archbit == 64:
-                loadbase = int(self.profile.get("OS64", "loadbase"),16)
+                loadbase = int(self.profile.get("OS64", "load_address"),16)
             elif self.ql.archtype== QL_ARCH.MIPS:
-                loadbase = int(self.profile.get("MIPS", "loadbse"),16)
+                loadbase = int(self.profile.get("MIPS", "load_address"),16)
             else:
-                loadbase = int(self.profile.get("OS32", "loadbase"),16)
+                loadbase = int(self.profile.get("OS32", "load_address"),16)
 
         elfhead = super().parse_header()
 
@@ -470,11 +470,11 @@ class QlLoaderELF(ELFParse, QlLoader):
             self.ql.dprint(D_INFO, "[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
 
             if self.ql.archbit == 64:
-                self.interp_base = int(self.profile.get("OS64", "interp_base"),16)
+                self.interp_base = int(self.profile.get("OS64", "interp_address"),16)
             elif self.ql.archbit == 32 and self.ql.archtype!= QL_ARCH.MIPS:
-                self.interp_base = int(self.profile.get("OS32", "interp_base"),16)
+                self.interp_base = int(self.profile.get("OS32", "interp_address"),16)
             elif self.ql.archtype== QL_ARCH.MIPS:
-                self.interp_base = int(self.profile.get("MIPS", "interp_base"),16)
+                self.interp_base = int(self.profile.get("MIPS", "interp_address"),16)
 
 
             self.ql.dprint(D_INFO, "[+] interp_base is : 0x%x" % (self.interp_base))
@@ -487,11 +487,11 @@ class QlLoaderELF(ELFParse, QlLoader):
 
         # Set MMAP addr
         if self.ql.archbit == 64:
-            self.mmap_start = int(self.profile.get("OS64", "mmap_start"),16)
+            self.mmap_start = int(self.profile.get("OS64", "mmap_address"),16)
         elif self.ql.archtype== QL_ARCH.MIPS:
-            self.mmap_start = int(self.profile.get("MIPS", "mmap_start"),16)
+            self.mmap_start = int(self.profile.get("MIPS", "mmap_address"),16)
         else:
-            self.mmap_start = int(self.profile.get("OS32", "mmap_start"),16)
+            self.mmap_start = int(self.profile.get("OS32", "mmap_address"),16)
 
         self.ql.dprint(D_INFO, "[+] mmap_start is : 0x%x" % (self.mmap_start))
 

@@ -31,12 +31,12 @@ class QlOs(QLOsUtils):
             self.stderr = self.ql.stderr
 
         if self.ql.archbit == 32:
-            self.QL_EMU_END = int(self.profile.get("OS32", "EMU_END"),16)
+            EMU_END = 0x8fffffff
         elif self.ql.archbit == 64:
-            self.QL_EMU_END = int(self.profile.get("OS64", "EMU_END"),16)
+            EMU_END = 0xffffffffffffffff        
         
         # defult exit point
-        self.exit_point = self.QL_EMU_END
+        self.exit_point = EMU_END
 
         if self.ql.shellcoder:
             self.shellcoder_ram_size = int(self.profile.get("SHELLCODER", "ram_size"),16)

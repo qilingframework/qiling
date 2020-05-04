@@ -1,2 +1,2 @@
 [MIPS]
-mmap_start = 0x7f7ee000
+mmap_address = 0x7f7ee000

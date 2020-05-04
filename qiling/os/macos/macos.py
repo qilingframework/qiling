@@ -36,12 +36,12 @@ class QlOsMacos(QlOsPosix):
         self.ql.uc = self.ql.arch.init_uc
 
         if self.ql.archtype== QL_ARCH.ARM64:
-            stackaddress        = int(self.profile.get("ARM64", "stackaddress"),16)
-            stacksize           = int(self.profile.get("ARM64", "stacksize"),16)
+            stackaddress        = int(self.profile.get("ARM64", "stack_address"),16)
+            stacksize           = int(self.profile.get("ARM64", "stack_size"),16)
             vmmap_trap_address  = int(self.profile.get("ARM64", "vmmap_trap_address"),16)
         elif  self.ql.archtype== QL_ARCH.X8664:
-            stackaddress        = int(self.profile.get("X8664", "stackaddress"),16)
-            stacksize           = int(self.profile.get("X8664", "stacksize"),16)     
+            stackaddress        = int(self.profile.get("X8664", "stack_address"),16)
+            stacksize           = int(self.profile.get("X8664", "stack_size"),16)     
             vmmap_trap_address  = int(self.profile.get("X8664", "vmmap_trap_address"),16)
 
         self.stack_address = stackaddress
