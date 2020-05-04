@@ -50,13 +50,13 @@ def ql_arm64_poll(ql, target, address, size, *args, **kw):
 # 0xa
 def ql_x86_syscall_kernelrpc_mach_vm_allocate_trap(ql, port, addr, size, flags, *args, **kw):
     ql.dprint(D_INFO, "[+] [mach] mach vm allocate trap(port: 0x%x, addr: 0x%x, size: 0x%x, flags: 0x%x" % (port, addr, size, flags))
-    mmap_start = ql.os.macho_task.min_offset
-    mmap_end = page_align_end(mmap_start + size, PAGE_SIZE)
-    ql.mem.map(mmap_start, mmap_end - mmap_start)
-    ql.mem.write(mmap_start, b'\x00'*(mmap_end - mmap_start))
+    mmap_address = ql.os.macho_task.min_offset
+    mmap_end = page_align_end(mmap_address + size, PAGE_SIZE)
+    ql.mem.map(mmap_address, mmap_end - mmap_address)
+    ql.mem.write(mmap_address, b'\x00'*(mmap_end - mmap_address))
     ql.os.macho_task.min_offset = mmap_end
-    ql.dprint(D_INFO, "[+] vm alloc form 0x%x to 0x%0x" % (mmap_start, mmap_end))
-    ql.mem.write(addr, struct.pack("<Q", mmap_start))
+    ql.dprint(D_INFO, "[+] vm alloc form 0x%x to 0x%0x" % (mmap_address, mmap_end))
+    ql.mem.write(addr, struct.pack("<Q", mmap_address))
     ql.os.definesyscall_return(0)
 
 # 0xc
@@ -75,12 +75,12 @@ def ql_x86_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, f
         ql.macho_vmmap_end += mask + 1
 
     
-    vmmap_start = page_align_end(ql.macho_vmmap_end, PAGE_SIZE)
-    vmmap_end = page_align_end(vmmap_start + size, PAGE_SIZE)
+    vmmap_address = page_align_end(ql.macho_vmmap_end, PAGE_SIZE)
+    vmmap_end = page_align_end(vmmap_address + size, PAGE_SIZE)
 
     ql.macho_vmmap_end = vmmap_end
-    ql.mem.map(vmmap_start, vmmap_end - vmmap_start)
-    ql.mem.write(address, struct.pack("<Q", vmmap_start))
+    ql.mem.map(vmmap_address, vmmap_end - vmmap_address)
+    ql.mem.write(address, struct.pack("<Q", vmmap_address))
     ql.os.definesyscall_return(KERN_SUCCESS)
 
 # 0x12
@@ -276,11 +276,11 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
     mmap_base = mmap2_addr
     need_mmap = True
 
-    if mmap2_addr != 0 and mmap2_addr < ql.loader.mmap_start:
+    if mmap2_addr != 0 and mmap2_addr < ql.loader.mmap_address:
         need_mmap = False
     if mmap2_addr == 0:
-        mmap_base = ql.loader.mmap_start
-        ql.loader.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
+        mmap_base = ql.loader.mmap_address
+        ql.loader.mmap_address = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
 
     ql.dprint(D_INFO, "[+] log mmap - mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d)" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
     ql.dprint(D_INFO, "[+] log mmap - return addr : " + hex(mmap_base))

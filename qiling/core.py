@@ -237,7 +237,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:
-            self.mem.write(self.loader.loadbase + addr, code)
+            self.mem.write(self.loader.load_address + addr, code)
 
     def enable_lib_patch(self):
         for addr, code, filename in self.patch_lib:

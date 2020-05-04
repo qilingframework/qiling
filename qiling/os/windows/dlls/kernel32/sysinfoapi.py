@@ -77,8 +77,8 @@ def hook_GetSystemInfo(ql, address, params):
     pointer = params["lpSystemInfo"]
     system_info = {"dummy": 0x0.to_bytes(length=2 * 2 + 4, byteorder='little'),
                    "dwPageSize": ql.os.heap.page_size.to_bytes(length=4, byteorder='little'),
-                   "lpMinimumApplicationAddress": ql.loader.PE_IMAGE_BASE.to_bytes(length=ql.pointersize, byteorder='little'),
-                   "lpMaximumApplicationAddress": (ql.loader.dll_base_addr + ql.loader.DLL_SIZE).to_bytes(length=ql.pointersize,
+                   "lpMinimumApplicationAddress": ql.loader.pe_image_address.to_bytes(length=ql.pointersize, byteorder='little'),
+                   "lpMaximumApplicationAddress": (ql.loader.dll_address + ql.loader.dll_size).to_bytes(length=ql.pointersize,
                                                                                             byteorder='little'),
                    "dwActiveProcessorMask": 0x3.to_bytes(length=ql.pointersize, byteorder='little'),
                    # TODO not sure from here, did not found variables inside the emulator
@@ -172,8 +172,8 @@ def hook_GetNativeSystemInfo(ql, address, params):
     pointer = params["lpSystemInfo"]
     system_info = {"dummy": 0x0.to_bytes(length=8, byteorder='little'),
                    "dwPageSize": ql.os.heap.page_size.to_bytes(length=4, byteorder='little'),
-                   "lpMinimumApplicationAddress": ql.loader.PE_IMAGE_BASE.to_bytes(length=ql.pointersize, byteorder='little'),
-                   "lpMaximumApplicationAddress": (ql.loader.dll_base_addr + ql.loader.DLL_SIZE).to_bytes(length=ql.pointersize,
+                   "lpMinimumApplicationAddress": ql.loader.pe_image_address.to_bytes(length=ql.pointersize, byteorder='little'),
+                   "lpMaximumApplicationAddress": (ql.loader.dll_address + ql.loader.dll_size).to_bytes(length=ql.pointersize,
                                                                                             byteorder='little'),
                    "dwActiveProcessorMask": 0x3.to_bytes(length=ql.pointersize, byteorder='little'),
                    # TODO not sure from here, did not found variables inside the emulator
