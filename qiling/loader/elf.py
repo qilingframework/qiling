@@ -344,6 +344,7 @@ class QlLoaderELF(ELFParse, QlLoader):
         self.ql = ql
               
     def run(self):
+        self.profile = self.ql.profile
         if self.ql.shellcoder:
             return
         self.path = self.ql.path
@@ -399,11 +400,11 @@ class QlLoaderELF(ELFParse, QlLoader):
 
         if loadbase <= 0:
             if self.ql.archbit == 64:
-                loadbase = 0x555555554000
+                loadbase = int(self.profile.get("QLLOADERELF", "64_loadbase"),16)
             elif self.ql.archtype== QL_ARCH.MIPS32:
-                loadbase = 0x0000004fef000
+                loadbase = int(self.profile.get("QLLOADERELF", "mips32_loadbse"),16)
             else:
-                loadbase = 0x56555000
+                loadbase = int(self.profile.get("QLLOADERELF", "32_loadbase"),16)
 
         elfhead = super().parse_header()
 
@@ -468,17 +469,13 @@ class QlLoaderELF(ELFParse, QlLoader):
             interp_mem_size = (interp_mem_size // 0x1000 + 1) * 0x1000
             self.ql.dprint(D_INFO, "[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
 
-            if self.ql.interp_base == 0:
-                if self.ql.archbit == 64:
-                    self.interp_base = 0x7ffff7dd5000
-                elif self.ql.archbit == 32 and self.ql.archtype!= QL_ARCH.MIPS32:
-                    self.interp_base = 0xfb7d3000
-                elif self.ql.archtype== QL_ARCH.MIPS32:
-                    self.interp_base = 0x00000047ba000
-                else:
-                    self.interp_base = 0xff7d5000
-            else:
-                self.interp_base = self.ql.interp_base
+            if self.ql.archbit == 64:
+                self.interp_base = int(self.profile.get("QLLOADERELF", "64_interp_base"),16)
+            elif self.ql.archbit == 32 and self.ql.archtype!= QL_ARCH.MIPS32:
+                self.interp_base = int(self.profile.get("QLLOADERELF", "32_interp_base"),16)
+            elif self.ql.archtype== QL_ARCH.MIPS32:
+                self.interp_base = int(self.profile.get("QLLOADERELF", "mips32_interp_base"),16)
+
 
             self.ql.dprint(D_INFO, "[+] interp_base is : 0x%x" % (self.interp_base))
             self.ql.mem.map(self.interp_base, int(interp_mem_size), info=os.path.abspath(interp_path))
@@ -489,17 +486,14 @@ class QlLoaderELF(ELFParse, QlLoader):
             entry_point = interphead['e_entry'] + self.interp_base
 
         # Set MMAP addr
-        if self.ql.mmap_start == 0:
-            if self.ql.archbit == 64:
-                self.mmap_start = 0x7ffff7dd6000 - 0x40000000
-            elif self.ql.archtype== QL_ARCH.MIPS32:
-                self.mmap_start = 0x7ffef000 - 0x4000000
-                if self.ql.archendian == QL_ENDIAN.EB:
-                    self.mmap_start  = 0x778bf000 - 0x400000
-            else:
-                self.mmap_start = 0xf7fd6000 - 0x400000
+        if self.ql.archbit == 64:
+            self.mmap_start = int(self.profile.get("QLLOADERELF", "64_mmap_start"),16)
+        elif self.ql.archtype== QL_ARCH.MIPS32:
+            self.mmap_start = int(self.profile.get("QLLOADERELF", "mips32el_mmap_start"),16)
+            if self.ql.archendian == QL_ENDIAN.EB:
+                self.mmap_start  = int(self.profile.get("QLLOADERELF", "mips32_mmap_start"),16)
         else:
-            self.mmap_start = self.ql.mmap_start
+            self.mmap_start = int(self.profile.get("QLLOADERELF", "32_mmap_start"),16)
 
         self.ql.dprint(D_INFO, "[+] mmap_start is : 0x%x" % (self.mmap_start))
 

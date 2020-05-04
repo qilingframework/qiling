@@ -96,10 +96,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.strace_filter = None
         self.remotedebugsession = None
         self.automatize_input = False
-        self.mmap_start = 0
-        self.stack_address = 0
-        self.stack_size = 0
-        self.interp_base = 0
 
         """
         Qiling Framework Core Engine

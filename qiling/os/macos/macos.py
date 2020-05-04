@@ -36,26 +36,19 @@ class QlOsMacos(QlOsPosix):
         self.ql.uc = self.ql.arch.init_uc
 
         if self.ql.archtype== QL_ARCH.ARM64:
-            self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x0000000160503000
-            self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x21000
-            self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
-            self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS  = 0x4000000f4000
+            stackaddress        = int(self.profile.get("QLOSMACOS", "arm64_stackaddress"),16)
+            stacksize           = int(self.profile.get("QLOSMACOS", "arm64_stacksize"),16)
+            vmmap_trap_address  = int(self.profile.get("QLOSMACOS", "arm64_vmmap_trap_address"),16)
         elif  self.ql.archtype== QL_ARCH.X8664:
-            self.QL_MACOS_PREDEFINE_STACKADDRESS        = 0x7ffcf0000000
-            self.QL_MACOS_PREDEFINE_STACKSIZE           = 0x19a00000
-            self.QL_MACOS_PREDEFINE_MMAPADDRESS         = 0x7ffbf0100000
-            self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS  = 0x4000000f4000
-        
-        
-        if self.ql.stack_address and self.ql.stack_size:
-            self.stack_address = self.ql.stack_address
-            self.stack_address = self.ql.stack_size
-        else:
-            self.stack_address = self.QL_MACOS_PREDEFINE_STACKADDRESS
-            self.stack_size = self.QL_MACOS_PREDEFINE_STACKSIZE            
+            stackaddress        = int(self.profile.get("QLOSMACOS", "x8664_stackaddress"),16)
+            stacksize           = int(self.profile.get("QLOSMACOS", "x8664_stacksize"),16)     
+            vmmap_trap_address  = int(self.profile.get("QLOSMACOS", "x8664_vmmap_trap_address"),16)
+
+        self.stack_address = stackaddress
+        self.stack_size = stacksize            
 
         if self.ql.shellcoder:    
-            self.ql.mem.map(self.entry_point, self.shellcoder_ram, info="[shellcode_stack]")
+            self.ql.mem.map(self.entry_point, self.shellcoder_ram_size, info="[shellcode_stack]")
             self.entry_point  = (self.entry_point + 0x200000 - 0x1000)
             self.ql.mem.write(self.entry_point, self.ql.shellcoder)
         else:
@@ -66,8 +59,8 @@ class QlOsMacos(QlOsPosix):
             self.macho_host_server = MachHostServer(self.ql)
             self.macho_task_server = MachTaskServer(self.ql)
             self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
-            self.ql.macho_vmmap_end = self.QL_MACOS_PREDEFINE_VMMAP_TRAP_ADDRESS
-            self.stack_sp = self.QL_MACOS_PREDEFINE_STACKADDRESS + self.QL_MACOS_PREDEFINE_STACKSIZE
+            self.ql.macho_vmmap_end = vmmap_trap_address
+            self.stack_sp = stackaddress + stacksize
             self.envs = env_dict_to_array(self.env)
             self.apples = ql_real_to_vm_abspath(self.ql, self.ql.path)
 

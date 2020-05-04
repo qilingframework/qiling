@@ -152,7 +152,7 @@ class QLCoreUtils(object):
         
         os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(self.ostype) + ".ql")
         qlos_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", "os" + ".ql") 
-        loader_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", loadertype_convert_str(self.ostype) + ".ql")
+        loader_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", loadertype_convert_str(self.ostype).lower() + ".ql")
         qlloader_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", "loader" + ".ql") 
 
         arch_str = arch_convert_str(self.archtype)

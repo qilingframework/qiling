@@ -20,12 +20,13 @@ class QlLoaderMACHO(QlLoader):
         self.ql             = ql
     
     def run(self):
+        self.profile        = self.ql.profile
         if self.ql.shellcoder:
             return  
         self.macho_file     = MachoParser(self.ql, self.ql.path)
         self.loading_file   = self.macho_file
-        self.slide          = 0x0000000000000000
-        self.dyld_slide     = 0x0000000500000000
+        self.slide          = int(self.profile.get("QLLOADERMACHO", "slide"),16)
+        self.dyld_slide     = int(self.profile.get("QLLOADERMACHO", "dyld_slide"),16)
         self.string_align   = 8
         self.ptr_align      = 8
         self.binary_entry   = 0x0
@@ -42,6 +43,11 @@ class QlLoaderMACHO(QlLoader):
 
 
     def loadMacho(self, depth=0, isdyld=False):
+        if self.ql.archtype== QL_ARCH.ARM64:
+            mmap_address   = int(self.profile.get("QLLOADERMACHO", "arm64_mmapaddress"),16)
+        elif self.ql.archtype== QL_ARCH.X8664:
+            mmap_address   = int(self.profile.get("QLLOADERMACHO", "x8664_mmapaddress"),16)
+
         # MAX load depth 
         if depth > 5:
             return
@@ -93,11 +99,7 @@ class QlLoaderMACHO(QlLoader):
                             self.using_dyld = True
 
         if depth == 0:
-            if self.ql.mmap_start == 0:
-                self.mmap_start = self.ql.os.QL_MACOS_PREDEFINE_MMAPADDRESS
-            else:
-                self.mmap_start = self.ql.mmap_start
-
+            self.mmap_start = mmap_address
             self.stack_sp = self.loadStack()
             if self.using_dyld:
                 self.ql.nprint("[+] ProcEntry: {}".format(hex(self.proc_entry)))

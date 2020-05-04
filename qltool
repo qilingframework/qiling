@@ -172,10 +172,7 @@ def usage():
 
 if __name__ == '__main__':
 
-    #
     # argparse setup
-    #
-
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(title='subcommands', description='valid subcommands', help='additional help', dest='subparser_name')
     
@@ -211,7 +208,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('-v', '--verbose', required=False, default=1, dest='verbose',
                             help='verbose mode, must be int and use with --debug or --dump')
     comm_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
-    comm_parser.add_argument('--profile', required=False, dest='profile', help="Defile profile")
+    comm_parser.add_argument('--profile', required=False, dest='profile', help="Define customized profile")
     comm_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
     comm_parser.add_argument('--dump', action='store_true', default=False, dest='dump', help='Enable Debug + Diassembler mode')
     comm_parser.add_argument('--debug', action='store_true', default=False, dest='debug', help='Enable Debug mode')
@@ -230,10 +227,7 @@ if __name__ == '__main__':
     options = parser.parse_args()
 
 
-    #
     # var check
-    #
-
     if options.strace:
         options.output = "default"
     elif options.trace:
@@ -263,10 +257,7 @@ if __name__ == '__main__':
         print("ERROR: debug_stop must use with either dump or debug mode")
         usage()
     
-    #
-    # ql setup
-    #
-
+    # ql file setup
     if (options.subparser_name == 'run'):
         if options.filename is not None and options.run_args == []:
             ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile = options.profile, output=options.output, log_console = options.console, log_dir=options.log_dir)
@@ -278,10 +269,7 @@ if __name__ == '__main__':
             print("ERROR: Command error!")
             usage()
 
-    #
-    # run the shellcode
-    #
-
+    # ql shellcode setup
     elif (options.subparser_name == 'shellcode'):
         ql = run_shellcode(options)
     
@@ -290,10 +278,7 @@ if __name__ == '__main__':
         usage()
 
 
-    #
     # ql execute additional options
-    #
-
     if options.gdb:
         ql.debugger = options.gdb
 
@@ -317,10 +302,7 @@ if __name__ == '__main__':
     if options.strace_filter != None:
        ql.strace_filter = options.strace_filter
     
-    #
     # ql run
-    #
-
     ql.run()
     exit(ql.exit_code)
 

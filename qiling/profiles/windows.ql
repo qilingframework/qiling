@@ -1,3 +1,14 @@
+[QLOSWINDOWS]
+x8664_stackaddress = 0x7ffffffde000
+x8664_stacksize = 0x40000
+x8664_head_base_addr = 0x500000000
+x8664_head_base_size = 0x5000000
+
+x86_stackaddress = 0xfffdd000
+x86_stacksize = 0x21000
+x86_head_base_addr = 0x5000000
+x86_head_base_size = 0x5000000
+
 [SYSTEM]
 # Major Minor ProductType
 majorVersion = 10

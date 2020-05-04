@@ -15,22 +15,15 @@ class QlOsFreebsd(QlOsPosix):
         self.load()
         
     def load(self):   
-        
         self.ql.uc = self.ql.arch.init_uc
-        self.QL_FREEBSD_PREDEFINE_STACKADDRESS = 0x7ffffffde000
-        self.QL_FREEBSD_PREDEFINE_STACKSIZE = 0x21000
 
         if self.ql.shellcoder:
-            self.ql.mem.map(self.entry_point, self.shellcoder_ram, info="[shellcode_stack]")
+            self.ql.mem.map(self.entry_point, self.shellcoder_ram_size, info="[shellcode_stack]")
             self.entry_point  = (self.entry_point + 0x200000 - 0x1000)
             self.ql.mem.write(self.entry_point, self.ql.shellcoder)
         else:
-            if not self.ql.stack_address and not self.ql.stack_size:
-                self.stack_address = self.QL_FREEBSD_PREDEFINE_STACKADDRESS
-                self.stack_size = self.QL_FREEBSD_PREDEFINE_STACKSIZE
-            elif self.ql.stack_address and self.ql.stack_size:
-                self.stack_address = self.ql.stack_address
-                self.stack_address = self.ql.stack_size    
+            self.stack_address = int(self.profile.get("QLOSFREEBSD", "stackaddress"),16)
+            self.stack_size = int(self.profile.get("QLOSFREEBSD", "stacksize"),16)
 
             self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")                    
         
