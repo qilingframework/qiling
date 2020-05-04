@@ -1,4 +1,4 @@
-[QLOSMACOS]
+[OS]
 arm64_stackaddress = 0x0000000160503000
 arm64_stacksize = 0x21000
 arm64_vmmap_trap_address = 0x4000000f4000

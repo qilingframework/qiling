@@ -1,4 +1,4 @@
-[QLOSWINDOWS]
+[OS]
 x8664_stackaddress = 0x7ffffffde000
 x8664_stacksize = 0x40000
 x8664_head_base_addr = 0x500000000

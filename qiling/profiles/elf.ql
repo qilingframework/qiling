@@ -1,4 +1,4 @@
-[QLLOADERELF]
+[LOADER]
 64_loadbase = 0x7ffbf0100000
 32_loadbase = 0x56555000
 mips32_loadbse = 0x0000004fef000

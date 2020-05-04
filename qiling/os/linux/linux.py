@@ -27,32 +27,32 @@ class QlOsLinux(QlOsPosix):
     def load(self):
         self.ql.uc = self.ql.arch.init_uc
         self.futexm = QlLinuxFutexManagement()
-        stacksize = int(self.profile.get("QLOSLINUX", "stacksize"),16)
+        stacksize = int(self.profile.get("OS", "stacksize"),16)
 
         # ARM
         if self.ql.archtype== QL_ARCH.ARM:
-            stackaddress = int(self.profile.get("QLOSLINUX", "arm_stackaddress"),16)
+            stackaddress = int(self.profile.get("OS", "arm_stackaddress"),16)
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             self.thread_class = QlLinuxARMThread
 
         # MIPS32
         elif self.ql.archtype== QL_ARCH.MIPS32:
-            stackaddress = int(self.profile.get("QLOSLINUX", "mips32_stackaddress"),16)
-            stacksize = int(self.profile.get("QLOSLINUX", "mips32_stacksize"),16)        
+            stackaddress = int(self.profile.get("OS", "mips32_stackaddress"),16)
+            stacksize = int(self.profile.get("OS", "mips32_stacksize"),16)        
             self.ql.hook_intno(self.hook_syscall, 17)
             self.thread_class = QlLinuxMIPS32Thread
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
-            stackaddress = int(self.profile.get("QLOSLINUX", "arm64_stackaddress"),16)
+            stackaddress = int(self.profile.get("OS", "arm64_stackaddress"),16)
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             self.thread_class = QlLinuxARM64Thread
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
-            stackaddress = int(self.profile.get("QLOSLINUX", "x86_stackaddress"),16)
+            stackaddress = int(self.profile.get("OS", "x86_stackaddress"),16)
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
@@ -61,7 +61,7 @@ class QlOsLinux(QlOsPosix):
 
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
-            stackaddress = int(self.profile.get("QLOSLINUX", "x8664_stackaddress"),16)
+            stackaddress = int(self.profile.get("OS", "x8664_stackaddress"),16)
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)

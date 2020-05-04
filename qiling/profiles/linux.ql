@@ -1,4 +1,4 @@
-[QLOSLINUX]
+[OS]
 stacksize = 0x21000
 arm_stackaddress = 0xfff0d000
 mips32_stackaddress = 0x7ff0d000

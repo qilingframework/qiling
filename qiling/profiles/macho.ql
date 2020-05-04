@@ -1,4 +1,4 @@
-[QLLOADERMACHO]
+[LOADER]
 arm64_mmapaddress = 0x7ffbf0100000
 x8664_mmapaddress = 0x7ffbf0100000
 

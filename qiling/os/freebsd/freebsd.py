@@ -22,8 +22,8 @@ class QlOsFreebsd(QlOsPosix):
             self.entry_point  = (self.entry_point + 0x200000 - 0x1000)
             self.ql.mem.write(self.entry_point, self.ql.shellcoder)
         else:
-            self.stack_address = int(self.profile.get("QLOSFREEBSD", "stackaddress"),16)
-            self.stack_size = int(self.profile.get("QLOSFREEBSD", "stacksize"),16)
+            self.stack_address = int(self.profile.get("OS", "stackaddress"),16)
+            self.stack_size = int(self.profile.get("OS", "stacksize"),16)
 
             self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")                    
         
