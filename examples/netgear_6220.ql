@@ -1,2 +1,2 @@
-[LOADER]
-mips32el_mmap_start = 0x7f7ee000
+[MIPS]
+mmap_start = 0x7f7ee000

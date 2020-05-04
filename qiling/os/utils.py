@@ -65,7 +65,7 @@ class QLOsUtils:
                 adapter = {
                     QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
                     QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
-                    QL_ARCH.MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
+                    QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
                     QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_BIG_ENDIAN),
                     QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
                     QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
@@ -74,7 +74,7 @@ class QLOsUtils:
                 adapter = {
                     QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
                     QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
-                    QL_ARCH.MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
+                    QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
                     QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM),
                     QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
                     QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
@@ -273,7 +273,7 @@ class QLOsUtils:
         elif self.ql.archtype == QL_ARCH.ARM64:  # QL_ARM64
             md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 
-        elif self.ql.archtype == QL_ARCH.MIPS32:  # QL_MIPS32
+        elif self.ql.archtype == QL_ARCH.MIPS:  # QL_MIPS32
             if self.ql.archendian == QL_ENDIAN.EB:
                 md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
             else:

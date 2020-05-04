@@ -44,9 +44,9 @@ class QlLoaderMACHO(QlLoader):
 
     def loadMacho(self, depth=0, isdyld=False):
         if self.ql.archtype== QL_ARCH.ARM64:
-            mmap_address   = int(self.profile.get("LOADER", "arm64_mmapaddress"),16)
+            mmap_address   = int(self.profile.get("ARM64", "mmapaddress"),16)
         elif self.ql.archtype== QL_ARCH.X8664:
-            mmap_address   = int(self.profile.get("LOADER", "x8664_mmapaddress"),16)
+            mmap_address   = int(self.profile.get("X8664", "mmapaddress"),16)
 
         # MAX load depth 
         if depth > 5:

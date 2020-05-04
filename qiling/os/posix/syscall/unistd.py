@@ -531,7 +531,7 @@ def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
         else:
             ql.os.file_des[idx1] = rd
             ql.os.file_des[idx2] = wd
-            if ql.archtype== QL_ARCH.MIPS32:
+            if ql.archtype== QL_ARCH.MIPS:
                 ql.reg.v1 = idx2
                 regreturn = idx1
             else:

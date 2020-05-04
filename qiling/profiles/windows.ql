@@ -1,13 +1,31 @@
-[OS]
-x8664_stackaddress = 0x7ffffffde000
-x8664_stacksize = 0x40000
-x8664_head_base_addr = 0x500000000
-x8664_head_base_size = 0x5000000
+[OS64]
+EMU_END = 0xffffffffffffffff
 
-x86_stackaddress = 0xfffdd000
-x86_stacksize = 0x21000
-x86_head_base_addr = 0x5000000
-x86_head_base_size = 0x5000000
+[OS32]
+EMU_END = 0x8fffffff
+
+[X8664]
+head_base_addr = 0x500000000
+head_base_size = 0x5000000
+stackaddress = 0x7ffffffde000
+stacksize = 0x40000
+default_image_base = 0x400000
+dll_base_addr = 0x7ffff0000000
+entry_point = 0x140000000
+
+[X86]
+head_base_addr = 0x5000000
+head_base_size = 0x5000000
+stackaddress = 0xfffdd000
+stacksize = 0x21000
+default_image_base = 0x400000
+dll_base_addr = 0x10000000
+entry_point = 0x40000  
+
+[SHELLCODER]
+ram_size = 0xa00000
+entry_point = 0x1000000
+
 
 [SYSTEM]
 # Major Minor ProductType

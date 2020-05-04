@@ -366,7 +366,7 @@ class FunctionHook:
             ins = b'p\x00 \xe1\x1e\xff/\xe1'
 
         # MIPS32
-        elif self.ql.archtype== QL_ARCH.MIPS32:
+        elif self.ql.archtype== QL_ARCH.MIPS:
             GLOB_DAT = 21
             JMP_SLOT = 22
             ins = b'\xa0\x00\x00\xef\x1e\xff/\xe1'

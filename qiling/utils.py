@@ -25,7 +25,7 @@ def catch_KeyboardInterrupt(ql):
     return decorator
 
 def ql_get_arch_bits(arch):
-    arch_32b = [QL_ARCH.ARM, QL_ARCH.MIPS32, QL_ARCH.X86]
+    arch_32b = [QL_ARCH.ARM, QL_ARCH.MIPS, QL_ARCH.X86]
     arch_64b = [QL_ARCH.ARM64, QL_ARCH.X8664]
 
     if arch in arch_32b:

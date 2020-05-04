@@ -265,7 +265,7 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
     if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
 
-    elif (ql.archtype== QL_ARCH.MIPS32):
+    elif (ql.archtype== QL_ARCH.MIPS):
         mmap2_fd = ql.unpack32s(ql.mem.read(mmap2_fd, 4))
         mmap2_pgoffset = ql.unpack32(ql.mem.read(mmap2_pgoffset, 4)) * 4096
         MAP_ANONYMOUS=2048

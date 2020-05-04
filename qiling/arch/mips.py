@@ -8,12 +8,12 @@ from unicorn.mips_const import *
 
 from qiling.const import *
 from .arch import QlArch
-from .mips32_const import *
+from .mips_const import *
 
 
-class QlArchMIPS32(QlArch):
+class QlArchMIPS(QlArch):
     def __init__(self, ql):
-        super(QlArchMIPS32, self).__init__(ql)
+        super(QlArchMIPS, self).__init__(ql)
 
         register_mappings = [
             reg_map, reg_map_afpr128
@@ -46,7 +46,7 @@ class QlArchMIPS32(QlArch):
 
     # get initialized unicorn engine
     def get_init_uc(self):
-        if self.ql.archtype== QL_ARCH.MIPS32:
+        if self.ql.archtype== QL_ARCH.MIPS:
             if self.ql.archendian == QL_ENDIAN.EB:
                 uc = Uc(UC_ARCH_MIPS, UC_MODE_MIPS32 + UC_MODE_BIG_ENDIAN)
             else:
