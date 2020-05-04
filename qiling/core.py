@@ -61,8 +61,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.libcache = libcache
         self.log_console = log_console
         self.log_dir = log_dir
-
-        self.append = append# generic append function, eg log file
+        self.append = append # generic append function, eg log file
         self.profile = profile
         # OS dependent configuration for stdio
         self.stdin = stdin
@@ -166,6 +165,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         #############
         self.mem = self.component_setup("os", "memory")
         self.reg = self.component_setup("arch", "register")
+        self.profile = self.profile_setup()
 
         #####################################
         # Architecture                      #

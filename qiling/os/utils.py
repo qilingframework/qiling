@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-import struct, os, configparser
+import struct, os
 from json import dumps
 
 from binascii import unhexlify
@@ -53,16 +53,6 @@ class QLOsUtils:
             ebsc += i
 
         return ebsc
-
-    def init_profile(self):
-        config = configparser.ConfigParser()
-        config.read(self.profile)
-        self.ql.dprint(D_RPRT, "[+] Added configuration file %s" % self.profile)
-        for section in config.sections():
-            self.ql.dprint(D_RPRT, "[+] Section: %s" % section)
-            for key in config[section]:
-                self.ql.dprint(D_RPRT, "[-] %s %s" % (key, config[section][key]))
-        return config
 
     def compile_asm(self, archtype, runcode, arm_thumb=None):
         try:

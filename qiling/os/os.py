@@ -5,7 +5,6 @@
 
 import os, sys
 
-from qiling.utils import ostype_convert_str
 from .utils import QLOsUtils
 from .const import *
 from .filestruct import ql_file
@@ -20,6 +19,7 @@ class QlOs(QLOsUtils):
         self.child_processes = False
         self.thread_management = None
         self.current_path = '/'
+        self.profile = self.ql.profile
 
         if self.ql.stdin != 0:
             self.stdin = self.ql.stdin
@@ -30,26 +30,19 @@ class QlOs(QLOsUtils):
         if self.ql.stderr != 0:
             self.stderr = self.ql.stderr
 
-        # define analysis enviroment profile
-        if self.ql.profile is None:
-            self.profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".." ,"profiles", ostype_convert_str(self.ql.ostype) + ".ql")
-        else:
-            self.profile = self.ql.profile
-        # user configuration
-        self.profile = self.init_profile()
-        
         if self.ql.archbit == 32:
-            self.QL_EMU_END = QL_ARCHBIT32_EMU_END
+            self.QL_EMU_END = int(self.profile.get("QLOS", "ARCHBIT32_EMU_END"),16)
         elif self.ql.archbit == 64:
-            self.QL_EMU_END = QL_ARCHBIT64_EMU_END
-
+            self.QL_EMU_END = int(self.profile.get("QLOS", "ARCHBIT64_EMU_END"),16)
+        
         # defult exit point
         self.exit_point = self.QL_EMU_END
+
         if self.ql.shellcoder:
-            self.shellcoder_ram = 10 * 1024 * 1024
+            self.shellcoder_ram = self.profile.getint("SHELLCODE", "ram")
             # this shellcode entrypoint does not work for windows
             # windows shellcode entry point will comes from pe loader
-            self.entry_point = 0x1000000
+            self.entry_point = int(self.profile.get("SHELLCODE", "entry_point"),16)
 
         # We can save every syscall called
         self.syscalls = {}

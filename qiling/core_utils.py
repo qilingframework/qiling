@@ -1,8 +1,14 @@
-import os, logging
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
+import os, logging, configparser
 from .utils import ql_build_module_import_name, ql_get_module_function
 from .utils import ql_is_valid_arch, ql_is_valid_ostype
 from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
 from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
+from .const import D_RPRT
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 from .loader.utils import ql_checkostype
 
@@ -139,3 +145,30 @@ class QLCoreUtils(object):
         module_name = "qiling." + component_type + "." + function_name
         function_name = "Ql" + function_name.capitalize() + "Manager"
         return ql_get_module_function(module_name, function_name)(self)
+
+    def profile_setup(self):
+        os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(self.ostype) + ".ql")
+        qlos_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", "os" + ".ql") 
+        loader_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", loadertype_convert_str(self.ostype) + ".ql")
+        qlloader_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", "loader" + ".ql") 
+
+        arch_str = arch_convert_str(self.archtype)
+        if arch_str == "x8664":  
+            arch_str = "x86"
+
+        arch_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", arch_str + ".ql")
+        qlarch_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", "arch" + ".ql")
+
+        if self.profile:
+            profiles = [os_profile, qlos_profile ,arch_profile, qlarch_profile, loader_profile, qlloader_profile, self.profile]
+        else:
+            profiles = [os_profile, qlos_profile ,arch_profile, qlarch_profile, loader_profile, qlloader_profile]
+
+        config = configparser.ConfigParser()
+        config.read(profiles)
+        self.dprint(D_RPRT, "[+] Added profile %s" % self.profile)
+        for section in config.sections():
+            self.dprint(D_RPRT, "[+] Section: %s" % section)
+            for key in config[section]:
+                self.dprint(D_RPRT, "[-] %s %s" % (key, config[section][key]))
+        return config        
