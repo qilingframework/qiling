@@ -222,6 +222,11 @@ class QLOsUtils:
             self.ql.dprint(D_INFO, "[-] %s:" % key)
             for value in values:
                 self.ql.dprint(D_INFO, "[-] %s " % str(dumps(value)))
+        self.ql.dprint(D_INFO, "[+] Strings")
+        for key, values in self.ql.os.appeared_strings.items():
+            val = " ".join([str(word) for word in values])
+            self.ql.dprint(D_INFO, "[-] %s: %s" % (key, val))
+
 
     def exec_arbitrary(self, start, end):
         old_sp = self.ql.reg.arch_sp

@@ -464,13 +464,12 @@ def hook_DefWindowProcA(ql, address, params):
 #   LPCWSTR lpsz
 # );
 @winapi(cc=STDCALL, params={
-    "lpsz": POINTER
+    "lpsz": WSTRING_ADDR
 })
 def hook_CharNextW(ql, address, params):
     # Return next char if is different from \x00
-    point = params["lpsz"]
-    string = read_wstring(ql, point)
-    ql.dprint(D_INFO, string)
+    point = params["lpsz"][0]
+    string = params["lpsz"][1]
     if len(string) == 0:
         return point
     else:
@@ -482,13 +481,13 @@ def hook_CharNextW(ql, address, params):
 #   LPCWSTR lpszCurrent
 # );
 @winapi(cc=STDCALL, params={
-    "lpszStart": POINTER,
+    "lpszStart": WSTRING_ADDR,
     "lpszCurrent": POINTER
 })
 def hook_CharPrevW(ql, address, params):
     # Return next char if is different from \x00
     current = params["lpszCurrent"]
-    start = params["lpszStart"]
+    start = params["lpszStart"][0]
     if start == current:
         return start
     return current - 1
