@@ -50,7 +50,7 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
     ql.os.definesyscall_return(regreturn)
 
 
-def ql_syscall_mips32_set_thread_area(ql, sta_area, *args, **kw):
+def ql_syscall_mips_set_thread_area(ql, sta_area, *args, **kw):
     CONFIG3_ULR = (1 << 13)
     ql.reg.cp0_config3 = CONFIG3_ULR
     ql.reg.cp0_userlocal = sta_area

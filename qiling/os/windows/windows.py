@@ -36,13 +36,11 @@ class QlOsWindows(QlOs):
         self.userprofile = self.profile["PATH"]["systemdrive"] + "Users\\" + self.profile["USER"]["username"] + "\\"
 
         if self.ql.archtype == QL_ARCH.X8664:
-
-            self.heap_base_addr = int(self.profile.get("QLOSWINDOWS", "x8664_head_base_addr"),16)
-            self.heap_base_size = int(self.profile.get("QLOSWINDOWS", "x8664_head_base_size"),16)       
+            self.heap_base_addr = int(self.profile.get("X8664", "head_base_addr"),16)
+            self.heap_base_size = int(self.profile.get("X8664", "head_base_size"),16)       
         elif self.ql.archtype == QL_ARCH.X86:
-
-            self.heap_base_addr = int(self.profile.get("QLOSWINDOWS", "x86_head_base_addr"),16)
-            self.heap_base_size = int(self.profile.get("QLOSWINDOWS", "x86_head_base_size"),16)
+            self.heap_base_addr = int(self.profile.get("X86", "head_base_addr"),16)
+            self.heap_base_size = int(self.profile.get("X86", "head_base_size"),16)
 
         """
         Load Heap module

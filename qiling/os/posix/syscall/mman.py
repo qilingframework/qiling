@@ -57,7 +57,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
         mmap_fd = ql.unpack64(ql.pack64(mmap_fd))
 
-    elif (ql.archtype== QL_ARCH.MIPS32):
+    elif (ql.archtype== QL_ARCH.MIPS):
         mmap_fd = ql.unpack32s(ql.mem.read(mmap_fd, 4))
         mmap_offset = ql.unpack32(ql.mem.read(mmap_offset, 4))
         MAP_ANONYMOUS=2048
@@ -122,7 +122,7 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
     if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
         mmap_fd = ql.unpack64(ql.pack64(mmap_fd))
 
-    elif (ql.archtype== QL_ARCH.MIPS32):
+    elif (ql.archtype== QL_ARCH.MIPS):
         mmap_fd = ql.unpack32s(ql.mem.read(mmap_fd, 4))
         mmap_pgoffset = ql.unpack32(ql.mem.read(mmap_pgoffset, 4))
         MAP_ANONYMOUS=2048
@@ -190,7 +190,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
 
-    elif (ql.archtype== QL_ARCH.MIPS32):
+    elif (ql.archtype== QL_ARCH.MIPS):
         mmap2_fd = ql.unpack32s(ql.mem.read(mmap2_fd, 4))
         mmap2_pgoffset = ql.unpack32(ql.mem.read(mmap2_pgoffset, 4)) * 4096
         MAP_ANONYMOUS=2048

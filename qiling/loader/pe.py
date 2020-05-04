@@ -274,19 +274,19 @@ class QlLoaderPE(Process, QlLoader):
         self.sizeOfStackReserve = 0
 
         if self.ql.archtype== QL_ARCH.X86:
-            self.stack_address = int(self.profile.get("QLLOADERPE", "x86_stackaddress"),16)
-            self.stack_size = int(self.profile.get("QLLOADERPE", "x86_stacksize"),16)            
-            self.default_image_base = int(self.profile.get("QLLOADERPE", "x86_default_image_base"),16)
-            self.dll_base_addr = int(self.profile.get("QLLOADERPE", "x86_dll_base_addr"),16)
-            self.entry_point = int(self.profile.get("QLLOADERPE", "x86_entry_point"),16)
+            self.stack_address = int(self.profile.get("X86", "stackaddress"),16)
+            self.stack_size = int(self.profile.get("X86", "stacksize"),16)            
+            self.default_image_base = int(self.profile.get("X86", "default_image_base"),16)
+            self.dll_base_addr = int(self.profile.get("X86", "dll_base_addr"),16)
+            self.entry_point = int(self.profile.get("X86", "entry_point"),16)
             self.structure_last_addr = FS_SEGMENT_ADDR 
              
         elif self.ql.archtype== QL_ARCH.X8664:
-            self.stack_address = int(self.profile.get("QLLOADERPE", "x8664_stackaddress"),16)
-            self.stack_size = int(self.profile.get("QLLOADERPE", "x8664_stacksize"),16)
-            self.default_image_base = int(self.profile.get("QLLOADERPE", "x8664_default_image_base"),16)
-            self.dll_base_addr = int(self.profile.get("QLLOADERPE", "x8664_dll_base_addr"),16)
-            self.entry_point = int(self.profile.get("QLLOADERPE", "x8664_entry_point"),16)
+            self.stack_address = int(self.profile.get("X8664", "stackaddress"),16)
+            self.stack_size = int(self.profile.get("X8664", "stacksize"),16)
+            self.default_image_base = int(self.profile.get("X8664", "default_image_base"),16)
+            self.dll_base_addr = int(self.profile.get("X8664", "dll_base_addr"),16)
+            self.entry_point = int(self.profile.get("X8664", "entry_point"),16)
             self.structure_last_addr = GS_SEGMENT_ADDR
             
         self.dlls = {}

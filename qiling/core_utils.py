@@ -151,21 +151,17 @@ class QLCoreUtils(object):
             self.dprint(D_INFO, "[+] Customized profile: %s" % self.profile)
         
         os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(self.ostype) + ".ql")
-        qlos_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", "os" + ".ql") 
-        loader_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", loadertype_convert_str(self.ostype).lower() + ".ql")
-        qlloader_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", "loader" + ".ql") 
-
+      
         arch_str = arch_convert_str(self.archtype)
         if arch_str == "x8664":  
             arch_str = "x86"
 
         arch_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", arch_str + ".ql")
-        qlarch_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", "arch" + ".ql")
 
         if self.profile:
-            profiles = [os_profile, qlos_profile ,arch_profile, qlarch_profile, loader_profile, qlloader_profile, self.profile]
+            profiles = [os_profile, arch_profile, self.profile]
         else:
-            profiles = [os_profile, qlos_profile ,arch_profile, qlarch_profile, loader_profile, qlloader_profile]
+            profiles = [os_profile, arch_profile]
 
         config = configparser.ConfigParser()
         config.read(profiles)

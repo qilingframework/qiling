@@ -38,7 +38,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     CLONE_NEWNET = 0x40000000	
     CLONE_IO = 0x80000000
 
-    if ql.archtype== QL_ARCH.MIPS32:
+    if ql.archtype== QL_ARCH.MIPS:
         clone_child_tidptr = ql.unpack32(ql.mem.read(clone_child_tidptr, 4))
 
 

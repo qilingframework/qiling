@@ -31,9 +31,9 @@ class QlOs(QLOsUtils):
             self.stderr = self.ql.stderr
 
         if self.ql.archbit == 32:
-            self.QL_EMU_END = int(self.profile.get("QLOS", "ARCHBIT32_EMU_END"),16)
+            self.QL_EMU_END = int(self.profile.get("OS32", "EMU_END"),16)
         elif self.ql.archbit == 64:
-            self.QL_EMU_END = int(self.profile.get("QLOS", "ARCHBIT64_EMU_END"),16)
+            self.QL_EMU_END = int(self.profile.get("OS64", "EMU_END"),16)
         
         # defult exit point
         self.exit_point = self.QL_EMU_END

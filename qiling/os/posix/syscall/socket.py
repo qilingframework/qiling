@@ -19,9 +19,9 @@ def ql_bin_to_ip(ip):
 
 
 def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **kw):
-    if ql.archtype== QL_ARCH.MIPS32 and socket_type == 2:
+    if ql.archtype== QL_ARCH.MIPS and socket_type == 2:
         socket_type = 1
-    elif ql.archtype== QL_ARCH.MIPS32 and socket_type == 1:
+    elif ql.archtype== QL_ARCH.MIPS and socket_type == 1:
         socket_type = 1
 
     idx = -1

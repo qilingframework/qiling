@@ -105,7 +105,7 @@ class QlOsPosix(QlOs):
                 syscall_num = UC_ARM64_REG_X8
         elif self.ql.archtype == QL_ARCH.ARM:
             syscall_num = UC_ARM_REG_R7
-        elif self.ql.archtype == QL_ARCH.MIPS32:
+        elif self.ql.archtype == QL_ARCH.MIPS:
             syscall_num = UC_MIPS_REG_V0
         elif self.ql.archtype == QL_ARCH.X86:
             syscall_num = UC_X86_REG_EAX
@@ -130,7 +130,7 @@ class QlOsPosix(QlOs):
         elif self.ql.archtype == QL_ARCH.X8664:  # X8664
             self.ql.reg.rax = regreturn
 
-        elif self.ql.archtype == QL_ARCH.MIPS32:  # MIPSE32EL
+        elif self.ql.archtype == QL_ARCH.MIPS:  # MIPSE32EL
             if regreturn < 0 and regreturn > -1134:
                 a3return = 1
                 regreturn = - regreturn
@@ -158,7 +158,7 @@ class QlOsPosix(QlOs):
             param3 = self.ql.reg.r3
             param4 = self.ql.reg.r4
             param5 = self.ql.reg.r5
-        elif self.ql.archtype == QL_ARCH.MIPS32:
+        elif self.ql.archtype == QL_ARCH.MIPS:
             param0 = self.ql.reg.a0
             param1 = self.ql.reg.a1
             param2 = self.ql.reg.a2

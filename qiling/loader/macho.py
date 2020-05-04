@@ -25,8 +25,8 @@ class QlLoaderMACHO(QlLoader):
             return  
         self.macho_file     = MachoParser(self.ql, self.ql.path)
         self.loading_file   = self.macho_file
-        self.slide          = int(self.profile.get("QLLOADERMACHO", "slide"),16)
-        self.dyld_slide     = int(self.profile.get("QLLOADERMACHO", "dyld_slide"),16)
+        self.slide          = int(self.profile.get("LOADER", "slide"),16)
+        self.dyld_slide     = int(self.profile.get("LOADER", "dyld_slide"),16)
         self.string_align   = 8
         self.ptr_align      = 8
         self.binary_entry   = 0x0
@@ -44,9 +44,9 @@ class QlLoaderMACHO(QlLoader):
 
     def loadMacho(self, depth=0, isdyld=False):
         if self.ql.archtype== QL_ARCH.ARM64:
-            mmap_address   = int(self.profile.get("QLLOADERMACHO", "arm64_mmapaddress"),16)
+            mmap_address   = int(self.profile.get("ARM64", "mmapaddress"),16)
         elif self.ql.archtype== QL_ARCH.X8664:
-            mmap_address   = int(self.profile.get("QLLOADERMACHO", "x8664_mmapaddress"),16)
+            mmap_address   = int(self.profile.get("X8664", "mmapaddress"),16)
 
         # MAX load depth 
         if depth > 5:

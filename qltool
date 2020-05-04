@@ -57,7 +57,7 @@ def ql_asm2bytes(fname, archtype, archmode = None):
             adapter = {
                 'x86': (KS_ARCH_X86, KS_MODE_32),
                 'x8664': (KS_ARCH_X86, KS_MODE_64),
-                'mips32': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
+                'mips': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
                 'arm': (KS_ARCH_ARM, KS_MODE_ARM, + KS_MODE_BIG_ENDIAN),
                 'armthumb': (KS_ARCH_ARM, KS_MODE_THUMB | KS_MODE_BIG_ENDIAN),
                 'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
@@ -66,7 +66,7 @@ def ql_asm2bytes(fname, archtype, archmode = None):
             adapter = {
                 'x86': (KS_ARCH_X86, KS_MODE_32),
                 'x8664': (KS_ARCH_X86, KS_MODE_64),
-                'mips32el': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
+                'mips': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
                 'arm': (KS_ARCH_ARM, KS_MODE_ARM),
                 'armthumb': (KS_ARCH_ARM, KS_MODE_THUMB),
                 'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
@@ -107,8 +107,8 @@ def run_shellcode(options):
             print("ERROR: -os required: either linux, windows, freebsd, macos")
             exit(1)
     
-    if not options.arch in ("arm", "arm64", "x86", "x8664", "mips32"):
-            print("ERROR: -arch required: either arm, arm64, x86, x8664, mips32")
+    if not options.arch in ("arm", "arm64", "x86", "x8664", "mips"):
+            print("ERROR: -arch required: either arm, arm64, x86, x8664, mips")
             exit(1)
 
     if type(options.bigendian) is not bool:
@@ -185,7 +185,7 @@ if __name__ == '__main__':
     shellcode_parser = commands.add_parser('shellcode', help = 'shellcode')
     shellcode_parser.add_argument('-f', '--filename', required=False, metavar="FILE", dest="filename", help="filename")
     shellcode_parser.add_argument('-i', '--input', required=False, metavar="INPUT", dest="input", help='input hex value')
-    shellcode_parser.add_argument('--arch', required=True, help='option are x86, x8664, arm, arm64, mips32el, mips32')
+    shellcode_parser.add_argument('--arch', required=True, help='option are x86, x8664, arm, arm64, mips')
     shellcode_parser.add_argument('--bigendian', required=False, default=False, help='Type: Bool True or False')
     shellcode_parser.add_argument('--os', required=True, help='option are windows, linux, freebsd and macos')
     shellcode_parser.add_argument('--rootfs', required=False, help='emulated rootfs, that is where all the so or dll sits')
