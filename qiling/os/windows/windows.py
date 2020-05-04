@@ -38,19 +38,11 @@ class QlOsWindows(QlOs):
         if self.ql.archtype == QL_ARCH.X8664:
 
             self.heap_base_addr = int(self.profile.get("QLOSWINDOWS", "x8664_head_base_addr"),16)
-            self.heap_base_size = int(self.profile.get("QLOSWINDOWS", "x8664_head_base_size"),16)
-            # self.stack_address = 0x7ffffffde000
-            # self.stack_size = 0x40000
-            # self.HEAP_BASE_ADDR = 0x500000000
-            # self.HEAP_SIZE = 0x5000000            
+            self.heap_base_size = int(self.profile.get("QLOSWINDOWS", "x8664_head_base_size"),16)       
         elif self.ql.archtype == QL_ARCH.X86:
 
             self.heap_base_addr = int(self.profile.get("QLOSWINDOWS", "x86_head_base_addr"),16)
             self.heap_base_size = int(self.profile.get("QLOSWINDOWS", "x86_head_base_size"),16)
-            # self.stack_address = 0xfffdd000
-            # self.stack_size = 0x21000
-            # self.HEAP_BASE_ADDR = 0x5000000
-            # self.HEAP_SIZE = 0x5000000
 
         """
         Load Heap module
