@@ -34,18 +34,11 @@ class QlOsMacos(QlOsPosix):
     def load(self):
 
         self.ql.uc = self.ql.arch.init_uc
-
-        if self.ql.archtype== QL_ARCH.ARM64:
-            stackaddress        = int(self.profile.get("ARM64", "stackaddress"),16)
-            stacksize           = int(self.profile.get("ARM64", "stacksize"),16)
-            vmmap_trap_address  = int(self.profile.get("ARM64", "vmmap_trap_address"),16)
-        elif  self.ql.archtype== QL_ARCH.X8664:
-            stackaddress        = int(self.profile.get("X8664", "stackaddress"),16)
-            stacksize           = int(self.profile.get("X8664", "stacksize"),16)     
-            vmmap_trap_address  = int(self.profile.get("X8664", "vmmap_trap_address"),16)
-
-        self.stack_address = stackaddress
-        self.stack_size = stacksize            
+        stack_address        = int(self.profile.get("OS64", "stack_address"),16)
+        stack_size           = int(self.profile.get("OS64", "stack_size"),16)     
+        vmmap_trap_address  = int(self.profile.get("OS64", "vmmap_trap_address"),16)
+        self.stack_address = stack_address
+        self.stack_size = stack_size            
 
         if self.ql.shellcoder:    
             self.ql.mem.map(self.entry_point, self.shellcoder_ram_size, info="[shellcode_stack]")
@@ -60,7 +53,7 @@ class QlOsMacos(QlOsPosix):
             self.macho_task_server = MachTaskServer(self.ql)
             self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
             self.ql.macho_vmmap_end = vmmap_trap_address
-            self.stack_sp = stackaddress + stacksize
+            self.stack_sp = stack_address + stack_size
             self.envs = env_dict_to_array(self.env)
             self.apples = ql_real_to_vm_abspath(self.ql, self.ql.path)
 

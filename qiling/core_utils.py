@@ -152,16 +152,10 @@ class QLCoreUtils(object):
         
         os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(self.ostype) + ".ql")
       
-        arch_str = arch_convert_str(self.archtype)
-        if arch_str == "x8664":  
-            arch_str = "x86"
-
-        arch_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", arch_str + ".ql")
-
         if self.profile:
-            profiles = [os_profile, arch_profile, self.profile]
+            profiles = [os_profile, self.profile]
         else:
-            profiles = [os_profile, arch_profile]
+            profiles = [os_profile]
 
         config = configparser.ConfigParser()
         config.read(profiles)

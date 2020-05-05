@@ -21,18 +21,16 @@ class QlOsFreebsd(QlOsPosix):
             self.ql.mem.map(self.entry_point, self.shellcoder_ram_size, info="[shellcode_stack]")
             self.entry_point  = (self.entry_point + 0x200000 - 0x1000)
             self.ql.mem.write(self.entry_point, self.ql.shellcoder)
-        else:
-            self.stack_address = int(self.profile.get("OS", "stackaddress"),16)
-            self.stack_size = int(self.profile.get("OS", "stacksize"),16)
-
-            self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")                    
-        
-        if self.ql.shellcoder:
             self.ql.reg.arch_sp = self.entry_point
-        else:            
-            self.ql.reg.arch_sp = self.stack_address
-            init_rbp = self.stack_address + 0x40
-            init_rdi = self.stack_address
+        else:
+            stack_address = int(self.profile.get("OS64", "stack_address"),16)
+            stack_size = int(self.profile.get("OS64", "stack_size"),16)
+            self.ql.mem.map(stack_address, stack_size, info="[stack]")                    
+            self.ql.reg.arch_sp = stack_address
+            init_rbp = stack_address + 0x40
+            init_rdi = stack_address
+            self.stack_address = stack_address
+            self.stack_size = stack_size
             self.ql.reg.rbp = init_rbp
             self.ql.reg.rdi = init_rdi
             self.ql.reg.r14 = init_rdi

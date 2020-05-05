@@ -265,8 +265,8 @@ def hook_GetCurrentProcess(ql, address, params):
 def hook_TerminateProcess(ql, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
-    # TODO i have no idea on how to find the old ql.pe.default_image_base
-    if process == 0x0:  # or process == ql.os.default_image_base:
+    # TODO i have no idea on how to find the old ql.pe.image_address
+    if process == 0x0:  # or process == ql.os.image_address:
         ql.emu_stop()
         ql.os.PE_RUN = False
     ret = 1

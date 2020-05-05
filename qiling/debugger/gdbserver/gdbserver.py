@@ -462,7 +462,7 @@ class GDBSERVERsession(object):
                         AT_PHDR     = self.ql.arch.addr_to_str(self.ql.loader.elf_phdr)  # Program headers for program
                         AT_PHENT    = self.ql.arch.addr_to_str(self.ql.loader.elf_phent)  # Size of program header entry
                         AT_PHNUM    = self.ql.arch.addr_to_str(self.ql.loader.elf_phnum)  # Number of program headers
-                        AT_BASE     = self.ql.arch.addr_to_str(self.ql.loader.interp_base)  # Base address of interpreter
+                        AT_BASE     = self.ql.arch.addr_to_str(self.ql.loader.interp_address)  # Base address of interpreter
                         AT_FLAGS    = self.ql.arch.addr_to_str(self.ql.loader.elf_flags)
                         AT_ENTRY    = self.ql.arch.addr_to_str(self.ql.loader.elf_entry)  # Entry point of program
                         AT_UID      = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # UID at 1000 fixed in qiling

@@ -27,32 +27,33 @@ class QlOsLinux(QlOsPosix):
     def load(self):
         self.ql.uc = self.ql.arch.init_uc
         self.futexm = QlLinuxFutexManagement()
-        stacksize = int(self.profile.get("OS", "stacksize"),16)
+
+        if self.ql.archbit == 32:
+            stack_address = int(self.profile.get("OS32", "stack_address"),16)
+            stack_size = int(self.profile.get("OS32", "stack_size"),16)
+        elif self.ql.archbit == 64:
+            stack_address = int(self.profile.get("OS64", "stack_address"),16)
+            stack_size = int(self.profile.get("OS64", "stack_size"),16)
 
         # ARM
         if self.ql.archtype== QL_ARCH.ARM:
-            stackaddress = int(self.profile.get("ARM", "stackaddress"),16)
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             self.thread_class = QlLinuxARMThread
 
         # MIPS32
-        elif self.ql.archtype== QL_ARCH.MIPS:
-            stackaddress = int(self.profile.get("MIPS", "stackaddress"),16)
-            stacksize = int(self.profile.get("MIPS", "stacksize"),16)        
+        elif self.ql.archtype== QL_ARCH.MIPS:      
             self.ql.hook_intno(self.hook_syscall, 17)
             self.thread_class = QlLinuxMIPS32Thread
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
-            stackaddress = int(self.profile.get("ARM64", "stackaddress"),16)
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             self.thread_class = QlLinuxARM64Thread
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
-            stackaddress = int(self.profile.get("X86", "stackaddress"),16)
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
@@ -61,7 +62,6 @@ class QlOsLinux(QlOsPosix):
 
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
-            stackaddress = int(self.profile.get("X8664", "stackaddress"),16)
             self.gdtm = GDTManager(self.ql)
             ql_x86_register_cs(self)
             ql_x86_register_ds_ss_es(self)
@@ -74,8 +74,8 @@ class QlOsLinux(QlOsPosix):
             self.ql.mem.write(self.entry_point, self.ql.shellcoder)
         else:
             # if not self.ql.stack_address and not self.ql.stack_size:
-            self.stack_address = stackaddress
-            self.stack_size = stacksize
+            self.stack_address = stack_address
+            self.stack_size = stack_size
             # elif self.ql.stack_address and self.ql.stack_size:
             #     self.stack_address = self.ql.stack_address
             #     self.stack_address = self.ql.stack_size    
