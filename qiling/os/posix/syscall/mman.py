@@ -57,7 +57,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
         mmap_fd = ql.unpack64(ql.pack64(mmap_fd))
 
-    elif (ql.archtype== QL_ARCH.MIPS32):
+    elif (ql.archtype== QL_ARCH.MIPS):
         mmap_fd = ql.unpack32s(ql.mem.read(mmap_fd, 4))
         mmap_offset = ql.unpack32(ql.mem.read(mmap_offset, 4))
         MAP_ANONYMOUS=2048
@@ -65,16 +65,16 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     else:
         mmap_fd = ql.unpack32s(ql.pack32(mmap_fd))
 
-    # initial ql.loader.mmap_start
+    # initial ql.loader.mmap_address
     mmap_base = mmap_addr
     need_mmap = True
 
-    if mmap_addr != 0 and (mmap_addr < ql.loader.mmap_start):
+    if mmap_addr != 0 and (mmap_addr < ql.loader.mmap_address):
         need_mmap = False
 
     if mmap_addr == 0:
-        mmap_base = ql.loader.mmap_start
-        ql.loader.mmap_start = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
+        mmap_base = ql.loader.mmap_address
+        ql.loader.mmap_address = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
 
     ql.dprint(D_INFO, "[+] log old_mmap - return addr : " + hex(mmap_base))
     ql.dprint(D_INFO, "[+] log old_mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
@@ -122,7 +122,7 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
     if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
         mmap_fd = ql.unpack64(ql.pack64(mmap_fd))
 
-    elif (ql.archtype== QL_ARCH.MIPS32):
+    elif (ql.archtype== QL_ARCH.MIPS):
         mmap_fd = ql.unpack32s(ql.mem.read(mmap_fd, 4))
         mmap_pgoffset = ql.unpack32(ql.mem.read(mmap_pgoffset, 4))
         MAP_ANONYMOUS=2048
@@ -134,14 +134,14 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
     need_mmap = True
 
     
-    if mmap_addr != 0 and (mmap_addr < ql.loader.mmap_start):
-        ql.dprint(D_INFO, "[+] mmap_addr 0x%x < ql.loader.mmap_start 0x%x" %(mmap_addr, ql.loader.mmap_start))
+    if mmap_addr != 0 and (mmap_addr < ql.loader.mmap_address):
+        ql.dprint(D_INFO, "[+] mmap_addr 0x%x < ql.loader.mmap_address 0x%x" %(mmap_addr, ql.loader.mmap_address))
         need_mmap = False
 
-    # initial ql.loader.mmap_start
+    # initial ql.loader.mmap_address
     if mmap_addr == 0:
-        mmap_base = ql.loader.mmap_start
-        ql.loader.mmap_start = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
+        mmap_base = ql.loader.mmap_address
+        ql.loader.mmap_address = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
 
     ql.dprint(D_INFO, "[+] log mmap - return addr : " + hex(mmap_base))
     ql.dprint(D_INFO, "[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
@@ -190,7 +190,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     if (ql.archtype== QL_ARCH.ARM64) or (ql.archtype== QL_ARCH.X8664):
         mmap2_fd = ql.unpack64(ql.pack64(mmap2_fd))
 
-    elif (ql.archtype== QL_ARCH.MIPS32):
+    elif (ql.archtype== QL_ARCH.MIPS):
         mmap2_fd = ql.unpack32s(ql.mem.read(mmap2_fd, 4))
         mmap2_pgoffset = ql.unpack32(ql.mem.read(mmap2_pgoffset, 4)) * 4096
         MAP_ANONYMOUS=2048
@@ -201,11 +201,11 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     mmap_base = mmap2_addr
     need_mmap = True
 
-    if mmap2_addr != 0 and mmap2_addr < ql.loader.mmap_start:
+    if mmap2_addr != 0 and mmap2_addr < ql.loader.mmap_address:
         need_mmap = False
     if mmap2_addr == 0:
-        mmap_base = ql.loader.mmap_start
-        ql.loader.mmap_start = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
+        mmap_base = ql.loader.mmap_address
+        ql.loader.mmap_address = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
 
     ql.dprint(D_INFO, "[+] log mmap2 - mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
     mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))

@@ -1,8 +1,14 @@
-import os, logging
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
+import os, logging, configparser
 from .utils import ql_build_module_import_name, ql_get_module_function
 from .utils import ql_is_valid_arch, ql_is_valid_ostype
 from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
 from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
+from .const import D_INFO
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 from .loader.utils import ql_checkostype
 
@@ -114,7 +120,7 @@ class QLCoreUtils(object):
             return ql_get_module_function(module_name, function_name)
 
     def loader_setup(self, function_name = None):
-        if self.path:
+        if not self.shellcoder:
             self.archtype, self.ostype, self.archendian = ql_checkostype(self.path)
 
         if not ql_is_valid_ostype(self.ostype):
@@ -139,3 +145,18 @@ class QLCoreUtils(object):
         module_name = "qiling." + component_type + "." + function_name
         function_name = "Ql" + function_name.capitalize() + "Manager"
         return ql_get_module_function(module_name, function_name)(self)
+
+    def profile_setup(self):
+        if self.profile:
+            self.dprint(D_INFO, "[+] Customized profile: %s" % self.profile)
+        
+        os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(self.ostype) + ".ql")
+      
+        if self.profile:
+            profiles = [os_profile, self.profile]
+        else:
+            profiles = [os_profile]
+
+        config = configparser.ConfigParser()
+        config.read(profiles)
+        return config

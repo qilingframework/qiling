@@ -89,7 +89,7 @@ def ql_open_flag_mapping(ql, flags):
         'O_DIRECTORY': 65536
     }
 
-    mips32el_open_flags = {
+    mips_open_flags = {
         'O_RDONLY': 0x0,
         'O_WRONLY': 0x1,
         'O_RDWR': 0x2,
@@ -105,7 +105,7 @@ def ql_open_flag_mapping(ql, flags):
         'O_DIRECTORY': 0x100000,
     }
 
-    if ql.archtype!= QL_ARCH.MIPS32:
+    if ql.archtype!= QL_ARCH.MIPS:
         if ql.platform == None or ql.platform == ql.ostype:
             return flags
 
@@ -117,13 +117,10 @@ def ql_open_flag_mapping(ql, flags):
             f = mac_open_flags
             t = linux_open_flags
 
-    elif ql.archtype== QL_ARCH.MIPS32 and ql.platform == QL_OS.LINUX:
-        f = mips32el_open_flags
+    elif ql.archtype== QL_ARCH.MIPS and ql.platform == QL_OS.LINUX:
+        f = mips_open_flags
         t = linux_open_flags
 
-    elif ql.archtype== QL_ARCH.MIPS32 and ql.platform == QL_OS.MACOS:
-        f = mips32el_open_flags
-        t = mac_open_flags
 
     return flag_mapping(flags, open_flags_name, f, t)
 
@@ -137,7 +134,7 @@ def open_flags_mapping(flags, arch):
             QL_ARCH.X8664: linux_open_flags,
             QL_ARCH.ARM: arm_open_flags,
             QL_ARCH.ARM64: arm64_open_flags,
-            QL_ARCH.MIPS32: mips32_open_flags,
+            QL_ARCH.MIPS: mips_open_flags,
             #FIXME: QL_OS.MACOS is QL_OS
             #QL_OS.MACOS: mac_open_flags,
             }.get(arch)
@@ -180,7 +177,7 @@ def socket_type_mapping(t, arch):
             QL_ARCH.ARM: arm_socket_types,
             QL_ARCH.ARM_THUMB: arm_socket_types,
             QL_ARCH.ARM64: arm_socket_types,
-            QL_ARCH.MIPS32: mips32_socket_types,
+            QL_ARCH.MIPS: mips_socket_types,
             #FIXME: QL_OS.MACOS is QL_OS
             #QL_OS.MACOS: linux_socket_types,
             }.get(arch)
@@ -195,7 +192,7 @@ def socket_domain_mapping(p, arch):
             QL_ARCH.ARM: arm_socket_domain,
             QL_ARCH.ARM_THUMB: arm_socket_domain,
             QL_ARCH.ARM64: arm_socket_domain,
-            QL_ARCH.MIPS32: mips32_socket_domain,
+            QL_ARCH.MIPS: mips_socket_domain,
             #FIXME: QL_OS.MACOS is QL_OS
             #QL_OS.MACOS: "macos_socket_domain",
             }.get(arch)

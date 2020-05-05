@@ -29,9 +29,23 @@ def hook_InterlockedExchange(ql, address, params):
     "Target": POINTER
 })
 def hook_InterlockedIncrement(ql, address, params):
-    val = int.from_bytes(ql.mem.read(params['Target'], ql.pointersize), byteorder='little')
-    val += 1 & (2 ** ql.pointersize * 8)  # increment and overflow back to 0 if applicable
-    ql.mem.write(params['Target'], val.to_bytes(length=ql.pointersize, byteorder='little'))
+    val = int.from_bytes(ql.mem.read(params['Target'], 4), byteorder='little')
+    val += 1 & (2 ** 32)  # increment and overflow back to 0 if applicable
+    ql.mem.write(params['Target'], val.to_bytes(length=4, byteorder='little'))
+    return val
+
+# LONG InterlockedDecrement(
+#  LONG volatile *Target,
+# );
+@winapi(cc=STDCALL, params={
+    "Target": POINTER
+})
+def hook_InterlockedDecrement(ql, address, params):
+    val = int.from_bytes(ql.mem.read(params['Target'], 4), byteorder='little')
+    val -= 1
+    if val == -1:
+        val = 0xFFFFFFFF
+    ql.mem.write(params['Target'], val.to_bytes(length=4, byteorder='little'))
     return val
 
 

@@ -62,6 +62,9 @@ class QlErrorSyscallError(QlErrorBase):
 class QlErrorSyscallNotFound(QlErrorBase):
     pass
 
+class QlErrorCoreHook(QlErrorBase):
+    pass
+
 class QlOutOfMemory(QlErrorBase):
     pass
 

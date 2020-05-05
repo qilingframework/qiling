@@ -57,7 +57,7 @@ def ql_asm2bytes(fname, archtype, archmode = None):
             adapter = {
                 'x86': (KS_ARCH_X86, KS_MODE_32),
                 'x8664': (KS_ARCH_X86, KS_MODE_64),
-                'mips32': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
+                'mips': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
                 'arm': (KS_ARCH_ARM, KS_MODE_ARM, + KS_MODE_BIG_ENDIAN),
                 'armthumb': (KS_ARCH_ARM, KS_MODE_THUMB | KS_MODE_BIG_ENDIAN),
                 'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
@@ -66,7 +66,7 @@ def ql_asm2bytes(fname, archtype, archmode = None):
             adapter = {
                 'x86': (KS_ARCH_X86, KS_MODE_32),
                 'x8664': (KS_ARCH_X86, KS_MODE_64),
-                'mips32el': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
+                'mips': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
                 'arm': (KS_ARCH_ARM, KS_MODE_ARM),
                 'armthumb': (KS_ARCH_ARM, KS_MODE_THUMB),
                 'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
@@ -107,8 +107,8 @@ def run_shellcode(options):
             print("ERROR: -os required: either linux, windows, freebsd, macos")
             exit(1)
     
-    if not options.arch in ("arm", "arm64", "x86", "x8664", "mips32"):
-            print("ERROR: -arch required: either arm, arm64, x86, x8664, mips32")
+    if not options.arch in ("arm", "arm64", "x86", "x8664", "mips"):
+            print("ERROR: -arch required: either arm, arm64, x86, x8664, mips")
             exit(1)
 
     if type(options.bigendian) is not bool:
@@ -142,7 +142,7 @@ def run_shellcode(options):
             exit(1)
         shellcoder = read_shellcode(options.filename)
 
-    return Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output)
+    return Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output, profile = options.profile)
 
 
 def usage():
@@ -172,10 +172,7 @@ def usage():
 
 if __name__ == '__main__':
 
-    #
     # argparse setup
-    #
-
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(title='subcommands', description='valid subcommands', help='additional help', dest='subparser_name')
     
@@ -188,7 +185,7 @@ if __name__ == '__main__':
     shellcode_parser = commands.add_parser('shellcode', help = 'shellcode')
     shellcode_parser.add_argument('-f', '--filename', required=False, metavar="FILE", dest="filename", help="filename")
     shellcode_parser.add_argument('-i', '--input', required=False, metavar="INPUT", dest="input", help='input hex value')
-    shellcode_parser.add_argument('--arch', required=True, help='option are x86, x8664, arm, arm64, mips32el, mips32')
+    shellcode_parser.add_argument('--arch', required=True, help='option are x86, x8664, arm, arm64, mips')
     shellcode_parser.add_argument('--bigendian', required=False, default=False, help='Type: Bool True or False')
     shellcode_parser.add_argument('--os', required=True, help='option are windows, linux, freebsd and macos')
     shellcode_parser.add_argument('--rootfs', required=False, help='emulated rootfs, that is where all the so or dll sits')
@@ -211,7 +208,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('-v', '--verbose', required=False, default=1, dest='verbose',
                             help='verbose mode, must be int and use with --debug or --dump')
     comm_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
-    comm_parser.add_argument('--profile', required=False, default='', metavar="FILE", dest="profile", help="Defile OS profile")
+    comm_parser.add_argument('--profile', required=False, dest='profile', help="Define customized profile")
     comm_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
     comm_parser.add_argument('--dump', action='store_true', default=False, dest='dump', help='Enable Debug + Diassembler mode')
     comm_parser.add_argument('--debug', action='store_true', default=False, dest='debug', help='Enable Debug mode')
@@ -230,10 +227,7 @@ if __name__ == '__main__':
     options = parser.parse_args()
 
 
-    #
     # var check
-    #
-
     if options.strace:
         options.output = "default"
     elif options.trace:
@@ -250,7 +244,11 @@ if __name__ == '__main__':
 
     if options.log_split:
         options.console = True
-
+    
+    # FIXME: this did not parse to core.py need to fine out why
+    if options.profile:
+        options.profile = str(options.profile)
+    
     if type(options.verbose) != int and options.output not in ("debug", "dump"):
         print("ERROR: verbose mode, must be int and use with --debug or --dump")
         usage()
@@ -259,22 +257,19 @@ if __name__ == '__main__':
         print("ERROR: debug_stop must use with either dump or debug mode")
         usage()
     
-    #
-    # ql setup
-    #
-
+    # ql file setup
     if (options.subparser_name == 'run'):
-        if options.filename != '' and options.run_args == []:
-            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, 
-                        output=options.output, log_console = options.console, log_dir=options.log_dir)
+        if options.filename is not None and options.run_args == []:
+            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile = options.profile, output=options.output, log_console = options.console, log_dir=options.log_dir)
 
-        elif options.filename == '' and options.args == [] and options.run_args != []:
-            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, output=options.output, 
-                        log_console = options.console, log_dir=options.log_dir)
+        elif options.filename is None and options.args == [] and options.run_args != []:
+            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, profile = options.profile, output=options.output, log_console = options.console, log_dir=options.log_dir)
+        
         else:
             print("ERROR: Command error!")
             usage()
 
+    # ql shellcode setup
     elif (options.subparser_name == 'shellcode'):
         ql = run_shellcode(options)
     
@@ -283,10 +278,7 @@ if __name__ == '__main__':
         usage()
 
 
-    #
     # ql execute additional options
-    #
-
     if options.gdb:
         ql.debugger = options.gdb
 
@@ -302,12 +294,7 @@ if __name__ == '__main__':
     if options.multithread:
         ql.multithread = True
 
-    if options.profile:
-        if os.path.exists(options.profile):
-            ql.config = options.config
-        else:
-            print("File Not Found!!!")
-            exit(1)        
+       
 
     if options.verbose:
         ql.verbose = options.verbose   
@@ -315,11 +302,8 @@ if __name__ == '__main__':
     if options.strace_filter != None:
        ql.strace_filter = options.strace_filter
     
-    #
     # ql run
-    #
-
     ql.run()
-    exit(ql.exit_code)
+    exit(ql.os.exit_code)
 
 

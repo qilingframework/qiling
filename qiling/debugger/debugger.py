@@ -22,17 +22,17 @@ def ql_debugger_init(ql):
             port = int(port)
             
             if ql.shellcoder:
-                loadbase = ql.os.entry_point
-                mappings = [(hex(loadbase), 0x0)]
-                exit_point = loadbase + len(ql.shellcoder)
+                load_address = ql.os.entry_point
+                mappings = [(hex(load_address), 0x0)]
+                exit_point = load_address + len(ql.shellcoder)
             else:
-                loadbase = ql.loader.loadbase
-                mappings = [(hex(loadbase), 0x10)]
-                exit_point = loadbase + os.path.getsize(path)
+                load_address = ql.loader.load_address
+                mappings = [(hex(load_address), 0x10)]
+                exit_point = load_address + os.path.getsize(path)
 
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind((ip, port))
-            ql.nprint("\ndebugger> Initializing loadbase 0x%x\n" % (loadbase))
+            ql.nprint("\ndebugger> Initializing load_address 0x%x\n" % (load_address))
             ql.nprint("debugger> Listening on %s:%u\n" % (ip, port))
             sock.listen(1)
             conn, addr = sock.accept()

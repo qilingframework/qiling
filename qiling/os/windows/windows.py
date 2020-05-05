@@ -36,20 +36,11 @@ class QlOsWindows(QlOs):
         self.userprofile = self.profile["PATH"]["systemdrive"] + "Users\\" + self.profile["USER"]["username"] + "\\"
 
         if self.ql.archtype == QL_ARCH.X8664:
-            self.stack_address = 0x7ffffffde000
-            self.stack_size = 0x40000
-            self.HEAP_BASE_ADDR = 0x500000000
-            self.HEAP_SIZE = 0x5000000            
+            self.heap_base_addr = int(self.profile.get("OS64", "heap_address"),16)
+            self.heap_base_size = int(self.profile.get("OS64", "heap_size"),16)       
         elif self.ql.archtype == QL_ARCH.X86:
-            self.stack_address = 0xfffdd000
-            self.stack_size = 0x21000
-            self.HEAP_BASE_ADDR = 0x5000000
-            self.HEAP_SIZE = 0x5000000
-
-        if self.ql.stack_address == 0:
-            self.ql.stack_address = self.stack_address
-        if self.ql.stack_size == 0:
-            self.ql.stack_size = self.stack_size
+            self.heap_base_addr = int(self.profile.get("OS32", "heap_address"),16)
+            self.heap_base_size = int(self.profile.get("OS32", "heap_size"),16)
 
         """
         Load Heap module
@@ -57,8 +48,8 @@ class QlOsWindows(QlOs):
         """
         self.heap = QlMemoryHeap(
                 self.ql,
-                self.HEAP_BASE_ADDR,
-                self.HEAP_BASE_ADDR + self.HEAP_SIZE)
+                self.heap_base_addr,
+                self.heap_base_addr + self.heap_base_size)
 
         self.setupGDT()
         # hook win api

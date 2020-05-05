@@ -71,7 +71,7 @@ def map_syscall(syscall_num):
         4238 : "ql_syscall_futex",
         4246 : "ql_syscall_exit_group",
         4252 : "ql_syscall_set_tid_address",
-        4283 : "ql_syscall_mips32_set_thread_area",
+        4283 : "ql_syscall_mips_set_thread_area",
         4309 : "ql_syscall_set_robust_list",
     }
     return adapter.get(syscall_num)

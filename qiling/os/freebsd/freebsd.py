@@ -15,31 +15,22 @@ class QlOsFreebsd(QlOsPosix):
         self.load()
         
     def load(self):   
-        
         self.ql.uc = self.ql.arch.init_uc
-        self.QL_FREEBSD_PREDEFINE_STACKADDRESS = 0x7ffffffde000
-        self.QL_FREEBSD_PREDEFINE_STACKSIZE = 0x21000
 
         if self.ql.shellcoder:
-            self.ql.mem.map(self.entry_point, self.shellcoder_ram, info="[shellcode_stack]")
+            self.ql.mem.map(self.entry_point, self.shellcoder_ram_size, info="[shellcode_stack]")
             self.entry_point  = (self.entry_point + 0x200000 - 0x1000)
             self.ql.mem.write(self.entry_point, self.ql.shellcoder)
-        else:
-            if not self.ql.stack_address and not self.ql.stack_size:
-                self.stack_address = self.QL_FREEBSD_PREDEFINE_STACKADDRESS
-                self.stack_size = self.QL_FREEBSD_PREDEFINE_STACKSIZE
-            elif self.ql.stack_address and self.ql.stack_size:
-                self.stack_address = self.ql.stack_address
-                self.stack_address = self.ql.stack_size    
-
-            self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")                    
-        
-        if self.ql.shellcoder:
             self.ql.reg.arch_sp = self.entry_point
-        else:            
-            self.ql.reg.arch_sp = self.stack_address
-            init_rbp = self.stack_address + 0x40
-            init_rdi = self.stack_address
+        else:
+            stack_address = int(self.profile.get("OS64", "stack_address"),16)
+            stack_size = int(self.profile.get("OS64", "stack_size"),16)
+            self.ql.mem.map(stack_address, stack_size, info="[stack]")                    
+            self.ql.reg.arch_sp = stack_address
+            init_rbp = stack_address + 0x40
+            init_rdi = stack_address
+            self.stack_address = stack_address
+            self.stack_size = stack_size
             self.ql.reg.rbp = init_rbp
             self.ql.reg.rdi = init_rdi
             self.ql.reg.r14 = init_rdi

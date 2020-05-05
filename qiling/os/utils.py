@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-import struct, os, configparser
+import struct, os
 from json import dumps
 
 from binascii import unhexlify
@@ -54,16 +54,6 @@ class QLOsUtils:
 
         return ebsc
 
-    def init_profile(self):
-        config = configparser.ConfigParser()
-        config.read(self.profile)
-        self.ql.dprint(D_RPRT, "[+] Added configuration file %s" % self.profile)
-        for section in config.sections():
-            self.ql.dprint(D_RPRT, "[+] Section: %s" % section)
-            for key in config[section]:
-                self.ql.dprint(D_RPRT, "[-] %s %s" % (key, config[section][key]))
-        return config
-
     def compile_asm(self, archtype, runcode, arm_thumb=None):
         try:
             loadarch = KS_ARCH_X86
@@ -75,7 +65,7 @@ class QLOsUtils:
                 adapter = {
                     QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
                     QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
-                    QL_ARCH.MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
+                    QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
                     QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_BIG_ENDIAN),
                     QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
                     QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
@@ -84,7 +74,7 @@ class QLOsUtils:
                 adapter = {
                     QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
                     QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
-                    QL_ARCH.MIPS32: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
+                    QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
                     QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM),
                     QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
                     QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
@@ -222,16 +212,21 @@ class QLOsUtils:
         return relative_path
 
     def post_report(self):
-        self.ql.dprint(D_INFO, "[+] Syscalls called")
+        self.ql.dprint(D_RPRT, "[+] Syscalls called")
         for key, values in self.ql.os.syscalls.items():
-            self.ql.dprint(D_INFO, "[-] %s:" % key)
+            self.ql.dprint(D_RPRT, "[-] %s:" % key)
             for value in values:
-                self.ql.dprint(D_INFO, "[-] %s " % str(dumps(value)))
-        self.ql.dprint(D_INFO, "[+] Registries accessed")
+                self.ql.dprint(D_RPRT, "[-] %s " % str(dumps(value)))
+        self.ql.dprint(D_RPRT, "[+] Registries accessed")
         for key, values in self.ql.os.registry_manager.accessed.items():
-            self.ql.dprint(D_INFO, "[-] %s:" % key)
+            self.ql.dprint(D_RPRT, "[-] %s:" % key)
             for value in values:
-                self.ql.dprint(D_INFO, "[-] %s " % str(dumps(value)))
+                self.ql.dprint(D_RPRT, "[-] %s " % str(dumps(value)))
+        self.ql.dprint(D_RPRT, "[+] Strings")
+        for key, values in self.ql.os.appeared_strings.items():
+            val = " ".join([str(word) for word in values])
+            self.ql.dprint(D_RPRT, "[-] %s: %s" % (key, val))
+
 
     def exec_arbitrary(self, start, end):
         old_sp = self.ql.reg.arch_sp
@@ -283,7 +278,7 @@ class QLOsUtils:
         elif self.ql.archtype == QL_ARCH.ARM64:  # QL_ARM64
             md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 
-        elif self.ql.archtype == QL_ARCH.MIPS32:  # QL_MIPS32
+        elif self.ql.archtype == QL_ARCH.MIPS:  # QL_MIPS32
             if self.ql.archendian == QL_ENDIAN.EB:
                 md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
             else:
@@ -295,13 +290,12 @@ class QLOsUtils:
         insn = md.disasm(tmp, address)
         opsize = int(size)
 
-        self.ql.nprint("[+] 0x%x\t" % (address), end="")
+        self.ql.nprint( ("[+] 0x%x" % (address)).ljust( (self.ql.archbit // 8) + 15), end="")
 
+        temp_str = ""
         for i in tmp:
-            self.ql.nprint(" %02x " % i, end="")
-
-        if opsize <= 6:
-            self.ql.nprint("\t", end="")
+            temp_str += ("%02x " % i)
+        self.ql.nprint(temp_str.ljust(30), end="")
 
         for i in insn:
             self.ql.nprint("%s %s" % (i.mnemonic, i.op_str))
