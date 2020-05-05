@@ -4,7 +4,6 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import struct
-from unicorn.x86_const import *
 from functools import wraps
 
 from qiling.os.const import *
@@ -33,7 +32,7 @@ def _x86_get_params_by_index(ql, index):
 
 
 def _x8664_get_params_by_index(ql, index):
-    reg_list = [UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9]
+    reg_list = ["rcx", "rdx", "r8", "r9"]
     if index < 4:
         return ql.reg.read(reg_list[index])
 
@@ -61,7 +60,7 @@ def _x86_get_args(ql, number):
 
 
 def _x8664_get_args(ql, number):
-    reg_list = [UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9]
+    reg_list = ["rcx", "rdx", "r8", "r9"]
     arg_list = []
     reg_num = number
     if reg_num > 4:

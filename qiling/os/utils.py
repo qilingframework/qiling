@@ -212,20 +212,20 @@ class QLOsUtils:
         return relative_path
 
     def post_report(self):
-        self.ql.dprint(D_INFO, "[+] Syscalls called")
+        self.ql.dprint(D_RPRT, "[+] Syscalls called")
         for key, values in self.ql.os.syscalls.items():
-            self.ql.dprint(D_INFO, "[-] %s:" % key)
+            self.ql.dprint(D_RPRT, "[-] %s:" % key)
             for value in values:
-                self.ql.dprint(D_INFO, "[-] %s " % str(dumps(value)))
-        self.ql.dprint(D_INFO, "[+] Registries accessed")
+                self.ql.dprint(D_RPRT, "[-] %s " % str(dumps(value)))
+        self.ql.dprint(D_RPRT, "[+] Registries accessed")
         for key, values in self.ql.os.registry_manager.accessed.items():
-            self.ql.dprint(D_INFO, "[-] %s:" % key)
+            self.ql.dprint(D_RPRT, "[-] %s:" % key)
             for value in values:
-                self.ql.dprint(D_INFO, "[-] %s " % str(dumps(value)))
-        self.ql.dprint(D_INFO, "[+] Strings")
+                self.ql.dprint(D_RPRT, "[-] %s " % str(dumps(value)))
+        self.ql.dprint(D_RPRT, "[+] Strings")
         for key, values in self.ql.os.appeared_strings.items():
             val = " ".join([str(word) for word in values])
-            self.ql.dprint(D_INFO, "[-] %s: %s" % (key, val))
+            self.ql.dprint(D_RPRT, "[-] %s: %s" % (key, val))
 
 
     def exec_arbitrary(self, start, end):
