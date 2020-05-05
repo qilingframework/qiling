@@ -63,12 +63,6 @@ class MyPipe():
         return stdin_fstat
 
 
-X64BASE = 0x7ffbf0100000
-
-# 64 bit loader addrs are placed at 0x7ffbf0100000
-# see loader/elf.py:load_with_ld(..)
-
-
 def main(input_file, enable_trace=False):
     stdin = MyPipe()
     ql = Qiling(["./x8664_fuzz"], "../rootfs/x8664_linux",
@@ -102,7 +96,11 @@ def main(input_file, enable_trace=False):
             # TODO: Chose a better hook position :)
             if ex != unicornafl.UC_AFL_RET_CALLED_TWICE:
                 raise
-
+    
+    # 64 bit loader addrs are placed at 0x7ffbf0100000
+    # see loader/elf.py:load_with_ld(..)
+    X64BASE = int(ql.profile.get("OS64", "load_address"),16)
+    
     # crash in case we reach stackcheck_fail:
     # 1225:	e8 16 fe ff ff       	callq  1040 <__stack_chk_fail@plt>
     ql.hook_address(callback=lambda x: os.abort(), address=X64BASE + 0x1225)
