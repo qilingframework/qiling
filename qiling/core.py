@@ -69,14 +69,11 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         ##################################
         # Definition after ql=Qiling()   #
         ##################################
-        self.archbit = ''
-        self.path = ''
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
         self.log_file_fd = None
         self.fs_mapper = []
-        self.exit_code = 0
         self.debug_stop = False
         self.internal_exception = None
         self.platform = platform.system()

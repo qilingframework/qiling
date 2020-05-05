@@ -304,6 +304,6 @@ if __name__ == '__main__':
     
     # ql run
     ql.run()
-    exit(ql.exit_code)
+    exit(ql.os.exit_code)
 
 
