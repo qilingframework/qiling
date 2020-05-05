@@ -8,185 +8,125 @@ from unicorn.arm64_const import *
 
 from qiling.const import *
 from .arch import QlArch
-
+from .arm64_const import *
 
 class QlArchARM64(QlArch):
     def __init__(self, ql):
         super(QlArchARM64, self).__init__(ql)
 
+        register_mappings = [
+            reg_map
+        ]
+
+        for reg_maper in register_mappings:
+            self.ql.reg.expand_mapping(reg_maper)            
+
+        self.ql.reg.register_sp(reg_map["sp"])
+        self.ql.reg.register_pc(reg_map["pc"])
+
 
     def stack_push(self, value):
-        SP = self.ql.register(UC_ARM64_REG_SP)
-        SP -= 8
-        self.ql.mem.write(SP, self.ql.pack64(value))
-        self.ql.register(UC_ARM64_REG_SP, SP)
-        return SP
+        self.ql.reg.sp -= 8
+        self.ql.mem.write(self.ql.reg.sp, self.ql.pack64(value))
+        return self.ql.reg.sp
 
 
     def stack_pop(self):
-        SP = self.ql.register(UC_ARM64_REG_SP)
-        data = self.ql.unpack64(self.ql.mem.read(SP, 8))
-        self.ql.register(UC_ARM64_REG_SP, SP + 8)
+        data = self.ql.unpack64(self.ql.mem.read(self.ql.reg.sp, 8))
+        self.ql.reg.sp += 8
         return data
 
 
     def stack_read(self, offset):
-        SP = self.ql.register(UC_ARM64_REG_SP)
-        return self.ql.unpack64(self.ql.mem.read(SP + offset, 8))
+        return self.ql.unpack64(self.ql.mem.read(self.ql.reg.sp + offset, 8))
 
 
     def stack_write(self, offset, data):
-        SP = self.ql.register(UC_ARM64_REG_SP)
-        return self.ql.mem.write(SP + offset, self.ql.pack64(data))
+        return self.ql.mem.write(self.ql.reg.sp + offset, self.ql.pack64(data))
+
 
     # get initialized unicorn engine
     def get_init_uc(self):
         uc = Uc(UC_ARCH_ARM64, UC_MODE_ARM)   
         return uc
 
+
     # set PC
     def set_pc(self, value):
-        self.ql.register(UC_ARM64_REG_PC, value)
+        self.ql.reg.pc = value
+
 
     # get PC
     def get_pc(self):
-        return self.ql.register(UC_ARM64_REG_PC)
+        return self.ql.reg.pc
 
 
     # set stack pointer
     def set_sp(self, value):
-        self.ql.register(UC_ARM64_REG_SP, value)
+        self.ql.reg.sp = value
 
 
     # get stack pointer
     def get_sp(self):
-        return self.ql.register(UC_ARM64_REG_SP)
+        return self.ql.reg.sp
 
 
     # get stack pointer register
     def get_name_sp(self):
-        return UC_ARM64_REG_SP
+        return reg_map["sp"]
 
 
     # get pc register pointer
     def get_name_pc(self):
-        return UC_ARM64_REG_PC
+        return reg_map["pc"]
         
 
     def get_reg_table(self):
-        registers_table = [
-            UC_ARM64_REG_X0, UC_ARM64_REG_X1, UC_ARM64_REG_X2,
-            UC_ARM64_REG_X3, UC_ARM64_REG_X4, UC_ARM64_REG_X5,
-            UC_ARM64_REG_X6, UC_ARM64_REG_X7, UC_ARM64_REG_X8,
-            UC_ARM64_REG_X9, UC_ARM64_REG_X10, UC_ARM64_REG_X11,
-            UC_ARM64_REG_X12, UC_ARM64_REG_X13, UC_ARM64_REG_X14,
-            UC_ARM64_REG_X15, UC_ARM64_REG_X16, UC_ARM64_REG_X17,
-            UC_ARM64_REG_X18, UC_ARM64_REG_X19, UC_ARM64_REG_X20,
-            UC_ARM64_REG_X21, UC_ARM64_REG_X22, UC_ARM64_REG_X23,
-            UC_ARM64_REG_X24, UC_ARM64_REG_X25, UC_ARM64_REG_X26,
-            UC_ARM64_REG_X27, UC_ARM64_REG_X28, UC_ARM64_REG_X29,
-            UC_ARM64_REG_X30, UC_ARM64_REG_SP, UC_ARM64_REG_PC
-            ]
+        registers_table = []
+        adapter = {}
+        adapter.update(reg_map)
+        registers = {k:v for k, v in adapter.items()}
+
+        for reg in registers:
+            registers_table += [reg]
         return registers_table
+
 
     # set register name
     def set_reg_name_str(self):
         pass  
     
+
     def get_reg_name_str(self, uc_reg):
-        adapter = {
-            UC_ARM64_REG_X0: "X0", 
-            UC_ARM64_REG_X1: "X1", 
-            UC_ARM64_REG_X2: "X2",
-            UC_ARM64_REG_X3: "X3", 
-            UC_ARM64_REG_X4: "X4", 
-            UC_ARM64_REG_X5: "X5",
-            UC_ARM64_REG_X6: "X6", 
-            UC_ARM64_REG_X7: "X7", 
-            UC_ARM64_REG_X8: "X8",
-            UC_ARM64_REG_X9: "X9", 
-            UC_ARM64_REG_X10: "X10", 
-            UC_ARM64_REG_X11: "X11",
-            UC_ARM64_REG_X12: "X12", 
-            UC_ARM64_REG_X13: "X13", 
-            UC_ARM64_REG_X14: "X14",
-            UC_ARM64_REG_X15: "X15", 
-            UC_ARM64_REG_X16: "X16", 
-            UC_ARM64_REG_X17: "X17",
-            UC_ARM64_REG_X18: "X18", 
-            UC_ARM64_REG_X19: "X19", 
-            UC_ARM64_REG_X20: "X20",
-            UC_ARM64_REG_X21: "X21", 
-            UC_ARM64_REG_X22: "X22", 
-            UC_ARM64_REG_X23: "X23",
-            UC_ARM64_REG_X24: "X24", 
-            UC_ARM64_REG_X25: "X25", 
-            UC_ARM64_REG_X26: "X26",
-            UC_ARM64_REG_X27: "X27", 
-            UC_ARM64_REG_X28: "X28", 
-            UC_ARM64_REG_X29: "X29",
-            UC_ARM64_REG_X30: "X30", 
-            UC_ARM64_REG_SP: "SP", 
-            UC_ARM64_REG_PC: "PC"
-        }
+        adapter = {}
+        adapter.update(reg_map)
+        adapter = {v: k for k, v in adapter.items()}
+
         if uc_reg in adapter:
             return adapter[uc_reg]
         # invalid
         return None
 
 
-    def get_register(self, register_str):
-        if type(register_str) == str:
-            register_str = self.get_reg_name(register_str)  
-        return self.ql.uc.reg_read(register_str)
+    def get_register(self, register):
+        if type(register) == str:
+            register = self.get_reg_name(register)  
+        return self.ql.uc.reg_read(register)
 
 
-    def set_register(self, register_str, value):
-        if type(register_str) == str:
-            register_str = self.get_reg_name(register_str)  
-        return self.ql.uc.reg_write(register_str, value)
+    def set_register(self, register, value):
+        if type(register) == str:
+            register = self.get_reg_name(register)  
+        return self.ql.uc.reg_write(register, value)
+
 
     def enable_vfp(self):
-        ARM64FP = self.ql.register(UC_ARM64_REG_CPACR_EL1)
-        ARM64FP |= 0x300000
-        self.ql.register(UC_ARM64_REG_CPACR_EL1, ARM64FP)
+        self.ql.reg.cpacr_el1 = self.ql.reg.cpacr_el1 | 0x300000
+
 
     def get_reg_name(self, uc_reg_name):
-        adapter = {
-            "X0": UC_ARM64_REG_X0, 
-            "X1": UC_ARM64_REG_X1, 
-            "X2": UC_ARM64_REG_X2,
-            "X3": UC_ARM64_REG_X3, 
-            "X4": UC_ARM64_REG_X4, 
-            "X5": UC_ARM64_REG_X5,
-            "X6": UC_ARM64_REG_X6, 
-            "X7": UC_ARM64_REG_X7, 
-            "X8": UC_ARM64_REG_X8,
-            "X9": UC_ARM64_REG_X9, 
-            "X10": UC_ARM64_REG_X10, 
-            "X11": UC_ARM64_REG_X11,
-            "X12": UC_ARM64_REG_X12, 
-            "X13": UC_ARM64_REG_X13, 
-            "X14": UC_ARM64_REG_X14,
-            "X15": UC_ARM64_REG_X15, 
-            "X16": UC_ARM64_REG_X16, 
-            "X17": UC_ARM64_REG_X17,
-            "X18": UC_ARM64_REG_X18, 
-            "X19": UC_ARM64_REG_X19, 
-            "X20": UC_ARM64_REG_X20,
-            "X21": UC_ARM64_REG_X21, 
-            "X22": UC_ARM64_REG_X22, 
-            "X23": UC_ARM64_REG_X23,
-            "X24": UC_ARM64_REG_X24, 
-            "X25": UC_ARM64_REG_X25, 
-            "X26": UC_ARM64_REG_X26,
-            "X27": UC_ARM64_REG_X27, 
-            "X28": UC_ARM64_REG_X28, 
-            "X29": UC_ARM64_REG_X29,
-            "X30": UC_ARM64_REG_X30, 
-            "SP": UC_ARM64_REG_SP, 
-            "PC": UC_ARM64_REG_PC,
-        }
+        adapter = {}
+        adapter.update(reg_map)
         if uc_reg_name in adapter:
             return adapter[uc_reg_name]
         # invalid

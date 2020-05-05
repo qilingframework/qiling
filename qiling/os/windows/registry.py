@@ -82,14 +82,17 @@ class RegistryManager:
             self.hkcu = Registry.Registry(os.path.join(self.hive, 'NTUSER.DAT'))
         except FileNotFoundError:
             if not ql.shellcoder:
-                QlPrintException("WARNING: Registry files not found!")
+                QlErrorFileNotFound("WARNING: Registry files not found!")
         except Exception:
-            QlPrintException("WARNING: Registry files format error")
+            if not ql.shellcoder:
+                QlErrorFileNotFound("WARNING: Registry files format error")
+        self.accessed = {}
 
     def exists(self, key):
         if key in self.regdiff:
             return True
         keys = key.split("\\")
+        self.access(key)
         try:
             if keys[0] == "HKEY_LOCAL_MACHINE":
                 reg = self.hklm[keys[1]]
@@ -107,6 +110,8 @@ class RegistryManager:
         return True
 
     def read(self, key, subkey, reg_type):
+        # of the key, the subkey is the value checked
+
         # read reg conf first
         if key in self.regdiff and subkey in self.regdiff[key]:
             if self.regdiff[key][subkey].type in REG_TYPES:
@@ -134,10 +139,29 @@ class RegistryManager:
             for value in data.values():
                 if value.name() == subkey and (reg_type == Registry.RegNone or
                                                value.value_type() == reg_type):
+
+                    self.access(key, subkey=subkey, value=value.value(), type=value.value_type())
                     return value.value_type(), value.value()
-            return None, None
+
         except Registry.RegistryKeyNotFoundException:
-            return None, None
+            pass
+
+        self.access(key, subkey=subkey, value=None, type=None)
+
+        return None, None
+
+    def access(self, key, subkey=None, value=None, type=None):
+        if subkey is None:
+            if key not in self.accessed:
+                self.accessed[key] = []
+        else:
+            self.accessed[key].append({
+                "subkey": subkey,
+                "value": value,
+                "type": type,
+                "position": self.ql.os.syscalls_counter
+            })
+            # we don't have to increase the counter since we are technically inside a hook
 
     def create(self, key):
         self.registry_config[key] = dict()

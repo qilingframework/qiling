@@ -116,7 +116,7 @@ arm_socket_domain = {
 }
 
 
-mips32_socket_types = {
+mips_socket_types = {
     'SOCK_DGRAM'     : 0x1,
     'SOCK_STREAM'    : 0x2,
     'SOCK_RAW'       : 0x3,
@@ -129,7 +129,7 @@ mips32_socket_types = {
 }
 
 
-mips32_socket_domain = {
+mips_socket_domain = {
     'AF_UNSPEC'     : 0x0,
     'AF_FILE'       : 0x1,
     'AF_UNIX'       : 0x1,
@@ -214,7 +214,7 @@ linux_open_flags = {
 }
 
 
-mips32_open_flags = {
+mips_open_flags = {
     'O_RDONLY'   : 0x0,
     'O_WRONLY'   : 0x1,
     'O_RDWR'     : 0x2,

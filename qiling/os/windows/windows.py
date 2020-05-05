@@ -31,22 +31,16 @@ class QlOsWindows(QlOs):
         self.env = self.ql.env
         self.ql.uc = self.ql.arch.init_uc
         self.ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
+        self.username = self.profile["USER"]["username"]
+        self.windir = self.profile["PATH"]["systemdrive"] + self.profile["PATH"]["windir"]
+        self.userprofile = self.profile["PATH"]["systemdrive"] + "Users\\" + self.profile["USER"]["username"] + "\\"
 
         if self.ql.archtype == QL_ARCH.X8664:
-            self.stack_address = 0x7ffffffde000
-            self.stack_size = 0x40000
-            self.HEAP_BASE_ADDR = 0x500000000
-            self.HEAP_SIZE = 0x5000000            
+            self.heap_base_addr = int(self.profile.get("OS64", "heap_address"),16)
+            self.heap_base_size = int(self.profile.get("OS64", "heap_size"),16)       
         elif self.ql.archtype == QL_ARCH.X86:
-            self.stack_address = 0xfffdd000
-            self.stack_size = 0x21000
-            self.HEAP_BASE_ADDR = 0x5000000
-            self.HEAP_SIZE = 0x5000000
-
-        if self.ql.stack_address == 0:
-            self.ql.stack_address = self.stack_address
-        if self.ql.stack_size == 0:
-            self.ql.stack_size = self.stack_size
+            self.heap_base_addr = int(self.profile.get("OS32", "heap_address"),16)
+            self.heap_base_size = int(self.profile.get("OS32", "heap_size"),16)
 
         """
         Load Heap module
@@ -54,12 +48,13 @@ class QlOsWindows(QlOs):
         """
         self.heap = QlMemoryHeap(
                 self.ql,
-                self.HEAP_BASE_ADDR,
-                self.HEAP_BASE_ADDR + self.HEAP_SIZE)
+                self.heap_base_addr,
+                self.heap_base_addr + self.heap_base_size)
 
         self.setupGDT()
         # hook win api
         self.ql.hook_code(self.hook_winapi)
+    
 
     def setupGDT(self):
         # setup gdt
@@ -122,6 +117,12 @@ class QlOsWindows(QlOs):
                     raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
     def run(self):
+        if self.ql.exit_point is not None:
+            self.exit_point = self.ql.exit_point
+        
+        if  self.ql.entry_point  is not None:
+            self.ql.loader.entry_point = self.ql.entry_point
+
         if self.ql.stdin != 0:
             self.stdin = self.ql.stdin
         
@@ -132,25 +133,20 @@ class QlOsWindows(QlOs):
             self.stderr = self.ql.stderr 
 
         self.setup_output()
-
-        if (self.ql.until_addr == 0):
-            self.ql.until_addr = self.QL_EMU_END
+        
         try:
             if self.ql.shellcoder:
-                self.ql.emu_start(self.ql.loader.code_address, self.ql.loader.code_address + len(self.ql.shellcoder))
+                self.ql.emu_start(self.ql.loader.entry_point, (self.ql.loader.entry_point + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)
             else:
-                self.ql.emu_start(self.ql.loader.entry_point, self.ql.until_addr, self.ql.timeout)
+                self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:
             if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
-                self.ql.nprint("[+] PC = 0x%x\n" % (self.ql.reg.pc))
+                self.ql.nprint("[+] PC = 0x%x\n" % (self.ql.reg.arch_pc))
                 self.ql.mem.show_mapinfo()
-                try:
-                    buf = self.ql.mem.read(self.ql.reg.pc, 8)
-                    self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                    self.ql.nprint("\n")
-                    ql_hook_code_disasm(self.ql, self.ql.reg.pc, 64)
-                except:
-                    pass
+                buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
+                self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                self.ql.nprint("\n")
+                self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
             raise
 
         self.registry_manager.save()

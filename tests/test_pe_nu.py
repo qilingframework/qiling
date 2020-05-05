@@ -77,7 +77,7 @@ def test_pe_win_x86_gandcrab():
             for path in ql.os.profile["PATH"]:
                 val = ql.os.profile["PATH"][path].replace(old_name, new_name)
                 ql.os.profile["PATH"][path] = val
-        elif key == "SYSTEM" and subkey == "computer_name":
+        elif key == "SYSTEM" and subkey == "computername":
             length = random.randint(0, 15)
             new_name = ""
             for i in range(length):
@@ -89,11 +89,11 @@ def test_pe_win_x86_gandcrab():
     ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                 output="debug")
     default_user = ql.os.profile["USER"]["username"]
-    default_computer = ql.os.profile["SYSTEM"]["computer_name"]
+    default_computer = ql.os.profile["SYSTEM"]["computername"]
 
     ql.hook_address(stop, 0x40860f, user_data=(default_user, default_computer))
     randomize_config_value(ql, "USER", "username")
-    randomize_config_value(ql, "SYSTEM", "computer_name")
+    randomize_config_value(ql, "SYSTEM", "computername")
     randomize_config_value(ql, "VOLUME", "serial_number")
     ql.run()
     del ql
@@ -154,11 +154,11 @@ def test_pe_win_al_khaser():
     # The hooks are to remove the prints to file. It crashes. will debug why in the future
     def results(ql):
 
-        if ql.register(UC_X86_REG_EBX) == 1:
+        if ql.reg.ebx == 1:
             print("[=] BAD")
         else:
             print("[=] GOOD ")
-        ql.reg.pc = 0x402ee4
+        ql.reg.eip = 0x402ee4
 
     ql.hook_address(results, 0x00402e66)
     # the program alloc 4 bytes and then tries to write 0x2cc bytes.
@@ -223,7 +223,7 @@ def test_pe_win_x86_crackme():
 
     def force_call_dialog_func(ql):
         # get DialogFunc address
-        lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.sp - 0x8, 4))
+        lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.esp - 0x8, 4))
         # setup stack for DialogFunc
         ql.stack_push(0)
         ql.stack_push(1001)
@@ -231,7 +231,7 @@ def test_pe_win_x86_crackme():
         ql.stack_push(0)
         ql.stack_push(0x0401018)
         # force EIP to DialogFunc
-        ql.reg.pc = lpDialogFunc
+        ql.reg.eip = lpDialogFunc
 
     def our_sandbox(path, rootfs):
         ql = Qiling(path, rootfs)

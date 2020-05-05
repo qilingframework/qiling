@@ -2,16 +2,20 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 import cProfile
 import pstats
 import sys
 import inspect
-import os
+import os as pyos
+
 sys.path.append("..")
 from qiling import *
+
 from test_elf import *
 from test_macho import *
 from test_shellcode import *
+
 perf_res_dir = "./perf_results/"
 
 test_mapping = [
@@ -39,7 +43,7 @@ def ql_profile(run_fn, outfile):
     pr.print_stats()
 
 def profile_all_functions():
-    if not os.path.isdir("perf_results"): os.mkdir("perf_results")
+    if not pyos.path.isdir("perf_results"): os.mkdir("perf_results")
     
     populate_tests()
 

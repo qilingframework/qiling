@@ -1,8 +1,14 @@
-import os, logging
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
+import os, logging, configparser
 from .utils import ql_build_module_import_name, ql_get_module_function
 from .utils import ql_is_valid_arch, ql_is_valid_ostype
-from .utils import ql_loadertype_convert_str, ql_ostype_convert_str, ql_arch_convert_str
+from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
 from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
+from .const import D_INFO
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 from .loader.utils import ql_checkostype
 
@@ -55,21 +61,11 @@ class QLCoreUtils(object):
         if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             self.nprint(*args, **kw)
 
-    # ql.register - read and write register 
-    def register(self, register_str= None, value= None):
-        return self.reg.rw(register_str, value)
-
     def context(self, saved_context= None):
         if saved_context == None:
             return self.uc.context_save()
         else:
             self.uc.context_restore(saved_context)
-
-    def set_timeout(self, microseconds):
-        self.timeout = microseconds
-
-    def set_exit(self, until_addr):
-        self.until_addr = until_addr
 
     def add_fs_mapper(self, fm, to):
         self.fs_mapper.append([fm, to])
@@ -92,7 +88,7 @@ class QLCoreUtils(object):
         if not ql_is_valid_arch(self.archtype):
             raise QlErrorArch("[!] Invalid Arch")
         
-        archmanager = ql_arch_convert_str(self.archtype).upper()
+        archmanager = arch_convert_str(self.archtype).upper()
         archmanager = ("QlArch" + archmanager)
 
         module_name = ql_build_module_import_name("arch", None, self.archtype)
@@ -106,15 +102,15 @@ class QLCoreUtils(object):
             raise QlErrorArch("[!] Invalid Arch %s" % self.archtype)
 
         if function_name == None:
-            ostype_str = ql_ostype_convert_str(self.ostype)
+            ostype_str = ostype_convert_str(self.ostype)
             ostype_str = ostype_str.capitalize()
             function_name = "QlOs" + ostype_str
             module_name = ql_build_module_import_name("os", self.ostype)
             return ql_get_module_function(module_name, function_name)(self)
 
         elif function_name == "map_syscall":
-            ostype_str = ql_ostype_convert_str(self.ostype)
-            arch_str = ql_arch_convert_str(self.archtype)
+            ostype_str = ostype_convert_str(self.ostype)
+            arch_str = arch_convert_str(self.archtype)
             arch_str = arch_str + "_syscall"
             module_name = ql_build_module_import_name("os", ostype_str, arch_str)
             return ql_get_module_function(module_name, function_name)
@@ -124,7 +120,7 @@ class QLCoreUtils(object):
             return ql_get_module_function(module_name, function_name)
 
     def loader_setup(self, function_name = None):
-        if self.path:
+        if not self.shellcoder:
             self.archtype, self.ostype, self.archendian = ql_checkostype(self.path)
 
         if not ql_is_valid_ostype(self.ostype):
@@ -134,7 +130,7 @@ class QLCoreUtils(object):
             raise QlErrorArch("[!] Invalid Arch %s" % self.archtype)
 
         if function_name == None:
-            loadertype_str = ql_loadertype_convert_str(self.ostype)
+            loadertype_str = loadertype_convert_str(self.ostype)
             function_name = "QlLoader" + loadertype_str
             module_name = ql_build_module_import_name("loader", loadertype_str.lower())
             return ql_get_module_function(module_name, function_name)(self)
@@ -149,3 +145,18 @@ class QLCoreUtils(object):
         module_name = "qiling." + component_type + "." + function_name
         function_name = "Ql" + function_name.capitalize() + "Manager"
         return ql_get_module_function(module_name, function_name)(self)
+
+    def profile_setup(self):
+        if self.profile:
+            self.dprint(D_INFO, "[+] Customized profile: %s" % self.profile)
+        
+        os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(self.ostype) + ".ql")
+      
+        if self.profile:
+            profiles = [os_profile, self.profile]
+        else:
+            profiles = [os_profile]
+
+        config = configparser.ConfigParser()
+        config.read(profiles)
+        return config

@@ -16,7 +16,7 @@ from qiling.exception import *
 def _GetModuleHandle(ql, address, params):
     lpModuleName = params["lpModuleName"]
     if lpModuleName == 0:
-        ret = ql.loader.PE_IMAGE_BASE
+        ret = ql.loader.pe_image_address
     else:
         lpModuleName = lpModuleName.lower()
         if not is_file_library(lpModuleName):
@@ -89,9 +89,9 @@ def hook_GetModuleFileNameA(ql, address, params):
     lpFilename = params["lpFilename"]
     nSize = params["nSize"]
 
-    # GetModuleHandle can return PE_IMAGE_BASE as handle, and GetModuleFileName will try to retrieve it.
-    # Pretty much 0 and PE_IMAGE_BASE value should do the same operations
-    if hModule == 0 or hModule == ql.loader.PE_IMAGE_BASE:
+    # GetModuleHandle can return pe_image_address as handle, and GetModuleFileName will try to retrieve it.
+    # Pretty much 0 and pe_image_address value should do the same operations
+    if hModule == 0 or hModule == ql.loader.pe_image_address:
         filename = ql.loader.filepath
         filename_len = len(filename)
         if filename_len > nSize - 1:
@@ -121,9 +121,9 @@ def hook_GetModuleFileNameW(ql, address, params):
     hModule = params["hModule"]
     lpFilename = params["lpFilename"]
     nSize = params["nSize"]
-    # GetModuleHandle can return PE_IMAGE_BASE as handle, and GetModuleFileName will try to retrieve it.
-    # Pretty much 0 and PE_IMAGE_BASE value should do the same operations
-    if hModule == 0 or hModule == ql.loader.PE_IMAGE_BASE:
+    # GetModuleHandle can return pe_image_address as handle, and GetModuleFileName will try to retrieve it.
+    # Pretty much 0 and pe_image_address value should do the same operations
+    if hModule == 0 or hModule == ql.loader.pe_image_address:
         filename = ql.loader.filepath.decode('ascii').encode('utf-16le')
         filename_len = len(filename)
         if filename_len > nSize - 1:
@@ -156,12 +156,20 @@ def hook_GetProcAddress(ql, address, params):
     # TODO fix for gandcrab
     if params["lpProcName"] == "RtlComputeCrc32":
         return 0
+
     # Check if dll is loaded
     try:
         dll_name = [key for key, value in ql.loader.dlls.items() if value == params['hModule']][0]
     except IndexError as ie:
         ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
         return 0
+
+    #Handle case where module is self
+    if dll_name == os.path.basename(ql.loader.path):
+        for addr, export in ql.loader.export_symbols.items():
+            if export['name'] == lpProcName:
+                return addr
+    
 
     if lpProcName in ql.loader.import_address_table[dll_name]:
         return ql.loader.import_address_table[dll_name][lpProcName]
@@ -177,6 +185,9 @@ def hook_GetProcAddress(ql, address, params):
 })
 def hook_LoadLibraryA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
+    if lpLibFileName == ql.loader.filepath.decode():
+        #Loading self
+        return ql.loader.pe_image_address
     dll_base = ql.loader.load_dll(lpLibFileName.encode())
     return dll_base
 
@@ -261,3 +272,12 @@ def hook_LoadResource(ql, address, params):
 def hook_LockResource(ql, address, params):
     pointer = params["hResData"]
     return pointer
+
+#BOOL DisableThreadLibraryCalls(
+#  HMODULE hLibModule
+#);
+@winapi(cc=STDCALL, params={
+    "hLibModule": POINTER
+})
+def hook_DisableThreadLibraryCalls(ql, address, params):
+    return 1

@@ -25,7 +25,7 @@ class Qldbg(object):
 
     def initialize(self, ql, exit_point=None, mappings=None):
         self.ql = ql
-        self.current_address = self.entry_point = self.ql.loader.entry_point
+        self.current_address = self.entry_point = self.ql.os.entry_point
         self.exit_point = exit_point
         self.mapping = mappings
         self.ql.hook_code(self.dbg_hook)
@@ -103,7 +103,7 @@ class Qldbg(object):
 
                 for r in self.ql.reg.table:
                     try:
-                        self.entry_context['regs'][r] = self.ql.register(r)
+                        self.entry_context['regs'][r] = self.ql.reg.read(r)
                     except Exception as ex:
                         pass
             start_addr = self.current_address

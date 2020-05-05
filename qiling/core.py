@@ -26,7 +26,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             self,
             filename=None,
             rootfs=None,
-            argv=None,
             env=None,
             shellcoder=None,
             ostype=None,
@@ -45,7 +44,9 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
     ):
         super(Qiling, self).__init__()
 
-        # Define during ql=Qiling()
+        ##################################
+        # Definition during ql=Qiling()  #
+        ##################################
         self.output = output
         self.verbose = verbose
         self.ostype = ostype
@@ -54,32 +55,25 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.shellcoder = shellcoder
         self.filename = filename
         self.rootfs = rootfs
-        self.argv = argv if argv else []
         self.env = env if env else {}
         self.libcache = libcache
         self.log_console = log_console
         self.log_dir = log_dir
-        # generic append function, eg log file        
-        self.append = append
+        self.append = append # generic append function, eg log file
         self.profile = profile
         # OS dependent configuration for stdio
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
 
-        # Define after ql=Qiling(), either defined by Qiling Framework or user defined
-        self.archbit = ''
-        self.path = ''
-        self.entry_point = 0
+        ##################################
+        # Definition after ql=Qiling()   #
+        ##################################
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
-        self.timeout = 0
-        self.until_addr = 0
-        self.byte = 0
         self.log_file_fd = None
         self.fs_mapper = []
-        self.exit_code = 0
         self.debug_stop = False
         self.internal_exception = None
         self.platform = platform.system()
@@ -87,7 +81,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
         self.multithread = False
         # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
-        self.ipv6 = False        
+        self.ipv6 = False
         # Bind to localhost
         self.bindtolocalhost = False
         # by turning this on, you must run your analysis with sudo
@@ -95,36 +89,30 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.log_split = False
         # syscall filter for strace-like functionality
         self.strace_filter = None
-        self.uc = None
         self.remotedebugsession = None
         self.automatize_input = False
-        self.mmap_start = 0
-        self.stack_address = 0
-        self.stack_size = 0
-        self.interp_base = 0
 
         """
         Qiling Framework Core Engine
         """
-        # shellcoder or file settings
+        # shellcoder settings
         if self.shellcoder:
             if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str ):
-                self.ostype = self.ostype.lower()
-                self.ostype = ostype_convert(self.ostype)
-                self.archtype = self.archtype.lower()
-                self.archtype = arch_convert(self.archtype)
-                self.targetname = "qilingshellcode"
-
+                self.ostype = ostype_convert(self.ostype.lower())
+                self.archtype = arch_convert(self.archtype.lower())
+                self.filename = ["qilingshellcode"]
+                if self.rootfs is None:
+                    self.rootfs = "."
+        # file check
         elif self.shellcoder is None:
-            if os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs):
-                self.path = (str(self.filename[0]))
-                self.argv = self.filename
-                self.targetname = ntpath.basename(self.filename[0])
-            else:
-                if not os.path.exists(str(self.filename[0])):
-                    raise QlErrorFileNotFound("[!] Target binary not found")
-                if not os.path.exists(self.rootfs):
-                    raise QlErrorFileNotFound("[!] Target rootfs not found")
+            if not os.path.exists(str(self.filename[0])):
+                raise QlErrorFileNotFound("[!] Target binary not found")
+            if not os.path.exists(self.rootfs):
+                raise QlErrorFileNotFound("[!] Target rootfs not found")
+        
+        self.path = (str(self.filename[0]))
+        self.argv = self.filename
+        self.targetname = ntpath.basename(self.filename[0])
         
         ##########
         # Loader #
@@ -147,14 +135,13 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if type(self.verbose) != int or self.verbose > 99 and (self.verbose > 0 and self.output not in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP)):
             raise QlErrorOutput("[!] verbose required input as int and less than 99")
         
-        ##############################
-        # Define file is 32 or 64bit #
-        # Define pointersize         #
-        ##############################
+        ####################################
+        # Set pointersize (32bit or 64bit) #
+        ####################################
         self.archbit = ql_get_arch_bits(self.archtype)
         self.pointersize = (self.archbit // 8)  
         
-        #Endian for shellcode needs to set manually
+        # Endian for shellcode needs to set manually
         if self.shellcoder and self.bigendian == True and self.archtype in (QL_ENDINABLE):
             self.archendian = QL_ENDIAN.EB
         elif self.shellcoder:
@@ -165,12 +152,14 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         #############
         self.mem = self.component_setup("os", "memory")
         self.reg = self.component_setup("arch", "register")
+        self.profile = self.profile_setup()
 
         #####################################
         # Architecture                      #
         #####################################
         # Load architecture's and os module #
-        # ql.reg.pc, ql.reg.sp and etc      #
+        # ql.reg.arch_pc, ql.reg.arch_sp    #
+        # and other important stuff         #
         #####################################
         self.arch = self.arch_setup()
 
@@ -179,8 +168,16 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         ######
         self.os = self.os_setup()
 
-    def run(self):
-        # load the loader
+    # Emulate the binary from begin until @end, with timeout in @timeout and
+    # number of emulated instructions in @count
+    def run(self, begin=None, end=None, timeout=0, count=0):
+        # replace the original entry point, exit point, timeout and count
+        self.entry_point = begin
+        self.exit_point = end
+        self.timeout = timeout
+        self.count = count
+
+        # Run the loader
         self.loader.run()
         
         # setup strace filter for logger
@@ -195,7 +192,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # patch binary
         self.__enable_bin_patch()
 
-        # run the binary
+        # emulate the binary
         self.os.run()     
 
         # resume with debugger
@@ -231,14 +228,16 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:
-            self.mem.write(self.loader.loadbase + addr, code)
+            self.mem.write(self.loader.load_address + addr, code)
 
     def enable_lib_patch(self):
         for addr, code, filename in self.patch_lib:
             self.mem.write(self.mem.get_lib_base(filename) + addr, code)
 
+    # stop emulation
     def emu_stop(self):
         self.uc.emu_stop()
 
+    # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):
         self.uc.emu_start(begin, end, timeout, count)

@@ -134,6 +134,7 @@ def hook_WriteFile(ql, address, params):
     if hFile == STD_OUTPUT_HANDLE:
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
+        string_appearance(ql, s.decode())
         ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
     else:
         f = ql.os.handle_manager.get(hFile)
@@ -236,7 +237,7 @@ def hook_CreateFileW(ql, address, params):
     "lpBuffer": POINTER
 })
 def hook_GetTempPathW(ql, address, params):
-    temp = (ql.os.profile["PATH"]["temp"] + "\\\x00").encode('utf-16le')
+    temp = (ql.os.windir + "Temp" + "\\\x00").encode('utf-16le')
     dest = params["lpBuffer"]
     temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
     if not os.path.exists(temp_path):
@@ -287,7 +288,7 @@ def hook_GetShortPathNameW(ql, address, params):
 #   DWORD   nFileSystemNameSize
 # );
 @winapi(cc=STDCALL, params={
-    "lpRootPathName": POINTER,
+    "lpRootPathName": WSTRING,
     "lpVolumeNameBuffer": POINTER,
     "nVolumeNameSize": DWORD,
     "lpVolumeSerialNumber": POINTER,
@@ -297,9 +298,8 @@ def hook_GetShortPathNameW(ql, address, params):
     "nFileSystemNameSize": DWORD
 })
 def hook_GetVolumeInformationW(ql, address, params):
-    root_pt = params["lpRootPathName"]
-    if root_pt != 0:
-        root = read_wstring(ql, root_pt)
+    root = params["lpRootPathName"]
+    if root != 0:
         pt_volume_name = params["lpVolumeNameBuffer"]
         if pt_volume_name != 0:
             # TODO implement
@@ -336,10 +336,9 @@ def hook_GetVolumeInformationW(ql, address, params):
     "lpRootPathName": POINTER
 })
 def hook_GetDriveTypeW(ql, address, params):
-    pointer = params["lpRootPathName"]
-    if pointer != 0:
-        path = read_wstring(ql, pointer)
-        if path == ql.os.profile["VOLUME"]["PATH"]:
+    path = params["lpRootPathName"]
+    if path != 0:
+        if path == ql.os.profile["PATH"]["systemdrive"]:
             return DRIVE_FIXED
         # TODO add configuration for drives
     else:
@@ -363,7 +362,7 @@ def hook_GetDriveTypeW(ql, address, params):
 })
 def hook_GetDiskFreeSpaceW(ql, address, params):
     path = params["lpRootPathName"]
-    if path == ql.os.profile["VOLUME"]["PATH"]:
+    if path == ql.os.profile["PATH"]["systemdrive"]:
         pt_sectors = params["lpSectorsPerCluster"]
         pt_bytes = params["lpBytesPerSector"]
         pt_free_clust = params["lpNumberOfFreeClusters"]
@@ -391,8 +390,16 @@ def hook_GetDiskFreeSpaceW(ql, address, params):
 })
 def hook_CreateDirectoryA(ql, address, params):
     try:
-        os.mkdir(os.path.join(ql.rootfs, lpPathName.replace("\\", os.sep)))
-        return 1
+        target_dir = os.path.join(ql.rootfs, lpPathName.replace("\\", os.sep))
+        print('TARGET_DIR = %s' % target_dir)
+        ql.os.transform_to_real_path(lpPathName) 
+        # Verify the directory is in ql.rootfs to ensure no path traversal has taken place
+        if os.path.commonprefix(target_dir, ql.rootfs) != ql.rootfs:
+            ql.dprint(D_INFO, 'CreateDirectoryA attempted to create dir outside of rootfs: "%s". Not creating.' % (target_dir))
+            return 0
+        else:
+            os.mkdir()
+            return 1
     except FileExistsError:
         ql.os.last_error = ERROR_ALREADY_EXISTS
         return 0

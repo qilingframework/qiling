@@ -55,10 +55,10 @@ def ql_elf_check_archtype(path):
             arch = QL_ARCH.X86
         elif e_machine == b"\x08\x00" and endian == 1 and elfbit == 1:
             archendian = QL_ENDIAN.EL
-            arch = QL_ARCH.MIPS32
+            arch = QL_ARCH.MIPS
         elif e_machine == b"\x00\x08" and endian == 2 and elfbit == 1:
             archendian = QL_ENDIAN.EB
-            arch = QL_ARCH.MIPS32
+            arch = QL_ARCH.MIPS
         elif e_machine == b"\x28\x00" and endian == 1 and elfbit == 1:
             archendian = QL_ENDIAN.EL
             arch = QL_ARCH.ARM

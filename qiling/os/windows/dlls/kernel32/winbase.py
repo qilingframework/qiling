@@ -223,14 +223,14 @@ def hook_lstrcpyA(ql, address, params):
 #   LPCSTR lpString2
 # );
 @winapi(cc=STDCALL, params={
-    "lpString1": POINTER,
+    "lpString1": STRING_ADDR,
     "lpString2": STRING,
 })
 def hook_lstrcatA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
-    pointer = params["lpString1"]
-    string_base = read_cstring(ql, pointer)
+    pointer = params["lpString1"][0]
+    string_base = params["lpString1"][1]
     result = string_base + src + "\x00"
     ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
     return pointer
@@ -241,14 +241,14 @@ def hook_lstrcatA(ql, address, params):
 #   LPCWSTR lpString2
 # );
 @winapi(cc=STDCALL, params={
-    "lpString1": POINTER,
+    "lpString1": WSTRING_ADDR,
     "lpString2": WSTRING,
 })
 def hook_lstrcatW(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
-    pointer = params["lpString1"]
-    string_base = read_wstring(ql, pointer)
+    pointer = params["lpString1"][0]
+    string_base = params["lpString1"][1]
     result = string_base + src + "\x00"
     ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
     return pointer
@@ -458,7 +458,7 @@ def hook_GetUserNameW(ql, address, params):
     "nSize": POINTER
 })
 def hook_GetComputerNameW(ql, address, params):
-    computer = (ql.os.profile["SYSTEM"]["computer_name"] + "\x00").encode("utf-16le")
+    computer = (ql.os.profile["SYSTEM"]["computername"] + "\x00").encode("utf-16le")
     dst = params["lpBuffer"]
     max_size = params["nSize"]
     ql.mem.write(max_size, (len(computer)-2).to_bytes(4, byteorder="little"))

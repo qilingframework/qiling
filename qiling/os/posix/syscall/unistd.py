@@ -14,7 +14,7 @@ from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 
 def ql_syscall_exit(ql, exit_code, *args, **kw):
-    ql.exit_code = exit_code
+    ql.os.exit_code = exit_code
 
     ql.nprint("exit(%u) = %u" % (exit_code, exit_code))
 
@@ -25,9 +25,9 @@ def ql_syscall_exit(ql, exit_code, *args, **kw):
 
 
 def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
-    ql.exit_code = exit_code
+    ql.os.exit_code = exit_code
 
-    ql.nprint("exit_group(%u)" % ql.exit_code)
+    ql.nprint("exit_group(%u)" % ql.os.exit_code)
 
     if ql.os.child_processes == True:
         os._exit(0)
@@ -531,8 +531,8 @@ def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
         else:
             ql.os.file_des[idx1] = rd
             ql.os.file_des[idx2] = wd
-            if ql.archtype== QL_ARCH.MIPS32:
-                ql.register(UC_MIPS_REG_V1, idx2)
+            if ql.archtype== QL_ARCH.MIPS:
+                ql.reg.v1 = idx2
                 regreturn = idx1
             else:
                 ql.mem.write(pipe_pipefd, ql.pack32(idx1) + ql.pack32(idx2))

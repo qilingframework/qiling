@@ -12,6 +12,7 @@ from unicorn import *
 from unicorn.x86_const import *
 from .utils import catch_KeyboardInterrupt
 from .const import QL_POSIX, QL_OS
+from .exception import QlErrorCoreHook
 
 class Hook:
     def __init__(self, callback, user_data=None, begin=1, end=0):
@@ -99,14 +100,14 @@ class QLCoreHooks(object):
                         break
         
         if catched == False:
-            raise
+            raise QlErrorCoreHook("_hook_intr_cb : catched == False")
     
     def _hook_insn_cb(self, uc, *args):
         ql, hook_type = args[-1]
 
         if hook_type in self._insn_hook.keys():
             for h in self._insn_hook[hook_type]:
-                if h.bound_check(ql.reg.pc):
+                if h.bound_check(ql.reg.arch_pc):
                     ret = h.call(ql, *args[ : -1])
                     if ret == False:
                         break
@@ -127,7 +128,7 @@ class QLCoreHooks(object):
         ql, hook_type = pack_data
         if hook_type in self._hook.keys():
             for h in self._hook[hook_type]:
-                if h.bound_check(ql.reg.pc):
+                if h.bound_check(ql.reg.arch_pc):
                     ret = h.call(ql, addr, size)
                     if ret == False:
                         break
@@ -143,7 +144,7 @@ class QLCoreHooks(object):
         handled = False
         if hook_type in self._hook.keys():
             for h in self._hook[hook_type]:
-                if h.bound_check(ql.reg.pc):
+                if h.bound_check(ql.reg.arch_pc):
                     handled = True
                     ret = h.call(ql, access, addr, size, value)
                     if ret == False:
@@ -151,7 +152,7 @@ class QLCoreHooks(object):
         
         if hook_type in (UC_HOOK_MEM_READ_UNMAPPED, UC_HOOK_MEM_WRITE_UNMAPPED, UC_HOOK_MEM_FETCH_UNMAPPED, UC_HOOK_MEM_READ_PROT, UC_HOOK_MEM_WRITE_PROT, UC_HOOK_MEM_FETCH_PROT):
             if handled == False:
-                raise
+                raise QlErrorCoreHook("_hook_mem_cb : handled == False")
 
     def _callback_x86_syscall(self, uc, pack_data):
         ql, user_data, callback = pack_data
@@ -170,7 +171,7 @@ class QLCoreHooks(object):
                     break
         
         if catched == False:
-            raise
+            raise QlErrorCoreHook("_hook_intr_invalid_cb : catched == False")
 
     ###############
     # Class Hooks #
@@ -304,18 +305,24 @@ class QLCoreHooks(object):
         elif self.ostype == QL_OS.WINDOWS:
             self.set_api(syscall_cur, syscall_new)
 
-    # replace Windows API with custom syscall
+    # replace Windows API with custom syscall or posix based api (eg, libc)
     def set_api(self, syscall_cur, syscall_new):
         if self.ostype == QL_OS.WINDOWS:
             self.os.user_defined_api[syscall_cur] = syscall_new
-        elif self.ostype in (QL_POSIX):
-            self.set_syscall(syscall_cur, syscall_new)
-    
+        else:
+            self.os.add_function_hook(syscall_cur, syscall_new)
+
+    # ql.func_arg - get syscall for all posix series
+    @property
+    def func_arg(self):
+        if self.ostype in (QL_POSIX):
+            return self.os.get_func_arg()    
+
+
     def clear_hooks(self):
         for i in self._hook_fuc.keys():
             self.uc.hook_del(self._hook_fuc[i])
         
-
         for i in self._insn_hook_fuc.keys():
             self.uc.hook_del(self._insn_hook_fuc[i])
 

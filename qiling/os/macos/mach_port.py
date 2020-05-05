@@ -107,8 +107,6 @@ class MachPortManager():
         self.semaphore_port = MachPort(0x903)
         self.special_port = MachPort(0x707)
         self.my_port = my_port
-        self.count = 0
-        pass
 
     def deal_with_msg(self, msg, addr):
 

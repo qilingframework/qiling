@@ -50,16 +50,16 @@ def ql_x86_syscall_set_thread_area(ql, u_info_addr, *args, **kw):
     ql.os.definesyscall_return(regreturn)
 
 
-def ql_syscall_mips32_set_thread_area(ql, sta_area, *args, **kw):
+def ql_syscall_mips_set_thread_area(ql, sta_area, *args, **kw):
     CONFIG3_ULR = (1 << 13)
-    ql.register(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
-    ql.register(UC_MIPS_REG_CP0_USERLOCAL, sta_area)
-    ql.register(UC_MIPS_REG_V0, 0)
-    ql.register(UC_MIPS_REG_A3, 0)
+    ql.reg.cp0_config3 = CONFIG3_ULR
+    ql.reg.cp0_userlocal = sta_area
+    ql.reg.v0 = 0
+    ql.reg.a3 = 0
     ql.nprint ("set_thread_area(0x%x)" % sta_area)
 
 def ql_syscall_arm_settls(ql, address, *args, **kw):
-    ql.register(UC_ARM_REG_C13_C0_3, address)
+    ql.reg.c13_c0_3 = address
     ql.mem.write(ql.os.QL_ARM_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
-    ql.register(UC_ARM_REG_R0, address)
+    ql.reg.r0 = address
     ql.nprint("settls(0x%x)" % address)

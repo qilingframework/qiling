@@ -10,6 +10,7 @@ thoughout the qiling framework
 import importlib, logging, os
 from .exception import *
 from .const import QL_ARCH, QL_ARCH_ALL, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER
+from .const import debugger_map, arch_map, os_map
 
 def catch_KeyboardInterrupt(ql):
     def decorator(func):
@@ -24,7 +25,7 @@ def catch_KeyboardInterrupt(ql):
     return decorator
 
 def ql_get_arch_bits(arch):
-    arch_32b = [QL_ARCH.ARM, QL_ARCH.MIPS32, QL_ARCH.X86]
+    arch_32b = [QL_ARCH.ARM, QL_ARCH.MIPS, QL_ARCH.X86]
     arch_64b = [QL_ARCH.ARM64, QL_ARCH.X8664]
 
     if arch in arch_32b:
@@ -43,16 +44,7 @@ def ql_is_valid_arch(arch):
         return False
     return True
 
-def ql_ostype_convert_str(ostype):
-    adapter = {
-        QL_OS.LINUX: "linux",
-        QL_OS.MACOS: "macos",
-        QL_OS.FREEBSD: "freebsd",
-        QL_OS.WINDOWS: "windows",
-    }
-    return adapter.get(ostype)
-
-def ql_loadertype_convert_str(ostype):
+def loadertype_convert_str(ostype):
     adapter = {
         QL_OS.LINUX: "ELF",
         QL_OS.MACOS: "MACHO",
@@ -61,37 +53,32 @@ def ql_loadertype_convert_str(ostype):
     }
     return adapter.get(ostype)
 
+def ostype_convert_str(ostype):
+    adapter = {}
+    adapter.update(os_map)
+    adapter = {v: k for k, v in adapter.items()}
+    return adapter.get(ostype)
+
 def ostype_convert(ostype):
-    adapter = {
-        "linux": QL_OS.LINUX,
-        "macos": QL_OS.MACOS,
-        "darwin": QL_OS.MACOS,
-        "freebsd": QL_OS.FREEBSD,
-        "windows": QL_OS.WINDOWS,
-    }
+    # this is for ql.platform
+    if ostype == "darwin":
+        ostype = "macos"
+    adapter = {}
+    adapter.update(os_map)
     if ostype in adapter:
         return adapter[ostype]
     # invalid
     return None, None
 
-def ql_arch_convert_str(arch):
-    adapter = {
-        QL_ARCH.X86: "x86",
-        QL_ARCH.X8664: "x8664",
-        QL_ARCH.MIPS32: "mips32",
-        QL_ARCH.ARM: "arm",
-        QL_ARCH.ARM64: "arm64",
-    }
+def arch_convert_str(arch):
+    adapter = {}
+    adapter.update(arch_map)
+    adapter = {v: k for k, v in adapter.items()}
     return adapter.get(arch)
 
 def arch_convert(arch):
-    adapter = {
-        "x86": QL_ARCH.X86,
-        "x8664": QL_ARCH.X8664,
-        "mips32": QL_ARCH.MIPS32,
-        "arm": QL_ARCH.ARM,
-        "arm64": QL_ARCH.ARM64,
-    }
+    adapter = {}
+    adapter.update(arch_map)
     if arch in adapter:
         return adapter[arch]
     # invalid
@@ -111,21 +98,17 @@ def output_convert(output):
     return None, None
 
 def debugger_convert(debugger):
-    adapter = {
-        "gdb": QL_DEBUGGER.GDB,
-        "ida": QL_DEBUGGER.IDAPRO,
-    }
+    adapter = {}
+    adapter.update(debugger_map)
     if debugger in adapter:
         return adapter[debugger]
     # invalid
     return None, None
 
 def debugger_convert_str(debugger_id):
-    adapter = {
-        None : "gdb",
-        QL_DEBUGGER.GDB : "gdb",
-        QL_DEBUGGER.IDAPRO: "ida",
-    }
+    adapter = {}
+    adapter.update(debugger_map)
+    adapter = {v: k for k, v in adapter.items()}
     if debugger_id in adapter:
         return adapter[debugger_id]
     # invalid
@@ -145,7 +128,7 @@ def ql_build_module_import_name(module, ostype, arch = None):
     arch_str = arch
 
     if type(ostype) is QL_OS:
-        ostype_str = ql_ostype_convert_str(ostype)
+        ostype_str = ostype_convert_str(ostype)
     
     if ostype_str and "loader" not in ret_str:
         ret_str += "." + ostype_str
@@ -155,7 +138,7 @@ def ql_build_module_import_name(module, ostype, arch = None):
         if module == "arch" and arch == QL_ARCH.X8664:  
             arch_str = "x86"
         elif type(arch) is QL_ARCH:
-            arch_str = ql_arch_convert_str(arch)
+            arch_str = arch_convert_str(arch)
     else:
         arch_str = ostype_str
         
