@@ -290,13 +290,12 @@ class QLOsUtils:
         insn = md.disasm(tmp, address)
         opsize = int(size)
 
-        self.ql.nprint("[+] 0x%x\t" % (address), end="")
+        self.ql.nprint( ("[+] 0x%x" % (address)).ljust( (self.ql.archbit // 8) + 15), end="")
 
+        temp_str = ""
         for i in tmp:
-            self.ql.nprint(" %02x " % i, end="")
-
-        if opsize <= 6:
-            self.ql.nprint("\t", end="")
+            temp_str += ("%02x " % i)
+        self.ql.nprint(temp_str.ljust(30), end="")
 
         for i in insn:
             self.ql.nprint("%s %s" % (i.mnemonic, i.op_str))
