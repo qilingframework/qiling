@@ -91,7 +91,7 @@ def test_pe_win_x86_gandcrab():
     default_user = ql.os.profile["USER"]["username"]
     default_computer = ql.os.profile["SYSTEM"]["computername"]
 
-    ql.hook_address(stop, 0x050453a2, user_data=(default_user, default_computer))
+    ql.hook_address(stop, 0x40860f, user_data=(default_user, default_computer))
     randomize_config_value(ql, "USER", "username")
     randomize_config_value(ql, "SYSTEM", "computername")
     randomize_config_value(ql, "VOLUME", "serial_number")
