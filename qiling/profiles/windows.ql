@@ -1,4 +1,4 @@
-[X8664]
+[OS64]
 heap_address = 0x500000000
 heap_size = 0x5000000
 stack_address = 0x7ffffffde000
@@ -8,7 +8,7 @@ dll_address = 0x7ffff0000000
 entry_point = 0x140000000
 
 
-[X86]
+[OS32]
 heap_address = 0x5000000
 heap_size = 0x5000000
 stack_address = 0xfffdd000
