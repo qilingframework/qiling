@@ -420,7 +420,7 @@ class FunctionHook:
             self.rel_list += self.plt_rel
             self.show_relocation(self.plt_rel)
         
-        if self.ql.archtype == QL_ARCH.MIPS32 and self.plt_got != None and self.mips_gotsym != None and self.mips_local_gotno != None and self.mips_symtabno:
+        if self.ql.archtype == QL_ARCH.MIPS and self.plt_got != None and self.mips_gotsym != None and self.mips_local_gotno != None and self.mips_symtabno != None:
             self.show_dynsym_name(self.mips_gotsym, self.mips_symtabno)
 
         self.ql.mem.map(hook_mem, 0x2000, perms=7, info="hook mem")
