@@ -56,8 +56,7 @@ class Process(QlLoader):
             pass
 
         if self.ql.libcache and os.path.exists(fcache) and \
-            # pickle file cannot be outdated
-            os.stat(fcache).st_mtime > os.stat(path).st_mtime:
+            os.stat(fcache).st_mtime > os.stat(path).st_mtime: # pickle file cannot be outdated
             (data, cmdlines, self.import_symbols, self.import_address_table) = \
                 pickle.load(open(fcache, "rb"))
             for entry in cmdlines:
