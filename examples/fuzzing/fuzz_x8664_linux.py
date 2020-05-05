@@ -63,9 +63,9 @@ class MyPipe():
         return stdin_fstat
 
 
-X64BASE = 0x555555554000
+X64BASE = 0x7ffbf0100000
 
-# 64 bit loader addrs are placed at 0x555555554000
+# 64 bit loader addrs are placed at 0x7ffbf0100000
 # see loader/elf.py:load_with_ld(..)
 
 
