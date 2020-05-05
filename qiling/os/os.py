@@ -20,6 +20,7 @@ class QlOs(QLOsUtils):
         self.thread_management = None
         self.current_path = '/'
         self.profile = self.ql.profile
+        self.exit_code = 0
 
         if self.ql.stdin != 0:
             self.stdin = self.ql.stdin
@@ -47,3 +48,4 @@ class QlOs(QLOsUtils):
         # We can save every syscall called
         self.syscalls = {}
         self.syscalls_counter = 0
+        self.appeared_strings = {}

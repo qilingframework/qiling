@@ -14,10 +14,10 @@ setup(
     name='qiling',
     version=VERSION,
 
-    description='Qiling is an advanced binary emulation framework that cross-platform-architecture.',
+    description='Qiling is an advanced binary emulation framework that cross-platform-architecture',
     url='http://qiling.io',
 
-    maintainer='KaiJern Lau',
+    maintainer='KaiJern Lau (xwings)',
     maintainer_email='info@qiling.io',
 
     license='GPLv2',
@@ -42,7 +42,7 @@ setup(
         'Programming Language :: Python :: 3',
     ],
 
-    keywords='qiling binary emulator framework malware analysis uefi',
+    keywords='qiling binary emulator framework malware analysis uefi IoT',
 
     packages=find_packages(),
     include_package_data=True,

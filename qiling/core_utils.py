@@ -120,7 +120,7 @@ class QLCoreUtils(object):
             return ql_get_module_function(module_name, function_name)
 
     def loader_setup(self, function_name = None):
-        if self.path:
+        if not self.shellcoder:
             self.archtype, self.ostype, self.archendian = ql_checkostype(self.path)
 
         if not ql_is_valid_ostype(self.ostype):

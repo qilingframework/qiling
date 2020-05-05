@@ -12,6 +12,7 @@ from unicorn import *
 from unicorn.x86_const import *
 from .utils import catch_KeyboardInterrupt
 from .const import QL_POSIX, QL_OS
+from .exception import QlErrorCoreHook
 
 class Hook:
     def __init__(self, callback, user_data=None, begin=1, end=0):
@@ -99,7 +100,7 @@ class QLCoreHooks(object):
                         break
         
         if catched == False:
-            raise
+            raise QlErrorCoreHook("_hook_intr_cb : catched == False")
     
     def _hook_insn_cb(self, uc, *args):
         ql, hook_type = args[-1]
@@ -151,7 +152,7 @@ class QLCoreHooks(object):
         
         if hook_type in (UC_HOOK_MEM_READ_UNMAPPED, UC_HOOK_MEM_WRITE_UNMAPPED, UC_HOOK_MEM_FETCH_UNMAPPED, UC_HOOK_MEM_READ_PROT, UC_HOOK_MEM_WRITE_PROT, UC_HOOK_MEM_FETCH_PROT):
             if handled == False:
-                raise
+                raise QlErrorCoreHook("_hook_mem_cb : handled == False")
 
     def _callback_x86_syscall(self, uc, pack_data):
         ql, user_data, callback = pack_data
@@ -170,7 +171,7 @@ class QLCoreHooks(object):
                     break
         
         if catched == False:
-            raise
+            raise QlErrorCoreHook("_hook_intr_invalid_cb : catched == False")
 
     ###############
     # Class Hooks #

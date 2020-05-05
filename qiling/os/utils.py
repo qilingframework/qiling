@@ -212,16 +212,21 @@ class QLOsUtils:
         return relative_path
 
     def post_report(self):
-        self.ql.dprint(D_INFO, "[+] Syscalls called")
+        self.ql.dprint(D_RPRT, "[+] Syscalls called")
         for key, values in self.ql.os.syscalls.items():
-            self.ql.dprint(D_INFO, "[-] %s:" % key)
+            self.ql.dprint(D_RPRT, "[-] %s:" % key)
             for value in values:
-                self.ql.dprint(D_INFO, "[-] %s " % str(dumps(value)))
-        self.ql.dprint(D_INFO, "[+] Registries accessed")
+                self.ql.dprint(D_RPRT, "[-] %s " % str(dumps(value)))
+        self.ql.dprint(D_RPRT, "[+] Registries accessed")
         for key, values in self.ql.os.registry_manager.accessed.items():
-            self.ql.dprint(D_INFO, "[-] %s:" % key)
+            self.ql.dprint(D_RPRT, "[-] %s:" % key)
             for value in values:
-                self.ql.dprint(D_INFO, "[-] %s " % str(dumps(value)))
+                self.ql.dprint(D_RPRT, "[-] %s " % str(dumps(value)))
+        self.ql.dprint(D_RPRT, "[+] Strings")
+        for key, values in self.ql.os.appeared_strings.items():
+            val = " ".join([str(word) for word in values])
+            self.ql.dprint(D_RPRT, "[-] %s: %s" % (key, val))
+
 
     def exec_arbitrary(self, start, end):
         old_sp = self.ql.reg.arch_sp
@@ -285,13 +290,12 @@ class QLOsUtils:
         insn = md.disasm(tmp, address)
         opsize = int(size)
 
-        self.ql.nprint("[+] 0x%x\t" % (address), end="")
+        self.ql.nprint( ("[+] 0x%x" % (address)).ljust( (self.ql.archbit // 8) + 15), end="")
 
+        temp_str = ""
         for i in tmp:
-            self.ql.nprint(" %02x " % i, end="")
-
-        if opsize <= 6:
-            self.ql.nprint("\t", end="")
+            temp_str += ("%02x " % i)
+        self.ql.nprint(temp_str.ljust(30), end="")
 
         for i in insn:
             self.ql.nprint("%s %s" % (i.mnemonic, i.op_str))
