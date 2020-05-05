@@ -26,7 +26,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             self,
             filename=None,
             rootfs=None,
-            argv=None,
             env=None,
             shellcoder=None,
             ostype=None,
@@ -56,7 +55,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.shellcoder = shellcoder
         self.filename = filename
         self.rootfs = rootfs
-        self.argv = argv if argv else []
         self.env = env if env else {}
         self.libcache = libcache
         self.log_console = log_console
@@ -71,14 +69,11 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         ##################################
         # Definition after ql=Qiling()   #
         ##################################
-        self.archbit = ''
-        self.path = ''
         self.patch_bin = []
         self.patch_lib = []
         self.patched_lib = []
         self.log_file_fd = None
         self.fs_mapper = []
-        self.exit_code = 0
         self.debug_stop = False
         self.internal_exception = None
         self.platform = platform.system()
@@ -103,25 +98,21 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # shellcoder settings
         if self.shellcoder:
             if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str ):
-                self.ostype = self.ostype.lower()
-                self.ostype = ostype_convert(self.ostype)
-                self.archtype = self.archtype.lower()
-                self.archtype = arch_convert(self.archtype)
+                self.ostype = ostype_convert(self.ostype.lower())
+                self.archtype = arch_convert(self.archtype.lower())
                 self.filename = ["qilingshellcode"]
-                self.targetname = "qilingshellcode"
                 if self.rootfs is None:
                     self.rootfs = "."
-        # file settings
+        # file check
         elif self.shellcoder is None:
-            if os.path.exists(str(self.filename[0])) and os.path.exists(self.rootfs):
-                self.path = (str(self.filename[0]))
-                self.argv = self.filename
-                self.targetname = ntpath.basename(self.filename[0])
-            else:
-                if not os.path.exists(str(self.filename[0])):
-                    raise QlErrorFileNotFound("[!] Target binary not found")
-                if not os.path.exists(self.rootfs):
-                    raise QlErrorFileNotFound("[!] Target rootfs not found")
+            if not os.path.exists(str(self.filename[0])):
+                raise QlErrorFileNotFound("[!] Target binary not found")
+            if not os.path.exists(self.rootfs):
+                raise QlErrorFileNotFound("[!] Target rootfs not found")
+        
+        self.path = (str(self.filename[0]))
+        self.argv = self.filename
+        self.targetname = ntpath.basename(self.filename[0])
         
         ##########
         # Loader #
