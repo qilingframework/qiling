@@ -140,23 +140,23 @@ class RegistryManager:
                 if value.name() == subkey and (reg_type == Registry.RegNone or
                                                value.value_type() == reg_type):
 
-                    self.access(key, subkey=subkey, value=value.value(), type=value.value_type())
+                    self.access(key, value_name=subkey, value=value.value(), type=value.value_type())
                     return value.value_type(), value.value()
 
         except Registry.RegistryKeyNotFoundException:
             pass
 
-        self.access(key, subkey=subkey, value=None, type=None)
+        self.access(key, value_name=subkey, value=None, type=None)
 
         return None, None
 
-    def access(self, key, subkey=None, value=None, type=None):
-        if subkey is None:
+    def access(self, key, value_name=None, value=None, type=None):
+        if value_name is None:
             if key not in self.accessed:
                 self.accessed[key] = []
         else:
             self.accessed[key].append({
-                "subkey": subkey,
+                "value_name": value_name,
                 "value": value,
                 "type": type,
                 "position": self.ql.os.syscalls_counter
