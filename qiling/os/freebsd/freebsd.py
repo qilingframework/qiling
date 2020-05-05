@@ -23,8 +23,8 @@ class QlOsFreebsd(QlOsPosix):
             self.ql.mem.write(self.entry_point, self.ql.shellcoder)
             self.ql.reg.arch_sp = self.entry_point
         else:
-            stack_address = int(self.profile.get("OS", "stack_address"),16)
-            stack_size = int(self.profile.get("OS", "stack_size"),16)
+            stack_address = int(self.profile.get("OS64", "stack_address"),16)
+            stack_size = int(self.profile.get("OS64", "stack_size"),16)
             self.ql.mem.map(stack_address, stack_size, info="[stack]")                    
             self.ql.reg.arch_sp = stack_address
             init_rbp = stack_address + 0x40

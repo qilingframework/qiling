@@ -401,8 +401,6 @@ class QlLoaderELF(ELFParse, QlLoader):
         if load_address <= 0:
             if self.ql.archbit == 64:
                 load_address = int(self.profile.get("OS64", "load_address"),16)
-            elif self.ql.archtype== QL_ARCH.MIPS:
-                load_address = int(self.profile.get("MIPS", "load_address"),16)
             else:
                 load_address = int(self.profile.get("OS32", "load_address"),16)
 
@@ -471,11 +469,8 @@ class QlLoaderELF(ELFParse, QlLoader):
 
             if self.ql.archbit == 64:
                 self.interp_address = int(self.profile.get("OS64", "interp_address"),16)
-            elif self.ql.archbit == 32 and self.ql.archtype!= QL_ARCH.MIPS:
+            elif self.ql.archbit == 32:
                 self.interp_address = int(self.profile.get("OS32", "interp_address"),16)
-            elif self.ql.archtype== QL_ARCH.MIPS:
-                self.interp_address = int(self.profile.get("MIPS", "interp_address"),16)
-
 
             self.ql.dprint(D_INFO, "[+] interp_address is : 0x%x" % (self.interp_address))
             self.ql.mem.map(self.interp_address, int(interp_mem_size), info=os.path.abspath(interp_path))
@@ -488,8 +483,6 @@ class QlLoaderELF(ELFParse, QlLoader):
         # Set MMAP addr
         if self.ql.archbit == 64:
             self.mmap_address = int(self.profile.get("OS64", "mmap_address"),16)
-        elif self.ql.archtype== QL_ARCH.MIPS:
-            self.mmap_address = int(self.profile.get("MIPS", "mmap_address"),16)
         else:
             self.mmap_address = int(self.profile.get("OS32", "mmap_address"),16)
 

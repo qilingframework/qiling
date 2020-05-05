@@ -1,6 +1,6 @@
 
 [X8664]
-heap_addr = 0x500000000
+heap_address = 0x500000000
 heap_size = 0x5000000
 stack_address = 0x7ffffffde000
 stack_size = 0x40000
@@ -10,7 +10,7 @@ entry_point = 0x140000000
 
 
 [X86]
-heap_addr = 0x5000000
+heap_address = 0x5000000
 heap_size = 0x5000000
 stack_address = 0xfffdd000
 stack_size = 0x21000
