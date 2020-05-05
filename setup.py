@@ -28,7 +28,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 4 - Production/Stable',
+        'Development Status :: 5 - Production/Stable',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
@@ -42,7 +42,7 @@ setup(
         'Programming Language :: Python :: 3',
     ],
 
-    keywords='qiling binary emulator framework',
+    keywords='qiling binary emulator framework malware analysis uefi',
 
     packages=find_packages(),
     include_package_data=True,
