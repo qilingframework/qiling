@@ -4,7 +4,6 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import struct
-from unicorn.x86_const import *
 from functools import wraps
 
 from qiling.os.const import *
@@ -23,7 +22,8 @@ HANDLE = 3
 POINTER = 3
 STRING = 4
 WSTRING = 5
-
+STRING_ADDR = 6
+WSTRING_ADDR = 7
 
 def _x86_get_params_by_index(ql, index):
     # index starts from 0
@@ -32,8 +32,7 @@ def _x86_get_params_by_index(ql, index):
 
 
 def _x8664_get_params_by_index(ql, index):
-    #self.ql = ql
-    reg_list = [UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9]
+    reg_list = ["rcx", "rdx", "r8", "r9"]
     if index < 4:
         return ql.reg.read(reg_list[index])
 
@@ -43,9 +42,9 @@ def _x8664_get_params_by_index(ql, index):
 
 
 def _get_param_by_index(ql, index):
-    if ql.archtype== QL_ARCH.X86:
+    if ql.archtype == QL_ARCH.X86:
         return _x86_get_params_by_index(ql, index)
-    elif ql.archtype== QL_ARCH.X8664:
+    elif ql.archtype == QL_ARCH.X8664:
         return _x8664_get_params_by_index(ql, index)
 
 
@@ -61,7 +60,7 @@ def _x86_get_args(ql, number):
 
 
 def _x8664_get_args(ql, number):
-    reg_list = [UC_X86_REG_RCX, UC_X86_REG_RDX, UC_X86_REG_R8, UC_X86_REG_R9]
+    reg_list = ["rcx", "rdx", "r8", "r9"]
     arg_list = []
     reg_num = number
     if reg_num > 4:
@@ -84,48 +83,57 @@ def set_function_params(ql, in_params, out_params):
         if in_params[each] == DWORD or in_params[each] == POINTER:
             out_params[each] = _get_param_by_index(ql, index)
         elif in_params[each] == ULONGLONG:
-            if ql.archtype== QL_ARCH.X86:
+            if ql.archtype == QL_ARCH.X86:
                 low = _get_param_by_index(ql, index)
                 index += 1
                 high = _get_param_by_index(ql, index)
                 out_params[each] = high << 32 + low
             else:
                 out_params[each] = _get_param_by_index(ql, index)
-        elif in_params[each] == STRING:
+        elif in_params[each] == STRING or in_params[each] == STRING_ADDR:
             ptr = _get_param_by_index(ql, index)
             if ptr == 0:
                 out_params[each] = 0
             else:
-                out_params[each] = read_cstring(ql, ptr)
-        elif in_params[each] == WSTRING:
+                content = read_cstring(ql, ptr)
+                if in_params[each] == STRING_ADDR:
+                    out_params[each] = (ptr, content)
+                else:
+                    out_params[each] = content
+        elif in_params[each] == WSTRING or in_params[each] == WSTRING_ADDR:
             ptr = _get_param_by_index(ql, index)
             if ptr == 0:
                 out_params[each] = 0
             else:
-                out_params[each] = read_wstring(ql, ptr)
+                content = read_wstring(ql, ptr)
+                if in_params[each] == WSTRING_ADDR:
+                    out_params[each] = (ptr, content)
+                else:
+                    out_params[each] = content
         index += 1
     return index
 
 
 def get_function_param(ql, number):
-    if ql.archtype== QL_ARCH.X86:
+    if ql.archtype == QL_ARCH.X86:
         return _x86_get_args(ql, number)
-    elif ql.archtype== QL_ARCH.X8664:
+    elif ql.archtype == QL_ARCH.X8664:
         return _x8664_get_args(ql, number)
 
 
 def set_return_value(ql, ret):
-    if ql.archtype== QL_ARCH.X86:
+    if ql.archtype == QL_ARCH.X86:
         ql.reg.eax = ret
-    elif ql.archtype== QL_ARCH.X8664:
+    elif ql.archtype == QL_ARCH.X8664:
         ql.reg.rax = ret
 
 
 def get_return_value(ql):
-    if ql.archtype== QL_ARCH.X86:
+    if ql.archtype == QL_ARCH.X86:
         return ql.reg.eax
-    elif ql.archtype== QL_ARCH.X8664:
+    elif ql.archtype == QL_ARCH.X8664:
         return ql.reg.rax
+
 
 #
 # stdcall cdecl fastcall cc
@@ -137,7 +145,6 @@ def __x86_cc(ql, param_num, params, func, args, kwargs):
         param_num = set_function_params(ql, params, args[2])
     # call function
     result = func(*args, **kwargs)
-
 
     # set return value
     if result is not None:
@@ -156,14 +163,15 @@ def _call_api(ql, name, params, result, address, return_address):
         if params is not None:
             set_function_params(ql, params, params_with_values)
     ql.os.syscalls.setdefault(name, []).append({
-            "params": params_with_values,
-            "result": result,
-            "address": address,
-            "return_address": return_address,
-            "position": ql.os.syscalls_counter
-        })
+        "params": params_with_values,
+        "result": result,
+        "address": address,
+        "return_address": return_address,
+        "position": ql.os.syscalls_counter
+    })
 
     ql.os.syscalls_counter += 1
+
 
 def x86_stdcall(ql, param_num, params, func, args, kwargs):
     # if we check ret_addr before the call, we can't modify the ret_addr from inside the hook
@@ -193,11 +201,10 @@ def x86_cdecl(ql, param_num, params, func, args, kwargs):
     if ql.os.PE_RUN:
         ql.reg.arch_pc = ql.stack_pop()
 
-
     return result
 
 
-def x8664_fastcall(ql,  param_num, params, func, args, kwargs):
+def x8664_fastcall(ql, param_num, params, func, args, kwargs):
     result, param_num = __x86_cc(ql, param_num, params, func, args, kwargs)
     old_pc = ql.reg.arch_pc
     # append syscall to list
@@ -205,8 +212,6 @@ def x8664_fastcall(ql,  param_num, params, func, args, kwargs):
 
     if ql.os.PE_RUN:
         ql.reg.arch_pc = ql.stack_pop()
-
-
 
     return result
 
@@ -223,12 +228,12 @@ def winapi(cc, param_num=None, params=None):
         @wraps(func)
         def wrapper(*args, **kwargs):
             ql = args[0]
-            if ql.archtype== QL_ARCH.X86:
+            if ql.archtype == QL_ARCH.X86:
                 if cc == STDCALL:
                     return x86_stdcall(ql, param_num, params, func, args, kwargs)
                 elif cc == CDECL:
                     return x86_cdecl(ql, param_num, params, func, args, kwargs)
-            elif ql.archtype== QL_ARCH.X8664:
+            elif ql.archtype == QL_ARCH.X8664:
                 return x8664_fastcall(ql, param_num, params, func, args, kwargs)
             else:
                 raise QlErrorArch("[!] Unknown self.ql.arch")
