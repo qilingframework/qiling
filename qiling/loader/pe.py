@@ -55,7 +55,9 @@ class Process(QlLoader):
         except KeyError as ke:
             pass
 
-        if self.ql.libcache and os.path.exists(fcache):
+        if self.ql.libcache and os.path.exists(fcache) and \
+            # pickle file cannot be outdated
+            os.stat(fcache).st_mtime > os.stat(path).st_mtime:
             (data, cmdlines, self.import_symbols, self.import_address_table) = \
                 pickle.load(open(fcache, "rb"))
             for entry in cmdlines:
