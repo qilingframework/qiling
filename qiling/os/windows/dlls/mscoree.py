@@ -5,7 +5,7 @@
 import struct
 import base64
 from qiling.os.windows.fncc import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
@@ -18,8 +18,8 @@ from qiling.os.windows.const import *
     "exitCode": DWORD
 })
 def hook_CorExitProcess(ql, address, params):
-    ql.uc.emu_stop()
-    ql.RUN = False
+    ql.emu_stop()
+    ql.os.PE_RUN = False
 
 
 # __int32 STDMETHODCALLTYPE _CorExeMain ();

@@ -8,9 +8,9 @@ from qiling import *
 
 def stopatkillerswtich(ql):
     print("killerswtch found")
-    ql.uc.emu_stop()
+    ql.emu_stop()
 
 if __name__ == "__main__":
-    ql = Qiling(["rootfs/x86_windows/bin/wannacry.bin"], "rootfs/x86_windows", output = "debug")
+    ql = Qiling(["rootfs/x86_windows/bin/wannacry.bin"], "rootfs/x86_windows", output="debug")
     ql.hook_address(stopatkillerswtich, 0x40819a)
     ql.run()

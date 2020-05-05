@@ -40,6 +40,11 @@ arm64_hello: hello.c
 arm64_hello_static: hello.c
 	aarch64-linux-gnu-gcc -Wall -O2 -s -static $< -o $@
 
+# not included in default targets because requires the Android NDK to be installed.
+# add <NDK>/toolchains/llvm/prebuilt/linux-x86_64/bin/ to your path
+arm64_android_hello: hello.c
+	aarch64-linux-android29-clang -Wall -O2 -s $< -o $@
+
 arm64_posix_syscall: posix_syscall.c
 	aarch64-linux-gnu-gcc -Wall -O2 -s $< -o $@
 

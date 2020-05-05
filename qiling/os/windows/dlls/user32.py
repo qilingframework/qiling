@@ -5,10 +5,10 @@
 
 import struct
 from qiling.os.windows.fncc import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.const import *
-
+from qiling.const import *
 
 # INT_PTR DialogBoxParamA(
 #   HINSTANCE hInstance,
@@ -48,10 +48,10 @@ def hook_GetDlgItemTextA(ql, address, params):
     lpString = params["lpString"]
     cchMax = params["cchMax"]
 
-    ql.stdout.write(b"Input DlgItemText :\n")
-    string = ql.stdin.readline().strip()[:cchMax]
+    ql.os.stdout.write(b"Input DlgItemText :\n")
+    string = ql.os.stdin.readline().strip()[:cchMax]
     ret = len(string)
-    ql.uc.mem_write(lpString, string)
+    ql.mem.write(lpString, string)
 
     return ret
 
@@ -100,13 +100,13 @@ def hook_GetDesktopWindow(ql, address, params):
     "hWndNewOwner": HANDLE
 })
 def hook_OpenClipboard(ql, address, params):
-    return ql.clipboard.open(params['hWndNewOwner'])
+    return ql.os.clipboard.open(params['hWndNewOwner'])
 
 
 # BOOL CloseClipboard();
 @winapi(cc=STDCALL, params={})
 def hook_CloseClipboard(ql, address, params):
-    return ql.clipboard.close()
+    return ql.os.clipboard.close()
 
 
 # HANDLE SetClipboardData(
@@ -120,9 +120,9 @@ def hook_CloseClipboard(ql, address, params):
 def hook_SetClipboardData(ql, address, params):
     try:
         data = bytes(params['hMem'], 'ascii', 'ignore')
-    except UnicodeEncodeError:
+    except (UnicodeEncodeError, TypeError):
         data = b""
-    return ql.clipboard.set_data(params['uFormat'], data)
+    return ql.os.clipboard.set_data(params['uFormat'], data)
 
 
 # HANDLE GetClipboardData(
@@ -132,13 +132,13 @@ def hook_SetClipboardData(ql, address, params):
     "uFormat": UINT
 })
 def hook_GetClipboardData(ql, address, params):
-    data = ql.clipboard.get_data(params['uFormat'])
+    data = ql.os.clipboard.get_data(params['uFormat'])
     if data:
-        addr = ql.heap.mem_alloc(len(data))
-        ql.uc.mem_write(addr, data)
+        addr = ql.os.heap.mem_alloc(len(data))
+        ql.mem.write(addr, data)
         return addr
     else:
-        ql.dprint(0, 'Failed to get clipboard data')
+        ql.dprint(D_INFO, 'Failed to get clipboard data')
         return 0
 
 
@@ -149,7 +149,7 @@ def hook_GetClipboardData(ql, address, params):
     "uFormat": UINT
 })
 def hook_IsClipboardFormatAvailable(ql, address, params):
-    rtn = ql.clipboard.format_available(params['uFormat'])
+    rtn = ql.os.clipboard.format_available(params['uFormat'])
     return rtn
 
 
@@ -170,10 +170,10 @@ def hook_MapVirtualKeyW(ql, address, params):
         if code is not None:
             return code
         else:
-            ql.dprint(0, "Code value %x" % info)
+            ql.dprint(D_INFO, "Code value %x" % code_value)
             raise QlErrorNotImplemented("[!] API not implemented")
     else:
-        ql.dprint(0, "Map value %x" % info)
+        ql.dprint(D_INFO, "Map value %x" % map_value)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -244,7 +244,7 @@ def hook_GetSystemMetrics(ql, address, params):
     elif info == SM_CYHSCROLL:
         return 300
     else:
-        ql.dprint(0, "Info value %x" % info)
+        ql.dprint(D_INFO, "Info value %x" % info)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -346,7 +346,7 @@ def hook_LoadStringA(ql, address, params):
         if len(string) >= max_len:
             string[max_len] = "\x00"
             string = string[:max_len]
-        ql.uc.mem_write(dst, string.encode("utf-16le"))
+        ql.mem.write(dst, string.encode("utf-16le"))
     # should not count the \x00 byte
     return len(string) - 1
 
@@ -470,7 +470,7 @@ def hook_CharNextW(ql, address, params):
     # Return next char if is different from \x00
     point = params["lpsz"]
     string = read_wstring(ql, point)
-    ql.dprint(0, string)
+    ql.dprint(D_INFO, string)
     if len(string) == 0:
         return point
     else:
@@ -506,11 +506,31 @@ def hook_wsprintfW(ql, address, params):
     size, string = printf(ql, address, format_string, p_args, "wsprintfW", wstring=True)
 
     count = format_string.count('%')
-    if ql.arch == QL_X8664:
+    if ql.archtype== QL_ARCH.X8664:
         # We must pop the stack correctly
         raise QlErrorNotImplemented("[!] API not implemented")
 
-    ql.uc.mem_write(dst, (string + "\x00").encode("utf-16le"))
+    ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
+    return size
+
+
+# int WINAPIV sprintf(
+#   LPWSTR  ,
+#   LPCWSTR ,
+#   ...
+# );
+@winapi(cc=CDECL, param_num=3)
+def hook_sprintf(ql, address, params):
+    dst, p_format, p_args = get_function_param(ql, 3)
+    format_string = read_wstring(ql, p_format)
+    size, string = printf(ql, address, format_string, p_args, "sprintf", wstring=True)
+
+    count = format_string.count('%')
+    if ql.archtype == QL_ARCH.X8664:
+        # We must pop the stack correctly
+        raise QlErrorNotImplemented("[!] API not implemented")
+
+    ql.mem.write(dst, (string + "\x00").encode("utf-16le"))
     return size
 
 
@@ -519,3 +539,43 @@ def hook_wsprintfW(ql, address, params):
 })
 def hook_GetForegroundWindow(ql, address, params):
     return 0xF02E620D  # Value so we can recognize inside dumps
+
+
+# BOOL MoveWindow(
+#   HWND hWnd,
+#   int  X,
+#   int  Y,
+#   int  nWidth,
+#   int  nHeight,
+#   BOOL bRepaint
+# )
+@winapi(cc=STDCALL, params={
+    "hWnd": HANDLE,
+    "X": INT,
+    "Y": INT,
+    "nWidth": INT,
+    "nHeight": INT,
+    "bRepaint": BOOL
+
+})
+def hook_MoveWindow(ql, address, params):
+    return 1
+
+#int GetKeyboardType(
+#  int nTypeFlag
+#);
+@winapi(cc=STDCALL, params={
+    "nTypeFlag": UINT
+})
+def hook_GetKeyboardType(ql, address, params):
+    """ 
+    See https://salsa.debian.org/wine-team/wine/-/blob/master/dlls/user32/input.c 
+    """
+    _type = params['nTypeFlag']
+    if _type == 0: #0: Keyboard Type, 1: Keyboard subtype, 2: num func keys
+        return 7
+    elif _type == 1:
+        return 0
+    elif _type == 2:
+        return 12
+    return 0

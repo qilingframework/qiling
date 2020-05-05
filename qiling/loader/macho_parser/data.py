@@ -17,8 +17,8 @@ class Segment:
         for i in range(self.section_num):
             self.sections.append(Section(lc.sections[i], data))
 
-    def __str__(self):
-        return (" Segment {}: content {}".format(self.name, self.content))
+    # def __str__(self):
+    #     return (" Segment {}: content {}".format(self.name, self.content))
 
 
 class Section:
@@ -35,8 +35,8 @@ class Section:
         self.flags = lc.flags
         self.content = data[self.offset : self.offset + self.size]
 
-    def __str__(self):
-        return (" Section {}: content {}".format(self.name,self.content))
+    # def __str__(self):
+    #     return (" Section {}: content {}".format(self.name,self.content))
 
 
 class FunctionStarts:
@@ -46,8 +46,8 @@ class FunctionStarts:
         self.size = lc.data_size
         self.content = data[self.offset : self.offset + self.size]
 
-    def __str__(self):
-        return (" FunctionStarts: content {}".format(self.content))
+    # def __str__(self):
+    #     return (" FunctionStarts: content {}".format(self.content))
 
 
 class SymbolTable:
@@ -58,8 +58,8 @@ class SymbolTable:
         self.content = data[self.offset : self.offset + self.sym_num * 0x10]
         # TODO: parse table 
 
-    def __str__(self):
-        return (" SymbolTable: content {}".format(self.content))
+    # def __str__(self):
+    #     return (" SymbolTable: content {}".format(self.content))
 
 
 class StringTable:
@@ -70,8 +70,8 @@ class StringTable:
         self.content = data[self.offset : self.offset + self.size]
         # TODO: parse table
 
-    def __str__(self):
-        return (" StringTable: content {}".format(self.content))
+    # def __str__(self):
+    #     return (" StringTable: content {}".format(self.content))
 
 
 class DataInCode:
@@ -81,8 +81,8 @@ class DataInCode:
         self.size = lc.data_size
         self.content = data[self.offset : self.offset + self.size]
 
-    def __str__(self): 
-        return (" DataInCode: content {}".format(self.content))
+    # def __str__(self): 
+    #     return (" DataInCode: content {}".format(self.content))
 
 
 class CodeSignature:
@@ -92,8 +92,8 @@ class CodeSignature:
         self.size = lc.data_size
         self.content = data[self.offset : self.offset + self.size]
 
-    def __str__(self): 
-        return (" CodeSignature: content {}".format(self.content))
+    # def __str__(self): 
+    #     return (" CodeSignature: content {}".format(self.content))
 
 
 class SegmentSplitInfo:
@@ -103,8 +103,8 @@ class SegmentSplitInfo:
         self.size = lc.data_size
         self.content = data[self.offset : self.offset + self.size]
 
-    def __str__(self): 
-        return (" SegSplitInfo: content {}".format(self.content))
+    # def __str__(self): 
+    #     return (" SegSplitInfo: content {}".format(self.content))
 
 
 class DySymbolTable:

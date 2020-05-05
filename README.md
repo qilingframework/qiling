@@ -12,7 +12,7 @@ Qiling is an advanced binary emulation framework, with the following features:
 - Cross architecture: X86, X86_64, Arm, Arm64, Mips
 - Multiple file formats: PE, MachO, ELF
 - Emulate & sandbox machine code in a isolated environment
-- Supports cross architecture and platform debugging capabalities
+- Supports cross architecture and platform debugging capabilities
 - Provide high level API to setup & configure the sandbox
 - Fine-grain instrumentation: allow hooks at various levels (instruction/basic-block/memory-access/exception/syscall/IO/etc)
 - Allow dynamic hotpatch on-the-fly running code, including the loaded library
@@ -83,7 +83,7 @@ from qiling import *
 
 def force_call_dialog_func(ql):
     # get DialogFunc address
-    lpDialogFunc = ql.unpack32(ql.mem_read(ql.sp - 0x8, 4))
+    lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.sp - 0x8, 4))
     # setup stack memory for DialogFunc
     ql.stack_push(0)
     ql.stack_push(1001)
@@ -91,7 +91,7 @@ def force_call_dialog_func(ql):
     ql.stack_push(0)
     ql.stack_push(0x0401018)
     # force EIP to DialogFunc
-    ql.pc = lpDialogFunc
+    ql.reg.pc = lpDialogFunc
 
 
 def my_sandbox(path, rootfs):
@@ -116,7 +116,7 @@ The below Youtube video shows how the above example works.
 
 - Solving a simple CTF challenge with Qiling Framework and IDAPro
 
-[![Solving a simple CTF challange with Qiling Framework and IDAPro](https://i.ytimg.com/vi/SPjVAt2FkKA/0.jpg)](https://www.youtube.com/watch?v=SPjVAt2FkKA "Video DEMO 2")
+[![Solving a simple CTF challenge with Qiling Framework and IDAPro](https://i.ytimg.com/vi/SPjVAt2FkKA/0.jpg)](https://www.youtube.com/watch?v=SPjVAt2FkKA "Video DEMO 2")
 
 #### Wannacry demo
 
@@ -180,7 +180,7 @@ See [EN](docs/GDBSERVER.md)|[CN](docs/GDBSERVER_CN.md)  for more details
 
 #### Contact
 
-Get the latest info from out webiste https://www.qiling.io
+Get the latest info from our website https://www.qiling.io
 
 Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.com/qiling_io)
 

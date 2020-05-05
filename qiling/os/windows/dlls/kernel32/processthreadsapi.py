@@ -6,14 +6,14 @@
 import struct
 import time
 from qiling.os.windows.const import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-from qiling.os.windows.token import *
+from qiling.os.windows.structs import *
+
 
 # void ExitProcess(
 #   UINT uExitCode
@@ -22,8 +22,8 @@ from qiling.os.windows.token import *
     "uExitCode": DWORD
 })
 def hook_ExitProcess(ql, address, params):
-    ql.uc.emu_stop()
-    ql.RUN = False
+    ql.emu_stop()
+    ql.os.PE_RUN = False
 
 
 # typedef struct _STARTUPINFO {
@@ -72,7 +72,7 @@ def GetStartupInfo(ql, address, params):
 
     # CB must be the size of the struct
     assert len(values) == startup_info["cb"][0]
-    ql.uc.mem_write(pointer, values)
+    ql.mem.write(pointer, values)
     return 0
 
 
@@ -100,9 +100,9 @@ def hook_GetStartupInfoW(ql, address, params):
 # DWORD TlsAlloc();
 @winapi(cc=STDCALL, params={})
 def hook_TlsAlloc(ql, address, params):
-    idx = ql.thread_manager.current_thread.tls_index
-    ql.thread_manager.current_thread.tls_index += 1
-    ql.thread_manager.current_thread.tls[idx] = 0
+    idx = ql.os.thread_manager.cur_thread.tls_index
+    ql.os.thread_manager.cur_thread.tls_index += 1
+    ql.os.thread_manager.cur_thread.tls[idx] = 0
     return idx
 
 
@@ -114,11 +114,11 @@ def hook_TlsAlloc(ql, address, params):
 })
 def hook_TlsFree(ql, address, params):
     idx = params['dwTlsIndex']
-    if idx not in ql.thread_manager.current_thread.tls:
-        ql.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
+    if idx not in ql.os.thread_manager.cur_thread.tls:
+        ql.os.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
-        del (ql.thread_manager.current_thread.tls[idx])
+        del (ql.os.thread_manager.cur_thread.tls[idx])
         return 1
 
 
@@ -129,14 +129,14 @@ def hook_TlsFree(ql, address, params):
     "dwTlsIndex": UINT})
 def hook_TlsGetValue(ql, address, params):
     idx = params['dwTlsIndex']
-    if idx not in ql.thread_manager.current_thread.tls:
-        ql.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
+    if idx not in ql.os.thread_manager.cur_thread.tls:
+        ql.os.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
         # api explicity clears last error on success:
         # https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-tlsgetvalue
-        ql.last_error = 0
-        return ql.thread_manager.current_thread.tls[idx]
+        ql.os.last_error
+        return ql.os.thread_manager.cur_thread.tls[idx]
 
 
 # LPVOID TlsSetValue(
@@ -148,11 +148,11 @@ def hook_TlsGetValue(ql, address, params):
 })
 def hook_TlsSetValue(ql, address, params):
     idx = params['dwTlsIndex']
-    if idx not in ql.thread_manager.current_thread.tls:
-        ql.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
+    if idx not in ql.os.thread_manager.cur_thread.tls:
+        ql.os.last_error = 0x57  # (ERROR_INVALID_PARAMETER)
         return 0
     else:
-        ql.thread_manager.current_thread.tls[idx] = params['lpTlsValue']
+        ql.os.thread_manager.cur_thread.tls[idx] = params['lpTlsValue']
         return 1
 
 
@@ -160,7 +160,7 @@ def hook_TlsSetValue(ql, address, params):
 # );
 @winapi(cc=STDCALL, params={})
 def hook_GetCurrentThreadId(ql, address, params):
-    ret = ql.thread_manager.current_thread.id
+    ret = ql.os.thread_manager.cur_thread.id
     return ret
 
 
@@ -179,8 +179,12 @@ def hook_GetCurrentProcessId(ql, address, params):
     "ProcessorFeature": DWORD
 })
 def hook_IsProcessorFeaturePresent(ql, address, params):
-    ret = 1
-    return ret
+    feature = params["ProcessorFeature"]
+    if feature == PF_XSAVE_ENABLED:
+        # it seems like unicorn can't recognize the instruction
+        return 0
+    else:
+        return 1
 
 
 # HANDLE CreateThread(
@@ -212,12 +216,12 @@ def hook_CreateThread(ql, address, params):
     lpThreadId = params["lpThreadId"]
 
     # new thread obj
-    new_thread = Thread(ql)
+    new_thread = QlWindowsThread(ql)
 
     if dwCreationFlags & CREATE_SUSPENDED == CREATE_SUSPENDED:
-        thread_status = Thread.READY
+        thread_status = QlWindowsThread.READY
     else:
-        thread_status = Thread.RUNNING
+        thread_status = QlWindowsThread.RUNNING
 
     # create new thread
     thread_id = new_thread.create(
@@ -227,16 +231,16 @@ def hook_CreateThread(ql, address, params):
     )
 
     # append the new thread to ThreadManager
-    ql.thread_manager.append(new_thread)
+    ql.os.thread_manager.append(new_thread)
 
     # create thread handle
-    new_handle = Handle(thread=new_thread)
-    ql.handle_manager.append(new_handle)
+    new_handle = Handle(obj=new_thread)
+    ql.os.handle_manager.append(new_handle)
     ret = new_handle.id
 
     # set lpThreadId
     if lpThreadId != 0:
-        ql.mem_write(lpThreadId, ql.pack(thread_id))
+        ql.mem.write(lpThreadId, ql.pack(thread_id))
 
     # set thread handle
     return ret
@@ -246,7 +250,7 @@ def hook_CreateThread(ql, address, params):
 # );
 @winapi(cc=STDCALL, params={})
 def hook_GetCurrentProcess(ql, address, params):
-    ret = 1
+    ret = 0
     return ret
 
 
@@ -261,9 +265,10 @@ def hook_GetCurrentProcess(ql, address, params):
 def hook_TerminateProcess(ql, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
-    if process == 0x0 or process == ql.DEFAULT_IMAGE_BASE:
-        ql.uc.emu_stop()
-        ql.RUN = False
+    # TODO i have no idea on how to find the old ql.pe.DEFAULT_IMAGE_BASE
+    if process == 0x0:  # or process == ql.os.DEFAULT_IMAGE_BASE:
+        ql.emu_stop()
+        ql.os.PE_RUN = False
     ret = 1
     return ret
 
@@ -272,7 +277,7 @@ def hook_TerminateProcess(ql, address, params):
 @winapi(cc=STDCALL, params={
 })
 def hook_GetCurrentThread(ql, address, params):
-    ret = 1
+    ret = ql.os.thread_manager.cur_thread.id
     return ret
 
 
@@ -291,7 +296,7 @@ def hook_OpenProcess(ql, address, params):
     # If the specified process is the System Process (0x00000000),
     # the function fails and the last error code is ERROR_INVALID_PARAMETER
     if proc == 0:
-        ql.last_error = ERROR_INVALID_PARAMETER
+        ql.os.last_error = ERROR_INVALID_PARAMETER
         return 0
     return 0xD10C
 
@@ -309,7 +314,19 @@ def hook_OpenProcess(ql, address, params):
 def hook_OpenProcessToken(ql, address, params):
     token_pointer = params["TokenHandle"]
     token = Token(ql)
-    new_handle = Handle(token=token)
-    ql.handle_manager.append(new_handle)
-    ql.uc.mem_write(token_pointer, ql.pack(new_handle.id))
+    new_handle = Handle(obj=token)
+    ql.os.handle_manager.append(new_handle)
+    ql.mem.write(token_pointer, ql.pack(new_handle.id))
+    return 1
+
+
+# BOOL GetThreadContext(
+#   HANDLE    hThread,
+#   LPCONTEXT lpContext
+# );
+@winapi(cc=STDCALL, params={
+    "hThread": HANDLE,
+    "lpContext": POINTER
+})
+def hook_GetThreadContext(ql, address, params):
     return 1

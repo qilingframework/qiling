@@ -6,14 +6,13 @@
 import struct
 import time
 from qiling.os.windows.const import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-
+from qiling.const import *
 
 # BOOL SetThreadLocale(
 #   LCID Locale
@@ -24,6 +23,10 @@ from qiling.exception import *
 def hook_SetThreadLocale(ql, address, params):
     return 0xC000  # LOCALE_CUSTOM_DEFAULT
 
+#LCID GetThreadLocale();
+@winapi(cc=STDCALL, params={})
+def hook_GetThreadLocale(ql, address, params):
+    return 0xC000 #LOCALE_CUSTOM_DEFAULT
 
 # UINT GetACP(
 # );
@@ -64,12 +67,15 @@ def hook_GetLocaleInfoA(ql, address, params):
 
     local_dict = LOCALE.get(locale_value, None)
     if local_dict is None:
-        raise QlErrorNotImplemented("[!] API not implemented")
+        #raise QlErrorNotImplemented("[!] API not implemented")
+        ql.os.last_error = ERROR_INVALID_PARAMETER
+        return 0
+
     lctype = local_dict[lctype_value] + "\x00"
 
     if cchData != 0:
         lplcdata = params["lpLCData"]
-        ql.uc.mem_write(lplcdata, lctype.encode("utf16-le"))
+        ql.mem.write(lplcdata, lctype.encode("utf16-le"))
     return len(lctype)
 
 
@@ -89,7 +95,7 @@ def _LCMapString(ql, address, params):
     dst = params["lpDestStr"]
     if cchDest != 0:
         # TODO maybe do some other check, for now is working
-        ql.uc.mem_write(dst, result)
+        ql.mem.write(dst, result)
     return len(result)
 
 
@@ -166,8 +172,8 @@ def hook_LCMapStringEx(ql, address, params):
 def hook_GetUserDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
-    ql.dprint(2, "[=] Sample is checking user language!")
-    return ql.config.getint("USER", "language")
+    ql.dprint(D_RPRT, "[=] Sample is checking user language!")
+    return ql.os.profile.getint("USER", "language")
 
 
 # LANGID GetSystemDefaultUILanguage();
@@ -176,5 +182,5 @@ def hook_GetUserDefaultUILanguage(ql, address, params):
 def hook_GetSystemDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
-    ql.dprint(2, "[=] Sample is checking system language!")
-    return ql.config.getint("SYSTEM", "language")
+    ql.dprint(D_RPRT, "[=] Sample is checking system language!")
+    return ql.os.profile.getint("SYSTEM", "language")

@@ -5,7 +5,8 @@
 import struct
 from unicorn.x86_const import *
 from qiling.os.windows.utils import *
-
+from enum import IntEnum
+from qiling.os.windows.handle import *
 
 class TEB:
     def __init__(self, ql, base=0,
@@ -67,6 +68,7 @@ class TEB:
         s += self.ql.pack(self.HardErrorMode)  # 0x40
         return s
 
+# https://www.geoffchappell.com/studies/windows/win32/ntdll/structs/peb/index.htm
 
 class PEB:
     def __init__(self, ql, base=0,
@@ -185,13 +187,13 @@ class LdrDataTableEntry:
 
         full_dll_name = full_dll_name.encode("utf-16le")
         self.FullDllName = {'Length': len(full_dll_name), 'MaximumLength': len(full_dll_name) + 2}
-        self.FullDllName['BufferPtr'] = ql.heap.mem_alloc(self.FullDllName['MaximumLength'])
-        ql.uc.mem_write(self.FullDllName['BufferPtr'], full_dll_name + b"\x00\x00")
+        self.FullDllName['BufferPtr'] = self.ql.os.heap.mem_alloc(self.FullDllName['MaximumLength'])
+        ql.mem.write(self.FullDllName['BufferPtr'], full_dll_name + b"\x00\x00")
 
         base_dll_name = base_dll_name.encode("utf-16le")
         self.BaseDllName = {'Length': len(base_dll_name), 'MaximumLength': len(base_dll_name) + 2}
-        self.BaseDllName['BufferPtr'] = ql.heap.mem_alloc(self.BaseDllName['MaximumLength'])
-        ql.uc.mem_write(self.BaseDllName['BufferPtr'], base_dll_name + b"\x00\x00")
+        self.BaseDllName['BufferPtr'] = self.ql.os.heap.mem_alloc(self.BaseDllName['MaximumLength'])
+        ql.mem.write(self.BaseDllName['BufferPtr'], base_dll_name + b"\x00\x00")
 
         self.Flags = flags
         self.LoadCount = load_count
@@ -229,12 +231,12 @@ class LdrDataTableEntry:
         s += self.ql.pack(self.SizeOfImage)  # 0x20
         s += self.ql.pack16(self.FullDllName['Length'])  # 0x24
         s += self.ql.pack16(self.FullDllName['MaximumLength'])  # 0x26
-        if self.ql.arch == QL_X8664:
+        if self.ql.archtype== QL_ARCH.X8664:
             s += self.ql.pack32(0)
         s += self.ql.pack(self.FullDllName['BufferPtr'])  # 0x28
         s += self.ql.pack16(self.BaseDllName['Length'])
         s += self.ql.pack16(self.BaseDllName['MaximumLength'])
-        if self.ql.arch == QL_X8664:
+        if self.ql.archtype== QL_ARCH.X8664:
             s += self.ql.pack32(0)
         s += self.ql.pack(self.BaseDllName['BufferPtr'])
         s += self.ql.pack(self.Flags)
@@ -255,3 +257,127 @@ class LdrDataTableEntry:
         s += self.ql.pack(self.LoadTime)
 
         return s
+
+class Token:
+    class TokenInformationClass(IntEnum):
+        # https://docs.microsoft.com/it-it/windows/win32/api/winnt/ne-winnt-token_information_class
+        TokenUser = 1,
+        TokenGroups = 2,
+        TokenPrivileges = 3,
+        TokenOwner = 4,
+        TokenPrimaryGroup = 5,
+        TokenDefaultDacl = 6,
+        TokenSource = 7,
+        TokenType = 8,
+        TokenImpersonationLevel = 9,
+        TokenStatistics = 10,
+        TokenRestrictedSids = 11,
+        TokenSessionId = 12,
+        TokenGroupsAndPrivileges = 13,
+        TokenSessionReference = 14,
+        TokenSandBoxInert = 15,
+        TokenAuditPolicy = 16,
+        TokenOrigin = 17,
+        TokenElevationType = 18,
+        TokenLinkedToken = 19,
+        TokenElevation = 20,
+        TokenHasRestrictions = 21,
+        TokenAccessInformation = 22,
+        TokenVirtualizationAllowed = 23,
+        TokenVirtualizationEnabled = 24,
+        TokenIntegrityLevel = 25,
+        TokenUIAccess = 26,
+        TokenMandatoryPolicy = 27,
+        TokenLogonSid = 28,
+        TokenIsAppContainer = 29,
+        TokenCapabilities = 30,
+        TokenAppContainerSid = 31,
+        TokenAppContainerNumber = 32,
+        TokenUserClaimAttributes = 33,
+        TokenDeviceClaimAttributes = 34,
+        TokenRestrictedUserClaimAttributes = 35,
+        TokenRestrictedDeviceClaimAttributes = 36,
+        TokenDeviceGroups = 37,
+        TokenRestrictedDeviceGroups = 38,
+        TokenSecurityAttributes = 39,
+        TokenIsRestricted = 40,
+        TokenProcessTrustLevel = 41,
+        TokenPrivateNameSpace = 42,
+        TokenSingletonAttributes = 43,
+        TokenBnoIsolation = 44,
+        TokenChildProcessFlags = 45,
+        TokenIsLessPrivilegedAppContainer = 46,
+        TokenIsSandboxed = 47,
+        TokenOriginatingProcessTrustLevel = 48,
+        MaxTokenInfoClass = 49
+
+    def __init__(self, ql):
+        # We will create them when we need it. There are too many structs
+        self.struct = {}
+        self.ql = ql
+        self.struct[Token.TokenInformationClass.TokenUIAccess.value] = 0x1.to_bytes(length=4,
+                                                                                    byteorder='little')
+        # We create a Sid Structure, set its handle and return the value
+        sid = Sid(ql)
+        handle = Handle(obj=sid)
+        
+        # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
+        self.ql.os.handle_manager.append(handle)
+
+        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = self.ql.pack(handle.id)
+
+    def get(self, value):
+        res = self.struct[value]
+        if res is None:
+            raise QlErrorNotImplemented("[!] API not implemented")
+        else:
+            return res
+
+
+# typedef struct _SID {
+#   BYTE                     Revision;
+#   BYTE                     SubAuthorityCount;
+#   SID_IDENTIFIER_AUTHORITY IdentifierAuthority;
+# #if ...
+#   DWORD                    *SubAuthority[];
+# #else
+#   DWORD                    SubAuthority[ANYSIZE_ARRAY];
+# #endif
+# } SID, *PISID;
+class Sid:
+    # General Struct
+    # https://docs.microsoft.com/it-it/windows/win32/api/winnt/ns-winnt-sid
+    # Identf Authority
+    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/c6ce4275-3d90-4890-ab3a-514745e4637e
+    def __init__(self, ql):
+        # TODO find better documentation
+        perm = ql.os.profile["SYSTEM"]["permission"]
+        if perm == "root":
+            perm = 0x123456
+        else:
+            perm = 0
+        self.struct = {
+            "Revision": 0x1.to_bytes(length=1, byteorder="little"),  # ADD
+            "SubAuthorityCount": 0x1.to_bytes(length=1, byteorder="little"),
+            "IdentifierAuthority": 0x5.to_bytes(length=6, byteorder="little"),
+            "SubAuthority": perm.to_bytes(length=ql.pointersize, byteorder="little")
+        }
+        values = b"".join(self.struct.values())
+        self.addr = ql.os.heap.mem_alloc(len(values))
+        ql.mem.write(self.addr, values)
+
+
+class Mutex:
+    def __init__(self, name, type):
+        self.name = name
+        self.locked = False
+        self.type = type
+
+    def lock(self):
+        self.locked = True
+
+    def unlock(self):
+        self.locked = False
+
+    def isFree(self):
+        return not self.locked

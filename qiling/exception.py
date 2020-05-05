@@ -14,6 +14,9 @@ class QlErrorBase(Exception):
     def __str__(self):
         return self.msg
 
+class QlErrorStructConversion(QlErrorBase):
+    pass
+
 class QlErrorFileNotFound(QlErrorBase):
     pass
 
@@ -59,8 +62,24 @@ class QlErrorSyscallError(QlErrorBase):
 class QlErrorSyscallNotFound(QlErrorBase):
     pass
 
+class QlOutOfMemory(QlErrorBase):
+    pass
+
+class QlMemoryMappedError(QlErrorBase):
+    pass
+
+class QlGDTError(QlErrorBase):
+    pass
+
+class QlSyscallError(QlErrorBase):
+    def __init__(self, errno, msg):
+        super(QlSyscallError, self).__init__(msg)
+        self.errno = errno
+    
+    def __str__(self):
+        return "[ Errno " + str(self.errno) + "] " + self.msg
 
 def QlPrintException(msg):
-    exc_type, exc_value, exc_traceback = sys.exc_info()
+    _, _, exc_traceback = sys.exc_info()
     print(msg + repr(traceback.format_tb(exc_traceback, limit=1) ) )
     

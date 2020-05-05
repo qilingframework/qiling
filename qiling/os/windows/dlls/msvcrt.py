@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
-# Built on top of Unicorn emulator (www.unicorn-engine.org) 
-import struct
-from qiling.os.utils import *
-from qiling.os.windows.fncc import *
-from qiling.os.fncc import *
-from qiling.os.windows.const import *
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+import struct, os, time
+
+from qiling.os.windows.fncc import *
+from qiling.os.const import *
+from qiling.os.windows.const import *
 
 # void __set_app_type (
 #    int at
@@ -41,7 +41,7 @@ def hook___getmainargs(ql, address, params):
 # );
 @winapi(cc=CDECL, params={})
 def hook___p__fmode(ql, address, params):
-    addr = ql.heap.mem_alloc(ql.pointersize)
+    addr = ql.os.heap.mem_alloc(ql.pointersize)
     return addr
 
 
@@ -49,9 +49,15 @@ def hook___p__fmode(ql, address, params):
 #    );
 @winapi(cc=CDECL, params={})
 def hook___p__commode(ql, address, params):
-    addr = ql.heap.mem_alloc(ql.pointersize)
+    addr = ql.os.heap.mem_alloc(ql.pointersize)
     return addr
 
+# int * __p__commode(
+#    );
+@winapi(cc=CDECL, params={})
+def hook___p__acmdln(self, address, params):
+    addr = self.ql.loader.import_address_table['msvcrt.dll'][b'_acmdln']
+    return addr
 
 # unsigned int _controlfp(
 #    unsigned int new,
@@ -80,15 +86,15 @@ def hook_atexit(ql, address, params):
 # char*** __p__environ(void)
 @winapi(cc=CDECL, params={})
 def hook___p__environ(ql, address, params):
-    ret = ql.heap.mem_alloc(ql.pointersize * len(ql.env))
+    ret = ql.os.heap.mem_alloc(ql.pointersize * len(ql.os.env))
     count = 0
-    for key in ql.env:
-        pointer = ql.heap.mem_alloc(ql.pointersize)
-        env = key + "=" + ql.env[key]
-        env_addr = ql.heap.mem_alloc(len(env) + 1)
-        ql.mem_write(env_addr, bytes(env, 'ascii') + b'\x00')
-        ql.mem_write(pointer, ql.pack(env_addr))
-        ql.mem_write(ret + count * ql.pointersize, ql.pack(pointer))
+    for key in ql.os.env:
+        pointer = ql.os.heap.mem_alloc(ql.pointersize)
+        env = key + "=" + ql.os.env[key]
+        env_addr = ql.os.heap.mem_alloc(len(env) + 1)
+        ql.mem.write(env_addr, bytes(env, 'ascii') + b'\x00')
+        ql.mem.write(pointer, ql.pack(env_addr))
+        ql.mem.write(ret + count * ql.pointersize, ql.pack(pointer))
         count += 1
     return ret
 
@@ -102,7 +108,7 @@ def hook___p__environ(ql, address, params):
 def hook_puts(ql, address, params):
     ret = 0
     string = params["str"]
-    ql.stdout.write(bytes(string + "\n", "utf-8"))
+    ql.os.stdout.write(bytes(string + "\n", "utf-8"))
     ret = len(string) + 1
     return ret
 
@@ -132,8 +138,8 @@ def hook__initterm(ql, address, params):
     "status": INT
 })
 def hook_exit(ql, address, params):
-    ql.uc.emu_stop()
-    ql.RUN = False
+    ql.emu_stop()
+    ql.os.PE_RUN = False
 
 
 # int __cdecl _initterm_e(
@@ -151,14 +157,14 @@ def hook__initterm_e(ql, address, params):
 # char***    __cdecl __p___argv (void);
 @winapi(cc=CDECL, params={})
 def hook___p___argv(ql, address, params):
-    ret = ql.heap.mem_alloc(ql.pointersize * len(ql.argv))
+    ret = ql.os.heap.mem_alloc(ql.pointersize * len(ql.argv))
     count = 0
     for each in ql.argv:
-        arg_pointer = ql.heap.mem_alloc(ql.pointersize)
-        arg = ql.heap.mem_alloc(len(each) + 1)
-        ql.mem_write(arg, bytes(each, 'ascii') + b'\x00')
-        ql.mem_write(arg_pointer, ql.pack(arg))
-        ql.mem_write(ret + count * ql.pointersize, ql.pack(arg_pointer))
+        arg_pointer = ql.os.heap.mem_alloc(ql.pointersize)
+        arg = ql.os.heap.mem_alloc(len(each) + 1)
+        ql.mem.write(arg, bytes(each, 'ascii') + b'\x00')
+        ql.mem.write(arg_pointer, ql.pack(arg))
+        ql.mem.write(ret + count * ql.pointersize, ql.pack(arg_pointer))
         count += 1
     return ret
 
@@ -166,8 +172,8 @@ def hook___p___argv(ql, address, params):
 # int* __p___argc(void)
 @winapi(cc=CDECL, params={})
 def hook___p___argc(ql, address, params):
-    ret = ql.heap.mem_alloc(ql.pointersize)
-    ql.mem_write(ret, ql.pack(len(ql.argv)))
+    ret = ql.os.heap.mem_alloc(ql.pointersize)
+    ql.mem.write(ret, ql.pack(len(ql.argv)))
     return ret
 
 
@@ -177,10 +183,10 @@ def hook__get_initial_narrow_environment(ql, address, params):
     count = 0
     for key in ql.env:
         value = key + "=" + ql.env[key]
-        env = ql.heap.mem_alloc(len(value) + 1)
+        env = ql.os.heap.mem_alloc(len(value) + 1)
         if count == 0:
             ret = env
-        ql.mem_write(env, bytes(value, 'ascii') + b'\x00')
+        ql.mem.write(env, bytes(value, 'ascii') + b'\x00')
         count += 1
     return ret
 
@@ -192,12 +198,12 @@ def hook_printf(ql, address, _):
     format_string = get_function_param(ql, 1)
 
     if format_string == 0:
-        ql.nprint('0x%0.2x: printf(format = 0x0) = 0x%x' % (address, ret))
+        ql.nprint('printf(format = 0x0) = 0x%x' % (ret))
         return ret
 
     format_string = read_cstring(ql, format_string)
 
-    param_addr = ql.sp + ql.pointersize * 2
+    param_addr = ql.reg.sp + ql.pointersize * 2
     ret, _ = printf(ql, address, format_string, param_addr, "printf")
 
     set_return_value(ql, ret)
@@ -205,11 +211,11 @@ def hook_printf(ql, address, _):
     count = format_string.count('%')
     # x8664 fastcall donnot known the real number of parameters
     # so you need to manually pop the stack
-    if ql.arch == QL_X8664:
+    if ql.archtype== QL_ARCH.X8664:
         # if number of params > 4
         if count + 1 > 4:
-            rsp = ql.uc.reg_read(UC_X86_REG_RSP)
-            ql.uc.reg_write(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
+            rsp = ql.register(UC_X86_REG_RSP)
+            ql.register(UC_X86_REG_RSP, rsp + (count - 4 + 1) * 8)
 
     return None
 
@@ -233,6 +239,29 @@ def hook___stdio_common_vfprintf(ql, address, _):
     fmt = read_cstring(ql, p_format)
     printf(ql, address, fmt, p_args, '__stdio_common_vfprintf')
     return ret
+
+
+@winapi(cc=CDECL, param_num=4)
+def hook___stdio_common_vfwprintf(ql, address, _):
+    ret = 0
+    _, _, _, p_format, _, p_args = get_function_param(ql, 6)
+    fmt = read_wstring(ql, p_format)
+
+    printf(ql, address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True, double_pointer=True)
+    return ret
+
+
+@winapi(cc=CDECL, param_num=4)
+def hook___stdio_common_vswprintf_s(ql, address, _):
+    ret = 0
+    _, size, p_format, p_args = get_function_param(ql, 4)
+
+    fmt = read_wstring(ql, p_format)
+    printf(ql, address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True, double_pointer=True)
+
+    return ret
+
+
 
 
 # int lstrlenW(
@@ -301,7 +330,7 @@ def hook_strncmp(ql, address, params):
 })
 def hook_malloc(ql, address, params):
     size = params['size']
-    addr = ql.heap.mem_alloc(size)
+    addr = ql.os.heap.mem_alloc(size)
     return addr
 
 
@@ -313,8 +342,8 @@ def hook_malloc(ql, address, params):
 })
 def hook__onexit(ql, address, params):
     function = params['function']
-    addr = ql.heap.mem_alloc(ql.pointersize)
-    ql.uc.mem_write(addr, ql.pack(function))
+    addr = ql.os.heap.mem_alloc(ql.pointersize)
+    ql.mem.write(addr, ql.pack(function))
     return addr
 
 
@@ -332,7 +361,7 @@ def hook_memset(ql, address, params):
     dest = params["dest"]
     c = params["c"]
     count = params["count"]
-    ql.uc.mem_write(dest, bytes(c) * count)
+    ql.mem.write(dest, bytes(c) * count)
     return dest
 
 
@@ -347,7 +376,7 @@ def hook_memset(ql, address, params):
 def hook_calloc(ql, address, params):
     num = params['num']
     size = params['size']
-    ret = ql.heap.mem_alloc(num * size)
+    ret = ql.os.heap.mem_alloc(num * size)
     return ret
 
 
@@ -362,8 +391,8 @@ def hook_calloc(ql, address, params):
     "num": SIZE_T
 })
 def hook_memmove(ql, address, params):
-    data = ql.mem_read(params['src'], params['num'])
-    ql.mem_write(params['dest'], bytes(data))
+    data = ql.mem.read(params['src'], params['num'])
+    ql.mem.write(params['dest'], bytes(data))
     return params['dest']
 
 
@@ -381,3 +410,37 @@ def hook__ismbblead(ql, address, params):
         return 0
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
+
+
+# errno_t _wfopen_s(
+#    FILE** pFile,
+#    const wchar_t *filename,
+#    const wchar_t *mode
+# );
+@winapi(cc=CDECL, params={
+    "pFile": POINTER,
+    "filename": WSTRING,
+    "mode": WSTRING
+})
+def hook__wfopen_s(ql, address, params):
+    dst = params["pFile"]
+    filename = params["filename"]
+    mode = params["mode"]
+    s_lpFileName = ql.os.transform_to_real_path(filename)
+    f = open(s_lpFileName.replace("\\", os.sep), mode)
+    new_handle = Handle(obj=f)
+    ql.os.handle_manager.append(new_handle)
+    ql.mem.write(dst, ql.pack(new_handle.id))
+    return 1
+
+
+# time_t time( time_t *destTime );
+@winapi(cc=CDECL, params={
+    "destTime": POINTER
+})
+def hook__time64(ql, address, params):
+    dst = params["destTime"]
+    time_wasted = int(time.time())
+    if dst != 0:
+        ql.mem.write(dst, time_wasted.to_bytes(8, "little"))
+    return time_wasted

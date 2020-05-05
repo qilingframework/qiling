@@ -6,10 +6,9 @@
 import struct
 import time
 from qiling.os.windows.const import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -34,9 +33,10 @@ from qiling.exception import *
     "dwOptions": DWORD
 })
 def hook_DuplicateHandle(ql, address, params):
+    # TODO for how we manage handle, i think this doesn't work
     content = params["hSourceHandle"]
     dst = params["lpTargetHandle"]
-    ql.uc.mem_write(dst, content.to_bytes(length=ql.pointersize, byteorder='little'))
+    ql.mem.write(dst, content.to_bytes(length=ql.pointersize, byteorder='little'))
     return 1
 
 
@@ -47,5 +47,9 @@ def hook_DuplicateHandle(ql, address, params):
     "hObject": HANDLE
 })
 def hook_CloseHandle(ql, address, params):
-    ret = 0
-    return ret
+    value = params["hObject"]
+    handle = ql.os.handle_manager.get(value)
+    if handle is None:
+        ql.os.last_error = ERROR_INVALID_HANDLE
+        return 0
+    return 1

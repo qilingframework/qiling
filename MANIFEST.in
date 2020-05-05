@@ -1,2 +1,2 @@
 recursive-include qiling/gdbserver/xml *
-include qiling/os/windows/configuration.cfg
+recursive-include qiling/profiles *

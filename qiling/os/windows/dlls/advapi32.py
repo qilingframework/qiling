@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 import struct
 from qiling.os.windows.fncc import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
@@ -17,19 +17,22 @@ def _RegOpenKey(ql, address, params):
     phkResult = params["phkResult"]
 
     if hKey not in REG_KEYS:
-        ql.dprint(0, "[!] Key %s %s not present" % (hKey, s_lpSubKey))
+        ql.dprint(D_INFO, "[!] Key %s %s not present" % (hKey, s_lpSubKey))
         return ERROR_FILE_NOT_FOUND
     else:
         s_hKey = REG_KEYS[hKey]
-    if not ql.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
-        ql.dprint(0, "[!] Value key %s\%s not present" % (s_hKey, s_lpSubKey))
+    if not ql.os.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
+        ql.dprint(D_INFO, "[!] Value key %s\%s not present" % (s_hKey, s_lpSubKey))
+        return ERROR_FILE_NOT_FOUND
+    # TODO fix for gandcrab, to remove when it works
+    if s_lpSubKey == "HARDWARE\DESCRIPTION\System\CentralProcessor\\0":
         return ERROR_FILE_NOT_FOUND
 
     # new handle
-    new_handle = Handle(regkey=s_hKey + "\\" + s_lpSubKey)
-    ql.handle_manager.append(new_handle)
+    new_handle = Handle(obj=s_hKey + "\\" + s_lpSubKey)
+    ql.os.handle_manager.append(new_handle)
     if phkResult != 0:
-        ql.mem_write(phkResult, ql.pack(new_handle.id))
+        ql.mem.write(phkResult, ql.pack(new_handle.id))
     return ERROR_SUCCESS
 
 
@@ -42,28 +45,32 @@ def RegQueryValue(ql, address, params):
     lpData = params["lpData"]
     lpcbData = params["lpcbData"]
 
-    s_hKey = ql.handle_manager.get(hKey).regkey
+    s_hKey = ql.os.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
-
     # read reg_type
     if lpType != 0:
-        reg_type = ql.unpack(ql.mem_read(lpType, 4))
+        reg_type = ql.unpack(ql.mem.read(lpType, 4))
     else:
         reg_type = Registry.RegNone
+    try:
+        value = ql.os.profile["REGISTRY"][s_hKey]
+        # TODO fix in profile
+        reg_type = 0x0001
+    except KeyError:
+        reg_type, value = ql.os.registry_manager.read(s_hKey, s_lpValueName, reg_type)
 
     # read registy
-    reg_type, value = ql.registry_manager.read(s_hKey, s_lpValueName, reg_type)
 
     # error key
     if reg_type is None or value is None:
-        ql.dprint(0, "[!] Key value not found")
+        ql.dprint(D_INFO, "[!] Key value not found")
         return ERROR_FILE_NOT_FOUND
     else:
         # set lpData
-        length = ql.registry_manager.write_reg_value_into_mem(value, reg_type, lpData)
+        length = ql.os.registry_manager.write_reg_value_into_mem(value, reg_type, lpData)
         # set lpcbData
-        max_size = int.from_bytes(ql.uc.mem_read(lpcbData, 4), byteorder="little")
-        ql.mem_write(lpcbData, ql.pack(length))
+        max_size = int.from_bytes(ql.mem.read(lpcbData, 4), byteorder="little")
+        ql.mem.write(lpcbData, ql.pack(length))
         if max_size < length:
             ret = ERROR_MORE_DATA
 
@@ -183,7 +190,7 @@ def hook_RegQueryValueExW(ql, address, params):
 def hook_RegCloseKey(ql, address, params):
     ret = ERROR_SUCCESS
     hKey = params["hKey"]
-    ql.handle_manager.delete(hKey)
+    ql.os.handle_manager.delete(hKey)
     return ret
 
 
@@ -209,16 +216,16 @@ def hook_RegCreateKeyA(ql, address, params):
     else:
         s_hKey = REG_KEYS[hKey]
         params["hKey"] = s_hKey
-        if not ql.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
+        if not ql.os.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
             ret = ERROR_SUCCESS
-            ql.registry_manager.create(s_hKey + "\\" + s_lpSubKey)
+            ql.os.registry_manager.create(s_hKey + "\\" + s_lpSubKey)
 
     # new handle
     if ret == ERROR_SUCCESS:
-        new_handle = Handle(regkey=s_hKey + "\\" + s_lpSubKey)
-        ql.handle_manager.append(new_handle)
+        new_handle = Handle(obj=s_hKey + "\\" + s_lpSubKey)
+        ql.os.handle_manager.append(new_handle)
         if phkResult != 0:
-            ql.mem_write(phkResult, ql.pack(new_handle.id))
+            ql.mem.write(phkResult, ql.pack(new_handle.id))
     else:
         new_handle = 0
 
@@ -248,10 +255,10 @@ def hook_RegSetValueA(ql, address, params):
     s_lpData = params["lpData"]
     cbData = params["cbData"]
 
-    s_hKey = ql.handle_manager.get(hKey).regkey
+    s_hKey = ql.os.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
 
-    ql.registry_manager.write(s_hKey, s_lpSubKey, dwType, s_lpData)
+    ql.os.registry_manager.write(s_hKey, s_lpSubKey, dwType, s_lpData)
 
     return ret
 
@@ -281,10 +288,10 @@ def hook_RegSetValueExW(ql, address, params):
     s_lpData = params["lpData"]
     cbData = params["cbData"]
 
-    s_hKey = ql.handle_manager.get(hKey).regkey
+    s_hKey = ql.os.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
 
-    ql.registry_manager.write(s_hKey, s_lpValueName, dwType, s_lpData)
+    ql.os.registry_manager.write(s_hKey, s_lpValueName, dwType, s_lpData)
 
     return ret
 
@@ -303,10 +310,10 @@ def hook_RegDeleteKeyA(ql, address, params):
     hKey = params["hKey"]
     s_lpSubKey = params["lpSubKey"]
 
-    s_hKey = ql.handle_manager.get(hKey).regkey
+    s_hKey = ql.os.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
 
-    ql.registry_manager.delete(s_hKey, s_lpSubKey)
+    ql.os.registry_manager.delete(s_hKey, s_lpSubKey)
 
     return ret
 
@@ -325,10 +332,10 @@ def hook_RegDeleteValueW(ql, address, params):
     hKey = params["hKey"]
     s_lpValueName = params["lpValueName"]
 
-    s_hKey = ql.handle_manager.get(hKey).regkey
+    s_hKey = ql.os.handle_manager.get(hKey).obj
     params["hKey"] = s_hKey
 
-    ql.registry_manager.delete(s_hKey, s_lpValueName)
+    ql.os.registry_manager.delete(s_hKey, s_lpValueName)
 
     return ret
 
@@ -353,15 +360,16 @@ def hook_GetTokenInformation(ql, address, params):
     max_size = params["TokenInformationLength"]
     return_point = params["ReturnLength"]
     dst = params["TokenInformation"]
-    token = ql.handle_manager.get(id).token
+    token = ql.os.handle_manager.get(id).obj
     information_value = token.get(information)
-    ql.uc.mem_write(return_point, len(information_value).to_bytes(4, byteorder="little"))
-    return_size = int.from_bytes(ql.uc.mem_read(return_point, 4), byteorder="little")
+    ql.mem.write(return_point, len(information_value).to_bytes(4, byteorder="little"))
+    return_size = int.from_bytes(ql.mem.read(return_point, 4), byteorder="little")
+    ql.dprint(D_RPRT, "[=] The sample is checking for its permissions")
     if return_size > max_size:
-        ql.last_error = ERROR_INSUFFICIENT_BUFFER
+        ql.os.last_error  = ERROR_INSUFFICIENT_BUFFER
         return 0
     if dst != 0:
-        ql.uc.mem_write(dst, information_value)
+        ql.mem.write(dst, information_value)
         return 1
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
@@ -374,7 +382,7 @@ def hook_GetTokenInformation(ql, address, params):
     "pSid": HANDLE
 })
 def hook_GetSidSubAuthorityCount(ql, address, params):
-    sid = ql.handle_manager.get(params["pSid"]).sid
+    sid = ql.os.handle_manager.get(params["pSid"]).obj
     addr_authority_count = sid.addr + 1  # +1 because the first byte is revision
     return addr_authority_count
 
@@ -389,6 +397,6 @@ def hook_GetSidSubAuthorityCount(ql, address, params):
 })
 def hook_GetSidSubAuthority(ql, address, params):
     num = params["nSubAuthority"]
-    sid = ql.handle_manager.get(params["pSid"]).sid
+    sid = ql.os.handle_manager.get(params["pSid"]).obj
     addr_authority = sid.addr + 8 + (ql.pointersize * num)
     return addr_authority

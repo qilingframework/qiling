@@ -6,14 +6,14 @@
 import struct
 import time
 from qiling.os.windows.const import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-
+from qiling.os.windows.structs import *
+from qiling.const import *
 
 # void Sleep(
 #  DWORD dwMilliseconds
@@ -105,9 +105,41 @@ def hook_WaitForSingleObject(ql, address, params):
     hHandle = params["hHandle"]
     dwMilliseconds = params["dwMilliseconds"]
 
-    target_thread: Thread = ql.handle_manager.get(hHandle).thread
+    try:
+        target_thread: Thread = ql.os.handle_manager.get(hHandle).thread
+    except AttributeError:
+        ql.os.last_error = ERROR_INVALID_HANDLE
+        return 0xFFFFFFFF #WAIT_FAILED
+
     if not target_thread.fake:
-        ql.thread_manager.current_thread.waitfor(target_thread)
+        ql.os.thread_manager.cur_thread.waitfor(target_thread)
+
+    return ret
+
+# DWORD WaitForSingleObjectEx(
+#   HANDLE hHandle,
+#   DWORD  dwMilliseconds
+#   BOOL   bAlertable
+# );
+@winapi(cc=STDCALL, params={
+    "hHandle": HANDLE,
+    "dwMilliseconds": DWORD,
+    "bAlertable": BOOL
+})
+def hook_WaitForSingleObjectEx(ql, address, params):
+    ret = 0
+    hHandle = params["hHandle"]
+    dwMilliseconds = params["dwMilliseconds"]
+    alertable = params["bAlertable"]
+
+    try:
+        target_thread: Thread = ql.os.handle_manager.get(hHandle).thread
+    except AttributeError:
+        ql.os.last_error = ERROR_INVALID_HANDLE
+        return 0xFFFFFFFF #WAIT_FAILED
+
+    if not target_thread.fake:
+        ql.os.thread_manager.cur_thread.waitfor(target_thread)
 
     return ret
 
@@ -132,10 +164,10 @@ def hook_WaitForMultipleObjects(ql, address, params):
     dwMilliseconds = params["dwMilliseconds"]
 
     for i in range(nCount):
-        handle_value = ql.unpack(ql.mem_read(lpHandles + i * ql.pointersize, ql.pointersize))
+        handle_value = ql.unpack(ql.mem.read(lpHandles + i * ql.pointersize, ql.pointersize))
         if handle_value != 0:
-            thread = ql.handle_manager.get(handle_value).thread
-            ql.thread_manager.current_thread.waitfor(thread)
+            thread = ql.os.handle_manager.get(handle_value).obj
+            ql.os.thread_manager.cur_thread.waitfor(thread)
 
     return ret
 
@@ -148,22 +180,91 @@ def hook_WaitForMultipleObjects(ql, address, params):
 @winapi(cc=STDCALL, params={
     "dwDesiredAccess": DWORD,
     "bInheritHandle": BOOL,
-    "LPCWSTR": WSTRING
+    "lpName": WSTRING
 })
 def hook_OpenMutexW(ql, address, params):
-    type, name = params["LPCWSTR"].split("\\")
+    type, name = params["lpName"].split("\\")
     # The name can have a "Global" or "Local" prefix to explicitly open an object in the global or session namespace.
+    handle = ql.os.handle_manager.search(name)
     if type == "Global":
         # if is global is a Windows lock. We always return a valid handle because we have no way to emulate them
-        # TODO maybe create it? Not sure if is necessary
         # example sample: Gandcrab e42431d37561cc695de03b85e8e99c9e31321742
-        return 0xD10C
+        if handle is None:
+            return 0xD10C
+        else:
+            mutex = handle.obj
+            if mutex.isFree():
+                mutex.lock()
+            else:
+                raise QlErrorNotImplemented("[!] API not implemented")
     else:
-        # TODO manage creation of mutex object if is necessary
-        mutex = ql.handle_manager.get(name)
-        if mutex is None:
+        if handle is None:
             # If a named mutex does not exist, the function fails and GetLastError returns ERROR_FILE_NOT_FOUND.
-            ql.last_error = ERROR_FILE_NOT_FOUND
+            ql.os.last_error  = ERROR_FILE_NOT_FOUND
             return 0
         else:
             raise QlErrorNotImplemented("[!] API not implemented")
+
+
+# HANDLE CreateMutexW(
+#   LPSECURITY_ATTRIBUTES lpMutexAttributes,
+#   BOOL                  bInitialOwner,
+#   LPCWSTR               lpName
+# );
+@winapi(cc=STDCALL, params={
+    "lpMutexAttributes": POINTER,
+    "bInitialOwner": BOOL,
+    "lpName": WSTRING
+})
+def hook_CreateMutexW(ql, address, params):
+    try:
+        _type, name = params["lpName"].split("\\")
+    except:
+        name = params["lpName"]
+        _type = ""
+
+    owning = params["bInitialOwner"]
+    handle = ql.os.handle_manager.search(name)
+    if handle is not None:
+        #ql.os.last_error = ERROR_ALREADY_EXISTS
+        return 0
+    else:
+        mutex = Mutex(name, _type)
+        if owning:
+            mutex.lock()
+        handle = Handle(obj=mutex, name=name)
+        ql.os.handle_manager.append(handle)
+
+    return handle.ID
+
+#HANDLE CreateEventA(
+#  LPSECURITY_ATTRIBUTES lpEventAttributes,
+#  BOOL                  bManualReset,
+#  BOOL                  bInitialState,
+#  LPCSTR                lpName
+#);
+@winapi(cc=STDCALL, params={
+    "lpEventAttributes": POINTER, 
+    "bManualReset": BOOL,
+    "bInitialState": BOOL,
+    "lpName": STRING 
+})
+def hook_CreateEventA(ql, address, params):
+    """ 
+    Implementation seems similar enough to Mutex to just use it
+    """
+    try:
+        namespace, name = params["lpName"].split("\\")
+    except:
+        name = params["lpName"]
+        namespace = ""
+    handle = ql.os.handle_manager.search(name)
+    if handle is not None:
+        ql.os.last_error = ERROR_ALREADY_EXISTS
+    else:
+        mutex = Mutex(name, namespace)
+        if params['bInitialState']:
+            mutex.lock()
+        handle = Handle(obj=mutex, name=name)
+        ql.os.handle_manager.append(handle)
+    return handle.ID

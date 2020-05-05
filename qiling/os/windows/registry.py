@@ -10,7 +10,7 @@ import sys
 from Registry import Registry
 from qiling.os.windows.const import *
 from qiling.exception import *
-
+from qiling.const import *
 
 # Registry Manager reads data from two places
 # 1. config.json
@@ -27,29 +27,31 @@ class RegistryManager:
     def __init__(self, ql, hive=None):
         self.ql = ql
 
-        if ql.log_dir is None:
-            ql.log_reg_dir = os.path.join(ql.rootfs, "qlog")
+        if self.ql.log_dir is None:
+            self.log_registry_dir = "qlog"
         else:
-            ql.log_reg_dir = ql.log_dir
+            self.log_registry_dir = self.ql.log_dir
 
-        if hasattr(ql, 'regdiff'):
-            self.regdiff = self.ql.regdiff
+        if self.ql.append:
+            self.registry_diff = self.ql.targetname + "_" + self.ql.append + ".json"
         else:
-            self.regdiff = os.path.join(ql.log_reg_dir, "registry", "registry_diff.json")    
+            self.registry_diff = self.ql.targetname + ".json"
+
+        self.regdiff = os.path.join(self.log_registry_dir, "registry", self.registry_diff)    
 
         # hive dir
         if hive:
             self.hive = hive
         else:
             self.hive = os.path.join(ql.rootfs, "Windows", "registry")
-            ql.dprint(0, "[+] Windows Registry PATH: %s" % self.hive)
+            ql.dprint(D_INFO, "[+] Windows Registry PATH: %s" % self.hive)
             if not os.path.exists(self.hive) and not self.ql.shellcoder:
-                raise QlPrintException("Error: Registry files not found!")
+                raise QlErrorFileNotFound("Error: Registry files not found!")
 
         if not os.path.exists(self.regdiff):
             self.registry_config = {}
             try:
-                os.makedirs(os.path.join(ql.log_reg_dir, "registry"), 0o755)
+                os.makedirs(os.path.join(self.log_registry_dir, "registry"), 0o755)
             except Exception:
                 pass
         else:
@@ -75,13 +77,15 @@ class RegistryManager:
             self.hklm['SAM'] = Registry.Registry(os.path.join(self.hive, 'SAM'))
             self.hklm['SOFTWARE'] = Registry.Registry(os.path.join(self.hive, 'SOFTWARE'))
             self.hklm['SYSTEM'] = Registry.Registry(os.path.join(self.hive, 'SYSTEM'))
+            self.hklm['HARDWARE'] = Registry.Registry(os.path.join(self.hive, 'HARDWARE'))
             # hkey current user
             self.hkcu = Registry.Registry(os.path.join(self.hive, 'NTUSER.DAT'))
         except FileNotFoundError:
             if not ql.shellcoder:
-                QlPrintException("WARNING: Registry files not found!")
+                QlErrorFileNotFound("WARNING: Registry files not found!")
         except Exception:
-            QlPrintException("WARNING: Registry files format error")
+            if not ql.shellcoder:
+                QlErrorFileNotFound("WARNING: Registry files format error")
 
     def exists(self, key):
         if key in self.regdiff:
@@ -161,22 +165,22 @@ class RegistryManager:
         length = 0
         # string
         if reg_type == Registry.RegSZ or reg_type == Registry.RegExpandSZ:
-            self.ql.mem_write(address, bytes(reg_value, "utf-16le") + b"\x00")
+            self.ql.mem.write(address, bytes(reg_value, "utf-16le") + b"\x00")
             length = len(reg_value)
         elif reg_type == Registry.RegBin:
             # you can set REG_BINARY like '\x00\x01\x02' in config.json
             if type(reg_value) == str:
-                self.ql.mem_write(address, bytes(reg_value))
+                self.ql.mem.write(address, bytes(reg_value))
                 length = len(reg_value)
             else:
                 raise QlErrorNotImplemented("[!] Windows Registry Type not implemented")
         elif reg_type == Registry.RegDWord:
             data = self.ql.pack32(reg_value)
-            self.ql.mem_write(address, data)
+            self.ql.mem.write(address, data)
             length = len(data)
         elif reg_type == Registry.RegQWord:
             data = self.ql.pack64(reg_value)
-            self.ql.mem_write(address, data)
+            self.ql.mem.write(address, data)
             length = len(data)
         else:
             raise QlErrorNotImplemented(

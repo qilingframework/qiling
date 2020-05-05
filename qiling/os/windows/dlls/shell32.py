@@ -3,17 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct
-import time
+import struct, time, os
+
 from qiling.os.windows.const import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-
+from qiling.const import *
 
 # DWORD_PTR SHGetFileInfoW(
 #   LPCWSTR     pszPath,
@@ -34,7 +33,7 @@ def hook_SHGetFileInfoW(ql, address, params):
     if flags == SHGFI_LARGEICON:
         return 1
     else:
-        ql.dprint(0, flags)
+        ql.dprint(D_INFO, flags)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -54,18 +53,18 @@ def _ShellExecute(ql, dic: dict):
     directory = read_wstring(ql, pt_file) if pt_directory != 0 else ""
     show = int.from_bytes(dic["nShow"], byteorder="little") if not isinstance(dic["nShow"], int) else dic["nShow"]
 
-    ql.dprint(2, "[=] Sample executed a shell command!")
-    ql.dprint(2, "[-] Operation: %s " % operation)
-    ql.dprint(2, "[-] Parameters: %s " % params)
-    ql.dprint(2, "[-] File: %s " % file)
-    ql.dprint(2, "[-] Directory: %s " % directory)
+    ql.dprint(D_RPRT, "[=] Sample executed a shell command!")
+    ql.dprint(D_RPRT, "[-] Operation: %s " % operation)
+    ql.dprint(D_RPRT, "[-] Parameters: %s " % params)
+    ql.dprint(D_RPRT, "[-] File: %s " % file)
+    ql.dprint(D_RPRT, "[-] Directory: %s " % directory)
     if show == SW_HIDE:
-        ql.dprint(2, "[=] Sample is creating a hidden window!")
+        ql.dprint(D_RPRT, "[=] Sample is creating a hidden window!")
     if operation == "runas":
-        ql.dprint(2, "[=] Sample is executing shell command as administrator!")
-    process = Thread(ql, status=0, isFake=True)
-    handle = Handle(thread=process)
-    ql.handle_manager.append(handle)
+        ql.dprint(D_RPRT, "[=] Sample is executing shell command as administrator!")
+    process = QlWindowsThread(ql, status=0, isFake=True)
+    handle = Handle(obj=process)
+    ql.os.handle_manager.append(handle)
     return handle
 
 
@@ -100,21 +99,21 @@ def _ShellExecute(ql, dic: dict):
 def hook_ShellExecuteExW(ql, address, params):
     pointer = params["pExecInfo"]
 
-    shell_execute_info = {"cbSize": ql.uc.mem_read(pointer, 4),
-                          "fMask": ql.uc.mem_read(pointer + 4, 4),
-                          "hwnd": ql.uc.mem_read(pointer + 8, ql.pointersize),
-                          "lpVerb": ql.uc.mem_read(pointer + 8 + ql.pointersize, ql.pointersize),
-                          "lpFile": ql.uc.mem_read(pointer + 8 + ql.pointersize * 2, ql.pointersize),
-                          "lpParameters": ql.uc.mem_read(pointer + 8 + ql.pointersize * 3, ql.pointersize),
-                          "lpDirectory": ql.uc.mem_read(pointer + 8 + ql.pointersize * 4, ql.pointersize),
-                          "nShow": ql.uc.mem_read(pointer + 8 + ql.pointersize * 5, 4),
-                          "hInstApp": ql.uc.mem_read(pointer + 12 + ql.pointersize * 5, 4),  # Must be > 32 for success
-                          "lpIDList": ql.uc.mem_read(pointer + 16 + ql.pointersize * 5, ql.pointersize),
-                          "lpClass": ql.uc.mem_read(pointer + 16 + ql.pointersize * 6, ql.pointersize),
-                          "hkeyClass": ql.uc.mem_read(pointer + 16 + ql.pointersize * 7, ql.pointersize),
-                          "dwHotKey": ql.uc.mem_read(pointer + 16 + ql.pointersize * 8, 4),
-                          "dummy": ql.uc.mem_read(pointer + 20 + ql.pointersize * 8, ql.pointersize),
-                          "hprocess": ql.uc.mem_read(pointer + 20 + ql.pointersize * 9, ql.pointersize),
+    shell_execute_info = {"cbSize": ql.mem.read(pointer, 4),
+                          "fMask": ql.mem.read(pointer + 4, 4),
+                          "hwnd": ql.mem.read(pointer + 8, ql.pointersize),
+                          "lpVerb": ql.mem.read(pointer + 8 + ql.pointersize, ql.pointersize),
+                          "lpFile": ql.mem.read(pointer + 8 + ql.pointersize * 2, ql.pointersize),
+                          "lpParameters": ql.mem.read(pointer + 8 + ql.pointersize * 3, ql.pointersize),
+                          "lpDirectory": ql.mem.read(pointer + 8 + ql.pointersize * 4, ql.pointersize),
+                          "nShow": ql.mem.read(pointer + 8 + ql.pointersize * 5, 4),
+                          "hInstApp": ql.mem.read(pointer + 12 + ql.pointersize * 5, 4),  # Must be > 32 for success
+                          "lpIDList": ql.mem.read(pointer + 16 + ql.pointersize * 5, ql.pointersize),
+                          "lpClass": ql.mem.read(pointer + 16 + ql.pointersize * 6, ql.pointersize),
+                          "hkeyClass": ql.mem.read(pointer + 16 + ql.pointersize * 7, ql.pointersize),
+                          "dwHotKey": ql.mem.read(pointer + 16 + ql.pointersize * 8, 4),
+                          "dummy": ql.mem.read(pointer + 20 + ql.pointersize * 8, ql.pointersize),
+                          "hprocess": ql.mem.read(pointer + 20 + ql.pointersize * 9, ql.pointersize),
                           }
 
     handle = _ShellExecute(ql, shell_execute_info)
@@ -127,7 +126,7 @@ def hook_ShellExecuteExW(ql, address, params):
     assert len(values) == shell_execute_info["cbSize"][0]
 
     # Rewrite memory
-    ql.uc.mem_write(pointer, values)
+    ql.mem.write(pointer, values)
     return 1
 
 
@@ -168,13 +167,20 @@ def hook_SHGetSpecialFolderPathW(ql, address, params):
     directory_id = params["csidl"]
     dst = params["pszPath"]
     if directory_id == CSIDL_COMMON_APPDATA:
-        path = ql.config["PATHS"]["appdata"]
+        path = str(ql.os.profile["PATH"]["appdata"])
         # We always create the directory
-        dir = path.split("C:\\")[1].replace("\\", "/")
-        path_emulated = os.path.join(ql.rootfs, dir)
-        ql.uc.mem_write(dst, (path + "\x00").encode("utf-16le"))
+        appdata_dir = path.split("C:\\")[1].replace("\\", "/")
+        ql.dprint(D_INFO, "[+] dir path: %s" % path)
+        path_emulated = os.path.join(ql.rootfs, appdata_dir)
+        ql.dprint(D_INFO, "[!] emulated path: %s" % path_emulated)
+        ql.mem.write(dst, (path + "\x00").encode("utf-16le"))
+        # FIXME: Somehow winodws path is wrong
         if not os.path.exists(path_emulated):
-            os.makedirs(path_emulated, 0o755)
+            try:
+                os.makedirs(path_emulated, 0o755)
+                ql.dprint(D_INFO, "[!] os.makedirs completed")
+            except:
+                ql.dprint(D_INFO, "[!] os.makedirs fail")    
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 1

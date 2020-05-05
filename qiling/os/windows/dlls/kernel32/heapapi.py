@@ -6,10 +6,9 @@
 import struct
 import time
 from qiling.os.windows.const import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -27,7 +26,7 @@ from qiling.exception import *
 })
 def hook_HeapCreate(ql, address, params):
     dwInitialSize = params["dwInitialSize"]
-    addr = ql.heap.mem_alloc(dwInitialSize)
+    addr = ql.os.heap.mem_alloc(dwInitialSize)
     return addr
 
 
@@ -42,7 +41,7 @@ def hook_HeapCreate(ql, address, params):
     "dwBytes": SIZE_T
 })
 def hook_HeapAlloc(ql, address, params):
-    ret = ql.heap.mem_alloc(params["dwBytes"])
+    ret = ql.os.heap.mem_alloc(params["dwBytes"])
     return ret
 
 
@@ -58,7 +57,7 @@ def hook_HeapAlloc(ql, address, params):
 })
 def hook_HeapSize(ql, address, params):
     pointer = params["lpMem"]
-    return ql.heap.mem_size(pointer)
+    return ql.os.heap.mem_size(pointer)
 
 
 # BOOL HeapFree(
@@ -72,7 +71,7 @@ def hook_HeapSize(ql, address, params):
     "lpMem": POINTER
 })
 def hook_HeapFree(ql, address, params):
-    return ql.heap.mem_free(params['lpMem'])
+    return ql.os.heap.mem_free(params['lpMem'])
 
 
 # BOOL HeapSetInformation(
@@ -95,5 +94,5 @@ def hook_HeapSetInformation(ql, address, params):
 # );
 @winapi(cc=STDCALL, params={})
 def hook_GetProcessHeap(ql, address, params):
-    ret = ql.heap.start_address
+    ret = ql.os.heap.start_address
     return ret

@@ -5,11 +5,11 @@
 
 import struct
 import time
+from datetime import datetime
 from qiling.os.windows.const import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -47,17 +47,6 @@ def hook_GetVersionExW(ql, address, params):
     return 1
 
 
-# NOT_BUILD_WINDOWS_DEPRECATE BOOL GetVersionExA(
-#   LPOSVERSIONINFOA lpVersionInformation
-# );
-@winapi(cc=STDCALL, params={
-    "lpVersionInformation": POINTER
-})
-def hook_GetVersionExA(ql, address, params):
-    ret = 1
-    return ret
-
-
 # typedef struct _SYSTEM_INFO {
 #   union {
 #     DWORD dwOemId;
@@ -87,20 +76,20 @@ def hook_GetVersionExA(ql, address, params):
 def hook_GetSystemInfo(ql, address, params):
     pointer = params["lpSystemInfo"]
     system_info = {"dummy": 0x0.to_bytes(length=2 * 2 + 4, byteorder='little'),
-                   "dwPageSize": ql.heap.page_size.to_bytes(length=4, byteorder='little'),
-                   "lpMinimumApplicationAddress": ql.PE_IMAGE_BASE.to_bytes(length=ql.pointersize, byteorder='little'),
-                   "lpMaximumApplicationAddress": (ql.DLL_BASE_ADDR + ql.DLL_SIZE).to_bytes(length=ql.pointersize,
+                   "dwPageSize": ql.os.heap.page_size.to_bytes(length=4, byteorder='little'),
+                   "lpMinimumApplicationAddress": ql.loader.PE_IMAGE_BASE.to_bytes(length=ql.pointersize, byteorder='little'),
+                   "lpMaximumApplicationAddress": (ql.loader.DLL_BASE_ADDR + ql.loader.DLL_SIZE).to_bytes(length=ql.pointersize,
                                                                                             byteorder='little'),
                    "dwActiveProcessorMask": 0x3.to_bytes(length=ql.pointersize, byteorder='little'),
                    # TODO not sure from here, did not found variables inside the emulator
                    "dwNumberOfProcessors": 0x4.to_bytes(length=4, byteorder='little'),
                    "dwProcessorType": 0x24a.to_bytes(length=4, byteorder='little'),
-                   "dwAllocationGranularity": (ql.heap.page_size * 10).to_bytes(length=4, byteorder='little'),
+                   "dwAllocationGranularity": (ql.os.heap.page_size * 10).to_bytes(length=4, byteorder='little'),
                    "wProcessorLevel": 0x6.to_bytes(length=2, byteorder='little'),
                    "wProcessorRevision": 0x4601.to_bytes(length=2, byteorder='little')
                    }
     values = b"".join(system_info.values())
-    ql.uc.mem_write(pointer, values)
+    ql.mem.write(pointer, values)
     return 0
 
 
@@ -128,14 +117,14 @@ def hook_GetLocalTime(ql, address, params):
     import datetime
     ptr = params['lpSystemTime']
     d = datetime.datetime.now()
-    ql.uc.mem_write(d.year.to_bytes(length=2, byteorder='little'), ptr)
-    ql.uc.mem_write(d.month.to_bytes(length=2, byteorder='little'), ptr + 2)
-    ql.uc.mem_write(d.isoweekday().to_bytes(length=2, byteorder='little'), ptr + 4)
-    ql.uc.mem_write(d.day.to_bytes(length=2, byteorder='little'), ptr + 6)
-    ql.uc.mem_write(d.hour.to_bytes(length=2, byteorder='little'), ptr + 8)
-    ql.uc.mem_write(d.minute.to_bytes(length=2, byteorder='little'), ptr + 10)
-    ql.uc.mem_write(d.second.to_bytes(length=2, byteorder='little'), ptr + 12)
-    ql.uc.mem_write((d.microsecond * 1000).to_bytes(length=2, byteorder='little'), ptr + 14)
+    ql.mem.write(d.year.to_bytes(length=2, byteorder='little'), ptr)
+    ql.mem.write(d.month.to_bytes(length=2, byteorder='little'), ptr + 2)
+    ql.mem.write(d.isoweekday().to_bytes(length=2, byteorder='little'), ptr + 4)
+    ql.mem.write(d.day.to_bytes(length=2, byteorder='little'), ptr + 6)
+    ql.mem.write(d.hour.to_bytes(length=2, byteorder='little'), ptr + 8)
+    ql.mem.write(d.minute.to_bytes(length=2, byteorder='little'), ptr + 10)
+    ql.mem.write(d.second.to_bytes(length=2, byteorder='little'), ptr + 12)
+    ql.mem.write((d.microsecond * 1000).to_bytes(length=2, byteorder='little'), ptr + 14)
     return 0
 
 
@@ -146,6 +135,7 @@ def hook_GetLocalTime(ql, address, params):
     "lpSystemTimeAsFileTime": POINTER
 })
 def hook_GetSystemTimeAsFileTime(ql, address, params):
+    # TODO
     pass
 
 
@@ -155,3 +145,63 @@ def hook_GetSystemTimeAsFileTime(ql, address, params):
 def hook_GetTickCount(ql, address, params):
     ret = 200000
     return ret
+
+
+# UINT GetWindowsDirectoryW(
+#   LPWSTR lpBuffer,
+#   UINT   uSize
+# );
+@winapi(cc=STDCALL, params={
+    "lpBuffer": POINTER,
+    "uSize": UINT
+})
+def hook_GetWindowsDirectoryW(ql, address, params):
+    dst = params["lpBuffer"]
+    value = (ql.os.profile["PATH"]["windir"] + "\x00").encode("utf-16le")
+    ql.mem.write(dst, value)
+    return len(value)-2
+
+
+# void GetNativeSystemInfo(
+#   LPSYSTEM_INFO lpSystemInfo
+# );
+@winapi(cc=STDCALL, params={
+    "lpSystemInfo": POINTER
+})
+def hook_GetNativeSystemInfo(ql, address, params):
+    pointer = params["lpSystemInfo"]
+    system_info = {"dummy": 0x0.to_bytes(length=8, byteorder='little'),
+                   "dwPageSize": ql.os.heap.page_size.to_bytes(length=4, byteorder='little'),
+                   "lpMinimumApplicationAddress": ql.loader.PE_IMAGE_BASE.to_bytes(length=ql.pointersize, byteorder='little'),
+                   "lpMaximumApplicationAddress": (ql.loader.DLL_BASE_ADDR + ql.loader.DLL_SIZE).to_bytes(length=ql.pointersize,
+                                                                                            byteorder='little'),
+                   "dwActiveProcessorMask": 0x3.to_bytes(length=ql.pointersize, byteorder='little'),
+                   # TODO not sure from here, did not found variables inside the emulator
+                   "dwNumberOfProcessors": 0x4.to_bytes(length=4, byteorder='little'),
+                   "dwProcessorType": 0x24a.to_bytes(length=4, byteorder='little'),
+                   "dwAllocationGranularity": (ql.os.heap.page_size * 10).to_bytes(length=4, byteorder='little'),
+                   "wProcessorLevel": 0x6.to_bytes(length=2, byteorder='little'),
+                   "wProcessorRevision": 0x4601.to_bytes(length=2, byteorder='little')
+                   }
+    values = b"".join(system_info.values())
+    ql.mem.write(pointer, values)
+    return 0
+
+
+# typedef struct _FILETIME {
+#   DWORD dwLowDateTime;
+#   DWORD dwHighDateTime;
+# } FILETIME, *PFILETIME, *LPFILETIME;
+
+# void GetSystemTimePreciseAsFileTime(
+#   LPFILETIME lpSystemTimeAsFileTime
+# );
+@winapi(cc=STDCALL, params={
+    "lpSystemTimeAsFileTime": POINTER
+})
+def hook_GetSystemTimePreciseAsFileTime(ql, address, params):
+    # todo check if the value is correct
+    dt = datetime.now().microsecond.to_bytes(8, byteorder="little")
+    pointer = params["lpSystemTimeAsFileTime"]
+    ql.mem.write(pointer, dt)
+    return 0

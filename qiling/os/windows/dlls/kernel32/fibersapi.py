@@ -6,10 +6,9 @@
 import struct
 import time
 from qiling.os.windows.const import *
-from qiling.os.fncc import *
+from qiling.os.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.memory import align
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
@@ -22,7 +21,7 @@ from qiling.exception import *
     "dwFlsIndex": UINT
 })
 def hook_FlsFree(ql, address, params):
-    return ql.fiber_manager.free(params['dwFlsIndex'])
+    return ql.os.fiber_manager.free(params['dwFlsIndex'])
 
 
 # LPVOID FlsGetValue(
@@ -31,7 +30,7 @@ def hook_FlsFree(ql, address, params):
 @winapi(cc=STDCALL, params={
     "dwFlsIndex": UINT})
 def hook_FlsGetValue(ql, address, params):
-    return ql.fiber_manager.get(params['dwFlsIndex'])
+    return ql.os.fiber_manager.get(params['dwFlsIndex'])
 
 
 # LPVOID FlsSetValue(
@@ -42,7 +41,7 @@ def hook_FlsGetValue(ql, address, params):
     "lpFlsValue": POINTER
 })
 def hook_FlsSetValue(ql, address, params):
-    return ql.fiber_manager.set(params['dwFlsIndex'], params['lpFlsValue'])
+    return ql.os.fiber_manager.set(params['dwFlsIndex'], params['lpFlsValue'])
 
 
 # DWORD FlsAlloc(
@@ -55,6 +54,6 @@ def hook_FlsAlloc(ql, address, params):
     # global cb = params['lpCallback']
     cb = params['lpCallback']
     if cb:
-        return ql.fiber_manager.alloc(cb)
+        return ql.os.fiber_manager.alloc(cb)
     else:
-        return ql.fiber_manager.alloc()
+        return ql.os.fiber_manager.alloc()

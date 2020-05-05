@@ -17,8 +17,8 @@ from qiling.exception import *
     "ExitCode": INT
 })
 def hook_FatalExit(ql, address, params):
-    ql.uc.emu_stop()
-    ql.RUN = False
+    ql.emu_stop()
+    ql.os.PE_RUN = False
 
 
 # PVOID EncodePointer(
@@ -53,21 +53,6 @@ def hook_WinExec(ql, address, params):
     return 33
 
 
-# DWORD GetEnvironmentVariableA(
-#   LPCSTR lpName,
-#   LPSTR  lpBuffer,
-#   DWORD  nSize
-# );
-@winapi(cc=STDCALL, params={
-    "lpName": STRING,
-    "lpBuffer": POINTER,
-    "nSize": DWORD
-})
-def hook_GetEnvironmentVariableA(ql, address, params):
-    ret = 0
-    return ret
-
-
 # DECLSPEC_ALLOCATOR HLOCAL LocalAlloc(
 #   UINT   uFlags,
 #   SIZE_T uBytes
@@ -77,7 +62,7 @@ def hook_GetEnvironmentVariableA(ql, address, params):
     "uBytes": SIZE_T
 })
 def hook_LocalAlloc(ql, address, params):
-    ret = ql.heap.mem_alloc(params["uBytes"])
+    ret = ql.os.heap.mem_alloc(params["uBytes"])
     return ret
 
 
@@ -93,8 +78,8 @@ def hook_LocalAlloc(ql, address, params):
 })
 def hook_LocalReAlloc(ql, address, params):
     old_mem = params["hMem"]
-    ql.heap.mem_free(old_mem)
-    ret = ql.heap.mem_alloc(params["uBytes"])
+    ql.os.heap.mem_free(old_mem)
+    ret = ql.os.heap.mem_alloc(params["uBytes"])
     return ret
 
 
@@ -106,7 +91,7 @@ def hook_LocalReAlloc(ql, address, params):
 })
 def hook_LocalFree(ql, address, params):
     old_mem = params["hMem"]
-    ql.heap.mem_free(old_mem)
+    ql.os.heap.mem_free(old_mem)
     return 0
 
 
@@ -150,7 +135,7 @@ def hook_GlobalUnlock(ql, address, params):
     "dwBytes": UINT
 })
 def hook_GlobalAlloc(ql, address, params):
-    return ql.heap.mem_alloc(params["dwBytes"])
+    return ql.os.heap.mem_alloc(params["dwBytes"])
 
 
 # HGLOBAL GlobalFree(
@@ -161,7 +146,7 @@ def hook_GlobalAlloc(ql, address, params):
 })
 def hook_GlobalFree(ql, address, params):
     old_mem = params["hMem"]
-    ql.heap.mem_free(old_mem)
+    ql.os.heap.mem_free(old_mem)
     return 0
 
 
@@ -192,7 +177,7 @@ def hook_lstrcpynA(ql, address, params):
     max_length = params["iMaxLength"]
     if len(src) > max_length:
         src = src[:max_length]
-    ql.uc.mem_write(dst, bytes(src, encoding="utf-16le"))
+    ql.mem.write(dst, bytes(src, encoding="utf-16le"))
     return dst
 
 
@@ -213,7 +198,7 @@ def hook_lstrcpynW(ql, address, params):
     max_length = params["iMaxLength"]
     if len(src) > max_length:
         src = src[:max_length]
-    ql.uc.mem_write(dst, bytes(src, encoding="utf-16le"))
+    ql.mem.write(dst, bytes(src, encoding="utf-16le"))
     return dst
 
 
@@ -229,7 +214,7 @@ def hook_lstrcpyA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
     dst = params["lpString1"]
-    ql.uc.mem_write(dst, bytes(src, encoding="utf-16le"))
+    ql.mem.write(dst, bytes(src, encoding="utf-16le"))
     return dst
 
 
@@ -247,7 +232,7 @@ def hook_lstrcatA(ql, address, params):
     pointer = params["lpString1"]
     string_base = read_cstring(ql, pointer)
     result = string_base + src + "\x00"
-    ql.uc.mem_write(pointer, bytes(result, encoding="utf-16le"))
+    ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
     return pointer
 
 
@@ -265,7 +250,7 @@ def hook_lstrcatW(ql, address, params):
     pointer = params["lpString1"]
     string_base = read_wstring(ql, pointer)
     result = string_base + src + "\x00"
-    ql.uc.mem_write(pointer, bytes(result, encoding="utf-16le"))
+    ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
     return pointer
 
 
@@ -346,6 +331,10 @@ def compare(p1, operator, p2):
         return p1 > p2
     elif operator == ">=":
         return p1 >= p2
+    elif operator == "<":
+        return p1 < p2
+    elif operator == "<=":
+        return p1 <= p2
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
 
@@ -378,21 +367,21 @@ def compare(p1, operator, p2):
 def hook_VerifyVersionInfoW(ql, address, params):
     #  https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow2
     pointer = params["lpVersionInformation"]
-    os_version_info_asked = {"dwOSVersionInfoSize": int.from_bytes(ql.uc.mem_read(pointer, 4), byteorder="little"),
-                             VER_MAJORVERSION: int.from_bytes(ql.uc.mem_read(pointer + 4, 4), byteorder="little"),
-                             VER_MINORVERSION: int.from_bytes(ql.uc.mem_read(pointer + 8, 4), byteorder="little"),
-                             VER_BUILDNUMBER: int.from_bytes(ql.uc.mem_read(pointer + 12, 4), byteorder="little"),
-                             VER_PLATFORMID: int.from_bytes(ql.uc.mem_read(pointer + 16, 4), byteorder="little"),
-                             "szCSDVersion": int.from_bytes(ql.uc.mem_read(pointer + 20, 128), byteorder="little"),
-                             VER_SERVICEPACKMAJOR: int.from_bytes(ql.uc.mem_read(pointer + 20 + 128, 2),
+    os_version_info_asked = {"dwOSVersionInfoSize": int.from_bytes(ql.mem.read(pointer, 4), byteorder="little"),
+                             VER_MAJORVERSION: int.from_bytes(ql.mem.read(pointer + 4, 4), byteorder="little"),
+                             VER_MINORVERSION: int.from_bytes(ql.mem.read(pointer + 8, 4), byteorder="little"),
+                             VER_BUILDNUMBER: int.from_bytes(ql.mem.read(pointer + 12, 4), byteorder="little"),
+                             VER_PLATFORMID: int.from_bytes(ql.mem.read(pointer + 16, 4), byteorder="little"),
+                             "szCSDVersion": int.from_bytes(ql.mem.read(pointer + 20, 128), byteorder="little"),
+                             VER_SERVICEPACKMAJOR: int.from_bytes(ql.mem.read(pointer + 20 + 128, 2),
                                                                   byteorder="little"),
-                             VER_SERVICEPACKMINOR: int.from_bytes(ql.uc.mem_read(pointer + 22 + 128, 2),
+                             VER_SERVICEPACKMINOR: int.from_bytes(ql.mem.read(pointer + 22 + 128, 2),
                                                                   byteorder="little"),
-                             VER_SUITENAME: int.from_bytes(ql.uc.mem_read(pointer + 152, 2), byteorder="little"),
-                             VER_PRODUCT_TYPE: int.from_bytes(ql.uc.mem_read(pointer + 154, 1), byteorder="little"),
-                             "wReserved": int.from_bytes(ql.uc.mem_read(pointer + 155, 1), byteorder="little"),
+                             VER_SUITENAME: int.from_bytes(ql.mem.read(pointer + 152, 2), byteorder="little"),
+                             VER_PRODUCT_TYPE: int.from_bytes(ql.mem.read(pointer + 154, 1), byteorder="little"),
+                             "wReserved": int.from_bytes(ql.mem.read(pointer + 155, 1), byteorder="little"),
                              }
-    ConditionMask: dict = ql.hooks_variables["ConditionMask"]
+    ConditionMask: dict = ql.os.hooks_variables["ConditionMask"]
     res = True
     for key, value in ConditionMask.items():
         if value == VER_EQUAL:
@@ -401,8 +390,12 @@ def hook_VerifyVersionInfoW(ql, address, params):
             operator = ">"
         elif value == VER_GREATER_EQUAL:
             operator = ">="
+        elif value == VER_LESS:
+            operator = "<"
+        elif value == VER_LESS_EQUAL:
+            operator = "<="
         else:
-            raise QlErrorNotImplemented("[!] API not implemented")
+            raise QlErrorNotImplemented("[!] API not implemented with operator %d" % value)
         # Versions should be compared together
         if key == VER_MAJORVERSION or key == VER_MINORVERSION or key == VER_PRODUCT_TYPE:
             major_version_asked = os_version_info_asked[VER_MAJORVERSION]
@@ -412,20 +405,66 @@ def hook_VerifyVersionInfoW(ql, address, params):
 
             # Just a print for analysts, will remove it from here in the future
             if key == VER_MAJORVERSION:
-                ql.dprint(2, "[=] The sample is checking the windows Version!")
+                ql.dprint(D_RPRT, "[=] The sample is checking the windows Version!")
                 version_asked = SYSTEMS_VERSION.get(concat, None)
                 if version_asked is None:
-                    raise QlErrorNotImplemented("[!] API not implemented")
+                    raise QlErrorNotImplemented("[!] API not implemented for version %s" % concat)
                 else:
-                    ql.dprint(2, "[=] The sample asks for %s" % version_asked)
+                    ql.dprint(D_RPRT, "[=] The sample asks for version %s %s" % (operator, version_asked))
             # We can finally compare
-            res = compare(ql.config.getint("SYSTEM", "os"), operator, int(concat))
+            qiling_os = str(ql.os.profile.get("SYSTEM", "majorVersion")) + \
+                        str(ql.os.profile.get("SYSTEM", "minorVersion")) + str(ql.os.profile.get("SYSTEM", "productType"))
+            res = compare(int(qiling_os), operator, int(concat))
         elif key == VER_SERVICEPACKMAJOR:
-            res = compare(ql.config.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_version_info_asked[key])
+            res = compare(ql.os.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_version_info_asked[key])
         else:
-            raise QlErrorNotImplemented("[!] API not implemented")
+            raise QlErrorNotImplemented("[!] API not implemented for key %s" % key)
         # The result is a AND between every value, so if we find a False we just exit from the loop
         if not res:
-            ql.last_error = ERROR_OLD_WIN_VERSION
+            ql.os.last_error = ERROR_OLD_WIN_VERSION
             return 0
+    # reset mask
+    ql.os.hooks_variables["ConditionMask"]= {}
+    return res
+
+
+# BOOL GetUserNameW(
+#   LPWSTR  lpBuffer,
+#   LPDWORD pcbBuffer
+# );
+@winapi(cc=STDCALL, params={
+    "lpBuffer": POINTER,
+    "pcbBuffer": POINTER
+})
+def hook_GetUserNameW(ql, address, params):
+    username = (ql.os.profile["USER"]["username"]+"\x00").encode("utf-16le")
+    dst = params["lpBuffer"]
+    max_size = params["pcbBuffer"]
+    ql.mem.write(max_size, len(username).to_bytes(4, byteorder="little"))
+    if len(username) > max_size:
+        ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
+        return 0
+    else:
+        ql.mem.write(dst, username)
+    return 1
+
+
+# BOOL GetComputerNameW(
+#   LPWSTR  lpBuffer,
+#   LPDWORD nSize
+# );
+@winapi(cc=STDCALL, params={
+    "lpBuffer": POINTER,
+    "nSize": POINTER
+})
+def hook_GetComputerNameW(ql, address, params):
+    computer = (ql.os.profile["SYSTEM"]["computer_name"] + "\x00").encode("utf-16le")
+    dst = params["lpBuffer"]
+    max_size = params["nSize"]
+    ql.mem.write(max_size, (len(computer)-2).to_bytes(4, byteorder="little"))
+    if len(computer) > max_size:
+        #ql.os.last_error = ERROR_BUFFER_OVERFLOW
+        return 0
+    else:
+        ql.mem.write(dst, computer)
     return 1

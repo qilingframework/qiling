@@ -18,8 +18,8 @@ from qiling.os.posix import syscall
 
 
 def my_syscall_write(ql, write_fd, write_buf, write_count, *rest):
-    if write_fd is 2 and ql.file_des[2].__class__.__name__ == 'ql_pipe':
-        ql_definesyscall_return(ql, -1)
+    if write_fd == 2 and ql.os.file_des[2].__class__.__name__ == 'ql_pipe':
+        ql.os.definesyscall_return(-1)
     else:
         syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *rest)
 
@@ -30,14 +30,14 @@ def my_netgear(path, rootfs):
                 rootfs, 
                 output      = "debug", 
                 log_dir     = "qlog",
-                log_split   = True,
-                log_console = True,
-                mmap_start  = 0x7ffee000 - 0x800000,
+               
                 )
 
+    ql.log_split        = True
     ql.root             = False
     ql.bindtolocalhost  = True
     ql.multithread      = False
+    ql.mmap_start       = 0x7ffee000 - 0x800000
     ql.add_fs_mapper('/proc', '/proc')
     ql.set_syscall(4004, my_syscall_write)
     ql.run()
