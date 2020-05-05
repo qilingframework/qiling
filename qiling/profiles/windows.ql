@@ -1,4 +1,3 @@
-
 [X8664]
 heap_address = 0x500000000
 heap_size = 0x5000000
