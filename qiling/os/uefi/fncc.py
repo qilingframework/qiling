@@ -51,26 +51,26 @@ def dxeapi(param_num=None, params=None):
                     self.ql = ql
                     self.PE_RUN = True
                 def write_int32(self, address, num):
-                    if self.ql.archendian == QL_ENDIAN_EL:
+                    if self.ql.archendian == QL_ENDIAN.EL:
                         self.ql.mem.write(address, struct.pack('<I',(num)))
                     else:
                         self.ql.mem.write(address, struct.pack('>I',(num)))
                 def write_int64(self, address, num):
-                    if self.ql.archendian == QL_ENDIAN_EL:
+                    if self.ql.archendian == QL_ENDIAN.EL:
                         self.ql.mem.write(address, struct.pack('<Q',(num)))
                     else:
                         self.ql.mem.write(address, struct.pack('>Q',(num)))
                 def read_int64(self, address):
-                    if self.ql.archendian == QL_ENDIAN_EL:
+                    if self.ql.archendian == QL_ENDIAN.EL:
                         return struct.unpack('<Q', self.ql.mem.read(address, 8))[0]
                     else:
                         return struct.unpack('>Q',self.ql.mem.read(address, 8))[0]
             ctx = hook_context(args[0])
-            arg = (ctx, ctx.ql.pc, {})
+            arg = (ctx, ctx.ql.reg.arch_pc, {})
             f = func
             if func.__name__ in ctx.ql.hook_override:
                 f = ctx.ql.hook_override[func.__name__]
-            return x8664_fastcall(ctx, param_num, params, f, arg, kwargs)
+            return x8664_fastcall(ctx.ql, param_num, params, f, arg, kwargs)
 
         return wrapper
 

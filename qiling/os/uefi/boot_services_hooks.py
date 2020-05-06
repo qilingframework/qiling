@@ -4,6 +4,7 @@ from qiling.const import *
 from qiling.os.uefi.utils import *
 from qiling.os.uefi.fncc import *
 from qiling.os.uefi.uefi_types_64 import *
+from qiling.os.uefi.other_hooks import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.fncc import _get_param_by_index
 
@@ -112,12 +113,6 @@ def hook_SetTimer(ctx, address, params):
 def hook_WaitForEvent(ctx, address, params):
     return ctx.EFI_SUCCESS
 
-
-def hook_EndOfNotify(ql):
-    ql.nprint(f'Back from event notify returning to:{ql.notify_return_address:x}')
-    ql.register(UC_X86_REG_RIP, ql.notify_return_address)
-    return 0
-
 def SignalEvent(ctx, event_id):
     if event_id in ctx.ql.events:
         event = ctx.ql.events[event_id]
@@ -131,7 +126,7 @@ def SignalEvent(ctx, event_id):
                 ctx.ql.notify_return_address = ctx.ql.stack_pop()
                 ctx.ql.stack_push(ctx.ql.notify_ptr) # Return address from the notify function
                 ctx.ql.stack_push(notify_func) # Return address from here -> the notify function.
-                ctx.ql.register(UC_X86_REG_RCX, notify_context)
+                ctx.ql.reg.rcx = notify_context
             else:
                 ctx.ql.notify_list.append((event_id, notify_func, notify_context))
         return ctx.EFI_SUCCESS
@@ -477,9 +472,9 @@ def hook_InstallMultipleProtocolInterfaces(ctx, address, params):
         dic = ctx.ql.handle_dict[handle]
     
     index = 1
-    while _get_param_by_index(ctx, index) != 0:
-        GUID_ptr = _get_param_by_index(ctx, index)
-        protocol_ptr = _get_param_by_index(ctx, index+1)
+    while _get_param_by_index(ctx.ql, index) != 0:
+        GUID_ptr = _get_param_by_index(ctx.ql, index)
+        protocol_ptr = _get_param_by_index(ctx.ql, index+1)
         GUID = str(read_guid(ctx.ql, GUID_ptr))
         ctx.ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
         dic[GUID] = protocol_ptr

@@ -132,7 +132,11 @@ def ql_pe_check_archtype(path):
     arch = machine_map.get(pe.FILE_HEADER.Machine)
 
     if arch:
-        ostype = QL_OS.WINDOWS
+        if pe.OPTIONAL_HEADER.Subsystem >= pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_APPLICATION'] and \
+        pe.OPTIONAL_HEADER.Subsystem <= pefile.SUBSYSTEM_TYPE['IMAGE_SUBSYSTEM_EFI_ROM'] :
+            ostype = QL_OS.UEFI
+        else:
+            ostype = QL_OS.WINDOWS
     else:
         ostype = None
 
