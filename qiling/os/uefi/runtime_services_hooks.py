@@ -12,29 +12,29 @@ from qiling.os.windows.fncc import *
     "a0": POINTER, #POINTER_T(struct_EFI_TIME)
     "a1": POINTER, #POINTER_T(struct_EFI_TIME_CAPABILITIES)
 })
-def hook_GetTime(ql, ctx, address, params):
-    return ctx.EFI_SUCCESS
+def hook_GetTime(ql, address, params):
+    return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(struct_EFI_TIME)
 })
-def hook_SetTime(ql, ctx, address, params):
-    return ctx.EFI_SUCCESS
+def hook_SetTime(ql, address, params):
+    return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(ctypes.c_ubyte)
     "a1": POINTER, #POINTER_T(ctypes.c_ubyte)
     "a2": POINTER, #POINTER_T(struct_EFI_TIME)
 })
-def hook_GetWakeupTime(ql, ctx, address, params):
-    return ctx.EFI_SUCCESS
+def hook_GetWakeupTime(ql, address, params):
+    return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
     "a1": POINTER, #POINTER_T(struct_EFI_TIME)
 })
-def hook_SetWakeupTime(ql, ctx, address, params):
-    return ctx.EFI_SUCCESS
+def hook_SetWakeupTime(ql, address, params):
+    return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
@@ -42,15 +42,15 @@ def hook_SetWakeupTime(ql, ctx, address, params):
     "a2": UINT,
     "a3": POINTER, #POINTER_T(struct_EFI_MEMORY_DESCRIPTOR)
 })
-def hook_SetVirtualAddressMap(ql, ctx, address, params):
-    return ctx.EFI_SUCCESS
+def hook_SetVirtualAddressMap(ql, address, params):
+    return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
     "a1": POINTER, #POINTER_T(POINTER_T(None))
 })
-def hook_ConvertPointer(ql, ctx, address, params):
-    return ctx.EFI_SUCCESS
+def hook_ConvertPointer(ql, address, params):
+    return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
     "VariableName": WSTRING,
@@ -65,7 +65,7 @@ def hook_GetVariable(ql, address, params):
         read_len = ql.os.ctx.read_int64(params['DataSize'])
         ql.os.ctx.write_int64(params['DataSize'], len(var))
         if read_len < len(var):
-            return ctx.EFI_BUFFER_TOO_SMALL
+            return ql.os.ctx.EFI_BUFFER_TOO_SMALL
         if params['Data'] != 0:
             ql.mem.write(params['Data'], var)
         return ql.os.ctx.EFI_SUCCESS
@@ -76,14 +76,14 @@ def hook_GetVariable(ql, address, params):
     "VariableName": POINTER, #POINTER_T(ctypes.c_uint16)
     "VendorGuid": GUID,
 })
-def hook_GetNextVariableName(ql, ctx, address, params):
-    name_size = ctx.read_int64(params["VariableNameSize"])
+def hook_GetNextVariableName(ql, address, params):
+    name_size = ql.os.ctx.read_int64(params["VariableNameSize"])
     last_name = read_wstring(ql, params["VariableName"])
     vars = ql.env['Names'] # This is a list of variable names in correct order.
     if last_name in vars and vars.index(last_name) < len(vars) - 1:
         new_name = vars[vars.index(last_name)+1]
         if (len(new_name)+1)*2 > name_size:
-            return ctx.EFI_BUFFER_TOO_SMALL
+            return ql.os.ctx.EFI_BUFFER_TOO_SMALL
         vn_ptr = params["VariableName"]
         for char in new_name:
             ql.mem.write(vn_ptr, char)
@@ -92,7 +92,7 @@ def hook_GetNextVariableName(ql, ctx, address, params):
             vn_ptr += 1
         ql.mem.write(vn_ptr, '\x00\x00')
 
-    return ctx.EFI_INVALID_PARAMETER
+    return ql.os.ctx.EFI_INVALID_PARAMETER
 
 @dxeapi(params={
     "VariableName": WSTRING, #POINTER_T(ctypes.c_uint16)
@@ -101,19 +101,19 @@ def hook_GetNextVariableName(ql, ctx, address, params):
     "DataSize": ULONGLONG,
     "Data": POINTER, #POINTER_T(None)
 })
-def hook_SetVariable(ql, ctx, address, params):
+def hook_SetVariable(ql, address, params):
     ql.env[params['VariableName']] = ql.mem.read(params['Data'], params['DataSize'])
-    return ctx.EFI_SUCCESS
+    return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
     "Count": POINTER, #POINTER_T(ctypes.c_uint32)
 })
-def hook_GetNextHighMonotonicCount(ql, ctx, address, params):
+def hook_GetNextHighMonotonicCount(ql, address, params):
     ql.os.monotonic_count += 0x0000000100000000
     hmc = ql.os.monotonic_count
     hmc = (hmc >> 32) & 0xffffffff
-    ctx.write_int32(params["Count"], hmc)
-    return ctx.EFI_SUCCESS
+    ql.os.ctx.write_int32(params["Count"], hmc)
+    return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
@@ -121,18 +121,18 @@ def hook_GetNextHighMonotonicCount(ql, ctx, address, params):
     "a2": ULONGLONG,
     "a3": POINTER, #POINTER_T(None)
 })
-def hook_ResetSystem(ql, ctx, address, params):
+def hook_ResetSystem(ql, address, params):
     ql.nprint(f'hook_ResetSystem')
     ql.emu_stop()
-    return ctx.EFI_SUCCESS
+    return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(POINTER_T(struct_EFI_CAPSULE_HEADER))
     "a1": ULONGLONG,
     "a2": ULONGLONG,
 })
-def hook_UpdateCapsule(ql, ctx, address, params):
-    return ctx.EFI_SUCCESS
+def hook_UpdateCapsule(ql, address, params):
+    return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(POINTER_T(struct_EFI_CAPSULE_HEADER))
@@ -140,8 +140,8 @@ def hook_UpdateCapsule(ql, ctx, address, params):
     "a2": POINTER, #POINTER_T(ctypes.c_uint64)
     "a3": POINTER, #POINTER_T(enum_73)
 })
-def hook_QueryCapsuleCapabilities(ql, ctx, address, params):
-    return ctx.EFI_SUCCESS
+def hook_QueryCapsuleCapabilities(ql, address, params):
+    return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
     "a0": UINT,
@@ -149,8 +149,8 @@ def hook_QueryCapsuleCapabilities(ql, ctx, address, params):
     "a2": POINTER, #POINTER_T(ctypes.c_uint64)
     "a3": POINTER, #POINTER_T(ctypes.c_uint64)
 })
-def hook_QueryVariableInfo(ql, ctx, address, params):
-    return ctx.EFI_SUCCESS
+def hook_QueryVariableInfo(ql, address, params):
+    return ql.os.ctx.EFI_SUCCESS
 
 def hook_EFI_RUNTIME_SERVICES(ql, start_ptr):
     efi_runtime_services = EFI_RUNTIME_SERVICES()

@@ -1,8 +1,13 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 from unicorn.x86_const import *
 
 def check_and_notify_protocols(ql):
-    if len(ql.notify_list) > 0:
-        event_id, notify_func, notify_context = ql.notify_list.pop(0)
+    if len(ql.loader.notify_list) > 0:
+        event_id, notify_func, notify_context = ql.loader.notify_list.pop(0)
         ql.nprint(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
         ql.stack_push(ql.end_of_execution_ptr)
         ql.reg.rcx = notify_context
@@ -13,7 +18,7 @@ def check_and_notify_protocols(ql):
 def hook_EndOfExecution(ql):
     if check_and_notify_protocols(ql):
         return
-    if len(ql.modules) < 1:
+    if len(ql.loader.modules) < 1:
         ql.nprint(f'No more modules to run')
         ql.emu_stop()
     else:
