@@ -118,10 +118,11 @@ def test_pe_win_x86_partial_api():
     def partialapi2(ql, address, params):
         ql.test += 1
 
-    ql = Qiling(["../examples/rootfs/x8664_windows/bin//x8664_clipboard_test.exe"],
-                "../examples/rootfs/x8664_windows")
-    ql.set_partial_api("GlobalUnlock", {"hMem": 0x5000893c0}, partialapi)
-    ql.set_partial_api("GlobalUnlock", {"hMem": 0x5000893d8}, partialapi2)
+    ql = Qiling(["../examples/rootfs/x86_windows/bin/UselessDisk.bin"], "../examples/rootfs/x86_windows",
+                output="debug")
+
+    ql.set_partial_api("GetCPInfo", {"lpCPInfo": 0xffffcf34}, partialapi)
+    ql.set_partial_api("GetCPInfo", {"lpCPInfo": 0xffffcc0c}, partialapi2)
     ql.test = 0
     ql.run()
     assert ql.test == 2
