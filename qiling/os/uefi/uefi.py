@@ -38,3 +38,4 @@ class QlOsUefi(QlOs):
 
         if self.ql.internal_exception is not None:
             raise self.ql.internal_exception
+

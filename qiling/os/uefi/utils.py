@@ -37,3 +37,4 @@ def read_int64(ql, address):
         return struct.unpack('<Q', ql.mem.read(address, 8))[0]
     else:
         return struct.unpack('>Q',ql.mem.read(address, 8))[0]
+
