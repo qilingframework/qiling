@@ -24,6 +24,7 @@ STRING = 4
 WSTRING = 5
 STRING_ADDR = 6
 WSTRING_ADDR = 7
+GUID = 8
 
 def _x86_get_params_by_index(ql, index):
     # index starts from 0
@@ -110,6 +111,12 @@ def set_function_params(ql, in_params, out_params):
                     out_params[each] = (ptr, content)
                 else:
                     out_params[each] = content
+        elif in_params[each] == GUID:
+            ptr = _get_param_by_index(ql, index)
+            if ptr == 0:
+                out_params[each] = 0
+            else:
+                out_params[each] = str(read_guid(ql, ptr))
         index += 1
     return index
 

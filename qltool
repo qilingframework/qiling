@@ -177,7 +177,8 @@ if __name__ == '__main__':
     commands = parser.add_subparsers(title='subcommands', description='valid subcommands', help='additional help', dest='subparser_name')
     
     run_parser = commands.add_parser('run', help = 'run')
-    run_parser.add_argument('-f', '--filename', required=False, default='', metavar="FILE", dest="filename", help="filename")
+    run_parser.add_argument('-f', '--filename', required=False, default=None, metavar="FILE", dest="filename", help="filename")
+    run_parser.add_argument('--env', required=False, default='', metavar="FILE", dest="env_filename", help="Pickle file containing an environment dictionary")
     run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
     run_parser.add_argument('--args', required=False, default=[], nargs=argparse.REMAINDER, dest="args", help="args")
     run_parser.add_argument('run_args', default=[], nargs=argparse.REMAINDER)
@@ -223,6 +224,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('--log_dir', required=False, default=None, dest='log_dir', help='log file dir')
     comm_parser.add_argument('--log_split', action='store_true', default=False, dest='log_split', help='split log file')
     comm_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
+    comm_parser.add_argument('--timeout', required=False, help='Emulation timeout')
 
     options = parser.parse_args()
 
@@ -301,9 +303,18 @@ if __name__ == '__main__':
 
     if options.strace_filter != None:
        ql.strace_filter = options.strace_filter
+
+    if options.env_filename != '':
+        import pickle
+        with open(options.env_filename, 'rb') as f:
+            ql.env = pickle.load(f)
+    
+    timeout = 0
+    if options.timeout != None:
+        timeout = int(options.timeout)
     
     # ql run
-    ql.run()
+    ql.run(timeout=timeout)
     exit(ql.os.exit_code)
 
 
