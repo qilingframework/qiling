@@ -8,7 +8,7 @@
 
 Qiling is an advanced binary emulation framework, with the following features:
 
-- Cross platform: Windows, MacOS, Linux, BSD
+- Cross platform: Windows, MacOS, Linux, BSD, UEFI
 - Cross architecture: X86, X86_64, Arm, Arm64, Mips
 - Multiple file formats: PE, MachO, ELF
 - Emulate & sandbox machine code in a isolated environment
@@ -149,11 +149,12 @@ $ ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs exa
 ```
 
 With UEFI file:
+
 ```
 $ ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel
 ```
 
-With binary gdbserver:
+With binary and GDB debugger enable:
 
 ```
 $ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --gdb 127.0.0.1:9999 --rootfs examples/rootfs/x8664_linux
@@ -177,7 +178,7 @@ $ ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs exa
 
 #### Gdbserver
 
-Qiling has supported **Gdb remote debugging** now (x86, x86-64 for now).
+Qiling supports **Gdb remote debugging** now.
 
 See [EN](docs/GDBSERVER.md)|[CN](docs/GDBSERVER_CN.md)  for more details
 
