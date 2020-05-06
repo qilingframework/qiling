@@ -13,8 +13,8 @@ def hook_EndOfExecution(ql):
         ql.emu_stop()
     else:
         path, entry_point, pe = ql.loader.modules.pop(0)
-        ql.stack_push(ql.end_of_execution_ptr)
-        ql.reg.rdx = ql.os.system_table_ptr
+        ql.stack_push(ql.loader.end_of_execution_ptr)
+        ql.reg.rdx = ql.loader.system_table_ptr
         ql.nprint(f'Running {path} module entrypoint: 0x{entry_point:x}')
         ql.reg.arch_pc = entry_point
 
