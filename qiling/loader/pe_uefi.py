@@ -13,7 +13,7 @@ from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.uefi.utils import *
-from qiling.os.uefi.uefi_types_64 import *
+from qiling.os.uefi.type64 import *
 from qiling.os.uefi.fncc import *
 from qiling.os.uefi.bootup import *
 from qiling.os.uefi.runtime import *
