@@ -10,8 +10,8 @@
 # POINTER_SIZE is: 8
 # LONGDOUBLE_SIZE is: 16
 #
-import ctypes
 
+import ctypes
 
 c_int128 = ctypes.c_ubyte*16
 c_uint128 = c_int128

@@ -9,7 +9,7 @@ from qiling.const import *
 from .utils import *
 from .fncc import *
 from .uefi_types_64 import *
-from .other_hooks import *
+from .shutdown import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.fncc import _get_param_by_index
 
@@ -118,7 +118,7 @@ def SignalEvent(ql, event_id):
             if ql.notify_immediately:
                 ql.hook_address(hook_EndOfNotify, ql.notify_ptr)
                 ql.nprint(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
-                ql.notify_return_address = ql.stack_pop()
+                ql.os.notify_return_address = ql.stack_pop()
                 ql.stack_push(ql.notify_ptr) # Return address from the notify function
                 ql.stack_push(notify_func) # Return address from here -> the notify function.
                 ql.reg.rcx = notify_context
@@ -157,10 +157,10 @@ def hook_CheckEvent(ql, address, params):
 def hook_InstallProtocolInterface(ql, address, params):
     dic = {}
     handle = params["Handle"]
-    if handle in ql.handle_dict:
-        dic = ql.handle_dict[handle]
+    if handle in ql.loader.handle_dict:
+        dic = ql.loader.handle_dict[handle]
     dic[params["Protocol"]] = params["Interface"]
-    ql.handle_dict[handle] = dic
+    ql.loader.handle_dict[handle] = dic
     check_and_notify_protocols(ql)
     return ql.os.ctx.EFI_SUCCESS
 
@@ -172,9 +172,9 @@ def hook_InstallProtocolInterface(ql, address, params):
 })
 def hook_ReinstallProtocolInterface(ql, address, params):
     handle = params["Handle"]
-    if handle not in ql.handle_dict:
+    if handle not in ql.loader.handle_dict:
         return ql.os.ctx.EFI_NOT_FOUND
-    dic = ql.handle_dict[handle]
+    dic = ql.loader.handle_dict[handle]
     protocol = params["Protocol"]
     if protocol not in dic:
         return ql.os.ctx.EFI_NOT_FOUND
@@ -188,9 +188,9 @@ def hook_ReinstallProtocolInterface(ql, address, params):
 })
 def hook_UninstallProtocolInterface(ql, address, params):
     handle = params["Handle"]
-    if handle not in ql.handle_dict:
+    if handle not in ql.loader.handle_dict:
         return ql.os.ctx.EFI_NOT_FOUND
-    dic = ql.handle_dict[handle]
+    dic = ql.loader.handle_dict[handle]
     protocol = params["Protocol"]
     if protocol not in dic:
         return ql.os.ctx.EFI_NOT_FOUND
@@ -206,9 +206,9 @@ def hook_HandleProtocol(ql, address, params):
     handle = params["Handle"]
     protocol = params["Protocol"]
     interface = params['Interface']
-    if handle in ql.handle_dict:
-        if protocol in ql.handle_dict[handle]:
-            ql.os.ctx.write_int64(interface, ql.handle_dict[handle][protocol])
+    if handle in ql.loader.handle_dict:
+        if protocol in ql.loader.handle_dict[handle]:
+            ql.os.ctx.write_int64(interface, ql.loader.handle_dict[handle][protocol])
             return ql.os.ctx.EFI_SUCCESS
     return ql.os.ctx.EFI_NOT_FOUND
 
@@ -226,9 +226,9 @@ def hook_RegisterProtocolNotify(ql, address, params):
 def LocateHandles(ql, address, params):
     handles = []
     if params["SearchKey"] == ql.os.ctx.SEARCHTYPE_AllHandles:
-        handles = ql.handle_dict.keys()
+        handles = ql.loader.handle_dict.keys()
     elif params["SearchKey"] == ql.os.ctx.SEARCHTYPE_ByProtoco:
-        for handle, guid_dic in ql.handle_dict.items():
+        for handle, guid_dic in ql.loader.handle_dict.items():
             if params["Protocol"] in guid_dic:
                 handles.append(handle)
                     
@@ -433,7 +433,7 @@ def hook_LocateHandleBuffer(ql, address, params):
 
 def LocateProtocol(ql, address, params):
     protocol = params['Protocol']
-    for handle, guid_dic in ql.handle_dict.items():
+    for handle, guid_dic in ql.loader.handle_dict.items():
         if "Handle" in params and params["Handle"] != handle:
             continue
         if protocol in guid_dic:
@@ -477,7 +477,7 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
 def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
     handle = params["Handle"]
     ql.nprint(f'hook_UninstallMultipleProtocolInterfaces {handle:x}')
-    if handle not in ql.handle_dict:
+    if handle not in ql.loader.handle_dict:
         return ql.os.ctx.EFI_NOT_FOUND
     index = 1
     while _get_param_by_index(ql, index) != 0:
@@ -485,7 +485,7 @@ def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
         protocol_ptr = _get_param_by_index(ql, index+1)
         GUID = str(read_guid(ql, GUID_ptr))
         ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
-        dic = ql.handle_dict[handle]
+        dic = ql.loader.handle_dict[handle]
         protocol = params["Protocol"]
         if protocol not in dic:
             return ql.os.ctx.EFI_INVALID_PARAMETER

@@ -15,8 +15,8 @@ from qiling.os.memory import QlMemoryHeap
 from qiling.os.uefi.utils import *
 from qiling.os.uefi.uefi_types_64 import *
 from qiling.os.uefi.fncc import *
-from qiling.os.uefi.boot_services_hooks import *
-from qiling.os.uefi.runtime_services_hooks import *
+from qiling.os.uefi.bootup import *
+from qiling.os.uefi.runtime import *
 
 from qiling.os.windows.fncc import *
 from qiling.os.windows.fncc import _get_param_by_index
