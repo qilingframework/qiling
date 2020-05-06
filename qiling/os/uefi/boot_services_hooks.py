@@ -13,7 +13,7 @@ pointer_size = 8
 @dxeapi(params={
     "NewTpl": ULONGLONG,
 })
-def hook_RaiseTPL(ql, ctx, address, params):
+def hook_RaiseTPL(ql, address, params):
     tpl = ql.loader.tpl
     ql.loader.tpl = params["NewTpl"]
     return tpl
@@ -65,9 +65,9 @@ def hook_GetMemoryMap(ql, ctx, address, params):
     "Size": UINT,
     "Buffer": POINTER,
 })
-def hook_AllocatePool(ql, ctx, address, params):
-    address = ql.heap.mem_alloc(params["Size"])
-    ctx.write_int64(params["Buffer"], address)
+def hook_AllocatePool(ql, address, params):
+    address = ql.loader.heap.mem_alloc(params["Size"])
+    ql.os.ctx.write_int64(params["Buffer"], address)
     return address
 
 @dxeapi(params={
@@ -84,8 +84,8 @@ def hook_FreePool(ql, ctx, address, params):
     "NotifyFunction": POINTER,
     "NotifyContext": POINTER,
     "Event": POINTER})
-def hook_CreateEvent(ctx, address, params):
-    return CreateEvent(ctx, address, params)
+def hook_CreateEvent(ql, address, params):
+    return CreateEvent(ql, address, params)
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -143,13 +143,6 @@ def hook_CloseEvent(ctx, address, params):
 def hook_CheckEvent(ctx, address, params):
     return ctx.EFI_SUCCESS if ctx.ql.events[params["Event"]]["Set"] else ctx.EFI_NOT_READY
 
-def check_and_notify_protocols(ctx):
-    for handle in ctx.ql.handle_dict:
-        for protocol in ctx.ql.handle_dict[handle]:
-            for event_id, event_dic in ctx.ql.events.items():
-                if event_dic["Guid"] == protocol:
-                    SignalEvent(ctx, event_id)
-
 @dxeapi(params={
     "Handle": POINTER, #POINTER_T(POINTER_T(None))
     "Protocol": GUID,
@@ -163,7 +156,7 @@ def hook_InstallProtocolInterface(ctx, address, params):
         dic = ctx.ql.handle_dict[handle]
     dic[params["Protocol"]] = params["Interface"]
     ctx.ql.handle_dict[handle] = dic
-    check_and_notify_protocols(ctx)
+    check_and_notify_protocols(ql)
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
@@ -218,12 +211,12 @@ def hook_HandleProtocol(ctx, address, params):
     "Protocol": GUID,
     "Event": POINTER,
     "Registration": POINTER})
-def hook_RegisterProtocolNotify(ctx, address, params):
-    if params['Event'] in ctx.ql.events:
-        ctx.ql.events[params['Event']]['Guid'] = params["Protocol"]
-        check_and_notify_protocols(ctx)
-        return ctx.EFI_SUCCESS
-    return ctx.EFI_INVALID_PARAMETER
+def hook_RegisterProtocolNotify(ql, address, params):
+    if params['Event'] in ql.loader.events:
+        ql.loader.events[params['Event']]['Guid'] = params["Protocol"]
+        check_and_notify_protocols(ql)
+        return ql.os.ctx.EFI_SUCCESS
+    return ql.os.ctx.EFI_INVALID_PARAMETER
 
 def LocateHandles(ctx, address, params):
     handles = []
@@ -454,24 +447,24 @@ def hook_LocateProtocol(ctx, address, params):
 
 @dxeapi(params={
     "Handle": POINTER})
-def hook_InstallMultipleProtocolInterfaces(ctx, address, params):
+def hook_InstallMultipleProtocolInterfaces(ql, address, params):
     handle = params["Handle"]
-    ctx.ql.nprint(f'hook_InstallMultipleProtocolInterfaces {handle:x}')
+    ql.nprint(f'hook_InstallMultipleProtocolInterfaces {handle:x}')
     dic = {}
-    if handle in ctx.ql.handle_dict:
-        dic = ctx.ql.handle_dict[handle]
+    if handle in ql.loader.handle_dict:
+        dic = ql.loader.handle_dict[handle]
     
     index = 1
-    while _get_param_by_index(ctx.ql, index) != 0:
-        GUID_ptr = _get_param_by_index(ctx.ql, index)
-        protocol_ptr = _get_param_by_index(ctx.ql, index+1)
-        GUID = str(read_guid(ctx.ql, GUID_ptr))
-        ctx.ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
+    while _get_param_by_index(ql, index) != 0:
+        GUID_ptr = _get_param_by_index(ql, index)
+        protocol_ptr = _get_param_by_index(ql, index+1)
+        GUID = str(read_guid(ql, GUID_ptr))
+        ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
         dic[GUID] = protocol_ptr
         index +=2
-    ctx.ql.handle_dict[handle] = dic
-    check_and_notify_protocols(ctx)
-    return ctx.EFI_SUCCESS
+    ql.loader.handle_dict[handle] = dic
+    check_and_notify_protocols(ql)
+    return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
     "Handle": POINTER, #POINTER_T(None)
@@ -535,18 +528,26 @@ def hook_SetMem(ql, ctx, address, params):
     "EventGroup": GUID,
     "Event": POINTER, #POINTER_T(POINTER_T(None))
 })
-def hook_CreateEventEx(ql, ctx, address, params):
-    return CreateEvent(ctx, address, params)
+def hook_CreateEventEx(ql, address, params):
+    return CreateEvent(ql, address, params)
 
 
-def CreateEvent(ql, wrapper, address, params):
-    event_id = len(wrapper.ql.events)
+def check_and_notify_protocols(ql):
+    for handle in ql.loader.handle_dict:
+        for protocol in ql.loader.handle_dict[handle]:
+            for event_id, event_dic in ql.loader.events.items():
+                if event_dic["Guid"] == protocol:
+                    SignalEvent(ql, event_id)
+
+
+def CreateEvent(ql, address, params):
+    event_id = len(ql.loader.events)
     event_dic = {"NotifyFunction": params["NotifyFunction"], "NotifyContext": params["NotifyContext"], "Guid": "", "Set": False}
     if "EventGroup" in params:
         event_dic["EventGroup"] =  params["EventGroup"]
     
-    wrapper.ql.events[event_id] = event_dic
-    wrapper.write_int64(params["Event"], event_id)
+    ql.loader.events[event_id] = event_dic
+    ql.os.ctx.write_int64(params["Event"], event_id)
     return event_id
 
 def hook_EFI_BOOT_SERVICES(ql, start_ptr):

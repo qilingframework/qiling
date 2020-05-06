@@ -59,17 +59,17 @@ def hook_ConvertPointer(ql, ctx, address, params):
     "DataSize": POINTER,
     "Data": POINTER
 })
-def hook_GetVariable(ql, ctx, address, params):
+def hook_GetVariable(ql, address, params):
     if params['VariableName'] in ql.env:
         var = ql.env[params['VariableName']]
-        read_len = ctx.read_int64(params['DataSize'])
-        ctx.write_int64(params['DataSize'], len(var))
+        read_len = ql.os.ctx.read_int64(params['DataSize'])
+        ql.os.ctx.write_int64(params['DataSize'], len(var))
         if read_len < len(var):
             return ctx.EFI_BUFFER_TOO_SMALL
         if params['Data'] != 0:
             ql.mem.write(params['Data'], var)
-        return ctx.EFI_SUCCESS
-    return ctx.EFI_NOT_FOUND
+        return ql.os.ctx.EFI_SUCCESS
+    return ql.os.ctx.EFI_NOT_FOUND
 
 @dxeapi(params={
     "VariableNameSize": POINTER, #POINTER_T(ctypes.c_uint64)
