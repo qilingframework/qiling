@@ -25,6 +25,7 @@ class QlOsWindows(QlOs):
         self.last_error = 0
         # variables used inside hooks
         self.user_defined_api = {}
+        self.user_partial_defined_api = {}
         self.hooks_variables = {}
         self.syscall_count = {}
         self.argv = self.ql.argv
