@@ -87,7 +87,7 @@ def test_pe_win_x86_gandcrab():
             raise QlErrorNotImplemented("[!] API not implemented")
 
     ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
-                output="debug")
+                output="debug", profile="profiles/windows_gandcrab.ql")
     default_user = ql.os.profile["USER"]["username"]
     default_computer = ql.os.profile["SYSTEM"]["computername"]
 

@@ -11,7 +11,6 @@ from qiling.os.windows.const import *
 
 
 def _RegOpenKey(ql, address, params):
-
     hKey = params["hKey"]
     s_lpSubKey = params["lpSubKey"]
     phkResult = params["phkResult"]
@@ -21,15 +20,20 @@ def _RegOpenKey(ql, address, params):
         return ERROR_FILE_NOT_FOUND
     else:
         s_hKey = REG_KEYS[hKey]
-    if not ql.os.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
-        ql.dprint(D_INFO, "[!] Value key %s\%s not present" % (s_hKey, s_lpSubKey))
-        return ERROR_FILE_NOT_FOUND
-    # TODO fix for gandcrab, to remove when it works
-    if s_lpSubKey == "HARDWARE\DESCRIPTION\System\CentralProcessor\\0":
-        return ERROR_FILE_NOT_FOUND
+    key = s_hKey + "\\" + s_lpSubKey
+
+    # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
+    keys_profile = [key.rsplit("\\", 1)[0] for key in ql.os.profile["REGISTRY"].keys()]
+    if key.lower() in keys_profile:
+        ql.dprint(D_INFO, "[+] Using profile for key of  %s" % key)
+        ql.os.registry_manager.access(key)
+    else:
+        if not ql.os.registry_manager.exists(key):
+            ql.dprint(D_INFO, "[!] Value key %s not present" % key)
+            return ERROR_FILE_NOT_FOUND
 
     # new handle
-    new_handle = Handle(obj=s_hKey + "\\" + s_lpSubKey)
+    new_handle = Handle(obj=key)
     ql.os.handle_manager.append(new_handle)
     if phkResult != 0:
         ql.mem.write(phkResult, ql.pack(new_handle.id))
@@ -44,23 +48,26 @@ def RegQueryValue(ql, address, params):
     lpType = params["lpType"]
     lpData = params["lpData"]
     lpcbData = params["lpcbData"]
-
     s_hKey = ql.os.handle_manager.get(hKey).obj
-    params["hKey"] = s_hKey
     # read reg_type
     if lpType != 0:
         reg_type = ql.unpack(ql.mem.read(lpType, 4))
     else:
         reg_type = Registry.RegNone
     try:
-        value = ql.os.profile["REGISTRY"][s_hKey]
-        # TODO fix in profile
+        # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
+        value = ql.os.profile["REGISTRY"][s_hKey + "\\" + s_lpValueName]
+        ql.dprint(D_INFO, "[+] Using profile for value of key %s" % (s_hKey + "\\" + s_lpValueName,))
+        # TODO i have no fucking idea on how to set a None value, fucking configparser
+        if value == "None":
+            return ERROR_FILE_NOT_FOUND
         reg_type = 0x0001
+        # set that the registry has been accessed
         ql.os.registry_manager.access(s_hKey, s_lpValueName, value, reg_type)
-    except KeyError:
-        reg_type, value = ql.os.registry_manager.read(s_hKey, s_lpValueName, reg_type)
 
-    # read registy
+    except KeyError:
+        # Read the registry
+        reg_type, value = ql.os.registry_manager.read(s_hKey, s_lpValueName, reg_type)
 
     # error key
     if reg_type is None or value is None:
@@ -367,7 +374,7 @@ def hook_GetTokenInformation(ql, address, params):
     return_size = int.from_bytes(ql.mem.read(return_point, 4), byteorder="little")
     ql.dprint(D_RPRT, "[=] The sample is checking for its permissions")
     if return_size > max_size:
-        ql.os.last_error  = ERROR_INSUFFICIENT_BUFFER
+        ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
         return 0
     if dst != 0:
         ql.mem.write(dst, information_value)
