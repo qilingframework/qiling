@@ -61,6 +61,8 @@ class QLCoreHooks(object):
         self._hook_fuc = {}
         self._insn_hook = {}
         self._insn_hook_fuc = {}
+        self._addr_hook = {}
+        self._addr_hook_fuc = {}
         
         self.hook_intr_fuc = None
         self.hook_insn_fuc = None
@@ -173,6 +175,14 @@ class QLCoreHooks(object):
         if catched == False:
             raise QlErrorCoreHook("_hook_intr_invalid_cb : catched == False")
 
+    def _hook_addr_cb(self, uc, addr, size, pack_data):
+        ql, addr = pack_data
+        if addr in self._addr_hook.keys():
+            for h in self._addr_hook[addr]:
+                ret = h.call(ql, addr, size)
+                if ret == False:
+                    break
+
     ###############
     # Class Hooks #
     ###############
@@ -180,6 +190,11 @@ class QLCoreHooks(object):
         _callback = (catch_KeyboardInterrupt(self))(callback)
         # pack user_data & callback for wrapper _callback
         return self.uc.hook_add(hook_type, _callback, (self, user_data), 1, 0, *args)
+
+    def _ql_hook_addr_internal(self, callback, user_data, address):
+        _callback = (catch_KeyboardInterrupt(self))(callback)
+        # pack user_data & callback for wrapper _callback
+        return self.uc.hook_add(UC_HOOK_CODE, _callback, (self, user_data), address, address)
 
     def _ql_hook(self, hook_type, h, *args):
         base_type = [
@@ -273,7 +288,14 @@ class QLCoreHooks(object):
     # a convenient API to set callback for a single address
     def hook_address(self, callback, address, user_data=None):
         h = HookAddr(callback, address, user_data)
-        self._ql_hook(UC_HOOK_CODE, h)
+
+        if address not in self._addr_hook_fuc.keys():
+            self._addr_hook_fuc[address] = self._ql_hook_addr_internal(self._hook_addr_cb, address, address)
+
+        if address not in self._addr_hook.keys():
+            self._addr_hook[address] = []
+
+        self._addr_hook[address].append(h)
     
     def hook_intno(self, callback, intno, user_data=None):
         h = HookIntr(callback, intno, user_data)
