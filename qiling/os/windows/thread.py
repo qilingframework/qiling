@@ -29,7 +29,7 @@ class QlWindowsThreadManagement(QlThread):
         self.cur_thread = cur_thread
         self.threads = [self.cur_thread]
         self.ins_count = 0
-        self.THREAD_RET_ADDR = self.ql.os.heap.mem_alloc(8)
+        self.THREAD_RET_ADDR = self.ql.os.heap.alloc(8)
         # write nop to THREAD_RET_ADDR
         self.ql.mem.write(self.THREAD_RET_ADDR, b"\x90"*8)
         self.ql.hook_code(thread_scheduler)
@@ -81,7 +81,7 @@ class QlWindowsThread(QlThread):
     def create(self, func_addr, func_params, status):
         # create new stack
         stack_size = 1024
-        new_stack = self.ql.os.heap.mem_alloc(stack_size) + stack_size
+        new_stack = self.ql.os.heap.alloc(stack_size) + stack_size
         
         # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
         if self.ql.archtype == QL_ARCH.X86:

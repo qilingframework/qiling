@@ -138,7 +138,7 @@ class QlLoaderPE_UEFI(QlLoader):
         # set SystemTable to image base for now
         pointer_size = ctypes.sizeof(ctypes.c_void_p)
         system_table_heap_size = 1024*1024
-        system_table_heap = self.heap.mem_alloc(system_table_heap_size)
+        system_table_heap = self.heap.alloc(system_table_heap_size)
         self.ql.mem.write(system_table_heap, b'\x90'*system_table_heap_size)
         self.system_table_ptr = system_table_heap
         system_table = EFI_SYSTEM_TABLE()

@@ -101,10 +101,10 @@ class Process(QlLoader):
 
     def set_cmdline(self, name, address, memory):
         if self.ql.archtype== QL_ARCH.X86:
-            addr = self.ql.os.heap.mem_alloc(len(self.cmdline))
+            addr = self.ql.os.heap.alloc(len(self.cmdline))
             packed_addr = self.ql.pack32(addr)
         else:
-            addr = self.ql.os.heap.mem_alloc(2 * len(self.cmdline))
+            addr = self.ql.os.heap.alloc(2 * len(self.cmdline))
             packed_addr = self.ql.pack64(addr)
 
         cmdline_entry = None
@@ -157,7 +157,7 @@ class Process(QlLoader):
         peb_size = len(PEB(self.ql).bytes())
 
         # we must set an heap, will try to retrieve this value. Is ok to be all \x00
-        process_heap = self.ql.os.heap.mem_alloc(0x100)
+        process_heap = self.ql.os.heap.alloc(0x100)
         peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size, process_heap=process_heap)
 
         self.ql.mem.write(peb_addr, peb_data.bytes())
@@ -191,7 +191,7 @@ class Process(QlLoader):
         dll_base = self.dlls[dll_name]
         path = "C:\\Windows\\System32\\" + dll_name
         ldr_table_entry_size = len(LdrDataTableEntry(self.ql).bytes())
-        base = self.ql.os.heap.mem_alloc(ldr_table_entry_size)
+        base = self.ql.os.heap.alloc(ldr_table_entry_size)
         ldr_table_entry = LdrDataTableEntry(self.ql,
                                             base=base,
                                             in_load_order_links={'Flink': 0, 'Blink': 0},

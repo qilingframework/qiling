@@ -44,7 +44,7 @@ def hook_AllocatePages(ql, address, params):
         address =  ql.os.ctx.read_int64(params["Memory"])
         ql.mem.map(address, params["Pages"]*PageSize)
     else:
-        address = ql.heap.mem_alloc(params["Pages"]*PageSize)
+        address = ql.heap.alloc(params["Pages"]*PageSize)
         ql.os.ctx.write_int64(params["Memory"], address)
     return address
 
@@ -71,7 +71,7 @@ def hook_GetMemoryMap(ql, address, params):
     "Buffer": POINTER,
 })
 def hook_AllocatePool(ql, address, params):
-    address = ql.loader.heap.mem_alloc(params["Size"])
+    address = ql.loader.heap.alloc(params["Size"])
     ql.os.ctx.write_int64(params["Buffer"], address)
     return address
 
@@ -80,7 +80,7 @@ def hook_AllocatePool(ql, address, params):
 })
 def hook_FreePool(ql, address, params):
     address = params["Buffer"]
-    ql.heap.mem_free(address)
+    ql.heap.free(address)
     return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
@@ -424,7 +424,7 @@ def hook_LocateHandleBuffer(ql, address, params):
     ql.os.ctx.write_int64(params["NoHandles"], len(handles))
     if len(handles) == 0:
         return ql.os.ctx.EFI_NOT_FOUND
-    address = ql.heap.mem_alloc(buffer_size)
+    address = ql.heap.alloc(buffer_size)
     ql.os.ctx.write_int64(params["Buffer"], address)
     for handle in handles:
             ql.os.ctx.write_int64(address, handle)
