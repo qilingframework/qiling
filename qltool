@@ -308,6 +308,7 @@ if __name__ == '__main__':
         import pickle
         with open(options.env_filename, 'rb') as f:
             ql.env = pickle.load(f)
+    
     timeout = 0
     if options.timeout != None:
         timeout = int(options.timeout)

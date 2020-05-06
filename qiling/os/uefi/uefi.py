@@ -32,7 +32,7 @@ class QlOsUefi(QlOs):
                 self.ql.stack_push(self.ql.end_of_execution_ptr)
                 self.ql.reg.rdx = self.ql.system_table_ptr
                 self.ql.nprint(f'Running from 0x{self.entry_point:x} of {path}')
-            self.ql.uc.emu_start(self.entry_point, self.exit_point, 100000*1000)
+            self.ql.uc.emu_start(self.entry_point, self.exit_point, self.ql.timeout)
         except UcError:
             raise
 

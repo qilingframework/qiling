@@ -66,7 +66,6 @@ def ostype_convert(ostype):
         ostype = "macos"
     adapter = {}
     adapter.update(os_map)
-
     if ostype in adapter:
         return adapter[ostype]
     # invalid
