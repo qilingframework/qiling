@@ -8,7 +8,7 @@ from binascii import crc32
 from qiling.const import *
 from .utils import *
 from .fncc import *
-from .uefi_types_64 import *
+from .type64 import *
 from .shutdown import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.fncc import _get_param_by_index

@@ -6,14 +6,14 @@
 # generate hook files: boot_services_hooks.py & runtime_services_hooks.
 
 import ctypes
-from uefi_types_64 import *
+from type64 import *
 
 def generate_hooks(cls_name, stram):
     cls = eval(cls_name)
     print('# NOTE: Autogen from gen_hooks.py. DO NOT MODIFY!\n', file=stram)
     print('from qiling.const import *\n', file=stram)
     print('from qiling.os.uefi.fncc import *\n', file=stram)
-    print('from qiling.os.uefi.uefi_types_64 import *\n', file=stram)
+    print('from qiling.os.uefi.type64 import *\n', file=stram)
     print('from qiling.os.windows.fncc import *\n', file=stram)
 
     gen_func_str = f'\n\ndef hook_{cls_name}(start_ptr, ql):\n'
