@@ -305,12 +305,12 @@ class QLCoreHooks(object):
         elif self.ostype == QL_OS.WINDOWS:
             self.set_api(syscall_cur, syscall_new)
 
-    # replace Windows API with custom syscall or posix based api (eg, libc)
-    def set_api(self, syscall_cur, syscall_new):
+    # replace default API with customed function
+    def set_api(self, api_name, my_func):
         if self.ostype == QL_OS.WINDOWS:
-            self.os.user_defined_api[syscall_cur] = syscall_new
+            self.os.user_defined_api[api_name] = my_func
         else:
-            self.os.add_function_hook(syscall_cur, syscall_new)
+            self.os.add_function_hook(api_name, my_func)
 
     # ql.func_arg - get syscall for all posix series
     @property
