@@ -38,7 +38,7 @@ def generate_hooks(cls_name, stram):
                 t = 'ULONGLONG,'
             func_str += f'\t"a{i}": {t}\n'
         func_str += '})\n'
-        func_str += f'def hook_{f_name}(ctx, address, params):\n\tpass\n'
+        func_str += f'def hook_{f_name}(ql), address, params):\n\tpass\n'
         gen_func_str += f'\t{class_instance_name}.{f_name} = ptr\n'
         gen_func_str += f'\tql.hook_address(hook_{f_name}, ptr)\n'
         gen_func_str += '\tptr += pointer_size\n'
@@ -46,5 +46,5 @@ def generate_hooks(cls_name, stram):
     gen_func_str += f'\treturn (ptr, {class_instance_name})\n'
     print(gen_func_str, file=stram)    
 
-generate_hooks('EFI_BOOT_SERVICES', open('boot_services_hooks.py', 'w'))
-generate_hooks('EFI_RUNTIME_SERVICES', open('runtime_services_hooks.py', 'w'))
+generate_hooks('EFI_BOOT_SERVICES', open('bootup.py', 'w'))
+generate_hooks('EFI_RUNTIME_SERVICES', open('runtime.py', 'w'))
