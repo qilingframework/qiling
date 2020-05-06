@@ -523,7 +523,7 @@ def hook_SetMem(ql, address, params):
     ptr = params["Buffer"]
     value = struct.pack('B',params["Value"] & 0xff)
     for i in range(0, params["Size"]):
-        ql.mem.write(ptr, value)
+        ql.mem.write(ptr+i, value)
     return EFI_SUCCESS
 
 @dxeapi(params={
