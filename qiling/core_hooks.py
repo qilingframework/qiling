@@ -348,6 +348,9 @@ class QLCoreHooks(object):
         for i in self._insn_hook_fuc.keys():
             self.uc.hook_del(self._insn_hook_fuc[i])
 
+        for i in self._addr_hook_fuc.keys():
+            self.uc.hook_del(self._addr_hook_fuc[i])
+
         self.clear_ql_hooks()
     
     def clear_ql_hooks(self):
@@ -355,3 +358,5 @@ class QLCoreHooks(object):
         self._hook_fuc = {}
         self._insn_hook = {}
         self._insn_hook_fuc = {}
+        self._addr_hook = {}
+        self._addr_hook_fuc = {}
