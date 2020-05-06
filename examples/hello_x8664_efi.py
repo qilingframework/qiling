@@ -2,23 +2,20 @@
 # 
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 import sys
 import pickle
 sys.path.append("..")
 from qiling import *
 
-# @dxeapi(params={
-#     "Protocol": GUID,
-#     "Event": POINTER,
-#     "Registration": POINTER})
 def force_notify_RegisterProtocolNotify(ql, address, params):
     event_id = params['Event']
-    if event_id in ql.os.ctx.events:
-        ql.os.ctx.events[event_id]['Guid'] = params["Protocol"]
+    if event_id in ql.loader.events:
+        ql.loader.events[event_id]['Guid'] = params["Protocol"]
         # let's force notify
-        event = ql.os.ctx.events[event_id]
+        event = ql.loader.events[event_id]
         event["Set"] = True
-        ql.os.loader.notify_list.append((event_id, event['NotifyFunction'], event['NotifyContext']))
+        ql.loader.notify_list.append((event_id, event['NotifyFunction'], event['NotifyContext']))
         ######
         return ql.os.ctx.EFI_SUCCESS
     return ql.os.ctx.EFI_INVALID_PARAMETER

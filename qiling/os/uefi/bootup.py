@@ -139,7 +139,7 @@ def hook_SignalEvent(ql, address, params):
     "Event": POINTER, #POINTER_T(None)
 })
 def hook_CloseEvent(ql, address, params):
-    del ql.events[params["Event"]]
+    del ql.loader.events[params["Event"]]
     return ql.os.ctx.EFI_SUCCESS
 
 @dxeapi(params={
