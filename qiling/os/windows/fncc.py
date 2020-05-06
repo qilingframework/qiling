@@ -154,17 +154,18 @@ def __x86_cc(ql, param_num, params, func, args, kwargs):
     name = retrieve_winapi_name(ql, ql.reg.arch_pc)
     # we check if we need to call the user defined syscall
     if name in ql.os.user_partial_defined_api:
-        partial = True
-        params_user = ql.os.user_partial_defined_api[name]
-        # we try to match the parameters
-        for key, value in params_user.items():
-            if key != "func" and args[2][key] != value:
-                partial = False
-                # if one doesn't match, we are already done
-                break
-        # we need to call our function!
-        if partial:
-            func = params_user["func"]
+        for params_user in ql.os.user_partial_defined_api[name]:
+            partial = True
+            for key, value in params_user.items():
+                partial = True
+                # we try to match the parameters
+                if key != "func" and args[2][key] != value:
+                    partial = False
+                    # if one doesn't match, we are already done
+                    break
+                # we need to call our function!
+            if partial:
+                func = params_user["func"]
 
     # call function
     result = func(*args, **kwargs)

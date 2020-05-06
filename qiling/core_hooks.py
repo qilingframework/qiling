@@ -315,7 +315,8 @@ class QLCoreHooks(object):
     def set_partial_api(self, api_name, params: dict, my_func):
         if self.ostype == QL_OS.WINDOWS:
             params["func"] = my_func
-            self.os.user_partial_defined_api[api_name] = params
+            # is a list so is possible to append more than one hook to the same syscall
+            self.os.user_partial_defined_api.setdefault(api_name, []).append(params)
         else:
             raise QlErrorCoreHook("Only windows is supported for now :(")
 
