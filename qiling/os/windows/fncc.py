@@ -151,7 +151,7 @@ def __x86_cc(ql, param_num, params, func, args, kwargs):
     # read params
     if params is not None:
         param_num = set_function_params(ql, params, args[2])
-    name = ql.loader.import_symbols[ql.reg.arch_pc]['name'].decode()
+    name = retrieve_winapi_name(ql, ql.reg.arch_pc)
     # we check if we need to call the user defined syscall
     if name in ql.os.user_partial_defined_api:
         partial = True

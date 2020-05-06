@@ -6,6 +6,7 @@
 import uuid
 from qiling.const import *
 from qiling.os.const import *
+from qiling.os.windows.const import *
 
 from .registry import RegistryManager
 from .clipboard import Clipboard
@@ -151,3 +152,13 @@ def printf(ql, address, fmt, params_addr, name, wstring=False, double_pointer=Fa
     ql.nprint(output)
     ql.os.stdout.write(bytes(stdout, 'utf-8'))
     return len(stdout), stdout
+
+
+def retrieve_winapi_name(ql, address):
+    winapi_name = ql.loader.import_symbols[address]['name']
+    if winapi_name is None:
+        winapi_name = Mapper[ql.loader.import_symbols[address]['dll']][
+            ql.loader.import_symbols[address]['ordinal']]
+    else:
+        winapi_name = winapi_name.decode()
+    return winapi_name

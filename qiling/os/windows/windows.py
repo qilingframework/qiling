@@ -80,12 +80,8 @@ class QlOsWindows(QlOs):
     # hook WinAPI in PE EMU
     def hook_winapi(self, int, address, size):
         if address in self.ql.loader.import_symbols:
-            winapi_name = self.ql.loader.import_symbols[address]['name']
-            if winapi_name is None:
-                winapi_name = Mapper[self.ql.loader.import_symbols[address]['dll']][self.ql.loader.import_symbols[address]['ordinal']]
-            else:
-                winapi_name = winapi_name.decode()
             winapi_func = None
+            winapi_name = retrieve_winapi_name(self.ql, address)
 
             if winapi_name in self.user_defined_api:
                 if isinstance(self.user_defined_api[winapi_name], types.FunctionType):
