@@ -178,7 +178,6 @@ if __name__ == '__main__':
     
     run_parser = commands.add_parser('run', help = 'run')
     run_parser.add_argument('-f', '--filename', required=False, default=None, metavar="FILE", dest="filename", help="filename")
-    run_parser.add_argument('--env', required=False, default='', metavar="FILE", dest="env_filename", help="Pickle file containing an environment dictionary")
     run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
     run_parser.add_argument('--args', required=False, default=[], nargs=argparse.REMAINDER, dest="args", help="args")
     run_parser.add_argument('run_args', default=[], nargs=argparse.REMAINDER)
@@ -208,6 +207,7 @@ if __name__ == '__main__':
                             help='output mode, options are off, debug , disasm, dump')
     comm_parser.add_argument('-v', '--verbose', required=False, default=1, dest='verbose',
                             help='verbose mode, must be int and use with --debug or --dump')
+    comm_parser.add_argument('--env', required=False, default='', metavar="FILE", dest="env", help="Pickle file containing an environment dictionary")                            
     comm_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
     comm_parser.add_argument('--profile', required=False, dest='profile', help="Define customized profile")
     comm_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
@@ -218,7 +218,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('-e', '--strace-filter', metavar="FUNCTION NAME", required=False, dest="strace_filter", default=None, 
                             help="Only work with strace mode, you can choose what to be printout, for multiple function calls should be separated by comma")
     comm_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
-    comm_parser.add_argument('--en_root', action='store_true', default=False, dest='en_root', help='Enable sudo required mode')
+    comm_parser.add_argument('--root', action='store_true', default=False, dest='root', help='Enable sudo required mode')
     comm_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', 
                             help='Stop running while encounter any error (only use it with debug mode)')
     comm_parser.add_argument('--log_dir', required=False, default=None, dest='log_dir', help='log file dir')
@@ -287,7 +287,7 @@ if __name__ == '__main__':
     if options.debug_stop and (options.dump or options.debug):
         ql.debug_stop = True
         
-    if options.en_root:
+    if options.root:
         ql.root = True
 
     if options.log_split:
@@ -304,10 +304,11 @@ if __name__ == '__main__':
     if options.strace_filter != None:
        ql.strace_filter = options.strace_filter
 
-    if options.env_filename != '':
+    if options.env != '':
         import pickle
-        with open(options.env_filename, 'rb') as f:
-            ql.env = pickle.load(f)
+        with open(options.env, 'rb') as f:
+            ql.env = pickle.load(f, encoding='bytes')
+            print(ql.env)
     
     timeout = 0
     if options.timeout != None:

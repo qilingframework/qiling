@@ -324,7 +324,7 @@ class QlLoaderPE(Process, QlLoader):
             self.pe_image_address = self.pe_image_address = self.pe.OPTIONAL_HEADER.ImageBase
             self.pe_image_address_size = self.pe_image_address_size = self.pe.OPTIONAL_HEADER.SizeOfImage
 
-            if self.pe_image_address + self.pe_image_address_size > self.ql.os.heap_base_addr:
+            if self.pe_image_address + self.pe_image_address_size > self.ql.os.heap_base_address:
                 # pe reloc
                 self.pe_image_address = self.pe_image_address = self.image_address
                 self.pe.relocate_image(self.image_address)

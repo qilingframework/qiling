@@ -13,16 +13,16 @@ pointer_size = 8
 @dxeapi(params={
     "NewTpl": ULONGLONG,
 })
-def hook_RaiseTPL(ctx, address, params):
-    tpl = ctx.ql.tpl
-    ctx.ql.tpl = params["NewTpl"]
+def hook_RaiseTPL(ql, ctx, address, params):
+    tpl = ql.loader.tpl
+    ql.loader.tpl = params["NewTpl"]
     return tpl
 
 @dxeapi(params={
     "OldTpl": ULONGLONG,
 })
-def hook_RestoreTPL(ctx, address, params):
-    ctx.ql.tpl = params["OldTpl"]
+def hook_RestoreTPL(ql, ctx, address, params):
+    ql.loader.tpl = params["OldTpl"]
 
 @dxeapi(params={
     "type": ULONGLONG,
@@ -30,14 +30,14 @@ def hook_RestoreTPL(ctx, address, params):
     "Pages": ULONGLONG,
     "Memory": POINTER, #POINTER_T(ctypes.c_uint64)
 })
-def hook_AllocatePages(ctx, address, params):
+def hook_AllocatePages(ql, ctx, address, params):
     AllocateAnyPages = 0
     AllocateMaxAddress = 1
     AllocateAddress = 2
     PageSize = 4096
     if params['type'] == AllocateAddress:
         address = ctx.read_int64(params["Memory"])
-        ctx.ql.mem.map(address, params["Pages"]*PageSize)
+        ql.mem.map(address, params["Pages"]*PageSize)
     else:
         address = ctx.ql.heap.mem_alloc(params["Pages"]*PageSize)
         ctx.write_int64(params["Memory"], address)
@@ -47,7 +47,7 @@ def hook_AllocatePages(ctx, address, params):
     "Memory": ULONGLONG,
     "Pages": ULONGLONG,
 })
-def hook_FreePages(ctx, address, params):
+def hook_FreePages(ql, ctx, address, params):
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
@@ -57,7 +57,7 @@ def hook_FreePages(ctx, address, params):
     "a3": POINTER, #POINTER_T(ctypes.c_uint64)
     "a4": POINTER, #POINTER_T(ctypes.c_uint32)
 })
-def hook_GetMemoryMap(ctx, address, params):
+def hook_GetMemoryMap(ql, ctx, address, params):
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
@@ -65,28 +65,18 @@ def hook_GetMemoryMap(ctx, address, params):
     "Size": UINT,
     "Buffer": POINTER,
 })
-def hook_AllocatePool(ctx, address, params):
-    address = ctx.ql.heap.mem_alloc(params["Size"])
+def hook_AllocatePool(ql, ctx, address, params):
+    address = ql.heap.mem_alloc(params["Size"])
     ctx.write_int64(params["Buffer"], address)
     return address
 
 @dxeapi(params={
     "Buffer": POINTER, #POINTER_T(None)
 })
-def hook_FreePool(ctx, address, params):
+def hook_FreePool(ql, ctx, address, params):
     address = params["Buffer"]
-    ctx.ql.heap.mem_free(address)
+    ql.heap.mem_free(address)
     return ctx.EFI_SUCCESS
-
-def CreateEvent(wrapper, address, params):
-    event_id = len(wrapper.ql.events)
-    event_dic = {"NotifyFunction": params["NotifyFunction"], "NotifyContext": params["NotifyContext"], "Guid": "", "Set": False}
-    if "EventGroup" in params:
-        event_dic["EventGroup"] =  params["EventGroup"]
-    
-    wrapper.ql.events[event_id] = event_dic
-    wrapper.write_int64(params["Event"], event_id)
-    return event_id
 
 @dxeapi(params={
     "Type": UINT,
@@ -486,9 +476,9 @@ def hook_InstallMultipleProtocolInterfaces(ctx, address, params):
 @dxeapi(params={
     "Handle": POINTER, #POINTER_T(None)
 })
-def hook_UninstallMultipleProtocolInterfaces(ctx, address, params):
+def hook_UninstallMultipleProtocolInterfaces(ql, ctx, address, params):
     handle = params["Handle"]
-    ctx.ql.nprint(f'hook_UninstallMultipleProtocolInterfaces {handle:x}')
+    ql.nprint(f'hook_UninstallMultipleProtocolInterfaces {handle:x}')
     if handle not in ctx.ql.handle_dict:
         return ctx.EFI_NOT_FOUND
     index = 1
@@ -496,7 +486,7 @@ def hook_UninstallMultipleProtocolInterfaces(ctx, address, params):
         GUID_ptr = _get_param_by_index(ctx, index)
         protocol_ptr = _get_param_by_index(ctx, index+1)
         GUID = str(read_guid(ctx.ql, GUID_ptr))
-        ctx.ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
+        ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
         dic = ctx.ql.handle_dict[handle]
         protocol = params["Protocol"]
         if protocol not in dic:
@@ -510,8 +500,8 @@ def hook_UninstallMultipleProtocolInterfaces(ctx, address, params):
     "DataSize": ULONGLONG,
     "Crc32": POINTER, #POINTER_T(ctypes.c_uint32)
 })
-def hook_CalculateCrc32(ctx, address, params):
-    data = bytes(ctx.ql.mem.read(params['Data'], params['DataSize']))
+def hook_CalculateCrc32(ql, ctx, address, params):
+    data = bytes(ql.mem.read(params['Data'], params['DataSize']))
     ctx.write_int32(params['Crc32'], crc32(data))
     return ctx.EFI_SUCCESS
 
@@ -520,9 +510,9 @@ def hook_CalculateCrc32(ctx, address, params):
     "Source": POINTER, #POINTER_T(None)
     "Length": ULONGLONG,
 })
-def hook_CopyMem(ctx, address, params):
-    data = bytes(ctx.ql.mem.read(params['Source'], params['Length']))
-    ctx.ql.mem.write(params['Destination'], data)
+def hook_CopyMem(ql, ctx, address, params):
+    data = bytes(ql.mem.read(params['Source'], params['Length']))
+    ql.mem.write(params['Destination'], data)
     return params['Destination']
 
 @dxeapi(params={
@@ -530,11 +520,11 @@ def hook_CopyMem(ctx, address, params):
     "Size": ULONGLONG,
     "Value": BYTE,
 })
-def hook_SetMem(ctx, address, params):
+def hook_SetMem(ql, ctx, address, params):
     ptr = params["Buffer"]
     value = struct.pack('B',params["Value"])
     for i in range(0, params["Size"]):
-        ctx.ql.mem.write(ptr, value)
+        ql.mem.write(ptr, value)
     return ctx.EFI_SUCCESS
 
 @dxeapi(params={
@@ -545,13 +535,22 @@ def hook_SetMem(ctx, address, params):
     "EventGroup": GUID,
     "Event": POINTER, #POINTER_T(POINTER_T(None))
 })
-def hook_CreateEventEx(ctx, address, params):
+def hook_CreateEventEx(ql, ctx, address, params):
     return CreateEvent(ctx, address, params)
 
 
+def CreateEvent(ql, wrapper, address, params):
+    event_id = len(wrapper.ql.events)
+    event_dic = {"NotifyFunction": params["NotifyFunction"], "NotifyContext": params["NotifyContext"], "Guid": "", "Set": False}
+    if "EventGroup" in params:
+        event_dic["EventGroup"] =  params["EventGroup"]
+    
+    wrapper.ql.events[event_id] = event_dic
+    wrapper.write_int64(params["Event"], event_id)
+    return event_id
 
-def hook_EFI_BOOT_SERVICES(start_ptr, ql):
-    ql.monotonic_count = 0
+def hook_EFI_BOOT_SERVICES(ql, start_ptr):
+    ql.os.monotonic_count = 0
 
     efi_boot_services = EFI_BOOT_SERVICES()
     ptr = start_ptr

@@ -28,5 +28,5 @@ if __name__ == "__main__":
     with open("rootfs/x8664_efi/rom2_nvar.pickel", 'rb') as f:
         env = pickle.load(f)
     ql = Qiling(["rootfs/x8664_efi/bin/TcgPlatformSetupPolicy"], "rootfs/x8664_efi", env=env)
-    ql.hook_override["hook_RegisterProtocolNotify"] = force_notify_RegisterProtocolNotify
+    ql.loader.hook_override["hook_RegisterProtocolNotify"] = force_notify_RegisterProtocolNotify
     ql.run()

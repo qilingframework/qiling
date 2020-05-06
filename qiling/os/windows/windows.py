@@ -36,21 +36,13 @@ class QlOsWindows(QlOs):
         self.userprofile = self.profile["PATH"]["systemdrive"] + "Users\\" + self.profile["USER"]["username"] + "\\"
 
         if self.ql.archtype == QL_ARCH.X8664:
-            self.heap_base_addr = int(self.profile.get("OS64", "heap_address"),16)
+            self.heap_base_address = int(self.profile.get("OS64", "heap_address"),16)
             self.heap_base_size = int(self.profile.get("OS64", "heap_size"),16)       
         elif self.ql.archtype == QL_ARCH.X86:
-            self.heap_base_addr = int(self.profile.get("OS32", "heap_address"),16)
+            self.heap_base_address = int(self.profile.get("OS32", "heap_address"),16)
             self.heap_base_size = int(self.profile.get("OS32", "heap_size"),16)
 
-        """
-        Load Heap module
-        FIXME: We need to refactor this
-        """
-        self.heap = QlMemoryHeap(
-                self.ql,
-                self.heap_base_addr,
-                self.heap_base_addr + self.heap_base_size)
-
+        self.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
         self.setupGDT()
         # hook win api
         self.ql.hook_code(self.hook_winapi)

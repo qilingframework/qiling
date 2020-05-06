@@ -20,19 +20,15 @@ class QlOsUefi(QlOs):
     def run(self):
         self.setup_output()
         try:
-            if self.ql.shellcoder:
-                self.PE_RUN = False
-                self.ql.uc.emu_start(self.ql.code_address, self.ql.code_address + len(self.ql.shellcoder))
-            else:
-                self.PE_RUN = True
-                path, self.entry_point, pe = self.ql.modules.pop(0)
-                # workaround, the debugger sets the breakpoint before the module is loaded.
-                if hasattr(self.ql.remotedebugsession ,'gdb'):
-                    self.ql.remotedebugsession.gdb.bp_insert(self.entry_point)
-                self.ql.stack_push(self.ql.end_of_execution_ptr)
-                self.ql.reg.rdx = self.ql.system_table_ptr
-                self.ql.nprint(f'Running from 0x{self.entry_point:x} of {path}')
-            self.ql.uc.emu_start(self.entry_point, self.exit_point, self.ql.timeout)
+            self.PE_RUN = True
+            path, self.entry_point, pe = self.ql.loader.modules.pop(0)
+            # workaround, the debugger sets the breakpoint before the module is loaded.
+            if hasattr(self.ql.remotedebugsession ,'gdb'):
+                self.ql.remotedebugsession.gdb.bp_insert(self.entry_point)
+            self.ql.stack_push(self.ql.loader.end_of_execution_ptr)
+            self.ql.reg.rdx = self.ql.loader.system_table_ptr
+            self.ql.nprint(f'Running from 0x{self.entry_point:x} of {path}')
+            self.ql.emu_start(self.entry_point, self.exit_point, self.ql.timeout)
         except UcError:
             raise
 
