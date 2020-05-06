@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 # -*- coding: utf-8 -*-
 #
 # TARGET arch is: []
@@ -5,8 +10,8 @@
 # POINTER_SIZE is: 8
 # LONGDOUBLE_SIZE is: 16
 #
-import ctypes
 
+import ctypes
 
 c_int128 = ctypes.c_ubyte*16
 c_uint128 = c_int128

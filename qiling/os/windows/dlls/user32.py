@@ -134,7 +134,7 @@ def hook_SetClipboardData(ql, address, params):
 def hook_GetClipboardData(ql, address, params):
     data = ql.os.clipboard.get_data(params['uFormat'])
     if data:
-        addr = ql.os.heap.mem_alloc(len(data))
+        addr = ql.os.heap.alloc(len(data))
         ql.mem.write(addr, data)
         return addr
     else:

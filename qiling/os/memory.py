@@ -367,7 +367,7 @@ class QlMemoryHeap:
     def _align(self, size, unit):
         return (size // unit + (1 if size % unit else 0)) * unit     
 
-    def mem_alloc(self, size):
+    def alloc(self, size):
         
         if self.ql.archbit == 32:
             size = self._align(size, 4)
@@ -399,16 +399,16 @@ class QlMemoryHeap:
             self.chunks.append(chunk)
 
         chunk.inuse = True
-        #self.ql.dprint(D_INFO,"heap.mem_alloc addresss: " + hex(chunk.address))
+        #self.ql.dprint(D_INFO,"heap.alloc addresss: " + hex(chunk.address))
         return chunk.address
 
-    def mem_size(self, addr):
+    def size(self, addr):
         for chunk in self.chunks:
             if addr == chunk.address and chunk.inuse:
                 return chunk.size
         return 0
 
-    def mem_free(self, addr):
+    def free(self, addr):
         for chunk in self.chunks:
             if addr == chunk.address and chunk.inuse:
                 chunk.inuse = False

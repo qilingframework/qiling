@@ -167,6 +167,9 @@ def usage():
     print("\n\nwith binary file and various output format:")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e open")
+    
+    print("\n\nWith UEFI file:")
+    print("\t ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel")
     exit(1)
 
 

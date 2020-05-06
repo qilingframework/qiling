@@ -13,10 +13,10 @@ from qiling.os.utils import *
 from qiling.const import *
 from qiling.os.memory import QlMemoryHeap
 from qiling.os.uefi.utils import *
-from qiling.os.uefi.uefi_types_64 import *
+from qiling.os.uefi.type64 import *
 from qiling.os.uefi.fncc import *
-from qiling.os.uefi.boot_services_hooks import *
-from qiling.os.uefi.runtime_services_hooks import *
+from qiling.os.uefi.bootup import *
+from qiling.os.uefi.runtime import *
 
 from qiling.os.windows.fncc import *
 from qiling.os.windows.fncc import _get_param_by_index
@@ -32,7 +32,7 @@ class QlLoaderPE_UEFI(QlLoader):
     def run(self):
         self.profile = self.ql.profile
         self.tpl = 4 # TPL_APPLICATION
-        self.hook_override = {}
+        self.user_defined_api = self.ql.os.user_defined_api
         self.modules = []
         self.events = {}
         self.handle_dict = {}
@@ -138,7 +138,7 @@ class QlLoaderPE_UEFI(QlLoader):
         # set SystemTable to image base for now
         pointer_size = ctypes.sizeof(ctypes.c_void_p)
         system_table_heap_size = 1024*1024
-        system_table_heap = self.heap.mem_alloc(system_table_heap_size)
+        system_table_heap = self.heap.alloc(system_table_heap_size)
         self.ql.mem.write(system_table_heap, b'\x90'*system_table_heap_size)
         self.system_table_ptr = system_table_heap
         system_table = EFI_SYSTEM_TABLE()

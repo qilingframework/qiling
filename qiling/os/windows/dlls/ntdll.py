@@ -135,5 +135,5 @@ def hook_LdrGetProcedureAddress(ql, address, params):
     "Size": SIZE_T
 })
 def hook_RtlAllocateHeap(ql, address, params):
-    ret = ql.heap.mem_alloc(params["Size"])
+    ret = ql.heap.alloc(params["Size"])
     return ret
