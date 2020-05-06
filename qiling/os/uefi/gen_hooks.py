@@ -1,8 +1,16 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
+# generate hook files: boot_services_hooks.py & runtime_services_hooks.
+
 import ctypes
-from efi_types_64 import *
+from uefi_types_64 import *
 
 def generate_hooks(cls_name, stram):
     cls = eval(cls_name)
+    print('# NOTE: Autogen from gen_hooks.py. DO NOT MODIFY!\n', file=stram)
     print('from qiling.const import *\n', file=stram)
     print('from qiling.os.uefi.fncc import *\n', file=stram)
     print('from qiling.os.uefi.uefi_types_64 import *\n', file=stram)
