@@ -204,8 +204,8 @@ def dxeapi(param_num=None, params=None):
             ql.os.ctx = hook_context(ql)
             arg = (ql, ql.reg.arch_pc, {})
             f = func
-            if func.__name__ in ql.loader.hook_override:
-                f = ql.loader.hook_override[func.__name__]
+            if func.__name__ in ql.loader.user_defined_api:
+                f = ql.loader.user_defined_api[func.__name__]
             return x8664_fastcall(ql, param_num, params, f, arg, kwargs)
 
         return wrapper

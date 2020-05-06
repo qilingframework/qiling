@@ -302,12 +302,12 @@ class QLCoreHooks(object):
             else:
                 syscall_name = "ql_syscall_" + str(syscall_cur)
                 self.os.dict_posix_syscall[syscall_name] = syscall_new
-        elif self.ostype == QL_OS.WINDOWS:
+        elif self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
             self.set_api(syscall_cur, syscall_new)
 
     # replace default API with customed function
     def set_api(self, api_name, my_func):
-        if self.ostype == QL_OS.WINDOWS:
+        if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
             self.os.user_defined_api[api_name] = my_func
         else:
             self.os.add_function_hook(api_name, my_func)

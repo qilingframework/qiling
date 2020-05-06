@@ -16,9 +16,11 @@ class QlOsUefi(QlOs):
         super(QlOsUefi, self).__init__(ql)
         self.ql = ql
         self.entry_point = 0
+        self.user_defined_api = {}
 
     def run(self):
         self.setup_output()
+       
         try:
             self.PE_RUN = True
             path, self.entry_point, pe = self.ql.loader.modules.pop(0)

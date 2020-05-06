@@ -148,6 +148,11 @@ $ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples
 $ ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux
 ```
 
+With UEFI file:
+```
+$ ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel
+```
+
 With binary gdbserver:
 
 ```

@@ -32,7 +32,7 @@ class QlLoaderPE_UEFI(QlLoader):
     def run(self):
         self.profile = self.ql.profile
         self.tpl = 4 # TPL_APPLICATION
-        self.hook_override = {}
+        self.user_defined_api = self.ql.os.user_defined_api
         self.modules = []
         self.events = {}
         self.handle_dict = {}
