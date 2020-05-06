@@ -5,7 +5,7 @@
 
 import uuid
 from qiling.const import *
-from qiling.os.const import *
+from .const import *
 from qiling.os.windows.const import *
 
 from .registry import RegistryManager

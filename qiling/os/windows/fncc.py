@@ -158,7 +158,7 @@ def __x86_cc(ql, param_num, params, func, args, kwargs):
         params_user = ql.os.user_partial_defined_api[name]
         # we try to match the parameters
         for key, value in params_user.items():
-            if key != "func" and params[key] != value:
+            if key != "func" and args[2][key] != value:
                 partial = False
                 # if one doesn't match, we are already done
                 break
