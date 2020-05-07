@@ -87,11 +87,11 @@ Once completed workaround installation, run Qiling Framework setup.
 #### Setting Qiling Framework docker container
 If a quick and easy way to deploy Qiling Framework is preferred, spin it up with a docker container.
 
-##### Building Qiling Framework docker image
-Build the Qiling Framework docker by running the command below within source directory.
+##### Getting Qiling Framework docker image
+Pulling the Qiling Framework docker image from dockerhub by running the command below.
 
 ```
-docker build -t qiling:1.0 .
+docker pull qilingframework/qiling:1.0 
 ```
 
 ##### Running Qiling Framework docker with a bind mount
