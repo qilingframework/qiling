@@ -17,6 +17,8 @@ class QlOsUefi(QlOs):
         self.ql = ql
         self.entry_point = 0
         self.user_defined_api = {}
+        self.notify_immediately = False
+
 
     def run(self):
         self.setup_output()
@@ -36,3 +38,4 @@ class QlOsUefi(QlOs):
 
         if self.ql.internal_exception is not None:
             raise self.ql.internal_exception
+
