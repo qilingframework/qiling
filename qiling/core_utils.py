@@ -4,6 +4,14 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import os, logging, configparser
+
+try:
+    from keystone import *
+except:
+    pass
+
+from binascii import unhexlify
+
 from .utils import ql_build_module_import_name, ql_get_module_function
 from .utils import ql_is_valid_arch, ql_is_valid_ostype
 from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
@@ -160,3 +168,52 @@ class QLCoreUtils(object):
         config = configparser.ConfigParser()
         config.read(profiles)
         return config
+
+    def compile(self, archtype, runcode, arm_thumb=None):
+        try:
+            loadarch = KS_ARCH_X86
+        except:
+            raise QlErrorOutput("Please install Keystone Engine")
+
+        def ks_convert(arch):
+            if self.archendian == QL_ENDIAN.EB:
+                adapter = {
+                    QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
+                    QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
+                    QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
+                    QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_BIG_ENDIAN),
+                    QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
+                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                }
+            else:
+                adapter = {
+                    QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
+                    QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
+                    QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
+                    QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM),
+                    QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
+                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                }
+
+            if arch in adapter:
+                return adapter[arch]
+            # invalid
+            return None, None
+
+        def compile_instructions(runcode, archtype, archmode):
+            ks = Ks(archtype, archmode)
+            shellcode = ''
+            try:
+                # Initialize engine in X86-32bit mode
+                encoding, count = ks.asm(runcode)
+                shellcode = ''.join('%02x' % i for i in encoding)
+                shellcode = unhexlify(shellcode)
+            except KsError as e:
+                raise
+            return shellcode
+
+        if arm_thumb and archtype == QL_ARCH.ARM:
+            archtype = QL_ARCH.ARM_THUMB
+
+        archtype, archmode = ks_convert(archtype)
+        return compile_instructions(runcode, archtype, archmode)        

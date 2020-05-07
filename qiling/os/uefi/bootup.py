@@ -6,6 +6,7 @@
 from uuid import UUID
 from binascii import crc32
 from qiling.const import *
+from .const import *
 from .utils import *
 from .fncc import *
 from .type64 import *
@@ -41,11 +42,11 @@ def hook_AllocatePages(ql, address, params):
     AllocateAddress = 2
     PageSize = 4096
     if params['type'] == AllocateAddress:
-        address =  ql.os.ctx.read_int64(params["Memory"])
+        address =  read_int64(ql, params["Memory"])
         ql.mem.map(address, params["Pages"]*PageSize)
     else:
-        address = ql.heap.alloc(params["Pages"]*PageSize)
-        ql.os.ctx.write_int64(params["Memory"], address)
+        address = ql.loader.heap.alloc(params["Pages"]*PageSize)
+        write_int64(ql, params["Memory"], address)
     return address
 
 @dxeapi(params={
@@ -53,7 +54,7 @@ def hook_AllocatePages(ql, address, params):
     "Pages": ULONGLONG,
 })
 def hook_FreePages(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(ctypes.c_uint64)
@@ -63,7 +64,7 @@ def hook_FreePages(ql, address, params):
     "a4": POINTER, #POINTER_T(ctypes.c_uint32)
 })
 def hook_GetMemoryMap(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "PoolType": UINT,
@@ -72,7 +73,7 @@ def hook_GetMemoryMap(ql, address, params):
 })
 def hook_AllocatePool(ql, address, params):
     address = ql.loader.heap.alloc(params["Size"])
-    ql.os.ctx.write_int64(params["Buffer"], address)
+    write_int64(ql, params["Buffer"], address)
     return address
 
 @dxeapi(params={
@@ -80,8 +81,8 @@ def hook_AllocatePool(ql, address, params):
 })
 def hook_FreePool(ql, address, params):
     address = params["Buffer"]
-    ql.heap.free(address)
-    return ql.os.ctx.EFI_SUCCESS
+    ql.loader.heap.free(address)
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Type": UINT,
@@ -98,7 +99,7 @@ def hook_CreateEvent(ql, address, params):
     "a2": ULONGLONG,
 })
 def hook_SetTimer(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
@@ -106,27 +107,27 @@ def hook_SetTimer(ql, address, params):
     "a2": POINTER, #POINTER_T(ctypes.c_uint64)
 })
 def hook_WaitForEvent(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 def SignalEvent(ql, event_id):
-    if event_id in ql.events:
-        event = ql.events[event_id]
+    if event_id in ql.loader.events:
+        event = ql.loader.events[event_id]
         if not event["Set"]:
             event["Set"] = True
             notify_func = event["NotifyFunction"]
             notify_context = event["NotifyContext"]
-            if ql.notify_immediately:
-                ql.hook_address(hook_EndOfNotify, ql.notify_ptr)
+            if ql.os.notify_immediately:
+                ql.hook_address(hook_EndOfNotify, ql.loader.notify_ptr)
                 ql.nprint(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
                 ql.os.notify_return_address = ql.stack_pop()
-                ql.stack_push(ql.notify_ptr) # Return address from the notify function
+                ql.stack_push(ql.loader.notify_ptr) # Return address from the notify function
                 ql.stack_push(notify_func) # Return address from here -> the notify function.
                 ql.reg.rcx = notify_context
             else:
-                ql.notify_list.append((event_id, notify_func, notify_context))
-        return ql.os.ctx.EFI_SUCCESS
+                ql.loader.notify_list.append((event_id, notify_func, notify_context))
+        return EFI_SUCCESS
     else:
-        return ql.os.ctx.EFI_INVALID_PARAMETER
+        return EFI_INVALID_PARAMETER
 
 @dxeapi(params={
     "Event": POINTER, #POINTER_T(None)
@@ -140,13 +141,13 @@ def hook_SignalEvent(ql, address, params):
 })
 def hook_CloseEvent(ql, address, params):
     del ql.loader.events[params["Event"]]
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Event": POINTER, #POINTER_T(None)
 })
 def hook_CheckEvent(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS if ql.events[params["Event"]]["Set"] else ql.os.ctx.EFI_NOT_READY
+    return EFI_SUCCESS if ql.loader.events[params["Event"]]["Set"] else EFI_NOT_READY
 
 @dxeapi(params={
     "Handle": POINTER, #POINTER_T(POINTER_T(None))
@@ -162,7 +163,7 @@ def hook_InstallProtocolInterface(ql, address, params):
     dic[params["Protocol"]] = params["Interface"]
     ql.loader.handle_dict[handle] = dic
     check_and_notify_protocols(ql)
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Handle": POINTER, #POINTER_T(None)
@@ -173,13 +174,13 @@ def hook_InstallProtocolInterface(ql, address, params):
 def hook_ReinstallProtocolInterface(ql, address, params):
     handle = params["Handle"]
     if handle not in ql.loader.handle_dict:
-        return ql.os.ctx.EFI_NOT_FOUND
+        return EFI_NOT_FOUND
     dic = ql.loader.handle_dict[handle]
     protocol = params["Protocol"]
     if protocol not in dic:
-        return ql.os.ctx.EFI_NOT_FOUND
+        return EFI_NOT_FOUND
     dic[protocol] = params["NewInterface"]
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Handle": POINTER, #POINTER_T(None)
@@ -189,13 +190,13 @@ def hook_ReinstallProtocolInterface(ql, address, params):
 def hook_UninstallProtocolInterface(ql, address, params):
     handle = params["Handle"]
     if handle not in ql.loader.handle_dict:
-        return ql.os.ctx.EFI_NOT_FOUND
+        return EFI_NOT_FOUND
     dic = ql.loader.handle_dict[handle]
     protocol = params["Protocol"]
     if protocol not in dic:
-        return ql.os.ctx.EFI_NOT_FOUND
+        return EFI_NOT_FOUND
     del dic[protocol]
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Handle": POINTER, #POINTER_T(None)
@@ -208,9 +209,9 @@ def hook_HandleProtocol(ql, address, params):
     interface = params['Interface']
     if handle in ql.loader.handle_dict:
         if protocol in ql.loader.handle_dict[handle]:
-            ql.os.ctx.write_int64(interface, ql.loader.handle_dict[handle][protocol])
-            return ql.os.ctx.EFI_SUCCESS
-    return ql.os.ctx.EFI_NOT_FOUND
+            write_int64(ql, interface, ql.loader.handle_dict[handle][protocol])
+            return EFI_SUCCESS
+    return EFI_NOT_FOUND
 
 @dxeapi(params={
     "Protocol": GUID,
@@ -220,14 +221,14 @@ def hook_RegisterProtocolNotify(ql, address, params):
     if params['Event'] in ql.loader.events:
         ql.loader.events[params['Event']]['Guid'] = params["Protocol"]
         check_and_notify_protocols(ql)
-        return ql.os.ctx.EFI_SUCCESS
-    return ql.os.ctx.EFI_INVALID_PARAMETER
+        return EFI_SUCCESS
+    return EFI_INVALID_PARAMETER
 
 def LocateHandles(ql, address, params):
     handles = []
-    if params["SearchKey"] == ql.os.ctx.SEARCHTYPE_AllHandles:
+    if params["SearchKey"] == SEARCHTYPE_AllHandles:
         handles = ql.loader.handle_dict.keys()
-    elif params["SearchKey"] == ql.os.ctx.SEARCHTYPE_ByProtoco:
+    elif params["SearchKey"] == SEARCHTYPE_ByProtoco:
         for handle, guid_dic in ql.loader.handle_dict.items():
             if params["Protocol"] in guid_dic:
                 handles.append(handle)
@@ -244,15 +245,15 @@ def LocateHandles(ql, address, params):
 def hook_LocateHandle(ql, address, params):
     buffer_size, handles = LocateHandles(ql, address, params)
     if len(handles) == 0:
-        return ql.os.ctx.EFI_NOT_FOUND
-    ret = ql.os.ctx.EFI_BUFFER_TOO_SMALL
-    if ql.os.ctx.read_int64(params["BufferSize"]) >= buffer_size:
+        return EFI_NOT_FOUND
+    ret = EFI_BUFFER_TOO_SMALL
+    if read_int64(ql, params["BufferSize"]) >= buffer_size:
         ptr = params["Buffer"]
         for handle in handles:
-            ql.os.ctx.write_int64(ptr, handle)
+            write_int64(ql, ptr, handle)
             ptr += pointer_size
-        ret = ql.os.ctx.EFI_SUCCESS
-    ql.os.ctx.write_int64(params["BufferSize"], buffer_size)
+        ret = EFI_SUCCESS
+    write_int64(ql, params["BufferSize"], buffer_size)
     return ret
     
 
@@ -262,7 +263,7 @@ def hook_LocateHandle(ql, address, params):
     "a2": POINTER, #POINTER_T(POINTER_T(None))
 })
 def hook_LocateDevicePath(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Guid": GUID,
@@ -272,13 +273,13 @@ def hook_InstallConfigurationTable(ql, address, params):
     guid = params["Guid"]
     uuid = UUID(guid)
     efi_configuration_table = EFI_CONFIGURATION_TABLE()
-    if guid in ql.efi_configuration_table:
-        index = ql.efi_configuration_table.index(guid)
+    if guid in ql.loader.efi_configuration_table:
+        index = ql.loader.efi_configuration_table.index(guid)
     else:
-        index = len(ql.efi_configuration_table)
-        ql.efi_configuration_table.append(guid)
+        index = len(ql.loader.efi_configuration_table)
+        ql.loader.efi_configuration_table.append(guid)
     
-    address = (index * ctypes.sizeof(efi_configuration_table)) + ql.efi_configuration_table_ptr
+    address = (index * ctypes.sizeof(efi_configuration_table)) + ql.loader.efi_configuration_table_ptr
     efi_configuration_table.VendorGuid.Data1 = uuid.fields[0]
     efi_configuration_table.VendorGuid.Data2 = uuid.fields[1]
     efi_configuration_table.VendorGuid.Data3 = uuid.fields[2]
@@ -288,7 +289,7 @@ def hook_InstallConfigurationTable(ql, address, params):
     
     efi_configuration_table.VendorTable = params["Table"]
     ql.mem.write(address, convert_struct_to_bytes(efi_configuration_table))
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
@@ -299,7 +300,7 @@ def hook_InstallConfigurationTable(ql, address, params):
     "a5": POINTER, #POINTER_T(POINTER_T(None))
 })
 def hook_LoadImage(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -307,7 +308,7 @@ def hook_LoadImage(ql, address, params):
     "a2": POINTER, #POINTER_T(POINTER_T(ctypes.c_uint16))
 })
 def hook_StartImage(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -318,13 +319,13 @@ def hook_StartImage(ql, address, params):
 def hook_Exit(ql, address, params):
     ql.nprint(f'hook_Exit')
     ql.uc.emu_stop()
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
 })
 def hook_UnloadImage(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -333,21 +334,21 @@ def hook_UnloadImage(ql, address, params):
 def hook_ExitBootServices(ql, address, params):
     ql.nprint(f'hook_ExitBootServices')
     ql.uc.emu_stop()
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Count": POINTER, #POINTER_T(ctypes.c_uint64)
 })
 def hook_GetNextMonotonicCount(ql, address, params):
-    ql.monotonic_count += 1
-    ql.os.ctx.write_int64(params["Count"], ql.monotonic_count)
-    return ql.os.ctx.EFI_SUCCESS
+    ql.os.monotonic_count += 1
+    write_int64(ql, params["Count"], ql.os.monotonic_count)
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
 })
 def hook_Stall(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "a0": ULONGLONG,
@@ -356,7 +357,7 @@ def hook_Stall(ql, address, params):
     "a3": POINTER, #POINTER_T(ctypes.c_uint16)
 })
 def hook_SetWatchdogTimer(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -365,7 +366,7 @@ def hook_SetWatchdogTimer(ql, address, params):
     "a3": ULONGLONG,
 })
 def hook_ConnectController(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -373,7 +374,7 @@ def hook_ConnectController(ql, address, params):
     "a2": POINTER, #POINTER_T(None)
 })
 def hook_DisconnectController(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Handle": POINTER, #POINTER_T(None)
@@ -393,7 +394,7 @@ def hook_OpenProtocol(ql, address, params):
     "ControllerHandle": POINTER, #POINTER_T(None)
 })
 def hook_CloseProtocol(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Handle": POINTER, #POINTER_T(None)
@@ -402,7 +403,7 @@ def hook_CloseProtocol(ql, address, params):
     "EntryCount": POINTER, #POINTER_T(ctypes.c_uint64)
 })
 def hook_OpenProtocolInformation(ql, address, params):
-    return ql.os.ctx.EFI_NOT_FOUND
+    return EFI_NOT_FOUND
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(None)
@@ -410,7 +411,7 @@ def hook_OpenProtocolInformation(ql, address, params):
     "a2": POINTER, #POINTER_T(ctypes.c_uint64)
 })
 def hook_ProtocolsPerHandle(ql, address, params):
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "SearchType": ULONGLONG,
@@ -421,15 +422,15 @@ def hook_ProtocolsPerHandle(ql, address, params):
 })
 def hook_LocateHandleBuffer(ql, address, params):
     buffer_size, handles = LocateHandles(ql, address, params)
-    ql.os.ctx.write_int64(params["NoHandles"], len(handles))
+    write_int64(ql, params["NoHandles"], len(handles))
     if len(handles) == 0:
-        return ql.os.ctx.EFI_NOT_FOUND
-    address = ql.heap.alloc(buffer_size)
-    ql.os.ctx.write_int64(params["Buffer"], address)
+        return EFI_NOT_FOUND
+    address = ql.loader.heap.alloc(buffer_size)
+    write_int64(ql, params["Buffer"], address)
     for handle in handles:
-            ql.os.ctx.write_int64(address, handle)
+            write_int64(ql, address, handle)
             address += pointer_size
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 def LocateProtocol(ql, address, params):
     protocol = params['Protocol']
@@ -437,9 +438,9 @@ def LocateProtocol(ql, address, params):
         if "Handle" in params and params["Handle"] != handle:
             continue
         if protocol in guid_dic:
-            ql.os.ctx.write_int64(params['Interface'], guid_dic[protocol])
-            return ql.os.ctx.EFI_SUCCESS
-    return ql.os.ctx.EFI_NOT_FOUND
+            write_int64(ql, params['Interface'], guid_dic[protocol])
+            return EFI_SUCCESS
+    return EFI_NOT_FOUND
 
 @dxeapi(params={
     "Protocol": GUID,
@@ -469,7 +470,7 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
         index +=2
     ql.loader.handle_dict[handle] = dic
     check_and_notify_protocols(ql)
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Handle": POINTER, #POINTER_T(None)
@@ -478,7 +479,7 @@ def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
     handle = params["Handle"]
     ql.nprint(f'hook_UninstallMultipleProtocolInterfaces {handle:x}')
     if handle not in ql.loader.handle_dict:
-        return ql.os.ctx.EFI_NOT_FOUND
+        return EFI_NOT_FOUND
     index = 1
     while _get_param_by_index(ql, index) != 0:
         GUID_ptr = _get_param_by_index(ql, index)
@@ -488,10 +489,10 @@ def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
         dic = ql.loader.handle_dict[handle]
         protocol = params["Protocol"]
         if protocol not in dic:
-            return ql.os.ctx.EFI_INVALID_PARAMETER
+            return EFI_INVALID_PARAMETER
         del dic[protocol]
         index +=2
-    return ql.os.ctx.EFI_SUCCESS
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Data": POINTER, #POINTER_T(None)
@@ -500,8 +501,8 @@ def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
 })
 def hook_CalculateCrc32(ql, address, params):
     data = bytes(ql.mem.read(params['Data'], params['DataSize']))
-    ql.os.ctx.write_int32(params['Crc32'], crc32(data))
-    return ql.os.ctx.EFI_SUCCESS
+    write_int32(ql, params['Crc32'], crc32(data))
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Destination": POINTER, #POINTER_T(None)
@@ -520,10 +521,10 @@ def hook_CopyMem(ql, address, params):
 })
 def hook_SetMem(ql, address, params):
     ptr = params["Buffer"]
-    value = struct.pack('B',params["Value"])
+    value = struct.pack('B',params["Value"] & 0xff)
     for i in range(0, params["Size"]):
-        ql.mem.write(ptr, value)
-    return ql.os.ctx.EFI_SUCCESS
+        ql.mem.write(ptr+i, value)
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Type": UINT,
@@ -552,7 +553,7 @@ def CreateEvent(ql, address, params):
         event_dic["EventGroup"] =  params["EventGroup"]
     
     ql.loader.events[event_id] = event_dic
-    ql.os.ctx.write_int64(params["Event"], event_id)
+    write_int64(ql, params["Event"], event_id)
     return event_id
 
 def hook_EFI_BOOT_SERVICES(ql, start_ptr):

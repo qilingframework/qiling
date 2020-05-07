@@ -8,10 +8,16 @@ import pickle
 sys.path.append("..")
 from qiling import *
 from qiling.exception import *
+from qiling.os.uefi.const import *
 
 class Test_UEFI(unittest.TestCase):
     def test_x8664_uefi(self):
         def force_notify_RegisterProtocolNotify(ql, address, params):
+            print("\n")
+            print("=" * 40)
+            print(" Enter into set_api mode")
+            print("=" * 40)
+            print("\n")
             event_id = params['Event']
             if event_id in ql.loader.events:
                 ql.loader.events[event_id]['Guid'] = params["Protocol"]
@@ -20,8 +26,8 @@ class Test_UEFI(unittest.TestCase):
                 event["Set"] = True
                 ql.loader.notify_list.append((event_id, event['NotifyFunction'], event['NotifyContext']))
                 ######
-                return ql.os.ctx.EFI_SUCCESS
-            return ql.os.ctx.EFI_INVALID_PARAMETER
+                return EFI_SUCCESS
+            return EFI_INVALID_PARAMETER
 
 
         if __name__ == "__main__":
