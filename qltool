@@ -34,9 +34,9 @@ def parse_args(parser, commands):
 # read shellcode from file
 def read_file(fname):
     with open(fname,"rb") as f:
-        shellcode = f.read()
+        content = f.read()
         f.close
-        return shellcode
+        return content
 
 def run_shellcode(options):
     if not options.os in ("linux", "windows", "freebsd", "macos"):
@@ -242,10 +242,13 @@ if __name__ == '__main__':
        ql.strace_filter = options.strace_filter
 
     if options.env != '':
-        import pickle
-        with open(options.env, 'rb') as f:
-            ql.env = pickle.load(f, encoding='bytes')
-    
+        if os.path.exists(options.env):
+            import pickle
+            with open(options.env, 'rb') as f:
+                ql.env = pickle.load(f, encoding='bytes')
+        else:
+            ql.env = options.env
+            
     timeout = 0
     if options.timeout != None:
         timeout = int(options.timeout)
