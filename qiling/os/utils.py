@@ -10,13 +10,6 @@ This module is intended for general purpose functions that are only used in qili
 import struct, os
 from json import dumps
 
-from binascii import unhexlify
-
-try:
-    from keystone import *
-except:
-    pass
-
 from unicorn import *
 from unicorn.arm_const import *
 from unicorn.x86_const import *
@@ -53,62 +46,6 @@ class QLOsUtils:
             ebsc += i
 
         return ebsc
-
-    def compile_asm(self, archtype, runcode, arm_thumb=None):
-        try:
-            loadarch = KS_ARCH_X86
-        except:
-            raise QlErrorOutput("Please install Keystone Engine")
-
-        def ks_convert(arch):
-            if self.ql.archendian == QL_ENDIAN.EB:
-                adapter = {
-                    QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
-                    QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
-                    QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
-                    QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_BIG_ENDIAN),
-                    QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
-                }
-            else:
-                adapter = {
-                    QL_ARCH.X86: (KS_ARCH_X86, KS_MODE_32),
-                    QL_ARCH.X8664: (KS_ARCH_X86, KS_MODE_64),
-                    QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
-                    QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM),
-                    QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
-                }
-
-            if arch in adapter:
-                return adapter[arch]
-            # invalid
-            return None, None
-
-        def compile_instructions(fname, archtype, archmode):
-            f = open(fname, 'rb')
-            assembly = f.read()
-            f.close()
-
-            ks = Ks(archtype, archmode)
-
-            shellcode = ''
-            try:
-                # Initialize engine in X86-32bit mode
-                encoding, count = ks.asm(assembly)
-                shellcode = ''.join('%02x' % i for i in encoding)
-                shellcode = unhexlify(shellcode)
-
-            except KsError as e:
-                raise
-
-            return shellcode
-
-        if arm_thumb1 and archtype == QL_ARCH.ARM:
-            archtype = QL_ARCH.ARM_THUMB
-
-        archtype, archmode = ks_convert(archtype)
-        return compile_instructions(runcode, archtype, archmode)
 
     def transform_to_link_path(self, path):
         if self.ql.multithread:

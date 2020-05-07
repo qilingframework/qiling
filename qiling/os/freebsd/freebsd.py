@@ -20,7 +20,6 @@ class QlOsFreebsd(QlOsPosix):
         if self.ql.shellcoder:
             self.ql.mem.map(self.entry_point, self.shellcoder_ram_size, info="[shellcode_stack]")
             self.entry_point  = (self.entry_point + 0x200000 - 0x1000)
-            self.ql.mem.write(self.entry_point, self.ql.shellcoder)
             self.ql.reg.arch_sp = self.entry_point
         else:
             stack_address = int(self.profile.get("OS64", "stack_address"),16)
@@ -47,6 +46,9 @@ class QlOsFreebsd(QlOsPosix):
 
 
     def run(self):
+        if self.ql.shellcoder:
+            self.ql.mem.write(self.entry_point, self.ql.shellcoder)
+
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
 

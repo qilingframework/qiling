@@ -71,15 +71,10 @@ class QlOsLinux(QlOsPosix):
         if self.ql.shellcoder:
             self.ql.mem.map(self.entry_point, self.shellcoder_ram_size, info="[shellcode_stack]")
             self.entry_point  = (self.entry_point + 0x200000 - 0x1000)
-            self.ql.mem.write(self.entry_point, self.ql.shellcoder)
         else:
             # if not self.ql.stack_address and not self.ql.stack_size:
             self.stack_address = stack_address
             self.stack_size = stack_size
-            # elif self.ql.stack_address and self.ql.stack_size:
-            #     self.stack_address = self.ql.stack_address
-            #     self.stack_address = self.ql.stack_size    
-
             self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")            
 
         self.setup_output()
@@ -92,6 +87,9 @@ class QlOsLinux(QlOsPosix):
         self.fh_tmp.append((fn, cb, userdata))
 
     def run(self):
+        if self.ql.shellcoder:
+            self.ql.mem.write(self.entry_point, self.ql.shellcoder)
+        
         for fn, cb, userdata in self.fh_tmp:
             self.fh.add_function_hook(fn, cb, userdata)
 

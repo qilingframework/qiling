@@ -6,10 +6,6 @@
 
 import argparse, os, string, sys
 from binascii import unhexlify
-try:
-    from keystone import *
-except:
-    pass    
 from qiling import *
 
 
@@ -42,66 +38,6 @@ def read_shellcode(fname):
         f.close
         return shellcode
 
-def ql_asm2bytes(fname, archtype, archmode = None):
-    try:
-        loadarch = KS_ARCH_X86
-    except:
-        print ("Please install Keystone Engine")
-        raise
-
-    def ks_convert(arch, archmode):
-        if archmode != None:
-            arch = "armthumb"
-        
-        if options.bigendian == True:
-            adapter = {
-                'x86': (KS_ARCH_X86, KS_MODE_32),
-                'x8664': (KS_ARCH_X86, KS_MODE_64),
-                'mips': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
-                'arm': (KS_ARCH_ARM, KS_MODE_ARM, + KS_MODE_BIG_ENDIAN),
-                'armthumb': (KS_ARCH_ARM, KS_MODE_THUMB | KS_MODE_BIG_ENDIAN),
-                'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
-            }
-        else:    
-            adapter = {
-                'x86': (KS_ARCH_X86, KS_MODE_32),
-                'x8664': (KS_ARCH_X86, KS_MODE_64),
-                'mips': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
-                'arm': (KS_ARCH_ARM, KS_MODE_ARM),
-                'armthumb': (KS_ARCH_ARM, KS_MODE_THUMB),
-                'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
-            }                
-
-            if arch in adapter:
-                return adapter[arch]
-        # invalid
-        return None, None
-
-    def compile_instructions(fname, archtype, archmode):
-        f = open(fname, 'rb')
-        assembly = f.read()
-        f.close()
-
-        ks = Ks(archtype, archmode)
-
-        shellcode = ''
-        try:
-            # Initialize engine in X86-32bit mode
-            encoding, count = ks.asm(assembly)
-            shellcode = ''.join('%02x'%i for i in encoding)
-            shellcode = unhexlify(shellcode)
-
-        except KsError as e:
-            print("ERROR Keystone Compile Error: %s" % e)
-            exit(1)
-
-        return shellcode
-
-
-    archtype, archmode = ks_convert(archtype, archmode)
-    return compile_instructions(fname, archtype, archmode)
-
-
 def run_shellcode(options):
     if not options.os in ("linux", "windows", "freebsd", "macos"):
             print("ERROR: -os required: either linux, windows, freebsd, macos")
@@ -133,7 +69,7 @@ def run_shellcode(options):
 
     elif options.asm == True:
         print ("[+] Load ASM from FILE")
-        shellcoder = ql_asm2bytes(options.filename, options.arch)
+        shellcoder = "asmfile"
 
     else:
         print ("[+] Load BIN from FILE")
@@ -277,11 +213,15 @@ if __name__ == '__main__':
     # ql shellcode setup
     elif (options.subparser_name == 'shellcode'):
         ql = run_shellcode(options)
+        if options.asm == True:
+            f = open(options.filename, 'rb')
+            assembly = f.read()
+            f.close()
+            ql.shellcoder = ql.compile(ql.archtype, assembly)
     
     else:
         print("ERROR: Unknown command")
         usage()
-
 
     # ql execute additional options
     if options.gdb:
