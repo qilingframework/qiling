@@ -1,5 +1,6 @@
 [![Gitter](https://badges.gitter.im/qilingframework/community.svg)](https://gitter.im/qilingframework/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![Build Status](https://travis-ci.com/qilingframework/qiling.svg?branch=master)](https://travis-ci.com/qilingframework/qiling)
+[![Build Status](https://travis-ci.com/qilingframework/qiling.svg?branch=dev)](https://travis-ci.com/qilingframework/qiling)
+![Docker Image CI](https://github.com/qilingframework/qiling/workflows/Docker%20Image%20CI/badge.svg?branch=dev)
 ---
 
 <p align="center">
@@ -9,7 +10,7 @@
 Qiling is an advanced binary emulation framework, with the following features:
 
 - Cross platform: Windows, MacOS, Linux, BSD, UEFI
-- Cross architecture: X86, X86_64, Arm, Arm64, Mips
+- Cross architecture: X86, X86_64, Arm, Arm64, MIPS
 - Multiple file formats: PE, MachO, ELF
 - Emulate & sandbox machine code in a isolated environment
 - Supports cross architecture and platform debugging capabilities
