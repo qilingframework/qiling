@@ -13,6 +13,11 @@ from qiling.os.uefi.const import *
 class Test_UEFI(unittest.TestCase):
     def test_x8664_uefi(self):
         def force_notify_RegisterProtocolNotify(ql, address, params):
+            print("\n")
+            print("=" * 40)
+            print(" Enter into set_api mode")
+            print("=" * 40)
+            print("\n")
             event_id = params['Event']
             if event_id in ql.loader.events:
                 ql.loader.events[event_id]['Guid'] = params["Protocol"]

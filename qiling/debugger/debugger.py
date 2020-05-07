@@ -32,12 +32,12 @@ def ql_debugger_init(ql):
 
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind((ip, port))
-            ql.nprint("\ndebugger> Initializing load_address 0x%x\n" % (load_address))
-            ql.nprint("debugger> Listening on %s:%u\n" % (ip, port))
+            ql.nprint("debugger> Initializing load_address 0x%x" % (load_address))
+            ql.nprint("debugger> Listening on %s:%u" % (ip, port))
             sock.listen(1)
             conn, addr = sock.accept()
         except:
-            ql.nprint("debugger> Error: Address already in use\n")
+            ql.nprint("debugger> Error: Address already in use")
             raise
         try:
 
@@ -47,7 +47,7 @@ def ql_debugger_init(ql):
             DEBUGSESSION = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, DEBUGSESSION)
             ql.remotedebugsession = DEBUGSESSION(ql, conn, exit_point, mappings)
         except:
-            ql.nprint("debugger> Error: Not able to initialize Debugging Server\n")
+            ql.nprint("debugger> Error: Not able to initialize Debugging Server")
             raise
 
     try:
@@ -70,7 +70,7 @@ def ql_debugger_init(ql):
     remotedebugsrv = debugger_convert(remotedebugsrv)
 
     if remotedebugsrv not in (QL_DEBUGGER):
-        raise QlErrorOutput("[!] Error: Debugger not supported\n")       
+        raise QlErrorOutput("[!] Error: Debugger not supported")       
     else:
         try:
             if ql.debugger is True:
@@ -81,4 +81,4 @@ def ql_debugger_init(ql):
         except KeyboardInterrupt:
             if ql.remotedebugsession():
                 ql.remotedebugsession.close()
-            raise QlErrorOutput("[!] Remote debugging session ended\n")
+            raise QlErrorOutput("[!] Remote debugging session ended")
