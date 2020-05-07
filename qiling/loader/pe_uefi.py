@@ -85,7 +85,6 @@ class QlLoaderPE_UEFI(QlLoader):
         initiate UC needs to be in loader, or else it will kill execve
         Note: This is EFI, but for the sake of same with others OS
         """
-        self.ql.uc = self.ql.arch.init_uc
 
         if self.ql.archtype == QL_ARCH.X8664:
             self.stack_address = int(self.profile.get("OS64", "stack_address"),16)
