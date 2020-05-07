@@ -12,6 +12,7 @@ __pycache__/
 *.py[cod]
 build
 dist
+.github/
 
 # examples 
 examples/**/registry/
