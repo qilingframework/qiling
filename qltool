@@ -32,7 +32,7 @@ def parse_args(parser, commands):
     return args
 
 # read shellcode from file
-def read_shellcode(fname):
+def read_file(fname):
     with open(fname,"rb") as f:
         shellcode = f.read()
         f.close
@@ -59,7 +59,7 @@ def run_shellcode(options):
             shellcoder =  bytes.fromhex(shellcoder)
         elif options.filename is not None:
             print ("[+] Load HEX from FILE")
-            shellcoder = str(read_shellcode(options.filename)).strip('b\'').strip('\\n')
+            shellcoder = str(read_file(options.filename)).strip('b\'').strip('\\n')
             shellcoder = shellcoder.strip('x').split("\\\\x")
             shellcoder = "".join(shellcoder).strip()
             shellcoder = bytes.fromhex(shellcoder)
@@ -76,7 +76,7 @@ def run_shellcode(options):
         if options.filename is None:
             print("ERROR: File not found")
             exit(1)
-        shellcoder = read_shellcode(options.filename)
+        shellcoder = read_file(options.filename)
 
     return Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output, profile = options.profile)
 
@@ -167,7 +167,6 @@ if __name__ == '__main__':
 
     options = parser.parse_args()
 
-
     # var check
     if options.strace:
         options.output = "default"
@@ -186,7 +185,6 @@ if __name__ == '__main__':
     if options.log_split:
         options.console = True
     
-    # FIXME: this did not parse to core.py need to fine out why
     if options.profile:
         options.profile = str(options.profile)
     
@@ -214,9 +212,7 @@ if __name__ == '__main__':
     elif (options.subparser_name == 'shellcode'):
         ql = run_shellcode(options)
         if options.asm == True:
-            f = open(options.filename, 'rb')
-            assembly = f.read()
-            f.close()
+            assembly = read_file(options.filename)
             ql.shellcoder = ql.compile(ql.archtype, assembly)
     
     else:
