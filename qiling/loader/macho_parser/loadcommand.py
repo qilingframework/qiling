@@ -146,7 +146,7 @@ class LoadDysymtab(LoadCommand):
         self.indsym_table_offset        = unpack("<L", self.FR.read(4))[0]
         self.indsym_table_entries       = unpack("<L", self.FR.read(4))[0]
         self.extreloc_table_offset      = unpack("<L", self.FR.read(4))[0]
-        self.extref_table_entries       = unpack("<L", self.FR.read(4))[0]
+        self.extreloc_table_entries     = unpack("<L", self.FR.read(4))[0]
         self.locreloc_table_offset      = unpack("<L", self.FR.read(4))[0]
         self.locreloc_table_entries     = unpack("<L", self.FR.read(4))[0]
 
