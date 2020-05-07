@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 
-import argparse, os, string, sys
+import argparse, os, string, sys, ast
 from binascii import unhexlify
 from qiling import *
 
@@ -245,10 +245,10 @@ if __name__ == '__main__':
         if os.path.exists(options.env):
             import pickle
             with open(options.env, 'rb') as f:
-                ql.env = pickle.load(f, encoding='bytes')
+                ql.env = pickle.load(f)
         else:
-            ql.env = options.env
-            
+            ql.env = ast.literal_eval(options.env)
+    
     timeout = 0
     if options.timeout != None:
         timeout = int(options.timeout)
