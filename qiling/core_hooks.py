@@ -37,6 +37,7 @@ class Hook:
 class HookAddr(Hook):
     def __init__(self, callback, address, user_data=None):
         super(HookAddr, self).__init__(callback, user_data, address, address)
+        self.addr = address
     
     def call(self, ql, *args):
         if self.user_data == None:
@@ -52,6 +53,16 @@ class HookIntr(Hook):
         if intno < 0 or self.intno == intno:
             return True
         return False
+
+class HookRet:
+    def __init__(self, ql, t, h):
+        self._ql = ql
+        self._t = t
+        self._h = h
+    
+    def remove(self):
+        self._ql.hook_del(self._t, self._h)
+
 
 class QLCoreHooks(object):
     def __init__(self):
@@ -260,30 +271,31 @@ class QLCoreHooks(object):
     def ql_hook(self, hook_type, callback, user_data=None, begin=1, end=0, *args):
         h = Hook(callback, user_data, begin, end)
         self._ql_hook(hook_type, h, *args)
+        return HookRet(self, hook_type, h)
 
     def hook_code(self, callback, user_data=None, begin=1, end=0):
-        self.ql_hook(UC_HOOK_CODE, callback, user_data, begin, end)
+        return self.ql_hook(UC_HOOK_CODE, callback, user_data, begin, end)
 
     def hook_intr(self, callback, user_data=None, begin=1, end=0):
-        self.ql_hook(UC_HOOK_INTR,  callback, user_data, begin, end)
+        return self.ql_hook(UC_HOOK_INTR,  callback, user_data, begin, end)
 
     def hook_block(self, callback, user_data=None, begin=1, end=0):
-        self.ql_hook(UC_HOOK_BLOCK, callback, user_data, begin, end)
+        return self.ql_hook(UC_HOOK_BLOCK, callback, user_data, begin, end)
 
     def hook_mem_unmapped(self, callback, user_data=None, begin=1, end=0):
-        self.ql_hook(UC_HOOK_MEM_UNMAPPED, callback, user_data, begin, end)
+        return self.ql_hook(UC_HOOK_MEM_UNMAPPED, callback, user_data, begin, end)
 
     def hook_mem_read_invalid(self, callback, user_data=None, begin=1, end=0):
-        self.ql_hook(UC_HOOK_MEM_READ_INVALID, callback, user_data, begin, end)
+        return self.ql_hook(UC_HOOK_MEM_READ_INVALID, callback, user_data, begin, end)
 
     def hook_mem_write_invalid(self, callback, user_data=None, begin=1, end=0):
-        self.ql_hook(UC_HOOK_MEM_WRITE_INVALID, callback, user_data, begin, end)
+        return self.ql_hook(UC_HOOK_MEM_WRITE_INVALID, callback, user_data, begin, end)
 
     def hook_mem_fetch_invalid(self, callback, user_data=None, begin=1, end=0):
-        self.ql_hook(UC_HOOK_MEM_FETCH_INVALID, callback, user_data, begin, end)
+        return self.ql_hook(UC_HOOK_MEM_FETCH_INVALID, callback, user_data, begin, end)
 
     def hook_mem_invalid(self, callback, user_data=None, begin=1, end=0):
-        self.ql_hook(UC_HOOK_MEM_VALID, callback, user_data, begin, end)
+        return self.ql_hook(UC_HOOK_MEM_VALID, callback, user_data, begin, end)
 
     # a convenient API to set callback for a single address
     def hook_address(self, callback, address, user_data=None):
@@ -296,22 +308,24 @@ class QLCoreHooks(object):
             self._addr_hook[address] = []
 
         self._addr_hook[address].append(h)
+        return HookRet(self, None, h)
     
     def hook_intno(self, callback, intno, user_data=None):
         h = HookIntr(callback, intno, user_data)
         self._ql_hook(UC_HOOK_INTR, h)
+        return HookRet(self, UC_HOOK_INTR, h)
 
     def hook_mem_read(self, callback, user_data=None, begin=1, end=0):
-        self.ql_hook(UC_HOOK_MEM_READ, callback, user_data, begin, end)
+        return self.ql_hook(UC_HOOK_MEM_READ, callback, user_data, begin, end)
 
     def hook_mem_write(self, callback, user_data=None, begin=1, end=0):
-        self.ql_hook(UC_HOOK_MEM_WRITE, callback, user_data, begin, end)
+        return self.ql_hook(UC_HOOK_MEM_WRITE, callback, user_data, begin, end)
 
     def hook_mem_fetch(self, callback, user_data=None, begin=1, end=0):
-        self.ql_hook(UC_HOOK_MEM_FETCH, callback, user_data, begin, end)
+        return self.ql_hook(UC_HOOK_MEM_FETCH, callback, user_data, begin, end)
 
     def hook_insn(self, callback, arg1, user_data=None, begin=1, end=0):
-        self.ql_hook(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
+        return self.ql_hook(UC_HOOK_INSN, callback, user_data, begin, end, arg1)
     
     # replace linux or windows syscall/api with custom api/syscall
     # if replace function name is needed, first syscall must be available
@@ -340,6 +354,64 @@ class QLCoreHooks(object):
         if self.ostype in (QL_POSIX):
             return self.os.get_func_arg()    
 
+    def hook_del(self, *args):
+        if len(args) != 1 and len(args) != 2:
+            return
+
+        if isinstance(args[0], HookRet):
+            args[0].remove()
+            return
+        else:
+            hook_type, h = args
+
+        base_type = [
+            UC_HOOK_INTR,
+            UC_HOOK_INSN,
+            UC_HOOK_CODE,
+            UC_HOOK_BLOCK,
+            UC_HOOK_MEM_READ_UNMAPPED,
+            UC_HOOK_MEM_WRITE_UNMAPPED,
+            UC_HOOK_MEM_FETCH_UNMAPPED,
+            UC_HOOK_MEM_READ_PROT,
+            UC_HOOK_MEM_WRITE_PROT,
+            UC_HOOK_MEM_FETCH_PROT,
+            UC_HOOK_MEM_READ,
+            UC_HOOK_MEM_WRITE,
+            UC_HOOK_MEM_FETCH,
+            UC_HOOK_MEM_READ_AFTER,
+            UC_HOOK_INSN_INVALID
+            ]
+        if isinstance(h, HookAddr):
+            if h.addr in self._addr_hook.keys():
+                if h in self._addr_hook[h.addr]:
+                    del self._addr_hook[h.addr][self._addr_hook[h.addr].index(h)]
+
+                    if len(self._addr_hook[h.addr]) == 0:
+                        self.uc.hook_del(self._addr_hook_fuc[h.addr])
+                        del self._addr_hook_fuc[h.addr]
+            
+            return
+
+        for t in base_type:
+            if (t & hook_type) != 0:
+                if t in (UC_HOOK_INTR, UC_HOOK_CODE, UC_HOOK_BLOCK, UC_HOOK_MEM_READ_UNMAPPED, UC_HOOK_MEM_WRITE_UNMAPPED, UC_HOOK_MEM_FETCH_UNMAPPED, UC_HOOK_MEM_READ_PROT, UC_HOOK_MEM_WRITE_PROT, UC_HOOK_MEM_FETCH_PROT, UC_HOOK_MEM_READ, UC_HOOK_MEM_WRITE, UC_HOOK_MEM_FETCH, UC_HOOK_MEM_READ_AFTER, UC_HOOK_INSN_INVALID):
+                    if t in self._hook.keys():
+                        if h in self._hook[t]:
+                            del self._hook[t][self._hook[t].index(h)]
+
+                            if len(self._hook[t]) == 0:
+                                self.uc.hook_del(self._hook_fuc[t])
+                                del self._hook_fuc[t]
+                
+                if t in (UC_HOOK_INSN, ):
+                    if t in self._insn_hook.keys():
+                        if h in self._insn_hook[t]:
+                            del self._insn_hook[t][self._insn_hook[t].index(h)]
+
+                            if len(self._insn_hook[t]) == 0:
+                                self.uc.hook_del(self._insn_hook_fuc[t])
+                                del self._insn_hook_fuc[t]
+                    
 
     def clear_hooks(self):
         for i in self._hook_fuc.keys():
