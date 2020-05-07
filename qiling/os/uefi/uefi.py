@@ -18,7 +18,7 @@ class QlOsUefi(QlOs):
         self.entry_point = 0
         self.user_defined_api = {}
         self.notify_immediately = False
-
+        self.ql.uc = self.ql.arch.init_uc
 
     def run(self):
         self.setup_output()
