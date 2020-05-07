@@ -7,6 +7,7 @@ import sys
 import pickle
 sys.path.append("..")
 from qiling import *
+from qiling.os.uefi.const import *
 
 def force_notify_RegisterProtocolNotify(ql, address, params):
     event_id = params['Event']
@@ -17,8 +18,8 @@ def force_notify_RegisterProtocolNotify(ql, address, params):
         event["Set"] = True
         ql.loader.notify_list.append((event_id, event['NotifyFunction'], event['NotifyContext']))
         ######
-        return ql.os.ctx.EFI_SUCCESS
-    return ql.os.ctx.EFI_INVALID_PARAMETER
+        return EFI_SUCCESS
+    return EFI_INVALID_PARAMETER
 
 
 if __name__ == "__main__":
