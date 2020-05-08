@@ -160,8 +160,6 @@ if __name__ == '__main__':
     comm_parser.add_argument('--root', action='store_true', default=False, dest='root', help='Enable sudo required mode')
     comm_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', 
                             help='Stop running while encounter any error (only use it with debug mode)')
-    comm_parser.add_argument('--log_dir', required=False, default=None, dest='log_dir', help='log file dir')
-    comm_parser.add_argument('--log_split', action='store_true', default=False, dest='log_split', help='split log file')
     comm_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
     comm_parser.add_argument('--timeout', required=False, help='Emulation timeout')
 
@@ -179,12 +177,6 @@ if __name__ == '__main__':
     elif options.disasm:
         options.output = "disasm"            
 
-    if options.console == "False":
-        options.console = False
-
-    if options.log_split:
-        options.console = True
-    
     if options.profile:
         options.profile = str(options.profile)
     
@@ -199,10 +191,10 @@ if __name__ == '__main__':
     # ql file setup
     if (options.subparser_name == 'run'):
         if options.filename is not None and options.run_args == []:
-            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile = options.profile, output=options.output, log_console = options.console, log_dir=options.log_dir)
+            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile = options.profile, output=options.output)
 
         elif options.filename is None and options.args == [] and options.run_args != []:
-            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, profile = options.profile, output=options.output, log_console = options.console, log_dir=options.log_dir)
+            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, profile = options.profile, output=options.output)
         
         else:
             print("ERROR: Command error!")
@@ -229,8 +221,8 @@ if __name__ == '__main__':
     if options.root:
         ql.root = True
 
-    if options.log_split:
-        ql.log_split = True
+    if options.console == "False":
+        ql.log_split = False
 
     if options.multithread:
         ql.multithread = True

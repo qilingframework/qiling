@@ -20,7 +20,7 @@ class ELFTest(unittest.TestCase):
 
 
     def test_multithread_elf_linux_x8664(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", log_dir= "multi_log")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", profile= "profiles/append_test.ql")
         ql.log_split = True
         ql.multithread = True   
         ql.run()
@@ -220,7 +220,7 @@ class ELFTest(unittest.TestCase):
             addr = ql.func_arg[0]
             print("puts(%s)" % ql.mem.string(addr))
             
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", log_dir='logs')
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql')
         ql.log_split=True
         ql.set_api('puts', my_puts)
         ql.run()

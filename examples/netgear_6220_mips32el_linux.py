@@ -29,11 +29,9 @@ def my_netgear(path, rootfs):
                 path, 
                 rootfs, 
                 output      = "debug", 
-                log_dir     = "qlog",
                 profile     = "netgear_6220.ql"
                 )
 
-    ql.log_split        = True
     ql.root             = False
     ql.bindtolocalhost  = True
     ql.multithread      = False

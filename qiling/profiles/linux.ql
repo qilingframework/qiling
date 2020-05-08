@@ -1,4 +1,5 @@
 [SHELLCODER]
+# ram_size 0xa00000 is 10MB
 ram_size = 0xa00000
 entry_point = 0x1000000
 
@@ -26,8 +27,15 @@ pid = 1996
 
 
 [LOG]
-logdir = qlog
+# log directory output
+# usage: dir = qlog
+dir =
+# split log file, use with multithread
+split = False
 
 
 [MISC]
+# append string into different logs
+# maily for multiple times Ql run with one file
+# usage: append = test1
 append =

@@ -31,38 +31,35 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             ostype=None,
             archtype=None,
             bigendian=False,
-            libcache=False,
+            output=None,
+            verbose=1,
+            profile=None,
+            console=True,
             stdin=0,
             stdout=0,
             stderr=0,
-            output=None,
-            verbose=1,
-            log_console=True,
-            log_dir=None,
-            append = None,
-            profile=None
     ):
         super(Qiling, self).__init__()
 
         ##################################
         # Definition during ql=Qiling()  #
         ##################################
-        self.output = output
-        self.verbose = verbose
-        self.ostype = ostype
-        self.archtype = archtype
-        self.bigendian = bigendian
-        self.shellcoder = shellcoder
         self.filename = filename
         self.rootfs = rootfs
         self.env = env if env else {}
-        self.libcache = libcache
-        self.log_console = log_console
+        self.shellcoder = shellcoder
+        self.ostype = ostype
+        self.archtype = archtype
+        self.bigendian = bigendian
+        self.output = output
+        self.verbose = verbose
         self.profile = profile
+        self.console = console
         # OS dependent configuration for stdio
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
+        
 
         ##################################
         # Definition after ql=Qiling()   #
@@ -76,33 +73,34 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.internal_exception = None
         self.platform = platform.system()
         self.debugger = None
-        # due to the instablity of multithreading, added a swtich for multithreading. at least for MIPS32EL for now
+        # due to the instablity of multithreading, added a swtich for multithreading
         self.multithread = False
         # To use IPv6 or not, to avoid binary double bind. ipv6 and ipv4 bind the same port at the same time
         self.ipv6 = False
         # Bind to localhost
-        self.bindtolocalhost = False
+        self.bindtolocalhost = True
         # by turning this on, you must run your analysis with sudo
         self.root = False
-        self.log_split = False
         # syscall filter for strace-like functionality
         self.strace_filter = None
         self.remotedebugsession = None
         self.automatize_input = False
+        self.libcache = False
+
 
         """
         Qiling Framework Core Engine
         """
         # shellcoder settings
         if self.shellcoder:
-            if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str ):
+            if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str):
                 self.ostype = ostype_convert(self.ostype.lower())
                 self.archtype = arch_convert(self.archtype.lower())
-                self.filename = ["qilingshellcode"]
+                self.filename = ["qilingshellcoder"]
                 if self.rootfs is None:
                     self.rootfs = "."
         # file check
-        elif self.shellcoder is None:
+        if self.shellcoder is None:
             if not os.path.exists(str(self.filename[0])):
                 raise QlErrorFileNotFound("[!] Target binary not found")
             if not os.path.exists(self.rootfs):
@@ -111,7 +109,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.path = (str(self.filename[0]))
         self.argv = self.filename
         self.targetname = ntpath.basename(self.filename[0])
-                
+
         ##########
         # Loader #
         ##########        
@@ -122,12 +120,15 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         ############           
         self.profile = self.profile_setup()
         self.append = self.profile["MISC"]["append"]
-        self.log_dir = self.profile["LOG"]["logdir"]
+        self.log_dir = self.profile["LOG"]["dir"]
+        self.log_split =  self.profile.getboolean('LOG', 'split')
 
-        # Looger's configuration
-        if self.log_dir is not None and type(self.log_dir) == str:
+         # Looger's configuration
+        if self.log_dir != "" and type(self.log_dir) == str:
             _logger = ql_setup_logging_env(self)    
             self.log_file_fd = _logger
+        else:
+            self.log_dir = None     
         
         # qiling output method conversion
         if self.output and type(self.output) == str:
@@ -147,17 +148,16 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.pointersize = (self.archbit // 8)  
         
         # Endian for shellcode needs to set manually
-        if self.shellcoder and self.bigendian == True and self.archtype in (QL_ENDINABLE):
-            self.archendian = QL_ENDIAN.EB
-        elif self.shellcoder:
+        if self.shellcoder:
             self.archendian = QL_ENDIAN.EL
+            if self.bigendian == True and self.archtype in (QL_ENDINABLE):
+                self.archendian = QL_ENDIAN.EB
 
         #############
         # Component #
         #############
         self.mem = self.component_setup("os", "memory")
         self.reg = self.component_setup("arch", "register")
-
 
         #####################################
         # Architecture                      #

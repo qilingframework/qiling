@@ -30,14 +30,14 @@ class QLCoreUtils(object):
 
     # normal print out
     def nprint(self, *args, **kw):
-        if self.log_console == True:
+        if self.console == True:
             print (*args, **kw)
-        elif type(self.log_console) is bool:
+        elif type(self.console) is bool:
             pass
         else:
-            raise QlErrorOutput("[!] log_consnsole must be True or False")     
+            raise QlErrorOutput("[!] consnsole must be True or False")     
         
-        # FIXME: this is due to log_console must be able to update duirng runtime
+        # FIXME: this is due to console must be able to update duirng runtime
         if self.log_file_fd is not None:
             if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
                 fd = self.os.thread_management.cur_thread.log_file_fd

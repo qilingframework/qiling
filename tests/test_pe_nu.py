@@ -138,7 +138,7 @@ def test_pe_win_x8664_fls():
 def test_pe_win_x86_wannacry():
     def stop(ql):
         ql.nprint("killerswtichfound")
-        ql.log_console = False
+        ql.console = False
         ql.nprint("No Print")
         ql.emu_stop()
 
