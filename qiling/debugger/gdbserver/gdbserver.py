@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-# gdbserver --remote-debug --disable-packet=threads,vCont 0.0.0.0:9999 /path/to binary
+# gdbserver --remote-debug 0.0.0.0:9999 /path/to binary
 # documentation: according to https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html#Remote-Protocol
 
 import struct, os, re, socket
@@ -39,7 +39,6 @@ class GDBSERVERsession(object):
         self.netin          = clientsocket.makefile('r')
         self.netout         = clientsocket.makefile('w')
         self.last_pkt       = None
-        #self.en_vcont       = False
         self.gdb            = qldbg.Qldbg()
         self.gdb.initialize(self.ql, exit_point=exit_point, mappings=mappings)
         self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
@@ -104,7 +103,7 @@ class GDBSERVERsession(object):
                     adapter = {
                         QL_ARCH.X86          : [ 0x05, 0x04, 0x08 ],
                         QL_ARCH.X8664        : [ 0x06, 0x07, 0x10 ],
-                        QL_ARCH.MIPS       : [ 0x1d, 0x00, 0x25 ],        
+                        QL_ARCH.MIPS         : [ 0x1d, 0x00, 0x25 ],        
                         QL_ARCH.ARM          : [ 0x0b, 0x0d, 0x0f ],
                         QL_ARCH.ARM64        : [ 0x1d, 0xf1, 0x20 ]
                         }
