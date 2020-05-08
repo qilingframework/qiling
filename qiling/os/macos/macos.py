@@ -110,11 +110,14 @@ class QlOsMacos(QlOsPosix):
             if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                 self.ql.nprint("[+] PC= " + hex(self.ql.reg.arch_pc))
                 self.ql.mem.show_mapinfo()
-                buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
-                self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                self.ql.nprint("\n")
-                self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
-            raise QlErrorExecutionStop("[!] Execution Terminated")
+                try:
+                    buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
+                    self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                    self.ql.nprint("\n")
+                    self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
+                except:
+                    pass
+            raise
 
         if self.ql.internal_exception != None:
             raise self.ql.internal_exception
