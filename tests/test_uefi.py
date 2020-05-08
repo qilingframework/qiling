@@ -33,7 +33,7 @@ class Test_UEFI(unittest.TestCase):
         if __name__ == "__main__":
             with open("../examples/rootfs/x8664_efi/rom2_nvar.pickel", 'rb') as f:
                 env = pickle.load(f)
-            ql = Qiling(["../examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy"], "../examples/rootfs/x8664_efi", env=env)
+            ql = Qiling(["../examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy"], "../examples/rootfs/x8664_efi", env=env, output="debug")
             ql.set_api("hook_RegisterProtocolNotify", force_notify_RegisterProtocolNotify)
             ql.run()
 

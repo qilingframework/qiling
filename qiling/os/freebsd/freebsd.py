@@ -15,7 +15,6 @@ class QlOsFreebsd(QlOsPosix):
         self.load()
         
     def load(self):   
-        self.ql.uc = self.ql.arch.init_uc
         if self.ql.shellcoder:
             self.ql.mem.map(self.entry_point, self.shellcoder_ram_size, info="[shellcode_stack]")
             self.entry_point  = (self.entry_point + 0x200000 - 0x1000)

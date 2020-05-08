@@ -269,7 +269,7 @@ class QlLoaderPE(Process, QlLoader):
     def run(self):
         self.path = self.ql.path
         self.init_dlls = [b"ntdll.dll", b"kernel32.dll", b"user32.dll"]
-        self.filepath = ''
+        #self.filepath = ''
         self.pe_entry_point = 0
         self.sizeOfStackReserve = 0
 
@@ -402,8 +402,8 @@ class QlLoaderPE(Process, QlLoader):
                             address = self.ql.pack64(addr)
                         self.ql.mem.write(imp.address, address)
 
-            self.ql.nprint("[+] Done with loading %s" % self.path)
-            self.filepath = b"D:\\" + bytes(self.path.replace("/", "\\"), "utf-8")
+            self.ql.dprint(D_INFO, "[+] Done with loading %s" % self.path)
+            self.filepath = self.cmdline
 
         elif self.ql.shellcoder:
             if self.ql.archtype== QL_ARCH.X86:

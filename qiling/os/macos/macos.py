@@ -32,7 +32,6 @@ class QlOsMacos(QlOsPosix):
         self.load()
 
     def load(self):
-        self.ql.uc = self.ql.arch.init_uc
         stack_address        = int(self.profile.get("OS64", "stack_address"),16)
         stack_size           = int(self.profile.get("OS64", "stack_size"),16)     
         vmmap_trap_address  = int(self.profile.get("OS64", "vmmap_trap_address"),16)

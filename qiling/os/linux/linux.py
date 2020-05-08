@@ -25,7 +25,6 @@ class QlOsLinux(QlOsPosix):
         self.load()
 
     def load(self):
-        self.ql.uc = self.ql.arch.init_uc
         self.futexm = QlLinuxFutexManagement()
 
         if self.ql.archbit == 32:

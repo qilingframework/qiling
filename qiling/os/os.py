@@ -13,6 +13,7 @@ class QlOs(QLOsUtils):
     def __init__(self, ql):
         super(QlOs, self).__init__(ql)
         self.ql = ql
+        self.ql.uc = self.ql.arch.init_uc
         self.stdin = ql_file('stdin', sys.stdin.fileno())
         self.stdout = ql_file('stdout', sys.stdout.fileno())
         self.stderr = ql_file('stderr', sys.stderr.fileno())
@@ -49,4 +50,3 @@ class QlOs(QLOsUtils):
         self.syscalls = {}
         self.syscalls_counter = 0
         self.appeared_strings = {}
-        self.profile = self.ql.profile
