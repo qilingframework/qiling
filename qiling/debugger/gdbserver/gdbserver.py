@@ -39,7 +39,7 @@ class GDBSERVERsession(object):
         self.netin          = clientsocket.makefile('r')
         self.netout         = clientsocket.makefile('w')
         self.last_pkt       = None
-        self.en_vcont       = False
+        #self.en_vcont       = False
         self.gdb            = qldbg.Qldbg()
         self.gdb.initialize(self.ql, exit_point=exit_point, mappings=mappings)
         self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
@@ -635,15 +635,13 @@ class GDBSERVERsession(object):
                 elif subcmd.startswith('Cont'):
                     self.ql.dprint(D_INFO, "gdb> Cont command received: %s" % subcmd)
                     if subcmd == 'Cont?':
-                        if self.en_vcont == True:
-                            self.send('vCont;c;C;s;S')
-                        else:    
-                            self.send('')
-                    else:
+                        self.send('vCont;c;C;t;s;S;r')
+                    elif subcmd.startswith ("Cont;"):
                         subcmd = subcmd.split(';')
-                        if subcmd[1] in ('c', 'C05'):
+                        subcmd = subcmd[1].split(':')
+                        if subcmd[0] in ('c', 'C05'):
                             handle_c(subcmd)
-                        elif subcmd[1] in ('s:1', 'S:1'):
+                        elif subcmd[0] in ('S', 's'):
                             handle_s(subcmd)
                 else:
                     self.send("")
