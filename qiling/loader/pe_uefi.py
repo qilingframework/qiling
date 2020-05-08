@@ -34,15 +34,15 @@ class QlLoaderPE_UEFI(QlLoader):
         self.notify_list = []
     
     def run(self):
-        self.profile = self.ql.profile
+        
         self.tpl = 4 # TPL_APPLICATION
         self.user_defined_api = self.ql.os.user_defined_api
         if self.ql.archtype == QL_ARCH.X8664:
-            self.heap_base_address = int(self.profile.get("OS64", "heap_address"),16)
-            self.heap_base_size = int(self.profile.get("OS64", "heap_size"),16)       
+            self.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"),16)
+            self.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"),16)       
         elif self.ql.archtype == QL_ARCH.X86:
-            self.heap_base_address = int(self.profile.get("OS32", "heap_address"),16)
-            self.heap_base_size = int(self.profile.get("OS32", "heap_size"),16)
+            self.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"),16)
+            self.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"),16)
         self.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
         self.entry_point = 0
         self.load_address = 0  
@@ -87,52 +87,41 @@ class QlLoaderPE_UEFI(QlLoader):
         """
 
         if self.ql.archtype == QL_ARCH.X8664:
-            self.stack_address = int(self.profile.get("OS64", "stack_address"),16)
-            self.stack_size = int(self.profile.get("OS64", "stack_size"),16)
+            self.stack_address = int(self.ql.os.profile.get("OS64", "stack_address"),16)
+            self.stack_size = int(self.ql.os.profile.get("OS64", "stack_size"),16)
             
         elif self.ql.archtype == QL_ARCH.X86:        
-            self.stack_address = int(self.profile.get("OS32", "stack_address"),16)
-            self.stack_size = int(self.profile.get("OS32", "stack_size"),16)     
+            self.stack_address = int(self.ql.os.profile.get("OS32", "stack_address"),16)
+            self.stack_size = int(self.ql.os.profile.get("OS32", "stack_size"),16)     
 
-        if self.ql.path and not self.ql.shellcoder:
-            
-            # set stack pointer
-            self.ql.nprint("[+] Initiate stack address at 0x%x " % self.stack_address)
-            self.ql.mem.map(self.stack_address, self.stack_size)
+        # set stack pointer
+        self.ql.nprint("[+] Initiate stack address at 0x%x " % self.stack_address)
+        self.ql.mem.map(self.stack_address, self.stack_size)
 
-            # Stack should not init at the very bottom. Will cause errors with Dlls
-            sp = self.stack_address + self.stack_size - 0x1000
+        # Stack should not init at the very bottom. Will cause errors with Dlls
+        sp = self.stack_address + self.stack_size - 0x1000
 
-            if self.ql.archtype== QL_ARCH.X86:
-                raise QlErrorArch("[!] Only 64 bit arch supported for now.")
+        if self.ql.archtype== QL_ARCH.X86:
+            raise QlErrorArch("[!] Only 64 bit arch supported for now.")
 
-            elif self.ql.archtype== QL_ARCH.X8664:
-                self.ql.reg.rsp = sp
-                self.ql.reg.rbp = sp
+        elif self.ql.archtype== QL_ARCH.X8664:
+            self.ql.reg.rsp = sp
+            self.ql.reg.rbp = sp
 
-            else:
-                raise QlErrorArch("[!] Unknown ql.arch")
+        else:
+            raise QlErrorArch("[!] Unknown ql.arch")
 
-            if len(self.ql.argv) > 1:
-                for dependency in self.ql.argv[1:]:
-                    if not self.map_and_load(dependency):
-                        raise QlErrorFileType("Can't map dependency")
+        if len(self.ql.argv) > 1:
+            for dependency in self.ql.argv[1:]:
+                if not self.map_and_load(dependency):
+                    raise QlErrorFileType("Can't map dependency")
 
-            # Load main module
-            self.map_and_load(self.ql.path)
+        # Load main module
+        self.map_and_load(self.ql.path)
 
-            self.ql.nprint("[+] Done with loading %s" % self.ql.path)
-            self.filepath = b"D:\\" + bytes(self.ql.path.replace("/", "\\"), "utf-8")
+        self.ql.nprint("[+] Done with loading %s" % self.ql.path)
+        self.filepath = b"D:\\" + bytes(self.ql.path.replace("/", "\\"), "utf-8")
 
-        elif self.ql.shellcoder:
-            # setup stack memory
-            self.ql.mem.map(self.ql.stack_address, self.ql.stack_size)
-            self.ql.reg.rsp =  self.ql.stack_address + 0x3000
-            self.ql.reg.rsp = self.ql.stack_address + 0x3000
-            # load shellcode in
-            self.ql.mem.map(self.ql.code_address, self.ql.code_size)
-            self.ql.mem.write(self.ql.code_address, self.ql.shellcoder)
-        
         # set SystemTable to image base for now
         pointer_size = ctypes.sizeof(ctypes.c_void_p)
         system_table_heap_size = 1024*1024

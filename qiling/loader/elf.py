@@ -364,7 +364,7 @@ class QlLoaderELF(ELFParse, QlLoader):
         else:
             return self.ql.pack32(data)
 
-    def copy_str(self, uc, addr, l):
+    def copy_str(self, addr, l):
         l_addr = []
         s_addr = addr
         for i in l:
@@ -500,7 +500,7 @@ class QlLoaderELF(ELFParse, QlLoader):
 
         # Set argv
         if len(argv) != 0:
-            argv_addr, new_stack = self.copy_str(ql.uc, stack_addr, argv)
+            argv_addr, new_stack = self.copy_str(stack_addr, argv)
 
             if self.ql.archbit == 32:
                 elf_table += b''.join([ql.pack32(_) for _ in argv_addr])
@@ -514,7 +514,7 @@ class QlLoaderELF(ELFParse, QlLoader):
 
         # Set env
         if len(env) != 0:
-            env_addr, new_stack = self.copy_str(ql.uc, new_stack, [key + '=' + value for key, value in env.items()])
+            env_addr, new_stack = self.copy_str(new_stack, [key + '=' + value for key, value in env.items()])
             if self.ql.archbit == 32:
                 elf_table += b''.join([ql.pack32(_) for _ in env_addr])
             elif self.ql.archbit == 64:
@@ -529,7 +529,7 @@ class QlLoaderELF(ELFParse, QlLoader):
 
         randstr = 'a' * 0x10
         cpustr = 'i686'
-        (addr, new_stack) = self.copy_str(ql.uc, new_stack, [randstr, cpustr])
+        (addr, new_stack) = self.copy_str(new_stack, [randstr, cpustr])
         new_stack = self.alignment(new_stack)
 
         # Set AUX
@@ -573,7 +573,6 @@ class QlLoaderELF(ELFParse, QlLoader):
         elf_table += self.NEW_AUX_ENT(AT_PLATFORM, self.cpustraddr)
         elf_table += self.NEW_AUX_ENT(AT_SECURE, 0)
         elf_table += self.NEW_AUX_ENT(AT_NULL, 0)
-
         elf_table += b'\x00' * (0x10 - (new_stack - len(elf_table)) & 0xf)
 
         self.ql.mem.write(int(new_stack - len(elf_table)), elf_table)
@@ -585,11 +584,9 @@ class QlLoaderELF(ELFParse, QlLoader):
         # for i in range(120):
         #     buf = self.ql.mem.read(new_stack + i * 0x8, 8)
         #     self.ql.nprint("0x%08x : 0x%08x " % (new_stack + i * 0x4, self.ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
-
-        
+ 
         self.ql.os.entry_point = self.entry_point = entry_point
         self.ql.os.elf_entry = self.elf_entry = load_address + elfhead['e_entry']
         self.new_stack = new_stack
         self.load_address = load_address
-
         self.ql.os.fh = FunctionHook(ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)

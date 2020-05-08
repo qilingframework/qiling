@@ -268,26 +268,25 @@ class QlLoaderPE(Process, QlLoader):
 
     def run(self):
         self.path = self.ql.path
-        self.profile = self.ql.profile
         self.init_dlls = [b"ntdll.dll", b"kernel32.dll", b"user32.dll"]
         self.filepath = ''
         self.pe_entry_point = 0
         self.sizeOfStackReserve = 0
 
         if self.ql.archtype== QL_ARCH.X86:
-            self.stack_address = int(self.profile.get("OS32", "stack_address"),16)
-            self.stack_size = int(self.profile.get("OS32", "stack_size"),16)            
-            self.image_address = int(self.profile.get("OS32", "image_address"),16)
-            self.dll_address = int(self.profile.get("OS32", "dll_address"),16)
-            self.entry_point = int(self.profile.get("OS32", "entry_point"),16)
+            self.stack_address = int(self.ql.os.profile.get("OS32", "stack_address"),16)
+            self.stack_size = int(self.ql.os.profile.get("OS32", "stack_size"),16)            
+            self.image_address = int(self.ql.os.profile.get("OS32", "image_address"),16)
+            self.dll_address = int(self.ql.os.profile.get("OS32", "dll_address"),16)
+            self.entry_point = int(self.ql.os.profile.get("OS32", "entry_point"),16)
             self.structure_last_addr = FS_SEGMENT_ADDR 
              
         elif self.ql.archtype== QL_ARCH.X8664:
-            self.stack_address = int(self.profile.get("OS64", "stack_address"),16)
-            self.stack_size = int(self.profile.get("OS64", "stack_size"),16)
-            self.image_address = int(self.profile.get("OS64", "image_address"),16)
-            self.dll_address = int(self.profile.get("OS64", "dll_address"),16)
-            self.entry_point = int(self.profile.get("OS64", "entry_point"),16)
+            self.stack_address = int(self.ql.os.profile.get("OS64", "stack_address"),16)
+            self.stack_size = int(self.ql.os.profile.get("OS64", "stack_size"),16)
+            self.image_address = int(self.ql.os.profile.get("OS64", "image_address"),16)
+            self.dll_address = int(self.ql.os.profile.get("OS64", "dll_address"),16)
+            self.entry_point = int(self.ql.os.profile.get("OS64", "entry_point"),16)
             self.structure_last_addr = GS_SEGMENT_ADDR
             
         self.dlls = {}

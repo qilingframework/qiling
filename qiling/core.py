@@ -160,18 +160,13 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.reg = self.component_setup("arch", "register")
 
         #####################################
-        # Architecture                      #
+        # Architecture and OS               #
         #####################################
         # Load architecture's and os module #
-        # ql.reg.arch_pc, ql.reg.arch_sp    #
-        # and other important stuff         #
         #####################################
         self.arch = self.arch_setup()
-
-        ######
-        # OS #
-        ######
         self.os = self.os_setup()
+        
 
     # Emulate the binary from begin until @end, with timeout in @timeout and
     # number of emulated instructions in @count

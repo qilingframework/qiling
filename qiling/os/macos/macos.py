@@ -32,7 +32,6 @@ class QlOsMacos(QlOsPosix):
         self.load()
 
     def load(self):
-
         self.ql.uc = self.ql.arch.init_uc
         stack_address        = int(self.profile.get("OS64", "stack_address"),16)
         stack_size           = int(self.profile.get("OS64", "stack_size"),16)     
@@ -63,7 +62,6 @@ class QlOsMacos(QlOsPosix):
     def run(self):
         if self.ql.shellcoder:
             self.ql.mem.write(self.entry_point, self.ql.shellcoder)
-            
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
         

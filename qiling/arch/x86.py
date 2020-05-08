@@ -289,8 +289,7 @@ class GDTManager:
     def __init__(self, ql, GDT_ADDR = QL_X86_GDT_ADDR, GDT_LIMIT =  QL_X86_GDT_LIMIT, GDT_ENTRY_ENTRIES = 16):
         if ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT) == False:
             ql.mem.map(GDT_ADDR, GDT_LIMIT, info="[GDT]")
-        else:
-            raise QlGDTError("[!] Ql GDT mem map error!")
+
         # setup GDT by writing to GDTR
         ql.reg.write(UC_X86_REG_GDTR, (0, GDT_ADDR, GDT_LIMIT, 0x0))
 

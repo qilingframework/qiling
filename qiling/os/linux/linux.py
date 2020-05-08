@@ -75,7 +75,8 @@ class QlOsLinux(QlOsPosix):
             # if not self.ql.stack_address and not self.ql.stack_size:
             self.stack_address = stack_address
             self.stack_size = stack_size
-            self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")            
+            if self.ql.mem.is_mapped(self.stack_address, self.stack_size) == False:
+                self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")            
 
         self.setup_output()
 
