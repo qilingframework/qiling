@@ -155,9 +155,6 @@ class QLCoreUtils(object):
         return ql_get_module_function(module_name, function_name)(self)
 
     def profile_setup(self):
-        if self.profile:
-            self.dprint(D_INFO, "[+] Customized profile: %s" % self.profile)
-        
         os_profile = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles", ostype_convert_str(self.ostype) + ".ql")
       
         if self.profile:

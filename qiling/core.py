@@ -37,9 +37,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             stderr=0,
             output=None,
             verbose=1,
-            log_console=True,
-            log_dir=None,
-            append = None,
             profile=None
     ):
         super(Qiling, self).__init__()
@@ -57,7 +54,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.rootfs = rootfs
         self.env = env if env else {}
         self.libcache = libcache
-        self.log_console = log_console
         self.profile = profile
         # OS dependent configuration for stdio
         self.stdin = stdin
@@ -84,7 +80,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.bindtolocalhost = False
         # by turning this on, you must run your analysis with sudo
         self.root = False
-        self.log_split = False
         # syscall filter for strace-like functionality
         self.strace_filter = None
         self.remotedebugsession = None
@@ -122,12 +117,16 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         ############           
         self.profile = self.profile_setup()
         self.append = self.profile["MISC"]["append"]
-        self.log_dir = self.profile["LOG"]["logdir"]
+        self.log_dir = self.profile["LOG"]["dir"]
+        self.log_console =  self.profile.getboolean('LOG', 'console')
+        self.log_split =  self.profile.getboolean('LOG', 'split')
 
-        # Looger's configuration
-        if self.log_dir is not None and type(self.log_dir) == str:
+         # Looger's configuration
+        if self.log_dir != "" and type(self.log_dir) == str:
             _logger = ql_setup_logging_env(self)    
             self.log_file_fd = _logger
+        else:
+            self.log_dir = None     
         
         # qiling output method conversion
         if self.output and type(self.output) == str:

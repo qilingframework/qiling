@@ -1,5 +1,5 @@
 [LOG]
-logdir = log_test
+dir = log_test
 
 [MISC]
 append = append_test

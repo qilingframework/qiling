@@ -26,8 +26,11 @@ from qiling.const import *
 class RegistryManager:
     def __init__(self, ql, hive=None):
         self.ql = ql
-
         self.log_registry_dir = self.ql.log_dir
+        
+        if self.log_registry_dir == None:
+            self.log_registry_dir = "qlog"
+
         self.registry_diff = self.ql.targetname + "_" + self.ql.append + ".json"
         self.regdiff = os.path.join(self.log_registry_dir, "registry", self.registry_diff)    
 

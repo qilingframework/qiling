@@ -19,8 +19,17 @@ entry_point = 0x40000
 
 
 [LOG]
-logdir = qlog
+# log directory output
+# usage: dir = qlog
+dir =
+# split log file, use with multithread
+split = False
+# stdout
+console = True
 
 
 [MISC]
+# append string into different logs
+# maily for multiple times Ql run with one file
+# usage: append = test1
 append =
