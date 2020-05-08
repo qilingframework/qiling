@@ -40,7 +40,7 @@ class QlLoaderPE_UEFI(QlLoader):
         IMAGE_SIZE = self.heap._align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
 
         while IMAGE_BASE + IMAGE_SIZE < self.heap_base_address:
-            try:
+            if not self.ql.mem.is_mapped(IMAGE_BASE, 1):
                 self.ql.mem.map(IMAGE_BASE, IMAGE_SIZE)
                 pe.parse_data_directories()
                 data = bytearray(pe.get_memory_mapped_image())
@@ -53,13 +53,7 @@ class QlLoaderPE_UEFI(QlLoader):
                 self.ql.nprint("[+] PE entry point at 0x%x" % entry_point)
                 self.modules.append((path, entry_point, pe))
                 return True
-            except UcError as e:
-                if e.errno == UC_ERR_MAP:
-                    IMAGE_BASE += 0x10000
-                    pe.relocate_image(IMAGE_BASE)
-                else:
-                    raise
-            except QlMemoryMappedError:
+            else:
                 IMAGE_BASE += 0x10000
                 pe.relocate_image(IMAGE_BASE)
         return False
