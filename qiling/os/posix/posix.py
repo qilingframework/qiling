@@ -25,6 +25,15 @@ class QlOsPosix(QlOs):
         super(QlOsPosix, self).__init__(ql)
         self.ql = ql
         self.sigaction_act = []
+        
+        if self.ql.root == True:
+            self.uid = 0
+            self.gid = 0
+        else:    
+            self.uid = self.profile.getint("KERNEL","uid")
+            self.gid = self.profile.getint("KERNEL","gid")
+        
+        self.pid = self.profile.getint("KERNEL","pid")
 
         self.file_des = []
         self.dict_posix_syscall = dict()

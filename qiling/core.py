@@ -58,8 +58,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.env = env if env else {}
         self.libcache = libcache
         self.log_console = log_console
-        self.log_dir = log_dir
-        self.append = append # generic append function, eg log file
         self.profile = profile
         # OS dependent configuration for stdio
         self.stdin = stdin
@@ -85,7 +83,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # Bind to localhost
         self.bindtolocalhost = False
         # by turning this on, you must run your analysis with sudo
-        self.root = True
+        self.root = False
         self.log_split = False
         # syscall filter for strace-like functionality
         self.strace_filter = None
@@ -113,11 +111,18 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.path = (str(self.filename[0]))
         self.argv = self.filename
         self.targetname = ntpath.basename(self.filename[0])
-        
+                
         ##########
         # Loader #
         ##########        
         self.loader = self.loader_setup()
+
+        ############
+        # setup    #
+        ############           
+        self.profile = self.profile_setup()
+        self.append = self.profile["MISC"]["append"]
+        self.log_dir = self.profile["LOG"]["logdir"]
 
         # Looger's configuration
         if self.log_dir is not None and type(self.log_dir) == str:
@@ -152,7 +157,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         #############
         self.mem = self.component_setup("os", "memory")
         self.reg = self.component_setup("arch", "register")
-        self.profile = self.profile_setup()
+
 
         #####################################
         # Architecture                      #

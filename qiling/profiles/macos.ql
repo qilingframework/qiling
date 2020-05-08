@@ -13,3 +13,15 @@ mmap_address = 0x7ffbf0100000
 [SHELLCODER]
 ram_size = 0xa00000
 entry_point = 0x1000000
+
+
+[KERNEL]
+uid = 1000
+gid = 1000
+pid = 1996
+
+[LOG]
+logdir = qlog
+
+[MISC]
+append =

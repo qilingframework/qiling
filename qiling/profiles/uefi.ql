@@ -16,3 +16,11 @@ stack_size = 0x21000
 image_address  = 0x400000
 dll_address  = 0x10000000
 entry_point = 0x40000  
+
+
+[LOG]
+logdir = qlog
+
+
+[MISC]
+append =

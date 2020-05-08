@@ -42,101 +42,70 @@ def ql_syscall_alarm(ql, alarm_seconds, *args, **kw):
 
 
 def ql_syscall_issetugid(ql, *args, **kw):
-    if ql.root == False:
-        UGID = 0
-    else:
-        UGID = 1000
+    UGID = ql.os.uid
     ql.nprint("issetugid(%i)" % UGID)
     regreturn = UGID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getuid(ql, *args, **kw):
-    if ql.root == False:
-        UID = 0
-    else:
-        UID = 1000
+    UID = ql.os.uid
     ql.nprint("getuid(%i)" % UID)
     regreturn = UID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getuid32(ql, *args, **kw):
-    if ql.root == False:
-        UID = 0
-    else:
-        UID = 1000
+    UID = ql.os.uid
     ql.nprint("getuid32(%i)" % UID)
     regreturn = UID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getgid32(ql, *args, **kw):
-    if ql.root == False:
-        GID = 0
-    else:
-        GID = 1000
+    GID = ql.os.gid
     ql.nprint("getgid32(%i)" % GID)
     regreturn = GID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_geteuid(ql, *args, **kw):
-    if ql.root == False:
-        EUID = 0
-    else:
-        EUID = 1000
+    EUID = ql.os.uid
     ql.nprint("geteuid(%i)" % EUID)
     regreturn = EUID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getegid(ql, *args, **kw):
-    if ql.root == False:
-        EGID = 0
-    else:
-        EGID = 1000
+    EGID = ql.os.gid
     ql.nprint("getegid(%i)" % EGID)
     regreturn = EGID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getgid(ql, *args, **kw):
-    if ql.root == False:
-        GID = 0
-    else:
-        GID = 1000
+    GID = ql.os.gid
     ql.nprint("getgid(%i)" % GID)
     regreturn = GID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_setgroups(ql, gidsetsize, grouplist, *args, **kw):
-    if ql.root == False:
-        GID = 0
-    else:
-        GID = 1000
-
+    GID = ql.os.gid
     regreturn = GID
     ql.nprint("setgroups(0x%x, 0x%x) = %d" % (gidsetsize, grouplist, regreturn))
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_setgid(ql, *args, **kw):
-    if ql.root == False:
-        GID = 0
-    else:
-        GID = 1000
+    GID = ql.os.gid
     ql.nprint("setgid(%i)" % GID)
     regreturn = GID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_setuid(ql, *args, **kw):
-    if ql.root == False:
-        UID = 0
-    else:
-        UID = 1000
+    UID = ql.os.uid
     ql.nprint("setuid(%i)" % UID)
     regreturn = UID
     ql.os.definesyscall_return(regreturn)

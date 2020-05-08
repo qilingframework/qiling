@@ -27,15 +27,15 @@ class RegistryManager:
     def __init__(self, ql, hive=None):
         self.ql = ql
 
-        if self.ql.log_dir is None:
-            self.log_registry_dir = "qlog"
-        else:
-            self.log_registry_dir = self.ql.log_dir
+        #if self.ql.log_dir is None:
+        #    self.log_registry_dir = "qlog"
+        #else:
+        self.log_registry_dir = self.ql.log_dir
 
-        if self.ql.append:
-            self.registry_diff = self.ql.targetname + "_" + self.ql.append + ".json"
-        else:
-            self.registry_diff = self.ql.targetname + ".json"
+        #if self.ql.append:
+        self.registry_diff = self.ql.targetname + "_" + self.ql.append + ".json"
+        #else:
+        #    self.registry_diff = self.ql.targetname + ".json"
 
         self.regdiff = os.path.join(self.log_registry_dir, "registry", self.registry_diff)    
 

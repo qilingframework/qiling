@@ -544,7 +544,7 @@ class QlLoaderELF(ELFParse, QlLoader):
         self.elf_pagesz   = 0x1000
         if self.ql.archendian == QL_ENDIAN.EB:
             self.elf_pagesz   = 0x0010
-        self.elf_guid     = 1000
+        self.elf_guid     = self.ql.os.uid
         self.elf_flags    = 0
         self.elf_entry    = (load_address + elfhead['e_entry'])
         self.randstraddr  = addr[0]

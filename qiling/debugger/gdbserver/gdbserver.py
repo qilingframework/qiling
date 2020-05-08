@@ -465,10 +465,10 @@ class GDBSERVERsession(object):
                         AT_BASE     = self.ql.arch.addr_to_str(self.ql.loader.interp_address)  # Base address of interpreter
                         AT_FLAGS    = self.ql.arch.addr_to_str(self.ql.loader.elf_flags)
                         AT_ENTRY    = self.ql.arch.addr_to_str(self.ql.loader.elf_entry)  # Entry point of program
-                        AT_UID      = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # UID at 1000 fixed in qiling
-                        AT_EUID     = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # EUID at 1000 fixed in qiling
-                        AT_GID      = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # GID at 1000 fixed in qiling
-                        AT_EGID     = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # EGID at 1000 fixed in qiling
+                        AT_UID      = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
+                        AT_EUID     = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
+                        AT_GID      = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
+                        AT_EGID     = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
                         AT_RANDOM   = self.ql.arch.addr_to_str(self.ql.loader.randstraddr)  # Address of 16 random bytes
                         AT_PLATFORM = self.ql.arch.addr_to_str(self.ql.loader.cpustraddr)  # String identifying platform
 
@@ -519,6 +519,8 @@ class GDBSERVERsession(object):
                     else:     
                         self.send("l<library-list-svr4 version=\"1.0\"></library-list-svr4>")
 
+                elif subcmd.startswith("Xfer:btrace-conf:read:"):
+                     self.send("E.Btrace not enabled.")
 
                 elif subcmd == "Attached":
                     self.send("")

@@ -17,3 +17,17 @@ stack_size = 0x30000
 load_address = 0x56555000
 interp_address = 0x047ba000
 mmap_address = 0x774bf000
+
+
+[KERNEL]
+uid = 1000
+gid = 1000
+pid = 1996
+
+
+[LOG]
+logdir = qlog
+
+
+[MISC]
+append =
