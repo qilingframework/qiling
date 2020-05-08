@@ -100,7 +100,8 @@ def trace_cb(ql, address, size, count):
 
 
 def emulate(path, rootfs, output="debug", enable_trace=False):
-    ql = Qiling([path], rootfs, libcache=True, output=output)
+    ql = Qiling([path], rootfs, output=output)
+    ql.libcache=True
     if enable_trace:
         trace(ql)
     ql.run()

@@ -16,11 +16,11 @@ ram_size = 0xa00000
 entry_point = 0x1000000
 
 
-
 [KERNEL]
 uid = 1000
 gid = 1000
 pid = 1996
+
 
 [LOG]
 # log directory output
@@ -28,8 +28,6 @@ pid = 1996
 dir =
 # split log file, use with multithread
 split = False
-# stdout, can be overwritten by ql.log_console
-console = True
 
 
 [MISC]

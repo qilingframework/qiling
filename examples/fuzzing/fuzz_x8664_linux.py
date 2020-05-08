@@ -69,7 +69,7 @@ def main(input_file, enable_trace=False):
                 stdin=stdin,
                 stdout=1 if enable_trace else None,
                 stderr=1 if enable_trace else None,
-                log_console = True if enable_trace else False)
+                console = True if enable_trace else False)
 
     # or this for output:
     # ... stdout=sys.stdout, stderr=sys.stderr)

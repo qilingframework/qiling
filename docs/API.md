@@ -24,7 +24,7 @@ mmap_address = 0xhexaddress
 additional options
 ```
 output = ["debug","off","disasm","dump"] // dump=(disam + debug)
-log_console
+console
 log_dir = path to all the logs
 ```
 #### Pre-Execution Settings

@@ -23,8 +23,6 @@ pid = 1996
 dir =
 # split log file, use with multithread
 split = False
-# stdout, can be overwritten by ql.log_console
-console = True
 
 
 [MISC]

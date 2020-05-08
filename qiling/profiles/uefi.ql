@@ -24,8 +24,6 @@ entry_point = 0x40000
 dir =
 # split log file, use with multithread
 split = False
-# stdout
-console = True
 
 
 [MISC]
