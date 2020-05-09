@@ -20,4 +20,4 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: qilingframework/qiling
           tag_with_ref: true
-          tag_with_sha: true
+          tags: latest
