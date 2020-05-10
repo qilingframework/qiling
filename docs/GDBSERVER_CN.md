@@ -1,4 +1,4 @@
-For latest documentation, please visit https://qilingframework.readthedocs.io/
+For latest documentation, please visit https://docs.qiling.io
 
 ---
 
