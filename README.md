@@ -193,7 +193,7 @@ $ ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs exa
 
 Qiling supports **Gdb remote debugging** now.
 
-See [EN](docs/GDBSERVER.md)|[CN](docs/GDBSERVER_CN.md)  for more details
+See  https://qilingframework.readthedocs.io/  for more details
 
 ---
 
