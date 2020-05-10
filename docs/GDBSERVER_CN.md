@@ -1,3 +1,7 @@
+For latest documentation, please visit https://qilingframework.readthedocs.io/
+
+---
+
 # Qiling Gdbserver
 
 Qiling已支持**Gdb远程调试**。这意味着它能够与gdbserver兼容的客户端(例如IDApro)一起工作。到目前为止，Qiling gdbserver的功能还没有GDB的gdbserver完整，但是已经非常接近qemu-gdbserver了。为了进行更完整的调试，仍然需要手动执行一些步骤(例如手动重新设置IDAPro中的基本地址)
