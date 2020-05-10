@@ -92,8 +92,6 @@ class QlOsMacos(QlOsPosix):
             self.ql.reg.arch_sp = self.entry_point
         else:
             self.ql.reg.arch_sp = self.ql.loader.stack_address # self.stack_sp
-
-        if not self.ql.shellcoder:
             self.macho_task.min_offset = page_align_end(self.ql.loader.vm_end_addr, PAGE_SIZE)
 
         try:
