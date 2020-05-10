@@ -44,7 +44,7 @@ AT_HWCAP2 = 26
 AT_EXECFN = 31
 
 FILE_DES = []
-#MMAP_START = 0
+
 
 class ELFParse(QlLoader):
     def __init__(self, path, ql):
