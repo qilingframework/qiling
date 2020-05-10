@@ -32,13 +32,13 @@ class QlOsMacos(QlOsPosix):
         self.load()
 
     def load(self):
-        stack_address        = int(self.profile.get("OS64", "stack_address"),16)
-        stack_size           = int(self.profile.get("OS64", "stack_size"),16)     
-        vmmap_trap_address  = int(self.profile.get("OS64", "vmmap_trap_address"),16)
+        stack_address      = int(self.profile.get("OS64", "stack_address"), 16)
+        stack_size         = int(self.profile.get("OS64", "stack_size"), 16)
+        vmmap_trap_address = int(self.profile.get("OS64", "vmmap_trap_address"), 16)
         self.stack_address = stack_address
-        self.stack_size = stack_size            
+        self.stack_size = stack_size
 
-        if self.ql.shellcoder:    
+        if self.ql.shellcoder:
             self.ql.mem.map(self.entry_point, self.shellcoder_ram_size, info="[shellcode_stack]")
             self.entry_point  = (self.entry_point + 0x200000 - 0x1000)
         else:
@@ -54,52 +54,46 @@ class QlOsMacos(QlOsPosix):
             self.envs = env_dict_to_array(self.env)
             self.apples = ql_real_to_vm_abspath(self.ql, self.ql.path)
 
+            if self.ql.archtype== QL_ARCH.ARM64:
+                self.ql.arch.enable_vfp()
+                self.ql.hook_intno(self.hook_syscall, 2)
+
+            elif self.ql.archtype== QL_ARCH.X8664:
+                self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
+                self.gdtm = GDTManager(self.ql)
+                ql_x86_register_cs(self)
+                ql_x86_register_ds_ss_es(self)
+
+            if not self.ql.shellcoder:
+                # FIXME: Not working due to overlarge mapping, need to fix it
+                # vm_shared_region_enter(self.ql)
+
+                map_commpage(self.ql)
+
+                self.thread_management = QlMachoThreadManagement(self.ql)
+                self.macho_thread = QlMachoThread(self.ql)
+                self.thread_management.cur_thread = self.macho_thread
+
+        self.setup_output()
+
     def hook_syscall(self, intno= None, int = None):
         return self.load_syscall()
-
 
     def run(self):
         if self.ql.shellcoder:
             self.ql.mem.write(self.entry_point, self.ql.shellcoder)
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
-        
+
         if  self.ql.entry_point is not None:
                 self.ql.loader.entry_point = self.ql.entry_point    
 
         if self.ql.shellcoder:
             self.ql.reg.arch_sp = self.entry_point
-        else:            
-            self.ql.reg.arch_sp = self.ql.loader.stack_address
-
-        if self.ql.archtype== QL_ARCH.ARM64:
-            self.ql.arch.enable_vfp()
-            self.ql.hook_intno(self.hook_syscall, 2)
-
-        elif self.ql.archtype== QL_ARCH.X8664:
-            self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
-            self.gdtm = GDTManager(self.ql)
-            ql_x86_register_cs(self)
-            ql_x86_register_ds_ss_es(self)
-                
-        if not self.ql.shellcoder:
+        else:
+            self.ql.reg.arch_sp = self.ql.loader.stack_address # self.stack_sp
             self.macho_task.min_offset = page_align_end(self.ql.loader.vm_end_addr, PAGE_SIZE)
-    
-            # FIXME: Not working due to overlarge mapping, need to fix it
-            # vm_shared_region_enter(self.ql)
-            
-            map_commpage(self.ql)
-            
-            self.thread_management = QlMachoThreadManagement(self.ql)
-            self.macho_thread = QlMachoThread(self.ql)
-            self.thread_management.cur_thread = self.macho_thread
 
-            # load_commpage not wroking with ARM64, yet
-            if  self.ql.archtype== QL_ARCH.X8664:
-                load_commpage(self.ql)
-        
-        self.setup_output()                
-        
         try:
             if self.ql.shellcoder:
                 self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)
