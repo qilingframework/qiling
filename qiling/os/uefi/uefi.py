@@ -18,8 +18,7 @@ class QlOsUefi(QlOs):
         self.entry_point = 0
         self.user_defined_api = {}
         self.notify_immediately = False
-        self.ql.uc = self.ql.arch.init_uc
-
+    
     def run(self):
         self.setup_output()
        
@@ -31,7 +30,7 @@ class QlOsUefi(QlOs):
                 self.ql.remotedebugsession.gdb.bp_insert(self.entry_point)
             self.ql.stack_push(self.ql.loader.end_of_execution_ptr)
             self.ql.reg.rdx = self.ql.loader.system_table_ptr
-            self.ql.nprint(f'Running from 0x{self.entry_point:x} of {path}')
+            self.ql.nprint(f'[+] Running from 0x{self.entry_point:x} of {path}')
             self.ql.emu_start(self.entry_point, self.exit_point, self.ql.timeout)
         except UcError:
             raise

@@ -29,7 +29,6 @@ class QlOsWindows(QlOs):
         self.syscall_count = {}
         self.argv = self.ql.argv
         self.env = self.ql.env
-        self.ql.uc = self.ql.arch.init_uc
         self.ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
         self.username = self.profile["USER"]["username"]
         self.windir = self.profile["PATH"]["systemdrive"] + self.profile["PATH"]["windir"]

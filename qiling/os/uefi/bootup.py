@@ -47,7 +47,7 @@ def hook_AllocatePages(ql, address, params):
     else:
         address = ql.loader.heap.alloc(params["Pages"]*PageSize)
         write_int64(ql, params["Memory"], address)
-    return address
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Memory": ULONGLONG,
@@ -74,7 +74,7 @@ def hook_GetMemoryMap(ql, address, params):
 def hook_AllocatePool(ql, address, params):
     address = ql.loader.heap.alloc(params["Size"])
     write_int64(ql, params["Buffer"], address)
-    return address
+    return EFI_SUCCESS
 
 @dxeapi(params={
     "Buffer": POINTER, #POINTER_T(None)
@@ -512,7 +512,6 @@ def hook_CalculateCrc32(ql, address, params):
 def hook_CopyMem(ql, address, params):
     data = bytes(ql.mem.read(params['Source'], params['Length']))
     ql.mem.write(params['Destination'], data)
-    return params['Destination']
 
 @dxeapi(params={
     "Buffer": POINTER, #POINTER_T(None)
@@ -524,7 +523,6 @@ def hook_SetMem(ql, address, params):
     value = struct.pack('B',params["Value"] & 0xff)
     for i in range(0, params["Size"]):
         ql.mem.write(ptr+i, value)
-    return EFI_SUCCESS
 
 @dxeapi(params={
     "Type": UINT,
@@ -554,7 +552,7 @@ def CreateEvent(ql, address, params):
     
     ql.loader.events[event_id] = event_dic
     write_int64(ql, params["Event"], event_id)
-    return event_id
+    return EFI_SUCCESS
 
 def hook_EFI_BOOT_SERVICES(ql, start_ptr):
     ql.os.monotonic_count = 0

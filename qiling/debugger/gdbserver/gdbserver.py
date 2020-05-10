@@ -324,7 +324,7 @@ class GDBSERVERsession(object):
                     if reg_index <= 17:
                         reg_data = int(reg_data, 16)
                         reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
-                        sself.ql.reg.write(self.ql.reg.table[reg_index], reg_data)
+                        self.ql.reg.write(self.ql.reg.table[reg_index], reg_data)
                     else:
                         reg_data = int(reg_data[:8], 16)
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
@@ -393,7 +393,7 @@ class GDBSERVERsession(object):
 
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
-                    file_contents = ("<threads>\r\n<thread id=\"2048\" core=\"3\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
+                    file_contents = ("<threads>\r\n<thread id=\""+ str(self.ql.os.pid) + "\" core=\"1\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
                     self.send("l" + file_contents)
 
                 elif subcmd.startswith('Xfer:auxv:read::'):

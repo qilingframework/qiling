@@ -431,17 +431,17 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
     ql.nprint("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
 
     if ql.shellcoder:
-        pass
-    else:
-        ql.os.stack_address    = 0
-        ql.argv             = argv
-        ql.env              = env
-        ql.path             = real_path
-        ql.mem.map_info     = []
-        ql.clear_ql_hooks()
-
-        ql.os.load()
-        ql.run()
+        return
+    
+    ql.os.stack_address = 0
+    ql.argv             = argv
+    ql.env              = env
+    ql.path             = real_path
+    ql.mem.map_info     = []
+    ql.clear_ql_hooks()
+    ql.uc = ql.arch.init_uc
+    ql.os.load()
+    ql.run()
 
 
 def ql_syscall_dup2(ql, dup2_oldfd, dup2_newfd, *args, **kw):

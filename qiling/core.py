@@ -123,7 +123,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.log_dir = self.profile["LOG"]["dir"]
         self.log_split =  self.profile.getboolean('LOG', 'split')
 
-         # Looger's configuration
+         # Log's configuration
         if self.log_dir != "" and type(self.log_dir) == str:
             _logger = ql_setup_logging_env(self)    
             self.log_file_fd = _logger
@@ -160,18 +160,13 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.reg = self.component_setup("arch", "register")
 
         #####################################
-        # Architecture                      #
+        # Architecture and OS               #
         #####################################
         # Load architecture's and os module #
-        # ql.reg.arch_pc, ql.reg.arch_sp    #
-        # and other important stuff         #
         #####################################
         self.arch = self.arch_setup()
-
-        ######
-        # OS #
-        ######
         self.os = self.os_setup()
+        
 
     # Emulate the binary from begin until @end, with timeout in @timeout and
     # number of emulated instructions in @count
