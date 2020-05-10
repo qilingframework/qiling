@@ -128,10 +128,10 @@ class QlMemoryManager:
                     perms_sym.append("-")
             return "".join(perms_sym)
 
-        self.ql.nprint("[+] Start      End        Perm.  Path\n")
+        self.ql.nprint("[+] Start      End        Perm.  Path")
         for s, e, p, info in self.map_info:
             _p = _perms_mapping(p)
-            self.ql.nprint("[+] %08x - %08x - %s    %s\n" % (s, e, _p, info))
+            self.ql.nprint("[+] %08x - %08x - %s    %s" % (s, e, _p, info))
 
 
     def get_lib_base(self, filename):

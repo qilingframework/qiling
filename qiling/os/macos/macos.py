@@ -107,7 +107,7 @@ class QlOsMacos(QlOsPosix):
                 self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:
             if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
-                self.ql.nprint("[+] PC= " + hex(self.ql.reg.arch_pc))
+                self.ql.nprint("[+] PC = 0x%x" %(self.ql.reg.arch_pc))
                 self.ql.mem.show_mapinfo()
                 try:
                     buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
