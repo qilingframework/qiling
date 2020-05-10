@@ -65,7 +65,7 @@ class QlOsMacos(QlOsPosix):
             self.exit_point = self.ql.exit_point
         
         if  self.ql.entry_point is not None:
-                self.ql.loader.elf_entry = self.ql.entry_point    
+                self.ql.loader.entry_point = self.ql.entry_point    
 
         if self.ql.shellcoder:
             self.ql.reg.arch_sp = self.entry_point
