@@ -10,7 +10,6 @@ from unicorn import *
 from qiling.arch.x86_const import *
 from qiling.arch.x86 import *
 from qiling.const import *
-from qiling.os.memory import QlMemoryHeap
 from qiling.os.os import QlOs
 
 from .dlls import *
@@ -33,15 +32,10 @@ class QlOsWindows(QlOs):
         self.username = self.profile["USER"]["username"]
         self.windir = self.profile["PATH"]["systemdrive"] + self.profile["PATH"]["windir"]
         self.userprofile = self.profile["PATH"]["systemdrive"] + "Users\\" + self.profile["USER"]["username"] + "\\"
+        self.load()
 
-        if self.ql.archtype == QL_ARCH.X8664:
-            self.heap_base_address = int(self.profile.get("OS64", "heap_address"),16)
-            self.heap_base_size = int(self.profile.get("OS64", "heap_size"),16)       
-        elif self.ql.archtype == QL_ARCH.X86:
-            self.heap_base_address = int(self.profile.get("OS32", "heap_address"),16)
-            self.heap_base_size = int(self.profile.get("OS32", "heap_size"),16)
 
-        self.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
+    def load(self):
         self.setupGDT()
         # hook win api
         self.ql.hook_code(self.hook_winapi)

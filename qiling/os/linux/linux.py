@@ -27,13 +27,6 @@ class QlOsLinux(QlOsPosix):
     def load(self):
         self.futexm = QlLinuxFutexManagement()
 
-        if self.ql.archbit == 32:
-            stack_address = int(self.profile.get("OS32", "stack_address"),16)
-            stack_size = int(self.profile.get("OS32", "stack_size"),16)
-        elif self.ql.archbit == 64:
-            stack_address = int(self.profile.get("OS64", "stack_address"),16)
-            stack_size = int(self.profile.get("OS64", "stack_size"),16)
-
         # ARM
         if self.ql.archtype== QL_ARCH.ARM:
             self.ql.arch.enable_vfp()
@@ -66,20 +59,7 @@ class QlOsLinux(QlOsPosix):
             ql_x86_register_ds_ss_es(self)
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
             self.thread_class = QlLinuxX8664Thread
-
-        if self.ql.shellcoder:
-            self.ql.mem.map(self.entry_point, self.shellcoder_ram_size, info="[shellcode_stack]")
-            self.entry_point  = (self.entry_point + 0x200000 - 0x1000)
-        else:
-            # if not self.ql.stack_address and not self.ql.stack_size:
-            self.stack_address = stack_address
-            self.stack_size = stack_size
-            if self.ql.mem.is_mapped(self.stack_address, self.stack_size) == False:
-                self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")            
-
-        self.setup_output()
-
-
+       
     def hook_syscall(self, int= None, intno= None):
         return self.load_syscall(intno)
 
@@ -87,6 +67,8 @@ class QlOsLinux(QlOsPosix):
         self.fh_tmp.append((fn, cb, userdata))
 
     def run(self):
+        self.setup_output()
+
         if self.ql.shellcoder:
             self.ql.mem.write(self.entry_point, self.ql.shellcoder)
         

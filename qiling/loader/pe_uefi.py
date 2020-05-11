@@ -26,7 +26,7 @@ from .loader import QlLoader
 
 class QlLoaderPE_UEFI(QlLoader):
     def __init__(self, ql):
-        super()
+        super(QlLoaderPE_UEFI, self).__init__(ql)
         self.ql = ql
         self.modules = []
         self.events = {}
