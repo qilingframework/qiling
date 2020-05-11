@@ -130,7 +130,6 @@ class QlOsLinux(QlOsPosix):
                         thread_management.clean_world()
                         thread_management.set_main_thread(main_thread)
 
-
                     thread_management.run()
                 else:
                     if self.ql.loader.elf_entry != self.ql.loader.entry_point:

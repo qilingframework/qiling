@@ -64,15 +64,14 @@ class QlOsMacos(QlOsPosix):
                 ql_x86_register_cs(self)
                 ql_x86_register_ds_ss_es(self)
 
-            if not self.ql.shellcoder:
-                # FIXME: Not working due to overlarge mapping, need to fix it
-                # vm_shared_region_enter(self.ql)
+            # FIXME: Not working due to overlarge mapping, need to fix it
+            # vm_shared_region_enter(self.ql)
 
-                map_commpage(self.ql)
+            map_commpage(self.ql)
 
-                self.thread_management = QlMachoThreadManagement(self.ql)
-                self.macho_thread = QlMachoThread(self.ql)
-                self.thread_management.cur_thread = self.macho_thread
+            self.thread_management = QlMachoThreadManagement(self.ql)
+            self.macho_thread = QlMachoThread(self.ql)
+            self.thread_management.cur_thread = self.macho_thread
 
         self.setup_output()
 
