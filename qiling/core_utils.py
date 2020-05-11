@@ -77,18 +77,22 @@ class QLCoreUtils(object):
 
     def add_fs_mapper(self, fm, to):
         self.fs_mapper.append([fm, to])
-    
+
+    # push to stack bottom, and update stack register
     def stack_push(self, data):
         self.arch.stack_push(data)
 
+    # pop from stack bottom, and update stack register
     def stack_pop(self):
         return self.arch.stack_pop()
 
     # read from stack, at a given offset from stack bottom
+    # NOTE: unlike stack_pop(), this does not change stack register
     def stack_read(self, offset):
         return self.arch.stack_read(offset)
 
     # write to stack, at a given offset from stack bottom
+    # NOTE: unlike stack_push(), this does not change stack register
     def stack_write(self, offset, data):
         self.arch.stack_write(offset, data)
 
