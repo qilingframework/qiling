@@ -13,6 +13,7 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
+
 def _GetModuleHandle(ql, address, params):
     lpModuleName = params["lpModuleName"]
     if lpModuleName == 0:
@@ -164,12 +165,11 @@ def hook_GetProcAddress(ql, address, params):
         ql.nprint('[!] Failed to import function "%s" with handle 0x%X' % (lpProcName, params['hModule']))
         return 0
 
-    #Handle case where module is self
+    # Handle case where module is self
     if dll_name == os.path.basename(ql.loader.path):
         for addr, export in ql.loader.export_symbols.items():
             if export['name'] == lpProcName:
                 return addr
-    
 
     if lpProcName in ql.loader.import_address_table[dll_name]:
         return ql.loader.import_address_table[dll_name][lpProcName]
@@ -186,7 +186,7 @@ def hook_GetProcAddress(ql, address, params):
 def hook_LoadLibraryA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
     if lpLibFileName == ql.loader.filepath.decode():
-        #Loading self
+        # Loading self
         return ql.loader.pe_image_address
     dll_base = ql.loader.load_dll(lpLibFileName.encode())
     return dll_base
@@ -273,11 +273,36 @@ def hook_LockResource(ql, address, params):
     pointer = params["hResData"]
     return pointer
 
-#BOOL DisableThreadLibraryCalls(
+
+# BOOL DisableThreadLibraryCalls(
 #  HMODULE hLibModule
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hLibModule": POINTER
 })
 def hook_DisableThreadLibraryCalls(ql, address, params):
     return 1
+
+
+# BOOL FreeLibrary(
+#   HMODULE hLibModule
+# );
+@winapi(cc=STDCALL, params={
+    "hLibModule": POINTER
+})
+def hook_FreeLibrary(ql, address, params):
+    return 1
+
+
+# BOOL SetDefaultDllDirectories(
+#   DWORD DirectoryFlags
+# );
+@winapi(cc=STDCALL, params={
+    "DirectoryFlags": DWORD
+})
+def hook_SetDefaultDllDirectories(ql, address, params):
+    value = params["DirectoryFlags"]
+    if value == LOAD_LIBRARY_SEARCH_USER_DIRS:
+        # TODO we have to probably set an handler for this, since it can be a not default value.
+        #  And we have to change the default path of load
+        raise QlErrorNotImplemented("[!] API not implemented")

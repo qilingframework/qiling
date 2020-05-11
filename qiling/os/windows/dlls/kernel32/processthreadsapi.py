@@ -330,3 +330,23 @@ def hook_OpenProcessToken(ql, address, params):
 })
 def hook_GetThreadContext(ql, address, params):
     return 1
+
+# BOOL OpenThreadToken(
+#   HANDLE  ThreadHandle,
+#   DWORD   DesiredAccess,
+#   BOOL    OpenAsSelf,
+#   PHANDLE TokenHandle
+# );
+@winapi(cc=STDCALL, params={
+    "ThreadHandle": HANDLE,
+    "DesiredAccess": DWORD,
+    "OpenAsSelf": BOOL,
+    "TokenHandle": POINTER
+})
+def hook_OpenThreadToken(ql, address, params):
+    token_pointer = params["TokenHandle"]
+    token = Token(ql)
+    new_handle = Handle(obj=token)
+    ql.os.handle_manager.append(new_handle)
+    ql.mem.write(token_pointer, ql.pack(new_handle.id))
+    return 1

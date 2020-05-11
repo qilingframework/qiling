@@ -176,6 +176,19 @@ def hook_MapVirtualKeyW(ql, address, params):
         ql.dprint(D_INFO, "Map value %x" % map_value)
         raise QlErrorNotImplemented("[!] API not implemented")
 
+# SHORT GetKeyState(
+#   int nVirtKey
+# );
+@winapi(cc=STDCALL, params={
+    "nVirtKey": UINT,
+})
+def hook_GetKeyState(ql, address, params):
+    let = chr(params["nVirtKey"])
+    ql.dprint(0, let)
+    UP = 2
+    DOWN = 0
+    return UP
+
 
 # UINT RegisterWindowMessageA(
 #   LPCSTR lpString
@@ -318,6 +331,17 @@ def hook_GetSysColorBrush(ql, address, params):
 def hook_LoadCursorA(ql, address, params):
     return 0xd10c
 
+# HCURSOR LoadCursorFromFileA(
+#   LPCSTR lpFileName
+# );
+@winapi(cc=STDCALL, params={
+    "lpFileName": STRING
+})
+def hook_LoadCursorFromFileA(ql, address, params):
+    handle = Handle()
+    ql.os.handle_manager.append(handle)
+    return handle.id
+
 
 # UINT GetOEMCP();
 @winapi(cc=STDCALL, params={
@@ -408,11 +432,27 @@ def hook_ShowWindow(ql, address, params):
 # );
 @winapi(cc=STDCALL, params={
     "hInstance": POINTER,
-    "lpIconName": INT
+    "lpIconName": UINT
 })
 def hook_LoadIconA(ql, address, params):
-    # we should create an handle for this?
-    return 0xD10C
+    handle = Handle()
+    ql.os.handle_manager.append(handle)
+    return handle.id
+
+# HICON LoadIconW(
+#   HINSTANCE hInstance,
+#   LPCWSTR    lpIconName
+# );
+@winapi(cc=STDCALL, params={
+    "hInstance": POINTER,
+    "lpIconName": UINT
+})
+def hook_LoadIconW(ql, address, params):
+    handle = Handle()
+    ql.os.handle_manager.append(handle)
+    return handle.id
+
+
 
 
 # BOOL IsWindow(
@@ -560,6 +600,7 @@ def hook_GetForegroundWindow(ql, address, params):
 def hook_MoveWindow(ql, address, params):
     return 1
 
+
 #int GetKeyboardType(
 #  int nTypeFlag
 #);
@@ -578,3 +619,27 @@ def hook_GetKeyboardType(ql, address, params):
     elif _type == 2:
         return 12
     return 0
+
+
+# int MessageBoxW(
+#   HWND    hWnd,
+#   LPCWSTR lpText,
+#   LPCWSTR lpCaption,
+#   UINT    uType
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": HANDLE,
+    "lpText": WSTRING,
+    "lpCaption": WSTRING,
+    "uType": UINT
+})
+def hook_MessageBoxW(ql, address, params):
+    # We always return a positive result
+    type= params["uType"]
+    if type == MB_OK or type == MB_OKCANCEL:
+        return IDOK
+    if type == MB_YESNO or type == MB_YESNOCANCEL:
+        return IDYES
+    else:
+        ql.dprint(D_INFO, type)
+        raise QlErrorNotImplemented("[!] API not implemented")

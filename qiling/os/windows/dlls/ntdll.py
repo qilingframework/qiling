@@ -39,9 +39,9 @@ def _QueryInformationProcess(ql, address, params):
     dst = params["ProcessInformation"]
     pt_res = params["ReturnLength"]
     if flag == ProcessDebugFlags:
-        value = b"\x01"*0x4
+        value = b"\x01" * 0x4
     elif flag == ProcessDebugPort:
-        value = b"\x00"*0x4
+        value = b"\x00" * 0x4
     elif flag == ProcessDebugObjectHandle:
         return STATUS_PORT_NOT_SET
     else:
@@ -94,6 +94,7 @@ def hook_NtQueryInformationProcess(ql, address, params):
 
     _QueryInformationProcess(ql, address, params)
 
+
 # NTSTATUS LdrGetProcedureAddress(
 #  IN HMODULE              ModuleHandle,
 #  IN PANSI_STRING         FunctionName OPTIONAL,
@@ -110,7 +111,7 @@ def hook_LdrGetProcedureAddress(ql, address, params):
         identifier = bytes(params["lpProcName"], 'ascii')
     else:
         identifier = params['Ordinal']
-    #Check if dll is loaded
+    # Check if dll is loaded
     try:
         dll_name = [key for key, value in ql.loader.dlls.items() if value == params['ModuleHandle']][0]
     except IndexError as ie:
@@ -124,11 +125,12 @@ def hook_LdrGetProcedureAddress(ql, address, params):
 
     return 0xFFFFFFFF
 
-#NTSYSAPI PVOID RtlAllocateHeap(
+
+# NTSYSAPI PVOID RtlAllocateHeap(
 #  PVOID  HeapHandle,
 #  ULONG  Flags,
 #  SIZE_T Size
-#);
+# );
 @winapi(cc=STDCALL, params={
     "HeapHandle": POINTER,
     "Flags": UINT,
@@ -137,3 +139,18 @@ def hook_LdrGetProcedureAddress(ql, address, params):
 def hook_RtlAllocateHeap(ql, address, params):
     ret = ql.heap.alloc(params["Size"])
     return ret
+
+
+# wchar_t* wcsstr( const wchar_t* dest, const wchar_t* src );
+@winapi(cc=STDCALL, params={
+    "dest": WSTRING_ADDR,
+    "src": WSTRING
+})
+def hook_wcsstr(ql, address, params):
+    dest = params["dest"][0]
+    value = params["dest"][1]
+    src = params["src"]
+    if src in value:
+        pos = value.index(src)
+        return dest + post
+    return 0

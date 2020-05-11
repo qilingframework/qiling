@@ -8,7 +8,7 @@ from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
-
+from qiling.os.windows.structs import *
 
 def _RegOpenKey(ql, address, params):
     hKey = params["hKey"]
@@ -408,3 +408,75 @@ def hook_GetSidSubAuthority(ql, address, params):
     sid = ql.os.handle_manager.get(params["pSid"]).obj
     addr_authority = sid.addr + 8 + (ql.pointersize * num)
     return addr_authority
+
+
+# BOOL AllocateAndInitializeSid(
+#   PSID_IDENTIFIER_AUTHORITY pIdentifierAuthority,
+#   BYTE                      nSubAuthorityCount,
+#   DWORD                     nSubAuthority0,
+#   DWORD                     nSubAuthority1,
+#   DWORD                     nSubAuthority2,
+#   DWORD                     nSubAuthority3,
+#   DWORD                     nSubAuthority4,
+#   DWORD                     nSubAuthority5,
+#   DWORD                     nSubAuthority6,
+#   DWORD                     nSubAuthority7,
+#   PSID                      *pSid
+# );
+@winapi(cc=STDCALL, params={
+    "pIdentifierAuthority": POINTER,
+    "nSubAuthorityCount": BYTE,
+    "nSubAuthority0": DWORD,
+    "nSubAuthority1": DWORD,
+    "nSubAuthority2": DWORD,
+    "nSubAuthority3": DWORD,
+    "nSubAuthority4": DWORD,
+    "nSubAuthority5": DWORD,
+    "nSubAuthority6": DWORD,
+    "nSubAuthority7": DWORD,
+    "pSid":POINTER
+
+})
+def hook_AllocateAndInitializeSid(ql, address, params):
+    count = params["nSubAuthorityCount"]
+    subs = b""
+    for i in range(count):
+        sub = params["nSubAuthority"+str(i)].to_bytes(length=ql.pointersize, byteorder="little")
+        subs  += sub
+    sid = Sid(ql,subs=subs,subs_count=count)
+    handle = Handle(obj=sid, id=sid.addr)
+    ql.dprint(0, sid.addr)
+    ql.os.handle_manager.append(handle,)
+    dest = params["pSid"]
+    ql.mem.write(dest, ql.pack(sid.addr))
+    return 1
+
+# PVOID FreeSid(
+#   PSID pSid
+# );
+@winapi(cc=STDCALL, params={
+    "pSid": HANDLE
+
+})
+def hook_FreeSid(ql, address, params):
+    return 0
+
+
+# BOOL EqualSid(
+#   PSID pSid1,
+#   PSID pSid2
+# );
+@winapi(cc=STDCALL, params={
+    "pSid1": HANDLE,
+    "pSid2": HANDLE,
+
+})
+def hook_EqualSid(ql, address, params):
+
+    # TODO once i have understood better how SID are wrote in memory. Fucking documentation
+    # technically this one should be my SID that i created at the start. I said should, because when testing, it has a
+    # different address. Why? No idea
+    # sid1 = ql.os.handle_manager.get(params["pSid1"]).obj
+    sid2 = ql.os.handle_manager.get(params["pSid2"]).obj
+    # return sid1 == sid2
+    return 0

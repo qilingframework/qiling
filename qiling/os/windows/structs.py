@@ -315,16 +315,16 @@ class Token:
         # We will create them when we need it. There are too many structs
         self.struct = {}
         self.ql = ql
-        self.struct[Token.TokenInformationClass.TokenUIAccess.value] = 0x1.to_bytes(length=4,
-                                                                                    byteorder='little')
+        # TODO find a GOOD reference paper for the values
+        self.struct[Token.TokenInformationClass.TokenUIAccess.value] = self.ql.pack(0x1)
+        self.struct[Token.TokenInformationClass.TokenGroups.value] = self.ql.pack(0x1)
         # We create a Sid Structure, set its handle and return the value
-        sid = Sid(ql)
-        handle = Handle(obj=sid)
-        
-        # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
+        sid = Sid(self.ql)
+        handle = Handle(obj=sid, id=sid.addr)
+        ql.dprint(0, hex(handle.id))
         self.ql.os.handle_manager.append(handle)
+        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = self.ql.pack(sid.addr)
 
-        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = self.ql.pack(handle.id)
 
     def get(self, value):
         res = self.struct[value]
@@ -347,24 +347,31 @@ class Token:
 class Sid:
     # General Struct
     # https://docs.microsoft.com/it-it/windows/win32/api/winnt/ns-winnt-sid
+
     # Identf Authority
     # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/c6ce4275-3d90-4890-ab3a-514745e4637e
-    def __init__(self, ql):
+    def __init__(self, ql, subs_count = 1, subs= None):
         # TODO find better documentation
-        perm = ql.os.profile["SYSTEM"]["permission"]
-        if perm == "root":
-            perm = 0x123456
-        else:
-            perm = 0
+        if subs is None:
+            perm = ql.os.profile["SYSTEM"]["permission"]
+            if perm == "root":
+                perm = 0x123456
+            else:
+                perm = 0
         self.struct = {
             "Revision": 0x1.to_bytes(length=1, byteorder="little"),  # ADD
-            "SubAuthorityCount": 0x1.to_bytes(length=1, byteorder="little"),
+            "SubAuthorityCount": subs_count.to_bytes(length=1, byteorder="little"),
             "IdentifierAuthority": 0x5.to_bytes(length=6, byteorder="little"),
-            "SubAuthority": perm.to_bytes(length=ql.pointersize, byteorder="little")
+            "SubAuthority": perm.to_bytes(length=ql.pointersize, byteorder="little") if subs is None else subs
         }
         values = b"".join(self.struct.values())
         self.addr = ql.os.heap.alloc(len(values))
         ql.mem.write(self.addr, values)
+
+    def __eq__(self, other):
+        if not isinstance(other, Sid):
+            return False
+        return self.struct == other.struct
 
 
 class Mutex:
