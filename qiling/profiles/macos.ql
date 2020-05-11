@@ -1,7 +1,7 @@
 [LOADER]
 slide           = 0x0000000000000000
 dyld_slide      = 0x0000000500000000
-libcache        = False
+
 
 [OS64]
 stack_address = 0x7ffcf0000000

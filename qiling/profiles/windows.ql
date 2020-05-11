@@ -18,10 +18,6 @@ dll_address  = 0x10000000
 entry_point = 0x40000  
 
 
-[LOADER]
-libcache = False
-
-
 [SHELLCODER]
 # ram_size 0xa00000 is 10MB
 ram_size = 0xa00000

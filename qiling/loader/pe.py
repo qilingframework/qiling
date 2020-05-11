@@ -265,6 +265,7 @@ class QlLoaderPE(QlLoader, Process):
     def __init__(self, ql):
         super(QlLoaderPE, self).__init__(ql)
         self.ql = ql
+        self.libcache = self.ql.libcache
 
     def run(self):
         self.path = self.ql.path
@@ -290,8 +291,7 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.os.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"),16)
             self.ql.os.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"),16) 
             self.structure_last_addr = GS_SEGMENT_ADDR
-            
-        self.libcache = self.ql.os.profile.getboolean("LOADER","libcache")    
+              
         self.dlls = {}
         self.import_symbols = {}
         self.export_symbols = {}

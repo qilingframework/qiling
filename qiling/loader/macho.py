@@ -106,8 +106,6 @@ class QlLoaderMACHO(QlLoader):
         self.ql.os.thread_management = QlMachoThreadManagement(self.ql)
         self.ql.os.macho_thread = QlMachoThread(self.ql)
         self.ql.os.thread_management.cur_thread = self.ql.os.macho_thread
-
-        self.libcache = self.ql.os.profile.getboolean("LOADER","libcache")
         self.ql.os.macho_vmmap_end = vmmap_trap_address
         self.stack_sp = stack_address + stack_size
         self.macho_file     = MachoParser(self.ql, self.ql.path)

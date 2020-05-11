@@ -67,7 +67,6 @@ class QlLoaderPE_UEFI(QlLoader):
         elif self.ql.archtype == QL_ARCH.X86:
             self.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"),16)
             self.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"),16)
-        self.libcache = self.ql.os.profile.getboolean("LOADER","libcache")
         self.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
         self.entry_point = 0
         self.load_address = 0  

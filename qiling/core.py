@@ -35,6 +35,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             verbose=1,
             profile=None,
             console=True,
+            libcache = False,
             stdin=0,
             stdout=0,
             stderr=0,
@@ -55,12 +56,11 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.verbose = verbose
         self.profile = profile
         self.console = console
-        # OS dependent configuration for stdio
+        self.libcache = libcache
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
         
-
         ##################################
         # Definition after ql=Qiling()   #
         ##################################

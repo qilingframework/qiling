@@ -364,7 +364,6 @@ class QlLoaderELF(QlLoader, ELFParse):
             self.ql.reg.arch_sp = self.ql.os.entry_point
             return
             
-        self.libcache = self.ql.os.profile.getboolean("LOADER","libcache")
         self.path = self.ql.path
         ELFParse.__init__(self, self.path, self.ql)
         self.interp_address = 0

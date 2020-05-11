@@ -11,6 +11,6 @@ if __name__ == "__main__":
         ["rootfs/x8664_windows/bin/x8664_hello.exe"],
         "rootfs/x8664_windows",
         output="default",
-        profile="libcache.ql"
+        libcache = True
     )
     ql.run()
