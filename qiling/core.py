@@ -88,6 +88,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         """
         Qiling Framework Core Engine
         """
+
         # shellcoder settings
         if self.shellcoder:
             if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str):
