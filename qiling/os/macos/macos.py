@@ -49,7 +49,6 @@ class QlOsMacos(QlOsPosix):
 
         try:
             if self.ql.shellcoder:
-                
                 self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)
             else:
                 self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)

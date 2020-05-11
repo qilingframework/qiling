@@ -116,9 +116,7 @@ class QlOsWindows(QlOs):
             self.stdout = self.ql.stdout
         
         if self.ql.stderr != 0:
-            self.stderr = self.ql.stderr 
-
-        self.setup_output()
+            self.stderr = self.ql.stderr
         
         try:
             if self.ql.shellcoder:

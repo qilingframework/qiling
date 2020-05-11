@@ -18,21 +18,25 @@ class QlOsUefi(QlOs):
         self.entry_point = 0
         self.user_defined_api = {}
         self.notify_immediately = False
+        self.PE_RUN = True
     
     def run(self):
-        self.setup_output()
-       
+        if self.ql.exit_point is not None:
+            self.exit_point = self.ql.exit_point
+        
+        if  self.ql.entry_point  is not None:
+            self.ql.loader.entry_point = self.ql.entry_point
+
         try:
-            self.PE_RUN = True
-            path, self.entry_point, pe = self.ql.loader.modules.pop(0)
-            # workaround, the debugger sets the breakpoint before the module is loaded.
-            if hasattr(self.ql.remotedebugsession ,'gdb'):
-                self.ql.remotedebugsession.gdb.bp_insert(self.entry_point)
-            self.ql.stack_push(self.ql.loader.end_of_execution_ptr)
-            self.ql.reg.rdx = self.ql.loader.system_table_ptr
-            self.ql.nprint(f'[+] Running from 0x{self.entry_point:x} of {path}')
-            self.ql.emu_start(self.entry_point, self.exit_point, self.ql.timeout)
+            self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:
+            if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+                self.ql.nprint("[+] PC = 0x%x" % (self.ql.reg.arch_pc))
+                self.ql.mem.show_mapinfo()
+                buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
+                self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+                self.ql.nprint("\n")
+                self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
             raise
 
         if self.ql.internal_exception is not None:

@@ -156,3 +156,11 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.hook_address(hook_EndOfExecution, self.end_of_execution_ptr)
         self.notify_ptr = system_table_heap_ptr
         system_table_heap_ptr += pointer_size
+
+        path, self.entry_point, pe = self.modules.pop(0)
+        # workaround, the debugger sets the breakpoint before the module is loaded.
+        if hasattr(self.ql.remotedebugsession ,'gdb'):
+                self.ql.remotedebugsession.gdb.bp_insert(self.entry_point)
+        self.ql.stack_push(self.end_of_execution_ptr)
+        self.ql.reg.rdx = self.system_table_ptr
+        self.ql.nprint(f'[+] Running from 0x{self.entry_point:x} of {path}')
