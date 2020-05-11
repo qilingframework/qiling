@@ -25,21 +25,6 @@ class QlOsFreebsd(QlOsPosix):
 
 
     def run(self):
-        self.setup_output()
-        init_rbp = self.stack_address + 0x40
-        init_rdi = self.stack_address
-        self.ql.reg.rbp = init_rbp
-        self.ql.reg.rdi = init_rdi
-        self.ql.reg.r14 = init_rdi
-
-        if self.ql.shellcoder:
-            self.ql.reg.arch_sp = self.entry_point
-        else:            
-            self.ql.reg.arch_sp = self.stack_address
-
-        if self.ql.shellcoder:
-            self.ql.mem.write(self.entry_point, self.ql.shellcoder)
-
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
 

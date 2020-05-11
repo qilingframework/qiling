@@ -11,6 +11,10 @@ interp_address = 0x7ffff7dd5000
 mmap_address = 0x7fffb7dd6000
 
 
+[LOADER]
+libcache = False
+
+
 [KERNEL]
 uid = 1000
 gid = 1000

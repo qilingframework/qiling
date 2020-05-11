@@ -15,7 +15,6 @@ from qiling.const import *
 from qiling.os.const import *
 from qiling.os.posix.posix import QlOsPosix
 
-from .utils import page_align_end
 from .const import *
 
 class QlOsMacos(QlOsPosix):
@@ -42,25 +41,15 @@ class QlOsMacos(QlOsPosix):
         return self.load_syscall()
 
     def run(self):
-        self.setup_output()
-
-        if self.ql.shellcoder:
-            self.ql.mem.write(self.entry_point, self.ql.shellcoder)
-        
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
 
         if  self.ql.entry_point is not None:
                 self.ql.loader.entry_point = self.ql.entry_point    
 
-        if self.ql.shellcoder:
-            self.ql.reg.arch_sp = self.entry_point
-        else:
-            self.ql.reg.arch_sp = self.ql.loader.stack_address # self.stack_sp
-            self.macho_task.min_offset = page_align_end(self.ql.loader.vm_end_addr, PAGE_SIZE)
-
         try:
             if self.ql.shellcoder:
+                
                 self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)
             else:
                 self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)

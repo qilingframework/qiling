@@ -60,6 +60,6 @@ def ql_syscall_mips_set_thread_area(ql, sta_area, *args, **kw):
 
 def ql_syscall_arm_settls(ql, address, *args, **kw):
     ql.reg.c13_c0_3 = address
-    ql.mem.write(ql.os.QL_ARM_KERNEL_GET_TLS_ADDR + 12, ql.pack32(address))
+    ql.mem.write(ql.arch.arm_get_tls_addr + 12, ql.pack32(address))
     ql.reg.r0 = address
     ql.nprint("settls(0x%x)" % address)

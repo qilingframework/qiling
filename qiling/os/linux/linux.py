@@ -17,7 +17,6 @@ class QlOsLinux(QlOsPosix):
     def __init__(self, ql):
         super(QlOsLinux, self).__init__(ql)
         self.ql = ql
-        self.QL_ARM_KERNEL_GET_TLS_ADDR = 0xFFFF0FE0
         self.thread_class = None
         self.futexm = None
         self.fh_tmp = []
@@ -32,6 +31,8 @@ class QlOsLinux(QlOsPosix):
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
             self.thread_class = QlLinuxARMThread
+            ql_arm_init_get_tls(self.ql)
+
 
         # MIPS32
         elif self.ql.archtype== QL_ARCH.MIPS:      
@@ -67,24 +68,14 @@ class QlOsLinux(QlOsPosix):
         self.fh_tmp.append((fn, cb, userdata))
 
     def run(self):
-        self.setup_output()
-
-        if self.ql.shellcoder:
-            self.ql.mem.write(self.entry_point, self.ql.shellcoder)
-        
         for fn, cb, userdata in self.fh_tmp:
             self.fh.add_function_hook(fn, cb, userdata)
 
-        if self.ql.archtype== QL_ARCH.ARM:
-            ql_arm_init_kernel_get_tls(self.ql)
-        
-        if self.ql.shellcoder:
-            self.ql.reg.arch_sp = self.entry_point
-        else:            
-            self.ql.reg.arch_sp = self.stack_address
-
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
+
+        if  self.ql.entry_point is not None:
+            self.ql.loader.elf_entry = self.ql.entry_point   
 
         try:
             if self.ql.shellcoder:

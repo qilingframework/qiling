@@ -55,7 +55,7 @@ class Process():
         except KeyError as ke:
             pass
 
-        if self.ql.libcache and os.path.exists(fcache) and \
+        if self.libcache and os.path.exists(fcache) and \
             os.stat(fcache).st_mtime > os.stat(path).st_mtime: # pickle file cannot be outdated
             (data, cmdlines, self.import_symbols, self.import_address_table) = \
                 pickle.load(open(fcache, "rb"))
@@ -78,7 +78,7 @@ class Process():
                 if cmdline_entry:
                     cmdlines.append(cmdline_entry)
 
-            if self.ql.libcache:
+            if self.libcache:
                 # cache this dll file
                 pickle.dump((data, cmdlines,
                              self.import_symbols,
@@ -291,6 +291,7 @@ class QlLoaderPE(QlLoader, Process):
             self.ql.os.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"),16) 
             self.structure_last_addr = GS_SEGMENT_ADDR
             
+        self.libcache = self.ql.os.profile.getboolean("LOADER","libcache")    
         self.dlls = {}
         self.import_symbols = {}
         self.export_symbols = {}
@@ -417,7 +418,13 @@ class QlLoaderPE(QlLoader, Process):
 
             # load shellcode in
             self.ql.mem.map(self.entry_point, self.ql.os.shellcoder_ram_size, info="[shellcode_base]")
-            self.ql.mem.write(self.entry_point, self.ql.shellcoder)
+            
+            # for ASM file input, will mem.write in qltools
+            try:
+                self.ql.mem.write(self.entry_point, self.ql.shellcoder)
+            except:
+                pass
+            
             # rewrite entrypoint for windows shellcode
             self.ql.os.entry_point = self.entry_point
 

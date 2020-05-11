@@ -50,3 +50,4 @@ class QlOs(QLOsUtils):
         self.syscalls = {}
         self.syscalls_counter = 0
         self.appeared_strings = {}
+        self.setup_output()

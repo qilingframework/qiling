@@ -354,8 +354,17 @@ class QlLoaderELF(QlLoader, ELFParse):
         if self.ql.shellcoder:
             self.ql.mem.map(self.ql.os.entry_point, self.ql.os.shellcoder_ram_size, info="[shellcode_stack]")
             self.ql.os.entry_point  = (self.ql.os.entry_point + 0x200000 - 0x1000)
+            
+            # for ASM file input, will mem.write in qltools
+            try:
+                self.ql.mem.write(self.ql.os.entry_point, self.ql.shellcoder)
+            except:
+                pass    
+            
+            self.ql.reg.arch_sp = self.ql.os.entry_point
             return
-
+            
+        self.libcache = self.ql.os.profile.getboolean("LOADER","libcache")
         self.path = self.ql.path
         ELFParse.__init__(self, self.path, self.ql)
         self.interp_address = 0
@@ -363,7 +372,15 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.argv = self.ql.argv
         self.ql.mem.map(stack_address, stack_size, info="[stack]") 
         self.load_with_ld(self.ql, stack_address + stack_size, argv = self.argv, env = self.env)
-        self.ql.os.stack_address  = (int(self.new_stack))   
+        self.stack_address  = (int(self.new_stack))
+        self.ql.reg.arch_sp = self.stack_address
+
+        if self.ql.ostype == QL_OS.FREEBSD:
+            init_rbp = self.stack_address + 0x40
+            init_rdi = self.stack_address
+            self.ql.reg.rbp = init_rbp
+            self.ql.reg.rdi = init_rdi
+            self.ql.reg.r14 = init_rdi
 
     def pack(self, data):
         if self.ql.archbit == 64:

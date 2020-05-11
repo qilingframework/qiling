@@ -441,6 +441,7 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
     ql.clear_ql_hooks()
     ql.uc = ql.arch.init_uc
     ql.os.load()
+    ql.loader.run()
     ql.run()
 
 

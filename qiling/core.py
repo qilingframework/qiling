@@ -84,9 +84,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # syscall filter for strace-like functionality
         self.strace_filter = None
         self.remotedebugsession = None
-        self.automatize_input = False
-        self.libcache = False
-
 
         """
         Qiling Framework Core Engine
@@ -166,7 +163,9 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         #####################################
         self.arch = self.arch_setup()
         self.os = self.os_setup()
-        
+
+        # Run the loader
+        self.loader.run()
 
     # Emulate the binary from begin until @end, with timeout in @timeout and
     # number of emulated instructions in @count
@@ -176,9 +175,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.exit_point = end
         self.timeout = timeout
         self.count = count
-
-        # Run the loader
-        self.loader.run()
         
         # setup strace filter for logger
         # FIXME: only works for logging due to we might need runtime disable nprint
