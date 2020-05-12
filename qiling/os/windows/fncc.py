@@ -91,26 +91,36 @@ def set_function_params(ql, in_params, out_params):
                 out_params[each] = high << 32 + low
             else:
                 out_params[each] = _get_param_by_index(ql, index)
-        elif in_params[each] == STRING or in_params[each] == STRING_ADDR:
+        elif in_params[each] == STRING:
             ptr = _get_param_by_index(ql, index)
             if ptr == 0:
                 out_params[each] = 0
             else:
                 content = read_cstring(ql, ptr)
-                if in_params[each] == STRING_ADDR:
-                    out_params[each] = (ptr, content)
-                else:
-                    out_params[each] = content
-        elif in_params[each] == WSTRING or in_params[each] == WSTRING_ADDR:
+                out_params[each] = content
+        elif in_params[each] == STRING_ADDR:
+            ptr = _get_param_by_index(ql, index)
+            if ptr == 0:
+                out_params[each] = (0, 0)
+
+            else:
+                content = read_cstring(ql, ptr)
+                out_params[each] = (ptr, content)
+
+        elif in_params[each] == WSTRING :
             ptr = _get_param_by_index(ql, index)
             if ptr == 0:
                 out_params[each] = 0
             else:
                 content = read_wstring(ql, ptr)
-                if in_params[each] == WSTRING_ADDR:
-                    out_params[each] = (ptr, content)
-                else:
-                    out_params[each] = content
+                out_params[each] = content
+        elif in_params[each] == WSTRING_ADDR:
+            ptr = _get_param_by_index(ql, index)
+            if ptr == 0:
+                out_params[each] = (0,0)
+            else:
+                content = read_wstring(ql, ptr)
+                out_params[each] = (ptr, content)
         elif in_params[each] == GUID:
             ptr = _get_param_by_index(ql, index)
             if ptr == 0:
