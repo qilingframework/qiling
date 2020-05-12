@@ -48,6 +48,13 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    def test_libpatch_elf_linux_x8664(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/patch_test.bin"], "../examples/rootfs/x8664_linux")
+        ql.patch(0x0000000000000575, b'qiling\x00', file_name = b'libpatch_test.so')  
+        ql.run()
+        del ql
+
+
     def test_elf_freebsd_x8664(self):     
         ql = Qiling(["../examples/rootfs/x8664_freebsd/bin/x8664_hello_asm"], "../examples/rootfs/x8664_freebsd", output = "dump")
         ql.run()
