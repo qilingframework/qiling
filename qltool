@@ -154,7 +154,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('--debug', action='store_true', default=False, dest='debug', help='Enable Debug mode')
     comm_parser.add_argument('--disasm', action='store_true', default=False, dest='disasm', help='Run in disassemble mode')
     comm_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')  
-    comm_parser.add_argument('-e', '--strace-filter', metavar="FUNCTION NAME", required=False, dest="strace_filter", default=None, 
+    comm_parser.add_argument('-e', '--filter', metavar="FUNCTION NAME", required=False, dest="filter", default=None, 
                             help="Only work with strace mode, you can choose what to be printout, for multiple function calls should be separated by comma")
     comm_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
     comm_parser.add_argument('--root', action='store_true', default=False, dest='root', help='Enable sudo required mode')
@@ -231,8 +231,8 @@ if __name__ == '__main__':
     if options.verbose:
         ql.verbose = options.verbose   
 
-    if options.strace_filter != None:
-       ql.strace_filter = options.strace_filter
+    if options.filter != None:
+       ql.filter = options.filter
 
     if options.env != '':
         if os.path.exists(options.env):

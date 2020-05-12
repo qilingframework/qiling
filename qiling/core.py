@@ -13,7 +13,6 @@ from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorO
 from .utils import arch_convert, ostype_convert, output_convert
 from .utils import ql_is_valid_arch, ql_get_arch_bits
 from .utils import ql_setup_logging_env
-from .utils import Strace_filter
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 from .core_utils import QLCoreUtils
@@ -82,7 +81,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # by turning this on, you must run your analysis with sudo
         self.root = False
         # syscall filter for strace-like functionality
-        self.strace_filter = None
+        self.filter = None
         self.remotedebugsession = None
 
         """
@@ -177,11 +176,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.timeout = timeout
         self.count = count
         
-        # setup strace filter for logger
-        # FIXME: only works for logging due to we might need runtime disable nprint
-        if self.strace_filter != None and self.output == QL_OUTPUT.DEFAULT and self.log_file_fd:
-            self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
-
         # init debugger
         if self.debugger is not None:
             ql_debugger_init(self)

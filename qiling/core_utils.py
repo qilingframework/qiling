@@ -13,7 +13,7 @@ except:
 from binascii import unhexlify
 
 from .utils import ql_build_module_import_name, ql_get_module_function
-from .utils import ql_is_valid_arch, ql_is_valid_ostype
+from .utils import ql_is_valid_arch, ql_is_valid_ostype, Ql_filter
 from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
 from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
 from .const import D_INFO
@@ -43,6 +43,12 @@ class QLCoreUtils(object):
                 fd = self.os.thread_management.cur_thread.log_file_fd
             else:
                 fd = self.log_file_fd
+
+            # setup strace filter for logger
+            # from .utils import ql_is_valid_arch, ql_is_valid_ostype, Strace_filter
+            # FIXME: only works for logging due to we might need runtime disable nprint, it should be a global filter not only syscall
+            # if self.strace != None and self.output == QL_OUTPUT.DEFAULT:
+            #     self.log_file_fd.addFilter(ql_filter(self.filter))
 
             msg = args[0]
             msg += kw["end"] if kw.get("end", None) != None else os.linesep
