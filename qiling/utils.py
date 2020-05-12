@@ -194,12 +194,4 @@ def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
 
     logger.addHandler(fh)
     return logger
-
-class Ql_filter(logging.Filter):
-    def __init__(self, func_names):
-        super(Strace_filter, self).__init__()
-        self.filter_list = func_names.split(",") if isinstance(func_names, str) else func_names
-
-    def filter(self, record):
-        return any((record.getMessage().startswith(each) for each in self.filter_list))
       

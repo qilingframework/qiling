@@ -223,7 +223,10 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
     def enable_lib_patch(self):
         for addr, code, filename in self.patch_lib:
-            self.mem.write(self.mem.get_lib_base(filename) + addr, code)
+            try:
+                self.mem.write(self.mem.get_lib_base(filename) + addr, code)
+            except:
+                raise RuntimeError("Fail to patch filename %s at addr 0x%x" % (filename, addr))
 
     # stop emulation
     def emu_stop(self):

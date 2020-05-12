@@ -51,7 +51,6 @@ class QlMemoryManager:
             self.write(addr, string_bytes)
             return None
 
-
     def add_mapinfo(self, mem_s, mem_e, mem_p, mem_info):
         tmp_map_info = []
         insert_flag = 0
