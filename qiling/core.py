@@ -80,7 +80,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.bindtolocalhost = True
         # by turning this on, you must run your analysis with sudo
         self.root = False
-        # syscall filter for strace-like functionality
+        # generic filter to filter print (WIP)
         self.filter = None
         self.remotedebugsession = None
 
