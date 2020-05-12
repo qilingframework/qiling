@@ -34,6 +34,9 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             verbose=1,
             profile=None,
             console=True,
+            log_dir=None,
+            log_split=None,
+            append=None,
             libcache = False,
             stdin=0,
             stdout=0,
@@ -55,6 +58,9 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.verbose = verbose
         self.profile = profile
         self.console = console
+        self.log_dir = log_dir
+        self.log_split = log_split
+        self.append = append
         self.libcache = libcache
         self.stdin = stdin
         self.stdout = stdout
@@ -116,9 +122,12 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # setup    #
         ############           
         self.profile = self.profile_setup()
-        self.append = self.profile["MISC"]["append"]
-        self.log_dir = self.profile["LOG"]["dir"]
-        self.log_split =  self.profile.getboolean('LOG', 'split')
+        if self.append == None:
+            self.append = self.profile["MISC"]["append"]
+        if self.log_dir == None:
+            self.log_dir = self.profile["LOG"]["dir"]
+        if self.log_split == None:            
+            self.log_split =  self.profile.getboolean('LOG', 'split')
 
          # Log's configuration
         if self.log_dir != "" and type(self.log_dir) == str:

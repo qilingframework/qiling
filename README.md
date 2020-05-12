@@ -54,7 +54,7 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 ---
 
 #### Installation
-Please see [setup guide](https://docs.qiling.io/) file for how to install Qiling Framework.
+Please see [setup guide](https://docs.qiling.io/en/latest/getting_started/) file for how to install Qiling Framework.
 
 ---
 
