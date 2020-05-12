@@ -26,4 +26,3 @@ def testshellcode():
 if __name__ == "__main__":
     testexec_args()
     testshellcode()
-    #teststrace_filter()
