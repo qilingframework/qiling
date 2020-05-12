@@ -261,6 +261,14 @@ def hook___stdio_common_vswprintf_s(ql, address, _):
     return ret
 
 
+# int lstrlenA(
+#   LPCSTR lpString
+# );
+@winapi(cc=CDECL, params={
+    'lpString': STRING
+})
+def hook_lstrlenA(ql, address, params):
+    return hook_lstrlenW.__wrapped__(ql, address, params)
 
 
 # int lstrlenW(

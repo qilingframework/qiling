@@ -10,6 +10,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.const import *
 from qiling.const import *
 
+
 # INT_PTR DialogBoxParamA(
 #   HINSTANCE hInstance,
 #   LPCSTR    lpTemplateName,
@@ -176,6 +177,7 @@ def hook_MapVirtualKeyW(ql, address, params):
         ql.dprint(D_INFO, "Map value %x" % map_value)
         raise QlErrorNotImplemented("[!] API not implemented")
 
+
 # SHORT GetKeyState(
 #   int nVirtKey
 # );
@@ -197,8 +199,7 @@ def hook_GetKeyState(ql, address, params):
     "lpString": STRING
 })
 def hook_RegisterWindowMessageA(ql, address, params):
-    # maybe some samples really use this and we need to have a real implementation
-    return 0xD10C
+    return hook_RegisterWindowMessageW.__wrapped__(ql, address, params)
 
 
 # UINT RegisterWindowMessageW(
@@ -331,6 +332,7 @@ def hook_GetSysColorBrush(ql, address, params):
 def hook_LoadCursorA(ql, address, params):
     return 0xd10c
 
+
 # HCURSOR LoadCursorFromFileA(
 #   LPCSTR lpFileName
 # );
@@ -338,6 +340,16 @@ def hook_LoadCursorA(ql, address, params):
     "lpFileName": STRING
 })
 def hook_LoadCursorFromFileA(ql, address, params):
+    return hook_LoadCursorFromFileW.__wrapped__(ql, address, params)
+
+
+# HCURSOR LoadCursorFromFileA(
+#   LPCSTR lpFileName
+# );
+@winapi(cc=STDCALL, params={
+    "lpFileName": WSTRING
+})
+def hook_LoadCursorFromFileW(ql, address, params):
     handle = Handle()
     ql.os.handle_manager.append(handle)
     return handle.id
@@ -348,6 +360,32 @@ def hook_LoadCursorFromFileA(ql, address, params):
 })
 def hook_GetOEMCP(ql, address, params):
     return OEM_US
+
+
+# int LoadStringW(
+#   HINSTANCE hInstance,
+#   UINT      uID,
+#   LPSTR     lpBuffer,
+#   int       cchBufferMax
+# );
+@winapi(cc=STDCALL, params={
+    "hInstance": POINTER,
+    "uID": UINT,
+    "lpBuffer": POINTER,
+    "cchBufferMax": INT
+})
+def hook_LoadStringW(ql, address, params):
+    dst = params["lpBuffer"]
+    max_len = params["cchBufferMax"]
+    # TODO fix the string
+    string = "AAAABBBBCCCCDDDD" + "\x00"
+    if max_len == 0:
+        if len(string) >= max_len:
+            string[max_len] = "\x00"
+            string = string[:max_len]
+        ql.mem.write(dst, string.encode("utf-16le"))
+    # should not count the \x00 byte
+    return len(string) - 1
 
 
 # int LoadStringA(
@@ -365,12 +403,13 @@ def hook_GetOEMCP(ql, address, params):
 def hook_LoadStringA(ql, address, params):
     dst = params["lpBuffer"]
     max_len = params["cchBufferMax"]
+    # TODO fix the string
     string = "AAAABBBBCCCCDDDD" + "\x00"
     if max_len == 0:
         if len(string) >= max_len:
             string[max_len] = "\x00"
             string = string[:max_len]
-        ql.mem.write(dst, string.encode("utf-16le"))
+        ql.mem.write(dst, string.encode())
     # should not count the \x00 byte
     return len(string) - 1
 
@@ -435,9 +474,8 @@ def hook_ShowWindow(ql, address, params):
     "lpIconName": UINT
 })
 def hook_LoadIconA(ql, address, params):
-    handle = Handle()
-    ql.os.handle_manager.append(handle)
-    return handle.id
+    return hook_LoadIconW(ql, address, params)
+
 
 # HICON LoadIconW(
 #   HINSTANCE hInstance,
@@ -451,8 +489,6 @@ def hook_LoadIconW(ql, address, params):
     handle = Handle()
     ql.os.handle_manager.append(handle)
     return handle.id
-
-
 
 
 # BOOL IsWindow(
@@ -516,6 +552,16 @@ def hook_CharNextW(ql, address, params):
         return point + 1
 
 
+# LPWSTR CharNextA(
+#   LPCWSTR lpsz
+# );
+@winapi(cc=STDCALL, params={
+    "lpsz": STRING_ADDR
+})
+def hook_CharNextA(ql, address, params):
+    return hook_CharNextW.__wrapped__(ql, address, params)
+
+
 # LPWSTR CharPrevW(
 #   LPCWSTR lpszStart,
 #   LPCWSTR lpszCurrent
@@ -533,6 +579,18 @@ def hook_CharPrevW(ql, address, params):
     return current - 1
 
 
+# LPWSTR CharPrevA(
+#   LPCWSTR lpszStart,
+#   LPCWSTR lpszCurrent
+# );
+@winapi(cc=STDCALL, params={
+    "lpszStart": STRING_ADDR,
+    "lpszCurrent": POINTER
+})
+def hook_CharPrevA(ql, address, params):
+    return hook_CharPrevW.__wrapped__(ql, address, params)
+
+
 # int WINAPIV wsprintfW(
 #   LPWSTR  ,
 #   LPCWSTR ,
@@ -545,7 +603,7 @@ def hook_wsprintfW(ql, address, params):
     size, string = printf(ql, address, format_string, p_args, "wsprintfW", wstring=True)
 
     count = format_string.count('%')
-    if ql.archtype== QL_ARCH.X8664:
+    if ql.archtype == QL_ARCH.X8664:
         # We must pop the stack correctly
         raise QlErrorNotImplemented("[!] API not implemented")
 
@@ -601,9 +659,9 @@ def hook_MoveWindow(ql, address, params):
     return 1
 
 
-#int GetKeyboardType(
+# int GetKeyboardType(
 #  int nTypeFlag
-#);
+# );
 @winapi(cc=STDCALL, params={
     "nTypeFlag": UINT
 })
@@ -612,7 +670,7 @@ def hook_GetKeyboardType(ql, address, params):
     See https://salsa.debian.org/wine-team/wine/-/blob/master/dlls/user32/input.c 
     """
     _type = params['nTypeFlag']
-    if _type == 0: #0: Keyboard Type, 1: Keyboard subtype, 2: num func keys
+    if _type == 0:  # 0: Keyboard Type, 1: Keyboard subtype, 2: num func keys
         return 7
     elif _type == 1:
         return 0
@@ -635,7 +693,7 @@ def hook_GetKeyboardType(ql, address, params):
 })
 def hook_MessageBoxW(ql, address, params):
     # We always return a positive result
-    type= params["uType"]
+    type = params["uType"]
     if type == MB_OK or type == MB_OKCANCEL:
         return IDOK
     if type == MB_YESNO or type == MB_YESNOCANCEL:
@@ -643,3 +701,19 @@ def hook_MessageBoxW(ql, address, params):
     else:
         ql.dprint(D_INFO, type)
         raise QlErrorNotImplemented("[!] API not implemented")
+
+
+# int MessageBoxA(
+#   HWND    hWnd,
+#   LPCWSTR lpText,
+#   LPCWSTR lpCaption,
+#   UINT    uType
+# );
+@winapi(cc=STDCALL, params={
+    "hWnd": HANDLE,
+    "lpText": STRING,
+    "lpCaption": STRING,
+    "uType": UINT
+})
+def hook_MessageBoxA(ql, address, params):
+    return hook_MessageBoxW.__wrapped__(ql, address, params)

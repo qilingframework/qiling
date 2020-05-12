@@ -14,6 +14,7 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 from qiling.const import *
 
+
 # BOOL SetThreadLocale(
 #   LCID Locale
 # );
@@ -23,10 +24,12 @@ from qiling.const import *
 def hook_SetThreadLocale(ql, address, params):
     return 0xC000  # LOCALE_CUSTOM_DEFAULT
 
-#LCID GetThreadLocale();
+
+# LCID GetThreadLocale();
 @winapi(cc=STDCALL, params={})
 def hook_GetThreadLocale(ql, address, params):
-    return 0xC000 #LOCALE_CUSTOM_DEFAULT
+    return 0xC000  # LOCALE_CUSTOM_DEFAULT
+
 
 # UINT GetACP(
 # );
@@ -67,7 +70,7 @@ def hook_GetLocaleInfoA(ql, address, params):
 
     local_dict = LOCALE.get(locale_value, None)
     if local_dict is None:
-        #raise QlErrorNotImplemented("[!] API not implemented")
+        # raise QlErrorNotImplemented("[!] API not implemented")
         ql.os.last_error = ERROR_INVALID_PARAMETER
         return 0
 
@@ -91,7 +94,7 @@ def hook_IsValidCodePage(ql, address, params):
 
 def _LCMapString(ql, address, params):
     cchDest = params["cchDest"]
-    result = (params["lpSrcStr"] +"\x00").encode("utf-16le")
+    result = (params["lpSrcStr"] + "\x00").encode("utf-16le")
     dst = params["lpDestStr"]
     if cchDest != 0:
         # TODO maybe do some other check, for now is working

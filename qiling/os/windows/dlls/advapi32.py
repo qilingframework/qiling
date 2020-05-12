@@ -10,6 +10,7 @@ from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
 from qiling.os.windows.structs import *
 
+
 def _RegOpenKey(ql, address, params):
     hKey = params["hKey"]
     s_lpSubKey = params["lpSubKey"]
@@ -213,6 +214,20 @@ def hook_RegCloseKey(ql, address, params):
     "phkResult": POINTER
 })
 def hook_RegCreateKeyA(ql, address, params):
+    return hook_RegCreateKeyW.__wrapped__(ql, address, params)
+
+
+# LSTATUS RegCreateKeyW(
+#   HKEY   hKey,
+#   LPCWSTR lpSubKey,
+#   PHKEY  phkResult
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": WSTRING,
+    "phkResult": POINTER
+})
+def hook_RegCreateKeyW(ql, address, params):
     ret = ERROR_SUCCESS
 
     hKey = params["hKey"]
@@ -264,6 +279,7 @@ def hook_RegSetValueA(ql, address, params):
     cbData = params["cbData"]
 
     s_hKey = ql.os.handle_manager.get(hKey).obj
+    # this is done so the print_function would print the correct value
     params["hKey"] = s_hKey
 
     ql.os.registry_manager.write(s_hKey, s_lpSubKey, dwType, s_lpData)
@@ -297,6 +313,7 @@ def hook_RegSetValueExW(ql, address, params):
     cbData = params["cbData"]
 
     s_hKey = ql.os.handle_manager.get(hKey).obj
+    # this is done so the print_function would print the correct value
     params["hKey"] = s_hKey
 
     ql.os.registry_manager.write(s_hKey, s_lpValueName, dwType, s_lpData)
@@ -313,6 +330,18 @@ def hook_RegSetValueExW(ql, address, params):
     "lpSubKey": STRING,
 })
 def hook_RegDeleteKeyA(ql, address, params):
+    return hook_RegDeleteKeyW.__wrapped__(ql, address, params)
+
+
+# LSTATUS RegDeleteKeyW(
+#   HKEY   hKey,
+#   LPCWSTR lpSubKey
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": WSTRING,
+})
+def hook_RegDeleteKeyW(ql, address, params):
     ret = ERROR_SUCCESS
 
     hKey = params["hKey"]
@@ -324,6 +353,18 @@ def hook_RegDeleteKeyA(ql, address, params):
     ql.os.registry_manager.delete(s_hKey, s_lpSubKey)
 
     return ret
+
+
+# LSTATUS RegDeleteValueA(
+#   HKEY    hKey,
+#   LPCSTR lpValueName
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpValueName": STRING
+})
+def hook_RegDeleteValueA(ql, address, params):
+    return hook_RegDeleteValueW.__wrapped__(ql, address, params)
 
 
 # LSTATUS RegDeleteValueW(
@@ -434,22 +475,23 @@ def hook_GetSidSubAuthority(ql, address, params):
     "nSubAuthority5": DWORD,
     "nSubAuthority6": DWORD,
     "nSubAuthority7": DWORD,
-    "pSid":POINTER
+    "pSid": POINTER
 
 })
 def hook_AllocateAndInitializeSid(ql, address, params):
     count = params["nSubAuthorityCount"]
     subs = b""
     for i in range(count):
-        sub = params["nSubAuthority"+str(i)].to_bytes(length=ql.pointersize, byteorder="little")
-        subs  += sub
-    sid = Sid(ql,subs=subs,subs_count=count)
+        sub = params["nSubAuthority" + str(i)].to_bytes(length=ql.pointersize, byteorder="little")
+        subs += sub
+    sid = Sid(ql, subs=subs, subs_count=count)
     handle = Handle(obj=sid, id=sid.addr)
     ql.dprint(0, sid.addr)
-    ql.os.handle_manager.append(handle,)
+    ql.os.handle_manager.append(handle, )
     dest = params["pSid"]
     ql.mem.write(dest, ql.pack(sid.addr))
     return 1
+
 
 # PVOID FreeSid(
 #   PSID pSid
@@ -459,6 +501,7 @@ def hook_AllocateAndInitializeSid(ql, address, params):
 
 })
 def hook_FreeSid(ql, address, params):
+    ql.os.heap.free(params["pSid"])
     return 0
 
 
@@ -472,7 +515,6 @@ def hook_FreeSid(ql, address, params):
 
 })
 def hook_EqualSid(ql, address, params):
-
     # TODO once i have understood better how SID are wrote in memory. Fucking documentation
     # technically this one should be my SID that i created at the start. I said should, because when testing, it has a
     # different address. Why? No idea

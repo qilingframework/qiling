@@ -14,23 +14,29 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
-# BOOL QueryPerformanceCounter(
-#   LARGE_INTEGER *lpPerformanceCount
+# BSTR SysAllocStringLen(
+#   const OLECHAR *strIn,
+#   UINT          ui
 # );
 @winapi(cc=STDCALL, params={
-    "lpPerformanceCount": POINTER
+    "strIn": STRING,
+    "ui": UINT
 })
-def hook_QueryPerformanceCounter(ql, address, params):
-    ret = 0
-    return ret
+def hook_SysAllocStringLen(ql, address, params):
+    addr = ql.os.heap.alloc(params["ui"] + 1)
+    if params["strIn"] != 0:
+        ql.mem.write(addr, params["strIn"][params["ui"]])
+    return addr
 
 
-# BOOL QueryPerformanceFrequency(
-#  LARGE_INTEGER *lpFrequency
+# void SysFreeString(
+#   BSTR bstrString
 # );
 @winapi(cc=STDCALL, params={
-    "lpFrequency": POINTER
+    "strIn": STRING_ADDR,
 })
-def hook_QueryPerformanceFrequency(ql, address, params):
-    ql.mem.write(params['lpFrequency'], (10000000).to_bytes(length=8, byteorder='little'))
-    return 1
+def hook_SysFreeString(ql, address, params):
+    addr = params["strIn"][0]
+    if addr != 0:
+        ql.os.heap.free(addr)
+    return 0

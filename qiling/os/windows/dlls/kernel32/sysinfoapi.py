@@ -33,14 +33,14 @@ def hook_GetVersion(ql, address, params):
 
 })
 def hook_GetVersionExA(ql, address, params):
-    return 1
+    return hook_GetVersionExW.__wrapped__(ql, address, params)
 
 
 # NOT_BUILD_WINDOWS_DEPRECATE BOOL GetVersionExW(
 #   LPOSVERSIONINFOW lpVersionInformation
 # );
 @winapi(cc=STDCALL, params={
-    "lpVersionInformation": STRING
+    "lpVersionInformation": WSTRING
 
 })
 def hook_GetVersionExW(ql, address, params):

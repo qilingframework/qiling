@@ -8,6 +8,7 @@ from qiling.os.windows.fncc import *
 from qiling.os.windows.thread import *
 from qiling.exception import *
 
+
 # __analysis_noreturn VOID FatalExit(
 #   int ExitCode
 # );
@@ -177,7 +178,7 @@ def hook_lstrcpynA(ql, address, params):
     max_length = params["iMaxLength"]
     if len(src) > max_length:
         src = src[:max_length]
-    ql.mem.write(dst, bytes(src, encoding="utf-16le"))
+    ql.mem.write(dst, src.encode())
     return dst
 
 
@@ -198,7 +199,7 @@ def hook_lstrcpynW(ql, address, params):
     max_length = params["iMaxLength"]
     if len(src) > max_length:
         src = src[:max_length]
-    ql.mem.write(dst, bytes(src, encoding="utf-16le"))
+    ql.mem.write(dst, src.encode("utf-16le"))
     return dst
 
 
@@ -214,9 +215,24 @@ def hook_lstrcpyA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
     dst = params["lpString1"]
-    ql.mem.write(dst, bytes(src, encoding="utf-16le"))
+    ql.mem.write(dst, src.encode())
     return dst
 
+
+# LPSTR lstrcpyW(
+#   LPSTR  lpString1,
+#   LPCSTR lpString2,
+# );
+@winapi(cc=STDCALL, params={
+    "lpString1": POINTER,
+    "lpString2": WSTRING,
+})
+def hook_lstrcpyA(ql, address, params):
+    # Copy String2 into String
+    src = params["lpString2"]
+    dst = params["lpString1"]
+    ql.mem.write(dst, src.encode("utf16-le"))
+    return dst
 
 # LPSTR lstrcatA(
 #   LPSTR  lpString1,
@@ -232,7 +248,7 @@ def hook_lstrcatA(ql, address, params):
     pointer = params["lpString1"][0]
     string_base = params["lpString1"][1]
     result = string_base + src + "\x00"
-    ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
+    ql.mem.write(pointer, result.encode())
     return pointer
 
 
@@ -250,7 +266,7 @@ def hook_lstrcatW(ql, address, params):
     pointer = params["lpString1"][0]
     string_base = params["lpString1"][1]
     result = string_base + src + "\x00"
-    ql.mem.write(pointer, bytes(result, encoding="utf-16le"))
+    ql.mem.write(pointer, result.encode("utf16-le"))
     return pointer
 
 
@@ -271,8 +287,19 @@ def hook_lstrcmpiW(ql, address, params):
     elif str1 > str2:
         return 1
     else:
-        # TODO fix negative value
         return -1
+
+
+# int lstrcmpiA(
+#   LPCSTR lpString1,
+#   LPCSTR lpString2
+# );
+@winapi(cc=STDCALL, params={
+    "lpString1": STRING,
+    "lpString2": STRING,
+})
+def hook_lstrcmpiA(ql, address, params):
+    return hook_lstrcmpiW.__wrapped__(ql, address, params)
 
 
 # HRSRC FindResourceA(
@@ -413,7 +440,8 @@ def hook_VerifyVersionInfoW(ql, address, params):
                     ql.dprint(D_RPRT, "[=] The sample asks for version %s %s" % (operator, version_asked))
             # We can finally compare
             qiling_os = str(ql.os.profile.get("SYSTEM", "majorVersion")) + \
-                        str(ql.os.profile.get("SYSTEM", "minorVersion")) + str(ql.os.profile.get("SYSTEM", "productType"))
+                        str(ql.os.profile.get("SYSTEM", "minorVersion")) + str(
+                ql.os.profile.get("SYSTEM", "productType"))
             res = compare(int(qiling_os), operator, int(concat))
         elif key == VER_SERVICEPACKMAJOR:
             res = compare(ql.os.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_version_info_asked[key])
@@ -424,7 +452,7 @@ def hook_VerifyVersionInfoW(ql, address, params):
             ql.os.last_error = ERROR_OLD_WIN_VERSION
             return 0
     # reset mask
-    ql.os.hooks_variables["ConditionMask"]= {}
+    ql.os.hooks_variables["ConditionMask"] = {}
     return res
 
 
@@ -437,7 +465,28 @@ def hook_VerifyVersionInfoW(ql, address, params):
     "pcbBuffer": POINTER
 })
 def hook_GetUserNameW(ql, address, params):
-    username = (ql.os.profile["USER"]["username"]+"\x00").encode("utf-16le")
+    username = (ql.os.profile["USER"]["username"] + "\x00").encode("utf-16le")
+    dst = params["lpBuffer"]
+    max_size = params["pcbBuffer"]
+    ql.mem.write(max_size, len(username).to_bytes(4, byteorder="little"))
+    if len(username) > max_size:
+        ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
+        return 0
+    else:
+        ql.mem.write(dst, username)
+    return 1
+
+
+# BOOL GetUserNameA(
+#   LPCSTR  lpBuffer,
+#   LPDWORD pcbBuffer
+# );
+@winapi(cc=STDCALL, params={
+    "lpBuffer": POINTER,
+    "pcbBuffer": POINTER
+})
+def hook_GetUserNameA(ql, address, params):
+    username = (ql.os.profile["USER"]["username"] + "\x00").encode()
     dst = params["lpBuffer"]
     max_size = params["pcbBuffer"]
     ql.mem.write(max_size, len(username).to_bytes(4, byteorder="little"))
@@ -461,9 +510,30 @@ def hook_GetComputerNameW(ql, address, params):
     computer = (ql.os.profile["SYSTEM"]["computername"] + "\x00").encode("utf-16le")
     dst = params["lpBuffer"]
     max_size = params["nSize"]
-    ql.mem.write(max_size, (len(computer)-2).to_bytes(4, byteorder="little"))
+    ql.mem.write(max_size, (len(computer) - 2).to_bytes(4, byteorder="little"))
     if len(computer) > max_size:
-        #ql.os.last_error = ERROR_BUFFER_OVERFLOW
+        ql.os.last_error = ERROR_BUFFER_OVERFLOW
+        return 0
+    else:
+        ql.mem.write(dst, computer)
+    return 1
+
+
+# BOOL GetComputerNameA(
+#   LPCSTR  lpBuffer,
+#   LPDWORD nSize
+# );
+@winapi(cc=STDCALL, params={
+    "lpBuffer": POINTER,
+    "nSize": POINTER
+})
+def hook_GetComputerNameA(ql, address, params):
+    computer = (ql.os.profile["SYSTEM"]["computername"] + "\x00").encode()
+    dst = params["lpBuffer"]
+    max_size = params["nSize"]
+    ql.mem.write(max_size, (len(computer) - 2).to_bytes(4, byteorder="little"))
+    if len(computer) > max_size:
+        ql.os.last_error = ERROR_BUFFER_OVERFLOW
         return 0
     else:
         ql.mem.write(dst, computer)

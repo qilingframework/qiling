@@ -14,6 +14,25 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 from qiling.const import *
 
+
+# DWORD_PTR SHGetFileInfoA(
+#   LPCSTR     pszPath,
+#   DWORD       dwFileAttributes,
+#   SHFILEINFOW *psfi,
+#   UINT        cbFileInfo,
+#   UINT        uFlags
+# );
+@winapi(cc=STDCALL, params={
+    "pszPath": STRING,
+    "dwFileAttributes": DWORD,
+    "psfi": POINTER,
+    "cbFileInfo": UINT,
+    "uFlags": UINT
+})
+def hook_SHGetFileInfoA(ql, address, params):
+    return hook_SHGetFileInfoW.__wrapped__(ql, address, params)
+
+
 # DWORD_PTR SHGetFileInfoW(
 #   LPCWSTR     pszPath,
 #   DWORD       dwFileAttributes,
@@ -179,8 +198,8 @@ def hook_SHGetSpecialFolderPathW(ql, address, params):
             try:
                 os.makedirs(path_emulated, 0o755)
                 ql.dprint(D_INFO, "[!] os.makedirs completed")
-            except:
-                ql.dprint(D_INFO, "[!] os.makedirs fail")    
+            except OSError:
+                ql.dprint(D_INFO, "[!] os.makedirs fail")
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return 1

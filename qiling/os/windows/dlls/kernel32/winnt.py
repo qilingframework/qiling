@@ -6,6 +6,7 @@
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 
+
 # LONG InterlockedExchange(
 #  LONG volatile *Target,
 #  LONG          Value
@@ -33,6 +34,7 @@ def hook_InterlockedIncrement(ql, address, params):
     val += 1 & (2 ** 32)  # increment and overflow back to 0 if applicable
     ql.mem.write(params['Target'], val.to_bytes(length=4, byteorder='little'))
     return val
+
 
 # LONG InterlockedDecrement(
 #  LONG volatile *Target,
