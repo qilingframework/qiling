@@ -19,7 +19,7 @@ TARGET = arm_hello arm_hello_static \
             x86_hello x86_hello_static \
             x8664_hello x8664_hello_static \
             patch_test.bin \
-            arm_sleep_hello arm_sleep_hello_static
+            arm_sleep_hello arm64_sleep_hello
 
 all : $(TARGET)
 
@@ -39,14 +39,14 @@ arm_hello_static: hello.c
 arm_sleep_hello: sleep_hello.c
 	arm-linux-gnueabihf-gcc -Wall -O2 -s $< -o $@
 
-arm_sleep_hello_static: sleep_hello.c
-	arm-linux-gnueabihf-gcc -Wall -O2 -s -static $< -o $@
-
 arm64_hello: hello.c
 	aarch64-linux-gnu-gcc -Wall -O2 -s $< -o $@
 
 arm64_hello_static: hello.c
 	aarch64-linux-gnu-gcc -Wall -O2 -s -static $< -o $@
+
+arm64_sleep_hello: sleep_hello.c
+	aarch64-linux-gnu-gcc -Wall -O2 -s $< -o $@
 
 # not included in default targets because requires the Android NDK to be installed.
 # add <NDK>/toolchains/llvm/prebuilt/linux-x86_64/bin/ to your path
