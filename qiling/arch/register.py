@@ -62,8 +62,16 @@ class QlRegisterManager():
             self.ql.uc.msr_write(msr, addr)
 
 
+    def context_save(self):
+        return self.ql.uc.context_save()
+
+
+    def context_restore(self, saved_context):
+        self.ql.uc.context_restore(saved_context)
+
+
     # ql.reg.store - store all register
-    def store(self):
+    def save(self):
         reg_dict = {}
         for reg in self.ql.reg.table:
             reg_v = self.read(reg)
