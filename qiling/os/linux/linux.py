@@ -74,9 +74,6 @@ class QlOsLinux(QlOsPosix):
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point
 
-        if  self.ql.entry_point is not None:
-            self.ql.loader.elf_entry = self.ql.entry_point   
-
         try:
             if self.ql.shellcoder:
                 self.ql.emu_start(self.entry_point, (self.entry_point + len(self.ql.shellcoder)), self.ql.timeout, self.ql.count)

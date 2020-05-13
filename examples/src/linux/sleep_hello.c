@@ -12,8 +12,8 @@ void func_hello()
 
 int main(int argc, const char **argv)
 {
-    printf("sleep 60 seconds...\n");
-    sleep(60);
+    printf("sleep 3600 seconds...\n");
+    sleep(3600);
     printf("wake up.\n");
 
     func_hello();

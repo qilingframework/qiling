@@ -60,6 +60,12 @@ class ELFTest(unittest.TestCase):
         ql.run()
         del ql
 
+    def test_elf_partial_linux_x8664(self): 
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello"], "../examples/rootfs/x8664_linux" , output= "default")
+        X64BASE = int(ql.profile.get("OS64", "load_address"),16)
+        begin_point = X64BASE + 0x109e
+        end_point = X64BASE + 0x10bc
+        ql.run(begin = begin_point, end = end_point)
 
     def test_elf_linux_x8664(self):
         def my_puts(ql):
