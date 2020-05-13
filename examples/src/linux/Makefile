@@ -18,7 +18,8 @@ TARGET = arm_hello arm_hello_static \
             mips32el_hello mips32el_hello_static \
             x86_hello x86_hello_static \
             x8664_hello x8664_hello_static \
-            patch_test.bin
+            patch_test.bin \
+            arm_sleep_hello arm_sleep_hello_static
 
 all : $(TARGET)
 
@@ -33,6 +34,12 @@ arm_hello: hello.c
 	arm-linux-gnueabihf-gcc -Wall -O2 -s $< -o $@
 
 arm_hello_static: hello.c
+	arm-linux-gnueabihf-gcc -Wall -O2 -s -static $< -o $@
+
+arm_sleep_hello: sleep_hello.c
+	arm-linux-gnueabihf-gcc -Wall -O2 -s $< -o $@
+
+arm_sleep_hello_static: sleep_hello.c
 	arm-linux-gnueabihf-gcc -Wall -O2 -s -static $< -o $@
 
 arm64_hello: hello.c
