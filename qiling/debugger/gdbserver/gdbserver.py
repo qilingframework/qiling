@@ -68,7 +68,7 @@ class GDBSERVERsession(object):
             # must always be escaped. Responses sent by the stub must also escape 0x2a (ASCII ‘*’), 
             # so that it is not interpreted as the start of a run-length encoded sequence (described next).
 
-            if a in (42,35,36,125):
+            if a in (42,35,36, 125):
                 a = a ^ 0x20
                 a = (str(hex(a)[2:]))
                 a = incomplete_hex_check(a)

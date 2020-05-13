@@ -274,22 +274,22 @@ class QlLoaderPE(QlLoader, Process):
         self.sizeOfStackReserve = 0
 
         if self.ql.archtype== QL_ARCH.X86:
-            self.stack_address = int(self.ql.os.profile.get("OS32", "stack_address"),16)
-            self.stack_size = int(self.ql.os.profile.get("OS32", "stack_size"),16)            
-            self.image_address = int(self.ql.os.profile.get("OS32", "image_address"),16)
-            self.dll_address = int(self.ql.os.profile.get("OS32", "dll_address"),16)
-            self.entry_point = int(self.ql.os.profile.get("OS32", "entry_point"),16)
-            self.ql.os.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"),16)
-            self.ql.os.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"),16)            
+            self.stack_address = int(self.ql.os.profile.get("OS32", "stack_address"), 16)
+            self.stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)            
+            self.image_address = int(self.ql.os.profile.get("OS32", "image_address"), 16)
+            self.dll_address = int(self.ql.os.profile.get("OS32", "dll_address"), 16)
+            self.entry_point = int(self.ql.os.profile.get("OS32", "entry_point"), 16)
+            self.ql.os.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"), 16)
+            self.ql.os.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"), 16)            
             self.structure_last_addr = FS_SEGMENT_ADDR     
         elif self.ql.archtype== QL_ARCH.X8664:
-            self.stack_address = int(self.ql.os.profile.get("OS64", "stack_address"),16)
-            self.stack_size = int(self.ql.os.profile.get("OS64", "stack_size"),16)
-            self.image_address = int(self.ql.os.profile.get("OS64", "image_address"),16)
-            self.dll_address = int(self.ql.os.profile.get("OS64", "dll_address"),16)
-            self.entry_point = int(self.ql.os.profile.get("OS64", "entry_point"),16)
-            self.ql.os.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"),16)
-            self.ql.os.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"),16) 
+            self.stack_address = int(self.ql.os.profile.get("OS64", "stack_address"), 16)
+            self.stack_size = int(self.ql.os.profile.get("OS64", "stack_size"), 16)
+            self.image_address = int(self.ql.os.profile.get("OS64", "image_address"), 16)
+            self.dll_address = int(self.ql.os.profile.get("OS64", "dll_address"), 16)
+            self.entry_point = int(self.ql.os.profile.get("OS64", "entry_point"), 16)
+            self.ql.os.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"), 16)
+            self.ql.os.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"), 16) 
             self.structure_last_addr = GS_SEGMENT_ADDR
               
         self.dlls = {}

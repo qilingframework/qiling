@@ -62,22 +62,22 @@ class QlLoaderPE_UEFI(QlLoader):
         self.tpl = 4 # TPL_APPLICATION
         self.user_defined_api = self.ql.os.user_defined_api
         if self.ql.archtype == QL_ARCH.X8664:
-            self.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"),16)
-            self.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"),16)       
+            self.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"), 16)
+            self.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"), 16)       
         elif self.ql.archtype == QL_ARCH.X86:
-            self.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"),16)
-            self.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"),16)
+            self.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"), 16)
+            self.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"), 16)
         self.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
         self.entry_point = 0
         self.load_address = 0  
 
         if self.ql.archtype == QL_ARCH.X8664:
-            self.stack_address = int(self.ql.os.profile.get("OS64", "stack_address"),16)
-            self.stack_size = int(self.ql.os.profile.get("OS64", "stack_size"),16)
+            self.stack_address = int(self.ql.os.profile.get("OS64", "stack_address"), 16)
+            self.stack_size = int(self.ql.os.profile.get("OS64", "stack_size"), 16)
             
         elif self.ql.archtype == QL_ARCH.X86:        
-            self.stack_address = int(self.ql.os.profile.get("OS32", "stack_address"),16)
-            self.stack_size = int(self.ql.os.profile.get("OS32", "stack_size"),16)     
+            self.stack_address = int(self.ql.os.profile.get("OS32", "stack_address"), 16)
+            self.stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)     
 
         # set stack pointer
         self.ql.nprint("[+] Initiate stack address at 0x%x" % self.stack_address)
@@ -131,9 +131,9 @@ class QlLoaderPE_UEFI(QlLoader):
         efi_configuration_table = EFI_CONFIGURATION_TABLE()
 
         #   0x7739f24c, 0x93d7, 0x11d4, {0x9a, 0x3a, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d } \
-        efi_configuration_table.VendorGuid.Data1 = int(self.ql.os.profile.get("GUID", "data1"),16)
-        efi_configuration_table.VendorGuid.Data2 = int(self.ql.os.profile.get("GUID", "data2"),16)
-        efi_configuration_table.VendorGuid.Data3 = int(self.ql.os.profile.get("GUID", "data3"),16)
+        efi_configuration_table.VendorGuid.Data1 = int(self.ql.os.profile.get("GUID", "data1"), 16)
+        efi_configuration_table.VendorGuid.Data2 = int(self.ql.os.profile.get("GUID", "data2"), 16)
+        efi_configuration_table.VendorGuid.Data3 = int(self.ql.os.profile.get("GUID", "data3"), 16)
         
         data4 = ast.literal_eval(self.ql.os.profile.get("GUID", "data4"))
         datalist = 0

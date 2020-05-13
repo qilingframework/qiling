@@ -345,11 +345,11 @@ class QlLoaderELF(QlLoader, ELFParse):
               
     def run(self):
         if self.ql.archbit == 32:
-            stack_address = int(self.ql.os.ql.os.profile.get("OS32", "stack_address"),16)
-            stack_size = int(self.ql.os.profile.get("OS32", "stack_size"),16)
+            stack_address = int(self.ql.os.ql.os.profile.get("OS32", "stack_address"), 16)
+            stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)
         elif self.ql.archbit == 64:
-            stack_address = int(self.ql.os.profile.get("OS64", "stack_address"),16)
-            stack_size = int(self.ql.os.profile.get("OS64", "stack_size"),16)
+            stack_address = int(self.ql.os.profile.get("OS64", "stack_address"), 16)
+            stack_size = int(self.ql.os.profile.get("OS64", "stack_size"), 16)
 
         if self.ql.shellcoder:
             self.ql.mem.map(self.ql.os.entry_point, self.ql.os.shellcoder_ram_size, info="[shellcode_stack]")
@@ -425,9 +425,9 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         if load_address <= 0:
             if self.ql.archbit == 64:
-                load_address = int(self.ql.os.profile.get("OS64", "load_address"),16)
+                load_address = int(self.ql.os.profile.get("OS64", "load_address"), 16)
             else:
-                load_address = int(self.ql.os.profile.get("OS32", "load_address"),16)
+                load_address = int(self.ql.os.profile.get("OS32", "load_address"), 16)
 
         elfhead = super().parse_header()
 
@@ -493,9 +493,9 @@ class QlLoaderELF(QlLoader, ELFParse):
             self.ql.dprint(D_INFO, "[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
 
             if self.ql.archbit == 64:
-                self.interp_address = int(self.ql.os.profile.get("OS64", "interp_address"),16)
+                self.interp_address = int(self.ql.os.profile.get("OS64", "interp_address"), 16)
             elif self.ql.archbit == 32:
-                self.interp_address = int(self.ql.os.profile.get("OS32", "interp_address"),16)
+                self.interp_address = int(self.ql.os.profile.get("OS32", "interp_address"), 16)
 
             self.ql.dprint(D_INFO, "[+] interp_address is : 0x%x" % (self.interp_address))
             self.ql.mem.map(self.interp_address, int(interp_mem_size), info=os.path.abspath(interp_path))
@@ -507,9 +507,9 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         # Set MMAP addr
         if self.ql.archbit == 64:
-            self.mmap_address = int(self.ql.os.profile.get("OS64", "mmap_address"),16)
+            self.mmap_address = int(self.ql.os.profile.get("OS64", "mmap_address"), 16)
         else:
-            self.mmap_address = int(self.ql.os.profile.get("OS32", "mmap_address"),16)
+            self.mmap_address = int(self.ql.os.profile.get("OS32", "mmap_address"), 16)
 
         self.ql.dprint(D_INFO, "[+] mmap_address is : 0x%x" % (self.mmap_address))
 

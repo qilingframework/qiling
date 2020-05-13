@@ -110,8 +110,8 @@ class QlLoaderMACHO(QlLoader):
         self.stack_sp = stack_address + stack_size
         self.macho_file     = MachoParser(self.ql, self.ql.path)
         self.loading_file   = self.macho_file
-        self.slide          = int(self.profile.get("LOADER", "slide"),16)
-        self.dyld_slide     = int(self.profile.get("LOADER", "dyld_slide"),16)
+        self.slide          = int(self.profile.get("LOADER", "slide"), 16)
+        self.dyld_slide     = int(self.profile.get("LOADER", "dyld_slide"), 16)
         self.string_align   = 8
         self.ptr_align      = 8
         self.binary_entry   = 0x0
@@ -127,7 +127,7 @@ class QlLoaderMACHO(QlLoader):
         self.ql.os.macho_task.min_offset = page_align_end(self.vm_end_addr, PAGE_SIZE)
 
     def loadMacho(self, depth=0, isdyld=False):
-        mmap_address   = int(self.profile.get("OS64", "mmap_address"),16)
+        mmap_address   = int(self.profile.get("OS64", "mmap_address"), 16)
 
         # MAX load depth 
         if depth > 5:
