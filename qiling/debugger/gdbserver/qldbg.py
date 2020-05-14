@@ -36,6 +36,12 @@ class Qldbg(object):
         Modified this function for qiling.gdbserver by kabeor from https://github.com/iGio90/uDdbg
         """
         try:
+            if self.ql.archtype == QL_ARCH.ARM:
+                mode = self.ql.arch.check_thumb()
+                if mode == UC_MODE_THUMB:
+                    address += 1
+                    size = 2
+
             self.mapping.append([hex(address), size])
             self.current_address = address
 
