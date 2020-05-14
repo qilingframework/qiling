@@ -193,7 +193,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.__enable_bin_patch()
 
         # emulate the binary
-        self.os.run()     
+        self.os.run()
 
         # resume with debugger
         if self.debugger is not None:

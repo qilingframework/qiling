@@ -43,7 +43,7 @@ class Qldbg(object):
                     address += 1
                     size = 2
 
-            self.mapping.append([hex(address), size])
+            self.mapping.append([(hex(address)), size])
             self.current_address = address
             hit_soft_bp = False
 
@@ -108,9 +108,10 @@ class Qldbg(object):
                 map_list = self.mapping
                 for maps in map_list:
                     map_address = int(maps[0], 16)
+                    # FIXME: should be 0x1000? use opcode size for now.
                     map_len = maps[1]
 
-                    if map_address and self.ql.mem.is_mapped(map_address,map_len) == True:
+                    if map_address and self.ql.mem.is_mapped(map_address, map_len) == True:
                         self.entry_context['memory'][map_address] = bytes(self.ql.mem.read(map_address, map_len))
 
                 for r in self.ql.reg.table:
