@@ -187,12 +187,12 @@ class LdrDataTableEntry:
 
         full_dll_name = full_dll_name.encode("utf-16le")
         self.FullDllName = {'Length': len(full_dll_name), 'MaximumLength': len(full_dll_name) + 2}
-        self.FullDllName['BufferPtr'] = self.ql.os.heap.mem_alloc(self.FullDllName['MaximumLength'])
+        self.FullDllName['BufferPtr'] = self.ql.os.heap.alloc(self.FullDllName['MaximumLength'])
         ql.mem.write(self.FullDllName['BufferPtr'], full_dll_name + b"\x00\x00")
 
         base_dll_name = base_dll_name.encode("utf-16le")
         self.BaseDllName = {'Length': len(base_dll_name), 'MaximumLength': len(base_dll_name) + 2}
-        self.BaseDllName['BufferPtr'] = self.ql.os.heap.mem_alloc(self.BaseDllName['MaximumLength'])
+        self.BaseDllName['BufferPtr'] = self.ql.os.heap.alloc(self.BaseDllName['MaximumLength'])
         ql.mem.write(self.BaseDllName['BufferPtr'], base_dll_name + b"\x00\x00")
 
         self.Flags = flags
@@ -363,7 +363,7 @@ class Sid:
             "SubAuthority": perm.to_bytes(length=ql.pointersize, byteorder="little")
         }
         values = b"".join(self.struct.values())
-        self.addr = ql.os.heap.mem_alloc(len(values))
+        self.addr = ql.os.heap.alloc(len(values))
         ql.mem.write(self.addr, values)
 
 

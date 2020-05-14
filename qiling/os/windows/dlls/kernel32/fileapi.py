@@ -89,7 +89,7 @@ def hook_ReadFile(ql, address, params):
     lpNumberOfBytesRead = params["lpNumberOfBytesRead"]
     lpOverlapped = params["lpOverlapped"]
     if hFile == STD_INPUT_HANDLE:
-        if ql.automatize_input:
+        if ql.os.automatize_input:
             # TODO maybe insert a good random generation input
             s = (b"A" * (nNumberOfBytesToRead - 1)) + b"\x00"
         else:
@@ -134,6 +134,7 @@ def hook_WriteFile(ql, address, params):
     if hFile == STD_OUTPUT_HANDLE:
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
+        string_appearance(ql, s.decode())
         ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
     else:
         f = ql.os.handle_manager.get(hFile)
@@ -236,7 +237,7 @@ def hook_CreateFileW(ql, address, params):
     "lpBuffer": POINTER
 })
 def hook_GetTempPathW(ql, address, params):
-    temp = (ql.os.profile["PATH"]["temp"] + "\\\x00").encode('utf-16le')
+    temp = (ql.os.windir + "Temp" + "\\\x00").encode('utf-16le')
     dest = params["lpBuffer"]
     temp_path = os.path.join(ql.rootfs, "Windows", "Temp")
     if not os.path.exists(temp_path):
@@ -287,7 +288,7 @@ def hook_GetShortPathNameW(ql, address, params):
 #   DWORD   nFileSystemNameSize
 # );
 @winapi(cc=STDCALL, params={
-    "lpRootPathName": POINTER,
+    "lpRootPathName": WSTRING,
     "lpVolumeNameBuffer": POINTER,
     "nVolumeNameSize": DWORD,
     "lpVolumeSerialNumber": POINTER,
@@ -297,9 +298,8 @@ def hook_GetShortPathNameW(ql, address, params):
     "nFileSystemNameSize": DWORD
 })
 def hook_GetVolumeInformationW(ql, address, params):
-    root_pt = params["lpRootPathName"]
-    if root_pt != 0:
-        root = read_wstring(ql, root_pt)
+    root = params["lpRootPathName"]
+    if root != 0:
         pt_volume_name = params["lpVolumeNameBuffer"]
         if pt_volume_name != 0:
             # TODO implement
@@ -336,10 +336,9 @@ def hook_GetVolumeInformationW(ql, address, params):
     "lpRootPathName": POINTER
 })
 def hook_GetDriveTypeW(ql, address, params):
-    pointer = params["lpRootPathName"]
-    if pointer != 0:
-        path = read_wstring(ql, pointer)
-        if path == ql.os.profile["VOLUME"]["PATH"]:
+    path = params["lpRootPathName"]
+    if path != 0:
+        if path == ql.os.profile["PATH"]["systemdrive"]:
             return DRIVE_FIXED
         # TODO add configuration for drives
     else:
@@ -363,7 +362,7 @@ def hook_GetDriveTypeW(ql, address, params):
 })
 def hook_GetDiskFreeSpaceW(ql, address, params):
     path = params["lpRootPathName"]
-    if path == ql.os.profile["VOLUME"]["PATH"]:
+    if path == ql.os.profile["PATH"]["systemdrive"]:
         pt_sectors = params["lpSectorsPerCluster"]
         pt_bytes = params["lpBytesPerSector"]
         pt_free_clust = params["lpNumberOfFreeClusters"]

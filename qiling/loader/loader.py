@@ -6,6 +6,7 @@ import pefile
 from qiling.const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
 from qiling.exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 
-class QlLoader:
+class QlLoader():
     def __init__(self, ql):
-        self.ql = ql
+        self.ql     = ql
+        self.env    = self.ql.env

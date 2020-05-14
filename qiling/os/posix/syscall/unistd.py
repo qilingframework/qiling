@@ -14,7 +14,7 @@ from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 
 def ql_syscall_exit(ql, exit_code, *args, **kw):
-    ql.exit_code = exit_code
+    ql.os.exit_code = exit_code
 
     ql.nprint("exit(%u) = %u" % (exit_code, exit_code))
 
@@ -25,9 +25,9 @@ def ql_syscall_exit(ql, exit_code, *args, **kw):
 
 
 def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
-    ql.exit_code = exit_code
+    ql.os.exit_code = exit_code
 
-    ql.nprint("exit_group(%u)" % ql.exit_code)
+    ql.nprint("exit_group(%u)" % ql.os.exit_code)
 
     if ql.os.child_processes == True:
         os._exit(0)
@@ -42,101 +42,70 @@ def ql_syscall_alarm(ql, alarm_seconds, *args, **kw):
 
 
 def ql_syscall_issetugid(ql, *args, **kw):
-    if ql.root == False:
-        UGID = 0
-    else:
-        UGID = 1000
+    UGID = ql.os.uid
     ql.nprint("issetugid(%i)" % UGID)
     regreturn = UGID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getuid(ql, *args, **kw):
-    if ql.root == False:
-        UID = 0
-    else:
-        UID = 1000
+    UID = ql.os.uid
     ql.nprint("getuid(%i)" % UID)
     regreturn = UID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getuid32(ql, *args, **kw):
-    if ql.root == False:
-        UID = 0
-    else:
-        UID = 1000
+    UID = ql.os.uid
     ql.nprint("getuid32(%i)" % UID)
     regreturn = UID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getgid32(ql, *args, **kw):
-    if ql.root == False:
-        GID = 0
-    else:
-        GID = 1000
+    GID = ql.os.gid
     ql.nprint("getgid32(%i)" % GID)
     regreturn = GID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_geteuid(ql, *args, **kw):
-    if ql.root == False:
-        EUID = 0
-    else:
-        EUID = 1000
+    EUID = ql.os.uid
     ql.nprint("geteuid(%i)" % EUID)
     regreturn = EUID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getegid(ql, *args, **kw):
-    if ql.root == False:
-        EGID = 0
-    else:
-        EGID = 1000
+    EGID = ql.os.gid
     ql.nprint("getegid(%i)" % EGID)
     regreturn = EGID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_getgid(ql, *args, **kw):
-    if ql.root == False:
-        GID = 0
-    else:
-        GID = 1000
+    GID = ql.os.gid
     ql.nprint("getgid(%i)" % GID)
     regreturn = GID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_setgroups(ql, gidsetsize, grouplist, *args, **kw):
-    if ql.root == False:
-        GID = 0
-    else:
-        GID = 1000
-
+    GID = ql.os.gid
     regreturn = GID
     ql.nprint("setgroups(0x%x, 0x%x) = %d" % (gidsetsize, grouplist, regreturn))
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_setgid(ql, *args, **kw):
-    if ql.root == False:
-        GID = 0
-    else:
-        GID = 1000
+    GID = ql.os.gid
     ql.nprint("setgid(%i)" % GID)
     regreturn = GID
     ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_setuid(ql, *args, **kw):
-    if ql.root == False:
-        UID = 0
-    else:
-        UID = 1000
+    UID = ql.os.uid
     ql.nprint("setuid(%i)" % UID)
     regreturn = UID
     ql.os.definesyscall_return(regreturn)
@@ -462,17 +431,18 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
     ql.nprint("execve(%s, [%s], [%s])"% (pathname, ', '.join(argv), ', '.join([key + '=' + value for key, value in env.items()])))
 
     if ql.shellcoder:
-        pass
-    else:
-        ql.os.stack_address    = 0
-        ql.argv             = argv
-        ql.env              = env
-        ql.path             = real_path
-        ql.mem.map_info     = []
-        ql.clear_ql_hooks()
-
-        ql.os.load()
-        ql.run()
+        return
+    
+    ql.os.stack_address = 0
+    ql.argv             = argv
+    ql.env              = env
+    ql.path             = real_path
+    ql.mem.map_info     = []
+    ql.clear_ql_hooks()
+    ql.uc = ql.arch.init_uc
+    ql.os.load()
+    ql.loader.run()
+    ql.run()
 
 
 def ql_syscall_dup2(ql, dup2_oldfd, dup2_newfd, *args, **kw):
@@ -531,8 +501,8 @@ def ql_syscall_pipe(ql, pipe_pipefd, *args, **kw):
         else:
             ql.os.file_des[idx1] = rd
             ql.os.file_des[idx2] = wd
-            if ql.archtype== QL_ARCH.MIPS32:
-                ql.register(UC_MIPS_REG_V1, idx2)
+            if ql.archtype== QL_ARCH.MIPS:
+                ql.reg.v1 = idx2
                 regreturn = idx1
             else:
                 ql.mem.write(pipe_pipefd, ql.pack32(idx1) + ql.pack32(idx2))

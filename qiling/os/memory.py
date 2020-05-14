@@ -51,7 +51,6 @@ class QlMemoryManager:
             self.write(addr, string_bytes)
             return None
 
-
     def add_mapinfo(self, mem_s, mem_e, mem_p, mem_info):
         tmp_map_info = []
         insert_flag = 0
@@ -128,10 +127,10 @@ class QlMemoryManager:
                     perms_sym.append("-")
             return "".join(perms_sym)
 
-        self.ql.nprint("[+] Start      End        Perm.  Path\n")
+        self.ql.nprint("[+] Start      End        Perm.  Path")
         for s, e, p, info in self.map_info:
             _p = _perms_mapping(p)
-            self.ql.nprint("[+] %08x - %08x - %s    %s\n" % (s, e, _p, info))
+            self.ql.nprint("[+] %08x - %08x - %s    %s" % (s, e, _p, info))
 
 
     def get_lib_base(self, filename):
@@ -367,7 +366,7 @@ class QlMemoryHeap:
     def _align(self, size, unit):
         return (size // unit + (1 if size % unit else 0)) * unit     
 
-    def mem_alloc(self, size):
+    def alloc(self, size):
         
         if self.ql.archbit == 32:
             size = self._align(size, 4)
@@ -399,16 +398,16 @@ class QlMemoryHeap:
             self.chunks.append(chunk)
 
         chunk.inuse = True
-        #self.ql.dprint(D_INFO,"heap.mem_alloc addresss: " + hex(chunk.address))
+        #self.ql.dprint(D_INFO,"heap.alloc addresss: " + hex(chunk.address))
         return chunk.address
 
-    def mem_size(self, addr):
+    def size(self, addr):
         for chunk in self.chunks:
             if addr == chunk.address and chunk.inuse:
                 return chunk.size
         return 0
 
-    def mem_free(self, addr):
+    def free(self, addr):
         for chunk in self.chunks:
             if addr == chunk.address and chunk.inuse:
                 chunk.inuse = False

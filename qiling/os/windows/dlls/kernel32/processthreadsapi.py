@@ -48,7 +48,7 @@ def hook_ExitProcess(ql, address, params):
 # } STARTUPINFO, *LPSTARTUPINFO;
 def GetStartupInfo(ql, address, params):
     startup_info = {
-        "cb": 0x44.to_bytes(length=4, byteorder='little'),
+        "cb": (0x34 + 4*ql.pointersize).to_bytes(length=4, byteorder='little'),
         "lpReserved": 0x0.to_bytes(length=ql.pointersize, byteorder='little'),
         "lpDesktop": 0xc3c930.to_bytes(length=ql.pointersize, byteorder='little'),
         "lpTitle": 0x0.to_bytes(length=ql.pointersize, byteorder='little'),
@@ -265,8 +265,8 @@ def hook_GetCurrentProcess(ql, address, params):
 def hook_TerminateProcess(ql, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
-    # TODO i have no idea on how to find the old ql.pe.DEFAULT_IMAGE_BASE
-    if process == 0x0:  # or process == ql.os.DEFAULT_IMAGE_BASE:
+    # TODO i have no idea on how to find the old ql.pe.image_address
+    if process == 0x0:  # or process == ql.os.image_address:
         ql.emu_stop()
         ql.os.PE_RUN = False
     ret = 1

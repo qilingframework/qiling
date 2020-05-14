@@ -31,7 +31,7 @@ if __name__ == "__main__":
     ql.run()
 
     print("\nLinux MIPS 32bit EL Shellcode")
-    ql = Qiling(shellcoder = MIPS32EL_LIN, archtype = "mips32el", ostype = "linux", output = "debug")
+    ql = Qiling(shellcoder = MIPS32EL_LIN, archtype = "mips32", ostype = "linux", output = "debug")
     ql.run()
 
     print("\nLinux X86 64bit Shellcode")
