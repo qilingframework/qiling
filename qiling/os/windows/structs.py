@@ -401,6 +401,7 @@ class Point:
         self.ql = ql
         self.x: int = x
         self.y: int = y
+        self.size = 64
 
     def write(self, addr):
         self.ql.mem.write(addr, self.x.to_bytes(length=32, byteorder="little"))
@@ -408,4 +409,40 @@ class Point:
 
     def read(self, addr):
         self.x = int.from_bytes(self.ql.mem.read(addr, 32), byteorder="little")
-        self.y = int.from_bytes(self.ql.mem.read(addr+32, 32), byteorder="little")
+        self.y = int.from_bytes(self.ql.mem.read(addr + 32, 32), byteorder="little")
+
+
+# typedef struct hostent {
+#  char  *h_name;
+#  char  **h_aliases;
+#  short h_addrtype;
+#  short h_length;
+#  char  **h_addr_list;
+# } HOSTENT, *PHOSTENT, *LPHOSTENT;
+class Hostent:
+    def __init__(self, ql, name=None, aliases=None, addr_type=None, length=None, addr_list=None):
+        self.ql = ql
+        self.name = name
+        self.aliases = aliases
+        self.addr_type = addr_type
+        self.length = length
+        self.addr_list = addr_list
+        self.size = self.ql.pointersize * 3 + 4
+
+    def write(self, addr):
+        ip_ptr = self.ql.heap.alloc(self.name)
+        ql.uc.mem.write(ip_ptr, self.name.encode())
+        ql.mem.write(addr, ip_ptr.to_bytes(length=self.ql.pointersize, byteorder='little'))
+        ql.mem.write(addr + self.ql.pointersize, self.aliases.to_bytes(length=self.ql.pointersize, byteorder='little'))
+        ql.mem.write(addr + 2 * self.ql.pointersize, self.addr_type.add.to_bytes(length=2, byteorder='little'))
+        ql.mem.write(addr + 2 * self.ql.pointersize + 2, self.length.to_bytes(length=2, byteorder='little'))
+        ql.mem.write(addr + 2 * self.ql.pointersize + 4, self.addr_list)
+
+    def read(self, addr):
+        ip_ptr = int.from_bytes(self.ql.mem.read(addr, self.ql.pointersize), byteorder="little")
+        self.name = read_cstring(self.ql, ip_ptr)
+        self.aliases = int.from_bytes(self.ql.mem.read(addr + self.ql.pointersize, self.ql.pointersize),
+                                      byteorder="little")
+        self.addr_type = int.from_bytes(self.ql.mem.read(addr + 2 * self.ql.pointersize, 2), byteorder="little")
+        self.length = int.from_bytes(self.ql.mem.read(addr + 2 * self.ql.pointersize + 2, 2), byteorder="little")
+        self.addr_list = self.ql.mem.read(addr + 2 * self.ql.pointersize + 4, self.ql.pointersize)
