@@ -22,9 +22,7 @@ HANDLE = 3
 POINTER = 3
 STRING = 4
 WSTRING = 5
-STRING_ADDR = 6
-WSTRING_ADDR = 7
-GUID = 8
+GUID = 6
 
 def _x86_get_params_by_index(ql, index):
     # index starts from 0
@@ -98,14 +96,7 @@ def set_function_params(ql, in_params, out_params):
             else:
                 content = read_cstring(ql, ptr)
                 out_params[each] = content
-        elif in_params[each] == STRING_ADDR:
-            ptr = _get_param_by_index(ql, index)
-            if ptr == 0:
-                out_params[each] = (0, 0)
 
-            else:
-                content = read_cstring(ql, ptr)
-                out_params[each] = (ptr, content)
 
         elif in_params[each] == WSTRING :
             ptr = _get_param_by_index(ql, index)
@@ -114,13 +105,7 @@ def set_function_params(ql, in_params, out_params):
             else:
                 content = read_wstring(ql, ptr)
                 out_params[each] = content
-        elif in_params[each] == WSTRING_ADDR:
-            ptr = _get_param_by_index(ql, index)
-            if ptr == 0:
-                out_params[each] = (0,0)
-            else:
-                content = read_wstring(ql, ptr)
-                out_params[each] = (ptr, content)
+
         elif in_params[each] == GUID:
             ptr = _get_param_by_index(ql, index)
             if ptr == 0:

@@ -33,10 +33,18 @@ def hook_SysAllocStringLen(ql, address, params):
 #   BSTR bstrString
 # );
 @winapi(cc=STDCALL, params={
-    "strIn": STRING_ADDR,
+    "strIn": POINTER,
 })
 def hook_SysFreeString(ql, address, params):
-    addr = params["strIn"][0]
+    addr = params["strIn"]
+    content = read_wstring(ql, addr)
+
+    params["strIn"] = content
+
     if addr != 0:
         ql.os.heap.free(addr)
     return 0
+
+# UINT SysStringLen(
+#   BSTR pbstr
+# );

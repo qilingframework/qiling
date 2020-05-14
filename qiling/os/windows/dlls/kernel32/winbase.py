@@ -231,7 +231,7 @@ def hook_lstrcpyA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
     dst = params["lpString1"]
-    ql.mem.write(dst, src.encode("utf16-le"))
+    ql.mem.write(dst, src.encode("utf-16le"))
     return dst
 
 # LPSTR lstrcatA(
@@ -239,14 +239,15 @@ def hook_lstrcpyA(ql, address, params):
 #   LPCSTR lpString2
 # );
 @winapi(cc=STDCALL, params={
-    "lpString1": STRING_ADDR,
+    "lpString1": POINTER,
     "lpString2": STRING,
 })
 def hook_lstrcatA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
-    pointer = params["lpString1"][0]
-    string_base = params["lpString1"][1]
+    pointer = params["lpString1"]
+    string_base = read_cstring(ql, pointer)
+    params["lpString1"] = string_base
     result = string_base + src + "\x00"
     ql.mem.write(pointer, result.encode())
     return pointer
@@ -257,16 +258,17 @@ def hook_lstrcatA(ql, address, params):
 #   LPCWSTR lpString2
 # );
 @winapi(cc=STDCALL, params={
-    "lpString1": WSTRING_ADDR,
+    "lpString1": POINTER,
     "lpString2": WSTRING,
 })
 def hook_lstrcatW(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
-    pointer = params["lpString1"][0]
-    string_base = params["lpString1"][1]
+    pointer = params["lpString1"]
+    string_base = read_wstring(ql, pointer)
+    params["lpString1"] = string_base
     result = string_base + src + "\x00"
-    ql.mem.write(pointer, result.encode("utf16-le"))
+    ql.mem.write(pointer, result.encode("utf-16le"))
     return pointer
 
 

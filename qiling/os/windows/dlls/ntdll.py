@@ -143,12 +143,13 @@ def hook_RtlAllocateHeap(ql, address, params):
 
 # wchar_t* wcsstr( const wchar_t* dest, const wchar_t* src );
 @winapi(cc=STDCALL, params={
-    "dest": WSTRING_ADDR,
+    "dest": POINTER,
     "src": WSTRING
 })
 def hook_wcsstr(ql, address, params):
-    dest = params["dest"][0]
-    value = params["dest"][1]
+    dest = params["dest"]
+    value = read_wstring(ql, dest)
+    params["dest"] = value
     src = params["src"]
     if src in value:
         pos = value.index(src)

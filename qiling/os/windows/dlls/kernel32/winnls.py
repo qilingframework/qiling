@@ -78,7 +78,7 @@ def hook_GetLocaleInfoA(ql, address, params):
 
     if cchData != 0:
         lplcdata = params["lpLCData"]
-        ql.mem.write(lplcdata, lctype.encode("utf16-le"))
+        ql.mem.write(lplcdata, lctype.encode("utf-16le"))
     return len(lctype)
 
 

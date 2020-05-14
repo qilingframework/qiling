@@ -540,12 +540,13 @@ def hook_DefWindowProcA(ql, address, params):
 #   LPCWSTR lpsz
 # );
 @winapi(cc=STDCALL, params={
-    "lpsz": WSTRING_ADDR
+    "lpsz": POINTER
 })
 def hook_CharNextW(ql, address, params):
     # Return next char if is different from \x00
     point = params["lpsz"][0]
-    string = params["lpsz"][1]
+    string = read_wstring(ql, point)
+    params["lpsz"] = string
     if len(string) == 0:
         return point
     else:
@@ -556,10 +557,17 @@ def hook_CharNextW(ql, address, params):
 #   LPCWSTR lpsz
 # );
 @winapi(cc=STDCALL, params={
-    "lpsz": STRING_ADDR
+    "lpsz": STRING
 })
 def hook_CharNextA(ql, address, params):
-    return hook_CharNextW.__wrapped__(ql, address, params)
+    # Return next char if is different from \x00
+    point = params["lpsz"][0]
+    string = read_cstring(ql, point)
+    params["lpsz"] = string
+    if len(string) == 0:
+        return point
+    else:
+        return point + 1
 
 
 # LPWSTR CharPrevW(
@@ -567,13 +575,18 @@ def hook_CharNextA(ql, address, params):
 #   LPCWSTR lpszCurrent
 # );
 @winapi(cc=STDCALL, params={
-    "lpszStart": WSTRING_ADDR,
+    "lpszStart": POINTER,
     "lpszCurrent": POINTER
 })
 def hook_CharPrevW(ql, address, params):
     # Return next char if is different from \x00
     current = params["lpszCurrent"]
-    start = params["lpszStart"][0]
+    strcur = read_wstring(ql, current)
+    start = params["lpszStart"]
+    strstart = read_wstring(ql,start)
+    params["lpszStart"] = strstart
+    params["lpszCurrent"] = strcur
+
     if start == current:
         return start
     return current - 1
@@ -584,11 +597,21 @@ def hook_CharPrevW(ql, address, params):
 #   LPCWSTR lpszCurrent
 # );
 @winapi(cc=STDCALL, params={
-    "lpszStart": STRING_ADDR,
+    "lpszStart": POINTER,
     "lpszCurrent": POINTER
 })
 def hook_CharPrevA(ql, address, params):
-    return hook_CharPrevW.__wrapped__(ql, address, params)
+    # Return next char if is different from \x00
+    current = params["lpszCurrent"]
+    strcur = read_cstring(ql, current)
+    start = params["lpszStart"]
+    strstart = read_cstring(ql, start)
+    params["lpszStart"] = strstart
+    params["lpszCurrent"] = strcur
+
+    if start == current:
+        return start
+    return current - 1
 
 
 # int WINAPIV wsprintfW(
