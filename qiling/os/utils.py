@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-import struct, os
+import os, struct, uuid
 from json import dumps
 
 from unicorn import *
@@ -258,3 +258,5 @@ class QLOsUtils:
             td.stop()
             td.stop_event = stop_event
         self.ql.emu_stop()
+
+

@@ -8,11 +8,10 @@ from binascii import crc32
 from qiling.const import *
 from .const import *
 from .utils import *
-from .fncc import *
 from .type64 import *
 from .shutdown import *
-from qiling.os.windows.fncc import *
-from qiling.os.windows.fncc import _get_param_by_index
+from .fncc import *
+from qiling.os.fncc import *
 
 pointer_size = 8
 
@@ -461,9 +460,9 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
         dic = ql.loader.handle_dict[handle]
     
     index = 1
-    while _get_param_by_index(ql, index) != 0:
-        GUID_ptr = _get_param_by_index(ql, index)
-        protocol_ptr = _get_param_by_index(ql, index+1)
+    while get_param_by_index(ql, index) != 0:
+        GUID_ptr = get_param_by_index(ql, index)
+        protocol_ptr = get_param_by_index(ql, index+1)
         GUID = str(read_guid(ql, GUID_ptr))
         ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
         dic[GUID] = protocol_ptr
@@ -481,9 +480,9 @@ def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
     if handle not in ql.loader.handle_dict:
         return EFI_NOT_FOUND
     index = 1
-    while _get_param_by_index(ql, index) != 0:
-        GUID_ptr = _get_param_by_index(ql, index)
-        protocol_ptr = _get_param_by_index(ql, index+1)
+    while get_param_by_index(ql, index) != 0:
+        GUID_ptr = get_param_by_index(ql, index)
+        protocol_ptr = get_param_by_index(ql, index+1)
         GUID = str(read_guid(ql, GUID_ptr))
         ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
         dic = ql.loader.handle_dict[handle]

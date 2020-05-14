@@ -114,9 +114,7 @@ class Qldbg(object):
                         self.entry_context['memory'][map_address] = bytes(self.ql.mem.read(map_address, map_len))
 
                 for r in self.ql.reg.table:
-                    try:
-                        self.entry_context['regs'][r] = self.ql.reg.read(r)
-                    except Exception as ex:
-                        pass
+                    self.entry_context['regs'][r] = self.ql.reg.read(r)
+                    
             start_addr = self.current_address
             self.ql.emu_start(start_addr, self.exit_point)

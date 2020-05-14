@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
 from qiling.exception import *
 
 # HANDLE WINAPI GetStdHandle(

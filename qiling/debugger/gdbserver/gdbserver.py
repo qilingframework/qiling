@@ -135,7 +135,7 @@ class GDBSERVERsession(object):
                         address = self.ql.reg.arch_pc + 1
                 
                 self.gdb.resume_emu(address)
-                
+
                 if self.gdb.bp_list is ([self.entry_point]):
                     self.send("W00")
                 else:

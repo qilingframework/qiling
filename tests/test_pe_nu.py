@@ -11,7 +11,7 @@ sys.path.insert(0, "..")
 
 from qiling import *
 from qiling.exception import *
-from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
 from qiling.os.windows.utils import *
 from unicorn.x86_const import *
 

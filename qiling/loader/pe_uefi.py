@@ -18,8 +18,7 @@ from qiling.os.uefi.fncc import *
 from qiling.os.uefi.bootup import *
 from qiling.os.uefi.runtime import *
 
-from qiling.os.windows.fncc import *
-from qiling.os.windows.fncc import _get_param_by_index
+from qiling.os.fncc import *
 
 import pefile
 from .loader import QlLoader
