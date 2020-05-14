@@ -8,6 +8,7 @@ from qiling.os.windows.utils import *
 from enum import IntEnum
 from qiling.os.windows.handle import *
 
+
 class TEB:
     def __init__(self, ql, base=0,
                  exception_list=0,
@@ -67,6 +68,7 @@ class TEB:
         s += self.ql.pack(self.Count_Owned_Locks)  # 0x3c
         s += self.ql.pack(self.HardErrorMode)  # 0x40
         return s
+
 
 # https://www.geoffchappell.com/studies/windows/win32/ntdll/structs/peb/index.htm
 
@@ -231,12 +233,12 @@ class LdrDataTableEntry:
         s += self.ql.pack(self.SizeOfImage)  # 0x20
         s += self.ql.pack16(self.FullDllName['Length'])  # 0x24
         s += self.ql.pack16(self.FullDllName['MaximumLength'])  # 0x26
-        if self.ql.archtype== QL_ARCH.X8664:
+        if self.ql.archtype == QL_ARCH.X8664:
             s += self.ql.pack32(0)
         s += self.ql.pack(self.FullDllName['BufferPtr'])  # 0x28
         s += self.ql.pack16(self.BaseDllName['Length'])
         s += self.ql.pack16(self.BaseDllName['MaximumLength'])
-        if self.ql.archtype== QL_ARCH.X8664:
+        if self.ql.archtype == QL_ARCH.X8664:
             s += self.ql.pack32(0)
         s += self.ql.pack(self.BaseDllName['BufferPtr'])
         s += self.ql.pack(self.Flags)
@@ -257,6 +259,7 @@ class LdrDataTableEntry:
         s += self.ql.pack(self.LoadTime)
 
         return s
+
 
 class Token:
     class TokenInformationClass(IntEnum):
@@ -325,7 +328,6 @@ class Token:
         self.ql.os.handle_manager.append(handle)
         self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = self.ql.pack(sid.addr)
 
-
     def get(self, value):
         res = self.struct[value]
         if res is None:
@@ -350,7 +352,7 @@ class Sid:
 
     # Identf Authority
     # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/c6ce4275-3d90-4890-ab3a-514745e4637e
-    def __init__(self, ql, subs_count = 1, subs= None):
+    def __init__(self, ql, subs_count=1, subs=None):
         # TODO find better documentation
         if subs is None:
             perm = ql.os.profile["SYSTEM"]["permission"]
@@ -388,3 +390,22 @@ class Mutex:
 
     def isFree(self):
         return not self.locked
+
+
+# typedef struct tagPOINT {
+#   LONG x;
+#   LONG y;
+# } POINT, *PPOINT;
+class Point:
+    def __init__(self, ql, x=None, y=None):
+        self.ql = ql
+        self.x: int = x
+        self.y: int = y
+
+    def write(self, addr):
+        self.ql.mem.write(addr, self.x.to_bytes(length=32, byteorder="little"))
+        self.ql.mem.write(addr + 32, self.y.to_bytes(length=32, byteorder="little"))
+
+    def read(self, addr):
+        self.x = int.from_bytes(self.ql.mem.read(addr, 32), byteorder="little")
+        self.y = int.from_bytes(self.ql.mem.read(addr+32, 32), byteorder="little")

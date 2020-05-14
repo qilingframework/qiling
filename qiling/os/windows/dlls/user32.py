@@ -9,6 +9,7 @@ from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.const import *
 from qiling.const import *
+from qiling.os.windows.structs import *
 
 
 # INT_PTR DialogBoxParamA(
@@ -583,7 +584,7 @@ def hook_CharPrevW(ql, address, params):
     current = params["lpszCurrent"]
     strcur = read_wstring(ql, current)
     start = params["lpszStart"]
-    strstart = read_wstring(ql,start)
+    strstart = read_wstring(ql, start)
     params["lpszStart"] = strstart
     params["lpszCurrent"] = strcur
 
@@ -716,13 +717,13 @@ def hook_GetKeyboardType(ql, address, params):
 })
 def hook_MessageBoxW(ql, address, params):
     # We always return a positive result
-    type = params["uType"]
-    if type == MB_OK or type == MB_OKCANCEL:
+    type_box = params["uType"]
+    if type_box == MB_OK or type_box == MB_OKCANCEL:
         return IDOK
-    if type == MB_YESNO or type == MB_YESNOCANCEL:
+    if type_box == MB_YESNO or type_box == MB_YESNOCANCEL:
         return IDYES
     else:
-        ql.dprint(D_INFO, type)
+        ql.dprint(D_INFO, type_box)
         raise QlErrorNotImplemented("[!] API not implemented")
 
 
@@ -740,3 +741,31 @@ def hook_MessageBoxW(ql, address, params):
 })
 def hook_MessageBoxA(ql, address, params):
     return hook_MessageBoxW.__wrapped__(ql, address, params)
+
+
+# BOOL GetCursorPos(
+#   LPPOINT lpPoint
+# );
+@winapi(cc=STDCALL, params={
+    "lpPoint": POINTER
+})
+def hook_GetCursorPos(ql, address, params):
+    # TODO maybe we can add it to the profile too
+    p = Point(ql, 50, 50)
+    dest = params["lpPoint"]
+    p.write(dest)
+    return 0
+
+
+# HANDLE CreateActCtxW(
+#   PCACTCTXW pActCtx
+# );
+@winapi(cc=STDCALL, params={
+    "pActCtx": POINTER
+})
+def hook_CreateActCtxW(ql, address, params):
+    # TODo maybe is necessary to really create this
+    addr = params["pActCtx"]
+    handle = Handle(name="actctx")
+    ql.os.handle_manager.append(handle)
+    return handle.id

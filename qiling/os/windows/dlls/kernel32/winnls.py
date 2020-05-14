@@ -187,3 +187,30 @@ def hook_GetSystemDefaultUILanguage(ql, address, params):
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
     ql.dprint(D_RPRT, "[=] Sample is checking system language!")
     return ql.os.profile.getint("SYSTEM", "language")
+
+
+# int CompareStringA(
+#   LCID   Locale,
+#   DWORD  dwCmpFlags,
+#   PCNZCH lpString1,
+#   int    cchCount1,
+#   PCNZCH lpString2,
+#   int    cchCount2
+# );
+@winapi(cc=STDCALL, params={
+    "Locale": POINTER,
+    "dwCmpFlags": DWORD,
+    "lpString1": STRING,
+    "cchCount1": INT,
+    "lpString2": STRING,
+    "cchCount2": INT
+})
+def hook_CompareStringA(ql, address, params):
+    st1 = params["lpString1"]
+    st2 = params["lpString2"]
+    if st1 < st2:
+        return CSTR_LESS_THAN
+    elif st1 == st2:
+        return CSTR_EQUAL
+    else:
+        return CSTR_GREATER_THAN
