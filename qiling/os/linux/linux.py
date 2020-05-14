@@ -19,7 +19,7 @@ class QlOsLinux(QlOsPosix):
         self.ql = ql
         self.thread_class = None
         self.futexm = None
-        self.fh_tmp = []
+        self.function_hook_tmp = []
         self.fh = None
         self.load()
 
@@ -65,11 +65,11 @@ class QlOsLinux(QlOsPosix):
         return self.load_syscall(intno)
 
     def add_function_hook(self, fn, cb, userdata = None):
-        self.fh_tmp.append((fn, cb, userdata))
+        self.function_hook_tmp.append((fn, cb, userdata))
 
     def run(self):
-        for fn, cb, userdata in self.fh_tmp:
-            self.fh.add_function_hook(fn, cb, userdata)
+        for function, callback, userdata in self.ql.os.function_hook_tmp:
+            self.ql.os.function_hook.add_function_hook(function, callback, userdata)
 
         if self.ql.exit_point is not None:
             self.exit_point = self.ql.exit_point

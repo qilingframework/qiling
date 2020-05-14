@@ -75,8 +75,8 @@ class QLCoreUtils(object):
         if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             self.nprint(*args, **kw)
 
-    def add_fs_mapper(self, fm, to):
-        self.fs_mapper.append([fm, to])
+    def add_fs_mapper(self, host_src, ql_dest):
+        self.fs_mapper.append([host_src, ql_dest])
 
     # push to stack bottom, and update stack register
     def stack_push(self, data):

@@ -614,6 +614,5 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.ql.os.elf_entry = self.elf_entry = load_address + elfhead['e_entry']
         self.new_stack = new_stack
         self.load_address = load_address
-        self.ql.os.fh = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)
-
+        self.ql.os.function_hook = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)
         

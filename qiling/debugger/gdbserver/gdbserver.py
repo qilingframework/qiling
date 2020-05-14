@@ -6,6 +6,8 @@
 # gdbserver --remote-debug 0.0.0.0:9999 /path/to binary
 # documentation: according to https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html#Remote-Protocol
 
+from unicorn import *
+
 import struct, os, re, socket
 from binascii import unhexlify
 
@@ -124,7 +126,14 @@ class GDBSERVERsession(object):
 
 
             def handle_c(subcmd):
-                self.gdb.resume_emu(self.ql.reg.arch_pc)
+                if self.ql.archtype == QL_ARCH.ARM:
+                    mode = self.ql.arch.check_thumb()
+                    if mode == UC_MODE_THUMB:
+                        address = self.ql.reg.arch_pc + 1
+                    else:
+                        address = self.ql.reg.arch_pc
+                
+                self.gdb.resume_emu(address)
                 
                 if self.gdb.bp_list is ([self.entry_point]):
                     self.send("W00")

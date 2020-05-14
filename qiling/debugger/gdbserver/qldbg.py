@@ -3,6 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+from unicorn import *
 from qiling.const import *
 
 class Qldbg(object):
@@ -44,7 +45,6 @@ class Qldbg(object):
 
             self.mapping.append([hex(address), size])
             self.current_address = address
-
             hit_soft_bp = False
 
             if self.soft_bp:
@@ -52,23 +52,29 @@ class Qldbg(object):
                 hit_soft_bp = True
 
             if address != self.last_bp and address in self.bp_list or self.has_soft_bp:
+
                 if self.skip_bp_count > 0:
                     self.skip_bp_count -= 1
                 else:
                     self.breakpoint_count += 1
-                    ql.os.stop()
-
+                    self.ql.os.stop()
                     self.last_bp = address
-                    self.ql.nprint("gdb> Breakpoint: 0x%x" % address)
+                    self.ql.nprint("gdb> Breakpoint found, stop at address: 0x%x" % address)      
+
             elif address == self.last_bp:
-                self.last_bp = 0
+                self.last_bp = 0x0
+            
             self.has_soft_bp = hit_soft_bp
+            
             if self.current_address + size == self.exit_point:
                 self.ql.dprint(D_INFO, "gdb> emulation entrypoint at 0x%x" % (self.entry_point))
                 self.ql.dprint(D_INFO, "gdb> emulation exitpoint at 0x%x" % (self.exit_point))
+        
         except KeyboardInterrupt as ex:
             self.ql.nprint("gdb> Paused at 0x%x, instruction size = %u" % (address, size))
-            ql.os.stop()
+            self.ql.os.stop()
+        except:
+            raise    
 
 
     def bp_insert(self, addr):
