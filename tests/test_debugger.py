@@ -9,7 +9,7 @@ sys.path.append("..")
 from qiling import *
 from qiling.exception import *
 
-DELAY = 0.5
+DELAY = 1
 
 def checksum(data):
     checksum = 0

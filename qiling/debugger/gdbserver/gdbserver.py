@@ -126,7 +126,6 @@ class GDBSERVERsession(object):
 
 
             def handle_c(subcmd):
-                
                 address = self.ql.reg.arch_pc
 
                 if self.ql.archtype == QL_ARCH.ARM:
