@@ -641,7 +641,6 @@ class GDBSERVERsession(object):
 
                 elif subcmd.startswith('Kill'):
                     self.send('OK')
-                    exit(1)
 
                 elif subcmd.startswith('Cont'):
                     self.ql.dprint(D_INFO, "gdb> Cont command received: %s" % subcmd)
