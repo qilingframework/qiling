@@ -34,7 +34,7 @@ def hook_SetUnhandledExceptionFilter(ql, address, params):
 # _Post_equals_last_error_ DWORD GetLastError();
 @winapi(cc=STDCALL, params={})
 def hook_GetLastError(ql, address, params):
-    return ql.os.last_error 
+    return ql.os.last_error
 
 
 # void SetLastError(
@@ -44,7 +44,7 @@ def hook_GetLastError(ql, address, params):
     "dwErrCode": UINT
 })
 def hook_SetLastError(ql, address, params):
-    ql.os.last_error  = params['dwErrCode']
+    ql.os.last_error = params['dwErrCode']
     return 0
 
 

@@ -48,9 +48,10 @@ def hook_OutputDebugStringW(ql, address, params):
     ql.nprint('OutputDebugStringW: "%s"' % (string.encode()))
     return 0
 
-#void OutputDebugStringA(
+
+# void OutputDebugStringA(
 #  LPCSTR lpOutputString
-#);
+# );
 @winapi(cc=STDCALL, params={
     "lpOutputString": STRING
 })

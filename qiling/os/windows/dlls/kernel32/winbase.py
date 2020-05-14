@@ -234,6 +234,7 @@ def hook_lstrcpyA(ql, address, params):
     ql.mem.write(dst, src.encode("utf-16le"))
     return dst
 
+
 # LPSTR lstrcatA(
 #   LPSTR  lpString1,
 #   LPCSTR lpString2

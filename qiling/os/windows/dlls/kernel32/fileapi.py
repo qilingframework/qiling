@@ -3,15 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct, time, os
+import os
 
-from qiling.os.windows.const import *
-from qiling.os.const import *
-from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
-from qiling.os.windows.thread import *
-from qiling.os.windows.handle import *
 from qiling.exception import *
+from qiling.os.windows.const import *
+from qiling.os.windows.fncc import *
+from qiling.os.windows.handle import *
+from qiling.os.windows.thread import *
+
 
 # DWORD GetFileType(
 #   HANDLE hFile
@@ -140,7 +139,7 @@ def hook_WriteFile(ql, address, params):
         f = ql.os.handle_manager.get(hFile)
         if f is None:
             # Invalid handle
-            ql.os.last_error  = ERROR_INVALID_HANDLE
+            ql.os.last_error = ERROR_INVALID_HANDLE
             return 0
         else:
             f = f.obj
@@ -303,7 +302,7 @@ def hook_GetVolumeInformationW(ql, address, params):
         pt_volume_name = params["lpVolumeNameBuffer"]
         if pt_volume_name != 0:
             # TODO implement
-            volume_name = ("AAAABBBB"+"\x00").encode("utf-16le")
+            volume_name = ("AAAABBBB" + "\x00").encode("utf-16le")
 
             ql.mem.write(pt_volume_name, volume_name)
 
@@ -380,10 +379,10 @@ def hook_GetDiskFreeSpaceW(ql, address, params):
     return 0
 
 
-#BOOL CreateDirectoryA(
+# BOOL CreateDirectoryA(
 #  LPCSTR                lpPathName,
 #  LPSECURITY_ATTRIBUTES lpSecurityAttributes
-#);
+# );
 @winapi(cc=STDCALL, params={
     "lpPathName": STRING,
     "lpSecurityAttributes": POINTER
@@ -392,10 +391,11 @@ def hook_CreateDirectoryA(ql, address, params):
     try:
         target_dir = os.path.join(ql.rootfs, lpPathName.replace("\\", os.sep))
         print('TARGET_DIR = %s' % target_dir)
-        ql.os.transform_to_real_path(lpPathName) 
+        ql.os.transform_to_real_path(lpPathName)
         # Verify the directory is in ql.rootfs to ensure no path traversal has taken place
-        if os.path.commonprefix(target_dir, ql.rootfs) != ql.rootfs:
-            ql.dprint(D_INFO, 'CreateDirectoryA attempted to create dir outside of rootfs: "%s". Not creating.' % (target_dir))
+        if os.path.commonprefix([target_dir, ql.rootfs]) != ql.rootfs:
+            ql.dprint(D_INFO,
+                      'CreateDirectoryA attempted to create dir outside of rootfs: "%s". Not creating.' % target_dir)
             return 0
         else:
             os.mkdir()
@@ -406,10 +406,11 @@ def hook_CreateDirectoryA(ql, address, params):
     finally:
         return 0
 
-#DWORD GetFileSize(
+
+# DWORD GetFileSize(
 #  HANDLE  hFile,
 #  LPDWORD lpFileSizeHigh
-#);
+# );
 @winapi(cc=STDCALL, params={
     "hFile": HANDLE,
     "lpFileSizeHigh": DWORD,
@@ -418,6 +419,6 @@ def hook_GetFileSize(ql, address, params):
     try:
         handle = ql.handle_manager.get(params['hFile'].file)
         return os.path.getsize(handle.name)
-    except:
-        ql.os.last_error = ERROR_INVALID_HANDLE 
-        return 0xFFFFFFFF #INVALID_FILE_SIZE
+    except FileNotFoundError:
+        ql.os.last_error = ERROR_INVALID_HANDLE
+        return 0xFFFFFFFF  # INVALID_FILE_SIZE

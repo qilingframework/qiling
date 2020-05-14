@@ -65,37 +65,38 @@ def hook_connect(ql, address, params):
     else:
         ql.dprint(D_INFO, "[!] sockaddr sin_family unhandled variant")
         return 0
-    
+
     ql.dprint(D_INFO,
-        f"0x{params['name']:08x}: sockaddr_in{6 if sin_family == 0x17 else ''}",
-        f"{{sin_family=0x{sin_family:02x}, sin_port={sin_port}, sin_addr={sin_addr}}}",
-        sep="",
-    )
+              f"0x{params['name']:08x}: sockaddr_in{6 if sin_family == 0x17 else ''}",
+              f"{{sin_family=0x{sin_family:02x}, sin_port={sin_port}, sin_addr={sin_addr}}}",
+              sep="",
+              )
     return 0
 
-#hostent * gethostbyname(
+
+# hostent * gethostbyname(
 #  const char *name
-#);
-#typedef struct hostent {
+# );
+# typedef struct hostent {
 #  char  *h_name;
 #  char  **h_aliases;
 #  short h_addrtype;
 #  short h_length;
 #  char  **h_addr_list;
-#} HOSTENT, *PHOSTENT, *LPHOSTENT;
+# } HOSTENT, *PHOSTENT, *LPHOSTENT;
 @winapi(cc=STDCALL, params={
     "name": STRING
 })
 def hook_gethostbyname(ql, address, params):
     ip_str = ql.os.profile.getint("NETWORK", "dns_response_ip")
     ip = bytes([int(octet) for octet in ip_str.split('.')[::-1]])
-    hostnet = ql.heap.alloc(ql.pointersize*3+4)
+    hostnet = ql.heap.alloc(ql.pointersize * 3 + 4)
     ip_ptr = ql.heap.alloc(len(params['name']))
     ql.uc.mem.write(ip_ptr, params['name'].encode('latin1'))
-    
+
     ql.mem.write(hostnet, ip_ptr.to_bytes(length=ql.pointersize, byteorder='little'))
-    ql.mem.write(hostnet+ql.pointersize, (0).to_bytes(length=ql.pointersize, byteorder='little'))
-    ql.mem.write(hostnet+2*ql.pointersize, (2).to_bytes(length=2, byteorder='little'))
-    ql.mem.write(hostnet+2*ql.pointersize+2, (4).to_bytes(length=2, byteorder='little'))
-    ql.mem.write(hostnet+2*ql.pointersize+4, ip)
+    ql.mem.write(hostnet + ql.pointersize, (0).to_bytes(length=ql.pointersize, byteorder='little'))
+    ql.mem.write(hostnet + 2 * ql.pointersize, (2).to_bytes(length=2, byteorder='little'))
+    ql.mem.write(hostnet + 2 * ql.pointersize + 2, (4).to_bytes(length=2, byteorder='little'))
+    ql.mem.write(hostnet + 2 * ql.pointersize + 4, ip)
     return hostnet

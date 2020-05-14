@@ -90,7 +90,7 @@ def hook_VirtualQuery(ql, address, params):
     base = None
     size = None
     for chunk in ql.os.heap.chunks:
-        if params['lpAddress'] >= chunk.address and params['lpAddress'] < chunk.address + chunk.size:
+        if chunk.address <= params['lpAddress'] < chunk.address + chunk.size:
             base = chunk.address
             size = chunk.size
 

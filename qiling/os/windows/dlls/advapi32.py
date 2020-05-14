@@ -404,12 +404,12 @@ def hook_RegDeleteValueW(ql, address, params):
     "ReturnLength": POINTER
 })
 def hook_GetTokenInformation(ql, address, params):
-    id = params["TokenHandle"]
+    id_token = params["TokenHandle"]
     information = params["TokenInformationClass"]
     max_size = params["TokenInformationLength"]
     return_point = params["ReturnLength"]
     dst = params["TokenInformation"]
-    token = ql.os.handle_manager.get(id).obj
+    token = ql.os.handle_manager.get(id_token).obj
     information_value = token.get(information)
     ql.mem.write(return_point, len(information_value).to_bytes(4, byteorder="little"))
     return_size = int.from_bytes(ql.mem.read(return_point, 4), byteorder="little")

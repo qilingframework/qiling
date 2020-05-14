@@ -3,11 +3,13 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import struct, os, time
+import os
+import time
 
-from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.const import *
+from qiling.os.windows.fncc import *
+
 
 # void __set_app_type (
 #    int at
@@ -52,12 +54,14 @@ def hook___p__commode(ql, address, params):
     addr = ql.os.heap.alloc(ql.pointersize)
     return addr
 
+
 # int * __p__commode(
 #    );
 @winapi(cc=CDECL, params={})
 def hook___p__acmdln(self, address, params):
     addr = self.ql.loader.import_address_table['msvcrt.dll'][b'_acmdln']
     return addr
+
 
 # unsigned int _controlfp(
 #    unsigned int new,
@@ -198,7 +202,7 @@ def hook_printf(ql, address, _):
     format_string = get_function_param(ql, 1)
 
     if format_string == 0:
-        ql.nprint('printf(format = 0x0) = 0x%x' % (ret))
+        ql.nprint('printf(format = 0x0) = 0x%x' % ret)
         return ret
 
     format_string = read_cstring(ql, format_string)
@@ -211,10 +215,10 @@ def hook_printf(ql, address, _):
     count = format_string.count('%')
     # x8664 fastcall donnot known the real number of parameters
     # so you need to manually pop the stack
-    if ql.archtype== QL_ARCH.X8664:
+    if ql.archtype == QL_ARCH.X8664:
         # if number of params > 4
         if count + 1 > 4:
-            ql.reg.rsp = ql.reg.rsp + ( (count - 4 + 1) * 8 )
+            ql.reg.rsp = ql.reg.rsp + ((count - 4 + 1) * 8)
 
     return None
 

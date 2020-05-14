@@ -77,9 +77,10 @@ def hook_GetSystemInfo(ql, address, params):
     pointer = params["lpSystemInfo"]
     system_info = {"dummy": 0x0.to_bytes(length=2 * 2 + 4, byteorder='little'),
                    "dwPageSize": ql.os.heap.page_size.to_bytes(length=4, byteorder='little'),
-                   "lpMinimumApplicationAddress": ql.loader.pe_image_address.to_bytes(length=ql.pointersize, byteorder='little'),
-                   "lpMaximumApplicationAddress": (ql.loader.dll_address + ql.loader.dll_size).to_bytes(length=ql.pointersize,
-                                                                                            byteorder='little'),
+                   "lpMinimumApplicationAddress": ql.loader.pe_image_address.to_bytes(length=ql.pointersize,
+                                                                                      byteorder='little'),
+                   "lpMaximumApplicationAddress": (ql.loader.dll_address + ql.loader.dll_size).to_bytes(
+                       length=ql.pointersize, byteorder='little'),
                    "dwActiveProcessorMask": 0x3.to_bytes(length=ql.pointersize, byteorder='little'),
                    # TODO not sure from here, did not found variables inside the emulator
                    "dwNumberOfProcessors": 0x4.to_bytes(length=4, byteorder='little'),
@@ -159,7 +160,7 @@ def hook_GetWindowsDirectoryW(ql, address, params):
     dst = params["lpBuffer"]
     value = (ql.os.windir + "\x00").encode("utf-16le")
     ql.mem.write(dst, value)
-    return len(value)-2
+    return len(value) - 2
 
 
 # void GetNativeSystemInfo(
@@ -172,9 +173,11 @@ def hook_GetNativeSystemInfo(ql, address, params):
     pointer = params["lpSystemInfo"]
     system_info = {"dummy": 0x0.to_bytes(length=8, byteorder='little'),
                    "dwPageSize": ql.os.heap.page_size.to_bytes(length=4, byteorder='little'),
-                   "lpMinimumApplicationAddress": ql.loader.pe_image_address.to_bytes(length=ql.pointersize, byteorder='little'),
-                   "lpMaximumApplicationAddress": (ql.loader.dll_address + ql.loader.dll_size).to_bytes(length=ql.pointersize,
-                                                                                            byteorder='little'),
+                   "lpMinimumApplicationAddress": ql.loader.pe_image_address.to_bytes(length=ql.pointersize,
+                                                                                      byteorder='little'),
+                   "lpMaximumApplicationAddress": (ql.loader.dll_address + ql.loader.dll_size).to_bytes(
+                       length=ql.pointersize,
+                       byteorder='little'),
                    "dwActiveProcessorMask": 0x3.to_bytes(length=ql.pointersize, byteorder='little'),
                    # TODO not sure from here, did not found variables inside the emulator
                    "dwNumberOfProcessors": 0x4.to_bytes(length=4, byteorder='little'),
