@@ -615,4 +615,3 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.new_stack = new_stack
         self.load_address = load_address
         self.ql.os.function_hook = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)
-        

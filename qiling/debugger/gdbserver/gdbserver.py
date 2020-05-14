@@ -126,12 +126,13 @@ class GDBSERVERsession(object):
 
 
             def handle_c(subcmd):
+                
+                address = self.ql.reg.arch_pc
+
                 if self.ql.archtype == QL_ARCH.ARM:
                     mode = self.ql.arch.check_thumb()
                     if mode == UC_MODE_THUMB:
                         address = self.ql.reg.arch_pc + 1
-                    else:
-                        address = self.ql.reg.arch_pc
                 
                 self.gdb.resume_emu(address)
                 

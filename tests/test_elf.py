@@ -74,11 +74,15 @@ class ELFTest(unittest.TestCase):
             
             reg = ql.reg.read("rax")
             print("reg : 0x%x" % reg)
-            ql.reg.rax = reg 
+            ql.reg.rax = reg
+            self.api_works = 0
         
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
         ql.set_api('puts', my_puts)
         ql.run()
+        if self.api_works != 0:
+            exit(1)
+        del self.api_works
         del ql
 
 
