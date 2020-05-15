@@ -397,9 +397,8 @@ def compare(p1, operator, p2):
 def hook_VerifyVersionInfoW(ql, address, params):
     #  https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow2
     pointer = params["lpVersionInformation"]
-    os_asked = OsVersionInfo(ql)
+    os_asked = OsVersionInfoExA(ql)
     os_asked.read(pointer)
-    ql.dprint(0, os_asked.major)
     ConditionMask: dict = ql.os.hooks_variables["ConditionMask"]
     res = True
     for key, value in ConditionMask.items():
