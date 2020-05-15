@@ -51,15 +51,15 @@ class Qldbg(object):
                 self.soft_bp = False
                 hit_soft_bp = True
 
-            if address != self.last_bp and address in self.bp_list or self.has_soft_bp:
-
+            if address in self.bp_list and address is not self.last_bp or self.has_soft_bp:
                 if self.skip_bp_count > 0:
                     self.skip_bp_count -= 1
                 else:
-                    self.breakpoint_count += 1
                     self.ql.os.stop()
+                    self.breakpoint_count += 1
                     self.last_bp = address
-                    self.ql.nprint("gdb> Breakpoint found, stop at address: 0x%x" % address)      
+                    self.ql.nprint("gdb> Breakpoint found, stop at address: 0x%x" % address)
+                          
 
             elif address == self.last_bp:
                 self.last_bp = 0x0
