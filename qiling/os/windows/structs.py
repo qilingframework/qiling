@@ -614,10 +614,11 @@ class SystemInfo(WindowsStruct):
         self.processor_revision = processor_revision
 
     def write(self, addr):
-        self.ql.mem.write(addr, self.size.to_bytes(8, byteorder="little"))
-        self.ql.mem.write(addr + 8, self.major.to_bytes(4, byteorder="little"))
-        self.ql.mem.write(addr + 12, self.minor.to_bytes(self.ql.pointersize, byteorder="little"))
-        self.ql.mem.write(addr + 12 + self.ql.pointersize, self.build.to_bytes(self.ql.pointersize, byteorder="little"))
+        self.ql.mem.write(addr, self.dummy.to_bytes(8, byteorder="little"))
+        self.ql.mem.write(addr + 8, self.page_size.to_bytes(4, byteorder="little"))
+        self.ql.mem.write(addr + 12, self.min_address.to_bytes(self.ql.pointersize, byteorder="little"))
+        self.ql.mem.write(addr + 12 + self.ql.pointersize, self.max_address.to_bytes(self.ql.pointersize,
+                                                                                     byteorder="little"))
         self.ql.mem.write(addr + 12 + 2 * self.ql.pointersize, self.mask.to_bytes(4, byteorder="little"))
         self.ql.mem.write(addr + 16 + 2 * self.ql.pointersize, self.processors.to_bytes(4, byteorder="little"))
         self.ql.mem.write(addr + 20 + 2 * self.ql.pointersize, self.processor_type.to_bytes(4, byteorder="little"))
