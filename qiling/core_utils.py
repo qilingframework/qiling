@@ -30,12 +30,12 @@ class QLCoreUtils(object):
 
     # normal print out
     def nprint(self, *args, **kw):
-        if self.console == True:
-            print (*args, **kw)
-        elif type(self.console) is bool:
-            pass
-        else:
-            raise QlErrorOutput("[!] consnsole must be True or False")     
+        # if self.console == True:
+            # print (*args, **kw)
+        # elif type(self.console) is bool:
+            # pass
+        # else:
+            # raise QlErrorOutput("[!] consnsole must be True or False")     
         
         # FIXME: this is due to console must be able to update duirng runtime
         if self.log_file_fd is not None:
@@ -46,9 +46,9 @@ class QLCoreUtils(object):
 
             # setup filter for logger
             # FIXME: only works for logging due to we might need runtime disable nprint, it should be a global filter not only syscall
-            # if self.strace != None and self.output == QL_OUTPUT.DEFAULT:
-            #     from .utils import Ql_filter
-            #     self.log_file_fd.addFilter(ql_filter(self.filter))
+            if self.filter != None and self.output == QL_OUTPUT.DEFAULT:
+                from .utils import Ql_filter
+                self.log_file_fd.addFilter(Ql_filter(self.filter))
 
             msg = args[0]
             msg += kw["end"] if kw.get("end", None) != None else os.linesep
