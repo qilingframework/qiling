@@ -26,53 +26,12 @@ def hook_ExitProcess(ql, address, params):
     ql.os.PE_RUN = False
 
 
-# typedef struct _STARTUPINFO {
-#   DWORD  cb;
-#   LPTSTR lpReserved;
-#   LPTSTR lpDesktop;
-#   LPTSTR lpTitle;
-#   DWORD  dwX;
-#   DWORD  dwY;
-#   DWORD  dwXSize;
-#   DWORD  dwYSize;
-#   DWORD  dwXCountChars;
-#   DWORD  dwYCountChars;
-#   DWORD  dwFillAttribute;
-#   DWORD  dwFlags;
-#   WORD   wShowWindow;
-#   WORD   cbReserved2;
-#   LPBYTE lpReserved2;
-#   HANDLE hStdInput;
-#   HANDLE hStdOutput;
-#   HANDLE hStdError;
-# } STARTUPINFO, *LPSTARTUPINFO;
-def GetStartupInfo(ql, address, params):
-    startup_info = {
-        "cb": (0x34 + 4 * ql.pointersize).to_bytes(length=4, byteorder='little'),
-        "lpReserved": 0x0.to_bytes(length=ql.pointersize, byteorder='little'),
-        "lpDesktop": 0xc3c930.to_bytes(length=ql.pointersize, byteorder='little'),
-        "lpTitle": 0x0.to_bytes(length=ql.pointersize, byteorder='little'),
-        "dwX": 0x0.to_bytes(length=4, byteorder='little'),
-        "dwY": 0x0.to_bytes(length=4, byteorder='little'),
-        "dwXSize": 0x64.to_bytes(length=4, byteorder='little'),
-        "dwYSize": 0x64.to_bytes(length=4, byteorder='little'),
-        "dwXCountChars": 0x84.to_bytes(length=4, byteorder='little'),
-        "dwYCountChars": 0x80.to_bytes(length=4, byteorder='little'),
-        "dwFillAttribute": 0xff.to_bytes(length=4, byteorder='little'),
-        "dwFlags": 0x40.to_bytes(length=4, byteorder='little'),
-        "wShowWindow": 0x1.to_bytes(length=2, byteorder='little'),
-        "cbReserved2": 0x0.to_bytes(length=2, byteorder='little'),
-        "lpReserved2": 0x0.to_bytes(length=ql.pointersize, byteorder='little'),
-        "hStdInput": 0xffffffff.to_bytes(length=4, byteorder='little'),
-        "hStdOutput": 0xffffffff.to_bytes(length=4, byteorder='little'),
-        "hStdError": 0xffffffff.to_bytes(length=4, byteorder='little')
-    }
-    pointer = params["lpStartupInfo"]
-    values = b"".join(startup_info.values())
+def _GetStartupInfo(ql, address, params):
+    startup_info = StartupInfo(ql, 0xc3c930, 0, 0, 0, 0x64, 0x64, 0x84, 0x80, 0xff, 0x40, 0x1, STD_INPUT_HANDLE,
+                               STD_OUTPUT_HANDLE, STD_ERROR_HANDLE)
 
-    # CB must be the size of the struct
-    assert len(values) == startup_info["cb"][0]
-    ql.mem.write(pointer, values)
+    pointer = params["lpStartupInfo"]
+    startup_info.write(pointer)
     return 0
 
 
@@ -83,7 +42,7 @@ def GetStartupInfo(ql, address, params):
     "lpStartupInfo": POINTER
 })
 def hook_GetStartupInfoA(ql, address, params):
-    return GetStartupInfo(ql, address, params)
+    return _GetStartupInfo(ql, address, params)
 
 
 # VOID WINAPI GetStartupInfoW(
@@ -94,7 +53,7 @@ def hook_GetStartupInfoA(ql, address, params):
 })
 def hook_GetStartupInfoW(ql, address, params):
     # The struct for the W version uses LPWSTRING, but i think is the same in this context
-    return GetStartupInfo(ql, address, params)
+    return _GetStartupInfo(ql, address, params)
 
 
 # DWORD TlsAlloc();

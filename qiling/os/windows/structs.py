@@ -691,3 +691,92 @@ class SystemTime(WindowsStruct):
         self.seconds = int.from_bytes(self.ql.mem.read(addr + 12, 2), byteorder="little")
         self.milliseconds = int.from_bytes(self.ql.mem.read(addr + 14, 2), byteorder="little")
         self.addr = addr
+
+
+# typedef struct _STARTUPINFO {
+#   DWORD  cb;
+#   LPTSTR lpReserved;
+#   LPTSTR lpDesktop;
+#   LPTSTR lpTitle;
+#   DWORD  dwX;
+#   DWORD  dwY;
+#   DWORD  dwXSize;
+#   DWORD  dwYSize;
+#   DWORD  dwXCountChars;
+#   DWORD  dwYCountChars;
+#   DWORD  dwFillAttribute;
+#   DWORD  dwFlags;
+#   WORD   wShowWindow;
+#   WORD   cbReserved2;
+#   LPBYTE lpReserved2;
+#   HANDLE hStdInput;
+#   HANDLE hStdOutput;
+#   HANDLE hStdError;
+# } STARTUPINFO, *LPSTARTUPINFO;
+class StartupInfo(WindowsStruct):
+    def __init__(self, ql, desktop=None, title=None, x=None, y=None, x_size=None, y_size=None, x_chars=None,
+                 y_chars=None, fill_attribute=None, flags=None, show=None, std_input=None, output=None, error=None):
+        super().__init__(ql)
+        self.size = 49 + 3 * self.ql.pointersize
+        self.reserved = 0
+        self.desktop = desktop
+        self.title = title
+        self.x = x
+        self.y = y
+        self.x_size = x_size
+        self.y_size = y_size
+        self.x_chars = x_chars
+        self.y_chars = y_chars
+        self.fill_attribute = fill_attribute
+        self.flags = flags
+        self.show = show
+        self.reserved2 = 0
+        self.reserved3 = 0
+        self.input = std_input
+        self.output = output
+        self.error = error
+
+    def read(self, addr):
+        self.size = int.from_bytes(self.ql.mem.read(addr, 4), byteorder="little")
+        self.reserved = int.from_bytes(self.ql.mem.read(addr + 4, self.ql.pointersize), byteorder="little")
+        self.desktop = int.from_bytes(self.ql.mem.read(addr + 4 + 1 * self.ql.pointersize, self.ql.pointersize),
+                                      byteorder="little")
+        self.title = int.from_bytes(self.ql.mem.read(addr + 4 + 2 * self.ql.pointersize, self.ql.pointersize),
+                                    byteorder="little")
+        self.x = int.from_bytes(self.ql.mem.read(addr + 4 + 3 * self.ql.pointersize, 4), byteorder="little")
+        self.y = int.from_bytes(self.ql.mem.read(addr + 8 + 3 * self.ql.pointersize, 4), byteorder="little")
+        self.x_size = int.from_bytes(self.ql.mem.read(addr + 12 + 3 * self.ql.pointersize, 4), byteorder="little")
+        self.y_size = int.from_bytes(self.ql.mem.read(addr + 16 + 3 * self.ql.pointersize, 4), byteorder="little")
+        self.x_chars = int.from_bytes(self.ql.mem.read(addr + 20 + 3 * self.ql.pointersize, 4), byteorder="little")
+        self.y_chars = int.from_bytes(self.ql.mem.read(addr + 24 + 3 * self.ql.pointersize, 4), byteorder="little")
+        self.fill_attribute = int.from_bytes(self.ql.mem.read(addr + 28 + 3 * self.ql.pointersize, 4),
+                                             byteorder="little")
+        self.flags = int.from_bytes(self.ql.mem.read(addr + 32 + 3 * self.ql.pointersize, 4), byteorder="little")
+        self.show = int.from_bytes(self.ql.mem.read(addr + 36 + 3 * self.ql.pointersize, 2), byteorder="little")
+        self.reserved2 = int.from_bytes(self.ql.mem.read(addr + 38 + 3 * self.ql.pointersize, 2), byteorder="little")
+        self.reserved3 = int.from_bytes(self.ql.mem.read(addr + 40 + 3 * self.ql.pointersize, 1), byteorder="little")
+        self.input = int.from_bytes(self.ql.mem.read(addr + 41 + 3 * self.ql.pointersize, 4), byteorder="little")
+        self.output = int.from_bytes(self.ql.mem.read(addr + 45 + 3 * self.ql.pointersize, 4), byteorder="little")
+        self.error = int.from_bytes(self.ql.mem.read(addr + 49 + 3 * self.ql.pointersize, 4), byteorder="little")
+        self.addr = addr
+
+    def write(self, addr):
+        self.ql.mem.write(addr, self.size.to_bytes(4, "little"))
+        self.ql.mem.write(addr + 4, self.reserved.to_bytes(self.ql.pointersize, "little"))
+        self.ql.mem.write(addr + 4 + self.ql.pointersize, self.desktop.to_bytes(self.ql.pointersize, "little"))
+        self.ql.mem.write(addr + 4 + 2 * self.ql.pointersize, self.title.to_bytes(self.ql.pointersize, "little"))
+        self.ql.mem.write(addr + 4 + 3 * self.ql.pointersize, self.x.to_bytes(4, "little"))
+        self.ql.mem.write(addr + 8 + 3 * self.ql.pointersize, self.y.to_bytes(4, "little"))
+        self.ql.mem.write(addr + 12 + 3 * self.ql.pointersize, self.x_size.to_bytes(4, "little"))
+        self.ql.mem.write(addr + 16 + 3 * self.ql.pointersize, self.y_size.to_bytes(4, "little"))
+        self.ql.mem.write(addr + 20 + 3 * self.ql.pointersize, self.x_chars.to_bytes(4, "little"))
+        self.ql.mem.write(addr + 24 + 3 * self.ql.pointersize, self.y_chars.to_bytes(4, "little"))
+        self.ql.mem.write(addr + 28 + 3 * self.ql.pointersize, self.fill_attribute.to_bytes(4, "little"))
+        self.ql.mem.write(addr + 32 + 3 * self.ql.pointersize, self.flags.to_bytes(4, "little"))
+        self.ql.mem.write(addr + 36 + 3 * self.ql.pointersize, self.show.to_bytes(2, "little"))
+        self.ql.mem.write(addr + 38 + 3 * self.ql.pointersize, self.reserved2.to_bytes(2, "little"))
+        self.ql.mem.write(addr + 40 + 3 * self.ql.pointersize, self.reserved3.to_bytes(1, "little"))
+        self.ql.mem.write(addr + 41 + 3 * self.ql.pointersize, self.input.to_bytes(4, "little"))
+        self.ql.mem.write(addr + 45 + 3 * self.ql.pointersize, self.output.to_bytes(4, "little"))
+        self.ql.mem.write(addr + 49 + 3 * self.ql.pointersize, self.error.to_bytes(4, "little"))
+        self.addr = addr
