@@ -7,7 +7,7 @@ from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.thread import *
 from qiling.exception import *
-
+from qiling.os.windows.structs import *
 
 # __analysis_noreturn VOID FatalExit(
 #   int ExitCode
@@ -397,20 +397,9 @@ def compare(p1, operator, p2):
 def hook_VerifyVersionInfoW(ql, address, params):
     #  https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow2
     pointer = params["lpVersionInformation"]
-    os_version_info_asked = {"dwOSVersionInfoSize": int.from_bytes(ql.mem.read(pointer, 4), byteorder="little"),
-                             VER_MAJORVERSION: int.from_bytes(ql.mem.read(pointer + 4, 4), byteorder="little"),
-                             VER_MINORVERSION: int.from_bytes(ql.mem.read(pointer + 8, 4), byteorder="little"),
-                             VER_BUILDNUMBER: int.from_bytes(ql.mem.read(pointer + 12, 4), byteorder="little"),
-                             VER_PLATFORMID: int.from_bytes(ql.mem.read(pointer + 16, 4), byteorder="little"),
-                             "szCSDVersion": int.from_bytes(ql.mem.read(pointer + 20, 128), byteorder="little"),
-                             VER_SERVICEPACKMAJOR: int.from_bytes(ql.mem.read(pointer + 20 + 128, 2),
-                                                                  byteorder="little"),
-                             VER_SERVICEPACKMINOR: int.from_bytes(ql.mem.read(pointer + 22 + 128, 2),
-                                                                  byteorder="little"),
-                             VER_SUITENAME: int.from_bytes(ql.mem.read(pointer + 152, 2), byteorder="little"),
-                             VER_PRODUCT_TYPE: int.from_bytes(ql.mem.read(pointer + 154, 1), byteorder="little"),
-                             "wReserved": int.from_bytes(ql.mem.read(pointer + 155, 1), byteorder="little"),
-                             }
+    os_asked = OsVersionInfo(ql)
+    os_asked.read(pointer)
+    ql.dprint(0, os_asked.major)
     ConditionMask: dict = ql.os.hooks_variables["ConditionMask"]
     res = True
     for key, value in ConditionMask.items():
@@ -428,9 +417,9 @@ def hook_VerifyVersionInfoW(ql, address, params):
             raise QlErrorNotImplemented("[!] API not implemented with operator %d" % value)
         # Versions should be compared together
         if key == VER_MAJORVERSION or key == VER_MINORVERSION or key == VER_PRODUCT_TYPE:
-            major_version_asked = os_version_info_asked[VER_MAJORVERSION]
-            minor_version_asked = os_version_info_asked[VER_MINORVERSION]
-            product_type = os_version_info_asked[VER_PRODUCT_TYPE]
+            major_version_asked = os_asked.major
+            minor_version_asked = os_asked.minor
+            product_type = os_asked.product
             concat = str(major_version_asked) + str(minor_version_asked) + str(product_type)
 
             # Just a print for analysts, will remove it from here in the future
@@ -447,7 +436,7 @@ def hook_VerifyVersionInfoW(ql, address, params):
                 ql.os.profile.get("SYSTEM", "productType"))
             res = compare(int(qiling_os), operator, int(concat))
         elif key == VER_SERVICEPACKMAJOR:
-            res = compare(ql.os.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_version_info_asked[key])
+            res = compare(ql.os.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_asked.service_major)
         else:
             raise QlErrorNotImplemented("[!] API not implemented for key %s" % key)
         # The result is a AND between every value, so if we find a False we just exit from the loop

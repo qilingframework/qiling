@@ -483,3 +483,64 @@ class Hostent(WindowsStruct):
         self.length = int.from_bytes(self.ql.mem.read(addr + 2 * self.ql.pointersize + 2, 2), byteorder="little")
         self.addr_list = self.ql.mem.read(addr + 2 * self.ql.pointersize + 4, self.ql.pointersize)
         self.addr = addr
+
+
+# typedef struct _OSVERSIONINFOEXA {
+#   DWORD dwOSVersionInfoSize;
+#   DWORD dwMajorVersion;
+#   DWORD dwMinorVersion;
+#   DWORD dwBuildNumber;
+#   DWORD dwPlatformId;
+#   CHAR  szCSDVersion[128];
+#   WORD  wServicePackMajor;
+#   WORD  wServicePackMinor;
+#   WORD  wSuiteMask;
+#   BYTE  wProductType;
+#   BYTE  wReserved;
+# } OSVERSIONINFOEXA, *POSVERSIONINFOEXA, *LPOSVERSIONINFOEXA;
+
+
+class OsVersionInfo(WindowsStruct):
+    def __init__(self, ql, size=None, major=None, minor=None, build=None, platform=None, version=None,
+                 service_major=None, service_minor=None, suite=None, product=None):
+        super().__init__(ql)
+        self.size = size
+        self.major = major
+        self.minor = minor
+        self.build = build
+        self.platform = platform
+        self.version = version
+        self.service_major = service_major
+        self.service_minor = service_minor
+        self.suite = suite
+        self.product = product
+        self.reserved = 0
+        self.addr = None
+
+    def write(self, addr):
+        self.ql.mem.write(addr, self.size.to_bytes(4, "little"))
+        self.ql.mem.write(addr+4, self.major.to_bytes(4, "little"))
+        self.ql.mem.write(addr+8, self.minor.to_bytes(4, "little"))
+        self.ql.mem.write(addr+12, self.build.to_bytes(4, "little"))
+        self.ql.mem.write(addr+16, self.platform.to_bytes(4, "little"))
+        self.ql.mem.write(addr+20, self.version.to_bytes(128, "little"))
+        self.ql.mem.write(addr+148, self.service_major.to_bytes(2, "little"))
+        self.ql.mem.write(addr + 150, self.service_minor.to_bytes(2, "little"))
+        self.ql.mem.write(addr + 152, self.suite.to_bytes(2, "little"))
+        self.ql.mem.write(addr + 154, self.product.to_bytes(1, "little"))
+        self.ql.mem.write(addr + 155, self.reserved.to_bytes(1, "little"))
+        self.addr = addr
+
+    def read(self, addr):
+        self.size = int.from_bytes(self.ql.mem.read(addr, 4), byteorder="little")
+        self.major = int.from_bytes(self.ql.mem.read(addr + 4, 4), byteorder="little")
+        self.minor = int.from_bytes(self.ql.mem.read(addr + 8, 4), byteorder="little")
+        self.build = int.from_bytes(self.ql.mem.read(addr + 12, 4), byteorder="little")
+        self.platform = int.from_bytes(self.ql.mem.read(addr + 16, 4), byteorder="little")
+        self.version = int.from_bytes(self.ql.mem.read(addr + 20, 128), byteorder="little")
+        self.service_major = int.from_bytes(self.ql.mem.read(addr + 20 + 128, 2), byteorder="little")
+        self.service_minor = int.from_bytes(self.ql.mem.read(addr + 22 + 128, 2), byteorder="little")
+        self.suite = int.from_bytes(self.ql.mem.read(addr + 152, 2), byteorder="little")
+        self.product = int.from_bytes(self.ql.mem.read(addr + 154, 1), byteorder="little")
+        self.reserved = int.from_bytes(self.ql.mem.read(addr + 155, 1), byteorder="little")
+        self.addr = addr
