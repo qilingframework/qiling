@@ -16,7 +16,6 @@ class Qldbg(object):
         self.exit_point = None
         self.soft_bp = False
         self.has_soft_bp = False
-
         self.bp_list = []
         self.mapping = []
         self.entry_context = {}
@@ -51,18 +50,18 @@ class Qldbg(object):
                 self.soft_bp = False
                 hit_soft_bp = True
 
-            if address in self.bp_list and address is not self.last_bp or self.has_soft_bp:
+            if address is not self.last_bp and address in self.bp_list or self.has_soft_bp:
                 if self.skip_bp_count > 0:
                     self.skip_bp_count -= 1
                 else:
-                    self.ql.os.stop()
                     self.breakpoint_count += 1
+                    self.ql.os.stop()
                     self.last_bp = address
                     self.ql.nprint("gdb> Breakpoint found, stop at address: 0x%x" % address)
                           
-
             elif address == self.last_bp:
                 self.last_bp = 0x0
+                self.ql.nprint("gdb> last_bp found, last_bp: 0x%x address: 0x%x" % (self.last_bp, address))
             
             self.has_soft_bp = hit_soft_bp
             
@@ -117,5 +116,4 @@ class Qldbg(object):
                 for r in self.ql.reg.table:
                     self.entry_context['regs'][r] = self.ql.reg.read(r)
                     
-            start_addr = self.current_address
-            self.ql.emu_start(start_addr, self.exit_point)
+            self.ql.emu_start(self.current_address, self.exit_point)
