@@ -15,7 +15,7 @@ class Qldbg(object):
         self.entry_point = None
         self.exit_point = None
         self.soft_bp = False
-        self.has_soft_bp = False
+        self.has_soft_bp = None
         self.bp_list = []
         self.mapping = []
         self.entry_context = {}
@@ -41,6 +41,7 @@ class Qldbg(object):
                 if mode == UC_MODE_THUMB:
                     address += 1
                     size = 2
+                    self.has_soft_bp = True
 
             self.mapping.append([(hex(address)), size])
             self.current_address = address
@@ -49,9 +50,8 @@ class Qldbg(object):
             if self.soft_bp:
                 self.soft_bp = False
                 hit_soft_bp = True
-
-
-            if address != self.last_bp and address in self.bp_list or self.has_soft_bp:
+            
+            if address != self.last_bp and (address in self.bp_list or self.has_soft_bp == True):
                     if self.skip_bp_count > 0:
                         self.skip_bp_count -= 1
                     else:

@@ -128,12 +128,13 @@ class GDBSERVERsession(object):
             def handle_c(subcmd):
                 address = self.ql.reg.arch_pc
 
-                if self.ql.archtype == QL_ARCH.ARM:
-                    mode = self.ql.arch.check_thumb()
-                    if mode == UC_MODE_THUMB:
-                        address = self.ql.reg.arch_pc + 1
+                # if self.ql.archtype == QL_ARCH.ARM:
+                #     mode = self.ql.arch.check_thumb()
+                #     if mode == UC_MODE_THUMB:
+                #         address = self.ql.reg.arch_pc + 1
                 
-                self.gdb.resume_emu(address)
+                self.gdb.resume_emu(self.ql.reg.arch_pc)
+               
 
                 if self.gdb.bp_list is ([self.entry_point]):
                     self.send("W00")
@@ -162,8 +163,14 @@ class GDBSERVERsession(object):
                         s += tmp
                 
                 elif self.ql.archtype== QL_ARCH.ARM:
+                    if self.ql.archtype == QL_ARCH.ARM:
+                        mode = self.ql.arch.check_thumb()
+                    
                     for reg in self.ql.reg.table[:17]:
                         r = self.ql.reg.read(reg)
+                        if mode == UC_MODE_THUMB and reg == "pc":
+                            r += 1
+
                         tmp = self.ql.arch.addr_to_str(r)
                         s += tmp
 
