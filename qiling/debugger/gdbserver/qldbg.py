@@ -15,10 +15,9 @@ class Qldbg(object):
         self.entry_point = None
         self.exit_point = None
         self.soft_bp = False
-        self.has_soft_bp = None
+        self.has_soft_bp = False
         self.bp_list = []
         self.mapping = []
-        self.entry_context = {}
         self.breakpoint_count = 0x0
         self.skip_bp_count = 0x0
 
@@ -40,30 +39,27 @@ class Qldbg(object):
                 mode = self.ql.arch.check_thumb()
                 if mode == UC_MODE_THUMB:
                     address += 1
-                    size = 2
-                    self.has_soft_bp = True
 
-            self.mapping.append([(hex(address)), size])
+            self.mapping.append([(hex(address))])
             self.current_address = address
             hit_soft_bp = False
 
             if self.soft_bp:
                 self.soft_bp = False
                 hit_soft_bp = True
-            
-            if address != self.last_bp and (address in self.bp_list or self.has_soft_bp == True):
-                    if self.skip_bp_count > 0:
-                        self.skip_bp_count -= 1
-                    else:
-                        self.breakpoint_count += 1
-                        self.ql.os.stop()
-                        self.last_bp = address
-                        self.ql.nprint("gdb> Breakpoint found, stop at address: 0x%x" % address)
+ 
+            if address != self.last_bp and address in self.bp_list or self.has_soft_bp == True:
+                if self.skip_bp_count > 0:
+                    self.skip_bp_count -= 1
+                else:
+                    self.breakpoint_count += 1
+                    self.ql.os.stop()
+                    self.last_bp = address
+                    self.ql.nprint("gdb> Breakpoint found, stop at address: 0x%x" % address)
                           
             elif address == self.last_bp:
                 self.last_bp = 0x0
-                self.ql.nprint("gdb> last_bp found, last_bp: 0x%x address: 0x%x" % (self.last_bp, address))
-            
+
             self.has_soft_bp = hit_soft_bp
             
             if self.current_address + size == self.exit_point:
@@ -92,29 +88,15 @@ class Qldbg(object):
         """
         Modified this function for qiling.gdbserver by kabeor from https://github.com/iGio90/uDdbg
         """
+
         if address is not None:
+            if self.ql.archtype == QL_ARCH.ARM:
+                mode = self.ql.arch.check_thumb()
+                if mode == UC_MODE_THUMB:
+                    address += 1
             self.current_address = address
 
         self.skip_bp_count = skip_bp
         if self.exit_point is not None:
             self.ql.nprint('gdb> Resume at: 0x%x' % self.current_address)
-
-            if len(self.entry_context) == 0:
-                self.entry_context = {
-                    'memory': {},
-                    'regs': {}
-                }
-                
-                map_list = self.mapping
-                for maps in map_list:
-                    map_address = int(maps[0], 16)
-                    # FIXME: should be 0x1000? use opcode size for now.
-                    map_len = maps[1]
-
-                    if map_address and self.ql.mem.is_mapped(map_address, map_len) == True:
-                        self.entry_context['memory'][map_address] = bytes(self.ql.mem.read(map_address, map_len))
-
-                for r in self.ql.reg.table:
-                    self.entry_context['regs'][r] = self.ql.reg.read(r)
-                    
             self.ql.emu_start(self.current_address, self.exit_point)

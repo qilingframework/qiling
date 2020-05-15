@@ -126,7 +126,7 @@ class GDBSERVERsession(object):
 
 
             def handle_c(subcmd):
-                address = self.ql.reg.arch_pc
+                #address = self.ql.reg.arch_pc
 
                 # if self.ql.archtype == QL_ARCH.ARM:
                 #     mode = self.ql.arch.check_thumb()

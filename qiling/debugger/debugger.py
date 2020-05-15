@@ -27,9 +27,8 @@ def ql_debugger_init(ql):
             else:
                 load_address = ql.loader.load_address
                 exit_point = load_address + os.path.getsize(path)
-
-            # FIXME: address and opcode size, but dont think we really implement it
-            mappings = [(hex(load_address), 0x0)]
+                
+            mappings = [(hex(load_address))]
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind((ip, port))
             ql.nprint("debugger> Initializing load_address 0x%x" % (load_address))
