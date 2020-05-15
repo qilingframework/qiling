@@ -9,7 +9,8 @@ import time
 
 from qiling.os.const import *
 from qiling.os.windows.const import *
-from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
+
 
 
 # void __set_app_type (
