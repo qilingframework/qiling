@@ -30,12 +30,10 @@ class QLCoreUtils(object):
 
     # normal print out
     def nprint(self, *args, **kw):
-        # if self.console == True:
-            # print (*args, **kw)
-        # elif type(self.console) is bool:
-            # pass
-        # else:
-            # raise QlErrorOutput("[!] consnsole must be True or False")     
+        if type(self.console) is bool:
+            pass
+        else:
+            raise QlErrorOutput("[!] consnsole must be True or False")     
         
         # FIXME: this is due to console must be able to update duirng runtime
         if self.log_file_fd is not None:
