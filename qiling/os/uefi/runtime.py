@@ -6,9 +6,9 @@
 from qiling.const import *
 from .const import *
 from .utils import *
-from .fncc import *
 from .type64 import *
-from qiling.os.windows.fncc import *
+from .fncc import *
+from qiling.os.fncc import *
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(struct_EFI_TIME)

@@ -6,6 +6,7 @@
 import os
 import time
 
+
 from qiling.os.const import *
 from qiling.os.windows.const import *
 from qiling.os.windows.fncc import *

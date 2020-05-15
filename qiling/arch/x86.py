@@ -302,7 +302,7 @@ class GDTManager:
 
     def register_gdt_segment(self, index, SEGMENT_ADDR, SEGMENT_SIZE, SPORT, RPORT):
         # FIXME: Temp fix for FS and GS
-        if index in (14,15):
+        if index in (14, 15):
             if self.ql.mem.is_mapped(SEGMENT_ADDR, SEGMENT_ADDR) == False:
                 self.ql.mem.map(SEGMENT_ADDR, SEGMENT_ADDR, info="[FS/GS]")
 

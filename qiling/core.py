@@ -13,7 +13,6 @@ from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorO
 from .utils import arch_convert, ostype_convert, output_convert
 from .utils import ql_is_valid_arch, ql_get_arch_bits
 from .utils import ql_setup_logging_env
-from .utils import Strace_filter
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 from .core_utils import QLCoreUtils
@@ -35,6 +34,10 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             verbose=1,
             profile=None,
             console=True,
+            log_dir=None,
+            log_split=None,
+            append=None,
+            libcache = False,
             stdin=0,
             stdout=0,
             stderr=0,
@@ -55,12 +58,14 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.verbose = verbose
         self.profile = profile
         self.console = console
-        # OS dependent configuration for stdio
+        self.log_dir = log_dir
+        self.log_split = log_split
+        self.append = append
+        self.libcache = libcache
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
         
-
         ##################################
         # Definition after ql=Qiling()   #
         ##################################
@@ -81,16 +86,14 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.bindtolocalhost = True
         # by turning this on, you must run your analysis with sudo
         self.root = False
-        # syscall filter for strace-like functionality
-        self.strace_filter = None
+        # generic filter to filter print (WIP)
+        self.filter = None
         self.remotedebugsession = None
-        self.automatize_input = False
-        self.libcache = False
-
 
         """
         Qiling Framework Core Engine
         """
+
         # shellcoder settings
         if self.shellcoder:
             if (self.ostype and type(self.ostype) == str) and (self.archtype and type(self.archtype) == str):
@@ -119,9 +122,12 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # setup    #
         ############           
         self.profile = self.profile_setup()
-        self.append = self.profile["MISC"]["append"]
-        self.log_dir = self.profile["LOG"]["dir"]
-        self.log_split =  self.profile.getboolean('LOG', 'split')
+        if self.append == None:
+            self.append = self.profile["MISC"]["append"]
+        if self.log_dir == None:
+            self.log_dir = self.profile["LOG"]["dir"]
+        if self.log_split == None:            
+            self.log_split =  self.profile.getboolean('LOG', 'split')
 
          # Log's configuration
         if self.log_dir != "" and type(self.log_dir) == str:
@@ -166,7 +172,9 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         #####################################
         self.arch = self.arch_setup()
         self.os = self.os_setup()
-        
+
+        # Run the loader
+        self.loader.run()
 
     # Emulate the binary from begin until @end, with timeout in @timeout and
     # number of emulated instructions in @count
@@ -176,15 +184,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.exit_point = end
         self.timeout = timeout
         self.count = count
-
-        # Run the loader
-        self.loader.run()
         
-        # setup strace filter for logger
-        # FIXME: only works for logging due to we might need runtime disable nprint
-        if self.strace_filter != None and self.output == QL_OUTPUT.DEFAULT and self.log_file_fd:
-            self.log_file_fd.addFilter(Strace_filter(self.strace_filter))
-
         # init debugger
         if self.debugger is not None:
             ql_debugger_init(self)
@@ -193,7 +193,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.__enable_bin_patch()
 
         # emulate the binary
-        self.os.run()     
+        self.os.run()
 
         # resume with debugger
         if self.debugger is not None:
@@ -232,7 +232,10 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
     def enable_lib_patch(self):
         for addr, code, filename in self.patch_lib:
-            self.mem.write(self.mem.get_lib_base(filename) + addr, code)
+            try:
+                self.mem.write(self.mem.get_lib_base(filename) + addr, code)
+            except:
+                raise RuntimeError("Fail to patch filename %s at addr 0x%x" % (filename, addr))
 
     # stop emulation
     def emu_stop(self):

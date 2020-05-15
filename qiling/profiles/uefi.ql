@@ -17,7 +17,6 @@ image_address  = 0x400000
 dll_address  = 0x10000000
 entry_point = 0x40000  
 
-
 [GUID]
 # EFI_GLOBAL_VARIABLE
 configuration_table = 7739f24c-93d7-11d4-9a3a-0090273fc14d

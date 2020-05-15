@@ -44,6 +44,12 @@ class QLCoreUtils(object):
             else:
                 fd = self.log_file_fd
 
+            # setup filter for logger
+            # FIXME: only works for logging due to we might need runtime disable nprint, it should be a global filter not only syscall
+            # if self.strace != None and self.output == QL_OUTPUT.DEFAULT:
+            #     from .utils import Ql_filter
+            #     self.log_file_fd.addFilter(ql_filter(self.filter))
+
             msg = args[0]
             msg += kw["end"] if kw.get("end", None) != None else os.linesep
             fd.info(msg)
@@ -69,26 +75,24 @@ class QLCoreUtils(object):
         if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             self.nprint(*args, **kw)
 
-    def context(self, saved_context= None):
-        if saved_context == None:
-            return self.uc.context_save()
-        else:
-            self.uc.context_restore(saved_context)
+    def add_fs_mapper(self, host_src, ql_dest):
+        self.fs_mapper.append([host_src, ql_dest])
 
-    def add_fs_mapper(self, fm, to):
-        self.fs_mapper.append([fm, to])
-    
+    # push to stack bottom, and update stack register
     def stack_push(self, data):
         self.arch.stack_push(data)
 
+    # pop from stack bottom, and update stack register
     def stack_pop(self):
         return self.arch.stack_pop()
 
     # read from stack, at a given offset from stack bottom
+    # NOTE: unlike stack_pop(), this does not change stack register
     def stack_read(self, offset):
         return self.arch.stack_read(offset)
 
     # write to stack, at a given offset from stack bottom
+    # NOTE: unlike stack_push(), this does not change stack register
     def stack_write(self, offset, data):
         self.arch.stack_write(offset, data)
 

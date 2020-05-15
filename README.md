@@ -54,7 +54,7 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 ---
 
 #### Installation
-Please see [setup guide](docs/SETUP.md) file for how to install Qiling Framework.
+Please see [setup guide](https://docs.qiling.io/en/latest/getting_started/) file for how to install Qiling Framework.
 
 ---
 
@@ -150,21 +150,12 @@ With shellcode:
 
 ```
 $ ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex
-$ ./qltool shellcode --os linux --arch x86 --asm -f examples/shellcodes/lin32_execve.asm
-$ ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex --strace
 ```
 
 With binary file:
 
 ```
 $ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples/rootfs/x8664_linux/
-$ ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux
-```
-
-With UEFI file:
-
-```
-$ ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel
 ```
 
 With binary and GDB debugger enable:
@@ -173,27 +164,15 @@ With binary and GDB debugger enable:
 $ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --gdb 127.0.0.1:9999 --rootfs examples/rootfs/x8664_linux
 ```
 
-With binary file and argv:
-
-```
-$ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_args --rootfs examples/rootfs/x8664_linux --args test1 test2 test3
-$ ./qltool run --rootfs examples/rootfs/x8664_linux examples/rootfs/x8664_linux/bin/x8664_args test1 test2 test3
-```
-
-with binary file and various output format:
-
-```
-$ ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm
-$ ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace
-```
+See  https://docs.qiling.io/  for more details
 
 ---
 
-#### Gdbserver
+#### Remote Debugger
 
-Qiling supports **Gdb remote debugging** now.
+Qiling supports **remote debugging** now.
 
-See  https://qilingframework.readthedocs.io/  for more details
+See  https://docs.qiling.io/  for more details
 
 ---
 

@@ -5,13 +5,21 @@
 
 import os, struct
 
+from .loader import QlLoader
+
 from qiling.exception import *
 from qiling.const import *
-from qiling.os.macos.const import *
-from .loader import *
+
 from .macho_parser.parser import *
 from .macho_parser.const import *
 
+from qiling.os.macos.const import *
+from qiling.os.macos.task import MachoTask
+from qiling.os.macos.kernel_func import FileSystem, map_commpage
+from qiling.os.macos.mach_port import MachPort, MachPortManager
+from qiling.os.macos.subsystems import MachHostServer, MachTaskServer
+from qiling.os.macos.utils import env_dict_to_array, ql_real_to_vm_abspath, page_align_end
+from qiling.os.macos.thread import QlMachoThreadManagement, QlMachoThread
 
 # commpage is a shared mem space which is in a static address
 # start at 0x7FFFFFE00000
@@ -55,35 +63,71 @@ def load_commpage(ql):
 class QlLoaderMACHO(QlLoader):
     # macho x8664 loader 
     def __init__(self, ql, dyld_path=None):
-        super()
+        super(QlLoaderMACHO, self).__init__(ql)
         self.dyld_path      = dyld_path
         self.ql             = ql
     
     def run(self):
         self.profile        = self.ql.profile
+        stack_address      = int(self.profile.get("OS64", "stack_address"), 16)
+        stack_size         = int(self.profile.get("OS64", "stack_size"), 16)
+        vmmap_trap_address = int(self.profile.get("OS64", "vmmap_trap_address"), 16)
+        self.stack_address = stack_address
+        self.stack_size = stack_size
+
         if self.ql.shellcoder:
-            return  
+            self.ql.mem.map(self.ql.os.entry_point, self.ql.os.shellcoder_ram_size, info="[shellcode_stack]")
+            self.ql.os.entry_point  = (self.ql.os.entry_point + 0x200000 - 0x1000)
+            
+            # for ASM file input, will mem.write in qltools
+            try:
+                self.ql.mem.write(self.entry_point, self.ql.shellcoder)
+            except:
+                pass
+
+            self.ql.reg.arch_sp = self.ql.os.entry_point
+            return
+        
+        self.ql.os.macho_task = MachoTask()
+        self.ql.os.macho_fs = FileSystem(self.ql)
+        self.ql.os.macho_mach_port = MachPort(2187)
+        self.ql.os.macho_port_manager = MachPortManager(self.ql, self.ql.os.macho_mach_port)
+        self.ql.os.macho_host_server = MachHostServer(self.ql)
+        self.ql.os.macho_task_server = MachTaskServer(self.ql)
+        
+        self.envs = env_dict_to_array(self.env)
+        self.apples = ql_real_to_vm_abspath(self.ql, self.ql.path)
+
+        # FIXME: Not working due to overlarge mapping, need to fix it
+        # vm_shared_region_enter(self.ql)
+
+        map_commpage(self.ql)
+
+        self.ql.os.thread_management = QlMachoThreadManagement(self.ql)
+        self.ql.os.macho_thread = QlMachoThread(self.ql)
+        self.ql.os.thread_management.cur_thread = self.ql.os.macho_thread
+        self.ql.os.macho_vmmap_end = vmmap_trap_address
+        self.stack_sp = stack_address + stack_size
         self.macho_file     = MachoParser(self.ql, self.ql.path)
         self.loading_file   = self.macho_file
-        self.slide          = int(self.profile.get("LOADER", "slide"),16)
-        self.dyld_slide     = int(self.profile.get("LOADER", "dyld_slide"),16)
+        self.slide          = int(self.profile.get("LOADER", "slide"), 16)
+        self.dyld_slide     = int(self.profile.get("LOADER", "dyld_slide"), 16)
         self.string_align   = 8
         self.ptr_align      = 8
         self.binary_entry   = 0x0
         self.proc_entry     = 0x0
-        self.stack_sp       = self.ql.os.stack_sp
         self.argvs          = [self.ql.path]
-        self.envs           = self.ql.os.envs
-        self.apples         = self.ql.os.apples
         self.argc           = 1
         self.using_dyld     = False
         self.vm_end_addr    = 0x0
+        self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
         self.loadMacho()
         self.stack_address = (int(self.stack_sp))
-
+        self.ql.reg.arch_sp = self.stack_address # self.stack_sp
+        self.ql.os.macho_task.min_offset = page_align_end(self.vm_end_addr, PAGE_SIZE)
 
     def loadMacho(self, depth=0, isdyld=False):
-        mmap_address   = int(self.profile.get("OS64", "mmap_address"),16)
+        mmap_address   = int(self.profile.get("OS64", "mmap_address"), 16)
 
         # MAX load depth 
         if depth > 5:

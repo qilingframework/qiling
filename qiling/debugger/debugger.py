@@ -23,13 +23,12 @@ def ql_debugger_init(ql):
             
             if ql.shellcoder:
                 load_address = ql.os.entry_point
-                mappings = [(hex(load_address), 0x0)]
                 exit_point = load_address + len(ql.shellcoder)
             else:
                 load_address = ql.loader.load_address
-                mappings = [(hex(load_address), 0x10)]
                 exit_point = load_address + os.path.getsize(path)
-
+                
+            mappings = [(hex(load_address))]
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind((ip, port))
             ql.nprint("debugger> Initializing load_address 0x%x" % (load_address))

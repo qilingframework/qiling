@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 from qiling.os.windows.const import *
-from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
 
 
 # LONG InterlockedExchange(

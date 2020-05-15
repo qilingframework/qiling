@@ -36,10 +36,10 @@ class QL_DEBUGGER(IntEnum):
     GDB = 1
     IDAPRO = 2
 
-D_INFO = 1 # GENERAL DEBUG INFO
-D_PROT = 2 # FLAG, PROTOCOL DEBUG INFO
-D_CONT = 3 # Print out content
-D_RPRT = 4 # Extrame OUTPUT
+D_INFO = 1 # General debug information
+D_PROT = 2 # Protocol level debug, print out open file flag
+D_CONT = 3 # Print out content. File content or content of a tcp stream
+D_RPRT = 4 # Reporting output, main summarizing purposes
 
 QL_DEBUGGER_ALL = [QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB]
 QL_ARCH_ALL = [QL_ARCH.X86, QL_ARCH.X8664, QL_ARCH.ARM, QL_ARCH.ARM64, QL_ARCH.MIPS]

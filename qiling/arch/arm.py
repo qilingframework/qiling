@@ -20,9 +20,9 @@ class QlArchARM(QlArch):
         for reg_maper in register_mappings:
             self.ql.reg.expand_mapping(reg_maper)
 
-
         self.ql.reg.register_sp(reg_map["sp"])
         self.ql.reg.register_pc(reg_map["pc"])
+        self.arm_get_tls_addr = 0xFFFF0FE0
 
 
     def stack_push(self, value):

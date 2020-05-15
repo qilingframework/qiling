@@ -5,7 +5,7 @@
 
 import struct
 from qiling.const import *
-from qiling.os.windows.fncc import *
+from qiling.os.fncc import *
 from qiling.os.windows.utils import read_cstring, read_wstring, read_guid, print_function
 
 def dxeapi(param_num=None, params=None):

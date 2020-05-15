@@ -46,7 +46,7 @@ AT_EXECFN = 31
 FILE_DES = []
 
 
-class ELFParse(QlLoader):
+class ELFParse():
     def __init__(self, path, ql):
         self.path = os.path.abspath(path)
         self.ql = ql
@@ -338,23 +338,48 @@ class ELFParse(QlLoader):
         elif self.ql.archbit == 32:
             return self.parse_program_header32()
 
-class QlLoaderELF(ELFParse, QlLoader):
+class QlLoaderELF(QlLoader, ELFParse):
     def __init__(self, ql):
-        super()
+        super(QlLoaderELF, self).__init__(ql)
         self.ql = ql
               
     def run(self):
-        self.profile = self.ql.profile
+        if self.ql.archbit == 32:
+            stack_address = int(self.ql.os.ql.os.profile.get("OS32", "stack_address"), 16)
+            stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)
+        elif self.ql.archbit == 64:
+            stack_address = int(self.ql.os.profile.get("OS64", "stack_address"), 16)
+            stack_size = int(self.ql.os.profile.get("OS64", "stack_size"), 16)
+
         if self.ql.shellcoder:
+            self.ql.mem.map(self.ql.os.entry_point, self.ql.os.shellcoder_ram_size, info="[shellcode_stack]")
+            self.ql.os.entry_point  = (self.ql.os.entry_point + 0x200000 - 0x1000)
+            
+            # for ASM file input, will mem.write in qltools
+            try:
+                self.ql.mem.write(self.ql.os.entry_point, self.ql.shellcoder)
+            except:
+                pass    
+            
+            self.ql.reg.arch_sp = self.ql.os.entry_point
             return
+            
         self.path = self.ql.path
         ELFParse.__init__(self, self.path, self.ql)
         self.interp_address = 0
         self.mmap_address = 0
         self.argv = self.ql.argv
-        self.env = self.ql.env
-        self.load_with_ld(self.ql, self.ql.os.stack_address + self.ql.os.stack_size, argv = self.argv, env = self.env)
-        self.ql.os.stack_address  = (int(self.new_stack))
+        self.ql.mem.map(stack_address, stack_size, info="[stack]") 
+        self.load_with_ld(stack_address + stack_size, argv = self.argv, env = self.env)
+        self.stack_address  = (int(self.new_stack))
+        self.ql.reg.arch_sp = self.stack_address
+
+        if self.ql.ostype == QL_OS.FREEBSD:
+            init_rbp = self.stack_address + 0x40
+            init_rdi = self.stack_address
+            self.ql.reg.rbp = init_rbp
+            self.ql.reg.rdi = init_rdi
+            self.ql.reg.r14 = init_rdi
 
     def pack(self, data):
         if self.ql.archbit == 64:
@@ -396,13 +421,13 @@ class QlLoaderELF(ELFParse, QlLoader):
     def NullStr(self, s):
         return s[ : s.find(b'\x00')]
 
-    def load_with_ld(self, ql, stack_addr, load_address = -1, argv = [], env = {}):
+    def load_with_ld(self, stack_addr, load_address = -1, argv = [], env = {}):
 
         if load_address <= 0:
             if self.ql.archbit == 64:
-                load_address = int(self.profile.get("OS64", "load_address"),16)
+                load_address = int(self.ql.os.profile.get("OS64", "load_address"), 16)
             else:
-                load_address = int(self.profile.get("OS32", "load_address"),16)
+                load_address = int(self.ql.os.profile.get("OS32", "load_address"), 16)
 
         elfhead = super().parse_header()
 
@@ -454,9 +479,9 @@ class QlLoaderELF(ELFParse, QlLoader):
         if interp_path != '':
             interp_path = str(interp_path, 'utf-8', errors="ignore")
            
-            interp = ELFParse(ql.rootfs + interp_path, ql)
+            interp = ELFParse(self.ql.rootfs + interp_path, self.ql)
             interphead = interp.parse_header()
-            self.ql.dprint(D_INFO, "[+] interp is : %s" % (ql.rootfs + interp_path))
+            self.ql.dprint(D_INFO, "[+] interp is : %s" % (self.ql.rootfs + interp_path))
 
             interp_mem_size = -1
             for i in interp.parse_program_header():
@@ -468,9 +493,9 @@ class QlLoaderELF(ELFParse, QlLoader):
             self.ql.dprint(D_INFO, "[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
 
             if self.ql.archbit == 64:
-                self.interp_address = int(self.profile.get("OS64", "interp_address"),16)
+                self.interp_address = int(self.ql.os.profile.get("OS64", "interp_address"), 16)
             elif self.ql.archbit == 32:
-                self.interp_address = int(self.profile.get("OS32", "interp_address"),16)
+                self.interp_address = int(self.ql.os.profile.get("OS32", "interp_address"), 16)
 
             self.ql.dprint(D_INFO, "[+] interp_address is : 0x%x" % (self.interp_address))
             self.ql.mem.map(self.interp_address, int(interp_mem_size), info=os.path.abspath(interp_path))
@@ -482,9 +507,9 @@ class QlLoaderELF(ELFParse, QlLoader):
 
         # Set MMAP addr
         if self.ql.archbit == 64:
-            self.mmap_address = int(self.profile.get("OS64", "mmap_address"),16)
+            self.mmap_address = int(self.ql.os.profile.get("OS64", "mmap_address"), 16)
         else:
-            self.mmap_address = int(self.profile.get("OS32", "mmap_address"),16)
+            self.mmap_address = int(self.ql.os.profile.get("OS32", "mmap_address"), 16)
 
         self.ql.dprint(D_INFO, "[+] mmap_address is : 0x%x" % (self.mmap_address))
 
@@ -503,9 +528,9 @@ class QlLoaderELF(ELFParse, QlLoader):
             argv_addr, new_stack = self.copy_str(stack_addr, argv)
 
             if self.ql.archbit == 32:
-                elf_table += b''.join([ql.pack32(_) for _ in argv_addr])
+                elf_table += b''.join([self.ql.pack32(_) for _ in argv_addr])
             elif self.ql.archbit == 64:
-                elf_table += b''.join([ql.pack64(_) for _ in argv_addr])
+                elf_table += b''.join([self.ql.pack64(_) for _ in argv_addr])
 
         if self.ql.archbit == 32:
             elf_table += self.ql.pack32(0)
@@ -516,9 +541,9 @@ class QlLoaderELF(ELFParse, QlLoader):
         if len(env) != 0:
             env_addr, new_stack = self.copy_str(new_stack, [key + '=' + value for key, value in env.items()])
             if self.ql.archbit == 32:
-                elf_table += b''.join([ql.pack32(_) for _ in env_addr])
+                elf_table += b''.join([self.ql.pack32(_) for _ in env_addr])
             elif self.ql.archbit == 64:
-                elf_table += b''.join([ql.pack64(_) for _ in env_addr])
+                elf_table += b''.join([self.ql.pack64(_) for _ in env_addr])
 
         if self.ql.archbit == 32:
             elf_table += self.ql.pack32(0)
@@ -584,9 +609,9 @@ class QlLoaderELF(ELFParse, QlLoader):
         # for i in range(120):
         #     buf = self.ql.mem.read(new_stack + i * 0x8, 8)
         #     self.ql.nprint("0x%08x : 0x%08x " % (new_stack + i * 0x4, self.ql.unpack64(buf)) + ' '.join(['%02x' % i for i in buf]) + '  ' + ''.join([chr(i) if i in string.printable[ : -5].encode('ascii') else '.' for i in buf]))
- 
+        
         self.ql.os.entry_point = self.entry_point = entry_point
         self.ql.os.elf_entry = self.elf_entry = load_address + elfhead['e_entry']
         self.new_stack = new_stack
         self.load_address = load_address
-        self.ql.os.fh = FunctionHook(ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)
+        self.ql.os.function_hook = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)

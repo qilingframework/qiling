@@ -6,6 +6,8 @@
 # gdbserver --remote-debug 0.0.0.0:9999 /path/to binary
 # documentation: according to https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html#Remote-Protocol
 
+from unicorn import *
+
 import struct, os, re, socket
 from binascii import unhexlify
 
@@ -68,7 +70,7 @@ class GDBSERVERsession(object):
             # must always be escaped. Responses sent by the stub must also escape 0x2a (ASCII ‘*’), 
             # so that it is not interpreted as the start of a run-length encoded sequence (described next).
 
-            if a in (42,35,36,125):
+            if a in (42,35,36, 125):
                 a = a ^ 0x20
                 a = (str(hex(a)[2:]))
                 a = incomplete_hex_check(a)
@@ -124,8 +126,16 @@ class GDBSERVERsession(object):
 
 
             def handle_c(subcmd):
-                self.gdb.resume_emu(self.ql.reg.arch_pc)
+                #address = self.ql.reg.arch_pc
+
+                # if self.ql.archtype == QL_ARCH.ARM:
+                #     mode = self.ql.arch.check_thumb()
+                #     if mode == UC_MODE_THUMB:
+                #         address = self.ql.reg.arch_pc + 1
                 
+                self.gdb.resume_emu(self.ql.reg.arch_pc)
+               
+
                 if self.gdb.bp_list is ([self.entry_point]):
                     self.send("W00")
                 else:
@@ -153,8 +163,14 @@ class GDBSERVERsession(object):
                         s += tmp
                 
                 elif self.ql.archtype== QL_ARCH.ARM:
+                    if self.ql.archtype == QL_ARCH.ARM:
+                        mode = self.ql.arch.check_thumb()
+                    
                     for reg in self.ql.reg.table[:17]:
                         r = self.ql.reg.read(reg)
+                        if mode == UC_MODE_THUMB and reg == "pc":
+                            r += 1
+
                         tmp = self.ql.arch.addr_to_str(r)
                         s += tmp
 
@@ -631,7 +647,6 @@ class GDBSERVERsession(object):
 
                 elif subcmd.startswith('Kill'):
                     self.send('OK')
-                    exit(1)
 
                 elif subcmd.startswith('Cont'):
                     self.ql.dprint(D_INFO, "gdb> Cont command received: %s" % subcmd)

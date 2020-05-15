@@ -70,15 +70,15 @@ def ql_x86_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, f
         target, address, size, mask, flags, cur_protection
     ))
 
-    if ql.macho_vmmap_end & mask > 0:
-        ql.macho_vmmap_end = ql.macho_vmmap_end - (ql.macho_vmmap_end & mask)
-        ql.macho_vmmap_end += mask + 1
+    if ql.os.macho_vmmap_end & mask > 0:
+        ql.os.macho_vmmap_end = ql.os.macho_vmmap_end - (ql.os.macho_vmmap_end & mask)
+        ql.os.macho_vmmap_end += mask + 1
 
     
-    vmmap_address = page_align_end(ql.macho_vmmap_end, PAGE_SIZE)
+    vmmap_address = page_align_end(ql.os.macho_vmmap_end, PAGE_SIZE)
     vmmap_end = page_align_end(vmmap_address + size, PAGE_SIZE)
 
-    ql.macho_vmmap_end = vmmap_end
+    ql.os.macho_vmmap_end = vmmap_end
     ql.mem.map(vmmap_address, vmmap_end - vmmap_address)
     ql.mem.write(address, struct.pack("<Q", vmmap_address))
     ql.os.definesyscall_return(KERN_SUCCESS)

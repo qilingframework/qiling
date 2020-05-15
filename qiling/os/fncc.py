@@ -7,7 +7,7 @@ import struct
 from functools import wraps
 
 from qiling.os.const import *
-from .utils import *
+from qiling.os.windows.utils import *
 from qiling.const import *
 from qiling.exception import *
 
@@ -40,7 +40,7 @@ def _x8664_get_params_by_index(ql, index):
     return ql.stack_read((index + 5) * 8)
 
 
-def _get_param_by_index(ql, index):
+def get_param_by_index(ql, index):
     if ql.archtype == QL_ARCH.X86:
         return _x86_get_params_by_index(ql, index)
     elif ql.archtype == QL_ARCH.X8664:
@@ -80,26 +80,25 @@ def set_function_params(ql, in_params, out_params):
     index = 0
     for each in in_params:
         if in_params[each] == DWORD or in_params[each] == POINTER:
-            out_params[each] = _get_param_by_index(ql, index)
+            out_params[each] = get_param_by_index(ql, index)
         elif in_params[each] == ULONGLONG:
             if ql.archtype == QL_ARCH.X86:
-                low = _get_param_by_index(ql, index)
+                low = get_param_by_index(ql, index)
                 index += 1
-                high = _get_param_by_index(ql, index)
+                high = get_param_by_index(ql, index)
                 out_params[each] = high << 32 + low
             else:
                 out_params[each] = _get_param_by_index(ql, index)
         elif in_params[each] == STRING:
-            ptr = _get_param_by_index(ql, index)
+            ptr = get_param_by_index(ql, index)
+
             if ptr == 0:
                 out_params[each] = 0
             else:
                 content = read_cstring(ql, ptr)
                 out_params[each] = content
-
-
-        elif in_params[each] == WSTRING :
-            ptr = _get_param_by_index(ql, index)
+        elif in_params[each] == WSTRING:
+            ptr = get_param_by_index(ql, index)
             if ptr == 0:
                 out_params[each] = 0
             else:
@@ -107,7 +106,7 @@ def set_function_params(ql, in_params, out_params):
                 out_params[each] = content
 
         elif in_params[each] == GUID:
-            ptr = _get_param_by_index(ql, index)
+            ptr = get_param_by_index(ql, index)
             if ptr == 0:
                 out_params[each] = 0
             else:

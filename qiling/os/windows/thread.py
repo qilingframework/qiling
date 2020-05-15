@@ -92,7 +92,7 @@ class QlWindowsThread(QlThread):
             self.ql.mem.write(new_stack, self.ql.pack64(func_params))
 
         # set eip, ebp, esp
-        self.saved_context = self.ql.reg.store()
+        self.saved_context = self.ql.reg.save()
 
         if self.ql.archtype == QL_ARCH.X86:
             self.saved_context["EIP"] = func_addr
@@ -107,7 +107,7 @@ class QlWindowsThread(QlThread):
         return self.id
 
     def suspend(self):
-        self.saved_context = self.ql.reg.store()
+        self.saved_context = self.ql.reg.save()
 
     def resume(self):
         self.ql.reg.restore(self.saved_context)

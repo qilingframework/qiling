@@ -48,11 +48,24 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    def test_libpatch_elf_linux_x8664(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/patch_test.bin"], "../examples/rootfs/x8664_linux")
+        ql.patch(0x0000000000000575, b'qiling\x00', file_name = b'libpatch_test.so')  
+        ql.run()
+        del ql
+
+
     def test_elf_freebsd_x8664(self):     
         ql = Qiling(["../examples/rootfs/x8664_freebsd/bin/x8664_hello_asm"], "../examples/rootfs/x8664_freebsd", output = "dump")
         ql.run()
         del ql
 
+    def test_elf_partial_linux_x8664(self): 
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello"], "../examples/rootfs/x8664_linux", output= "default")
+        X64BASE = int(ql.profile.get("OS64", "load_address"), 16)
+        begin_point = X64BASE + 0x109e
+        end_point = X64BASE + 0x10bc
+        ql.run(begin = begin_point, end = end_point)
 
     def test_elf_linux_x8664(self):
         def my_puts(ql):
@@ -61,11 +74,15 @@ class ELFTest(unittest.TestCase):
             
             reg = ql.reg.read("rax")
             print("reg : 0x%x" % reg)
-            ql.reg.rax = reg 
+            ql.reg.rax = reg
+            self.api_works = 0
         
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
         ql.set_api('puts', my_puts)
         ql.run()
+        if self.api_works != 0:
+            exit(1)
+        del self.api_works
         del ql
 
 
