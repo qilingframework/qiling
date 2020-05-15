@@ -688,17 +688,14 @@ class GDBSERVERsession(object):
                 data = subcmd.split(',')
                 if len(data) != 3:
                     self.send('E22')
-                    self.ql.dprint(D_INFO, "gdb> Error: not able to remove breakpoint: 0x%x" % (data[0]))
                 try:
                     type = data[0]
                     addr = int(data[1], 16)
                     length = data[2]
-                    self.ql.dprint(D_INFO, "gdb> Remove breakpoint: 0x%x" %(addr))
                     self.gdb.bp_remove(type, addr, length)
                     self.send('OK')
                 except:
                     self.send('E22')
-                    self.ql.dprint(D_INFO, "gdb> Error: not able to remove breakpoint: 0x%x" % (data[0]))
 
 
             def handle_exclaim(subcmd):
