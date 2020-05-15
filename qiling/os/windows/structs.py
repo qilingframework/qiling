@@ -321,12 +321,14 @@ class Token:
         # TODO find a GOOD reference paper for the values
         self.struct[Token.TokenInformationClass.TokenUIAccess.value] = self.ql.pack(0x1)
         self.struct[Token.TokenInformationClass.TokenGroups.value] = self.ql.pack(0x1)
-        # We create a Sid Structure, set its handle and return the value
-        sid = Sid(self.ql)
-        handle = Handle(obj=sid, id=sid.addr)
-        ql.dprint(0, hex(handle.id))
+        # still not sure why 0x1234 executes gandcrab as admin, but 544 no. No idea (see sid refs for the values)
+        sub = 0x1234 if ql.os.profile["SYSTEM"]["permission"] == "root" else 545
+        sid = Sid(self.ql, identifier=1, revision=1, subs_count=1, subs=[sub])
+        sid_addr = self.ql.os.heap.alloc(sid.size)
+        sid.write(sid_addr)
+        handle = Handle(obj=sid, id=sid_addr)
         self.ql.os.handle_manager.append(handle)
-        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = self.ql.pack(sid.addr)
+        self.struct[Token.TokenInformationClass.TokenIntegrityLevel] = self.ql.pack(sid_addr)
 
     def get(self, value):
         res = self.struct[value]
@@ -349,26 +351,41 @@ class Token:
 class Sid:
     # General Struct
     # https://docs.microsoft.com/it-it/windows/win32/api/winnt/ns-winnt-sid
+    # https://en.wikipedia.org/wiki/Security_Identifier
 
     # Identf Authority
     # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/c6ce4275-3d90-4890-ab3a-514745e4637e
-    def __init__(self, ql, subs_count=1, subs=None):
+    # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/81d92bba-d22b-4a8c-908a-554ab29148ab
+
+    def __init__(self, ql, revision=None, subs_count=None, identifier=None, subs=None):
         # TODO find better documentation
-        if subs is None:
-            perm = ql.os.profile["SYSTEM"]["permission"]
-            if perm == "root":
-                perm = 0x123456
-            else:
-                perm = 0
-        self.struct = {
-            "Revision": 0x1.to_bytes(length=1, byteorder="little"),  # ADD
-            "SubAuthorityCount": subs_count.to_bytes(length=1, byteorder="little"),
-            "IdentifierAuthority": 0x5.to_bytes(length=6, byteorder="little"),
-            "SubAuthority": perm.to_bytes(length=ql.pointersize, byteorder="little") if subs is None else subs
-        }
-        values = b"".join(self.struct.values())
-        self.addr = ql.os.heap.alloc(len(values))
-        ql.mem.write(self.addr, values)
+        self.ql = ql
+        self.revision: int = revision
+        self.subs_count: int = subs_count
+        self.identifier: int = identifier
+        self.subs: [int] = subs
+
+        if subs_count is not None:
+            self.size = 2 + 6 + self.subs_count * 4
+        self.addr = None
+
+    def write(self, addr):
+        self.ql.mem.write(addr, self.revision.to_bytes(length=1, byteorder="little"))
+        self.ql.mem.write(addr + 1, self.subs_count.to_bytes(length=1, byteorder="little"))
+        self.ql.mem.write(addr + 2, self.identifier.to_bytes(length=6, byteorder="big"))
+        for i in range(self.subs_count):
+            self.ql.mem.write(addr + 2 + 6 + 4 * i, self.subs[i].to_bytes(4, "little"))
+        self.addr = addr
+
+    def read(self, addr):
+        self.revision = int.from_bytes(self.ql.mem.read(addr, 1), byteorder="little")
+        self.subs_count = int.from_bytes(self.ql.mem.read(addr + 1, 1), byteorder="little")
+        self.identifier = int.from_bytes(self.ql.mem.read(addr + 2, 6), byteorder="little")
+        self.subs = []
+        for i in range(self.subs_count):
+            sub = int.from_bytes(self.ql.mem.read(addr + 2 + 6 + 4 * i, 4), "little")
+            self.subs.append(sub)
+        self.addr = addr
 
     def __eq__(self, other):
         if not isinstance(other, Sid):
@@ -402,14 +419,17 @@ class Point:
         self.x: int = x
         self.y: int = y
         self.size = 64
+        self.addr = None
 
     def write(self, addr):
         self.ql.mem.write(addr, self.x.to_bytes(length=32, byteorder="little"))
         self.ql.mem.write(addr + 32, self.y.to_bytes(length=32, byteorder="little"))
+        self.addr = addr
 
     def read(self, addr):
         self.x = int.from_bytes(self.ql.mem.read(addr, 32), byteorder="little")
         self.y = int.from_bytes(self.ql.mem.read(addr + 32, 32), byteorder="little")
+        self.addr = addr
 
 
 # typedef struct hostent {
@@ -428,6 +448,7 @@ class Hostent:
         self.length = length
         self.addr_list = addr_list
         self.size = self.ql.pointersize * 3 + 4
+        self.addr = None
 
     def write(self, addr):
         ip_ptr = self.ql.heap.alloc(self.name)
@@ -437,6 +458,7 @@ class Hostent:
         ql.mem.write(addr + 2 * self.ql.pointersize, self.addr_type.add.to_bytes(length=2, byteorder='little'))
         ql.mem.write(addr + 2 * self.ql.pointersize + 2, self.length.to_bytes(length=2, byteorder='little'))
         ql.mem.write(addr + 2 * self.ql.pointersize + 4, self.addr_list)
+        self.addr = addr
 
     def read(self, addr):
         ip_ptr = int.from_bytes(self.ql.mem.read(addr, self.ql.pointersize), byteorder="little")
@@ -446,3 +468,4 @@ class Hostent:
         self.addr_type = int.from_bytes(self.ql.mem.read(addr + 2 * self.ql.pointersize, 2), byteorder="little")
         self.length = int.from_bytes(self.ql.mem.read(addr + 2 * self.ql.pointersize + 2, 2), byteorder="little")
         self.addr_list = self.ql.mem.read(addr + 2 * self.ql.pointersize + 4, self.ql.pointersize)
+        self.addr = addr
