@@ -261,6 +261,20 @@ class LdrDataTableEntry:
         return s
 
 
+class WindowsStruct:
+
+    def __init__(self, ql):
+        self.ql = ql
+
+    def write(self, addr):
+        # I want to force the subclasses to implement it
+        raise NotImplementedError
+
+    def read(self, addr):
+        # I want to force the subclasses to implement it
+        raise NotImplementedError
+
+
 class Token:
     class TokenInformationClass(IntEnum):
         # https://docs.microsoft.com/it-it/windows/win32/api/winnt/ne-winnt-token_information_class
@@ -348,7 +362,7 @@ class Token:
 #   DWORD                    SubAuthority[ANYSIZE_ARRAY];
 # #endif
 # } SID, *PISID;
-class Sid:
+class Sid(WindowsStruct):
     # General Struct
     # https://docs.microsoft.com/it-it/windows/win32/api/winnt/ns-winnt-sid
     # https://en.wikipedia.org/wiki/Security_Identifier
@@ -359,7 +373,7 @@ class Sid:
 
     def __init__(self, ql, revision=None, subs_count=None, identifier=None, subs=None):
         # TODO find better documentation
-        self.ql = ql
+        super().__init__(ql)
         self.revision: int = revision
         self.subs_count: int = subs_count
         self.identifier: int = identifier
@@ -413,9 +427,9 @@ class Mutex:
 #   LONG x;
 #   LONG y;
 # } POINT, *PPOINT;
-class Point:
+class Point(WindowsStruct):
     def __init__(self, ql, x=None, y=None):
-        self.ql = ql
+        super().__init__(ql)
         self.x: int = x
         self.y: int = y
         self.size = 64
@@ -439,9 +453,9 @@ class Point:
 #  short h_length;
 #  char  **h_addr_list;
 # } HOSTENT, *PHOSTENT, *LPHOSTENT;
-class Hostent:
+class Hostent(WindowsStruct):
     def __init__(self, ql, name=None, aliases=None, addr_type=None, length=None, addr_list=None):
-        self.ql = ql
+        super().__init__(ql)
         self.name = name
         self.aliases = aliases
         self.addr_type = addr_type
