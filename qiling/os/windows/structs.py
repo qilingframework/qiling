@@ -265,6 +265,7 @@ class WindowsStruct:
 
     def __init__(self, ql):
         self.ql = ql
+        self.addr = None
 
     def write(self, addr):
         # I want to force the subclasses to implement it
@@ -381,7 +382,6 @@ class Sid(WindowsStruct):
 
         if subs_count is not None:
             self.size = 2 + 6 + self.subs_count * 4
-        self.addr = None
 
     def write(self, addr):
         self.ql.mem.write(addr, self.revision.to_bytes(length=1, byteorder="little"))
@@ -433,7 +433,6 @@ class Point(WindowsStruct):
         self.x: int = x
         self.y: int = y
         self.size = 64
-        self.addr = None
 
     def write(self, addr):
         self.ql.mem.write(addr, self.x.to_bytes(length=32, byteorder="little"))
@@ -462,7 +461,6 @@ class Hostent(WindowsStruct):
         self.length = length
         self.addr_list = addr_list
         self.size = self.ql.pointersize * 3 + 4
-        self.addr = None
 
     def write(self, addr):
         ip_ptr = self.ql.heap.alloc(self.name)
@@ -515,7 +513,6 @@ class OsVersionInfoExA(WindowsStruct):
         self.suite = suite
         self.product = product
         self.reserved = 0
-        self.addr = None
 
     def write(self, addr):
         self.ql.mem.write(addr, self.size.to_bytes(4, "little"))
@@ -563,7 +560,6 @@ class OsVersionInfoW(WindowsStruct):
         self.build = build
         self.platform = platform
         self.version = version
-        self.addr = None
 
     def write(self, addr):
         self.ql.mem.write(addr, self.size.to_bytes(8, byteorder="little"))
@@ -581,4 +577,116 @@ class OsVersionInfoW(WindowsStruct):
         self.build = int.from_bytes(self.ql.mem.read(addr + 24, 8), byteorder="little")
         self.platform = int.from_bytes(self.ql.mem.read(addr + 32, 8), byteorder="little")
         self.version = int.from_bytes(self.ql.mem.read(addr + 40, 128), byteorder="little")
+        self.addr = addr
+
+
+# typedef struct _SYSTEM_INFO {
+#   union {
+#     DWORD dwOemId;
+#     struct {
+#       WORD wProcessorArchitecture;
+#       WORD wReserved;
+#     } DUMMYSTRUCTNAME;
+#   } DUMMYUNIONNAME;
+#   DWORD     dwPageSize;
+#   LPVOID    lpMinimumApplicationAddress;
+#   LPVOID    lpMaximumApplicationAddress;
+#   DWORD_PTR dwActiveProcessorMask;
+#   DWORD     dwNumberOfProcessors;
+#   DWORD     dwProcessorType;
+#   DWORD     dwAllocationGranularity;
+#   WORD      wProcessorLevel;
+#   WORD      wProcessorRevision;
+# } SYSTEM_INFO, *LPSYSTEM_INFO;
+class SystemInfo(WindowsStruct):
+    def __init__(self, ql, dummy=None, page_size=None, min_address=None, max_address=None, mask=None, processors=None,
+                 processor_type=None, allocation=None, processor_level=None, processor_revision=None):
+        super().__init__(ql)
+        self.dummy = dummy
+        self.page_size = page_size
+        self.min_address = min_address
+        self.max_address = max_address
+        self.mask = mask
+        self.processors = processors
+        self.processor_type = processor_type
+        self.allocation = allocation
+        self.processor_level = processor_level
+        self.processor_revision = processor_revision
+
+    def write(self, addr):
+        self.ql.mem.write(addr, self.size.to_bytes(8, byteorder="little"))
+        self.ql.mem.write(addr + 8, self.major.to_bytes(4, byteorder="little"))
+        self.ql.mem.write(addr + 12, self.minor.to_bytes(self.ql.pointersize, byteorder="little"))
+        self.ql.mem.write(addr + 12 + self.ql.pointersize, self.build.to_bytes(self.ql.pointersize, byteorder="little"))
+        self.ql.mem.write(addr + 12 + 2 * self.ql.pointersize, self.mask.to_bytes(4, byteorder="little"))
+        self.ql.mem.write(addr + 16 + 2 * self.ql.pointersize, self.processors.to_bytes(4, byteorder="little"))
+        self.ql.mem.write(addr + 20 + 2 * self.ql.pointersize, self.processor_type.to_bytes(4, byteorder="little"))
+        self.ql.mem.write(addr + 24 + 2 * self.ql.pointersize, self.allocation.to_bytes(4, byteorder="little"))
+        self.ql.mem.write(addr + 28 + 2 * self.ql.pointersize, self.processor_level.to_bytes(2, byteorder="little"))
+        self.ql.mem.write(addr + 30 + 2 * self.ql.pointersize, self.processor_revision.to_bytes(2, byteorder="little"))
+        self.addr = addr
+
+    def read(self, addr):
+        self.dummy = int.from_bytes(self.ql.mem.read(addr, 8), byteorder="little")
+        self.page_size = int.from_bytes(self.ql.mem.read(addr + 8, 4), byteorder="little")
+        self.min_address = int.from_bytes(self.ql.mem.read(addr + 12, self.ql.pointersize), byteorder="little")
+        self.max_address = int.from_bytes(self.ql.mem.read(addr + 12 + self.ql.pointersize, self.ql.pointersize),
+                                          byteorder="little")
+        self.mask = int.from_bytes(self.ql.mem.read(addr + 12 + 2 * self.ql.pointersize, 4),
+                                   byteorder="little")
+        self.processors = int.from_bytes(self.ql.mem.read(addr + 16 + 2 * self.ql.pointersize, 4), byteorder="little")
+        self.processor_type = int.from_bytes(self.ql.mem.read(addr + 20 + 2 * self.ql.pointersize, 4),
+                                             byteorder="little")
+        self.allocation = int.from_bytes(self.ql.mem.read(aaddr + 24 + 2 * self.ql.pointersize, 4), byteorder="little")
+        self.processor_level = int.from_bytes(self.ql.mem.read(addr + 28 + 2 * self.ql.pointersize, 2),
+                                              byteorder="little")
+        self.processor_revision = int.from_bytes(self.ql.mem.read(addr + 30 + 2 * self.ql.pointersize, 2),
+                                                 byteorder="little")
+        self.addr = addr
+
+
+# typedef struct _SYSTEMTIME {
+#   WORD wYear;
+#   WORD wMonth;
+#   WORD wDayOfWeek;
+#   WORD wDay;
+#   WORD wHour;
+#   WORD wMinute;
+#   WORD wSecond;
+#   WORD wMilliseconds;
+# } SYSTEMTIME, *PSYSTEMTIME, *LPSYSTEMTIME;
+
+class SystemTime(WindowsStruct):
+    def __init__(self, ql, year=None, month=None, day_week=None, day=None, hour=None, minute=None, seconds=None,
+                 milliseconds=None):
+        super().__init__(ql)
+        self.year = year
+        self.month = month
+        self.day_week = day_week
+        self.day = day
+        self.hour = hour
+        self.minute = minute
+        self.seconds = seconds
+        self.milliseconds = milliseconds
+
+    def write(self, addr):
+        self.ql.mem.write(addr, self.year.to_bytes(2, byteorder="little"))
+        self.ql.mem.write(addr + 2, self.month.to_bytes(2, byteorder="little"))
+        self.ql.mem.write(addr + 4, self.day_week.to_bytes(2, byteorder="little"))
+        self.ql.mem.write(addr + 6, self.day.to_bytes(2, byteorder="little"))
+        self.ql.mem.write(addr + 8, self.hour.to_bytes(2, byteorder="little"))
+        self.ql.mem.write(addr + 10, self.minute.to_bytes(2, byteorder="little"))
+        self.ql.mem.write(addr + 12, self.seconds.to_bytes(2, byteorder="little"))
+        self.ql.mem.write(addr + 14, self.milliseconds.to_bytes(2, byteorder="little"))
+        self.addr = addr
+
+    def read(self, addr):
+        self.year = int.from_bytes(self.ql.mem.read(addr, 2), byteorder="little")
+        self.month = int.from_bytes(self.ql.mem.read(addr + 2, 2), byteorder="little")
+        self.day_week = int.from_bytes(self.ql.mem.read(addr + 4, 2), byteorder="little")
+        self.day = int.from_bytes(self.ql.mem.read(addr + 6, 2), byteorder="little")
+        self.hour = int.from_bytes(self.ql.mem.read(addr + 8, 2), byteorder="little")
+        self.minute = int.from_bytes(self.ql.mem.read(addr + 10, 2), byteorder="little")
+        self.seconds = int.from_bytes(self.ql.mem.read(addr + 12, 2), byteorder="little")
+        self.milliseconds = int.from_bytes(self.ql.mem.read(addr + 14, 2), byteorder="little")
         self.addr = addr
