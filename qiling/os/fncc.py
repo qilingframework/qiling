@@ -88,7 +88,7 @@ def set_function_params(ql, in_params, out_params):
                 high = get_param_by_index(ql, index)
                 out_params[each] = high << 32 + low
             else:
-                out_params[each] = _get_param_by_index(ql, index)
+                out_params[each] = get_param_by_index(ql, index)
         elif in_params[each] == STRING:
             ptr = get_param_by_index(ql, index)
 
