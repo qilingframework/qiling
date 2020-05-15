@@ -153,7 +153,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('--dump', action='store_true', default=False, dest='dump', help='Enable Debug + Diassembler mode')
     comm_parser.add_argument('--debug', action='store_true', default=False, dest='debug', help='Enable Debug mode')
     comm_parser.add_argument('--disasm', action='store_true', default=False, dest='disasm', help='Run in disassemble mode')
-    comm_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')  
+    comm_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')
     comm_parser.add_argument('-e', '--filter', metavar="FUNCTION NAME", required=False, dest="filter", default=None, 
                             help="Only work with strace mode, you can choose what to be printout, for multiple function calls should be separated by comma")
     comm_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
@@ -179,6 +179,12 @@ if __name__ == '__main__':
 
     if options.profile:
         options.profile = str(options.profile)
+
+    if options.console:
+        if options.console == 'False':
+            options.console = False
+        else:
+            options.console = True
     
     if type(options.verbose) != int and options.output not in ("debug", "dump"):
         print("ERROR: verbose mode, must be int and use with --debug or --dump")
@@ -191,7 +197,7 @@ if __name__ == '__main__':
     # ql file setup
     if (options.subparser_name == 'run'):
         if options.filename is not None and options.run_args == []:
-            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile = options.profile, output=options.output)
+            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile = options.profile, output=options.output, console=options.console)
 
         elif options.filename is None and options.args == [] and options.run_args != []:
             ql = Qiling(filename=options.run_args, rootfs=options.rootfs, profile = options.profile, output=options.output)

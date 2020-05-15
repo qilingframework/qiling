@@ -133,12 +133,11 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if self.log_dir != "" and type(self.log_dir) == str:
             _logger = ql_setup_logging_env(self)    
             self.log_file_fd = _logger
-        elif self.console == True: # only print out in console
+        elif self.console == True:
             _logger = ql_setup_logging_stream(self)
             self.log_file_fd = _logger
             # self.log_dir = None
 
-        
         # qiling output method conversion
         if self.output and type(self.output) == str:
             # setter / getter for output
