@@ -65,6 +65,8 @@ def hook_GetVariable(ql, address, params):
     if params['VariableName'] in ql.env:
         var = ql.env[params['VariableName']]
         read_len = read_int64(ql, params['DataSize'])
+        if params['Attributes'] != 0:
+            write_int64(ql, params['Attributes'], 0)
         write_int64(ql, params['DataSize'], len(var))
         if read_len < len(var):
             return EFI_BUFFER_TOO_SMALL
@@ -104,7 +106,7 @@ def hook_GetNextVariableName(ql, address, params):
     "Data": POINTER, #POINTER_T(None)
 })
 def hook_SetVariable(ql, address, params):
-    ql.env[params['VariableName']] = ql.mem.read(params['Data'], params['DataSize'])
+    ql.env[params['VariableName']] = bytes(ql.mem.read(params['Data'], params['DataSize']))
     return EFI_SUCCESS
 
 @dxeapi(params={

@@ -161,4 +161,5 @@ class QlLoaderPE_UEFI(QlLoader):
                 self.ql.remotedebugsession.gdb.bp_insert(self.entry_point)
         self.ql.stack_push(self.end_of_execution_ptr)
         self.ql.reg.rdx = self.system_table_ptr
+        self.ql.os.entry_point = self.entry_point
         self.ql.nprint(f'[+] Running from 0x{self.entry_point:x} of {path}')
