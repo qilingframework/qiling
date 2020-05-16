@@ -51,3 +51,13 @@ def LocateHandles(ql, address, params):
                 handles.append(handle)
                     
     return len(handles) * pointer_size, handles
+    
+def LocateProtocol(ql, address, params):
+    protocol = params['Protocol']
+    for handle, guid_dic in ql.loader.handle_dict.items():
+        if "Handle" in params and params["Handle"] != handle:
+            continue
+        if protocol in guid_dic:
+            write_int64(ql, params['Interface'], guid_dic[protocol])
+            return EFI_SUCCESS
+    return EFI_NOT_FOUND

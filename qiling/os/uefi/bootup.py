@@ -14,8 +14,6 @@ from .fncc import *
 from .const import *
 from qiling.os.const import *
 
-pointer_size = 8
-
 @dxeapi(params={
     "NewTpl": ULONGLONG,
 })
@@ -424,16 +422,6 @@ def hook_LocateHandleBuffer(ql, address, params):
             address += pointer_size
     return EFI_SUCCESS
 
-def LocateProtocol(ql, address, params):
-    protocol = params['Protocol']
-    for handle, guid_dic in ql.loader.handle_dict.items():
-        if "Handle" in params and params["Handle"] != handle:
-            continue
-        if protocol in guid_dic:
-            write_int64(ql, params['Interface'], guid_dic[protocol])
-            return EFI_SUCCESS
-    return EFI_NOT_FOUND
-
 @dxeapi(params={
     "Protocol": GUID,
     "Registration": POINTER, #POINTER_T(None)
@@ -441,7 +429,6 @@ def LocateProtocol(ql, address, params):
 })
 def hook_LocateProtocol(ql, address, params):
     return LocateProtocol(ql, address, params)
-
 
 @dxeapi(params={
     "Handle": POINTER})
@@ -526,14 +513,6 @@ def hook_SetMem(ql, address, params):
 })
 def hook_CreateEventEx(ql, address, params):
     return CreateEvent(ql, address, params)
-
-
-# def check_and_notify_protocols(ql):
-#     for handle in ql.loader.handle_dict:
-#         for protocol in ql.loader.handle_dict[handle]:
-#             for event_id, event_dic in ql.loader.events.items():
-#                 if event_dic["Guid"] == protocol:
-#                     SignalEvent(ql, event_id)
 
 
 def CreateEvent(ql, address, params):

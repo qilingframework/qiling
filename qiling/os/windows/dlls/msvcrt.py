@@ -261,8 +261,6 @@ def hook___stdio_common_vswprintf_s(ql, address, _):
     return ret
 
 
-
-
 # int lstrlenW(
 #   LPCWSTR lpString
 # );
