@@ -45,8 +45,8 @@ class QLCoreUtils(object):
             # setup filter for logger
             # FIXME: only works for logging due to we might need runtime disable nprint, it should be a global filter not only syscall
             if self.filter != None and self.output == QL_OUTPUT.DEFAULT:
-                from .utils import Ql_filter
-                self.log_file_fd.addFilter(Ql_filter(self.filter))
+                from .utils import ql_setup_filter
+                self.log_file_fd.addFilter(ql_setup_filter(self.filter))
 
             msg = args[0]
             msg += kw["end"] if kw.get("end", None) != None else os.linesep

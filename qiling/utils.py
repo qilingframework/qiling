@@ -210,12 +210,14 @@ def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
     logger.addHandler(fh)
     return logger
 
+def ql_setup_filter(func_names):
+    class _filter(logging.Filter):
+        def __init__(self, func_names):
+            super().__init__()
+            # accept list or string func_names so you can use it in qltool and programming
+            self.filter_list = func_names.strip().split(",") if isinstance(func_names, str) else func_names
 
-class Ql_filter(logging.Filter):
-    def __init__(self, func_names):
-        super().__init__()
-        # accept list or string func_names so you can use it in qltool and programming
-        self.filter_list = func_names.strip().split(",") if isinstance(func_names, str) else func_names
+        def filter(self, record):
+            return any((record.getMessage().startswith(each) for each in self.filter_list))
 
-    def filter(self, record):
-        return any((record.getMessage().startswith(each) for each in self.filter_list))
+    return _filter(func_names)
