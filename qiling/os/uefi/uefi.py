@@ -16,6 +16,7 @@ class QlOsUefi(QlOs):
         super(QlOsUefi, self).__init__(ql)
         self.ql = ql
         self.entry_point = 0
+        self.pid = 0
         self.user_defined_api = {}
         self.notify_immediately = False
         self.PE_RUN = True
