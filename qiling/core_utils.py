@@ -50,7 +50,8 @@ class QLCoreUtils(object):
 
             msg = args[0]
             msg += kw["end"] if kw.get("end", None) != None else os.linesep
-            fd.info(msg)
+            if self.console == True:
+                fd.info(msg)
 
             if isinstance(fd, logging.FileHandler):
                 fd.emit()
