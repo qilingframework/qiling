@@ -6,6 +6,7 @@
 import ctypes
 import struct
 from qiling.const import *
+from .const import *
 
 def convert_struct_to_bytes(st):
     buffer = ctypes.create_string_buffer(ctypes.sizeof(st))
@@ -40,3 +41,13 @@ def read_int64(ql, address):
     else:
         return struct.unpack('>Q',ql.mem.read(address, 8))[0]
 
+def LocateHandles(ql, address, params):
+    handles = []
+    if params["SearchKey"] == SEARCHTYPE_AllHandles:
+        handles = ql.loader.handle_dict.keys()
+    elif params["SearchKey"] == SEARCHTYPE_ByProtoco:
+        for handle, guid_dic in ql.loader.handle_dict.items():
+            if params["Protocol"] in guid_dic:
+                handles.append(handle)
+                    
+    return len(handles) * pointer_size, handles

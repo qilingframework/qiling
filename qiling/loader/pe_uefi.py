@@ -18,7 +18,7 @@ from qiling.os.uefi.fncc import *
 from qiling.os.uefi.bootup import *
 from qiling.os.uefi.runtime import *
 
-from qiling.os.fncc import *
+from qiling.os.windows.fncc import *
 
 import pefile
 from .loader import QlLoader

@@ -6,12 +6,13 @@
 from uuid import UUID
 from binascii import crc32
 from qiling.const import *
-from .const import *
+
 from .utils import *
 from .type64 import *
 from .shutdown import *
 from .fncc import *
-from qiling.os.fncc import *
+from .const import *
+from qiling.os.const import *
 
 pointer_size = 8
 
@@ -217,22 +218,14 @@ def hook_HandleProtocol(ql, address, params):
     "Event": POINTER,
     "Registration": POINTER})
 def hook_RegisterProtocolNotify(ql, address, params):
+    print(params["Protocol"])
     if params['Event'] in ql.loader.events:
         ql.loader.events[params['Event']]['Guid'] = params["Protocol"]
         check_and_notify_protocols(ql)
         return EFI_SUCCESS
     return EFI_INVALID_PARAMETER
 
-def LocateHandles(ql, address, params):
-    handles = []
-    if params["SearchKey"] == SEARCHTYPE_AllHandles:
-        handles = ql.loader.handle_dict.keys()
-    elif params["SearchKey"] == SEARCHTYPE_ByProtoco:
-        for handle, guid_dic in ql.loader.handle_dict.items():
-            if params["Protocol"] in guid_dic:
-                handles.append(handle)
-                    
-    return len(handles) * pointer_size, handles
+
 
 @dxeapi(params={
     "SearchType": ULONGLONG,
@@ -460,10 +453,10 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
         dic = ql.loader.handle_dict[handle]
     
     index = 1
-    while get_param_by_index(ql, index) != 0:
-        GUID_ptr = get_param_by_index(ql, index)
-        protocol_ptr = get_param_by_index(ql, index+1)
-        GUID = str(read_guid(ql, GUID_ptr))
+    while ql.os.get_param_by_index(index) != 0:
+        GUID_ptr = ql.os.get_param_by_index(index)
+        protocol_ptr = ql.os.get_param_by_index(index+1)
+        GUID = str(ql.os.read_guid(GUID_ptr))
         ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
         dic[GUID] = protocol_ptr
         index +=2
@@ -480,10 +473,10 @@ def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
     if handle not in ql.loader.handle_dict:
         return EFI_NOT_FOUND
     index = 1
-    while get_param_by_index(ql, index) != 0:
-        GUID_ptr = get_param_by_index(ql, index)
-        protocol_ptr = get_param_by_index(ql, index+1)
-        GUID = str(read_guid(ql, GUID_ptr))
+    while ql.os.get_param_by_index(index) != 0:
+        GUID_ptr = ql.os.get_param_by_index(index)
+        protocol_ptr = ql.os.get_param_by_index(index+1)
+        GUID = str(ql.os.read_guid(GUID_ptr))
         ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
         dic = ql.loader.handle_dict[handle]
         protocol = params["Protocol"]
@@ -535,12 +528,12 @@ def hook_CreateEventEx(ql, address, params):
     return CreateEvent(ql, address, params)
 
 
-def check_and_notify_protocols(ql):
-    for handle in ql.loader.handle_dict:
-        for protocol in ql.loader.handle_dict[handle]:
-            for event_id, event_dic in ql.loader.events.items():
-                if event_dic["Guid"] == protocol:
-                    SignalEvent(ql, event_id)
+# def check_and_notify_protocols(ql):
+#     for handle in ql.loader.handle_dict:
+#         for protocol in ql.loader.handle_dict[handle]:
+#             for event_id, event_dic in ql.loader.events.items():
+#                 if event_dic["Guid"] == protocol:
+#                     SignalEvent(ql, event_id)
 
 
 def CreateEvent(ql, address, params):

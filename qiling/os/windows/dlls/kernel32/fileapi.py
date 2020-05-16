@@ -7,7 +7,7 @@ import struct, time, os
 
 from qiling.os.windows.const import *
 from qiling.os.const import *
-from qiling.os.fncc import *
+from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
@@ -134,7 +134,7 @@ def hook_WriteFile(ql, address, params):
     if hFile == STD_OUTPUT_HANDLE:
         s = ql.mem.read(lpBuffer, nNumberOfBytesToWrite)
         ql.os.stdout.write(s)
-        string_appearance(ql, s.decode())
+        ql.os.string_appearance(s.decode())
         ql.mem.write(lpNumberOfBytesWritten, ql.pack(nNumberOfBytesToWrite))
     else:
         f = ql.os.handle_manager.get(hFile)

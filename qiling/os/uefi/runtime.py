@@ -4,11 +4,11 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 from qiling.const import *
+from qiling.os.const import *
 from .const import *
 from .utils import *
 from .type64 import *
 from .fncc import *
-from qiling.os.fncc import *
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(struct_EFI_TIME)
@@ -80,7 +80,7 @@ def hook_GetVariable(ql, address, params):
 })
 def hook_GetNextVariableName(ql, address, params):
     name_size = read_int64(ql, params["VariableNameSize"])
-    last_name = read_wstring(ql, params["VariableName"])
+    last_name = ql.os.read_wstring(params["VariableName"])
     vars = ql.env['Names'] # This is a list of variable names in correct order.
     if last_name in vars and vars.index(last_name) < len(vars) - 1:
         new_name = vars[vars.index(last_name)+1]
