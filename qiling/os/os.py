@@ -22,7 +22,8 @@ class QlOs(QLOsUtils):
         self.current_path = '/'
         self.profile = self.ql.profile
         self.exit_code = 0
-
+        self.pid = self.profile.getint("KERNEL","pid")
+        
         if self.ql.stdin != 0:
             self.stdin = self.ql.stdin
         

@@ -33,8 +33,6 @@ class QlOsPosix(QlOs):
             self.uid = self.profile.getint("KERNEL","uid")
             self.gid = self.profile.getint("KERNEL","gid")
         
-        self.pid = self.profile.getint("KERNEL","pid")
-
         self.file_des = []
         self.dict_posix_syscall = dict()
         self.dict_posix_syscall_by_num = dict()
