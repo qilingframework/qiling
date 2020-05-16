@@ -24,6 +24,10 @@ ram_size = 0xa00000
 entry_point = 0x1000000
 
 
+[KERNEL]
+pid = 1996
+
+
 [LOG]
 # log directory output
 # usage: dir = qlog
