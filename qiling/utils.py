@@ -210,7 +210,7 @@ def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
     logger.addHandler(fh)
     return logger
 
-def ql_setup_filter(func_names):
+def ql_setup_filter(func_names=None):
     class _filter(logging.Filter):
         def __init__(self, func_names):
             super().__init__()
@@ -220,10 +220,13 @@ def ql_setup_filter(func_names):
         def filter(self, record):
             return any((record.getMessage().startswith(each) for each in self.filter_list))
 
-    return _filter(func_names)
+    class _FalseFilter(logging.Filter):
+        def __init__(self):
+            super().__init__()
+        def filter(self, record):
+            return False
 
-class _FalseFilter(logging.Filter):
-    def __init__(self):
-        super().__init__()
-    def filter(self, record):
-        return False
+    if func_names == False:
+        return _FalseFilter()
+    else:
+        return _filter(func_names)

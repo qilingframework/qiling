@@ -15,7 +15,7 @@ from binascii import unhexlify
 from .utils import ql_build_module_import_name, ql_get_module_function
 from .utils import ql_is_valid_arch, ql_is_valid_ostype
 from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
-from .utils import _FalseFilter
+from .utils import ql_setup_filter
 from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
 from .const import D_INFO
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
@@ -46,7 +46,6 @@ class QLCoreUtils(object):
             # setup filter for logger
             # FIXME: only works for logging due to we might need runtime disable nprint, it should be a global filter not only syscall
             if self.filter != None and self.output == QL_OUTPUT.DEFAULT:
-                from .utils import ql_setup_filter
                 self.log_file_fd.addFilter(ql_setup_filter(self.filter))
 
             console_handlers = []
@@ -58,7 +57,7 @@ class QLCoreUtils(object):
             if self.console == False:
                 for each_console_handler in console_handlers:
                     if '_FalseFilter' not in [each.__class__.__name__ for each in each_console_handler.filters]:
-                        each_console_handler.addFilter(_FalseFilter())
+                        each_console_handler.addFilter(ql_setup_filter(False))
 
             elif self.console == True:
                 for each_console_handler in console_handlers:
