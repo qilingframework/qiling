@@ -164,6 +164,7 @@ def ql_setup_logger(logger_name=None):
         loggers = logging.root.manager.loggerDict
         _counter = len(loggers)
         logger_name = 'qiling_%s' % _counter
+
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)
     return logger
@@ -183,7 +184,6 @@ def ql_setup_logging_env(ql, logger=None):
 
 def ql_setup_logging_stream(ql, logger=None):
 
-    # ch = logging.NullHandler()
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
 
@@ -221,3 +221,9 @@ def ql_setup_filter(func_names):
             return any((record.getMessage().startswith(each) for each in self.filter_list))
 
     return _filter(func_names)
+
+class _FalseFilter(logging.Filter):
+    def __init__(self):
+        super().__init__()
+    def filter(self, record):
+        return False
