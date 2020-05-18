@@ -378,7 +378,7 @@ def hook_GetOEMCP(ql, address, params):
 def hook_LoadStringW(ql, address, params):
     dst = params["lpBuffer"]
     max_len = params["cchBufferMax"]
-    # TODO fix the string
+    # FIXME, should not be hardcoded
     string = "AAAABBBBCCCCDDDD" + "\x00"
     if max_len == 0:
         if len(string) >= max_len:
@@ -404,7 +404,7 @@ def hook_LoadStringW(ql, address, params):
 def hook_LoadStringA(ql, address, params):
     dst = params["lpBuffer"]
     max_len = params["cchBufferMax"]
-    # TODO fix the string
+    # FIXME, should not be hardcoded
     string = "AAAABBBBCCCCDDDD" + "\x00"
     if max_len == 0:
         if len(string) >= max_len:
