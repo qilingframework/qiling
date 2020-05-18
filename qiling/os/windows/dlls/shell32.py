@@ -59,17 +59,17 @@ def hook_SHGetFileInfoW(ql, address, params):
 
 def _ShellExecute(ql, obj: ShellExecuteInfoA):
 
-    operation = ql.os.read_wstring(obj.verb) if obj.verb != 0 else ""
-    params = ql.os.read_wstring(obj.params) if obj.params != 0 else ""
-    file = ql.os.read_wstring(obj.file) if obj.file != 0 else ""
-    directory = ql.os.read_wstring(obj.dir) if obj.dir != 0 else ""
+    operation = ql.os.read_wstring(obj.verb[0]) if obj.verb[0] != 0 else ""
+    params = ql.os.read_wstring(obj.params[0]) if obj.params[0] != 0 else ""
+    file = ql.os.read_wstring(obj.file[0]) if obj.file[0] != 0 else ""
+    directory = ql.os.read_wstring(obj.dir[0]) if obj.dir[0] != 0 else ""
 
     ql.dprint(D_RPRT, "[=] Target executed a shell command!")
     ql.dprint(D_RPRT, "[-] Operation: %s " % operation)
     ql.dprint(D_RPRT, "[-] Parameters: %s " % params)
     ql.dprint(D_RPRT, "[-] File: %s " % file)
     ql.dprint(D_RPRT, "[-] Directory: %s " % directory)
-    if obj.show == SW_HIDE:
+    if obj.show[0] == SW_HIDE:
         ql.dprint(D_RPRT, "[=] With an hidden window")
     process = QlWindowsThread(ql, status=0, isFake=True)
     handle = Handle(obj=process)
@@ -92,8 +92,8 @@ def hook_ShellExecuteExW(ql, address, params):
     handle = _ShellExecute(ql, shellInfo)
 
     # Write results
-    shellInfo.instApp = 0x21
-    shellInfo.process = handle.id
+    shellInfo.instApp[0] = 0x21
+    shellInfo.process[0] = handle.id
     shellInfo.write(pointer)
     return 1
 

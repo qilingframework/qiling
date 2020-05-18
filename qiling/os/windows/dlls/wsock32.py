@@ -79,12 +79,14 @@ def hook_connect(ql, address, params):
 #  const char *name
 # );
 @winapi(cc=STDCALL, params={
-    "name": STRING
+    "name": POINTER
 })
 def hook_gethostbyname(ql, address, params):
     ip_str = ql.os.profile.getint("NETWORK", "dns_response_ip")
     ip = bytes([int(octet) for octet in ip_str.split('.')[::-1]])
-    hostnet = Hostent(ql, params["name"], 0, 2, 4, ip)
+    name_ptr = params["name"]
+    params["name"] = ql.os.read_cstring(name_ptr)
+    hostnet = Hostent(ql, name_ptr, 0, 2, 4, ip)
     hostnet_addr = ql.heap.alloc(hostnet.size)
     hostnet.write(hostnet_addr)
 

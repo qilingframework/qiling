@@ -266,6 +266,13 @@ class WindowsStruct:
     def __init__(self, ql):
         self.ql = ql
         self.addr = None
+        self.ULONG_SIZE = 8
+        self.LONG_SIZE = 4
+        self.POINTER_SIZE = self.ql.pointersize
+        self.INT_SIZE = 2
+        self.DWORD_SIZE = 4
+        self.WORD_SIZE = 2
+        self.SHORT_SIZE = 2
 
     def write(self, addr):
         # I want to force the subclasses to implement it
@@ -274,6 +281,34 @@ class WindowsStruct:
     def read(self, addr):
         # I want to force the subclasses to implement it
         raise NotImplementedError
+
+    def generic_write(self, addr: int, attributes: list):
+        already_written = 0
+        for elem in attributes:
+            (val, size, endianness, type) = elem
+            if type == int:
+                value = val.to_bytes(size, endianness)
+            elif type == bytes:
+                value = val
+            else:
+                raise
+            self.ql.mem.write(addr + already_written, value)
+            already_written += size
+        self.addr = addr
+
+    def generic_read(self, addr: int, attributes: list):
+        already_read = 0
+        for elem in attributes:
+            (val, size, endianness, type) = elem
+            value = self.ql.mem.read(addr + already_read, size)
+            if type == int:
+                elem[0] = int.from_bytes(value, endianness)
+            elif type == bytes:
+                elem[0] = value
+            else:
+                raise
+            already_read += size
+        self.addr = addr
 
 
 class Token:
@@ -430,19 +465,15 @@ class Mutex:
 class Point(WindowsStruct):
     def __init__(self, ql, x=None, y=None):
         super().__init__(ql)
-        self.x: int = x
-        self.y: int = y
+        self.x = [x, self.LONG_SIZE, "little", int]
+        self.y = [y, self.LONG_SIZE, "little", int]
         self.size = 64
 
     def write(self, addr):
-        self.ql.mem.write(addr, self.x.to_bytes(length=32, byteorder="little"))
-        self.ql.mem.write(addr + 32, self.y.to_bytes(length=32, byteorder="little"))
-        self.addr = addr
+        super().generic_write(addr, [self.x, self.y])
 
     def read(self, addr):
-        self.x = int.from_bytes(self.ql.mem.read(addr, 32), byteorder="little")
-        self.y = int.from_bytes(self.ql.mem.read(addr + 32, 32), byteorder="little")
-        self.addr = addr
+        super().generic_read(addr, [self.x, self.y])
 
 
 # typedef struct hostent {
@@ -455,32 +486,18 @@ class Point(WindowsStruct):
 class Hostent(WindowsStruct):
     def __init__(self, ql, name=None, aliases=None, addr_type=None, length=None, addr_list=None):
         super().__init__(ql)
-        self.name = name
-        self.aliases = aliases
-        self.addr_type = addr_type
-        self.length = length
-        self.addr_list = addr_list
-        self.size = self.ql.pointersize * 3 + 4
+        self.name = [name, self.POINTER_SIZE, "little", int]
+        self.aliases = [aliases, self.POINTER_SIZE, "little", int]
+        self.addr_type = [addr_type, self.SHORT_SIZE, "little", int]
+        self.length = [length, self.SHORT_SIZE, "little", int]
+        self.addr_list = [addr_list, len(addr_list), "little", bytes]
+        self.size = self.POINTER_SIZE * 2 + self.SHORT_SIZE * 2 + len(addr_list)
 
     def write(self, addr):
-        ip_ptr = self.ql.heap.alloc(self.name)
-        ql.uc.mem.write(ip_ptr, self.name.encode())
-        ql.mem.write(addr, ip_ptr.to_bytes(length=self.ql.pointersize, byteorder='little'))
-        ql.mem.write(addr + self.ql.pointersize, self.aliases.to_bytes(length=self.ql.pointersize, byteorder='little'))
-        ql.mem.write(addr + 2 * self.ql.pointersize, self.addr_type.add.to_bytes(length=2, byteorder='little'))
-        ql.mem.write(addr + 2 * self.ql.pointersize + 2, self.length.to_bytes(length=2, byteorder='little'))
-        ql.mem.write(addr + 2 * self.ql.pointersize + 4, self.addr_list)
-        self.addr = addr
+        super().generic_write(addr, [self.name, self.aliases, self.addr_type, self.length, self.addr_list])
 
     def read(self, addr):
-        ip_ptr = int.from_bytes(self.ql.mem.read(addr, self.ql.pointersize), byteorder="little")
-        self.name = read_cstring(self.ql, ip_ptr)
-        self.aliases = int.from_bytes(self.ql.mem.read(addr + self.ql.pointersize, self.ql.pointersize),
-                                      byteorder="little")
-        self.addr_type = int.from_bytes(self.ql.mem.read(addr + 2 * self.ql.pointersize, 2), byteorder="little")
-        self.length = int.from_bytes(self.ql.mem.read(addr + 2 * self.ql.pointersize + 2, 2), byteorder="little")
-        self.addr_list = self.ql.mem.read(addr + 2 * self.ql.pointersize + 4, self.ql.pointersize)
-        self.addr = addr
+        super().generic_read(addr, [self.name, self.aliases, self.addr_type, self.length, self.addr_list])
 
 
 # typedef struct _OSVERSIONINFOEXA {
@@ -658,41 +675,28 @@ class SystemInfo(WindowsStruct):
 #   WORD wMilliseconds;
 # } SYSTEMTIME, *PSYSTEMTIME, *LPSYSTEMTIME;
 
+
 class SystemTime(WindowsStruct):
     def __init__(self, ql, year=None, month=None, day_week=None, day=None, hour=None, minute=None, seconds=None,
                  milliseconds=None):
         super().__init__(ql)
-        self.year = year
-        self.month = month
-        self.day_week = day_week
-        self.day = day
-        self.hour = hour
-        self.minute = minute
-        self.seconds = seconds
-        self.milliseconds = milliseconds
-        self.size = 16
+        self.year = [year, self.WORD_SIZE, "little", int]
+        self.month = [month, self.WORD_SIZE, "little", int]
+        self.day_week = [day_week, self.WORD_SIZE, "little", int]
+        self.day = [day, self.WORD_SIZE, "little", int]
+        self.hour = [hour, self.WORD_SIZE, "little", int]
+        self.minute = [minute, self.WORD_SIZE, "little", int]
+        self.seconds = [seconds, self.WORD_SIZE, "little", int]
+        self.milliseconds = [milliseconds, self.WORD_SIZE, "little", int]
+        self.size = self.WORD_SIZE * 8
 
     def write(self, addr):
-        self.ql.mem.write(addr, self.year.to_bytes(2, byteorder="little"))
-        self.ql.mem.write(addr + 2, self.month.to_bytes(2, byteorder="little"))
-        self.ql.mem.write(addr + 4, self.day_week.to_bytes(2, byteorder="little"))
-        self.ql.mem.write(addr + 6, self.day.to_bytes(2, byteorder="little"))
-        self.ql.mem.write(addr + 8, self.hour.to_bytes(2, byteorder="little"))
-        self.ql.mem.write(addr + 10, self.minute.to_bytes(2, byteorder="little"))
-        self.ql.mem.write(addr + 12, self.seconds.to_bytes(2, byteorder="little"))
-        self.ql.mem.write(addr + 14, self.milliseconds.to_bytes(2, byteorder="little"))
-        self.addr = addr
+        super().generic_write(addr, [self.year, self.month, self.day_week, self.day, self.hour,
+                                     self.minute, self.seconds, self.milliseconds])
 
     def read(self, addr):
-        self.year = int.from_bytes(self.ql.mem.read(addr, 2), byteorder="little")
-        self.month = int.from_bytes(self.ql.mem.read(addr + 2, 2), byteorder="little")
-        self.day_week = int.from_bytes(self.ql.mem.read(addr + 4, 2), byteorder="little")
-        self.day = int.from_bytes(self.ql.mem.read(addr + 6, 2), byteorder="little")
-        self.hour = int.from_bytes(self.ql.mem.read(addr + 8, 2), byteorder="little")
-        self.minute = int.from_bytes(self.ql.mem.read(addr + 10, 2), byteorder="little")
-        self.seconds = int.from_bytes(self.ql.mem.read(addr + 12, 2), byteorder="little")
-        self.milliseconds = int.from_bytes(self.ql.mem.read(addr + 14, 2), byteorder="little")
-        self.addr = addr
+        super().generic_read(addr, [self.year, self.month, self.day_week, self.day, self.hour,
+                                    self.minute, self.seconds, self.milliseconds])
 
 
 # typedef struct _STARTUPINFO {
@@ -805,70 +809,34 @@ class StartupInfo(WindowsStruct):
 #   HANDLE    hProcess;
 # } SHELLEXECUTEINFOA, *LPSHELLEXECUTEINFOA;
 class ShellExecuteInfoA(WindowsStruct):
-    def write(self, addr):
-        self.ql.mem.write(addr, self.size.to_bytes(4, "little"))
-        self.ql.mem.write(addr + 4, self.mask.to_bytes(8, "little"))
-        self.ql.mem.write(addr + 12, self.hwnd.to_bytes(self.ql.pointersize, "little"))
-        self.ql.mem.write(addr + 12 + self.ql.pointersize, self.verb.to_bytes(self.ql.pointersize, "little"))
-        self.ql.mem.write(addr + 12 + 2 * self.ql.pointersize, self.file.to_bytes(self.ql.pointersize, "little"))
-        self.ql.mem.write(addr + 12 + 3 * self.ql.pointersize, self.params.to_bytes(self.ql.pointersize, "little"))
-        self.ql.mem.write(addr + 12 + 4 * self.ql.pointersize, self.dir.to_bytes(self.ql.pointersize, "little"))
-        self.ql.mem.write(addr + 12 + 5 * self.ql.pointersize, self.show.to_bytes(4, "little"))
-        self.ql.mem.write(addr + 16 + 5 * self.ql.pointersize, self.instApp.to_bytes(self.ql.pointersize, "little"))
-
-        self.ql.mem.write(addr + 16 + 6 * self.ql.pointersize, self.id_list.to_bytes(self.ql.pointersize, "little"))
-        self.ql.mem.write(addr + 16 + 7 * self.ql.pointersize, self.class_name.to_bytes(self.ql.pointersize, "little"))
-        self.ql.mem.write(addr + 16 + 8 * self.ql.pointersize, self.class_key.to_bytes(self.ql.pointersize, "little"))
-        self.ql.mem.write(addr + 16 + 9 * self.ql.pointersize, self.hot_key.to_bytes(4, "little"))
-        self.ql.mem.write(addr + 20 + 9 * self.ql.pointersize, self.dummy.to_bytes(self.ql.pointersize, "little"))
-        self.ql.mem.write(addr + 20 + 10 * self.ql.pointersize, self.process.to_bytes(self.ql.pointersize, "little"))
-        self.addr = addr
-
-    def read(self, addr):
-        self.addr = addr
-        self.size = int.from_bytes(self.ql.mem.read(addr, 4), byteorder="little")
-        self.mask = int.from_bytes(self.ql.mem.read(addr + 4, 8), byteorder="little")
-        self.hwnd = int.from_bytes(self.ql.mem.read(addr + 12, self.ql.pointersize), byteorder="little")
-        self.verb = int.from_bytes(self.ql.mem.read(addr + 12 + self.ql.pointersize, self.ql.pointersize),
-                                   byteorder="little")
-        self.file = int.from_bytes(self.ql.mem.read(addr + 12 + 2 * self.ql.pointersize, self.ql.pointersize),
-                                   byteorder="little")
-        self.params = int.from_bytes(self.ql.mem.read(addr + 12 + 3 * self.ql.pointersize, self.ql.pointersize),
-                                     byteorder="little")
-        self.dir = int.from_bytes(self.ql.mem.read(addr + 12 + 4 * self.ql.pointersize, self.ql.pointersize),
-                                  byteorder="little")
-        self.show = int.from_bytes(self.ql.mem.read(addr + 12 + 5 * self.ql.pointersize, 4), byteorder="little")
-        self.instApp = int.from_bytes(self.ql.mem.read(addr + 16 + 5 * self.ql.pointersize, self.ql.pointersize),
-                                      byteorder="little")
-        self.id_list = int.from_bytes(self.ql.mem.read(addr + 16 + 6 * self.ql.pointersize, self.ql.pointersize),
-                                      byteorder="little")
-        self.class_name = int.from_bytes(self.ql.mem.read(addr + 16 + 7 * self.ql.pointersize, self.ql.pointersize),
-                                         byteorder="little")
-        self.class_key = int.from_bytes(self.ql.mem.read(addr + 16 + 8 * self.ql.pointersize, self.ql.pointersize),
-                                        byteorder="little")
-        self.hot_key = int.from_bytes(self.ql.mem.read(addr + 16 + 9 * self.ql.pointersize, 4), byteorder="little")
-        self.dummy = int.from_bytes(self.ql.mem.read(addr + 20 + 9 * self.ql.pointersize, self.ql.pointersize),
-                                    byteorder="little")
-        self.process = int.from_bytes(self.ql.mem.read(addr + 20 + 10 * self.ql.pointersize, self.ql.pointersize),
-                                      byteorder="little")
-
     def __init__(self, ql, fMask=None, hwnd=None, lpVerb=None, lpFile=None, lpParams=None, lpDir=None, show=None,
                  instApp=None, lpIDList=None, lpClass=None, hkeyClass=None,
                  dwHotKey=None, dummy=None, hProcess=None):
         super().__init__(ql)
-        self.mask = fMask
-        self.hwnd = hwnd
-        self.verb = lpVerb
-        self.file = lpFile
-        self.params = lpParams
-        self.dir = lpDir
-        self.show = show
-        self.instApp = instApp
-        self.id_list = lpIDList
-        self.class_name = lpClass
-        self.class_key = hkeyClass
-        self.hot_key = dwHotKey
-        self.dummy = dummy
-        self.process = hProcess
-        self.addr = None
-        self.size = 20 + 11 * self.ql.pointersize
+        self.size = self.DWORD_SIZE + self.ULONG_SIZE + self.INT_SIZE * 2 + self.POINTER_SIZE * 11
+        self.cb = [self.size, self.DWORD_SIZE, "little", int]
+        self.mask = [fMask, self.ULONG_SIZE, "little", int]
+        self.hwnd = [hwnd, self.POINTER_SIZE, "little", int]
+        self.verb = [lpVerb, self.POINTER_SIZE, "little", int]
+        self.file = [lpFile, self.POINTER_SIZE, "little", int]
+        self.params = [lpParams, self.POINTER_SIZE, "little", int]
+        self.dir = [lpDir, self.POINTER_SIZE, "little", int]
+        self.show = [show, self.INT_SIZE, "little", int]
+        self.instApp = [instApp, self.POINTER_SIZE, "little", int]
+        self.id_list = [lpIDList, self.POINTER_SIZE, "little", int]
+        self.class_name = [lpClass, self.POINTER_SIZE, "little", int]
+        self.class_key = [hkeyClass, self.POINTER_SIZE, "little", int]
+        self.hot_key = [dwHotKey, self.INT_SIZE, "little", int]
+        self.dummy = [dummy, self.POINTER_SIZE, "little", int]
+        self.process = [hProcess, self.POINTER_SIZE, "little", int]
+
+    def write(self, addr):
+        super().generic_write(addr, [self.cb, self.mask, self.hwnd, self.verb, self.file, self.params, self.dir,
+                                     self.show, self.instApp, self.id_list, self.class_name, self.class_key,
+                                     self.hot_key, self.dummy, self.process])
+
+    def read(self, addr):
+        super().generic_read(addr, [self.cb, self.mask, self.hwnd, self.verb, self.file, self.params, self.dir,
+                                    self.show, self.instApp, self.id_list, self.class_name, self.class_key,
+                                    self.hot_key, self.dummy, self.process])
+        self.size = self.cb
