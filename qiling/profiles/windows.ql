@@ -71,6 +71,7 @@ registry_diff = registry_diff.json
 
 
 [VOLUME]
+name = Volume1
 serial_number = 3224010732
 type = NTFS
 sectors_per_cluster = 10

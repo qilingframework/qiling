@@ -24,7 +24,7 @@ from qiling.exception import *
     "hProcess": HANDLE,
     "hModule": HANDLE,
     "lpmodinfo": POINTER,
-    "cb":DWORD
+    "cb": DWORD
 })
 def hook_K32GetModuleInformation(self, address, params):
     # TODO

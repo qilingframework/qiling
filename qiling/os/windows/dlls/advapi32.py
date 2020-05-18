@@ -8,6 +8,7 @@ from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
+from qiling.os.windows.structs import *
 
 
 def _RegOpenKey(ql, address, params):
@@ -213,6 +214,20 @@ def hook_RegCloseKey(ql, address, params):
     "phkResult": POINTER
 })
 def hook_RegCreateKeyA(ql, address, params):
+    return hook_RegCreateKeyW.__wrapped__(ql, address, params)
+
+
+# LSTATUS RegCreateKeyW(
+#   HKEY   hKey,
+#   LPCWSTR lpSubKey,
+#   PHKEY  phkResult
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": WSTRING,
+    "phkResult": POINTER
+})
+def hook_RegCreateKeyW(ql, address, params):
     ret = ERROR_SUCCESS
 
     hKey = params["hKey"]
@@ -264,6 +279,7 @@ def hook_RegSetValueA(ql, address, params):
     cbData = params["cbData"]
 
     s_hKey = ql.os.handle_manager.get(hKey).obj
+    # this is done so the print_function would print the correct value
     params["hKey"] = s_hKey
 
     ql.os.registry_manager.write(s_hKey, s_lpSubKey, dwType, s_lpData)
@@ -297,6 +313,7 @@ def hook_RegSetValueExW(ql, address, params):
     cbData = params["cbData"]
 
     s_hKey = ql.os.handle_manager.get(hKey).obj
+    # this is done so the print_function would print the correct value
     params["hKey"] = s_hKey
 
     ql.os.registry_manager.write(s_hKey, s_lpValueName, dwType, s_lpData)
@@ -313,6 +330,18 @@ def hook_RegSetValueExW(ql, address, params):
     "lpSubKey": STRING,
 })
 def hook_RegDeleteKeyA(ql, address, params):
+    return hook_RegDeleteKeyW.__wrapped__(ql, address, params)
+
+
+# LSTATUS RegDeleteKeyW(
+#   HKEY   hKey,
+#   LPCWSTR lpSubKey
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": WSTRING,
+})
+def hook_RegDeleteKeyW(ql, address, params):
     ret = ERROR_SUCCESS
 
     hKey = params["hKey"]
@@ -324,6 +353,18 @@ def hook_RegDeleteKeyA(ql, address, params):
     ql.os.registry_manager.delete(s_hKey, s_lpSubKey)
 
     return ret
+
+
+# LSTATUS RegDeleteValueA(
+#   HKEY    hKey,
+#   LPCSTR lpValueName
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpValueName": STRING
+})
+def hook_RegDeleteValueA(ql, address, params):
+    return hook_RegDeleteValueW.__wrapped__(ql, address, params)
 
 
 # LSTATUS RegDeleteValueW(
@@ -363,16 +404,16 @@ def hook_RegDeleteValueW(ql, address, params):
     "ReturnLength": POINTER
 })
 def hook_GetTokenInformation(ql, address, params):
-    id = params["TokenHandle"]
+    id_token = params["TokenHandle"]
     information = params["TokenInformationClass"]
     max_size = params["TokenInformationLength"]
     return_point = params["ReturnLength"]
     dst = params["TokenInformation"]
-    token = ql.os.handle_manager.get(id).obj
+    token = ql.os.handle_manager.get(id_token).obj
     information_value = token.get(information)
     ql.mem.write(return_point, len(information_value).to_bytes(4, byteorder="little"))
     return_size = int.from_bytes(ql.mem.read(return_point, 4), byteorder="little")
-    ql.dprint(D_RPRT, "[=] The sample is checking for its permissions")
+    ql.dprint(D_RPRT, "[=] The target is checking for its permissions")
     if return_size > max_size:
         ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
         return 0
@@ -408,3 +449,77 @@ def hook_GetSidSubAuthority(ql, address, params):
     sid = ql.os.handle_manager.get(params["pSid"]).obj
     addr_authority = sid.addr + 8 + (ql.pointersize * num)
     return addr_authority
+
+
+# BOOL AllocateAndInitializeSid(
+#   PSID_IDENTIFIER_AUTHORITY pIdentifierAuthority,
+#   BYTE                      nSubAuthorityCount,
+#   DWORD                     nSubAuthority0,
+#   DWORD                     nSubAuthority1,
+#   DWORD                     nSubAuthority2,
+#   DWORD                     nSubAuthority3,
+#   DWORD                     nSubAuthority4,
+#   DWORD                     nSubAuthority5,
+#   DWORD                     nSubAuthority6,
+#   DWORD                     nSubAuthority7,
+#   PSID                      *pSid
+# );
+@winapi(cc=STDCALL, params={
+    "pIdentifierAuthority": POINTER,
+    "nSubAuthorityCount": BYTE,
+    "nSubAuthority0": DWORD,
+    "nSubAuthority1": DWORD,
+    "nSubAuthority2": DWORD,
+    "nSubAuthority3": DWORD,
+    "nSubAuthority4": DWORD,
+    "nSubAuthority5": DWORD,
+    "nSubAuthority6": DWORD,
+    "nSubAuthority7": DWORD,
+    "pSid": POINTER
+
+})
+def hook_AllocateAndInitializeSid(ql, address, params):
+    count = params["nSubAuthorityCount"]
+    subs = b""
+    for i in range(count):
+        sub = params["nSubAuthority" + str(i)]
+        subs += sub.to_bytes(4, "little")
+    sid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=count)
+    sid_addr = ql.os.heap.alloc(sid.size)
+    sid.write(sid_addr)
+    handle = Handle(obj=sid, id=sid_addr)
+    ql.os.handle_manager.append(handle)
+    dest = params["pSid"]
+    ql.mem.write(dest, ql.pack(sid_addr))
+    return 1
+
+
+# PVOID FreeSid(
+#   PSID pSid
+# );
+@winapi(cc=STDCALL, params={
+    "pSid": HANDLE
+
+})
+def hook_FreeSid(ql, address, params):
+    ql.os.heap.free(params["pSid"])
+    return 0
+
+
+# BOOL EqualSid(
+#   PSID pSid1,
+#   PSID pSid2
+# );
+@winapi(cc=STDCALL, params={
+    "pSid1": HANDLE,
+    "pSid2": HANDLE,
+
+})
+def hook_EqualSid(ql, address, params):
+    # TODO once i have understood better how SID are wrote in memory. Fucking documentation
+    # technically this one should be my SID that i created at the start. I said should, because when testing, it has a
+    # different address. Why? No idea
+    # sid1 = ql.os.handle_manager.get(params["pSid1"]).obj
+    sid2 = ql.os.handle_manager.get(params["pSid2"]).obj
+    # return sid1 == sid2
+    return 0

@@ -14,6 +14,7 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 from qiling.const import *
 
+
 # BOOL SetThreadLocale(
 #   LCID Locale
 # );
@@ -23,10 +24,12 @@ from qiling.const import *
 def hook_SetThreadLocale(ql, address, params):
     return 0xC000  # LOCALE_CUSTOM_DEFAULT
 
-#LCID GetThreadLocale();
+
+# LCID GetThreadLocale();
 @winapi(cc=STDCALL, params={})
 def hook_GetThreadLocale(ql, address, params):
-    return 0xC000 #LOCALE_CUSTOM_DEFAULT
+    return 0xC000  # LOCALE_CUSTOM_DEFAULT
+
 
 # UINT GetACP(
 # );
@@ -67,7 +70,7 @@ def hook_GetLocaleInfoA(ql, address, params):
 
     local_dict = LOCALE.get(locale_value, None)
     if local_dict is None:
-        #raise QlErrorNotImplemented("[!] API not implemented")
+        # raise QlErrorNotImplemented("[!] API not implemented")
         ql.os.last_error = ERROR_INVALID_PARAMETER
         return 0
 
@@ -75,7 +78,7 @@ def hook_GetLocaleInfoA(ql, address, params):
 
     if cchData != 0:
         lplcdata = params["lpLCData"]
-        ql.mem.write(lplcdata, lctype.encode("utf16-le"))
+        ql.mem.write(lplcdata, lctype.encode("utf-16le"))
     return len(lctype)
 
 
@@ -91,7 +94,7 @@ def hook_IsValidCodePage(ql, address, params):
 
 def _LCMapString(ql, address, params):
     cchDest = params["cchDest"]
-    result = (params["lpSrcStr"] +"\x00").encode("utf-16le")
+    result = (params["lpSrcStr"] + "\x00").encode("utf-16le")
     dst = params["lpDestStr"]
     if cchDest != 0:
         # TODO maybe do some other check, for now is working
@@ -172,7 +175,6 @@ def hook_LCMapStringEx(ql, address, params):
 def hook_GetUserDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
-    ql.dprint(D_RPRT, "[=] Sample is checking user language!")
     return ql.os.profile.getint("USER", "language")
 
 
@@ -182,5 +184,31 @@ def hook_GetUserDefaultUILanguage(ql, address, params):
 def hook_GetSystemDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
-    ql.dprint(D_RPRT, "[=] Sample is checking system language!")
     return ql.os.profile.getint("SYSTEM", "language")
+
+
+# int CompareStringA(
+#   LCID   Locale,
+#   DWORD  dwCmpFlags,
+#   PCNZCH lpString1,
+#   int    cchCount1,
+#   PCNZCH lpString2,
+#   int    cchCount2
+# );
+@winapi(cc=STDCALL, params={
+    "Locale": POINTER,
+    "dwCmpFlags": DWORD,
+    "lpString1": STRING,
+    "cchCount1": INT,
+    "lpString2": STRING,
+    "cchCount2": INT
+})
+def hook_CompareStringA(ql, address, params):
+    st1 = params["lpString1"]
+    st2 = params["lpString2"]
+    if st1 < st2:
+        return CSTR_LESS_THAN
+    elif st1 == st2:
+        return CSTR_EQUAL
+    else:
+        return CSTR_GREATER_THAN

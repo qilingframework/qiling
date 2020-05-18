@@ -11,7 +11,7 @@ from qiling.os.windows.const import *
 
 
 # LPCSTR PathFindExtensionA(
-#   LPCSTR pszPath
+#   LPWSTR pszPath
 # );
 @winapi(cc=STDCALL, params={
     "pszPath": POINTER
@@ -19,7 +19,24 @@ from qiling.os.windows.const import *
 def hook_PathFindExtensionA(ql, address, params):
     # Must return the address of the dot
     pointer = params["pszPath"]
-    pathname = ql.os.read_cstring(pointer)
+    pathname = ql.os.read_wstring(pointer)
+    params["pszPath"] = pathname
+    size_before_dot = len(pathname.split(".")[0])
+    pointer_dot = pointer + size_before_dot
+    return pointer_dot
+
+
+# LPCSTR PathFindExtensionW(
+#   LPCSTR pszPath
+# );
+@winapi(cc=STDCALL, params={
+    "pszPath": POINTER
+})
+def hook_PathFindExtensionW(ql, address, params):
+    # Must return the address of the dot
+    pointer = params["pszPath"]
+    pathname = ql.os.read_wstring(pointer)
+    params["pszPath"] = pathname
     size_before_dot = len(pathname.split(".")[0])
     pointer_dot = pointer + size_before_dot
     return pointer_dot
@@ -34,7 +51,24 @@ def hook_PathFindExtensionA(ql, address, params):
 def hook_PathFindFileNameA(ql, address, params):
     # Must return the address of the start of the filename
     pointer = params["pszPath"]
-    pathname = ql.os.read_cstring(pointer)
+    pathname = read_cstring(ql, pointer)
+    params["pszPath"] = pathname
+    size_before_last_slash = len("".join(pathname.split("\\")[:-1])) + pathname.count("\\")
+    pointer_start = pointer + size_before_last_slash
+    return pointer
+
+
+# LPCSTR PathFindFileNameW(
+#   LPWSTR pszPath
+# );
+@winapi(cc=STDCALL, params={
+    "pszPath": POINTER
+})
+def hook_PathFindFileNameW(ql, address, params):
+    # Must return the address of the start of the filename
+    pointer = params["pszPath"]
+    pathname = ql.os.read_wstring(pointer)
+    params["pszPath"] = pathname
     size_before_last_slash = len("".join(pathname.split("\\")[:-1])) + pathname.count("\\")
     pointer_start = pointer + size_before_last_slash
     return pointer

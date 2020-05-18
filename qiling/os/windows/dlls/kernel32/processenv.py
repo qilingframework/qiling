@@ -110,4 +110,3 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
 def hook_GetEnvironmentVariableA(ql, address, params):
     ret = 0
     return ret
-

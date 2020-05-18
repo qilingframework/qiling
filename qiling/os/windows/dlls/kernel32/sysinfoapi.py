@@ -13,6 +13,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
+from qiling.os.windows.structs import *
 
 
 # NOT_BUILD_WINDOWS_DEPRECATE DWORD GetVersion(
@@ -33,38 +34,18 @@ def hook_GetVersion(ql, address, params):
 
 })
 def hook_GetVersionExA(ql, address, params):
-    return 1
+    return hook_GetVersionExW.__wrapped__(ql, address, params)
 
 
 # NOT_BUILD_WINDOWS_DEPRECATE BOOL GetVersionExW(
 #   LPOSVERSIONINFOW lpVersionInformation
 # );
 @winapi(cc=STDCALL, params={
-    "lpVersionInformation": STRING
+    "lpVersionInformation": WSTRING
 
 })
 def hook_GetVersionExW(ql, address, params):
     return 1
-
-
-# typedef struct _SYSTEM_INFO {
-#   union {
-#     DWORD dwOemId;
-#     struct {
-#       WORD wProcessorArchitecture;
-#       WORD wReserved;
-#     } DUMMYSTRUCTNAME;
-#   } DUMMYUNIONNAME;
-#   DWORD     dwPageSize;
-#   LPVOID    lpMinimumApplicationAddress;
-#   LPVOID    lpMaximumApplicationAddress;
-#   DWORD_PTR dwActiveProcessorMask;
-#   DWORD     dwNumberOfProcessors;
-#   DWORD     dwProcessorType;
-#   DWORD     dwAllocationGranularity;
-#   WORD      wProcessorLevel;
-#   WORD      wProcessorRevision;
-# } SYSTEM_INFO, *LPSYSTEM_INFO;
 
 
 # void GetSystemInfo(
@@ -75,36 +56,11 @@ def hook_GetVersionExW(ql, address, params):
 })
 def hook_GetSystemInfo(ql, address, params):
     pointer = params["lpSystemInfo"]
-    system_info = {"dummy": 0x0.to_bytes(length=2 * 2 + 4, byteorder='little'),
-                   "dwPageSize": ql.os.heap.page_size.to_bytes(length=4, byteorder='little'),
-                   "lpMinimumApplicationAddress": ql.loader.pe_image_address.to_bytes(length=ql.pointersize, byteorder='little'),
-                   "lpMaximumApplicationAddress": (ql.loader.dll_address + ql.loader.dll_size).to_bytes(length=ql.pointersize,
-                                                                                            byteorder='little'),
-                   "dwActiveProcessorMask": 0x3.to_bytes(length=ql.pointersize, byteorder='little'),
-                   # TODO not sure from here, did not found variables inside the emulator
-                   "dwNumberOfProcessors": 0x4.to_bytes(length=4, byteorder='little'),
-                   "dwProcessorType": 0x24a.to_bytes(length=4, byteorder='little'),
-                   "dwAllocationGranularity": (ql.os.heap.page_size * 10).to_bytes(length=4, byteorder='little'),
-                   "wProcessorLevel": 0x6.to_bytes(length=2, byteorder='little'),
-                   "wProcessorRevision": 0x4601.to_bytes(length=2, byteorder='little')
-                   }
-    values = b"".join(system_info.values())
-    ql.mem.write(pointer, values)
+    system_info = SystemInfo(ql, 0, ql.os.heap.page_size, ql.loader.pe_image_address,
+                             ql.loader.dll_address + ql.loader.dll_size, 0x3, 0x4, 0x24a, ql.os.heap.page_size * 10,
+                             0x6, 0x4601)
+    system_info.write(pointer)
     return 0
-
-
-"""
-typedef struct _SYSTEMTIME {
-  WORD wYear;
-  WORD wMonth;
-  WORD wDayOfWeek;
-  WORD wDay;
-  WORD wHour;
-  WORD wMinute;
-  WORD wSecond;
-  WORD wMilliseconds;
-} SYSTEMTIME, *PSYSTEMTIME, *LPSYSTEMTIME;
-"""
 
 
 # void GetLocalTime(
@@ -117,14 +73,9 @@ def hook_GetLocalTime(ql, address, params):
     import datetime
     ptr = params['lpSystemTime']
     d = datetime.datetime.now()
-    ql.mem.write(d.year.to_bytes(length=2, byteorder='little'), ptr)
-    ql.mem.write(d.month.to_bytes(length=2, byteorder='little'), ptr + 2)
-    ql.mem.write(d.isoweekday().to_bytes(length=2, byteorder='little'), ptr + 4)
-    ql.mem.write(d.day.to_bytes(length=2, byteorder='little'), ptr + 6)
-    ql.mem.write(d.hour.to_bytes(length=2, byteorder='little'), ptr + 8)
-    ql.mem.write(d.minute.to_bytes(length=2, byteorder='little'), ptr + 10)
-    ql.mem.write(d.second.to_bytes(length=2, byteorder='little'), ptr + 12)
-    ql.mem.write((d.microsecond * 1000).to_bytes(length=2, byteorder='little'), ptr + 14)
+    system_time = SystemTime(ql, d.year, d.month, d.isoweekday(), d.day, d.hour, d.minute, d.second,
+                             d.microsecond * 1000)
+    system_time.write(ptr)
     return 0
 
 
@@ -159,7 +110,7 @@ def hook_GetWindowsDirectoryW(ql, address, params):
     dst = params["lpBuffer"]
     value = (ql.os.windir + "\x00").encode("utf-16le")
     ql.mem.write(dst, value)
-    return len(value)-2
+    return len(value) - 2
 
 
 # void GetNativeSystemInfo(
@@ -170,21 +121,10 @@ def hook_GetWindowsDirectoryW(ql, address, params):
 })
 def hook_GetNativeSystemInfo(ql, address, params):
     pointer = params["lpSystemInfo"]
-    system_info = {"dummy": 0x0.to_bytes(length=8, byteorder='little'),
-                   "dwPageSize": ql.os.heap.page_size.to_bytes(length=4, byteorder='little'),
-                   "lpMinimumApplicationAddress": ql.loader.pe_image_address.to_bytes(length=ql.pointersize, byteorder='little'),
-                   "lpMaximumApplicationAddress": (ql.loader.dll_address + ql.loader.dll_size).to_bytes(length=ql.pointersize,
-                                                                                            byteorder='little'),
-                   "dwActiveProcessorMask": 0x3.to_bytes(length=ql.pointersize, byteorder='little'),
-                   # TODO not sure from here, did not found variables inside the emulator
-                   "dwNumberOfProcessors": 0x4.to_bytes(length=4, byteorder='little'),
-                   "dwProcessorType": 0x24a.to_bytes(length=4, byteorder='little'),
-                   "dwAllocationGranularity": (ql.os.heap.page_size * 10).to_bytes(length=4, byteorder='little'),
-                   "wProcessorLevel": 0x6.to_bytes(length=2, byteorder='little'),
-                   "wProcessorRevision": 0x4601.to_bytes(length=2, byteorder='little')
-                   }
-    values = b"".join(system_info.values())
-    ql.mem.write(pointer, values)
+    system_info = SystemInfo(ql, 0, ql.os.heap.page_size, ql.loader.pe_image_address,
+                             ql.loader.dll_address + ql.loader.dll_size, 0x3, 0x4, 0x24a, ql.os.heap.page_size * 10,
+                             0x6, 0x4601)
+    system_info.write(pointer)
     return 0
 
 
