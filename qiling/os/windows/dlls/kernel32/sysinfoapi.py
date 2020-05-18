@@ -59,7 +59,9 @@ def hook_GetSystemInfo(ql, address, params):
     system_info = SystemInfo(ql, 0, ql.os.heap.page_size, ql.loader.pe_image_address,
                              ql.loader.dll_address + ql.loader.dll_size, 0x3, 0x4, 0x24a, ql.os.heap.page_size * 10,
                              0x6, 0x4601)
+    #addr = ql.os.heap.alloc(system_info.size)
     system_info.write(pointer)
+    #ql.mem.write(pointer, addr.to_bytes(ql.pointersize, "little"))
     return 0
 
 

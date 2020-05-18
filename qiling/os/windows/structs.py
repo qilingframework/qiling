@@ -612,36 +612,37 @@ class SystemInfo(WindowsStruct):
         self.allocation = allocation
         self.processor_level = processor_level
         self.processor_revision = processor_revision
+        self.size = 26 + 2 * self.ql.pointersize
 
     def write(self, addr):
-        self.ql.mem.write(addr, self.dummy.to_bytes(8, byteorder="little"))
-        self.ql.mem.write(addr + 8, self.page_size.to_bytes(4, byteorder="little"))
-        self.ql.mem.write(addr + 12, self.min_address.to_bytes(self.ql.pointersize, byteorder="little"))
-        self.ql.mem.write(addr + 12 + self.ql.pointersize, self.max_address.to_bytes(self.ql.pointersize,
-                                                                                     byteorder="little"))
-        self.ql.mem.write(addr + 12 + 2 * self.ql.pointersize, self.mask.to_bytes(4, byteorder="little"))
-        self.ql.mem.write(addr + 16 + 2 * self.ql.pointersize, self.processors.to_bytes(4, byteorder="little"))
-        self.ql.mem.write(addr + 20 + 2 * self.ql.pointersize, self.processor_type.to_bytes(4, byteorder="little"))
-        self.ql.mem.write(addr + 24 + 2 * self.ql.pointersize, self.allocation.to_bytes(4, byteorder="little"))
-        self.ql.mem.write(addr + 28 + 2 * self.ql.pointersize, self.processor_level.to_bytes(2, byteorder="little"))
-        self.ql.mem.write(addr + 30 + 2 * self.ql.pointersize, self.processor_revision.to_bytes(2, byteorder="little"))
+        self.ql.mem.write(addr, self.dummy.to_bytes(4, byteorder="little"))
+        self.ql.mem.write(addr + 4, self.page_size.to_bytes(4, byteorder="little"))
+        self.ql.mem.write(addr + 8, self.min_address.to_bytes(self.ql.pointersize, byteorder="little"))
+        self.ql.mem.write(addr + 8 + self.ql.pointersize, self.max_address.to_bytes(self.ql.pointersize,
+                                                                                    byteorder="little"))
+        self.ql.mem.write(addr + 8 + 2 * self.ql.pointersize, self.mask.to_bytes(4, byteorder="little"))
+        self.ql.mem.write(addr + 12 + 2 * self.ql.pointersize, self.processors.to_bytes(4, byteorder="little"))
+        self.ql.mem.write(addr + 16 + 2 * self.ql.pointersize, self.processor_type.to_bytes(4, byteorder="little"))
+        self.ql.mem.write(addr + 20 + 2 * self.ql.pointersize, self.allocation.to_bytes(4, byteorder="little"))
+        self.ql.mem.write(addr + 24 + 2 * self.ql.pointersize, self.processor_level.to_bytes(2, byteorder="little"))
+        self.ql.mem.write(addr + 26 + 2 * self.ql.pointersize, self.processor_revision.to_bytes(2, byteorder="little"))
         self.addr = addr
 
     def read(self, addr):
-        self.dummy = int.from_bytes(self.ql.mem.read(addr, 8), byteorder="little")
-        self.page_size = int.from_bytes(self.ql.mem.read(addr + 8, 4), byteorder="little")
-        self.min_address = int.from_bytes(self.ql.mem.read(addr + 12, self.ql.pointersize), byteorder="little")
-        self.max_address = int.from_bytes(self.ql.mem.read(addr + 12 + self.ql.pointersize, self.ql.pointersize),
+        self.dummy = int.from_bytes(self.ql.mem.read(addr, 4), byteorder="little")
+        self.page_size = int.from_bytes(self.ql.mem.read(addr + 4, 4), byteorder="little")
+        self.min_address = int.from_bytes(self.ql.mem.read(addr + 8, self.ql.pointersize), byteorder="little")
+        self.max_address = int.from_bytes(self.ql.mem.read(addr + 8 + self.ql.pointersize, self.ql.pointersize),
                                           byteorder="little")
-        self.mask = int.from_bytes(self.ql.mem.read(addr + 12 + 2 * self.ql.pointersize, 4),
+        self.mask = int.from_bytes(self.ql.mem.read(addr + 8 + 2 * self.ql.pointersize, 4),
                                    byteorder="little")
-        self.processors = int.from_bytes(self.ql.mem.read(addr + 16 + 2 * self.ql.pointersize, 4), byteorder="little")
-        self.processor_type = int.from_bytes(self.ql.mem.read(addr + 20 + 2 * self.ql.pointersize, 4),
+        self.processors = int.from_bytes(self.ql.mem.read(addr + 12 + 2 * self.ql.pointersize, 4), byteorder="little")
+        self.processor_type = int.from_bytes(self.ql.mem.read(addr + 16 + 2 * self.ql.pointersize, 4),
                                              byteorder="little")
-        self.allocation = int.from_bytes(self.ql.mem.read(aaddr + 24 + 2 * self.ql.pointersize, 4), byteorder="little")
-        self.processor_level = int.from_bytes(self.ql.mem.read(addr + 28 + 2 * self.ql.pointersize, 2),
+        self.allocation = int.from_bytes(self.ql.mem.read(aaddr + 20 + 2 * self.ql.pointersize, 4), byteorder="little")
+        self.processor_level = int.from_bytes(self.ql.mem.read(addr + 24 + 2 * self.ql.pointersize, 2),
                                               byteorder="little")
-        self.processor_revision = int.from_bytes(self.ql.mem.read(addr + 30 + 2 * self.ql.pointersize, 2),
+        self.processor_revision = int.from_bytes(self.ql.mem.read(addr + 26 + 2 * self.ql.pointersize, 2),
                                                  byteorder="little")
         self.addr = addr
 
