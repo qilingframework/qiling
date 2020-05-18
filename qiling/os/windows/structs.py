@@ -290,7 +290,10 @@ class WindowsStruct:
             if type == int:
                 value = val.to_bytes(size, endianness)
             elif type == bytes:
-                value = val
+                if isinstance(val, bytearray):
+                    value = bytes(val)
+                else:
+                    value = val
             else:
                 raise
             self.ql.mem.write(addr + already_written, value)
