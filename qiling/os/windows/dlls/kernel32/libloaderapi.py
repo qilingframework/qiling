@@ -9,7 +9,7 @@ from qiling.exception import *
 from qiling.os.windows.const import *
 
 from qiling.os.const import *
-from qiling.os.fncc import *
+from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 
@@ -149,7 +149,7 @@ def hook_GetModuleFileNameW(ql, address, params):
 def hook_GetProcAddress(ql, address, params):
     if params["lpProcName"] > MAXUSHORT:
         # Look up by name
-        params["lpProcName"] = read_cstring(ql, params["lpProcName"])
+        params["lpProcName"] = ql.os.read_cstring(params["lpProcName"])
         lpProcName = bytes(params["lpProcName"], "ascii")
     else:
         # Look up by ordinal

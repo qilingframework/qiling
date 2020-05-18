@@ -12,7 +12,7 @@ from .const import QL_ENDINABLE, QL_ENDIAN, QL_POSIX, QL_OS_ALL, QL_OUTPUT, QL_O
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import arch_convert, ostype_convert, output_convert
 from .utils import ql_is_valid_arch, ql_get_arch_bits
-from .utils import ql_setup_logging_env
+from .utils import ql_setup_logging_env, ql_setup_logging_stream
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 from .core_utils import QLCoreUtils
@@ -133,9 +133,10 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if self.log_dir != "" and type(self.log_dir) == str:
             _logger = ql_setup_logging_env(self)    
             self.log_file_fd = _logger
-        else:
-            self.log_dir = None     
-        
+        elif self.console == True:
+            _logger = ql_setup_logging_stream(self)
+            self.log_file_fd = _logger
+
         # qiling output method conversion
         if self.output and type(self.output) == str:
             # setter / getter for output
@@ -198,6 +199,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # resume with debugger
         if self.debugger is not None:
             self.remotedebugsession.run()
+
 
     # patch @code to memory address @addr
     def patch(self, addr, code, file_name=b''):

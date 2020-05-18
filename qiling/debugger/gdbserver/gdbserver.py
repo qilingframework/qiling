@@ -50,7 +50,7 @@ class GDBSERVERsession(object):
             self.entry_point = self.ql.os.elf_entry
         else:
             self.entry_point = self.ql.os.entry_point
-
+            
         self.gdb.bp_insert(self.entry_point)
 
 
@@ -126,15 +126,7 @@ class GDBSERVERsession(object):
 
 
             def handle_c(subcmd):
-                #address = self.ql.reg.arch_pc
-
-                # if self.ql.archtype == QL_ARCH.ARM:
-                #     mode = self.ql.arch.check_thumb()
-                #     if mode == UC_MODE_THUMB:
-                #         address = self.ql.reg.arch_pc + 1
-                
                 self.gdb.resume_emu(self.ql.reg.arch_pc)
-               
 
                 if self.gdb.bp_list is ([self.entry_point]):
                     self.send("W00")
@@ -699,7 +691,7 @@ class GDBSERVERsession(object):
                     type = data[0]
                     addr = int(data[1], 16)
                     length = data[2]
-                    self.gdb.bp_remove(type, addr, length)
+                    self.gdb.bp_remove(addr, type, length)
                     self.send('OK')
                 except:
                     self.send('E22')

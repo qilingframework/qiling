@@ -21,5 +21,4 @@ def hook_EndOfExecution(ql):
 def hook_EndOfNotify(ql):
     ql.nprint(f'Back from event notify returning to:{ql.os.notify_return_address:x}')
     ql.reg.arch_pc = ql.os.notify_return_address
-    return 0
-
+    return 0  

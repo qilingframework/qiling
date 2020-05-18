@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 import struct
-from qiling.os.fncc import *
+from qiling.os.windows.fncc import *
 from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.const import *
@@ -622,9 +622,9 @@ def hook_CharPrevA(ql, address, params):
 # );
 @winapi(cc=CDECL, param_num=3)
 def hook_wsprintfW(ql, address, params):
-    dst, p_format, p_args = get_function_param(ql, 3)
-    format_string = read_wstring(ql, p_format)
-    size, string = printf(ql, address, format_string, p_args, "wsprintfW", wstring=True)
+    dst, p_format, p_args = ql.os.get_function_param(3)
+    format_string = ql.os.read_wstring(p_format)
+    size, string = ql.os.printf(address, format_string, p_args, "wsprintfW", wstring=True)
 
     count = format_string.count('%')
     if ql.archtype == QL_ARCH.X8664:
@@ -642,9 +642,9 @@ def hook_wsprintfW(ql, address, params):
 # );
 @winapi(cc=CDECL, param_num=3)
 def hook_sprintf(ql, address, params):
-    dst, p_format, p_args = get_function_param(ql, 3)
-    format_string = read_wstring(ql, p_format)
-    size, string = printf(ql, address, format_string, p_args, "sprintf", wstring=True)
+    dst, p_format, p_args = ql.os.get_function_param(3)
+    format_string = ql.os.read_wstring(p_format)
+    size, string = ql.os.printf(address, format_string, p_args, "sprintf", wstring=True)
 
     count = format_string.count('%')
     if ql.archtype == QL_ARCH.X8664:

@@ -7,7 +7,7 @@ import struct, time, os
 
 from qiling.os.windows.const import *
 from qiling.os.const import *
-from qiling.os.fncc import *
+from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
@@ -66,10 +66,10 @@ def _ShellExecute(ql, dic: dict):
     pt_directory = int.from_bytes(dic["lpDirectory"], byteorder="little") if not isinstance(dic["lpDirectory"], int) \
         else dic["lpDirectory"]
 
-    operation = read_wstring(ql, pt_operation) if pt_operation != 0 else ""
-    params = read_wstring(ql, pt_params) if pt_params != 0 else ""
-    file = read_wstring(ql, pt_file) if pt_file != 0 else ""
-    directory = read_wstring(ql, pt_file) if pt_directory != 0 else ""
+    operation = ql.os.read_wstring(pt_operation) if pt_operation != 0 else ""
+    params = ql.os.read_wstring(pt_params) if pt_params != 0 else ""
+    file = ql.os.read_wstring(pt_file) if pt_file != 0 else ""
+    directory = ql.os.read_wstring(pt_file) if pt_directory != 0 else ""
     show = int.from_bytes(dic["nShow"], byteorder="little") if not isinstance(dic["nShow"], int) else dic["nShow"]
 
     ql.dprint(D_RPRT, "[=] Sample executed a shell command!")

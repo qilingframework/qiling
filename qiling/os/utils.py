@@ -259,4 +259,108 @@ class QLOsUtils:
             td.stop_event = stop_event
         self.ql.emu_stop()
 
+    def read_guid(self, address):
+        result = ""
+        raw_guid = self.ql.mem.read(address, 16)
+        return uuid.UUID(bytes_le=bytes(raw_guid))
 
+
+    def string_appearance(self, string):
+        strings = string.split(" ")
+        for string in strings:
+            val = self.appeared_strings.get(string, set())
+            val.add(self.syscalls_counter)
+            self.appeared_strings[string] = val
+
+
+    def read_wstring(self, address):
+        result = ""
+        char = self.ql.mem.read(address, 2)
+        while char.decode(errors="ignore") != "\x00\x00":
+            address += 2
+            result += char.decode(errors="ignore")
+            char = self.ql.mem.read(address, 2)
+        # We need to remove \x00 inside the string. Compares do not work otherwise
+        result = result.replace("\x00", "")
+        self.string_appearance(result)
+        return result
+
+
+    def read_cstring(self, address):
+        result = ""
+        char = self.ql.mem.read(address, 1)
+        while char.decode(errors="ignore") != "\x00":
+            address += 1
+            result += char.decode(errors="ignore")
+            char = self.ql.mem.read(address, 1)
+        self.string_appearance(result)
+        return result
+
+
+    def print_function(self, address, function_name, params, ret):
+        function_name = function_name.replace('hook_', '')
+        if function_name in ("__stdio_common_vfprintf", "__stdio_common_vfwprintf", "printf", "wsprintfW", "sprintf"):
+            return
+        log = '0x%0.2x: %s(' % (address, function_name)
+        for each in params:
+            value = params[each]
+            if isinstance(value, str) or type(value) == bytearray:
+                log += '%s = "%s", ' % (each, value)
+            elif isinstance(value, tuple):
+                # we just need the string, not the address in the log
+                log += '%s = "%s", ' % (each, value[1])
+            else:
+                log += '%s = 0x%x, ' % (each, value)
+        log = log.strip(", ")
+        log += ')'
+        if ret is not None:
+            log += ' = 0x%x' % ret
+
+        if self.ql.output != QL_OUTPUT.DEBUG:
+            log = log.partition(" ")[-1]
+            self.ql.nprint(log)
+        else:
+            self.ql.dprint(D_INFO, log)
+
+    def printf(self, address, fmt, params_addr, name, wstring=False, double_pointer=False):
+        count = fmt.count("%")
+        params = []
+        if count > 0:
+            for i in range(count):
+                # We don't need to mem_read here, otherwise we have a problem with strings, since read_wstring/read_cstring
+                #  already take a pointer, and we will have pointer -> pointer -> STRING instead of pointer -> STRING
+                params.append(
+                    params_addr + i * self.ql.pointersize,
+                )
+
+            formats = fmt.split("%")[1:]
+            index = 0
+            for f in formats:
+                if f.startswith("s"):
+                    if wstring:
+                        if double_pointer:
+                            params[index] = self.ql.unpack32(self.ql.mem.read(params[index], self.ql.pointersize))
+                        params[index] = self.ql.os.read_wstring(params[index])
+                    else:
+                        params[index] = self.ql.os.read_cstring(params[index])
+                else:
+                    # if is not a string, then they are already values!
+                    pass
+                index += 1
+
+            output = '%s(format = %s' % (name, repr(fmt))
+            for each in params:
+                if type(each) == str:
+                    output += ', "%s"' % each
+                else:
+                    output += ', 0x%0.2x' % each
+            output += ')'
+            fmt = fmt.replace("%llx", "%x")
+            stdout = fmt % tuple(params)
+            output += " = 0x%x" % len(stdout)
+        else:
+            output = '%s(format = %s) = 0x%x' % (name, repr(fmt), len(fmt))
+            stdout = fmt
+        self.ql.nprint(output)
+        self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
+        return len(stdout), stdout            

@@ -38,17 +38,17 @@ class Qldbg(object):
             if self.ql.archtype == QL_ARCH.ARM:
                 mode = self.ql.arch.check_thumb()
                 if mode == UC_MODE_THUMB:
-                    address += 1
+                    address = address + 1
 
             self.mapping.append([(hex(address))])
             self.current_address = address
             hit_soft_bp = False
 
-            if self.soft_bp:
+            if self.soft_bp == True:
                 self.soft_bp = False
                 hit_soft_bp = True
- 
-            if address != self.last_bp and address in self.bp_list or self.has_soft_bp == True:
+
+            if (address in self.bp_list and address != self.last_bp) or self.has_soft_bp == True:
                 if self.skip_bp_count > 0:
                     self.skip_bp_count -= 1
                 else:
@@ -57,7 +57,7 @@ class Qldbg(object):
                     self.last_bp = address
                     self.ql.nprint("gdb> Breakpoint found, stop at address: 0x%x" % address)
                           
-            elif address == self.last_bp:
+            elif address  == self.last_bp:
                 self.last_bp = 0x0
 
             self.has_soft_bp = hit_soft_bp
@@ -79,7 +79,7 @@ class Qldbg(object):
             self.ql.nprint('gdb> Breakpoint added at: 0x%x' % addr)
 
 
-    def bp_remove(self, type, addr, len):
+    def bp_remove(self, addr, type = None, len = None):
         self.bp_list.remove(addr)
         self.ql.nprint('gdb> Breakpoint removed at: 0x%x' % addr)
 

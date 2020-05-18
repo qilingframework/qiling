@@ -9,6 +9,7 @@ sys.path.append("..")
 from qiling import *
 from qiling.exception import *
 from qiling.os.uefi.const import *
+from qiling.os.const import *
 
 class Test_UEFI(unittest.TestCase):
     def test_x8664_uefi(self):
