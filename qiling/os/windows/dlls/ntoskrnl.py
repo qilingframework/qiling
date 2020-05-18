@@ -24,8 +24,8 @@ def hook_RtlGetVersion(ql, address, params):
     pointer = params["lpVersionInformation"]
     os = OsVersionInfoW(ql)
     os.read(pointer)
-    os.major = ql.os.profile.getint("SYSTEM", "majorVersion")
-    os.minor = ql.os.profile.getint("SYSTEM", "minorVersion")
+    os.major[0] = ql.os.profile.getint("SYSTEM", "majorVersion")
+    os.minor[0] = ql.os.profile.getint("SYSTEM", "minorVersion")
     os.write(pointer)
     ql.dprint(D_RPRT, "[=] The target is checking the windows Version!")
     return STATUS_SUCCESS

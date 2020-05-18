@@ -9,6 +9,7 @@ from qiling.os.windows.thread import *
 from qiling.exception import *
 from qiling.os.windows.structs import *
 
+
 # __analysis_noreturn VOID FatalExit(
 #   int ExitCode
 # );
@@ -416,9 +417,9 @@ def hook_VerifyVersionInfoW(ql, address, params):
             raise QlErrorNotImplemented("[!] API not implemented with operator %d" % value)
         # Versions should be compared together
         if key == VER_MAJORVERSION or key == VER_MINORVERSION or key == VER_PRODUCT_TYPE:
-            major_version_asked = os_asked.major
-            minor_version_asked = os_asked.minor
-            product_type = os_asked.product
+            major_version_asked = os_asked.major[0]
+            minor_version_asked = os_asked.minor[0]
+            product_type = os_asked.product[0]
             concat = str(major_version_asked) + str(minor_version_asked) + str(product_type)
 
             # Just a print for analysts, will remove it from here in the future
@@ -430,12 +431,12 @@ def hook_VerifyVersionInfoW(ql, address, params):
                 else:
                     ql.dprint(D_RPRT, "[=] The target asks for version %s %s" % (operator, version_asked))
             # We can finally compare
-            qiling_os = str(ql.os.profile.get("SYSTEM", "majorVersion")) + \
-                        str(ql.os.profile.get("SYSTEM", "minorVersion")) + str(
+            qiling_os = str(ql.os.profile.get("SYSTEM", "majorVersion")) + str(
+                ql.os.profile.get("SYSTEM", "minorVersion")) + str(
                 ql.os.profile.get("SYSTEM", "productType"))
             res = compare(int(qiling_os), operator, int(concat))
         elif key == VER_SERVICEPACKMAJOR:
-            res = compare(ql.os.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_asked.service_major)
+            res = compare(ql.os.profile.getint("SYSTEM", "VER_SERVICEPACKMAJOR"), operator, os_asked.service_major[0])
         else:
             raise QlErrorNotImplemented("[!] API not implemented for key %s" % key)
         # The result is a AND between every value, so if we find a False we just exit from the loop

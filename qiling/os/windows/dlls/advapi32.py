@@ -480,10 +480,10 @@ def hook_GetSidSubAuthority(ql, address, params):
 })
 def hook_AllocateAndInitializeSid(ql, address, params):
     count = params["nSubAuthorityCount"]
-    subs = []
+    subs = b""
     for i in range(count):
         sub = params["nSubAuthority" + str(i)]
-        subs.append(sub)
+        subs += sub.to_bytes(4, "little")
     sid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=count)
     sid_addr = ql.os.heap.alloc(sid.size)
     sid.write(sid_addr)
