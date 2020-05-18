@@ -546,7 +546,7 @@ def hook_DefWindowProcA(ql, address, params):
 def hook_CharNextW(ql, address, params):
     # Return next char if is different from \x00
     point = params["lpsz"][0]
-    string = read_wstring(ql, point)
+    string = ql.os.read_wstring(point)
     params["lpsz"] = string
     if len(string) == 0:
         return point
@@ -582,9 +582,9 @@ def hook_CharNextA(ql, address, params):
 def hook_CharPrevW(ql, address, params):
     # Return next char if is different from \x00
     current = params["lpszCurrent"]
-    strcur = read_wstring(ql, current)
+    strcur = ql.os.read_wstring(current)
     start = params["lpszStart"]
-    strstart = read_wstring(ql, start)
+    strstart = ql.os.read_wstring(start)
     params["lpszStart"] = strstart
     params["lpszCurrent"] = strcur
 

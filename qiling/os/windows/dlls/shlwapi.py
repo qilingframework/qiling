@@ -19,7 +19,7 @@ from qiling.os.windows.const import *
 def hook_PathFindExtensionA(ql, address, params):
     # Must return the address of the dot
     pointer = params["pszPath"]
-    pathname = read_wstring(ql, pointer)
+    pathname = ql.os.read_wstring(pointer)
     params["pszPath"] = pathname
     size_before_dot = len(pathname.split(".")[0])
     pointer_dot = pointer + size_before_dot
@@ -35,7 +35,7 @@ def hook_PathFindExtensionA(ql, address, params):
 def hook_PathFindExtensionW(ql, address, params):
     # Must return the address of the dot
     pointer = params["pszPath"]
-    pathname = read_wstring(ql, pointer)
+    pathname = ql.os.read_wstring(pointer)
     params["pszPath"] = pathname
     size_before_dot = len(pathname.split(".")[0])
     pointer_dot = pointer + size_before_dot
@@ -67,7 +67,7 @@ def hook_PathFindFileNameA(ql, address, params):
 def hook_PathFindFileNameW(ql, address, params):
     # Must return the address of the start of the filename
     pointer = params["pszPath"]
-    pathname = read_wstring(ql, pointer)
+    pathname = ql.os.read_wstring(pointer)
     params["pszPath"] = pathname
     size_before_last_slash = len("".join(pathname.split("\\")[:-1])) + pathname.count("\\")
     pointer_start = pointer + size_before_last_slash

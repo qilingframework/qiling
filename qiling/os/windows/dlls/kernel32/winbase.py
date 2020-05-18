@@ -266,7 +266,7 @@ def hook_lstrcatW(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
     pointer = params["lpString1"]
-    string_base = read_wstring(ql, pointer)
+    string_base = ql.os.read_wstring(pointer)
     params["lpString1"] = string_base
     result = string_base + src + "\x00"
     ql.mem.write(pointer, result.encode("utf-16le"))
@@ -423,12 +423,12 @@ def hook_VerifyVersionInfoW(ql, address, params):
 
             # Just a print for analysts, will remove it from here in the future
             if key == VER_MAJORVERSION:
-                ql.dprint(D_RPRT, "[=] The sample is checking the windows Version!")
+                ql.dprint(D_RPRT, "[=] The Target is checking the windows Version!")
                 version_asked = SYSTEMS_VERSION.get(concat, None)
                 if version_asked is None:
                     raise QlErrorNotImplemented("[!] API not implemented for version %s" % concat)
                 else:
-                    ql.dprint(D_RPRT, "[=] The sample asks for version %s %s" % (operator, version_asked))
+                    ql.dprint(D_RPRT, "[=] The target asks for version %s %s" % (operator, version_asked))
             # We can finally compare
             qiling_os = str(ql.os.profile.get("SYSTEM", "majorVersion")) + \
                         str(ql.os.profile.get("SYSTEM", "minorVersion")) + str(

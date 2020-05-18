@@ -47,7 +47,7 @@ def _QueryInformationProcess(ql, address, params):
     else:
         ql.dprint(D_INFO, str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
-    ql.dprint(D_RPRT, "[=] The sample is checking the debugger via QueryInformationProcess ")
+    ql.dprint(D_RPRT, "[=] The target is checking the debugger via QueryInformationProcess ")
     ql.mem.write(dst, value)
     if pt_res != 0:
         ql.mem.write(pt_res, 0x8.to_bytes(1, byteorder="little"))
@@ -148,7 +148,7 @@ def hook_RtlAllocateHeap(ql, address, params):
 })
 def hook_wcsstr(ql, address, params):
     dest = params["dest"]
-    value = read_wstring(ql, dest)
+    value = ql.os.read_wstring(dest)
     params["dest"] = value
     src = params["src"]
     if src in value:

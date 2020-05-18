@@ -175,7 +175,6 @@ def hook_LCMapStringEx(ql, address, params):
 def hook_GetUserDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
-    ql.dprint(D_RPRT, "[=] Sample is checking user language!")
     return ql.os.profile.getint("USER", "language")
 
 
@@ -185,7 +184,6 @@ def hook_GetUserDefaultUILanguage(ql, address, params):
 def hook_GetSystemDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
-    ql.dprint(D_RPRT, "[=] Sample is checking system language!")
     return ql.os.profile.getint("SYSTEM", "language")
 
 
