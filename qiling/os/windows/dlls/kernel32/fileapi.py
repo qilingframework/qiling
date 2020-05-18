@@ -305,7 +305,7 @@ def hook_GetVolumeInformationW(ql, address, params):
         pt_volume_name = params["lpVolumeNameBuffer"]
         if pt_volume_name != 0:
             # TODO implement
-            volume_name = ("AAAABBBB" + "\x00").encode("utf-16le")
+            volume_name = (ql.os.profile["VOLUME"]["name"] + "\x00").encode("utf-16le")
 
             ql.mem.write(pt_volume_name, volume_name)
 
