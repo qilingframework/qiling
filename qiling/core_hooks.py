@@ -11,7 +11,7 @@
 from unicorn import *
 from unicorn.x86_const import *
 from .utils import catch_KeyboardInterrupt
-from .const import QL_POSIX, QL_OS
+from .const import *
 from .exception import QlErrorCoreHook
 
 class Hook:
@@ -50,6 +50,7 @@ class HookIntr(Hook):
         self.intno = intno
     
     def check(self, ql, intno):
+        ql.dprint(D_CONT, "[+] Received Interupt: %i Hooked Interupt: %i" % (intno, self.intno))
         if intno < 0 or self.intno == intno:
             return True
         return False

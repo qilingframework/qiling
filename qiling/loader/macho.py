@@ -22,7 +22,6 @@ from qiling.os.macos.utils import env_dict_to_array, ql_real_to_vm_abspath, page
 from qiling.os.macos.thread import QlMachoThreadManagement, QlMachoThread
 
 # commpage is a shared mem space which is in a static address
-# start at 0x7FFFFFE00000
 def load_commpage(ql):
     if ql.archtype == QL_ARCH.X8664:
         COMM_PAGE_START_ADDRESS = X8664_COMM_PAGE_START_ADDRESS

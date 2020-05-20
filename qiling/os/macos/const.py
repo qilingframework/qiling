@@ -496,16 +496,16 @@ COMM_PAGE_SIGNATURE                 = 0x000   # first 16 bytes are a signature
 COMM_PAGE_CPU_CAPABILITIES64        = 0x010   # uint64_t _cpu_capabilities
 COMM_PAGE_UNUSED                    = 0x018   # 6 unused bytes
 COMM_PAGE_VERSION                   = 0x01E   # 16-bit version
-COMM_PAGE_THIS_VERSION              = 13                                # in ver 13, _COMM_PAGE_NT_SHIFT defaults to 0 (was 32) 
+COMM_PAGE_THIS_VERSION              = 13      # in ver 13, _COMM_PAGE_NT_SHIFT defaults to 0 (was 32) 
 
 COMM_PAGE_CPU_CAPABILITIES          = 0x020   # uint32_t _cpu_capabilities (retained for compatibility) */
 COMM_PAGE_NCPUS                     = 0x022   # uint8_t number of configured CPUs (hw.logicalcpu at boot time) */
 COMM_PAGE_UNUSED0                   = 0x024   # 2 unused bytes, previouly reserved for expansion of cpu_capabilities */
 COMM_PAGE_CACHE_LINESIZE            = 0x026   # uint16_t cache line size */
 
-COMM_PAGE_SCHED_GEN                 = 0x028	# uint32_t scheduler generation number (count of pre-emptions) */
+COMM_PAGE_SCHED_GEN                 = 0x028	  # uint32_t scheduler generation number (count of pre-emptions) */
 COMM_PAGE_MEMORY_PRESSURE           = 0x02c   # uint32_t copy of vm_memory_pressure */
-COMM_PAGE_SPIN_COUNT                = 0x030	# uint32_t max spin count for mutex's */
+COMM_PAGE_SPIN_COUNT                = 0x030	  # uint32_t max spin count for mutex's */
 
 COMM_PAGE_ACTIVE_CPUS               = 0x034   # uint8_t number of active CPUs (hw.activecpu) */
 COMM_PAGE_PHYSICAL_CPUS             = 0x035   # uint8_t number of physical CPUs (hw.physicalcpu_max) */

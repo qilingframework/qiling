@@ -30,13 +30,7 @@ class QlOsUefi(QlOs):
         try:
             self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:
-            if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
-                self.ql.nprint("[+] PC = 0x%x" % (self.ql.reg.arch_pc))
-                self.ql.mem.show_mapinfo()
-                buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
-                self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                self.ql.nprint("\n")
-                self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
+            self.emu_error()
             raise
 
         if self.ql.internal_exception is not None:
