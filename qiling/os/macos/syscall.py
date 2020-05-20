@@ -38,9 +38,7 @@ def ql_arm64_fgetattrlist(ql, fd, attrlist, attrbuff, attrsizebuff, options, *ar
 
 def ql_arm64_poll(ql, target, address, size, *args, **kw):
     ql.os.definesyscall_return(KERN_SUCCESS)
-    # FIXME:
-    ql.nprint("FIXME: syscall[poll] >> exit for now")
-    exit()
+    ql.nprint("pool()")
 
 
 ################
