@@ -157,7 +157,7 @@ class QLCoreHooks(object):
         handled = False
         if hook_type in self._hook.keys():
             for h in self._hook[hook_type]:
-                if h.bound_check(ql.reg.arch_pc):
+                if h.bound_check(addr):
                     handled = True
                     ret = h.call(ql, access, addr, size, value)
                     if ret == False:
