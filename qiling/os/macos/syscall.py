@@ -476,7 +476,7 @@ def ql_syscall_bsdthread_register(ql, threadstart, wqthread, flags, stack_addr_h
 
 # 0x174
 def ql_syscall_thread_selfid(ql, *args, **kw):
-    thread_id = 0x1996
+    thread_id = ql.os.macho_thread.id
     ql.nprint("thread_selfid() = %d" % (thread_id))
     ql.os.definesyscall_return(thread_id)
 
