@@ -65,7 +65,7 @@ class QLCoreUtils(object):
                         if '_FalseFilter' in each_filter.__class__.__name__:
                             each_console_handler.removeFilter(each_filter)
 
-            msg = args[0]
+            msg = "".join(args)
             msg += kw["end"] if kw.get("end", None) != None else os.linesep
 
             fd.info(msg)
