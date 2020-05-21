@@ -103,6 +103,7 @@ def usage():
     print("\n\nwith binary file and various output format:")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e open")
+    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e open --log-dir=qlog")
     
     print("\n\nWith UEFI file:")
     print("\t ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel")
@@ -156,6 +157,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')
     comm_parser.add_argument('-e', '--filter', metavar="FUNCTION NAME", required=False, dest="filter", default=None, 
                             help="Only work with strace mode, you can choose what to be printout, for multiple function calls should be separated by comma")
+    comm_parser.add_argument('--log-dir', required=False, metavar="DIRECTORY NAME", dest='log_dir', default=None, help='the destinartion you want to store you log')
     comm_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
     comm_parser.add_argument('--root', action='store_true', default=False, dest='root', help='Enable sudo required mode')
     comm_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', 
@@ -197,7 +199,7 @@ if __name__ == '__main__':
     # ql file setup
     if (options.subparser_name == 'run'):
         if options.filename is not None and options.run_args == []:
-            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile = options.profile, output=options.output, console=options.console)
+            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile = options.profile, output=options.output, console=options.console, log_dir=options.log_dir)
 
         elif options.filename is None and options.args == [] and options.run_args != []:
             ql = Qiling(filename=options.run_args, rootfs=options.rootfs, profile = options.profile, output=options.output)

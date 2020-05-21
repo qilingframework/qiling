@@ -66,7 +66,12 @@ class QLCoreUtils(object):
                             each_console_handler.removeFilter(each_filter)
 
             msg = "".join(args)
-            msg += kw["end"] if kw.get("end", None) != None else os.linesep
+
+            if kw.get("end", None) != None:
+                msg += kw["end"]
+
+            elif msg != os.linesep:
+                msg += os.linesep
 
             fd.info(msg)
 
