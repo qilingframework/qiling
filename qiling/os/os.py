@@ -58,21 +58,21 @@ class QlOs(QLOsUtils):
     def emu_error(self):
         self.ql.nprint("[!] Emulation Error")
         
-        self.ql.nprint("\n")
+        self.ql.nprint()
         for reg in self.ql.reg.table:
             REG_NAME = reg
             REG_VAL = self.ql.reg.read(reg)
             self.ql.nprint("[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
         
-        self.ql.nprint("\n")
+        self.ql.nprint()
         self.ql.nprint("[+] PC = 0x%x" %(self.ql.reg.arch_pc))
         self.ql.mem.show_mapinfo()
         
-        self.ql.nprint("\n")
+        self.ql.nprint()
         buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
         self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
         
-        self.ql.nprint("\n")
+        self.ql.nprint()
         self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
 
 
