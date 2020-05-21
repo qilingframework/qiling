@@ -464,9 +464,10 @@ class QlLoaderELF(QlLoader, ELFParse):
 
                 self.ql.mem.write(load_address+i["p_vaddr"], super().getelfdata(i['p_offset'], i['p_filesz']))
 
-        if mem_end > _mem_e:
-            self.ql.mem.map(_mem_e, mem_end-_mem_e, info=self.path)
-            self.ql.dprint(D_INFO, "[+] load 0x%x - 0x%x" % (_mem_e, mem_end)) # make sure we map all PT_LOAD tagged area
+        loaded_mem_end = load_address + mem_end
+        if loaded_mem_end > _mem_e:
+            self.ql.mem.map(_mem_e, loaded_mem_end-_mem_e, info=self.path)
+            self.ql.dprint(D_INFO, "[+] load 0x%x - 0x%x" % (_mem_e, loaded_mem_end)) # make sure we map all PT_LOAD tagged area
 
         entry_point = elfhead['e_entry'] + load_address
 
