@@ -5,7 +5,7 @@
 
 def map_syscall(syscall_num):
     adapter = {
-        0xffffffffffffffe4 : "ql_arm64_fgetattrlist",
+        0xffffffffffffffe4 : "ql_syscall_fgetattrlist",
         0xffffffffffffffe6 : "ql_arm64_poll",
         0x174: "ql_syscall_thread_selfid",
     }

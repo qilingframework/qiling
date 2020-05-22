@@ -683,7 +683,7 @@ class ELFTest(unittest.TestCase):
 
         def run_one_round(payload):
             stdin = MyPipe()
-            ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", output = "off", stdin = stdin)
+            ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", console = False, stdin = stdin)
             ins_count = [0]
             ql.hook_code(instruction_count, ins_count)
             stdin.write(payload)
