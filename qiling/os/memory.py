@@ -145,7 +145,7 @@ class QlMemoryManager:
         mask = ((1 << self.ql.archbit) - 1) & -alignment
         return (addr + (alignment - 1)) & mask
 
-    # save all dumped memory
+    # save all mapped mem
     def save(self):
         mem_dict = {}
         seq = 1
@@ -165,7 +165,7 @@ class QlMemoryManager:
             mem_read = bytes(value[4])
             
             if self.is_mapped(start, start-end) == False:
-                self.map(start, start-end, perms=perm, info=info)
+                self.map(start, end-start, perms=perm, info=info)
 
             self.write(start, mem_read)
  
