@@ -50,7 +50,7 @@ class QlLoaderPE_UEFI(QlLoader):
                     # Setting entrypoint to the first loaded module entrypoint, so the debugger can break.
                     self.entry_point = entry_point
                 self.ql.nprint("[+] PE entry point at 0x%x" % entry_point)
-                self.modules.append((path, entry_point, pe))
+                self.modules.append((path, IMAGE_BASE, entry_point, pe))
                 return True
             else:
                 IMAGE_BASE += 0x10000
@@ -155,11 +155,12 @@ class QlLoaderPE_UEFI(QlLoader):
         self.notify_ptr = system_table_heap_ptr
         system_table_heap_ptr += pointer_size
 
-        path, self.entry_point, pe = self.modules.pop(0)
+        path, image_base, self.entry_point, pe = self.modules.pop(0)
         # workaround, the debugger sets the breakpoint before the module is loaded.
         if hasattr(self.ql.remotedebugsession ,'gdb'):
             self.ql.remotedebugsession.gdb.bp_insert(self.entry_point)
         self.ql.stack_push(self.end_of_execution_ptr)
+        self.ql.reg.rcx = image_base
         self.ql.reg.rdx = self.system_table_ptr
         self.ql.os.entry_point = self.entry_point
         self.ql.nprint(f'[+] Running from 0x{self.entry_point:x} of {path}')
