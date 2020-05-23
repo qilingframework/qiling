@@ -61,16 +61,16 @@ class QlRegisterManager():
         else:
             self.ql.uc.msr_write(msr, addr)
 
-
+    # Unicorn's register save method
     def context_save(self):
         return self.ql.uc.context_save()
 
-
+    # Unicorn's register restore method
     def context_restore(self, saved_context):
         self.ql.uc.context_restore(saved_context)
 
 
-    # ql.reg.store - store all register
+    # ql.reg.save - save based on ql.reg.table
     def save(self):
         reg_dict = {}
         for reg in self.ql.reg.table:
@@ -79,7 +79,7 @@ class QlRegisterManager():
         return reg_dict
 
 
-    # ql.reg.restore - restore all stored register
+    # ql.reg.restore - restore based on ql.reg.table
     def restore(self, value = {}):
         for reg in self.ql.reg.table:
             reg_v= value[reg]

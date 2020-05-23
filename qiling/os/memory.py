@@ -128,9 +128,9 @@ class QlMemoryManager:
             return "".join(perms_sym)
 
         self.ql.nprint("[+] Start      End        Perm.  Path")
-        for s, e, p, info in self.map_info:
-            _p = _perms_mapping(p)
-            self.ql.nprint("[+] %08x - %08x - %s    %s" % (s, e, _p, info))
+        for  start, end, perm, info in self.map_info:
+            _perm = _perms_mapping(perm)
+            self.ql.nprint("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
 
 
     def get_lib_base(self, filename):
@@ -145,6 +145,30 @@ class QlMemoryManager:
         mask = ((1 << self.ql.archbit) - 1) & -alignment
         return (addr + (alignment - 1)) & mask
 
+    # save all dumped memory
+    def save(self):
+        mem_dict = {}
+        seq = 1
+        for start, end, perm, info in self.map_info:
+            mem_read = self.read(start, end-start)          
+            mem_dict[seq] = start, end, perm, info, mem_read
+            seq += 1
+        return mem_dict
+
+    # restore all dumped memory
+    def restore(self, mem_dict):
+        for key, value in mem_dict.items():
+            start = value[0]
+            end = value[1]
+            perm = value[2]
+            info = value[3]
+            mem_read = bytes(value[4])
+            
+            if self.is_mapped(start, start-end) == False:
+                self.map(start, start-end, perms=perm, info=info)
+
+            self.write(start, mem_read)
+ 
 
     def read(self, addr: int, size: int) -> bytearray:
         return self.ql.uc.mem_read(addr, size)

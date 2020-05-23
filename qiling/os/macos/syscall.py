@@ -50,25 +50,25 @@ def ql_syscall_fgetattrlist(ql, fd, alist, attributeBuffer, bufferSize, options,
 
     # path_str = macho_read_string(ql, path, MAX_PATH_SIZE)
 
-    # attr = b''
-    # if attrlist["commonattr"] != 0:
-    #     commonattr = ql.os.macho_fs.get_common_attr(path_str, attrlist["commonattr"])
-    #     if not commonattr:
-    #         ql.dprint(D_INFO, "Error File Not Exist: %s" % (path_str))
-    #         raise QlErrorSyscallError("Error File Not Exist")
-    #     attr += commonattr
+    attr = b''
+    if attrlist["commonattr"] != 0:
+        commonattr = ql.os.macho_fs.get_common_attr(ql.path, attrlist["commonattr"])
+        if not commonattr:
+            ql.dprint(D_INFO, "Error File Not Exist: %s" % (path_str))
+            raise QlErrorSyscallError("Error File Not Exist")
+        attr += commonattr
     
-    # attr_len = len(attr) + 4
-    # attr = struct.pack("<L", attr_len) + attr
+    attr_len = len(attr) + 4
+    attr = struct.pack("<L", attr_len) + attr
 
-    # if len(attr) > bufferSize:
-    #     ql.dprint(D_INFO, "Length error")
-    #     ql.os.definesyscall_return(1)
-    # else:
+    if len(attr) > bufferSize:
+        ql.dprint(D_INFO, "Length error")
+        ql.os.definesyscall_return(1)
+    else:
 
-    #ql.mem.write(attributeBuffer, attr)
-    #set_eflags_cf(ql, 0x0)
-    ql.os.definesyscall_return(KERN_SUCCESS)
+        ql.mem.write(attributeBuffer, attr)
+        #set_eflags_cf(ql, 0x0)
+        ql.os.definesyscall_return(KERN_SUCCESS)
 
 
 def ql_arm64_poll(ql, target, address, size, *args, **kw):

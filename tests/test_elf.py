@@ -246,6 +246,8 @@ class ELFTest(unittest.TestCase):
 
     def test_elf_linux_arm_static(self):     
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello_static"], "../examples/rootfs/arm_linux", output = "default")
+        all_mem = ql.mem.save()
+        ql.mem.restore(all_mem)
         ql.run()
         del ql
 
