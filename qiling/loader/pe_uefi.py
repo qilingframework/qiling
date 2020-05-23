@@ -158,7 +158,7 @@ class QlLoaderPE_UEFI(QlLoader):
         path, self.entry_point, pe = self.modules.pop(0)
         # workaround, the debugger sets the breakpoint before the module is loaded.
         if hasattr(self.ql.remotedebugsession ,'gdb'):
-                self.ql.remotedebugsession.gdb.bp_insert(self.entry_point)
+            self.ql.remotedebugsession.gdb.bp_insert(self.entry_point)
         self.ql.stack_push(self.end_of_execution_ptr)
         self.ql.reg.rdx = self.system_table_ptr
         self.ql.os.entry_point = self.entry_point
