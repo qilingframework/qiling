@@ -236,6 +236,12 @@ class QlArchX8664(QlArch):
         adapter.update(reg_map_64)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
+        #adapter.update(reg_map_cr)
+        #adapter.update(reg_map_dr)
+        #adapter.update(reg_map_fp)
+        #adapter.update(reg_map_xmm)
+        #adapter.update(reg_map_ymm)
+        #adapter.update(reg_map_zmm)        
         registers = {k:v for k, v in adapter.items()}
         for reg in registers:
             registers_table += [reg]
@@ -252,6 +258,12 @@ class QlArchX8664(QlArch):
         adapter.update(reg_map_64)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
+        #adapter.update(reg_map_cr)
+        #adapter.update(reg_map_dr)
+        #adapter.update(reg_map_fp)
+        #adapter.update(reg_map_xmm)
+        #adapter.update(reg_map_ymm)
+        #adapter.update(reg_map_zmm)
         adapter = {v: k for k, v in adapter.items()}
 
         if uc_reg in adapter:
@@ -277,7 +289,12 @@ class QlArchX8664(QlArch):
         adapter.update(reg_map_64)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
-
+        adapter.update(reg_map_cr)
+        adapter.update(reg_map_dr)
+        #adapter.update(reg_map_fp)
+        #adapter.update(reg_map_xmm)
+        #adapter.update(reg_map_ymm)
+        #adapter.update(reg_map_zmm)
         if uc_reg_name in adapter:
             return adapter[uc_reg_name]
         # invalid
