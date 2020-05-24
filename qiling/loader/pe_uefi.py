@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import ctypes, types, struct, ast
+from contextlib import contextmanager
 
 from unicorn import *
 from unicorn.x86_const import *
@@ -32,6 +33,14 @@ class QlLoaderPE_UEFI(QlLoader):
         self.handle_dict = {}
         self.notify_list = []
 
+    @contextmanager
+    def map_memory(self, addr, size):
+        self.ql.mem.map(addr, size)
+        try:
+            yield
+        finally:
+            self.ql.mem.unmap(addr, size)
+
     def map_and_load(self, path):
         pe = pefile.PE(path, fast_load=True)
         
@@ -50,7 +59,7 @@ class QlLoaderPE_UEFI(QlLoader):
                     # Setting entrypoint to the first loaded module entrypoint, so the debugger can break.
                     self.entry_point = entry_point
                 self.ql.nprint("[+] PE entry point at 0x%x" % entry_point)
-                self.modules.append((path, entry_point, pe))
+                self.modules.append((path, IMAGE_BASE, entry_point, pe))
                 return True
             else:
                 IMAGE_BASE += 0x10000
@@ -95,14 +104,16 @@ class QlLoaderPE_UEFI(QlLoader):
         else:
             raise QlErrorArch("[!] Unknown ql.arch")
 
-        if len(self.ql.argv) > 1:
-            for dependency in self.ql.argv[1:]:
-                if not self.map_and_load(dependency):
-                    raise QlErrorFileType("Can't map dependency")
+        # Make sure no module will occupy the NULL page
+        with self.map_memory(0, 0x1000):
+            if len(self.ql.argv) > 1:
+                for dependency in self.ql.argv[1:]:
+                    if not self.map_and_load(dependency):
+                        raise QlErrorFileType("Can't map dependency")
 
-        # Load main module
-        self.map_and_load(self.ql.path)
-        self.ql.nprint("[+] Done with loading %s" % self.ql.path)
+            # Load main module
+            self.map_and_load(self.ql.path)
+            self.ql.nprint("[+] Done with loading %s" % self.ql.path)
 
         # set SystemTable to image base for now
         pointer_size = ctypes.sizeof(ctypes.c_void_p)
@@ -155,11 +166,12 @@ class QlLoaderPE_UEFI(QlLoader):
         self.notify_ptr = system_table_heap_ptr
         system_table_heap_ptr += pointer_size
 
-        path, self.entry_point, pe = self.modules.pop(0)
+        path, image_base, self.entry_point, pe = self.modules.pop(0)
         # workaround, the debugger sets the breakpoint before the module is loaded.
         if hasattr(self.ql.remotedebugsession ,'gdb'):
-                self.ql.remotedebugsession.gdb.bp_insert(self.entry_point)
+            self.ql.remotedebugsession.gdb.bp_insert(self.entry_point)
         self.ql.stack_push(self.end_of_execution_ptr)
+        self.ql.reg.rcx = image_base
         self.ql.reg.rdx = self.system_table_ptr
         self.ql.os.entry_point = self.entry_point
         self.ql.nprint(f'[+] Running from 0x{self.entry_point:x} of {path}')
