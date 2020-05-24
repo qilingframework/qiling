@@ -51,8 +51,8 @@ class QlRegisterManager():
 
     def write(self, register, value):
         if type(register) == str:
-            register = register.lower()
-        return self.ql.arch.set_register(register, value)
+            register = register.lower()           
+        self.ql.arch.set_register(register, value)
 
 
     def msr(self, msr, addr= None):
@@ -61,14 +61,13 @@ class QlRegisterManager():
         else:
             self.ql.uc.msr_write(msr, addr)
 
-    # Unicorn's register save method
+    # Unicorn's CPU state save
     def context_save(self):
         return self.ql.uc.context_save()
 
-    # Unicorn's register restore method
+    # Unicorn's CPU state restore method
     def context_restore(self, saved_context):
         self.ql.uc.context_restore(saved_context)
-
 
     # ql.reg.save - save based on ql.reg.table
     def save(self):

@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import os
+import os, re
 
 from qiling.const import *
 from qiling.exception import *
@@ -177,6 +177,20 @@ class QlMemoryManager:
     def write(self, addr: int, data: bytes) -> None:
         return self.ql.uc.mem_write(addr, data)
 
+
+    def search(self, needle: bytes):
+        """
+        Search for a sequence of bytes in memory. Returns all sequences
+        that match
+        """
+        addrs = []
+        for region in list(self.ql.uc.mem_regions()):
+            haystack = self.read(region[0], region[1] - region[0])
+            addrs += [
+                x.start(0) + region[0]
+                for x in re.finditer(needle, haystack)
+            ]
+        return addrs
 
     def unmap(self, addr, size) -> None:
         '''

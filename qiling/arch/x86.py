@@ -98,6 +98,8 @@ class QlArchX86(QlArch):
         adapter.update(reg_map_32)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
+        #adapter.update(reg_map_cr)
+        #adapter.update(reg_map_dr)        
         registers = {k:v for k, v in adapter.items()}
 
         for reg in registers:
@@ -116,6 +118,8 @@ class QlArchX86(QlArch):
         adapter.update(reg_map_32)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
+        #adapter.update(reg_map_cr)
+        #adapter.update(reg_map_dr)        
         adapter = {v: k for k, v in adapter.items()}
 
         if uc_reg in adapter:
@@ -132,8 +136,8 @@ class QlArchX86(QlArch):
 
     def set_register(self, register, value):
         if type(register) == str:
-            register = self.get_reg_name(register)  
-        return self.ql.uc.reg_write(register, value)
+            register = self.get_reg_name(register)
+        self.ql.uc.reg_write(register, value)
 
 
     def get_reg_name(self, uc_reg_name):
@@ -141,6 +145,8 @@ class QlArchX86(QlArch):
         adapter.update(reg_map_32)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
+        #adapter.update(reg_map_cr)
+        #adapter.update(reg_map_dr)        
 
         if uc_reg_name in adapter:
             return adapter[uc_reg_name]
@@ -289,8 +295,8 @@ class QlArchX8664(QlArch):
         adapter.update(reg_map_64)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
-        adapter.update(reg_map_cr)
-        adapter.update(reg_map_dr)
+        #adapter.update(reg_map_cr)
+        #adapter.update(reg_map_dr)
         #adapter.update(reg_map_fp)
         #adapter.update(reg_map_xmm)
         #adapter.update(reg_map_ymm)
