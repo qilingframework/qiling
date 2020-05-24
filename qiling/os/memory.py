@@ -178,14 +178,18 @@ class QlMemoryManager:
         return self.ql.uc.mem_write(addr, data)
 
 
-    def search(self, needle: bytes):
+    def search(self, needle: bytes, begin= None, end= None):
         """
         Search for a sequence of bytes in memory. Returns all sequences
         that match
         """
         addrs = []
         for region in list(self.ql.uc.mem_regions()):
-            haystack = self.read(region[0], region[1] - region[0])
+            if (begin and end) and end > begin:
+                haystack = self.read(begin, end)
+            else:  
+                haystack = self.read(region[0], region[1] - region[0])
+            
             addrs += [
                 x.start(0) + region[0]
                 for x in re.finditer(needle, haystack)
