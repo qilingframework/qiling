@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import ctypes, types, struct, ast
+from contextlib import contextmanager
 
 from unicorn import *
 from unicorn.x86_const import *
@@ -31,6 +32,14 @@ class QlLoaderPE_UEFI(QlLoader):
         self.events = {}
         self.handle_dict = {}
         self.notify_list = []
+
+    @contextmanager
+    def map_memory(self, addr, size):
+        self.ql.mem.map(addr, size)
+        try:
+            yield
+        finally:
+            self.ql.mem.unmap(addr, size)
 
     def map_and_load(self, path):
         pe = pefile.PE(path, fast_load=True)
@@ -95,14 +104,16 @@ class QlLoaderPE_UEFI(QlLoader):
         else:
             raise QlErrorArch("[!] Unknown ql.arch")
 
-        if len(self.ql.argv) > 1:
-            for dependency in self.ql.argv[1:]:
-                if not self.map_and_load(dependency):
-                    raise QlErrorFileType("Can't map dependency")
+        # Make sure no module will occupy the NULL page
+        with self.map_memory(0, 0x1000):
+            if len(self.ql.argv) > 1:
+                for dependency in self.ql.argv[1:]:
+                    if not self.map_and_load(dependency):
+                        raise QlErrorFileType("Can't map dependency")
 
-        # Load main module
-        self.map_and_load(self.ql.path)
-        self.ql.nprint("[+] Done with loading %s" % self.ql.path)
+            # Load main module
+            self.map_and_load(self.ql.path)
+            self.ql.nprint("[+] Done with loading %s" % self.ql.path)
 
         # set SystemTable to image base for now
         pointer_size = ctypes.sizeof(ctypes.c_void_p)
