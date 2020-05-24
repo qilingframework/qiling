@@ -156,11 +156,14 @@ def hook_CheckEvent(ql, address, params):
 def hook_InstallProtocolInterface(ql, address, params):
     dic = {}
     handle = read_int64(ql, params["Handle"])
+    if handle == 0:
+        handle = ql.loader.heap.alloc(1)
     if handle in ql.loader.handle_dict:
         dic = ql.loader.handle_dict[handle]
     dic[params["Protocol"]] = params["Interface"]
     ql.loader.handle_dict[handle] = dic
     check_and_notify_protocols(ql)
+    write_int64(ql, params["Handle"], handle)
     return EFI_SUCCESS
 
 @dxeapi(params={
@@ -434,6 +437,8 @@ def hook_LocateProtocol(ql, address, params):
     "Handle": POINTER})
 def hook_InstallMultipleProtocolInterfaces(ql, address, params):
     handle = read_int64(ql, params["Handle"])
+    if handle == 0:
+        handle = ql.loader.heap.alloc(1)
     ql.nprint(f'hook_InstallMultipleProtocolInterfaces {handle:x}')
     dic = {}
     if handle in ql.loader.handle_dict:
@@ -449,6 +454,7 @@ def hook_InstallMultipleProtocolInterfaces(ql, address, params):
         index +=2
     ql.loader.handle_dict[handle] = dic
     check_and_notify_protocols(ql)
+    write_int64(ql, params["Handle"], handle)
     return EFI_SUCCESS
 
 @dxeapi(params={
