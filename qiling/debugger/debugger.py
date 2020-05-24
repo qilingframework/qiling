@@ -44,7 +44,7 @@ def ql_debugger_init(ql):
             remotedebugsrv = str(remotedebugsrv) + "server" 
             DEBUGSESSION = str.upper(remotedebugsrv) + "session"
             DEBUGSESSION = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, DEBUGSESSION)
-            ql.remotedebugsession = DEBUGSESSION(ql, conn, exit_point, mappings)
+            ql.remote_debug = DEBUGSESSION(ql, conn, exit_point, mappings)
         except:
             ql.nprint("debugger> Error: Not able to initialize Debugging Server")
             raise
@@ -78,6 +78,6 @@ def ql_debugger_init(ql):
                 ql_debugger(ql, remotedebugsrv, ip, port)
         
         except KeyboardInterrupt:
-            if ql.remotedebugsession():
-                ql.remotedebugsession.close()
+            if ql.remote_debug():
+                ql.remote_debug.close()
             raise QlErrorOutput("[!] Remote debugging session ended")
