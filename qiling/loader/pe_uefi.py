@@ -41,6 +41,28 @@ class QlLoaderPE_UEFI(QlLoader):
         finally:
             self.ql.mem.unmap(addr, size)
 
+
+    def install_loaded_image_protocol(self, image_base, image_size, entry_point):
+        loaded_image_protocol = EFI_LOADED_IMAGE_PROTOCOL()
+        loaded_image_protocol.Revision = int(self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["revision"], 16)
+        loaded_image_protocol.ParentHandle = 0
+        loaded_image_protocol.SystemTable = self.system_table_ptr
+        loaded_image_protocol.DeviceHandle = image_base
+        loaded_image_protocol.FilePath = 0 # This is a handle to a complex path object, skip it for now.
+        loaded_image_protocol.LoadOptionsSize = 0
+        loaded_image_protocol.LoadOptions = 0
+        loaded_image_protocol.ImageBase = image_base
+        loaded_image_protocol.ImageSize = image_size
+        loaded_image_protocol.ImageCodeType = EfiLoaderCode
+        loaded_image_protocol.ImageDataType = EfiLoaderData
+        loaded_image_protocol.Unload = 0
+
+        loaded_image_protocol_ptr = self.heap.alloc(ctypes.sizeof(EFI_LOADED_IMAGE_PROTOCOL))
+        self.ql.mem.write(loaded_image_protocol_ptr, convert_struct_to_bytes(loaded_image_protocol))
+        self.handle_dict[image_base] = {self.loaded_image_protocol_guid: loaded_image_protocol_ptr}
+        self.loaded_image_protocol_modules.append(image_base)
+
+
     def map_and_load(self, path):
         pe = pefile.PE(path, fast_load=True)
         
@@ -56,9 +78,10 @@ class QlLoaderPE_UEFI(QlLoader):
                 self.ql.nprint("[+] Loading %s to 0x%x" % (path, IMAGE_BASE))
                 entry_point = IMAGE_BASE + pe.OPTIONAL_HEADER.AddressOfEntryPoint
                 if self.entry_point == 0:
-                    # Setting entrypoint to the first loaded module entrypoint, so the debugger can break.
+                    # Setting entry point to the first loaded module entry point, so the debugger can break.
                     self.entry_point = entry_point
                 self.ql.nprint("[+] PE entry point at 0x%x" % entry_point)
+                self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE, entry_point)
                 self.modules.append((path, IMAGE_BASE, entry_point, pe))
                 return True
             else:
@@ -66,7 +89,36 @@ class QlLoaderPE_UEFI(QlLoader):
                 pe.relocate_image(IMAGE_BASE)
         return False
 
+    def unload_modules(self):
+        for handle in self.loaded_image_protocol_modules:
+            dic = self.handle_dict[handle]
+            buf = bytes(self.ql.mem.read(dic[self.loaded_image_protocol_guid], ctypes.sizeof(EFI_LOADED_IMAGE_PROTOCOL)))
+            buffer = ctypes.create_string_buffer(buf)
+            loaded_image_protocol = EFI_LOADED_IMAGE_PROTOCOL()
+            ctypes.memmove(ctypes.addressof(loaded_image_protocol), buffer, ctypes.sizeof(loaded_image_protocol))
+            unload_ptr = struct.unpack("Q", loaded_image_protocol.Unload)[0]
+            if unload_ptr != 0:
+                self.ql.stack_push(self.end_of_execution_ptr)
+                self.ql.reg.rcx = handle
+                self.ql.reg.rip = unload_ptr
+                self.ql.nprint(f'[+] Unloading module 0x{handle:x}, calling 0x{unload_ptr:x}')
+                self.loaded_image_protocol_modules.remove(handle)
+                return True
+        return False
+
+    def execute_next_module(self):
+        path, image_base, entry_point, pe = self.modules.pop(0)
+        self.ql.stack_push(self.end_of_execution_ptr)
+        self.ql.reg.rcx = image_base
+        self.ql.reg.rdx = self.system_table_ptr
+        self.ql.reg.rip = entry_point
+        self.ql.os.entry_point = entry_point
+        self.ql.nprint(f'[+] Running from 0x{self.entry_point:x} of {path}')
+
+
     def run(self):
+        self.loaded_image_protocol_guid = self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["guid"]
+        self.loaded_image_protocol_modules = []
         self.tpl = 4 # TPL_APPLICATION
         self.user_defined_api = self.ql.os.user_defined_api
         if self.ql.archtype == QL_ARCH.X8664:
@@ -103,17 +155,6 @@ class QlLoaderPE_UEFI(QlLoader):
 
         else:
             raise QlErrorArch("[!] Unknown ql.arch")
-
-        # Make sure no module will occupy the NULL page
-        with self.map_memory(0, 0x1000):
-            if len(self.ql.argv) > 1:
-                for dependency in self.ql.argv[1:]:
-                    if not self.map_and_load(dependency):
-                        raise QlErrorFileType("Can't map dependency")
-
-            # Load main module
-            self.map_and_load(self.ql.path)
-            self.ql.nprint("[+] Done with loading %s" % self.ql.path)
 
         # set SystemTable to image base for now
         pointer_size = ctypes.sizeof(ctypes.c_void_p)
@@ -158,6 +199,17 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.mem.write(self.efi_configuration_table_ptr, convert_struct_to_bytes(efi_configuration_table))
         self.ql.mem.write(self.system_table_ptr, convert_struct_to_bytes(system_table))
 
+        # Make sure no module will occupy the NULL page
+        with self.map_memory(0, 0x1000):
+            if len(self.ql.argv) > 1:
+                for dependency in self.ql.argv[1:]:
+                    if not self.map_and_load(dependency):
+                        raise QlErrorFileType("Can't map dependency")
+
+            # Load main module
+            self.map_and_load(self.ql.path)
+            self.ql.nprint("[+] Done with loading %s" % self.ql.path)
+
         #return address
         self.end_of_execution_ptr = system_table_heap_ptr
         self.ql.mem.write(self.end_of_execution_ptr, b'\xcc')
@@ -166,12 +218,4 @@ class QlLoaderPE_UEFI(QlLoader):
         self.notify_ptr = system_table_heap_ptr
         system_table_heap_ptr += pointer_size
 
-        path, image_base, self.entry_point, pe = self.modules.pop(0)
-        # workaround, the debugger sets the breakpoint before the module is loaded.
-        if hasattr(self.ql.remote_debug ,'gdb'):
-            self.ql.remote_debug.gdb.bp_insert(self.entry_point)
-        self.ql.stack_push(self.end_of_execution_ptr)
-        self.ql.reg.rcx = image_base
-        self.ql.reg.rdx = self.system_table_ptr
-        self.ql.os.entry_point = self.entry_point
-        self.ql.nprint(f'[+] Running from 0x{self.entry_point:x} of {path}')
+        self.execute_next_module()
