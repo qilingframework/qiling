@@ -4008,6 +4008,33 @@ PEFI_KEY_OPTION = POINTER_T(struct_EFI_KEY_OPTION)
 enum_1__enumvalues = {
 }
 enum_1 = ctypes.c_int # enum
+
+class struct_EFI_LOADED_IMAGE_PROTOCOL(ctypes.Structure):
+    pass
+
+struct_EFI_LOADED_IMAGE_PROTOCOL._pack_ = True # source:False
+struct_EFI_LOADED_IMAGE_PROTOCOL._functions_ = []
+struct_EFI_LOADED_IMAGE_PROTOCOL._fields_ = [
+    ('Revision', ctypes.c_uint32),
+    ('PADDING_0', ctypes.c_ubyte * 4),
+    ('ParentHandle', POINTER_T(None)),
+    ('SystemTable', POINTER_T(struct_EFI_SYSTEM_TABLE)),
+    ('DeviceHandle', POINTER_T(None)),
+    ('FilePath', POINTER_T(struct_EFI_DEVICE_PATH_PROTOCOL)),
+    ('Reserved', POINTER_T(None)),
+    ('LoadOptionsSize', ctypes.c_uint32),
+    ('PADDING_1', ctypes.c_ubyte * 4),
+    ('LoadOptions', POINTER_T(None)),
+    ('ImageBase', POINTER_T(None)),
+    ('ImageSize', ctypes.c_uint64),
+    ('ImageCodeType', EFI_MEMORY_TYPE),
+    ('ImageDataType', EFI_MEMORY_TYPE),
+    ('Unload', POINTER_T(ctypes.CFUNCTYPE(ctypes.c_uint64, POINTER_T(None)))),
+]
+
+struct_EFI_LOADED_IMAGE_PROTOCOL._functions_.append(("Unload",['ctypes.c_uint64', 'POINTER_T(None)']))
+EFI_LOADED_IMAGE_PROTOCOL = struct_EFI_LOADED_IMAGE_PROTOCOL
+PEFI_LOADED_IMAGE_PROTOCOL = POINTER_T(struct_EFI_LOADED_IMAGE_PROTOCOL)
 __all__ = \
     ['AllHandles', 'AllocateAddress', 'AllocateAnyPages',
     'AllocateMaxAddress', 'BOOLEAN', 'ByProtocol', 'ByRegisterNotify',
@@ -4132,7 +4159,7 @@ __all__ = \
     'EFI_MAC_ADDRESS', 'EFI_MEMORY_DESCRIPTOR', 'EFI_MEMORY_TYPE',
     'EFI_MEMORY_TYPE__enumvalues', 'EFI_NARROW_GLYPH',
     'EFI_NATIVE_INTERFACE', 'EFI_OPEN_PROTOCOL',
-    'EFI_OPEN_PROTOCOL_INFORMATION',
+    'EFI_OPEN_PROTOCOL_INFORMATION', 'EFI_LOADED_IMAGE_PROTOCOL',
     'EFI_OPEN_PROTOCOL_INFORMATION_ENTRY', 'EFI_PARTITION_ENTRY',
     'EFI_PARTITION_TABLE_HEADER', 'EFI_PHYSICAL_ADDRESS',
     'EFI_PROTOCOLS_PER_HANDLE', 'EFI_QUERY_CAPSULE_CAPABILITIES',
@@ -4205,7 +4232,8 @@ __all__ = \
     'PEFI_RUNTIME_SERVICES', 'PEFI_SIMPLE_TEXT_OUTPUT_MODE',
     'PEFI_SYSTEM_TABLE', 'PEFI_TABLE_HEADER', 'PEFI_TIME',
     'PEFI_TIME_CAPABILITIES', 'PEFI_VARIABLE_AUTHENTICATION',
-    'PEFI_VARIABLE_AUTHENTICATION_2', 'PEFI_WIDE_GLYPH', 'PGUID',
+    'PEFI_VARIABLE_AUTHENTICATION_2', 'PEFI_WIDE_GLYPH', 
+    'PEFI_LOADED_IMAGE_PROTOCOL', 'PGUID',
     'PMINMAXSTEP_DATA', 'PWIN_CERTIFICATE',
     'PWIN_CERTIFICATE_UEFI_GUID', 'PXE_BOOL', 'PXE_CDB',
     'PXE_CONTROL', 'PXE_CPB_FILL_HEADER',
@@ -4461,7 +4489,7 @@ __all__ = \
     'struct_EFI_MEMORY_DESCRIPTOR', 'struct_EFI_NARROW_GLYPH',
     'struct_EFI_OPEN_PROTOCOL_INFORMATION_ENTRY',
     'struct_EFI_PARTITION_ENTRY', 'struct_EFI_PARTITION_TABLE_HEADER',
-    'struct_EFI_RUNTIME_SERVICES',
+    'struct_EFI_RUNTIME_SERVICES', 'struct_EFI_LOADED_IMAGE_PROTOCOL', 
     'struct_EFI_SIMPLE_TEXT_OUTPUT_MODE', 'struct_EFI_SYSTEM_TABLE',
     'struct_EFI_TABLE_HEADER', 'struct_EFI_TIME',
     'struct_EFI_TIME_CAPABILITIES',
