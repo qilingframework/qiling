@@ -7,6 +7,7 @@
 import argparse, os, string, sys, ast
 from binascii import unhexlify
 from qiling import *
+from qiling import __version__ as ql_version
 
 
 def parse_args(parser, commands):
@@ -82,6 +83,8 @@ def run_shellcode(options):
 
 
 def usage():
+    print("qltool for Qiling v%s" %ql_version)
+
     print("\nUsage: ./qltool [run|shellcode] OPTIONS")
 
     print("\n\nWith shellcode:")
