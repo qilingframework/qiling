@@ -64,13 +64,16 @@ class QlArch:
     def get_name_pc(self):
         pass
 
+
     # get PC register
     def get_reg_table(self):
         pass
-    
+
+
     # get register name
     def get_reg_name_str(self):
         pass
+
 
     # set register name
     def set_reg_name_str(self, uc_reg):
