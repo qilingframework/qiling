@@ -96,8 +96,8 @@ class QlLoaderPE_UEFI(QlLoader):
             buffer = ctypes.create_string_buffer(buf)
             loaded_image_protocol = EFI_LOADED_IMAGE_PROTOCOL()
             ctypes.memmove(ctypes.addressof(loaded_image_protocol), buffer, ctypes.sizeof(loaded_image_protocol))
-            if loaded_image_protocol.Unload != 0:
-                unload_ptr = struct.unpack("Q", loaded_image_protocol.Unload)[0]
+            unload_ptr = struct.unpack("Q", loaded_image_protocol.Unload)[0]
+            if unload_ptr != 0:
                 self.ql.stack_push(self.end_of_execution_ptr)
                 self.ql.reg.rcx = handle
                 self.ql.reg.rip = unload_ptr
