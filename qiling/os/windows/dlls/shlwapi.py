@@ -51,7 +51,7 @@ def hook_PathFindExtensionW(ql, address, params):
 def hook_PathFindFileNameA(ql, address, params):
     # Must return the address of the start of the filename
     pointer = params["pszPath"]
-    pathname = read_cstring(ql, pointer)
+    pathname = ql.os.read_cstring(pointer)
     params["pszPath"] = pathname
     size_before_last_slash = len("".join(pathname.split("\\")[:-1])) + pathname.count("\\")
     pointer_start = pointer + size_before_last_slash
