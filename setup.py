@@ -5,7 +5,7 @@
 
 from setuptools import setup, find_packages
 
-VERSION = '1.0'
+VERSION = '1.1'
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
