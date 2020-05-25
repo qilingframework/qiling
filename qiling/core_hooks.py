@@ -50,7 +50,7 @@ class HookIntr(Hook):
         self.intno = intno
     
     def check(self, ql, intno):
-        ql.dprint(D_CONT, "[+] Received Interupt: %i Hooked Interupt: %i" % (intno, self.intno))
+        ql.dprint(D_CTNT, "[+] Received Interupt: %i Hooked Interupt: %i" % (intno, self.intno))
         if intno < 0 or self.intno == intno:
             return True
         return False

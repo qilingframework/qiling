@@ -24,3 +24,4 @@ from .uio import *
 from .unistd import *
 from .utsname import *
 from .wait import *
+from .random import *
