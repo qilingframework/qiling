@@ -61,13 +61,6 @@ class QlRegisterManager():
         else:
             self.ql.uc.msr_write(msr, addr)
 
-    # Unicorn's CPU state save
-    def context_save(self):
-        return self.ql.uc.context_save()
-
-    # Unicorn's CPU state restore method
-    def context_restore(self, saved_context):
-        self.ql.uc.context_restore(saved_context)
 
     # ql.reg.save - save based on ql.reg.table
     def save(self):

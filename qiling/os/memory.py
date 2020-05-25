@@ -196,6 +196,7 @@ class QlMemoryManager:
             ]
         return addrs
 
+
     def unmap(self, addr, size) -> None:
         '''
         The main function of mem_unmap is to reclaim memory.

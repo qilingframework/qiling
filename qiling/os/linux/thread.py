@@ -161,18 +161,18 @@ class QlLinuxThread(QlThread):
         self.store()
 
     def store_regs(self):
-        self.context = self.ql.reg.context_save()
+        self.context = self.ql.arch.context_save()
         self.start_address = self.ql.arch.get_pc()
 
     def restore_regs(self):
-        self.ql.reg.context_restore(self.context)
+        self.ql.arch.context_restore(self.context)
 
     def set_start_address(self, addr):
-        old_context = self.ql.reg.context_save()
+        old_context = self.ql.arch.context_save()
         self.restore_regs()
         self.ql.reg.arch_pc = addr
         self.store_regs()
-        self.ql.reg.context_restore(old_context)
+        self.ql.arch.context_restore(old_context)
 
     def set_context(self, con):
         self.context = con

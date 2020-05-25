@@ -86,3 +86,13 @@ class QlArch:
             addr = ('{:0>8}'.format(addr[2:]))
         addr = str(addr)    
         return addr
+
+
+    # Unicorn's CPU state save
+    def context_save(self):
+        return self.ql.uc.context_save()
+
+
+    # Unicorn's CPU state restore method
+    def context_restore(self, saved_context):
+        self.ql.uc.context_restore(saved_context)        
