@@ -445,6 +445,21 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
     ql.run()
 
 
+def ql_syscall_dup(ql, dup_oldfd, *args, **kw):
+    regreturn = -1
+    if dup_oldfd in range(0, 256):
+        if ql.os.file_des[dup_oldfd] != 0:
+            newfd = ql.os.file_des[dup_oldfd].dup()
+            for idx, val in enumerate(ql.os.file_des):
+                if val == 0:
+                    ql.os.file_des[idx] = newfd
+                    regreturn = idx
+                    break
+
+    ql.nprint("dup(%d) = %d" % (dup_old, regreturn))
+    ql.os.definesyscall_return(regreturn)
+
+
 def ql_syscall_dup2(ql, dup2_oldfd, dup2_newfd, *args, **kw):
     if 0 <= dup2_newfd < 256 and 0 <= dup2_oldfd < 256:
         if ql.os.file_des[dup2_oldfd] != 0:
