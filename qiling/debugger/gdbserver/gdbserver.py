@@ -397,7 +397,8 @@ class GDBSERVERsession(object):
                         file_contents = f.read()
                         self.send("l%s" % file_contents)
                     else:
-                        self.ql.nprint("gdb> Xml file not found: %s\n" % (xfercmd_file))
+                        self.ql.nprint("gdb> Platform is not supported by xml or xml file not found: %s\n" % (xfercmd_file))
+                        self.send("l")
 
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
