@@ -333,7 +333,7 @@ class QlLoaderPE(QlLoader, Process):
                 self.pe_image_address = self.pe_image_address = self.image_address
                 self.pe.relocate_image(self.image_address)
 
-            self.ql.os.entry_point = self.entry_point = self.pe_entry_point = self.pe_image_address + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
+            self.entry_point = self.pe_entry_point = self.pe_image_address + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
             self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
             self.ql.nprint("[+] Loading %s to 0x%x" % (self.path, self.pe_image_address))
             self.ql.nprint("[+] PE entry point at 0x%x" % self.entry_point)
@@ -431,3 +431,6 @@ class QlLoaderPE(QlLoader, Process):
             # load dlls
             for each in self.init_dlls:
                 super().load_dll(each)
+        
+        # move entry_point to ql.os
+        self.ql.os.entry_point = self.entry_point
