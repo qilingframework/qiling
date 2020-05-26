@@ -248,7 +248,7 @@ def hook_lstrcatA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
     pointer = params["lpString1"]
-    string_base = read_cstring(ql, pointer)
+    string_base = ql.os.read_cstring(pointer)
     params["lpString1"] = string_base
     result = string_base + src + "\x00"
     ql.mem.write(pointer, result.encode())

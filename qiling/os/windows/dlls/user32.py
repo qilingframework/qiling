@@ -563,7 +563,7 @@ def hook_CharNextW(ql, address, params):
 def hook_CharNextA(ql, address, params):
     # Return next char if is different from \x00
     point = params["lpsz"][0]
-    string = read_cstring(ql, point)
+    string = ql.os.read_cstring(point)
     params["lpsz"] = string
     if len(string) == 0:
         return point
@@ -604,9 +604,9 @@ def hook_CharPrevW(ql, address, params):
 def hook_CharPrevA(ql, address, params):
     # Return next char if is different from \x00
     current = params["lpszCurrent"]
-    strcur = read_cstring(ql, current)
+    strcur = ql.os.read_cstring(current)
     start = params["lpszStart"]
-    strstart = read_cstring(ql, start)
+    strstart = ql.os.read_cstring(start)
     params["lpszStart"] = strstart
     params["lpszCurrent"] = strcur
 

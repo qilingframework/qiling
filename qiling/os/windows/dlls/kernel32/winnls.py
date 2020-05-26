@@ -96,7 +96,7 @@ def _LCMapString(ql, address, params):
     cchDest = params["cchDest"]
     result = (params["lpSrcStr"] + "\x00").encode("utf-16le")
     dst = params["lpDestStr"]
-    if cchDest != 0:
+    if cchDest != 0 and dst != 0:
         # TODO maybe do some other check, for now is working
         ql.mem.write(dst, result)
     return len(result)
