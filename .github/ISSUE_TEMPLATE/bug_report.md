@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Please make sure you are on "dev" branch and check our [FAQ](https://docs.qiling.io/en/latest/faq/)
+about: Make sure to star Qiling(top right conner), tried "dev" branch and check our [FAQ](https://docs.qiling.io/en/latest/faq/)
 title: ''
 labels: ''
 assignees: ''
