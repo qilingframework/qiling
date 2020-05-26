@@ -228,7 +228,7 @@ def hook_lstrcpyA(ql, address, params):
     "lpString1": POINTER,
     "lpString2": WSTRING,
 })
-def hook_lstrcpyA(ql, address, params):
+def hook_lstrcpyW(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
     dst = params["lpString1"]

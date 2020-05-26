@@ -391,9 +391,10 @@ def hook_GetDiskFreeSpaceW(ql, address, params):
     "lpSecurityAttributes": POINTER
 })
 def hook_CreateDirectoryA(ql, address, params):
-    target_dir = os.path.join(ql.rootfs, lpPathName.replace("\\", os.sep))
+    path_name = params["lpPathName"]
+    target_dir = os.path.join(ql.rootfs, path_name.replace("\\", os.sep))
     print('TARGET_DIR = %s' % target_dir)
-    real_path = ql.os.transform_to_real_path(lpPathName)
+    real_path = ql.os.transform_to_real_path(path_name)
     # Verify the directory is in ql.rootfs to ensure no path traversal has taken place
     if not os.path.exists(real_path):
         os.mkdir(real_path)
