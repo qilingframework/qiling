@@ -305,7 +305,9 @@ class QlLoaderPE(QlLoader, Process):
         self.load_address = 0  
         self.ql.os.heap = QlMemoryHeap(self.ql, self.ql.os.heap_base_address, self.ql.os.heap_base_address + self.ql.os.heap_base_size)
         self.ql.os.setupComponents()
+        self.ql.os.entry_point = self.entry_point
         self.cmdline = bytes(((str(self.ql.os.userprofile)) + "Desktop\\" + (self.ql.targetname) + "\x00"), "utf-8")
+        
         self.load()
 
     def init_thread_information_block(self): 
@@ -331,7 +333,7 @@ class QlLoaderPE(QlLoader, Process):
                 self.pe_image_address = self.pe_image_address = self.image_address
                 self.pe.relocate_image(self.image_address)
 
-            self.entry_point = self.pe_entry_point = self.pe_image_address + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
+            self.ql.os.entry_point = self.entry_point = self.pe_entry_point = self.pe_image_address + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
             self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
             self.ql.nprint("[+] Loading %s to 0x%x" % (self.path, self.pe_image_address))
             self.ql.nprint("[+] PE entry point at 0x%x" % self.entry_point)
@@ -425,9 +427,6 @@ class QlLoaderPE(QlLoader, Process):
             except:
                 pass
             
-            # rewrite entrypoint for windows shellcode
-            self.ql.os.entry_point = self.entry_point
-
             self.init_thread_information_block()
             # load dlls
             for each in self.init_dlls:
