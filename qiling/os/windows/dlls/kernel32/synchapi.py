@@ -321,3 +321,53 @@ def hook_CreateEventA(ql, address, params):
 })
 def hook_CreateEventW(ql, address, params):
     return hook_CreateEventA.__wrapped__(ql, address, params)
+
+
+# void InitializeSRWLock(
+#  PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_InitializeSRWLock(ql, address, params):
+    return
+
+
+# void AcquireSRWLockExclusive(
+#   PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_AcquireSRWLockExclusive(ql, address, params):
+    return
+
+
+# void AcquireSRWLockShared(
+#   PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_AcquireSRWLockShared(ql, address, params):
+    return
+
+
+# void ReleaseSRWLockExclusive(
+#   PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_ReleaseSRWLockExclusive(ql, address, params):
+    return
+
+
+# void ReleaseSRWLockShared(
+#   PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_ReleaseSRWLockShared(ql, address, params):
+    return
