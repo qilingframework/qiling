@@ -5,7 +5,9 @@
 
 from setuptools import setup, find_packages
 
-VERSION = '1.1-alpha1'
+from qiling import __version__ as ql_version
+
+VERSION = ql_version
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
