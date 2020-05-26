@@ -180,9 +180,7 @@ See  https://docs.qiling.io/  for more details
 
 Get the latest info from our website https://www.qiling.io
 
-Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.com/qiling_io)
-
-任何疑问请联系[麒麟框架官方微博](https://www.weibo.com/sgniwx)
+Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.com/qiling_io) or [Weibo](https://www.weibo.com/sgniwx)
 
 ---
 
