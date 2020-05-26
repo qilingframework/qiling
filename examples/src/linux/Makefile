@@ -17,7 +17,9 @@ TARGET = arm_hello arm_hello_static \
             arm64_hello arm64_hello_static \
             mips32el_hello mips32el_hello_static \
             x86_hello x86_hello_static \
-            x8664_hello x8664_hello_static
+            x8664_hello x8664_hello_static \
+            patch_test.bin \
+            arm_sleep_hello arm64_sleep_hello
 
 all : $(TARGET)
 
@@ -34,11 +36,17 @@ arm_hello: hello.c
 arm_hello_static: hello.c
 	arm-linux-gnueabihf-gcc -Wall -O2 -s -static $< -o $@
 
+arm_sleep_hello: sleep_hello.c
+	arm-linux-gnueabihf-gcc -Wall -O2 -s $< -o $@
+
 arm64_hello: hello.c
 	aarch64-linux-gnu-gcc -Wall -O2 -s $< -o $@
 
 arm64_hello_static: hello.c
 	aarch64-linux-gnu-gcc -Wall -O2 -s -static $< -o $@
+
+arm64_sleep_hello: sleep_hello.c
+	aarch64-linux-gnu-gcc -Wall -O2 -s $< -o $@
 
 # not included in default targets because requires the Android NDK to be installed.
 # add <NDK>/toolchains/llvm/prebuilt/linux-x86_64/bin/ to your path
@@ -71,6 +79,13 @@ x8664_hello: hello.c
 
 x8664_hello_static: hello.c
 	gcc -Wall -O2 -s -static $< -o $@
+
+libpatch_test.so: patch_test.so.h patch_test.so.c
+	gcc -shared -fpic -s patch_test.so.c -o $@
+
+patch_test.bin: libpatch_test.so patch_test.bin.c
+	gcc -s patch_test.bin.c libpatch_test.so -o $@
+
 
 $(OBJS):%.o:%.c
 	$(CC) $(CFLAGS) -c $< -o $@

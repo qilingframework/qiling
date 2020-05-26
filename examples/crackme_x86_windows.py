@@ -36,7 +36,7 @@ def instruction_count(ql, address, size, user_data):
 
 
 def get_count(flag):
-    ql = Qiling(["rootfs/x86_windows/bin/crackme.exe"], "rootfs/x86_windows", libcache=True, output="off")
+    ql = Qiling(["rootfs/x86_windows/bin/crackme.exe"], "rootfs/x86_windows", output="off")
     ql.stdin = StringBuffer()
     ql.stdout = StringBuffer()
     ql.stdin.write(bytes("".join(flag) + "\n", 'utf-8'))

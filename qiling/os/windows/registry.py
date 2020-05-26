@@ -26,17 +26,12 @@ from qiling.const import *
 class RegistryManager:
     def __init__(self, ql, hive=None):
         self.ql = ql
-
-        if self.ql.log_dir is None:
+        self.log_registry_dir = self.ql.log_dir
+        
+        if self.log_registry_dir == None:
             self.log_registry_dir = "qlog"
-        else:
-            self.log_registry_dir = self.ql.log_dir
 
-        if self.ql.append:
-            self.registry_diff = self.ql.targetname + "_" + self.ql.append + ".json"
-        else:
-            self.registry_diff = self.ql.targetname + ".json"
-
+        self.registry_diff = self.ql.targetname + "_" + self.ql.append + ".json"
         self.regdiff = os.path.join(self.log_registry_dir, "registry", self.registry_diff)    
 
         # hive dir
@@ -86,11 +81,13 @@ class RegistryManager:
         except Exception:
             if not ql.shellcoder:
                 QlErrorFileNotFound("WARNING: Registry files format error")
+        self.accessed = {}
 
     def exists(self, key):
         if key in self.regdiff:
             return True
         keys = key.split("\\")
+        self.access(key)
         try:
             if keys[0] == "HKEY_LOCAL_MACHINE":
                 reg = self.hklm[keys[1]]
@@ -108,6 +105,8 @@ class RegistryManager:
         return True
 
     def read(self, key, subkey, reg_type):
+        # of the key, the subkey is the value checked
+
         # read reg conf first
         if key in self.regdiff and subkey in self.regdiff[key]:
             if self.regdiff[key][subkey].type in REG_TYPES:
@@ -135,10 +134,29 @@ class RegistryManager:
             for value in data.values():
                 if value.name() == subkey and (reg_type == Registry.RegNone or
                                                value.value_type() == reg_type):
+
+                    self.access(key, value_name=subkey, value=value.value(), type=value.value_type())
                     return value.value_type(), value.value()
-            return None, None
+
         except Registry.RegistryKeyNotFoundException:
-            return None, None
+            pass
+
+        self.access(key, value_name=subkey, value=None, type=None)
+
+        return None, None
+
+    def access(self, key, value_name=None, value=None, type=None):
+        if value_name is None:
+            if key not in self.accessed:
+                self.accessed[key] = []
+        else:
+            self.accessed[key].append({
+                "value_name": value_name,
+                "value": value,
+                "type": type,
+                "position": self.ql.os.syscalls_counter
+            })
+            # we don't have to increase the counter since we are technically inside a hook
 
     def create(self, key):
         self.registry_config[key] = dict()

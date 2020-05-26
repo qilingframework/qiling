@@ -3,11 +3,23 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-QL_ARCHBIT32_EMU_END = 0x8fffffff
-QL_ARCHBIT64_EMU_END = 0xffffffffffffffff
-
 STDCALL = 1
 CDECL = 2
+
+DWORD = 1
+UINT = 1
+INT = 1
+BOOL = 1
+SIZE_T = 1
+BYTE = 1
+ULONGLONG = 2
+HANDLE = 3
+POINTER = 3
+STRING = 4
+WSTRING = 5
+STRING_ADDR = 6
+WSTRING_ADDR = 7
+GUID = 8
 
 #OS Threading Constants
 THREAD_EVENT_INIT_VAL = 0

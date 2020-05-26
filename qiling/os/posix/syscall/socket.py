@@ -19,9 +19,9 @@ def ql_bin_to_ip(ip):
 
 
 def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **kw):
-    if ql.archtype== QL_ARCH.MIPS32 and socket_type == 2:
+    if ql.archtype== QL_ARCH.MIPS and socket_type == 2:
         socket_type = 1
-    elif ql.archtype== QL_ARCH.MIPS32 and socket_type == 1:
+    elif ql.archtype== QL_ARCH.MIPS and socket_type == 1:
         socket_type = 1
 
     idx = -1
@@ -211,8 +211,8 @@ def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, *args, **kw
     if recv_sockfd < 256 and ql.os.file_des[recv_sockfd] != 0:
         tmp_buf = ql.os.file_des[recv_sockfd].recv(recv_len, recv_flags)
         if tmp_buf:
-            ql.dprint(D_INFO, "[+] recv() CONTENT:")
-            ql.dprint(D_INFO, "%s" % tmp_buf)
+            ql.dprint(D_CTNT, "[+] recv() CONTENT:")
+            ql.dprint(D_CTNT, "%s" % tmp_buf)
         ql.mem.write(recv_buf, tmp_buf)
         regreturn = len(tmp_buf)
     else:
@@ -229,8 +229,8 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
             tmp_buf = ql.mem.read(send_buf, send_len)
             ql.dprint(D_INFO, ql.os.file_des[send_sockfd])
             ql.dprint(D_INFO, "[+] fd is " + str(send_sockfd))
-            ql.dprint(D_INFO, "[+] send() CONTENT:")
-            ql.dprint(D_INFO, "%s" % tmp_buf)
+            ql.dprint(D_CTNT, "[+] send() CONTENT:")
+            ql.dprint(D_CTNT, "%s" % tmp_buf)
             ql.dprint(D_INFO, "[+] send() flag is " + str(send_flags))
             ql.dprint(D_INFO, "[+] send() len is " + str(send_len))
             ql.os.file_des[send_sockfd].send(bytes(tmp_buf), send_flags)

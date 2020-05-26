@@ -2,17 +2,6 @@
 =====
 - More *nix based syscall
 
-MacOS
-=====
-- Current Status: only work with assembler compiled binary
-- Dyld binaries
-    - finish syscall integration (MacOS specific)
-    - parse more lc command
-    - add thread/task manager
-    - add cpu data manager
-    - add mach port manager
-    - find a better way to load binary
-
 iOS
 ===
 - Partial complete. Did not test againts any actual iOS binary yet
@@ -22,7 +11,6 @@ FreeBSD
 Current Status: only work with assembler compiled binary
 - gcc compiled static binary
 - Dynamically compile binary
-
 
 Windows
 =======
@@ -37,9 +25,9 @@ Linux / *nix
 - ql.dev to emulate devices
 - ql.proc to emulate /proc
 
-Testing
-=======
-- Unit testing
+Debugging Server
+================
+- Add GDB stub commands
 
 -------------------- FUTURE --------------------
 
@@ -51,11 +39,7 @@ Blockchain
 ==========
 - Smart contract emulator?
 
-(U)EFI
-======
-- Emulator?
-- Since its PE
-
 Android
 ======
 - Its linux, but a bit more specific support ?
+- maybe a OS by itself

@@ -24,7 +24,7 @@ def hook_GetStdHandle(ql, address, params):
 @winapi(cc=STDCALL, params={})
 def hook_GetCommandLineA(ql, address, params):
     cmdline = ql.loader.cmdline + b"\x00"
-    addr = ql.os.heap.mem_alloc(len(cmdline))
+    addr = ql.os.heap.alloc(len(cmdline))
     ql.mem.write(addr, cmdline)
     return addr
 
@@ -34,7 +34,7 @@ def hook_GetCommandLineA(ql, address, params):
 @winapi(cc=STDCALL, params={})
 def hook_GetCommandLineW(ql, address, params):
     cmdline = ql.loader.cmdline.decode('ascii').encode('utf-16le')
-    addr = ql.os.heap.mem_alloc(len(cmdline))
+    addr = ql.os.heap.alloc(len(cmdline))
     ql.mem.write(addr, cmdline)
     return addr
 
@@ -44,7 +44,7 @@ def hook_GetCommandLineW(ql, address, params):
 @winapi(cc=STDCALL, params={})
 def hook_GetEnvironmentStrings(ql, address, params):
     cmdline = b"\x00"
-    addr = ql.os.heap.mem_alloc(len(cmdline))
+    addr = ql.os.heap.alloc(len(cmdline))
     ql.mem.write(addr, cmdline)
     return addr
 
@@ -54,7 +54,7 @@ def hook_GetEnvironmentStrings(ql, address, params):
 @winapi(cc=STDCALL, params={})
 def hook_GetEnvironmentStringsW(ql, address, params):
     cmdline = b"\x00\x00"
-    addr = ql.os.heap.mem_alloc(len(cmdline))
+    addr = ql.os.heap.alloc(len(cmdline))
     ql.mem.write(addr, cmdline)
     return addr
 
@@ -110,4 +110,3 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
 def hook_GetEnvironmentVariableA(ql, address, params):
     ret = 0
     return ret
-
