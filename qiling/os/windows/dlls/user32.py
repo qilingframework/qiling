@@ -58,23 +58,6 @@ def hook_GetDlgItemTextA(ql, address, params):
     return ret
 
 
-# int MessageBoxA(
-#     HWND   hWnd,
-#     LPCSTR lpText,
-#     LPCSTR lpCaption,
-#     UINT   uType
-#     );
-@winapi(cc=STDCALL, params={
-    "hWnd": HANDLE,
-    "lpText": STRING,
-    "lpCaption": STRING,
-    "uType": UINT
-})
-def hook_MessageBoxA(ql, address, params):
-    ret = 2
-    return ret
-
-
 # BOOL EndDialog(
 #   HWND    hDlg,
 #   INT_PTR nResult
