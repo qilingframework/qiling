@@ -12,7 +12,6 @@ from .utils import *
 from .futex import *
 from .thread import *
 
-
 class QlOsLinux(QlOsPosix):
     def __init__(self, ql):
         super(QlOsLinux, self).__init__(ql)

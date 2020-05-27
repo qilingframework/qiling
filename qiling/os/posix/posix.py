@@ -55,8 +55,10 @@ class QlOsPosix(QlOs):
         return self.get_syscall()
 
     def load_syscall(self, intno=None):
+        # import syscall mapping function
         map_syscall = self.ql.os_setup(function_name="map_syscall")
         self.syscall_map = self.dict_posix_syscall_by_num.get(self.syscall)
+
         if self.syscall_map is not None:
             self.syscall_name = self.syscall_map.__name__
         else:
@@ -90,8 +92,8 @@ class QlOsPosix(QlOs):
                 })
 
                 self.syscalls_counter += 1
-
                 self.syscall_map(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
+
             except KeyboardInterrupt:
                 raise
             except Exception as e:
@@ -99,7 +101,7 @@ class QlOsPosix(QlOs):
                 raise
         else:
             self.ql.nprint(
-                "[!] 0x%x: syscall number = 0x%x(%d) not implemented" % (self.ql.reg.arch_pc, self.syscall, self.syscall))
+                "[!] 0x%x: syscall number = 0x%x(%d) not implemented" % (s  elf.ql.reg.arch_pc, self.syscall, self.syscall))
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Syscall Not Found")
 

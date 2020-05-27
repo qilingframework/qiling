@@ -339,6 +339,7 @@ class QLCoreHooks(object):
             else:
                 syscall_name = "ql_syscall_" + str(syscall_cur)
                 self.os.dict_posix_syscall[syscall_name] = syscall_new
+        
         elif self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
             self.set_api(syscall_cur, syscall_new)
 
