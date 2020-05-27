@@ -19,7 +19,7 @@ def map_syscall(syscall_num):
         0x6A : "ql_syscall_listen",
         0xA5 : "ql_syscall_sysarch",
         0xCA : "ql_syscall__sysctl",
-        0xE4 : "ql_syscall_clock_gettime",
+        0xE8 : "ql_syscall_clock_gettime",
         0xFD : "ql_syscall_issetugid",
         0x0146 : "ql_syscall_getcwd",
         0x01DD : "ql_syscall_mmap2",

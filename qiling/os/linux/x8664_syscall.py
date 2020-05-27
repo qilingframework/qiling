@@ -51,6 +51,7 @@ def map_syscall(syscall_num):
         0xba : "ql_syscall_gettid",
         0xCA : "ql_syscall_futex",
         0xDA : "ql_syscall_set_tid_address",
+        0xD9 : "ql_syscall_getdents", # getdents64
         0xE4 : "ql_syscall_clock_gettime",
         0xE7 : "ql_syscall_exit_group",
         0x0101 : "ql_syscall_openat",
