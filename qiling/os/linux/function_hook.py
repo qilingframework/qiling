@@ -51,8 +51,8 @@ GLOB_DAT = 6
 JMP_SLOT = 7
 
 class HookFunc:
-    def __init__(self, ql, fucname, r, load_base):
-        self.fucname = fucname
+    def __init__(self, ql, funcname, r, load_base):
+        self.funcname = funcname
         self.hook = []
         self.rel = r
         self.idx = None
@@ -730,25 +730,25 @@ class FunctionHook:
                 self.ql.hook_intno(self._hook_int, 7)
 
 
-    def add_function_hook_relocation(self, fucname, cb, userdata = None):
-        if type(fucname) != str:
+    def add_function_hook_relocation(self, funcname, cb, userdata = None):
+        if type(funcname) != str:
             raise
 
         for r in self.rel_list:
             if (r.r_type == JMP_SLOT or r.r_type == GLOB_DAT) and r.r_sym != 0:
                 tmp_name = self.strtab[self.symtab[r.r_sym].st_name]
-                if tmp_name == fucname.encode():
+                if tmp_name == funcname.encode():
                     self._hook_function(tmp_name, r, cb, userdata)
     
-    def add_function_hook_default(self, fucname, cb, userdata = None):
+    def add_function_hook_default(self, funcname, cb, userdata = None):
         pass
     
-    def add_function_hook_mips(self, fucname, cb, userdata = None):
-        self.add_function_hook_relocation(fucname, cb, userdata)
+    def add_function_hook_mips(self, funcname, cb, userdata = None):
+        self.add_function_hook_relocation(funcname, cb, userdata)
 
         for symidx in range(self.mips_gotsym, self.mips_symtabno):
             tmp_name = self.strtab[self.symtab[symidx].st_name]
-            if tmp_name == fucname.encode():
+            if tmp_name == funcname.encode():
                 pass
 
     def _load_import(self):
