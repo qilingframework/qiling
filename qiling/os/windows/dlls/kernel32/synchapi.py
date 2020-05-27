@@ -107,7 +107,7 @@ def hook_WaitForSingleObject(ql, address, params):
     dwMilliseconds = params["dwMilliseconds"]
 
     try:
-        target_thread: QlWindowsThread = ql.os.handle_manager.get(hHandle).thread
+        target_thread = ql.os.handle_manager.get(hHandle).thread
     except AttributeError:
         ql.os.last_error = ERROR_INVALID_HANDLE
         return 0xFFFFFFFF  # WAIT_FAILED
@@ -135,7 +135,7 @@ def hook_WaitForSingleObjectEx(ql, address, params):
     alertable = params["bAlertable"]
 
     try:
-        target_thread: QlWindowsThread = ql.os.handle_manager.get(hHandle).thread
+        target_thread = ql.os.handle_manager.get(hHandle).thread
     except AttributeError:
         ql.os.last_error = ERROR_INVALID_HANDLE
         return 0xFFFFFFFF  # WAIT_FAILED
