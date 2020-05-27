@@ -103,11 +103,10 @@ def hook_RaiseException(ql, address, params):
 def hook_AddVectoredExceptionHandler(ql, address, params):
 
     # this case is an anomaly from other interrupts (from what i learned, can be wrong)
-    def exec_into_0x2d(ql, into, start_end):
+    def exec_into_0x2d(ql, into, start):
         old_sp = ql.reg.arch_sp
         # we read where this hook is supposed to return
         ret = ql.stack_pop()
-        start, end = start_end
 
         # https://github.com/LordNoteworthy/al-khaser/wiki/Anti-Debugging-Tricks#interrupt-0x2d
         pointer = ql.os.heap.alloc(0x4)
@@ -137,7 +136,7 @@ def hook_AddVectoredExceptionHandler(ql, address, params):
     size = find_size_function(ql, addr)
     # the interrupts 0x2d, 0x3 must be hooked
     hook = ql.hook_intno(exec_standard_into, 0x3, user_data=addr)
-    hook = ql.hook_intno(exec_into_0x2d, 0x2d, user_data=(addr, addr + size))
+    hook = ql.hook_intno(exec_into_0x2d, 0x2d, user_data=addr)
     handle = Handle(obj=hook)
     ql.os.handle_manager.append(handle)
     return handle.id

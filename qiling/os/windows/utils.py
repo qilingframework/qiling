@@ -51,12 +51,6 @@ def string_to_hex(string):
 def find_size_function(ql, func_addr):
     # We have to retrieve the return address position
     code = ql.mem.read(func_addr, 0x100)
-    if b"\xc3" in code:
-        code = code[:code.index(b"\xc3")]
-    if b"\xc2" in code:
-        code = code[:code.index(b"\xc2")]
-    if b"\xcb" in code:
-        code = code[:code.index(b"\xcb")]
-    if b"\xca" in code:
-        code = code[:code.index(b"\xca")]
-    return len(code)
+    opcodes = [b"\xc3", b"\xc2", b"\xcb", b"\xca"]
+    min_index = min([code.index(opcode) for opcode in opcodes if opcode in code])
+    return min_index
