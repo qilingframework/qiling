@@ -46,3 +46,17 @@ def is_file_library(string):
 
 def string_to_hex(string):
     return ":".join("{:02x}".format(ord(c)) for c in string)
+
+
+def find_size_function(ql, func_addr):
+    # We have to retrieve the return address position
+    code = ql.mem.read(func_addr, 0x100)
+    if b"\xc3" in code:
+        code = code[:code.index(b"\xc3")]
+    if b"\xc2" in code:
+        code = code[:code.index(b"\xc2")]
+    if b"\xcb" in code:
+        code = code[:code.index(b"\xcb")]
+    if b"\xca" in code:
+        code = code[:code.index(b"\xca")]
+    return len(code)

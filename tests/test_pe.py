@@ -160,14 +160,11 @@ class PETest(unittest.TestCase):
         # I have no idea of why this code should work without this patch
         ql.patch(0x00401984, b'\xb8\x04\x00\x00\x00')
 
-        # This should call an interrupt. Other than we don't listen to interrupts, this interrupt is shit.
-        ql.patch(0x0040145c, b'\x90' * 5)
-
         def end(ql):
             print("We are finally done")
             ql.emu_stop()
 
-        ql.hook_address(end, 0x0040148d)
+        ql.hook_address(end, 0x004014a1)
 
         ql.run()
         del ql
