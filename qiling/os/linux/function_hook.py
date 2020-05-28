@@ -80,10 +80,10 @@ class HookFunc:
             if type(ret) != int:
                 ret = 0
             
-            if ret & FUNC_CALL_BLOCK == 0:
+            if ret & QL_CALL_BLOCK == 0:
                 self.ql.reg.arch_pc = next_pc
             
-            if ret & FUNC_HOOK_BLOCK != 0:
+            if ret & QL_HOOK_BLOCK != 0:
                 break
     
     def enable(self):

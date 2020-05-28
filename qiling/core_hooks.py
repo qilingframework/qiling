@@ -110,7 +110,7 @@ class QLCoreHooks(object):
                 if h.check(ql, intno):
                     catched = True
                     ret = h.call(ql, intno)
-                    if ret == False:
+                    if isinstance(ret, int) == True and ret & QL_HOOK_BLOCK  != 0:
                         break
         
         if catched == False:
@@ -123,7 +123,7 @@ class QLCoreHooks(object):
             for h in self._insn_hook[hook_type]:
                 if h.bound_check(ql.reg.arch_pc):
                     ret = h.call(ql, *args[ : -1])
-                    if ret == False:
+                    if isinstance(ret, int) == True and ret & QL_HOOK_BLOCK  != 0:
                         break
 
     def _callback_type4(self, uc, addr, size, pack_data):
@@ -144,7 +144,7 @@ class QLCoreHooks(object):
             for h in self._hook[hook_type]:
                 if h.bound_check(ql.reg.arch_pc):
                     ret = h.call(ql, addr, size)
-                    if ret == False:
+                    if isinstance(ret, int) == True and ret & QL_HOOK_BLOCK  != 0:
                         break
 
     def _callback_type6(self, uc, access, addr, size, value, pack_data):
@@ -161,7 +161,7 @@ class QLCoreHooks(object):
                 if h.bound_check(addr):
                     handled = True
                     ret = h.call(ql, access, addr, size, value)
-                    if ret == False:
+                    if isinstance(ret, int) == True and ret & QL_HOOK_BLOCK  != 0:
                         break
         
         if hook_type in (UC_HOOK_MEM_READ_UNMAPPED, UC_HOOK_MEM_WRITE_UNMAPPED, UC_HOOK_MEM_FETCH_UNMAPPED, UC_HOOK_MEM_READ_PROT, UC_HOOK_MEM_WRITE_PROT, UC_HOOK_MEM_FETCH_PROT):
@@ -181,7 +181,7 @@ class QLCoreHooks(object):
             for h in self._hook[hook_type]:
                 catched = True
                 ret = h.call(ql)
-                if ret == False:
+                if isinstance(ret, int) == True and ret & QL_HOOK_BLOCK  != 0:
                     break
         
         if catched == False:
@@ -192,7 +192,7 @@ class QLCoreHooks(object):
         if addr in self._addr_hook.keys():
             for h in self._addr_hook[addr]:
                 ret = h.call(ql, addr, size)
-                if ret == False:
+                if isinstance(ret, int) == True and ret & QL_HOOK_BLOCK  != 0:
                     break
 
     ###############
@@ -332,17 +332,36 @@ class QLCoreHooks(object):
     # if replace function name is needed, first syscall must be available
     # - ql.set_syscall(0x04, my_syscall_write)
     # - ql.set_syscall("write", my_syscall_write)
-    def set_syscall(self, syscall_cur, syscall_new):
-        if self.ostype in (QL_POSIX):
-            if isinstance(syscall_cur, int):
-                self.os.dict_posix_syscall_by_num[syscall_cur] = syscall_new
-            else:
-                syscall_name = "ql_syscall_" + str(syscall_cur)
-                self.os.dict_posix_syscall[syscall_name] = syscall_new
-        
-        elif self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
-            self.set_api(syscall_cur, syscall_new)
+    def set_syscall(self, syscall_cur, syscall_new, pos = "onCall"):
+        if pos not in ("onCall", "onEnter", "onExit"):
+            raise
+        if pos == "onEnter":
+            if self.ostype in (QL_POSIX):
+                if isinstance(syscall_cur, int):
+                    self.os.dict_posix_onEnter_syscall_by_num[syscall_cur] = syscall_new
+                else:
+                    syscall_name = "ql_syscall_" + str(syscall_cur)
+                    self.os.dict_posix_onEnter_syscall[syscall_name] = syscall_new
 
+        if pos == "onCall":
+            if self.ostype in (QL_POSIX):
+                if isinstance(syscall_cur, int):
+                    self.os.dict_posix_syscall_by_num[syscall_cur] = syscall_new
+                else:
+                    syscall_name = "ql_syscall_" + str(syscall_cur)
+                    self.os.dict_posix_syscall[syscall_name] = syscall_new
+            
+            elif self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+                self.set_api(syscall_cur, syscall_new)
+        
+        if pos == "onExit":
+            if self.ostype in (QL_POSIX):
+                if isinstance(syscall_cur, int):
+                    self.os.dict_posix_onExit_syscall_by_num[syscall_cur] = syscall_new
+                else:
+                    syscall_name = "ql_syscall_" + str(syscall_cur)
+                    self.os.dict_posix_onExit_syscall[syscall_name] = syscall_new
+        
     # replace default API with customed function
     def set_api(self, api_name, my_func):
         if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
