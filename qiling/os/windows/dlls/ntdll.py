@@ -11,6 +11,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
+from qiling.os.windows.structs import *
 
 
 # void *memcpy(
@@ -44,6 +45,11 @@ def _QueryInformationProcess(ql, address, params):
         value = b"\x00" * 0x4
     elif flag == ProcessDebugObjectHandle:
         return STATUS_PORT_NOT_SET
+    elif flag == ProcessBasicInformation:
+        pbi = ProcessBasicInformation(ql, )
+        addr = ql.os.heap.alloc(pbi.size)
+        pbi.write(addr)
+        value = addr.to_bytes(ql.pointersize, "little")
     else:
         ql.dprint(D_INFO, str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
@@ -93,6 +99,7 @@ def hook_NtQueryInformationProcess(ql, address, params):
     # TODO have no idea if is cdecl or stdcall
 
     _QueryInformationProcess(ql, address, params)
+
 
 
 # NTSTATUS LdrGetProcedureAddress(

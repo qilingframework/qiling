@@ -128,7 +128,7 @@ def hook_GetCurrentThreadId(ql, address, params):
 @winapi(cc=STDCALL, params={})
 def hook_GetCurrentProcessId(ql, address, params):
     # Let's return a valid value
-    return 0x2005
+    return ql.os.profile.getint("TARGET", "pid")
 
 
 # BOOL IsProcessorFeaturePresent(
@@ -209,8 +209,7 @@ def hook_CreateThread(ql, address, params):
 # );
 @winapi(cc=STDCALL, params={})
 def hook_GetCurrentProcess(ql, address, params):
-    ret = 0
-    return ret
+    return ql.os.profile.getint("TARGET", "pid")
 
 
 # BOOL TerminateProcess(
@@ -224,8 +223,7 @@ def hook_GetCurrentProcess(ql, address, params):
 def hook_TerminateProcess(ql, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
-    # TODO i have no idea on how to find the old ql.pe.image_address
-    if process == 0x0:  # or process == ql.os.image_address:
+    if process == ql.os.profile.getint("TARGET", "pid"):  # or process == ql.os.image_address:
         ql.emu_stop()
         ql.os.PE_RUN = False
     ret = 1

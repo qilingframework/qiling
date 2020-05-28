@@ -376,7 +376,7 @@ class Token:
         self.struct[Token.TokenInformationClass.TokenUIAccess.value] = self.ql.pack(0x1)
         self.struct[Token.TokenInformationClass.TokenGroups.value] = self.ql.pack(0x1)
         # still not sure why 0x1234 executes gandcrab as admin, but 544 no. No idea (see sid refs for the values)
-        sub = 0x1234 if ql.os.profile["SYSTEM"]["permission"] == "root" else 545
+        sub = 0x1234 if ql.os.profile["TARGET"]["permission"] == "root" else 545
         sub = sub.to_bytes(4, "little")
         sid = Sid(self.ql, identifier=1, revision=1, subs_count=1, subs=sub)
         sid_addr = self.ql.os.heap.alloc(sid.size)
@@ -745,3 +745,35 @@ class ShellExecuteInfoA(WindowsStruct):
                                     self.show, self.instApp, self.id_list, self.class_name, self.class_key,
                                     self.hot_key, self.dummy, self.process])
         self.size = self.cb
+
+
+# private struct PROCESS_BASIC_INFORMATION
+# {
+#   public NtStatus ExitStatus;
+#   public IntPtr PebBaseAddress;
+#   public UIntPtr AffinityMask;
+#   public int BasePriority;
+#   public UIntPtr UniqueProcessId;
+#   public UIntPtr InheritedFromUniqueProcessId;
+# }
+class ProcessBasicInformation(WindowsStruct):
+    def __init__(self, ql, exitStatus=None, pebBaseAddress=None, affinityMask=None, basePriority=None, uniqueId=None,
+                 parentPid=None):
+        super().__init__(ql)
+        self.size = self.DWORD_SIZE + self.POINTER_SIZE * 4 + self.INT_SIZE
+        self.exitStatus = [exitStatus, self.DWORD_SIZE, "little", int]
+        self.pebBaseAddress = [pebBaseAddress, self.POINTER_SIZE, "little", int]
+        self.affinityMask = [affinityMask, self.INT_SIZE, "little", int]
+        self.basePriority = [basePriority, self.POINTER_SIZE, "little", int]
+        self.pid = [uniqueId, self.POINTER_SIZE, "little", int]
+        self.parentPid = [parentPid, self.POINTER_SIZE, "little", int]
+
+    def write(self, addr):
+        super().generic_write(addr,
+                              [self.exitStatus, self.pebBaseAddress, self.affinityMask, self.basePriority, self.pid,
+                               self.parentPid])
+
+    def read(self, addr):
+        super().generic_read(addr,
+                             [self.exitStatus, self.pebBaseAddress, self.affinityMask, self.basePriority, self.pid,
+                              self.parentPid])

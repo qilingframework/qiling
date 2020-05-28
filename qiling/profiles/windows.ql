@@ -53,7 +53,12 @@ productType = 1
 language = 1093
 VER_SERVICEPACKMAJOR = 0
 computername = qilingpc
+
+[TARGET]
 permission = root
+pid = 10004
+father_pid = 5
+shell_pid = 10
 
 
 [USER]
