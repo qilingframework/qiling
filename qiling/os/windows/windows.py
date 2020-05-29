@@ -101,15 +101,13 @@ class QlOsWindows(QlOs):
 
             if winapi_name in self.user_defined_api_onexit:
                 if isinstance(self.user_defined_api_onexit[winapi_name], types.FunctionType):
-                    winapi_func_onexit = self.user_defined_api_onexit[winapi_name]
+                    self.winapi_func_onexit = self.user_defined_api_onexit[winapi_name]
             else:
-                winapi_func_onexit = None
+                self.winapi_func_onexit = None
 
             if winapi_func:
                 try:
                     winapi_func(self.ql, address, {})
-                    if winapi_func_onexit:
-                        winapi_func_onexit(self.ql)
                         
                 except Exception:
                     self.ql.nprint("[!] %s Exception Found" % winapi_name)

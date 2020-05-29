@@ -40,13 +40,22 @@ class Test_UEFI(unittest.TestCase):
             print("\n")
             return address, params
 
+        def my_onexit(ql, address, params):
+            print("\n")
+            print("=" * 40)
+            print(" Enter into my_exit mode")
+            print("params: %s" % params)
+            print("=" * 40)
+            print("\n")
+
 
         if __name__ == "__main__":
             with open("../examples/rootfs/x8664_efi/rom2_nvar.pickel", 'rb') as f:
                 env = pickle.load(f)
             ql = Qiling(["../examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy"], "../examples/rootfs/x8664_efi", env=env, output="debug")
-            ql.set_api("hook_RegisterProtocolNotify", force_notify_RegisterProtocolNotify)
-            ql.set_api("hook_CopyMem", my_onenter, QL_INTERCEPT.ENTER)
+            ql.set_api("RegisterProtocolNotify", force_notify_RegisterProtocolNotify)
+            ql.set_api("CopyMem", my_onenter, QL_INTERCEPT.ENTER)
+            ql.set_api("LocateProtocol", my_onexit, QL_INTERCEPT.EXIT)
             ql.run()
 
 if __name__ == "__main__":

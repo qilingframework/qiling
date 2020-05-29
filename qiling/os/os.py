@@ -209,6 +209,9 @@ class QlOs(QLOsUtils):
 
         # call function
         result = func(*args, **kwargs)
+        
+        if isinstance(self.winapi_func_onexit, types.FunctionType):
+            self.winapi_func_onexit(*args, **kwargs)
 
         # set return value
         if result is not None:

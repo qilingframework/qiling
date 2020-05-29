@@ -405,6 +405,9 @@ class QLCoreHooks(object):
         if intercept not in QL_INTERCEPT:
             raise
         
+        if self.ostype == QL_OS.UEFI:
+            api_name = "hook_" + str(api_name)
+
         if intercept == QL_INTERCEPT.ENTER:
             self.os.user_defined_api_onenter[api_name] = intercept_function
 
