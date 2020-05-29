@@ -5,6 +5,8 @@
 
 import sys
 sys.path.append("..")
+
+
 from qiling import *
 from qiling.const import *
 from qiling.os.windows.fncc import *
