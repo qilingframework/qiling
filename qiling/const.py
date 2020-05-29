@@ -36,6 +36,13 @@ class QL_DEBUGGER(IntEnum):
     GDB = 1
     IDAPRO = 2
 
+
+class QL_INTERCEPT(IntEnum):
+    CALL = 1
+    ENTER = 2
+    EXIT = 3
+
+
 D_INFO = 1 # General debug information
 D_PROT = 2 # Protocol level debug, print out open file flag
 D_CTNT = 3 # Print out content. File content or content of a tcp stream

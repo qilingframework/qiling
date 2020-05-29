@@ -80,9 +80,20 @@ class ELFTest(unittest.TestCase):
             ql.mem.map(0x1000, 0x1000)
             ql.mem.write(0x1000, b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD")
             self.assertEqual([0x1000], ql.mem.search(b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD"))
-        
+
+        def onEnter_write(ql, arg1, arg2, arg3, *args):
+            print("enter write syscall!")
+            ql.reg.rsi = arg2 + 1
+            ql.reg.rdx = arg3 - 1
+
+        def onExit_write(ql, arg1, arg2, arg3, *args):
+            print("exit write syscall!")
+            ql.reg.rax = arg3 + 1
+
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
+        ql.set_syscall(1, onEnter_write, QL_INTERCEPT.ENTER)
         ql.set_api('puts', my_puts)
+        ql.set_syscall(1, onExit_write, QL_INTERCEPT.EXIT)
         ql.run()
         if self.api_works != 0:
             exit(1)

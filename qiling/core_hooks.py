@@ -332,10 +332,10 @@ class QLCoreHooks(object):
     # if replace function name is needed, first syscall must be available
     # - ql.set_syscall(0x04, my_syscall_write)
     # - ql.set_syscall("write", my_syscall_write)
-    def set_syscall(self, syscall_cur, syscall_new, pos = "onCall"):
-        if pos not in ("onCall", "onEnter", "onExit"):
+    def set_syscall(self, syscall_cur, syscall_new, pos = QL_INTERCEPT.CALL):
+        if pos not in QL_INTERCEPT:
             raise
-        if pos == "onEnter":
+        if pos == QL_INTERCEPT.ENTER:
             if self.ostype in (QL_POSIX):
                 if isinstance(syscall_cur, int):
                     self.os.dict_posix_onEnter_syscall_by_num[syscall_cur] = syscall_new
@@ -343,7 +343,7 @@ class QLCoreHooks(object):
                     syscall_name = "ql_syscall_" + str(syscall_cur)
                     self.os.dict_posix_onEnter_syscall[syscall_name] = syscall_new
 
-        if pos == "onCall":
+        if pos == QL_INTERCEPT.CALL:
             if self.ostype in (QL_POSIX):
                 if isinstance(syscall_cur, int):
                     self.os.dict_posix_syscall_by_num[syscall_cur] = syscall_new
@@ -354,7 +354,7 @@ class QLCoreHooks(object):
             elif self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
                 self.set_api(syscall_cur, syscall_new)
         
-        if pos == "onExit":
+        if pos == QL_INTERCEPT.EXIT:
             if self.ostype in (QL_POSIX):
                 if isinstance(syscall_cur, int):
                     self.os.dict_posix_onExit_syscall_by_num[syscall_cur] = syscall_new

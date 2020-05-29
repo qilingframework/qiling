@@ -5,6 +5,7 @@
 import sys
 sys.path.append("..")
 from qiling import *
+from qiling.const import *
 
 def onEnter_write(ql, arg1, arg2, arg3, *args):
     print("enter write syscall!")
@@ -18,6 +19,6 @@ def onExit_write(ql, arg1, arg2, arg3, *args):
 if __name__ == "__main__":
     ql = Qiling(["rootfs/x8664_linux/bin/x8664_hello"], "rootfs/x8664_linux", output="debug")
     # ql.set_api('puts', my_puts)
-    ql.set_syscall(1, onEnter_write, "onEnter")
-    ql.set_syscall(1, onExit_write, "onExit")
+    ql.set_syscall(1, onEnter_write, QL_INTERCEPT.ENTER)
+    ql.set_syscall(1, onExit_write, QL_INTERCEPT.EXIT)
     ql.run()
