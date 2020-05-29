@@ -255,6 +255,12 @@ def hook_OpenProcess(ql, address, params):
     if proc == 0:
         ql.os.last_error = ERROR_INVALID_PARAMETER
         return 0
+    #  If the specified process is the Idle process or one of the CSRSS processes, this function fails
+    #  and the last error code is ERROR_ACCESS_DENIED because their access restrictions prevent user-level code
+    #  from opening them.
+    if proc == ql.profile.getint("PROCESSES", "csrss.exe"):
+        ql.os.last_error = ERROR_ACCESS_DENIED
+        return 0
     return 0xD10C
 
 
