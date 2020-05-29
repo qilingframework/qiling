@@ -26,7 +26,8 @@ entry_point = 0x1000000
 
 [KERNEL]
 pid = 1996
-
+parent_pid = 0
+shell_pid = 10
 
 [LOG]
 # log directory output
@@ -53,13 +54,11 @@ productType = 1
 language = 1093
 VER_SERVICEPACKMAJOR = 0
 computername = qilingpc
-
-[TARGET]
 permission = root
-pid = 10004
-father_pid = 5
-shell_pid = 10
 
+[PROCESSES]
+# process active in our env -> pid
+csrss.exe = 1239
 
 [USER]
 username = Qiling

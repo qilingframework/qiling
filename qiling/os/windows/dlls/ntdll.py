@@ -11,7 +11,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-from qiling.os.windows.structs import *
+import qiling.os.windows.structs
 
 
 # void *memcpy(
@@ -46,7 +46,11 @@ def _QueryInformationProcess(ql, address, params):
     elif flag == ProcessDebugObjectHandle:
         return STATUS_PORT_NOT_SET
     elif flag == ProcessBasicInformation:
-        pbi = ProcessBasicInformation(ql, )
+        pbi = qiling.os.windows.structs.ProcessBasicInformation(ql, exitStatus=0,
+                                                                pebBaseAddress=ql.os.heap_base_address, affinityMask=0,
+                                                                basePriority=0,
+                                                                uniqueId=ql.os.profile.getint("KERNEL", "pid"),
+                                                                parentPid=ql.os.profile.getint("KERNEL", "parent_pid"))
         addr = ql.os.heap.alloc(pbi.size)
         pbi.write(addr)
         value = addr.to_bytes(ql.pointersize, "little")
@@ -99,7 +103,6 @@ def hook_NtQueryInformationProcess(ql, address, params):
     # TODO have no idea if is cdecl or stdcall
 
     _QueryInformationProcess(ql, address, params)
-
 
 
 # NTSTATUS LdrGetProcedureAddress(
@@ -162,3 +165,11 @@ def hook_wcsstr(ql, address, params):
         pos = value.index(src)
         return dest + post
     return 0
+
+
+# HANDLE CsrGetProcessId();
+@winapi(cc=STDCALL, params={
+})
+def hook_CsrGetProcessId(ql, address, params):
+    pid = ql.os.profile["PROCESSES"].getint("csrss.exe", fallback=12345)
+    return pid

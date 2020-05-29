@@ -764,8 +764,8 @@ def hook_CreateActCtxW(ql, address, params):
 })
 def hook_GetWindowThreadProcessId(ql, address, params):
     target = params["hWnd"]
-    if target == ql.os.profile.getint("TARGET", "pid") or target == ql.os.profile.getint("TARGET", "shell_pid"):
-        pid = ql.os.profile.getint("TARGET", "father_pid")
+    if target == ql.os.profile.getint("KERNEL", "pid") or target == ql.os.profile.getint("KERNEL", "shell_pid"):
+        pid = ql.os.profile.getint("KERNEL", "parent_pid")
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     dst = params["lpdwProcessId"]
@@ -778,4 +778,4 @@ def hook_GetWindowThreadProcessId(ql, address, params):
 @winapi(cc=STDCALL, params={
 })
 def hook_GetShellWindow(ql, address, params):
-    return ql.os.profile.getint("TARGET", "shell_pid")
+    return ql.os.profile.getint("KERNEL", "shell_pid")
