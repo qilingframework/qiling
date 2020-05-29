@@ -184,9 +184,22 @@ class PETest(unittest.TestCase):
             ret = len(string)
             return ret
 
+        def my_onenter(ql, param_num, params, func, args, kwargs):
+            ql.nprint("\n+++++++++\nmy OnEnter")
+            ql.nprint("params: %s" % params)
+            ql.nprint("+++++++++\n")
+            return  param_num, params, func, args, kwargs
+
+
+        def my_onexit(ql):
+            ql.nprint("\n+++++++++\nmy OnExit")
+            ql.nprint("+++++++++\n")
+
         def my_sandbox(path, rootfs):
             ql = Qiling(path, rootfs, output="debug")
-            ql.set_syscall("puts", my_puts64)
+            ql.set_api("_cexit", my_onenter, intercept = QL_INTERCEPT.ENTER)
+            ql.set_api("puts", my_puts64)
+            ql.set_api("atexit", my_onexit, intercept = QL_INTERCEPT.EXIT)
             ql.run()
             del ql
 

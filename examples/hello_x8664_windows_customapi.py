@@ -6,25 +6,38 @@
 import sys
 sys.path.append("..")
 from qiling import *
+from qiling.const import *
 from qiling.os.windows.fncc import *
-from qiling.os.const import *
-from qiling.os.windows.const import *
-
+from qiling.os.windows.utils import *
 
 @winapi(cc=CDECL, params={
     "str": STRING
 })
 def my_puts(ql, address, params):
     ret = 0
-    ql.nprint("\n+++++++++\nmy 64bit random Windows API\n+++++++++\n")
+    ql.nprint("\n+++++++++\nmy random Windows API\n+++++++++\n")
     string = params["str"]
     ret = len(string)
     return ret
 
 
+def my_onenter(ql, param_num, params, func, args, kwargs):
+    ql.nprint("\n+++++++++\nmy OnEnter")
+    ql.nprint("params: %s" % params)
+    ql.nprint("+++++++++\n")
+    return  param_num, params, func, args, kwargs
+
+
+def my_onexit(ql):
+    ql.nprint("\n+++++++++\nmy OnExit")
+    ql.nprint("+++++++++\n")
+
+
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, output = "debug")
+    ql.set_api("_cexit", my_onenter, intercept = QL_INTERCEPT.ENTER)
     ql.set_api("puts", my_puts)
+    ql.set_api("atexit", my_onexit, intercept = QL_INTERCEPT.EXIT)
     ql.run()
 
 if __name__ == "__main__":

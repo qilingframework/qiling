@@ -121,6 +121,8 @@ class QlLoaderPE_UEFI(QlLoader):
         self.loaded_image_protocol_modules = []
         self.tpl = 4 # TPL_APPLICATION
         self.user_defined_api = self.ql.os.user_defined_api
+        self.user_defined_api_onenter = self.ql.os.user_defined_api_onenter
+        self.user_defined_api_onexit = self.ql.os.user_defined_api_onexit
         if self.ql.archtype == QL_ARCH.X8664:
             self.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"), 16)
             self.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"), 16)       

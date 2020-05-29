@@ -9,6 +9,7 @@ class QL_ENDIAN(IntEnum):
     EL = 1
     EB = 2
 
+
 class QL_ARCH(IntEnum):
     X86 = 1
     X8664 = 2
@@ -16,6 +17,7 @@ class QL_ARCH(IntEnum):
     ARM_THUMB = 4
     ARM64 = 5
     MIPS = 6
+
 
 class QL_OS(IntEnum):
     LINUX = 1
@@ -25,12 +27,14 @@ class QL_OS(IntEnum):
     POSIX = 5
     UEFI = 6
 
+
 class QL_OUTPUT(IntEnum):
     OFF = 1
     DEFAULT = 2
     DISASM = 3
     DEBUG = 4
     DUMP = 5
+
 
 class QL_DEBUGGER(IntEnum):
     GDB = 1

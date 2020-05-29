@@ -7,6 +7,7 @@ import sys,unittest
 import pickle
 sys.path.append("..")
 from qiling import *
+from qiling.const import *
 from qiling.exception import *
 from qiling.os.uefi.const import *
 from qiling.os.const import *
@@ -30,12 +31,21 @@ class Test_UEFI(unittest.TestCase):
                 return EFI_SUCCESS
             return EFI_INVALID_PARAMETER
 
+        def my_onenter(ql, param_num, params, f, arg, kwargs):
+            print("\n")
+            print("=" * 40)
+            print(" Enter into my_onenter mode")
+            print("=" * 40)
+            print("\n")
+            return param_num, params, f, arg, kwargs
+
 
         if __name__ == "__main__":
             with open("../examples/rootfs/x8664_efi/rom2_nvar.pickel", 'rb') as f:
                 env = pickle.load(f)
             ql = Qiling(["../examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy"], "../examples/rootfs/x8664_efi", env=env, output="debug")
             ql.set_api("hook_RegisterProtocolNotify", force_notify_RegisterProtocolNotify)
+            ql.set_api("hook_CopyMem", my_onenter, QL_INTERCEPT.ENTER)
             ql.run()
 
 if __name__ == "__main__":
