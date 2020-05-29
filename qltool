@@ -8,6 +8,7 @@ import argparse, os, string, sys, ast
 from binascii import unhexlify
 from qiling import *
 from qiling import __version__ as ql_version
+from qiling.coverage import collect_coverage
 
 
 def parse_args(parser, commands):
@@ -167,6 +168,7 @@ if __name__ == '__main__':
                             help='Stop running while encounter any error (only use it with debug mode)')
     comm_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
     comm_parser.add_argument('--timeout', required=False, help='Emulation timeout')
+    comm_parser.add_argument('-c', '--coverage', required=False, default=None, dest='coverage', help='Code coverage file name')
 
     options = parser.parse_args()
 
@@ -258,7 +260,8 @@ if __name__ == '__main__':
         timeout = int(options.timeout)
     
     # ql run
-    ql.run(timeout=timeout)
+    with collect_coverage(ql, options.coverage):
+        ql.run(timeout=timeout)
     exit(ql.os.exit_code)
 
 
