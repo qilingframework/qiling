@@ -122,7 +122,7 @@ def hook_AddVectoredExceptionHandler(ql, address, params):
         ql.stack_push(start)
 
     def exec_standard_into(ql, into, user_data):
-        # fixme probably this works only with al-khaser.
+        # FIXME: probably this works only with al-khaser.
         pointer = ql.os.heap.alloc(0x4)
         # the value has just to be different from 0x80000003
         ql.mem.write(pointer, (0).to_bytes(4, "little"))
