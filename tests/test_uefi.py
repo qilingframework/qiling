@@ -31,13 +31,14 @@ class Test_UEFI(unittest.TestCase):
                 return EFI_SUCCESS
             return EFI_INVALID_PARAMETER
 
-        def my_onenter(ql, param_num, params, f, arg, kwargs):
+        def my_onenter(ql, address, params):
             print("\n")
             print("=" * 40)
             print(" Enter into my_onenter mode")
+            print(params)
             print("=" * 40)
             print("\n")
-            return param_num, params, f, arg, kwargs
+            return address, params
 
 
         if __name__ == "__main__":

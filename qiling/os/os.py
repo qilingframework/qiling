@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import os, sys
+import os, sys, types
 
 from .utils import QLOsUtils
 from .const import *
@@ -199,6 +199,14 @@ class QlOs(QLOsUtils):
         # read params
         if params is not None:
             param_num = self.set_function_params(params, args[2])
+        
+        if isinstance(self.winapi_func_onenter, types.FunctionType):
+            address, params = self.winapi_func_onenter(*args, **kwargs)
+            args = (self.ql, address, params)
+            onEnter = True
+        else:
+            onEnter = False  
+
         # call function
         result = func(*args, **kwargs)
 

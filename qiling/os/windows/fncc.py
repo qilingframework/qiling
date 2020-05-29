@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import struct, types
+import struct
 from functools import wraps
 
 from qiling.os.const import *
@@ -24,30 +24,14 @@ def winapi(cc, param_num=None, params=None):
         @wraps(func)
         def wrapper(*args, **kwargs):
             ql = args[0]
-            
-            if isinstance(ql.os.winapi_func_onenter, types.FunctionType):
-                # FIXME: not too sure why we cannot just repalce param_num,  so i declare as param_num_oe
-                param_num_oe, params_oe, func_oe, args_oe, kwargs_oe = ql.os.winapi_func_onenter(ql, param_num, params, func, args, kwargs)
-                onEnter = True
-            else:
-                onEnter = False    
-                    
+                                
             if ql.archtype == QL_ARCH.X86:
                 if cc == STDCALL:
-                    if onEnter == True:
-                        return ql.os.x86_stdcall(param_num_oe, params_oe, func_oe, args_oe, kwargs_oe)
-                    else:                        
-                        return ql.os.x86_stdcall(param_num, params, func, args, kwargs)
+                    return ql.os.x86_stdcall(param_num, params, func, args, kwargs)
                 elif cc == CDECL:
-                    if onEnter == True:
-                        return ql.os.x86_cdecl(param_num_oe, params_oe, func_oe, args_oe, kwargs_oe)
-                    else:
-                        return ql.os.x86_cdecl(param_num, params, func, args, kwargs)
+                    return ql.os.x86_cdecl(param_num, params, func, args, kwargs)
             elif ql.archtype == QL_ARCH.X8664:
-                if onEnter == True:
-                    return ql.os.x8664_fastcall(param_num_oe, params_oe, func_oe, args_oe, kwargs_oe)
-                else:
-                    return ql.os.x8664_fastcall(param_num, params, func, args, kwargs)
+                return ql.os.x8664_fastcall(param_num, params, func, args, kwargs)
             else:
                 raise QlErrorArch("[!] Unknown self.ql.arch")
 

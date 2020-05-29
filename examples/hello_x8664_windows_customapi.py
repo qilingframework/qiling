@@ -21,11 +21,12 @@ def my_puts(ql, address, params):
     return ret
 
 
-def my_onenter(ql, param_num, params, func, args, kwargs):
-    ql.nprint("\n+++++++++\nmy OnEnter")
-    ql.nprint("params: %s" % params)
-    ql.nprint("+++++++++\n")
-    return  param_num, params, func, args, kwargs
+def my_onenter(ql, address, params):
+    print("\n+++++++++\nmy OnEnter")
+    print("lpSubKey: %s" % params["lpSubKey"])
+    params = ({'hKey': 2147483649, 'lpSubKey': 'Software', 'phkResult': 4294954932})
+    print("+++++++++\n")
+    return  address, params
 
 
 def my_onexit(ql):

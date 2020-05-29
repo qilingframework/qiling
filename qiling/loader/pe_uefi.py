@@ -123,12 +123,14 @@ class QlLoaderPE_UEFI(QlLoader):
         self.user_defined_api = self.ql.os.user_defined_api
         self.user_defined_api_onenter = self.ql.os.user_defined_api_onenter
         self.user_defined_api_onexit = self.ql.os.user_defined_api_onexit
+        
         if self.ql.archtype == QL_ARCH.X8664:
             self.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"), 16)
             self.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"), 16)       
         elif self.ql.archtype == QL_ARCH.X86:
             self.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"), 16)
             self.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"), 16)
+        
         self.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
         self.entry_point = 0
         self.load_address = 0  
