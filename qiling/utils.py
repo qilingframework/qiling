@@ -162,9 +162,16 @@ def catch_KeyboardInterrupt(ql):
     return decorator
 
 def ql_get_arch_bits(arch):
+<<<<<<< HEAD
     if arch in QL_ARCH_16BIT:
         return 16
     if arch in QL_ARCH_32BIT:
+=======
+    arch_32b = [QL_ARCH.ARM, QL_ARCH.MIPS, QL_ARCH.X86, QL_ARCH.SPARC]
+    arch_64b = [QL_ARCH.ARM64, QL_ARCH.X8664]
+
+    if arch in arch_32b:
+>>>>>>> [core] Add SPARC as a valid arch
         return 32
     if arch in QL_ARCH_64BIT:
         return 64
