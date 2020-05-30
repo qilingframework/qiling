@@ -106,11 +106,15 @@ def hook_WaitForSingleObject(ql, address, params):
     hHandle = params["hHandle"]
     dwMilliseconds = params["dwMilliseconds"]
 
+    ql.dprint(D_INFO, "hHandle Address: 0x%x" % hHandle)
+
     try:
         target_thread = ql.os.handle_manager.get(hHandle).thread
     except AttributeError:
         ql.os.last_error = ERROR_INVALID_HANDLE
-        return 0xFFFFFFFF  # WAIT_FAILED
+        raise
+        # FIXME: we need to raise here else, will parse in wrong ID
+        #return 0xFFFFFFFF  # WAIT_FAILED
 
     if not target_thread.fake:
         ql.os.thread_manager.cur_thread.waitfor(target_thread)

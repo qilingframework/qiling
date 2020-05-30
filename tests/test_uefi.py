@@ -21,6 +21,7 @@ class Test_UEFI(unittest.TestCase):
             print("=" * 40)
             print("\n")
             event_id = params['Event']
+            self.set_api = "pass"
             if event_id in ql.loader.events:
                 ql.loader.events[event_id]['Guid'] = params["Protocol"]
                 # let's force notify
@@ -38,6 +39,7 @@ class Test_UEFI(unittest.TestCase):
             print(params)
             print("=" * 40)
             print("\n")
+            self.set_api_onenter = "pass"
             return address, params
 
         def my_onexit(ql, address, params):
@@ -47,6 +49,7 @@ class Test_UEFI(unittest.TestCase):
             print("params: %s" % params)
             print("=" * 40)
             print("\n")
+            self.set_api_onexit = "pass"
 
 
         if __name__ == "__main__":
@@ -57,6 +60,15 @@ class Test_UEFI(unittest.TestCase):
             ql.set_api("CopyMem", my_onenter)
             ql.set_api("LocateProtocol", my_onexit)
             ql.run()
+
+            self.assertEqual("pass", self.set_api)
+            self.assertEqual("pass", self.set_api_onenter)
+            self.assertEqual("pass", self.set_api_onexit)
+            
+            del ql
+            del self.set_api
+            del self.set_api_onenter
+            del self.set_api_onexit
 
 if __name__ == "__main__":
     unittest.main()

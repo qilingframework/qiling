@@ -198,8 +198,14 @@ def hook_CreateThread(ql, address, params):
     ret = new_handle.id
 
     # set lpThreadId
+    # FIXME: Temporary fix for the crash
     if lpThreadId != 0:
-        ql.mem.write(lpThreadId, ql.pack(thread_id))
+        try:
+            ql.mem.write(lpThreadId, ql.pack(thread_id))
+        except:
+            ql.dprint(D_INFO, "[!] lpThreadId Address: 0x%x" % lpThreadId)
+            raise
+            
 
     # set thread handle
     return ret

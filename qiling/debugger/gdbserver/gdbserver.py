@@ -140,13 +140,13 @@ class GDBSERVERsession(object):
             def handle_g(subcmd):
                 s = ''
                 if self.ql.archtype== QL_ARCH.X86:
-                    for reg in self.ql.reg.table[:16]:
+                    for reg in self.ql.reg.table[:24]:
                         r = self.ql.reg.read(reg)
                         tmp = self.ql.arch.addr_to_str(r)
                         s += tmp
 
                 elif self.ql.archtype== QL_ARCH.X8664:
-                    for reg in self.ql.reg.table[:24]:
+                    for reg in self.ql.reg.table[:32]:
                         r = self.ql.reg.read(reg)
                         if self.ql.reg.bit(reg) == 64:
                             tmp = self.ql.arch.addr_to_str(r)

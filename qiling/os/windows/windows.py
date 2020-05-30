@@ -111,6 +111,7 @@ class QlOsWindows(QlOs):
                         
                 except Exception:
                     self.ql.nprint("[!] %s Exception Found" % winapi_name)
+                    self.emu_error()
                     raise QlErrorSyscallError("[!] Windows API Implementation Error")
             else:
                 self.ql.nprint("[!] %s is not implemented" % winapi_name)
