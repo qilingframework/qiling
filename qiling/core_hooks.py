@@ -369,10 +369,8 @@ class QLCoreHooks(object):
     # if replace function name is needed, first syscall must be available
     # - ql.set_syscall(0x04, my_syscall_write)
     # - ql.set_syscall("write", my_syscall_write)
-    def set_syscall(self, syscall_cur, intercept_function, intercept = QL_INTERCEPT.CALL):
-        if intercept not in QL_INTERCEPT:
-            raise
-        if intercept == QL_INTERCEPT.ENTER:
+    def set_syscall(self, syscall_cur, intercept_function):
+        if intercept_function.__name__.lower().endswith("_onenter"):
             if self.ostype in (QL_POSIX):
                 if isinstance(syscall_cur, int):
                     self.os.dict_posix_onEnter_syscall_by_num[syscall_cur] = intercept_function
@@ -380,7 +378,16 @@ class QLCoreHooks(object):
                     syscall_name = "ql_syscall_" + str(syscall_cur)
                     self.os.dict_posix_onEnter_syscall[syscall_name] = intercept_function
 
-        if intercept == QL_INTERCEPT.CALL:
+        #if intercept == QL_INTERCEPT.EXIT:
+        elif intercept_function.__name__.lower().endswith("_onexit"):
+            if self.ostype in (QL_POSIX):
+                if isinstance(syscall_cur, int):
+                    self.os.dict_posix_onExit_syscall_by_num[syscall_cur] = intercept_function
+                else:
+                    syscall_name = "ql_syscall_" + str(syscall_cur)
+                    self.os.dict_posix_onExit_syscall[syscall_name] = intercept_function                    
+
+        else:
             if self.ostype in (QL_POSIX):
                 if isinstance(syscall_cur, int):
                     self.os.dict_posix_syscall_by_num[syscall_cur] = intercept_function
@@ -391,35 +398,26 @@ class QLCoreHooks(object):
             elif self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
                 self.set_api(syscall_cur, intercept_function, QL_INTERCEPT.CALL)
         
-        if intercept == QL_INTERCEPT.EXIT:
-            if self.ostype in (QL_POSIX):
-                if isinstance(syscall_cur, int):
-                    self.os.dict_posix_onExit_syscall_by_num[syscall_cur] = intercept_function
-                else:
-                    syscall_name = "ql_syscall_" + str(syscall_cur)
-                    self.os.dict_posix_onExit_syscall[syscall_name] = intercept_function
+
         
 
     # replace default API with customed function
-    def set_api(self, api_name, intercept_function, intercept = QL_INTERCEPT.CALL):
-        if intercept not in QL_INTERCEPT:
-            raise
-        
+    def set_api(self, api_name, intercept_function):
         if self.ostype == QL_OS.UEFI:
             api_name = "hook_" + str(api_name)
 
-        if intercept == QL_INTERCEPT.ENTER:
+        if intercept_function.__name__.lower().endswith("_onenter"):
             self.os.user_defined_api_onenter[api_name] = intercept_function
 
-        if intercept == QL_INTERCEPT.CALL:
+        elif intercept_function.__name__.lower().endswith("_onexit"):
+            self.os.user_defined_api_onexit[api_name] = intercept_function            
+
+        #if intercept == QL_INTERCEPT.CALL:
+        else:
             if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
                 self.os.user_defined_api[api_name] = intercept_function
             else:
                 self.os.add_function_hook(api_name, intercept_function)  
-
-        if intercept == QL_INTERCEPT.EXIT:
-            self.os.user_defined_api_onexit[api_name] = intercept_function
-              
 
 
     # ql.func_arg - get syscall for all posix series

@@ -54,8 +54,8 @@ class Test_UEFI(unittest.TestCase):
                 env = pickle.load(f)
             ql = Qiling(["../examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy"], "../examples/rootfs/x8664_efi", env=env, output="debug")
             ql.set_api("RegisterProtocolNotify", force_notify_RegisterProtocolNotify)
-            ql.set_api("CopyMem", my_onenter, QL_INTERCEPT.ENTER)
-            ql.set_api("LocateProtocol", my_onexit, QL_INTERCEPT.EXIT)
+            ql.set_api("CopyMem", my_onenter)
+            ql.set_api("LocateProtocol", my_onexit)
             ql.run()
 
 if __name__ == "__main__":

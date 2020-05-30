@@ -8,7 +8,6 @@ sys.path.append("..")
 
 
 from qiling import *
-from qiling.const import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 
@@ -31,16 +30,17 @@ def my_onenter(ql, address, params):
     return  address, params
 
 
-def my_onexit(ql):
-    ql.nprint("\n+++++++++\nmy OnExit")
-    ql.nprint("+++++++++\n")
+def my_onexit(ql, address, params):
+    print("\n+++++++++\nmy OnExit")
+    print("params: %s" % params)
+    print("+++++++++\n")
 
 
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, output = "debug")
-    ql.set_api("_cexit", my_onenter, intercept = QL_INTERCEPT.ENTER)
+    ql.set_api("_cexit", my_onenter)
     ql.set_api("puts", my_puts)
-    ql.set_api("atexit", my_onexit, intercept = QL_INTERCEPT.EXIT)
+    ql.set_api("atexit", my_onexit)
     ql.run()
 
 if __name__ == "__main__":

@@ -194,9 +194,9 @@ class PETest(unittest.TestCase):
 
         def my_sandbox(path, rootfs):
             ql = Qiling(path, rootfs, output="debug")
-            ql.set_api("puts", my_onenter, intercept = QL_INTERCEPT.ENTER)
+            ql.set_api("puts", my_onenter)
             ql.set_api("puts", my_puts64)
-            ql.set_api("atexit", my_onexit, intercept = QL_INTERCEPT.EXIT)
+            ql.set_api("atexit", my_onexit)
             ql.run()
             del ql
 
