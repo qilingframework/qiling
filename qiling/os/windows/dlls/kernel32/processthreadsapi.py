@@ -181,7 +181,9 @@ def hook_CreateThread(ql, address, params):
         thread_status = QlWindowsThread.READY
     else:
         thread_status = QlWindowsThread.RUNNING
-
+    
+    ql.dprint(D_INFO, "[!] thread_status: %i" % thread_status)
+    
     # create new thread
     thread_id = new_thread.create(
         lpStartAddress,
