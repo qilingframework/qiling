@@ -207,6 +207,11 @@ class HookFunc:
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
             return self.ql.unpack(self.ql.mem.read(self.ql.reg.rsp, self.ql.pointersize))
+
+        # SPARC
+        elif  self.ql.archtype== QL_ARCH.SPARC:
+            return self.ql.unpack(self.ql.mem.read(self.ql.reg.rsp, self.ql.pointersize))
+
         else:
             raise
 
@@ -230,6 +235,11 @@ class HookFunc:
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
             self.ql.reg.rsp = self.ql.reg.rsp + self.ql.pointersize
+
+        # SPARC
+        elif  self.ql.archtype== QL_ARCH.SPARC:
+            self.ql.reg.rsp = self.ql.reg.rsp + self.ql.pointersize
+
         else:
             raise
 
@@ -253,6 +263,11 @@ class HookFunc:
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
             self.ql.mem.write(self.ql.reg.rsp, self.ql.pack(addr))
+
+        # SPARC
+        elif  self.ql.archtype== QL_ARCH.SPARC:
+            self.ql.mem.write(self.ql.reg.rsp, self.ql.pack(addr))
+            
         else:
             raise
 
@@ -718,6 +733,18 @@ class FunctionHook:
             # nop
             ins = b'\x90'
             self.add_function_hook = self.add_function_hook_relocation
+
+        # SPARC
+        elif  self.ql.archtype == QL_ARCH.SPARC:
+            GLOB_DAT = 6    # TODO : Find what this does
+            JMP_SLOT = 7    # TODO : Find what this does
+            # ta 0xa0;ret
+            ins = b'\x91\xd0\x20\xa0\x81\xc7\xe0\x08'
+            self.add_function_hook = self.add_function_hook_relocation
+
+        else:
+            raise QlErrorArch("[!] Unknown arch defined in function_hook.py : {0:s} (debug output mode)".format(repr(self.ql.archtype)))
+
 
         self._parse()
         if self.rel != None:
