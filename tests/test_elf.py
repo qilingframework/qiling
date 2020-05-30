@@ -75,7 +75,7 @@ class ELFTest(unittest.TestCase):
             reg = ql.reg.read("rax")
             print("reg : 0x%x" % reg)
             ql.reg.rax = reg
-            self.api_works = 0
+            self.api_works = "pass"
 
             ql.mem.map(0x1000, 0x1000)
             ql.mem.write(0x1000, b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD")
@@ -85,9 +85,11 @@ class ELFTest(unittest.TestCase):
             print("enter write syscall!")
             ql.reg.rsi = arg2 + 1
             ql.reg.rdx = arg3 - 1
+            self.onenter = "pass"
 
         def write_onexit(ql, arg1, arg2, arg3, *args):
             print("exit write syscall!")
+            self.onexit = "pass"
             ql.reg.rax = arg3 + 1
 
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
@@ -95,9 +97,14 @@ class ELFTest(unittest.TestCase):
         ql.set_api('puts', my_puts)
         ql.set_syscall(1, write_onexit)
         ql.run()
-        if self.api_works != 0:
-            exit(1)
+
+        self.assertEqual("pass", self.api_works)
+        self.assertEqual("pass", self.onexit)
+        self.assertEqual("pass", self.onenter)
+
         del self.api_works
+        del self.onexit
+        del self.onenter
         del ql
 
 
