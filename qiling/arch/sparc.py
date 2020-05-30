@@ -61,6 +61,26 @@ class QlArchSPARC(QlArch):
         return reg_map["pc"]
 
 
+    def stack_push(self, value):
+        self.ql.reg.esp -= 4
+        self.ql.mem.write(self.ql.reg.esp , self.ql.pack32(value))
+        return self.ql.reg.esp
+
+
+    def stack_pop(self):
+        data = self.ql.unpack32(self.ql.mem.read(self.ql.reg.esp, 4))
+        self.ql.reg.esp += 4
+        return data
+
+
+    def stack_read(self, offset):
+        return self.ql.unpack32(self.ql.mem.read(self.ql.reg.esp+offset, 4))
+
+
+    def stack_write(self, offset, data):
+        return self.ql.mem.write(self.ql.reg.esp + offset, self.ql.pack32(data))
+
+
     def get_reg_table(self):
         registers_table = []
         adapter = {}

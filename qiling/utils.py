@@ -162,16 +162,9 @@ def catch_KeyboardInterrupt(ql):
     return decorator
 
 def ql_get_arch_bits(arch):
-<<<<<<< HEAD
     if arch in QL_ARCH_16BIT:
         return 16
     if arch in QL_ARCH_32BIT:
-=======
-    arch_32b = [QL_ARCH.ARM, QL_ARCH.MIPS, QL_ARCH.X86, QL_ARCH.SPARC]
-    arch_64b = [QL_ARCH.ARM64, QL_ARCH.X8664]
-
-    if arch in arch_32b:
->>>>>>> [core] Add SPARC as a valid arch
         return 32
     if arch in QL_ARCH_64BIT:
         return 64
@@ -319,6 +312,12 @@ def ql_elf_parse_emu_env(path):
         elif e_machine == b"\x3E\x00":
             archendian = QL_ENDIAN.EL
             arch = QL_ARCH.X8664
+        elif e_machine == b"\x02\x00" and endian == 1 and elfbit == 1:
+            archendian = QL_ENDIAN.EL
+            arch = QL_ARCH.SPARC
+        elif e_machine == b"\x00\x02" and endian == 2 and elfbit == 1:
+            archendian = QL_ENDIAN.EB
+            arch = QL_ARCH.SPARC
         else:
             arch = None
 
