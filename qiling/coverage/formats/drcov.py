@@ -5,7 +5,7 @@
 
 from ctypes import Structure
 from ctypes import c_uint32, c_uint16
-from contextlib import contextmanager
+from ..coverage import QlCoverage
 
 # Adapted from https://www.ayrx.me/drcov-file-format
 class bb_entry(Structure):
@@ -15,11 +15,22 @@ class bb_entry(Structure):
         ("mod_id", c_uint16)
     ]
 
-class QlCoverage():
-    def __init__(self, ql, drcov_version = 2, drcov_flavor = "drcov"):
+class QlDrCoverage(QlCoverage):
+    """
+    Collects emulated code coverage and formats it in accordance with the DynamoRIO based
+    tool drcov: https://dynamorio.org/dynamorio_docs/page_drcov.html
+
+    The resulting output file can later be imported by coverage visualization tools such
+    as Lighthouse: https://github.com/gaasedelen/lighthouse
+    """
+    
+    FORMAT_NAME = "drcov"
+
+    def __init__(self, ql):
+        super().__init__()
         self.ql            = ql
-        self.drcov_version = drcov_version
-        self.drcov_flavor  = drcov_flavor
+        self.drcov_version = 2
+        self.drcov_flavor  = 'drcov'
         self.basic_blocks  = []
         self.bb_callback   = None
 
@@ -48,14 +59,3 @@ class QlCoverage():
             cov.write(f"BB Table: {len(self.basic_blocks)} bbs\n".encode())
             for bb in self.basic_blocks:
                 cov.write(bytes(bb))
-
-@contextmanager
-def collect_coverage(ql, coverage_file):
-    cov = QlCoverage(ql)
-    cov.activate()
-    try:
-        yield
-    finally:
-        cov.deactivate()
-        if coverage_file:
-            cov.dump_coverage(coverage_file)
