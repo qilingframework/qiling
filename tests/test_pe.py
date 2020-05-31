@@ -95,8 +95,17 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_multithread(self):
+        def ThreadId_onEnter(ql, address, params):
+            self.thread_id = ql.os.thread_manager.cur_thread.id
+            return address, params
+
         ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
+        ql.set_api("GetCurrentThreadId", ThreadId_onEnter)
         ql.run()
+        
+        self.assertGreater(255, self.thread_id)
+        
+        del self.thread_id
         del ql
 
 

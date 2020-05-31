@@ -83,7 +83,6 @@ class QlWindowsThread(QlThread):
         stack_size = 1024
         new_stack = self.ql.os.heap.alloc(stack_size) + stack_size
         
-        # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
         if self.ql.archtype == QL_ARCH.X86:
             self.ql.mem.write(new_stack - 4, self.ql.pack32(self.ql.os.thread_manager.THREAD_RET_ADDR))
             self.ql.mem.write(new_stack, self.ql.pack32(func_params))
