@@ -182,7 +182,6 @@ def hook_CreateThread(ql, address, params):
     else:
         thread_status = QlWindowsThread.RUNNING
     
-    ql.dprint(D_INFO, "[!] thread_status: %i" % thread_status)
     
     # create new thread
     thread_id = new_thread.create(
@@ -202,12 +201,7 @@ def hook_CreateThread(ql, address, params):
     # set lpThreadId
     # FIXME: Temporary fix for the crash
     if lpThreadId != 0:
-        try:
-            ql.mem.write(lpThreadId, ql.pack(thread_id))
-        except:
-            ql.dprint(D_INFO, "[!] lpThreadId Address: 0x%x" % lpThreadId)
-            raise
-            
+        ql.mem.write(lpThreadId, ql.pack(thread_id))    
 
     # set thread handle
     return ret
