@@ -3,13 +3,12 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-from .coverage import QlCoverage
 from .formats import *
 from contextlib import contextmanager
 
 class CoverageFactory():
     def __init__(self):
-        self.coverage_collectors = {subcls.FORMAT_NAME:subcls for subcls in QlCoverage.__subclasses__()}
+        self.coverage_collectors = {subcls.FORMAT_NAME:subcls for subcls in base.QlBaseCoverage.__subclasses__()}
 
     @property
     def formats(self):

@@ -5,7 +5,7 @@
 
 from abc import ABC, abstractmethod
 
-class QlCoverage(ABC):
+class QlBaseCoverage(ABC):
     """
     An abstract base class for concrete code coverage collectors.
     To add support for a new coverage format, just derive from this class and implement
