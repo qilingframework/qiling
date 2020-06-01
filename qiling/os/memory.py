@@ -140,7 +140,7 @@ class QlMemoryManager:
         return -1
 
 
-    def _align(self, addr, alignment=0x1000):
+    def align(self, addr, alignment=0x1000):
         # rounds up to nearest alignment
         mask = ((1 << self.ql.archbit) - 1) & -alignment
         return (addr + (alignment - 1)) & mask
@@ -281,7 +281,7 @@ class QlMemoryManager:
             mapped += [[address_start, (address_end - address_start)]]
         
         for i in range(0, len(mapped)):
-            addr = self._align(
+            addr = self.align(
                 mapped[i][0] + mapped[i][1], alignment=alignment
             )
             # Enable allocating memory in the middle of a gap when the
@@ -344,12 +344,12 @@ class QlMemoryManager:
         we need a better mem_map as defined in the issue
         """
         #self.map(address, util.align(size), name, kind)
-        self.map(address, self._align(size))
+        self.map(address, self.align(size))
         return address
 
     def protect(self, addr, size, perms):
         aligned_address = addr & 0xFFFFF000  # Address needs to align with
-        aligned_size = self._align((addr & 0xFFF) + size)
+        aligned_size = self.align((addr & 0xFFF) + size)
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
 
 
@@ -406,15 +406,12 @@ class QlMemoryHeap:
         # curent use memory size
         self.current_use = 0
 
-    def _align(self, size, unit):
-        return (size // unit + (1 if size % unit else 0)) * unit     
-
     def alloc(self, size):
         
         if self.ql.archbit == 32:
-            size = self._align(size, 4)
+            size = self.ql.mem.align(size, 4)
         elif self.ql.archbit == 64:
-            size = self._align(size, 8)
+            size = self.ql.mem.align(size, 8)
 
         # Find the heap chunks that best matches size 
         self.chunks.sort(key=Chunk.compare)
@@ -426,7 +423,7 @@ class QlMemoryHeap:
         chunk = None
         # If we need mem_map new memory
         if self.current_use + size > self.current_alloc:
-            real_size = self._align(size, self.page_size)
+            real_size = self.ql.mem.align(size, self.page_size)
             # If the heap is not enough
             if self.start_address + self.current_use + real_size > self.end_address:
                 return 0

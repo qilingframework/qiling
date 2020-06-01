@@ -87,7 +87,7 @@ class Process():
                 self.ql.nprint("[+] Cached %s" % path)
 
         dll_base = self.dll_last_address
-        dll_len = self.ql.os.heap._align(len(bytes(data)), 0x1000)
+        dll_len = self.ql.mem.align(len(bytes(data)), 0x1000)
         self.dll_size += dll_len
         self.ql.mem.map(dll_base, dll_len, info=dll_name)
         self.ql.mem.write(dll_base, bytes(data))
