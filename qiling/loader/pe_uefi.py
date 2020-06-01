@@ -67,7 +67,7 @@ class QlLoaderPE_UEFI(QlLoader):
         pe = pefile.PE(path, fast_load=True)
         
         IMAGE_BASE = pe.OPTIONAL_HEADER.ImageBase
-        IMAGE_SIZE = self.mem.align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
+        IMAGE_SIZE = self.ql.mem.align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
 
         while IMAGE_BASE + IMAGE_SIZE < self.heap_base_address:
             if not self.ql.mem.is_mapped(IMAGE_BASE, 1):
