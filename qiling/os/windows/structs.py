@@ -83,7 +83,8 @@ class PEB:
                  process_heap=0,
                  fast_peb_lock=0,
                  alt_thunk_s_list_ptr=0,
-                 ifeo_key=0):
+                 ifeo_key=0,
+                 number_processors=0):
         self.ql = ql
         self.base = base
         self.flag = flag
@@ -96,20 +97,27 @@ class PEB:
         self.FastPebLock = fast_peb_lock
         self.AtlThunkSListPtr = alt_thunk_s_list_ptr
         self.IFEOKey = ifeo_key
+        self.numberOfProcessors = number_processors
+        if self.ql.archtype == 32:
+            self.size = 0x0468
+        else:
+            self.size = 0x07B0
 
-    def bytes(self):
+    def write(self, addr):
         s = b''
         s += self.ql.pack(self.flag)  # 0x0 / 0x0
         s += self.ql.pack(self.Mutant)  # 0x4 / 0x8
         s += self.ql.pack(self.ImageBaseAddress)  # 0x8 / 0x10
         s += self.ql.pack(self.LdrAddress)  # 0xc / 0x18
-        s += self.ql.pack(self.ProcessParameters)
-        s += self.ql.pack(self.SubSystemData)
-        s += self.ql.pack(self.ProcessHeap)
-        s += self.ql.pack(self.FastPebLock)
-        s += self.ql.pack(self.AtlThunkSListPtr)
-        s += self.ql.pack(self.IFEOKey)
-        return s
+        s += self.ql.pack(self.ProcessParameters)  # 0x10 / 0x20
+        s += self.ql.pack(self.SubSystemData)  # 0x14 / 0x28
+        s += self.ql.pack(self.ProcessHeap)  # 0x18 / 0x30
+        s += self.ql.pack(self.FastPebLock)  # 0x1c / 0x38
+        s += self.ql.pack(self.AtlThunkSListPtr)  # 0x20 / 0x40
+        s += self.ql.pack(self.IFEOKey)  # 0x24 / 0x48
+        self.ql.mem.write(addr, s)
+        # FIXME: understand how each attribute of the PEB works before adding it
+        self.ql.mem.write(addr + 0x64, self.ql.pack(self.numberOfProcessors))
 
 
 class LdrData:

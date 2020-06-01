@@ -74,6 +74,9 @@ windir = Windows\
 registry_diff = registry_diff.json
 
 
+[HARDWARE]
+number_processors = 5
+
 [VOLUME]
 name = Volume1
 serial_number = 3224010732
