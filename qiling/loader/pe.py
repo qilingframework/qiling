@@ -383,7 +383,8 @@ class QlLoaderPE(QlLoader, Process):
             mod_name = os.path.basename(self.path)
             self.dlls[mod_name] = self.pe_image_address
             super().add_ldr_data_table_entry(mod_name)
-
+            # is necessary to always load ntdll.dll
+            super().load_dll(b"ntdll.dll")
             # parse directory entry import
             if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress != 0:
                 for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
