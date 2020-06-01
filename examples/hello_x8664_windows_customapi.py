@@ -5,26 +5,42 @@
 
 import sys
 sys.path.append("..")
+
+
 from qiling import *
 from qiling.os.windows.fncc import *
-from qiling.os.const import *
-from qiling.os.windows.const import *
-
+from qiling.os.windows.utils import *
 
 @winapi(cc=CDECL, params={
     "str": STRING
 })
 def my_puts(ql, address, params):
     ret = 0
-    ql.nprint("\n+++++++++\nmy 64bit random Windows API\n+++++++++\n")
+    ql.nprint("\n+++++++++\nmy random Windows API\n+++++++++\n")
     string = params["str"]
     ret = len(string)
     return ret
 
 
+def my_onenter(ql, address, params):
+    print("\n+++++++++\nmy OnEnter")
+    print("lpSubKey: %s" % params["lpSubKey"])
+    params = ({'hKey': 2147483649, 'lpSubKey': 'Software', 'phkResult': 4294954932})
+    print("+++++++++\n")
+    return  address, params
+
+
+def my_onexit(ql, address, params):
+    print("\n+++++++++\nmy OnExit")
+    print("params: %s" % params)
+    print("+++++++++\n")
+
+
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, output = "debug")
+    ql.set_api("_cexit", my_onenter)
     ql.set_api("puts", my_puts)
+    ql.set_api("atexit", my_onexit)
     ql.run()
 
 if __name__ == "__main__":

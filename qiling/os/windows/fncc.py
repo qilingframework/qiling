@@ -24,6 +24,7 @@ def winapi(cc, param_num=None, params=None):
         @wraps(func)
         def wrapper(*args, **kwargs):
             ql = args[0]
+                                
             if ql.archtype == QL_ARCH.X86:
                 if cc == STDCALL:
                     return ql.os.x86_stdcall(param_num, params, func, args, kwargs)

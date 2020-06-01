@@ -322,15 +322,14 @@ class QLOsUtils:
         else:
             self.ql.dprint(D_INFO, log)
 
-    def printf(self, address, fmt, params_addr, name, wstring=False, double_pointer=False):
+    def printf(self, address, fmt, params_addr, name, wstring=False):
         count = fmt.count("%")
         params = []
         if count > 0:
             for i in range(count):
-                # We don't need to mem_read here, otherwise we have a problem with strings, since read_wstring/read_cstring
-                #  already take a pointer, and we will have pointer -> pointer -> STRING instead of pointer -> STRING
+                param = self.ql.mem.read(params_addr + i * self.ql.pointersize, self.ql.pointersize)
                 params.append(
-                    params_addr + i * self.ql.pointersize,
+                    self.ql.unpack(param)
                 )
 
             formats = fmt.split("%")[1:]
@@ -338,14 +337,9 @@ class QLOsUtils:
             for f in formats:
                 if f.startswith("s"):
                     if wstring:
-                        if double_pointer:
-                            params[index] = self.ql.unpack32(self.ql.mem.read(params[index], self.ql.pointersize))
                         params[index] = self.ql.os.read_wstring(params[index])
                     else:
                         params[index] = self.ql.os.read_cstring(params[index])
-                else:
-                    # if is not a string, then they are already values!
-                    pass
                 index += 1
 
             output = '%s(format = %s' % (name, repr(fmt))
@@ -363,4 +357,4 @@ class QLOsUtils:
             stdout = fmt
         self.ql.nprint(output)
         self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
-        return len(stdout), stdout            
+        return len(stdout), stdout

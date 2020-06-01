@@ -17,7 +17,7 @@ class Handle:
             self.id = id
         self.obj = obj
         self.name = name
-
+ 
     # rewrite "="
     def __eq__(self, other):
         return self.id == other.id

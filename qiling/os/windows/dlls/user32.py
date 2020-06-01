@@ -605,7 +605,10 @@ def hook_CharPrevA(ql, address, params):
 # );
 @winapi(cc=CDECL, param_num=3)
 def hook_wsprintfW(ql, address, params):
-    dst, p_format, p_args = ql.os.get_function_param(3)
+    dst, p_format = ql.os.get_function_param(2)
+
+    sp = ql.reg.esp if ql.archtype == QL_ARCH.X86 else ql.reg.rsp
+    p_args = sp + ql.pointersize * 3
     format_string = ql.os.read_wstring(p_format)
     size, string = ql.os.printf(address, format_string, p_args, "wsprintfW", wstring=True)
 

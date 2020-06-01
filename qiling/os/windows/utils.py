@@ -51,6 +51,6 @@ def string_to_hex(string):
 def find_size_function(ql, func_addr):
     # We have to retrieve the return address position
     code = ql.mem.read(func_addr, 0x100)
-    opcodes = [b"\xc3", b"\xc2", b"\xcb", b"\xca"]
-    min_index = min([code.index(opcode) for opcode in opcodes if opcode in code])
+    return_procedures = [b"\xc3", b"\xc2", b"\xcb", b"\xca"]
+    min_index = min([code.index(return_value) for return_value in return_procedures if return_value in code])
     return min_index

@@ -15,6 +15,7 @@ def _RegOpenKey(ql, address, params):
     hKey = params["hKey"]
     s_lpSubKey = params["lpSubKey"]
     phkResult = params["phkResult"]
+    ql.dprint(D_INFO, "[+] Key %s %s" % (hKey, s_lpSubKey))
 
     if hKey not in REG_KEYS:
         ql.dprint(D_INFO, "[!] Key %s %s not present" % (hKey, s_lpSubKey))
