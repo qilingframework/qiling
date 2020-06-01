@@ -638,3 +638,14 @@ PAGE_TARGETS_NO_UPDATE = 0x40000000
 PAGE_GUARD = 0x100
 PAGE_NOCACHE = 0x200
 PAGE_WRITECOMBINE = 0x400
+
+
+# https://docs.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryobject
+# https://gist.github.com/soxfmr/16c495d6e4ad99e9e46f5bfd558d152f
+ObjectTypeInformation = 0x2
+ObjectBasicInformation = 0x1
+ObjectAllTypesInformation = 0x3
+
+# https://docs.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-sethandleinformation
+HANDLE_FLAG_INHERIT = 0x1
+HANDLE_FLAG_PROTECT_FROM_CLOSE = 0x2
