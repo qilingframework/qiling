@@ -356,7 +356,7 @@ class GDBSERVERsession(object):
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                     self.ql.reg.write(self.ql.reg.table[reg_index], reg_data)
 
-                self.ql.nprint("gdb> Write to register %x with %x\n" % (self.ql.reg.table[reg_index], reg_data))
+                self.ql.nprint("gdb> Write to register %s with %x\n" % (self.ql.reg.table[reg_index], reg_data))
                 self.send('OK')
 
 
