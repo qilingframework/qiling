@@ -83,6 +83,7 @@ class QlLoaderPE_UEFI(QlLoader):
                 self.ql.nprint("[+] PE entry point at 0x%x" % entry_point)
                 self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE, entry_point)
                 self.modules.append((path, IMAGE_BASE, entry_point, pe))
+                self.images.append(self.QlImage(IMAGE_BASE, IMAGE_BASE + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, path))
                 return True
             else:
                 IMAGE_BASE += 0x10000
