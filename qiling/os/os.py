@@ -68,7 +68,6 @@ class QlOs(QLOsUtils):
         self.ql.nprint("[+] PC = 0x%x" %(self.ql.reg.arch_pc))
         self.ql.mem.show_mapinfo()
         
-        self.ql.nprint("\n")
         buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
         self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
         

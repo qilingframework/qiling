@@ -690,8 +690,8 @@ class FunctionHook:
 
         if idx not in self.use_list.keys():
             raise
-        self.use_list[idx].call()
 
+        self.use_list[idx].call()
 
     def _hook_function(self, fn, r, cb, userdata):
         if fn in self.hook_list.keys():

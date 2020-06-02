@@ -64,8 +64,11 @@ class QLCoreUtils(object):
                     for each_filter in [each for each in each_console_handler.filters]:
                         if '_FalseFilter' in each_filter.__class__.__name__:
                             each_console_handler.removeFilter(each_filter)
-
-            msg = "".join(args)
+            
+            try:
+                msg = "".join(args)
+            except:
+                msg = "".join(str(args))    
 
             if kw.get("end", None) != None:
                 msg += kw["end"]

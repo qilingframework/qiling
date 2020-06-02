@@ -104,6 +104,7 @@ class PETest(unittest.TestCase):
         ql.run()
         
         self.assertGreater(255, self.thread_id)
+        self.assertLessEqual(1, self.thread_id)
         
         del self.thread_id
         del ql
