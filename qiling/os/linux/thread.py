@@ -34,7 +34,7 @@ class QlLinuxThread(QlThread):
         self.runing_time = 0
         self.context = context
         self.ql = ql
-        self.until_addr = ql.until_addr
+        self.exit_point = self.ql.os.exit_point
         self.start_address = start_address
         self.status = THREAD_STATUS_RUNNING
         self.stop_event = THREAD_EVENT_INIT_VAL
@@ -120,15 +120,15 @@ class QlLinuxThread(QlThread):
 
         # Run and log the run event
         s_time = int(time.time() * 1000000)
-        self.start_address = self.ql.reg.pc
+        self.start_address = self.ql.arch.get_pc()
 
         if mode == TIME_MODE:
-            self.ql.emu_start(self.start_address, self.until_addr, timeout = thread_slice)
+            self.ql.emu_start(self.start_address, self.exit_point, timeout = thread_slice)
         elif mode == COUNT_MODE:
-            self.ql.emu_start(self.start_address, self.until_addr, count = thread_slice)
+            self.ql.emu_start(self.start_address, self.exit_point, count = thread_slice)
         elif mode == BBL_MODE:
             self.thread_management.set_bbl_count(thread_slice)
-            self.ql.emu_start(self.start_address, self.until_addr)
+            self.ql.emu_start(self.start_address, self.exit_point)
         else:
             raise
 
@@ -139,7 +139,7 @@ class QlLinuxThread(QlThread):
         if self.total_time != 0 and self.runing_time >= self.total_time:
             self.status = THREAD_STATUS_TIMEOUT
 
-        if self.ql.arch.get_pc() == self.until_addr:
+        if self.ql.arch.get_pc() == self.exit_point:
             self.stop()
             self.stop_event = THREAD_EVENT_EXIT_EVENT
 
@@ -161,18 +161,18 @@ class QlLinuxThread(QlThread):
         self.store()
 
     def store_regs(self):
-        self.context = self.ql.context()
+        self.context = self.ql.arch.context_save()
         self.start_address = self.ql.arch.get_pc()
 
     def restore_regs(self):
-        self.ql.context(self.context)
+        self.ql.arch.context_restore(self.context)
 
     def set_start_address(self, addr):
-        old_context = self.ql.context()
+        old_context = self.ql.arch.context_save()
         self.restore_regs()
-        self.ql.reg.pc = addr
+        self.ql.reg.arch_pc = addr
         self.store_regs()
-        self.ql.context(old_context)
+        self.ql.arch.context_restore(old_context)
 
     def set_context(self, con):
         self.context = con
@@ -251,8 +251,8 @@ class QlLinuxThread(QlThread):
             return 0
         return self.total_time - self.runing_time
 
-    def set_until_addr(self, until_addr):
-        self.until_addr = until_addr
+    def set_exit_point(self, exit_point):
+        self.exit_point = exit_point
 
     def new_thread_id(self):
         self.thread_id = QlLinuxThread.LINUX_THREAD_ID
@@ -282,7 +282,6 @@ class QlLinuxX86Thread(QlLinuxThread):
     def clone_thread_tls(self, tls_addr):
         old_tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
 
-        # FIXME : self.ql.os should be better
         self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
 
         u_info = self.ql.mem.read(tls_addr, 4 * 4)
@@ -291,7 +290,6 @@ class QlLinuxX86Thread(QlLinuxThread):
         limit = self.ql.unpack32(u_info[8 : 12])
 
         if index == -1:
-            # FIXME : self.ql.os should be better
             index = self.ql.os.gdtm.get_free_idx(12)
 
         if index == -1 or index < 12 or index > 14:
@@ -300,18 +298,15 @@ class QlLinuxX86Thread(QlLinuxThread):
             self.ql.os.gdtm.register_gdt_segment(index, base, limit, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
             self.ql.mem.write(tls_addr, self.ql.pack32(index))
 
-        # FIXME : self.ql.os should be better
         self.tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
         self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, old_tls)
 
     def store(self):
         self.store_regs()
-        # FIXME : self.ql.os should be better
         self.tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
 
     def restore(self):
         self.restore_regs()
-        # FIXME : self.ql.os should be better
         self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
 
 class QlLinuxX8664Thread(QlLinuxThread):
@@ -337,18 +332,22 @@ class QlLinuxMIPS32Thread(QlLinuxThread):
         super(QlLinuxMIPS32Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
         self.tls = 0
 
+
     def clone_thread_tls(self, tls_addr):
         self.tls = tls_addr
 
+
     def store(self):
         self.store_regs()
-        self.tls = self.ql.register(UC_MIPS_REG_CP0_USERLOCAL)
+        self.tls = self.ql.reg.cp0_userlocal 
+
 
     def restore(self):
         self.restore_regs()
         CONFIG3_ULR = (1 << 13)
-        self.ql.register(UC_MIPS_REG_CP0_CONFIG3, CONFIG3_ULR)
-        self.ql.register(UC_MIPS_REG_CP0_USERLOCAL, self.tls)
+        self.ql.reg.cp0_config3 = CONFIG3_ULR
+        self.ql.reg.cp0_userlocal = self.tls
+
 
 class QlLinuxARMThread(QlLinuxThread):
     """docstring for QlLinuxARMThread"""
@@ -356,16 +355,20 @@ class QlLinuxARMThread(QlLinuxThread):
         super(QlLinuxARMThread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
         self.tls = 0
 
+
     def clone_thread_tls(self, tls_addr):
         self.tls = tls_addr
 
+
     def store(self):
         self.store_regs()
-        self.tls = self.ql.register(UC_ARM_REG_C13_C0_3)
+        self.tls = self.ql.reg.c13_c0_3
+
 
     def restore(self):
         self.restore_regs()
-        self.ql.register(UC_ARM_REG_C13_C0_3, self.tls)
+        self.ql.reg.c13_c0_3 = self.tls
+
 
 class QlLinuxARM64Thread(QlLinuxThread):
     """docstring for QlLinuxARM64Thread"""
@@ -384,13 +387,12 @@ class QlLinuxARM64Thread(QlLinuxThread):
 class QlLinuxThreadManagement(QlThreadManagement):
     def __init__(self, ql, time_slice = 1000, count_slice = 1000, bbl_slice = 300, mode = BBL_MODE, ):
         super(QlLinuxThreadManagement, self).__init__(ql)
+        self.ql = ql
         self.cur_thread = None
         self.running_thread_list = []
         self.ending_thread_list = []
         self.blocking_thread_list = []
         self.main_thread = None
-        self.ql = ql
-
         self.mode = mode
         self.time_slice = time_slice
         self.count_slice = count_slice

@@ -4,10 +4,10 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 
-import argparse, os, string, sys
+import argparse, os, string, sys, ast
 from binascii import unhexlify
-from keystone import *
 from qiling import *
+from qiling import __version__ as ql_version
 
 
 def parse_args(parser, commands):
@@ -33,74 +33,19 @@ def parse_args(parser, commands):
     return args
 
 # read shellcode from file
-def read_shellcode(fname):
+def read_file(fname):
     with open(fname,"rb") as f:
-        shellcode = f.read()
+        content = f.read()
         f.close
-        return shellcode
-
-def ql_asm2bytes(fname, archtype, archmode = None):
-    
-    def ks_convert(arch, archmode):
-        if archmode != None:
-            arch = "armthumb"
-        
-        if options.bigendian == True:
-            adapter = {
-                'x86': (KS_ARCH_X86, KS_MODE_32),
-                'x8664': (KS_ARCH_X86, KS_MODE_64),
-                'mips32': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
-                'arm': (KS_ARCH_ARM, KS_MODE_ARM, + KS_MODE_BIG_ENDIAN),
-                'armthumb': (KS_ARCH_ARM, KS_MODE_THUMB | KS_MODE_BIG_ENDIAN),
-                'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
-            }
-        else:    
-            adapter = {
-                'x86': (KS_ARCH_X86, KS_MODE_32),
-                'x8664': (KS_ARCH_X86, KS_MODE_64),
-                'mips32el': (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
-                'arm': (KS_ARCH_ARM, KS_MODE_ARM),
-                'armthumb': (KS_ARCH_ARM, KS_MODE_THUMB),
-                'arm64': (KS_ARCH_ARM64, KS_MODE_ARM),
-            }                
-
-            if arch in adapter:
-                return adapter[arch]
-        # invalid
-        return None, None
-
-    def compile_instructions(fname, archtype, archmode):
-        f = open(fname, 'rb')
-        assembly = f.read()
-        f.close()
-
-        ks = Ks(archtype, archmode)
-
-        shellcode = ''
-        try:
-            # Initialize engine in X86-32bit mode
-            encoding, count = ks.asm(assembly)
-            shellcode = ''.join('%02x'%i for i in encoding)
-            shellcode = unhexlify(shellcode)
-
-        except KsError as e:
-            print("ERROR Keystone Compile Error: %s" % e)
-            exit
-
-        return shellcode
-
-
-    archtype, archmode = ks_convert(archtype, archmode)
-    return compile_instructions(fname, archtype, archmode)
-
+        return content
 
 def run_shellcode(options):
     if not options.os in ("linux", "windows", "freebsd", "macos"):
             print("ERROR: -os required: either linux, windows, freebsd, macos")
             exit(1)
     
-    if not options.arch in ("arm", "arm64", "x86", "x8664", "mips32"):
-            print("ERROR: -arch required: either arm, arm64, x86, x8664, mips32")
+    if not options.arch in ("arm", "arm64", "x86", "x8664", "mips"):
+            print("ERROR: -arch required: either arm, arm64, x86, x8664, mips")
             exit(1)
 
     if type(options.bigendian) is not bool:
@@ -115,7 +60,7 @@ def run_shellcode(options):
             shellcoder =  bytes.fromhex(shellcoder)
         elif options.filename is not None:
             print ("[+] Load HEX from FILE")
-            shellcoder = str(read_shellcode(options.filename)).strip('b\'').strip('\\n')
+            shellcoder = str(read_file(options.filename)).strip('b\'').strip('\\n')
             shellcoder = shellcoder.strip('x').split("\\\\x")
             shellcoder = "".join(shellcoder).strip()
             shellcoder = bytes.fromhex(shellcoder)
@@ -125,19 +70,21 @@ def run_shellcode(options):
 
     elif options.asm == True:
         print ("[+] Load ASM from FILE")
-        shellcoder = ql_asm2bytes(options.filename, options.arch)
+        shellcoder = "asmfile"
 
     else:
         print ("[+] Load BIN from FILE")
         if options.filename is None:
             print("ERROR: File not found")
             exit(1)
-        shellcoder = read_shellcode(options.filename)
+        shellcoder = read_file(options.filename)
 
-    return Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output)
+    return Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output, profile = options.profile)
 
 
 def usage():
+    print("qltool for Qiling v%s" %ql_version)
+
     print("\nUsage: ./qltool [run|shellcode] OPTIONS")
 
     print("\n\nWith shellcode:")
@@ -150,30 +97,30 @@ def usage():
     print("\t ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples/rootfs/x8664_linux/")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux")
 
-    print("\n\nWith binary gdbserver:")
+    print("\n\nWith binary file and gdbserver:")
     print("\t ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --gdb 127.0.0.1:9999 --rootfs examples/rootfs/x8664_linux")
 
-    print("\n\nWith binary file and argv:")
+    print("\n\nWith binary file and additional argv:")
     print("\t ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_args --rootfs examples/rootfs/x8664_linux --args test1 test2 test3")
-    print("\t ./qltool run --rootfs examples/rootfs/x8664_linux examples/rootfs/x8664_linux/bin/x8664_args test1 test2 test3")
 
     print("\n\nwith binary file and various output format:")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm")
-    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace")
     print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e open")
+    print("\t ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace -e open --log-dir=qlog")
+    
+    print("\n\nWith UEFI file:")
+    print("\t ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel")
+    exit(1)
 
 
 if __name__ == '__main__':
 
-    #
     # argparse setup
-    #
-
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(title='subcommands', description='valid subcommands', help='additional help', dest='subparser_name')
     
     run_parser = commands.add_parser('run', help = 'run')
-    run_parser.add_argument('-f', '--filename', required=False, default='', metavar="FILE", dest="filename", help="filename")
+    run_parser.add_argument('-f', '--filename', required=False, default=None, metavar="FILE", dest="filename", help="filename")
     run_parser.add_argument('--rootfs', required=True, help='emulated rootfs')
     run_parser.add_argument('--args', required=False, default=[], nargs=argparse.REMAINDER, dest="args", help="args")
     run_parser.add_argument('run_args', default=[], nargs=argparse.REMAINDER)
@@ -181,7 +128,7 @@ if __name__ == '__main__':
     shellcode_parser = commands.add_parser('shellcode', help = 'shellcode')
     shellcode_parser.add_argument('-f', '--filename', required=False, metavar="FILE", dest="filename", help="filename")
     shellcode_parser.add_argument('-i', '--input', required=False, metavar="INPUT", dest="input", help='input hex value')
-    shellcode_parser.add_argument('--arch', required=True, help='option are x86, x8664, arm, arm64, mips32el, mips32')
+    shellcode_parser.add_argument('--arch', required=True, help='option are x86, x8664, arm, arm64, mips')
     shellcode_parser.add_argument('--bigendian', required=False, default=False, help='Type: Bool True or False')
     shellcode_parser.add_argument('--os', required=True, help='option are windows, linux, freebsd and macos')
     shellcode_parser.add_argument('--rootfs', required=False, help='emulated rootfs, that is where all the so or dll sits')
@@ -189,6 +136,9 @@ if __name__ == '__main__':
     shellcode_parser.add_argument('--hex', action='store_true', default=False, dest='hex', help='input file format, -hex')
     shellcode_parser.add_argument('--bin', action='store_true', default=True, dest='bin', help='input file format, -bin')
     
+    if len(sys.argv) <= 1:
+        usage()
+
     if (sys.argv[1] == 'run'):
         comm_parser = run_parser
     elif (sys.argv[1] == 'shellcode'):
@@ -200,30 +150,27 @@ if __name__ == '__main__':
                             help='output mode, options are off, debug , disasm, dump')
     comm_parser.add_argument('-v', '--verbose', required=False, default=1, dest='verbose',
                             help='verbose mode, must be int and use with --debug or --dump')
+    comm_parser.add_argument('--env', required=False, default='', metavar="FILE", dest="env", help="Pickle file containing an environment dictionary")                            
     comm_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
-    comm_parser.add_argument('--profile', required=False, default='', metavar="FILE", dest="profile", help="Defile OS profile")
+    comm_parser.add_argument('--profile', required=False, dest='profile', help="Define customized profile")
     comm_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
     comm_parser.add_argument('--dump', action='store_true', default=False, dest='dump', help='Enable Debug + Diassembler mode')
     comm_parser.add_argument('--debug', action='store_true', default=False, dest='debug', help='Enable Debug mode')
     comm_parser.add_argument('--disasm', action='store_true', default=False, dest='disasm', help='Run in disassemble mode')
-    comm_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')  
-    comm_parser.add_argument('-e', '--strace-filter', metavar="FUNCTION NAME", required=False, dest="strace_filter", default=None, 
+    comm_parser.add_argument('--console', required=False, default=True, dest='console', help='display in console')
+    comm_parser.add_argument('-e', '--filter', metavar="FUNCTION NAME", required=False, dest="filter", default=None, 
                             help="Only work with strace mode, you can choose what to be printout, for multiple function calls should be separated by comma")
+    comm_parser.add_argument('--log-dir', required=False, metavar="DIRECTORY NAME", dest='log_dir', default=None, help='the destinartion you want to store you log')
     comm_parser.add_argument('--trace', action='store_true', default=False, dest='trace', help='Run in strace mode')
-    comm_parser.add_argument('--en_root', action='store_true', default=False, dest='en_root', help='Enable sudo required mode')
+    comm_parser.add_argument('--root', action='store_true', default=False, dest='root', help='Enable sudo required mode')
     comm_parser.add_argument('--debug_stop', action='store_true', default=False, dest='debug_stop', 
                             help='Stop running while encounter any error (only use it with debug mode)')
-    comm_parser.add_argument('--log_dir', required=False, default=None, dest='log_dir', help='log file dir')
-    comm_parser.add_argument('--log_split', action='store_true', default=False, dest='log_split', help='split log file')
     comm_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
+    comm_parser.add_argument('--timeout', required=False, help='Emulation timeout')
 
     options = parser.parse_args()
 
-
-    #
     # var check
-    #
-
     if options.strace:
         options.output = "default"
     elif options.trace:
@@ -235,83 +182,83 @@ if __name__ == '__main__':
     elif options.disasm:
         options.output = "disasm"            
 
-    if options.console == "False":
-        options.console = False
+    if options.profile:
+        options.profile = str(options.profile)
 
-    if options.log_split:
-        options.console = True
-
+    if options.console:
+        if options.console == 'False':
+            options.console = False
+        else:
+            options.console = True
+    
     if type(options.verbose) != int and options.output not in ("debug", "dump"):
         print("ERROR: verbose mode, must be int and use with --debug or --dump")
         usage()
-        exit(1)
 
     if options.debug_stop and not (options.dump or options.debug):
         print("ERROR: debug_stop must use with either dump or debug mode")
         usage()
-        exit(1)
     
-    #
-    # ql setup
-    #
-
+    # ql file setup
     if (options.subparser_name == 'run'):
-        if options.filename != '' and options.run_args == []:
-            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, 
-                        output=options.output, log_console = options.console, log_dir=options.log_dir)
+        if options.filename is not None and options.run_args == []:
+            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile = options.profile, output=options.output, console=options.console, log_dir=options.log_dir)
 
-        elif options.filename == '' and options.args == [] and options.run_args != []:
-            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, output=options.output, 
-                        log_console = options.console, log_dir=options.log_dir)
+        elif options.filename is None and options.args == [] and options.run_args != []:
+            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, profile = options.profile, output=options.output)
+        
         else:
             print("ERROR: Command error!")
             usage()
-            exit(1)
+
+    # ql shellcode setup
     elif (options.subparser_name == 'shellcode'):
         ql = run_shellcode(options)
+        if options.asm == True:
+            assembly = read_file(options.filename)
+            ql.shellcoder = ql.compile(ql.archtype, assembly)
+            ql.mem.write(ql.os.entry_point, ql.shellcoder)
     
     else:
         print("ERROR: Unknown command")
         usage()
-        exit(1)
 
-    #
     # ql execute additional options
-    #
-
     if options.gdb:
         ql.debugger = options.gdb
 
     if options.debug_stop and (options.dump or options.debug):
         ql.debug_stop = True
         
-    if options.en_root:
+    if options.root:
         ql.root = True
 
-    if options.log_split:
-        ql.log_split = True
+    if options.console == "False":
+        ql.log_split = False
 
     if options.multithread:
         ql.multithread = True
 
-    if options.profile:
-        if os.path.exists(options.profile):
-            ql.config = options.config
-        else:
-            print("File Not Found!!!")
-            exit(1)        
-
     if options.verbose:
         ql.verbose = options.verbose   
 
-    if options.strace_filter != None:
-       ql.strace_filter = options.strace_filter
-    
-    #
-    # ql run
-    #
+    if options.filter != None:
+       ql.filter = options.filter
 
-    ql.run()
-    exit(ql.exit_code)
+    if options.env != '':
+        if os.path.exists(options.env):
+            import pickle
+            with open(options.env, 'rb') as f:
+                ql.env = pickle.load(f)
+        else:
+            ql.env = ast.literal_eval(options.env)
+    
+    timeout = 0
+    if options.timeout != None:
+        timeout = int(options.timeout)
+    
+    # ql run
+    ql.run(timeout=timeout)
+    exit(ql.os.exit_code)
 
 

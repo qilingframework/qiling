@@ -1,4 +1,7 @@
-
+#!/usr/bin/env python3
+#
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import struct
 from qiling.const import *
@@ -39,9 +42,63 @@ DT_FLAGS 		= 30
 DT_ENCODING 	= 32
 DT_GNU_HASH	    = 0x6ffffef5
 
-global JMP_SLOT
+DT_MIPS_LOCAL_GOTNO = 0x7000000a
+DT_MIPS_SYMTABNO = 0x70000011
+DT_MIPS_GOTSYM = 0x70000013
+
+global JMP_SLOT, GLOB_DAT
 GLOB_DAT = 6
 JMP_SLOT = 7
+
+class HookFunc:
+    def __init__(self, ql, fucname, r, load_base):
+        self.fucname = fucname
+        self.hook = []
+        self.rel = r
+        self.idx = None
+        self.hook_fuc_ptr = None
+        self.hook_data_ptr = None
+        self.load_base = load_base
+        self.ql = ql
+        self.ori_offest = None
+        self.ori_data = None
+    
+    def add_hook(self, cb, userdata):
+        self.hook.append((cb, userdata))
+    
+    def call(self):
+        if self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
+            self.ql.reg.arch_pc = self.ql.reg.arch_pc + 4
+
+        next_pc = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
+        for cb, userdata in self.hook:
+            if userdata == None:
+                ret = cb(self.ql)
+            else:
+                ret = cb(self.ql, userdata)
+
+            if type(ret) != int:
+                ret = 0
+            
+            if ret & FUNC_CALL_BLOCK == 0:
+                self.ql.reg.arch_pc = next_pc
+            
+            if ret & FUNC_HOOK_BLOCK != 0:
+                break
+    
+    def enable(self):
+        if self.rel == None or self.hook_fuc_ptr == None or self.hook_data_ptr == None:
+            raise
+        
+        self.ori_offest = self.rel.r_offset
+        self.rel.r_offset = self.hook_data_ptr - self.load_base        
+        self.ql.mem.write(self.rel.ptr, self.rel.pack())
+
+        self.ori_data = self.ql.mem.read(self.ori_offest + self.load_base, self.ql.pointersize)
+
+        self.ql.mem.write(self.ori_offest + self.load_base, self.ql.pack(self.hook_fuc_ptr))
+        self.ql.mem.write(self.hook_data_ptr, bytes(self.ori_data))
+        
 
 class ELF_Phdr:
     def __init__(self, p_type, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_flags, p_align):
@@ -110,13 +167,14 @@ class ELF_Rel:
 
 class ELF32_Rel(ELF_Rel):
     Rel_SIZE = 4 * 2
-    def __init__(self, buf, endian = 0):
+    def __init__(self, buf, endian = 0, ptr = None):
         if len(buf) != self.Rel_SIZE:
             raise
         
-        fmt = '<II' if endian == 0 else '>II'
+        self.ptr = ptr
+        self.fmt = '<II' if endian == 0 else '>II'
 
-        r_offset, r_info = struct.unpack(fmt, buf)
+        r_offset, r_info = struct.unpack(self.fmt, buf)
         super(ELF32_Rel, self).__init__(r_offset, r_info)
 
     @property
@@ -126,16 +184,20 @@ class ELF32_Rel(ELF_Rel):
     @property
     def r_sym(self):
         return self.r_info >> 8
+    
+    def pack(self):
+        return struct.pack(self.fmt, self.r_offset, self.r_info)
 
 class ELF64_Rel(ELF_Rel):
     Rel_SIZE = 8 * 2
-    def __init__(self, buf, endian = 0):
+    def __init__(self, buf, endian = 0, ptr = None):
         if len(buf) != self.Rel_SIZE:
             raise
         
-        fmt = '<QQ' if endian == 0 else '>QQ'
+        self.ptr = ptr
+        self.fmt = '<QQ' if endian == 0 else '>QQ'
 
-        r_offset, r_info = struct.unpack(fmt, buf)
+        r_offset, r_info = struct.unpack(self.fmt, buf)
         super(ELF64_Rel, self).__init__(r_offset, r_info)
 
     @property
@@ -145,6 +207,9 @@ class ELF64_Rel(ELF_Rel):
     @property
     def r_sym(self):
         return self.r_info >> 32
+    
+    def pack(self):
+        return struct.pack(self.fmt, self.r_offset, self.r_info)
 
 
 class ELF_Rela:
@@ -155,13 +220,14 @@ class ELF_Rela:
 
 class ELF32_Rela(ELF_Rela):
     Rela_SIZE = 4 * 3
-    def __init__(self, buf, endian = 0):
+    def __init__(self, buf, endian = 0, ptr = None):
         if len(buf) != self.Rela_SIZE:
             raise
         
-        fmt = '<IIi' if endian == 0 else '>IIi'
+        self.ptr = ptr
+        self.fmt = '<IIi' if endian == 0 else '>IIi'
 
-        r_offset, r_info, r_addend = struct.unpack(fmt, buf)
+        r_offset, r_info, r_addend = struct.unpack(self.fmt, buf)
         super(ELF32_Rela, self).__init__(r_offset, r_info, r_addend)
 
     @property
@@ -171,16 +237,20 @@ class ELF32_Rela(ELF_Rela):
     @property
     def r_sym(self):
         return self.r_info >> 8
+    
+    def pack(self):
+        return struct.pack(self.fmt, self.r_offset, self.r_info, self.r_addend)
 
 class ELF64_Rela(ELF_Rela):
     Rela_SIZE = 8 * 3
-    def __init__(self, buf, endian = 0):
+    def __init__(self, buf, endian = 0, ptr = None):
         if len(buf) != self.Rela_SIZE:
             raise
         
-        fmt = '<QQq' if endian == 0 else '>QQq'
+        self.ptr = ptr
+        self.fmt = '<QQq' if endian == 0 else '>QQq'
 
-        r_offset, r_info, r_addend = struct.unpack(fmt, buf)
+        r_offset, r_info, r_addend = struct.unpack(self.fmt, buf)
         super(ELF64_Rela, self).__init__(r_offset, r_info, r_addend)
 
     @property
@@ -190,6 +260,9 @@ class ELF64_Rela(ELF_Rela):
     @property
     def r_sym(self):
         return self.r_info >> 32
+
+    def pack(self):
+        return struct.pack(self.fmt, self.r_offset, self.r_info, self.r_addend)
 
 class ELF_Sym:
     def __init__(self, st_name ,st_value ,st_size ,st_info ,st_other ,st_shndx):
@@ -249,6 +322,9 @@ class FunctionHook:
         self.phnum = phnum
         self.phentsize = phentsize
         self.load_base = load_base
+        self.add_function_hook = self.add_function_hook_default 
+
+        self.dynamic = None
 
         self.hash_nbucket = None
         self.hash_nchain = None
@@ -281,6 +357,11 @@ class FunctionHook:
         self.rel_size = None
         self.relent = ELF32_Rel.Rel_SIZE if ql.archbit == 32 else ELF64_Rel.Rel_SIZE
 
+        self.plt_got = None
+        self.mips_local_gotno = None
+        self.mips_symtabno = None
+        self.mips_gotsym = None
+
         self.rel_list = []
 
 
@@ -290,27 +371,42 @@ class FunctionHook:
         global GLOB_DAT
         # ARM
         if self.ql.archtype== QL_ARCH.ARM:
-            pass
+            GLOB_DAT = 21
+            JMP_SLOT = 22
+            # bkpt 0; bx lr
+            ins = b'p\x00 \xe1\x1e\xff/\xe1'
+            self.add_function_hook = self.add_function_hook_relocation
 
         # MIPS32
-        elif self.ql.archtype== QL_ARCH.MIPS32:
-            pass
+        elif self.ql.archtype== QL_ARCH.MIPS:
+            GLOB_DAT = 21
+            JMP_SLOT = 22
+            ins = b'\xa0\x00\x00\xef\x1e\xff/\xe1'
+            self.add_function_hook = self.add_function_hook_mips
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
-            pass
+            GLOB_DAT = 1025
+            JMP_SLOT = 1026
+            #brk 0; ret
+            ins = b'\x00\x00 \xd4\xc0\x03_\xd6'
+            self.add_function_hook = self.add_function_hook_relocation
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
             GLOB_DAT = 6
             JMP_SLOT = 7
-            pass
+            # int 0xa0; ret
+            ins = b'\xcd\xa0\xc3'.ljust(8, b'\x90')
+            self.add_function_hook = self.add_function_hook_relocation
 
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
             GLOB_DAT = 6
             JMP_SLOT = 7
-            pass
+            # int 0xa0; ret
+            ins = b'\xcd\xa0\xc3'.ljust(8, b'\x90')
+            self.add_function_hook = self.add_function_hook_relocation
 
         self._parse()
         if self.rel != None:
@@ -324,7 +420,17 @@ class FunctionHook:
             self.rel_list += self.plt_rel
             self.show_relocation(self.plt_rel)
         
-        # self.ql.mem.map(hook_mem, 0x1000, perms=7, info="hook mem")
+        if self.ql.archtype == QL_ARCH.MIPS and self.plt_got != None and self.mips_gotsym != None and self.mips_local_gotno != None and self.mips_symtabno != None:
+            self.show_dynsym_name(self.mips_gotsym, self.mips_symtabno)
+
+        self.ql.mem.map(hook_mem, 0x2000, perms=7, info="hook mem")
+        self.ql.mem.write(hook_mem, (ins + b'\x00' * 8) * (0x2000 // 0x10))
+
+        self.free_list = [_ for _ in range(0, 0x2000, 0x10)]
+        self.use_list = {}
+        self.hook_list = {}
+
+        self.hook_int = False
 
     def parse_program_header32(self):
         # typedef struct elf32_phdr{
@@ -467,6 +573,9 @@ class FunctionHook:
                 self.dynamic = p.p_vaddr + self.load_base
                 break
         
+        if self.dynamic == None:
+            return
+
         for d in self.parse_dynamic():
             if d.d_tag == DT_NULL:
                 break
@@ -520,6 +629,16 @@ class FunctionHook:
             elif d.d_tag == DT_RELENT:
                 if self.relent != d.d_un:
                     raise
+
+            elif d.d_tag == DT_PLTGOT:
+                self.plt_got = d.d_un
+
+            elif d.d_tag == DT_MIPS_LOCAL_GOTNO:
+                self.mips_local_gotno = d.d_un
+            elif d.d_tag == DT_MIPS_SYMTABNO:
+                self.mips_symtabno = d.d_un
+            elif d.d_tag == DT_MIPS_GOTSYM:
+                self.mips_gotsym = d.d_un
             
             elif d.d_tag == DT_NEEDED:
                 pass
@@ -531,30 +650,33 @@ class FunctionHook:
         
         if self.rela != None and self.rela_size != None:
             rela_buf = self.ql.mem.read(self.rela, self.rela_size)
+            rela_ptr = self.rela
             if self.ql.archbit == 32:
-                self.rela = [ELF32_Rela(rela_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian) for _ in range(self.rela_size // self.relaent)]
+                self.rela = [ELF32_Rela(rela_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, rela_ptr + _ * self.relaent) for _ in range(self.rela_size // self.relaent)]
             else:
-                self.rela = [ELF64_Rela(rela_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian) for _ in range(self.rela_size // self.relaent)]
+                self.rela = [ELF64_Rela(rela_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, rela_ptr + _ * self.relaent) for _ in range(self.rela_size // self.relaent)]
         
         if self.rel != None and self.rel_size != None:
             rel_buf = self.ql.mem.read(self.rel, self.rel_size)
+            rel_ptr = self.rel
             if self.ql.archbit == 32:
-                self.rel = [ELF32_Rel(rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian) for _ in range(self.rel_size // self.relent)]
+                self.rel = [ELF32_Rel(rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, rel_ptr + _ * self.relent) for _ in range(self.rel_size // self.relent)]
             else:
-                self.rel = [ELF64_Rel(rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian) for _ in range(self.rel_size // self.relent)]
+                self.rel = [ELF64_Rel(rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, rel_ptr + _ * self.relent) for _ in range(self.rel_size // self.relent)]
 
         if self.plt_rel != None and self.plt_rel_size != None:
             plt_rel_buf = self.ql.mem.read(self.plt_rel, self.plt_rel_size)
+            plt_rel_ptr = self.plt_rel
             if self.plt_rel_type == DT_REL:
                 if self.ql.archbit == 32:
-                    self.plt_rel = [ELF32_Rel(plt_rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian) for _ in range(self.plt_rel_size // self.relent)]
+                    self.plt_rel = [ELF32_Rel(plt_rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, plt_rel_ptr + _ * self.relent) for _ in range(self.plt_rel_size // self.relent)]
                 else:
-                    self.plt_rel = [ELF64_Rel(plt_rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian) for _ in range(self.plt_rel_size // self.relent)]
+                    self.plt_rel = [ELF64_Rel(plt_rel_buf[_ * self.relent : (_ + 1) * self.relent], self.endian, plt_rel_ptr + _ * self.relent) for _ in range(self.plt_rel_size // self.relent)]
             else:
                 if self.ql.archbit == 32:
-                    self.plt_rel = [ELF32_Rela(plt_rel_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian) for _ in range(self.plt_rel_size // self.relaent)]
+                    self.plt_rel = [ELF32_Rela(plt_rel_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, plt_rel_ptr + _ * self.relaent) for _ in range(self.plt_rel_size // self.relaent)]
                 else:
-                    self.plt_rel = [ELF64_Rela(plt_rel_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian) for _ in range(self.plt_rel_size // self.relaent)]
+                    self.plt_rel = [ELF64_Rela(plt_rel_buf[_ * self.relaent : (_ + 1) * self.relaent], self.endian, plt_rel_ptr + _ * self.relaent) for _ in range(self.plt_rel_size // self.relaent)]
         
         if self.symtab != None:
             self.symtab = ELF_Symtab(self.ql, self.symtab, self.endian)
@@ -563,31 +685,71 @@ class FunctionHook:
     def show_relocation(self, rel):
         for r in rel:
             if (r.r_type == JMP_SLOT or r.r_type == GLOB_DAT) and r.r_sym != 0:
-                fuc_name = self.strtab[self.symtab[r.r_sym].st_name]
-                self.ql.nprint('[+] rel fuc name ' + str(fuc_name))
+                rel_name = self.strtab[self.symtab[r.r_sym].st_name]
+                self.ql.dprint(D_INFO, '[+] rel name ' + str(rel_name))
+    
+    def show_dynsym_name(self, s, e):
+        for symidx in range(s, e):
+            rel_name = self.strtab[self.symtab[symidx].st_name]
+            self.ql.dprint(D_INFO, '[+] dynsym name ' + str(rel_name))
 
-    def _hook_fuction(self, fn, r, cb, userdata):
+    def _hook_int(self, ql, intno):
+        idx = (self.ql.reg.arch_pc - self.hook_mem) // 0x10
+
+        if idx not in self.use_list.keys():
+            raise
+        self.use_list[idx].call()
+
+
+    def _hook_function(self, fn, r, cb, userdata):
         if fn in self.hook_list.keys():
-            self.hook_list[fn].append((cb, userdata))
+            self.hook_list[fn].add_hook(cb, userdata)
             return
-        else:
-            self.hook_list[fn] = []
-            self.hook_list[fn].append((cb, userdata))
+
+        hf = HookFunc(self.ql, fn, r, self.load_base)
+        hf.add_hook(cb, userdata)
+
+        if len(self.free_list) == 0:
+            raise
         
+        hf.idx = self.free_list[0]
+        del self.free_list[0]
+
+        hf.hook_fuc_ptr = hf.idx * 0x10 + self.hook_mem
+        hf.hook_data_ptr = hf.idx * 0x10 + self.hook_mem + 8
+
+        self.use_list[hf.idx] = hf
+        self.hook_list[fn] = hf
+
+        hf.enable()
+
+        if self.hook_int == False:
+            if self.ql.archtype == QL_ARCH.X86 or self.ql.archtype == QL_ARCH.X8664:
+                self.ql.hook_intno(self._hook_int, 0xa0)
+            elif self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
+                self.ql.hook_intno(self._hook_int, 7)
 
 
-    def add_fuction_hook(self, fucname, cb, userdata = None):
-        if type(fucname) != bytes:
+    def add_function_hook_relocation(self, fucname, cb, userdata = None):
+        if type(fucname) != str:
             raise
 
         for r in self.rel_list:
             if (r.r_type == JMP_SLOT or r.r_type == GLOB_DAT) and r.r_sym != 0:
                 tmp_name = self.strtab[self.symtab[r.r_sym].st_name]
                 if tmp_name == fucname.encode():
-                    self._hook_fuction(tmp_name, r, cb, userdata)
+                    self._hook_function(tmp_name, r, cb, userdata)
+    
+    def add_function_hook_default(self, fucname, cb, userdata = None):
+        pass
+    
+    def add_function_hook_mips(self, fucname, cb, userdata = None):
+        self.add_function_hook_relocation(fucname, cb, userdata)
 
+        for symidx in range(self.mips_gotsym, self.mips_symtabno):
+            tmp_name = self.strtab[self.symtab[symidx].st_name]
+            if tmp_name == fucname.encode():
+                pass
 
     def _load_import(self):
         pass
-    
-    

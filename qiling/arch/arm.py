@@ -8,36 +8,41 @@ from unicorn.arm_const import *
 
 from qiling.const import *
 from .arch import QlArch
-
+from .arm_const import *
 
 class QlArchARM(QlArch):
     def __init__(self, ql):
         super(QlArchARM, self).__init__(ql)
+        register_mappings = [
+            reg_map
+        ]
+
+        for reg_maper in register_mappings:
+            self.ql.reg.expand_mapping(reg_maper)
+
+        self.ql.reg.register_sp(reg_map["sp"])
+        self.ql.reg.register_pc(reg_map["pc"])
+        self.arm_get_tls_addr = 0xFFFF0FE0
 
 
     def stack_push(self, value):
-        SP = self.ql.register(UC_ARM_REG_SP)
-        SP -= 4
-        self.ql.mem.write(SP, self.ql.pack32(value))
-        self.ql.register(UC_ARM_REG_SP, SP)
-        return SP
+        self.ql.reg.sp -= 4
+        self.ql.mem.write(self.ql.reg.sp, self.ql.pack32(value))
+        return self.ql.reg.sp
 
 
     def stack_pop(self):
-        SP = self.ql.register(UC_ARM_REG_SP)
-        data = self.ql.unpack32(self.ql.mem.read(SP, 4))
-        self.ql.register(UC_ARM_REG_SP, SP + 4)
+        data = self.ql.unpack32(self.ql.mem.read(self.ql.reg.sp, 4))
+        self.ql.reg.sp += 4
         return data
 
 
     def stack_read(self, offset):
-        SP = self.ql.register(UC_ARM_REG_SP)
-        return self.ql.unpack32(self.ql.mem.read(SP + offset, 4))
+        return self.ql.unpack32(self.ql.mem.read(self.ql.reg.sp + offset, 4))
 
 
     def stack_write(self, offset, data):
-        SP = self.ql.register(UC_ARM_REG_SP)
-        return self.ql.mem.write(SP + offset, self.ql.pack32(data))
+        return self.ql.mem.write(self.ql.reg.sp + offset, self.ql.pack32(data))
 
 
     # get initialized unicorn engine
@@ -50,9 +55,10 @@ class QlArchARM(QlArch):
             uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)    
         return uc
 
+
     # set PC
     def set_pc(self, value):
-        self.ql.register(UC_ARM_REG_PC, value)
+        self.ql.reg.pc = value
 
 
     # get PC
@@ -62,44 +68,42 @@ class QlArchARM(QlArch):
             append = 1
         else:
             append = 0
-        return self.ql.register(UC_ARM_REG_PC) + append
+            
+        return self.ql.reg.pc + append
 
 
     # set stack pointer
     def set_sp(self, value):
-        self.ql.register(UC_ARM_REG_SP, value)
+        self.ql.reg.sp = value
 
 
     # get stack pointer
     def get_sp(self):
-        return self.ql.register(UC_ARM_REG_SP)
+        return self.ql.reg.sp
 
 
     # get stack pointer register
     def get_name_sp(self):
-        return UC_ARM_REG_SP
+        return reg_map["sp"]
 
 
     # get pc register pointer
     def get_name_pc(self):
-        return UC_ARM_REG_PC
+        return reg_map["pc"]
+
 
     def enable_vfp(self):
-        tmp_val = self.ql.register(UC_ARM_REG_C1_C0_2)
-        tmp_val = tmp_val | (0xf << 20)
-        self.ql.register(UC_ARM_REG_C1_C0_2, tmp_val)
+        self.ql.reg.c1_c0_2 = self.ql.reg.c1_c0_2 | (0xf << 20)
         if self.ql.archendian == QL_ENDIAN.EB:
-            enable_vfp = 0x40000000
-            #enable_vfp = 0x00000040
+            self.ql.reg.fpexc = 0x40000000
+            #self.ql.reg.fpexc = 0x00000040
         else:
-            enable_vfp = 0x40000000
-        self.ql.register(UC_ARM_REG_FPEXC, enable_vfp)
+            self.ql.reg.fpexc = 0x40000000
         self.ql.dprint(D_INFO, "[+] Enable ARM VFP")
 
 
     def check_thumb(self):
-    
-        reg_cpsr = self.ql.register(UC_ARM_REG_CPSR)
+        reg_cpsr = self.ql.reg.cpsr
         if self.ql.archendian == QL_ENDIAN.EB:
             reg_cpsr_v = 0b100000
             # reg_cpsr_v = 0b000000
@@ -112,79 +116,50 @@ class QlArchARM(QlArch):
             self.ql.dprint(D_INFO, "[+] Enable ARM THUMB")
         return mode
 
+
     def get_reg_table(self):
-        registers_table = [
-            UC_ARM_REG_R0, UC_ARM_REG_R1, UC_ARM_REG_R2,
-            UC_ARM_REG_R3, UC_ARM_REG_R4, UC_ARM_REG_R5,
-            UC_ARM_REG_R6, UC_ARM_REG_R7, UC_ARM_REG_R8,
-            UC_ARM_REG_R9, UC_ARM_REG_R10, UC_ARM_REG_R11,
-            UC_ARM_REG_R12, UC_ARM_REG_SP, UC_ARM_REG_LR,
-            UC_ARM_REG_PC, UC_ARM_REG_CPSR
-            ]
-        return registers_table
+        registers_table = []
+        adapter = {}
+        adapter.update(reg_map)
+        registers = {k:v for k, v in adapter.items()}
+ 
+        for reg in registers:
+            registers_table += [reg]
+        
+        return registers_table  
+
 
     # set register name
     def set_reg_name_str(self):
         pass  
 
+
     def get_reg_name_str(self, uc_reg):
-        adapter = {
-            UC_ARM_REG_R0: "R0",
-            UC_ARM_REG_R1: "R1", 
-            UC_ARM_REG_R2: "R2",
-            UC_ARM_REG_R3: "R3", 
-            UC_ARM_REG_R4: "R4", 
-            UC_ARM_REG_R5: "R5",
-            UC_ARM_REG_R6: "R6", 
-            UC_ARM_REG_R7: "R7", 
-            UC_ARM_REG_R8: "R8",
-            UC_ARM_REG_R9: "R9", 
-            UC_ARM_REG_R10: "R10", 
-            UC_ARM_REG_R11: "R11",
-            UC_ARM_REG_R12: "R12", 
-            UC_ARM_REG_SP: "SP", 
-            UC_ARM_REG_LR: "LR",
-            UC_ARM_REG_PC: "PC", 
-            UC_ARM_REG_CPSR: "CPSR",
-        }
+        adapter = {}
+        adapter.update(reg_map)
+        adapter = {v: k for k, v in adapter.items()}
+
         if uc_reg in adapter:
             return adapter[uc_reg]
         # invalid
-        return None
+        return None   
 
 
-    def get_register(self, register_str):
-        if type(register_str) == str:
-            register_str = self.get_reg_name(register_str)  
-        return self.ql.uc.reg_read(register_str)
+    def get_register(self, register):
+        if type(register) == str:
+            register = self.get_reg_name(register)  
+        return self.ql.uc.reg_read(register)
 
 
-    def set_register(self, register_str, value):
-        if type(register_str) == str:
-            register_str = self.get_reg_name(register_str)  
-        return self.ql.uc.reg_write(register_str, value)
+    def set_register(self, register, value):
+        if type(register) == str:
+            register = self.get_reg_name(register)  
+        return self.ql.uc.reg_write(register, value)
 
 
     def get_reg_name(self, uc_reg_name):
-        adapter = {
-            "R0": UC_ARM_REG_R0,
-            "R1": UC_ARM_REG_R1, 
-            "R2": UC_ARM_REG_R2,
-            "R3": UC_ARM_REG_R3, 
-            "R4": UC_ARM_REG_R4,
-            "R5": UC_ARM_REG_R5,
-            "R6": UC_ARM_REG_R6, 
-            "R7": UC_ARM_REG_R7, 
-            "R8": UC_ARM_REG_R8,
-            "R9": UC_ARM_REG_R9, 
-            "R10": UC_ARM_REG_R10, 
-            "R11": UC_ARM_REG_R11,
-            "R12": UC_ARM_REG_R12, 
-            "SP": UC_ARM_REG_SP, 
-            "LR": UC_ARM_REG_LR,
-            "PC": UC_ARM_REG_PC, 
-            "CPSR": UC_ARM_REG_CPSR,
-        }
+        adapter = {}
+        adapter.update(reg_map)
         if uc_reg_name in adapter:
             return adapter[uc_reg_name]
         # invalid

@@ -23,3 +23,15 @@ from qiling.exception import *
 def hook_OleInitialize(ql, address, params):
     # I don't think we need to do anything, we hook every call for the COM library and manage them locally
     return S_OK
+
+
+# HRESULT CoRegisterMessageFilter(
+#   LPMESSAGEFILTER lpMessageFilter,
+#   LPMESSAGEFILTER *lplpMessageFilter
+# );
+@winapi(cc=STDCALL, params={
+    "lpMessageFilter": POINTER,
+    "lplpMessageFilter": POINTER
+})
+def hook_CoRegisterMessageFilter(ql, address, params):
+    return S_OK

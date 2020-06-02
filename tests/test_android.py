@@ -3,17 +3,17 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-
 import unittest
 import os
 import sys
 sys.path.append("..")
 
 from qiling import *
+from qiling.const import *
 from qiling.os.posix.syscall.unistd import ql_syscall_pread64
 
 # syscalls that need to be implemented for android
-def syscall_getrandom(ql, buf, buflen, flags, null0, null1, null2):
+def syscall_getrandom(ql, buf, buflen, flags, *args, **kw):
     data = None
     regreturn = None
     try:
@@ -27,8 +27,8 @@ def syscall_getrandom(ql, buf, buflen, flags, null0, null1, null2):
               (buf, buflen, flags, regreturn))
 
     if data:
-        ql.dprint(0, "[+] getrandom() CONTENT:")
-        ql.dprint(0, str(data))
+        ql.dprint(D_CTNT, "[+] getrandom() CONTENT:")
+        ql.dprint(D_CTNT, str(data))
     ql.os.definesyscall_return(regreturn)
 
 
@@ -36,7 +36,7 @@ def syscall_getrandom(ql, buf, buflen, flags, null0, null1, null2):
 Android linker calls fstatfs to determine if the file is on tmpfs as part of checking if libraries are allowed
 https://cs.android.com/android/platform/superproject/+/master:bionic/linker/linker.cpp;l=1215
 """
-def syscall_fstatfs(ql, fd, buf, null0, null1, null2, null3):
+def syscall_fstatfs(ql, fd, buf, *args, **kw):
     data = b"0" * (12*8)  # for now, just return 0s
     regreturn = None
     try:

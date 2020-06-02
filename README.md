@@ -1,5 +1,6 @@
 [![Gitter](https://badges.gitter.im/qilingframework/community.svg)](https://gitter.im/qilingframework/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![Build Status](https://travis-ci.com/qilingframework/qiling.svg?branch=master)](https://travis-ci.com/qilingframework/qiling)
+[![Build Status](https://travis-ci.com/qilingframework/qiling.svg?branch=dev)](https://travis-ci.com/qilingframework/qiling)
+![Docker Image CI](https://github.com/qilingframework/qiling/workflows/Docker%20Image%20CI/badge.svg?branch=dev)
 ---
 
 <p align="center">
@@ -8,8 +9,8 @@
 
 Qiling is an advanced binary emulation framework, with the following features:
 
-- Cross platform: Windows, MacOS, Linux, BSD
-- Cross architecture: X86, X86_64, Arm, Arm64, Mips
+- Cross platform: Windows, MacOS, Linux, BSD, UEFI
+- Cross architecture: X86, X86_64, Arm, Arm64, MIPS
 - Multiple file formats: PE, MachO, ELF
 - Emulate & sandbox machine code in a isolated environment
 - Supports cross architecture and platform debugging capabilities
@@ -53,7 +54,7 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 ---
 
 #### Installation
-Please see [setup guide](docs/SETUP.md) file for how to install Qiling Framework.
+Please see [setup guide](https://docs.qiling.io/en/latest/howto/) file for how to install Qiling Framework.
 
 ---
 
@@ -83,7 +84,7 @@ from qiling import *
 
 def force_call_dialog_func(ql):
     # get DialogFunc address
-    lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.sp - 0x8, 4))
+    lpDialogFunc = ql.unpack32(ql.mem.read(ql.reg.esp - 0x8, 4))
     # setup stack memory for DialogFunc
     ql.stack_push(0)
     ql.stack_push(1001)
@@ -91,7 +92,7 @@ def force_call_dialog_func(ql):
     ql.stack_push(0)
     ql.stack_push(0x0401018)
     # force EIP to DialogFunc
-    ql.reg.pc = lpDialogFunc
+    ql.reg.eip = lpDialogFunc
 
 
 def my_sandbox(path, rootfs):
@@ -118,11 +119,23 @@ The below Youtube video shows how the above example works.
 
 [![Solving a simple CTF challenge with Qiling Framework and IDAPro](https://i.ytimg.com/vi/SPjVAt2FkKA/0.jpg)](https://www.youtube.com/watch?v=SPjVAt2FkKA "Video DEMO 2")
 
-#### Wannacry demo
+#### Fuzzing with Qiling Unicornalf
 
-- The below Youtube video shows how Qiling analyzes Wannacry malware.
+- More information on fuzzing with Qiling Unicornalf can be found [here](https://github.com/qilingframework/qiling/tree/dev/examples/fuzzing/README.md).
 
-[![qiling DEMO 0: catching wannacry's killer swtich](https://img.youtube.com/vi/gVtpcXBxwE8/0.jpg)](https://www.youtube.com/watch?v=gVtpcXBxwE8 "Video DEMO 0")
+[![qiling DEMO 2: Fuzzing with Qiling Unicornalf](https://raw.githubusercontent.com/qilingframework/qilingframework.github.io/master/images/qilingfzz-s.png)](https://raw.githubusercontent.com/qilingframework/qiling/dev/examples/fuzzing/qilingfzz.png "Demo #2 Fuzzing with Qiling Unicornalf")
+
+#### Emulating ARM router firmware on Ubuntu X64 machine
+
+- Qiling Framework hot-patch and emulates ARM router's /usr/bin/httpd on a X86_64Bit Ubuntu
+
+[![qiling DEMO 3: Fully emulating httpd from ARM router firmware with Qiling on Ubuntu X64 machine](https://raw.githubusercontent.com/qilingframework/qilingframework.github.io/master/images/demo3-en.jpg)](https://www.youtube.com/watch?v=Nxu742-SNvw "Demo #3 Emulating ARM router firmware on Ubuntu X64 machine")
+
+#### Emulating UEFI
+
+- Qiling Framework emulates UEFI
+
+[![qiling DEMO 4: Emulating UEFI](https://raw.githubusercontent.com/qilingframework/qilingframework.github.io/master/images/demo4-s.png)](https://raw.githubusercontent.com/qilingframework/qilingframework.github.io/master/images/demo4-en.png "Demo #4 Emulating UEFI")
 
 ---
 
@@ -137,44 +150,29 @@ With shellcode:
 
 ```
 $ ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex
-$ ./qltool shellcode --os linux --arch x86 --asm -f examples/shellcodes/lin32_execve.asm
-$ ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex --strace
 ```
 
 With binary file:
 
 ```
 $ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --rootfs  examples/rootfs/x8664_linux/
-$ ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux
 ```
 
-With binary gdbserver:
+With binary and GDB debugger enable:
 
 ```
 $ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --gdb 127.0.0.1:9999 --rootfs examples/rootfs/x8664_linux
 ```
 
-With binary file and argv:
-
-```
-$ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_args --rootfs examples/rootfs/x8664_linux --args test1 test2 test3
-$ ./qltool run --rootfs examples/rootfs/x8664_linux examples/rootfs/x8664_linux/bin/x8664_args test1 test2 test3
-```
-
-with binary file and various output format:
-
-```
-$ ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --output=disasm
-$ ./qltool run -f examples/rootfs/mips32el_linux/bin/mips32el_hello --rootfs examples/rootfs/mips32el_linux --strace
-```
+See  https://docs.qiling.io/  for more details
 
 ---
 
-#### Gdbserver
+#### Remote Debugger
 
-Qiling has supported **Gdb remote debugging** now (x86, x86-64 for now).
+Qiling supports **remote debugging** now.
 
-See [EN](docs/GDBSERVER.md)|[CN](docs/GDBSERVER_CN.md)  for more details
+See  https://docs.qiling.io/  for more details
 
 ---
 
@@ -182,9 +180,7 @@ See [EN](docs/GDBSERVER.md)|[CN](docs/GDBSERVER_CN.md)  for more details
 
 Get the latest info from our website https://www.qiling.io
 
-Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.com/qiling_io)
-
-任何疑问请联系[麒麟框架官方微博](https://www.weibo.com/sgniwx)
+Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.com/qiling_io) or [Weibo](https://www.weibo.com/sgniwx)
 
 ---
 
@@ -196,6 +192,7 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 - SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
 - CHEN huitao (null) <null@qiling.io>
 - YU tong (sp1ke) <spikeinhouse@gmail.com>
+- Earl Marcus (klks84) klks84@gmail.com 
 
 #### Travis-CI, Docker and Website
 - FOO Kevin (chfl4gs) <chbsd64@qiling.io>

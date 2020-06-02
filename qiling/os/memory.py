@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import os
+import os, re
 
 from qiling.const import *
 from qiling.exception import *
@@ -50,7 +50,6 @@ class QlMemoryManager:
             string_bytes = bytes(value, encoding) + b'\x00'
             self.write(addr, string_bytes)
             return None
-
 
     def add_mapinfo(self, mem_s, mem_e, mem_p, mem_info):
         tmp_map_info = []
@@ -128,10 +127,10 @@ class QlMemoryManager:
                     perms_sym.append("-")
             return "".join(perms_sym)
 
-        self.ql.nprint("[+] Start      End        Perm.  Path\n")
-        for s, e, p, info in self.map_info:
-            _p = _perms_mapping(p)
-            self.ql.nprint("[+] %08x - %08x - %s    %s\n" % (s, e, _p, info))
+        self.ql.nprint("[+] Start      End        Perm.  Path")
+        for  start, end, perm, info in self.map_info:
+            _perm = _perms_mapping(perm)
+            self.ql.nprint("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
 
 
     def get_lib_base(self, filename):
@@ -146,6 +145,30 @@ class QlMemoryManager:
         mask = ((1 << self.ql.archbit) - 1) & -alignment
         return (addr + (alignment - 1)) & mask
 
+    # save all mapped mem
+    def save(self):
+        mem_dict = {}
+        seq = 1
+        for start, end, perm, info in self.map_info:
+            mem_read = self.read(start, end-start)          
+            mem_dict[seq] = start, end, perm, info, mem_read
+            seq += 1
+        return mem_dict
+
+    # restore all dumped memory
+    def restore(self, mem_dict):
+        for key, value in mem_dict.items():
+            start = value[0]
+            end = value[1]
+            perm = value[2]
+            info = value[3]
+            mem_read = bytes(value[4])
+            
+            if self.is_mapped(start, start-end) == False:
+                self.map(start, end-start, perms=perm, info=info)
+
+            self.write(start, mem_read)
+ 
 
     def read(self, addr: int, size: int) -> bytearray:
         return self.ql.uc.mem_read(addr, size)
@@ -153,6 +176,25 @@ class QlMemoryManager:
 
     def write(self, addr: int, data: bytes) -> None:
         return self.ql.uc.mem_write(addr, data)
+
+
+    def search(self, needle: bytes, begin= None, end= None):
+        """
+        Search for a sequence of bytes in memory. Returns all sequences
+        that match
+        """
+        addrs = []
+        for region in list(self.ql.uc.mem_regions()):
+            if (begin and end) and end > begin:
+                haystack = self.read(begin, end)
+            else:  
+                haystack = self.read(region[0], region[1] - region[0])
+            
+            addrs += [
+                x.start(0) + region[0]
+                for x in re.finditer(needle, haystack)
+            ]
+        return addrs
 
 
     def unmap(self, addr, size) -> None:
@@ -367,7 +409,7 @@ class QlMemoryHeap:
     def _align(self, size, unit):
         return (size // unit + (1 if size % unit else 0)) * unit     
 
-    def mem_alloc(self, size):
+    def alloc(self, size):
         
         if self.ql.archbit == 32:
             size = self._align(size, 4)
@@ -399,16 +441,16 @@ class QlMemoryHeap:
             self.chunks.append(chunk)
 
         chunk.inuse = True
-        #self.ql.dprint(D_INFO,"heap.mem_alloc addresss: " + hex(chunk.address))
+        #self.ql.dprint(D_INFO,"heap.alloc addresss: " + hex(chunk.address))
         return chunk.address
 
-    def mem_size(self, addr):
+    def size(self, addr):
         for chunk in self.chunks:
             if addr == chunk.address and chunk.inuse:
                 return chunk.size
         return 0
 
-    def mem_free(self, addr):
+    def free(self, addr):
         for chunk in self.chunks:
             if addr == chunk.address and chunk.inuse:
                 chunk.inuse = False

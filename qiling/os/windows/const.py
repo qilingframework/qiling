@@ -550,7 +550,6 @@ Mapper = {
 
 MAXUSHORT = 0xffff
 
-
 DRIVE_UNKNOWN = 0
 DRIVE_NO_ROOT_DIR = 1
 DRIVE_REMOVABLE = 2
@@ -588,3 +587,37 @@ ThreadPriority = 0x2
 # ...
 ThreadHideFromDebugger = 0x11
 # ...
+
+
+# https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messageboxw
+
+MB_ABORTRETRYIGNORE = 0x000000020
+MB_CANCELTRYCONTINUE = 0x000000060
+MB_HELP = 0x000040000
+MB_OK = 0x000000000
+MB_OKCANCEL = 0x000000010
+MB_RETRYCANCEL = 0x000000050
+MB_YESNO = 0x000000040
+MB_YESNOCANCEL = 0x000000030
+
+IDABORT = 3
+IDCANCEL = 2
+IDCONTINUE = 11
+IDIGNORE = 5
+IDNO = 7
+IDOK = 1
+IDRETRY = 4
+IDTRYAGAIN = 10
+IDYES = 6
+
+# https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-setdefaultdlldirectories
+
+LOAD_LIBRARY_SEARCH_APPLICATION_DIR = 0x00000200
+LOAD_LIBRARY_SEARCH_DEFAULT_DIRS = 0x00001000
+LOAD_LIBRARY_SEARCH_SYSTEM32 = 0x00000800
+LOAD_LIBRARY_SEARCH_USER_DIRS = 0x00000400
+
+# https://groups.google.com/forum/#!topic/microsoft.public.vc.language/UERvWrmTn-o
+CSTR_LESS_THAN = 1
+CSTR_EQUAL = 2
+CSTR_GREATER_THAN = 3

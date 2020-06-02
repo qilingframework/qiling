@@ -8,10 +8,10 @@ from qiling.os.const import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
+from qiling.os.windows.structs import *
 
 
 def _RegOpenKey(ql, address, params):
-
     hKey = params["hKey"]
     s_lpSubKey = params["lpSubKey"]
     phkResult = params["phkResult"]
@@ -21,15 +21,20 @@ def _RegOpenKey(ql, address, params):
         return ERROR_FILE_NOT_FOUND
     else:
         s_hKey = REG_KEYS[hKey]
-    if not ql.os.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
-        ql.dprint(D_INFO, "[!] Value key %s\%s not present" % (s_hKey, s_lpSubKey))
-        return ERROR_FILE_NOT_FOUND
-    # TODO fix for gandcrab, to remove when it works
-    if s_lpSubKey == "HARDWARE\DESCRIPTION\System\CentralProcessor\\0":
-        return ERROR_FILE_NOT_FOUND
+    key = s_hKey + "\\" + s_lpSubKey
+
+    # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
+    keys_profile = [key.rsplit("\\", 1)[0] for key in ql.os.profile["REGISTRY"].keys()]
+    if key.lower() in keys_profile:
+        ql.dprint(D_INFO, "[+] Using profile for key of  %s" % key)
+        ql.os.registry_manager.access(key)
+    else:
+        if not ql.os.registry_manager.exists(key):
+            ql.dprint(D_INFO, "[!] Value key %s not present" % key)
+            return ERROR_FILE_NOT_FOUND
 
     # new handle
-    new_handle = Handle(obj=s_hKey + "\\" + s_lpSubKey)
+    new_handle = Handle(obj=key)
     ql.os.handle_manager.append(new_handle)
     if phkResult != 0:
         ql.mem.write(phkResult, ql.pack(new_handle.id))
@@ -44,22 +49,26 @@ def RegQueryValue(ql, address, params):
     lpType = params["lpType"]
     lpData = params["lpData"]
     lpcbData = params["lpcbData"]
-
     s_hKey = ql.os.handle_manager.get(hKey).obj
-    params["hKey"] = s_hKey
     # read reg_type
     if lpType != 0:
         reg_type = ql.unpack(ql.mem.read(lpType, 4))
     else:
         reg_type = Registry.RegNone
     try:
-        value = ql.os.profile["REGISTRY"][s_hKey]
-        # TODO fix in profile
+        # Keys in the profile are saved as KEY\PARAM = VALUE, so i just want to check that the key is the same
+        value = ql.os.profile["REGISTRY"][s_hKey + "\\" + s_lpValueName]
+        ql.dprint(D_INFO, "[+] Using profile for value of key %s" % (s_hKey + "\\" + s_lpValueName,))
+        # TODO i have no fucking idea on how to set a None value, fucking configparser
+        if value == "None":
+            return ERROR_FILE_NOT_FOUND
         reg_type = 0x0001
-    except KeyError:
-        reg_type, value = ql.os.registry_manager.read(s_hKey, s_lpValueName, reg_type)
+        # set that the registry has been accessed
+        ql.os.registry_manager.access(s_hKey, s_lpValueName, value, reg_type)
 
-    # read registy
+    except KeyError:
+        # Read the registry
+        reg_type, value = ql.os.registry_manager.read(s_hKey, s_lpValueName, reg_type)
 
     # error key
     if reg_type is None or value is None:
@@ -205,6 +214,20 @@ def hook_RegCloseKey(ql, address, params):
     "phkResult": POINTER
 })
 def hook_RegCreateKeyA(ql, address, params):
+    return hook_RegCreateKeyW.__wrapped__(ql, address, params)
+
+
+# LSTATUS RegCreateKeyW(
+#   HKEY   hKey,
+#   LPCWSTR lpSubKey,
+#   PHKEY  phkResult
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": WSTRING,
+    "phkResult": POINTER
+})
+def hook_RegCreateKeyW(ql, address, params):
     ret = ERROR_SUCCESS
 
     hKey = params["hKey"]
@@ -256,6 +279,7 @@ def hook_RegSetValueA(ql, address, params):
     cbData = params["cbData"]
 
     s_hKey = ql.os.handle_manager.get(hKey).obj
+    # this is done so the print_function would print the correct value
     params["hKey"] = s_hKey
 
     ql.os.registry_manager.write(s_hKey, s_lpSubKey, dwType, s_lpData)
@@ -289,6 +313,7 @@ def hook_RegSetValueExW(ql, address, params):
     cbData = params["cbData"]
 
     s_hKey = ql.os.handle_manager.get(hKey).obj
+    # this is done so the print_function would print the correct value
     params["hKey"] = s_hKey
 
     ql.os.registry_manager.write(s_hKey, s_lpValueName, dwType, s_lpData)
@@ -305,6 +330,18 @@ def hook_RegSetValueExW(ql, address, params):
     "lpSubKey": STRING,
 })
 def hook_RegDeleteKeyA(ql, address, params):
+    return hook_RegDeleteKeyW.__wrapped__(ql, address, params)
+
+
+# LSTATUS RegDeleteKeyW(
+#   HKEY   hKey,
+#   LPCWSTR lpSubKey
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": WSTRING,
+})
+def hook_RegDeleteKeyW(ql, address, params):
     ret = ERROR_SUCCESS
 
     hKey = params["hKey"]
@@ -316,6 +353,18 @@ def hook_RegDeleteKeyA(ql, address, params):
     ql.os.registry_manager.delete(s_hKey, s_lpSubKey)
 
     return ret
+
+
+# LSTATUS RegDeleteValueA(
+#   HKEY    hKey,
+#   LPCSTR lpValueName
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpValueName": STRING
+})
+def hook_RegDeleteValueA(ql, address, params):
+    return hook_RegDeleteValueW.__wrapped__(ql, address, params)
 
 
 # LSTATUS RegDeleteValueW(
@@ -355,18 +404,18 @@ def hook_RegDeleteValueW(ql, address, params):
     "ReturnLength": POINTER
 })
 def hook_GetTokenInformation(ql, address, params):
-    id = params["TokenHandle"]
+    id_token = params["TokenHandle"]
     information = params["TokenInformationClass"]
     max_size = params["TokenInformationLength"]
     return_point = params["ReturnLength"]
     dst = params["TokenInformation"]
-    token = ql.os.handle_manager.get(id).obj
+    token = ql.os.handle_manager.get(id_token).obj
     information_value = token.get(information)
     ql.mem.write(return_point, len(information_value).to_bytes(4, byteorder="little"))
     return_size = int.from_bytes(ql.mem.read(return_point, 4), byteorder="little")
-    ql.dprint(D_RPRT, "[=] The sample is checking for its permissions")
+    ql.dprint(D_RPRT, "[=] The target is checking for its permissions")
     if return_size > max_size:
-        ql.os.last_error  = ERROR_INSUFFICIENT_BUFFER
+        ql.os.last_error = ERROR_INSUFFICIENT_BUFFER
         return 0
     if dst != 0:
         ql.mem.write(dst, information_value)
@@ -400,3 +449,77 @@ def hook_GetSidSubAuthority(ql, address, params):
     sid = ql.os.handle_manager.get(params["pSid"]).obj
     addr_authority = sid.addr + 8 + (ql.pointersize * num)
     return addr_authority
+
+
+# BOOL AllocateAndInitializeSid(
+#   PSID_IDENTIFIER_AUTHORITY pIdentifierAuthority,
+#   BYTE                      nSubAuthorityCount,
+#   DWORD                     nSubAuthority0,
+#   DWORD                     nSubAuthority1,
+#   DWORD                     nSubAuthority2,
+#   DWORD                     nSubAuthority3,
+#   DWORD                     nSubAuthority4,
+#   DWORD                     nSubAuthority5,
+#   DWORD                     nSubAuthority6,
+#   DWORD                     nSubAuthority7,
+#   PSID                      *pSid
+# );
+@winapi(cc=STDCALL, params={
+    "pIdentifierAuthority": POINTER,
+    "nSubAuthorityCount": BYTE,
+    "nSubAuthority0": DWORD,
+    "nSubAuthority1": DWORD,
+    "nSubAuthority2": DWORD,
+    "nSubAuthority3": DWORD,
+    "nSubAuthority4": DWORD,
+    "nSubAuthority5": DWORD,
+    "nSubAuthority6": DWORD,
+    "nSubAuthority7": DWORD,
+    "pSid": POINTER
+
+})
+def hook_AllocateAndInitializeSid(ql, address, params):
+    count = params["nSubAuthorityCount"]
+    subs = b""
+    for i in range(count):
+        sub = params["nSubAuthority" + str(i)]
+        subs += sub.to_bytes(4, "little")
+    sid = Sid(ql, revision=1, identifier=5, subs=subs, subs_count=count)
+    sid_addr = ql.os.heap.alloc(sid.size)
+    sid.write(sid_addr)
+    handle = Handle(obj=sid, id=sid_addr)
+    ql.os.handle_manager.append(handle)
+    dest = params["pSid"]
+    ql.mem.write(dest, ql.pack(sid_addr))
+    return 1
+
+
+# PVOID FreeSid(
+#   PSID pSid
+# );
+@winapi(cc=STDCALL, params={
+    "pSid": HANDLE
+
+})
+def hook_FreeSid(ql, address, params):
+    ql.os.heap.free(params["pSid"])
+    return 0
+
+
+# BOOL EqualSid(
+#   PSID pSid1,
+#   PSID pSid2
+# );
+@winapi(cc=STDCALL, params={
+    "pSid1": HANDLE,
+    "pSid2": HANDLE,
+
+})
+def hook_EqualSid(ql, address, params):
+    # TODO once i have understood better how SID are wrote in memory. Fucking documentation
+    # technically this one should be my SID that i created at the start. I said should, because when testing, it has a
+    # different address. Why? No idea
+    # sid1 = ql.os.handle_manager.get(params["pSid1"]).obj
+    sid2 = ql.os.handle_manager.get(params["pSid2"]).obj
+    # return sid1 == sid2
+    return 0

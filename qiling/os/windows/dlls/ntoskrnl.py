@@ -11,16 +11,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
-
-
-# typedef struct _OSVERSIONINFOW {
-#   ULONG dwOSVersionInfoSize;
-#   ULONG dwMajorVersion;
-#   ULONG dwMinorVersion;
-#   ULONG dwBuildNumber;
-#   ULONG dwPlatformId;
-#   WCHAR szCSDVersion[128];
-# }
+from qiling.os.windows.structs import *
 
 
 # NTSYSAPI NTSTATUS RtlGetVersion(
@@ -31,18 +22,12 @@ from qiling.exception import *
 })
 def hook_RtlGetVersion(ql, address, params):
     pointer = params["lpVersionInformation"]
-    size = int.from_bytes(ql.mem.read(pointer, 4), byteorder="little")
-    os_version_info_asked = {"dwOSVersionInfoSize": size,
-                             VER_MAJORVERSION: int.from_bytes(ql.mem.read(pointer + 4, 4), byteorder="little"),
-                             VER_MINORVERSION: int.from_bytes(ql.mem.read(pointer + 8, 4), byteorder="little"),
-                             VER_BUILDNUMBER: int.from_bytes(ql.mem.read(pointer + 12, 4), byteorder="little"),
-                             VER_PLATFORMID: int.from_bytes(ql.mem.read(pointer + 16, 4), byteorder="little"),
-                             "szCSDVersion": int.from_bytes(ql.mem.read(pointer + 20, 128), byteorder="little"),
-                             }
-    ql.mem.write(pointer + 4, ql.os.profile.getint("SYSTEM", "majorVersion").to_bytes(4, byteorder="little"))
-    ql.mem.write(pointer + 8, ql.os.profile.getint("SYSTEM", "minorVersion").to_bytes(4, byteorder="little"))
-
-    ql.dprint(D_RPRT, "[=] The sample is checking the windows Version!")
+    os = OsVersionInfoW(ql)
+    os.read(pointer)
+    os.major[0] = ql.os.profile.getint("SYSTEM", "majorVersion")
+    os.minor[0] = ql.os.profile.getint("SYSTEM", "minorVersion")
+    os.write(pointer)
+    ql.dprint(D_RPRT, "[=] The target is checking the windows Version!")
     return STATUS_SUCCESS
 
 
@@ -69,7 +54,7 @@ def hook_ZwSetInformationThread(ql, address, params):
         if size >= 100:
             return STATUS_INFO_LENGTH_MISMATCH
         if information == ThreadHideFromDebugger:
-            ql.dprint(D_RPRT, "[=] Sample is checking debugger via SetInformationThread")
+            ql.dprint(D_RPRT, "[=] The target is checking debugger via SetInformationThread")
             if dst != 0:
                 ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
         else:

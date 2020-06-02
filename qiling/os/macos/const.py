@@ -489,50 +489,52 @@ HOST_PREFERRED_USER_ARCH            = 12
 
 
 # commpage 
-COMM_PAGE_START_ADDRESS             = 0x7FFFFFE00000
-COMM_PAGE_SIGNATURE                 = COMM_PAGE_START_ADDRESS + 0x000   # first 16 bytes are a signature
-COMM_PAGE_CPU_CAPABILITIES64        = COMM_PAGE_START_ADDRESS + 0x010   # uint64_t _cpu_capabilities
-COMM_PAGE_UNUSED                    = COMM_PAGE_START_ADDRESS + 0x018   # 6 unused bytes
-COMM_PAGE_VERSION                   = COMM_PAGE_START_ADDRESS + 0x01E   # 16-bit version
-COMM_PAGE_THIS_VERSION              = 13                                # in ver 13, _COMM_PAGE_NT_SHIFT defaults to 0 (was 32) 
+X8664_COMM_PAGE_START_ADDRESS       = 0x7FFFFFE00000
+ARM64_COMM_PAGE_START_ADDRESS       = 0x0000000FFFFFC000
 
-COMM_PAGE_CPU_CAPABILITIES          = COMM_PAGE_START_ADDRESS + 0x020   # uint32_t _cpu_capabilities (retained for compatibility) */
-COMM_PAGE_NCPUS                     = COMM_PAGE_START_ADDRESS + 0x022   # uint8_t number of configured CPUs (hw.logicalcpu at boot time) */
-COMM_PAGE_UNUSED0                   = COMM_PAGE_START_ADDRESS + 0x024   # 2 unused bytes, previouly reserved for expansion of cpu_capabilities */
-COMM_PAGE_CACHE_LINESIZE            = COMM_PAGE_START_ADDRESS + 0x026   # uint16_t cache line size */
+COMM_PAGE_SIGNATURE                 = 0x000   # first 16 bytes are a signature
+COMM_PAGE_CPU_CAPABILITIES64        = 0x010   # uint64_t _cpu_capabilities
+COMM_PAGE_UNUSED                    = 0x018   # 6 unused bytes
+COMM_PAGE_VERSION                   = 0x01E   # 16-bit version
+COMM_PAGE_THIS_VERSION              = 13      # in ver 13, _COMM_PAGE_NT_SHIFT defaults to 0 (was 32) 
 
-COMM_PAGE_SCHED_GEN                 = COMM_PAGE_START_ADDRESS + 0x028	# uint32_t scheduler generation number (count of pre-emptions) */
-COMM_PAGE_MEMORY_PRESSURE           = COMM_PAGE_START_ADDRESS + 0x02c   # uint32_t copy of vm_memory_pressure */
-COMM_PAGE_SPIN_COUNT                = COMM_PAGE_START_ADDRESS + 0x030	# uint32_t max spin count for mutex's */
+COMM_PAGE_CPU_CAPABILITIES          = 0x020   # uint32_t _cpu_capabilities (retained for compatibility) */
+COMM_PAGE_NCPUS                     = 0x022   # uint8_t number of configured CPUs (hw.logicalcpu at boot time) */
+COMM_PAGE_UNUSED0                   = 0x024   # 2 unused bytes, previouly reserved for expansion of cpu_capabilities */
+COMM_PAGE_CACHE_LINESIZE            = 0x026   # uint16_t cache line size */
 
-COMM_PAGE_ACTIVE_CPUS               = COMM_PAGE_START_ADDRESS + 0x034   # uint8_t number of active CPUs (hw.activecpu) */
-COMM_PAGE_PHYSICAL_CPUS             = COMM_PAGE_START_ADDRESS + 0x035   # uint8_t number of physical CPUs (hw.physicalcpu_max) */
-COMM_PAGE_LOGICAL_CPUS              = COMM_PAGE_START_ADDRESS + 0x036   # uint8_t number of logical CPUs (hw.logicalcpu_max) */
-COMM_PAGE_UNUSED1                   = COMM_PAGE_START_ADDRESS + 0x037   # 1 unused bytes */
-COMM_PAGE_MEMORY_SIZE               = COMM_PAGE_START_ADDRESS + 0x038   # uint64_t max memory size */
+COMM_PAGE_SCHED_GEN                 = 0x028	  # uint32_t scheduler generation number (count of pre-emptions) */
+COMM_PAGE_MEMORY_PRESSURE           = 0x02c   # uint32_t copy of vm_memory_pressure */
+COMM_PAGE_SPIN_COUNT                = 0x030	  # uint32_t max spin count for mutex's */
 
-COMM_PAGE_CPUFAMILY                 = COMM_PAGE_START_ADDRESS + 0x040   # uint32_t hw.cpufamily, x86*/
-COMM_PAGE_KDEBUG_ENABLE             = COMM_PAGE_START_ADDRESS + 0x044   # uint32_t export "kdebug_enable" to userspace */
-COMM_PAGE_ATM_DIAGNOSTIC_CONFIG     = COMM_PAGE_START_ADDRESS + 0x48    # uint32_t export "atm_diagnostic_config" to userspace */
+COMM_PAGE_ACTIVE_CPUS               = 0x034   # uint8_t number of active CPUs (hw.activecpu) */
+COMM_PAGE_PHYSICAL_CPUS             = 0x035   # uint8_t number of physical CPUs (hw.physicalcpu_max) */
+COMM_PAGE_LOGICAL_CPUS              = 0x036   # uint8_t number of logical CPUs (hw.logicalcpu_max) */
+COMM_PAGE_UNUSED1                   = 0x037   # 1 unused bytes */
+COMM_PAGE_MEMORY_SIZE               = 0x038   # uint64_t max memory size */
 
-COMM_PAGE_UNUSED2                   = COMM_PAGE_START_ADDRESS + 0x04C   # [0x4C,0x50) unused */
+COMM_PAGE_CPUFAMILY                 = 0x040   # uint32_t hw.cpufamily, x86*/
+COMM_PAGE_KDEBUG_ENABLE             = 0x044   # uint32_t export "kdebug_enable" to userspace */
+COMM_PAGE_ATM_DIAGNOSTIC_CONFIG     = 0x48    # uint32_t export "atm_diagnostic_config" to userspace */
 
-COMM_PAGE_TIME_DATA_START           = COMM_PAGE_START_ADDRESS + 0x050   # base of offsets below (_NT_SCALE etc) */
-COMM_PAGE_NT_TSC_BASE               = COMM_PAGE_START_ADDRESS + 0x050   # used by nanotime() */
-COMM_PAGE_NT_SCALE                  = COMM_PAGE_START_ADDRESS + 0x058   # used by nanotime() */
-COMM_PAGE_NT_SHIFT                  = COMM_PAGE_START_ADDRESS + 0x05c   # used by nanotime() */
-COMM_PAGE_NT_NS_BASE                = COMM_PAGE_START_ADDRESS + 0x060   # used by nanotime() */
-COMM_PAGE_NT_GENERATION             = COMM_PAGE_START_ADDRESS + 0x068   # used by nanotime() */
-COMM_PAGE_GTOD_GENERATION           = COMM_PAGE_START_ADDRESS + 0x06c   # used by gettimeofday() */
-COMM_PAGE_GTOD_NS_BASE              = COMM_PAGE_START_ADDRESS + 0x070   # used by gettimeofday() */
-COMM_PAGE_GTOD_SEC_BASE             = COMM_PAGE_START_ADDRESS + 0x078   # used by gettimeofday() */
+COMM_PAGE_UNUSED2                   = 0x04C   # [0x4C,0x50) unused */
+
+COMM_PAGE_TIME_DATA_START           = 0x050   # base of offsets below (_NT_SCALE etc) */
+COMM_PAGE_NT_TSC_BASE               = 0x050   # used by nanotime() */
+COMM_PAGE_NT_SCALE                  = 0x058   # used by nanotime() */
+COMM_PAGE_NT_SHIFT                  = 0x05c   # used by nanotime() */
+COMM_PAGE_NT_NS_BASE                = 0x060   # used by nanotime() */
+COMM_PAGE_NT_GENERATION             = 0x068   # used by nanotime() */
+COMM_PAGE_GTOD_GENERATION           = 0x06c   # used by gettimeofday() */
+COMM_PAGE_GTOD_NS_BASE              = 0x070   # used by gettimeofday() */
+COMM_PAGE_GTOD_SEC_BASE             = 0x078   # used by gettimeofday() */
 
 # APPROX_TIME must be aligned to 64-byte cache line size
-COMM_PAGE_APPROX_TIME               = COMM_PAGE_START_ADDRESS + 0x080   # used by mach_approximate_time() */
-COMM_PAGE_APPROX_TIME_SUPPORTED     = COMM_PAGE_START_ADDRESS + 0x088   # used by mach_approximate_time() */
+COMM_PAGE_APPROX_TIME               = 0x080   # used by mach_approximate_time() */
+COMM_PAGE_APPROX_TIME_SUPPORTED     = 0x088   # used by mach_approximate_time() */
 
 # following entries to next cache line
-COMM_PAGE_CONT_TIMEBASE             = COMM_PAGE_START_ADDRESS + 0x0C0   # used by mach_continuous_time() */
-COMM_PAGE_BOOTTIME_USEC             = COMM_PAGE_START_ADDRESS + 0x0C8   # uint64_t boottime */
+COMM_PAGE_CONT_TIMEBASE             = 0x0C0   # used by mach_continuous_time() */
+COMM_PAGE_BOOTTIME_USEC             = 0x0C8   # uint64_t boottime */
 
-COMM_PAGE_END                       = COMM_PAGE_START_ADDRESS + 0xfff
+COMM_PAGE_END                       = 0xfff

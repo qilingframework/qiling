@@ -26,7 +26,7 @@ from qiling.exception import *
 })
 def hook_HeapCreate(ql, address, params):
     dwInitialSize = params["dwInitialSize"]
-    addr = ql.os.heap.mem_alloc(dwInitialSize)
+    addr = ql.os.heap.alloc(dwInitialSize)
     return addr
 
 
@@ -41,7 +41,7 @@ def hook_HeapCreate(ql, address, params):
     "dwBytes": SIZE_T
 })
 def hook_HeapAlloc(ql, address, params):
-    ret = ql.os.heap.mem_alloc(params["dwBytes"])
+    ret = ql.os.heap.alloc(params["dwBytes"])
     return ret
 
 
@@ -57,7 +57,7 @@ def hook_HeapAlloc(ql, address, params):
 })
 def hook_HeapSize(ql, address, params):
     pointer = params["lpMem"]
-    return ql.os.heap.mem_size(pointer)
+    return ql.os.heap.size(pointer)
 
 
 # BOOL HeapFree(
@@ -71,7 +71,7 @@ def hook_HeapSize(ql, address, params):
     "lpMem": POINTER
 })
 def hook_HeapFree(ql, address, params):
-    return ql.os.heap.mem_free(params['lpMem'])
+    return ql.os.heap.free(params['lpMem'])
 
 
 # BOOL HeapSetInformation(
