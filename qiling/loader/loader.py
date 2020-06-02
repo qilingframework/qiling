@@ -8,9 +8,8 @@ from qiling.exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 from collections import namedtuple
 
 class QlLoader():
-    QlImage = namedtuple('Image', 'base end path')
-
     def __init__(self, ql):
         self.ql     = ql
         self.env    = self.ql.env
         self.images = []
+        self.coverage_image = namedtuple('Image', 'base end path')

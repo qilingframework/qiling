@@ -97,6 +97,7 @@ class Process():
         self.add_ldr_data_table_entry(dll_name)
 
         self.ql.nprint("[+] Done with loading %s" % path)
+        
         return dll_base
 
     def set_cmdline(self, name, address, memory):
@@ -337,7 +338,8 @@ class QlLoaderPE(QlLoader, Process):
             self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
             self.ql.nprint("[+] Loading %s to 0x%x" % (self.path, self.pe_image_address))
             self.ql.nprint("[+] PE entry point at 0x%x" % self.entry_point)
-
+            self.images.append(self.coverage_image(self.pe_image_address, self.pe_image_address + self.pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, self.path))
+            
             # Stack should not init at the very bottom. Will cause errors with Dlls
             sp = self.stack_address + self.stack_size - 0x1000
 
