@@ -6,6 +6,8 @@
 # gdbserver --remote-debug 0.0.0.0:9999 /path/to binary
 # documentation: according to https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html#Remote-Protocol
 
+from unicorn import *
+
 import struct, os, re, socket
 from binascii import unhexlify
 
@@ -48,7 +50,7 @@ class GDBSERVERsession(object):
             self.entry_point = self.ql.os.elf_entry
         else:
             self.entry_point = self.ql.os.entry_point
-
+            
         self.gdb.bp_insert(self.entry_point)
 
 
@@ -68,7 +70,7 @@ class GDBSERVERsession(object):
             # must always be escaped. Responses sent by the stub must also escape 0x2a (ASCII ‘*’), 
             # so that it is not interpreted as the start of a run-length encoded sequence (described next).
 
-            if a in (42,35,36,125):
+            if a in (42,35,36, 125):
                 a = a ^ 0x20
                 a = (str(hex(a)[2:]))
                 a = incomplete_hex_check(a)
@@ -125,7 +127,7 @@ class GDBSERVERsession(object):
 
             def handle_c(subcmd):
                 self.gdb.resume_emu(self.ql.reg.arch_pc)
-                
+
                 if self.gdb.bp_list is ([self.entry_point]):
                     self.send("W00")
                 else:
@@ -138,13 +140,13 @@ class GDBSERVERsession(object):
             def handle_g(subcmd):
                 s = ''
                 if self.ql.archtype== QL_ARCH.X86:
-                    for reg in self.ql.reg.table[:16]:
+                    for reg in self.ql.reg.table[:24]:
                         r = self.ql.reg.read(reg)
                         tmp = self.ql.arch.addr_to_str(r)
                         s += tmp
 
                 elif self.ql.archtype== QL_ARCH.X8664:
-                    for reg in self.ql.reg.table[:24]:
+                    for reg in self.ql.reg.table[:32]:
                         r = self.ql.reg.read(reg)
                         if self.ql.reg.bit(reg) == 64:
                             tmp = self.ql.arch.addr_to_str(r)
@@ -153,8 +155,14 @@ class GDBSERVERsession(object):
                         s += tmp
                 
                 elif self.ql.archtype== QL_ARCH.ARM:
+                    if self.ql.archtype == QL_ARCH.ARM:
+                        mode = self.ql.arch.check_thumb()
+                    
                     for reg in self.ql.reg.table[:17]:
                         r = self.ql.reg.read(reg)
+                        if mode == UC_MODE_THUMB and reg == "pc":
+                            r += 1
+
                         tmp = self.ql.arch.addr_to_str(r)
                         s += tmp
 
@@ -389,7 +397,8 @@ class GDBSERVERsession(object):
                         file_contents = f.read()
                         self.send("l%s" % file_contents)
                     else:
-                        self.ql.nprint("gdb> Xml file not found: %s\n" % (xfercmd_file))
+                        self.ql.nprint("gdb> Platform is not supported by xml or xml file not found: %s\n" % (xfercmd_file))
+                        self.send("l")
 
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
@@ -631,7 +640,6 @@ class GDBSERVERsession(object):
 
                 elif subcmd.startswith('Kill'):
                     self.send('OK')
-                    exit(1)
 
                 elif subcmd.startswith('Cont'):
                     self.ql.dprint(D_INFO, "gdb> Cont command received: %s" % subcmd)
@@ -684,7 +692,7 @@ class GDBSERVERsession(object):
                     type = data[0]
                     addr = int(data[1], 16)
                     length = data[2]
-                    self.gdb.bp_remove(type, addr, length)
+                    self.gdb.bp_remove(addr, type, length)
                     self.send('OK')
                 except:
                     self.send('E22')

@@ -22,42 +22,46 @@ from qiling.os.macos.utils import env_dict_to_array, ql_real_to_vm_abspath, page
 from qiling.os.macos.thread import QlMachoThreadManagement, QlMachoThread
 
 # commpage is a shared mem space which is in a static address
-# start at 0x7FFFFFE00000
 def load_commpage(ql):
-    ql.mem.write(COMM_PAGE_SIGNATURE, b'\x00')
-    ql.mem.write(COMM_PAGE_CPU_CAPABILITIES64, b'\x00\x00\x00\x00')
-    ql.mem.write(COMM_PAGE_UNUSED, b'\x00')
-    ql.mem.write(COMM_PAGE_VERSION, b'\x0d')
+    if ql.archtype == QL_ARCH.X8664:
+        COMM_PAGE_START_ADDRESS = X8664_COMM_PAGE_START_ADDRESS
+    else:    
+        COMM_PAGE_START_ADDRESS = ARM64_COMM_PAGE_START_ADDRESS
+
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_SIGNATURE, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_CPU_CAPABILITIES64, b'\x00\x00\x00\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_UNUSED, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_VERSION, b'\x0d')
     ql.mem.write(COMM_PAGE_THIS_VERSION, b'\x00')
-    ql.mem.write(COMM_PAGE_CPU_CAPABILITIES, b'\x00\x00\x00\x00')
-    ql.mem.write(COMM_PAGE_NCPUS, b'\x00')
-    ql.mem.write(COMM_PAGE_UNUSED0, b'\x00')
-    ql.mem.write(COMM_PAGE_CACHE_LINESIZE, b'\x00')
-    ql.mem.write(COMM_PAGE_SCHED_GEN, b'\x00')
-    ql.mem.write(COMM_PAGE_MEMORY_PRESSURE, b'\x00')
-    ql.mem.write(COMM_PAGE_SPIN_COUNT, b'\x00')
-    ql.mem.write(COMM_PAGE_ACTIVE_CPUS, b'\x00')
-    ql.mem.write(COMM_PAGE_PHYSICAL_CPUS, b'\x00')
-    ql.mem.write(COMM_PAGE_LOGICAL_CPUS, b'\x00')
-    ql.mem.write(COMM_PAGE_UNUSED1, b'\x00')
-    ql.mem.write(COMM_PAGE_MEMORY_SIZE, b'\x00')
-    ql.mem.write(COMM_PAGE_CPUFAMILY, b'\xec\x5e\x3b\x57')
-    ql.mem.write(COMM_PAGE_KDEBUG_ENABLE, b'\x00')
-    ql.mem.write(COMM_PAGE_ATM_DIAGNOSTIC_CONFIG, b'\x00')
-    ql.mem.write(COMM_PAGE_UNUSED2, b'\x00')
-    ql.mem.write(COMM_PAGE_TIME_DATA_START, b'\x00')
-    ql.mem.write(COMM_PAGE_NT_TSC_BASE, b'\x00')
-    ql.mem.write(COMM_PAGE_NT_SCALE, b'\x00')
-    ql.mem.write(COMM_PAGE_NT_SHIFT, b'\x00')
-    ql.mem.write(COMM_PAGE_NT_NS_BASE, b'\x00')
-    ql.mem.write(COMM_PAGE_NT_GENERATION, b'\x01')       # someflag seem important 
-    ql.mem.write(COMM_PAGE_GTOD_GENERATION, b'\x00')
-    ql.mem.write(COMM_PAGE_GTOD_NS_BASE, b'\x00')
-    ql.mem.write(COMM_PAGE_GTOD_SEC_BASE, b'\x00')
-    ql.mem.write(COMM_PAGE_APPROX_TIME, b'\x00')
-    ql.mem.write(COMM_PAGE_APPROX_TIME_SUPPORTED, b'\x00')
-    ql.mem.write(COMM_PAGE_CONT_TIMEBASE, b'\x00')
-    ql.mem.write(COMM_PAGE_BOOTTIME_USEC, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_CPU_CAPABILITIES, b'\x00\x00\x00\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_NCPUS, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_UNUSED0, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_CACHE_LINESIZE, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_SCHED_GEN, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_MEMORY_PRESSURE, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_SPIN_COUNT, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_ACTIVE_CPUS, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_PHYSICAL_CPUS, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_LOGICAL_CPUS, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_UNUSED1, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_MEMORY_SIZE, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_CPUFAMILY, b'\xec\x5e\x3b\x57')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_KDEBUG_ENABLE, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_ATM_DIAGNOSTIC_CONFIG, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_UNUSED2, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_TIME_DATA_START, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_NT_TSC_BASE, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_NT_SCALE, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_NT_SHIFT, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_NT_NS_BASE, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_NT_GENERATION, b'\x01')       # someflag seem important 
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_GTOD_GENERATION, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_GTOD_NS_BASE, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_GTOD_SEC_BASE, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_APPROX_TIME, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_APPROX_TIME_SUPPORTED, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_CONT_TIMEBASE, b'\x00')
+    ql.mem.write(COMM_PAGE_START_ADDRESS + COMM_PAGE_BOOTTIME_USEC, b'\x00')
 
 
 class QlLoaderMACHO(QlLoader):
@@ -110,8 +114,8 @@ class QlLoaderMACHO(QlLoader):
         self.stack_sp = stack_address + stack_size
         self.macho_file     = MachoParser(self.ql, self.ql.path)
         self.loading_file   = self.macho_file
-        self.slide          = int(self.profile.get("LOADER", "slide"),16)
-        self.dyld_slide     = int(self.profile.get("LOADER", "dyld_slide"),16)
+        self.slide          = int(self.profile.get("LOADER", "slide"), 16)
+        self.dyld_slide     = int(self.profile.get("LOADER", "dyld_slide"), 16)
         self.string_align   = 8
         self.ptr_align      = 8
         self.binary_entry   = 0x0
@@ -127,7 +131,7 @@ class QlLoaderMACHO(QlLoader):
         self.ql.os.macho_task.min_offset = page_align_end(self.vm_end_addr, PAGE_SIZE)
 
     def loadMacho(self, depth=0, isdyld=False):
-        mmap_address   = int(self.profile.get("OS64", "mmap_address"),16)
+        mmap_address   = int(self.profile.get("OS64", "mmap_address"), 16)
 
         # MAX load depth 
         if depth > 5:

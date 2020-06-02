@@ -21,6 +21,7 @@ class QlOsMacos(QlOsPosix):
     def __init__(self, ql):
         super(QlOsMacos, self).__init__(ql)
         self.ql = ql
+        self.ql.counter = 0
         self.load()
 
     def load(self):
@@ -30,6 +31,7 @@ class QlOsMacos(QlOsPosix):
         if self.ql.archtype== QL_ARCH.ARM64:
             self.ql.arch.enable_vfp()
             self.ql.hook_intno(self.hook_syscall, 2)
+            self.ql.hook_intno(self.hook_sigtrap, 7)
 
         elif self.ql.archtype== QL_ARCH.X8664:
             self.ql.hook_insn(self.hook_syscall, UC_X86_INS_SYSCALL)
@@ -39,6 +41,11 @@ class QlOsMacos(QlOsPosix):
 
     def hook_syscall(self, intno= None, int = None):
         return self.load_syscall()
+
+    def hook_sigtrap(self, intno= None, int = None):
+        self.ql.nprint("[!] Trap Found")
+        self.emu_error()
+        exit(1)
 
     def run(self):
         if self.ql.exit_point is not None:
@@ -53,17 +60,9 @@ class QlOsMacos(QlOsPosix):
             else:
                 self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:
-            if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
-                self.ql.nprint("[+] PC = 0x%x" %(self.ql.reg.arch_pc))
-                self.ql.mem.show_mapinfo()
-                try:
-                    buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
-                    self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                    self.ql.nprint("\n")
-                    self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
-                except:
-                    pass
+            self.emu_error()
             raise
+
 
         if self.ql.internal_exception != None:
             raise self.ql.internal_exception

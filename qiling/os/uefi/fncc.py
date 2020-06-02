@@ -5,8 +5,6 @@
 
 import struct
 from qiling.const import *
-from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import read_cstring, read_wstring, read_guid, print_function
 
 def dxeapi(param_num=None, params=None):
     def decorator(func):
@@ -14,9 +12,21 @@ def dxeapi(param_num=None, params=None):
             ql = args[0]
             arg = (ql, ql.reg.arch_pc, {})
             f = func
+
             if func.__name__ in ql.loader.user_defined_api:
                 f = ql.loader.user_defined_api[func.__name__]
-            return x8664_fastcall(ql, param_num, params, f, arg, kwargs)
+            
+            if func.__name__ in ql.loader.user_defined_api_onenter:
+                ql.os.winapi_func_onenter = ql.loader.user_defined_api_onenter[func.__name__]
+            else:    
+                ql.os.winapi_func_onenter = None
+
+            if func.__name__ in ql.loader.user_defined_api_onexit:
+                ql.os.winapi_func_onexit = ql.loader.user_defined_api_onexit[func.__name__]
+            else:    
+                ql.os.winapi_func_onexit = None                
+
+            return ql.os.x8664_fastcall(param_num, params, f, arg, kwargs)
 
         return wrapper
 

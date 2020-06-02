@@ -12,13 +12,13 @@ from .const import QL_ENDINABLE, QL_ENDIAN, QL_POSIX, QL_OS_ALL, QL_OUTPUT, QL_O
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import arch_convert, ostype_convert, output_convert
 from .utils import ql_is_valid_arch, ql_get_arch_bits
-from .utils import ql_setup_logging_env
+from .utils import ql_setup_logging_env, ql_setup_logging_stream
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 from .core_utils import QLCoreUtils
 from .debugger import ql_debugger_init
 
-__version__ = "1.0"
+__version__ = "1.1" + "-dev"
 
 class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):    
     def __init__(
@@ -88,7 +88,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.root = False
         # generic filter to filter print (WIP)
         self.filter = None
-        self.remotedebugsession = None
+        self.remote_debug = None
 
         """
         Qiling Framework Core Engine
@@ -133,9 +133,10 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if self.log_dir != "" and type(self.log_dir) == str:
             _logger = ql_setup_logging_env(self)    
             self.log_file_fd = _logger
-        else:
-            self.log_dir = None     
-        
+        elif self.console == True:
+            _logger = ql_setup_logging_stream(self)
+            self.log_file_fd = _logger
+
         # qiling output method conversion
         if self.output and type(self.output) == str:
             # setter / getter for output
@@ -176,6 +177,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # Run the loader
         self.loader.run()
 
+
     # Emulate the binary from begin until @end, with timeout in @timeout and
     # number of emulated instructions in @count
     def run(self, begin=None, end=None, timeout=0, count=0):
@@ -193,11 +195,12 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.__enable_bin_patch()
 
         # emulate the binary
-        self.os.run()     
+        self.os.run()
 
         # resume with debugger
         if self.debugger is not None:
-            self.remotedebugsession.run()
+            self.remote_debug.run()
+
 
     # patch @code to memory address @addr
     def patch(self, addr, code, file_name=b''):
@@ -206,29 +209,35 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         else:
             self.patch_lib.append((addr, code, file_name.decode()))
     
+
     # ql.output var getter
     @property
     def output(self):
         return self._output
+
 
     # ql.output - output var setter eg. QL_OUTPUT.DEFAULT and etc
     @output.setter
     def output(self, output):
         self._output = output_convert(output)
     
+
     # ql.platform - platform var = host os getter eg. LINUX and etc
     @property
     def platform(self):
         return self._platform
+
 
     # ql.platform - platform var = host os setter eg. LINUX and etc
     @platform.setter
     def platform(self, value):
         self._platform = ostype_convert(value.lower())
 
+
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:
             self.mem.write(self.loader.load_address + addr, code)
+
 
     def enable_lib_patch(self):
         for addr, code, filename in self.patch_lib:
@@ -237,9 +246,11 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             except:
                 raise RuntimeError("Fail to patch filename %s at addr 0x%x" % (filename, addr))
 
+
     # stop emulation
     def emu_stop(self):
         self.uc.emu_stop()
+
 
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):

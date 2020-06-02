@@ -54,7 +54,7 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 ---
 
 #### Installation
-Please see [setup guide](https://docs.qiling.io/en/latest/getting_started/) file for how to install Qiling Framework.
+Please see [setup guide](https://docs.qiling.io/en/latest/howto/) file for how to install Qiling Framework.
 
 ---
 
@@ -166,6 +166,11 @@ $ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --gdb 127.0.0.1:99
 
 See  https://docs.qiling.io/  for more details
 
+With code coverage collection (UEFI only for now):
+
+```
+$ ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --coverage-format drcov --coverage-file TcgPlatformSetupPolicy.cov
+```
 ---
 
 #### Remote Debugger
@@ -180,9 +185,7 @@ See  https://docs.qiling.io/  for more details
 
 Get the latest info from our website https://www.qiling.io
 
-Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.com/qiling_io)
-
-任何疑问请联系[麒麟框架官方微博](https://www.weibo.com/sgniwx)
+Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.com/qiling_io) or [Weibo](https://www.weibo.com/sgniwx)
 
 ---
 

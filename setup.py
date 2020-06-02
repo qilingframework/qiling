@@ -5,10 +5,15 @@
 
 from setuptools import setup, find_packages
 
-VERSION = '1.0'
+from qiling import __version__ as ql_version
+
+VERSION = ql_version
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
+
+with open("README.md", "r") as ld:
+    long_description = ld.read()
 
 setup(
     name='qiling',
@@ -16,7 +21,8 @@ setup(
 
     description='Qiling is an advanced binary emulation framework that cross-platform-architecture',
     url='http://qiling.io',
-
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     maintainer='KaiJern Lau (xwings)',
     maintainer_email='info@qiling.io',
 
@@ -28,7 +34,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 3 - Alpha',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',

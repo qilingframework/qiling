@@ -248,8 +248,8 @@ def ql_syscall_read(ql, read_fd, read_buf, read_len, *args, **kw):
     ql.nprint("read(%d, 0x%x, 0x%x) = %d" % (read_fd, read_buf, read_len, regreturn))
 
     if data:
-        ql.dprint(D_INFO, "[+] read() CONTENT:")
-        ql.dprint(D_INFO, "%s" % data)
+        ql.dprint(D_CTNT, "[+] read() CONTENT:")
+        ql.dprint(D_CTNT, "%s" % data)
     ql.os.definesyscall_return(regreturn)
 
 
@@ -261,8 +261,8 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
         buf = ql.mem.read(write_buf, write_count)
         ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         if buf:
-            ql.dprint(D_INFO, "[+] write() CONTENT:")
-            ql.dprint(D_INFO, "%s" % buf)
+            ql.dprint(D_CTNT, "[+] write() CONTENT:")
+            ql.dprint(D_CTNT, "%s" % buf)
         ql.os.file_des[write_fd].write(buf)
         regreturn = write_count
     except:
@@ -443,6 +443,21 @@ def ql_syscall_execve(ql, execve_pathname, execve_argv, execve_envp, *args, **kw
     ql.os.load()
     ql.loader.run()
     ql.run()
+
+
+def ql_syscall_dup(ql, dup_oldfd, *args, **kw):
+    regreturn = -1
+    if dup_oldfd in range(0, 256):
+        if ql.os.file_des[dup_oldfd] != 0:
+            newfd = ql.os.file_des[dup_oldfd].dup()
+            for idx, val in enumerate(ql.os.file_des):
+                if val == 0:
+                    ql.os.file_des[idx] = newfd
+                    regreturn = idx
+                    break
+
+    ql.nprint("dup(%d) = %d" % (dup_old, regreturn))
+    ql.os.definesyscall_return(regreturn)
 
 
 def ql_syscall_dup2(ql, dup2_oldfd, dup2_newfd, *args, **kw):

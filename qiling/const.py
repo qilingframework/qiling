@@ -9,6 +9,7 @@ class QL_ENDIAN(IntEnum):
     EL = 1
     EB = 2
 
+
 class QL_ARCH(IntEnum):
     X86 = 1
     X8664 = 2
@@ -16,6 +17,7 @@ class QL_ARCH(IntEnum):
     ARM_THUMB = 4
     ARM64 = 5
     MIPS = 6
+
 
 class QL_OS(IntEnum):
     LINUX = 1
@@ -25,6 +27,7 @@ class QL_OS(IntEnum):
     POSIX = 5
     UEFI = 6
 
+
 class QL_OUTPUT(IntEnum):
     OFF = 1
     DEFAULT = 2
@@ -32,13 +35,15 @@ class QL_OUTPUT(IntEnum):
     DEBUG = 4
     DUMP = 5
 
+
 class QL_DEBUGGER(IntEnum):
     GDB = 1
     IDAPRO = 2
 
+
 D_INFO = 1 # General debug information
 D_PROT = 2 # Protocol level debug, print out open file flag
-D_CONT = 3 # Print out content. File content or content of a tcp stream
+D_CTNT = 3 # Print out content. File content or content of a tcp stream
 D_RPRT = 4 # Reporting output, main summarizing purposes
 
 QL_DEBUGGER_ALL = [QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB]
@@ -47,8 +52,8 @@ QL_ENDINABLE = [QL_ARCH.MIPS, QL_ARCH.ARM]
 QL_OS_ALL = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.WINDOWS, QL_OS.POSIX, QL_OS.UEFI]
 QL_POSIX = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS]
 
-FUNC_HOOK_BLOCK = 0b1
-FUNC_CALL_BLOCK = 0b10
+QL_HOOK_BLOCK = 0b1
+QL_CALL_BLOCK = 0b10
 
 debugger_map = {
         "gdb": QL_DEBUGGER.GDB,

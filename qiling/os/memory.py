@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import os
+import os, re
 
 from qiling.const import *
 from qiling.exception import *
@@ -128,9 +128,9 @@ class QlMemoryManager:
             return "".join(perms_sym)
 
         self.ql.nprint("[+] Start      End        Perm.  Path")
-        for s, e, p, info in self.map_info:
-            _p = _perms_mapping(p)
-            self.ql.nprint("[+] %08x - %08x - %s    %s" % (s, e, _p, info))
+        for  start, end, perm, info in self.map_info:
+            _perm = _perms_mapping(perm)
+            self.ql.nprint("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
 
 
     def get_lib_base(self, filename):
@@ -140,11 +140,35 @@ class QlMemoryManager:
         return -1
 
 
-    def _align(self, addr, alignment=0x1000):
+    def align(self, addr, alignment=0x1000):
         # rounds up to nearest alignment
         mask = ((1 << self.ql.archbit) - 1) & -alignment
         return (addr + (alignment - 1)) & mask
 
+    # save all mapped mem
+    def save(self):
+        mem_dict = {}
+        seq = 1
+        for start, end, perm, info in self.map_info:
+            mem_read = self.read(start, end-start)          
+            mem_dict[seq] = start, end, perm, info, mem_read
+            seq += 1
+        return mem_dict
+
+    # restore all dumped memory
+    def restore(self, mem_dict):
+        for key, value in mem_dict.items():
+            start = value[0]
+            end = value[1]
+            perm = value[2]
+            info = value[3]
+            mem_read = bytes(value[4])
+            
+            if self.is_mapped(start, start-end) == False:
+                self.map(start, end-start, perms=perm, info=info)
+
+            self.write(start, mem_read)
+ 
 
     def read(self, addr: int, size: int) -> bytearray:
         return self.ql.uc.mem_read(addr, size)
@@ -152,6 +176,25 @@ class QlMemoryManager:
 
     def write(self, addr: int, data: bytes) -> None:
         return self.ql.uc.mem_write(addr, data)
+
+
+    def search(self, needle: bytes, begin= None, end= None):
+        """
+        Search for a sequence of bytes in memory. Returns all sequences
+        that match
+        """
+        addrs = []
+        for region in list(self.ql.uc.mem_regions()):
+            if (begin and end) and end > begin:
+                haystack = self.read(begin, end)
+            else:  
+                haystack = self.read(region[0], region[1] - region[0])
+            
+            addrs += [
+                x.start(0) + region[0]
+                for x in re.finditer(needle, haystack)
+            ]
+        return addrs
 
 
     def unmap(self, addr, size) -> None:
@@ -238,7 +281,7 @@ class QlMemoryManager:
             mapped += [[address_start, (address_end - address_start)]]
         
         for i in range(0, len(mapped)):
-            addr = self._align(
+            addr = self.align(
                 mapped[i][0] + mapped[i][1], alignment=alignment
             )
             # Enable allocating memory in the middle of a gap when the
@@ -301,12 +344,12 @@ class QlMemoryManager:
         we need a better mem_map as defined in the issue
         """
         #self.map(address, util.align(size), name, kind)
-        self.map(address, self._align(size))
+        self.map(address, self.align(size))
         return address
 
     def protect(self, addr, size, perms):
         aligned_address = addr & 0xFFFFF000  # Address needs to align with
-        aligned_size = self._align((addr & 0xFFF) + size)
+        aligned_size = self.align((addr & 0xFFF) + size)
         self.ql.uc.mem_protect(aligned_address, aligned_size, perms)
 
 
@@ -363,15 +406,12 @@ class QlMemoryHeap:
         # curent use memory size
         self.current_use = 0
 
-    def _align(self, size, unit):
-        return (size // unit + (1 if size % unit else 0)) * unit     
-
     def alloc(self, size):
         
         if self.ql.archbit == 32:
-            size = self._align(size, 4)
+            size = self.ql.mem.align(size, 4)
         elif self.ql.archbit == 64:
-            size = self._align(size, 8)
+            size = self.ql.mem.align(size, 8)
 
         # Find the heap chunks that best matches size 
         self.chunks.sort(key=Chunk.compare)
@@ -383,7 +423,7 @@ class QlMemoryHeap:
         chunk = None
         # If we need mem_map new memory
         if self.current_use + size > self.current_alloc:
-            real_size = self._align(size, self.page_size)
+            real_size = self.ql.mem.align(size, self.page_size)
             # If the heap is not enough
             if self.start_address + self.current_use + real_size > self.end_address:
                 return 0

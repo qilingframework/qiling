@@ -80,7 +80,7 @@ def hook_WideCharToMultiByte(ql, address, params):
     s_lpWideCharStr = params["lpWideCharStr"]
     lpMultiByteStr = params["lpMultiByteStr"]
     s = (s_lpWideCharStr + "\x00").encode("utf-16le")
-    if cbMultiByte != 0:
+    if cbMultiByte != 0 and lpMultiByteStr != 0:
         ql.mem.write(lpMultiByteStr, s)
     ret = len(s)
 

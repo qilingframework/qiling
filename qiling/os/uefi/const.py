@@ -1,4 +1,11 @@
 
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
+pointer_size = 8
+
 EFI_MAX_BIT = 0x8000000000000000
 EFI_SUCCESS = 0
 EFI_LOAD_ERROR = EFI_MAX_BIT | 1

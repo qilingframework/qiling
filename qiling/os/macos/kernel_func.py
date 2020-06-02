@@ -20,10 +20,10 @@ def vm_shared_region_enter(ql):
 
 def map_commpage(ql):
     if ql.archtype== QL_ARCH.X8664:
-        addr_base = COMM_PAGE_START_ADDRESS
+        addr_base = X8664_COMM_PAGE_START_ADDRESS
         addr_size = 0x100000
     elif ql.archtype== QL_ARCH.ARM64:
-        addr_base = 0x0000000FFFFFC000
+        addr_base = ARM64_COMM_PAGE_START_ADDRESS
         addr_size = 0x1000        
     ql.mem.map(addr_base, addr_size, info="[commpage]")
     time_lock_slide = 0x68

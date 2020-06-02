@@ -24,6 +24,8 @@ class QlOsWindows(QlOs):
         self.last_error = 0
         # variables used inside hooks
         self.user_defined_api = {}
+        self.user_defined_api_onenter = {}
+        self.user_defined_api_onexit = {}
         self.hooks_variables = {}
         self.syscall_count = {}
         self.argv = self.ql.argv
@@ -90,15 +92,29 @@ class QlOsWindows(QlOs):
                     winapi_func = globals()['hook_' + winapi_name]
                 except KeyError:
                     winapi_func = None
+            
+            if winapi_name in self.user_defined_api_onenter:
+                if isinstance(self.user_defined_api_onenter[winapi_name], types.FunctionType):
+                    self.winapi_func_onenter = self.user_defined_api_onenter[winapi_name]
+            else:
+                self.winapi_func_onenter = None
+
+            if winapi_name in self.user_defined_api_onexit:
+                if isinstance(self.user_defined_api_onexit[winapi_name], types.FunctionType):
+                    self.winapi_func_onexit = self.user_defined_api_onexit[winapi_name]
+            else:
+                self.winapi_func_onexit = None
 
             if winapi_func:
                 try:
                     winapi_func(self.ql, address, {})
+                        
                 except Exception:
                     self.ql.nprint("[!] %s Exception Found" % winapi_name)
+                    self.emu_error()
                     raise QlErrorSyscallError("[!] Windows API Implementation Error")
             else:
-                self.ql.nprint("[!] %s is not implemented\n" % winapi_name)
+                self.ql.nprint("[!] %s is not implemented" % winapi_name)
                 if self.ql.debug_stop:
                     raise QlErrorSyscallNotFound("[!] Windows API Implementation Not Found")
 
@@ -124,13 +140,7 @@ class QlOsWindows(QlOs):
             else:
                 self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:
-            if self.ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
-                self.ql.nprint("[+] PC = 0x%x" % (self.ql.reg.arch_pc))
-                self.ql.mem.show_mapinfo()
-                buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
-                self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-                self.ql.nprint("\n")
-                self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
+            self.emu_error()
             raise
 
         self.registry_manager.save()

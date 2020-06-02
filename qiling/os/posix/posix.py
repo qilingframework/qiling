@@ -33,11 +33,13 @@ class QlOsPosix(QlOs):
             self.uid = self.profile.getint("KERNEL","uid")
             self.gid = self.profile.getint("KERNEL","gid")
         
-        self.pid = self.profile.getint("KERNEL","pid")
-
         self.file_des = []
         self.dict_posix_syscall = dict()
+        self.dict_posix_onEnter_syscall = dict()
+        self.dict_posix_onExit_syscall = dict()
         self.dict_posix_syscall_by_num = dict()
+        self.dict_posix_onEnter_syscall_by_num = dict()
+        self.dict_posix_onExit_syscall_by_num = dict()
 
         self.syscall_map = None
         self.syscall_name = None
@@ -57,8 +59,12 @@ class QlOsPosix(QlOs):
         return self.get_syscall()
 
     def load_syscall(self, intno=None):
+        # import syscall mapping function
         map_syscall = self.ql.os_setup(function_name="map_syscall")
+        self.syscall_onEnter = self.dict_posix_onEnter_syscall_by_num.get(self.syscall)
         self.syscall_map = self.dict_posix_syscall_by_num.get(self.syscall)
+        self.syscall_onExit = self.dict_posix_onExit_syscall_by_num.get(self.syscall)
+
         if self.syscall_map is not None:
             self.syscall_name = self.syscall_map.__name__
         else:
@@ -92,8 +98,18 @@ class QlOsPosix(QlOs):
                 })
 
                 self.syscalls_counter += 1
+                
+                if self.syscall_onEnter == None:
+                    ret = 0
+                else:
+                    ret = self.syscall_onEnter(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
 
-                self.syscall_map(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
+                if isinstance(ret, int) == False or ret & QL_CALL_BLOCK == 0:
+                    self.syscall_map(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
+                
+                if self.syscall_onExit != None:
+                    self.syscall_onExit(self.ql, self.get_func_arg()[0], self.get_func_arg()[1], self.get_func_arg()[2], self.get_func_arg()[3], self.get_func_arg()[4], self.get_func_arg()[5])
+
             except KeyboardInterrupt:
                 raise
             except Exception as e:
@@ -128,7 +144,6 @@ class QlOsPosix(QlOs):
         self.syscalls[self.syscall_name][-1]["result"] = regreturn
         if self.ql.archtype == QL_ARCH.ARM:  # ARM
             self.ql.reg.r0 = regreturn
-            # ql.nprint("-[+] Write %i to UC_ARM_REG_R0" % regreturn)
 
         elif self.ql.archtype == QL_ARCH.ARM64:  # ARM64
             self.ql.reg.x0 = regreturn
@@ -145,8 +160,7 @@ class QlOsPosix(QlOs):
                 regreturn = - regreturn
             else:
                 a3return = 0
-            # if ql.output == QL_OUTPUT.DEBUG:
-            #    print("[+] A3 is %d" % a3return)
+
             self.ql.reg.v0 = regreturn
             self.ql.reg.a3 = a3return
 

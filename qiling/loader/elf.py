@@ -345,11 +345,11 @@ class QlLoaderELF(QlLoader, ELFParse):
               
     def run(self):
         if self.ql.archbit == 32:
-            stack_address = int(self.ql.os.ql.os.profile.get("OS32", "stack_address"),16)
-            stack_size = int(self.ql.os.profile.get("OS32", "stack_size"),16)
+            stack_address = int(self.ql.os.profile.get("OS32", "stack_address"), 16)
+            stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)
         elif self.ql.archbit == 64:
-            stack_address = int(self.ql.os.profile.get("OS64", "stack_address"),16)
-            stack_size = int(self.ql.os.profile.get("OS64", "stack_size"),16)
+            stack_address = int(self.ql.os.profile.get("OS64", "stack_address"), 16)
+            stack_size = int(self.ql.os.profile.get("OS64", "stack_size"), 16)
 
         if self.ql.shellcoder:
             self.ql.mem.map(self.ql.os.entry_point, self.ql.os.shellcoder_ram_size, info="[shellcode_stack]")
@@ -371,7 +371,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.argv = self.ql.argv
         self.ql.mem.map(stack_address, stack_size, info="[stack]") 
         self.load_with_ld(stack_address + stack_size, argv = self.argv, env = self.env)
-        self.stack_address  = (int(self.new_stack))
+        self.stack_address  = int(self.new_stack)
         self.ql.reg.arch_sp = self.stack_address
 
         if self.ql.ostype == QL_OS.FREEBSD:
@@ -425,9 +425,9 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         if load_address <= 0:
             if self.ql.archbit == 64:
-                load_address = int(self.ql.os.profile.get("OS64", "load_address"),16)
+                load_address = int(self.ql.os.profile.get("OS64", "load_address"), 16)
             else:
-                load_address = int(self.ql.os.profile.get("OS32", "load_address"),16)
+                load_address = int(self.ql.os.profile.get("OS32", "load_address"), 16)
 
         elfhead = super().parse_header()
 
@@ -464,9 +464,10 @@ class QlLoaderELF(QlLoader, ELFParse):
 
                 self.ql.mem.write(load_address+i["p_vaddr"], super().getelfdata(i['p_offset'], i['p_filesz']))
 
-        if mem_end > _mem_e:
-            self.ql.mem.map(_mem_e, mem_end-_mem_e, info=self.path)
-            self.ql.dprint(D_INFO, "[+] load 0x%x - 0x%x" % (_mem_e, mem_end)) # make sure we map all PT_LOAD tagged area
+        loaded_mem_end = load_address + mem_end
+        if loaded_mem_end > _mem_e:
+            self.ql.mem.map(_mem_e, loaded_mem_end-_mem_e, info=self.path)
+            self.ql.dprint(D_INFO, "[+] load 0x%x - 0x%x" % (_mem_e, loaded_mem_end)) # make sure we map all PT_LOAD tagged area
 
         entry_point = elfhead['e_entry'] + load_address
 
@@ -493,9 +494,9 @@ class QlLoaderELF(QlLoader, ELFParse):
             self.ql.dprint(D_INFO, "[+] interp_mem_size is : 0x%x" % int(interp_mem_size))
 
             if self.ql.archbit == 64:
-                self.interp_address = int(self.ql.os.profile.get("OS64", "interp_address"),16)
+                self.interp_address = int(self.ql.os.profile.get("OS64", "interp_address"), 16)
             elif self.ql.archbit == 32:
-                self.interp_address = int(self.ql.os.profile.get("OS32", "interp_address"),16)
+                self.interp_address = int(self.ql.os.profile.get("OS32", "interp_address"), 16)
 
             self.ql.dprint(D_INFO, "[+] interp_address is : 0x%x" % (self.interp_address))
             self.ql.mem.map(self.interp_address, int(interp_mem_size), info=os.path.abspath(interp_path))
@@ -507,9 +508,9 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         # Set MMAP addr
         if self.ql.archbit == 64:
-            self.mmap_address = int(self.ql.os.profile.get("OS64", "mmap_address"),16)
+            self.mmap_address = int(self.ql.os.profile.get("OS64", "mmap_address"), 16)
         else:
-            self.mmap_address = int(self.ql.os.profile.get("OS32", "mmap_address"),16)
+            self.mmap_address = int(self.ql.os.profile.get("OS32", "mmap_address"), 16)
 
         self.ql.dprint(D_INFO, "[+] mmap_address is : 0x%x" % (self.mmap_address))
 
@@ -614,6 +615,5 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.ql.os.elf_entry = self.elf_entry = load_address + elfhead['e_entry']
         self.new_stack = new_stack
         self.load_address = load_address
-        self.ql.os.fh = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)
-
-        
+        self.images.append(self.coverage_image(load_address, load_address + mem_end, self.path))
+        self.ql.os.function_hook = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)

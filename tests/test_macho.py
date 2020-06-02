@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 
-import sys,unittest
+import sys, unittest
 sys.path.append("..")
 from qiling import *
 from qiling.exception import *
