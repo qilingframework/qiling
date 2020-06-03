@@ -154,15 +154,14 @@ class Process():
 
         self.ql.nprint("[+] PEB addr is 0x%x" % peb_addr)
 
-        peb_size = PEB(self.ql).size
-
         # we must set an heap, will try to retrieve this value. Is ok to be all \x00
         process_heap = self.ql.os.heap.alloc(0x100)
-        peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size, process_heap=process_heap,
-                       number_processors=self.ql.os.profile.getint("HARDWARE","number_processors"))
-
+        peb_data = PEB(self.ql, base=peb_addr, process_heap=process_heap,
+                       number_processors=self.ql.os.profile.getint("HARDWARE",
+                                                                   "number_processors"))
+        peb_data.LdrAddress = peb_addr + peb_data.size
         peb_data.write(peb_addr)
-        self.structure_last_addr += peb_size
+        self.structure_last_addr += peb_data.size
         self.PEB = self.ql.PEB = peb_data
 
     def init_ldr_data(self):
