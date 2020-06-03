@@ -53,7 +53,7 @@ def instruction_count(ql, address, size, user_data):
 
 def run_one_round(payload):
     stdin = MyPipe()
-    ql = Qiling(["rootfs/x86_linux/bin/crackme_linux"], "rootfs/x86_linux", output="off", stdin=stdin,
+    ql = Qiling(["rootfs/x86_linux/bin/crackme_linux"], "rootfs/x86_linux", console=False, stdin=stdin,
                 stdout=sys.stdout, stderr=sys.stderr)
     ins_count = [0]
     ql.hook_code(instruction_count, ins_count)

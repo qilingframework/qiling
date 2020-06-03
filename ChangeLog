@@ -1,6 +1,6 @@
 This file details the changelog of Qiling Framework.
 
--------------------------------
+------------------------------------
 [Version 1.1-alpha1]: May 26th, 2020
 
 - More refactor and bug fix
@@ -30,3 +30,16 @@ This file details the changelog of Qiling Framework.
 - Support more Linux syscalls
 - Support more Windows APIs
 - Support MacOS dyld
+
+
+---------------------------------------
+[Version 1.0 beta]: November 14th, 2019
+
+- First public released
+
+
+--------------------------------------------
+[Version 1.0 close alpha]: October 9th, 2019
+
+- Closed alpha test
+

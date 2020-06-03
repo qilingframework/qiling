@@ -64,8 +64,11 @@ class QLCoreUtils(object):
                     for each_filter in [each for each in each_console_handler.filters]:
                         if '_FalseFilter' in each_filter.__class__.__name__:
                             each_console_handler.removeFilter(each_filter)
-
-            msg = "".join(args)
+            
+            try:
+                msg = "".join(args)
+            except:
+                msg = "".join(str(args))    
 
             if kw.get("end", None) != None:
                 msg += kw["end"]
@@ -216,7 +219,7 @@ class QLCoreUtils(object):
                     QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
                     QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_BIG_ENDIAN),
                     QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN),
                 }
             else:
                 adapter = {
@@ -225,13 +228,14 @@ class QLCoreUtils(object):
                     QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
                     QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM),
                     QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN),
                 }
 
             return adapter.get(arch, (None,None))
 
 
         def compile_instructions(runcode, archtype, archmode):
+
             ks = Ks(archtype, archmode)
             shellcode = ''
             try:

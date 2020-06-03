@@ -67,7 +67,7 @@ class QlLoaderPE_UEFI(QlLoader):
         pe = pefile.PE(path, fast_load=True)
         
         IMAGE_BASE = pe.OPTIONAL_HEADER.ImageBase
-        IMAGE_SIZE = self.heap._align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
+        IMAGE_SIZE = self.ql.mem.align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
 
         while IMAGE_BASE + IMAGE_SIZE < self.heap_base_address:
             if not self.ql.mem.is_mapped(IMAGE_BASE, 1):
@@ -83,6 +83,7 @@ class QlLoaderPE_UEFI(QlLoader):
                 self.ql.nprint("[+] PE entry point at 0x%x" % entry_point)
                 self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE, entry_point)
                 self.modules.append((path, IMAGE_BASE, entry_point, pe))
+                self.images.append(self.coverage_image(IMAGE_BASE, IMAGE_BASE + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, path))
                 return True
             else:
                 IMAGE_BASE += 0x10000
