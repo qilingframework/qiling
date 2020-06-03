@@ -61,6 +61,7 @@ if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-crt-heap-l1-1-0.dll xcopy /f /y 
 if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-core-synch-l1-2-0.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-core-synch-l1-2-0.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-core-fibers-l1-1-1.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-core-fibers-l1-1-1.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-core-localization-l1-2-1.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-core-localization-l1-2-1.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
+if exist %WINDIR%\SysWOW64\downlevel\api-ms-win-core-sysinfo-l1-2-1.dll xcopy /f /y %WINDIR%\SysWOW64\downlevel\api-ms-win-core-sysinfo-l1-2-1.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\SysWOW64\shlwapi.dll xcopy /f /y %WINDIR%\SysWOW64\shlwapi.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\SysWOW64\setupapi.dll xcopy /f /y %WINDIR%\SysWOW64\setupapi.dll "examples\rootfs\x86_windows\Windows\SysWOW64\"
 if exist %WINDIR%\System32\advapi32.dll xcopy /f /y %WINDIR%\System32\advapi32.dll "examples\rootfs\x8664_windows\Windows\System32\"
