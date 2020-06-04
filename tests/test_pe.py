@@ -174,7 +174,7 @@ class PETest(unittest.TestCase):
             print("We are finally done")
             ql.emu_stop()
 
-        ql.hook_address(end, 0x004014a1)
+        ql.hook_address(end, 0x004016ae)
 
         ql.run()
         del ql

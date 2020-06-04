@@ -9,7 +9,7 @@ class Handle:
     ID = 0xa0000000
 
     def __init__(self, id=None, obj=None,
-                 name=None):
+                 name=None, permissions=None):
         if id is None:
             self.id = Handle.ID
             Handle.ID += 1
@@ -17,6 +17,7 @@ class Handle:
             self.id = id
         self.obj = obj
         self.name = name
+        self.permissions = permissions
  
     # rewrite "="
     def __eq__(self, other):

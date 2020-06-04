@@ -245,7 +245,7 @@ def hook_CreateMutexW(ql, address, params):
         handle = Handle(obj=mutex, name=name)
         ql.os.handle_manager.append(handle)
 
-    return handle.ID
+    return handle.id
 
 
 # HANDLE CreateMutexA(

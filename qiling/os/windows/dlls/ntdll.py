@@ -11,6 +11,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
+import qiling.os.windows.structs
 
 
 # void *memcpy(
@@ -44,6 +45,15 @@ def _QueryInformationProcess(ql, address, params):
         value = b"\x00" * 0x4
     elif flag == ProcessDebugObjectHandle:
         return STATUS_PORT_NOT_SET
+    elif flag == ProcessBasicInformation:
+        pbi = qiling.os.windows.structs.ProcessBasicInformation(ql, exitStatus=0,
+                                                                pebBaseAddress=ql.os.heap_base_address, affinityMask=0,
+                                                                basePriority=0,
+                                                                uniqueId=ql.os.profile.getint("KERNEL", "pid"),
+                                                                parentPid=ql.os.profile.getint("KERNEL", "parent_pid"))
+        addr = ql.os.heap.alloc(pbi.size)
+        pbi.write(addr)
+        value = addr.to_bytes(ql.pointersize, "little")
     else:
         ql.dprint(D_INFO, str(flag))
         raise QlErrorNotImplemented("[!] API not implemented")
@@ -93,6 +103,81 @@ def hook_NtQueryInformationProcess(ql, address, params):
     # TODO have no idea if is cdecl or stdcall
 
     _QueryInformationProcess(ql, address, params)
+
+
+# pub unsafe extern "system" fn ZwCreateDebugObject(
+#     DebugObjectHandle: PHANDLE,
+#     DesiredAccess: ACCESS_MASK,
+#     ObjectAttributes: POBJECT_ATTRIBUTES,
+#     Flags: ULONG
+# ) -> NTSTATUS
+@winapi(cc=STDCALL, params={
+    "DebugObjectHandle": HANDLE,
+    "DesiredAccess": INT,
+    "ObjectAttributes": POINTER,
+    "Flags": ULONGLONG
+})
+def hook_ZwCreateDebugObject(ql, address, params):
+    # FIXME: find documentation, almost none was found online, and create the correct object
+    handle = Handle(id=params["DebugObjectHandle"])
+    ql.os.handle_manager.append(handle)
+    return STATUS_SUCCESS
+
+
+# __kernel_entry NTSYSCALLAPI NTSTATUS NtQueryObject(
+#   HANDLE                   Handle,
+#   OBJECT_INFORMATION_CLASS ObjectInformationClass,
+#   PVOID                    ObjectInformation,
+#   ULONG                    ObjectInformationLength,
+#   PULONG                   ReturnLength
+# );
+@winapi(cc=STDCALL, params={
+    "Handle": HANDLE,
+    "ObjectInformationClass": INT,
+    "ObjectInformation": POINTER,
+    "ObjectInformationLength": UINT,
+    "ReturnLength": POINTER
+})
+def hook_ZwQueryObject(ql, address, params):
+    infoClass = params["ObjectInformationClass"]
+    dest = params["ObjectInformation"]
+    size_dest = params["ReturnLength"]
+    string = "DebugObject".encode("utf-16le")
+    string_addr = ql.os.heap.alloc(len(string))
+    ql.dprint(0, str(string_addr))
+    ql.dprint(0, str(string))
+    ql.mem.write(string_addr, string)
+    us = qiling.os.windows.structs.UnicodeString(ql, length=len(string), maxLength=len(string),
+                                                 buffer=string_addr)
+
+    if infoClass == ObjectTypeInformation:
+        res = qiling.os.windows.structs.ObjectTypeInformation(ql, us, 1, 1)
+    elif infoClass == ObjectAllTypesInformation:
+        # FIXME: there is an error in how these structs are read by al-khaser. Have no idea on where, so we are
+        #  bypassing it
+        # oti = qiling.os.windows.structs.ObjectTypeInformation(ql, us, 1, 1)
+        # res = qiling.os.windows.structs.ObjectAllTypesInformation(ql, 2, oti)
+        return 1
+    else:
+        raise QlErrorNotImplemented("[!] API not implemented")
+    if dest != 0 and params["Handle"] != 0:
+        res.write(dest)
+    if size_dest != 0:
+        ql.mem.write(size_dest, res.size.to_bytes(4, "little"))
+
+    return STATUS_SUCCESS
+
+
+# NTSYSAPI
+# NTSTATUS
+# NTAPI
+# NtYieldExecution(
+#  );
+@winapi(cc=STDCALL, params={
+})
+def hook_ZwYieldExecution(ql, address, params):
+    # FIXME: offer timeslice of this thread
+    return STATUS_NO_YIELD_PERFORMED
 
 
 # NTSTATUS LdrGetProcedureAddress(
@@ -155,3 +240,11 @@ def hook_wcsstr(ql, address, params):
         pos = value.index(src)
         return dest + post
     return 0
+
+
+# HANDLE CsrGetProcessId();
+@winapi(cc=STDCALL, params={
+})
+def hook_CsrGetProcessId(ql, address, params):
+    pid = ql.os.profile["PROCESSES"].getint("csrss.exe", fallback=12345)
+    return pid
