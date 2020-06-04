@@ -181,7 +181,8 @@ def hook_CreateThread(ql, address, params):
         thread_status = QlWindowsThread.READY
     else:
         thread_status = QlWindowsThread.RUNNING
-
+    
+    
     # create new thread
     thread_id = new_thread.create(
         lpStartAddress,
@@ -198,8 +199,9 @@ def hook_CreateThread(ql, address, params):
     ret = new_handle.id
 
     # set lpThreadId
+    # FIXME: Temporary fix for the crash
     if lpThreadId != 0:
-        ql.mem.write(lpThreadId, ql.pack(thread_id))
+        ql.mem.write(lpThreadId, ql.pack(thread_id))    
 
     # set thread handle
     return ret
@@ -309,4 +311,22 @@ def hook_OpenThreadToken(ql, address, params):
     new_handle = Handle(obj=token)
     ql.os.handle_manager.append(new_handle)
     ql.mem.write(token_pointer, ql.pack(new_handle.id))
+    return 1
+
+
+# BOOL GetThreadTimes(
+#   HANDLE     hThread,
+#   LPFILETIME lpCreationTime,
+#   LPFILETIME lpExitTime,
+#   LPFILETIME lpKernelTime,
+#   LPFILETIME lpUserTime
+# );
+@winapi(cc=STDCALL, params={
+    "hThread": HANDLE,
+    "lpCreationTime": POINTER,
+    "lpExitTime": POINTER,
+    "lpKernelTime": POINTER,
+    "lpUserTime": POINTER
+})
+def hook_GetThreadTimes(ql, address, params):
     return 1

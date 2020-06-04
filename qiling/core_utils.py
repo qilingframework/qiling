@@ -64,8 +64,11 @@ class QLCoreUtils(object):
                     for each_filter in [each for each in each_console_handler.filters]:
                         if '_FalseFilter' in each_filter.__class__.__name__:
                             each_console_handler.removeFilter(each_filter)
-
-            msg = "".join(args)
+            
+            try:
+                msg = "".join(args)
+            except:
+                msg = "".join(str(args))    
 
             if kw.get("end", None) != None:
                 msg += kw["end"]
@@ -92,26 +95,32 @@ class QLCoreUtils(object):
         if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             self.nprint(*args, **kw)
 
+
     def add_fs_mapper(self, host_src, ql_dest):
         self.fs_mapper.append([host_src, ql_dest])
+
 
     # push to stack bottom, and update stack register
     def stack_push(self, data):
         self.arch.stack_push(data)
 
+
     # pop from stack bottom, and update stack register
     def stack_pop(self):
         return self.arch.stack_pop()
+
 
     # read from stack, at a given offset from stack bottom
     # NOTE: unlike stack_pop(), this does not change stack register
     def stack_read(self, offset):
         return self.arch.stack_read(offset)
 
+
     # write to stack, at a given offset from stack bottom
     # NOTE: unlike stack_push(), this does not change stack register
     def stack_write(self, offset, data):
         self.arch.stack_write(offset, data)
+
 
     def arch_setup(self):
         if not ql_is_valid_arch(self.archtype):
@@ -122,6 +131,7 @@ class QLCoreUtils(object):
 
         module_name = ql_build_module_import_name("arch", None, self.archtype)
         return ql_get_module_function(module_name, archmanager)(self)
+
 
     def os_setup(self, function_name = None):
         if not ql_is_valid_ostype(self.ostype):
@@ -148,6 +158,7 @@ class QLCoreUtils(object):
             module_name = ql_build_module_import_name("os", self.ostype, self.archtype)
             return ql_get_module_function(module_name, function_name)
 
+
     def loader_setup(self, function_name = None):
         if not self.shellcoder:
             self.archtype, self.ostype, self.archendian = ql_checkostype(self.path)
@@ -164,6 +175,7 @@ class QLCoreUtils(object):
             module_name = ql_build_module_import_name("loader", loadertype_str.lower())
             return ql_get_module_function(module_name, function_name)(self)
 
+
     def component_setup(self, component_type, function_name):
         if not ql_is_valid_ostype(self.ostype):
             raise QlErrorOsType("[!] Invalid OSType")
@@ -174,6 +186,7 @@ class QLCoreUtils(object):
         module_name = "qiling." + component_type + "." + function_name
         function_name = "Ql" + function_name.capitalize() + "Manager"
         return ql_get_module_function(module_name, function_name)(self)
+
 
     def profile_setup(self):
         if self.profile:
@@ -190,11 +203,13 @@ class QLCoreUtils(object):
         config.read(profiles)
         return config
 
+
     def compile(self, archtype, runcode, arm_thumb=None):
         try:
             loadarch = KS_ARCH_X86
         except:
             raise QlErrorOutput("Please install Keystone Engine")
+
 
         def ks_convert(arch):
             if self.archendian == QL_ENDIAN.EB:
@@ -204,7 +219,7 @@ class QLCoreUtils(object):
                     QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
                     QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_BIG_ENDIAN),
                     QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN),
                 }
             else:
                 adapter = {
@@ -213,15 +228,14 @@ class QLCoreUtils(object):
                     QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
                     QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM),
                     QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN),
                 }
 
-            if arch in adapter:
-                return adapter[arch]
-            # invalid
-            return None, None
+            return adapter.get(arch, (None,None))
+
 
         def compile_instructions(runcode, archtype, archmode):
+
             ks = Ks(archtype, archmode)
             shellcode = ''
             try:

@@ -419,3 +419,22 @@ def hook_GetFileSize(ql, address, params):
     except FileNotFoundError:
         ql.os.last_error = ERROR_INVALID_HANDLE
         return 0xFFFFFFFF  # INVALID_FILE_SIZE
+
+
+# BOOL AreFileApisANSI();
+@winapi(cc=STDCALL, params={})
+def hook_AreFileApisANSI(ql, address, params):
+    # TODO make this coherent with SetFileApisToANSI/OEM calls
+    return 1
+
+
+# void SetFileApisToANSI();
+@winapi(cc=STDCALL, params={})
+def hook_SetFileApisToANSI(ql, address, params):
+    return
+
+
+# void SetFileApisToOEM();
+@winapi(cc=STDCALL, params={})
+def hook_SetFileApisToOEM(ql, address, params):
+    return

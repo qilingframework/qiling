@@ -8,6 +8,7 @@ import argparse, os, string, sys, ast
 from binascii import unhexlify
 from qiling import *
 from qiling import __version__ as ql_version
+from qiling.coverage import utils as cov_utils
 
 
 def parse_args(parser, commands):
@@ -167,7 +168,9 @@ if __name__ == '__main__':
                             help='Stop running while encounter any error (only use it with debug mode)')
     comm_parser.add_argument('-m','--multithread', action='store_true', default=False, dest='multithread', help='Run in multithread mode')
     comm_parser.add_argument('--timeout', required=False, help='Emulation timeout')
-
+    comm_parser.add_argument('-c', '--coverage-file', required=False, default=None, dest='coverage_file', help='Code coverage file name')
+    comm_parser.add_argument('--coverage-format', required=False, default='drcov', dest='coverage_format',
+                             choices=cov_utils.factory.formats, help='Code coverage file format')
     options = parser.parse_args()
 
     # var check
@@ -258,7 +261,8 @@ if __name__ == '__main__':
         timeout = int(options.timeout)
     
     # ql run
-    ql.run(timeout=timeout)
+    with cov_utils.collect_coverage(ql, options.coverage_format, options.coverage_file):
+        ql.run(timeout=timeout)
     exit(ql.os.exit_code)
 
 

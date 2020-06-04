@@ -95,8 +95,18 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_multithread(self):
+        def ThreadId_onEnter(ql, address, params):
+            self.thread_id = ql.os.thread_manager.cur_thread.id
+            return address, params
+
         ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
+        ql.set_api("GetCurrentThreadId", ThreadId_onEnter)
         ql.run()
+        
+        self.assertGreater(255, self.thread_id)
+        self.assertLessEqual(1, self.thread_id)
+        
+        del self.thread_id
         del ql
 
 
@@ -160,14 +170,11 @@ class PETest(unittest.TestCase):
         # I have no idea of why this code should work without this patch
         ql.patch(0x00401984, b'\xb8\x04\x00\x00\x00')
 
-        # This should call an interrupt. Other than we don't listen to interrupts, this interrupt is shit.
-        ql.patch(0x0040145c, b'\x90' * 5)
-
         def end(ql):
             print("We are finally done")
             ql.emu_stop()
 
-        ql.hook_address(end, 0x0040148d)
+        ql.hook_address(end, 0x004014a1)
 
         ql.run()
         del ql
@@ -182,12 +189,36 @@ class PETest(unittest.TestCase):
             ql.nprint("\n+++++++++\nMy Windows 64bit Windows API\n+++++++++\n")
             string = params["str"]
             ret = len(string)
+            self.set_api = "pass"
             return ret
+
+        def my_onenter(ql, address, params):
+            print("\n+++++++++\nmy OnEnter")
+            print("params: ", params)
+            print("+++++++++\n")
+            self.set_api_onenter = "pass"
+            return  address, params
+
+
+        def my_onexit(ql, address, params):
+            ql.nprint("\n+++++++++\nmy OnExit")
+            ql.nprint("+++++++++\n")
+            self.set_api_onexit = "pass"
 
         def my_sandbox(path, rootfs):
             ql = Qiling(path, rootfs, output="debug")
-            ql.set_syscall("puts", my_puts64)
+            ql.set_api("puts", my_onenter)
+            ql.set_api("puts", my_puts64)
+            ql.set_api("puts", my_onexit)
             ql.run()
+            
+            self.assertEqual("pass", self.set_api)
+            self.assertEqual("pass", self.set_api_onenter)
+            self.assertEqual("pass", self.set_api_onexit)
+            
+            del self.set_api
+            del self.set_api_onenter
+            del self.set_api_onexit
             del ql
 
         my_sandbox(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows")

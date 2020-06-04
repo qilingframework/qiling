@@ -345,7 +345,7 @@ class QlLoaderELF(QlLoader, ELFParse):
               
     def run(self):
         if self.ql.archbit == 32:
-            stack_address = int(self.ql.os.ql.os.profile.get("OS32", "stack_address"), 16)
+            stack_address = int(self.ql.os.profile.get("OS32", "stack_address"), 16)
             stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)
         elif self.ql.archbit == 64:
             stack_address = int(self.ql.os.profile.get("OS64", "stack_address"), 16)
@@ -371,7 +371,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.argv = self.ql.argv
         self.ql.mem.map(stack_address, stack_size, info="[stack]") 
         self.load_with_ld(stack_address + stack_size, argv = self.argv, env = self.env)
-        self.stack_address  = (int(self.new_stack))
+        self.stack_address  = int(self.new_stack)
         self.ql.reg.arch_sp = self.stack_address
 
         if self.ql.ostype == QL_OS.FREEBSD:
@@ -615,4 +615,5 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.ql.os.elf_entry = self.elf_entry = load_address + elfhead['e_entry']
         self.new_stack = new_stack
         self.load_address = load_address
+        self.images.append(self.coverage_image(load_address, load_address + mem_end, self.path))
         self.ql.os.function_hook = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)

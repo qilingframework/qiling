@@ -106,14 +106,8 @@ def hook_WaitForSingleObject(ql, address, params):
     hHandle = params["hHandle"]
     dwMilliseconds = params["dwMilliseconds"]
 
-    try:
-        target_thread: Thread = ql.os.handle_manager.get(hHandle).thread
-    except AttributeError:
-        ql.os.last_error = ERROR_INVALID_HANDLE
-        return 0xFFFFFFFF  # WAIT_FAILED
-
-    if not target_thread.fake:
-        ql.os.thread_manager.cur_thread.waitfor(target_thread)
+    target_thread = ql.os.handle_manager.get(hHandle).obj
+    ql.os.thread_manager.cur_thread.waitfor(target_thread)
 
     return ret
 
@@ -134,14 +128,8 @@ def hook_WaitForSingleObjectEx(ql, address, params):
     dwMilliseconds = params["dwMilliseconds"]
     alertable = params["bAlertable"]
 
-    try:
-        target_thread: Thread = ql.os.handle_manager.get(hHandle).thread
-    except AttributeError:
-        ql.os.last_error = ERROR_INVALID_HANDLE
-        return 0xFFFFFFFF  # WAIT_FAILED
-
-    if not target_thread.fake:
-        ql.os.thread_manager.cur_thread.waitfor(target_thread)
+    target_thread = ql.os.handle_manager.get(hHandle).obj
+    ql.os.thread_manager.cur_thread.waitfor(target_thread)
 
     return ret
 
@@ -321,3 +309,53 @@ def hook_CreateEventA(ql, address, params):
 })
 def hook_CreateEventW(ql, address, params):
     return hook_CreateEventA.__wrapped__(ql, address, params)
+
+
+# void InitializeSRWLock(
+#  PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_InitializeSRWLock(ql, address, params):
+    return
+
+
+# void AcquireSRWLockExclusive(
+#   PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_AcquireSRWLockExclusive(ql, address, params):
+    return
+
+
+# void AcquireSRWLockShared(
+#   PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_AcquireSRWLockShared(ql, address, params):
+    return
+
+
+# void ReleaseSRWLockExclusive(
+#   PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_ReleaseSRWLockExclusive(ql, address, params):
+    return
+
+
+# void ReleaseSRWLockShared(
+#   PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_ReleaseSRWLockShared(ql, address, params):
+    return

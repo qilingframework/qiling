@@ -252,7 +252,7 @@ def hook___stdio_common_vfwprintf(ql, address, _):
     _, _, _, p_format, _, p_args = ql.os.get_function_param(6)
     fmt = ql.os.read_wstring(p_format)
 
-    ql.os.printf(address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True, double_pointer=True)
+    ql.os.printf(address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True)
     return ret
 
 
@@ -262,7 +262,7 @@ def hook___stdio_common_vswprintf_s(ql, address, _):
     _, size, p_format, p_args = ql.os.get_function_param(4)
 
     fmt = ql.os.read_wstring(p_format)
-    ql.os.printf(address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True, double_pointer=True)
+    ql.os.printf(address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True)
 
     return ret
 

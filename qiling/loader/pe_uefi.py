@@ -67,7 +67,7 @@ class QlLoaderPE_UEFI(QlLoader):
         pe = pefile.PE(path, fast_load=True)
         
         IMAGE_BASE = pe.OPTIONAL_HEADER.ImageBase
-        IMAGE_SIZE = self.heap._align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
+        IMAGE_SIZE = self.ql.mem.align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
 
         while IMAGE_BASE + IMAGE_SIZE < self.heap_base_address:
             if not self.ql.mem.is_mapped(IMAGE_BASE, 1):
@@ -83,6 +83,7 @@ class QlLoaderPE_UEFI(QlLoader):
                 self.ql.nprint("[+] PE entry point at 0x%x" % entry_point)
                 self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE, entry_point)
                 self.modules.append((path, IMAGE_BASE, entry_point, pe))
+                self.images.append(self.coverage_image(IMAGE_BASE, IMAGE_BASE + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, path))
                 return True
             else:
                 IMAGE_BASE += 0x10000
@@ -121,12 +122,16 @@ class QlLoaderPE_UEFI(QlLoader):
         self.loaded_image_protocol_modules = []
         self.tpl = 4 # TPL_APPLICATION
         self.user_defined_api = self.ql.os.user_defined_api
+        self.user_defined_api_onenter = self.ql.os.user_defined_api_onenter
+        self.user_defined_api_onexit = self.ql.os.user_defined_api_onexit
+        
         if self.ql.archtype == QL_ARCH.X8664:
             self.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"), 16)
             self.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"), 16)       
         elif self.ql.archtype == QL_ARCH.X86:
             self.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"), 16)
             self.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"), 16)
+        
         self.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
         self.entry_point = 0
         self.load_address = 0  

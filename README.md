@@ -166,6 +166,11 @@ $ ./qltool run -f examples/rootfs/x8664_linux/bin/x8664_hello --gdb 127.0.0.1:99
 
 See  https://docs.qiling.io/  for more details
 
+With code coverage collection (UEFI only for now):
+
+```
+$ ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --coverage-format drcov --coverage-file TcgPlatformSetupPolicy.cov
+```
 ---
 
 #### Remote Debugger
