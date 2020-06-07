@@ -64,13 +64,16 @@ class QlArch:
     def get_name_pc(self):
         pass
 
+
     # get PC register
     def get_reg_table(self):
         pass
-    
+
+
     # get register name
     def get_reg_name_str(self):
         pass
+
 
     # set register name
     def set_reg_name_str(self, uc_reg):
@@ -86,3 +89,13 @@ class QlArch:
             addr = ('{:0>8}'.format(addr[2:]))
         addr = str(addr)    
         return addr
+
+
+    # Unicorn's CPU state save
+    def context_save(self):
+        return self.ql.uc.context_save()
+
+
+    # Unicorn's CPU state restore method
+    def context_restore(self, saved_context):
+        self.ql.uc.context_restore(saved_context)        

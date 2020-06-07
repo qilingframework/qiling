@@ -26,21 +26,54 @@ from .utils import *
 # ios syscall #
 ################
 
+def ql_syscall_fgetattrlist(ql, fd, alist, attributeBuffer, bufferSize, options, *args, **kw):
+    ql.nprint("fgetattrlist(0x%x, 0x%x, 0x%x, 0x%x, 0x%x)" % (
+        fd, alist, attributeBuffer, bufferSize, options
+    ))
 
-def ql_arm64_fgetattrlist(ql, fd, attrlist, attrbuff, attrsizebuff, options, *args, **kw):
-    ql.nprint("fgetattrlist(fd: %d, attrlist: 0x%x, attrbuff: 0x%x, attrsizebuff: 0x%x, options: 0x%x)" % (
-            fd, attrlist, attrbuff, attrsizebuff, options))
+    ql.dprint(D_INFO, "fgetattrlist(fd: 0x%x, alist: 0x%x, attributeBuffer: 0x%x, bufferSize: 0x%x, options: 0x%x)" % (
+        fd, alist, attributeBuffer, bufferSize, options
+    ))
 
-    ql.dprint(D_INFO, "[+] addr: 0x%x, path: %s" % (attrlist ,attrbuff))
-    KERN_SUCCESS = 1
-    ql.os.definesyscall_return(KERN_SUCCESS)
+    attrlist = {}
+    attrlist["bitmapcount"] = unpack("<H", ql.mem.read(alist, 2))[0]
+    attrlist["reserved"] = unpack("<H", ql.mem.read(alist + 2, 2))[0]
+    attrlist["commonattr"] = unpack("<L", ql.mem.read(alist + 4, 4))[0]
+    attrlist["volattr"] = unpack("<L", ql.mem.read(alist + 8, 4))[0]
+    attrlist["dirattr"] = unpack("<L", ql.mem.read(alist + 12, 4))[0]
+    attrlist["fileattr"] = unpack("<L", ql.mem.read(alist + 16, 4))[0]
+    attrlist["forkattr"] = unpack("<L", ql.mem.read(alist + 20, 4))[0]
+
+    ql.dprint(D_INFO, "[+] bitmapcount: 0x%x, reserved: 0x%x, commonattr: 0x%x, volattr: 0x%x, dirattr: 0x%x, fileattr: 0x%x, forkattr: 0x%x\n" % (
+        attrlist["bitmapcount"], attrlist["reserved"], attrlist["commonattr"], attrlist["volattr"], attrlist["dirattr"], attrlist["fileattr"], attrlist["forkattr"]
+    ))
+
+    # path_str = macho_read_string(ql, path, MAX_PATH_SIZE)
+
+    attr = b''
+    if attrlist["commonattr"] != 0:
+        commonattr = ql.os.macho_fs.get_common_attr(ql.path, attrlist["commonattr"])
+        if not commonattr:
+            ql.dprint(D_INFO, "Error File Not Exist: %s" % (path_str))
+            raise QlErrorSyscallError("Error File Not Exist")
+        attr += commonattr
+    
+    attr_len = len(attr) + 4
+    attr = struct.pack("<L", attr_len) + attr
+
+    if len(attr) > bufferSize:
+        ql.dprint(D_INFO, "Length error")
+        ql.os.definesyscall_return(1)
+    else:
+
+        ql.mem.write(attributeBuffer, attr)
+        #set_eflags_cf(ql, 0x0)
+        ql.os.definesyscall_return(KERN_SUCCESS)
 
 
 def ql_arm64_poll(ql, target, address, size, *args, **kw):
     ql.os.definesyscall_return(KERN_SUCCESS)
-    # FIXME:
-    ql.nprint("FIXME: syscall[poll] >> exit for now")
-    exit()
+    ql.nprint("pool()")
 
 
 ################
@@ -70,15 +103,15 @@ def ql_x86_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, f
         target, address, size, mask, flags, cur_protection
     ))
 
-    if ql.macho_vmmap_end & mask > 0:
-        ql.macho_vmmap_end = ql.macho_vmmap_end - (ql.macho_vmmap_end & mask)
-        ql.macho_vmmap_end += mask + 1
+    if ql.os.macho_vmmap_end & mask > 0:
+        ql.os.macho_vmmap_end = ql.os.macho_vmmap_end - (ql.os.macho_vmmap_end & mask)
+        ql.os.macho_vmmap_end += mask + 1
 
     
-    vmmap_address = page_align_end(ql.macho_vmmap_end, PAGE_SIZE)
+    vmmap_address = page_align_end(ql.os.macho_vmmap_end, PAGE_SIZE)
     vmmap_end = page_align_end(vmmap_address + size, PAGE_SIZE)
 
-    ql.macho_vmmap_end = vmmap_end
+    ql.os.macho_vmmap_end = vmmap_end
     ql.mem.map(vmmap_address, vmmap_end - vmmap_address)
     ql.mem.write(address, struct.pack("<Q", vmmap_address))
     ql.os.definesyscall_return(KERN_SUCCESS)

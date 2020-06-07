@@ -10,7 +10,7 @@ if __name__ == "__main__":
     ql = Qiling(
         ["rootfs/x8664_windows/bin/x8664_hello.exe"],
         "rootfs/x8664_windows",
-        libcache=True,
-        output="default"
+        output="default",
+        libcache = True
     )
     ql.run()

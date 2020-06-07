@@ -16,10 +16,10 @@ from qiling.exception import *
 from qiling.const import *
 from qiling.arch.x86_const import *
 from .loader import QlLoader
+from qiling.os.memory import QlMemoryHeap
 
-class Process(QlLoader):
+class Process():
     def __init__(self, ql):
-        super(QlLoader, self).__init__()
         self.ql = ql
 
     def load_dll(self, dll_name):
@@ -55,7 +55,7 @@ class Process(QlLoader):
         except KeyError as ke:
             pass
 
-        if self.ql.libcache and os.path.exists(fcache) and \
+        if self.libcache and os.path.exists(fcache) and \
             os.stat(fcache).st_mtime > os.stat(path).st_mtime: # pickle file cannot be outdated
             (data, cmdlines, self.import_symbols, self.import_address_table) = \
                 pickle.load(open(fcache, "rb"))
@@ -78,7 +78,7 @@ class Process(QlLoader):
                 if cmdline_entry:
                     cmdlines.append(cmdline_entry)
 
-            if self.ql.libcache:
+            if self.libcache:
                 # cache this dll file
                 pickle.dump((data, cmdlines,
                              self.import_symbols,
@@ -87,7 +87,7 @@ class Process(QlLoader):
                 self.ql.nprint("[+] Cached %s" % path)
 
         dll_base = self.dll_last_address
-        dll_len = self.ql.os.heap._align(len(bytes(data)), 0x1000)
+        dll_len = self.ql.mem.align(len(bytes(data)), 0x1000)
         self.dll_size += dll_len
         self.ql.mem.map(dll_base, dll_len, info=dll_name)
         self.ql.mem.write(dll_base, bytes(data))
@@ -97,6 +97,7 @@ class Process(QlLoader):
         self.add_ldr_data_table_entry(dll_name)
 
         self.ql.nprint("[+] Done with loading %s" % path)
+        
         return dll_base
 
     def set_cmdline(self, name, address, memory):
@@ -154,14 +155,14 @@ class Process(QlLoader):
 
         self.ql.nprint("[+] PEB addr is 0x%x" % peb_addr)
 
-        peb_size = len(PEB(self.ql).bytes())
-
         # we must set an heap, will try to retrieve this value. Is ok to be all \x00
         process_heap = self.ql.os.heap.alloc(0x100)
-        peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size, process_heap=process_heap)
-
-        self.ql.mem.write(peb_addr, peb_data.bytes())
-        self.structure_last_addr += peb_size
+        peb_data = PEB(self.ql, base=peb_addr, process_heap=process_heap,
+                       number_processors=self.ql.os.profile.getint("HARDWARE",
+                                                                   "number_processors"))
+        peb_data.LdrAddress = peb_addr + peb_data.size
+        peb_data.write(peb_addr)
+        self.structure_last_addr += peb_data.size
         self.PEB = self.ql.PEB = peb_data
 
     def init_ldr_data(self):
@@ -261,35 +262,37 @@ class Process(QlLoader):
             self.ql.nprint('Failed to load exports for %s:\n%s' % (self.ql.filename, traceback.format_exc()))
 
 
-class QlLoaderPE(Process, QlLoader):
+class QlLoaderPE(QlLoader, Process):
     def __init__(self, ql):
-        super()
+        super(QlLoaderPE, self).__init__(ql)
         self.ql = ql
+        self.libcache = self.ql.libcache
 
     def run(self):
         self.path = self.ql.path
-        self.profile = self.ql.profile
         self.init_dlls = [b"ntdll.dll", b"kernel32.dll", b"user32.dll"]
-        self.filepath = ''
         self.pe_entry_point = 0
         self.sizeOfStackReserve = 0
 
         if self.ql.archtype== QL_ARCH.X86:
-            self.stack_address = int(self.profile.get("OS32", "stack_address"),16)
-            self.stack_size = int(self.profile.get("OS32", "stack_size"),16)            
-            self.image_address = int(self.profile.get("OS32", "image_address"),16)
-            self.dll_address = int(self.profile.get("OS32", "dll_address"),16)
-            self.entry_point = int(self.profile.get("OS32", "entry_point"),16)
-            self.structure_last_addr = FS_SEGMENT_ADDR 
-             
+            self.stack_address = int(self.ql.os.profile.get("OS32", "stack_address"), 16)
+            self.stack_size = int(self.ql.os.profile.get("OS32", "stack_size"), 16)            
+            self.image_address = int(self.ql.os.profile.get("OS32", "image_address"), 16)
+            self.dll_address = int(self.ql.os.profile.get("OS32", "dll_address"), 16)
+            self.entry_point = int(self.ql.os.profile.get("OS32", "entry_point"), 16)
+            self.ql.os.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"), 16)
+            self.ql.os.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"), 16)            
+            self.structure_last_addr = FS_SEGMENT_ADDR     
         elif self.ql.archtype== QL_ARCH.X8664:
-            self.stack_address = int(self.profile.get("OS64", "stack_address"),16)
-            self.stack_size = int(self.profile.get("OS64", "stack_size"),16)
-            self.image_address = int(self.profile.get("OS64", "image_address"),16)
-            self.dll_address = int(self.profile.get("OS64", "dll_address"),16)
-            self.entry_point = int(self.profile.get("OS64", "entry_point"),16)
+            self.stack_address = int(self.ql.os.profile.get("OS64", "stack_address"), 16)
+            self.stack_size = int(self.ql.os.profile.get("OS64", "stack_size"), 16)
+            self.image_address = int(self.ql.os.profile.get("OS64", "image_address"), 16)
+            self.dll_address = int(self.ql.os.profile.get("OS64", "dll_address"), 16)
+            self.entry_point = int(self.ql.os.profile.get("OS64", "entry_point"), 16)
+            self.ql.os.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"), 16)
+            self.ql.os.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"), 16) 
             self.structure_last_addr = GS_SEGMENT_ADDR
-            
+              
         self.dlls = {}
         self.import_symbols = {}
         self.export_symbols = {}
@@ -301,8 +304,11 @@ class QlLoaderPE(Process, QlLoader):
         self.dll_last_address = self.dll_address      
         # compatible with ql.__enable_bin_patch()
         self.load_address = 0  
+        self.ql.os.heap = QlMemoryHeap(self.ql, self.ql.os.heap_base_address, self.ql.os.heap_base_address + self.ql.os.heap_base_size)
         self.ql.os.setupComponents()
+        self.ql.os.entry_point = self.entry_point
         self.cmdline = bytes(((str(self.ql.os.userprofile)) + "Desktop\\" + (self.ql.targetname) + "\x00"), "utf-8")
+        
         self.load()
 
     def init_thread_information_block(self): 
@@ -312,7 +318,6 @@ class QlLoaderPE(Process, QlLoader):
         super().init_exports()
 
     def load(self):
-
         # set stack pointer
         self.ql.nprint("[+] Initiate stack address at 0x%x " % self.stack_address)
         self.ql.mem.map(self.stack_address, self.stack_size, info="[stack]")
@@ -321,20 +326,20 @@ class QlLoaderPE(Process, QlLoader):
             
             self.pe = pefile.PE(self.path, fast_load=True)
             # for simplicity, no image base relocation
-            self.pe_image_address = self.pe_image_address = self.pe.OPTIONAL_HEADER.ImageBase
-            self.pe_image_address_size = self.pe_image_address_size = self.pe.OPTIONAL_HEADER.SizeOfImage
+            self.pe_image_address = self.pe.OPTIONAL_HEADER.ImageBase
+            self.pe_image_address_size = self.ql.mem.align(self.pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
 
             if self.pe_image_address + self.pe_image_address_size > self.ql.os.heap_base_address:
                 # pe reloc
-                self.pe_image_address = self.pe_image_address = self.image_address
+                self.pe_image_address = self.image_address
                 self.pe.relocate_image(self.image_address)
 
             self.entry_point = self.pe_entry_point = self.pe_image_address + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
             self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
             self.ql.nprint("[+] Loading %s to 0x%x" % (self.path, self.pe_image_address))
             self.ql.nprint("[+] PE entry point at 0x%x" % self.entry_point)
-
-
+            self.images.append(self.coverage_image(self.pe_image_address, self.pe_image_address + self.pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, self.path))
+            
             # Stack should not init at the very bottom. Will cause errors with Dlls
             sp = self.stack_address + self.stack_size - 0x1000
 
@@ -379,7 +384,8 @@ class QlLoaderPE(Process, QlLoader):
             mod_name = os.path.basename(self.path)
             self.dlls[mod_name] = self.pe_image_address
             super().add_ldr_data_table_entry(mod_name)
-
+            # is necessary to always load ntdll.dll
+            super().load_dll(b"ntdll.dll")
             # parse directory entry import
             if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress != 0:
                 for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
@@ -403,8 +409,8 @@ class QlLoaderPE(Process, QlLoader):
                             address = self.ql.pack64(addr)
                         self.ql.mem.write(imp.address, address)
 
-            self.ql.nprint("[+] Done with loading %s" % self.path)
-            self.filepath = b"D:\\" + bytes(self.path.replace("/", "\\"), "utf-8")
+            self.ql.dprint(D_INFO, "[+] Done with loading %s" % self.path)
+            self.filepath = self.cmdline
 
         elif self.ql.shellcoder:
             if self.ql.archtype== QL_ARCH.X86:
@@ -416,11 +422,17 @@ class QlLoaderPE(Process, QlLoader):
 
             # load shellcode in
             self.ql.mem.map(self.entry_point, self.ql.os.shellcoder_ram_size, info="[shellcode_base]")
-            self.ql.mem.write(self.entry_point, self.ql.shellcoder)
-            # rewrite entrypoint for windows shellcode
-            self.ql.os.entry_point = self.entry_point
-
+            
+            # for ASM file input, will mem.write in qltools
+            try:
+                self.ql.mem.write(self.entry_point, self.ql.shellcoder)
+            except:
+                pass
+            
             self.init_thread_information_block()
             # load dlls
             for each in self.init_dlls:
                 super().load_dll(each)
+        
+        # move entry_point to ql.os
+        self.ql.os.entry_point = self.entry_point

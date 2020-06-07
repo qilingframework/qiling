@@ -161,18 +161,18 @@ class QlLinuxThread(QlThread):
         self.store()
 
     def store_regs(self):
-        self.context = self.ql.context()
+        self.context = self.ql.arch.context_save()
         self.start_address = self.ql.arch.get_pc()
 
     def restore_regs(self):
-        self.ql.context(self.context)
+        self.ql.arch.context_restore(self.context)
 
     def set_start_address(self, addr):
-        old_context = self.ql.context()
+        old_context = self.ql.arch.context_save()
         self.restore_regs()
         self.ql.reg.arch_pc = addr
         self.store_regs()
-        self.ql.context(old_context)
+        self.ql.arch.context_restore(old_context)
 
     def set_context(self, con):
         self.context = con
@@ -282,7 +282,6 @@ class QlLinuxX86Thread(QlLinuxThread):
     def clone_thread_tls(self, tls_addr):
         old_tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
 
-        # FIXME : self.ql.os should be better
         self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
 
         u_info = self.ql.mem.read(tls_addr, 4 * 4)
@@ -291,7 +290,6 @@ class QlLinuxX86Thread(QlLinuxThread):
         limit = self.ql.unpack32(u_info[8 : 12])
 
         if index == -1:
-            # FIXME : self.ql.os should be better
             index = self.ql.os.gdtm.get_free_idx(12)
 
         if index == -1 or index < 12 or index > 14:
@@ -300,18 +298,15 @@ class QlLinuxX86Thread(QlLinuxThread):
             self.ql.os.gdtm.register_gdt_segment(index, base, limit, QL_X86_A_PRESENT | QL_X86_A_DATA | QL_X86_A_DATA_WRITABLE | QL_X86_A_PRIV_3 | QL_X86_A_DIR_CON_BIT, QL_X86_S_GDT | QL_X86_S_PRIV_3)
             self.ql.mem.write(tls_addr, self.ql.pack32(index))
 
-        # FIXME : self.ql.os should be better
         self.tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
         self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, old_tls)
 
     def store(self):
         self.store_regs()
-        # FIXME : self.ql.os should be better
         self.tls = bytes(self.ql.os.gdtm.get_gdt_buf(12, 14 + 1))
 
     def restore(self):
         self.restore_regs()
-        # FIXME : self.ql.os should be better
         self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
 
 class QlLinuxX8664Thread(QlLinuxThread):
@@ -392,13 +387,12 @@ class QlLinuxARM64Thread(QlLinuxThread):
 class QlLinuxThreadManagement(QlThreadManagement):
     def __init__(self, ql, time_slice = 1000, count_slice = 1000, bbl_slice = 300, mode = BBL_MODE, ):
         super(QlLinuxThreadManagement, self).__init__(ql)
+        self.ql = ql
         self.cur_thread = None
         self.running_thread_list = []
         self.ending_thread_list = []
         self.blocking_thread_list = []
         self.main_thread = None
-        self.ql = ql
-
         self.mode = mode
         self.time_slice = time_slice
         self.count_slice = count_slice

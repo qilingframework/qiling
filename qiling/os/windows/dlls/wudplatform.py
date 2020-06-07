@@ -13,7 +13,6 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 
 
-
 @winapi(cc=STDCALL, params={
 })
 def hook_WudfIsUserDebuggerPresent(ql, address, params):

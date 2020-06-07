@@ -25,6 +25,10 @@ Linux / *nix
 - ql.dev to emulate devices
 - ql.proc to emulate /proc
 
+Debugging Server
+================
+- Add GDB stub commands
+
 -------------------- FUTURE --------------------
 
 MCU

@@ -3,8 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-# gdbserver --remote-debug --disable-packet=threads,vCont 0.0.0.0:9999 /path/to binary
+# gdbserver --remote-debug 0.0.0.0:9999 /path/to binary
 # documentation: according to https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Protocol.html#Remote-Protocol
+
+from unicorn import *
 
 import struct, os, re, socket
 from binascii import unhexlify
@@ -39,7 +41,6 @@ class GDBSERVERsession(object):
         self.netin          = clientsocket.makefile('r')
         self.netout         = clientsocket.makefile('w')
         self.last_pkt       = None
-        self.en_vcont       = False
         self.gdb            = qldbg.Qldbg()
         self.gdb.initialize(self.ql, exit_point=exit_point, mappings=mappings)
         self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
@@ -49,7 +50,7 @@ class GDBSERVERsession(object):
             self.entry_point = self.ql.os.elf_entry
         else:
             self.entry_point = self.ql.os.entry_point
-
+            
         self.gdb.bp_insert(self.entry_point)
 
 
@@ -69,7 +70,7 @@ class GDBSERVERsession(object):
             # must always be escaped. Responses sent by the stub must also escape 0x2a (ASCII ‘*’), 
             # so that it is not interpreted as the start of a run-length encoded sequence (described next).
 
-            if a in (42,35,36,125):
+            if a in (42,35,36, 125):
                 a = a ^ 0x20
                 a = (str(hex(a)[2:]))
                 a = incomplete_hex_check(a)
@@ -104,7 +105,7 @@ class GDBSERVERsession(object):
                     adapter = {
                         QL_ARCH.X86          : [ 0x05, 0x04, 0x08 ],
                         QL_ARCH.X8664        : [ 0x06, 0x07, 0x10 ],
-                        QL_ARCH.MIPS       : [ 0x1d, 0x00, 0x25 ],        
+                        QL_ARCH.MIPS         : [ 0x1d, 0x00, 0x25 ],        
                         QL_ARCH.ARM          : [ 0x0b, 0x0d, 0x0f ],
                         QL_ARCH.ARM64        : [ 0x1d, 0xf1, 0x20 ]
                         }
@@ -126,7 +127,7 @@ class GDBSERVERsession(object):
 
             def handle_c(subcmd):
                 self.gdb.resume_emu(self.ql.reg.arch_pc)
-                
+
                 if self.gdb.bp_list is ([self.entry_point]):
                     self.send("W00")
                 else:
@@ -139,13 +140,13 @@ class GDBSERVERsession(object):
             def handle_g(subcmd):
                 s = ''
                 if self.ql.archtype== QL_ARCH.X86:
-                    for reg in self.ql.reg.table[:16]:
+                    for reg in self.ql.reg.table[:24]:
                         r = self.ql.reg.read(reg)
                         tmp = self.ql.arch.addr_to_str(r)
                         s += tmp
 
                 elif self.ql.archtype== QL_ARCH.X8664:
-                    for reg in self.ql.reg.table[:24]:
+                    for reg in self.ql.reg.table[:32]:
                         r = self.ql.reg.read(reg)
                         if self.ql.reg.bit(reg) == 64:
                             tmp = self.ql.arch.addr_to_str(r)
@@ -154,8 +155,14 @@ class GDBSERVERsession(object):
                         s += tmp
                 
                 elif self.ql.archtype== QL_ARCH.ARM:
+                    if self.ql.archtype == QL_ARCH.ARM:
+                        mode = self.ql.arch.check_thumb()
+                    
                     for reg in self.ql.reg.table[:17]:
                         r = self.ql.reg.read(reg)
+                        if mode == UC_MODE_THUMB and reg == "pc":
+                            r += 1
+
                         tmp = self.ql.arch.addr_to_str(r)
                         s += tmp
 
@@ -325,7 +332,7 @@ class GDBSERVERsession(object):
                     if reg_index <= 17:
                         reg_data = int(reg_data, 16)
                         reg_data = int.from_bytes(struct.pack('<Q', reg_data), byteorder='big')
-                        sself.ql.reg.write(self.ql.reg.table[reg_index], reg_data)
+                        self.ql.reg.write(self.ql.reg.table[reg_index], reg_data)
                     else:
                         reg_data = int(reg_data[:8], 16)
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
@@ -349,7 +356,7 @@ class GDBSERVERsession(object):
                         reg_data = int.from_bytes(struct.pack('<I', reg_data), byteorder='big')
                     self.ql.reg.write(self.ql.reg.table[reg_index], reg_data)
 
-                self.ql.nprint("gdb> Write to register %x with %x\n" % (self.ql.reg.table[reg_index], reg_data))
+                self.ql.nprint("gdb> Write to register %s with %x\n" % (self.ql.reg.table[reg_index], reg_data))
                 self.send('OK')
 
 
@@ -390,11 +397,12 @@ class GDBSERVERsession(object):
                         file_contents = f.read()
                         self.send("l%s" % file_contents)
                     else:
-                        self.ql.nprint("gdb> Xml file not found: %s\n" % (xfercmd_file))
+                        self.ql.nprint("gdb> Platform is not supported by xml or xml file not found: %s\n" % (xfercmd_file))
+                        self.send("l")
 
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
-                    file_contents = ("<threads>\r\n<thread id=\"2048\" core=\"3\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
+                    file_contents = ("<threads>\r\n<thread id=\""+ str(self.ql.os.pid) + "\" core=\"1\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
                     self.send("l" + file_contents)
 
                 elif subcmd.startswith('Xfer:auxv:read::'):
@@ -465,10 +473,10 @@ class GDBSERVERsession(object):
                         AT_BASE     = self.ql.arch.addr_to_str(self.ql.loader.interp_address)  # Base address of interpreter
                         AT_FLAGS    = self.ql.arch.addr_to_str(self.ql.loader.elf_flags)
                         AT_ENTRY    = self.ql.arch.addr_to_str(self.ql.loader.elf_entry)  # Entry point of program
-                        AT_UID      = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # UID at 1000 fixed in qiling
-                        AT_EUID     = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # EUID at 1000 fixed in qiling
-                        AT_GID      = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # GID at 1000 fixed in qiling
-                        AT_EGID     = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # EGID at 1000 fixed in qiling
+                        AT_UID      = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
+                        AT_EUID     = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
+                        AT_GID      = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
+                        AT_EGID     = self.ql.arch.addr_to_str(self.ql.loader.elf_guid)  # UID from ql.profile
                         AT_RANDOM   = self.ql.arch.addr_to_str(self.ql.loader.randstraddr)  # Address of 16 random bytes
                         AT_PLATFORM = self.ql.arch.addr_to_str(self.ql.loader.cpustraddr)  # String identifying platform
 
@@ -519,6 +527,8 @@ class GDBSERVERsession(object):
                     else:     
                         self.send("l<library-list-svr4 version=\"1.0\"></library-list-svr4>")
 
+                elif subcmd.startswith("Xfer:btrace-conf:read:"):
+                     self.send("E.Btrace not enabled.")
 
                 elif subcmd == "Attached":
                     self.send("")
@@ -630,20 +640,17 @@ class GDBSERVERsession(object):
 
                 elif subcmd.startswith('Kill'):
                     self.send('OK')
-                    exit(1)
 
                 elif subcmd.startswith('Cont'):
                     self.ql.dprint(D_INFO, "gdb> Cont command received: %s" % subcmd)
                     if subcmd == 'Cont?':
-                        if self.en_vcont == True:
-                            self.send('vCont;c;C;s;S')
-                        else:    
-                            self.send('')
-                    else:
+                        self.send('vCont;c;C;t;s;S;r')
+                    elif subcmd.startswith ("Cont;"):
                         subcmd = subcmd.split(';')
-                        if subcmd[1] in ('c', 'C05'):
+                        subcmd = subcmd[1].split(':')
+                        if subcmd[0] in ('c', 'C05'):
                             handle_c(subcmd)
-                        elif subcmd[1] in ('s:1', 'S:1'):
+                        elif subcmd[0] in ('S', 's'):
                             handle_s(subcmd)
                 else:
                     self.send("")
@@ -685,7 +692,7 @@ class GDBSERVERsession(object):
                     type = data[0]
                     addr = int(data[1], 16)
                     length = data[2]
-                    self.gdb.bp_remove(type, addr, length)
+                    self.gdb.bp_remove(addr, type, length)
                     self.send('OK')
                 except:
                     self.send('E22')

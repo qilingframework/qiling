@@ -98,6 +98,8 @@ class QlArchX86(QlArch):
         adapter.update(reg_map_32)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
+        #adapter.update(reg_map_cr)
+        #adapter.update(reg_map_dr)        
         registers = {k:v for k, v in adapter.items()}
 
         for reg in registers:
@@ -116,6 +118,8 @@ class QlArchX86(QlArch):
         adapter.update(reg_map_32)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
+        #adapter.update(reg_map_cr)
+        #adapter.update(reg_map_dr)        
         adapter = {v: k for k, v in adapter.items()}
 
         if uc_reg in adapter:
@@ -132,8 +136,8 @@ class QlArchX86(QlArch):
 
     def set_register(self, register, value):
         if type(register) == str:
-            register = self.get_reg_name(register)  
-        return self.ql.uc.reg_write(register, value)
+            register = self.get_reg_name(register)
+        self.ql.uc.reg_write(register, value)
 
 
     def get_reg_name(self, uc_reg_name):
@@ -141,6 +145,8 @@ class QlArchX86(QlArch):
         adapter.update(reg_map_32)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
+        #adapter.update(reg_map_cr)
+        #adapter.update(reg_map_dr)        
 
         if uc_reg_name in adapter:
             return adapter[uc_reg_name]
@@ -236,6 +242,12 @@ class QlArchX8664(QlArch):
         adapter.update(reg_map_64)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
+        #adapter.update(reg_map_cr)
+        #adapter.update(reg_map_dr)
+        #adapter.update(reg_map_fp)
+        #adapter.update(reg_map_xmm)
+        #adapter.update(reg_map_ymm)
+        #adapter.update(reg_map_zmm)        
         registers = {k:v for k, v in adapter.items()}
         for reg in registers:
             registers_table += [reg]
@@ -252,6 +264,12 @@ class QlArchX8664(QlArch):
         adapter.update(reg_map_64)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
+        #adapter.update(reg_map_cr)
+        #adapter.update(reg_map_dr)
+        #adapter.update(reg_map_fp)
+        #adapter.update(reg_map_xmm)
+        #adapter.update(reg_map_ymm)
+        #adapter.update(reg_map_zmm)
         adapter = {v: k for k, v in adapter.items()}
 
         if uc_reg in adapter:
@@ -277,7 +295,12 @@ class QlArchX8664(QlArch):
         adapter.update(reg_map_64)
         adapter.update(reg_map_misc)
         adapter.update(reg_map_st)
-
+        #adapter.update(reg_map_cr)
+        #adapter.update(reg_map_dr)
+        #adapter.update(reg_map_fp)
+        #adapter.update(reg_map_xmm)
+        #adapter.update(reg_map_ymm)
+        #adapter.update(reg_map_zmm)
         if uc_reg_name in adapter:
             return adapter[uc_reg_name]
         # invalid
@@ -289,8 +312,7 @@ class GDTManager:
     def __init__(self, ql, GDT_ADDR = QL_X86_GDT_ADDR, GDT_LIMIT =  QL_X86_GDT_LIMIT, GDT_ENTRY_ENTRIES = 16):
         if ql.mem.is_mapped(GDT_ADDR, GDT_LIMIT) == False:
             ql.mem.map(GDT_ADDR, GDT_LIMIT, info="[GDT]")
-        else:
-            raise QlGDTError("[!] Ql GDT mem map error!")
+
         # setup GDT by writing to GDTR
         ql.reg.write(UC_X86_REG_GDTR, (0, GDT_ADDR, GDT_LIMIT, 0x0))
 
@@ -303,7 +325,7 @@ class GDTManager:
 
     def register_gdt_segment(self, index, SEGMENT_ADDR, SEGMENT_SIZE, SPORT, RPORT):
         # FIXME: Temp fix for FS and GS
-        if index in (14,15):
+        if index in (14, 15):
             if self.ql.mem.is_mapped(SEGMENT_ADDR, SEGMENT_ADDR) == False:
                 self.ql.mem.map(SEGMENT_ADDR, SEGMENT_ADDR, info="[FS/GS]")
 

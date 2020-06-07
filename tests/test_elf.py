@@ -20,7 +20,7 @@ class ELFTest(unittest.TestCase):
 
 
     def test_multithread_elf_linux_x8664(self):
-        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", log_dir= "multi_log")
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", profile= "profiles/append_test.ql")
         ql.log_split = True
         ql.multithread = True   
         ql.run()
@@ -48,24 +48,61 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    def test_libpatch_elf_linux_x8664(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/patch_test.bin"], "../examples/rootfs/x8664_linux")
+        ql.patch(0x0000000000000575, b'qiling\x00', file_name = b'libpatch_test.so')  
+        ql.run()
+        del ql
+
+
     def test_elf_freebsd_x8664(self):     
         ql = Qiling(["../examples/rootfs/x8664_freebsd/bin/x8664_hello_asm"], "../examples/rootfs/x8664_freebsd", output = "dump")
         ql.run()
         del ql
 
+    def test_elf_partial_linux_x8664(self): 
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello"], "../examples/rootfs/x8664_linux", output= "default")
+        X64BASE = int(ql.profile.get("OS64", "load_address"), 16)
+        begin_point = X64BASE + 0x109e
+        end_point = X64BASE + 0x10bc
+        ql.run(begin = begin_point, end = end_point)
 
     def test_elf_linux_x8664(self):
         def my_puts(ql):
             addr = ql.func_arg[0]
             print("puts(%s)" % ql.mem.string(addr))
-            
             reg = ql.reg.read("rax")
             print("reg : 0x%x" % reg)
-            ql.reg.rax = reg 
-        
+            ql.reg.rax = reg
+            self.set_api = "pass"
+
+        def write_onEnter(ql, arg1, arg2, arg3, *args):
+            print("enter write syscall!")
+            ql.reg.rsi = arg2 + 1
+            ql.reg.rdx = arg3 - 1
+            self.set_api_onenter = "pass"
+
+        def write_onexit(ql, arg1, arg2, arg3, *args):
+            print("exit write syscall!")
+            self.set_api_onexit = "pass"
+            ql.reg.rax = arg3 + 1
+
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
+        ql.set_syscall(1, write_onEnter)
         ql.set_api('puts', my_puts)
+        ql.set_syscall(1, write_onexit)
+        ql.mem.map(0x1000, 0x1000)
+        ql.mem.write(0x1000, b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD")
         ql.run()
+
+        self.assertEqual([0x1000], ql.mem.search(b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD"))
+        self.assertEqual("pass", self.set_api)
+        self.assertEqual("pass", self.set_api_onexit)
+        self.assertEqual("pass", self.set_api_onenter)
+
+        del self.set_api
+        del self.set_api_onexit
+        del self.set_api_onenter
         del ql
 
 
@@ -220,7 +257,7 @@ class ELFTest(unittest.TestCase):
             addr = ql.func_arg[0]
             print("puts(%s)" % ql.mem.string(addr))
             
-        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", log_dir='logs')
+        ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql')
         ql.log_split=True
         ql.set_api('puts', my_puts)
         ql.run()
@@ -229,6 +266,8 @@ class ELFTest(unittest.TestCase):
 
     def test_elf_linux_arm_static(self):     
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello_static"], "../examples/rootfs/arm_linux", output = "default")
+        all_mem = ql.mem.save()
+        ql.mem.restore(all_mem)
         ql.run()
         del ql
 
@@ -604,7 +643,8 @@ class ELFTest(unittest.TestCase):
             
             reg = ql.reg.read("r0")
             print("reg : 0x%x" % reg)
-            ql.reg.r0 = reg  
+            ql.reg.r0 = reg
+            
             
             try:
                 buf = ql.mem.read(write_buf, write_count)
@@ -617,10 +657,15 @@ class ELFTest(unittest.TestCase):
                 if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
                     raise
             ql.os.definesyscall_return(regreturn)
+            self.set_syscall = "pass"
 
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux")
         ql.set_syscall(0x04, my_syscall_write)
         ql.run()
+        
+        self.assertEqual("pass", self.set_syscall)
+        
+        del self.set_syscall
         del ql
 
 
@@ -666,7 +711,7 @@ class ELFTest(unittest.TestCase):
 
         def run_one_round(payload):
             stdin = MyPipe()
-            ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", output = "off", stdin = stdin)
+            ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", console = False, stdin = stdin)
             ins_count = [0]
             ql.hook_code(instruction_count, ins_count)
             stdin.write(payload)

@@ -51,8 +51,8 @@ class QlRegisterManager():
 
     def write(self, register, value):
         if type(register) == str:
-            register = register.lower()
-        return self.ql.arch.set_register(register, value)
+            register = register.lower()           
+        self.ql.arch.set_register(register, value)
 
 
     def msr(self, msr, addr= None):
@@ -62,8 +62,8 @@ class QlRegisterManager():
             self.ql.uc.msr_write(msr, addr)
 
 
-    # ql.reg.store - store all register
-    def store(self):
+    # ql.reg.save - save based on ql.reg.table
+    def save(self):
         reg_dict = {}
         for reg in self.ql.reg.table:
             reg_v = self.read(reg)
@@ -71,7 +71,7 @@ class QlRegisterManager():
         return reg_dict
 
 
-    # ql.reg.restore - restore all stored register
+    # ql.reg.restore - restore based on ql.reg.table
     def restore(self, value = {}):
         for reg in self.ql.reg.table:
             reg_v= value[reg]

@@ -26,53 +26,12 @@ def hook_ExitProcess(ql, address, params):
     ql.os.PE_RUN = False
 
 
-# typedef struct _STARTUPINFO {
-#   DWORD  cb;
-#   LPTSTR lpReserved;
-#   LPTSTR lpDesktop;
-#   LPTSTR lpTitle;
-#   DWORD  dwX;
-#   DWORD  dwY;
-#   DWORD  dwXSize;
-#   DWORD  dwYSize;
-#   DWORD  dwXCountChars;
-#   DWORD  dwYCountChars;
-#   DWORD  dwFillAttribute;
-#   DWORD  dwFlags;
-#   WORD   wShowWindow;
-#   WORD   cbReserved2;
-#   LPBYTE lpReserved2;
-#   HANDLE hStdInput;
-#   HANDLE hStdOutput;
-#   HANDLE hStdError;
-# } STARTUPINFO, *LPSTARTUPINFO;
-def GetStartupInfo(ql, address, params):
-    startup_info = {
-        "cb": (0x34 + 4*ql.pointersize).to_bytes(length=4, byteorder='little'),
-        "lpReserved": 0x0.to_bytes(length=ql.pointersize, byteorder='little'),
-        "lpDesktop": 0xc3c930.to_bytes(length=ql.pointersize, byteorder='little'),
-        "lpTitle": 0x0.to_bytes(length=ql.pointersize, byteorder='little'),
-        "dwX": 0x0.to_bytes(length=4, byteorder='little'),
-        "dwY": 0x0.to_bytes(length=4, byteorder='little'),
-        "dwXSize": 0x64.to_bytes(length=4, byteorder='little'),
-        "dwYSize": 0x64.to_bytes(length=4, byteorder='little'),
-        "dwXCountChars": 0x84.to_bytes(length=4, byteorder='little'),
-        "dwYCountChars": 0x80.to_bytes(length=4, byteorder='little'),
-        "dwFillAttribute": 0xff.to_bytes(length=4, byteorder='little'),
-        "dwFlags": 0x40.to_bytes(length=4, byteorder='little'),
-        "wShowWindow": 0x1.to_bytes(length=2, byteorder='little'),
-        "cbReserved2": 0x0.to_bytes(length=2, byteorder='little'),
-        "lpReserved2": 0x0.to_bytes(length=ql.pointersize, byteorder='little'),
-        "hStdInput": 0xffffffff.to_bytes(length=4, byteorder='little'),
-        "hStdOutput": 0xffffffff.to_bytes(length=4, byteorder='little'),
-        "hStdError": 0xffffffff.to_bytes(length=4, byteorder='little')
-    }
-    pointer = params["lpStartupInfo"]
-    values = b"".join(startup_info.values())
+def _GetStartupInfo(ql, address, params):
+    startup_info = StartupInfo(ql, 0xc3c930, 0, 0, 0, 0x64, 0x64, 0x84, 0x80, 0xff, 0x40, 0x1, STD_INPUT_HANDLE,
+                               STD_OUTPUT_HANDLE, STD_ERROR_HANDLE)
 
-    # CB must be the size of the struct
-    assert len(values) == startup_info["cb"][0]
-    ql.mem.write(pointer, values)
+    pointer = params["lpStartupInfo"]
+    startup_info.write(pointer)
     return 0
 
 
@@ -83,7 +42,7 @@ def GetStartupInfo(ql, address, params):
     "lpStartupInfo": POINTER
 })
 def hook_GetStartupInfoA(ql, address, params):
-    return GetStartupInfo(ql, address, params)
+    return _GetStartupInfo(ql, address, params)
 
 
 # VOID WINAPI GetStartupInfoW(
@@ -94,7 +53,7 @@ def hook_GetStartupInfoA(ql, address, params):
 })
 def hook_GetStartupInfoW(ql, address, params):
     # The struct for the W version uses LPWSTRING, but i think is the same in this context
-    return GetStartupInfo(ql, address, params)
+    return _GetStartupInfo(ql, address, params)
 
 
 # DWORD TlsAlloc();
@@ -135,7 +94,7 @@ def hook_TlsGetValue(ql, address, params):
     else:
         # api explicity clears last error on success:
         # https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-tlsgetvalue
-        ql.os.last_error
+        ql.os.last_error = 0
         return ql.os.thread_manager.cur_thread.tls[idx]
 
 
@@ -169,7 +128,7 @@ def hook_GetCurrentThreadId(ql, address, params):
 @winapi(cc=STDCALL, params={})
 def hook_GetCurrentProcessId(ql, address, params):
     # Let's return a valid value
-    return 0x2005
+    return ql.os.profile.getint("KERNEL", "pid")
 
 
 # BOOL IsProcessorFeaturePresent(
@@ -222,7 +181,8 @@ def hook_CreateThread(ql, address, params):
         thread_status = QlWindowsThread.READY
     else:
         thread_status = QlWindowsThread.RUNNING
-
+    
+    
     # create new thread
     thread_id = new_thread.create(
         lpStartAddress,
@@ -239,8 +199,9 @@ def hook_CreateThread(ql, address, params):
     ret = new_handle.id
 
     # set lpThreadId
+    # FIXME: Temporary fix for the crash
     if lpThreadId != 0:
-        ql.mem.write(lpThreadId, ql.pack(thread_id))
+        ql.mem.write(lpThreadId, ql.pack(thread_id))    
 
     # set thread handle
     return ret
@@ -250,8 +211,7 @@ def hook_CreateThread(ql, address, params):
 # );
 @winapi(cc=STDCALL, params={})
 def hook_GetCurrentProcess(ql, address, params):
-    ret = 0
-    return ret
+    return ql.os.profile.getint("KERNEL", "pid")
 
 
 # BOOL TerminateProcess(
@@ -265,8 +225,7 @@ def hook_GetCurrentProcess(ql, address, params):
 def hook_TerminateProcess(ql, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
-    # TODO i have no idea on how to find the old ql.pe.image_address
-    if process == 0x0:  # or process == ql.os.image_address:
+    if process == ql.os.profile.getint("KERNEL", "pid"):  # or process == ql.os.image_address:
         ql.emu_stop()
         ql.os.PE_RUN = False
     ret = 1
@@ -297,6 +256,12 @@ def hook_OpenProcess(ql, address, params):
     # the function fails and the last error code is ERROR_INVALID_PARAMETER
     if proc == 0:
         ql.os.last_error = ERROR_INVALID_PARAMETER
+        return 0
+    #  If the specified process is the Idle process or one of the CSRSS processes, this function fails
+    #  and the last error code is ERROR_ACCESS_DENIED because their access restrictions prevent user-level code
+    #  from opening them.
+    if proc == ql.profile.getint("PROCESSES", "csrss.exe"):
+        ql.os.last_error = ERROR_ACCESS_DENIED
         return 0
     return 0xD10C
 
@@ -329,4 +294,43 @@ def hook_OpenProcessToken(ql, address, params):
     "lpContext": POINTER
 })
 def hook_GetThreadContext(ql, address, params):
+    return 1
+
+
+# BOOL OpenThreadToken(
+#   HANDLE  ThreadHandle,
+#   DWORD   DesiredAccess,
+#   BOOL    OpenAsSelf,
+#   PHANDLE TokenHandle
+# );
+@winapi(cc=STDCALL, params={
+    "ThreadHandle": HANDLE,
+    "DesiredAccess": DWORD,
+    "OpenAsSelf": BOOL,
+    "TokenHandle": POINTER
+})
+def hook_OpenThreadToken(ql, address, params):
+    token_pointer = params["TokenHandle"]
+    token = Token(ql)
+    new_handle = Handle(obj=token)
+    ql.os.handle_manager.append(new_handle)
+    ql.mem.write(token_pointer, ql.pack(new_handle.id))
+    return 1
+
+
+# BOOL GetThreadTimes(
+#   HANDLE     hThread,
+#   LPFILETIME lpCreationTime,
+#   LPFILETIME lpExitTime,
+#   LPFILETIME lpKernelTime,
+#   LPFILETIME lpUserTime
+# );
+@winapi(cc=STDCALL, params={
+    "hThread": HANDLE,
+    "lpCreationTime": POINTER,
+    "lpExitTime": POINTER,
+    "lpKernelTime": POINTER,
+    "lpUserTime": POINTER
+})
+def hook_GetThreadTimes(ql, address, params):
     return 1

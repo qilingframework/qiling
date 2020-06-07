@@ -46,13 +46,18 @@ DT_MIPS_LOCAL_GOTNO = 0x7000000a
 DT_MIPS_SYMTABNO = 0x70000011
 DT_MIPS_GOTSYM = 0x70000013
 
-global JMP_SLOT, GLOB_DAT
-GLOB_DAT = 6
-JMP_SLOT = 7
-
 class HookFunc:
+<<<<<<< HEAD
     def __init__(self, ql, fn):
         self.fucname = fn
+=======
+    def __init__(self, ql, funcname, r, load_base):
+        self.funcname = funcname
+        self.hook = []
+        self.rel = r
+        self.idx = None
+        self.hook_fuc_ptr = None
+>>>>>>> b198b4edfbd98d1b72344c6dc06047c89f90f590
         self.hook_data_ptr = None
         self.hook = []
         self.ql = ql
@@ -74,10 +79,10 @@ class HookFunc:
             if type(ret) != int:
                 ret = 0
             
-            if ret & FUNC_CALL_BLOCK == 0:
+            if ret & QL_CALL_BLOCK == 0:
                 self.ql.reg.arch_pc = next_pc
             
-            if ret & FUNC_HOOK_BLOCK != 0:
+            if ret & QL_HOOK_BLOCK != 0:
                 break
 
 class HookFuncRel(HookFunc):
@@ -100,11 +105,10 @@ class HookFuncRel(HookFunc):
         self.ql.hook_address(self._hook_fuc, self.hook_fuc_ptr)
         
         self.ori_offest = self.rel.r_offset
-        self.rel.r_offset = self.hook_data_ptr - self.load_base        
+        self.rel.r_offset = self.hook_data_ptr - self.load_base
+        self.ori_data = self.ql.mem.read(self.ori_offest + self.load_base, self.ql.pointersize)        
+        
         self.ql.mem.write(self.rel.ptr, self.rel.pack())
-
-        self.ori_data = self.ql.mem.read(self.ori_offest + self.load_base, self.ql.pointersize)
-
         self.ql.mem.write(self.ori_offest + self.load_base, self.ql.pack(self.hook_fuc_ptr))
         self.ql.mem.write(self.hook_data_ptr, bytes(self.ori_data))
 
@@ -388,31 +392,27 @@ class FunctionHook:
         self.mips_gotsym = None
 
         self.rel_list = []
-
-
         self.endian = 0 if ql.archendian == QL_ENDIAN.EL else 1
 
-        global JMP_SLOT
-        global GLOB_DAT
         # ARM
         if self.ql.archtype== QL_ARCH.ARM:
-            GLOB_DAT = 21
-            JMP_SLOT = 22
+            self.GLOB_DAT = 21
+            self.JMP_SLOT = 22
             # bkpt 0; bx lr
             ins = b'p\x00 \xe1\x1e\xff/\xe1'
             self.add_function_hook = self.add_function_hook_relocation
 
         # MIPS32
         elif self.ql.archtype== QL_ARCH.MIPS:
-            GLOB_DAT = 21
-            JMP_SLOT = 22
+            self.GLOB_DAT = 21
+            self.JMP_SLOT = 22
             ins = b'\xa0\x00\x00\xef\x1e\xff/\xe1'
             self.add_function_hook = self.add_function_hook_mips
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
-            GLOB_DAT = 1025
-            JMP_SLOT = 1026
+            self.GLOB_DAT = 1025
+            self.JMP_SLOT = 1026
             #brk 0; ret
             ins = b'\x00\x00 \xd4\xc0\x03_\xd6'
             self.add_function_hook = self.add_function_hook_relocation
@@ -709,22 +709,22 @@ class FunctionHook:
     
     def show_relocation(self, rel):
         for r in rel:
-            if (r.r_type == JMP_SLOT or r.r_type == GLOB_DAT) and r.r_sym != 0:
+            if (r.r_type == self.JMP_SLOT or r.r_type == self.GLOB_DAT) and r.r_sym != 0:
                 rel_name = self.strtab[self.symtab[r.r_sym].st_name]
-                self.ql.nprint('[+] rel name ' + str(rel_name))
+                self.ql.dprint(D_INFO, '[+] rel name ' + str(rel_name))
     
     def show_dynsym_name(self, s, e):
         for symidx in range(s, e):
             rel_name = self.strtab[self.symtab[symidx].st_name]
-            self.ql.nprint('[+] rel name ' + str(rel_name))
+            self.ql.dprint(D_INFO, '[+] dynsym name ' + str(rel_name))
 
     def _hook_int(self, ql, intno):
         idx = (self.ql.reg.arch_pc - self.hook_mem) // 0x10
 
         if idx not in self.use_list.keys():
             raise
-        self.use_list[idx].call()
 
+        self.use_list[idx].call()
 
     def _hook_function(self, fn, r, cb, userdata):
         if fn in self.hook_list.keys():
@@ -756,24 +756,25 @@ class FunctionHook:
         #     self.hook_int = True
 
 
-    def add_function_hook_relocation(self, fucname, cb, userdata = None):
-        if type(fucname) != str:
+    def add_function_hook_relocation(self, funcname, cb, userdata = None):
+        if type(funcname) != str:
             raise
 
         for r in self.rel_list:
-            if (r.r_type == JMP_SLOT or r.r_type == GLOB_DAT) and r.r_sym != 0:
+            if (r.r_type == self.JMP_SLOT or r.r_type == self.GLOB_DAT) and r.r_sym != 0:
                 tmp_name = self.strtab[self.symtab[r.r_sym].st_name]
-                if tmp_name == fucname.encode():
+                if tmp_name == funcname.encode():
                     self._hook_function(tmp_name, r, cb, userdata)
     
-    def add_function_hook_default(self, fucname, cb, userdata = None):
+    def add_function_hook_default(self, funcname, cb, userdata = None):
         pass
     
-    def add_function_hook_mips(self, fucname, cb, userdata = None):
-        self.add_function_hook_relocation(fucname, cb, userdata)
+    def add_function_hook_mips(self, funcname, cb, userdata = None):
+        self.add_function_hook_relocation(funcname, cb, userdata)
 
         for symidx in range(self.mips_gotsym, self.mips_symtabno):
             tmp_name = self.strtab[self.symtab[symidx].st_name]
+<<<<<<< HEAD
             if tmp_name == fucname.encode():
                 fn = tmp_name
                 if fn in self.hook_list.keys():
@@ -800,6 +801,10 @@ class FunctionHook:
                 if self.hook_int == False:
                     self.ql.hook_intno(self._hook_int, 0xa0)
                     self.hook_int = True
+=======
+            if tmp_name == funcname.encode():
+                pass
+>>>>>>> b198b4edfbd98d1b72344c6dc06047c89f90f590
 
     def _load_import(self):
         pass

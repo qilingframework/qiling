@@ -4,11 +4,11 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 from qiling.const import *
+from qiling.os.const import *
 from .const import *
 from .utils import *
-from .fncc import *
 from .type64 import *
-from qiling.os.windows.fncc import *
+from .fncc import *
 
 @dxeapi(params={
     "a0": POINTER, #POINTER_T(struct_EFI_TIME)
@@ -65,6 +65,8 @@ def hook_GetVariable(ql, address, params):
     if params['VariableName'] in ql.env:
         var = ql.env[params['VariableName']]
         read_len = read_int64(ql, params['DataSize'])
+        if params['Attributes'] != 0:
+            write_int64(ql, params['Attributes'], 0)
         write_int64(ql, params['DataSize'], len(var))
         if read_len < len(var):
             return EFI_BUFFER_TOO_SMALL
@@ -80,7 +82,7 @@ def hook_GetVariable(ql, address, params):
 })
 def hook_GetNextVariableName(ql, address, params):
     name_size = read_int64(ql, params["VariableNameSize"])
-    last_name = read_wstring(ql, params["VariableName"])
+    last_name = ql.os.read_wstring(params["VariableName"])
     vars = ql.env['Names'] # This is a list of variable names in correct order.
     if last_name in vars and vars.index(last_name) < len(vars) - 1:
         new_name = vars[vars.index(last_name)+1]
@@ -104,7 +106,7 @@ def hook_GetNextVariableName(ql, address, params):
     "Data": POINTER, #POINTER_T(None)
 })
 def hook_SetVariable(ql, address, params):
-    ql.env[params['VariableName']] = ql.mem.read(params['Data'], params['DataSize'])
+    ql.env[params['VariableName']] = bytes(ql.mem.read(params['Data'], params['DataSize']))
     return EFI_SUCCESS
 
 @dxeapi(params={

@@ -15,6 +15,7 @@ from qiling.exception import *
 from qiling.os.windows.structs import *
 from qiling.const import *
 
+
 # void Sleep(
 #  DWORD dwMilliseconds
 # );
@@ -105,16 +106,11 @@ def hook_WaitForSingleObject(ql, address, params):
     hHandle = params["hHandle"]
     dwMilliseconds = params["dwMilliseconds"]
 
-    try:
-        target_thread: Thread = ql.os.handle_manager.get(hHandle).thread
-    except AttributeError:
-        ql.os.last_error = ERROR_INVALID_HANDLE
-        return 0xFFFFFFFF #WAIT_FAILED
-
-    if not target_thread.fake:
-        ql.os.thread_manager.cur_thread.waitfor(target_thread)
+    target_thread = ql.os.handle_manager.get(hHandle).obj
+    ql.os.thread_manager.cur_thread.waitfor(target_thread)
 
     return ret
+
 
 # DWORD WaitForSingleObjectEx(
 #   HANDLE hHandle,
@@ -132,14 +128,8 @@ def hook_WaitForSingleObjectEx(ql, address, params):
     dwMilliseconds = params["dwMilliseconds"]
     alertable = params["bAlertable"]
 
-    try:
-        target_thread: Thread = ql.os.handle_manager.get(hHandle).thread
-    except AttributeError:
-        ql.os.last_error = ERROR_INVALID_HANDLE
-        return 0xFFFFFFFF #WAIT_FAILED
-
-    if not target_thread.fake:
-        ql.os.thread_manager.cur_thread.waitfor(target_thread)
+    target_thread = ql.os.handle_manager.get(hHandle).obj
+    ql.os.thread_manager.cur_thread.waitfor(target_thread)
 
     return ret
 
@@ -187,7 +177,7 @@ def hook_OpenMutexW(ql, address, params):
     # It can also have no prefix
     try:
         _type, name = params["lpName"].split("\\")
-    except:
+    except ValueError:
         name = params["lpName"]
         _type = ""
 
@@ -206,10 +196,11 @@ def hook_OpenMutexW(ql, address, params):
     else:
         if handle is None:
             # If a named mutex does not exist, the function fails and GetLastError returns ERROR_FILE_NOT_FOUND.
-            ql.os.last_error  = ERROR_FILE_NOT_FOUND
+            ql.os.last_error = ERROR_FILE_NOT_FOUND
             return 0
         else:
             raise QlErrorNotImplemented("[!] API not implemented")
+
 
 # HANDLE OpenMutexA(
 #   DWORD   dwDesiredAccess,
@@ -238,14 +229,14 @@ def hook_OpenMutexA(ql, address, params):
 def hook_CreateMutexW(ql, address, params):
     try:
         _type, name = params["lpName"].split("\\")
-    except:
+    except ValueError:
         name = params["lpName"]
         _type = ""
 
     owning = params["bInitialOwner"]
     handle = ql.os.handle_manager.search(name)
     if handle is not None:
-        #ql.os.last_error = ERROR_ALREADY_EXISTS
+        # ql.os.last_error = ERROR_ALREADY_EXISTS
         return 0
     else:
         mutex = Mutex(name, _type)
@@ -254,7 +245,8 @@ def hook_CreateMutexW(ql, address, params):
         handle = Handle(obj=mutex, name=name)
         ql.os.handle_manager.append(handle)
 
-    return handle.ID
+    return handle.id
+
 
 # HANDLE CreateMutexA(
 #   LPSECURITY_ATTRIBUTES lpMutexAttributes,
@@ -270,17 +262,17 @@ def hook_CreateMutexA(ql, address, params):
     return hook_CreateMutexW.__wrapped__(ql, address, params)
 
 
-#HANDLE CreateEventA(
+# HANDLE CreateEventA(
 #  LPSECURITY_ATTRIBUTES lpEventAttributes,
 #  BOOL                  bManualReset,
 #  BOOL                  bInitialState,
 #  LPCSTR                lpName
-#);
+# );
 @winapi(cc=STDCALL, params={
-    "lpEventAttributes": POINTER, 
+    "lpEventAttributes": POINTER,
     "bManualReset": BOOL,
     "bInitialState": BOOL,
-    "lpName": STRING 
+    "lpName": STRING
 })
 def hook_CreateEventA(ql, address, params):
     """ 
@@ -288,7 +280,7 @@ def hook_CreateEventA(ql, address, params):
     """
     try:
         namespace, name = params["lpName"].split("\\")
-    except:
+    except ValueError:
         name = params["lpName"]
         namespace = ""
     handle = ql.os.handle_manager.search(name)
@@ -302,17 +294,68 @@ def hook_CreateEventA(ql, address, params):
         ql.os.handle_manager.append(handle)
     return handle.ID
 
-#HANDLE CreateEventW(
+
+# HANDLE CreateEventW(
 #  LPSECURITY_ATTRIBUTES lpEventAttributes,
 #  BOOL                  bManualReset,
 #  BOOL                  bInitialState,
 #  LPCWSTR               lpName
-#);
+# );
 @winapi(cc=STDCALL, params={
-    "lpEventAttributes": POINTER, 
+    "lpEventAttributes": POINTER,
     "bManualReset": BOOL,
     "bInitialState": BOOL,
-    "lpName": WSTRING 
+    "lpName": WSTRING
 })
 def hook_CreateEventW(ql, address, params):
     return hook_CreateEventA.__wrapped__(ql, address, params)
+
+
+# void InitializeSRWLock(
+#  PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_InitializeSRWLock(ql, address, params):
+    return
+
+
+# void AcquireSRWLockExclusive(
+#   PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_AcquireSRWLockExclusive(ql, address, params):
+    return
+
+
+# void AcquireSRWLockShared(
+#   PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_AcquireSRWLockShared(ql, address, params):
+    return
+
+
+# void ReleaseSRWLockExclusive(
+#   PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_ReleaseSRWLockExclusive(ql, address, params):
+    return
+
+
+# void ReleaseSRWLockShared(
+#   PSRWLOCK SRWLock
+# );
+@winapi(cc=STDCALL, params={
+    "SRWLock": POINTER
+})
+def hook_ReleaseSRWLockShared(ql, address, params):
+    return

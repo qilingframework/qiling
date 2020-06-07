@@ -17,23 +17,22 @@ class QlOsUefi(QlOs):
         self.ql = ql
         self.entry_point = 0
         self.user_defined_api = {}
+        self.user_defined_api_onenter = {}
+        self.user_defined_api_onexit = {}
         self.notify_immediately = False
-
-
+        self.PE_RUN = True
+    
     def run(self):
-        self.setup_output()
-       
+        if self.ql.exit_point is not None:
+            self.exit_point = self.ql.exit_point
+        
+        if  self.ql.entry_point  is not None:
+            self.ql.loader.entry_point = self.ql.entry_point
+
         try:
-            self.PE_RUN = True
-            path, self.entry_point, pe = self.ql.loader.modules.pop(0)
-            # workaround, the debugger sets the breakpoint before the module is loaded.
-            if hasattr(self.ql.remotedebugsession ,'gdb'):
-                self.ql.remotedebugsession.gdb.bp_insert(self.entry_point)
-            self.ql.stack_push(self.ql.loader.end_of_execution_ptr)
-            self.ql.reg.rdx = self.ql.loader.system_table_ptr
-            self.ql.nprint(f'Running from 0x{self.entry_point:x} of {path}')
-            self.ql.emu_start(self.entry_point, self.exit_point, self.ql.timeout)
+            self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:
+            self.emu_error()
             raise
 
         if self.ql.internal_exception is not None:

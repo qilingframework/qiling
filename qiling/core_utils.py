@@ -15,6 +15,7 @@ from binascii import unhexlify
 from .utils import ql_build_module_import_name, ql_get_module_function
 from .utils import ql_is_valid_arch, ql_is_valid_ostype
 from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
+from .utils import ql_setup_filter
 from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
 from .const import D_INFO
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
@@ -30,28 +31,53 @@ class QLCoreUtils(object):
 
     # normal print out
     def nprint(self, *args, **kw):
-        if self.log_console == True:
-            print (*args, **kw)
-        elif type(self.log_console) is bool:
+        if type(self.console) is bool:
             pass
         else:
-            raise QlErrorOutput("[!] log_consnsole must be True or False")     
+            raise QlErrorOutput("[!] consnsole must be True or False")     
         
-        # FIXME: this is due to log_console must be able to update duirng runtime
+        # FIXME: this is due to console must be able to update duirng runtime
         if self.log_file_fd is not None:
             if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
                 fd = self.os.thread_management.cur_thread.log_file_fd
             else:
                 fd = self.log_file_fd
 
-            msg = args[0]
-            msg += kw["end"] if kw.get("end", None) != None else os.linesep
+            # setup filter for logger
+            # FIXME: only works for logging due to we might need runtime disable nprint, it should be a global filter not only syscall
+            if self.filter != None and self.output == QL_OUTPUT.DEFAULT:
+                self.log_file_fd.addFilter(ql_setup_filter(self.filter))
+
+            console_handlers = []
+
+            for each_handler in fd.handlers:
+                if type(each_handler) == logging.StreamHandler:
+                    console_handlers.append(each_handler)
+
+            if self.console == False:
+                for each_console_handler in console_handlers:
+                    if '_FalseFilter' not in [each.__class__.__name__ for each in each_console_handler.filters]:
+                        each_console_handler.addFilter(ql_setup_filter(False))
+
+            elif self.console == True:
+                for each_console_handler in console_handlers:
+                    for each_filter in [each for each in each_console_handler.filters]:
+                        if '_FalseFilter' in each_filter.__class__.__name__:
+                            each_console_handler.removeFilter(each_filter)
+            
+            try:
+                msg = "".join(args)
+            except:
+                msg = "".join(str(args))    
+
+            if kw.get("end", None) != None:
+                msg += kw["end"]
+
+            elif msg != os.linesep:
+                msg += os.linesep
+
             fd.info(msg)
 
-            if isinstance(fd, logging.FileHandler):
-                fd.emit()
-            elif isinstance(fd, logging.StreamHandler):
-                fd.flush()
 
     # debug print out, always use with verbose level with dprint(D_INFO,"helloworld")
     def dprint(self, level, *args, **kw):
@@ -69,28 +95,32 @@ class QLCoreUtils(object):
         if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             self.nprint(*args, **kw)
 
-    def context(self, saved_context= None):
-        if saved_context == None:
-            return self.uc.context_save()
-        else:
-            self.uc.context_restore(saved_context)
 
-    def add_fs_mapper(self, fm, to):
-        self.fs_mapper.append([fm, to])
-    
+    def add_fs_mapper(self, host_src, ql_dest):
+        self.fs_mapper.append([host_src, ql_dest])
+
+
+    # push to stack bottom, and update stack register
     def stack_push(self, data):
         self.arch.stack_push(data)
 
+
+    # pop from stack bottom, and update stack register
     def stack_pop(self):
         return self.arch.stack_pop()
 
+
     # read from stack, at a given offset from stack bottom
+    # NOTE: unlike stack_pop(), this does not change stack register
     def stack_read(self, offset):
         return self.arch.stack_read(offset)
 
+
     # write to stack, at a given offset from stack bottom
+    # NOTE: unlike stack_push(), this does not change stack register
     def stack_write(self, offset, data):
         self.arch.stack_write(offset, data)
+
 
     def arch_setup(self):
         if not ql_is_valid_arch(self.archtype):
@@ -101,6 +131,7 @@ class QLCoreUtils(object):
 
         module_name = ql_build_module_import_name("arch", None, self.archtype)
         return ql_get_module_function(module_name, archmanager)(self)
+
 
     def os_setup(self, function_name = None):
         if not ql_is_valid_ostype(self.ostype):
@@ -127,6 +158,7 @@ class QLCoreUtils(object):
             module_name = ql_build_module_import_name("os", self.ostype, self.archtype)
             return ql_get_module_function(module_name, function_name)
 
+
     def loader_setup(self, function_name = None):
         if not self.shellcoder:
             self.archtype, self.ostype, self.archendian = ql_checkostype(self.path)
@@ -143,6 +175,7 @@ class QLCoreUtils(object):
             module_name = ql_build_module_import_name("loader", loadertype_str.lower())
             return ql_get_module_function(module_name, function_name)(self)
 
+
     def component_setup(self, component_type, function_name):
         if not ql_is_valid_ostype(self.ostype):
             raise QlErrorOsType("[!] Invalid OSType")
@@ -153,6 +186,7 @@ class QLCoreUtils(object):
         module_name = "qiling." + component_type + "." + function_name
         function_name = "Ql" + function_name.capitalize() + "Manager"
         return ql_get_module_function(module_name, function_name)(self)
+
 
     def profile_setup(self):
         if self.profile:
@@ -169,11 +203,13 @@ class QLCoreUtils(object):
         config.read(profiles)
         return config
 
+
     def compile(self, archtype, runcode, arm_thumb=None):
         try:
             loadarch = KS_ARCH_X86
         except:
             raise QlErrorOutput("Please install Keystone Engine")
+
 
         def ks_convert(arch):
             if self.archendian == QL_ENDIAN.EB:
@@ -183,7 +219,7 @@ class QLCoreUtils(object):
                     QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_BIG_ENDIAN),
                     QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM + KS_MODE_BIG_ENDIAN),
                     QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN),
                 }
             else:
                 adapter = {
@@ -192,15 +228,14 @@ class QLCoreUtils(object):
                     QL_ARCH.MIPS: (KS_ARCH_MIPS, KS_MODE_MIPS32 + KS_MODE_LITTLE_ENDIAN),
                     QL_ARCH.ARM: (KS_ARCH_ARM, KS_MODE_ARM),
                     QL_ARCH.ARM_THUMB: (KS_ARCH_ARM, KS_MODE_THUMB),
-                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_ARM),
+                    QL_ARCH.ARM64: (KS_ARCH_ARM64, KS_MODE_LITTLE_ENDIAN),
                 }
 
-            if arch in adapter:
-                return adapter[arch]
-            # invalid
-            return None, None
+            return adapter.get(arch, (None,None))
+
 
         def compile_instructions(runcode, archtype, archmode):
+
             ks = Ks(archtype, archmode)
             shellcode = ''
             try:

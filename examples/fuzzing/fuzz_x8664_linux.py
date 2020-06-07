@@ -69,7 +69,7 @@ def main(input_file, enable_trace=False):
                 stdin=stdin,
                 stdout=1 if enable_trace else None,
                 stderr=1 if enable_trace else None,
-                log_console = True if enable_trace else False)
+                console = True if enable_trace else False)
 
     # or this for output:
     # ... stdout=sys.stdout, stderr=sys.stderr)
@@ -99,7 +99,7 @@ def main(input_file, enable_trace=False):
     
     # 64 bit loader addrs are placed at 0x7ffbf0100000
     # see loader/elf.py:load_with_ld(..)
-    X64BASE = int(ql.profile.get("OS64", "load_address"),16)
+    X64BASE = int(ql.profile.get("OS64", "load_address"), 16)
     
     # crash in case we reach stackcheck_fail:
     # 1225:	e8 16 fe ff ff       	callq  1040 <__stack_chk_fail@plt>

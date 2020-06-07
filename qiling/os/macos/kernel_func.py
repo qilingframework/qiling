@@ -12,45 +12,6 @@ from .const import *
 from .mach_port import *
 
 
-# commpage is a shared mem space which is in a static address
-# start at 0x7FFFFFE00000
-def load_commpage(ql):
-    ql.mem.write(COMM_PAGE_SIGNATURE, b'\x00')
-    ql.mem.write(COMM_PAGE_CPU_CAPABILITIES64, b'\x00\x00\x00\x00')
-    ql.mem.write(COMM_PAGE_UNUSED, b'\x00')
-    ql.mem.write(COMM_PAGE_VERSION, b'\x0d')
-    ql.mem.write(COMM_PAGE_THIS_VERSION, b'\x00')
-    ql.mem.write(COMM_PAGE_CPU_CAPABILITIES, b'\x00\x00\x00\x00')
-    ql.mem.write(COMM_PAGE_NCPUS, b'\x00')
-    ql.mem.write(COMM_PAGE_UNUSED0, b'\x00')
-    ql.mem.write(COMM_PAGE_CACHE_LINESIZE, b'\x00')
-    ql.mem.write(COMM_PAGE_SCHED_GEN, b'\x00')
-    ql.mem.write(COMM_PAGE_MEMORY_PRESSURE, b'\x00')
-    ql.mem.write(COMM_PAGE_SPIN_COUNT, b'\x00')
-    ql.mem.write(COMM_PAGE_ACTIVE_CPUS, b'\x00')
-    ql.mem.write(COMM_PAGE_PHYSICAL_CPUS, b'\x00')
-    ql.mem.write(COMM_PAGE_LOGICAL_CPUS, b'\x00')
-    ql.mem.write(COMM_PAGE_UNUSED1, b'\x00')
-    ql.mem.write(COMM_PAGE_MEMORY_SIZE, b'\x00')
-    ql.mem.write(COMM_PAGE_CPUFAMILY, b'\xec\x5e\x3b\x57')
-    ql.mem.write(COMM_PAGE_KDEBUG_ENABLE, b'\x00')
-    ql.mem.write(COMM_PAGE_ATM_DIAGNOSTIC_CONFIG, b'\x00')
-    ql.mem.write(COMM_PAGE_UNUSED2, b'\x00')
-    ql.mem.write(COMM_PAGE_TIME_DATA_START, b'\x00')
-    ql.mem.write(COMM_PAGE_NT_TSC_BASE, b'\x00')
-    ql.mem.write(COMM_PAGE_NT_SCALE, b'\x00')
-    ql.mem.write(COMM_PAGE_NT_SHIFT, b'\x00')
-    ql.mem.write(COMM_PAGE_NT_NS_BASE, b'\x00')
-    ql.mem.write(COMM_PAGE_NT_GENERATION, b'\x01')       # someflag seem important 
-    ql.mem.write(COMM_PAGE_GTOD_GENERATION, b'\x00')
-    ql.mem.write(COMM_PAGE_GTOD_NS_BASE, b'\x00')
-    ql.mem.write(COMM_PAGE_GTOD_SEC_BASE, b'\x00')
-    ql.mem.write(COMM_PAGE_APPROX_TIME, b'\x00')
-    ql.mem.write(COMM_PAGE_APPROX_TIME_SUPPORTED, b'\x00')
-    ql.mem.write(COMM_PAGE_CONT_TIMEBASE, b'\x00')
-    ql.mem.write(COMM_PAGE_BOOTTIME_USEC, b'\x00')
-
-
 def vm_shared_region_enter(ql):
     ql.mem.map(SHARED_REGION_BASE_X86_64, SHARED_REGION_SIZE_X86_64, info="[shared_region]")
     ql.macos_shared_region = True
@@ -59,10 +20,10 @@ def vm_shared_region_enter(ql):
 
 def map_commpage(ql):
     if ql.archtype== QL_ARCH.X8664:
-        addr_base = COMM_PAGE_START_ADDRESS
+        addr_base = X8664_COMM_PAGE_START_ADDRESS
         addr_size = 0x100000
     elif ql.archtype== QL_ARCH.ARM64:
-        addr_base = 0x0000000FFFFFC000
+        addr_base = ARM64_COMM_PAGE_START_ADDRESS
         addr_size = 0x1000        
     ql.mem.map(addr_base, addr_size, info="[commpage]")
     time_lock_slide = 0x68

@@ -18,7 +18,7 @@ def catch_KeyboardInterrupt(ql):
             try:
                 return func(*args, **kw)
             except BaseException as e:
-                # THREAD_EVENT_UNEXECPT_EVENT = 2
+                from .os.const import THREAD_EVENT_UNEXECPT_EVENT
                 ql.os.stop(stop_event=2)
                 ql.internal_exception = e
         return wrapper
@@ -164,6 +164,7 @@ def ql_setup_logger(logger_name=None):
         loggers = logging.root.manager.loggerDict
         _counter = len(loggers)
         logger_name = 'qiling_%s' % _counter
+
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)
     return logger
@@ -172,17 +173,27 @@ def ql_setup_logging_env(ql, logger=None):
     if not os.path.exists(ql.log_dir):
         os.makedirs(ql.log_dir, 0o755)
 
-    if ql.append:
-        ql.log_filename = ql.targetname + "_" + ql.append          
-    else:
-        ql.log_filename = ql.targetname
-    
+    ql.log_filename = ql.targetname + ql.append          
     ql.log_file = os.path.join(ql.log_dir, ql.log_filename) 
 
     #_logger = ql_setup_logging_file(ql.output, ql.log_file + "_" + str(pid), logger)
-    _logger = ql_setup_logging_file(ql.output, ql.log_file, logger)
+    _logger = ql_setup_logging_stream(ql)
+    _logger = ql_setup_logging_file(ql.output, ql.log_file, _logger)
     return _logger
 
+
+def ql_setup_logging_stream(ql, logger=None):
+
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+
+    ch.terminator = ""
+
+    if logger is None:
+        logger = ql_setup_logger()
+
+    logger.addHandler(ch)
+    return logger
 
 def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
 
@@ -199,11 +210,23 @@ def ql_setup_logging_file(ql_mode, log_file_path, logger=None):
     logger.addHandler(fh)
     return logger
 
-class Strace_filter(logging.Filter):
-    def __init__(self, func_names):
-        super(Strace_filter, self).__init__()
-        self.filter_list = func_names.split(",") if isinstance(func_names, str) else func_names
+def ql_setup_filter(func_names=None):
+    class _filter(logging.Filter):
+        def __init__(self, func_names):
+            super().__init__()
+            # accept list or string func_names so you can use it in qltool and programming
+            self.filter_list = func_names.strip().split(",") if isinstance(func_names, str) else func_names
 
-    def filter(self, record):
-        return any((record.getMessage().startswith(each) for each in self.filter_list))
-      
+        def filter(self, record):
+            return any((record.getMessage().startswith(each) for each in self.filter_list))
+
+    class _FalseFilter(logging.Filter):
+        def __init__(self):
+            super().__init__()
+        def filter(self, record):
+            return False
+
+    if func_names == False:
+        return _FalseFilter()
+    else:
+        return _filter(func_names)

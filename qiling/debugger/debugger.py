@@ -23,13 +23,12 @@ def ql_debugger_init(ql):
             
             if ql.shellcoder:
                 load_address = ql.os.entry_point
-                mappings = [(hex(load_address), 0x0)]
                 exit_point = load_address + len(ql.shellcoder)
             else:
                 load_address = ql.loader.load_address
-                mappings = [(hex(load_address), 0x10)]
                 exit_point = load_address + os.path.getsize(path)
-
+                
+            mappings = [(hex(load_address))]
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind((ip, port))
             ql.nprint("debugger> Initializing load_address 0x%x" % (load_address))
@@ -45,7 +44,7 @@ def ql_debugger_init(ql):
             remotedebugsrv = str(remotedebugsrv) + "server" 
             DEBUGSESSION = str.upper(remotedebugsrv) + "session"
             DEBUGSESSION = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, DEBUGSESSION)
-            ql.remotedebugsession = DEBUGSESSION(ql, conn, exit_point, mappings)
+            ql.remote_debug = DEBUGSESSION(ql, conn, exit_point, mappings)
         except:
             ql.nprint("debugger> Error: Not able to initialize Debugging Server")
             raise
@@ -79,6 +78,6 @@ def ql_debugger_init(ql):
                 ql_debugger(ql, remotedebugsrv, ip, port)
         
         except KeyboardInterrupt:
-            if ql.remotedebugsession():
-                ql.remotedebugsession.close()
+            if ql.remote_debug():
+                ql.remote_debug.close()
             raise QlErrorOutput("[!] Remote debugging session ended")

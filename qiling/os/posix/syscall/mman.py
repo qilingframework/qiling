@@ -3,6 +3,13 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
+from unicorn import (
+    UC_PROT_ALL,
+    UC_PROT_EXEC,
+    UC_PROT_NONE,
+    UC_PROT_READ,
+    UC_PROT_WRITE,
+)
 
 from qiling.const import *
 from qiling.os.linux.thread import *
@@ -11,6 +18,7 @@ from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
+
 
 def ql_syscall_munmap(ql, munmap_addr , munmap_len, *args, **kw):
     munmap_len = ((munmap_len + 0x1000 - 1) // 0x1000) * 0x1000
@@ -94,12 +102,13 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     if ((mmap_flags & MAP_ANONYMOUS) == 0) and mmap_fd < 256 and ql.os.file_des[mmap_fd] != 0:
         ql.os.file_des[mmap_fd].lseek(mmap_offset)
         data = ql.os.file_des[mmap_fd].read(mmap_length)
+        mem_info = str(ql.os.file_des[mmap_fd].name)
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
-        ql.dprint(D_INFO, "[+] log mem mmap  : " + str(ql.os.file_des[mmap_fd].name))
-
+        ql.dprint(D_INFO, "[+] log mem mmap  : " + mem_info)
+        ql.mem.add_mapinfo(mmap_base, mmap_base + (len(data)), mem_p = UC_PROT_ALL, mem_info = mem_info)
         ql.mem.write(mmap_base, data)
-        mem_info = ql.os.file_des[mmap_fd].name
+        
 
     ql.nprint("old_mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, mmap_offset, mmap_base))
     regreturn = mmap_base
@@ -166,12 +175,13 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
     if ((mmap_flags & MAP_ANONYMOUS) == 0) and mmap_fd < 256 and ql.os.file_des[mmap_fd] != 0:
         ql.os.file_des[mmap_fd].lseek(mmap_pgoffset)
         data = ql.os.file_des[mmap_fd].read(mmap_length)
+        mem_info = str(ql.os.file_des[mmap_fd].name)
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
-        ql.dprint(D_INFO, "[+] log mem mmap  : " + str(ql.os.file_des[mmap_fd].name))
-
+        ql.dprint(D_INFO, "[+] log mem mmap  : " + mem_info)
+        ql.mem.add_mapinfo(mmap_base, mmap_base + (len(data)), mem_p = UC_PROT_ALL, mem_info = mem_info)
         ql.mem.write(mmap_base, data)
-        mem_info = ql.os.file_des[mmap_fd].name
+        
 
     ql.nprint("mmap(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap_addr, mmap_length, mmap_prot, mmap_flags,
                                                                mmap_fd, mmap_pgoffset, mmap_base))
@@ -216,7 +226,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
 
     if need_mmap:
-        ql.dprint(D_INFO, "[+] log mmap - mapping needed")
+        ql.dprint(D_INFO, "[+] log mmap2 - mapping needed")
         try:
             ql.mem.map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000)
         except:
@@ -228,12 +238,12 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     if ((mmap2_flags & MAP_ANONYMOUS) == 0) and mmap2_fd < 256 and ql.os.file_des[mmap2_fd] != 0:
         ql.os.file_des[mmap2_fd].lseek(mmap2_pgoffset)
         data = ql.os.file_des[mmap2_fd].read(mmap2_length)
+        mem_info = str(ql.os.file_des[mmap2_fd].name)
 
-        ql.dprint(D_INFO, "[+] log2 mem wirte : " + hex(len(data)))
-        ql.dprint(D_INFO, "[+] log2 mem mmap  : " + str(ql.os.file_des[mmap2_fd].name))
+        ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
+        ql.dprint(D_INFO, "[+] log mem mmap2  : " + mem_info)
+        ql.mem.add_mapinfo(mmap_base, mmap_base + (len(data)), mem_p = UC_PROT_ALL, mem_info = mem_info)
         ql.mem.write(mmap_base, data)
-
-        mem_info = ql.os.file_des[mmap2_fd].name
 
     ql.nprint("mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
 
