@@ -87,11 +87,10 @@ class HookFunc:
             raise
         
         self.ori_offest = self.rel.r_offset
-        self.rel.r_offset = self.hook_data_ptr - self.load_base        
+        self.rel.r_offset = self.hook_data_ptr - self.load_base
+        self.ori_data = self.ql.mem.read(self.ori_offest + self.load_base, self.ql.pointersize)        
+        
         self.ql.mem.write(self.rel.ptr, self.rel.pack())
-
-        self.ori_data = self.ql.mem.read(self.ori_offest + self.load_base, self.ql.pointersize)
-
         self.ql.mem.write(self.ori_offest + self.load_base, self.ql.pack(self.hook_fuc_ptr))
         self.ql.mem.write(self.hook_data_ptr, bytes(self.ori_data))
         
