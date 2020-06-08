@@ -210,8 +210,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
 
     mmap_base = mmap2_addr
     need_mmap = True
-
-    if mmap2_addr != 0 and mmap2_addr < ql.loader.mmap_address:
+    if mmap2_addr !=0 and ql.mem.is_mapped(mmap2_addr,mmap2_length): 
         need_mmap = False
     if mmap2_addr == 0:
         mmap_base = ql.loader.mmap_address
@@ -228,8 +227,10 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     if need_mmap:
         ql.dprint(D_INFO, "[+] log mmap2 - mapping needed")
         try:
+            ql.dprint(D_INFO, "trying unicorn map %x %x"%(mmap_base,((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
             ql.mem.map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000)
         except:
+            ql.dprint(D_INFO, "unicorn mapping failed %x %x"%(mmap_base,((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
             ql.mem.show_mapinfo()
             raise
 
