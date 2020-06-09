@@ -407,17 +407,23 @@ class QLCoreHooks(object):
             api_name = "hook_" + str(api_name)
 
         if intercept_function.__name__.lower().endswith("_onenter"):
-            self.os.user_defined_api_onenter[api_name] = intercept_function
+            if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+                self.os.user_defined_api_onenter[api_name] = intercept_function
+            else:
+                self.os.add_function_hook(api_name, intercept_function, "onenter") 
 
         elif intercept_function.__name__.lower().endswith("_onexit"):
-            self.os.user_defined_api_onexit[api_name] = intercept_function            
+            if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
+                self.os.user_defined_api_onexit[api_name] = intercept_function  
+            else:
+                self.os.add_function_hook(api_name, intercept_function, "onexit")           
 
         #if intercept == QL_INTERCEPT.CALL:
         else:
             if self.ostype in (QL_OS.WINDOWS, QL_OS.UEFI):
                 self.os.user_defined_api[api_name] = intercept_function
             else:
-                self.os.add_function_hook(api_name, intercept_function)  
+                self.os.add_function_hook(api_name, intercept_function, '')  
 
 
     # ql.func_arg - get syscall for all posix series

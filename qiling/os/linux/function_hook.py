@@ -47,43 +47,172 @@ DT_MIPS_SYMTABNO = 0x70000011
 DT_MIPS_GOTSYM = 0x70000013
 
 class HookFunc:
-<<<<<<< HEAD
     def __init__(self, ql, fn):
         self.fucname = fn
-=======
-    def __init__(self, ql, funcname, r, load_base):
-        self.funcname = funcname
-        self.hook = []
-        self.rel = r
-        self.idx = None
-        self.hook_fuc_ptr = None
->>>>>>> b198b4edfbd98d1b72344c6dc06047c89f90f590
         self.hook_data_ptr = None
+        self.hook_onenter = []
+        self.hook_onexit = []
         self.hook = []
         self.ql = ql
+        self.ret_pc = None
+        self.exit_addr = None
 
-    def add_hook(self, cb, userdata):
-        self.hook.append((cb, userdata))
+    def add_hook(self, cb, pos, userdata):
+        if pos == 'onenter':
+            self.hook_onenter.append((cb, userdata))
+        elif pos == 'onexit':
+            self.hook_onexit.append((cb, userdata))
+        else:
+            self.hook.append((cb, userdata))
 
-    def call(self):
-        if self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
-            self.ql.reg.arch_pc = self.ql.reg.arch_pc + 4
+    def get_ret_pc(self):
+        # ARM
+        if self.ql.archtype== QL_ARCH.ARM:
+            return self.ql.reg.lr
+
+        # MIPS32
+        elif self.ql.archtype== QL_ARCH.MIPS:
+            pass
+
+        # ARM64
+        elif self.ql.archtype== QL_ARCH.ARM64:
+            return self.ql.unpack(self.ql.mem.read(self.ql.reg.sp, self.ql.pointersize))
+
+        # X86
+        elif  self.ql.archtype== QL_ARCH.X86:
+            return self.ql.unpack(self.ql.mem.read(self.ql.reg.esp, self.ql.pointersize))
+
+        # X8664
+        elif  self.ql.archtype== QL_ARCH.X8664:
+            return self.ql.unpack(self.ql.mem.read(self.ql.reg.rsp, self.ql.pointersize))
+        else:
+            raise
+
+    def context_fixup(self):
+        # ARM
+        if self.ql.archtype== QL_ARCH.ARM:
+            pass
+
+        # MIPS32
+        elif self.ql.archtype== QL_ARCH.MIPS:
+            pass
+
+        # ARM64
+        elif self.ql.archtype== QL_ARCH.ARM64:
+            self.ql.reg.esp = self.ql.reg.sp + self.ql.pointersize
+
+        # X86
+        elif  self.ql.archtype== QL_ARCH.X86:
+            self.ql.reg.esp = self.ql.reg.esp + self.ql.pointersize
+
+        # X8664
+        elif  self.ql.archtype== QL_ARCH.X8664:
+            self.ql.reg.rsp = self.ql.reg.rsp + self.ql.pointersize
+        else:
+            raise
+
+    def set_ret(self, addr):
+        # ARM
+        if self.ql.archtype== QL_ARCH.ARM:
+            self.ql.reg.lr = addr
+
+        # MIPS32
+        elif self.ql.archtype== QL_ARCH.MIPS:
+            self.ql.mem.write(self.ql.reg.sp, self.ql.pack(addr))
+
+        # ARM64
+        elif self.ql.archtype== QL_ARCH.ARM64:
+            pass
+
+        # X86
+        elif  self.ql.archtype== QL_ARCH.X86:
+            self.ql.mem.write(self.ql.reg.esp, self.ql.pack(addr))
+
+        # X8664
+        elif  self.ql.archtype== QL_ARCH.X8664:
+            self.ql.mem.write(self.ql.reg.rsp, self.ql.pack(addr))
+        else:
+            raise
+
+    def call_enter(self):
+        # if self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
+        #     self.ql.reg.arch_pc = self.ql.reg.arch_pc + 4
 
         next_pc = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
-        for cb, userdata in self.hook:
-            if userdata == None:
-                ret = cb(self.ql)
-            else:
-                ret = cb(self.ql, userdata)
+        self.ret_pc = self.get_ret_pc()
+        onenter_cb = None
+        onenter_userdata = None
 
-            if type(ret) != int:
+        if len(self.hook_onenter) != 0:
+            onenter_cb, onenter_userdata = self.hook_onenter[0]
+        
+        cb = None
+        userdata = None
+        if len(self.hook) != 0:
+            cb, userdata = self.hook[0]
+        
+        if onenter_cb == None:
+            ret = 0
+        else:
+            if onenter_userdata == None:
+                ret = onenter_cb(self.ql)
+            else:
+                ret = onenter_cb(self.ql, onenter_userdata)
+
+        if isinstance(ret, int) == False or ret & QL_CALL_BLOCK == 0:
+            if cb != None:
+                if userdata == None:
+                    ret = cb(self.ql)
+                else:
+                    ret = cb(self.ql, userdata)
+            else:
                 ret = 0
-            
-            if ret & QL_CALL_BLOCK == 0:
-                self.ql.reg.arch_pc = next_pc
-            
-            if ret & QL_HOOK_BLOCK != 0:
-                break
+
+            self.context_fixup()
+        else:
+            self.set_ret(self.exit_addr)
+            self.ql.reg.arch_pc = next_pc
+    
+    def ret(self):
+        # ARM
+        if self.ql.archtype== QL_ARCH.ARM:
+            self.ql.reg.arch_pc = self.ret_pc
+
+        # MIPS32
+        elif self.ql.archtype== QL_ARCH.MIPS:
+            pass
+
+        # ARM64
+        elif self.ql.archtype== QL_ARCH.ARM64:
+            self.ql.reg.arch_pc = self.ret_pc
+
+        # X86
+        elif  self.ql.archtype== QL_ARCH.X86:
+            self.ql.reg.arch_pc = self.ret_pc
+
+        # X8664
+        elif  self.ql.archtype== QL_ARCH.X8664:
+            self.ql.reg.arch_pc = self.ret_pc
+        else:
+            raise
+
+    def call_exit(self):
+        # if self.ql.archtype == QL_ARCH.ARM or self.ql.archtype == QL_ARCH.ARM64:
+        #     self.ql.reg.arch_pc = self.ql.reg.arch_pc + 4
+        onexit_cb = None
+        onexit_userdata = None
+
+        if len(self.hook_onexit) != 0:
+            onexit_cb, onexit_userdata = self.hook_onexit[0]
+
+        if onexit_cb != None:
+            if onexit_userdata == None:
+                onexit_cb(self.ql)
+            else:
+                onexit_cb(self.ql, onexit_userdata)
+
+        self.ret()
+
 
 class HookFuncRel(HookFunc):
     def __init__(self, ql, fucname, r, load_base):
@@ -95,14 +224,20 @@ class HookFuncRel(HookFunc):
         self.ori_offest = None
         self.ori_data = None
     
-    def _hook_fuc(self, ql):
-        self.call()
+    def _hook_fuc_enter(self, ql):
+        self.call_enter()
+    
+    def _hook_fuc_exit(self, ql):
+        self.call_exit()
     
     def enable(self):
         if self.rel == None or self.hook_fuc_ptr == None or self.hook_data_ptr == None:
             raise
-            
-        self.ql.hook_address(self._hook_fuc, self.hook_fuc_ptr)
+        
+        self.exit_addr = self.hook_fuc_ptr + 8
+
+        self.ql.hook_address(self._hook_fuc_enter, self.hook_fuc_ptr)
+        self.ql.hook_address(self._hook_fuc_exit, self.hook_fuc_ptr + 8)
         
         self.ori_offest = self.rel.r_offset
         self.rel.r_offset = self.hook_data_ptr - self.load_base
@@ -398,37 +533,38 @@ class FunctionHook:
         if self.ql.archtype== QL_ARCH.ARM:
             self.GLOB_DAT = 21
             self.JMP_SLOT = 22
-            # bkpt 0; bx lr
-            ins = b'p\x00 \xe1\x1e\xff/\xe1'
+            # orr r1, r1, r1
+            ins = b'\x01\x10\x81\xe1'
             self.add_function_hook = self.add_function_hook_relocation
 
         # MIPS32
         elif self.ql.archtype== QL_ARCH.MIPS:
             self.GLOB_DAT = 21
             self.JMP_SLOT = 22
-            ins = b'\xa0\x00\x00\xef\x1e\xff/\xe1'
+            # add $t9, $t9, $zero
+            ins = b' \xc8 \x03'
             self.add_function_hook = self.add_function_hook_mips
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
             self.GLOB_DAT = 1025
             self.JMP_SLOT = 1026
-            #brk 0; ret
-            ins = b'\x00\x00 \xd4\xc0\x03_\xd6'
+            #'!\x00\x01\xaa'
+            ins = b'orr x1,x1,x1'
             self.add_function_hook = self.add_function_hook_relocation
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
-            GLOB_DAT = 6
-            JMP_SLOT = 7
+            self.GLOB_DAT = 6
+            self.JMP_SLOT = 7
             # nop
             ins = b'\x90'
             self.add_function_hook = self.add_function_hook_relocation
 
         # X8664
         elif  self.ql.archtype== QL_ARCH.X8664:
-            GLOB_DAT = 6
-            JMP_SLOT = 7
+            self.GLOB_DAT = 6
+            self.JMP_SLOT = 7
             # nop
             ins = b'\x90'
             self.add_function_hook = self.add_function_hook_relocation
@@ -726,13 +862,13 @@ class FunctionHook:
 
         self.use_list[idx].call()
 
-    def _hook_function(self, fn, r, cb, userdata):
+    def _hook_function(self, fn, r, cb, pos, userdata):
         if fn in self.hook_list.keys():
-            self.hook_list[fn].add_hook(cb, userdata)
+            self.hook_list[fn].add_hook(cb, pos, userdata)
             return
 
         hf = HookFuncRel(self.ql, fn, r, self.load_base)
-        hf.add_hook(cb, userdata)
+        hf.add_hook(cb, pos, userdata)
 
         if len(self.free_list) == 0:
             raise
@@ -756,15 +892,15 @@ class FunctionHook:
         #     self.hook_int = True
 
 
-    def add_function_hook_relocation(self, funcname, cb, userdata = None):
+    def add_function_hook_relocation(self, funcname, cb, pos, userdata = None):
         if type(funcname) != str:
             raise
-
+        
         for r in self.rel_list:
             if (r.r_type == self.JMP_SLOT or r.r_type == self.GLOB_DAT) and r.r_sym != 0:
                 tmp_name = self.strtab[self.symtab[r.r_sym].st_name]
                 if tmp_name == funcname.encode():
-                    self._hook_function(tmp_name, r, cb, userdata)
+                    self._hook_function(tmp_name, r, cb, pos, userdata)
     
     def add_function_hook_default(self, funcname, cb, userdata = None):
         pass
@@ -774,8 +910,7 @@ class FunctionHook:
 
         for symidx in range(self.mips_gotsym, self.mips_symtabno):
             tmp_name = self.strtab[self.symtab[symidx].st_name]
-<<<<<<< HEAD
-            if tmp_name == fucname.encode():
+            if tmp_name == funcname.encode():
                 fn = tmp_name
                 if fn in self.hook_list.keys():
                     self.hook_list[fn].add_hook(cb, userdata)
@@ -801,10 +936,6 @@ class FunctionHook:
                 if self.hook_int == False:
                     self.ql.hook_intno(self._hook_int, 0xa0)
                     self.hook_int = True
-=======
-            if tmp_name == funcname.encode():
-                pass
->>>>>>> b198b4edfbd98d1b72344c6dc06047c89f90f590
 
     def _load_import(self):
         pass
