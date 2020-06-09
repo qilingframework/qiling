@@ -624,7 +624,7 @@ class GDBSERVERsession(object):
                                 self.send('F1;\x00')
 
                         elif count > 1:
-                            self.send(b'F' + (str(hex(count)[2:]).encode()) + b';' + (read_offset))
+                            self.send(("F%x;" % len(read_offset)).encode() + (read_offset))
 
                         else:
                             self.send("F0;")
