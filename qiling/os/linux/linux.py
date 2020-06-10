@@ -20,6 +20,7 @@ class QlOsLinux(QlOsPosix):
         self.futexm = None
         self.function_hook_tmp = []
         self.fh = None
+        self.function_after_load_list = []
         self.load()
 
     def load(self):
@@ -65,6 +66,14 @@ class QlOsLinux(QlOsPosix):
 
     def add_function_hook(self, fn, cb, userdata = None):
         self.function_hook_tmp.append((fn, cb, userdata))
+    
+    def register_function_after_load(self, function):
+        if function not in self.function_after_load_list:
+            self.function_after_load_list.append(function)
+
+    def run_function_after_load(self):
+        for f in self.function_after_load_list:
+            f()
 
     def run(self):
         for function, callback, userdata in self.ql.os.function_hook_tmp:
@@ -91,6 +100,7 @@ class QlOsLinux(QlOsPosix):
                         main_thread.set_exit_point(self.ql.loader.elf_entry)
                         thread_management.run()
                         self.ql.enable_lib_patch()
+                        self.run_function_after_load()
 
                         main_thread.set_start_address(self.ql.loader.elf_entry)
                         main_thread.set_exit_point(self.exit_point)
@@ -104,6 +114,7 @@ class QlOsLinux(QlOsPosix):
                     if self.ql.loader.elf_entry != self.ql.loader.entry_point:
                         self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
                         self.ql.enable_lib_patch()
+                        self.run_function_after_load()
                     
                     if  self.ql.entry_point is not None:
                         self.ql.loader.elf_entry = self.ql.entry_point

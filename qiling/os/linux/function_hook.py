@@ -72,7 +72,7 @@ class HookFunc:
 
         # MIPS32
         elif self.ql.archtype== QL_ARCH.MIPS:
-            pass
+            return self.ql.reg.ra
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
@@ -118,11 +118,11 @@ class HookFunc:
 
         # MIPS32
         elif self.ql.archtype== QL_ARCH.MIPS:
-            self.ql.mem.write(self.ql.reg.sp, self.ql.pack(addr))
+            self.ql.reg.ra = addr
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
-            pass
+            self.ql.mem.write(self.ql.reg.sp, self.ql.pack(addr))
 
         # X86
         elif  self.ql.archtype== QL_ARCH.X86:
@@ -180,7 +180,7 @@ class HookFunc:
 
         # MIPS32
         elif self.ql.archtype== QL_ARCH.MIPS:
-            pass
+            self.ql.reg.arch_pc = self.ret_pc
 
         # ARM64
         elif self.ql.archtype== QL_ARCH.ARM64:
@@ -248,12 +248,41 @@ class HookFuncRel(HookFunc):
         self.ql.mem.write(self.hook_data_ptr, bytes(self.ori_data))
 
 class HookFuncMips(HookFunc):
-    def __init__(self, ql, fn, load_base):
-        super(HookFuncMips, self).__init__(ql, fn)
+    def __init__(self, ql, fucname, got, gotidx, load_base):
+        super(HookFuncMips, self).__init__(ql, fucname)
         self.load_base = load_base
+        self.got = got
+        self.gotidx = gotidx
+    
+    def _hook_fuc_enter(self, ql):
+        self.ql.reg.t9 = self.ql.unpack(self.ql.mem.read(self.hook_data_ptr, self.ql.pointersize))
+        self.call_enter()
+    
+    def _hook_fuc_exit(self, ql):
+        self.call_exit()
+
+        tmp = self.ql.unpack(self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pointersize))
+        if tmp != self.hook_fuc_ptr:
+            self.ql.mem.write(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pack(self.hook_fuc_ptr))
+            self.ql.mem.write(self.hook_data_ptr, self.ql.pack(tmp))
+    
+    def _hook_got(self):
+        self.ori_data = self.ql.mem.read(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pointersize) 
+
+        self.ql.mem.write(self.got + self.load_base + self.gotidx * self.ql.pointersize, self.ql.pack(self.hook_fuc_ptr))
+        self.ql.mem.write(self.hook_data_ptr, bytes(self.ori_data))
     
     def enable(self):
-        pass
+        if self.got == None or self.hook_fuc_ptr == None or self.hook_data_ptr == None:
+            raise
+
+        self.ql.os.register_function_after_load(self._hook_got)
+        
+        self.exit_addr = self.hook_fuc_ptr + 8
+
+        self.ql.hook_address(self._hook_fuc_enter, self.hook_fuc_ptr)
+        self.ql.hook_address(self._hook_fuc_exit, self.hook_fuc_ptr + 8)
+
 
 class ELF_Phdr:
     def __init__(self, p_type, p_offset, p_vaddr, p_paddr, p_filesz, p_memsz, p_flags, p_align):
@@ -905,7 +934,7 @@ class FunctionHook:
     def add_function_hook_default(self, funcname, cb, userdata = None):
         pass
     
-    def add_function_hook_mips(self, funcname, cb, userdata = None):
+    def add_function_hook_mips(self, funcname, cb, pos, userdata = None):
         self.add_function_hook_relocation(funcname, cb, userdata)
 
         for symidx in range(self.mips_gotsym, self.mips_symtabno):
@@ -913,11 +942,11 @@ class FunctionHook:
             if tmp_name == funcname.encode():
                 fn = tmp_name
                 if fn in self.hook_list.keys():
-                    self.hook_list[fn].add_hook(cb, userdata)
+                    self.hook_list[fn].add_hook(cb, pos, userdata)
                     return
 
-                hf = HookFuncMips(self.ql, fn, self.load_base)
-                hf.add_hook(cb, userdata)
+                hf = HookFuncMips(self.ql, fn, self.plt_got, symidx - self.mips_gotsym + self.mips_local_gotno, self.load_base)
+                hf.add_hook(cb, pos, userdata)
 
                 if len(self.free_list) == 0:
                     raise
@@ -926,16 +955,16 @@ class FunctionHook:
                 del self.free_list[0]
 
                 hf.hook_fuc_ptr = hf.idx * 0x10 + self.hook_mem
-                hf.hook_data_ptr = hf.idx * 0x10 + self.hook_mem + 8
+                hf.hook_data_ptr = hf.idx * 0x10 + self.hook_mem + 0x1000
 
                 self.use_list[hf.idx] = hf
                 self.hook_list[fn] = hf
 
-                # hf.enable()
+                hf.enable()
 
-                if self.hook_int == False:
-                    self.ql.hook_intno(self._hook_int, 0xa0)
-                    self.hook_int = True
+                # if self.hook_int == False:
+                #     self.ql.hook_intno(self._hook_int, 0xa0)
+                #     self.hook_int = True
 
     def _load_import(self):
         pass
