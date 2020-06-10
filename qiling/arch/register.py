@@ -44,11 +44,15 @@ class QlRegisterManager():
 
     # read register
     def read(self, register):
-        return self.get_register(register)
+        if isinstance(register, str):
+            register = self.register_mapping.get(register.lower(), None)
+        return self.ql.uc.reg_read(register)
 
 
     def write(self, register, value):
-        self.set_register(register, value)
+        if isinstance(register, str):
+            register = self.register_mapping.get(register.lower(), None) 
+        return self.ql.uc.reg_write(register, value)
 
 
     def msr(self, msr, addr= None):
@@ -125,20 +129,6 @@ class QlRegisterManager():
 
     def get_reg_name(self, uc_reg_name):
         return self.register_mapping.get(uc_reg_name, None)
-
-
-    #FIXME: why do we need this if we have read (See above this class) @sgniwx
-    def get_register(self, register):
-        if isinstance(register, str):
-            register = self.register_mapping.get(register.lower(), None)
-        return self.ql.uc.reg_read(register)
-
-
-    #FIXME: why do we need this if we have write (See above this class) @sgniwx
-    def set_register(self, register, value):
-        if isinstance(register, str):
-            register = self.register_mapping.get(register.lower(), None) 
-        return self.ql.uc.reg_write(register, value)
 
 
     def create_reverse_mapping(self):
