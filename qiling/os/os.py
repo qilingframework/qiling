@@ -59,10 +59,11 @@ class QlOs(QLOsUtils):
         self.ql.nprint("[!] Emulation Error")
         
         self.ql.nprint("\n")
-        for reg in self.ql.reg.table:
-            REG_NAME = reg
-            REG_VAL = self.ql.reg.read(reg)
-            self.ql.nprint("[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+        for reg in self.ql.reg.register_mapping:
+            if isinstance(reg, str):
+                REG_NAME = reg
+                REG_VAL = self.ql.reg.read(reg)
+                self.ql.nprint("[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
         
         self.ql.nprint("\n")
         self.ql.nprint("[+] PC = 0x%x" %(self.ql.reg.arch_pc))

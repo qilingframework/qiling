@@ -38,62 +38,28 @@ class QlArch(ABC):
     @abstractmethod
     def stack_read(self, value):
         pass
+ 
 
-
-    # set PC
-    @abstractmethod
+       # set PC
     def set_pc(self, value):
-        pass
+        self.ql.reg.arch_pc = value
 
 
     # get PC
-    @abstractmethod
     def get_pc(self):
-        pass
+        return self.ql.reg.arch_pc
 
 
     # set stack pointer
-    @abstractmethod
     def set_sp(self, value):
-        pass
+        self.ql.reg.arch_sp = value
 
 
     # get stack pointer
-    @abstractmethod
     def get_sp(self):
-        pass
+        return self.ql.reg.arch_sp 
 
 
-    # get stack pointer register
-    @abstractmethod
-    def get_name_sp(self):
-        pass
-
-
-    # get PC register
-    @abstractmethod
-    def get_name_pc(self):
-        pass
-
-
-    # get PC register
-    @abstractmethod
-    def get_reg_table(self):
-        pass
-
-
-    # get register name
-    @abstractmethod
-    def get_reg_name_str(self):
-        pass
-
-
-    # set register name
-    @abstractmethod
-    def set_reg_name_str(self, uc_reg):
-        pass
-   
-   
     def addr_to_str(self, addr, short=False, endian="big"):
         if self.ql.archbit == 64 and short == False:
             addr = (hex(int.from_bytes(struct.pack('<Q', addr), byteorder=endian)))

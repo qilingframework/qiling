@@ -238,10 +238,11 @@ class QLOsUtils:
             self.ql.nprint("%s %s" % (i.mnemonic, i.op_str))
 
         if self.ql.output == QL_OUTPUT.DUMP:
-            for reg in self.ql.reg.table:
-                REG_NAME = reg
-                REG_VAL = self.ql.reg.read(reg)
-                self.ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+            for reg in self.ql.reg.register_mapping:
+                if isinstance(reg, str):
+                    REG_NAME = reg
+                    REG_VAL = self.ql.reg.read(reg)
+                    self.ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
 
     def setup_output(self):
         def ql_hook_block_disasm(ql, address, size):
