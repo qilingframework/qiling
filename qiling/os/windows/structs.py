@@ -293,6 +293,7 @@ class WindowsStruct:
         raise NotImplementedError
 
     def generic_write(self, addr: int, attributes: list):
+        self.ql.dprint(D_INFO, "[+] Writing Windows object " + self.__class__.__name__)
         already_written = 0
         for elem in attributes:
             (val, size, endianness, typ) = elem
@@ -305,6 +306,7 @@ class WindowsStruct:
                     value = bytes(val)
                 else:
                     value = val
+                self.ql.mem.write(addr + already_written, value)
             elif issubclass(typ, WindowsStruct):
                 val.write(addr)
             else:
