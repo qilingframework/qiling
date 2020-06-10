@@ -62,7 +62,7 @@ class QlRegisterManager():
             self.ql.uc.msr_write(msr, addr)
 
 
-    # ql.reg.save - save based on ql.reg.table
+    # ql.reg.save
     def save(self):
         reg_dict = {}
         for reg in self.register_mapping:
@@ -71,7 +71,7 @@ class QlRegisterManager():
         return reg_dict
 
 
-    # ql.reg.restore - restore based on ql.reg.table
+    # ql.reg.restore
     def restore(self, value = {}):
         for reg in self.register_mapping:
             reg_v= value[reg]
@@ -82,18 +82,6 @@ class QlRegisterManager():
     #FIXME: This needs to be implemented for all archs
     def bit(self, uc_reg):
         return self.ql.arch.get_reg_bit(uc_reg)
-
-
-    # ql.reg.name_pc - PC register name getter
-    @property
-    def name_pc(self):
-        return self.register_mapping[self.uc_pc]
-
-
-    # ql.reg.name_sp - SP register name getter
-    @property
-    def name_sp(self):
-        return self.register_mapping[self.uc_sp]
 
 
     # Generic methods to get SP and IP across Arch's #
