@@ -298,7 +298,7 @@ class WindowsStruct:
             (val, size, endianness, typ) = elem
             if typ == int:
                 value = val.to_bytes(size, endianness)
-                self.ql.dprint(D_INFO, "[+] Writing at addr %d value %s" % (addr + already_written, value))
+                self.ql.dprint(D_RPRT, "[+] Writing to %d with value %s" % (addr + already_written, value))
                 self.ql.mem.write(addr + already_written, value)
             elif typ == bytes:
                 if isinstance(val, bytearray):
