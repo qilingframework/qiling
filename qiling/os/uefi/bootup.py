@@ -72,15 +72,15 @@ def hook_GetMemoryMap(ql, address, params):
 def hook_AllocatePool(ql, address, params):
     address = ql.loader.heap.alloc(params["Size"])
     write_int64(ql, params["Buffer"], address)
-    return EFI_SUCCESS
+    return EFI_SUCCESS if address else EFI_OUT_OF_RESOURCES
 
 @dxeapi(params={
     "Buffer": POINTER, #POINTER_T(None)
 })
 def hook_FreePool(ql, address, params):
     address = params["Buffer"]
-    ql.loader.heap.free(address)
-    return EFI_SUCCESS
+    freed = ql.loader.heap.free(address)
+    return EFI_SUCCESS if freed else EFI_INVALID_PARAMETER 
 
 @dxeapi(params={
     "Type": UINT,
