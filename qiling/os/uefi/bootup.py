@@ -421,8 +421,8 @@ def hook_LocateHandleBuffer(ql, address, params):
     address = ql.loader.heap.alloc(buffer_size)
     write_int64(ql, params["Buffer"], address)
     for handle in handles:
-            write_int64(ql, address, handle)
-            address += pointer_size
+        write_int64(ql, address, handle)
+        address += pointer_size
     return EFI_SUCCESS
 
 @dxeapi(params={
