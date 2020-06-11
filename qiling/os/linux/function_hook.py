@@ -57,10 +57,10 @@ class HookFunc:
         self.ret_pc = None
         self.exit_addr = None
 
-    def add_hook(self, cb, pos, userdata):
-        if pos == 'onenter':
+    def add_hook(self, cb, intercept, userdata):
+        if intercept == QL_INTERCEPT.ENTER:
             self.hook_onenter.append((cb, userdata))
-        elif pos == 'onexit':
+        elif intercept == QL_INTERCEPT.EXIT:
             self.hook_onexit.append((cb, userdata))
         else:
             self.hook.append((cb, userdata))
