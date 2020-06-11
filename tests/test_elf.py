@@ -97,7 +97,7 @@ class ELFTest(unittest.TestCase):
 
         self.assertEqual([0x1000], ql.mem.search(b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD"))
         self.assertEqual(93824992233162, self.set_api)
-        self.assertEqual(29, self.set_api_onexit)
+        self.assertEqual(29 or 73, self.set_api_onexit)
         self.assertEqual(28, self.set_api_onenter)
 
         del self.set_api
