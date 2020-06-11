@@ -420,6 +420,8 @@ def hook_LocateHandleBuffer(ql, address, params):
         return EFI_NOT_FOUND
     address = ql.loader.heap.alloc(buffer_size)
     write_int64(ql, params["Buffer"], address)
+    if address == 0:
+        return EFI_OUT_OF_RESOURCES
     for handle in handles:
         write_int64(ql, address, handle)
         address += pointer_size
