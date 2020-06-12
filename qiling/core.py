@@ -244,7 +244,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             try:
                 self.mem.write(self.mem.get_lib_base(filename) + addr, code)
             except:
-                raise RuntimeError("Fail to patch filename %s at addr 0x%x" % (filename, addr))
+                raise RuntimeError("Fail to patch %s at address 0x%x" % (filename, addr))
 
 
     # stop emulation

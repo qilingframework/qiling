@@ -26,14 +26,7 @@ def _GetModuleHandle(ql, address, params):
             ret = ql.loader.dlls[lpModuleName]
         else:
             ql.dprint(D_INFO, "[!] Library %s not imported" % lpModuleName)
-            # Let's try to import it if the sample think is default dll and was imported at the start
-            # Probably we can optimize here since load_dll already do a lot of checks, but not a real problem
-            path = os.path.join(ql.rootfs, ql.dlls, lpModuleName)
-            if is_file_library(lpModuleName) and os.path.exists(path):
-                ret = ql.loader.load_dll(lpModuleName.encode())
-            else:
-                ql.dprint(D_INFO, "[!] Library %s not found" % lpModuleName)
-                ret = 0
+            ret = 0
     return ret
 
 

@@ -10,6 +10,7 @@ from binascii import unhexlify
 sys.path.insert(0, "..")
 
 from qiling import *
+from qiling.const import *
 from qiling.exception import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
@@ -100,7 +101,7 @@ class PETest(unittest.TestCase):
             return address, params
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
-        ql.set_api("GetCurrentThreadId", ThreadId_onEnter)
+        ql.set_api("GetCurrentThreadId", ThreadId_onEnter, QL_INTERCEPT.ENTER)
         ql.run()
         
         self.assertGreater(255, self.thread_id)
@@ -174,7 +175,7 @@ class PETest(unittest.TestCase):
             print("We are finally done")
             ql.emu_stop()
 
-        ql.hook_address(end, 0x004014a1)
+        ql.hook_address(end, 0x004016ae)
 
         ql.run()
         del ql
@@ -186,35 +187,37 @@ class PETest(unittest.TestCase):
         })
         def my_puts64(ql, address, params):
             ret = 0
-            ql.nprint("\n+++++++++\nMy Windows 64bit Windows API\n+++++++++\n")
-            string = params["str"]
-            ret = len(string)
-            self.set_api = "pass"
+            print("\n+++++++++ My Windows 64bit Windows API +++++++++\n")
+            print("params: ", params)
+            print("+++++++++\n")
+            params["str"] = "Hello Hello Hello"
+            ret = len(params["str"])
+            self.set_api = len(params["str"])
             return ret
 
         def my_onenter(ql, address, params):
             print("\n+++++++++\nmy OnEnter")
             print("params: ", params)
             print("+++++++++\n")
-            self.set_api_onenter = "pass"
+            self.set_api_onenter = self.set_api = len( params["str"])
             return  address, params
 
-
         def my_onexit(ql, address, params):
-            ql.nprint("\n+++++++++\nmy OnExit")
-            ql.nprint("+++++++++\n")
-            self.set_api_onexit = "pass"
+            print("\n+++++++++\nmy OnExit")
+            print("params: ", params)
+            print("+++++++++\n")
+            self.set_api_onexit = self.set_api = len( params["str"])
 
         def my_sandbox(path, rootfs):
             ql = Qiling(path, rootfs, output="debug")
-            ql.set_api("puts", my_onenter)
+            ql.set_api("puts", my_onenter, QL_INTERCEPT.ENTER)
             ql.set_api("puts", my_puts64)
-            ql.set_api("puts", my_onexit)
+            ql.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
             ql.run()
             
-            self.assertEqual("pass", self.set_api)
-            self.assertEqual("pass", self.set_api_onenter)
-            self.assertEqual("pass", self.set_api_onexit)
+            self.assertEqual(17, self.set_api)
+            self.assertEqual(12, self.set_api_onenter)
+            self.assertEqual(17, self.set_api_onexit)
             
             del self.set_api
             del self.set_api_onenter

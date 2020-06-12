@@ -26,7 +26,8 @@ entry_point = 0x1000000
 
 [KERNEL]
 pid = 1996
-
+parent_pid = 0
+shell_pid = 10
 
 [LOG]
 # log directory output
@@ -55,6 +56,9 @@ VER_SERVICEPACKMAJOR = 0
 computername = qilingpc
 permission = root
 
+[PROCESSES]
+# process active in our env -> pid
+csrss.exe = 1239
 
 [USER]
 username = Qiling
@@ -69,6 +73,9 @@ windir = Windows\
 [REGISTRY]
 registry_diff = registry_diff.json
 
+
+[HARDWARE]
+number_processors = 5
 
 [VOLUME]
 name = Volume1
