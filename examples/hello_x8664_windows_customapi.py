@@ -6,10 +6,10 @@
 import sys
 sys.path.append("..")
 
-
 from qiling import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
+from qiling.const import *
 
 @winapi(cc=CDECL, params={
     "str": STRING
@@ -38,9 +38,9 @@ def my_onexit(ql, address, params):
 
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, output = "debug")
-    ql.set_api("_cexit", my_onenter)
+    ql.set_api("_cexit", my_onenter, QL_INTERCEPT.ENTER)
     ql.set_api("puts", my_puts)
-    ql.set_api("atexit", my_onexit)
+    ql.set_api("atexit", my_onexit, QL_INTERCEPT.EXIT)
     ql.run()
 
 if __name__ == "__main__":

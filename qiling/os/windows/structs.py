@@ -300,7 +300,7 @@ class WindowsStruct:
             (val, size, endianness, typ) = elem
             if typ == int:
                 value = val.to_bytes(size, endianness)
-                self.ql.dprint(D_RPRT, "[+] Writing at addr %d value %s" % (addr + already_written, value))
+                self.ql.dprint(D_RPRT, "[+] Writing to %d with value %s" % (addr + already_written, value))
                 self.ql.mem.write(addr + already_written, value)
             elif typ == bytes:
                 if isinstance(val, bytearray):
@@ -324,7 +324,7 @@ class WindowsStruct:
         for elem in attributes:
             (val, size, endianness, type) = elem
             value = self.ql.mem.read(addr + already_read, size)
-            self.ql.dprint(D_RPRT, "[+] Reading at addr %d value %s" % (addr + already_read, value))
+            self.ql.dprint(D_RPRT, "[+] Reading from %d value %s" % (addr + already_read, value))
             if type == int:
                 elem[0] = int.from_bytes(value, endianness)
             elif type == bytes:

@@ -58,6 +58,12 @@ class QlOsPosix(QlOs):
     def syscall(self):
         return self.get_syscall()
 
+    # ql.func_arg - get syscall for all posix series
+    @property
+    def function_arg(self):
+        if self.ql.ostype in (QL_POSIX):
+            return self.get_func_arg()            
+
     def load_syscall(self, intno=None):
         # import syscall mapping function
         map_syscall = self.ql.os_setup(function_name="map_syscall")

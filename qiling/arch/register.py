@@ -44,15 +44,15 @@ class QlRegisterManager():
 
     # read register
     def read(self, register):
-        if type(register) == str:
-            register = register.lower()
-        return self.ql.arch.get_register(register)
+        if isinstance(register, str):
+            register = self.register_mapping.get(register.lower(), None)
+        return self.ql.uc.reg_read(register)
 
 
     def write(self, register, value):
-        if type(register) == str:
-            register = register.lower()           
-        self.ql.arch.set_register(register, value)
+        if isinstance(register, str):
+            register = self.register_mapping.get(register.lower(), None) 
+        return self.ql.uc.reg_write(register, value)
 
 
     def msr(self, msr, addr= None):
@@ -62,55 +62,26 @@ class QlRegisterManager():
             self.ql.uc.msr_write(msr, addr)
 
 
-    # ql.reg.save - save based on ql.reg.table
+    # ql.reg.save
     def save(self):
         reg_dict = {}
-        for reg in self.ql.reg.table:
+        for reg in self.register_mapping:
             reg_v = self.read(reg)
             reg_dict[reg] = reg_v
         return reg_dict
 
 
-    # ql.reg.restore - restore based on ql.reg.table
+    # ql.reg.restore
     def restore(self, value = {}):
-        for reg in self.ql.reg.table:
+        for reg in self.register_mapping:
             reg_v= value[reg]
             self.write(reg, reg_v)
 
 
     # ql.reg.bit() - Register bit
+    #FIXME: This needs to be implemented for all archs
     def bit(self, uc_reg):
         return self.ql.arch.get_reg_bit(uc_reg)
-
-
-    # ql.reg.name_pc - PC register name getter
-    @property
-    def name_pc(self):
-        return self.ql.arch.get_name_pc()
-
-
-    # ql.reg.name_sp - SP register name getter
-    @property
-    def name_sp(self):
-        return self.ql.arch.get_name_sp()
-
-
-    # ql.reg.tables - Register table getter
-    @property
-    def table(self):
-        return self.ql.arch.get_reg_table()
-
-
-    # ql.reg.name - Register name converter getter
-    @property
-    def name(self):
-        return self.ql.arch.get_reg_name_str(self.uc_reg_name)
-
-
-    # ql.reg.name - Register name converter setter
-    @name.setter
-    def name(self, uc_reg):
-        self.uc_reg_name = uc_reg
 
 
     # Generic methods to get SP and IP across Arch's #
@@ -142,3 +113,12 @@ class QlRegisterManager():
     @arch_sp.setter
     def arch_sp(self, value):
         return self.ql.uc.reg_write(self.uc_sp, value)
+
+
+    def get_reg_name(self, uc_reg_name):
+        return self.register_mapping.get(uc_reg_name, None)
+
+
+    def create_reverse_mapping(self):
+        reversed_mapping = {v:k for k, v in self.register_mapping.items()}
+        self.expand_mapping(reversed_mapping)

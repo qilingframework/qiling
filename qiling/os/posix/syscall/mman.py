@@ -77,12 +77,11 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     mmap_base = mmap_addr
     need_mmap = True
 
-    if mmap_addr != 0 and (mmap_addr < ql.loader.mmap_address):
-        need_mmap = False
-
     if mmap_addr == 0:
         mmap_base = ql.loader.mmap_address
         ql.loader.mmap_address = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
+    elif ql.mem.is_mapped(mmap_addr, mmap_length):
+        need_mmap = False
 
     ql.dprint(D_INFO, "[+] log old_mmap - return addr : " + hex(mmap_base))
     ql.dprint(D_INFO, "[+] log old_mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
@@ -142,15 +141,12 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
     mmap_base = mmap_addr
     need_mmap = True
 
-    
-    if mmap_addr != 0 and (mmap_addr < ql.loader.mmap_address):
-        ql.dprint(D_INFO, "[+] mmap_addr 0x%x < ql.loader.mmap_address 0x%x" %(mmap_addr, ql.loader.mmap_address))
-        need_mmap = False
-
     # initial ql.loader.mmap_address
     if mmap_addr == 0:
         mmap_base = ql.loader.mmap_address
         ql.loader.mmap_address = mmap_base + ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000
+    elif ql.mem.is_mapped(mmap_addr, mmap_length):
+        need_mmap = False
 
     ql.dprint(D_INFO, "[+] log mmap - return addr : " + hex(mmap_base))
     ql.dprint(D_INFO, "[+] log mmap - addr range  : " + hex(mmap_base) + ' - ' + hex(
@@ -211,11 +207,11 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     mmap_base = mmap2_addr
     need_mmap = True
 
-    if mmap2_addr != 0 and mmap2_addr < ql.loader.mmap_address:
-        need_mmap = False
     if mmap2_addr == 0:
         mmap_base = ql.loader.mmap_address
         ql.loader.mmap_address = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
+    elif ql.mem.is_mapped(mmap2_addr, mmap2_length):
+        need_mmap = False
 
     ql.dprint(D_INFO, "[+] log mmap2 - mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
     mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset))
