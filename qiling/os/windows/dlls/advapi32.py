@@ -51,6 +51,7 @@ def RegQueryValue(ql, address, params):
     lpData = params["lpData"]
     lpcbData = params["lpcbData"]
     s_hKey = ql.os.handle_manager.get(hKey).obj
+    params["hKey"] = s_hKey
     # read reg_type
     if lpType != 0:
         reg_type = ql.unpack(ql.mem.read(lpType, 4))
