@@ -19,6 +19,7 @@ load_address = 0x56555000
 interp_address = 0x047ba000
 mmap_address = 0x774bf000
 
+
 [KERNEL]
 uid = 1000
 gid = 1000
