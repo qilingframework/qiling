@@ -1,0 +1,1 @@
+sspi_data = {}

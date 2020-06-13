@@ -1,0 +1,1 @@
+dxgi_data = {'CreateDXGIFactory': {'riid': 'IID', 'ppFactory': 'void'}, 'CreateDXGIFactory1': {'riid': 'IID', 'ppFactory': 'void'}}

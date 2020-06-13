@@ -1,0 +1,1 @@
+mmdeviceapi_data = {'ActivateAudioInterfaceAsync': {'deviceInterfacePath': 'LPCWSTR', 'riid': 'IID', 'activationParams': 'PROPVARIANT', 'completionHandler': 'IActivateAudioInterfaceCompletionHandler', 'activationOperation': 'IActivateAudioInterfaceAsyncOperation'}}

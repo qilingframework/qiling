@@ -1,0 +1,1 @@
+mftransform_data = {'MFCreateTransformActivate': {'ppActivate': 'IMFActivate'}}

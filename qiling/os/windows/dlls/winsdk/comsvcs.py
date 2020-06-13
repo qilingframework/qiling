@@ -1,0 +1,1 @@
+comsvcs_data = {'CoCreateActivity': {'pIUnknown': 'IUnknown', 'riid': 'IID', 'ppObj': 'void'}, 'CoEnterServiceDomain': {'pConfigObject': 'IUnknown'}, 'CoLeaveServiceDomain': {'pUnkStatus': 'IUnknown'}, 'GetManagedExtensions': {'dwExts': 'DWORD'}, 'RecycleSurrogate': {'lReasonCode': 'long'}, 'MTSCreateActivity': {'riid': 'IID', 'ppobj': 'void'}}

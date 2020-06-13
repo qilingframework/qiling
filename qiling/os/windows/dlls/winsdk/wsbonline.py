@@ -1,0 +1,1 @@
+wsbonline_data = {'RegisterOnlineBackupWithWindowsServerBackup': {'pOBRegistrationInfo': 'WSB_OB_REGISTRATION_INFO'}, 'DeregisterOnlineBackupFromWindowsServerBackup': {'guidSnapinId': 'GUID'}, 'UpdateOBStatusInWindowsServerBackup': {'pOBRegistrationInfo': 'WSB_OB_STATUS_INFO'}}

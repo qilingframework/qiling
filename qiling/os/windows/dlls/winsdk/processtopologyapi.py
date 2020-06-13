@@ -1,0 +1,1 @@
+processtopologyapi_data = {'GetProcessGroupAffinity': {'hProcess': 'HANDLE', 'GroupCount': 'PUSHORT', 'GroupArray': 'PUSHORT'}, 'GetThreadGroupAffinity': {'hThread': 'HANDLE', 'GroupAffinity': 'PGROUP_AFFINITY'}, 'SetThreadGroupAffinity': {'hThread': 'HANDLE', 'GroupAffinity': 'GROUP_AFFINITY', 'PreviousGroupAffinity': 'PGROUP_AFFINITY'}}

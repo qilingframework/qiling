@@ -1,0 +1,1 @@
+wsman_data = {}

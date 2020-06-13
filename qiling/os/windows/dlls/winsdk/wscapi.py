@@ -1,0 +1,1 @@
+wscapi_data = {'WscRegisterForChanges': {'Reserved': 'LPVOID', 'phCallbackRegistration': 'PHANDLE', 'lpCallbackAddress': 'LPTHREAD_START_ROUTINE', 'pContext': 'PVOID'}, 'WscUnRegisterChanges': {'hRegistrationHandle': 'HANDLE'}, 'WscGetSecurityProviderHealth': {'Providers': 'DWORD', 'pHealth': 'PWSC_SECURITY_PROVIDER_HEALTH'}}

@@ -1,0 +1,1 @@
+robuffer_data = {'RoGetBufferMarshaler': {'bufferMarshaler': 'IMarshal'}}

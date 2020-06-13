@@ -1,0 +1,1 @@
+sensapi_data = {'IsDestinationReachableA': {'lpszDestination': 'LPCSTR', 'lpQOCInfo': 'LPQOCINFO'}, 'IsDestinationReachableW': {'lpszDestination': 'LPCWSTR', 'lpQOCInfo': 'LPQOCINFO'}, 'IsNetworkAlive': {'lpdwFlags': 'LPDWORD'}}

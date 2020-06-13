@@ -1,0 +1,1 @@
+xapofx_data = {'CreateFX': {'clsid': 'IID', 'pEffect': 'IUnknown', 'pInitDat': 'void', 'InitDataByteSize': 'UINT32'}}

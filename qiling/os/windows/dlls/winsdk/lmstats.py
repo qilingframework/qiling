@@ -1,0 +1,1 @@
+lmstats_data = {'NetStatisticsGet': {'ServerName': 'LPTSTR', 'Service': 'LPTSTR', 'Level': 'DWORD', 'Options': 'DWORD', 'Buffer': 'LPBYTE'}}

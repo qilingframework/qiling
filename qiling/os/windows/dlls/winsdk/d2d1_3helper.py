@@ -1,0 +1,1 @@
+d2d1_3helper_data = {}

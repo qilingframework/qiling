@@ -1,0 +1,1 @@
+appcompatapi_data = {'ApphelpCheckShellObject': {'ObjectCLSID': 'IID', 'bShimIfNecessary': 'BOOL', 'pullFlags': 'ULONGLONG'}}

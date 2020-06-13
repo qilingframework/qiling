@@ -1,0 +1,1 @@
+dxgidebug_data = {'DXGIGetDebugInterface': {'riid': 'IID', 'ppDebug': 'void'}}

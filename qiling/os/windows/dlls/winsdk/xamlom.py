@@ -1,0 +1,1 @@
+xamlom_data = {'InitializeXamlDiagnosticsEx': {'endPointName': 'LPCWSTR', 'pid': 'DWORD', 'wszDllXamlDiagnostics': 'LPCWSTR', 'wszTAPDllName': 'LPCWSTR', 'tapClsid': 'CLSID', 'wszInitializationData': 'LPCWSTR'}}

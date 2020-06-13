@@ -1,0 +1,1 @@
+npapi_data = {'WNetSetLastErrorA': {'err': 'DWORD', 'lpError': 'LPSTR', 'lpProviders': 'LPSTR'}}

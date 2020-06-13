@@ -1,0 +1,1 @@
+expandedresources_data = {'HasExpandedResources': {'hasExpandedResources': 'BOOL'}, 'GetExpandedResourceExclusiveCpuCount': {'exclusiveCpuCount': 'ULONG'}, 'ReleaseExclusiveCpuSets': {}}

@@ -1,0 +1,1 @@
+clfs_data = {'LsnEqual': {'plsn1': 'CLFS_LSN', 'plsn2': 'CLFS_LSN'}, 'LsnLess': {'plsn1': 'CLFS_LSN', 'plsn2': 'CLFS_LSN'}, 'LsnGreater': {'plsn1': 'CLFS_LSN', 'plsn2': 'CLFS_LSN'}, 'LsnNull': {'plsn': 'CLFS_LSN'}}

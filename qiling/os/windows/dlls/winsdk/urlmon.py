@@ -1,0 +1,1 @@
+urlmon_data = {'CreateAsyncBindCtx': {'reserved': 'DWORD', 'pBSCb': 'IBindStatusCallback', 'pEFetc': 'IEnumFORMATETC', 'ppBC': 'IBindCtx'}, 'CreateFormatEnumerator': {'cfmtetc': 'UINT', 'rgfmtetc': 'FORMATETC', 'ppenumfmtetc': 'IEnumFORMATETC'}}

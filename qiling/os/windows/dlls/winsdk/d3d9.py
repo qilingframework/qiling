@@ -1,0 +1,1 @@
+d3d9_data = {'Direct3DCreate9Ex': {'SDKVersion': 'UINT', 'VOID': 'IDirect3D9Ex'}}

@@ -1,0 +1,1 @@
+gb18030_data = {'NlsDllCodePageTranslation': {'CodePage': 'DWORD', 'dwFlags': 'DWORD', 'lpMultiByteStr': 'LPSTR', 'cchMultiByte': 'int', 'lpWideCharStr': 'LPWSTR', 'cchWideChar': 'int', 'lpCPInfo': 'LPCPINFO'}}

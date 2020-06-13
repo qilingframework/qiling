@@ -1,0 +1,1 @@
+stralign_data = {'uaw_wcslen': {'String': 'PCUWSTR'}}

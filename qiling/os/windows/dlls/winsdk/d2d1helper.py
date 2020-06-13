@@ -1,0 +1,1 @@
+d2d1helper_data = {'Ellipse': {'hdc': 'HDC', 'left': 'int', 'top': 'int', 'right': 'int', 'bottom': 'int'}}

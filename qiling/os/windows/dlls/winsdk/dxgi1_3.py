@@ -1,0 +1,1 @@
+dxgi1_3_data = {'CreateDXGIFactory2': {'Flags': 'UINT', 'riid': 'IID', 'ppFactory': 'void'}, 'DXGIGetDebugInterface1': {'Flags': 'UINT', 'riid': 'IID', 'pDebug': 'void'}}

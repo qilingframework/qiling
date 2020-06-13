@@ -1,0 +1,1 @@
+errorrep_data = {'ReportFault': {'pep': 'LPEXCEPTION_POINTERS', 'dwOpt': 'DWORD'}, 'AddERExcludedApplicationA': {'szApplication': 'LPCSTR'}, 'AddERExcludedApplicationW': {'wszApplication': 'LPCWSTR'}, 'WerReportHang': {'hwndHungApp': 'HWND', 'pwzHungApplicationName': 'PCWSTR'}}

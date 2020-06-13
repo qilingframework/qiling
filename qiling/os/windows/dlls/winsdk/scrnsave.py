@@ -1,0 +1,1 @@
+scrnsave_data = {'ScreenSaverProc': {'hWnd': 'HWND', 'message': 'UINT', 'wParam': 'WPARAM', 'lParam': 'LPARAM'}, 'DefScreenSaverProc': {'hWnd': 'HWND', 'msg': 'UINT', 'wParam': 'WPARAM', 'lParam': 'LPARAM'}, 'ScreenSaverConfigureDialog': {'hDlg': 'HWND', 'message': 'UINT', 'wParam': 'WPARAM', 'lParam': 'LPARAM'}, 'RegisterDialogClasses': {'hInst': 'HANDLE'}}

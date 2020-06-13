@@ -1,0 +1,1 @@
+fxsutility_data = {'CanSendToFaxRecipient': {}, 'SendToFaxRecipient': {'sndMode': 'SendToMode', 'lpFileName': 'LPCWSTR'}}

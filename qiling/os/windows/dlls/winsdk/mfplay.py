@@ -1,0 +1,1 @@
+mfplay_data = {'MFPCreateMediaPlayer': {'pwszURL': 'LPCWSTR', 'fStartPlayback': 'BOOL', 'creationOptions': 'MFP_CREATION_OPTIONS', 'pCallback': 'IMFPMediaPlayerCallback', 'hWnd': 'HWND', 'ppMediaPlayer': 'IMFPMediaPlayer'}}

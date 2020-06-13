@@ -1,0 +1,1 @@
+dxgi1_6_data = {'DXGIDeclareAdapterRemovalSupport': {}}

@@ -1,0 +1,1 @@
+callobj_data = {'CoGetInterceptor': {'iidIntercepted': 'IID', 'punkOuter': 'IUnknown', 'iid': 'IID', 'ppv': 'void'}}

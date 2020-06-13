@@ -1,0 +1,1 @@
+advpub_data = {'RegInstallA': {'hmod': 'HMODULE', 'pszSection': 'LPCSTR', 'pstTable': 'STRTABLEA'}, 'RegInstallW': {'hmod': 'HMODULE', 'pszSection': 'LPCWSTR', 'pstTable': 'STRTABLEW'}}

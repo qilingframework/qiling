@@ -1,0 +1,1 @@
+wmsdkvalidate_data = {'WMCheckURLExtension': {'pwszURL': 'LPCWSTR'}, 'WMCheckURLScheme': {'pwszURLScheme': 'LPCWSTR'}, 'WMValidateData': {'pbData': 'BYTE', 'pdwDataSize': 'DWORD'}, 'WMIsAvailableOffline': {'pwszURL': 'LPCWSTR', 'pwszLanguage': 'LPCWSTR', 'pfIsAvailableOffline': 'BOOL'}}

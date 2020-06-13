@@ -1,0 +1,1 @@
+netcon_data = {'NcFreeNetconProperties': {'pProps': 'NETCON_PROPERTIES'}, 'NcIsValidConnectionName': {'pszwName': 'PCWSTR'}}

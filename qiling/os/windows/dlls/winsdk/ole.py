@@ -1,0 +1,1 @@
+ole_data = {'OleCreate': {'VOID': 'OLECLIPFORMAT'}, 'OleCreateFromFile': {'VOID': 'OLECLIPFORMAT'}, 'OleLoadFromStream': {'VOID': 'LPOLEOBJECT'}, 'OleSaveToStream': {'VOID': 'LPOLESTREAM'}, 'OleDraw': {'VOID': 'HDC'}}

@@ -1,0 +1,1 @@
+avrfsdk_data = {'VerifierEnumerateResource': {'Process': 'HANDLE', 'Flags': 'ULONG', 'ResourceType': 'ULONG', 'ResourceCallback': 'AVRF_RESOURCE_ENUMERATE_CALLBACK', 'EnumerationContext': 'PVOID'}, 'VerifierIsPerUserSettingsEnabled': {'VOID': 'void'}}

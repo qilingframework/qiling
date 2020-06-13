@@ -1,0 +1,1 @@
+oaidl_data = {'BSTR_UserSize': {'VOID': 'BSTR'}, 'BSTR_UserFree': {'VOID': 'BSTR'}, 'VARIANT_UserSize': {'VOID': 'VARIANT'}, 'VARIANT_UserFree': {'VOID': 'VARIANT'}, 'BSTR_UserSize64': {'VOID': 'BSTR'}, 'BSTR_UserFree64': {'VOID': 'BSTR'}, 'VARIANT_UserSize64': {'VOID': 'VARIANT'}, 'VARIANT_UserFree64': {'VOID': 'VARIANT'}}

@@ -1,0 +1,1 @@
+rpcssl_data = {'RpcCertGeneratePrincipalNameW': {'Context': 'PCCERT_CONTEXT', 'Flags': 'DWORD', 'pBuffer': 'RPC_WSTR'}, 'RpcCertGeneratePrincipalNameA': {'Context': 'PCCERT_CONTEXT', 'Flags': 'DWORD', 'pBuffer': 'RPC_CSTR'}}

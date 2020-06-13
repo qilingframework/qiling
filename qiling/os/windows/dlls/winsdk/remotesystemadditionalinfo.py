@@ -1,0 +1,1 @@
+remotesystemadditionalinfo_data = {'HSTRING_UserSize': {'VOID': 'HSTRING'}, 'HSTRING_UserFree': {'VOID': 'HSTRING'}, 'HSTRING_UserSize64': {'VOID': 'HSTRING'}, 'HSTRING_UserFree64': {'VOID': 'HSTRING'}}

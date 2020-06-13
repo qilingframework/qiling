@@ -1,0 +1,1 @@
+rrascfg_data = {}

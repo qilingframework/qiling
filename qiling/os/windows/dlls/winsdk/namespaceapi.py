@@ -1,0 +1,1 @@
+namespaceapi_data = {'ClosePrivateNamespace': {'Handle': 'HANDLE', 'Flags': 'ULONG'}, 'AddSIDToBoundaryDescriptor': {'BoundaryDescriptor': 'HANDLE', 'RequiredSid': 'PSID'}, 'DeleteBoundaryDescriptor': {'BoundaryDescriptor': 'HANDLE'}}

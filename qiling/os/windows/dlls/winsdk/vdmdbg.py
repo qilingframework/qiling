@@ -1,0 +1,1 @@
+vdmdbg_data = {'VDMEnumProcessWOW': {'fp': 'PROCESSENUMPROC', 'lparam': 'LPARAM'}, 'VDMEnumTaskWOWEx': {'dwProcessId': 'DWORD', 'fp': 'TASKENUMPROCEX', 'lparam': 'LPARAM'}}
