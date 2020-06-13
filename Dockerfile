@@ -22,8 +22,6 @@ RUN git clone https://github.com/qilingframework/qiling.git \
     && cd qiling \
     && pip3 install -r requirements.txt \
     && python3 setup.py install \ 
-    && pysite=$(python3 -c "import site; print(site.getsitepackages()[0])"); \
-    cp ${pysite}${pysite}/keystone/libkeystone.so ${pysite}/keystone/ \
     && rm -rf /tmp/*
 
 WORKDIR /qiling
