@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import os, re
+import os, re, random
 
 from qiling.const import *
 from qiling.exception import *
@@ -453,3 +453,78 @@ class QlMemoryHeap:
                 chunk.inuse = False
                 return True
         return False
+
+    def _find(self, addr):
+        for chunk in self.chunks:
+            if addr == chunk.address:
+                return chunk
+        return None
+
+class QlSanitizedMemoryHeap():
+    def __init__(self, ql, heap, fault_rate=0):
+        self.ql = ql
+        self.heap = heap
+        self.fault_rate = fault_rate
+
+    @staticmethod
+    def bo_handler(ql, access, addr, size, value):
+        """
+        Called when a buffer overflow/underflow is detected.
+        """
+        pass
+
+    @staticmethod
+    def oob_handler(ql, access, addr, size, value):
+        """
+        Called when an out-of-bounds element is accessed.
+        """
+        pass
+
+    @staticmethod
+    def uaf_handler(ql, access, addr, size, value):
+        """
+        Called when a use-after-free is detected.
+        """
+        pass
+
+    @staticmethod
+    def bad_free_handler(ql, addr):
+        """
+        Called when a bad/double free is detected.
+        """
+        pass
+
+    def alloc(self, size):
+        chance = random.randint(1, 100)
+        if chance <= self.fault_rate:
+            # Fail the allocation
+            return 0
+
+        # Add 8 bytes to the requested size so as to accomodate the canaries.
+        addr = self.heap.alloc(size + 8)
+
+        # Install canary hooks for overflow/underflow detection.
+        (underflow_begin, underflow_end) = (addr, addr + 3)
+        self.ql.hook_mem_write(self.bo_handler, begin=underflow_begin, end=underflow_end)
+        self.ql.hook_mem_read(self.oob_handler, begin=underflow_begin, end=underflow_end)
+
+        (overflow_begin, overflow_end) = (addr + 4 + size, addr + 4 + size + 3)
+        self.ql.hook_mem_write(self.bo_handler, begin=overflow_begin, end=overflow_end)
+        self.ql.hook_mem_read(self.oob_handler, begin=overflow_begin, end=overflow_end)
+
+        return (addr + 4)
+
+    def size(self, addr):
+        return self.heap.size(addr - 4)
+
+    def free(self, addr):
+        chunk = self.heap._find(addr - 4)
+        if chunk:
+            # Install the UAF hook.
+            self.ql.hook_mem_valid(self.uaf_handler, begin=addr, end=addr+chunk.size-8)
+            # Make sure the chunk won't be re-used by the underlying heap.
+            self.heap.chunks.remove(chunk)
+            return True
+        else:
+            self.bad_free_handler(self.ql, addr)
+            return False
