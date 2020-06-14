@@ -11,7 +11,7 @@ from unicorn import *
 import struct, os, re, socket
 from binascii import unhexlify
 
-from qiling.debugger.gdbserver import qldbg
+from qiling.extensions.debugger.gdbserver import qldbg
 from qiling.const import *
 from qiling.utils import *
 from qiling.arch.x86_const import reg_map_32 as x86_reg_map_32
