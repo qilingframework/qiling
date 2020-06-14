@@ -14,6 +14,7 @@ class ELFTest(unittest.TestCase):
 
     def test_multithread_elf_linux_x86(self):
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux")
+        print("X86")
         ql.multithread = True   
         ql.run()
         del ql
@@ -22,6 +23,7 @@ class ELFTest(unittest.TestCase):
     def test_multithread_elf_linux_x8664(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", profile= "profiles/append_test.ql")
         ql.log_split = True
+        print("X8664")
         ql.multithread = True   
         ql.run()
         del ql
@@ -29,6 +31,7 @@ class ELFTest(unittest.TestCase):
 
     def test_multithread_elf_linux_mips32el(self):
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_multithreading"], "../examples/rootfs/mips32el_linux")
+        print("MIPS32EL")
         ql.multithread = True   
         ql.run()
         del ql
@@ -36,6 +39,7 @@ class ELFTest(unittest.TestCase):
 
     def test_multithread_elf_linux_arm(self):
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux")
+        print("ARM")
         ql.multithread = True   
         ql.run()
         del ql
@@ -43,6 +47,7 @@ class ELFTest(unittest.TestCase):
 
     def test_multithread_elf_linux_arm64(self):
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux")
+        print("ARM64")
         ql.multithread = True   
         ql.run()
         del ql
@@ -725,12 +730,15 @@ class ELFTest(unittest.TestCase):
         def instruction_count(ql, address, size, user_data):
             user_data[0] += 1
 
+        def my__llseek(ql, *args, **kw):
+            pass
 
         def run_one_round(payload):
             stdin = MyPipe()
             ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", console = False, stdin = stdin)
             ins_count = [0]
             ql.hook_code(instruction_count, ins_count)
+            ql.set_syscall("_llseek", my__llseek)
             stdin.write(payload)
             ql.run()
             del stdin

@@ -70,11 +70,27 @@ class QlOsPosix(QlOs):
         self.syscall_onEnter = self.dict_posix_onEnter_syscall_by_num.get(self.syscall)
         self.syscall_map = self.dict_posix_syscall_by_num.get(self.syscall)
         self.syscall_onExit = self.dict_posix_onExit_syscall_by_num.get(self.syscall)
+        syscall_name_str = None
 
         if self.syscall_map is not None:
             self.syscall_name = self.syscall_map.__name__
         else:
-            self.syscall_name = map_syscall(self.syscall)
+            self.syscall_name = map_syscall(self.ql, self.syscall)
+
+            import qiling.os.posix.syscall
+            import qiling.os.linux.syscall
+            import qiling.os.macos.syscall
+            import qiling.os.freebsd.syscall
+
+            if self.syscall_name not in dir(qiling.os.posix.syscall) \
+            and self.syscall_name not in dir(qiling.os.linux.syscall) \
+            and self.syscall_name not in dir(qiling.os.macos.syscall) \
+            and self.syscall_name not in dir(qiling.os.freebsd.syscall):
+
+                syscall_name_str = self.syscall_name
+                self.syscall_name = None
+
+
             if self.syscall_name is not None:
                 replace_func = self.dict_posix_syscall.get(self.syscall_name)
                 if replace_func is not None:
@@ -87,24 +103,24 @@ class QlOsPosix(QlOs):
                 self.syscall_name = None
 
         if self.syscall_map is not None:
-            try:
-                self.syscalls.setdefault(self.syscall_name, []).append({
-                    "params": {
-                        "param0": self.get_func_arg()[0],
-                        "param1": self.get_func_arg()[1],
-                        "param2": self.get_func_arg()[2],
-                        "param3": self.get_func_arg()[3],
-                        "param4": self.get_func_arg()[4],
-                        "param5": self.get_func_arg()[5]
-                    },
-                    "result": None,
-                    "address": self.ql.reg.arch_pc,
-                    "return_address": None,
-                    "position": self.syscalls_counter
-                })
+            self.syscalls.setdefault(self.syscall_name, []).append({
+                "params": {
+                    "param0": self.get_func_arg()[0],
+                    "param1": self.get_func_arg()[1],
+                    "param2": self.get_func_arg()[2],
+                    "param3": self.get_func_arg()[3],
+                    "param4": self.get_func_arg()[4],
+                    "param5": self.get_func_arg()[5]
+                },
+                "result": None,
+                "address": self.ql.reg.arch_pc,
+                "return_address": None,
+                "position": self.syscalls_counter
+            })
 
-                self.syscalls_counter += 1
-                
+            self.syscalls_counter += 1
+
+            try:                
                 if self.syscall_onEnter == None:
                     ret = 0
                 else:
@@ -123,7 +139,7 @@ class QlOsPosix(QlOs):
                 raise
         else:
             self.ql.nprint(
-                "[!] 0x%x: syscall number = 0x%x(%d) not implemented" % (self.ql.reg.arch_pc, self.syscall, self.syscall))
+                "[!] 0x%x: syscall %s number = 0x%x(%d) not implemented" % (self.ql.reg.arch_pc, syscall_name_str, self.syscall, self.syscall))
             if self.ql.debug_stop:
                 raise QlErrorSyscallNotFound("[!] Syscall Not Found")
 

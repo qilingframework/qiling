@@ -23,6 +23,7 @@ jexamples/
 logs/
 log/
 test_qlog/
+log_test/
 qlog/
 qlogs/
 test_syscall_*.txt
