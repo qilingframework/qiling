@@ -73,7 +73,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.patch_lib = []
         self.patched_lib = []
         self.log_file_fd = None
-        self.log_file = None
         self.fs_mapper = []
         self.debug_stop = False
         self.internal_exception = None

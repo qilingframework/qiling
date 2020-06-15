@@ -90,16 +90,16 @@ class QlOsPosix(QlOs):
         # import syscall mapping function
         map_syscall = self.ql.os_setup(function_name="map_syscall")
         
-        if self.dict_posix_onEnter_syscall:
+        if self.dict_posix_onEnter_syscall.get(self.syscall_name) != None:
             self.syscall_onEnter = self.dict_posix_onEnter_syscall.get(self.syscall_name)
-        elif self.dict_posix_onEnter_syscall_by_num:
+        elif self.dict_posix_onEnter_syscall_by_num.get(self.syscall) != None:
             self.syscall_onEnter = self.dict_posix_onEnter_syscall_by_num.get(self.syscall)
         else:
             self.syscall_onEnter = None    
         
-        if self.dict_posix_onExit_syscall:
+        if self.dict_posix_onExit_syscall.get(self.syscall_name) != None:
             self.syscall_onExit = self.dict_posix_onExit_syscall.get(self.syscall_name)
-        elif self.dict_posix_onExit_syscall_by_num:
+        elif self.dict_posix_onExit_syscall_by_num.get(self.syscall) != None:
             self.syscall_onExit = self.dict_posix_onExit_syscall_by_num.get(self.syscall)
         else:
             self.syscall_onExit = None    
@@ -124,9 +124,10 @@ class QlOsPosix(QlOs):
             and self.syscall_name not in dir(qiling.os.freebsd.syscall):
 
                 syscall_name_str = self.syscall_name
+                self.syscall_map = None
                 self.syscall_name = None
 
-
+                
             if self.syscall_name is not None:
                 replace_func = self.dict_posix_syscall.get(self.syscall_name)
                 if replace_func is not None:

@@ -49,7 +49,7 @@ class QlLinuxThread(QlThread):
         # FIXME: @ucgJhe for Temporay FIX
         if ql.console == True:
             _logger = ql_setup_logging_stream(ql)
-        elif ql.log_file != None and type(ql.log_file) == str:
+        elif ql.log_dir != None and type(ql.log_dir) == str:
             _logger = ql_setup_logger(str(self.thread_id)) if ql.log_split else ql_setup_logger()
         else:
             _logger = None            
