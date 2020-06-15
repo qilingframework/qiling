@@ -51,6 +51,7 @@ def RegQueryValue(ql, address, params):
     lpData = params["lpData"]
     lpcbData = params["lpcbData"]
     s_hKey = ql.os.handle_manager.get(hKey).obj
+    params["hKey"] = s_hKey
     # read reg_type
     if lpType != 0:
         reg_type = ql.unpack(ql.mem.read(lpType, 4))
@@ -229,6 +230,56 @@ def hook_RegCreateKeyA(ql, address, params):
     "phkResult": POINTER
 })
 def hook_RegCreateKeyW(ql, address, params):
+    ret = ERROR_SUCCESS
+
+    hKey = params["hKey"]
+    s_lpSubKey = params["lpSubKey"]
+    phkResult = params["phkResult"]
+
+    if not (hKey in REG_KEYS):
+        return 2
+    else:
+        s_hKey = REG_KEYS[hKey]
+        params["hKey"] = s_hKey
+        if not ql.os.registry_manager.exists(s_hKey + "\\" + s_lpSubKey):
+            ret = ERROR_SUCCESS
+            ql.os.registry_manager.create(s_hKey + "\\" + s_lpSubKey)
+
+    # new handle
+    if ret == ERROR_SUCCESS:
+        new_handle = Handle(obj=s_hKey + "\\" + s_lpSubKey)
+        ql.os.handle_manager.append(new_handle)
+        if phkResult != 0:
+            ql.mem.write(phkResult, ql.pack(new_handle.id))
+    else:
+        new_handle = 0
+
+    return ret
+
+
+# LSTATUS RegCreateKeyExW(
+#   HKEY                        hKey,
+#   LPCWSTR                     lpSubKey,
+#   DWORD                       Reserved,
+#   LPWSTR                      lpClass,
+#   DWORD                       dwOptions,
+#   REGSAM                      samDesired,
+#   const LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+#   PHKEY                       phkResult,
+#   LPDWORD                     lpdwDisposition
+# );
+@winapi(cc=STDCALL, params={
+    "hKey": HANDLE,
+    "lpSubKey": WSTRING,
+    "Reserved": POINTER,
+    "lpClass": POINTER,
+    "dwOptions": POINTER,
+    "samDesired": POINTER,
+    "lpSecurityAttributes": POINTER,
+    "phkResult": POINTER,
+    "lpdwDisposition": POINTER
+})
+def hook_RegCreateKeyExW(ql, address, params):
     ret = ERROR_SUCCESS
 
     hKey = params["hKey"]

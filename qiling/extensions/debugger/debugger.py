@@ -43,7 +43,7 @@ def ql_debugger_init(ql):
             remotedebugsrv = debugger_convert_str(remotedebugsrv)
             remotedebugsrv = str(remotedebugsrv) + "server" 
             DEBUGSESSION = str.upper(remotedebugsrv) + "session"
-            DEBUGSESSION = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, DEBUGSESSION)
+            DEBUGSESSION = ql_get_module_function("qiling.extensions.debugger." + remotedebugsrv + "." + remotedebugsrv, DEBUGSESSION)
             ql.remote_debug = DEBUGSESSION(ql, conn, exit_point, mappings)
         except:
             ql.nprint("debugger> Error: Not able to initialize Debugging Server")

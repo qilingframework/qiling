@@ -3,9 +3,10 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+from abc import ABC, abstractmethod
 import struct
 
-class QlArch:
+class QlArch(ABC):
     def __init__(self, ql):
         self.ql = ql
 
@@ -16,70 +17,49 @@ class QlArch:
 
 
     # push value to stack
+    @abstractmethod
     def stack_push(self, value):
         pass
 
 
     # pop value to stack
+    @abstractmethod
     def stack_pop(self):
         pass
 
 
     # write stack value
+    @abstractmethod
     def stack_write(self, value, data):
         pass
 
 
     #  read stack value
+    @abstractmethod
     def stack_read(self, value):
         pass
+ 
 
-
-    # set PC
+       # set PC
     def set_pc(self, value):
-        pass
+        self.ql.reg.arch_pc = value
 
 
     # get PC
     def get_pc(self):
-        pass
+        return self.ql.reg.arch_pc
 
 
     # set stack pointer
     def set_sp(self, value):
-        pass
+        self.ql.reg.arch_sp = value
 
 
     # get stack pointer
     def get_sp(self):
-        pass
+        return self.ql.reg.arch_sp 
 
 
-    # get stack pointer register
-    def get_name_sp(self):
-        pass
-
-
-    # get PC register
-    def get_name_pc(self):
-        pass
-
-
-    # get PC register
-    def get_reg_table(self):
-        pass
-
-
-    # get register name
-    def get_reg_name_str(self):
-        pass
-
-
-    # set register name
-    def set_reg_name_str(self, uc_reg):
-        pass
-   
-   
     def addr_to_str(self, addr, short=False, endian="big"):
         if self.ql.archbit == 64 and short == False:
             addr = (hex(int.from_bytes(struct.pack('<Q', addr), byteorder=endian)))
@@ -98,4 +78,4 @@ class QlArch:
 
     # Unicorn's CPU state restore method
     def context_restore(self, saved_context):
-        self.ql.uc.context_restore(saved_context)        
+        self.ql.uc.context_restore(saved_context)

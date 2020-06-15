@@ -21,7 +21,7 @@ class Test_UEFI(unittest.TestCase):
             print("=" * 40)
             print("\n")
             event_id = params['Event']
-            self.set_api = "pass"
+            self.set_api = event_id
             if event_id in ql.loader.events:
                 ql.loader.events[event_id]['Guid'] = params["Protocol"]
                 # let's force notify
@@ -39,7 +39,7 @@ class Test_UEFI(unittest.TestCase):
             print(params)
             print("=" * 40)
             print("\n")
-            self.set_api_onenter = "pass"
+            self.set_api_onenter = params["Source"]
             return address, params
 
         def my_onexit(ql, address, params):
@@ -49,7 +49,7 @@ class Test_UEFI(unittest.TestCase):
             print("params: %s" % params)
             print("=" * 40)
             print("\n")
-            self.set_api_onexit = "pass"
+            self.set_api_onexit = params["Registration"]
 
 
         if __name__ == "__main__":
@@ -57,13 +57,13 @@ class Test_UEFI(unittest.TestCase):
                 env = pickle.load(f)
             ql = Qiling(["../examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy"], "../examples/rootfs/x8664_efi", env=env, output="debug")
             ql.set_api("RegisterProtocolNotify", force_notify_RegisterProtocolNotify)
-            ql.set_api("CopyMem", my_onenter)
-            ql.set_api("LocateProtocol", my_onexit)
+            ql.set_api("CopyMem", my_onenter, QL_INTERCEPT.ENTER)
+            ql.set_api("LocateProtocol", my_onexit, QL_INTERCEPT.EXIT)
             ql.run()
 
-            self.assertEqual("pass", self.set_api)
-            self.assertEqual("pass", self.set_api_onenter)
-            self.assertEqual("pass", self.set_api_onexit)
+            self.assertEqual(0, self.set_api)
+            self.assertEqual(21475885153, self.set_api_onenter)
+            self.assertEqual(0, self.set_api_onexit)
             
             del ql
             del self.set_api

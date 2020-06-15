@@ -10,6 +10,7 @@ from qiling.exception import *
 from test_elf import *
 from test_macho import *
 from test_posix import *
+from test_qltool import *
 
 if __name__ == "__main__":
     unittest.main()

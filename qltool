@@ -8,7 +8,7 @@ import argparse, os, string, sys, ast
 from binascii import unhexlify
 from qiling import *
 from qiling import __version__ as ql_version
-from qiling.coverage import utils as cov_utils
+from qiling.extensions.coverage import utils as cov_utils
 
 
 def parse_args(parser, commands):

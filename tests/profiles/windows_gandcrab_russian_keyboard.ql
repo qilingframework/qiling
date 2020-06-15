@@ -1,0 +1,2 @@
+[REGISTRY]
+HKEY_CURRENT_USER\Keyboard Layout\Preload\1 = 00000419

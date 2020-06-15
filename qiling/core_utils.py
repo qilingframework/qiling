@@ -150,8 +150,10 @@ class QLCoreUtils(object):
         elif function_name == "map_syscall":
             ostype_str = ostype_convert_str(self.ostype)
             arch_str = arch_convert_str(self.archtype)
-            arch_str = arch_str + "_syscall"
-            module_name = ql_build_module_import_name("os", ostype_str, arch_str)
+
+            syscall_table = "map_syscall"
+
+            module_name = ql_build_module_import_name("os", ostype_str, syscall_table)
             return ql_get_module_function(module_name, function_name)
         
         else:
