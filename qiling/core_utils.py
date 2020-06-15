@@ -34,7 +34,7 @@ class QLCoreUtils(object):
         if type(self.console) is bool:
             pass
         else:
-            raise QlErrorOutput("[!] consnsole must be True or False")     
+            raise QlErrorOutput("[!] console must be True or False")     
         
         # FIXME: this is due to console must be able to update duirng runtime
         if self.log_file_fd is not None:
@@ -46,8 +46,8 @@ class QLCoreUtils(object):
             # setup filter for logger
             # FIXME: only works for logging due to we might need runtime disable nprint, it should be a global filter not only syscall
             if self.filter != None and self.output == QL_OUTPUT.DEFAULT:
-                self.log_file_fd.addFilter(ql_setup_filter(self.filter))
-
+                fd.addFilter(ql_setup_filter(self.filter))
+            
             console_handlers = []
 
             for each_handler in fd.handlers:
