@@ -13,19 +13,44 @@ from qiling.os.posix import syscall
 class ELFTest(unittest.TestCase):
 
     def test_multithread_elf_linux_x86(self):
+
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                if buf.startswith("thread 2 ret"):
+                    ql.buf_out = buf
+            except:
+                pass
+
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux")
-        print("X86")
-        ql.multithread = True   
+        ql.multithread = True
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
+
+        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
+        
         del ql
 
 
     def test_multithread_elf_linux_x8664(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                if buf.startswith("thread 2 ret"):
+                    ql.buf_out = buf
+            except:
+                pass
+
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", profile= "profiles/append_test.ql")
         ql.log_split = True
-        print("X8664")
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.multithread = True   
         ql.run()
+
+        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
+
         del ql
 
 
@@ -38,18 +63,42 @@ class ELFTest(unittest.TestCase):
 
 
     def test_multithread_elf_linux_arm(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                if buf.startswith("thread 2 ret"):
+                    ql.buf_out = buf
+            except:
+                pass
+        
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux")
-        print("ARM")
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.multithread = True   
         ql.run()
+
+        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
+        
         del ql
 
 
     def test_multithread_elf_linux_arm64(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                if buf.startswith("thread 2 ret"):
+                    ql.buf_out = buf
+            except:
+                pass
+
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux")
-        print("ARM64")
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.multithread = True   
         ql.run()
+        
+        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
+
         del ql
 
 
