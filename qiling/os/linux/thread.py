@@ -51,6 +51,8 @@ class QlLinuxThread(QlThread):
             _logger = ql_setup_logging_stream(ql)
         elif ql.log_file != None and type(ql.log_file) == str:
             _logger = ql_setup_logger(str(self.thread_id)) if ql.log_split else ql_setup_logger()
+        else:
+            _logger = None            
 
         if ql.log_dir and ql.log_file != None:
             _logger = ql_setup_logger(str(self.thread_id)) if ql.log_split else ql_setup_logger()

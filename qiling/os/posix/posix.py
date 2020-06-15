@@ -19,6 +19,8 @@ from qiling.os.linux.syscall import *
 from qiling.os.macos.syscall import *
 from qiling.os.freebsd.syscall import *
 
+from qiling.os.linux.function_hook import ARMFunctionArg, MIPS32FunctionArg, ARM64FunctionArg, X86FunctionArg, X64FunctionArg
+
 
 class QlOsPosix(QlOs):
     def __init__(self, ql):
@@ -62,15 +64,49 @@ class QlOsPosix(QlOs):
     @property
     def function_arg(self):
         if self.ql.ostype in (QL_POSIX):
-            return self.get_func_arg()            
+            # ARM
+            if self.ql.archtype== QL_ARCH.ARM:
+                return ARMFunctionArg(self.ql)
+
+            # MIPS32
+            elif self.ql.archtype== QL_ARCH.MIPS:
+                return MIPS32FunctionArg(self.ql)
+
+            # ARM64
+            elif self.ql.archtype== QL_ARCH.ARM64:
+                return ARM64FunctionArg(self.ql)
+
+            # X86
+            elif  self.ql.archtype== QL_ARCH.X86:
+                return X86FunctionArg(self.ql)
+
+            # X8664
+            elif  self.ql.archtype== QL_ARCH.X8664:
+                return X64FunctionArg(self.ql)
+            else:
+                raise
 
     def load_syscall(self, intno=None):
         # import syscall mapping function
         map_syscall = self.ql.os_setup(function_name="map_syscall")
-        self.syscall_onEnter = self.dict_posix_onEnter_syscall_by_num.get(self.syscall)
+        
+        if self.dict_posix_onEnter_syscall:
+            self.syscall_onEnter = self.dict_posix_onEnter_syscall.get(self.syscall_name)
+        elif self.dict_posix_onEnter_syscall_by_num:
+            self.syscall_onEnter = self.dict_posix_onEnter_syscall_by_num.get(self.syscall)
+        else:
+            self.syscall_onEnter = None    
+        
+        if self.dict_posix_onExit_syscall:
+            self.syscall_onExit = self.dict_posix_onExit_syscall.get(self.syscall_name)
+        elif self.dict_posix_onExit_syscall_by_num:
+            self.syscall_onExit = self.dict_posix_onExit_syscall_by_num.get(self.syscall)
+        else:
+            self.syscall_onExit = None    
+        
         self.syscall_map = self.dict_posix_syscall_by_num.get(self.syscall)
-        self.syscall_onExit = self.dict_posix_onExit_syscall_by_num.get(self.syscall)
         syscall_name_str = None
+        
 
         if self.syscall_map is not None:
             self.syscall_name = self.syscall_map.__name__

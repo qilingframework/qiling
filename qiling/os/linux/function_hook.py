@@ -46,6 +46,127 @@ DT_MIPS_LOCAL_GOTNO = 0x7000000a
 DT_MIPS_SYMTABNO = 0x70000011
 DT_MIPS_GOTSYM = 0x70000013
 
+class FunctionArgv:
+    def __init__(self, ql):
+        self.ql = ql
+
+class ARMFunctionArg:
+    def __init__(self, ql):
+        self.ql = ql
+    
+    def _get_stack_value(self, idx):
+        tmp = self.ql.mem.read(self.ql.reg.sp + idx * self.ql.pointersize, self.ql.pointersize)
+        return self.ql.unpack(tmp)
+    
+    def _set_stack_value(self, idx, value):
+        self.ql.mem.write(self.ql.reg.sp + idx * self.ql.pointersize, self.ql.pack(value))
+
+    def __getitem__(self, idx):
+        reg_list = ['r0', 'r1', 'r2', 'r3']
+        if idx < 4:
+            return getattr(self.ql.reg, reg_list[idx])
+        else:
+            return self._get_stack_value(idx - 4)
+    
+    def __setitem__(self, idx, value):
+        reg_list = ['r0', 'r1', 'r2', 'r3']
+        if idx < 4:
+            setattr(self.ql.reg, reg_list[idx], value)
+        else:
+            self._set_stack_value(idx - 4, value)
+
+class MIPS32FunctionArg:
+    def __init__(self, ql):
+        self.ql = ql
+
+    def _get_stack_value(self, idx):
+        tmp = self.ql.mem.read(self.ql.reg.sp + idx * self.ql.pointersize, self.ql.pointersize)
+        return self.ql.unpack(tmp)
+    
+    def _set_stack_value(self, idx, value):
+        self.ql.mem.write(self.ql.reg.sp + idx * self.ql.pointersize, self.ql.pack(value))
+
+    def __getitem__(self, idx):
+        reg_list = ['a0', 'a1', 'a2', 'a3']
+        if idx < 4:
+            return getattr(self.ql.reg, reg_list[idx])
+        else:
+            return self._get_stack_value(idx)
+    
+    def __setitem__(self, idx, value):
+        reg_list = ['a0', 'a1', 'a2', 'a3']
+        if idx < 4:
+            setattr(self.ql.reg, reg_list[idx], value)
+        else:
+            self._set_stack_value(idx, value)
+
+class ARM64FunctionArg:
+    def __init__(self, ql):
+        self.ql = ql
+
+    def _get_stack_value(self, idx):
+        tmp = self.ql.mem.read(self.ql.reg.sp + idx * self.ql.pointersize, self.ql.pointersize)
+        return self.ql.unpack(tmp)
+    
+    def _set_stack_value(self, idx, value):
+        self.ql.mem.write(self.ql.reg.sp + idx * self.ql.pointersize, self.ql.pack(value))
+        
+    def __getitem__(self, idx):
+        reg_list = ['x0', 'x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7']
+        if idx < 8:
+            return getattr(self.ql.reg, reg_list[idx])
+        else:
+            return self._get_stack_value(idx - 8 + 1)
+    
+    def __setitem__(self, idx, value):
+        reg_list = ['x0', 'x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7']
+        if idx < 8:
+            setattr(self.ql.reg, reg_list[idx], value)
+        else:
+            self._set_stack_value(idx - 8 + 1, value)
+
+class X86FunctionArg:
+    def __init__(self, ql):
+        self.ql = ql
+
+    def _get_stack_value(self, idx):
+        tmp = self.ql.mem.read(self.ql.reg.esp + idx * self.ql.pointersize, self.ql.pointersize)
+        return self.ql.unpack(tmp)
+    
+    def _set_stack_value(self, idx, value):
+        self.ql.mem.write(self.ql.reg.esp + idx * self.ql.pointersize, self.ql.pack(value))
+
+    def __getitem__(self, idx):
+        return self._get_stack_value(idx + 1)
+    
+    def __setitem__(self, idx, value):
+        self._set_stack_value(idx + 1, value)
+
+class X64FunctionArg:
+    def __init__(self, ql):
+        self.ql = ql
+
+    def _get_stack_value(self, idx):
+        tmp = self.ql.mem.read(self.ql.reg.rsp + idx * self.ql.pointersize, self.ql.pointersize)
+        return self.ql.unpack(tmp)
+    
+    def _set_stack_value(self, idx, value):
+        self.ql.mem.write(self.ql.reg.rsp + idx * self.ql.pointersize, self.ql.pack(value))
+
+    def __getitem__(self, idx):
+        reg_list = ['rdi', 'rsi', 'rdx', 'rcx', 'r8', 'r9']
+        if idx < 6:
+            return getattr(self.ql.reg, reg_list[idx])
+        else:
+            return self._get_stack_value(idx - 6 + 1)
+    
+    def __setitem__(self, idx, value):
+        reg_list = ['rdi', 'rsi', 'rdx', 'rcx', 'r8', 'r9']
+        if idx < 6:
+            setattr(self.ql.reg, reg_list[idx], value)
+        else:
+            self._set_stack_value(idx - 6 + 1, value)
+
 class HookFunc:
     def __init__(self, ql, fn):
         self.fucname = fn
