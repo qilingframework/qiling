@@ -19,6 +19,8 @@ from qiling.os.linux.syscall import *
 from qiling.os.macos.syscall import *
 from qiling.os.freebsd.syscall import *
 
+from qiling.os.linux.function_hook import ARMFunctionArg, MIPS32FunctionArg, ARM64FunctionArg, X86FunctionArg, X64FunctionArg
+
 
 class QlOsPosix(QlOs):
     def __init__(self, ql):
@@ -62,7 +64,27 @@ class QlOsPosix(QlOs):
     @property
     def function_arg(self):
         if self.ql.ostype in (QL_POSIX):
-            return self.get_func_arg()            
+            # ARM
+            if self.ql.archtype== QL_ARCH.ARM:
+                return ARMFunctionArg(self.ql)
+
+            # MIPS32
+            elif self.ql.archtype== QL_ARCH.MIPS:
+                return MIPS32FunctionArg(self.ql)
+
+            # ARM64
+            elif self.ql.archtype== QL_ARCH.ARM64:
+                return ARM64FunctionArg(self.ql)
+
+            # X86
+            elif  self.ql.archtype== QL_ARCH.X86:
+                return X86FunctionArg(self.ql)
+
+            # X8664
+            elif  self.ql.archtype== QL_ARCH.X8664:
+                return X64FunctionArg(self.ql)
+            else:
+                raise
 
     def load_syscall(self, intno=None):
         # import syscall mapping function
