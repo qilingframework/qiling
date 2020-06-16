@@ -46,7 +46,6 @@ class QlLinuxThread(QlThread):
         self.current_path = ql.os.current_path
         self.log_file_fd = None
 
-        # FIXME: @ucgJhe for Temporay FIX
         _logger = self.ql.log_file_fd
 
         if self.ql.log_dir and self.ql.log_file_fd != None:
