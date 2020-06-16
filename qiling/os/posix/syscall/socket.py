@@ -225,18 +225,18 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
     regreturn = 0
     if send_sockfd < 256 and ql.os.file_des[send_sockfd] != 0:
         try:
-            ql.dprint(D_INFO, "[+] debug send() start")
+            ql.dprint(D_CTNT, "[+] debug send() start")
             tmp_buf = ql.mem.read(send_buf, send_len)
-            ql.dprint(D_INFO, ql.os.file_des[send_sockfd])
-            ql.dprint(D_INFO, "[+] fd is " + str(send_sockfd))
+            ql.dprint(D_CTNT, str(ql.os.file_des[send_sockfd]))
+            ql.dprint(D_CTNT, "[+] fd is " + str(send_sockfd))
             ql.dprint(D_CTNT, "[+] send() CONTENT:")
-            ql.dprint(D_CTNT, "%s" % tmp_buf)
-            ql.dprint(D_INFO, "[+] send() flag is " + str(send_flags))
-            ql.dprint(D_INFO, "[+] send() len is " + str(send_len))
+            ql.dprint(D_CTNT, "%s" % str(tmp_buf))
+            ql.dprint(D_CTNT, "[+] send() flag is " + str(send_flags))
+            ql.dprint(D_CTNT, "[+] send() len is " + str(send_len))
             ql.os.file_des[send_sockfd].send(bytes(tmp_buf), send_flags)
-            ql.dprint(D_INFO, ql.os.file_des[send_sockfd])
+            ql.dprint(D_CTNT, str(ql.os.file_des[send_sockfd]))
             regreturn = send_len
-            ql.dprint(D_INFO, "[+] debug send end")
+            ql.dprint(D_CTNT, "[+] debug send end")
         except:
             ql.nprint(sys.exc_info()[0])
             if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):

@@ -16,7 +16,7 @@ from .utils import ql_setup_logging_env, ql_setup_logging_stream
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 from .core_utils import QLCoreUtils
-from .debugger import ql_debugger_init
+from .extensions.debugger import ql_debugger_init
 
 __version__ = "1.1" + "-dev"
 
@@ -131,7 +131,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
          # Log's configuration
         if self.log_dir != "" and type(self.log_dir) == str:
-            _logger = ql_setup_logging_env(self)    
+            _logger = ql_setup_logging_env(self)
             self.log_file_fd = _logger
         elif self.console == True:
             _logger = ql_setup_logging_stream(self)

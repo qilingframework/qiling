@@ -13,38 +13,100 @@ from qiling.os.posix import syscall
 class ELFTest(unittest.TestCase):
 
     def test_multithread_elf_linux_x86(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                if buf.startswith("thread 2 ret"):
+                    ql.buf_out = buf
+            except:
+                pass
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux")
-        ql.multithread = True   
+        ql.multithread = True
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
+        
+        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
+        
+        del ql
+
+    
+    def test_multithread_elf_linux_arm64(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                if buf.startswith("thread 2 ret"):
+                    ql.buf_out = buf
+            except:
+                pass
+        
+        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux")
+        ql.multithread = True
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.run()
+        
+        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
+        
         del ql
 
 
     def test_multithread_elf_linux_x8664(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                if buf.startswith("thread 2 ret"):
+                    ql.buf_out = buf
+            except:
+                pass
+
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_multithreading"], "../examples/rootfs/x8664_linux", profile= "profiles/append_test.ql")
         ql.log_split = True
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.multithread = True   
         ql.run()
+
+        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
+
         del ql
 
 
     def test_multithread_elf_linux_mips32el(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                if buf.startswith("thread 2 ret"):
+                    ql.buf_out = buf
+            except:
+                pass
+
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_multithreading"], "../examples/rootfs/mips32el_linux")
-        ql.multithread = True   
+        print("MIPS32EL")
+        ql.multithread = True
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
         del ql
 
 
     def test_multithread_elf_linux_arm(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                if buf.startswith("thread 2 ret"):
+                    ql.buf_out = buf
+            except:
+                pass
+        
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_multithreading"], "../examples/rootfs/arm_linux")
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.multithread = True   
         ql.run()
-        del ql
 
-
-    def test_multithread_elf_linux_arm64(self):
-        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_multithreading"], "../examples/rootfs/arm64_linux")
-        ql.multithread = True   
-        ql.run()
+        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
+        
         del ql
 
 
@@ -60,12 +122,14 @@ class ELFTest(unittest.TestCase):
         ql.run()
         del ql
 
+
     def test_elf_partial_linux_x8664(self): 
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello"], "../examples/rootfs/x8664_linux", output= "default")
         X64BASE = int(ql.profile.get("OS64", "load_address"), 16)
         begin_point = X64BASE + 0x109e
         end_point = X64BASE + 0x10bc
         ql.run(begin = begin_point, end = end_point)
+
 
     def test_elf_linux_x8664(self):
         def my_puts(ql):
@@ -103,6 +167,20 @@ class ELFTest(unittest.TestCase):
         del self.set_api
         del self.set_api_onexit
         del self.set_api_onenter
+        del ql
+
+
+    def test_tcp_elf_linux_x86(self):
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_tcp_test","20004"], "../examples/rootfs/x86_linux")
+        ql.multithread = True
+        ql.run()
+        del ql
+
+
+    def test_tcp_elf_linux_arm64(self):
+        ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_tcp_test","20005"], "../examples/rootfs/arm64_linux")
+        ql.multithread = True
+        ql.run()
         del ql
 
 
@@ -440,7 +518,8 @@ class ELFTest(unittest.TestCase):
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
                 os.remove(real_path)
- 
+
+
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             target = False
             pathname = ql.os.file_des[write_fd].name.split('/')[-1]
@@ -457,6 +536,7 @@ class ELFTest(unittest.TestCase):
                     assert fd.read() == 'Hello testing\x00'
                 os.remove(real_path)
 
+
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
             target = False
             pathname = ql.mem.string(openat_path)
@@ -472,6 +552,7 @@ class ELFTest(unittest.TestCase):
                 assert os.path.isfile(real_path) == True
                 os.remove(real_path)
 
+
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
             pathname = ql.mem.string(unlink_pathname)
@@ -485,6 +566,7 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == False
+
 
         def test_syscall_truncate(ql, trunc_pathname, trunc_length, *args):
             target = False
@@ -500,6 +582,7 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
                 os.remove(real_path)
+
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             target = False
@@ -725,12 +808,15 @@ class ELFTest(unittest.TestCase):
         def instruction_count(ql, address, size, user_data):
             user_data[0] += 1
 
+        def my__llseek(ql, *args, **kw):
+            pass
 
         def run_one_round(payload):
             stdin = MyPipe()
             ql = Qiling(["../examples/rootfs/x86_linux/bin/crackme_linux"], "../examples/rootfs/x86_linux", console = False, stdin = stdin)
             ins_count = [0]
             ql.hook_code(instruction_count, ins_count)
+            ql.set_syscall("_llseek", my__llseek)
             stdin.write(payload)
             ql.run()
             del stdin
@@ -763,7 +849,6 @@ class ELFTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", output="debug")
         ql.run()
         del ql
-
 
 
 if __name__ == "__main__":

@@ -12,7 +12,6 @@ matrix:
         - pip3 install -r requirements.txt
         - python3 setup.py install
       before_script:
-        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
         - cd tests
       script:
         - ./test_elf.sh
@@ -28,7 +27,6 @@ matrix:
         - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         - python3 setup.py install
       before_script:
-        - pysite=$(python3 -m sysconfig | sed -n '/purelib/ s/.*\= *//p' | xargs); cp ${pysite}${pysite}/keystone/libkeystone.so $pysite/keystone/
         - cd tests
       script:
         - ./test_elf.sh
@@ -44,30 +42,19 @@ matrix:
       before_install:
         - pip3 install --upgrade pip
       install:
-        - pip3 install wheel 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn==1.0.2rc3'
+        - pip3 install wheel 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc4'
 #        - pip3 install -r requirements.txt
         - |
-          if [ ! -f $HOME/dist/keystone*.zip ]; then
+          if [ ! -f $HOME/dist/keystone*.whl ]; then
                git clone https://github.com/keystone-engine/keystone && \
-               cd keystone && \
-               mkdir build && \
-               cd build && \
-               ../make-share.sh && \
-               make -j8 && \
-               sudo make install && \
-               cd ../bindings/python && \
-               sudo make install && \
-               python3 setup.py install && \
-               sudo python3 setup.py bdist --formats=zip && \
-               cp dist/*.zip $HOME/dist/ && \
-               cp /usr/local/lib/libkeystone.0.dylib $HOME/dist/ && \
-               cp /usr/local/lib/libkeystone.dylib $HOME/dist/;
+               cd keystone/bindings/python && \
+               sudo python3 setup.py install bdist_wheel && \
+               cp dist/*.whl $HOME/dist/;
           else
-              unzip $HOME/dist/*.zip -d / && \
-              cp $HOME/dist/*.dylib /usr/local/lib/;
+              sudo pip3 install $HOME/dist/*.whl;
           fi
         - cd $TRAVIS_BUILD_DIR 
-        - python3 setup.py install 
+        - sudo python3 setup.py install 
       before_script:
         - ./examples/scripts/collectdylib.sh
         - cd tests
@@ -91,25 +78,25 @@ matrix:
         #- choco install kb2999226
         #- python -m pip install --upgrade pip
       install:
-        - pip3 install wheel 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc3'
-#`        - pip3 install -r requirements.txt
-        - |
-          if [ ! -f $HOME/dist/keystone*.zip ]; then
-               git clone https://github.com/keystone-engine/keystone && \
-               cd keystone && \
-               mkdir build && \
-               cd build && \
-               cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64 '&' cmd.exe //C '..\nmake-dll.bat' '&&' nmake instalL && \
-               cd ../bindings/python && \
-               python setup.py install && \
-               python setup.py bdist --formats=zip && \
-               cp dist/*.zip $HOME/dist/ && \
-               cp /c/Program\ Files\ \(x86\)/keystone/lib/keystone.dll /c/Python36/Lib/site-packages/keystone/ && \
-               cp /c/Program\ Files\ \(x86\)/keystone/lib/keystone.dll $HOME/dist/;
-          else
-              unzip $HOME/dist/*.zip -d /c && \
-              cp $HOME/dist/keystone.dll /c/Python36/Lib/site-packages/keystone/;
-          fi
+#        - pip3 install wheel 'capstone>=4.0.1' 'pefile>=2019.4.18' 'python-registry>=1.3.1' 'unicorn>=1.0.2rc3'
+        - pip3 install -r requirements.txt
+#        - |
+#          if [ ! -f $HOME/dist/keystone*.zip ]; then
+#               git clone https://github.com/keystone-engine/keystone && \
+#               cd keystone && \
+#               mkdir build && \
+#               cd build && \
+#               cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat' amd64 '&' cmd.exe //C '..\nmake-dll.bat' '&&' nmake instalL && \
+#               cd ../bindings/python && \
+#               python setup.py install && \
+#               python setup.py bdist --formats=zip && \
+#               cp dist/*.zip $HOME/dist/ && \
+#               cp /c/Program\ Files\ \(x86\)/keystone/lib/keystone.dll /c/Python36/Lib/site-packages/keystone/ && \
+#               cp /c/Program\ Files\ \(x86\)/keystone/lib/keystone.dll $HOME/dist/;
+#          else
+#              unzip $HOME/dist/*.zip -d /c && \
+#              cp $HOME/dist/keystone.dll /c/Python36/Lib/site-packages/keystone/;
+#          fi
         - cd $TRAVIS_BUILD_DIR
         - python setup.py install
 #        - cp /c/Program\ Files\ \(x86\)/keystone/lib/keystone.dll /c/Python36/Lib/site-packages/keystone/
@@ -127,23 +114,23 @@ matrix:
     - name: "Python 3.6 on Docker"
       services:
         - docker
-      cache:
-        bundler: true
-        directories:
-          - $HOME/docker
-#      before_cache:
-#          - docker save -o $HOME/docker/images.tar qiling:1.0
+#      cache:
+#        bundler: true
+#        directories:
+#          - $HOME/docker
       before_script:
-        - docker load -i $HOME/docker/images.tar || true
-        - |
-          if [[ ! $(docker images -q qiling:1.0) ]]; then
-              docker build -t qiling:1.0 . && docker save -o $HOME/docker/images.tar qiling:1.0;
-          fi
-        - docker run -dt --name qiling -v ${TRAVIS_BUILD_DIR}:/qiling qiling:1.0
-        - docker exec qiling pip3 install -r requirements.txt
-        - docker exec qiling python3 setup.py install
+#        - docker build -t qiling:1.1 .
+#        - docker load -i $HOME/docker/images.tar || true
+#        - |
+#          if [[ ! $(docker images -q qiling:1.1) ]]; then
+#              docker build -t qiling:1.1 . && docker save -o $HOME/docker/images.tar qiling:1.1;
+#          fi
+#        - docker run -dt --name qiling -v ${TRAVIS_BUILD_DIR}:/qiling qiling:1.1
+#        - docker exec qiling pip3 install -r requirements.txt
+#        - docker exec qiling python3 setup.py install
       script:
-        - docker exec qiling bash -c "cd tests && ./test_elf.sh"
+        - docker run -it --rm -v ${TRAVIS_BUILD_DIR}:/qiling qilingframework/qiling:dev bash -c "pip3 install -r requirements.txt && python3 setup.py install && cd tests && ./test_elf.sh"
+#        - docker exec qiling bash -c "cd tests && ./test_elf.sh"
 
 #    - name: "Python 3.6 on WSL1 Ubuntu"
 #      os: windows

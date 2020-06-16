@@ -8,7 +8,7 @@ import argparse, os, string, sys, ast
 from binascii import unhexlify
 from qiling import *
 from qiling import __version__ as ql_version
-from qiling.coverage import utils as cov_utils
+from qiling.extensions.coverage import utils as cov_utils
 
 
 def parse_args(parser, commands):
@@ -183,16 +183,17 @@ if __name__ == '__main__':
     elif options.debug:
         options.output = "debug"
     elif options.disasm:
-        options.output = "disasm"            
+        options.output = "disasm"
+    else:
+        options.output = "default"              
 
     if options.profile:
         options.profile = str(options.profile)
 
-    if options.console:
-        if options.console == 'False':
-            options.console = False
-        else:
-            options.console = True
+    if options.console == 'False':
+        options.console = False
+    else:
+        options.console = True    
     
     if type(options.verbose) != int and options.output not in ("debug", "dump"):
         print("ERROR: verbose mode, must be int and use with --debug or --dump")
@@ -204,11 +205,13 @@ if __name__ == '__main__':
     
     # ql file setup
     if (options.subparser_name == 'run'):
+        # with argv
         if options.filename is not None and options.run_args == []:
             ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile = options.profile, output=options.output, console=options.console, log_dir=options.log_dir)
 
+        # Without argv
         elif options.filename is None and options.args == [] and options.run_args != []:
-            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, profile = options.profile, output=options.output)
+            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, profile = options.profile, output=options.output, console=options.console, log_dir=options.log_dir)
         
         else:
             print("ERROR: Command error!")
@@ -236,16 +239,15 @@ if __name__ == '__main__':
     if options.root:
         ql.root = True
 
-    if options.console == "False":
-        ql.log_split = False
-
     if options.multithread:
         ql.multithread = True
 
     if options.verbose:
-        ql.verbose = options.verbose   
+        ql.verbose = options.verbose
+    else:
+        ql.verbose = 1
 
-    if options.filter != None:
+    if options.filter:
        ql.filter = options.filter
 
     if options.env != '':
