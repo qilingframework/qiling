@@ -47,19 +47,13 @@ class QlLinuxThread(QlThread):
         self.log_file_fd = None
 
         # FIXME: @ucgJhe for Temporay FIX
-        if ql.console == True:
-            _logger = ql_setup_logging_stream(ql)
-        elif ql.log_file != None and type(ql.log_file) == str:
-            _logger = ql_setup_logger(str(self.thread_id)) if ql.log_split else ql_setup_logger()
-        else:
-            _logger = None            
+        _logger = self.ql.log_file_fd
 
-        if ql.log_dir and ql.log_file != None:
-            _logger = ql_setup_logger(str(self.thread_id)) if ql.log_split else ql_setup_logger()
+        if self.ql.log_dir and self.ql.log_file_fd != None:
             if ql.log_split:
                 _logger = ql_setup_logging_file(ql.output, '%s_%s' % (ql.log_file, self.thread_id), _logger)
             else:
-                _logger = ql_setup_logging_file(ql.output, ql.log_file, _logger)
+                _logger = ql_setup_logging_file(ql.output, self.ql.log_filename, _logger)
 
         self.log_file_fd = _logger
 

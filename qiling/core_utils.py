@@ -5,11 +5,7 @@
 
 import os, logging, configparser
 
-try:
-    from keystone import *
-except:
-    pass
-
+from keystone import *
 from binascii import unhexlify
 
 from .utils import ql_build_module_import_name, ql_get_module_function
@@ -207,12 +203,6 @@ class QLCoreUtils(object):
 
 
     def compile(self, archtype, runcode, arm_thumb=None):
-        try:
-            loadarch = KS_ARCH_X86
-        except:
-            raise QlErrorOutput("Please install Keystone Engine")
-
-
         def ks_convert(arch):
             if self.archendian == QL_ENDIAN.EB:
                 adapter = {
