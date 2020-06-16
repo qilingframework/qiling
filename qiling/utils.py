@@ -176,9 +176,11 @@ def ql_setup_logging_env(ql, logger=None):
     ql.log_filename = ql.targetname + ql.append          
     ql.log_file = os.path.join(ql.log_dir, ql.log_filename) 
 
-    #_logger = ql_setup_logging_file(ql.output, ql.log_file + "_" + str(pid), logger)
     _logger = ql_setup_logging_stream(ql)
-    _logger = ql_setup_logging_file(ql.output, ql.log_file, _logger)
+
+    if ql.log_split == False:
+        _logger = ql_setup_logging_file(ql.output, ql.log_file, _logger)
+
     return _logger
 
 

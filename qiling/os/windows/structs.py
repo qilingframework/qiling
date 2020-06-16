@@ -7,6 +7,7 @@ from unicorn.x86_const import *
 from qiling.os.windows.utils import *
 from enum import IntEnum
 from qiling.os.windows.handle import *
+from qiling.exception import *
 
 
 class TEB:
@@ -293,18 +294,22 @@ class WindowsStruct:
         raise NotImplementedError
 
     def generic_write(self, addr: int, attributes: list):
+        self.ql.dprint(D_RPRT, "[+] Writing Windows object " + self.__class__.__name__)
         already_written = 0
         for elem in attributes:
             (val, size, endianness, typ) = elem
             if typ == int:
                 value = val.to_bytes(size, endianness)
-                self.ql.dprint(D_INFO, "[+] Writing at addr %d value %s" % (addr + already_written, value))
+                self.ql.dprint(D_RPRT, "[+] Writing to %d with value %s" % (addr + already_written, value))
                 self.ql.mem.write(addr + already_written, value)
             elif typ == bytes:
                 if isinstance(val, bytearray):
                     value = bytes(val)
                 else:
                     value = val
+                self.ql.dprint(D_RPRT, "[+] Writing at addr %d value %s" % (addr + already_written, value))
+
+                self.ql.mem.write(addr + already_written, value)
             elif issubclass(typ, WindowsStruct):
                 val.write(addr)
             else:
@@ -314,10 +319,12 @@ class WindowsStruct:
         self.addr = addr
 
     def generic_read(self, addr: int, attributes: list):
+        self.ql.dprint(D_RPRT, "[+] Reading Windows object " + self.__class__.__name__)
         already_read = 0
         for elem in attributes:
             (val, size, endianness, type) = elem
             value = self.ql.mem.read(addr + already_read, size)
+            self.ql.dprint(D_RPRT, "[+] Reading from %d value %s" % (addr + already_read, value))
             if type == int:
                 elem[0] = int.from_bytes(value, endianness)
             elif type == bytes:

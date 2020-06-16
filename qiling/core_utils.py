@@ -5,11 +5,7 @@
 
 import os, logging, configparser
 
-try:
-    from keystone import *
-except:
-    pass
-
+from keystone import *
 from binascii import unhexlify
 
 from .utils import ql_build_module_import_name, ql_get_module_function
@@ -34,7 +30,7 @@ class QLCoreUtils(object):
         if type(self.console) is bool:
             pass
         else:
-            raise QlErrorOutput("[!] consnsole must be True or False")     
+            raise QlErrorOutput("[!] console must be True or False")     
         
         # FIXME: this is due to console must be able to update duirng runtime
         if self.log_file_fd is not None:
@@ -46,8 +42,8 @@ class QLCoreUtils(object):
             # setup filter for logger
             # FIXME: only works for logging due to we might need runtime disable nprint, it should be a global filter not only syscall
             if self.filter != None and self.output == QL_OUTPUT.DEFAULT:
-                self.log_file_fd.addFilter(ql_setup_filter(self.filter))
-
+                fd.addFilter(ql_setup_filter(self.filter))
+            
             console_handlers = []
 
             for each_handler in fd.handlers:
@@ -65,10 +61,10 @@ class QLCoreUtils(object):
                         if '_FalseFilter' in each_filter.__class__.__name__:
                             each_console_handler.removeFilter(each_filter)
             
-            try:
+            if isinstance(args, tuple) or isinstance(args, list):
                 msg = "".join(args)
-            except:
-                msg = "".join(str(args))    
+            else:
+                msg = "".join(str(args))
 
             if kw.get("end", None) != None:
                 msg += kw["end"]
@@ -150,8 +146,10 @@ class QLCoreUtils(object):
         elif function_name == "map_syscall":
             ostype_str = ostype_convert_str(self.ostype)
             arch_str = arch_convert_str(self.archtype)
-            arch_str = arch_str + "_syscall"
-            module_name = ql_build_module_import_name("os", ostype_str, arch_str)
+
+            syscall_table = "map_syscall"
+
+            module_name = ql_build_module_import_name("os", ostype_str, syscall_table)
             return ql_get_module_function(module_name, function_name)
         
         else:
@@ -205,12 +203,6 @@ class QLCoreUtils(object):
 
 
     def compile(self, archtype, runcode, arm_thumb=None):
-        try:
-            loadarch = KS_ARCH_X86
-        except:
-            raise QlErrorOutput("Please install Keystone Engine")
-
-
         def ks_convert(arch):
             if self.archendian == QL_ENDIAN.EB:
                 adapter = {

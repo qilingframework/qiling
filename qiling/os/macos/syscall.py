@@ -71,7 +71,7 @@ def ql_syscall_fgetattrlist(ql, fd, alist, attributeBuffer, bufferSize, options,
         ql.os.definesyscall_return(KERN_SUCCESS)
 
 
-def ql_arm64_poll(ql, target, address, size, *args, **kw):
+def ql_syscall_poll(ql, target, address, size, *args, **kw):
     ql.os.definesyscall_return(KERN_SUCCESS)
     ql.nprint("pool()")
 
@@ -81,7 +81,7 @@ def ql_arm64_poll(ql, target, address, size, *args, **kw):
 ################
 
 # 0xa
-def ql_x86_syscall_kernelrpc_mach_vm_allocate_trap(ql, port, addr, size, flags, *args, **kw):
+def ql_syscall_kernelrpc_mach_vm_allocate_trap(ql, port, addr, size, flags, *args, **kw):
     ql.dprint(D_INFO, "[+] [mach] mach vm allocate trap(port: 0x%x, addr: 0x%x, size: 0x%x, flags: 0x%x" % (port, addr, size, flags))
     mmap_address = ql.os.macho_task.min_offset
     mmap_end = page_align_end(mmap_address + size, PAGE_SIZE)
@@ -93,12 +93,12 @@ def ql_x86_syscall_kernelrpc_mach_vm_allocate_trap(ql, port, addr, size, flags, 
     ql.os.definesyscall_return(0)
 
 # 0xc
-def ql_x86_syscall_kernelrpc_mach_vm_deallocate_trap(ql, target, address, size, *args, **kw):
+def ql_syscall_kernelrpc_mach_vm_deallocate_trap(ql, target, address, size, *args, **kw):
     ql.os.definesyscall_return(KERN_SUCCESS)
     ql.dprint(D_INFO, "[+] [mach] mach vm deallocate trap")
 
 # 0xf
-def ql_x86_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, flags, cur_protection):
+def ql_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, flags, cur_protection):
     ql.dprint(D_INFO, "[+] [mach] mach vm map trap(target: 0x%x, address: 0x%x, size: 0x%x, mask: 0x%x, flag: 0x%x, cur_protect: 0x%x)" % (
         target, address, size, mask, flags, cur_protection
     ))
@@ -117,48 +117,48 @@ def ql_x86_syscall_kernelrpc_mach_vm_map_trap(ql, target, address, size, mask, f
     ql.os.definesyscall_return(KERN_SUCCESS)
 
 # 0x12
-def ql_x86_syscall_kernelrpc_mach_port_deallocate_trap(ql, *args, **kw):
+def ql_syscall_kernelrpc_mach_port_deallocate_trap(ql, *args, **kw):
     ql.dprint(D_INFO, "[+] [mach] mach port deallocate trap")
 
 # 0x13
-def ql_x86_syscall_kernelrpc_mach_port_mod_refs_trap(ql, target, name, right, delta, *args, **kw):
+def ql_syscall_kernelrpc_mach_port_mod_refs_trap(ql, target, name, right, delta, *args, **kw):
     ql.dprint(D_INFO, "[+] [mach] mach port mod refs trap(target: 0x%x, name: 0x%x, right: 0x%x, delta: 0x%x)" % (
         target, name, right, delta
     ))
     pass
 
 # 0x18
-def ql_x86_syscall_kernelrpc_mach_port_construct_trap(ql, target, options, context, name, *args, **kw):
+def ql_syscall_kernelrpc_mach_port_construct_trap(ql, target, options, context, name, *args, **kw):
     ql.dprint(D_INFO, "[+] [mach] mach port construct trap(target: 0x%x, options: 0x%x, context: 0x%x, name: 0x%x)" % (
         target, options, context, name
     ))
     pass
 
 # 0x1a
-def ql_x86_syscall_mach_reply_port(ql, *args, **kw):
+def ql_syscall_mach_reply_port(ql, *args, **kw):
     ql.os.definesyscall_return(ql.os.macho_mach_port.name)
     ql.dprint(D_INFO, "[+] [mach] mach reply port , ret: %s" % (ql.os.macho_mach_port.name))
 
 # 0x1b
-def ql_x86_syscall_thread_self_trap(ql, *args, **kw):
+def ql_syscall_thread_self_trap(ql, *args, **kw):
     port_manager = ql.os.macho_port_manager
     thread_port = port_manager.get_thread_port(ql.os.macho_thread)
     ql.dprint(D_INFO, "[+] [mach] thread_self_trap: ret: %s" % (thread_port))
     ql.os.definesyscall_return(thread_port)
 
 # 0x1c
-def ql_x86_syscall_task_self_trap(ql, *args, **kw):
+def ql_syscall_task_self_trap(ql, *args, **kw):
     ql.os.definesyscall_return(ql.os.macho_task.id)
     ql.dprint(D_INFO, "[+] [mach] task self trap, ret: %d" % (ql.os.macho_task.id))
 
 # 0x1d
-def ql_x86_syscall_host_self_trap(ql, *args, **kw):
+def ql_syscall_host_self_trap(ql, *args, **kw):
     port_manager = ql.os.macho_port_manager
     ql.os.definesyscall_return(port_manager.host_port.name)
     ql.dprint(D_INFO, "[+] [mach] host_self_trap, ret: %s" % (666))
 
 # 0x1f
-def ql_x86_syscall_mach_msg_trap(ql, args, opt, ssize, rsize, rname, timeout):
+def ql_syscall_mach_msg_trap(ql, args, opt, ssize, rsize, rname, timeout):
     ql.dprint(D_INFO, "[+] [mach] mach_msg_trap(args: 0x%x opt: 0x%x, ssize: 0x%x, rsize: 0x%x, rname: 0x%x, timeout: %d)" % (
         args, opt, ssize, rsize, rname, timeout))
     mach_msg = MachMsg(ql)
@@ -608,7 +608,7 @@ def ql_syscall_abort_with_payload(ql, reason_namespace, reason_code, payload, pa
 
 # 0x3d
 # thread_set_tsd_base
-def ql_x86_syscall_thread_fast_set_cthread_self64(ql, u_info_addr, *args, **kw):
+def ql_syscall_thread_fast_set_cthread_self64(ql, u_info_addr, *args, **kw):
     ql.dprint(D_INFO, "[+] [mdep] thread fast set cthread self64(tsd_base:0x%x)" % (u_info_addr))
     ql.reg.msr(GSMSR, u_info_addr)
     ql.os.definesyscall_return(KERN_SUCCESS)

@@ -200,8 +200,8 @@ def hook_CreateThread(ql, address, params):
 
     # set lpThreadId
     # FIXME: Temporary fix for the crash
-    if lpThreadId != 0:
-        ql.mem.write(lpThreadId, ql.pack(thread_id))    
+    #if lpThreadId != 0:
+        #ql.mem.write(lpThreadId, ql.pack(thread_id))    
 
     # set thread handle
     return ret

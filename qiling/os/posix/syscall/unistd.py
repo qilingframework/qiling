@@ -456,7 +456,7 @@ def ql_syscall_dup(ql, dup_oldfd, *args, **kw):
                     regreturn = idx
                     break
 
-    ql.nprint("dup(%d) = %d" % (dup_old, regreturn))
+    ql.nprint("dup(%d) = %d" % (dup_oldfd, regreturn))
     ql.os.definesyscall_return(regreturn)
 
 
