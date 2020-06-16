@@ -1,1 +1,0 @@
-wsdxml_data = {'WSDXMLGetNameFromBuiltinNamespace': {'pszNamespace': 'LPCWSTR', 'pszName': 'LPCWSTR', 'ppName': 'WSDXML_NAME'}, 'WSDXMLCreateContext': {'ppContext': 'IWSDXMLContext'}}

@@ -1,1 +1,0 @@
-ual_data = {'VOID': {'wszProductName': 'WCHAR', 'wszRoleName': 'WCHAR', 'wszGuid': 'WCHAR'}}

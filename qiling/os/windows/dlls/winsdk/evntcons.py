@@ -1,1 +1,0 @@
-evntcons_data = {'EventAccessControl': {'Guid': 'LPGUID', 'Operation': 'ULONG', 'Sid': 'PSID', 'Rights': 'ULONG', 'AllowOrDeny': 'BOOLEAN'}, 'EventAccessQuery': {'Guid': 'LPGUID', 'Buffer': 'PSECURITY_DESCRIPTOR', 'BufferSize': 'PULONG'}, 'EventAccessRemove': {'Guid': 'LPGUID'}}

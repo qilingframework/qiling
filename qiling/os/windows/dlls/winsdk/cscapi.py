@@ -1,1 +1,0 @@
-cscapi_data = {'OfflineFilesEnable': {'bEnable': 'BOOL', 'pbRebootRequired': 'BOOL'}, 'OfflineFilesStart': {}, 'OfflineFilesQueryStatus': {'pbActive': 'BOOL', 'pbEnabled': 'BOOL'}, 'OfflineFilesQueryStatusEx': {'pbActive': 'BOOL', 'pbEnabled': 'BOOL', 'pbAvailable': 'BOOL'}}

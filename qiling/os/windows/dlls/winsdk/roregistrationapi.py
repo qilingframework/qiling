@@ -1,1 +1,0 @@
-roregistrationapi_data = {'RoGetActivatableClassRegistration': {'activatableClassId': 'HSTRING', 'activatableClassRegistration': 'PActivatableClassRegistration'}, 'RoGetServerActivatableClasses': {'serverName': 'HSTRING', 'activatableClassIds': 'HSTRING', 'count': 'DWORD'}}

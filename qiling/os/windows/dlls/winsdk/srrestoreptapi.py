@@ -1,1 +1,0 @@
-srrestoreptapi_data = {'SRSetRestorePointA': {'pRestorePtSpec': 'PRESTOREPOINTINFOA', 'pSMgrStatus': 'PSTATEMGRSTATUS'}, 'SRSetRestorePointW': {'pRestorePtSpec': 'PRESTOREPOINTINFOW', 'pSMgrStatus': 'PSTATEMGRSTATUS'}, 'SRRemoveRestorePoint': {'dwRPNum': 'DWORD'}}

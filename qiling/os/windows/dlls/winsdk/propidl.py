@@ -1,1 +1,0 @@
-propidl_data = {'PropVariantCopy': {'pvarDest': 'PROPVARIANT', 'pvarSrc': 'PROPVARIANT'}, 'PropVariantClear': {'pvar': 'PROPVARIANT'}, 'FreePropVariantArray': {'cVariants': 'ULONG', 'rgvars': 'PROPVARIANT'}}

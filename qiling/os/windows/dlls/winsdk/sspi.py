@@ -1,1 +1,0 @@
-sspi_data = {}

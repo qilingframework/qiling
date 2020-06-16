@@ -1,1 +1,0 @@
-winnls32_data = {'WINNLSEnableIME': {'VOID': 'BOOL'}}

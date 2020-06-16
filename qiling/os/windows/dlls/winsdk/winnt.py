@@ -1,1 +1,0 @@
-winnt_data = {}

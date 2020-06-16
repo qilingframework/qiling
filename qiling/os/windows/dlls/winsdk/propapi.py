@@ -1,1 +1,0 @@
-propapi_data = {'StgPropertyLengthAsVariant': {'pProp': 'SERIALIZEDPROPERTYVALUE', 'cbProp': 'ULONG', 'CodePage': 'USHORT', 'bReserved': 'BYTE'}}

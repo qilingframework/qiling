@@ -1,1 +1,0 @@
-mfobjects_data = {'MFSerializeAttributesToStream': {'pAttr': 'IMFAttributes', 'dwOptions': 'DWORD', 'pStm': 'IStream'}, 'MFDeserializeAttributesFromStream': {'pAttr': 'IMFAttributes', 'dwOptions': 'DWORD', 'pStm': 'IStream'}}

@@ -1,1 +1,0 @@
-icwcfg_data = {'CheckConnectionWizard': {'VOID': 'LPDWORD'}, 'SetShellNext': {'szShellNext': 'PSTR'}}

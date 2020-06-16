@@ -1,1 +1,0 @@
-winenclaveapi_data = {}

@@ -1,1 +1,0 @@
-ws2tcpip_data = {'VOID': {'Socket': 'SOCKET', 'MaxCoalescedMsgSize': 'DWORD'}}

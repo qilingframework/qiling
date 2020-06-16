@@ -1,1 +1,0 @@
-msacm_data = {}

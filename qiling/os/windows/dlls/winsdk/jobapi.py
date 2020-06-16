@@ -1,1 +1,0 @@
-jobapi_data = {'IsProcessInJob': {'ProcessHandle': 'HANDLE', 'JobHandle': 'HANDLE', 'Result': 'PBOOL'}}

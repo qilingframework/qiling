@@ -1,1 +1,0 @@
-comppkgsup_data = {}

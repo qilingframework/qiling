@@ -1,1 +1,0 @@
-ws2spi_data = {'VOID': {'hAsyncCall': 'HANDLE', 'iRetCode': 'INT'}}

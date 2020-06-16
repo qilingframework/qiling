@@ -1,1 +1,0 @@
-d3d11shadertracing_data = {'D3DDisassemble11Trace': {'pSrcData': 'LPCVOID', 'SrcDataSize': 'SIZE_T', 'pTrace': 'ID3D11ShaderTrace', 'StartStep': 'UINT', 'NumSteps': 'UINT', 'Flags': 'UINT', 'ppDisassembly': {'name': 'ID3D10Blob', 'data_type': 'Struct', 'elements': []}}}

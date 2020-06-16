@@ -1,1 +1,0 @@
-syncmgr_data = {}

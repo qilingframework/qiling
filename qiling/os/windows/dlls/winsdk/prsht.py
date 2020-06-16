@@ -1,1 +1,0 @@
-prsht_data = {'CreatePropertySheetPageA': {'constPropSheetPagePointer': 'LPCPROPSHEETPAGEA'}, 'CreatePropertySheetPageW': {'constPropSheetPagePointer': 'LPCPROPSHEETPAGEW'}, 'DestroyPropertySheetPage': {'VOID': 'HPROPSHEETPAGE'}, 'PropertySheetA': {'VOID': 'LPCPROPSHEETHEADERA'}, 'PropertySheetW': {'VOID': 'LPCPROPSHEETHEADERW'}}

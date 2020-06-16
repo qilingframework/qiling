@@ -1,1 +1,0 @@
-shobjidl_data = {'SHAddDefaultPropertiesByExt': {'pszExt': 'PCWSTR', 'pPropStore': 'IPropertyStore'}, 'SHCreateDefaultPropertiesOp': {'psi': 'IShellItem', 'ppFileOp': 'IFileOperation'}, 'SHSetDefaultProperties': {'hwnd': 'HWND', 'psi': 'IShellItem', 'dwFileOpFlags': 'DWORD', 'pfops': 'IFileOperationProgressSink'}}

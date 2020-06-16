@@ -1,1 +1,0 @@
-atacct_data = {'GetNetScheduleAccountInformation': {'pwszServerName': 'LPCWSTR', 'ccAccount': 'DWORD', 'wszAccount': 'WCHAR'}, 'SetNetScheduleAccountInformation': {'pwszServerName': 'LPCWSTR', 'pwszAccount': 'LPCWSTR', 'pwszPassword': 'LPCWSTR'}}

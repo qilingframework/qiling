@@ -1,1 +1,0 @@
-rometadata_data = {'MetaDataGetDispenser': {'rclsid': 'IID', 'riid': 'IID', 'ppv': 'LPVOID'}}

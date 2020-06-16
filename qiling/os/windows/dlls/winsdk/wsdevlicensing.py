@@ -1,1 +1,0 @@
-wsdevlicensing_data = {'CheckDeveloperLicense': {'pExpiration': 'FILETIME'}, 'AcquireDeveloperLicense': {'hwndParent': 'HWND', 'pExpiration': 'FILETIME'}, 'RemoveDeveloperLicense': {'hwndParent': 'HWND'}}

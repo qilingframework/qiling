@@ -1,1 +1,0 @@
-libloaderapi2_data = {'QueryOptionalDelayLoadedAPI': {'hParentModule': 'HMODULE', 'lpDllName': 'LPCSTR', 'lpProcName': 'LPCSTR', 'Reserved': 'DWORD'}}

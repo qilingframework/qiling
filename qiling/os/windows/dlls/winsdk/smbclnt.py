@@ -1,1 +1,0 @@
-smbclnt_data = {'RegisterAppInstance': {'ProcessHandle': 'HANDLE', 'AppInstanceId': 'GUID', 'ChildrenInheritAppInstance': 'BOOL'}, 'SetAppInstanceCsvFlags': {'ProcessHandle': 'HANDLE', 'Mask': 'ULONG', 'Flags': 'ULONG'}}

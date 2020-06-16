@@ -1,1 +1,0 @@
-wsman_data = {}

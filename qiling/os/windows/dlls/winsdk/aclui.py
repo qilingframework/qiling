@@ -1,1 +1,0 @@
-aclui_data = {'CreateSecurityPage': {'psi': 'LPSECURITYINFO'}, 'EditSecurity': {'hwndOwner': 'HWND', 'psi': 'LPSECURITYINFO'}, 'EditSecurityAdvanced': {'hwndOwner': 'HWND', 'psi': 'LPSECURITYINFO', 'uSIPage': 'SI_PAGE_TYPE'}}

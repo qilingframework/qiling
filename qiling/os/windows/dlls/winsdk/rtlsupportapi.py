@@ -1,1 +1,0 @@
-rtlsupportapi_data = {}

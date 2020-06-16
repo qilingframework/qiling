@@ -1,1 +1,0 @@
-d3d9helper_data = {}
