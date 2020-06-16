@@ -291,7 +291,7 @@ class QlLinuxX86Thread(QlLinuxThread):
 
         if index == -1:
             index = self.ql.os.gdtm.get_free_idx(12)
-
+            
         if index == -1 or index < 12 or index > 14:
             raise
         else:
@@ -374,15 +374,18 @@ class QlLinuxARM64Thread(QlLinuxThread):
     """docstring for QlLinuxARM64Thread"""
     def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
         super(QlLinuxARM64Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+        self.tls = 0
 
     def clone_thread_tls(self, tls_addr):
-        pass
+        self.tls = tls_addr
 
     def store(self):
         self.store_regs()
+        self.tls = self.ql.reg.tpidr_el0
 
     def restore(self):
         self.restore_regs()
+        self.ql.reg.tpidr_el0 = self.tls
 
 class QlLinuxThreadManagement(QlThreadManagement):
     def __init__(self, ql, time_slice = 1000, count_slice = 1000, bbl_slice = 300, mode = BBL_MODE, ):

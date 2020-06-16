@@ -40,4 +40,5 @@ reg_map = {
             "sp": UC_ARM64_REG_SP, 
             "pc": UC_ARM64_REG_PC,
             "cpacr_el1": UC_ARM64_REG_CPACR_EL1,
+            "tpidr_el0": UC_ARM64_REG_TPIDR_EL0,
 }
