@@ -56,7 +56,6 @@ class QlLinuxThread(QlThread):
 
         self.log_file_fd = _logger
 
-
         # For each thread, the kernel maintains two attributes (addresses)
         # called set_child_tid and clear_child_tid.  These two attributes
         # contain the value NULL by default.
@@ -87,6 +86,8 @@ class QlLinuxThread(QlThread):
         # The effect of this operation is to wake a single thread that is
         # performing a futex wait on the memory location.  Errors from the
         # futex wake operation are ignored.
+
+        # Source: Linux Man Page
 
         self.set_child_tid_address = set_child_tid_addr
         self.clear_child_tid_address = None
@@ -189,6 +190,8 @@ class QlLinuxThread(QlThread):
         #       set_tid_address(2) system call.  This is used by threading
         #       libraries.
 
+        # Source: Linux Man Page
+
         if self.clear_child_tid_address != None:
             self.ql.mem.write(self.clear_child_tid_address, self.ql.pack32(0))
         self.ql.os.futexm.futex_wake(self.clear_child_tid_address, 1)
@@ -222,15 +225,19 @@ class QlLinuxThread(QlThread):
         return self.return_val
 
     def set_blocking_condition(self, bc_fuc, bc_arg = None):
-        #When a thread encounters a special thing and needs to block,
-        #it will call this function to determine if it needs to continue blocking.
+        
+        # When a thread encounters a special condition and required blocking
+        # it will call this function to determine if this is a function needs blocking.
 
-        # Why do I need such a function, because when I am programming,
-        # I will encounter functions like sleep, wait, etc.
-        # If I don't do any processing, I will block the ThreadManagement if I call it directly.
-        # (This is also a design flaw of mine, because I designed it as Single process).
+        # Why set_blocking_condition is needed?
+        # Functions like sleep, wait, etc will have issue eventually cause issue to ThreadManagement.
+        # This is also a design flaw, this is due to Qiling Framework's multithread is not a real multithread.
+        
         # When implementing system calls, you need to unpack the system calls that are blocked,
         # and check whether the conditions are met on each time slice to prevent program blocking.
+        
+        # From: w1tcher
+
         self.blocking_condition_fuc = bc_fuc
         self.blocking_condition_arg = bc_arg
 
