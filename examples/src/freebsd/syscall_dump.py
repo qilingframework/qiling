@@ -1,5 +1,6 @@
-import re
+# the 'freebsd_syscall' can be download at 'https://github.com/freebsd/freebsd/blob/master/sys/kern/syscalls.master'
 
+import re
 
 def is_number(s):
     try:
@@ -17,7 +18,6 @@ def is_number(s):
 
     return False
 
-
 def read_file(f):
     line = f.readline()
     while line:
@@ -33,7 +33,6 @@ def read_file(f):
             else:
                 continue
         line = f.readline()
-
 
 if __name__ == '__main__':
     file = open('./freebsd_syscall')
