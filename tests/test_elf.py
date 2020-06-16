@@ -36,8 +36,9 @@ class ELFTest(unittest.TestCase):
             try:
                 buf = ql.mem.read(write_buf, write_count)
                 buf = buf.decode()
-                if buf.startswith("thread 2 ret"):
-                    ql.buf_out = buf
+                target = "thread 2 ret val is : 2"
+                if buf.find(target):
+                    ql.buf_out = target
             except:
                 pass
         
@@ -46,7 +47,7 @@ class ELFTest(unittest.TestCase):
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
         
-        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
+        self.assertEqual("thread 2 ret val is : 2", ql.buf_out)
         
         del ql
 
