@@ -2,7 +2,8 @@
 #
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
-# The 'freebsd_syscall' can be download at 'https://github.com/freebsd/freebsd/blob/master/sys/kern/syscalls.master'.
+
+# https://github.com/freebsd/freebsd/blob/master/sys/kern/syscalls.master
 
 import re
 
@@ -39,5 +40,5 @@ def read_file(f):
         line = f.readline()
 
 if __name__ == '__main__':
-    file = open('./freebsd_syscall')
+    file = open('./syscalls.master')
     read_file(file)
