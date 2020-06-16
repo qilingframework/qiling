@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-# cols = ("x86_64", "arm64")
+# cols = ("x8664", "arm64")
 
 from qiling.const import *
 
