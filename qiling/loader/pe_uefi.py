@@ -197,7 +197,10 @@ class QlLoaderPE_UEFI(QlLoader):
             efi_configuration_table.VendorGuid.Data4[datalist] = data4_list
             datalist += 1  
         
-        efi_configuration_table.VendorTable = self.ql.os.profile.getint("GUID", "vendortable")
+        VendorTable_ptr = system_table_heap_ptr
+        write_int64(self.ql, VendorTable_ptr, int(self.ql.os.profile.get("GUID", "vendortable"),16))
+        system_table_heap_ptr += pointer_size
+        efi_configuration_table.VendorTable = VendorTable_ptr
         self.efi_configuration_table = [self.ql.os.profile["GUID"]["configuration_table"]]
         self.ql.mem.write(runtime_services_ptr, convert_struct_to_bytes(runtime_services))
         self.ql.mem.write(boot_services_ptr, convert_struct_to_bytes(boot_services))

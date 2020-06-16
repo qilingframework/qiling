@@ -219,7 +219,6 @@ def hook_HandleProtocol(ql, address, params):
     "Event": POINTER,
     "Registration": POINTER})
 def hook_RegisterProtocolNotify(ql, address, params):
-    print(params["Protocol"])
     if params['Event'] in ql.loader.events:
         ql.loader.events[params['Event']]['Guid'] = params["Protocol"]
         check_and_notify_protocols(ql)
