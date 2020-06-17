@@ -115,11 +115,11 @@ def SignalEvent(ql, event_id):
             notify_func = event["NotifyFunction"]
             notify_context = event["NotifyContext"]
             if ql.os.notify_immediately:
-                ql.hook_address(hook_EndOfNotify, ql.loader.notify_ptr)
-                ql.nprint(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
-                ql.os.notify_return_address = ql.stack_pop()
-                ql.stack_push(ql.loader.notify_ptr) # Return address from the notify function
+                ql.nprint(f'[+] Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
+                ql.stack_push(0) # This is a throwaway value, some modules zero this value.
+                ql.stack_push(ql.loader.OOO_EOE_ptr) # Return address from the notify function.
                 ql.stack_push(notify_func) # Return address from here -> the notify function.
+                ql.loader.OOO_EOE_callbacks.append(None) # We don't need a callback.
                 ql.reg.rcx = notify_context
             else:
                 ql.loader.notify_list.append((event_id, notify_func, notify_context))
