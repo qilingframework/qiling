@@ -17,10 +17,11 @@ class ELFTest(unittest.TestCase):
             try:
                 buf = ql.mem.read(write_buf, write_count)
                 buf = buf.decode()
-                if buf.startswith("thread 2 ret"):
+                if buf.startswith("thread 2 ret") == True:
                     ql.buf_out = buf
             except:
                 pass
+
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_multithreading"], "../examples/rootfs/x86_linux")
         ql.multithread = True
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
@@ -37,10 +38,8 @@ class ELFTest(unittest.TestCase):
             try:
                 buf = ql.mem.read(write_buf, write_count)
                 buf = buf.decode()
-                if buf.startswith("thread 2 ret"):
+                if buf.startswith("thread 2 ret") == True:
                     ql.buf_out = buf
-                else:
-                    ql.buf_out = "OnEnter works, but either multithread or fd is dead"    
             except:
                 pass
         
@@ -59,7 +58,7 @@ class ELFTest(unittest.TestCase):
             try:
                 buf = ql.mem.read(write_buf, write_count)
                 buf = buf.decode()
-                if buf.startswith("thread 2 ret"):
+                if buf.startswith("thread 2 ret") == True:
                     ql.buf_out = buf
             except:
                 pass
@@ -80,7 +79,7 @@ class ELFTest(unittest.TestCase):
             try:
                 buf = ql.mem.read(write_buf, write_count)
                 buf = buf.decode()
-                if buf.startswith("thread 2 ret"):
+                if buf.startswith("thread 2 ret") == True:
                     ql.buf_out = buf
             except:
                 pass
@@ -98,7 +97,7 @@ class ELFTest(unittest.TestCase):
             try:
                 buf = ql.mem.read(write_buf, write_count)
                 buf = buf.decode()
-                if buf.startswith("thread 2 ret"):
+                if buf.startswith("thread 2 ret") == True:
                     ql.buf_out = buf
             except:
                 pass
