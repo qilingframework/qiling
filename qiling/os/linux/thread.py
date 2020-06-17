@@ -298,7 +298,7 @@ class QlLinuxX86Thread(QlLinuxThread):
 
         if index == -1:
             index = self.ql.os.gdtm.get_free_idx(12)
-            
+
         if index == -1 or index < 12 or index > 14:
             raise
         else:
@@ -315,6 +315,8 @@ class QlLinuxX86Thread(QlLinuxThread):
     def restore(self):
         self.restore_regs()
         self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
+        self.ql.reg.gs = self.ql.reg.gs
+        self.ql.reg.fs = self.ql.reg.fs
 
 class QlLinuxX8664Thread(QlLinuxThread):
     """docstring for X8664Thread"""
