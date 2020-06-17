@@ -11,7 +11,7 @@ from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 
-from qiling.os.posix.syscall.socket import ql_syscall_socket, ql_syscall_connect, ql_syscall_recv, ql_syscall_bind, ql_syscall_listen, ql_syscall_accept
+from qiling.os.posix.syscall.socket import ql_syscall_socket, ql_syscall_connect, ql_syscall_recv, ql_syscall_bind, ql_syscall_listen, ql_syscall_accept, ql_syscall_setsockopt
 
 def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, *args, **kw):
     SOCKETCALL_SYS_SOCKET = 1
@@ -42,34 +42,41 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, *args, **kw):
         socketcall_type = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize, ql.pointersize))
         socketcall_protocol = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 2, ql.pointersize))
         ql_syscall_socket(ql, socketcall_domain, socketcall_type, socketcall_protocol, 0, 0, 0)
+    
     elif socketcall_call == SOCKETCALL_SYS_CONNECT:
         socketcall_sockfd = ql.unpack(ql.mem.read(socketcall_args, ql.pointersize))
         socketcall_addr = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize, ql.pointersize))
         socketcall_addrlen = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 2, ql.pointersize))
         ql_syscall_connect(ql, socketcall_sockfd, socketcall_addr, socketcall_addrlen, 0, 0, 0)
+    
     elif socketcall_call == SOCKETCALL_SYS_RECV:
         socketcall_sockfd = ql.unpack(ql.mem.read(socketcall_args, ql.pointersize))
         socketcall_buf = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize, ql.pointersize))
         socketcall_len = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 2, ql.pointersize))
         socketcall_flags = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 3, ql.pointersize))
         ql_syscall_recv(ql, socketcall_sockfd, socketcall_buf, socketcall_len, socketcall_flags, 0, 0)
+    
     elif socketcall_call == SOCKETCALL_SYS_BIND:
         socketcall_fd = ql.unpack(ql.mem.read(socketcall_args, ql.pointersize))
         socketcall_addr = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize, ql.pointersize))
         socketcall_addrlen = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 2, ql.pointersize))
         ql_syscall_bind(ql, socketcall_fd, socketcall_addr, socketcall_addrlen)
+    
     elif socketcall_call == SOCKETCALL_SYS_LISTEN:
         socketcall_sockfd = ql.unpack(ql.mem.read(socketcall_args, ql.pointersize))
         socketcall_backlog = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize, ql.pointersize))
         ql_syscall_listen(ql, socketcall_sockfd, socketcall_backlog)
+    
     elif socketcall_call == SOCKETCALL_SYS_ACCEPT:
         socketcall_sockfd = ql.unpack(ql.mem.read(socketcall_args, ql.pointersize))
         socketcall_addr = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize, ql.pointersize))
         socketcall_addrlen = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 2, ql.pointersize))
         ql_syscall_accept(ql, socketcall_sockfd, socketcall_addr, socketcall_addrlen)
+    
+    elif socketcall_call == SOCKETCALL_SYS_SETSOCKOPT:
+        ql_syscall_setsockopt(ql)
+    
     else:
         ql.dprint(D_INFO, "[!] error call %d" % socketcall_call)
         ql.os.stop(stop_event=THREAD_EVENT_UNEXECPT_EVENT)
         raise
-
-

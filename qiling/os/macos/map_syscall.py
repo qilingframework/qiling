@@ -3,25 +3,59 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-# cols = ("x8664", "arm64")
+# cols = ("arm64", "x8664")
 
 from qiling.const import *
 
 def map_syscall(ql, syscall_num):
     for k,v in syscall_table.items():
+        if ql.archtype == QL_ARCH.X8664:
+            if syscall_num >= 0x2000000 and syscall_num <= 0x3000000:
+                syscall_num = syscall_num - 0x2000000
+            
+            if v[0] == syscall_num:
+                return "ql_syscall_" + k
         
-        if ql.archtype == QL_ARCH.X8664 and v[0] == syscall_num:
-            return "ql_syscall_" + k
-        
-        elif ql.archtype == QL_ARCH.ARM64 and v[1] == syscall_num:
-            return "ql_syscall_" + k            
+        elif ql.archtype == QL_ARCH.ARM64:
+            if syscall_num >= 0xffffffffffffff00:
+                syscall_num = syscall_num - 0xffffffffffffff00
+
+            if v[1] == syscall_num:
+                return "ql_syscall_" + k            
 
 syscall_table = {
+    "kernelrpc_mach_vm_allocate_trap": (0x100000a, -1),
+    "kernelrpc_mach_vm_deallocate_trap": (0x100000c, -1),
+    "kernelrpc_mach_vm_map_trap": (0x100000f, -1),
+    "kernelrpc_mach_port_deallocate_trap": (0x1000012, -1),
+    "kernelrpc_mach_port_mod_refs_trap": (0x1000013, -1),
+    "kernelrpc_mach_port_construct_trap": (0x1000018, -1),
+    "mach_reply_port": (0x100001a, -1),
+    "thread_self_trap": (0x100001b, -1),
+    "task_self_trap": (0x100001c, -1),
+    "host_self_trap": (0x100001d, -1),
+    "mach_msg_trap": (0x100001f, -1),
+    "thread_fast_set_cthread_self64": (0x3000003, -1),
+    # FIXME: Lets fix this later
+    #"kernelrpc_mach_vm_allocate_trap": (-1, 9),
+    #"kernelrpc_mach_vm_deallocate_trap": (-1, 11),
+    #"kernelrpc_mach_vm_protect_trap": (-1, 13),
+    #"kernelrpc_mach_vm_map_trap": (-1, 14),
+    #"kernelrpc_mach_port_destroy_trap": (-1, 16),
+    #"kernelrpc_mach_port_deallocate_trap": (-1, 17),
+    #"kernelrpc_mach_port_mod_refs_trap": (-1, 18),
+    #"kernelrpc_mach_port_move_member_trap": (-1, 19),
+    #"kernelrpc_mach_port_insert_right_trap": (-1, 20),
+    #"kernelrpc_mach_port_insert_member_trap": (-1, 21),
+    #"kernelrpc_mach_port_extract_member_trap": (-1, 22),
+    #"kernelrpc_mach_port_construct_trap": (-1, 23),
+    #"kernelrpc_mach_port_destruct_trap": (-1, 24),    
     "nosys": (379, -1),
     "exit": (1, 1),
     "fork": (2, 2),
     "read": (3, 3),
-    "write": (4, 4),
+     #"write_nocancel": (397, 397),
+    "write": (397, 397),
     "open": (5, 5),
     "close": (6, 6),
     "wait4": (7, 7),
@@ -44,7 +78,7 @@ syscall_table = {
     "accept": (30, 30),
     "getpeername": (31, 31),
     "getsockname": (32, 32),
-    "access": (33, 33),
+    "access_macos": (33, 33),
     "chflags": (34, 34),
     "fchflags": (35, 35),
     "sync": (36, -1),
@@ -85,7 +119,7 @@ syscall_table = {
     "getitimer": (86, 86),
     "getdtablesize": (89, 89),
     "dup2": (90, 90),
-    "fcntl": (92, 92),
+    "fcntl64_macos": (92, 92),
     "select": (93, 93),
     "fsync": (95, 95),
     "setpriority": (96, 96),
@@ -146,7 +180,7 @@ syscall_table = {
     "getrlimit": (194, 194),
     "setrlimit": (195, 195),
     "getdirentries": (196, 196),
-    "mmap": (197, 197),
+    "mmap2_macos": (197, 197),
     "lseek": (199, 199),
     "truncate": (200, 200),
     "ftruncate": (201, 201),
@@ -273,8 +307,8 @@ syscall_table = {
     "semwait_signal": (334, 334),
     "proc_info": (336, 336),
     "sendfile": (337, 337),
-    "stat64": (338, -1),
-    "fstat64": (339, -1),
+    "stat64_macos": (338, -1),
+    "fstat64_macos": (339, -1),
     "lstat64": (340, -1),
     "stat64_extended": (341, 341),
     "lstat64_extended": (342, 342),
@@ -324,7 +358,6 @@ syscall_table = {
     "setlcid": (394, -1),
     "getlcid": (395, -1),
     "read_nocancel": (396, 396),
-    "write_nocancel": (397, 397),
     "open_nocancel": (398, 398),
     "close_nocancel": (399, 399),
     "wait4_nocancel": (400, 400),
@@ -357,20 +390,7 @@ syscall_table = {
     "fsgetpath": (427, 427),
     "audit_session_self": (428, 428),
     "audit_session_join": (429, 429),
-    "kernelrpc_mach_vm_allocate_trap": (-1, 9),
-    "kernelrpc_mach_vm_deallocate_trap": (-1, 11),
-    "kernelrpc_mach_vm_protect_trap": (-1, 13),
-    "kernelrpc_mach_vm_map_trap": (-1, 14),
-    "kernelrpc_mach_port_destroy_trap": (-1, 16),
-    "kernelrpc_mach_port_deallocate_trap": (-1, 17),
-    "kernelrpc_mach_port_mod_refs_trap": (-1, 18),
-    "kernelrpc_mach_port_move_member_trap": (-1, 19),
-    "kernelrpc_mach_port_insert_right_trap": (-1, 20),
-    "kernelrpc_mach_port_insert_member_trap": (-1, 21),
-    "kernelrpc_mach_port_extract_member_trap": (-1, 22),
-    "kernelrpc_mach_port_construct_trap": (-1, 23),
-    "kernelrpc_mach_port_destruct_trap": (-1, 24),
-    "thread_self_trap": (-1, 26),
+    #"thread_self_trap": (-1, 26),
     "semaphore_wait_signal_trap": (-1, 36),
     "semaphore_timedwait_signal_trap": (-1, 38),
     "kernelrpc_mach_port_guard_trap": (-1, 40),
@@ -447,7 +467,7 @@ syscall_table = {
     "recvmsg_x": (-1, 480),
     "sendmsg_x": (-1, 481),
     "thread_selfusage": (-1, 482),
-    "csrctl": (-1, 483),
+    "csrctl": (483, 483),
     "guarded_open_dprotected_np": (-1, 484),
     "guarded_write_np": (-1, 485),
     "guarded_pwrite_np": (-1, 486),
@@ -459,4 +479,7 @@ syscall_table = {
     "microstackshot": (-1, 492),
     "grab_pgo_data": (-1, 493),
     "work_interval_ctl": (-1, 499),
+    "abort_with_payload": (521, -1),
+    "terminate_with_payload": (520, -1),
+    "getentropy": (500, -1),
 }
