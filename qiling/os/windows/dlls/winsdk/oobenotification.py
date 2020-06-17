@@ -1,1 +1,0 @@
-oobenotification_data = {'RegisterWaitUntilOOBECompleted': {'OOBECompletedCallback': 'OOBE_COMPLETED_CALLBACK', 'CallbackContext': 'PVOID', 'WaitHandle': 'PVOID'}, 'UnregisterWaitUntilOOBECompleted': {'WaitHandle': 'PVOID'}}

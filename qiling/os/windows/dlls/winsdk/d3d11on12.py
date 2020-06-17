@@ -1,1 +1,0 @@
-d3d11on12_data = {'D3D11On12CreateDevice': {'pDevice': 'IUnknown', 'Flags': 'UINT', 'pFeatureLevels': 'D3D_FEATURE_LEVEL', 'FeatureLevels': 'UINT', 'ppCommandQueues': 'IUnknown', 'NumQueues': 'UINT', 'NodeMask': 'UINT', 'ppDevice': 'ID3D11Device', 'ppImmediateContext': 'ID3D11DeviceContext', 'pChosenFeatureLevel': 'D3D_FEATURE_LEVEL'}}

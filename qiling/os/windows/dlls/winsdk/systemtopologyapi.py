@@ -1,1 +1,0 @@
-systemtopologyapi_data = {'GetNumaHighestNodeNumber': {'HighestNodeNumber': 'PULONG'}, 'GetNumaNodeProcessorMaskEx': {'Node': 'USHORT', 'ProcessorMask': 'PGROUP_AFFINITY'}, 'GetNumaProximityNodeEx': {'ProximityId': 'ULONG', 'NodeNumber': 'PUSHORT'}}

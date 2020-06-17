@@ -1,1 +1,0 @@
-dsrole_data = {'DsRoleGetPrimaryDomainInformation': {'lpServer': 'LPCWSTR', 'InfoLevel': 'DSROLE_PRIMARY_DOMAIN_INFO_LEVEL', 'Buffer': 'PBYTE'}, 'DsRoleFreeMemory': {'Buffer': 'PVOID'}}

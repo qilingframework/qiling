@@ -1,1 +1,0 @@
-wtshintapi_data = {'WTSSetRenderHint': {'pRenderHintID': 'UINT64', 'hwndOwner': 'HWND', 'renderHintType': 'DWORD', 'cbHintDataLength': 'DWORD', 'pHintData': 'BYTE'}}

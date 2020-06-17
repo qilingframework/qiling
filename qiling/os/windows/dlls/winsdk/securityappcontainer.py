@@ -1,1 +1,0 @@
-securityappcontainer_data = {'GetAppContainerNamedObjectPath': {'Token': 'HANDLE', 'AppContainerSid': 'PSID', 'ObjectPathLength': 'ULONG', 'ObjectPath': 'LPWSTR', 'ReturnLength': 'PULONG'}}

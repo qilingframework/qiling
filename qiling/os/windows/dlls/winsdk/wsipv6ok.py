@@ -1,1 +1,0 @@
-wsipv6ok_data = {'inet_addr': {'cp': 'char'}, 'WSAAsyncGetHostByName': {'hWnd': 'HWND', 'wMsg': 'u_int', 'name': 'char', 'buf': 'char', 'buflen': 'int'}, 'WSAAsyncGetHostByAddr': {'hWnd': 'HWND', 'wMsg': 'u_int', 'addr': 'char', 'len': 'int', 'type': 'int', 'buf': 'char', 'buflen': 'int'}}

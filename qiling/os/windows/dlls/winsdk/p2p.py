@@ -1,1 +1,0 @@
-p2p_data = {'VOID': {'hResolve': 'HRESOLUTION'}}

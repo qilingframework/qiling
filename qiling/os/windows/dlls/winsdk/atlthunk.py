@@ -1,1 +1,0 @@
-atlthunk_data = {'AtlThunk_InitData': {'Thunk': 'AtlThunkData_t', 'Proc': 'void', 'FirstParameter': 'size_t'}, 'AtlThunk_DataToCode': {'VOID': 'AtlThunkData_t'}, 'AtlThunk_FreeData': {'Thunk': 'AtlThunkData_t'}}

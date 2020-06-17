@@ -1,1 +1,0 @@
-deviceaccess_data = {'CreateDeviceAccessInstance': {'deviceInterfacePath': 'PCWSTR', 'desiredAccess': 'DWORD', 'createAsync': 'ICreateDeviceAccessAsync'}}

@@ -1,1 +1,0 @@
-winsxs_data = {'CreateAssemblyNameObject': {'ppAssemblyNameObj': 'LPASSEMBLYNAME', 'szAssemblyName': 'LPCWSTR', 'dwFlags': 'DWORD', 'pvReserved': 'LPVOID'}, 'CreateAssemblyCache': {'ppAsmCache': 'IAssemblyCache', 'dwReserved': 'DWORD'}}

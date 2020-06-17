@@ -1,1 +1,0 @@
-d2d1_2_data = {'D2D1ComputeMaximumScaleFactor': {'matrix': 'D2D1_MATRIX_3X2_F'}}

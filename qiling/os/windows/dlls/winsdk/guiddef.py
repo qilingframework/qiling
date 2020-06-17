@@ -1,1 +1,0 @@
-guiddef_data = {}

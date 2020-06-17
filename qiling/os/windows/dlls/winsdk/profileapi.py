@@ -1,1 +1,0 @@
-profileapi_data = {'QueryPerformanceCounter': {'lpPerformanceCount': 'LARGE_INTEGER'}, 'QueryPerformanceFrequency': {'lpFrequency': 'LARGE_INTEGER'}}

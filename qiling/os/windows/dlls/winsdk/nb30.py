@@ -1,1 +1,0 @@
-nb30_data = {'Netbios': {'pncb': 'PNCB'}}

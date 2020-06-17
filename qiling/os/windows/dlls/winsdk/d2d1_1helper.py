@@ -1,1 +1,0 @@
-d2d1_1helper_data = {}

@@ -1,1 +1,0 @@
-xaudio2_data = {'XAudio2Create': {'ppXAudio2': 'IXAudio2', 'Flags': 'UINT32', 'XAudio2Processor': 'XAUDIO2_PROCESSOR'}}

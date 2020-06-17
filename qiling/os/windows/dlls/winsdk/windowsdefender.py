@@ -1,1 +1,0 @@
-windowsdefender_data = {'WDStatus': {'pfEnabled': 'BOOL'}, 'WDEnable': {'fEnable': 'BOOL'}}

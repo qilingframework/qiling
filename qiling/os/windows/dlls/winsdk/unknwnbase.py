@@ -1,1 +1,0 @@
-unknwnbase_data = {'IUnknown_QueryInterface_Proxy': {'This': 'IUnknown', 'riid': 'IID', 'ppvObject': 'void'}, 'IUnknown_AddRef_Proxy': {'This': 'IUnknown'}, 'IUnknown_Release_Proxy': {'This': 'IUnknown'}}

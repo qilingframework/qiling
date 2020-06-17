@@ -1,1 +1,0 @@
-wmpservices_data = {}

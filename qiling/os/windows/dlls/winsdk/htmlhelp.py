@@ -1,1 +1,0 @@
-htmlhelp_data = {'HtmlHelpA': {'hwndCaller': 'HWND', 'pszFile': 'LPCSTR', 'uCommand': 'UINT', 'dwData': 'DWORD_PTR'}, 'HtmlHelpW': {'hwndCaller': 'HWND', 'pszFile': 'LPCWSTR', 'uCommand': 'UINT', 'dwData': 'DWORD_PTR'}}

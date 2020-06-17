@@ -1,1 +1,0 @@
-wsdattachment_data = {'WSDCreateOutboundAttachment': {'ppAttachment': 'IWSDOutboundAttachment'}}
