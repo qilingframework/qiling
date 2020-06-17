@@ -33,11 +33,14 @@ class ELFTest(unittest.TestCase):
     
     def test_multithread_elf_linux_arm64(self):
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            buf = ""
             try:
                 buf = ql.mem.read(write_buf, write_count)
                 buf = buf.decode()
                 if buf.startswith("thread 2 ret"):
-                    ql.buf_out = target
+                    ql.buf_out = buf
+                else:
+                    ql.buf_out = "OnEnter works, but either multithread or fd is dead"    
             except:
                 pass
         
@@ -46,7 +49,7 @@ class ELFTest(unittest.TestCase):
         ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
         ql.run()
         
-        self.assertEqual("thread 2 ret val is : 2", ql.buf_out)
+        self.assertEqual("thread 2 ret val is : 2\n", ql.buf_out)
         
         del ql
 
