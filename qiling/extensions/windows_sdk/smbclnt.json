@@ -1,0 +1,30 @@
+{
+    "RegisterAppInstance": [
+        {
+            "name": "ProcessHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "AppInstanceId",
+            "type": "GUID"
+        },
+        {
+            "name": "ChildrenInheritAppInstance",
+            "type": "BOOL"
+        }
+    ],
+    "SetAppInstanceCsvFlags": [
+        {
+            "name": "ProcessHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Mask",
+            "type": "ULONG"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ]
+}

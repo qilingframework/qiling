@@ -1,0 +1,8 @@
+{
+    "uaw_wcslen": [
+        {
+            "name": "String",
+            "type": "PCUWSTR"
+        }
+    ]
+}

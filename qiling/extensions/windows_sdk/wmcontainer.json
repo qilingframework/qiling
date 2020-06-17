@@ -1,0 +1,152 @@
+{
+    "MFCreateASFContentInfo": [
+        {
+            "name": "ppIContentInfo",
+            "type": "IMFASFContentInfo"
+        }
+    ],
+    "MFCreateASFIndexer": [
+        {
+            "name": "ppIIndexer",
+            "type": "IMFASFIndexer"
+        }
+    ],
+    "MFCreateASFIndexerByteStream": [
+        {
+            "name": "pIContentByteStream",
+            "type": "IMFByteStream"
+        },
+        {
+            "name": "cbIndexStartOffset",
+            "type": "QWORD"
+        },
+        {
+            "name": "pIIndexByteStream",
+            "type": "IMFByteStream"
+        }
+    ],
+    "MFCreateASFSplitter": [
+        {
+            "name": "ppISplitter",
+            "type": "IMFASFSplitter"
+        }
+    ],
+    "MFCreateASFProfile": [
+        {
+            "name": "ppIProfile",
+            "type": "IMFASFProfile"
+        }
+    ],
+    "MFCreateASFProfileFromPresentationDescriptor": [
+        {
+            "name": "pIPD",
+            "type": "IMFPresentationDescriptor"
+        },
+        {
+            "name": "ppIProfile",
+            "type": "IMFASFProfile"
+        }
+    ],
+    "MFCreatePresentationDescriptorFromASFProfile": [
+        {
+            "name": "pIProfile",
+            "type": "IMFASFProfile"
+        },
+        {
+            "name": "ppIPD",
+            "type": "IMFPresentationDescriptor"
+        }
+    ],
+    "MFCreateASFMultiplexer": [
+        {
+            "name": "ppIMultiplexer",
+            "type": "IMFASFMultiplexer"
+        }
+    ],
+    "MFCreateASFStreamSelector": [
+        {
+            "name": "pIASFProfile",
+            "type": "IMFASFProfile"
+        },
+        {
+            "name": "ppSelector",
+            "type": "IMFASFStreamSelector"
+        }
+    ],
+    "MFCreateASFMediaSink": [
+        {
+            "name": "pIByteStream",
+            "type": "IMFByteStream"
+        },
+        {
+            "name": "ppIMediaSink",
+            "type": "IMFMediaSink"
+        }
+    ],
+    "MFCreateASFMediaSinkActivate": [
+        {
+            "name": "pwszFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pContentInfo",
+            "type": "IMFASFContentInfo"
+        },
+        {
+            "name": "ppIActivate",
+            "type": "IMFActivate"
+        }
+    ],
+    "MFCreateWMVEncoderActivate": [
+        {
+            "name": "pMediaType",
+            "type": "IMFMediaType"
+        },
+        {
+            "name": "pEncodingConfigurationProperties",
+            "type": "IPropertyStore"
+        },
+        {
+            "name": "ppActivate",
+            "type": "IMFActivate"
+        }
+    ],
+    "MFCreateWMAEncoderActivate": [
+        {
+            "name": "pMediaType",
+            "type": "IMFMediaType"
+        },
+        {
+            "name": "pEncodingConfigurationProperties",
+            "type": "IPropertyStore"
+        },
+        {
+            "name": "ppActivate",
+            "type": "IMFActivate"
+        }
+    ],
+    "MFCreateASFStreamingMediaSink": [
+        {
+            "name": "pIByteStream",
+            "type": "IMFByteStream"
+        },
+        {
+            "name": "ppIMediaSink",
+            "type": "IMFMediaSink"
+        }
+    ],
+    "MFCreateASFStreamingMediaSinkActivate": [
+        {
+            "name": "pByteStreamActivate",
+            "type": "IMFActivate"
+        },
+        {
+            "name": "pContentInfo",
+            "type": "IMFASFContentInfo"
+        },
+        {
+            "name": "ppIActivate",
+            "type": "IMFActivate"
+        }
+    ]
+}

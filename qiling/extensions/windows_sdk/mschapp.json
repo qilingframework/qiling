@@ -1,0 +1,62 @@
+{
+    "MSChapSrvChangePassword": [
+        {
+            "name": "ServerName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "UserName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "LmOldPresent",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "LmOldOwfPassword",
+            "type": "PLM_OWF_PASSWORD"
+        },
+        {
+            "name": "LmNewOwfPassword",
+            "type": "PLM_OWF_PASSWORD"
+        },
+        {
+            "name": "NtOldOwfPassword",
+            "type": "PNT_OWF_PASSWORD"
+        },
+        {
+            "name": "NtNewOwfPassword",
+            "type": "PNT_OWF_PASSWORD"
+        }
+    ],
+    "MSChapSrvChangePassword2": [
+        {
+            "name": "ServerName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "UserName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "NewPasswordEncryptedWithOldNt",
+            "type": "PSAMPR_ENCRYPTED_USER_PASSWORD"
+        },
+        {
+            "name": "OldNtOwfPasswordEncryptedWithNewNt",
+            "type": "PENCRYPTED_NT_OWF_PASSWORD"
+        },
+        {
+            "name": "LmPresent",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "NewPasswordEncryptedWithOldLm",
+            "type": "PSAMPR_ENCRYPTED_USER_PASSWORD"
+        },
+        {
+            "name": "OldLmOwfPasswordEncryptedWithNewLmOrNt",
+            "type": "PENCRYPTED_LM_OWF_PASSWORD"
+        }
+    ]
+}

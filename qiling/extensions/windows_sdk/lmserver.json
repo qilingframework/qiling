@@ -1,0 +1,216 @@
+{
+    "NetServerEnum": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "servertype",
+            "type": "DWORD"
+        },
+        {
+            "name": "domain",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "resume_handle",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetServerGetInfo": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetServerSetInfo": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "ParmError",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetServerDiskEnum": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "resume_handle",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetServerComputerNameAdd": [
+        {
+            "name": "ServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "EmulatedDomainName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "EmulatedServerName",
+            "type": "LPWSTR"
+        }
+    ],
+    "NetServerComputerNameDel": [
+        {
+            "name": "ServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "EmulatedServerName",
+            "type": "LPWSTR"
+        }
+    ],
+    "NetServerTransportAdd": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetServerTransportAddEx": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetServerTransportDel": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetServerTransportEnum": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "resume_handle",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetServiceBits": [
+        {
+            "name": "hServiceStatus",
+            "type": "SERVICE_STATUS_HANDLE"
+        },
+        {
+            "name": "dwServiceBits",
+            "type": "DWORD"
+        },
+        {
+            "name": "bSetBitsOn",
+            "type": "BOOL"
+        },
+        {
+            "name": "bUpdateImmediately",
+            "type": "BOOL"
+        }
+    ]
+}

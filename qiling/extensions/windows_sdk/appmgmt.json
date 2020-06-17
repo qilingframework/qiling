@@ -1,0 +1,64 @@
+{
+    "InstallApplication": [
+        {
+            "name": "pInstallInfo",
+            "type": "PINSTALLDATA"
+        }
+    ],
+    "UninstallApplication": [
+        {
+            "name": "ProductCode",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwStatus",
+            "type": "DWORD"
+        }
+    ],
+    "GetManagedApplications": [
+        {
+            "name": "pCategory",
+            "type": "GUID"
+        },
+        {
+            "name": "dwQueryFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwInfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwApps",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "prgManagedApps",
+            "type": "PMANAGEDAPPLICATION"
+        }
+    ],
+    "GetLocalManagedApplications": [
+        {
+            "name": "bUserApps",
+            "type": "BOOL"
+        },
+        {
+            "name": "pdwApps",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "prgLocalApps",
+            "type": "PLOCALMANAGEDAPPLICATION"
+        }
+    ],
+    "GetManagedApplicationCategories": [
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pAppCategory",
+            "type": "APPCATEGORYINFOLIST"
+        }
+    ]
+}

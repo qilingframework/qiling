@@ -1,0 +1,8 @@
+{
+    "WSDCreateOutboundAttachment": [
+        {
+            "name": "ppAttachment",
+            "type": "IWSDOutboundAttachment"
+        }
+    ]
+}

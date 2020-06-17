@@ -1,0 +1,40 @@
+{
+    "timeGetSystemTime": [
+        {
+            "name": "pmmt",
+            "type": "LPMMTIME"
+        },
+        {
+            "name": "cbmmt",
+            "type": "UINT"
+        }
+    ],
+    "timeGetTime": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "timeGetDevCaps": [
+        {
+            "name": "ptc",
+            "type": "LPTIMECAPS"
+        },
+        {
+            "name": "cbtc",
+            "type": "UINT"
+        }
+    ],
+    "timeBeginPeriod": [
+        {
+            "name": "uPeriod",
+            "type": "UINT"
+        }
+    ],
+    "timeEndPeriod": [
+        {
+            "name": "uPeriod",
+            "type": "UINT"
+        }
+    ]
+}

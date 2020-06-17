@@ -1,0 +1,488 @@
+{
+    "LoadUserProfileA": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpProfileInfo",
+            "type": "LPPROFILEINFOA"
+        }
+    ],
+    "LoadUserProfileW": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpProfileInfo",
+            "type": "LPPROFILEINFOW"
+        }
+    ],
+    "UnloadUserProfile": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hProfile",
+            "type": "HANDLE"
+        }
+    ],
+    "GetProfilesDirectoryA": [
+        {
+            "name": "lpProfileDir",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpcchSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetProfilesDirectoryW": [
+        {
+            "name": "lpProfileDir",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetProfileType": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "DeleteProfileA": [
+        {
+            "name": "lpSidString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpProfilePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpComputerName",
+            "type": "LPCSTR"
+        }
+    ],
+    "DeleteProfileW": [
+        {
+            "name": "lpSidString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpProfilePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpComputerName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CreateProfile": [
+        {
+            "name": "pszUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszUserName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszProfilePath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchProfilePath",
+            "type": "DWORD"
+        }
+    ],
+    "GetDefaultUserProfileDirectoryA": [
+        {
+            "name": "lpProfileDir",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpcchSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetDefaultUserProfileDirectoryW": [
+        {
+            "name": "lpProfileDir",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetAllUsersProfileDirectoryA": [
+        {
+            "name": "lpProfileDir",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpcchSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetAllUsersProfileDirectoryW": [
+        {
+            "name": "lpProfileDir",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetUserProfileDirectoryA": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpProfileDir",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpcchSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetUserProfileDirectoryW": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpProfileDir",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "CreateEnvironmentBlock": [
+        {
+            "name": "lpEnvironment",
+            "type": "LPVOID"
+        },
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "bInherit",
+            "type": "BOOL"
+        }
+    ],
+    "DestroyEnvironmentBlock": [
+        {
+            "name": "lpEnvironment",
+            "type": "LPVOID"
+        }
+    ],
+    "ExpandEnvironmentStringsForUserA": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpSrc",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpDest",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwSize",
+            "type": "DWORD"
+        }
+    ],
+    "ExpandEnvironmentStringsForUserW": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpSrc",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDest",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwSize",
+            "type": "DWORD"
+        }
+    ],
+    "RefreshPolicy": [
+        {
+            "name": "bMachine",
+            "type": "BOOL"
+        }
+    ],
+    "RefreshPolicyEx": [
+        {
+            "name": "bMachine",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "EnterCriticalPolicySection": [
+        {
+            "name": "bMachine",
+            "type": "BOOL"
+        }
+    ],
+    "LeaveCriticalPolicySection": [
+        {
+            "name": "hSection",
+            "type": "HANDLE"
+        }
+    ],
+    "RegisterGPNotification": [
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "bMachine",
+            "type": "BOOL"
+        }
+    ],
+    "UnregisterGPNotification": [
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        }
+    ],
+    "GetGPOListA": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpHostName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpComputerName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pGPOList",
+            "type": "PGROUP_POLICY_OBJECTA"
+        }
+    ],
+    "GetGPOListW": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpHostName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpComputerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pGPOList",
+            "type": "PGROUP_POLICY_OBJECTW"
+        }
+    ],
+    "FreeGPOListA": [
+        {
+            "name": "pGPOList",
+            "type": "PGROUP_POLICY_OBJECTA"
+        }
+    ],
+    "FreeGPOListW": [
+        {
+            "name": "pGPOList",
+            "type": "PGROUP_POLICY_OBJECTW"
+        }
+    ],
+    "GetAppliedGPOListA": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pMachineName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pSidUser",
+            "type": "PSID"
+        },
+        {
+            "name": "pGuidExtension",
+            "type": "GUID"
+        },
+        {
+            "name": "ppGPOList",
+            "type": "PGROUP_POLICY_OBJECTA"
+        }
+    ],
+    "GetAppliedGPOListW": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pMachineName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pSidUser",
+            "type": "PSID"
+        },
+        {
+            "name": "pGuidExtension",
+            "type": "GUID"
+        },
+        {
+            "name": "ppGPOList",
+            "type": "PGROUP_POLICY_OBJECTW"
+        }
+    ],
+    "ProcessGroupPolicyCompleted": [
+        {
+            "name": "extensionId",
+            "type": "REFGPEXTENSIONID"
+        },
+        {
+            "name": "pAsyncHandle",
+            "type": "ASYNCCOMPLETIONHANDLE"
+        },
+        {
+            "name": "dwStatus",
+            "type": "DWORD"
+        }
+    ],
+    "ProcessGroupPolicyCompletedEx": [
+        {
+            "name": "extensionId",
+            "type": "REFGPEXTENSIONID"
+        },
+        {
+            "name": "pAsyncHandle",
+            "type": "ASYNCCOMPLETIONHANDLE"
+        },
+        {
+            "name": "dwStatus",
+            "type": "DWORD"
+        },
+        {
+            "name": "RsopStatus",
+            "type": "HRESULT"
+        }
+    ],
+    "CreateAppContainerProfile": [
+        {
+            "name": "pszAppContainerName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszDisplayName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszDescription",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pCapabilities",
+            "type": "PSID_AND_ATTRIBUTES"
+        },
+        {
+            "name": "dwCapabilityCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppSidAppContainerSid",
+            "type": "PSID"
+        }
+    ],
+    "DeleteAppContainerProfile": [
+        {
+            "name": "pszAppContainerName",
+            "type": "PCWSTR"
+        }
+    ],
+    "GetAppContainerRegistryLocation": [
+        {
+            "name": "desiredAccess",
+            "type": "REGSAM"
+        },
+        {
+            "name": "phAppContainerKey",
+            "type": "PHKEY"
+        }
+    ],
+    "GetAppContainerFolderPath": [
+        {
+            "name": "pszAppContainerSid",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppszPath",
+            "type": "PWSTR"
+        }
+    ],
+    "DeriveAppContainerSidFromAppContainerName": [
+        {
+            "name": "pszAppContainerName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppsidAppContainerSid",
+            "type": "PSID"
+        }
+    ],
+    "DeriveRestrictedAppContainerSidFromAppContainerSidAndRestrictedName": [
+        {
+            "name": "psidAppContainerSid",
+            "type": "PSID"
+        },
+        {
+            "name": "pszRestrictedAppContainerName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppsidRestrictedAppContainerSid",
+            "type": "PSID"
+        }
+    ]
+}

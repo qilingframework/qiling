@@ -1,0 +1,28 @@
+{
+    "PropVariantCopy": [
+        {
+            "name": "pvarDest",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pvarSrc",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PropVariantClear": [
+        {
+            "name": "pvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "FreePropVariantArray": [
+        {
+            "name": "cVariants",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgvars",
+            "type": "PROPVARIANT"
+        }
+    ]
+}

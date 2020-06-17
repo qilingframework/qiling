@@ -1,0 +1,34 @@
+{
+    "ReportFault": [
+        {
+            "name": "pep",
+            "type": "LPEXCEPTION_POINTERS"
+        },
+        {
+            "name": "dwOpt",
+            "type": "DWORD"
+        }
+    ],
+    "AddERExcludedApplicationA": [
+        {
+            "name": "szApplication",
+            "type": "LPCSTR"
+        }
+    ],
+    "AddERExcludedApplicationW": [
+        {
+            "name": "wszApplication",
+            "type": "LPCWSTR"
+        }
+    ],
+    "WerReportHang": [
+        {
+            "name": "hwndHungApp",
+            "type": "HWND"
+        },
+        {
+            "name": "pwzHungApplicationName",
+            "type": "PCWSTR"
+        }
+    ]
+}

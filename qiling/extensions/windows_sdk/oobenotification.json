@@ -1,0 +1,22 @@
+{
+    "RegisterWaitUntilOOBECompleted": [
+        {
+            "name": "OOBECompletedCallback",
+            "type": "OOBE_COMPLETED_CALLBACK"
+        },
+        {
+            "name": "CallbackContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "WaitHandle",
+            "type": "PVOID"
+        }
+    ],
+    "UnregisterWaitUntilOOBECompleted": [
+        {
+            "name": "WaitHandle",
+            "type": "PVOID"
+        }
+    ]
+}

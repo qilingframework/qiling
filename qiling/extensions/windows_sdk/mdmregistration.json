@@ -1,0 +1,98 @@
+{
+    "GetDeviceRegistrationInfo": [
+        {
+            "name": "DeviceInformationClass",
+            "type": "REGISTRATION_INFORMATION_CLASS"
+        },
+        {
+            "name": "ppDeviceRegistrationInfo",
+            "type": "PVOID"
+        }
+    ],
+    "IsDeviceRegisteredWithManagement": [
+        {
+            "name": "pfIsDeviceRegisteredWithManagement",
+            "type": "BOOL"
+        },
+        {
+            "name": "cchUPN",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszUPN",
+            "type": "LPWSTR"
+        }
+    ],
+    "IsManagementRegistrationAllowed": [
+        {
+            "name": "pfIsManagementRegistrationAllowed",
+            "type": "BOOL"
+        }
+    ],
+    "SetManagedExternally": [
+        {
+            "name": "IsManagedExternally",
+            "type": "BOOL"
+        }
+    ],
+    "DiscoverManagementService": [
+        {
+            "name": "pszUPN",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppMgmtInfo",
+            "type": "PMANAGEMENT_SERVICE_INFO"
+        }
+    ],
+    "RegisterDeviceWithManagementUsingAADCredentials": [
+        {
+            "name": "UserToken",
+            "type": "HANDLE"
+        }
+    ],
+    "RegisterDeviceWithManagement": [
+        {
+            "name": "pszUPN",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppszMDMServiceUri",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppzsAccessToken",
+            "type": "LPCWSTR"
+        }
+    ],
+    "UnregisterDeviceWithManagement": [
+        {
+            "name": "enrollmentID",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetManagementAppHyperlink": [
+        {
+            "name": "cchHyperlink",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszHyperlink",
+            "type": "LPWSTR"
+        }
+    ],
+    "DiscoverManagementServiceEx": [
+        {
+            "name": "pszUPN",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszDiscoveryServiceCandidate",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppMgmtInfo",
+            "type": "PMANAGEMENT_SERVICE_INFO"
+        }
+    ]
+}

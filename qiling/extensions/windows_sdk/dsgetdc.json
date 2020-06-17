@@ -1,0 +1,194 @@
+{
+    "DsGetDcNameA": [
+        {
+            "name": "ComputerName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "DomainName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "DomainGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SiteName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        },
+        {
+            "name": "DomainControllerInfo",
+            "type": "PDOMAIN_CONTROLLER_INFOA"
+        }
+    ],
+    "DsGetDcNameW": [
+        {
+            "name": "ComputerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DomainName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DomainGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SiteName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        },
+        {
+            "name": "DomainControllerInfo",
+            "type": "PDOMAIN_CONTROLLER_INFOW"
+        }
+    ],
+    "DsGetSiteNameA": [
+        {
+            "name": "ComputerName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "SiteName",
+            "type": "LPSTR"
+        }
+    ],
+    "DsGetSiteNameW": [
+        {
+            "name": "ComputerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "SiteName",
+            "type": "LPWSTR"
+        }
+    ],
+    "DsValidateSubnetNameW": [
+        {
+            "name": "SubnetName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "DsValidateSubnetNameA": [
+        {
+            "name": "SubnetName",
+            "type": "LPCSTR"
+        }
+    ],
+    "DsEnumerateDomainTrustsW": [
+        {
+            "name": "ServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        },
+        {
+            "name": "Domains",
+            "type": "PDS_DOMAIN_TRUSTSW"
+        },
+        {
+            "name": "DomainCount",
+            "type": "PULONG"
+        }
+    ],
+    "DsEnumerateDomainTrustsA": [
+        {
+            "name": "ServerName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        },
+        {
+            "name": "Domains",
+            "type": "PDS_DOMAIN_TRUSTSA"
+        },
+        {
+            "name": "DomainCount",
+            "type": "PULONG"
+        }
+    ],
+    "DsGetDcSiteCoverageW": [
+        {
+            "name": "ServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "EntryCount",
+            "type": "PULONG"
+        },
+        {
+            "name": "SiteNames",
+            "type": "LPWSTR"
+        }
+    ],
+    "DsGetDcSiteCoverageA": [
+        {
+            "name": "ServerName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "EntryCount",
+            "type": "PULONG"
+        },
+        {
+            "name": "SiteNames",
+            "type": "LPSTR"
+        }
+    ],
+    "DsDeregisterDnsHostRecordsW": [
+        {
+            "name": "ServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "DnsDomainName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "DomainGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "DsaGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "DnsHostName",
+            "type": "LPWSTR"
+        }
+    ],
+    "DsDeregisterDnsHostRecordsA": [
+        {
+            "name": "ServerName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "DnsDomainName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "DomainGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "DsaGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "DnsHostName",
+            "type": "LPSTR"
+        }
+    ]
+}

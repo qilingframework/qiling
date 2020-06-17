@@ -1,0 +1,142 @@
+{
+    "RaiseException": [
+        {
+            "name": "dwExceptionCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwExceptionFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "nNumberOfArguments",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpArguments",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "UnhandledExceptionFilter": [
+        {
+            "name": "ExceptionInfo",
+            "type": {
+                "name": "_EXCEPTION_POINTERS",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "SetUnhandledExceptionFilter": [
+        {
+            "name": "lpTopLevelExceptionFilter",
+            "type": "LPTOP_LEVEL_EXCEPTION_FILTER"
+        }
+    ],
+    "GetLastError": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetLastError": [
+        {
+            "name": "dwErrCode",
+            "type": "DWORD"
+        }
+    ],
+    "GetErrorMode": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetErrorMode": [
+        {
+            "name": "uMode",
+            "type": "UINT"
+        }
+    ],
+    "AddVectoredExceptionHandler": [
+        {
+            "name": "First",
+            "type": "ULONG"
+        },
+        {
+            "name": "Handler",
+            "type": "PVECTORED_EXCEPTION_HANDLER"
+        }
+    ],
+    "RemoveVectoredExceptionHandler": [
+        {
+            "name": "Handle",
+            "type": "PVOID"
+        }
+    ],
+    "AddVectoredContinueHandler": [
+        {
+            "name": "First",
+            "type": "ULONG"
+        },
+        {
+            "name": "Handler",
+            "type": "PVECTORED_EXCEPTION_HANDLER"
+        }
+    ],
+    "RemoveVectoredContinueHandler": [
+        {
+            "name": "Handle",
+            "type": "PVOID"
+        }
+    ],
+    "RaiseFailFastException": [
+        {
+            "name": "pExceptionRecord",
+            "type": "PEXCEPTION_RECORD"
+        },
+        {
+            "name": "pContextRecord",
+            "type": "PCONTEXT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "FatalAppExitA": [
+        {
+            "name": "uAction",
+            "type": "UINT"
+        },
+        {
+            "name": "lpMessageText",
+            "type": "LPCSTR"
+        }
+    ],
+    "FatalAppExitW": [
+        {
+            "name": "uAction",
+            "type": "UINT"
+        },
+        {
+            "name": "lpMessageText",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetThreadErrorMode": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetThreadErrorMode": [
+        {
+            "name": "dwNewMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOldMode",
+            "type": "LPDWORD"
+        }
+    ]
+}

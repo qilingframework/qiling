@@ -1,0 +1,144 @@
+{
+    "SwDeviceCreate": [
+        {
+            "name": "pszEnumeratorName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszParentDeviceInstance",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pCreateInfo",
+            "type": "SW_DEVICE_CREATE_INFO"
+        },
+        {
+            "name": "cPropertyCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pProperties",
+            "type": "DEVPROPERTY"
+        },
+        {
+            "name": "pCallback",
+            "type": "SW_DEVICE_CREATE_CALLBACK"
+        },
+        {
+            "name": "pContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "phSwDevice",
+            "type": "PHSWDEVICE"
+        }
+    ],
+    "SwDeviceClose": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        }
+    ],
+    "SwDeviceSetLifetime": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        },
+        {
+            "name": "Lifetime",
+            "type": "SW_DEVICE_LIFETIME"
+        }
+    ],
+    "SwDeviceGetLifetime": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        },
+        {
+            "name": "pLifetime",
+            "type": "PSW_DEVICE_LIFETIME"
+        }
+    ],
+    "SwDevicePropertySet": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        },
+        {
+            "name": "cPropertyCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pProperties",
+            "type": "DEVPROPERTY"
+        }
+    ],
+    "SwDeviceInterfaceRegister": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        },
+        {
+            "name": "pInterfaceClassGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "pszReferenceString",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cPropertyCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pProperties",
+            "type": "DEVPROPERTY"
+        },
+        {
+            "name": "fEnabled",
+            "type": "BOOL"
+        },
+        {
+            "name": "ppszDeviceInterfaceId",
+            "type": "PWSTR"
+        }
+    ],
+    "SwMemFree": [
+        {
+            "name": "pMem",
+            "type": "PVOID"
+        }
+    ],
+    "SwDeviceInterfaceSetState": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        },
+        {
+            "name": "pszDeviceInterfaceId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "fEnabled",
+            "type": "BOOL"
+        }
+    ],
+    "SwDeviceInterfacePropertySet": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        },
+        {
+            "name": "pszDeviceInterfaceId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cPropertyCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pProperties",
+            "type": "DEVPROPERTY"
+        }
+    ]
+}

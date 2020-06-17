@@ -1,0 +1,956 @@
+{
+    "SetEntriesInAclA": [
+        {
+            "name": "cCountOfExplicitEntries",
+            "type": "ULONG"
+        },
+        {
+            "name": "pListOfExplicitEntries",
+            "type": "PEXPLICIT_ACCESS_A"
+        },
+        {
+            "name": "OldAcl",
+            "type": "PACL"
+        },
+        {
+            "name": "NewAcl",
+            "type": "PACL"
+        }
+    ],
+    "SetEntriesInAclW": [
+        {
+            "name": "cCountOfExplicitEntries",
+            "type": "ULONG"
+        },
+        {
+            "name": "pListOfExplicitEntries",
+            "type": "PEXPLICIT_ACCESS_W"
+        },
+        {
+            "name": "OldAcl",
+            "type": "PACL"
+        },
+        {
+            "name": "NewAcl",
+            "type": "PACL"
+        }
+    ],
+    "GetExplicitEntriesFromAclA": [
+        {
+            "name": "pacl",
+            "type": "PACL"
+        },
+        {
+            "name": "pcCountOfExplicitEntries",
+            "type": "PULONG"
+        },
+        {
+            "name": "pListOfExplicitEntries",
+            "type": "PEXPLICIT_ACCESS_A"
+        }
+    ],
+    "GetExplicitEntriesFromAclW": [
+        {
+            "name": "pacl",
+            "type": "PACL"
+        },
+        {
+            "name": "pcCountOfExplicitEntries",
+            "type": "PULONG"
+        },
+        {
+            "name": "pListOfExplicitEntries",
+            "type": "PEXPLICIT_ACCESS_W"
+        }
+    ],
+    "GetEffectiveRightsFromAclA": [
+        {
+            "name": "pacl",
+            "type": "PACL"
+        },
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_A"
+        },
+        {
+            "name": "pAccessRights",
+            "type": "PACCESS_MASK"
+        }
+    ],
+    "GetEffectiveRightsFromAclW": [
+        {
+            "name": "pacl",
+            "type": "PACL"
+        },
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_W"
+        },
+        {
+            "name": "pAccessRights",
+            "type": "PACCESS_MASK"
+        }
+    ],
+    "GetAuditedPermissionsFromAclA": [
+        {
+            "name": "pacl",
+            "type": "PACL"
+        },
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_A"
+        },
+        {
+            "name": "pSuccessfulAuditedRights",
+            "type": "PACCESS_MASK"
+        },
+        {
+            "name": "pFailedAuditRights",
+            "type": "PACCESS_MASK"
+        }
+    ],
+    "GetAuditedPermissionsFromAclW": [
+        {
+            "name": "pacl",
+            "type": "PACL"
+        },
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_W"
+        },
+        {
+            "name": "pSuccessfulAuditedRights",
+            "type": "PACCESS_MASK"
+        },
+        {
+            "name": "pFailedAuditRights",
+            "type": "PACCESS_MASK"
+        }
+    ],
+    "GetNamedSecurityInfoA": [
+        {
+            "name": "pObjectName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "SecurityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "ppsidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "ppsidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "ppDacl",
+            "type": "PACL"
+        },
+        {
+            "name": "ppSacl",
+            "type": "PACL"
+        },
+        {
+            "name": "ppSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "GetNamedSecurityInfoW": [
+        {
+            "name": "pObjectName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "SecurityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "ppsidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "ppsidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "ppDacl",
+            "type": "PACL"
+        },
+        {
+            "name": "ppSacl",
+            "type": "PACL"
+        },
+        {
+            "name": "ppSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "GetSecurityInfo": [
+        {
+            "name": "handle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "SecurityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "ppsidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "ppsidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "ppDacl",
+            "type": "PACL"
+        },
+        {
+            "name": "ppSacl",
+            "type": "PACL"
+        },
+        {
+            "name": "ppSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "SetNamedSecurityInfoA": [
+        {
+            "name": "pObjectName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "SecurityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "psidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "psidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "pDacl",
+            "type": "PACL"
+        },
+        {
+            "name": "pSacl",
+            "type": "PACL"
+        }
+    ],
+    "SetNamedSecurityInfoW": [
+        {
+            "name": "pObjectName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "SecurityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "psidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "psidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "pDacl",
+            "type": "PACL"
+        },
+        {
+            "name": "pSacl",
+            "type": "PACL"
+        }
+    ],
+    "SetSecurityInfo": [
+        {
+            "name": "handle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "SecurityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "psidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "psidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "pDacl",
+            "type": "PACL"
+        },
+        {
+            "name": "pSacl",
+            "type": "PACL"
+        }
+    ],
+    "GetInheritanceSourceA": [
+        {
+            "name": "pObjectName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "SecurityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "Container",
+            "type": "BOOL"
+        },
+        {
+            "name": "pObjectClassGuids",
+            "type": "GUID"
+        },
+        {
+            "name": "GuidCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pAcl",
+            "type": "PACL"
+        },
+        {
+            "name": "pfnArray",
+            "type": "PFN_OBJECT_MGR_FUNCTS"
+        },
+        {
+            "name": "pGenericMapping",
+            "type": "PGENERIC_MAPPING"
+        },
+        {
+            "name": "pInheritArray",
+            "type": "PINHERITED_FROMA"
+        }
+    ],
+    "GetInheritanceSourceW": [
+        {
+            "name": "pObjectName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "SecurityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "Container",
+            "type": "BOOL"
+        },
+        {
+            "name": "pObjectClassGuids",
+            "type": "GUID"
+        },
+        {
+            "name": "GuidCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pAcl",
+            "type": "PACL"
+        },
+        {
+            "name": "pfnArray",
+            "type": "PFN_OBJECT_MGR_FUNCTS"
+        },
+        {
+            "name": "pGenericMapping",
+            "type": "PGENERIC_MAPPING"
+        },
+        {
+            "name": "pInheritArray",
+            "type": "PINHERITED_FROMW"
+        }
+    ],
+    "FreeInheritedFromArray": [
+        {
+            "name": "pInheritArray",
+            "type": "PINHERITED_FROMW"
+        },
+        {
+            "name": "AceCnt",
+            "type": "USHORT"
+        },
+        {
+            "name": "pfnArray",
+            "type": "PFN_OBJECT_MGR_FUNCTS"
+        }
+    ],
+    "TreeResetNamedSecurityInfoA": [
+        {
+            "name": "pObjectName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "SecurityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "pOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "pGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "pDacl",
+            "type": "PACL"
+        },
+        {
+            "name": "pSacl",
+            "type": "PACL"
+        },
+        {
+            "name": "KeepExplicit",
+            "type": "BOOL"
+        },
+        {
+            "name": "fnProgress",
+            "type": "FN_PROGRESS"
+        },
+        {
+            "name": "ProgressInvokeSetting",
+            "type": "PROG_INVOKE_SETTING"
+        },
+        {
+            "name": "Args",
+            "type": "PVOID"
+        }
+    ],
+    "TreeResetNamedSecurityInfoW": [
+        {
+            "name": "pObjectName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "SecurityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "pOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "pGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "pDacl",
+            "type": "PACL"
+        },
+        {
+            "name": "pSacl",
+            "type": "PACL"
+        },
+        {
+            "name": "KeepExplicit",
+            "type": "BOOL"
+        },
+        {
+            "name": "fnProgress",
+            "type": "FN_PROGRESS"
+        },
+        {
+            "name": "ProgressInvokeSetting",
+            "type": "PROG_INVOKE_SETTING"
+        },
+        {
+            "name": "Args",
+            "type": "PVOID"
+        }
+    ],
+    "TreeSetNamedSecurityInfoA": [
+        {
+            "name": "pObjectName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "SecurityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "pOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "pGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "pDacl",
+            "type": "PACL"
+        },
+        {
+            "name": "pSacl",
+            "type": "PACL"
+        },
+        {
+            "name": "dwAction",
+            "type": "DWORD"
+        },
+        {
+            "name": "fnProgress",
+            "type": "FN_PROGRESS"
+        },
+        {
+            "name": "ProgressInvokeSetting",
+            "type": "PROG_INVOKE_SETTING"
+        },
+        {
+            "name": "Args",
+            "type": "PVOID"
+        }
+    ],
+    "TreeSetNamedSecurityInfoW": [
+        {
+            "name": "pObjectName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "SecurityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "pOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "pGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "pDacl",
+            "type": "PACL"
+        },
+        {
+            "name": "pSacl",
+            "type": "PACL"
+        },
+        {
+            "name": "dwAction",
+            "type": "DWORD"
+        },
+        {
+            "name": "fnProgress",
+            "type": "FN_PROGRESS"
+        },
+        {
+            "name": "ProgressInvokeSetting",
+            "type": "PROG_INVOKE_SETTING"
+        },
+        {
+            "name": "Args",
+            "type": "PVOID"
+        }
+    ],
+    "BuildSecurityDescriptorA": [
+        {
+            "name": "pOwner",
+            "type": "PTRUSTEE_A"
+        },
+        {
+            "name": "pGroup",
+            "type": "PTRUSTEE_A"
+        },
+        {
+            "name": "cCountOfAccessEntries",
+            "type": "ULONG"
+        },
+        {
+            "name": "pListOfAccessEntries",
+            "type": "PEXPLICIT_ACCESS_A"
+        },
+        {
+            "name": "cCountOfAuditEntries",
+            "type": "ULONG"
+        },
+        {
+            "name": "pListOfAuditEntries",
+            "type": "PEXPLICIT_ACCESS_A"
+        },
+        {
+            "name": "pOldSD",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "pSizeNewSD",
+            "type": "PULONG"
+        },
+        {
+            "name": "pNewSD",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "BuildSecurityDescriptorW": [
+        {
+            "name": "pOwner",
+            "type": "PTRUSTEE_W"
+        },
+        {
+            "name": "pGroup",
+            "type": "PTRUSTEE_W"
+        },
+        {
+            "name": "cCountOfAccessEntries",
+            "type": "ULONG"
+        },
+        {
+            "name": "pListOfAccessEntries",
+            "type": "PEXPLICIT_ACCESS_W"
+        },
+        {
+            "name": "cCountOfAuditEntries",
+            "type": "ULONG"
+        },
+        {
+            "name": "pListOfAuditEntries",
+            "type": "PEXPLICIT_ACCESS_W"
+        },
+        {
+            "name": "pOldSD",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "pSizeNewSD",
+            "type": "PULONG"
+        },
+        {
+            "name": "pNewSD",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "LookupSecurityDescriptorPartsA": [
+        {
+            "name": "ppOwner",
+            "type": "PTRUSTEE_A"
+        },
+        {
+            "name": "ppGroup",
+            "type": "PTRUSTEE_A"
+        },
+        {
+            "name": "pcCountOfAccessEntries",
+            "type": "PULONG"
+        },
+        {
+            "name": "ppListOfAccessEntries",
+            "type": "PEXPLICIT_ACCESS_A"
+        },
+        {
+            "name": "pcCountOfAuditEntries",
+            "type": "PULONG"
+        },
+        {
+            "name": "ppListOfAuditEntries",
+            "type": "PEXPLICIT_ACCESS_A"
+        },
+        {
+            "name": "pSD",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "LookupSecurityDescriptorPartsW": [
+        {
+            "name": "ppOwner",
+            "type": "PTRUSTEE_W"
+        },
+        {
+            "name": "ppGroup",
+            "type": "PTRUSTEE_W"
+        },
+        {
+            "name": "pcCountOfAccessEntries",
+            "type": "PULONG"
+        },
+        {
+            "name": "ppListOfAccessEntries",
+            "type": "PEXPLICIT_ACCESS_W"
+        },
+        {
+            "name": "pcCountOfAuditEntries",
+            "type": "PULONG"
+        },
+        {
+            "name": "ppListOfAuditEntries",
+            "type": "PEXPLICIT_ACCESS_W"
+        },
+        {
+            "name": "pSD",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "BuildExplicitAccessWithNameA": [
+        {
+            "name": "pExplicitAccess",
+            "type": "PEXPLICIT_ACCESS_A"
+        },
+        {
+            "name": "pTrusteeName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "AccessPermissions",
+            "type": "DWORD"
+        },
+        {
+            "name": "AccessMode",
+            "type": "ACCESS_MODE"
+        },
+        {
+            "name": "Inheritance",
+            "type": "DWORD"
+        }
+    ],
+    "BuildExplicitAccessWithNameW": [
+        {
+            "name": "pExplicitAccess",
+            "type": "PEXPLICIT_ACCESS_W"
+        },
+        {
+            "name": "pTrusteeName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "AccessPermissions",
+            "type": "DWORD"
+        },
+        {
+            "name": "AccessMode",
+            "type": "ACCESS_MODE"
+        },
+        {
+            "name": "Inheritance",
+            "type": "DWORD"
+        }
+    ],
+    "BuildTrusteeWithNameA": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_A"
+        },
+        {
+            "name": "pName",
+            "type": "LPSTR"
+        }
+    ],
+    "BuildTrusteeWithNameW": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_W"
+        },
+        {
+            "name": "pName",
+            "type": "LPWSTR"
+        }
+    ],
+    "BuildTrusteeWithSidA": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_A"
+        },
+        {
+            "name": "pSid",
+            "type": "PSID"
+        }
+    ],
+    "BuildTrusteeWithSidW": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_W"
+        },
+        {
+            "name": "pSid",
+            "type": "PSID"
+        }
+    ],
+    "BuildTrusteeWithObjectsAndSidA": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_A"
+        },
+        {
+            "name": "pObjSid",
+            "type": "POBJECTS_AND_SID"
+        },
+        {
+            "name": "pObjectGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "pInheritedObjectGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "pSid",
+            "type": "PSID"
+        }
+    ],
+    "BuildTrusteeWithObjectsAndSidW": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_W"
+        },
+        {
+            "name": "pObjSid",
+            "type": "POBJECTS_AND_SID"
+        },
+        {
+            "name": "pObjectGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "pInheritedObjectGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "pSid",
+            "type": "PSID"
+        }
+    ],
+    "BuildTrusteeWithObjectsAndNameA": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_A"
+        },
+        {
+            "name": "pObjName",
+            "type": "POBJECTS_AND_NAME_A"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "ObjectTypeName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "InheritedObjectTypeName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "Name",
+            "type": "LPSTR"
+        }
+    ],
+    "BuildTrusteeWithObjectsAndNameW": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_W"
+        },
+        {
+            "name": "pObjName",
+            "type": "POBJECTS_AND_NAME_W"
+        },
+        {
+            "name": "ObjectType",
+            "type": "SE_OBJECT_TYPE"
+        },
+        {
+            "name": "ObjectTypeName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "InheritedObjectTypeName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Name",
+            "type": "LPWSTR"
+        }
+    ],
+    "GetTrusteeNameA": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_A"
+        }
+    ],
+    "GetTrusteeNameW": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_W"
+        }
+    ],
+    "GetTrusteeTypeA": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_A"
+        }
+    ],
+    "GetTrusteeTypeW": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_W"
+        }
+    ],
+    "GetTrusteeFormA": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_A"
+        }
+    ],
+    "GetTrusteeFormW": [
+        {
+            "name": "pTrustee",
+            "type": "PTRUSTEE_W"
+        }
+    ]
+}

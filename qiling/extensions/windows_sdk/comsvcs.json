@@ -1,0 +1,50 @@
+{
+    "CoCreateActivity": [
+        {
+            "name": "pIUnknown",
+            "type": "IUnknown"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppObj",
+            "type": "void"
+        }
+    ],
+    "CoEnterServiceDomain": [
+        {
+            "name": "pConfigObject",
+            "type": "IUnknown"
+        }
+    ],
+    "CoLeaveServiceDomain": [
+        {
+            "name": "pUnkStatus",
+            "type": "IUnknown"
+        }
+    ],
+    "GetManagedExtensions": [
+        {
+            "name": "dwExts",
+            "type": "DWORD"
+        }
+    ],
+    "RecycleSurrogate": [
+        {
+            "name": "lReasonCode",
+            "type": "long"
+        }
+    ],
+    "MTSCreateActivity": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppobj",
+            "type": "void"
+        }
+    ]
+}

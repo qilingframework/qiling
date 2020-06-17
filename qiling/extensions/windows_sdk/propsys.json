@@ -1,0 +1,972 @@
+{
+    "PropVariantToWinRTPropertyValue": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "WinRTPropertyValueToPropVariant": [
+        {
+            "name": "punkPropertyValue",
+            "type": "IUnknown"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PSFormatForDisplay": [
+        {
+            "name": "propkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pdfFlags",
+            "type": "PROPDESC_FORMAT_FLAGS"
+        },
+        {
+            "name": "pwszText",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchText",
+            "type": "DWORD"
+        }
+    ],
+    "PSFormatForDisplayAlloc": [
+        {
+            "name": "key",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pdff",
+            "type": "PROPDESC_FORMAT_FLAGS"
+        },
+        {
+            "name": "ppszDisplay",
+            "type": "PWSTR"
+        }
+    ],
+    "PSFormatPropertyValue": [
+        {
+            "name": "pps",
+            "type": "IPropertyStore"
+        },
+        {
+            "name": "ppd",
+            "type": "IPropertyDescription"
+        },
+        {
+            "name": "pdff",
+            "type": "PROPDESC_FORMAT_FLAGS"
+        },
+        {
+            "name": "ppszDisplay",
+            "type": "LPWSTR"
+        }
+    ],
+    "PSGetImageReferenceForValue": [
+        {
+            "name": "propkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "ppszImageRes",
+            "type": "PWSTR"
+        }
+    ],
+    "PSStringFromPropertyKey": [
+        {
+            "name": "pkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "psz",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cch",
+            "type": "UINT"
+        }
+    ],
+    "PSPropertyKeyFromString": [
+        {
+            "name": "pszString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pkey",
+            "type": "PROPERTYKEY"
+        }
+    ],
+    "PSCreateMemoryPropertyStore": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreateDelayedMultiplexPropertyStore": [
+        {
+            "name": "flags",
+            "type": "GETPROPERTYSTOREFLAGS"
+        },
+        {
+            "name": "pdpsf",
+            "type": "IDelayedPropertyStoreFactory"
+        },
+        {
+            "name": "rgStoreIds",
+            "type": "DWORD"
+        },
+        {
+            "name": "cStores",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreateMultiplexPropertyStore": [
+        {
+            "name": "prgpunkStores",
+            "type": "IUnknown"
+        },
+        {
+            "name": "cStores",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreatePropertyChangeArray": [
+        {
+            "name": "rgpropkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "rgflags",
+            "type": "PKA_FLAGS"
+        },
+        {
+            "name": "rgpropvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "cChanges",
+            "type": "UINT"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreateSimplePropertyChange": [
+        {
+            "name": "flags",
+            "type": "PKA_FLAGS"
+        },
+        {
+            "name": "key",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetPropertyDescription": [
+        {
+            "name": "propkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetPropertyDescriptionByName": [
+        {
+            "name": "pszCanonicalName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSLookupPropertyHandlerCLSID": [
+        {
+            "name": "pszFilePath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pclsid",
+            "type": "CLSID"
+        }
+    ],
+    "PSGetItemPropertyHandler": [
+        {
+            "name": "punkItem",
+            "type": "IUnknown"
+        },
+        {
+            "name": "fReadWrite",
+            "type": "BOOL"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetItemPropertyHandlerWithCreateObject": [
+        {
+            "name": "punkItem",
+            "type": "IUnknown"
+        },
+        {
+            "name": "fReadWrite",
+            "type": "BOOL"
+        },
+        {
+            "name": "punkCreateObject",
+            "type": "IUnknown"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetPropertyValue": [
+        {
+            "name": "pps",
+            "type": "IPropertyStore"
+        },
+        {
+            "name": "ppd",
+            "type": "IPropertyDescription"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PSSetPropertyValue": [
+        {
+            "name": "pps",
+            "type": "IPropertyStore"
+        },
+        {
+            "name": "ppd",
+            "type": "IPropertyDescription"
+        },
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PSRegisterPropertySchema": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "PSUnregisterPropertySchema": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "PSRefreshPropertySchema": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "PSEnumeratePropertyDescriptions": [
+        {
+            "name": "filterOn",
+            "type": "PROPDESC_ENUMFILTER"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetPropertyKeyFromName": [
+        {
+            "name": "pszName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppropkey",
+            "type": "PROPERTYKEY"
+        }
+    ],
+    "PSGetNameFromPropertyKey": [
+        {
+            "name": "propkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "ppszCanonicalName",
+            "type": "PWSTR"
+        }
+    ],
+    "PSCoerceToCanonicalValue": [
+        {
+            "name": "key",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PSGetPropertyDescriptionListFromString": [
+        {
+            "name": "pszPropList",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreatePropertyStoreFromPropertySetStorage": [
+        {
+            "name": "ppss",
+            "type": "IPropertySetStorage"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreatePropertyStoreFromObject": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreateAdapterFromPropertyStore": [
+        {
+            "name": "pps",
+            "type": "IPropertyStore"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetPropertySystem": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetPropertyFromPropertyStorage": [
+        {
+            "name": "psps",
+            "type": "PCUSERIALIZEDPROPSTORAGE"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        },
+        {
+            "name": "rpkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PSGetNamedPropertyFromPropertyStorage": [
+        {
+            "name": "psps",
+            "type": "PCUSERIALIZEDPROPSTORAGE"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PSPropertyBag_ReadType": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "type",
+            "type": "VARTYPE"
+        }
+    ],
+    "PSPropertyBag_ReadStr": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "characterCount",
+            "type": "int"
+        }
+    ],
+    "PSPropertyBag_ReadStrAlloc": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "PWSTR"
+        }
+    ],
+    "PSPropertyBag_ReadBSTR": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "BSTR"
+        }
+    ],
+    "PSPropertyBag_WriteStr": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PSPropertyBag_WriteBSTR": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "BSTR"
+        }
+    ],
+    "PSPropertyBag_ReadInt": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "INT"
+        }
+    ],
+    "PSPropertyBag_WriteInt": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "INT"
+        }
+    ],
+    "PSPropertyBag_ReadSHORT": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "SHORT"
+        }
+    ],
+    "PSPropertyBag_WriteSHORT": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "SHORT"
+        }
+    ],
+    "PSPropertyBag_ReadLONG": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "LONG"
+        }
+    ],
+    "PSPropertyBag_WriteLONG": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "LONG"
+        }
+    ],
+    "PSPropertyBag_ReadDWORD": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "DWORD"
+        }
+    ],
+    "PSPropertyBag_WriteDWORD": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "DWORD"
+        }
+    ],
+    "PSPropertyBag_ReadBOOL": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "BOOL"
+        }
+    ],
+    "PSPropertyBag_WriteBOOL": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "BOOL"
+        }
+    ],
+    "PSPropertyBag_ReadPOINTL": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "POINTL"
+        }
+    ],
+    "PSPropertyBag_WritePOINTL": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "POINTL"
+        }
+    ],
+    "PSPropertyBag_ReadPOINTS": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "POINTS"
+        }
+    ],
+    "PSPropertyBag_WritePOINTS": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "POINTS"
+        }
+    ],
+    "PSPropertyBag_ReadRECTL": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "RECTL"
+        }
+    ],
+    "PSPropertyBag_WriteRECTL": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "RECTL"
+        }
+    ],
+    "PSPropertyBag_ReadStream": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "IStream"
+        }
+    ],
+    "PSPropertyBag_WriteStream": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "IStream"
+        }
+    ],
+    "PSPropertyBag_Delete": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PSPropertyBag_ReadULONGLONG": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "ULONGLONG"
+        }
+    ],
+    "PSPropertyBag_WriteULONGLONG": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "ULONGLONG"
+        }
+    ],
+    "PSPropertyBag_ReadUnknown": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSPropertyBag_WriteUnknown": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        }
+    ],
+    "PSPropertyBag_ReadGUID": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "GUID"
+        }
+    ],
+    "PSPropertyBag_WriteGUID": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "GUID"
+        }
+    ],
+    "PSPropertyBag_ReadPropertyKey": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "PROPERTYKEY"
+        }
+    ],
+    "PSPropertyBag_WritePropertyKey": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "PROPERTYKEY"
+        }
+    ]
+}

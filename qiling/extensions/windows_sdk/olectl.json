@@ -1,0 +1,246 @@
+{
+    "DllRegisterServer": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "DllUnregisterServer": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "OleCreatePropertyFrame": [
+        {
+            "name": "hwndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "x",
+            "type": "UINT"
+        },
+        {
+            "name": "y",
+            "type": "UINT"
+        },
+        {
+            "name": "lpszCaption",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "cObjects",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppUnk",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "cPages",
+            "type": "ULONG"
+        },
+        {
+            "name": "pPageClsID",
+            "type": "LPCLSID"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreatePropertyFrameIndirect": [
+        {
+            "name": "lpParams",
+            "type": "LPOCPFIPARAMS"
+        }
+    ],
+    "OleTranslateColor": [
+        {
+            "name": "clr",
+            "type": "OLE_COLOR"
+        },
+        {
+            "name": "hpal",
+            "type": "HPALETTE"
+        },
+        {
+            "name": "lpcolorref",
+            "type": "COLORREF"
+        }
+    ],
+    "OleCreateFontIndirect": [
+        {
+            "name": "lpFontDesc",
+            "type": "LPFONTDESC"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "lplpvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreatePictureIndirect": [
+        {
+            "name": "lpPictDesc",
+            "type": "LPPICTDESC"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "fOwn",
+            "type": "BOOL"
+        },
+        {
+            "name": "lplpvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleLoadPicture": [
+        {
+            "name": "lpstream",
+            "type": "LPSTREAM"
+        },
+        {
+            "name": "lSize",
+            "type": "LONG"
+        },
+        {
+            "name": "fRunmode",
+            "type": "BOOL"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "lplpvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleLoadPictureEx": [
+        {
+            "name": "lpstream",
+            "type": "LPSTREAM"
+        },
+        {
+            "name": "lSize",
+            "type": "LONG"
+        },
+        {
+            "name": "fRunmode",
+            "type": "BOOL"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "xSizeDesired",
+            "type": "DWORD"
+        },
+        {
+            "name": "ySizeDesired",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleLoadPicturePath": [
+        {
+            "name": "szURLorPath",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "punkCaller",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "clrReserved",
+            "type": "OLE_COLOR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvRet",
+            "type": "LPVOID"
+        }
+    ],
+    "OleLoadPictureFile": [
+        {
+            "name": "varFileName",
+            "type": "VARIANT"
+        },
+        {
+            "name": "lplpdispPicture",
+            "type": "LPDISPATCH"
+        }
+    ],
+    "OleLoadPictureFileEx": [
+        {
+            "name": "varFileName",
+            "type": "VARIANT"
+        },
+        {
+            "name": "xSizeDesired",
+            "type": "DWORD"
+        },
+        {
+            "name": "ySizeDesired",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpdispPicture",
+            "type": "LPDISPATCH"
+        }
+    ],
+    "OleSavePictureFile": [
+        {
+            "name": "lpdispPicture",
+            "type": "LPDISPATCH"
+        },
+        {
+            "name": "bstrFileName",
+            "type": "BSTR"
+        }
+    ],
+    "OleIconToCursor": [
+        {
+            "name": "hinstExe",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "hIcon",
+            "type": "HICON"
+        }
+    ]
+}

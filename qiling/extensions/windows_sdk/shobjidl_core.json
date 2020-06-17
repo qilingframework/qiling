@@ -1,0 +1,382 @@
+{
+    "SHSimpleIDListFromPath": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "SHCreateItemFromIDList": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHCreateItemFromParsingName": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pbc",
+            "type": "IBindCtx"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHCreateItemWithParent": [
+        {
+            "name": "pidlParent",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "psfParent",
+            "type": "IShellFolder"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvItem",
+            "type": "void"
+        }
+    ],
+    "SHCreateItemFromRelativeName": [
+        {
+            "name": "psiParent",
+            "type": "IShellItem"
+        },
+        {
+            "name": "pszName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pbc",
+            "type": "IBindCtx"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHCreateItemInKnownFolder": [
+        {
+            "name": "kfid",
+            "type": "KNOWNFOLDERID"
+        },
+        {
+            "name": "dwKFFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszItem",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHGetIDListFromObject": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "ppidl",
+            "type": "LPITEMIDLIST"
+        }
+    ],
+    "SHGetItemFromObject": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHGetPropertyStoreFromIDList": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "flags",
+            "type": "GETPROPERTYSTOREFLAGS"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHGetPropertyStoreFromParsingName": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pbc",
+            "type": "IBindCtx"
+        },
+        {
+            "name": "flags",
+            "type": "GETPROPERTYSTOREFLAGS"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHGetNameFromIDList": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "sigdnName",
+            "type": "SIGDN"
+        },
+        {
+            "name": "ppszName",
+            "type": "PWSTR"
+        }
+    ],
+    "SHGetItemFromDataObject": [
+        {
+            "name": "pdtobj",
+            "type": "IDataObject"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DATAOBJ_GET_ITEM_FLAGS"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHCreateShellItemArray": [
+        {
+            "name": "pidlParent",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "psf",
+            "type": "IShellFolder"
+        },
+        {
+            "name": "cidl",
+            "type": "UINT"
+        },
+        {
+            "name": "ppidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "ppsiItemArray",
+            "type": "IShellItemArray"
+        }
+    ],
+    "SHCreateShellItemArrayFromDataObject": [
+        {
+            "name": "pdo",
+            "type": "IDataObject"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHCreateShellItemArrayFromIDLists": [
+        {
+            "name": "cidl",
+            "type": "UINT"
+        },
+        {
+            "name": "rgpidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "ppsiItemArray",
+            "type": "IShellItemArray"
+        }
+    ],
+    "SHCreateShellItemArrayFromShellItem": [
+        {
+            "name": "psi",
+            "type": "IShellItem"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHCreateAssociationRegistration": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHCreateDefaultExtractIcon": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SetCurrentProcessExplicitAppUserModelID": [
+        {
+            "name": "AppID",
+            "type": "PCWSTR"
+        }
+    ],
+    "GetCurrentProcessExplicitAppUserModelID": [
+        {
+            "name": "AppID",
+            "type": "PWSTR"
+        }
+    ],
+    "SHGetTemporaryPropertyForItem": [
+        {
+            "name": "psi",
+            "type": "IShellItem"
+        },
+        {
+            "name": "propkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "SHSetTemporaryPropertyForItem": [
+        {
+            "name": "psi",
+            "type": "IShellItem"
+        },
+        {
+            "name": "propkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "SHShowManageLibraryUI": [
+        {
+            "name": "psiLibrary",
+            "type": "IShellItem"
+        },
+        {
+            "name": "hwndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "pszTitle",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszInstruction",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lmdOptions",
+            "type": "LIBRARYMANAGEDIALOGOPTIONS"
+        }
+    ],
+    "SHResolveLibrary": [
+        {
+            "name": "psiLibrary",
+            "type": "IShellItem"
+        }
+    ],
+    "SHAssocEnumHandlers": [
+        {
+            "name": "pszExtra",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "afFilter",
+            "type": "ASSOC_FILTER"
+        },
+        {
+            "name": "ppEnumHandler",
+            "type": "IEnumAssocHandlers"
+        }
+    ],
+    "SHAssocEnumHandlersForProtocolByApplication": [
+        {
+            "name": "protocol",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "enumHandlers",
+            "type": "void"
+        }
+    ]
+}

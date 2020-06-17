@@ -1,0 +1,30 @@
+{
+    "RpcCertGeneratePrincipalNameW": [
+        {
+            "name": "Context",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBuffer",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcCertGeneratePrincipalNameA": [
+        {
+            "name": "Context",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBuffer",
+            "type": "RPC_CSTR"
+        }
+    ]
+}

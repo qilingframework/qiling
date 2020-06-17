@@ -1,0 +1,952 @@
+{
+    "NetUserAdd": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetUserEnum": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "filter",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "resume_handle",
+            "type": "PDWORD"
+        }
+    ],
+    "NetUserGetInfo": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "username",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetUserSetInfo": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "username",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetUserDel": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "username",
+            "type": "LPCWSTR"
+        }
+    ],
+    "NetUserGetGroups": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "username",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetUserSetGroups": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "username",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "num_entries",
+            "type": "DWORD"
+        }
+    ],
+    "NetUserGetLocalGroups": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "username",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetUserModalsGet": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetUserModalsSet": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetUserChangePassword": [
+        {
+            "name": "domainname",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "username",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "oldpassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "newpassword",
+            "type": "LPCWSTR"
+        }
+    ],
+    "NetGroupAdd": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetGroupAddUser": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "GroupName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "username",
+            "type": "LPCWSTR"
+        }
+    ],
+    "NetGroupEnum": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "resume_handle",
+            "type": "PDWORD_PTR"
+        }
+    ],
+    "NetGroupGetInfo": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "groupname",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetGroupSetInfo": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "groupname",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetGroupDel": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "groupname",
+            "type": "LPCWSTR"
+        }
+    ],
+    "NetGroupDelUser": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "GroupName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Username",
+            "type": "LPCWSTR"
+        }
+    ],
+    "NetGroupGetUsers": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "groupname",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "PDWORD_PTR"
+        }
+    ],
+    "NetGroupSetUsers": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "groupname",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "totalentries",
+            "type": "DWORD"
+        }
+    ],
+    "NetLocalGroupAdd": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetLocalGroupEnum": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "resumehandle",
+            "type": "PDWORD_PTR"
+        }
+    ],
+    "NetLocalGroupGetInfo": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "groupname",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetLocalGroupSetInfo": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "groupname",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetLocalGroupDel": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "groupname",
+            "type": "LPCWSTR"
+        }
+    ],
+    "NetLocalGroupGetMembers": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "localgroupname",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "resumehandle",
+            "type": "PDWORD_PTR"
+        }
+    ],
+    "NetLocalGroupSetMembers": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "groupname",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "totalentries",
+            "type": "DWORD"
+        }
+    ],
+    "NetLocalGroupAddMembers": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "groupname",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "totalentries",
+            "type": "DWORD"
+        }
+    ],
+    "NetLocalGroupDelMembers": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "groupname",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "totalentries",
+            "type": "DWORD"
+        }
+    ],
+    "NetQueryDisplayInformation": [
+        {
+            "name": "ServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Level",
+            "type": "DWORD"
+        },
+        {
+            "name": "Index",
+            "type": "DWORD"
+        },
+        {
+            "name": "EntriesRequested",
+            "type": "DWORD"
+        },
+        {
+            "name": "PreferredMaximumLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnedEntryCount",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "SortedBuffer",
+            "type": "PVOID"
+        }
+    ],
+    "NetGetDisplayInformationIndex": [
+        {
+            "name": "ServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Level",
+            "type": "DWORD"
+        },
+        {
+            "name": "Prefix",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Index",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetAccessAdd": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetAccessEnum": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "BasePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Recursive",
+            "type": "DWORD"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "resume_handle",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetAccessGetInfo": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "resource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetAccessSetInfo": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "resource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetAccessDel": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "resource",
+            "type": "LPCWSTR"
+        }
+    ],
+    "NetAccessGetUserPerms": [
+        {
+            "name": "servername",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "UGname",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "resource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Perms",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetValidatePasswordPolicy": [
+        {
+            "name": "ServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Qualifier",
+            "type": "LPVOID"
+        },
+        {
+            "name": "ValidationType",
+            "type": "NET_VALIDATE_PASSWORD_TYPE"
+        },
+        {
+            "name": "InputArg",
+            "type": "LPVOID"
+        },
+        {
+            "name": "OutputArg",
+            "type": "LPVOID"
+        }
+    ],
+    "NetValidatePasswordPolicyFree": [
+        {
+            "name": "OutputArg",
+            "type": "LPVOID"
+        }
+    ],
+    "NetGetDCName": [
+        {
+            "name": "ServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DomainName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Buffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetGetAnyDCName": [
+        {
+            "name": "ServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DomainName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Buffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "I_NetLogonControl2": [
+        {
+            "name": "ServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "FunctionCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "QueryLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "Data",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "Buffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetAddServiceAccount": [
+        {
+            "name": "ServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "AccountName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Password",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "NetRemoveServiceAccount": [
+        {
+            "name": "ServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "AccountName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "NetEnumerateServiceAccounts": [
+        {
+            "name": "ServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "AccountsCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "Accounts",
+            "type": "PZPWSTR"
+        }
+    ],
+    "NetIsServiceAccount": [
+        {
+            "name": "ServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "AccountName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "IsService",
+            "type": "BOOL"
+        }
+    ],
+    "NetQueryServiceAccount": [
+        {
+            "name": "ServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "AccountName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "InfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "Buffer",
+            "type": "PBYTE"
+        }
+    ]
+}

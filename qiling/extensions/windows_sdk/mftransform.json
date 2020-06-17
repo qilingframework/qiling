@@ -1,0 +1,8 @@
+{
+    "MFCreateTransformActivate": [
+        {
+            "name": "ppActivate",
+            "type": "IMFActivate"
+        }
+    ]
+}

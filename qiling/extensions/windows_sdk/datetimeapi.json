@@ -1,0 +1,162 @@
+{
+    "GetDateFormatA": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpDate",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "lpFormat",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpDateStr",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchDate",
+            "type": "int"
+        }
+    ],
+    "GetDateFormatW": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpDate",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "lpFormat",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDateStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchDate",
+            "type": "int"
+        }
+    ],
+    "GetTimeFormatA": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpTime",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "lpFormat",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpTimeStr",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchTime",
+            "type": "int"
+        }
+    ],
+    "GetTimeFormatW": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpTime",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "lpFormat",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpTimeStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchTime",
+            "type": "int"
+        }
+    ],
+    "GetTimeFormatEx": [
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpTime",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "lpFormat",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpTimeStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchTime",
+            "type": "int"
+        }
+    ],
+    "GetDateFormatEx": [
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpDate",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "lpFormat",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDateStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchDate",
+            "type": "int"
+        },
+        {
+            "name": "lpCalendar",
+            "type": "LPCWSTR"
+        }
+    ]
+}

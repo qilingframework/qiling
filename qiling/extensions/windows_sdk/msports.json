@@ -1,0 +1,84 @@
+{
+    "ComDBOpen": [
+        {
+            "name": "PHComDB",
+            "type": "PHCOMDB"
+        }
+    ],
+    "ComDBClose": [
+        {
+            "name": "HComDB",
+            "type": "HCOMDB"
+        }
+    ],
+    "ComDBGetCurrentPortUsage": [
+        {
+            "name": "HComDB",
+            "type": "HCOMDB"
+        },
+        {
+            "name": "Buffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "BufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReportType",
+            "type": "ULONG"
+        },
+        {
+            "name": "MaxPortsReported",
+            "type": "LPDWORD"
+        }
+    ],
+    "ComDBClaimNextFreePort": [
+        {
+            "name": "HComDB",
+            "type": "HCOMDB"
+        },
+        {
+            "name": "ComNumber",
+            "type": "LPDWORD"
+        }
+    ],
+    "ComDBClaimPort": [
+        {
+            "name": "HComDB",
+            "type": "HCOMDB"
+        },
+        {
+            "name": "ComNumber",
+            "type": "DWORD"
+        },
+        {
+            "name": "ForceClaim",
+            "type": "BOOL"
+        },
+        {
+            "name": "Forced",
+            "type": "PBOOL"
+        }
+    ],
+    "ComDBReleasePort": [
+        {
+            "name": "HComDB",
+            "type": "HCOMDB"
+        },
+        {
+            "name": "ComNumber",
+            "type": "DWORD"
+        }
+    ],
+    "ComDBResizeDatabase": [
+        {
+            "name": "HComDB",
+            "type": "HCOMDB"
+        },
+        {
+            "name": "NewSize",
+            "type": "DWORD"
+        }
+    ]
+}

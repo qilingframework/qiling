@@ -1,0 +1,52 @@
+{
+    "CreateRandomAccessStreamOnFile": [
+        {
+            "name": "filePath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "accessMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "CreateRandomAccessStreamOverStream": [
+        {
+            "name": "stream",
+            "type": "IStream"
+        },
+        {
+            "name": "options",
+            "type": "BSOS_OPTIONS"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "CreateStreamOverRandomAccessStream": [
+        {
+            "name": "randomAccessStream",
+            "type": "IUnknown"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ]
+}

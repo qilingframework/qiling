@@ -1,0 +1,38 @@
+{
+    "HtmlHelpA": [
+        {
+            "name": "hwndCaller",
+            "type": "HWND"
+        },
+        {
+            "name": "pszFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "uCommand",
+            "type": "UINT"
+        },
+        {
+            "name": "dwData",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "HtmlHelpW": [
+        {
+            "name": "hwndCaller",
+            "type": "HWND"
+        },
+        {
+            "name": "pszFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "uCommand",
+            "type": "UINT"
+        },
+        {
+            "name": "dwData",
+            "type": "DWORD_PTR"
+        }
+    ]
+}

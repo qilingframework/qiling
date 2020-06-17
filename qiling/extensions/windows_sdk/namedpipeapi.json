@@ -1,0 +1,138 @@
+{
+    "CreatePipe": [
+        {
+            "name": "hReadPipe",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "hWritePipe",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "lpPipeAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "ConnectNamedPipe": [
+        {
+            "name": "hNamedPipe",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "DisconnectNamedPipe": [
+        {
+            "name": "hNamedPipe",
+            "type": "HANDLE"
+        }
+    ],
+    "SetNamedPipeHandleState": [
+        {
+            "name": "hNamedPipe",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMode",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpMaxCollectionCount",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpCollectDataTimeout",
+            "type": "LPDWORD"
+        }
+    ],
+    "PeekNamedPipe": [
+        {
+            "name": "hNamedPipe",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesRead",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpTotalBytesAvail",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpBytesLeftThisMessage",
+            "type": "LPDWORD"
+        }
+    ],
+    "TransactNamedPipe": [
+        {
+            "name": "hNamedPipe",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOutBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nOutBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesRead",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "ImpersonateNamedPipeClient": [
+        {
+            "name": "hNamedPipe",
+            "type": "HANDLE"
+        }
+    ],
+    "GetNamedPipeInfo": [
+        {
+            "name": "hNamedPipe",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpFlags",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpOutBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpInBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpMaxInstances",
+            "type": "LPDWORD"
+        }
+    ]
+}

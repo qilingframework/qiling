@@ -1,0 +1,38 @@
+{
+    "WMCheckURLExtension": [
+        {
+            "name": "pwszURL",
+            "type": "LPCWSTR"
+        }
+    ],
+    "WMCheckURLScheme": [
+        {
+            "name": "pwszURLScheme",
+            "type": "LPCWSTR"
+        }
+    ],
+    "WMValidateData": [
+        {
+            "name": "pbData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdwDataSize",
+            "type": "DWORD"
+        }
+    ],
+    "WMIsAvailableOffline": [
+        {
+            "name": "pwszURL",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszLanguage",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pfIsAvailableOffline",
+            "type": "BOOL"
+        }
+    ]
+}

@@ -1,0 +1,32 @@
+{
+    "CreatePropertySheetPageA": [
+        {
+            "name": "constPropSheetPagePointer",
+            "type": "LPCPROPSHEETPAGEA"
+        }
+    ],
+    "CreatePropertySheetPageW": [
+        {
+            "name": "constPropSheetPagePointer",
+            "type": "LPCPROPSHEETPAGEW"
+        }
+    ],
+    "DestroyPropertySheetPage": [
+        {
+            "name": "VOID",
+            "type": "HPROPSHEETPAGE"
+        }
+    ],
+    "PropertySheetA": [
+        {
+            "name": "VOID",
+            "type": "LPCPROPSHEETHEADERA"
+        }
+    ],
+    "PropertySheetW": [
+        {
+            "name": "VOID",
+            "type": "LPCPROPSHEETHEADERW"
+        }
+    ]
+}

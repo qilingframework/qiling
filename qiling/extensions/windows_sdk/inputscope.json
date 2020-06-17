@@ -1,0 +1,78 @@
+{
+    "SetInputScope": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "inputscope",
+            "type": "InputScope"
+        }
+    ],
+    "SetInputScopes": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pInputScopes",
+            "type": "InputScope"
+        },
+        {
+            "name": "cInputScopes",
+            "type": "UINT"
+        },
+        {
+            "name": "ppszPhraseList",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cPhrases",
+            "type": "UINT"
+        },
+        {
+            "name": "pszRegExp",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pszSRGS",
+            "type": "PWSTR"
+        }
+    ],
+    "SetInputScopeXML": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszXML",
+            "type": "PWSTR"
+        }
+    ],
+    "SetInputScopes2": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pInputScopes",
+            "type": "InputScope"
+        },
+        {
+            "name": "cInputScopes",
+            "type": "UINT"
+        },
+        {
+            "name": "pEnumString",
+            "type": "IEnumString"
+        },
+        {
+            "name": "pszRegExp",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pszSRGS",
+            "type": "PWSTR"
+        }
+    ]
+}

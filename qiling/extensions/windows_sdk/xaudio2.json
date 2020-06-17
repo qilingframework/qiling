@@ -1,0 +1,16 @@
+{
+    "XAudio2Create": [
+        {
+            "name": "ppXAudio2",
+            "type": "IXAudio2"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT32"
+        },
+        {
+            "name": "XAudio2Processor",
+            "type": "XAUDIO2_PROCESSOR"
+        }
+    ]
+}

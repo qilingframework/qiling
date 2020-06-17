@@ -1,0 +1,182 @@
+{
+    "SaferGetPolicyInformation": [
+        {
+            "name": "dwScopeId",
+            "type": "DWORD"
+        },
+        {
+            "name": "SaferPolicyInfoClass",
+            "type": "SAFER_POLICY_INFO_CLASS"
+        },
+        {
+            "name": "InfoBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "InfoBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "InfoBufferRetSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "SaferSetPolicyInformation": [
+        {
+            "name": "dwScopeId",
+            "type": "DWORD"
+        },
+        {
+            "name": "SaferPolicyInfoClass",
+            "type": "SAFER_POLICY_INFO_CLASS"
+        },
+        {
+            "name": "InfoBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "InfoBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "SaferCreateLevel": [
+        {
+            "name": "dwScopeId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwLevelId",
+            "type": "DWORD"
+        },
+        {
+            "name": "OpenFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pLevelHandle",
+            "type": "SAFER_LEVEL_HANDLE"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "SaferCloseLevel": [
+        {
+            "name": "hLevelHandle",
+            "type": "SAFER_LEVEL_HANDLE"
+        }
+    ],
+    "SaferIdentifyLevel": [
+        {
+            "name": "dwNumProperties",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCodeProperties",
+            "type": "PSAFER_CODE_PROPERTIES"
+        },
+        {
+            "name": "pLevelHandle",
+            "type": "SAFER_LEVEL_HANDLE"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "SaferComputeTokenFromLevel": [
+        {
+            "name": "LevelHandle",
+            "type": "SAFER_LEVEL_HANDLE"
+        },
+        {
+            "name": "InAccessToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "OutAccessToken",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "SaferGetLevelInformation": [
+        {
+            "name": "LevelHandle",
+            "type": "SAFER_LEVEL_HANDLE"
+        },
+        {
+            "name": "dwInfoType",
+            "type": "SAFER_OBJECT_INFO_CLASS"
+        },
+        {
+            "name": "lpQueryBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwOutBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "SaferSetLevelInformation": [
+        {
+            "name": "LevelHandle",
+            "type": "SAFER_LEVEL_HANDLE"
+        },
+        {
+            "name": "dwInfoType",
+            "type": "SAFER_OBJECT_INFO_CLASS"
+        },
+        {
+            "name": "lpQueryBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwInBufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "SaferRecordEventLogEntry": [
+        {
+            "name": "hLevel",
+            "type": "SAFER_LEVEL_HANDLE"
+        },
+        {
+            "name": "szTargetPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "SaferiIsExecutableFileType": [
+        {
+            "name": "szFullPathname",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "bFromShellExecute",
+            "type": "BOOLEAN"
+        }
+    ]
+}

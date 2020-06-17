@@ -1,0 +1,174 @@
+{
+    "EventRegister": [
+        {
+            "name": "ProviderId",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "EnableCallback",
+            "type": "PENABLECALLBACK"
+        },
+        {
+            "name": "CallbackContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "RegHandle",
+            "type": "PREGHANDLE"
+        }
+    ],
+    "EventUnregister": [
+        {
+            "name": "RegHandle",
+            "type": "REGHANDLE"
+        }
+    ],
+    "EventSetInformation": [
+        {
+            "name": "RegHandle",
+            "type": "REGHANDLE"
+        },
+        {
+            "name": "InformationClass",
+            "type": "EVENT_INFO_CLASS"
+        },
+        {
+            "name": "EventInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "InformationLength",
+            "type": "ULONG"
+        }
+    ],
+    "EventEnabled": [
+        {
+            "name": "RegHandle",
+            "type": "REGHANDLE"
+        },
+        {
+            "name": "EventDescriptor",
+            "type": "PCEVENT_DESCRIPTOR"
+        }
+    ],
+    "EventProviderEnabled": [
+        {
+            "name": "RegHandle",
+            "type": "REGHANDLE"
+        },
+        {
+            "name": "Level",
+            "type": "UCHAR"
+        },
+        {
+            "name": "Keyword",
+            "type": "ULONGLONG"
+        }
+    ],
+    "EventWrite": [
+        {
+            "name": "RegHandle",
+            "type": "REGHANDLE"
+        },
+        {
+            "name": "EventDescriptor",
+            "type": "PCEVENT_DESCRIPTOR"
+        },
+        {
+            "name": "UserDataCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "UserData",
+            "type": "PEVENT_DATA_DESCRIPTOR"
+        }
+    ],
+    "EventWriteTransfer": [
+        {
+            "name": "RegHandle",
+            "type": "REGHANDLE"
+        },
+        {
+            "name": "EventDescriptor",
+            "type": "PCEVENT_DESCRIPTOR"
+        },
+        {
+            "name": "ActivityId",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "RelatedActivityId",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "UserDataCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "UserData",
+            "type": "PEVENT_DATA_DESCRIPTOR"
+        }
+    ],
+    "EventWriteEx": [
+        {
+            "name": "RegHandle",
+            "type": "REGHANDLE"
+        },
+        {
+            "name": "EventDescriptor",
+            "type": "PCEVENT_DESCRIPTOR"
+        },
+        {
+            "name": "Filter",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        },
+        {
+            "name": "ActivityId",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "RelatedActivityId",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "UserDataCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "UserData",
+            "type": "PEVENT_DATA_DESCRIPTOR"
+        }
+    ],
+    "EventWriteString": [
+        {
+            "name": "RegHandle",
+            "type": "REGHANDLE"
+        },
+        {
+            "name": "Level",
+            "type": "UCHAR"
+        },
+        {
+            "name": "Keyword",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "String",
+            "type": "PCWSTR"
+        }
+    ],
+    "EventActivityIdControl": [
+        {
+            "name": "ControlCode",
+            "type": "ULONG"
+        },
+        {
+            "name": "ActivityId",
+            "type": "LPGUID"
+        }
+    ]
+}

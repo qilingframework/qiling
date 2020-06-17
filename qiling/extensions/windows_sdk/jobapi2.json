@@ -1,0 +1,96 @@
+{
+    "FreeMemoryJobObject": [
+        {
+            "name": "Buffer",
+            "type": "void"
+        }
+    ],
+    "AssignProcessToJobObject": [
+        {
+            "name": "hJob",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        }
+    ],
+    "TerminateJobObject": [
+        {
+            "name": "hJob",
+            "type": "HANDLE"
+        },
+        {
+            "name": "uExitCode",
+            "type": "UINT"
+        }
+    ],
+    "SetInformationJobObject": [
+        {
+            "name": "hJob",
+            "type": "HANDLE"
+        },
+        {
+            "name": "JobObjectInformationClass",
+            "type": "JOBOBJECTINFOCLASS"
+        },
+        {
+            "name": "lpJobObjectInformation",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbJobObjectInformationLength",
+            "type": "DWORD"
+        }
+    ],
+    "SetIoRateControlInformationJobObject": [
+        {
+            "name": "hJob",
+            "type": "HANDLE"
+        },
+        {
+            "name": "IoRateControlInfo",
+            "type": "JOBOBJECT_IO_RATE_CONTROL_INFORMATION"
+        }
+    ],
+    "QueryInformationJobObject": [
+        {
+            "name": "hJob",
+            "type": "HANDLE"
+        },
+        {
+            "name": "JobObjectInformationClass",
+            "type": "JOBOBJECTINFOCLASS"
+        },
+        {
+            "name": "lpJobObjectInformation",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbJobObjectInformationLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpReturnLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "QueryIoRateControlInformationJobObject": [
+        {
+            "name": "hJob",
+            "type": "HANDLE"
+        },
+        {
+            "name": "VolumeName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "InfoBlocks",
+            "type": "JOBOBJECT_IO_RATE_CONTROL_INFORMATION"
+        },
+        {
+            "name": "InfoBlockCount",
+            "type": "ULONG"
+        }
+    ]
+}

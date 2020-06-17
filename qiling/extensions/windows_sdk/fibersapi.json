@@ -1,0 +1,36 @@
+{
+    "FlsAlloc": [
+        {
+            "name": "lpCallback",
+            "type": "PFLS_CALLBACK_FUNCTION"
+        }
+    ],
+    "FlsGetValue": [
+        {
+            "name": "dwFlsIndex",
+            "type": "DWORD"
+        }
+    ],
+    "FlsSetValue": [
+        {
+            "name": "dwFlsIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpFlsData",
+            "type": "PVOID"
+        }
+    ],
+    "FlsFree": [
+        {
+            "name": "dwFlsIndex",
+            "type": "DWORD"
+        }
+    ],
+    "IsThreadAFiber": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ]
+}

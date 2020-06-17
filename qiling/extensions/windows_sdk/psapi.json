@@ -1,0 +1,364 @@
+{
+    "K32EnumProcesses": [
+        {
+            "name": "lpidProcess",
+            "type": "DWORD"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpcbNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "K32EnumProcessModules": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lphModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpcbNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "K32EnumProcessModulesEx": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lphModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpcbNeeded",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFilterFlag",
+            "type": "DWORD"
+        }
+    ],
+    "K32GetModuleBaseNameA": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpBaseName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "K32GetModuleBaseNameW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpBaseName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "K32GetModuleFileNameExA": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpFilename",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "K32GetModuleFileNameExW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpFilename",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "K32GetModuleInformation": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpmodinfo",
+            "type": "LPMODULEINFO"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        }
+    ],
+    "K32EmptyWorkingSet": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        }
+    ],
+    "K32QueryWorkingSet": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pv",
+            "type": "PVOID"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        }
+    ],
+    "K32QueryWorkingSetEx": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pv",
+            "type": "PVOID"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        }
+    ],
+    "K32InitializeProcessForWsWatch": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        }
+    ],
+    "K32GetWsChanges": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpWatchInfo",
+            "type": "PPSAPI_WS_WATCH_INFORMATION"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        }
+    ],
+    "K32GetWsChangesEx": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpWatchInfoEx",
+            "type": "PPSAPI_WS_WATCH_INFORMATION_EX"
+        },
+        {
+            "name": "cb",
+            "type": "PDWORD"
+        }
+    ],
+    "K32GetMappedFileNameW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpv",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpFilename",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "K32GetMappedFileNameA": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpv",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpFilename",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "K32EnumDeviceDrivers": [
+        {
+            "name": "lpImageBase",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpcbNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "K32GetDeviceDriverBaseNameA": [
+        {
+            "name": "ImageBase",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpFilename",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "K32GetDeviceDriverBaseNameW": [
+        {
+            "name": "ImageBase",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpBaseName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "K32GetDeviceDriverFileNameA": [
+        {
+            "name": "ImageBase",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpFilename",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "K32GetDeviceDriverFileNameW": [
+        {
+            "name": "ImageBase",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpFilename",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "K32GetProcessMemoryInfo": [
+        {
+            "name": "Process",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppsmemCounters",
+            "type": "PPROCESS_MEMORY_COUNTERS"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        }
+    ],
+    "K32GetPerformanceInfo": [
+        {
+            "name": "pPerformanceInformation",
+            "type": "PPERFORMANCE_INFORMATION"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        }
+    ],
+    "K32EnumPageFilesW": [
+        {
+            "name": "pCallBackRoutine",
+            "type": "PENUM_PAGE_FILE_CALLBACKW"
+        },
+        {
+            "name": "pContext",
+            "type": "LPVOID"
+        }
+    ],
+    "K32EnumPageFilesA": [
+        {
+            "name": "pCallBackRoutine",
+            "type": "PENUM_PAGE_FILE_CALLBACKA"
+        },
+        {
+            "name": "pContext",
+            "type": "LPVOID"
+        }
+    ]
+}

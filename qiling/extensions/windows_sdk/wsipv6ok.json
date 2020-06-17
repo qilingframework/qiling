@@ -1,0 +1,60 @@
+{
+    "inet_addr": [
+        {
+            "name": "cp",
+            "type": "char"
+        }
+    ],
+    "WSAAsyncGetHostByName": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "wMsg",
+            "type": "u_int"
+        },
+        {
+            "name": "name",
+            "type": "char"
+        },
+        {
+            "name": "buf",
+            "type": "char"
+        },
+        {
+            "name": "buflen",
+            "type": "int"
+        }
+    ],
+    "WSAAsyncGetHostByAddr": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "wMsg",
+            "type": "u_int"
+        },
+        {
+            "name": "addr",
+            "type": "char"
+        },
+        {
+            "name": "len",
+            "type": "int"
+        },
+        {
+            "name": "type",
+            "type": "int"
+        },
+        {
+            "name": "buf",
+            "type": "char"
+        },
+        {
+            "name": "buflen",
+            "type": "int"
+        }
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "RoGetActivatableClassRegistration": [
+        {
+            "name": "activatableClassId",
+            "type": "HSTRING"
+        },
+        {
+            "name": "activatableClassRegistration",
+            "type": "PActivatableClassRegistration"
+        }
+    ],
+    "RoGetServerActivatableClasses": [
+        {
+            "name": "serverName",
+            "type": "HSTRING"
+        },
+        {
+            "name": "activatableClassIds",
+            "type": "HSTRING"
+        },
+        {
+            "name": "count",
+            "type": "DWORD"
+        }
+    ]
+}

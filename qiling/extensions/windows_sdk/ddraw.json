@@ -1,0 +1,86 @@
+{
+    "DirectDrawEnumerateW": [
+        {
+            "name": "lpCallback",
+            "type": "LPDDENUMCALLBACKW"
+        },
+        {
+            "name": "lpContext",
+            "type": "LPVOID"
+        }
+    ],
+    "DirectDrawEnumerateExW": [
+        {
+            "name": "lpCallback",
+            "type": "LPDDENUMCALLBACKEXW"
+        },
+        {
+            "name": "lpContext",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "DirectDrawEnumerateExA": [
+        {
+            "name": "lpCallback",
+            "type": "LPDDENUMCALLBACKEXA"
+        },
+        {
+            "name": "lpContext",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "DirectDrawCreate": [
+        {
+            "name": "lpGUID",
+            "type": "GUID"
+        },
+        {
+            "name": "lplpDD",
+            "type": "LPDIRECTDRAW"
+        },
+        {
+            "name": "pUnkOuter",
+            "type": "IUnknown"
+        }
+    ],
+    "DirectDrawCreateEx": [
+        {
+            "name": "lpGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "lplpDD",
+            "type": "LPVOID"
+        },
+        {
+            "name": "iid",
+            "type": "IID"
+        },
+        {
+            "name": "pUnkOuter",
+            "type": "IUnknown"
+        }
+    ],
+    "DirectDrawCreateClipper": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpDDClipper",
+            "type": "LPDIRECTDRAWCLIPPER"
+        },
+        {
+            "name": "pUnkOuter",
+            "type": "IUnknown"
+        }
+    ]
+}

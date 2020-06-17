@@ -1,0 +1,1006 @@
+{
+    "ChangeServiceConfigA": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwServiceType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwStartType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwErrorControl",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBinaryPathName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpLoadOrderGroup",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpdwTagId",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpDependencies",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpServiceStartName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpPassword",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpDisplayName",
+            "type": "LPCSTR"
+        }
+    ],
+    "ChangeServiceConfigW": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwServiceType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwStartType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwErrorControl",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBinaryPathName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpLoadOrderGroup",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpdwTagId",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpDependencies",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpServiceStartName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDisplayName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "ChangeServiceConfig2A": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwInfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInfo",
+            "type": "LPVOID"
+        }
+    ],
+    "ChangeServiceConfig2W": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwInfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInfo",
+            "type": "LPVOID"
+        }
+    ],
+    "CloseServiceHandle": [
+        {
+            "name": "hSCObject",
+            "type": "SC_HANDLE"
+        }
+    ],
+    "ControlService": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwControl",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServiceStatus",
+            "type": "LPSERVICE_STATUS"
+        }
+    ],
+    "CreateServiceA": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpDisplayName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwServiceType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwStartType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwErrorControl",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBinaryPathName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpLoadOrderGroup",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpdwTagId",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpDependencies",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpServiceStartName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpPassword",
+            "type": "LPCSTR"
+        }
+    ],
+    "CreateServiceW": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDisplayName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwServiceType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwStartType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwErrorControl",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBinaryPathName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpLoadOrderGroup",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpdwTagId",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpDependencies",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpServiceStartName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpPassword",
+            "type": "LPCWSTR"
+        }
+    ],
+    "DeleteService": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        }
+    ],
+    "EnumDependentServicesA": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwServiceState",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServices",
+            "type": "LPENUM_SERVICE_STATUSA"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpServicesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "EnumDependentServicesW": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwServiceState",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServices",
+            "type": "LPENUM_SERVICE_STATUSW"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpServicesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "EnumServicesStatusA": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwServiceType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwServiceState",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServices",
+            "type": "LPENUM_SERVICE_STATUSA"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpServicesReturned",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpResumeHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "EnumServicesStatusW": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwServiceType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwServiceState",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServices",
+            "type": "LPENUM_SERVICE_STATUSW"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpServicesReturned",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpResumeHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "EnumServicesStatusExA": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "InfoLevel",
+            "type": "SC_ENUM_TYPE"
+        },
+        {
+            "name": "dwServiceType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwServiceState",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServices",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpServicesReturned",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpResumeHandle",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pszGroupName",
+            "type": "LPCSTR"
+        }
+    ],
+    "EnumServicesStatusExW": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "InfoLevel",
+            "type": "SC_ENUM_TYPE"
+        },
+        {
+            "name": "dwServiceType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwServiceState",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServices",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpServicesReturned",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpResumeHandle",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pszGroupName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetServiceKeyNameA": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "lpDisplayName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpcchBuffer",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetServiceKeyNameW": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "lpDisplayName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchBuffer",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetServiceDisplayNameA": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpDisplayName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpcchBuffer",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetServiceDisplayNameW": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDisplayName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchBuffer",
+            "type": "LPDWORD"
+        }
+    ],
+    "LockServiceDatabase": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        }
+    ],
+    "NotifyBootConfigStatus": [
+        {
+            "name": "BootAcceptable",
+            "type": "BOOL"
+        }
+    ],
+    "OpenSCManagerA": [
+        {
+            "name": "lpMachineName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpDatabaseName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        }
+    ],
+    "OpenSCManagerW": [
+        {
+            "name": "lpMachineName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDatabaseName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        }
+    ],
+    "OpenServiceA": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        }
+    ],
+    "OpenServiceW": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        }
+    ],
+    "QueryServiceConfigA": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "lpServiceConfig",
+            "type": "LPQUERY_SERVICE_CONFIGA"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "QueryServiceConfigW": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "lpServiceConfig",
+            "type": "LPQUERY_SERVICE_CONFIGW"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "QueryServiceConfig2A": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwInfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "QueryServiceConfig2W": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwInfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "QueryServiceLockStatusA": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "lpLockStatus",
+            "type": "LPQUERY_SERVICE_LOCK_STATUSA"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "QueryServiceLockStatusW": [
+        {
+            "name": "hSCManager",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "lpLockStatus",
+            "type": "LPQUERY_SERVICE_LOCK_STATUSW"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "QueryServiceObjectSecurity": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwSecurityInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "lpSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "QueryServiceStatus": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "lpServiceStatus",
+            "type": "LPSERVICE_STATUS"
+        }
+    ],
+    "QueryServiceStatusEx": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "InfoLevel",
+            "type": "SC_STATUS_TYPE"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbBytesNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "RegisterServiceCtrlHandlerA": [
+        {
+            "name": "lpServiceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpHandlerProc",
+            "type": "LPHANDLER_FUNCTION"
+        }
+    ],
+    "RegisterServiceCtrlHandlerW": [
+        {
+            "name": "lpServiceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpHandlerProc",
+            "type": "LPHANDLER_FUNCTION"
+        }
+    ],
+    "RegisterServiceCtrlHandlerExA": [
+        {
+            "name": "lpServiceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpHandlerProc",
+            "type": "LPHANDLER_FUNCTION_EX"
+        },
+        {
+            "name": "lpContext",
+            "type": "LPVOID"
+        }
+    ],
+    "RegisterServiceCtrlHandlerExW": [
+        {
+            "name": "lpServiceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpHandlerProc",
+            "type": "LPHANDLER_FUNCTION_EX"
+        },
+        {
+            "name": "lpContext",
+            "type": "LPVOID"
+        }
+    ],
+    "SetServiceObjectSecurity": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwSecurityInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "lpSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "SetServiceStatus": [
+        {
+            "name": "hServiceStatus",
+            "type": "SERVICE_STATUS_HANDLE"
+        },
+        {
+            "name": "lpServiceStatus",
+            "type": "LPSERVICE_STATUS"
+        }
+    ],
+    "StartServiceCtrlDispatcherA": [
+        {
+            "name": "lpServiceStartTable",
+            "type": "SERVICE_TABLE_ENTRYA"
+        }
+    ],
+    "StartServiceCtrlDispatcherW": [
+        {
+            "name": "lpServiceStartTable",
+            "type": "SERVICE_TABLE_ENTRYW"
+        }
+    ],
+    "StartServiceA": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwNumServiceArgs",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServiceArgVectors",
+            "type": "LPCSTR"
+        }
+    ],
+    "StartServiceW": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwNumServiceArgs",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServiceArgVectors",
+            "type": "LPCWSTR"
+        }
+    ],
+    "UnlockServiceDatabase": [
+        {
+            "name": "ScLock",
+            "type": "SC_LOCK"
+        }
+    ],
+    "NotifyServiceStatusChangeA": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwNotifyMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "pNotifyBuffer",
+            "type": "PSERVICE_NOTIFYA"
+        }
+    ],
+    "NotifyServiceStatusChangeW": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwNotifyMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "pNotifyBuffer",
+            "type": "PSERVICE_NOTIFYW"
+        }
+    ],
+    "ControlServiceExA": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwControl",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwInfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "pControlParams",
+            "type": "PVOID"
+        }
+    ],
+    "ControlServiceExW": [
+        {
+            "name": "hService",
+            "type": "SC_HANDLE"
+        },
+        {
+            "name": "dwControl",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwInfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "pControlParams",
+            "type": "PVOID"
+        }
+    ],
+    "QueryServiceDynamicInformation": [
+        {
+            "name": "hServiceStatus",
+            "type": "SERVICE_STATUS_HANDLE"
+        },
+        {
+            "name": "dwInfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppDynamicInfo",
+            "type": "PVOID"
+        }
+    ],
+    "GetServiceRegistryStateKey": [
+        {
+            "name": "ServiceStatusHandle",
+            "type": "SERVICE_STATUS_HANDLE"
+        },
+        {
+            "name": "StateType",
+            "type": "SERVICE_REGISTRY_STATE_TYPE"
+        },
+        {
+            "name": "AccessMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "ServiceStateKey",
+            "type": "HKEY"
+        }
+    ],
+    "GetServiceDirectory": [
+        {
+            "name": "hServiceStatus",
+            "type": "SERVICE_STATUS_HANDLE"
+        },
+        {
+            "name": "eDirectoryType",
+            "type": "SERVICE_DIRECTORY_TYPE"
+        },
+        {
+            "name": "lpPathBuffer",
+            "type": "PWCHAR"
+        },
+        {
+            "name": "cchPathBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpcchRequiredBufferLength",
+            "type": "DWORD"
+        }
+    ]
+}

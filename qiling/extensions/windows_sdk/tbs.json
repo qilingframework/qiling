@@ -1,0 +1,132 @@
+{
+    "Tbsi_Context_Create": [
+        {
+            "name": "pContextParams",
+            "type": "PCTBS_CONTEXT_PARAMS"
+        },
+        {
+            "name": "phContext",
+            "type": "PTBS_HCONTEXT"
+        }
+    ],
+    "Tbsip_Context_Close": [
+        {
+            "name": "hContext",
+            "type": "TBS_HCONTEXT"
+        }
+    ],
+    "Tbsip_Submit_Command": [
+        {
+            "name": "hContext",
+            "type": "TBS_HCONTEXT"
+        },
+        {
+            "name": "Locality",
+            "type": "TBS_COMMAND_LOCALITY"
+        },
+        {
+            "name": "Priority",
+            "type": "TBS_COMMAND_PRIORITY"
+        },
+        {
+            "name": "pabCommand",
+            "type": "PCBYTE"
+        },
+        {
+            "name": "cbCommand",
+            "type": "UINT32"
+        },
+        {
+            "name": "pabResult",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pcbResult",
+            "type": "PUINT32"
+        }
+    ],
+    "Tbsip_Cancel_Commands": [
+        {
+            "name": "hContext",
+            "type": "TBS_HCONTEXT"
+        }
+    ],
+    "Tbsi_Physical_Presence_Command": [
+        {
+            "name": "hContext",
+            "type": "TBS_HCONTEXT"
+        },
+        {
+            "name": "pabInput",
+            "type": "PCBYTE"
+        },
+        {
+            "name": "cbInput",
+            "type": "UINT32"
+        },
+        {
+            "name": "pabOutput",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pcbOutput",
+            "type": "PUINT32"
+        }
+    ],
+    "Tbsi_Get_TCG_Log": [
+        {
+            "name": "hContext",
+            "type": "TBS_HCONTEXT"
+        },
+        {
+            "name": "pOutputBuf",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pOutputBufLen",
+            "type": "PUINT32"
+        }
+    ],
+    "Tbsi_GetDeviceInfo": [
+        {
+            "name": "Size",
+            "type": "UINT32"
+        },
+        {
+            "name": "Info",
+            "type": "PVOID"
+        }
+    ],
+    "Tbsi_Get_OwnerAuth": [
+        {
+            "name": "hContext",
+            "type": "TBS_HCONTEXT"
+        },
+        {
+            "name": "ownerauthType",
+            "type": "TBS_OWNERAUTH_TYPE"
+        },
+        {
+            "name": "pOutputBuf",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pOutputBufLen",
+            "type": "PUINT32"
+        }
+    ],
+    "Tbsi_Get_TCG_Log_Ex": [
+        {
+            "name": "logType",
+            "type": "UINT32"
+        },
+        {
+            "name": "pbOutput",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pcbOutput",
+            "type": "PUINT32"
+        }
+    ]
+}

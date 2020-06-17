@@ -1,0 +1,16 @@
+{
+    "WNetSetLastErrorA": [
+        {
+            "name": "err",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpError",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpProviders",
+            "type": "LPSTR"
+        }
+    ]
+}

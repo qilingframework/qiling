@@ -1,0 +1,14 @@
+{
+    "QueryPerformanceCounter": [
+        {
+            "name": "lpPerformanceCount",
+            "type": "LARGE_INTEGER"
+        }
+    ],
+    "QueryPerformanceFrequency": [
+        {
+            "name": "lpFrequency",
+            "type": "LARGE_INTEGER"
+        }
+    ]
+}

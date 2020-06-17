@@ -1,0 +1,512 @@
+{
+    "CreateTransaction": [
+        {
+            "name": "lpTransactionAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "UOW",
+            "type": "LPGUID"
+        },
+        {
+            "name": "CreateOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "IsolationLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "IsolationFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Timeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "Description",
+            "type": "LPWSTR"
+        }
+    ],
+    "OpenTransaction": [
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "TransactionId",
+            "type": "LPGUID"
+        }
+    ],
+    "CommitTransaction": [
+        {
+            "name": "TransactionHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "CommitTransactionAsync": [
+        {
+            "name": "TransactionHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "RollbackTransaction": [
+        {
+            "name": "TransactionHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "RollbackTransactionAsync": [
+        {
+            "name": "TransactionHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "GetTransactionId": [
+        {
+            "name": "TransactionHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TransactionId",
+            "type": "LPGUID"
+        }
+    ],
+    "GetTransactionInformation": [
+        {
+            "name": "TransactionHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Outcome",
+            "type": "PDWORD"
+        },
+        {
+            "name": "IsolationLevel",
+            "type": "PDWORD"
+        },
+        {
+            "name": "IsolationFlags",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Timeout",
+            "type": "PDWORD"
+        },
+        {
+            "name": "BufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "Description",
+            "type": "LPWSTR"
+        }
+    ],
+    "SetTransactionInformation": [
+        {
+            "name": "TransactionHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "IsolationLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "IsolationFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Timeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "Description",
+            "type": "LPWSTR"
+        }
+    ],
+    "CreateTransactionManager": [
+        {
+            "name": "lpTransactionAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "LogFileName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "CreateOptions",
+            "type": "ULONG"
+        },
+        {
+            "name": "CommitStrength",
+            "type": "ULONG"
+        }
+    ],
+    "OpenTransactionManager": [
+        {
+            "name": "LogFileName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "DesiredAccess",
+            "type": "ACCESS_MASK"
+        },
+        {
+            "name": "OpenOptions",
+            "type": "ULONG"
+        }
+    ],
+    "OpenTransactionManagerById": [
+        {
+            "name": "TransactionManagerId",
+            "type": "LPGUID"
+        },
+        {
+            "name": "DesiredAccess",
+            "type": "ACCESS_MASK"
+        },
+        {
+            "name": "OpenOptions",
+            "type": "ULONG"
+        }
+    ],
+    "RenameTransactionManager": [
+        {
+            "name": "LogFileName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ExistingTransactionManagerGuid",
+            "type": "LPGUID"
+        }
+    ],
+    "RollforwardTransactionManager": [
+        {
+            "name": "TransactionManagerHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TmVirtualClock",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "RecoverTransactionManager": [
+        {
+            "name": "TransactionManagerHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "GetCurrentClockTransactionManager": [
+        {
+            "name": "TransactionManagerHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TmVirtualClock",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "GetTransactionManagerId": [
+        {
+            "name": "TransactionManagerHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TransactionManagerId",
+            "type": "LPGUID"
+        }
+    ],
+    "CreateResourceManager": [
+        {
+            "name": "lpResourceManagerAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "ResourceManagerId",
+            "type": "LPGUID"
+        },
+        {
+            "name": "CreateOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "TmHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Description",
+            "type": "LPWSTR"
+        }
+    ],
+    "OpenResourceManager": [
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "TmHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ResourceManagerId",
+            "type": "LPGUID"
+        }
+    ],
+    "RecoverResourceManager": [
+        {
+            "name": "ResourceManagerHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "GetNotificationResourceManager": [
+        {
+            "name": "ResourceManagerHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TransactionNotification",
+            "type": "PTRANSACTION_NOTIFICATION"
+        },
+        {
+            "name": "NotificationLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwMilliseconds",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnLength",
+            "type": "PULONG"
+        }
+    ],
+    "GetNotificationResourceManagerAsync": [
+        {
+            "name": "ResourceManagerHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TransactionNotification",
+            "type": "PTRANSACTION_NOTIFICATION"
+        },
+        {
+            "name": "TransactionNotificationLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "ReturnLength",
+            "type": "PULONG"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "SetResourceManagerCompletionPort": [
+        {
+            "name": "ResourceManagerHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "IoCompletionPortHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CompletionKey",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "CreateEnlistment": [
+        {
+            "name": "lpEnlistmentAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "ResourceManagerHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TransactionHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NotificationMask",
+            "type": "NOTIFICATION_MASK"
+        },
+        {
+            "name": "CreateOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "EnlistmentKey",
+            "type": "PVOID"
+        }
+    ],
+    "OpenEnlistment": [
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "ResourceManagerHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "EnlistmentId",
+            "type": "LPGUID"
+        }
+    ],
+    "RecoverEnlistment": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "EnlistmentKey",
+            "type": "PVOID"
+        }
+    ],
+    "GetEnlistmentRecoveryInformation": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "BufferUsed",
+            "type": "PULONG"
+        }
+    ],
+    "GetEnlistmentId": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "EnlistmentId",
+            "type": "LPGUID"
+        }
+    ],
+    "SetEnlistmentRecoveryInformation": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PVOID"
+        }
+    ],
+    "PrepareEnlistment": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TmVirtualClock",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "PrePrepareEnlistment": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TmVirtualClock",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "CommitEnlistment": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TmVirtualClock",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "RollbackEnlistment": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TmVirtualClock",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "PrePrepareComplete": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TmVirtualClock",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "PrepareComplete": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TmVirtualClock",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "ReadOnlyEnlistment": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TmVirtualClock",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "CommitComplete": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TmVirtualClock",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "RollbackComplete": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TmVirtualClock",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "SinglePhaseReject": [
+        {
+            "name": "EnlistmentHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TmVirtualClock",
+            "type": "PLARGE_INTEGER"
+        }
+    ]
+}

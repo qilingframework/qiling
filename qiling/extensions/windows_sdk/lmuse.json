@@ -1,0 +1,82 @@
+{
+    "NetUseAdd": [
+        {
+            "name": "servername",
+            "type": "LPTSTR"
+        },
+        {
+            "name": "LevelFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetUseDel": [
+        {
+            "name": "UncServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "UseName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ForceLevelFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NetUseEnum": [
+        {
+            "name": "UncServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "LevelFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "BufPtr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "PreferedMaximumSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "EntriesRead",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "TotalEntries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "ResumeHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetUseGetInfo": [
+        {
+            "name": "UncServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "UseName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "LevelFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ]
+}

@@ -1,0 +1,274 @@
+{
+    "RpcAsyncRegisterInfo": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        }
+    ],
+    "RpcAsyncInitializeHandle": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        },
+        {
+            "name": "Size",
+            "type": "unsigned int"
+        }
+    ],
+    "RpcAsyncGetCallStatus": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        }
+    ],
+    "RpcAsyncCompleteCall": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        },
+        {
+            "name": "Reply",
+            "type": "void"
+        }
+    ],
+    "RpcAsyncAbortCall": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        },
+        {
+            "name": "ExceptionCode",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcAsyncCancelCall": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        },
+        {
+            "name": "fAbort",
+            "type": "BOOL"
+        }
+    ],
+    "RpcErrorStartEnumeration": [
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        }
+    ],
+    "RpcErrorGetNextRecord": [
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        },
+        {
+            "name": "CopyStrings",
+            "type": "BOOL"
+        },
+        {
+            "name": "ErrorInfo",
+            "type": "RPC_EXTENDED_ERROR_INFO"
+        }
+    ],
+    "RpcErrorEndEnumeration": [
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        }
+    ],
+    "RpcErrorResetEnumeration": [
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        }
+    ],
+    "RpcErrorGetNumberOfRecords": [
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        },
+        {
+            "name": "Records",
+            "type": "int"
+        }
+    ],
+    "RpcErrorSaveErrorInfo": [
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        },
+        {
+            "name": "ErrorBlob",
+            "type": "PVOID"
+        },
+        {
+            "name": "BlobSize",
+            "type": "size_t"
+        }
+    ],
+    "RpcErrorLoadErrorInfo": [
+        {
+            "name": "ErrorBlob",
+            "type": "PVOID"
+        },
+        {
+            "name": "BlobSize",
+            "type": "size_t"
+        },
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        }
+    ],
+    "RpcErrorAddRecord": [
+        {
+            "name": "ErrorInfo",
+            "type": "RPC_EXTENDED_ERROR_INFO"
+        }
+    ],
+    "RpcErrorClearInformation": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcGetAuthorizationContextForClient": [
+        {
+            "name": "ClientBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ImpersonateOnReturn",
+            "type": "BOOL"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "pExpirationTime",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "Reserved2",
+            "type": "LUID"
+        },
+        {
+            "name": "Reserved3",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved4",
+            "type": "PVOID"
+        },
+        {
+            "name": "pAuthzClientContext",
+            "type": "PVOID"
+        }
+    ],
+    "RpcFreeAuthorizationContext": [
+        {
+            "name": "pAuthzClientContext",
+            "type": "PVOID"
+        }
+    ],
+    "RpcSsContextLockExclusive": [
+        {
+            "name": "ServerBindingHandle",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "RpcSsContextLockShared": [
+        {
+            "name": "ServerBindingHandle",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "RpcServerInqCallAttributesW": [
+        {
+            "name": "ClientBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "RpcCallAttributes",
+            "type": "void"
+        }
+    ],
+    "RpcServerInqCallAttributesA": [
+        {
+            "name": "ClientBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "RpcCallAttributes",
+            "type": "void"
+        }
+    ],
+    "RpcServerSubscribeForNotification": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Notification",
+            "type": "RPC_NOTIFICATIONS"
+        },
+        {
+            "name": "NotificationType",
+            "type": "RPC_NOTIFICATION_TYPES"
+        },
+        {
+            "name": "NotificationInfo",
+            "type": "RPC_ASYNC_NOTIFICATION_INFO"
+        }
+    ],
+    "RpcServerUnsubscribeForNotification": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Notification",
+            "type": "RPC_NOTIFICATIONS"
+        },
+        {
+            "name": "NotificationsQueued",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcBindingBind": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        },
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        }
+    ],
+    "RpcBindingUnbind": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "I_RpcExceptionFilter": [
+        {
+            "name": "ExceptionCode",
+            "type": "unsigned long"
+        }
+    ]
+}

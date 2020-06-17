@@ -1,0 +1,64 @@
+{
+    "D2D1CreateFactory": [
+        {
+            "name": "factoryType",
+            "type": "D2D1_FACTORY_TYPE"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "pFactoryOptions",
+            "type": "D2D1_FACTORY_OPTIONS"
+        },
+        {
+            "name": "ppIFactory",
+            "type": "void"
+        }
+    ],
+    "D2D1MakeRotateMatrix": [
+        {
+            "name": "angle",
+            "type": "FLOAT"
+        },
+        {
+            "name": "center",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "matrix",
+            "type": "D2D1_MATRIX_3X2_F"
+        }
+    ],
+    "D2D1MakeSkewMatrix": [
+        {
+            "name": "angleX",
+            "type": "FLOAT"
+        },
+        {
+            "name": "angleY",
+            "type": "FLOAT"
+        },
+        {
+            "name": "center",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "matrix",
+            "type": "D2D1_MATRIX_3X2_F"
+        }
+    ],
+    "D2D1IsMatrixInvertible": [
+        {
+            "name": "matrix",
+            "type": "D2D1_MATRIX_3X2_F"
+        }
+    ],
+    "D2D1InvertMatrix": [
+        {
+            "name": "matrix",
+            "type": "D2D1_MATRIX_3X2_F"
+        }
+    ]
+}

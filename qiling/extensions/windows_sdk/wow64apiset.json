@@ -1,0 +1,96 @@
+{
+    "Wow64DisableWow64FsRedirection": [
+        {
+            "name": "OldValue",
+            "type": "PVOID"
+        }
+    ],
+    "Wow64RevertWow64FsRedirection": [
+        {
+            "name": "OlValue",
+            "type": "PVOID"
+        }
+    ],
+    "IsWow64Process": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Wow64Process",
+            "type": "PBOOL"
+        }
+    ],
+    "GetSystemWow64DirectoryA": [
+        {
+            "name": "lpBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "uSize",
+            "type": "UINT"
+        }
+    ],
+    "GetSystemWow64DirectoryW": [
+        {
+            "name": "lpBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "uSize",
+            "type": "UINT"
+        }
+    ],
+    "IsWow64Process2": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pProcessMachine",
+            "type": "USHORT"
+        },
+        {
+            "name": "pNativeMachine",
+            "type": "USHORT"
+        }
+    ],
+    "GetSystemWow64Directory2A": [
+        {
+            "name": "lpBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "uSize",
+            "type": "UINT"
+        },
+        {
+            "name": "ImageFileMachineType",
+            "type": "WORD"
+        }
+    ],
+    "GetSystemWow64Directory2W": [
+        {
+            "name": "lpBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "uSize",
+            "type": "UINT"
+        },
+        {
+            "name": "ImageFileMachineType",
+            "type": "WORD"
+        }
+    ],
+    "IsWow64GuestMachineSupported": [
+        {
+            "name": "WowGuestMachine",
+            "type": "USHORT"
+        },
+        {
+            "name": "MachineIsSupported",
+            "type": "BOOL"
+        }
+    ]
+}

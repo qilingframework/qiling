@@ -1,0 +1,374 @@
+{
+    "DisableThreadLibraryCalls": [
+        {
+            "name": "hLibModule",
+            "type": "HMODULE"
+        }
+    ],
+    "FindStringOrdinal": [
+        {
+            "name": "dwFindStringOrdinalFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpStringSource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchSource",
+            "type": "int"
+        },
+        {
+            "name": "lpStringValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchValue",
+            "type": "int"
+        },
+        {
+            "name": "bIgnoreCase",
+            "type": "BOOL"
+        }
+    ],
+    "FreeLibrary": [
+        {
+            "name": "hLibModule",
+            "type": "HMODULE"
+        }
+    ],
+    "FreeLibraryAndExitThread": [
+        {
+            "name": "hLibModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "dwExitCode",
+            "type": "DWORD"
+        }
+    ],
+    "FreeResource": [
+        {
+            "name": "hResData",
+            "type": "HGLOBAL"
+        }
+    ],
+    "GetModuleFileNameA": [
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpFilename",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "GetModuleFileNameW": [
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpFilename",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "GetModuleHandleA": [
+        {
+            "name": "lpModuleName",
+            "type": "LPCSTR"
+        }
+    ],
+    "GetModuleHandleW": [
+        {
+            "name": "lpModuleName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetModuleHandleExA": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpModuleName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "phModule",
+            "type": "HMODULE"
+        }
+    ],
+    "GetModuleHandleExW": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpModuleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phModule",
+            "type": "HMODULE"
+        }
+    ],
+    "GetProcAddress": [
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpProcName",
+            "type": "LPCSTR"
+        }
+    ],
+    "LoadLibraryExA": [
+        {
+            "name": "lpLibFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "LoadLibraryExW": [
+        {
+            "name": "lpLibFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "LoadResource": [
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "hResInfo",
+            "type": "HRSRC"
+        }
+    ],
+    "LockResource": [
+        {
+            "name": "hResData",
+            "type": "HGLOBAL"
+        }
+    ],
+    "SizeofResource": [
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "hResInfo",
+            "type": "HRSRC"
+        }
+    ],
+    "AddDllDirectory": [
+        {
+            "name": "NewDirectory",
+            "type": "PCWSTR"
+        }
+    ],
+    "RemoveDllDirectory": [
+        {
+            "name": "Cookie",
+            "type": "DLL_DIRECTORY_COOKIE"
+        }
+    ],
+    "SetDefaultDllDirectories": [
+        {
+            "name": "DirectoryFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumResourceLanguagesExA": [
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpType",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpEnumFunc",
+            "type": "ENUMRESLANGPROCA"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG_PTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "LangId",
+            "type": "LANGID"
+        }
+    ],
+    "EnumResourceLanguagesExW": [
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpType",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpEnumFunc",
+            "type": "ENUMRESLANGPROCW"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG_PTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "LangId",
+            "type": "LANGID"
+        }
+    ],
+    "EnumResourceNamesExA": [
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpType",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpEnumFunc",
+            "type": "ENUMRESNAMEPROCA"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG_PTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "LangId",
+            "type": "LANGID"
+        }
+    ],
+    "EnumResourceNamesExW": [
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpType",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpEnumFunc",
+            "type": "ENUMRESNAMEPROCW"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG_PTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "LangId",
+            "type": "LANGID"
+        }
+    ],
+    "EnumResourceTypesExA": [
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpEnumFunc",
+            "type": "ENUMRESTYPEPROCA"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG_PTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "LangId",
+            "type": "LANGID"
+        }
+    ],
+    "EnumResourceTypesExW": [
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpEnumFunc",
+            "type": "ENUMRESTYPEPROCW"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG_PTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "LangId",
+            "type": "LANGID"
+        }
+    ],
+    "LoadLibraryA": [
+        {
+            "name": "lpLibFileName",
+            "type": "LPCSTR"
+        }
+    ],
+    "LoadLibraryW": [
+        {
+            "name": "lpLibFileName",
+            "type": "LPCWSTR"
+        }
+    ]
+}

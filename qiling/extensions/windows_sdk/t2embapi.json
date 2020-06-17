@@ -1,0 +1,342 @@
+{
+    "TTEmbedFont": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulCharSet",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulPrivStatus",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulStatus",
+            "type": "ULONG"
+        },
+        {
+            "name": "lpfnWriteToStream",
+            "type": "WRITEEMBEDPROC"
+        },
+        {
+            "name": "lpvWriteStream",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pusCharCodeSet",
+            "type": "USHORT"
+        },
+        {
+            "name": "usCharCodeCount",
+            "type": "USHORT"
+        },
+        {
+            "name": "usLanguage",
+            "type": "USHORT"
+        },
+        {
+            "name": "pTTEmbedInfo",
+            "type": "TTEMBEDINFO"
+        }
+    ],
+    "TTEmbedFontFromFileA": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "szFontFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "usTTCIndex",
+            "type": "USHORT"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulCharSet",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulPrivStatus",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulStatus",
+            "type": "ULONG"
+        },
+        {
+            "name": "lpfnWriteToStream",
+            "type": "WRITEEMBEDPROC"
+        },
+        {
+            "name": "lpvWriteStream",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pusCharCodeSet",
+            "type": "USHORT"
+        },
+        {
+            "name": "usCharCodeCount",
+            "type": "USHORT"
+        },
+        {
+            "name": "usLanguage",
+            "type": "USHORT"
+        },
+        {
+            "name": "pTTEmbedInfo",
+            "type": "TTEMBEDINFO"
+        }
+    ],
+    "TTLoadEmbeddedFont": [
+        {
+            "name": "phFontReference",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulPrivStatus",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulPrivs",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulStatus",
+            "type": "ULONG"
+        },
+        {
+            "name": "lpfnReadFromStream",
+            "type": "READEMBEDPROC"
+        },
+        {
+            "name": "lpvReadStream",
+            "type": "LPVOID"
+        },
+        {
+            "name": "szWinFamilyName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "szMacFamilyName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pTTLoadInfo",
+            "type": "TTLOADINFO"
+        }
+    ],
+    "TTGetEmbeddedFontInfo": [
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulPrivStatus",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulPrivs",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulStatus",
+            "type": "ULONG"
+        },
+        {
+            "name": "lpfnReadFromStream",
+            "type": "READEMBEDPROC"
+        },
+        {
+            "name": "lpvReadStream",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pTTLoadInfo",
+            "type": "TTLOADINFO"
+        }
+    ],
+    "TTDeleteEmbeddedFont": [
+        {
+            "name": "hFontReference",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulStatus",
+            "type": "ULONG"
+        }
+    ],
+    "TTGetEmbeddingType": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "pulEmbedType",
+            "type": "ULONG"
+        }
+    ],
+    "TTCharToUnicode": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "pucCharCodes",
+            "type": "UCHAR"
+        },
+        {
+            "name": "ulCharCodeSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pusShortCodes",
+            "type": "USHORT"
+        },
+        {
+            "name": "ulShortCodeSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "TTRunValidationTests": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "pTestParam",
+            "type": "TTVALIDATIONTESTSPARAMS"
+        }
+    ],
+    "TTIsEmbeddingEnabled": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "pbEnabled",
+            "type": "BOOL"
+        }
+    ],
+    "TTIsEmbeddingEnabledForFacename": [
+        {
+            "name": "lpszFacename",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pbEnabled",
+            "type": "BOOL"
+        }
+    ],
+    "TTEnableEmbeddingForFacename": [
+        {
+            "name": "lpszFacename",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "bEnable",
+            "type": "BOOL"
+        }
+    ],
+    "TTEmbedFontEx": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulCharSet",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulPrivStatus",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulStatus",
+            "type": "ULONG"
+        },
+        {
+            "name": "lpfnWriteToStream",
+            "type": "WRITEEMBEDPROC"
+        },
+        {
+            "name": "lpvWriteStream",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pulCharCodeSet",
+            "type": "ULONG"
+        },
+        {
+            "name": "usCharCodeCount",
+            "type": "USHORT"
+        },
+        {
+            "name": "usLanguage",
+            "type": "USHORT"
+        },
+        {
+            "name": "pTTEmbedInfo",
+            "type": "TTEMBEDINFO"
+        }
+    ],
+    "TTRunValidationTestsEx": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "pTestParam",
+            "type": "TTVALIDATIONTESTSPARAMSEX"
+        }
+    ],
+    "TTGetNewFontName": [
+        {
+            "name": "phFontReference",
+            "type": "HANDLE"
+        },
+        {
+            "name": "wzWinFamilyName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMaxWinName",
+            "type": "LONG"
+        },
+        {
+            "name": "szMacFamilyName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchMaxMacName",
+            "type": "LONG"
+        }
+    ]
+}

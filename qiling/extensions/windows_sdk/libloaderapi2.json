@@ -1,0 +1,20 @@
+{
+    "QueryOptionalDelayLoadedAPI": [
+        {
+            "name": "hParentModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "lpDllName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpProcName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        }
+    ]
+}

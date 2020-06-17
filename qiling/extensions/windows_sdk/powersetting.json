@@ -1,0 +1,174 @@
+{
+    "PowerReadACValue": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Type",
+            "type": "PULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "BufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadDCValue": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Type",
+            "type": "PULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerWriteACValueIndex": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "AcValueIndex",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWriteDCValueIndex": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "DcValueIndex",
+            "type": "DWORD"
+        }
+    ],
+    "PowerGetActiveScheme": [
+        {
+            "name": "UserRootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "ActivePolicyGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerSetActiveScheme": [
+        {
+            "name": "UserRootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerSettingRegisterNotification": [
+        {
+            "name": "SettingGuid",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Recipient",
+            "type": "HANDLE"
+        },
+        {
+            "name": "RegistrationHandle",
+            "type": "PHPOWERNOTIFY"
+        }
+    ],
+    "PowerSettingUnregisterNotification": [
+        {
+            "name": "RegistrationHandle",
+            "type": "HPOWERNOTIFY"
+        }
+    ],
+    "PowerRegisterForEffectivePowerModeNotifications": [
+        {
+            "name": "Version",
+            "type": "ULONG"
+        },
+        {
+            "name": "Callback",
+            "type": "EFFECTIVE_POWER_MODE_CALLBACK"
+        },
+        {
+            "name": "Context",
+            "type": "void"
+        },
+        {
+            "name": "RegistrationHandle",
+            "type": "void"
+        }
+    ],
+    "PowerUnregisterFromEffectivePowerModeNotifications": [
+        {
+            "name": "RegistrationHandle",
+            "type": "void"
+        }
+    ]
+}

@@ -1,0 +1,24 @@
+{
+    "GetAppContainerNamedObjectPath": [
+        {
+            "name": "Token",
+            "type": "HANDLE"
+        },
+        {
+            "name": "AppContainerSid",
+            "type": "PSID"
+        },
+        {
+            "name": "ObjectPathLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "ObjectPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ReturnLength",
+            "type": "PULONG"
+        }
+    ]
+}

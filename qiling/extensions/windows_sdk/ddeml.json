@@ -1,0 +1,436 @@
+{
+    "DdeInitializeA": [
+        {
+            "name": "pidInst",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pfnCallback",
+            "type": "PFNCALLBACK"
+        },
+        {
+            "name": "afCmd",
+            "type": "DWORD"
+        },
+        {
+            "name": "ulRes",
+            "type": "DWORD"
+        }
+    ],
+    "DdeInitializeW": [
+        {
+            "name": "pidInst",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pfnCallback",
+            "type": "PFNCALLBACK"
+        },
+        {
+            "name": "afCmd",
+            "type": "DWORD"
+        },
+        {
+            "name": "ulRes",
+            "type": "DWORD"
+        }
+    ],
+    "DdeUninitialize": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        }
+    ],
+    "DdeConnectList": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hszService",
+            "type": "HSZ"
+        },
+        {
+            "name": "hszTopic",
+            "type": "HSZ"
+        },
+        {
+            "name": "hConvList",
+            "type": "HCONVLIST"
+        },
+        {
+            "name": "pCC",
+            "type": "PCONVCONTEXT"
+        }
+    ],
+    "DdeQueryNextServer": [
+        {
+            "name": "hConvList",
+            "type": "HCONVLIST"
+        },
+        {
+            "name": "hConvPrev",
+            "type": "HCONV"
+        }
+    ],
+    "DdeDisconnectList": [
+        {
+            "name": "hConvList",
+            "type": "HCONVLIST"
+        }
+    ],
+    "DdeConnect": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hszService",
+            "type": "HSZ"
+        },
+        {
+            "name": "hszTopic",
+            "type": "HSZ"
+        },
+        {
+            "name": "pCC",
+            "type": "PCONVCONTEXT"
+        }
+    ],
+    "DdeDisconnect": [
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        }
+    ],
+    "DdeReconnect": [
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        }
+    ],
+    "DdeQueryConvInfo": [
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        },
+        {
+            "name": "idTransaction",
+            "type": "DWORD"
+        },
+        {
+            "name": "pConvInfo",
+            "type": "PCONVINFO"
+        }
+    ],
+    "DdeSetUserHandle": [
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        },
+        {
+            "name": "id",
+            "type": "DWORD"
+        },
+        {
+            "name": "hUser",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "DdeAbandonTransaction": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        },
+        {
+            "name": "idTransaction",
+            "type": "DWORD"
+        }
+    ],
+    "DdePostAdvise": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hszTopic",
+            "type": "HSZ"
+        },
+        {
+            "name": "hszItem",
+            "type": "HSZ"
+        }
+    ],
+    "DdeEnableCallback": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        },
+        {
+            "name": "wCmd",
+            "type": "UINT"
+        }
+    ],
+    "DdeImpersonateClient": [
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        }
+    ],
+    "DdeNameService": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hsz1",
+            "type": "HSZ"
+        },
+        {
+            "name": "hsz2",
+            "type": "HSZ"
+        },
+        {
+            "name": "afCmd",
+            "type": "UINT"
+        }
+    ],
+    "DdeClientTransaction": [
+        {
+            "name": "pData",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        },
+        {
+            "name": "hszItem",
+            "type": "HSZ"
+        },
+        {
+            "name": "wFmt",
+            "type": "UINT"
+        },
+        {
+            "name": "wType",
+            "type": "UINT"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwResult",
+            "type": "LPDWORD"
+        }
+    ],
+    "DdeCreateDataHandle": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "pSrc",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        },
+        {
+            "name": "cbOff",
+            "type": "DWORD"
+        },
+        {
+            "name": "hszItem",
+            "type": "HSZ"
+        },
+        {
+            "name": "wFmt",
+            "type": "UINT"
+        },
+        {
+            "name": "afCmd",
+            "type": "UINT"
+        }
+    ],
+    "DdeAddData": [
+        {
+            "name": "hData",
+            "type": "HDDEDATA"
+        },
+        {
+            "name": "pSrc",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        },
+        {
+            "name": "cbOff",
+            "type": "DWORD"
+        }
+    ],
+    "DdeGetData": [
+        {
+            "name": "hData",
+            "type": "HDDEDATA"
+        },
+        {
+            "name": "pDst",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbMax",
+            "type": "DWORD"
+        },
+        {
+            "name": "cbOff",
+            "type": "DWORD"
+        }
+    ],
+    "DdeAccessData": [
+        {
+            "name": "hData",
+            "type": "HDDEDATA"
+        },
+        {
+            "name": "pcbDataSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "DdeUnaccessData": [
+        {
+            "name": "hData",
+            "type": "HDDEDATA"
+        }
+    ],
+    "DdeFreeDataHandle": [
+        {
+            "name": "hData",
+            "type": "HDDEDATA"
+        }
+    ],
+    "DdeGetLastError": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        }
+    ],
+    "DdeCreateStringHandleA": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "psz",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iCodePage",
+            "type": "int"
+        }
+    ],
+    "DdeCreateStringHandleW": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "psz",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iCodePage",
+            "type": "int"
+        }
+    ],
+    "DdeQueryStringA": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hsz",
+            "type": "HSZ"
+        },
+        {
+            "name": "psz",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "DWORD"
+        },
+        {
+            "name": "iCodePage",
+            "type": "int"
+        }
+    ],
+    "DdeQueryStringW": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hsz",
+            "type": "HSZ"
+        },
+        {
+            "name": "psz",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "DWORD"
+        },
+        {
+            "name": "iCodePage",
+            "type": "int"
+        }
+    ],
+    "DdeFreeStringHandle": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hsz",
+            "type": "HSZ"
+        }
+    ],
+    "DdeKeepStringHandle": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hsz",
+            "type": "HSZ"
+        }
+    ],
+    "DdeCmpStringHandles": [
+        {
+            "name": "hsz1",
+            "type": "HSZ"
+        },
+        {
+            "name": "hsz2",
+            "type": "HSZ"
+        }
+    ]
+}

@@ -1,0 +1,104 @@
+{
+    "FDICreate": [
+        {
+            "name": "pfnalloc",
+            "type": "PFNALLOC"
+        },
+        {
+            "name": "pfnfree",
+            "type": "PFNFREE"
+        },
+        {
+            "name": "pfnopen",
+            "type": "PFNOPEN"
+        },
+        {
+            "name": "pfnread",
+            "type": "PFNREAD"
+        },
+        {
+            "name": "pfnwrite",
+            "type": "PFNWRITE"
+        },
+        {
+            "name": "pfnclose",
+            "type": "PFNCLOSE"
+        },
+        {
+            "name": "pfnseek",
+            "type": "PFNSEEK"
+        },
+        {
+            "name": "cpuType",
+            "type": "int"
+        },
+        {
+            "name": "perf",
+            "type": "PERF"
+        }
+    ],
+    "FDIIsCabinet": [
+        {
+            "name": "hfdi",
+            "type": "HFDI"
+        },
+        {
+            "name": "hf",
+            "type": "INT_PTR"
+        },
+        {
+            "name": "pfdici",
+            "type": "PFDICABINETINFO"
+        }
+    ],
+    "FDICopy": [
+        {
+            "name": "hfdi",
+            "type": "HFDI"
+        },
+        {
+            "name": "pszCabinet",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pszCabPath",
+            "type": "LPSTR"
+        },
+        {
+            "name": "flags",
+            "type": "int"
+        },
+        {
+            "name": "pfnfdin",
+            "type": "PFNFDINOTIFY"
+        },
+        {
+            "name": "pfnfdid",
+            "type": "PFNFDIDECRYPT"
+        },
+        {
+            "name": "pvUser",
+            "type": "void"
+        }
+    ],
+    "FDIDestroy": [
+        {
+            "name": "hfdi",
+            "type": "HFDI"
+        }
+    ],
+    "FDITruncateCabinet": [
+        {
+            "name": "hfdi",
+            "type": "HFDI"
+        },
+        {
+            "name": "pszCabinetName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "iFolderToDelete",
+            "type": "USHORT"
+        }
+    ]
+}

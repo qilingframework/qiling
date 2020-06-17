@@ -1,0 +1,174 @@
+{
+    "CreateToolhelp32Snapshot": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "th32ProcessID",
+            "type": "DWORD"
+        }
+    ],
+    "Heap32ListFirst": [
+        {
+            "name": "hSnapshot",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lphl",
+            "type": "LPHEAPLIST32"
+        }
+    ],
+    "Heap32ListNext": [
+        {
+            "name": "hSnapshot",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lphl",
+            "type": "LPHEAPLIST32"
+        }
+    ],
+    "Heap32First": [
+        {
+            "name": "lphe",
+            "type": "LPHEAPENTRY32"
+        },
+        {
+            "name": "th32ProcessID",
+            "type": "DWORD"
+        },
+        {
+            "name": "th32HeapID",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "Heap32Next": [
+        {
+            "name": "lphe",
+            "type": "LPHEAPENTRY32"
+        }
+    ],
+    "Toolhelp32ReadProcessMemory": [
+        {
+            "name": "th32ProcessID",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBaseAddress",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbRead",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "lpNumberOfBytesRead",
+            "type": "SIZE_T"
+        }
+    ],
+    "Process32FirstW": [
+        {
+            "name": "hSnapshot",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lppe",
+            "type": "LPPROCESSENTRY32W"
+        }
+    ],
+    "Process32NextW": [
+        {
+            "name": "hSnapshot",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lppe",
+            "type": "LPPROCESSENTRY32W"
+        }
+    ],
+    "Process32First": [
+        {
+            "name": "hSnapshot",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lppe",
+            "type": "LPPROCESSENTRY32"
+        }
+    ],
+    "Process32Next": [
+        {
+            "name": "hSnapshot",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lppe",
+            "type": "LPPROCESSENTRY32"
+        }
+    ],
+    "Thread32First": [
+        {
+            "name": "hSnapshot",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpte",
+            "type": "LPTHREADENTRY32"
+        }
+    ],
+    "Thread32Next": [
+        {
+            "name": "hSnapshot",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpte",
+            "type": "LPTHREADENTRY32"
+        }
+    ],
+    "Module32FirstW": [
+        {
+            "name": "hSnapshot",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpme",
+            "type": "LPMODULEENTRY32W"
+        }
+    ],
+    "Module32NextW": [
+        {
+            "name": "hSnapshot",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpme",
+            "type": "LPMODULEENTRY32W"
+        }
+    ],
+    "Module32First": [
+        {
+            "name": "hSnapshot",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpme",
+            "type": "LPMODULEENTRY32"
+        }
+    ],
+    "Module32Next": [
+        {
+            "name": "hSnapshot",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpme",
+            "type": "LPMODULEENTRY32"
+        }
+    ]
+}

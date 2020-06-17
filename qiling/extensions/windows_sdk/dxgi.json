@@ -1,0 +1,22 @@
+{
+    "CreateDXGIFactory": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppFactory",
+            "type": "void"
+        }
+    ],
+    "CreateDXGIFactory1": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppFactory",
+            "type": "void"
+        }
+    ]
+}

@@ -1,0 +1,90 @@
+{
+    "DdeSetQualityOfService": [
+        {
+            "name": "hwndClient",
+            "type": "HWND"
+        },
+        {
+            "name": "pqosNew",
+            "type": "SECURITY_QUALITY_OF_SERVICE"
+        },
+        {
+            "name": "pqosPrev",
+            "type": "PSECURITY_QUALITY_OF_SERVICE"
+        }
+    ],
+    "ImpersonateDdeClientWindow": [
+        {
+            "name": "hWndClient",
+            "type": "HWND"
+        },
+        {
+            "name": "hWndServer",
+            "type": "HWND"
+        }
+    ],
+    "PackDDElParam": [
+        {
+            "name": "msg",
+            "type": "UINT"
+        },
+        {
+            "name": "uiLo",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "uiHi",
+            "type": "UINT_PTR"
+        }
+    ],
+    "UnpackDDElParam": [
+        {
+            "name": "msg",
+            "type": "UINT"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "puiLo",
+            "type": "PUINT_PTR"
+        },
+        {
+            "name": "puiHi",
+            "type": "PUINT_PTR"
+        }
+    ],
+    "FreeDDElParam": [
+        {
+            "name": "msg",
+            "type": "UINT"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "ReuseDDElParam": [
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "msgIn",
+            "type": "UINT"
+        },
+        {
+            "name": "msgOut",
+            "type": "UINT"
+        },
+        {
+            "name": "uiLo",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "uiHi",
+            "type": "UINT_PTR"
+        }
+    ]
+}

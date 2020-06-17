@@ -1,0 +1,922 @@
+{
+    "DragQueryFileA": [
+        {
+            "name": "hDrop",
+            "type": "HDROP"
+        },
+        {
+            "name": "iFile",
+            "type": "UINT"
+        },
+        {
+            "name": "lpszFile",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cch",
+            "type": "UINT"
+        }
+    ],
+    "DragQueryFileW": [
+        {
+            "name": "hDrop",
+            "type": "HDROP"
+        },
+        {
+            "name": "iFile",
+            "type": "UINT"
+        },
+        {
+            "name": "lpszFile",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cch",
+            "type": "UINT"
+        }
+    ],
+    "DragQueryPoint": [
+        {
+            "name": "hDrop",
+            "type": "HDROP"
+        },
+        {
+            "name": "ppt",
+            "type": "POINT"
+        }
+    ],
+    "DragFinish": [
+        {
+            "name": "hDrop",
+            "type": "HDROP"
+        }
+    ],
+    "DragAcceptFiles": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "fAccept",
+            "type": "BOOL"
+        }
+    ],
+    "ShellExecuteA": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpOperation",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpParameters",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpDirectory",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "nShowCmd",
+            "type": "INT"
+        }
+    ],
+    "ShellExecuteW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpOperation",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpParameters",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDirectory",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "nShowCmd",
+            "type": "INT"
+        }
+    ],
+    "FindExecutableA": [
+        {
+            "name": "lpFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpDirectory",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpResult",
+            "type": "LPSTR"
+        }
+    ],
+    "FindExecutableW": [
+        {
+            "name": "lpFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDirectory",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpResult",
+            "type": "LPWSTR"
+        }
+    ],
+    "ShellAboutA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "szApp",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szOtherStuff",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hIcon",
+            "type": "HICON"
+        }
+    ],
+    "ShellAboutW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "szApp",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szOtherStuff",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hIcon",
+            "type": "HICON"
+        }
+    ],
+    "DuplicateIcon": [
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "hIcon",
+            "type": "HICON"
+        }
+    ],
+    "ExtractAssociatedIconA": [
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "pszIconPath",
+            "type": "LPSTR"
+        },
+        {
+            "name": "piIcon",
+            "type": "WORD"
+        }
+    ],
+    "ExtractAssociatedIconW": [
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "pszIconPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "piIcon",
+            "type": "WORD"
+        }
+    ],
+    "ExtractAssociatedIconExA": [
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "pszIconPath",
+            "type": "LPSTR"
+        },
+        {
+            "name": "piIconIndex",
+            "type": "WORD"
+        },
+        {
+            "name": "piIconId",
+            "type": "WORD"
+        }
+    ],
+    "ExtractAssociatedIconExW": [
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "pszIconPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "piIconIndex",
+            "type": "WORD"
+        },
+        {
+            "name": "piIconId",
+            "type": "WORD"
+        }
+    ],
+    "ExtractIconA": [
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "pszExeFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "nIconIndex",
+            "type": "UINT"
+        }
+    ],
+    "ExtractIconW": [
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "pszExeFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "nIconIndex",
+            "type": "UINT"
+        }
+    ],
+    "SHAppBarMessage": [
+        {
+            "name": "dwMessage",
+            "type": "DWORD"
+        },
+        {
+            "name": "pData",
+            "type": "PAPPBARDATA"
+        }
+    ],
+    "DoEnvironmentSubstA": [
+        {
+            "name": "pszSrc",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchSrc",
+            "type": "UINT"
+        }
+    ],
+    "DoEnvironmentSubstW": [
+        {
+            "name": "pszSrc",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchSrc",
+            "type": "UINT"
+        }
+    ],
+    "ExtractIconExA": [
+        {
+            "name": "lpszFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "nIconIndex",
+            "type": "int"
+        },
+        {
+            "name": "phiconLarge",
+            "type": "HICON"
+        },
+        {
+            "name": "phiconSmall",
+            "type": "HICON"
+        },
+        {
+            "name": "nIcons",
+            "type": "UINT"
+        }
+    ],
+    "ExtractIconExW": [
+        {
+            "name": "lpszFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "nIconIndex",
+            "type": "int"
+        },
+        {
+            "name": "phiconLarge",
+            "type": "HICON"
+        },
+        {
+            "name": "phiconSmall",
+            "type": "HICON"
+        },
+        {
+            "name": "nIcons",
+            "type": "UINT"
+        }
+    ],
+    "SHFileOperationA": [
+        {
+            "name": "lpFileOp",
+            "type": "LPSHFILEOPSTRUCTA"
+        }
+    ],
+    "SHFileOperationW": [
+        {
+            "name": "lpFileOp",
+            "type": "LPSHFILEOPSTRUCTW"
+        }
+    ],
+    "SHFreeNameMappings": [
+        {
+            "name": "hNameMappings",
+            "type": "HANDLE"
+        }
+    ],
+    "ShellExecuteExA": [
+        {
+            "name": "pExecInfo",
+            "type": "SHELLEXECUTEINFOA"
+        }
+    ],
+    "ShellExecuteExW": [
+        {
+            "name": "pExecInfo",
+            "type": "SHELLEXECUTEINFOW"
+        }
+    ],
+    "SHCreateProcessAsUserW": [
+        {
+            "name": "pscpi",
+            "type": "PSHCREATEPROCESSINFOW"
+        }
+    ],
+    "SHEvaluateSystemCommandTemplate": [
+        {
+            "name": "pszCmdTemplate",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppszApplication",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ppszCommandLine",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ppszParameters",
+            "type": "PWSTR"
+        }
+    ],
+    "AssocCreateForClasses": [
+        {
+            "name": "rgClasses",
+            "type": "ASSOCIATIONELEMENT"
+        },
+        {
+            "name": "cClasses",
+            "type": "ULONG"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHQueryRecycleBinA": [
+        {
+            "name": "pszRootPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pSHQueryRBInfo",
+            "type": "LPSHQUERYRBINFO"
+        }
+    ],
+    "SHQueryRecycleBinW": [
+        {
+            "name": "pszRootPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pSHQueryRBInfo",
+            "type": "LPSHQUERYRBINFO"
+        }
+    ],
+    "SHEmptyRecycleBinA": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszRootPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHEmptyRecycleBinW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszRootPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHQueryUserNotificationState": [
+        {
+            "name": "pquns",
+            "type": "QUERY_USER_NOTIFICATION_STATE"
+        }
+    ],
+    "SHGetPropertyStoreForWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "Shell_NotifyIconA": [
+        {
+            "name": "dwMessage",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "PNOTIFYICONDATAA"
+        }
+    ],
+    "Shell_NotifyIconW": [
+        {
+            "name": "dwMessage",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "PNOTIFYICONDATAW"
+        }
+    ],
+    "Shell_NotifyIconGetRect": [
+        {
+            "name": "identifier",
+            "type": "NOTIFYICONIDENTIFIER"
+        },
+        {
+            "name": "iconLocation",
+            "type": "RECT"
+        }
+    ],
+    "SHGetFileInfoA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFileAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "psfi",
+            "type": "SHFILEINFOA"
+        },
+        {
+            "name": "cbFileInfo",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "SHGetFileInfoW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFileAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "psfi",
+            "type": "SHFILEINFOW"
+        },
+        {
+            "name": "cbFileInfo",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "SHGetStockIconInfo": [
+        {
+            "name": "siid",
+            "type": "SHSTOCKICONID"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "psii",
+            "type": "SHSTOCKICONINFO"
+        }
+    ],
+    "SHGetDiskFreeSpaceExA": [
+        {
+            "name": "pszDirectoryName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pulFreeBytesAvailableToCaller",
+            "type": "ULARGE_INTEGER"
+        },
+        {
+            "name": "pulTotalNumberOfBytes",
+            "type": "ULARGE_INTEGER"
+        },
+        {
+            "name": "pulTotalNumberOfFreeBytes",
+            "type": "ULARGE_INTEGER"
+        }
+    ],
+    "SHGetDiskFreeSpaceExW": [
+        {
+            "name": "pszDirectoryName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pulFreeBytesAvailableToCaller",
+            "type": "ULARGE_INTEGER"
+        },
+        {
+            "name": "pulTotalNumberOfBytes",
+            "type": "ULARGE_INTEGER"
+        },
+        {
+            "name": "pulTotalNumberOfFreeBytes",
+            "type": "ULARGE_INTEGER"
+        }
+    ],
+    "SHGetNewLinkInfoA": [
+        {
+            "name": "pszLinkTo",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszDir",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pfMustCopy",
+            "type": "BOOL"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "SHGetNewLinkInfoW": [
+        {
+            "name": "pszLinkTo",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszDir",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pfMustCopy",
+            "type": "BOOL"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "SHInvokePrinterCommandA": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "uAction",
+            "type": "UINT"
+        },
+        {
+            "name": "lpBuf1",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpBuf2",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "fModal",
+            "type": "BOOL"
+        }
+    ],
+    "SHInvokePrinterCommandW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "uAction",
+            "type": "UINT"
+        },
+        {
+            "name": "lpBuf1",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpBuf2",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fModal",
+            "type": "BOOL"
+        }
+    ],
+    "SHLoadNonloadedIconOverlayIdentifiers": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SHIsFileAvailableOffline": [
+        {
+            "name": "pwszPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pdwStatus",
+            "type": "DWORD"
+        }
+    ],
+    "SHSetLocalizedName": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszResModule",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "idsRes",
+            "type": "int"
+        }
+    ],
+    "SHRemoveLocalizedName": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "SHGetLocalizedName": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszResModule",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cch",
+            "type": "UINT"
+        },
+        {
+            "name": "pidsRes",
+            "type": "int"
+        }
+    ],
+    "ShellMessageBoxA": [
+        {
+            "name": "hAppInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpcText",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpcTitle",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "fuStyle",
+            "type": "UINT"
+        }
+    ],
+    "ShellMessageBoxW": [
+        {
+            "name": "hAppInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpcText",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpcTitle",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fuStyle",
+            "type": "UINT"
+        }
+    ],
+    "SHEnumerateUnreadMailAccountsA": [
+        {
+            "name": "hKeyUser",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszMailAddress",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchMailAddress",
+            "type": "int"
+        }
+    ],
+    "SHEnumerateUnreadMailAccountsW": [
+        {
+            "name": "hKeyUser",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszMailAddress",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMailAddress",
+            "type": "int"
+        }
+    ],
+    "SHGetUnreadMailCountW": [
+        {
+            "name": "hKeyUser",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszMailAddress",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdwCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pFileTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "pszShellExecuteCommand",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchShellExecuteCommand",
+            "type": "int"
+        }
+    ],
+    "SHSetUnreadMailCountW": [
+        {
+            "name": "pszMailAddress",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszShellExecuteCommand",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SHTestTokenMembership": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ulRID",
+            "type": "ULONG"
+        }
+    ],
+    "SHGetImageList": [
+        {
+            "name": "iImageList",
+            "type": "int"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvObj",
+            "type": "void"
+        }
+    ],
+    "InitNetworkAddressControl": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SHGetDriveMedia": [
+        {
+            "name": "pszDrive",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pdwMediaContent",
+            "type": "DWORD"
+        }
+    ]
+}

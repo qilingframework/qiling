@@ -1,0 +1,132 @@
+{
+    "DavAddConnection": [
+        {
+            "name": "ConnectionHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "RemoteName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "UserName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Password",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ClientCert",
+            "type": "PBYTE"
+        },
+        {
+            "name": "CertSize",
+            "type": "DWORD"
+        }
+    ],
+    "DavDeleteConnection": [
+        {
+            "name": "ConnectionHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "DavGetUNCFromHTTPPath": [
+        {
+            "name": "Url",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "UncPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "DavGetHTTPFromUNCPath": [
+        {
+            "name": "UncPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Url",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "DavGetTheLockOwnerOfTheFile": [
+        {
+            "name": "FileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "LockOwnerName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "LockOwnerNameLengthInBytes",
+            "type": "PULONG"
+        }
+    ],
+    "DavGetExtendedError": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ExtError",
+            "type": "DWORD"
+        },
+        {
+            "name": "ExtErrorString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cChSize",
+            "type": "DWORD"
+        }
+    ],
+    "DavFlushFile": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        }
+    ],
+    "DavInvalidateCache": [
+        {
+            "name": "URLName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "DavCancelConnectionsToServer": [
+        {
+            "name": "lpName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fForce",
+            "type": "BOOL"
+        }
+    ],
+    "DavRegisterAuthCallback": [
+        {
+            "name": "CallBack",
+            "type": "PFNDAVAUTHCALLBACK"
+        },
+        {
+            "name": "Version",
+            "type": "ULONG"
+        }
+    ],
+    "DavUnregisterAuthCallback": [
+        {
+            "name": "hCallback",
+            "type": "DWORD"
+        }
+    ]
+}

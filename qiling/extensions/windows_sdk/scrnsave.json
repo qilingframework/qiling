@@ -1,0 +1,62 @@
+{
+    "ScreenSaverProc": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "message",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "DefScreenSaverProc": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "ScreenSaverConfigureDialog": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "message",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "RegisterDialogClasses": [
+        {
+            "name": "hInst",
+            "type": "HANDLE"
+        }
+    ]
+}

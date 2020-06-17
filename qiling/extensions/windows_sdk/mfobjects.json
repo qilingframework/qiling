@@ -1,0 +1,30 @@
+{
+    "MFSerializeAttributesToStream": [
+        {
+            "name": "pAttr",
+            "type": "IMFAttributes"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "pStm",
+            "type": "IStream"
+        }
+    ],
+    "MFDeserializeAttributesFromStream": [
+        {
+            "name": "pAttr",
+            "type": "IMFAttributes"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "pStm",
+            "type": "IStream"
+        }
+    ]
+}

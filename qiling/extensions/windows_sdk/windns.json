@@ -1,0 +1,534 @@
+{
+    "DnsQueryConfig": [
+        {
+            "name": "Config",
+            "type": "DNS_CONFIG_TYPE"
+        },
+        {
+            "name": "Flag",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwsAdapterName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "pBufLen",
+            "type": "PDWORD"
+        }
+    ],
+    "DnsRecordCopyEx": [
+        {
+            "name": "pRecord",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "CharSetIn",
+            "type": "DNS_CHARSET"
+        },
+        {
+            "name": "CharSetOut",
+            "type": "DNS_CHARSET"
+        }
+    ],
+    "DnsRecordSetCopyEx": [
+        {
+            "name": "pRecordSet",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "CharSetIn",
+            "type": "DNS_CHARSET"
+        },
+        {
+            "name": "CharSetOut",
+            "type": "DNS_CHARSET"
+        }
+    ],
+    "DnsRecordCompare": [
+        {
+            "name": "pRecord1",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "pRecord2",
+            "type": "PDNS_RECORD"
+        }
+    ],
+    "DnsRecordSetCompare": [
+        {
+            "name": "pRR1",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "pRR2",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "ppDiff1",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "ppDiff2",
+            "type": "PDNS_RECORD"
+        }
+    ],
+    "DnsRecordSetDetach": [
+        {
+            "name": "pRecordList",
+            "type": "PDNS_RECORD"
+        }
+    ],
+    "DnsFree": [
+        {
+            "name": "pData",
+            "type": "PVOID"
+        },
+        {
+            "name": "FreeType",
+            "type": "DNS_FREE_TYPE"
+        }
+    ],
+    "DnsQuery_A": [
+        {
+            "name": "pszName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "wType",
+            "type": "WORD"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        },
+        {
+            "name": "pExtra",
+            "type": "PVOID"
+        },
+        {
+            "name": "ppQueryResults",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        }
+    ],
+    "DnsQuery_UTF8": [
+        {
+            "name": "pszName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "wType",
+            "type": "WORD"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        },
+        {
+            "name": "pExtra",
+            "type": "PVOID"
+        },
+        {
+            "name": "ppQueryResults",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        }
+    ],
+    "DnsQuery_W": [
+        {
+            "name": "pszName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "wType",
+            "type": "WORD"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        },
+        {
+            "name": "pExtra",
+            "type": "PVOID"
+        },
+        {
+            "name": "ppQueryResults",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        }
+    ],
+    "DnsQueryEx": [
+        {
+            "name": "pQueryRequest",
+            "type": "PDNS_QUERY_REQUEST"
+        },
+        {
+            "name": "pQueryResults",
+            "type": "PDNS_QUERY_RESULT"
+        },
+        {
+            "name": "pCancelHandle",
+            "type": "PDNS_QUERY_CANCEL"
+        }
+    ],
+    "DnsCancelQuery": [
+        {
+            "name": "pCancelHandle",
+            "type": "PDNS_QUERY_CANCEL"
+        }
+    ],
+    "DnsAcquireContextHandle_W": [
+        {
+            "name": "CredentialFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Credentials",
+            "type": "PVOID"
+        },
+        {
+            "name": "pContext",
+            "type": "PHANDLE"
+        }
+    ],
+    "DnsAcquireContextHandle_A": [
+        {
+            "name": "CredentialFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Credentials",
+            "type": "PVOID"
+        },
+        {
+            "name": "pContext",
+            "type": "PHANDLE"
+        }
+    ],
+    "DnsReleaseContextHandle": [
+        {
+            "name": "hContext",
+            "type": "HANDLE"
+        }
+    ],
+    "DnsModifyRecordsInSet_W": [
+        {
+            "name": "pAddRecords",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "pDeleteRecords",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        },
+        {
+            "name": "hCredentials",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pExtraList",
+            "type": "PVOID"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        }
+    ],
+    "DnsModifyRecordsInSet_A": [
+        {
+            "name": "pAddRecords",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "pDeleteRecords",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        },
+        {
+            "name": "hCredentials",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pExtraList",
+            "type": "PVOID"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        }
+    ],
+    "DnsModifyRecordsInSet_UTF8": [
+        {
+            "name": "pAddRecords",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "pDeleteRecords",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        },
+        {
+            "name": "hCredentials",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pExtraList",
+            "type": "PVOID"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        }
+    ],
+    "DnsReplaceRecordSetW": [
+        {
+            "name": "pReplaceSet",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        },
+        {
+            "name": "hContext",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pExtraInfo",
+            "type": "PVOID"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        }
+    ],
+    "DnsReplaceRecordSetA": [
+        {
+            "name": "pReplaceSet",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        },
+        {
+            "name": "hContext",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pExtraInfo",
+            "type": "PVOID"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        }
+    ],
+    "DnsReplaceRecordSetUTF8": [
+        {
+            "name": "pReplaceSet",
+            "type": "PDNS_RECORD"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        },
+        {
+            "name": "hContext",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pExtraInfo",
+            "type": "PVOID"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        }
+    ],
+    "DnsValidateName_W": [
+        {
+            "name": "pszName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Format",
+            "type": "DNS_NAME_FORMAT"
+        }
+    ],
+    "DnsValidateName_A": [
+        {
+            "name": "pszName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Format",
+            "type": "DNS_NAME_FORMAT"
+        }
+    ],
+    "DnsValidateName_UTF8": [
+        {
+            "name": "pszName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Format",
+            "type": "DNS_NAME_FORMAT"
+        }
+    ],
+    "DnsNameCompare_A": [
+        {
+            "name": "pName1",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pName2",
+            "type": "PCSTR"
+        }
+    ],
+    "DnsNameCompare_W": [
+        {
+            "name": "pName1",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pName2",
+            "type": "PCWSTR"
+        }
+    ],
+    "DnsWriteQuestionToBuffer_W": [
+        {
+            "name": "pDnsBuffer",
+            "type": "PDNS_MESSAGE_BUFFER"
+        },
+        {
+            "name": "pdwBufferSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "pszName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "wType",
+            "type": "WORD"
+        },
+        {
+            "name": "Xid",
+            "type": "WORD"
+        },
+        {
+            "name": "fRecursionDesired",
+            "type": "BOOL"
+        }
+    ],
+    "DnsWriteQuestionToBuffer_UTF8": [
+        {
+            "name": "pDnsBuffer",
+            "type": "PDNS_MESSAGE_BUFFER"
+        },
+        {
+            "name": "pdwBufferSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "pszName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "wType",
+            "type": "WORD"
+        },
+        {
+            "name": "Xid",
+            "type": "WORD"
+        },
+        {
+            "name": "fRecursionDesired",
+            "type": "BOOL"
+        }
+    ],
+    "DnsExtractRecordsFromMessage_W": [
+        {
+            "name": "pDnsBuffer",
+            "type": "PDNS_MESSAGE_BUFFER"
+        },
+        {
+            "name": "wMessageLength",
+            "type": "WORD"
+        },
+        {
+            "name": "ppRecord",
+            "type": "PDNS_RECORD"
+        }
+    ],
+    "DnsExtractRecordsFromMessage_UTF8": [
+        {
+            "name": "pDnsBuffer",
+            "type": "PDNS_MESSAGE_BUFFER"
+        },
+        {
+            "name": "wMessageLength",
+            "type": "WORD"
+        },
+        {
+            "name": "ppRecord",
+            "type": "PDNS_RECORD"
+        }
+    ],
+    "DnsGetProxyInformation": [
+        {
+            "name": "hostName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "proxyInformation",
+            "type": "DNS_PROXY_INFORMATION"
+        },
+        {
+            "name": "defaultProxyInformation",
+            "type": "DNS_PROXY_INFORMATION"
+        },
+        {
+            "name": "completionRoutine",
+            "type": "DNS_PROXY_COMPLETION_ROUTINE"
+        },
+        {
+            "name": "completionContext",
+            "type": "void"
+        }
+    ],
+    "DnsFreeProxyName": [
+        {
+            "name": "proxyName",
+            "type": "PWSTR"
+        }
+    ]
+}

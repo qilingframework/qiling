@@ -1,0 +1,158 @@
+{
+    "NetWkstaGetInfo": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetWkstaSetInfo": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetWkstaUserGetInfo": [
+        {
+            "name": "reserved",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetWkstaUserSetInfo": [
+        {
+            "name": "reserved",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetWkstaUserEnum": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "resumehandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetWkstaTransportAdd": [
+        {
+            "name": "servername",
+            "type": "LPTSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetWkstaTransportDel": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "transportname",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ucond",
+            "type": "DWORD"
+        }
+    ],
+    "NetWkstaTransportEnum": [
+        {
+            "name": "servername",
+            "type": "LPTSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "resume_handle",
+            "type": "LPDWORD"
+        }
+    ]
+}

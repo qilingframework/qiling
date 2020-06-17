@@ -1,0 +1,312 @@
+{
+    "DsMakeSpnW": [
+        {
+            "name": "ServiceClass",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ServiceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "InstancePort",
+            "type": "USHORT"
+        },
+        {
+            "name": "Referrer",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pcSpnLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszSpn",
+            "type": "LPWSTR"
+        }
+    ],
+    "DsMakeSpnA": [
+        {
+            "name": "ServiceClass",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ServiceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "InstancePort",
+            "type": "USHORT"
+        },
+        {
+            "name": "Referrer",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pcSpnLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszSpn",
+            "type": "LPSTR"
+        }
+    ],
+    "DsCrackSpnA": [
+        {
+            "name": "pszSpn",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pcServiceClass",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "ServiceClass",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcServiceName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "ServiceName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcInstanceName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pInstancePort",
+            "type": "USHORT"
+        }
+    ],
+    "DsCrackSpnW": [
+        {
+            "name": "pszSpn",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pcServiceClass",
+            "type": "DWORD"
+        },
+        {
+            "name": "ServiceClass",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcServiceName",
+            "type": "DWORD"
+        },
+        {
+            "name": "ServiceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcInstanceName",
+            "type": "DWORD"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pInstancePort",
+            "type": "USHORT"
+        }
+    ],
+    "DsQuoteRdnValueW": [
+        {
+            "name": "cUnquotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psUnquotedRdnValue",
+            "type": "LPCWCH"
+        },
+        {
+            "name": "pcQuotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psQuotedRdnValue",
+            "type": "LPWCH"
+        }
+    ],
+    "DsQuoteRdnValueA": [
+        {
+            "name": "cUnquotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psUnquotedRdnValue",
+            "type": "LPCCH"
+        },
+        {
+            "name": "pcQuotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psQuotedRdnValue",
+            "type": "LPCH"
+        }
+    ],
+    "DsUnquoteRdnValueW": [
+        {
+            "name": "cQuotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psQuotedRdnValue",
+            "type": "LPCWCH"
+        },
+        {
+            "name": "pcUnquotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psUnquotedRdnValue",
+            "type": "LPWCH"
+        }
+    ],
+    "DsUnquoteRdnValueA": [
+        {
+            "name": "cQuotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psQuotedRdnValue",
+            "type": "LPCCH"
+        },
+        {
+            "name": "pcUnquotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psUnquotedRdnValue",
+            "type": "LPCH"
+        }
+    ],
+    "DsGetRdnW": [
+        {
+            "name": "ppDN",
+            "type": "LPCWCH"
+        },
+        {
+            "name": "pcDN",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppKey",
+            "type": "LPCWCH"
+        },
+        {
+            "name": "pcKey",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppVal",
+            "type": "LPCWCH"
+        },
+        {
+            "name": "pcVal",
+            "type": "DWORD"
+        }
+    ],
+    "DsCrackUnquotedMangledRdnW": [
+        {
+            "name": "pszRDN",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchRDN",
+            "type": "DWORD"
+        },
+        {
+            "name": "pGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "peDsMangleFor",
+            "type": "DS_MANGLE_FOR"
+        }
+    ],
+    "DsCrackUnquotedMangledRdnA": [
+        {
+            "name": "pszRDN",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cchRDN",
+            "type": "DWORD"
+        },
+        {
+            "name": "pGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "peDsMangleFor",
+            "type": "DS_MANGLE_FOR"
+        }
+    ],
+    "DsIsMangledRdnValueW": [
+        {
+            "name": "pszRdn",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cRdn",
+            "type": "DWORD"
+        },
+        {
+            "name": "eDsMangleForDesired",
+            "type": "DS_MANGLE_FOR"
+        }
+    ],
+    "DsIsMangledRdnValueA": [
+        {
+            "name": "pszRdn",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cRdn",
+            "type": "DWORD"
+        },
+        {
+            "name": "eDsMangleForDesired",
+            "type": "DS_MANGLE_FOR"
+        }
+    ],
+    "DsIsMangledDnA": [
+        {
+            "name": "pszDn",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "eDsMangleFor",
+            "type": "DS_MANGLE_FOR"
+        }
+    ],
+    "DsIsMangledDnW": [
+        {
+            "name": "pszDn",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "eDsMangleFor",
+            "type": "DS_MANGLE_FOR"
+        }
+    ]
+}

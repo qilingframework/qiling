@@ -1,0 +1,28 @@
+{
+    "ClosePrivateNamespace": [
+        {
+            "name": "Handle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "AddSIDToBoundaryDescriptor": [
+        {
+            "name": "BoundaryDescriptor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "RequiredSid",
+            "type": "PSID"
+        }
+    ],
+    "DeleteBoundaryDescriptor": [
+        {
+            "name": "BoundaryDescriptor",
+            "type": "HANDLE"
+        }
+    ]
+}

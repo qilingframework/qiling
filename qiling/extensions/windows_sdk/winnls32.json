@@ -1,0 +1,12 @@
+{
+    "WINNLSEnableIME": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "BOOL"
+        }
+    ]
+}

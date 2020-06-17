@@ -1,0 +1,38 @@
+{
+    "LsnEqual": [
+        {
+            "name": "plsn1",
+            "type": "CLFS_LSN"
+        },
+        {
+            "name": "plsn2",
+            "type": "CLFS_LSN"
+        }
+    ],
+    "LsnLess": [
+        {
+            "name": "plsn1",
+            "type": "CLFS_LSN"
+        },
+        {
+            "name": "plsn2",
+            "type": "CLFS_LSN"
+        }
+    ],
+    "LsnGreater": [
+        {
+            "name": "plsn1",
+            "type": "CLFS_LSN"
+        },
+        {
+            "name": "plsn2",
+            "type": "CLFS_LSN"
+        }
+    ],
+    "LsnNull": [
+        {
+            "name": "plsn",
+            "type": "CLFS_LSN"
+        }
+    ]
+}

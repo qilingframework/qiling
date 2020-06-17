@@ -1,0 +1,1134 @@
+{
+    "CompareFileTime": [
+        {
+            "name": "lpFileTime1",
+            "type": "FILETIME"
+        },
+        {
+            "name": "lpFileTime2",
+            "type": "FILETIME"
+        }
+    ],
+    "CreateFileA": [
+        {
+            "name": "lpFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwShareMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "dwCreationDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlagsAndAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "hTemplateFile",
+            "type": "HANDLE"
+        }
+    ],
+    "CreateFileW": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwShareMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "dwCreationDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlagsAndAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "hTemplateFile",
+            "type": "HANDLE"
+        }
+    ],
+    "FileTimeToLocalFileTime": [
+        {
+            "name": "lpFileTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "lpLocalFileTime",
+            "type": "LPFILETIME"
+        }
+    ],
+    "FindClose": [
+        {
+            "name": "hFindFile",
+            "type": "HANDLE"
+        }
+    ],
+    "FindCloseChangeNotification": [
+        {
+            "name": "hChangeHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FindFirstChangeNotificationA": [
+        {
+            "name": "lpPathName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "bWatchSubtree",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwNotifyFilter",
+            "type": "DWORD"
+        }
+    ],
+    "FindFirstChangeNotificationW": [
+        {
+            "name": "lpPathName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "bWatchSubtree",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwNotifyFilter",
+            "type": "DWORD"
+        }
+    ],
+    "FindFirstFileA": [
+        {
+            "name": "lpFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpFindFileData",
+            "type": "LPWIN32_FIND_DATAA"
+        }
+    ],
+    "FindFirstFileW": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpFindFileData",
+            "type": "LPWIN32_FIND_DATAW"
+        }
+    ],
+    "FindFirstFileExA": [
+        {
+            "name": "lpFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "fInfoLevelId",
+            "type": "FINDEX_INFO_LEVELS"
+        },
+        {
+            "name": "lpFindFileData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "fSearchOp",
+            "type": "FINDEX_SEARCH_OPS"
+        },
+        {
+            "name": "lpSearchFilter",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwAdditionalFlags",
+            "type": "DWORD"
+        }
+    ],
+    "FindFirstFileExW": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fInfoLevelId",
+            "type": "FINDEX_INFO_LEVELS"
+        },
+        {
+            "name": "lpFindFileData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "fSearchOp",
+            "type": "FINDEX_SEARCH_OPS"
+        },
+        {
+            "name": "lpSearchFilter",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwAdditionalFlags",
+            "type": "DWORD"
+        }
+    ],
+    "FindNextChangeNotification": [
+        {
+            "name": "hChangeHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FindNextFileA": [
+        {
+            "name": "hFindFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpFindFileData",
+            "type": "LPWIN32_FIND_DATAA"
+        }
+    ],
+    "FindNextFileW": [
+        {
+            "name": "hFindFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpFindFileData",
+            "type": "LPWIN32_FIND_DATAW"
+        }
+    ],
+    "FindVolumeClose": [
+        {
+            "name": "hFindVolume",
+            "type": "HANDLE"
+        }
+    ],
+    "FlushFileBuffers": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        }
+    ],
+    "GetDiskFreeSpaceA": [
+        {
+            "name": "lpRootPathName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpSectorsPerCluster",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpBytesPerSector",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpNumberOfFreeClusters",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpTotalNumberOfClusters",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetDiskFreeSpaceW": [
+        {
+            "name": "lpRootPathName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpSectorsPerCluster",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpBytesPerSector",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpNumberOfFreeClusters",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpTotalNumberOfClusters",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetDiskFreeSpaceExA": [
+        {
+            "name": "lpDirectoryName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpFreeBytesAvailableToCaller",
+            "type": "PULARGE_INTEGER"
+        },
+        {
+            "name": "lpTotalNumberOfBytes",
+            "type": "PULARGE_INTEGER"
+        },
+        {
+            "name": "lpTotalNumberOfFreeBytes",
+            "type": "PULARGE_INTEGER"
+        }
+    ],
+    "GetDiskFreeSpaceExW": [
+        {
+            "name": "lpDirectoryName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpFreeBytesAvailableToCaller",
+            "type": "PULARGE_INTEGER"
+        },
+        {
+            "name": "lpTotalNumberOfBytes",
+            "type": "PULARGE_INTEGER"
+        },
+        {
+            "name": "lpTotalNumberOfFreeBytes",
+            "type": "PULARGE_INTEGER"
+        }
+    ],
+    "GetDriveTypeA": [
+        {
+            "name": "lpRootPathName",
+            "type": "LPCSTR"
+        }
+    ],
+    "GetDriveTypeW": [
+        {
+            "name": "lpRootPathName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetFileAttributesA": [
+        {
+            "name": "lpFileName",
+            "type": "LPCSTR"
+        }
+    ],
+    "GetFileAttributesW": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetFileAttributesExA": [
+        {
+            "name": "lpFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "fInfoLevelId",
+            "type": "GET_FILEEX_INFO_LEVELS"
+        },
+        {
+            "name": "lpFileInformation",
+            "type": "LPVOID"
+        }
+    ],
+    "GetFileAttributesExW": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fInfoLevelId",
+            "type": "GET_FILEEX_INFO_LEVELS"
+        },
+        {
+            "name": "lpFileInformation",
+            "type": "LPVOID"
+        }
+    ],
+    "GetFileInformationByHandle": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpFileInformation",
+            "type": "LPBY_HANDLE_FILE_INFORMATION"
+        }
+    ],
+    "GetFileSize": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpFileSizeHigh",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetFileSizeEx": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpFileSize",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "GetFileType": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        }
+    ],
+    "GetFinalPathNameByHandleA": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpszFilePath",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchFilePath",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetFinalPathNameByHandleW": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpszFilePath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchFilePath",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetFileTime": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpCreationTime",
+            "type": "LPFILETIME"
+        },
+        {
+            "name": "lpLastAccessTime",
+            "type": "LPFILETIME"
+        },
+        {
+            "name": "lpLastWriteTime",
+            "type": "LPFILETIME"
+        }
+    ],
+    "GetFullPathNameW": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "nBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpFilePart",
+            "type": "LPWSTR"
+        }
+    ],
+    "GetFullPathNameA": [
+        {
+            "name": "lpFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "nBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpFilePart",
+            "type": "LPSTR"
+        }
+    ],
+    "GetLogicalDrives": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetLongPathNameA": [
+        {
+            "name": "lpszShortPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszLongPath",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchBuffer",
+            "type": "DWORD"
+        }
+    ],
+    "GetLongPathNameW": [
+        {
+            "name": "lpszShortPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszLongPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchBuffer",
+            "type": "DWORD"
+        }
+    ],
+    "GetVolumeInformationByHandleW": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpVolumeNameBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nVolumeNameSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpVolumeSerialNumber",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpMaximumComponentLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpFileSystemFlags",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpFileSystemNameBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nFileSystemNameSize",
+            "type": "DWORD"
+        }
+    ],
+    "GetVolumeInformationW": [
+        {
+            "name": "lpRootPathName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpVolumeNameBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nVolumeNameSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpVolumeSerialNumber",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpMaximumComponentLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpFileSystemFlags",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpFileSystemNameBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nFileSystemNameSize",
+            "type": "DWORD"
+        }
+    ],
+    "LocalFileTimeToFileTime": [
+        {
+            "name": "lpLocalFileTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "lpFileTime",
+            "type": "LPFILETIME"
+        }
+    ],
+    "LockFile": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFileOffsetLow",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFileOffsetHigh",
+            "type": "DWORD"
+        },
+        {
+            "name": "nNumberOfBytesToLockLow",
+            "type": "DWORD"
+        },
+        {
+            "name": "nNumberOfBytesToLockHigh",
+            "type": "DWORD"
+        }
+    ],
+    "LockFileEx": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "nNumberOfBytesToLockLow",
+            "type": "DWORD"
+        },
+        {
+            "name": "nNumberOfBytesToLockHigh",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "ReadFile": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nNumberOfBytesToRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpNumberOfBytesRead",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "ReadFileEx": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nNumberOfBytesToRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        },
+        {
+            "name": "lpCompletionRoutine",
+            "type": "LPOVERLAPPED_COMPLETION_ROUTINE"
+        }
+    ],
+    "ReadFileScatter": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "aSegmentArray",
+            "type": "FILE_SEGMENT_ELEMENT"
+        },
+        {
+            "name": "nNumberOfBytesToRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "RemoveDirectoryA": [
+        {
+            "name": "lpPathName",
+            "type": "LPCSTR"
+        }
+    ],
+    "RemoveDirectoryW": [
+        {
+            "name": "lpPathName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SetEndOfFile": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        }
+    ],
+    "SetFileAttributesA": [
+        {
+            "name": "lpFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFileAttributes",
+            "type": "DWORD"
+        }
+    ],
+    "SetFileAttributesW": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFileAttributes",
+            "type": "DWORD"
+        }
+    ],
+    "SetFileInformationByHandle": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "FileInformationClass",
+            "type": "FILE_INFO_BY_HANDLE_CLASS"
+        },
+        {
+            "name": "lpFileInformation",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "SetFilePointer": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lDistanceToMove",
+            "type": "LONG"
+        },
+        {
+            "name": "lpDistanceToMoveHigh",
+            "type": "PLONG"
+        },
+        {
+            "name": "dwMoveMethod",
+            "type": "DWORD"
+        }
+    ],
+    "SetFilePointerEx": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "liDistanceToMove",
+            "type": "LARGE_INTEGER"
+        },
+        {
+            "name": "lpNewFilePointer",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "dwMoveMethod",
+            "type": "DWORD"
+        }
+    ],
+    "SetFileTime": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpCreationTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "lpLastAccessTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "lpLastWriteTime",
+            "type": "FILETIME"
+        }
+    ],
+    "SetFileValidData": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ValidDataLength",
+            "type": "LONGLONG"
+        }
+    ],
+    "UnlockFile": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFileOffsetLow",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFileOffsetHigh",
+            "type": "DWORD"
+        },
+        {
+            "name": "nNumberOfBytesToUnlockLow",
+            "type": "DWORD"
+        },
+        {
+            "name": "nNumberOfBytesToUnlockHigh",
+            "type": "DWORD"
+        }
+    ],
+    "UnlockFileEx": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "nNumberOfBytesToUnlockLow",
+            "type": "DWORD"
+        },
+        {
+            "name": "nNumberOfBytesToUnlockHigh",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "WriteFile": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "nNumberOfBytesToWrite",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpNumberOfBytesWritten",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "WriteFileEx": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "nNumberOfBytesToWrite",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        },
+        {
+            "name": "lpCompletionRoutine",
+            "type": "LPOVERLAPPED_COMPLETION_ROUTINE"
+        }
+    ],
+    "WriteFileGather": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "aSegmentArray",
+            "type": "FILE_SEGMENT_ELEMENT"
+        },
+        {
+            "name": "nNumberOfBytesToWrite",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "GetTempPathW": [
+        {
+            "name": "nBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPWSTR"
+        }
+    ],
+    "CreateFile2": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwShareMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwCreationDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCreateExParams",
+            "type": "LPCREATEFILE2_EXTENDED_PARAMETERS"
+        }
+    ],
+    "SetFileIoOverlappedRange": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "OverlappedRangeStart",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "Length",
+            "type": "ULONG"
+        }
+    ],
+    "GetCompressedFileSizeA": [
+        {
+            "name": "lpFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpFileSizeHigh",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetCompressedFileSizeW": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpFileSizeHigh",
+            "type": "LPDWORD"
+        }
+    ],
+    "FindFirstStreamW": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "InfoLevel",
+            "type": "STREAM_INFO_LEVELS"
+        },
+        {
+            "name": "lpFindStreamData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "FindNextStreamW": [
+        {
+            "name": "hFindStream",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpFindStreamData",
+            "type": "LPVOID"
+        }
+    ],
+    "AreFileApisANSI": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetTempPathA": [
+        {
+            "name": "nBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPSTR"
+        }
+    ],
+    "FindFirstFileNameW": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "StringLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "LinkName",
+            "type": "PWSTR"
+        }
+    ],
+    "FindNextFileNameW": [
+        {
+            "name": "hFindStream",
+            "type": "HANDLE"
+        },
+        {
+            "name": "StringLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "LinkName",
+            "type": "PWSTR"
+        }
+    ],
+    "GetVolumeInformationA": [
+        {
+            "name": "lpRootPathName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpVolumeNameBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nVolumeNameSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpVolumeSerialNumber",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpMaximumComponentLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpFileSystemFlags",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpFileSystemNameBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nFileSystemNameSize",
+            "type": "DWORD"
+        }
+    ],
+    "SetFileApisToOEM": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetFileApisToANSI": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ]
+}

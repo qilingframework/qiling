@@ -1,0 +1,86 @@
+{
+    "QueryUsersOnEncryptedFile": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pUsers",
+            "type": "PENCRYPTION_CERTIFICATE_HASH_LIST"
+        }
+    ],
+    "QueryRecoveryAgentsOnEncryptedFile": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pRecoveryAgents",
+            "type": "PENCRYPTION_CERTIFICATE_HASH_LIST"
+        }
+    ],
+    "RemoveUsersFromEncryptedFile": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pHashes",
+            "type": "PENCRYPTION_CERTIFICATE_HASH_LIST"
+        }
+    ],
+    "AddUsersToEncryptedFile": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pEncryptionCertificates",
+            "type": "PENCRYPTION_CERTIFICATE_LIST"
+        }
+    ],
+    "SetUserFileEncryptionKey": [
+        {
+            "name": "pEncryptionCertificate",
+            "type": "PENCRYPTION_CERTIFICATE"
+        }
+    ],
+    "FreeEncryptionCertificateHashList": [
+        {
+            "name": "pUsers",
+            "type": "PENCRYPTION_CERTIFICATE_HASH_LIST"
+        }
+    ],
+    "EncryptionDisable": [
+        {
+            "name": "DirPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Disable",
+            "type": "BOOL"
+        }
+    ],
+    "DuplicateEncryptionInfoFile": [
+        {
+            "name": "SrcFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DstFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwCreationDistribution",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        }
+    ]
+}

@@ -1,0 +1,104 @@
+{
+    "QueueUserWorkItem": [
+        {
+            "name": "Function",
+            "type": "LPTHREAD_START_ROUTINE"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "UnregisterWaitEx": [
+        {
+            "name": "WaitHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CompletionEvent",
+            "type": "HANDLE"
+        }
+    ],
+    "CreateTimerQueue": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CreateTimerQueueTimer": [
+        {
+            "name": "phNewTimer",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "TimerQueue",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Callback",
+            "type": "WAITORTIMERCALLBACK"
+        },
+        {
+            "name": "Parameter",
+            "type": "PVOID"
+        },
+        {
+            "name": "DueTime",
+            "type": "DWORD"
+        },
+        {
+            "name": "Period",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "ChangeTimerQueueTimer": [
+        {
+            "name": "TimerQueue",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Timer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "DueTime",
+            "type": "ULONG"
+        },
+        {
+            "name": "Period",
+            "type": "ULONG"
+        }
+    ],
+    "DeleteTimerQueueTimer": [
+        {
+            "name": "TimerQueue",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Timer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CompletionEvent",
+            "type": "HANDLE"
+        }
+    ],
+    "DeleteTimerQueueEx": [
+        {
+            "name": "TimerQueue",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CompletionEvent",
+            "type": "HANDLE"
+        }
+    ]
+}

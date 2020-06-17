@@ -1,0 +1,58 @@
+{
+    "OpenThreadWaitChainSession": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "callback",
+            "type": "PWAITCHAINCALLBACK"
+        }
+    ],
+    "CloseThreadWaitChainSession": [
+        {
+            "name": "WctHandle",
+            "type": "HWCT"
+        }
+    ],
+    "GetThreadWaitChain": [
+        {
+            "name": "WctHandle",
+            "type": "HWCT"
+        },
+        {
+            "name": "Context",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ThreadId",
+            "type": "DWORD"
+        },
+        {
+            "name": "NodeCount",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "NodeInfoArray",
+            "type": "PWAITCHAIN_NODE_INFO"
+        },
+        {
+            "name": "IsCycle",
+            "type": "LPBOOL"
+        }
+    ],
+    "RegisterWaitChainCOMCallback": [
+        {
+            "name": "CallStateCallback",
+            "type": "PCOGETCALLSTATE"
+        },
+        {
+            "name": "ActivationStateCallback",
+            "type": "PCOGETACTIVATIONSTATE"
+        }
+    ]
+}

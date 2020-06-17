@@ -1,0 +1,28 @@
+{
+    "GetNumaHighestNodeNumber": [
+        {
+            "name": "HighestNodeNumber",
+            "type": "PULONG"
+        }
+    ],
+    "GetNumaNodeProcessorMaskEx": [
+        {
+            "name": "Node",
+            "type": "USHORT"
+        },
+        {
+            "name": "ProcessorMask",
+            "type": "PGROUP_AFFINITY"
+        }
+    ],
+    "GetNumaProximityNodeEx": [
+        {
+            "name": "ProximityId",
+            "type": "ULONG"
+        },
+        {
+            "name": "NodeNumber",
+            "type": "PUSHORT"
+        }
+    ]
+}

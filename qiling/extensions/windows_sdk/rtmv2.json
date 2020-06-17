@@ -1,0 +1,1008 @@
+{
+    "RtmRegisterEntity": [
+        {
+            "name": "RtmEntityInfo",
+            "type": "PRTM_ENTITY_INFO"
+        },
+        {
+            "name": "ExportMethods",
+            "type": "PRTM_ENTITY_EXPORT_METHODS"
+        },
+        {
+            "name": "EventCallback",
+            "type": "RTM_EVENT_CALLBACK"
+        },
+        {
+            "name": "ReserveOpaquePointer",
+            "type": "BOOL"
+        },
+        {
+            "name": "RtmRegProfile",
+            "type": "PRTM_REGN_PROFILE"
+        },
+        {
+            "name": "RtmRegHandle",
+            "type": "PRTM_ENTITY_HANDLE"
+        }
+    ],
+    "RtmDeregisterEntity": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        }
+    ],
+    "RtmGetRegisteredEntities": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NumEntities",
+            "type": "PUINT"
+        },
+        {
+            "name": "EntityHandles",
+            "type": "PRTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "EntityInfos",
+            "type": "PRTM_ENTITY_INFO"
+        }
+    ],
+    "RtmReleaseEntities": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NumEntities",
+            "type": "UINT"
+        },
+        {
+            "name": "EntityHandles",
+            "type": "PRTM_ENTITY_HANDLE"
+        }
+    ],
+    "RtmLockDestination": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "DestHandle",
+            "type": "RTM_DEST_HANDLE"
+        },
+        {
+            "name": "Exclusive",
+            "type": "BOOL"
+        },
+        {
+            "name": "LockDest",
+            "type": "BOOL"
+        }
+    ],
+    "RtmGetOpaqueInformationPointer": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "DestHandle",
+            "type": "RTM_DEST_HANDLE"
+        },
+        {
+            "name": "OpaqueInfoPointer",
+            "type": "PVOID"
+        }
+    ],
+    "RtmGetEntityMethods": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "EntityHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NumMethods",
+            "type": "PUINT"
+        },
+        {
+            "name": "ExptMethods",
+            "type": "PRTM_ENTITY_EXPORT_METHOD"
+        }
+    ],
+    "RtmInvokeMethod": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "EntityHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "Input",
+            "type": "PRTM_ENTITY_METHOD_INPUT"
+        },
+        {
+            "name": "OutputSize",
+            "type": "PUINT"
+        },
+        {
+            "name": "Output",
+            "type": "PRTM_ENTITY_METHOD_OUTPUT"
+        }
+    ],
+    "RtmBlockMethods": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "TargetHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TargetType",
+            "type": "UCHAR"
+        },
+        {
+            "name": "BlockingFlag",
+            "type": "DWORD"
+        }
+    ],
+    "RtmGetEntityInfo": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "EntityHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "EntityInfo",
+            "type": "PRTM_ENTITY_INFO"
+        }
+    ],
+    "RtmGetDestInfo": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "DestHandle",
+            "type": "RTM_DEST_HANDLE"
+        },
+        {
+            "name": "ProtocolId",
+            "type": "ULONG"
+        },
+        {
+            "name": "TargetViews",
+            "type": "RTM_VIEW_SET"
+        },
+        {
+            "name": "DestInfo",
+            "type": "PRTM_DEST_INFO"
+        }
+    ],
+    "RtmGetRouteInfo": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "RouteHandle",
+            "type": "RTM_ROUTE_HANDLE"
+        },
+        {
+            "name": "RouteInfo",
+            "type": "PRTM_ROUTE_INFO"
+        },
+        {
+            "name": "DestAddress",
+            "type": "PRTM_NET_ADDRESS"
+        }
+    ],
+    "RtmGetNextHopInfo": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NextHopHandle",
+            "type": "RTM_NEXTHOP_HANDLE"
+        },
+        {
+            "name": "NextHopInfo",
+            "type": "PRTM_NEXTHOP_INFO"
+        }
+    ],
+    "RtmReleaseEntityInfo": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "EntityInfo",
+            "type": "PRTM_ENTITY_INFO"
+        }
+    ],
+    "RtmReleaseDestInfo": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "DestInfo",
+            "type": "PRTM_DEST_INFO"
+        }
+    ],
+    "RtmReleaseRouteInfo": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "RouteInfo",
+            "type": "PRTM_ROUTE_INFO"
+        }
+    ],
+    "RtmReleaseNextHopInfo": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NextHopInfo",
+            "type": "PRTM_NEXTHOP_INFO"
+        }
+    ],
+    "RtmAddRouteToDest": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "RouteHandle",
+            "type": "PRTM_ROUTE_HANDLE"
+        },
+        {
+            "name": "DestAddress",
+            "type": "PRTM_NET_ADDRESS"
+        },
+        {
+            "name": "RouteInfo",
+            "type": "PRTM_ROUTE_INFO"
+        },
+        {
+            "name": "TimeToLive",
+            "type": "ULONG"
+        },
+        {
+            "name": "RouteListHandle",
+            "type": "RTM_ROUTE_LIST_HANDLE"
+        },
+        {
+            "name": "NotifyType",
+            "type": "RTM_NOTIFY_FLAGS"
+        },
+        {
+            "name": "NotifyHandle",
+            "type": "RTM_NOTIFY_HANDLE"
+        },
+        {
+            "name": "ChangeFlags",
+            "type": "PRTM_ROUTE_CHANGE_FLAGS"
+        }
+    ],
+    "RtmDeleteRouteToDest": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "RouteHandle",
+            "type": "RTM_ROUTE_HANDLE"
+        },
+        {
+            "name": "ChangeFlags",
+            "type": "PRTM_ROUTE_CHANGE_FLAGS"
+        }
+    ],
+    "RtmHoldDestination": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "DestHandle",
+            "type": "RTM_DEST_HANDLE"
+        },
+        {
+            "name": "TargetViews",
+            "type": "RTM_VIEW_SET"
+        },
+        {
+            "name": "HoldTime",
+            "type": "ULONG"
+        }
+    ],
+    "RtmGetRoutePointer": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "RouteHandle",
+            "type": "RTM_ROUTE_HANDLE"
+        },
+        {
+            "name": "RoutePointer",
+            "type": "PRTM_ROUTE_INFO"
+        }
+    ],
+    "RtmLockRoute": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "RouteHandle",
+            "type": "RTM_ROUTE_HANDLE"
+        },
+        {
+            "name": "Exclusive",
+            "type": "BOOL"
+        },
+        {
+            "name": "LockRoute",
+            "type": "BOOL"
+        },
+        {
+            "name": "RoutePointer",
+            "type": "PRTM_ROUTE_INFO"
+        }
+    ],
+    "RtmUpdateAndUnlockRoute": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "RouteHandle",
+            "type": "RTM_ROUTE_HANDLE"
+        },
+        {
+            "name": "TimeToLive",
+            "type": "ULONG"
+        },
+        {
+            "name": "RouteListHandle",
+            "type": "RTM_ROUTE_LIST_HANDLE"
+        },
+        {
+            "name": "NotifyType",
+            "type": "RTM_NOTIFY_FLAGS"
+        },
+        {
+            "name": "NotifyHandle",
+            "type": "RTM_NOTIFY_HANDLE"
+        },
+        {
+            "name": "ChangeFlags",
+            "type": "PRTM_ROUTE_CHANGE_FLAGS"
+        }
+    ],
+    "RtmGetExactMatchDestination": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "DestAddress",
+            "type": "PRTM_NET_ADDRESS"
+        },
+        {
+            "name": "ProtocolId",
+            "type": "ULONG"
+        },
+        {
+            "name": "TargetViews",
+            "type": "RTM_VIEW_SET"
+        },
+        {
+            "name": "DestInfo",
+            "type": "PRTM_DEST_INFO"
+        }
+    ],
+    "RtmGetMostSpecificDestination": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "DestAddress",
+            "type": "PRTM_NET_ADDRESS"
+        },
+        {
+            "name": "ProtocolId",
+            "type": "ULONG"
+        },
+        {
+            "name": "TargetViews",
+            "type": "RTM_VIEW_SET"
+        },
+        {
+            "name": "DestInfo",
+            "type": "PRTM_DEST_INFO"
+        }
+    ],
+    "RtmGetLessSpecificDestination": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "DestHandle",
+            "type": "RTM_DEST_HANDLE"
+        },
+        {
+            "name": "ProtocolId",
+            "type": "ULONG"
+        },
+        {
+            "name": "TargetViews",
+            "type": "RTM_VIEW_SET"
+        },
+        {
+            "name": "DestInfo",
+            "type": "PRTM_DEST_INFO"
+        }
+    ],
+    "RtmGetExactMatchRoute": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "DestAddress",
+            "type": "PRTM_NET_ADDRESS"
+        },
+        {
+            "name": "MatchingFlags",
+            "type": "RTM_MATCH_FLAGS"
+        },
+        {
+            "name": "RouteInfo",
+            "type": "PRTM_ROUTE_INFO"
+        },
+        {
+            "name": "InterfaceIndex",
+            "type": "ULONG"
+        },
+        {
+            "name": "TargetViews",
+            "type": "RTM_VIEW_SET"
+        },
+        {
+            "name": "RouteHandle",
+            "type": "PRTM_ROUTE_HANDLE"
+        }
+    ],
+    "RtmIsBestRoute": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "RouteHandle",
+            "type": "RTM_ROUTE_HANDLE"
+        },
+        {
+            "name": "BestInViews",
+            "type": "PRTM_VIEW_SET"
+        }
+    ],
+    "RtmAddNextHop": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NextHopInfo",
+            "type": "PRTM_NEXTHOP_INFO"
+        },
+        {
+            "name": "NextHopHandle",
+            "type": "PRTM_NEXTHOP_HANDLE"
+        },
+        {
+            "name": "ChangeFlags",
+            "type": "PRTM_NEXTHOP_CHANGE_FLAGS"
+        }
+    ],
+    "RtmFindNextHop": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NextHopInfo",
+            "type": "PRTM_NEXTHOP_INFO"
+        },
+        {
+            "name": "NextHopHandle",
+            "type": "PRTM_NEXTHOP_HANDLE"
+        },
+        {
+            "name": "NextHopPointer",
+            "type": "PRTM_NEXTHOP_INFO"
+        }
+    ],
+    "RtmDeleteNextHop": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NextHopHandle",
+            "type": "RTM_NEXTHOP_HANDLE"
+        },
+        {
+            "name": "NextHopInfo",
+            "type": "PRTM_NEXTHOP_INFO"
+        }
+    ],
+    "RtmGetNextHopPointer": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NextHopHandle",
+            "type": "RTM_NEXTHOP_HANDLE"
+        },
+        {
+            "name": "NextHopPointer",
+            "type": "PRTM_NEXTHOP_INFO"
+        }
+    ],
+    "RtmLockNextHop": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NextHopHandle",
+            "type": "RTM_NEXTHOP_HANDLE"
+        },
+        {
+            "name": "Exclusive",
+            "type": "BOOL"
+        },
+        {
+            "name": "LockNextHop",
+            "type": "BOOL"
+        },
+        {
+            "name": "NextHopPointer",
+            "type": "PRTM_NEXTHOP_INFO"
+        }
+    ],
+    "RtmCreateDestEnum": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "TargetViews",
+            "type": "RTM_VIEW_SET"
+        },
+        {
+            "name": "EnumFlags",
+            "type": "RTM_ENUM_FLAGS"
+        },
+        {
+            "name": "NetAddress",
+            "type": "PRTM_NET_ADDRESS"
+        },
+        {
+            "name": "ProtocolId",
+            "type": "ULONG"
+        },
+        {
+            "name": "RtmEnumHandle",
+            "type": "PRTM_ENUM_HANDLE"
+        }
+    ],
+    "RtmGetEnumDests": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "EnumHandle",
+            "type": "RTM_ENUM_HANDLE"
+        },
+        {
+            "name": "NumDests",
+            "type": "PUINT"
+        },
+        {
+            "name": "DestInfos",
+            "type": "PRTM_DEST_INFO"
+        }
+    ],
+    "RtmReleaseDests": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NumDests",
+            "type": "UINT"
+        },
+        {
+            "name": "DestInfos",
+            "type": "PRTM_DEST_INFO"
+        }
+    ],
+    "RtmCreateRouteEnum": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "DestHandle",
+            "type": "RTM_DEST_HANDLE"
+        },
+        {
+            "name": "TargetViews",
+            "type": "RTM_VIEW_SET"
+        },
+        {
+            "name": "EnumFlags",
+            "type": "RTM_ENUM_FLAGS"
+        },
+        {
+            "name": "StartDest",
+            "type": "PRTM_NET_ADDRESS"
+        },
+        {
+            "name": "MatchingFlags",
+            "type": "RTM_MATCH_FLAGS"
+        },
+        {
+            "name": "CriteriaRoute",
+            "type": "PRTM_ROUTE_INFO"
+        },
+        {
+            "name": "CriteriaInterface",
+            "type": "ULONG"
+        },
+        {
+            "name": "RtmEnumHandle",
+            "type": "PRTM_ENUM_HANDLE"
+        }
+    ],
+    "RtmGetEnumRoutes": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "EnumHandle",
+            "type": "RTM_ENUM_HANDLE"
+        },
+        {
+            "name": "NumRoutes",
+            "type": "PUINT"
+        },
+        {
+            "name": "RouteHandles",
+            "type": "PRTM_ROUTE_HANDLE"
+        }
+    ],
+    "RtmReleaseRoutes": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NumRoutes",
+            "type": "UINT"
+        },
+        {
+            "name": "RouteHandles",
+            "type": "PRTM_ROUTE_HANDLE"
+        }
+    ],
+    "RtmCreateNextHopEnum": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "EnumFlags",
+            "type": "RTM_ENUM_FLAGS"
+        },
+        {
+            "name": "NetAddress",
+            "type": "PRTM_NET_ADDRESS"
+        },
+        {
+            "name": "RtmEnumHandle",
+            "type": "PRTM_ENUM_HANDLE"
+        }
+    ],
+    "RtmGetEnumNextHops": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "EnumHandle",
+            "type": "RTM_ENUM_HANDLE"
+        },
+        {
+            "name": "NumNextHops",
+            "type": "PUINT"
+        },
+        {
+            "name": "NextHopHandles",
+            "type": "PRTM_NEXTHOP_HANDLE"
+        }
+    ],
+    "RtmReleaseNextHops": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NumNextHops",
+            "type": "UINT"
+        },
+        {
+            "name": "NextHopHandles",
+            "type": "PRTM_NEXTHOP_HANDLE"
+        }
+    ],
+    "RtmDeleteEnumHandle": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "EnumHandle",
+            "type": "RTM_ENUM_HANDLE"
+        }
+    ],
+    "RtmRegisterForChangeNotification": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "TargetViews",
+            "type": "RTM_VIEW_SET"
+        },
+        {
+            "name": "NotifyFlags",
+            "type": "RTM_NOTIFY_FLAGS"
+        },
+        {
+            "name": "NotifyContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "NotifyHandle",
+            "type": "PRTM_NOTIFY_HANDLE"
+        }
+    ],
+    "RtmGetChangedDests": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NotifyHandle",
+            "type": "RTM_NOTIFY_HANDLE"
+        },
+        {
+            "name": "NumDests",
+            "type": "PUINT"
+        },
+        {
+            "name": "ChangedDests",
+            "type": "PRTM_DEST_INFO"
+        }
+    ],
+    "RtmReleaseChangedDests": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NotifyHandle",
+            "type": "RTM_NOTIFY_HANDLE"
+        },
+        {
+            "name": "NumDests",
+            "type": "UINT"
+        },
+        {
+            "name": "ChangedDests",
+            "type": "PRTM_DEST_INFO"
+        }
+    ],
+    "RtmIgnoreChangedDests": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NotifyHandle",
+            "type": "RTM_NOTIFY_HANDLE"
+        },
+        {
+            "name": "NumDests",
+            "type": "UINT"
+        },
+        {
+            "name": "ChangedDests",
+            "type": "PRTM_DEST_HANDLE"
+        }
+    ],
+    "RtmGetChangeStatus": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NotifyHandle",
+            "type": "RTM_NOTIFY_HANDLE"
+        },
+        {
+            "name": "DestHandle",
+            "type": "RTM_DEST_HANDLE"
+        },
+        {
+            "name": "ChangeStatus",
+            "type": "PBOOL"
+        }
+    ],
+    "RtmMarkDestForChangeNotification": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NotifyHandle",
+            "type": "RTM_NOTIFY_HANDLE"
+        },
+        {
+            "name": "DestHandle",
+            "type": "RTM_DEST_HANDLE"
+        },
+        {
+            "name": "MarkDest",
+            "type": "BOOL"
+        }
+    ],
+    "RtmIsMarkedForChangeNotification": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NotifyHandle",
+            "type": "RTM_NOTIFY_HANDLE"
+        },
+        {
+            "name": "DestHandle",
+            "type": "RTM_DEST_HANDLE"
+        },
+        {
+            "name": "DestMarked",
+            "type": "PBOOL"
+        }
+    ],
+    "RtmDeregisterFromChangeNotification": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NotifyHandle",
+            "type": "RTM_NOTIFY_HANDLE"
+        }
+    ],
+    "RtmCreateRouteList": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "RouteListHandle",
+            "type": "PRTM_ROUTE_LIST_HANDLE"
+        }
+    ],
+    "RtmInsertInRouteList": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "RouteListHandle",
+            "type": "RTM_ROUTE_LIST_HANDLE"
+        },
+        {
+            "name": "NumRoutes",
+            "type": "UINT"
+        },
+        {
+            "name": "RouteHandles",
+            "type": "PRTM_ROUTE_HANDLE"
+        }
+    ],
+    "RtmCreateRouteListEnum": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "RouteListHandle",
+            "type": "RTM_ROUTE_LIST_HANDLE"
+        },
+        {
+            "name": "RtmEnumHandle",
+            "type": "PRTM_ENUM_HANDLE"
+        }
+    ],
+    "RtmGetListEnumRoutes": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "EnumHandle",
+            "type": "RTM_ENUM_HANDLE"
+        },
+        {
+            "name": "NumRoutes",
+            "type": "PUINT"
+        },
+        {
+            "name": "RouteHandles",
+            "type": "PRTM_ROUTE_HANDLE"
+        }
+    ],
+    "RtmDeleteRouteList": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "RouteListHandle",
+            "type": "RTM_ROUTE_LIST_HANDLE"
+        }
+    ],
+    "RtmReferenceHandles": [
+        {
+            "name": "RtmRegHandle",
+            "type": "RTM_ENTITY_HANDLE"
+        },
+        {
+            "name": "NumHandles",
+            "type": "UINT"
+        },
+        {
+            "name": "RtmHandles",
+            "type": "HANDLE"
+        }
+    ]
+}

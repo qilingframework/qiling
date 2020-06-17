@@ -1,0 +1,28 @@
+{
+    "SRSetRestorePointA": [
+        {
+            "name": "pRestorePtSpec",
+            "type": "PRESTOREPOINTINFOA"
+        },
+        {
+            "name": "pSMgrStatus",
+            "type": "PSTATEMGRSTATUS"
+        }
+    ],
+    "SRSetRestorePointW": [
+        {
+            "name": "pRestorePtSpec",
+            "type": "PRESTOREPOINTINFOW"
+        },
+        {
+            "name": "pSMgrStatus",
+            "type": "PSTATEMGRSTATUS"
+        }
+    ],
+    "SRRemoveRestorePoint": [
+        {
+            "name": "dwRPNum",
+            "type": "DWORD"
+        }
+    ]
+}

@@ -1,0 +1,2012 @@
+{
+    "SHGetMalloc": [
+        {
+            "name": "ppMalloc",
+            "type": "IMalloc"
+        }
+    ],
+    "SHFree": [
+        {
+            "name": "pv",
+            "type": "void"
+        }
+    ],
+    "SHGetIconOverlayIndexA": [
+        {
+            "name": "pszIconPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iIconIndex",
+            "type": "int"
+        }
+    ],
+    "SHGetIconOverlayIndexW": [
+        {
+            "name": "pszIconPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iIconIndex",
+            "type": "int"
+        }
+    ],
+    "ILClone": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "ILCloneFirst": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "ILCombine": [
+        {
+            "name": "pidl1",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pidl2",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "ILFree": [
+        {
+            "name": "pidl",
+            "type": "LPITEMIDLIST"
+        }
+    ],
+    "ILGetNext": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "ILGetSize": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "ILFindChild": [
+        {
+            "name": "pidlParent",
+            "type": "LPITEMIDLIST"
+        },
+        {
+            "name": "pidlChild",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "ILFindLastID": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "ILRemoveLastID": [
+        {
+            "name": "pidl",
+            "type": "LPITEMIDLIST"
+        }
+    ],
+    "ILIsEqual": [
+        {
+            "name": "pidl1",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pidl2",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "ILIsParent": [
+        {
+            "name": "pidl1",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pidl2",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "fImmediate",
+            "type": "BOOL"
+        }
+    ],
+    "ILSaveToStream": [
+        {
+            "name": "pstm",
+            "type": "IStream"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "ILLoadFromStream": [
+        {
+            "name": "pstm",
+            "type": "IStream"
+        },
+        {
+            "name": "pidl",
+            "type": "LPITEMIDLIST"
+        }
+    ],
+    "ILLoadFromStreamEx": [
+        {
+            "name": "pstm",
+            "type": "IStream"
+        },
+        {
+            "name": "pidl",
+            "type": "LPITEMIDLIST"
+        }
+    ],
+    "ILCreateFromPathA": [
+        {
+            "name": "pszPath",
+            "type": "PCSTR"
+        }
+    ],
+    "ILCreateFromPathW": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "SHILCreateFromPath": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppidl",
+            "type": "LPITEMIDLIST"
+        },
+        {
+            "name": "rgfInOut",
+            "type": "DWORD"
+        }
+    ],
+    "ILAppendID": [
+        {
+            "name": "pidl",
+            "type": "LPITEMIDLIST"
+        },
+        {
+            "name": "pmkid",
+            "type": "LPCSHITEMID"
+        },
+        {
+            "name": "fAppend",
+            "type": "BOOL"
+        }
+    ],
+    "SHGetPathFromIDListEx": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "DWORD"
+        },
+        {
+            "name": "uOpts",
+            "type": "GPFIDL_FLAGS"
+        }
+    ],
+    "SHGetPathFromIDListA": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        }
+    ],
+    "SHGetPathFromIDListW": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "SHCreateDirectory": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "SHCreateDirectoryExA": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "psa",
+            "type": "SECURITY_ATTRIBUTES"
+        }
+    ],
+    "SHCreateDirectoryExW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "psa",
+            "type": "SECURITY_ATTRIBUTES"
+        }
+    ],
+    "SHOpenFolderAndSelectItems": [
+        {
+            "name": "pidlFolder",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "cidl",
+            "type": "UINT"
+        },
+        {
+            "name": "apidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHCreateShellItem": [
+        {
+            "name": "pidlParent",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "psfParent",
+            "type": "IShellFolder"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "ppsi",
+            "type": "IShellItem"
+        }
+    ],
+    "SHGetSpecialFolderLocation": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "csidl",
+            "type": "int"
+        },
+        {
+            "name": "ppidl",
+            "type": "LPITEMIDLIST"
+        }
+    ],
+    "SHCloneSpecialIDList": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "csidl",
+            "type": "int"
+        },
+        {
+            "name": "fCreate",
+            "type": "BOOL"
+        }
+    ],
+    "SHGetSpecialFolderPathA": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        },
+        {
+            "name": "csidl",
+            "type": "int"
+        },
+        {
+            "name": "fCreate",
+            "type": "BOOL"
+        }
+    ],
+    "SHGetSpecialFolderPathW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "csidl",
+            "type": "int"
+        },
+        {
+            "name": "fCreate",
+            "type": "BOOL"
+        }
+    ],
+    "SHFlushSFCache": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SHGetFolderPathA": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "csidl",
+            "type": "int"
+        },
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        }
+    ],
+    "SHGetFolderPathW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "csidl",
+            "type": "int"
+        },
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "SHGetFolderLocation": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "csidl",
+            "type": "int"
+        },
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppidl",
+            "type": "LPITEMIDLIST"
+        }
+    ],
+    "SHSetFolderPathA": [
+        {
+            "name": "csidl",
+            "type": "int"
+        },
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "SHSetFolderPathW": [
+        {
+            "name": "csidl",
+            "type": "int"
+        },
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SHGetFolderPathAndSubDirA": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "csidl",
+            "type": "int"
+        },
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszSubDir",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        }
+    ],
+    "SHGetFolderPathAndSubDirW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "csidl",
+            "type": "int"
+        },
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszSubDir",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "SHGetKnownFolderIDList": [
+        {
+            "name": "rfid",
+            "type": "KNOWNFOLDERID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppidl",
+            "type": "LPITEMIDLIST"
+        }
+    ],
+    "SHSetKnownFolderPath": [
+        {
+            "name": "rfid",
+            "type": "KNOWNFOLDERID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "SHGetKnownFolderPath": [
+        {
+            "name": "rfid",
+            "type": "KNOWNFOLDERID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppszPath",
+            "type": "PWSTR"
+        }
+    ],
+    "SHGetKnownFolderItem": [
+        {
+            "name": "rfid",
+            "type": "KNOWNFOLDERID"
+        },
+        {
+            "name": "flags",
+            "type": "KNOWN_FOLDER_FLAG"
+        },
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHGetSetFolderCustomSettings": [
+        {
+            "name": "pfcs",
+            "type": "LPSHFOLDERCUSTOMSETTINGS"
+        },
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwReadWrite",
+            "type": "DWORD"
+        }
+    ],
+    "SHBrowseForFolderA": [
+        {
+            "name": "lpbi",
+            "type": "LPBROWSEINFOA"
+        }
+    ],
+    "SHBrowseForFolderW": [
+        {
+            "name": "lpbi",
+            "type": "LPBROWSEINFOW"
+        }
+    ],
+    "SHLoadInProc": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        }
+    ],
+    "SHGetDesktopFolder": [
+        {
+            "name": "ppshf",
+            "type": "IShellFolder"
+        }
+    ],
+    "SHChangeNotify": [
+        {
+            "name": "wEventId",
+            "type": "LONG"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "dwItem1",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "dwItem2",
+            "type": "LPCVOID"
+        }
+    ],
+    "SHAddToRecentDocs": [
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "pv",
+            "type": "LPCVOID"
+        }
+    ],
+    "SHHandleUpdateImage": [
+        {
+            "name": "pidlExtra",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "SHUpdateImageA": [
+        {
+            "name": "pszHashItem",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iIndex",
+            "type": "int"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "iImageIndex",
+            "type": "int"
+        }
+    ],
+    "SHUpdateImageW": [
+        {
+            "name": "pszHashItem",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iIndex",
+            "type": "int"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "iImageIndex",
+            "type": "int"
+        }
+    ],
+    "SHChangeNotifyRegister": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "fSources",
+            "type": "int"
+        },
+        {
+            "name": "fEvents",
+            "type": "LONG"
+        },
+        {
+            "name": "wMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "cEntries",
+            "type": "int"
+        },
+        {
+            "name": "pshcne",
+            "type": "SHChangeNotifyEntry"
+        }
+    ],
+    "SHChangeNotifyDeregister": [
+        {
+            "name": "ulID",
+            "type": "ULONG"
+        }
+    ],
+    "SHChangeNotification_Lock": [
+        {
+            "name": "hChange",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwProcId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pppidl",
+            "type": "LPITEMIDLIST"
+        },
+        {
+            "name": "plEvent",
+            "type": "LONG"
+        }
+    ],
+    "SHChangeNotification_Unlock": [
+        {
+            "name": "hLock",
+            "type": "HANDLE"
+        }
+    ],
+    "SHGetRealIDL": [
+        {
+            "name": "psf",
+            "type": "IShellFolder"
+        },
+        {
+            "name": "pidlSimple",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "ppidlReal",
+            "type": "LPITEMIDLIST"
+        }
+    ],
+    "SHGetInstanceExplorer": [
+        {
+            "name": "ppunk",
+            "type": "IUnknown"
+        }
+    ],
+    "SHGetDataFromIDListA": [
+        {
+            "name": "psf",
+            "type": "IShellFolder"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "nFormat",
+            "type": "int"
+        },
+        {
+            "name": "pv",
+            "type": "void"
+        },
+        {
+            "name": "cb",
+            "type": "int"
+        }
+    ],
+    "SHGetDataFromIDListW": [
+        {
+            "name": "psf",
+            "type": "IShellFolder"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "nFormat",
+            "type": "int"
+        },
+        {
+            "name": "pv",
+            "type": "void"
+        },
+        {
+            "name": "cb",
+            "type": "int"
+        }
+    ],
+    "RestartDialog": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszPrompt",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwReturn",
+            "type": "DWORD"
+        }
+    ],
+    "RestartDialogEx": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszPrompt",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwReturn",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReasonCode",
+            "type": "DWORD"
+        }
+    ],
+    "SHCoCreateInstance": [
+        {
+            "name": "pszCLSID",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pclsid",
+            "type": "CLSID"
+        },
+        {
+            "name": "pUnkOuter",
+            "type": "IUnknown"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHCreateDataObject": [
+        {
+            "name": "pidlFolder",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "cidl",
+            "type": "UINT"
+        },
+        {
+            "name": "apidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pdtInner",
+            "type": "IDataObject"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "CIDLData_CreateFromIDArray": [
+        {
+            "name": "pidlFolder",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "cidl",
+            "type": "UINT"
+        },
+        {
+            "name": "apidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "ppdtobj",
+            "type": "IDataObject"
+        }
+    ],
+    "SHCreateStdEnumFmtEtc": [
+        {
+            "name": "cfmt",
+            "type": "UINT"
+        },
+        {
+            "name": "afmt",
+            "type": "FORMATETC"
+        },
+        {
+            "name": "ppenumFormatEtc",
+            "type": "IEnumFORMATETC"
+        }
+    ],
+    "SHDoDragDrop": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pdata",
+            "type": "IDataObject"
+        },
+        {
+            "name": "pdsrc",
+            "type": "IDropSource"
+        },
+        {
+            "name": "dwEffect",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwEffect",
+            "type": "DWORD"
+        }
+    ],
+    "DAD_SetDragImage": [
+        {
+            "name": "him",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "pptOffset",
+            "type": "POINT"
+        }
+    ],
+    "DAD_DragEnterEx": [
+        {
+            "name": "hwndTarget",
+            "type": "HWND"
+        },
+        {
+            "name": "ptStart",
+            "type": "POINT"
+        }
+    ],
+    "DAD_DragEnterEx2": [
+        {
+            "name": "hwndTarget",
+            "type": "HWND"
+        },
+        {
+            "name": "ptStart",
+            "type": "POINT"
+        },
+        {
+            "name": "pdtObject",
+            "type": "IDataObject"
+        }
+    ],
+    "DAD_ShowDragImage": [
+        {
+            "name": "fShow",
+            "type": "BOOL"
+        }
+    ],
+    "DAD_DragMove": [
+        {
+            "name": "pt",
+            "type": "POINT"
+        }
+    ],
+    "DAD_DragLeave": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "DAD_AutoScroll": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pad",
+            "type": "AUTO_SCROLL_DATA"
+        },
+        {
+            "name": "pptNow",
+            "type": "POINT"
+        }
+    ],
+    "ReadCabinetState": [
+        {
+            "name": "pcs",
+            "type": "CABINETSTATE"
+        },
+        {
+            "name": "cLength",
+            "type": "int"
+        }
+    ],
+    "WriteCabinetState": [
+        {
+            "name": "pcs",
+            "type": "CABINETSTATE"
+        }
+    ],
+    "PathMakeUniqueName": [
+        {
+            "name": "pszUniqueName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "UINT"
+        },
+        {
+            "name": "pszTemplate",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszLongPlate",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszDir",
+            "type": "PCWSTR"
+        }
+    ],
+    "PathIsExe": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "PathCleanupSpec": [
+        {
+            "name": "pszDir",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszSpec",
+            "type": "PWSTR"
+        }
+    ],
+    "PathResolve": [
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "dirs",
+            "type": "PZPCWSTR"
+        },
+        {
+            "name": "fFlags",
+            "type": "UINT"
+        }
+    ],
+    "GetFileNameFromBrowse": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszFilePath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchFilePath",
+            "type": "UINT"
+        },
+        {
+            "name": "pszWorkingDir",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszDefExt",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszFilters",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszTitle",
+            "type": "PCWSTR"
+        }
+    ],
+    "DriveType": [
+        {
+            "name": "iDrive",
+            "type": "int"
+        }
+    ],
+    "RealDriveType": [
+        {
+            "name": "iDrive",
+            "type": "int"
+        },
+        {
+            "name": "fOKToHitNet",
+            "type": "BOOL"
+        }
+    ],
+    "IsNetDrive": [
+        {
+            "name": "iDrive",
+            "type": "int"
+        }
+    ],
+    "Shell_MergeMenus": [
+        {
+            "name": "hmDst",
+            "type": "HMENU"
+        },
+        {
+            "name": "hmSrc",
+            "type": "HMENU"
+        },
+        {
+            "name": "uInsert",
+            "type": "UINT"
+        },
+        {
+            "name": "uIDAdjust",
+            "type": "UINT"
+        },
+        {
+            "name": "uIDAdjustMax",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "ULONG"
+        }
+    ],
+    "SHObjectProperties": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "shopObjectType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszObjectName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszPropertyPage",
+            "type": "PCWSTR"
+        }
+    ],
+    "SHFormatDrive": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "drive",
+            "type": "UINT"
+        },
+        {
+            "name": "fmtID",
+            "type": "UINT"
+        },
+        {
+            "name": "options",
+            "type": "UINT"
+        }
+    ],
+    "SHDestroyPropSheetExtArray": [
+        {
+            "name": "hpsxa",
+            "type": "HPSXA"
+        }
+    ],
+    "SHAddFromPropSheetExtArray": [
+        {
+            "name": "hpsxa",
+            "type": "HPSXA"
+        },
+        {
+            "name": "lpfnAddPage",
+            "type": "LPFNADDPROPSHEETPAGE"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "SHReplaceFromPropSheetExtArray": [
+        {
+            "name": "hpsxa",
+            "type": "HPSXA"
+        },
+        {
+            "name": "uPageID",
+            "type": "UINT"
+        },
+        {
+            "name": "lpfnReplaceWith",
+            "type": "LPFNADDPROPSHEETPAGE"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "SHFindFiles": [
+        {
+            "name": "pidlFolder",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pidlSaveFile",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "PathGetShortPath": [
+        {
+            "name": "pszLongPath",
+            "type": "PWSTR"
+        }
+    ],
+    "PathYetAnotherMakeUniqueName": [
+        {
+            "name": "pszUniqueName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszShort",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszFileSpec",
+            "type": "PCWSTR"
+        }
+    ],
+    "Win32DeleteFile": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "SHRestricted": [
+        {
+            "name": "rest",
+            "type": "RESTRICTIONS"
+        }
+    ],
+    "SignalFileOpen": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "AssocGetDetailsOfPropKey": [
+        {
+            "name": "psf",
+            "type": "IShellFolder"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "pv",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pfFoundPropKey",
+            "type": "BOOL"
+        }
+    ],
+    "SHStartNetConnectionDialogA": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszRemoteName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        }
+    ],
+    "SHStartNetConnectionDialogW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszRemoteName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        }
+    ],
+    "SHDefExtractIconA": [
+        {
+            "name": "pszIconFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iIndex",
+            "type": "int"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "phiconLarge",
+            "type": "HICON"
+        },
+        {
+            "name": "phiconSmall",
+            "type": "HICON"
+        },
+        {
+            "name": "nIconSize",
+            "type": "UINT"
+        }
+    ],
+    "SHDefExtractIconW": [
+        {
+            "name": "pszIconFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iIndex",
+            "type": "int"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "phiconLarge",
+            "type": "HICON"
+        },
+        {
+            "name": "phiconSmall",
+            "type": "HICON"
+        },
+        {
+            "name": "nIconSize",
+            "type": "UINT"
+        }
+    ],
+    "SHOpenWithDialog": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "poainfo",
+            "type": "OPENASINFO"
+        }
+    ],
+    "Shell_GetImageLists": [
+        {
+            "name": "phiml",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "phimlSmall",
+            "type": "HIMAGELIST"
+        }
+    ],
+    "Shell_GetCachedImageIndex": [
+        {
+            "name": "pwszIconPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "iIconIndex",
+            "type": "int"
+        },
+        {
+            "name": "uIconFlags",
+            "type": "UINT"
+        }
+    ],
+    "Shell_GetCachedImageIndexA": [
+        {
+            "name": "pszIconPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iIconIndex",
+            "type": "int"
+        },
+        {
+            "name": "uIconFlags",
+            "type": "UINT"
+        }
+    ],
+    "Shell_GetCachedImageIndexW": [
+        {
+            "name": "pszIconPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iIconIndex",
+            "type": "int"
+        },
+        {
+            "name": "uIconFlags",
+            "type": "UINT"
+        }
+    ],
+    "SHValidateUNC": [
+        {
+            "name": "hwndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "pszFile",
+            "type": "PWSTR"
+        },
+        {
+            "name": "fConnect",
+            "type": "UINT"
+        }
+    ],
+    "PifMgr_OpenProperties": [
+        {
+            "name": "pszApp",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszPIF",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "hInf",
+            "type": "UINT"
+        },
+        {
+            "name": "flOpt",
+            "type": "UINT"
+        }
+    ],
+    "PifMgr_GetProperties": [
+        {
+            "name": "hProps",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszGroup",
+            "type": "PCSTR"
+        },
+        {
+            "name": "lpProps",
+            "type": "void"
+        },
+        {
+            "name": "cbProps",
+            "type": "int"
+        },
+        {
+            "name": "flOpt",
+            "type": "UINT"
+        }
+    ],
+    "PifMgr_SetProperties": [
+        {
+            "name": "hProps",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszGroup",
+            "type": "PCSTR"
+        },
+        {
+            "name": "lpProps",
+            "type": "void"
+        },
+        {
+            "name": "cbProps",
+            "type": "int"
+        },
+        {
+            "name": "flOpt",
+            "type": "UINT"
+        }
+    ],
+    "PifMgr_CloseProperties": [
+        {
+            "name": "hProps",
+            "type": "HANDLE"
+        },
+        {
+            "name": "flOpt",
+            "type": "UINT"
+        }
+    ],
+    "SHSetInstanceExplorer": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        }
+    ],
+    "IsUserAnAdmin": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SHShellFolderView_Message": [
+        {
+            "name": "hwndMain",
+            "type": "HWND"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "SHCreateShellFolderView": [
+        {
+            "name": "pcsfv",
+            "type": "SFV_CREATE"
+        },
+        {
+            "name": "ppsv",
+            "type": "IShellView"
+        }
+    ],
+    "CDefFolderMenu_Create2": [
+        {
+            "name": "pidlFolder",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "cidl",
+            "type": "UINT"
+        },
+        {
+            "name": "apidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "psf",
+            "type": "IShellFolder"
+        },
+        {
+            "name": "pfn",
+            "type": "LPFNDFMCALLBACK"
+        },
+        {
+            "name": "nKeys",
+            "type": "UINT"
+        },
+        {
+            "name": "ahkeys",
+            "type": "HKEY"
+        },
+        {
+            "name": "ppcm",
+            "type": "IContextMenu"
+        }
+    ],
+    "SHCreateDefaultContextMenu": [
+        {
+            "name": "pdcm",
+            "type": "DEFCONTEXTMENU"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHCreateShellFolderViewEx": [
+        {
+            "name": "pcsfv",
+            "type": "CSFV"
+        },
+        {
+            "name": "ppsv",
+            "type": "IShellView"
+        }
+    ],
+    "SHGetSetSettings": [
+        {
+            "name": "lpss",
+            "type": "LPSHELLSTATEA"
+        },
+        {
+            "name": "dwMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "bSet",
+            "type": "BOOL"
+        }
+    ],
+    "SHGetSettings": [
+        {
+            "name": "psfs",
+            "type": "SHELLFLAGSTATE"
+        },
+        {
+            "name": "dwMask",
+            "type": "DWORD"
+        }
+    ],
+    "SHBindToParent": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        },
+        {
+            "name": "ppidlLast",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "SHBindToFolderIDListParent": [
+        {
+            "name": "psfRoot",
+            "type": "IShellFolder"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        },
+        {
+            "name": "ppidlLast",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "SHBindToFolderIDListParentEx": [
+        {
+            "name": "psfRoot",
+            "type": "IShellFolder"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "ppbc",
+            "type": "IBindCtx"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        },
+        {
+            "name": "ppidlLast",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "SHBindToObject": [
+        {
+            "name": "psf",
+            "type": "IShellFolder"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pbc",
+            "type": "IBindCtx"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHParseDisplayName": [
+        {
+            "name": "pszName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pbc",
+            "type": "IBindCtx"
+        },
+        {
+            "name": "ppidl",
+            "type": "LPITEMIDLIST"
+        },
+        {
+            "name": "sfgaoIn",
+            "type": "SFGAOF"
+        },
+        {
+            "name": "psfgaoOut",
+            "type": "SFGAOF"
+        }
+    ],
+    "SHPathPrepareForWriteA": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "punkEnableModless",
+            "type": "IUnknown"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHPathPrepareForWriteW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "punkEnableModless",
+            "type": "IUnknown"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHPropStgCreate": [
+        {
+            "name": "psstg",
+            "type": "IPropertySetStorage"
+        },
+        {
+            "name": "fmtid",
+            "type": "IID"
+        },
+        {
+            "name": "pclsid",
+            "type": "CLSID"
+        },
+        {
+            "name": "grfFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppstg",
+            "type": "IPropertyStorage"
+        },
+        {
+            "name": "puCodePage",
+            "type": "UINT"
+        }
+    ],
+    "SHPropStgReadMultiple": [
+        {
+            "name": "pps",
+            "type": "IPropertyStorage"
+        },
+        {
+            "name": "uCodePage",
+            "type": "UINT"
+        },
+        {
+            "name": "cpspec",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgpspec",
+            "type": "PROPSPEC"
+        },
+        {
+            "name": "rgvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "SHPropStgWriteMultiple": [
+        {
+            "name": "pps",
+            "type": "IPropertyStorage"
+        },
+        {
+            "name": "puCodePage",
+            "type": "UINT"
+        },
+        {
+            "name": "cpspec",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgpspec",
+            "type": "PROPSPEC"
+        },
+        {
+            "name": "rgvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "propidNameFirst",
+            "type": "PROPID"
+        }
+    ],
+    "SHCreateFileExtractIconW": [
+        {
+            "name": "pszFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFileAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHLimitInputEdit": [
+        {
+            "name": "hwndEdit",
+            "type": "HWND"
+        },
+        {
+            "name": "psf",
+            "type": "IShellFolder"
+        }
+    ],
+    "SHGetAttributesFromDataObject": [
+        {
+            "name": "pdo",
+            "type": "IDataObject"
+        },
+        {
+            "name": "dwAttributeMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcItems",
+            "type": "UINT"
+        }
+    ],
+    "SHMapPIDLToSystemImageListIndex": [
+        {
+            "name": "pshf",
+            "type": "IShellFolder"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "piIndexSel",
+            "type": "int"
+        }
+    ],
+    "SHCLSIDFromString": [
+        {
+            "name": "psz",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pclsid",
+            "type": "CLSID"
+        }
+    ],
+    "PickIconDlg": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszIconPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchIconPath",
+            "type": "UINT"
+        },
+        {
+            "name": "piIconIndex",
+            "type": "int"
+        }
+    ],
+    "StgMakeUniqueName": [
+        {
+            "name": "pstgParent",
+            "type": "IStorage"
+        },
+        {
+            "name": "pszFileSpec",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ]
+}

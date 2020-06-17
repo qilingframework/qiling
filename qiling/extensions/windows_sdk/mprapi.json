@@ -1,0 +1,1930 @@
+{
+    "MprAdminConnectionEnumEx": [
+        {
+            "name": "hRasServer",
+            "type": "RAS_SERVER_HANDLE"
+        },
+        {
+            "name": "pObjectHeader",
+            "type": "PMPRAPI_OBJECT_HEADER"
+        },
+        {
+            "name": "dwPreferedMaxLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwEntriesRead",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwTotalEntries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "ppRasConn",
+            "type": "PRAS_CONNECTION_EX"
+        },
+        {
+            "name": "lpdwResumeHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprAdminConnectionGetInfoEx": [
+        {
+            "name": "hRasServer",
+            "type": "RAS_SERVER_HANDLE"
+        },
+        {
+            "name": "hRasConnection",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pRasConnection",
+            "type": "PRAS_CONNECTION_EX"
+        }
+    ],
+    "MprAdminServerGetInfoEx": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "pServerInfo",
+            "type": "MPR_SERVER_EX1"
+        }
+    ],
+    "MprAdminServerSetInfoEx": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "pServerInfo",
+            "type": "MPR_SERVER_SET_CONFIG_EX1"
+        }
+    ],
+    "MprConfigServerGetInfoEx": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pServerInfo",
+            "type": "MPR_SERVER_EX1"
+        }
+    ],
+    "MprConfigServerSetInfoEx": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pSetServerConfig",
+            "type": "MPR_SERVER_SET_CONFIG_EX1"
+        }
+    ],
+    "MprAdminIsServiceInitialized": [
+        {
+            "name": "lpwsServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fIsServiceInitialized",
+            "type": "BOOL"
+        }
+    ],
+    "MprAdminInterfaceSetCustomInfoEx": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pCustomInfo",
+            "type": "PMPR_IF_CUSTOMINFOEX2"
+        }
+    ],
+    "MprAdminInterfaceGetCustomInfoEx": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pCustomInfo",
+            "type": "PMPR_IF_CUSTOMINFOEX2"
+        }
+    ],
+    "MprConfigInterfaceGetCustomInfoEx": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pCustomInfo",
+            "type": "PMPR_IF_CUSTOMINFOEX2"
+        }
+    ],
+    "MprConfigInterfaceSetCustomInfoEx": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pCustomInfo",
+            "type": "PMPR_IF_CUSTOMINFOEX2"
+        }
+    ],
+    "MprAdminConnectionEnum": [
+        {
+            "name": "hRasServer",
+            "type": "RAS_SERVER_HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpbBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwPrefMaxLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwEntriesRead",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwTotalEntries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwResumeHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprAdminPortEnum": [
+        {
+            "name": "hRasServer",
+            "type": "RAS_SERVER_HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "hRasConnection",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lplpbBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwPrefMaxLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwEntriesRead",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwTotalEntries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwResumeHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprAdminConnectionGetInfo": [
+        {
+            "name": "hRasServer",
+            "type": "RAS_SERVER_HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "hRasConnection",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lplpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminPortGetInfo": [
+        {
+            "name": "hRasServer",
+            "type": "RAS_SERVER_HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "hPort",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lplpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminConnectionClearStats": [
+        {
+            "name": "hRasServer",
+            "type": "RAS_SERVER_HANDLE"
+        },
+        {
+            "name": "hRasConnection",
+            "type": "HANDLE"
+        }
+    ],
+    "MprAdminPortClearStats": [
+        {
+            "name": "hRasServer",
+            "type": "RAS_SERVER_HANDLE"
+        },
+        {
+            "name": "hPort",
+            "type": "HANDLE"
+        }
+    ],
+    "MprAdminPortReset": [
+        {
+            "name": "hRasServer",
+            "type": "RAS_SERVER_HANDLE"
+        },
+        {
+            "name": "hPort",
+            "type": "HANDLE"
+        }
+    ],
+    "MprAdminPortDisconnect": [
+        {
+            "name": "hRasServer",
+            "type": "RAS_SERVER_HANDLE"
+        },
+        {
+            "name": "hPort",
+            "type": "HANDLE"
+        }
+    ],
+    "MprAdminConnectionRemoveQuarantine": [
+        {
+            "name": "hRasServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRasConnection",
+            "type": "HANDLE"
+        },
+        {
+            "name": "fIsIpAddress",
+            "type": "BOOL"
+        }
+    ],
+    "MprAdminUserGetInfo": [
+        {
+            "name": "lpszServer",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszUser",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminUserSetInfo": [
+        {
+            "name": "lpszServer",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszUser",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminSendUserMessage": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hConnection",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpwszMessage",
+            "type": "LPWSTR"
+        }
+    ],
+    "MprAdminGetPDCServer": [
+        {
+            "name": "lpszDomain",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszServer",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszPDCServer",
+            "type": "LPWSTR"
+        }
+    ],
+    "MprAdminIsServiceRunning": [
+        {
+            "name": "lpwsServerName",
+            "type": "LPWSTR"
+        }
+    ],
+    "MprAdminServerConnect": [
+        {
+            "name": "lpwsServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "phMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        }
+    ],
+    "MprAdminServerDisconnect": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        }
+    ],
+    "MprAdminServerGetCredentials": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminServerSetCredentials": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminBufferFree": [
+        {
+            "name": "pBuffer",
+            "type": "LPVOID"
+        }
+    ],
+    "MprAdminGetErrorString": [
+        {
+            "name": "dwError",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpwsErrorString",
+            "type": "LPWSTR"
+        }
+    ],
+    "MprAdminServerGetInfo": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminServerSetInfo": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminEstablishDomainRasServer": [
+        {
+            "name": "pszDomain",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pszMachine",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "bEnable",
+            "type": "BOOL"
+        }
+    ],
+    "MprAdminIsDomainRasServer": [
+        {
+            "name": "pszDomain",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pszMachine",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pbIsRasServer",
+            "type": "PBOOL"
+        }
+    ],
+    "MprAdminTransportCreate": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "dwTransportId",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpwsTransportName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pGlobalInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwGlobalInfoSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pClientInterfaceInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwClientInterfaceInfoSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpwsDLLPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "MprAdminTransportSetInfo": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "dwTransportId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pGlobalInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwGlobalInfoSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pClientInterfaceInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwClientInterfaceInfoSize",
+            "type": "DWORD"
+        }
+    ],
+    "MprAdminTransportGetInfo": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "dwTransportId",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppGlobalInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpdwGlobalInfoSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "ppClientInterfaceInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpdwClientInterfaceInfoSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprAdminDeviceEnum": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpbBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpdwTotalEntries",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprAdminInterfaceGetHandle": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "lpwsInterfaceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "phInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "fIncludeClientInterfaces",
+            "type": "BOOL"
+        }
+    ],
+    "MprAdminInterfaceCreate": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "phInterface",
+            "type": "HANDLE"
+        }
+    ],
+    "MprAdminInterfaceGetInfo": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminInterfaceSetInfo": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminInterfaceDelete": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        }
+    ],
+    "MprAdminInterfaceDeviceGetInfo": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminInterfaceDeviceSetInfo": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminInterfaceTransportRemove": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwTransportId",
+            "type": "DWORD"
+        }
+    ],
+    "MprAdminInterfaceTransportAdd": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwTransportId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pInterfaceInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwInterfaceInfoSize",
+            "type": "DWORD"
+        }
+    ],
+    "MprAdminInterfaceTransportGetInfo": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwTransportId",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppInterfaceInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpdwInterfaceInfoSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprAdminInterfaceTransportSetInfo": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwTransportId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pInterfaceInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwInterfaceInfoSize",
+            "type": "DWORD"
+        }
+    ],
+    "MprAdminInterfaceEnum": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpbBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwPrefMaxLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwEntriesRead",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwTotalEntries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwResumeHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprAdminInterfaceSetCredentials": [
+        {
+            "name": "lpwsServer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpwsInterfaceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpwsUserName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpwsDomainName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpwsPassword",
+            "type": "LPWSTR"
+        }
+    ],
+    "MprAdminInterfaceGetCredentials": [
+        {
+            "name": "lpwsServer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpwsInterfaceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpwsUserName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpwsPassword",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpwsDomainName",
+            "type": "LPWSTR"
+        }
+    ],
+    "MprAdminInterfaceSetCredentialsEx": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminInterfaceGetCredentialsEx": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprAdminInterfaceConnect": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "fSynchronous",
+            "type": "BOOL"
+        }
+    ],
+    "MprAdminInterfaceDisconnect": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        }
+    ],
+    "MprAdminInterfaceUpdateRoutes": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwProtocolId",
+            "type": "DWORD"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        }
+    ],
+    "MprAdminInterfaceQueryUpdateResult": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwProtocolId",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwUpdateResult",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprAdminInterfaceUpdatePhonebookInfo": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hInterface",
+            "type": "HANDLE"
+        }
+    ],
+    "MprAdminRegisterConnectionNotification": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hEventNotification",
+            "type": "HANDLE"
+        }
+    ],
+    "MprAdminDeregisterConnectionNotification": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "hEventNotification",
+            "type": "HANDLE"
+        }
+    ],
+    "MprAdminMIBServerConnect": [
+        {
+            "name": "lpwsServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "phMibServer",
+            "type": "MIB_SERVER_HANDLE"
+        }
+    ],
+    "MprAdminMIBServerDisconnect": [
+        {
+            "name": "hMibServer",
+            "type": "MIB_SERVER_HANDLE"
+        }
+    ],
+    "MprAdminMIBEntryCreate": [
+        {
+            "name": "hMibServer",
+            "type": "MIB_SERVER_HANDLE"
+        },
+        {
+            "name": "dwPid",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwRoutingPid",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpEntry",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwEntrySize",
+            "type": "DWORD"
+        }
+    ],
+    "MprAdminMIBEntryDelete": [
+        {
+            "name": "hMibServer",
+            "type": "MIB_SERVER_HANDLE"
+        },
+        {
+            "name": "dwProtocolId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwRoutingPid",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpEntry",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwEntrySize",
+            "type": "DWORD"
+        }
+    ],
+    "MprAdminMIBEntrySet": [
+        {
+            "name": "hMibServer",
+            "type": "MIB_SERVER_HANDLE"
+        },
+        {
+            "name": "dwProtocolId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwRoutingPid",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpEntry",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwEntrySize",
+            "type": "DWORD"
+        }
+    ],
+    "MprAdminMIBEntryGet": [
+        {
+            "name": "hMibServer",
+            "type": "MIB_SERVER_HANDLE"
+        },
+        {
+            "name": "dwProtocolId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwRoutingPid",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInEntry",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwInEntrySize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpOutEntry",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpOutEntrySize",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprAdminMIBEntryGetFirst": [
+        {
+            "name": "hMibServer",
+            "type": "MIB_SERVER_HANDLE"
+        },
+        {
+            "name": "dwProtocolId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwRoutingPid",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInEntry",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwInEntrySize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpOutEntry",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpOutEntrySize",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprAdminMIBEntryGetNext": [
+        {
+            "name": "hMibServer",
+            "type": "MIB_SERVER_HANDLE"
+        },
+        {
+            "name": "dwProtocolId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwRoutingPid",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInEntry",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwInEntrySize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpOutEntry",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpOutEntrySize",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprAdminMIBGetTrapInfo": [
+        {
+            "name": "hMibServer",
+            "type": "MIB_SERVER_HANDLE"
+        },
+        {
+            "name": "dwProtocolId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwRoutingPid",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwInDataSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpOutData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpOutDataSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprAdminMIBSetTrapInfo": [
+        {
+            "name": "dwProtocolId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwRoutingPid",
+            "type": "DWORD"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpInData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwInDataSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpOutData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpOutDataSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprAdminMIBBufferFree": [
+        {
+            "name": "pBuffer",
+            "type": "LPVOID"
+        }
+    ],
+    "MprConfigServerInstall": [
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PVOID"
+        }
+    ],
+    "MprConfigServerConnect": [
+        {
+            "name": "lpwsServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "phMprConfig",
+            "type": "HANDLE"
+        }
+    ],
+    "MprConfigServerDisconnect": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        }
+    ],
+    "MprConfigBufferFree": [
+        {
+            "name": "pBuffer",
+            "type": "LPVOID"
+        }
+    ],
+    "MprConfigServerGetInfo": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprConfigServerSetInfo": [
+        {
+            "name": "hMprServer",
+            "type": "MPR_SERVER_HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprConfigServerBackup": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpwsPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "MprConfigServerRestore": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpwsPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "MprConfigTransportCreate": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwTransportId",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpwsTransportName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pGlobalInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwGlobalInfoSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pClientInterfaceInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwClientInterfaceInfoSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpwsDLLPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "phRouterTransport",
+            "type": "HANDLE"
+        }
+    ],
+    "MprConfigTransportDelete": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterTransport",
+            "type": "HANDLE"
+        }
+    ],
+    "MprConfigTransportGetHandle": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwTransportId",
+            "type": "DWORD"
+        },
+        {
+            "name": "phRouterTransport",
+            "type": "HANDLE"
+        }
+    ],
+    "MprConfigTransportSetInfo": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterTransport",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pGlobalInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwGlobalInfoSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pClientInterfaceInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwClientInterfaceInfoSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpwsDLLPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "MprConfigTransportGetInfo": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterTransport",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppGlobalInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpdwGlobalInfoSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "ppClientInterfaceInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpdwClientInterfaceInfoSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lplpwsDLLPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "MprConfigTransportEnum": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwPrefMaxLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwEntriesRead",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwTotalEntries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwResumeHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprConfigInterfaceCreate": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "phRouterInterface",
+            "type": "HANDLE"
+        }
+    ],
+    "MprConfigInterfaceDelete": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterInterface",
+            "type": "HANDLE"
+        }
+    ],
+    "MprConfigInterfaceGetHandle": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpwsInterfaceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "phRouterInterface",
+            "type": "HANDLE"
+        }
+    ],
+    "MprConfigInterfaceGetInfo": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpdwBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprConfigInterfaceSetInfo": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprConfigInterfaceEnum": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwPrefMaxLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwEntriesRead",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwTotalEntries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwResumeHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprConfigInterfaceTransportAdd": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwTransportId",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpwsTransportName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pInterfaceInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwInterfaceInfoSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "phRouterIfTransport",
+            "type": "HANDLE"
+        }
+    ],
+    "MprConfigInterfaceTransportRemove": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterIfTransport",
+            "type": "HANDLE"
+        }
+    ],
+    "MprConfigInterfaceTransportGetHandle": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwTransportId",
+            "type": "DWORD"
+        },
+        {
+            "name": "phRouterIfTransport",
+            "type": "HANDLE"
+        }
+    ],
+    "MprConfigInterfaceTransportGetInfo": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterIfTransport",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppInterfaceInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpdwInterfaceInfoSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprConfigInterfaceTransportSetInfo": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterIfTransport",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pInterfaceInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwInterfaceInfoSize",
+            "type": "DWORD"
+        }
+    ],
+    "MprConfigInterfaceTransportEnum": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hRouterInterface",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwPrefMaxLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwEntriesRead",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwTotalEntries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwResumeHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "MprConfigGetFriendlyName": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszGuidName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pszBuffer",
+            "type": "PWCHAR"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "MprConfigGetGuidName": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszFriendlyName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pszBuffer",
+            "type": "PWCHAR"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "MprConfigFilterGetInfo": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwTransportId",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprConfigFilterSetInfo": [
+        {
+            "name": "hMprConfig",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwTransportId",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprInfoCreate": [
+        {
+            "name": "dwVersion",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpNewHeader",
+            "type": "LPVOID"
+        }
+    ],
+    "MprInfoDelete": [
+        {
+            "name": "lpHeader",
+            "type": "LPVOID"
+        }
+    ],
+    "MprInfoRemoveAll": [
+        {
+            "name": "lpHeader",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lplpNewHeader",
+            "type": "LPVOID"
+        }
+    ],
+    "MprInfoDuplicate": [
+        {
+            "name": "lpHeader",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lplpNewHeader",
+            "type": "LPVOID"
+        }
+    ],
+    "MprInfoBlockAdd": [
+        {
+            "name": "lpHeader",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwInfoType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwItemSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwItemCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpItemData",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lplpNewHeader",
+            "type": "LPVOID"
+        }
+    ],
+    "MprInfoBlockRemove": [
+        {
+            "name": "lpHeader",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwInfoType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpNewHeader",
+            "type": "LPVOID"
+        }
+    ],
+    "MprInfoBlockSet": [
+        {
+            "name": "lpHeader",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwInfoType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwItemSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwItemCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpItemData",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lplpNewHeader",
+            "type": "LPVOID"
+        }
+    ],
+    "MprInfoBlockFind": [
+        {
+            "name": "lpHeader",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwInfoType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwItemSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwItemCount",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lplpItemData",
+            "type": "LPBYTE"
+        }
+    ],
+    "MprInfoBlockQuerySize": [
+        {
+            "name": "lpHeader",
+            "type": "LPVOID"
+        }
+    ]
+}

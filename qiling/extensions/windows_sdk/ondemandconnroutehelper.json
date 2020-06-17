@@ -1,0 +1,58 @@
+{
+    "OnDemandGetRoutingHint": [
+        {
+            "name": "destinationHostName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "interfaceIndex",
+            "type": "DWORD"
+        }
+    ],
+    "OnDemandRegisterNotification": [
+        {
+            "name": "callback",
+            "type": "ONDEMAND_NOTIFICATION_CALLBACK"
+        },
+        {
+            "name": "callbackContext",
+            "type": "void"
+        },
+        {
+            "name": "registrationHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "GetInterfaceContextTableForHostName": [
+        {
+            "name": "HostName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ProxyName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ConnectionProfileFilterRawData",
+            "type": "BYTE"
+        },
+        {
+            "name": "ConnectionProfileFilterRawDataSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "InterfaceContextTable",
+            "type": "NET_INTERFACE_CONTEXT_TABLE"
+        }
+    ],
+    "FreeInterfaceContextTable": [
+        {
+            "name": "InterfaceContextTable",
+            "type": "NET_INTERFACE_CONTEXT_TABLE"
+        }
+    ]
+}

@@ -1,0 +1,138 @@
+{
+    "WinVerifyTrust": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pgActionID",
+            "type": "GUID"
+        },
+        {
+            "name": "pWVTData",
+            "type": "LPVOID"
+        }
+    ],
+    "WinVerifyTrustEx": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pgActionID",
+            "type": "GUID"
+        },
+        {
+            "name": "pWinTrustData",
+            "type": "WINTRUST_DATA"
+        }
+    ],
+    "WintrustGetRegPolicyFlags": [
+        {
+            "name": "pdwPolicyFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WintrustSetRegPolicyFlags": [
+        {
+            "name": "dwPolicyFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WintrustAddActionID": [
+        {
+            "name": "pgActionID",
+            "type": "GUID"
+        },
+        {
+            "name": "fdwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "psProvInfo",
+            "type": "CRYPT_REGISTER_ACTIONID"
+        }
+    ],
+    "WintrustRemoveActionID": [
+        {
+            "name": "pgActionID",
+            "type": "GUID"
+        }
+    ],
+    "WintrustLoadFunctionPointers": [
+        {
+            "name": "pgActionID",
+            "type": "GUID"
+        },
+        {
+            "name": "pPfns",
+            "type": "CRYPT_PROVIDER_FUNCTIONS"
+        }
+    ],
+    "WintrustAddDefaultForUsage": [
+        {
+            "name": "pszUsageOID",
+            "type": "char"
+        },
+        {
+            "name": "psDefUsage",
+            "type": "CRYPT_PROVIDER_REGDEFUSAGE"
+        }
+    ],
+    "WintrustGetDefaultForUsage": [
+        {
+            "name": "dwAction",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszUsageOID",
+            "type": "char"
+        },
+        {
+            "name": "psUsage",
+            "type": "CRYPT_PROVIDER_DEFUSAGE"
+        }
+    ],
+    "WTHelperCertIsSelfSigned": [
+        {
+            "name": "dwEncoding",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCert",
+            "type": "CERT_INFO"
+        }
+    ],
+    "WTHelperCertCheckValidSignature": [
+        {
+            "name": "pProvData",
+            "type": "CRYPT_PROVIDER_DATA"
+        }
+    ],
+    "OpenPersonalTrustDBDialogEx": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "PVOID"
+        }
+    ],
+    "OpenPersonalTrustDBDialog": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        }
+    ],
+    "WintrustSetDefaultIncludePEPageHashes": [
+        {
+            "name": "fIncludePEPageHashes",
+            "type": "BOOL"
+        }
+    ]
+}

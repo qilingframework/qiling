@@ -1,0 +1,534 @@
+{
+    "RpcSsDestroyClientContext": [
+        {
+            "name": "ContextHandle",
+            "type": "void"
+        }
+    ],
+    "NdrSimpleTypeMarshall": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "FormatChar",
+            "type": "unsigned char"
+        }
+    ],
+    "NdrSimpleTypeUnmarshall": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "FormatChar",
+            "type": "unsigned char"
+        }
+    ],
+    "NdrContextHandleInitialize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrPointerBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrSimpleStructBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrComplexStructBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrConformantArrayBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrComplexArrayBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrConformantStringBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrUserMarshalBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrInterfacePointerBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrContextHandleSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrContextHandleMemorySize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrPointerFree": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrUserMarshalFree": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrInterfacePointerFree": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrConvert": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrClientCall2": [
+        {
+            "name": "pStubDescriptor",
+            "type": "PMIDL_STUB_DESC"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrClientCall": [
+        {
+            "name": "pStubDescriptor",
+            "type": "PMIDL_STUB_DESC"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrAsyncClientCall": [
+        {
+            "name": "pStubDescriptor",
+            "type": "PMIDL_STUB_DESC"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrDcomAsyncClientCall": [
+        {
+            "name": "pStubDescriptor",
+            "type": "PMIDL_STUB_DESC"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrAsyncServerCall": [
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        }
+    ],
+    "NdrStubCall2": [
+        {
+            "name": "pThis",
+            "type": "void"
+        },
+        {
+            "name": "pChannel",
+            "type": "void"
+        },
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        },
+        {
+            "name": "pdwStubPhase",
+            "type": "unsigned long"
+        }
+    ],
+    "NdrServerCall2": [
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        }
+    ],
+    "RpcSsDisableAllocate": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcSsEnableAllocate": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcSsFree": [
+        {
+            "name": "NodeToFree",
+            "type": "void"
+        }
+    ],
+    "RpcSsGetThreadHandle": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcSsSetClientAllocFree": [
+        {
+            "name": "ClientAlloc",
+            "type": "RPC_CLIENT_ALLOC"
+        },
+        {
+            "name": "ClientFree",
+            "type": "RPC_CLIENT_FREE"
+        }
+    ],
+    "RpcSsSetThreadHandle": [
+        {
+            "name": "Id",
+            "type": "RPC_SS_THREAD_HANDLE"
+        }
+    ],
+    "RpcSsSwapClientAllocFree": [
+        {
+            "name": "ClientAlloc",
+            "type": "RPC_CLIENT_ALLOC"
+        },
+        {
+            "name": "ClientFree",
+            "type": "RPC_CLIENT_FREE"
+        },
+        {
+            "name": "OldClientAlloc",
+            "type": "RPC_CLIENT_ALLOC"
+        },
+        {
+            "name": "OldClientFree",
+            "type": "RPC_CLIENT_FREE"
+        }
+    ],
+    "RpcSmClientFree": [
+        {
+            "name": "pNodeToFree",
+            "type": "void"
+        }
+    ],
+    "RpcSmDestroyClientContext": [
+        {
+            "name": "ContextHandle",
+            "type": "void"
+        }
+    ],
+    "RpcSmDisableAllocate": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcSmEnableAllocate": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcSmFree": [
+        {
+            "name": "NodeToFree",
+            "type": "void"
+        }
+    ],
+    "RpcSmGetThreadHandle": [
+        {
+            "name": "pStatus",
+            "type": "RPC_STATUS"
+        }
+    ],
+    "RpcSmSetClientAllocFree": [
+        {
+            "name": "ClientAlloc",
+            "type": "RPC_CLIENT_ALLOC"
+        },
+        {
+            "name": "ClientFree",
+            "type": "RPC_CLIENT_FREE"
+        }
+    ],
+    "RpcSmSetThreadHandle": [
+        {
+            "name": "Id",
+            "type": "RPC_SS_THREAD_HANDLE"
+        }
+    ],
+    "RpcSmSwapClientAllocFree": [
+        {
+            "name": "ClientAlloc",
+            "type": "RPC_CLIENT_ALLOC"
+        },
+        {
+            "name": "ClientFree",
+            "type": "RPC_CLIENT_FREE"
+        },
+        {
+            "name": "OldClientAlloc",
+            "type": "RPC_CLIENT_ALLOC"
+        },
+        {
+            "name": "OldClientFree",
+            "type": "RPC_CLIENT_FREE"
+        }
+    ],
+    "NdrClearOutParameters": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        },
+        {
+            "name": "ArgAddr",
+            "type": "void"
+        }
+    ],
+    "NdrOleFree": [
+        {
+            "name": "NodeToFree",
+            "type": "void"
+        }
+    ],
+    "NdrGetUserMarshalInfo": [
+        {
+            "name": "pFlags",
+            "type": "unsigned long"
+        },
+        {
+            "name": "InformationLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pMarshalInfo",
+            "type": "NDR_USER_MARSHAL_INFO"
+        }
+    ],
+    "NdrClientCall3": [
+        {
+            "name": "pProxyInfo",
+            "type": "MIDL_STUBLESS_PROXY_INFO"
+        },
+        {
+            "name": "nProcNum",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pReturnValue",
+            "type": "void"
+        }
+    ],
+    "Ndr64AsyncClientCall": [
+        {
+            "name": "pProxyInfo",
+            "type": "MIDL_STUBLESS_PROXY_INFO"
+        },
+        {
+            "name": "nProcNum",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pReturnValue",
+            "type": "void"
+        }
+    ],
+    "Ndr64AsyncServerCallAll": [
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        }
+    ],
+    "NdrStubCall3": [
+        {
+            "name": "pThis",
+            "type": "void"
+        },
+        {
+            "name": "pChannel",
+            "type": "void"
+        },
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        },
+        {
+            "name": "pdwStubPhase",
+            "type": "unsigned long"
+        }
+    ],
+    "NdrServerCallAll": [
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        }
+    ],
+    "RpcUserFree": [
+        {
+            "name": "AsyncHandle",
+            "type": "handle_t"
+        },
+        {
+            "name": "pBuffer",
+            "type": "void"
+        }
+    ]
+}

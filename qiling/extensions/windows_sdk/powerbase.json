@@ -1,0 +1,56 @@
+{
+    "CallNtPowerInformation": [
+        {
+            "name": "InformationLevel",
+            "type": "POWER_INFORMATION_LEVEL"
+        },
+        {
+            "name": "InputBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "InputBufferLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "OutputBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "OutputBufferLength",
+            "type": "ULONG"
+        }
+    ],
+    "GetPwrCapabilities": [
+        {
+            "name": "lpspc",
+            "type": "PSYSTEM_POWER_CAPABILITIES"
+        }
+    ],
+    "PowerDeterminePlatformRoleEx": [
+        {
+            "name": "Version",
+            "type": "ULONG"
+        }
+    ],
+    "PowerRegisterSuspendResumeNotification": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Recipient",
+            "type": "HANDLE"
+        },
+        {
+            "name": "RegistrationHandle",
+            "type": "PHPOWERNOTIFY"
+        }
+    ],
+    "PowerUnregisterSuspendResumeNotification": [
+        {
+            "name": "RegistrationHandle",
+            "type": "HPOWERNOTIFY"
+        }
+    ]
+}

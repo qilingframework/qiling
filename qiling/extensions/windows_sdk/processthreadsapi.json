@@ -1,0 +1,1030 @@
+{
+    "QueueUserAPC": [
+        {
+            "name": "pfnAPC",
+            "type": "PAPCFUNC"
+        },
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwData",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "GetProcessTimes": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpCreationTime",
+            "type": "LPFILETIME"
+        },
+        {
+            "name": "lpExitTime",
+            "type": "LPFILETIME"
+        },
+        {
+            "name": "lpKernelTime",
+            "type": "LPFILETIME"
+        },
+        {
+            "name": "lpUserTime",
+            "type": "LPFILETIME"
+        }
+    ],
+    "GetCurrentProcess": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetCurrentProcessId": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "ExitProcess": [
+        {
+            "name": "uExitCode",
+            "type": "UINT"
+        }
+    ],
+    "TerminateProcess": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "uExitCode",
+            "type": "UINT"
+        }
+    ],
+    "GetExitCodeProcess": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpExitCode",
+            "type": "LPDWORD"
+        }
+    ],
+    "SwitchToThread": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CreateThread": [
+        {
+            "name": "lpThreadAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "dwStackSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "lpStartAddress",
+            "type": "LPTHREAD_START_ROUTINE"
+        },
+        {
+            "name": "lpParameter",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwCreationFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpThreadId",
+            "type": "LPDWORD"
+        }
+    ],
+    "CreateRemoteThread": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpThreadAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "dwStackSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "lpStartAddress",
+            "type": "LPTHREAD_START_ROUTINE"
+        },
+        {
+            "name": "lpParameter",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwCreationFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpThreadId",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetCurrentThread": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetCurrentThreadId": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "OpenThread": [
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "bInheritHandle",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwThreadId",
+            "type": "DWORD"
+        }
+    ],
+    "SetThreadPriority": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "nPriority",
+            "type": "int"
+        }
+    ],
+    "SetThreadPriorityBoost": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "bDisablePriorityBoost",
+            "type": "BOOL"
+        }
+    ],
+    "GetThreadPriorityBoost": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pDisablePriorityBoost",
+            "type": "PBOOL"
+        }
+    ],
+    "GetThreadPriority": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        }
+    ],
+    "ExitThread": [
+        {
+            "name": "dwExitCode",
+            "type": "DWORD"
+        }
+    ],
+    "TerminateThread": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwExitCode",
+            "type": "DWORD"
+        }
+    ],
+    "GetExitCodeThread": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpExitCode",
+            "type": "LPDWORD"
+        }
+    ],
+    "SuspendThread": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        }
+    ],
+    "ResumeThread": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        }
+    ],
+    "TlsAlloc": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "TlsGetValue": [
+        {
+            "name": "dwTlsIndex",
+            "type": "DWORD"
+        }
+    ],
+    "TlsSetValue": [
+        {
+            "name": "dwTlsIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpTlsValue",
+            "type": "LPVOID"
+        }
+    ],
+    "TlsFree": [
+        {
+            "name": "dwTlsIndex",
+            "type": "DWORD"
+        }
+    ],
+    "CreateProcessA": [
+        {
+            "name": "lpApplicationName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpCommandLine",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpProcessAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "lpThreadAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "bInheritHandles",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwCreationFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpEnvironment",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpCurrentDirectory",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpStartupInfo",
+            "type": "LPSTARTUPINFOA"
+        },
+        {
+            "name": "lpProcessInformation",
+            "type": "LPPROCESS_INFORMATION"
+        }
+    ],
+    "CreateProcessW": [
+        {
+            "name": "lpApplicationName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpCommandLine",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpProcessAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "lpThreadAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "bInheritHandles",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwCreationFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpEnvironment",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpCurrentDirectory",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpStartupInfo",
+            "type": "LPSTARTUPINFOW"
+        },
+        {
+            "name": "lpProcessInformation",
+            "type": "LPPROCESS_INFORMATION"
+        }
+    ],
+    "SetProcessShutdownParameters": [
+        {
+            "name": "dwLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetProcessVersion": [
+        {
+            "name": "ProcessId",
+            "type": "DWORD"
+        }
+    ],
+    "GetStartupInfoW": [
+        {
+            "name": "lpStartupInfo",
+            "type": "LPSTARTUPINFOW"
+        }
+    ],
+    "CreateProcessAsUserW": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpApplicationName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpCommandLine",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpProcessAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "lpThreadAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "bInheritHandles",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwCreationFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpEnvironment",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpCurrentDirectory",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpStartupInfo",
+            "type": "LPSTARTUPINFOW"
+        },
+        {
+            "name": "lpProcessInformation",
+            "type": "LPPROCESS_INFORMATION"
+        }
+    ],
+    "SetThreadToken": [
+        {
+            "name": "Thread",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "Token",
+            "type": "HANDLE"
+        }
+    ],
+    "OpenProcessToken": [
+        {
+            "name": "ProcessHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "DesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "TokenHandle",
+            "type": "PHANDLE"
+        }
+    ],
+    "OpenThreadToken": [
+        {
+            "name": "ThreadHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "DesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "OpenAsSelf",
+            "type": "BOOL"
+        },
+        {
+            "name": "TokenHandle",
+            "type": "PHANDLE"
+        }
+    ],
+    "SetPriorityClass": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwPriorityClass",
+            "type": "DWORD"
+        }
+    ],
+    "GetPriorityClass": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        }
+    ],
+    "SetThreadStackGuarantee": [
+        {
+            "name": "StackSizeInBytes",
+            "type": "PULONG"
+        }
+    ],
+    "ProcessIdToSessionId": [
+        {
+            "name": "dwProcessId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pSessionId",
+            "type": "DWORD"
+        }
+    ],
+    "GetProcessId": [
+        {
+            "name": "Process",
+            "type": "HANDLE"
+        }
+    ],
+    "GetThreadId": [
+        {
+            "name": "Thread",
+            "type": "HANDLE"
+        }
+    ],
+    "FlushProcessWriteBuffers": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetProcessIdOfThread": [
+        {
+            "name": "Thread",
+            "type": "HANDLE"
+        }
+    ],
+    "InitializeProcThreadAttributeList": [
+        {
+            "name": "lpAttributeList",
+            "type": "LPPROC_THREAD_ATTRIBUTE_LIST"
+        },
+        {
+            "name": "dwAttributeCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSize",
+            "type": "PSIZE_T"
+        }
+    ],
+    "DeleteProcThreadAttributeList": [
+        {
+            "name": "lpAttributeList",
+            "type": "LPPROC_THREAD_ATTRIBUTE_LIST"
+        }
+    ],
+    "UpdateProcThreadAttribute": [
+        {
+            "name": "lpAttributeList",
+            "type": "LPPROC_THREAD_ATTRIBUTE_LIST"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Attribute",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "lpValue",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "lpPreviousValue",
+            "type": "PVOID"
+        },
+        {
+            "name": "lpReturnSize",
+            "type": "PSIZE_T"
+        }
+    ],
+    "SetProcessAffinityUpdateMode": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "QueryProcessAffinityUpdateMode": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpdwFlags",
+            "type": "LPDWORD"
+        }
+    ],
+    "CreateRemoteThreadEx": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpThreadAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "dwStackSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "lpStartAddress",
+            "type": "LPTHREAD_START_ROUTINE"
+        },
+        {
+            "name": "lpParameter",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwCreationFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpAttributeList",
+            "type": "LPPROC_THREAD_ATTRIBUTE_LIST"
+        },
+        {
+            "name": "lpThreadId",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetCurrentThreadStackLimits": [
+        {
+            "name": "LowLimit",
+            "type": "PULONG_PTR"
+        },
+        {
+            "name": "HighLimit",
+            "type": "PULONG_PTR"
+        }
+    ],
+    "GetThreadContext": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpContext",
+            "type": "LPCONTEXT"
+        }
+    ],
+    "GetProcessMitigationPolicy": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "MitigationPolicy",
+            "type": "PROCESS_MITIGATION_POLICY"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "dwLength",
+            "type": "SIZE_T"
+        }
+    ],
+    "SetThreadContext": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpContext",
+            "type": "CONTEXT"
+        }
+    ],
+    "SetProcessMitigationPolicy": [
+        {
+            "name": "MitigationPolicy",
+            "type": "PROCESS_MITIGATION_POLICY"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "dwLength",
+            "type": "SIZE_T"
+        }
+    ],
+    "FlushInstructionCache": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpBaseAddress",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "dwSize",
+            "type": "SIZE_T"
+        }
+    ],
+    "GetThreadTimes": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpCreationTime",
+            "type": "LPFILETIME"
+        },
+        {
+            "name": "lpExitTime",
+            "type": "LPFILETIME"
+        },
+        {
+            "name": "lpKernelTime",
+            "type": "LPFILETIME"
+        },
+        {
+            "name": "lpUserTime",
+            "type": "LPFILETIME"
+        }
+    ],
+    "OpenProcess": [
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "bInheritHandle",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwProcessId",
+            "type": "DWORD"
+        }
+    ],
+    "IsProcessorFeaturePresent": [
+        {
+            "name": "ProcessorFeature",
+            "type": "DWORD"
+        }
+    ],
+    "GetProcessHandleCount": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pdwHandleCount",
+            "type": "PDWORD"
+        }
+    ],
+    "GetCurrentProcessorNumber": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetThreadIdealProcessorEx": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpIdealProcessor",
+            "type": "PPROCESSOR_NUMBER"
+        },
+        {
+            "name": "lpPreviousIdealProcessor",
+            "type": "PPROCESSOR_NUMBER"
+        }
+    ],
+    "GetThreadIdealProcessorEx": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpIdealProcessor",
+            "type": "PPROCESSOR_NUMBER"
+        }
+    ],
+    "GetCurrentProcessorNumberEx": [
+        {
+            "name": "ProcNumber",
+            "type": "PPROCESSOR_NUMBER"
+        }
+    ],
+    "GetProcessPriorityBoost": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pDisablePriorityBoost",
+            "type": "PBOOL"
+        }
+    ],
+    "SetProcessPriorityBoost": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "bDisablePriorityBoost",
+            "type": "BOOL"
+        }
+    ],
+    "GetThreadIOPendingFlag": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpIOIsPending",
+            "type": "PBOOL"
+        }
+    ],
+    "GetSystemTimes": [
+        {
+            "name": "lpIdleTime",
+            "type": "PFILETIME"
+        },
+        {
+            "name": "lpKernelTime",
+            "type": "PFILETIME"
+        },
+        {
+            "name": "lpUserTime",
+            "type": "PFILETIME"
+        }
+    ],
+    "GetThreadInformation": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ThreadInformationClass",
+            "type": "THREAD_INFORMATION_CLASS"
+        },
+        {
+            "name": "ThreadInformation",
+            "type": "LPVOID"
+        },
+        {
+            "name": "ThreadInformationSize",
+            "type": "DWORD"
+        }
+    ],
+    "SetThreadInformation": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ThreadInformationClass",
+            "type": "THREAD_INFORMATION_CLASS"
+        },
+        {
+            "name": "ThreadInformation",
+            "type": "LPVOID"
+        },
+        {
+            "name": "ThreadInformationSize",
+            "type": "DWORD"
+        }
+    ],
+    "IsProcessCritical": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Critical",
+            "type": "PBOOL"
+        }
+    ],
+    "SetProtectedPolicy": [
+        {
+            "name": "PolicyGuid",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "PolicyValue",
+            "type": "ULONG_PTR"
+        },
+        {
+            "name": "OldPolicyValue",
+            "type": "PULONG_PTR"
+        }
+    ],
+    "QueryProtectedPolicy": [
+        {
+            "name": "PolicyGuid",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "PolicyValue",
+            "type": "PULONG_PTR"
+        }
+    ],
+    "SetThreadIdealProcessor": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwIdealProcessor",
+            "type": "DWORD"
+        }
+    ],
+    "SetProcessInformation": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ProcessInformationClass",
+            "type": "PROCESS_INFORMATION_CLASS"
+        },
+        {
+            "name": "ProcessInformation",
+            "type": "LPVOID"
+        },
+        {
+            "name": "ProcessInformationSize",
+            "type": "DWORD"
+        }
+    ],
+    "GetProcessInformation": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ProcessInformationClass",
+            "type": "PROCESS_INFORMATION_CLASS"
+        },
+        {
+            "name": "ProcessInformation",
+            "type": "LPVOID"
+        },
+        {
+            "name": "ProcessInformationSize",
+            "type": "DWORD"
+        }
+    ],
+    "CreateProcessAsUserA": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpApplicationName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpCommandLine",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpProcessAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "lpThreadAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "bInheritHandles",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwCreationFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpEnvironment",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpCurrentDirectory",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpStartupInfo",
+            "type": "LPSTARTUPINFOA"
+        },
+        {
+            "name": "lpProcessInformation",
+            "type": "LPPROCESS_INFORMATION"
+        }
+    ],
+    "GetProcessShutdownParameters": [
+        {
+            "name": "lpdwLevel",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwFlags",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetThreadDescription": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpThreadDescription",
+            "type": "PCWSTR"
+        }
+    ],
+    "GetThreadDescription": [
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppszThreadDescription",
+            "type": "PWSTR"
+        }
+    ],
+    "GetStartupInfoA": [
+        {
+            "name": "lpStartupInfo",
+            "type": "LPSTARTUPINFOA"
+        }
+    ]
+}

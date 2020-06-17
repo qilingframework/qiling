@@ -1,0 +1,8 @@
+{
+    "D2D1ComputeMaximumScaleFactor": [
+        {
+            "name": "matrix",
+            "type": "D2D1_MATRIX_3X2_F"
+        }
+    ]
+}

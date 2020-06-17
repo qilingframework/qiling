@@ -1,0 +1,50 @@
+{
+    "LPSAFEARRAY_UserSize": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "LPSAFEARRAY"
+        }
+    ],
+    "LPSAFEARRAY_UserFree": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "LPSAFEARRAY"
+        }
+    ],
+    "LPSAFEARRAY_UserSize64": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "LPSAFEARRAY"
+        }
+    ],
+    "LPSAFEARRAY_UserFree64": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "LPSAFEARRAY"
+        }
+    ]
+}

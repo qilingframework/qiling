@@ -1,0 +1,568 @@
+{
+    "getaddrinfo": [
+        {
+            "name": "pNodeName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pServiceName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pHints",
+            "type": "ADDRINFOA"
+        },
+        {
+            "name": "ppResult",
+            "type": "PADDRINFOA"
+        }
+    ],
+    "GetAddrInfoW": [
+        {
+            "name": "pNodeName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pServiceName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pHints",
+            "type": "ADDRINFOW"
+        },
+        {
+            "name": "ppResult",
+            "type": "PADDRINFOW"
+        }
+    ],
+    "GetAddrInfoExA": [
+        {
+            "name": "pName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pServiceName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "dwNameSpace",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpNspId",
+            "type": "LPGUID"
+        },
+        {
+            "name": "hints",
+            "type": "ADDRINFOEXA"
+        },
+        {
+            "name": "ppResult",
+            "type": "PADDRINFOEXA"
+        },
+        {
+            "name": "timeout",
+            "type": {
+                "name": "timeval",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        },
+        {
+            "name": "lpCompletionRoutine",
+            "type": "LPLOOKUPSERVICE_COMPLETION_ROUTINE"
+        },
+        {
+            "name": "lpNameHandle",
+            "type": "LPHANDLE"
+        }
+    ],
+    "GetAddrInfoExW": [
+        {
+            "name": "pName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pServiceName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwNameSpace",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpNspId",
+            "type": "LPGUID"
+        },
+        {
+            "name": "hints",
+            "type": "ADDRINFOEXW"
+        },
+        {
+            "name": "ppResult",
+            "type": "PADDRINFOEXW"
+        },
+        {
+            "name": "timeout",
+            "type": {
+                "name": "timeval",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        },
+        {
+            "name": "lpCompletionRoutine",
+            "type": "LPLOOKUPSERVICE_COMPLETION_ROUTINE"
+        },
+        {
+            "name": "lpHandle",
+            "type": "LPHANDLE"
+        }
+    ],
+    "GetAddrInfoExCancel": [
+        {
+            "name": "lpHandle",
+            "type": "LPHANDLE"
+        }
+    ],
+    "GetAddrInfoExOverlappedResult": [
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "SetAddrInfoExA": [
+        {
+            "name": "pName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pServiceName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pAddresses",
+            "type": "SOCKET_ADDRESS"
+        },
+        {
+            "name": "dwAddressCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBlob",
+            "type": "LPBLOB"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwNameSpace",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpNspId",
+            "type": "LPGUID"
+        },
+        {
+            "name": "timeout",
+            "type": {
+                "name": "timeval",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        },
+        {
+            "name": "lpCompletionRoutine",
+            "type": "LPLOOKUPSERVICE_COMPLETION_ROUTINE"
+        },
+        {
+            "name": "lpNameHandle",
+            "type": "LPHANDLE"
+        }
+    ],
+    "SetAddrInfoExW": [
+        {
+            "name": "pName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pServiceName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pAddresses",
+            "type": "SOCKET_ADDRESS"
+        },
+        {
+            "name": "dwAddressCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBlob",
+            "type": "LPBLOB"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwNameSpace",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpNspId",
+            "type": "LPGUID"
+        },
+        {
+            "name": "timeout",
+            "type": {
+                "name": "timeval",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        },
+        {
+            "name": "lpCompletionRoutine",
+            "type": "LPLOOKUPSERVICE_COMPLETION_ROUTINE"
+        },
+        {
+            "name": "lpNameHandle",
+            "type": "LPHANDLE"
+        }
+    ],
+    "freeaddrinfo": [
+        {
+            "name": "pAddrInfo",
+            "type": "PADDRINFOA"
+        }
+    ],
+    "FreeAddrInfoW": [
+        {
+            "name": "pAddrInfo",
+            "type": "PADDRINFOW"
+        }
+    ],
+    "FreeAddrInfoEx": [
+        {
+            "name": "pAddrInfoEx",
+            "type": "PADDRINFOEXA"
+        }
+    ],
+    "FreeAddrInfoExW": [
+        {
+            "name": "pAddrInfoEx",
+            "type": "PADDRINFOEXW"
+        }
+    ],
+    "getnameinfo": [
+        {
+            "name": "pSockaddr",
+            "type": "SOCKADDR"
+        },
+        {
+            "name": "SockaddrLength",
+            "type": "socklen_t"
+        },
+        {
+            "name": "pNodeBuffer",
+            "type": "PCHAR"
+        },
+        {
+            "name": "NodeBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pServiceBuffer",
+            "type": "PCHAR"
+        },
+        {
+            "name": "ServiceBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "INT"
+        }
+    ],
+    "GetNameInfoW": [
+        {
+            "name": "pSockaddr",
+            "type": "SOCKADDR"
+        },
+        {
+            "name": "SockaddrLength",
+            "type": "socklen_t"
+        },
+        {
+            "name": "pNodeBuffer",
+            "type": "PWCHAR"
+        },
+        {
+            "name": "NodeBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pServiceBuffer",
+            "type": "PWCHAR"
+        },
+        {
+            "name": "ServiceBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "INT"
+        }
+    ],
+    "InetPtonW": [
+        {
+            "name": "Family",
+            "type": "INT"
+        },
+        {
+            "name": "pszAddrString",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pAddrBuf",
+            "type": "PVOID"
+        }
+    ],
+    "InetNtopW": [
+        {
+            "name": "Family",
+            "type": "INT"
+        },
+        {
+            "name": "pAddr",
+            "type": "void"
+        },
+        {
+            "name": "pStringBuf",
+            "type": "PWSTR"
+        },
+        {
+            "name": "StringBufSize",
+            "type": "size_t"
+        }
+    ],
+    "setipv4sourcefilter": [
+        {
+            "name": "Socket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "Interface",
+            "type": "IN_ADDR"
+        },
+        {
+            "name": "Group",
+            "type": "IN_ADDR"
+        },
+        {
+            "name": "FilterMode",
+            "type": "MULTICAST_MODE_TYPE"
+        },
+        {
+            "name": "SourceCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "SourceList",
+            "type": "IN_ADDR"
+        }
+    ],
+    "getipv4sourcefilter": [
+        {
+            "name": "Socket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "Interface",
+            "type": "IN_ADDR"
+        },
+        {
+            "name": "Group",
+            "type": "IN_ADDR"
+        },
+        {
+            "name": "FilterMode",
+            "type": "MULTICAST_MODE_TYPE"
+        },
+        {
+            "name": "SourceCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "SourceList",
+            "type": "IN_ADDR"
+        }
+    ],
+    "setsourcefilter": [
+        {
+            "name": "Socket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "Interface",
+            "type": "ULONG"
+        },
+        {
+            "name": "Group",
+            "type": "SOCKADDR"
+        },
+        {
+            "name": "GroupLength",
+            "type": "int"
+        },
+        {
+            "name": "FilterMode",
+            "type": "MULTICAST_MODE_TYPE"
+        },
+        {
+            "name": "SourceCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "SourceList",
+            "type": "SOCKADDR_STORAGE"
+        }
+    ],
+    "getsourcefilter": [
+        {
+            "name": "Socket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "Interface",
+            "type": "ULONG"
+        },
+        {
+            "name": "Group",
+            "type": "SOCKADDR"
+        },
+        {
+            "name": "GroupLength",
+            "type": "int"
+        },
+        {
+            "name": "FilterMode",
+            "type": "MULTICAST_MODE_TYPE"
+        },
+        {
+            "name": "SourceCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "SourceList",
+            "type": "SOCKADDR_STORAGE"
+        }
+    ],
+    "WSAGetIPUserMtu": [
+        {
+            "name": "Socket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "Mtu",
+            "type": "DWORD"
+        }
+    ],
+    "WSASetIPUserMtu": [
+        {
+            "name": "Socket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "Mtu",
+            "type": "DWORD"
+        }
+    ],
+    "WSAGetFailConnectOnIcmpError": [
+        {
+            "name": "Socket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "Enabled",
+            "type": "DWORD"
+        }
+    ],
+    "WSASetFailConnectOnIcmpError": [
+        {
+            "name": "Socket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "Enabled",
+            "type": "DWORD"
+        }
+    ],
+    "WSAGetIcmpErrorInfo": [
+        {
+            "name": "Socket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "Info",
+            "type": "ICMP_ERROR_INFO"
+        }
+    ],
+    "WSAGetUdpSendMessageSize": [
+        {
+            "name": "Socket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "MsgSize",
+            "type": "DWORD"
+        }
+    ],
+    "WSASetUdpSendMessageSize": [
+        {
+            "name": "Socket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "MsgSize",
+            "type": "DWORD"
+        }
+    ],
+    "WSAGetUdpRecvMaxCoalescedSize": [
+        {
+            "name": "Socket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "MaxCoalescedMsgSize",
+            "type": "DWORD"
+        }
+    ],
+    "WSASetUdpRecvMaxCoalescedSize": [
+        {
+            "name": "Socket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "MaxCoalescedMsgSize",
+            "type": "DWORD"
+        }
+    ]
+}

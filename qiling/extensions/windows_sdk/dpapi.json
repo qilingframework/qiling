@@ -1,0 +1,112 @@
+{
+    "CryptProtectData": [
+        {
+            "name": "pDataIn",
+            "type": "DATA_BLOB"
+        },
+        {
+            "name": "szDataDescr",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pOptionalEntropy",
+            "type": "DATA_BLOB"
+        },
+        {
+            "name": "pvReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "pPromptStruct",
+            "type": "CRYPTPROTECT_PROMPTSTRUCT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pDataOut",
+            "type": "DATA_BLOB"
+        }
+    ],
+    "CryptUnprotectData": [
+        {
+            "name": "pDataIn",
+            "type": "DATA_BLOB"
+        },
+        {
+            "name": "ppszDataDescr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pOptionalEntropy",
+            "type": "DATA_BLOB"
+        },
+        {
+            "name": "pvReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "pPromptStruct",
+            "type": "CRYPTPROTECT_PROMPTSTRUCT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pDataOut",
+            "type": "DATA_BLOB"
+        }
+    ],
+    "CryptUpdateProtectedState": [
+        {
+            "name": "pOldSid",
+            "type": "PSID"
+        },
+        {
+            "name": "pwszOldPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwSuccessCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwFailureCount",
+            "type": "DWORD"
+        }
+    ],
+    "CryptProtectMemory": [
+        {
+            "name": "pDataIn",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbDataIn",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptUnprotectMemory": [
+        {
+            "name": "pDataIn",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbDataIn",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ]
+}

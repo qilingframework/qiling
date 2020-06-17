@@ -1,0 +1,12 @@
+{
+    "I_RpcBindingInqLocalClientPID": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Pid",
+            "type": "unsigned long"
+        }
+    ]
+}

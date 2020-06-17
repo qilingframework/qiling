@@ -1,0 +1,306 @@
+{
+    "NetShareAdd": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetShareEnum": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "resume_handle",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetShareGetInfo": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "netname",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetShareSetInfo": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "netname",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "parm_err",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetShareDel": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "netname",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "reserved",
+            "type": "DWORD"
+        }
+    ],
+    "NetShareCheck": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "device",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "type",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetShareDelEx": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "buf",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetSessionEnum": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "UncClientName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "username",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "resume_handle",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetSessionDel": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "UncClientName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "username",
+            "type": "LPWSTR"
+        }
+    ],
+    "NetSessionGetInfo": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "UncClientName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "username",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ],
+    "NetConnectionEnum": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "qualifier",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "resume_handle",
+            "type": "LPDWORD"
+        }
+    ],
+    "NetFileClose": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fileid",
+            "type": "DWORD"
+        }
+    ],
+    "NetFileEnum": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "basepath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "username",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "prefmaxlen",
+            "type": "DWORD"
+        },
+        {
+            "name": "entriesread",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "totalentries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "resume_handle",
+            "type": "PDWORD_PTR"
+        }
+    ],
+    "NetFileGetInfo": [
+        {
+            "name": "servername",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fileid",
+            "type": "DWORD"
+        },
+        {
+            "name": "level",
+            "type": "DWORD"
+        },
+        {
+            "name": "bufptr",
+            "type": "LPBYTE"
+        }
+    ]
+}

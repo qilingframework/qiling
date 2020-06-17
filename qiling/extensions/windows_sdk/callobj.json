@@ -1,0 +1,20 @@
+{
+    "CoGetInterceptor": [
+        {
+            "name": "iidIntercepted",
+            "type": "IID"
+        },
+        {
+            "name": "punkOuter",
+            "type": "IUnknown"
+        },
+        {
+            "name": "iid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ]
+}

@@ -1,0 +1,212 @@
+{
+    "SnmpUtilOidCpy": [
+        {
+            "name": "pOidDst",
+            "type": "AsnObjectIdentifier"
+        },
+        {
+            "name": "pOidSrc",
+            "type": "AsnObjectIdentifier"
+        }
+    ],
+    "SnmpUtilOidAppend": [
+        {
+            "name": "pOidDst",
+            "type": "AsnObjectIdentifier"
+        },
+        {
+            "name": "pOidSrc",
+            "type": "AsnObjectIdentifier"
+        }
+    ],
+    "SnmpUtilOidNCmp": [
+        {
+            "name": "pOid1",
+            "type": "AsnObjectIdentifier"
+        },
+        {
+            "name": "pOid2",
+            "type": "AsnObjectIdentifier"
+        },
+        {
+            "name": "nSubIds",
+            "type": "UINT"
+        }
+    ],
+    "SnmpUtilOidCmp": [
+        {
+            "name": "pOid1",
+            "type": "AsnObjectIdentifier"
+        },
+        {
+            "name": "pOid2",
+            "type": "AsnObjectIdentifier"
+        }
+    ],
+    "SnmpUtilOidFree": [
+        {
+            "name": "pOid",
+            "type": "AsnObjectIdentifier"
+        }
+    ],
+    "SnmpUtilOctetsCmp": [
+        {
+            "name": "pOctets1",
+            "type": "AsnOctetString"
+        },
+        {
+            "name": "pOctets2",
+            "type": "AsnOctetString"
+        }
+    ],
+    "SnmpUtilOctetsNCmp": [
+        {
+            "name": "pOctets1",
+            "type": "AsnOctetString"
+        },
+        {
+            "name": "pOctets2",
+            "type": "AsnOctetString"
+        },
+        {
+            "name": "nChars",
+            "type": "UINT"
+        }
+    ],
+    "SnmpUtilOctetsCpy": [
+        {
+            "name": "pOctetsDst",
+            "type": "AsnOctetString"
+        },
+        {
+            "name": "pOctetsSrc",
+            "type": "AsnOctetString"
+        }
+    ],
+    "SnmpUtilOctetsFree": [
+        {
+            "name": "pOctets",
+            "type": "AsnOctetString"
+        }
+    ],
+    "SnmpUtilAsnAnyCpy": [
+        {
+            "name": "pAnyDst",
+            "type": "AsnAny"
+        },
+        {
+            "name": "pAnySrc",
+            "type": "AsnAny"
+        }
+    ],
+    "SnmpUtilAsnAnyFree": [
+        {
+            "name": "pAny",
+            "type": "AsnAny"
+        }
+    ],
+    "SnmpUtilVarBindCpy": [
+        {
+            "name": "pVbDst",
+            "type": "SnmpVarBind"
+        },
+        {
+            "name": "pVbSrc",
+            "type": "SnmpVarBind"
+        }
+    ],
+    "SnmpUtilVarBindFree": [
+        {
+            "name": "pVb",
+            "type": "SnmpVarBind"
+        }
+    ],
+    "SnmpUtilVarBindListCpy": [
+        {
+            "name": "pVblDst",
+            "type": "SnmpVarBindList"
+        },
+        {
+            "name": "pVblSrc",
+            "type": "SnmpVarBindList"
+        }
+    ],
+    "SnmpUtilVarBindListFree": [
+        {
+            "name": "pVbl",
+            "type": "SnmpVarBindList"
+        }
+    ],
+    "SnmpUtilMemFree": [
+        {
+            "name": "pMem",
+            "type": "LPVOID"
+        }
+    ],
+    "SnmpUtilMemAlloc": [
+        {
+            "name": "nBytes",
+            "type": "UINT"
+        }
+    ],
+    "SnmpUtilMemReAlloc": [
+        {
+            "name": "pMem",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nBytes",
+            "type": "UINT"
+        }
+    ],
+    "SnmpUtilOidToA": [
+        {
+            "name": "Oid",
+            "type": "AsnObjectIdentifier"
+        }
+    ],
+    "SnmpUtilIdsToA": [
+        {
+            "name": "Ids",
+            "type": "UINT"
+        },
+        {
+            "name": "IdLength",
+            "type": "UINT"
+        }
+    ],
+    "SnmpUtilPrintOid": [
+        {
+            "name": "Oid",
+            "type": "AsnObjectIdentifier"
+        }
+    ],
+    "SnmpUtilPrintAsnAny": [
+        {
+            "name": "pAny",
+            "type": "AsnAny"
+        }
+    ],
+    "SnmpSvcSetLogLevel": [
+        {
+            "name": "nLogLevel",
+            "type": "INT"
+        }
+    ],
+    "SnmpSvcSetLogType": [
+        {
+            "name": "nLogType",
+            "type": "INT"
+        }
+    ],
+    "SnmpUtilDbgPrint": [
+        {
+            "name": "nLogLevel",
+            "type": "INT"
+        },
+        {
+            "name": "szFormat",
+            "type": "LPSTR"
+        }
+    ]
+}

@@ -1,0 +1,58 @@
+{
+    "DCIOpenProvider": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "DCICloseProvider": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "DCICreatePrimary": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lplpSurface",
+            "type": "LPDCISURFACEINFO"
+        }
+    ],
+    "DCIEndAccess": [
+        {
+            "name": "pdci",
+            "type": "LPDCISURFACEINFO"
+        }
+    ],
+    "DCIBeginAccess": [
+        {
+            "name": "pdci",
+            "type": "LPDCISURFACEINFO"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "dx",
+            "type": "int"
+        },
+        {
+            "name": "dy",
+            "type": "int"
+        }
+    ],
+    "DCIDestroy": [
+        {
+            "name": "pdci",
+            "type": "LPDCISURFACEINFO"
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "IsDestinationReachableA": [
+        {
+            "name": "lpszDestination",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpQOCInfo",
+            "type": "LPQOCINFO"
+        }
+    ],
+    "IsDestinationReachableW": [
+        {
+            "name": "lpszDestination",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpQOCInfo",
+            "type": "LPQOCINFO"
+        }
+    ],
+    "IsNetworkAlive": [
+        {
+            "name": "lpdwFlags",
+            "type": "LPDWORD"
+        }
+    ]
+}

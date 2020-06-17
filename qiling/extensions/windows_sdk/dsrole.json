@@ -1,0 +1,22 @@
+{
+    "DsRoleGetPrimaryDomainInformation": [
+        {
+            "name": "lpServer",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "InfoLevel",
+            "type": "DSROLE_PRIMARY_DOMAIN_INFO_LEVEL"
+        },
+        {
+            "name": "Buffer",
+            "type": "PBYTE"
+        }
+    ],
+    "DsRoleFreeMemory": [
+        {
+            "name": "Buffer",
+            "type": "PVOID"
+        }
+    ]
+}

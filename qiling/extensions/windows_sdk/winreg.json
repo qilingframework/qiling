@@ -1,0 +1,1744 @@
+{
+    "RegCloseKey": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        }
+    ],
+    "RegOverridePredefKey": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "hNewHKey",
+            "type": "HKEY"
+        }
+    ],
+    "RegOpenUserClassesRoot": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        }
+    ],
+    "RegOpenCurrentUser": [
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        }
+    ],
+    "RegDisablePredefinedCache": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RegDisablePredefinedCacheEx": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RegConnectRegistryA": [
+        {
+            "name": "lpMachineName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        }
+    ],
+    "RegConnectRegistryW": [
+        {
+            "name": "lpMachineName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        }
+    ],
+    "RegCreateKeyA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        }
+    ],
+    "RegCreateKeyW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        }
+    ],
+    "RegCreateKeyExA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpClass",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        },
+        {
+            "name": "lpdwDisposition",
+            "type": "LPDWORD"
+        }
+    ],
+    "RegCreateKeyExW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpClass",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        },
+        {
+            "name": "lpdwDisposition",
+            "type": "LPDWORD"
+        }
+    ],
+    "RegCreateKeyTransactedA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpClass",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        },
+        {
+            "name": "lpdwDisposition",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "hTransaction",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pExtendedParemeter",
+            "type": "PVOID"
+        }
+    ],
+    "RegCreateKeyTransactedW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpClass",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        },
+        {
+            "name": "lpdwDisposition",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "hTransaction",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pExtendedParemeter",
+            "type": "PVOID"
+        }
+    ],
+    "RegDeleteKeyA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        }
+    ],
+    "RegDeleteKeyW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RegDeleteKeyExA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        }
+    ],
+    "RegDeleteKeyExW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        }
+    ],
+    "RegDeleteKeyTransactedA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "hTransaction",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pExtendedParameter",
+            "type": "PVOID"
+        }
+    ],
+    "RegDeleteKeyTransactedW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "hTransaction",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pExtendedParameter",
+            "type": "PVOID"
+        }
+    ],
+    "RegDisableReflectionKey": [
+        {
+            "name": "hBase",
+            "type": "HKEY"
+        }
+    ],
+    "RegEnableReflectionKey": [
+        {
+            "name": "hBase",
+            "type": "HKEY"
+        }
+    ],
+    "RegQueryReflectionKey": [
+        {
+            "name": "hBase",
+            "type": "HKEY"
+        },
+        {
+            "name": "bIsReflectionDisabled",
+            "type": "BOOL"
+        }
+    ],
+    "RegDeleteValueA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpValueName",
+            "type": "LPCSTR"
+        }
+    ],
+    "RegDeleteValueW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpValueName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RegEnumKeyA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchName",
+            "type": "DWORD"
+        }
+    ],
+    "RegEnumKeyW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchName",
+            "type": "DWORD"
+        }
+    ],
+    "RegEnumKeyExA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpClass",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpcchClass",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpftLastWriteTime",
+            "type": "PFILETIME"
+        }
+    ],
+    "RegEnumKeyExW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpClass",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchClass",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpftLastWriteTime",
+            "type": "PFILETIME"
+        }
+    ],
+    "RegEnumValueA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpValueName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpcchValueName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpcbData",
+            "type": "LPDWORD"
+        }
+    ],
+    "RegEnumValueW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpValueName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchValueName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpcbData",
+            "type": "LPDWORD"
+        }
+    ],
+    "RegFlushKey": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        }
+    ],
+    "RegGetKeySecurity": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SecurityInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "pSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "lpcbSecurityDescriptor",
+            "type": "LPDWORD"
+        }
+    ],
+    "RegLoadKeyA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpFile",
+            "type": "LPCSTR"
+        }
+    ],
+    "RegLoadKeyW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpFile",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RegNotifyChangeKeyValue": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "bWatchSubtree",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwNotifyFilter",
+            "type": "DWORD"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "fAsynchronous",
+            "type": "BOOL"
+        }
+    ],
+    "RegOpenKeyA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        }
+    ],
+    "RegOpenKeyW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        }
+    ],
+    "RegOpenKeyExA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ulOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        }
+    ],
+    "RegOpenKeyExW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ulOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        }
+    ],
+    "RegOpenKeyTransactedA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ulOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        },
+        {
+            "name": "hTransaction",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pExtendedParemeter",
+            "type": "PVOID"
+        }
+    ],
+    "RegOpenKeyTransactedW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ulOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        },
+        {
+            "name": "hTransaction",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pExtendedParemeter",
+            "type": "PVOID"
+        }
+    ],
+    "RegQueryInfoKeyA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpClass",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpcchClass",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcSubKeys",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcbMaxSubKeyLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcbMaxClassLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcValues",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcbMaxValueNameLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcbMaxValueLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcbSecurityDescriptor",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpftLastWriteTime",
+            "type": "PFILETIME"
+        }
+    ],
+    "RegQueryInfoKeyW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpClass",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchClass",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcSubKeys",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcbMaxSubKeyLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcbMaxClassLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcValues",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcbMaxValueNameLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcbMaxValueLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcbSecurityDescriptor",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpftLastWriteTime",
+            "type": "PFILETIME"
+        }
+    ],
+    "RegQueryValueA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpData",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpcbData",
+            "type": "PLONG"
+        }
+    ],
+    "RegQueryValueW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpData",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcbData",
+            "type": "PLONG"
+        }
+    ],
+    "RegQueryMultipleValuesA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "val_list",
+            "type": "PVALENTA"
+        },
+        {
+            "name": "num_vals",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpValueBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "ldwTotsize",
+            "type": "LPDWORD"
+        }
+    ],
+    "RegQueryMultipleValuesW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "val_list",
+            "type": "PVALENTW"
+        },
+        {
+            "name": "num_vals",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpValueBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ldwTotsize",
+            "type": "LPDWORD"
+        }
+    ],
+    "RegQueryValueExA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpValueName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpcbData",
+            "type": "LPDWORD"
+        }
+    ],
+    "RegQueryValueExW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpValueName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpcbData",
+            "type": "LPDWORD"
+        }
+    ],
+    "RegReplaceKeyA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpNewFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpOldFile",
+            "type": "LPCSTR"
+        }
+    ],
+    "RegReplaceKeyW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpNewFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpOldFile",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RegRestoreKeyA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "RegRestoreKeyW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "RegSaveKeyA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        }
+    ],
+    "RegSaveKeyW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        }
+    ],
+    "RegSetKeySecurity": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SecurityInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "pSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "RegSetValueA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        }
+    ],
+    "RegSetValueW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        }
+    ],
+    "RegSetValueExA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpValueName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        }
+    ],
+    "RegSetValueExW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpValueName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        }
+    ],
+    "RegUnLoadKeyA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        }
+    ],
+    "RegUnLoadKeyW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RegDeleteKeyValueA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpValueName",
+            "type": "LPCSTR"
+        }
+    ],
+    "RegDeleteKeyValueW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpValueName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RegSetKeyValueA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpValueName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        }
+    ],
+    "RegSetKeyValueW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpValueName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        }
+    ],
+    "RegDeleteTreeA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        }
+    ],
+    "RegDeleteTreeW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RegCopyTreeA": [
+        {
+            "name": "hKeySrc",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hKeyDest",
+            "type": "HKEY"
+        }
+    ],
+    "RegGetValueA": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "PVOID"
+        },
+        {
+            "name": "pcbData",
+            "type": "LPDWORD"
+        }
+    ],
+    "RegGetValueW": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "PVOID"
+        },
+        {
+            "name": "pcbData",
+            "type": "LPDWORD"
+        }
+    ],
+    "RegCopyTreeW": [
+        {
+            "name": "hKeySrc",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hKeyDest",
+            "type": "HKEY"
+        }
+    ],
+    "RegLoadMUIStringA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszOutBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cbOutBuf",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbData",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszDirectory",
+            "type": "LPCSTR"
+        }
+    ],
+    "RegLoadMUIStringW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszOutBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cbOutBuf",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbData",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszDirectory",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RegLoadAppKeyA": [
+        {
+            "name": "lpFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        }
+    ],
+    "RegLoadAppKeyW": [
+        {
+            "name": "lpFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        }
+    ],
+    "InitiateSystemShutdownA": [
+        {
+            "name": "lpMachineName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpMessage",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "bForceAppsClosed",
+            "type": "BOOL"
+        },
+        {
+            "name": "bRebootAfterShutdown",
+            "type": "BOOL"
+        }
+    ],
+    "InitiateSystemShutdownW": [
+        {
+            "name": "lpMachineName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpMessage",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "bForceAppsClosed",
+            "type": "BOOL"
+        },
+        {
+            "name": "bRebootAfterShutdown",
+            "type": "BOOL"
+        }
+    ],
+    "AbortSystemShutdownA": [
+        {
+            "name": "lpMachineName",
+            "type": "LPSTR"
+        }
+    ],
+    "AbortSystemShutdownW": [
+        {
+            "name": "lpMachineName",
+            "type": "LPWSTR"
+        }
+    ],
+    "InitiateSystemShutdownExA": [
+        {
+            "name": "lpMachineName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpMessage",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "bForceAppsClosed",
+            "type": "BOOL"
+        },
+        {
+            "name": "bRebootAfterShutdown",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwReason",
+            "type": "DWORD"
+        }
+    ],
+    "InitiateSystemShutdownExW": [
+        {
+            "name": "lpMachineName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpMessage",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "bForceAppsClosed",
+            "type": "BOOL"
+        },
+        {
+            "name": "bRebootAfterShutdown",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwReason",
+            "type": "DWORD"
+        }
+    ],
+    "InitiateShutdownA": [
+        {
+            "name": "lpMachineName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpMessage",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwGracePeriod",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwShutdownFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReason",
+            "type": "DWORD"
+        }
+    ],
+    "InitiateShutdownW": [
+        {
+            "name": "lpMachineName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpMessage",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwGracePeriod",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwShutdownFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReason",
+            "type": "DWORD"
+        }
+    ],
+    "RegSaveKeyExA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "RegSaveKeyExW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ]
+}

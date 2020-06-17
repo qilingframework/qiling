@@ -1,0 +1,376 @@
+{
+    "CreateThreadpool": [
+        {
+            "name": "reserved",
+            "type": "PVOID"
+        }
+    ],
+    "SetThreadpoolThreadMaximum": [
+        {
+            "name": "ptpp",
+            "type": "PTP_POOL"
+        },
+        {
+            "name": "cthrdMost",
+            "type": "DWORD"
+        }
+    ],
+    "SetThreadpoolThreadMinimum": [
+        {
+            "name": "ptpp",
+            "type": "PTP_POOL"
+        },
+        {
+            "name": "cthrdMic",
+            "type": "DWORD"
+        }
+    ],
+    "SetThreadpoolStackInformation": [
+        {
+            "name": "ptpp",
+            "type": "PTP_POOL"
+        },
+        {
+            "name": "ptpsi",
+            "type": "PTP_POOL_STACK_INFORMATION"
+        }
+    ],
+    "QueryThreadpoolStackInformation": [
+        {
+            "name": "ptpp",
+            "type": "PTP_POOL"
+        },
+        {
+            "name": "ptpsi",
+            "type": "PTP_POOL_STACK_INFORMATION"
+        }
+    ],
+    "CloseThreadpool": [
+        {
+            "name": "ptpp",
+            "type": "PTP_POOL"
+        }
+    ],
+    "CreateThreadpoolCleanupGroup": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CloseThreadpoolCleanupGroupMembers": [
+        {
+            "name": "ptpcg",
+            "type": "PTP_CLEANUP_GROUP"
+        },
+        {
+            "name": "fCancelPendingCallbacks",
+            "type": "BOOL"
+        },
+        {
+            "name": "pvCleanupContext",
+            "type": "PVOID"
+        }
+    ],
+    "CloseThreadpoolCleanupGroup": [
+        {
+            "name": "ptpcg",
+            "type": "PTP_CLEANUP_GROUP"
+        }
+    ],
+    "SetEventWhenCallbackReturns": [
+        {
+            "name": "pci",
+            "type": "PTP_CALLBACK_INSTANCE"
+        },
+        {
+            "name": "evt",
+            "type": "HANDLE"
+        }
+    ],
+    "ReleaseSemaphoreWhenCallbackReturns": [
+        {
+            "name": "pci",
+            "type": "PTP_CALLBACK_INSTANCE"
+        },
+        {
+            "name": "sem",
+            "type": "HANDLE"
+        },
+        {
+            "name": "crel",
+            "type": "DWORD"
+        }
+    ],
+    "ReleaseMutexWhenCallbackReturns": [
+        {
+            "name": "pci",
+            "type": "PTP_CALLBACK_INSTANCE"
+        },
+        {
+            "name": "mut",
+            "type": "HANDLE"
+        }
+    ],
+    "LeaveCriticalSectionWhenCallbackReturns": [
+        {
+            "name": "pci",
+            "type": "PTP_CALLBACK_INSTANCE"
+        },
+        {
+            "name": "pcs",
+            "type": "PCRITICAL_SECTION"
+        }
+    ],
+    "FreeLibraryWhenCallbackReturns": [
+        {
+            "name": "pci",
+            "type": "PTP_CALLBACK_INSTANCE"
+        },
+        {
+            "name": "mod",
+            "type": "HMODULE"
+        }
+    ],
+    "CallbackMayRunLong": [
+        {
+            "name": "pci",
+            "type": "PTP_CALLBACK_INSTANCE"
+        }
+    ],
+    "DisassociateCurrentThreadFromCallback": [
+        {
+            "name": "pci",
+            "type": "PTP_CALLBACK_INSTANCE"
+        }
+    ],
+    "TrySubmitThreadpoolCallback": [
+        {
+            "name": "pfns",
+            "type": "PTP_SIMPLE_CALLBACK"
+        },
+        {
+            "name": "pv",
+            "type": "PVOID"
+        },
+        {
+            "name": "pcbe",
+            "type": "PTP_CALLBACK_ENVIRON"
+        }
+    ],
+    "CreateThreadpoolWork": [
+        {
+            "name": "pfnwk",
+            "type": "PTP_WORK_CALLBACK"
+        },
+        {
+            "name": "pv",
+            "type": "PVOID"
+        },
+        {
+            "name": "pcbe",
+            "type": "PTP_CALLBACK_ENVIRON"
+        }
+    ],
+    "SubmitThreadpoolWork": [
+        {
+            "name": "pwk",
+            "type": "PTP_WORK"
+        }
+    ],
+    "WaitForThreadpoolWorkCallbacks": [
+        {
+            "name": "pwk",
+            "type": "PTP_WORK"
+        },
+        {
+            "name": "fCancelPendingCallbacks",
+            "type": "BOOL"
+        }
+    ],
+    "CloseThreadpoolWork": [
+        {
+            "name": "pwk",
+            "type": "PTP_WORK"
+        }
+    ],
+    "CreateThreadpoolTimer": [
+        {
+            "name": "pfnti",
+            "type": "PTP_TIMER_CALLBACK"
+        },
+        {
+            "name": "pv",
+            "type": "PVOID"
+        },
+        {
+            "name": "pcbe",
+            "type": "PTP_CALLBACK_ENVIRON"
+        }
+    ],
+    "SetThreadpoolTimer": [
+        {
+            "name": "pti",
+            "type": "PTP_TIMER"
+        },
+        {
+            "name": "pftDueTime",
+            "type": "PFILETIME"
+        },
+        {
+            "name": "msPeriod",
+            "type": "DWORD"
+        },
+        {
+            "name": "msWindowLength",
+            "type": "DWORD"
+        }
+    ],
+    "IsThreadpoolTimerSet": [
+        {
+            "name": "pti",
+            "type": "PTP_TIMER"
+        }
+    ],
+    "WaitForThreadpoolTimerCallbacks": [
+        {
+            "name": "pti",
+            "type": "PTP_TIMER"
+        },
+        {
+            "name": "fCancelPendingCallbacks",
+            "type": "BOOL"
+        }
+    ],
+    "CloseThreadpoolTimer": [
+        {
+            "name": "pti",
+            "type": "PTP_TIMER"
+        }
+    ],
+    "CreateThreadpoolWait": [
+        {
+            "name": "pfnwa",
+            "type": "PTP_WAIT_CALLBACK"
+        },
+        {
+            "name": "pv",
+            "type": "PVOID"
+        },
+        {
+            "name": "pcbe",
+            "type": "PTP_CALLBACK_ENVIRON"
+        }
+    ],
+    "SetThreadpoolWait": [
+        {
+            "name": "pwa",
+            "type": "PTP_WAIT"
+        },
+        {
+            "name": "h",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pftTimeout",
+            "type": "PFILETIME"
+        }
+    ],
+    "WaitForThreadpoolWaitCallbacks": [
+        {
+            "name": "pwa",
+            "type": "PTP_WAIT"
+        },
+        {
+            "name": "fCancelPendingCallbacks",
+            "type": "BOOL"
+        }
+    ],
+    "CloseThreadpoolWait": [
+        {
+            "name": "pwa",
+            "type": "PTP_WAIT"
+        }
+    ],
+    "CreateThreadpoolIo": [
+        {
+            "name": "fl",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pfnio",
+            "type": "PTP_WIN32_IO_CALLBACK"
+        },
+        {
+            "name": "pv",
+            "type": "PVOID"
+        },
+        {
+            "name": "pcbe",
+            "type": "PTP_CALLBACK_ENVIRON"
+        }
+    ],
+    "StartThreadpoolIo": [
+        {
+            "name": "pio",
+            "type": "PTP_IO"
+        }
+    ],
+    "CancelThreadpoolIo": [
+        {
+            "name": "pio",
+            "type": "PTP_IO"
+        }
+    ],
+    "WaitForThreadpoolIoCallbacks": [
+        {
+            "name": "pio",
+            "type": "PTP_IO"
+        },
+        {
+            "name": "fCancelPendingCallbacks",
+            "type": "BOOL"
+        }
+    ],
+    "CloseThreadpoolIo": [
+        {
+            "name": "pio",
+            "type": "PTP_IO"
+        }
+    ],
+    "SetThreadpoolTimerEx": [
+        {
+            "name": "pti",
+            "type": "PTP_TIMER"
+        },
+        {
+            "name": "pftDueTime",
+            "type": "PFILETIME"
+        },
+        {
+            "name": "msPeriod",
+            "type": "DWORD"
+        },
+        {
+            "name": "msWindowLength",
+            "type": "DWORD"
+        }
+    ],
+    "SetThreadpoolWaitEx": [
+        {
+            "name": "pwa",
+            "type": "PTP_WAIT"
+        },
+        {
+            "name": "h",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pftTimeout",
+            "type": "PFILETIME"
+        },
+        {
+            "name": "Reserved",
+            "type": "PVOID"
+        }
+    ]
+}

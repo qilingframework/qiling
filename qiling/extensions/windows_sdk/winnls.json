@@ -1,0 +1,1842 @@
+{
+    "GetDurationFormatEx": [
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpDuration",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "ullDuration",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "lpFormat",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDurationStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchDuration",
+            "type": "int"
+        }
+    ],
+    "CompareStringW": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwCmpFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpString1",
+            "type": "PCNZWCH"
+        },
+        {
+            "name": "cchCount1",
+            "type": "int"
+        },
+        {
+            "name": "lpString2",
+            "type": "PCNZWCH"
+        },
+        {
+            "name": "cchCount2",
+            "type": "int"
+        }
+    ],
+    "FoldStringW": [
+        {
+            "name": "dwMapFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSrcStr",
+            "type": "LPCWCH"
+        },
+        {
+            "name": "cchSrc",
+            "type": "int"
+        },
+        {
+            "name": "lpDestStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchDest",
+            "type": "int"
+        }
+    ],
+    "IsValidCodePage": [
+        {
+            "name": "CodePage",
+            "type": "UINT"
+        }
+    ],
+    "GetACP": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetOEMCP": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetCPInfo": [
+        {
+            "name": "CodePage",
+            "type": "UINT"
+        },
+        {
+            "name": "lpCPInfo",
+            "type": "LPCPINFO"
+        }
+    ],
+    "GetCPInfoExA": [
+        {
+            "name": "CodePage",
+            "type": "UINT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpCPInfoEx",
+            "type": "LPCPINFOEXA"
+        }
+    ],
+    "GetCPInfoExW": [
+        {
+            "name": "CodePage",
+            "type": "UINT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpCPInfoEx",
+            "type": "LPCPINFOEXW"
+        }
+    ],
+    "CompareStringA": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwCmpFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpString1",
+            "type": "PCNZCH"
+        },
+        {
+            "name": "cchCount1",
+            "type": "int"
+        },
+        {
+            "name": "lpString2",
+            "type": "PCNZCH"
+        },
+        {
+            "name": "cchCount2",
+            "type": "int"
+        }
+    ],
+    "FindNLSString": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFindNLSStringFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpStringSource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchSource",
+            "type": "int"
+        },
+        {
+            "name": "lpStringValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchValue",
+            "type": "int"
+        },
+        {
+            "name": "pcchFound",
+            "type": "LPINT"
+        }
+    ],
+    "LCMapStringW": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwMapFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSrcStr",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchSrc",
+            "type": "int"
+        },
+        {
+            "name": "lpDestStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchDest",
+            "type": "int"
+        }
+    ],
+    "LCMapStringA": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwMapFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSrcStr",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cchSrc",
+            "type": "int"
+        },
+        {
+            "name": "lpDestStr",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchDest",
+            "type": "int"
+        }
+    ],
+    "GetLocaleInfoW": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "LCType",
+            "type": "LCTYPE"
+        },
+        {
+            "name": "lpLCData",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchData",
+            "type": "int"
+        }
+    ],
+    "GetLocaleInfoA": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "LCType",
+            "type": "LCTYPE"
+        },
+        {
+            "name": "lpLCData",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchData",
+            "type": "int"
+        }
+    ],
+    "SetLocaleInfoA": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "LCType",
+            "type": "LCTYPE"
+        },
+        {
+            "name": "lpLCData",
+            "type": "LPCSTR"
+        }
+    ],
+    "SetLocaleInfoW": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "LCType",
+            "type": "LCTYPE"
+        },
+        {
+            "name": "lpLCData",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetCalendarInfoA": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "Calendar",
+            "type": "CALID"
+        },
+        {
+            "name": "CalType",
+            "type": "CALTYPE"
+        },
+        {
+            "name": "lpCalData",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchData",
+            "type": "int"
+        },
+        {
+            "name": "lpValue",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetCalendarInfoW": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "Calendar",
+            "type": "CALID"
+        },
+        {
+            "name": "CalType",
+            "type": "CALTYPE"
+        },
+        {
+            "name": "lpCalData",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchData",
+            "type": "int"
+        },
+        {
+            "name": "lpValue",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetCalendarInfoA": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "Calendar",
+            "type": "CALID"
+        },
+        {
+            "name": "CalType",
+            "type": "CALTYPE"
+        },
+        {
+            "name": "lpCalData",
+            "type": "LPCSTR"
+        }
+    ],
+    "SetCalendarInfoW": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "Calendar",
+            "type": "CALID"
+        },
+        {
+            "name": "CalType",
+            "type": "CALTYPE"
+        },
+        {
+            "name": "lpCalData",
+            "type": "LPCWSTR"
+        }
+    ],
+    "LoadStringByReference": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Language",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourceString",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Buffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "Directory",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pcchBufferOut",
+            "type": "PULONG"
+        }
+    ],
+    "IsDBCSLeadByte": [
+        {
+            "name": "TestChar",
+            "type": "BYTE"
+        }
+    ],
+    "IsDBCSLeadByteEx": [
+        {
+            "name": "CodePage",
+            "type": "UINT"
+        },
+        {
+            "name": "TestChar",
+            "type": "BYTE"
+        }
+    ],
+    "LocaleNameToLCID": [
+        {
+            "name": "lpName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "LCIDToLocaleName": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "lpName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchName",
+            "type": "int"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetDurationFormat": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpDuration",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "ullDuration",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "lpFormat",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDurationStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchDuration",
+            "type": "int"
+        }
+    ],
+    "GetNumberFormatA": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpFormat",
+            "type": "NUMBERFMTA"
+        },
+        {
+            "name": "lpNumberStr",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchNumber",
+            "type": "int"
+        }
+    ],
+    "GetNumberFormatW": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpFormat",
+            "type": "NUMBERFMTW"
+        },
+        {
+            "name": "lpNumberStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchNumber",
+            "type": "int"
+        }
+    ],
+    "GetCurrencyFormatA": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpFormat",
+            "type": "CURRENCYFMTA"
+        },
+        {
+            "name": "lpCurrencyStr",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchCurrency",
+            "type": "int"
+        }
+    ],
+    "GetCurrencyFormatW": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpFormat",
+            "type": "CURRENCYFMTW"
+        },
+        {
+            "name": "lpCurrencyStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchCurrency",
+            "type": "int"
+        }
+    ],
+    "EnumCalendarInfoA": [
+        {
+            "name": "lpCalInfoEnumProc",
+            "type": "CALINFO_ENUMPROCA"
+        },
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "Calendar",
+            "type": "CALID"
+        },
+        {
+            "name": "CalType",
+            "type": "CALTYPE"
+        }
+    ],
+    "EnumCalendarInfoW": [
+        {
+            "name": "lpCalInfoEnumProc",
+            "type": "CALINFO_ENUMPROCW"
+        },
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "Calendar",
+            "type": "CALID"
+        },
+        {
+            "name": "CalType",
+            "type": "CALTYPE"
+        }
+    ],
+    "EnumCalendarInfoExA": [
+        {
+            "name": "lpCalInfoEnumProcEx",
+            "type": "CALINFO_ENUMPROCEXA"
+        },
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "Calendar",
+            "type": "CALID"
+        },
+        {
+            "name": "CalType",
+            "type": "CALTYPE"
+        }
+    ],
+    "EnumCalendarInfoExW": [
+        {
+            "name": "lpCalInfoEnumProcEx",
+            "type": "CALINFO_ENUMPROCEXW"
+        },
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "Calendar",
+            "type": "CALID"
+        },
+        {
+            "name": "CalType",
+            "type": "CALTYPE"
+        }
+    ],
+    "EnumTimeFormatsA": [
+        {
+            "name": "lpTimeFmtEnumProc",
+            "type": "TIMEFMT_ENUMPROCA"
+        },
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumTimeFormatsW": [
+        {
+            "name": "lpTimeFmtEnumProc",
+            "type": "TIMEFMT_ENUMPROCW"
+        },
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumDateFormatsA": [
+        {
+            "name": "lpDateFmtEnumProc",
+            "type": "DATEFMT_ENUMPROCA"
+        },
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumDateFormatsW": [
+        {
+            "name": "lpDateFmtEnumProc",
+            "type": "DATEFMT_ENUMPROCW"
+        },
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumDateFormatsExA": [
+        {
+            "name": "lpDateFmtEnumProcEx",
+            "type": "DATEFMT_ENUMPROCEXA"
+        },
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumDateFormatsExW": [
+        {
+            "name": "lpDateFmtEnumProcEx",
+            "type": "DATEFMT_ENUMPROCEXW"
+        },
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "IsValidLanguageGroup": [
+        {
+            "name": "LanguageGroup",
+            "type": "LGRPID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetNLSVersion": [
+        {
+            "name": "Function",
+            "type": "NLS_FUNCTION"
+        },
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "lpVersionInformation",
+            "type": "LPNLSVERSIONINFO"
+        }
+    ],
+    "IsValidLocale": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetGeoInfoA": [
+        {
+            "name": "Location",
+            "type": "GEOID"
+        },
+        {
+            "name": "GeoType",
+            "type": "GEOTYPE"
+        },
+        {
+            "name": "lpGeoData",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchData",
+            "type": "int"
+        },
+        {
+            "name": "LangId",
+            "type": "LANGID"
+        }
+    ],
+    "GetGeoInfoW": [
+        {
+            "name": "Location",
+            "type": "GEOID"
+        },
+        {
+            "name": "GeoType",
+            "type": "GEOTYPE"
+        },
+        {
+            "name": "lpGeoData",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchData",
+            "type": "int"
+        },
+        {
+            "name": "LangId",
+            "type": "LANGID"
+        }
+    ],
+    "GetGeoInfoEx": [
+        {
+            "name": "location",
+            "type": "PWSTR"
+        },
+        {
+            "name": "geoType",
+            "type": "GEOTYPE"
+        },
+        {
+            "name": "geoData",
+            "type": "PWSTR"
+        },
+        {
+            "name": "geoDataCount",
+            "type": "int"
+        }
+    ],
+    "EnumSystemGeoID": [
+        {
+            "name": "GeoClass",
+            "type": "GEOCLASS"
+        },
+        {
+            "name": "ParentGeoId",
+            "type": "GEOID"
+        },
+        {
+            "name": "lpGeoEnumProc",
+            "type": "GEO_ENUMPROC"
+        }
+    ],
+    "EnumSystemGeoNames": [
+        {
+            "name": "geoClass",
+            "type": "GEOCLASS"
+        },
+        {
+            "name": "geoEnumProc",
+            "type": "GEO_ENUMNAMEPROC"
+        },
+        {
+            "name": "data",
+            "type": "LPARAM"
+        }
+    ],
+    "GetUserGeoID": [
+        {
+            "name": "GeoClass",
+            "type": "GEOCLASS"
+        }
+    ],
+    "GetUserDefaultGeoName": [
+        {
+            "name": "geoName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "geoNameCount",
+            "type": "int"
+        }
+    ],
+    "SetUserGeoID": [
+        {
+            "name": "GeoId",
+            "type": "GEOID"
+        }
+    ],
+    "SetUserGeoName": [
+        {
+            "name": "geoName",
+            "type": "PWSTR"
+        }
+    ],
+    "ConvertDefaultLocale": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        }
+    ],
+    "GetSystemDefaultUILanguage": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetThreadLocale": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetThreadLocale": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        }
+    ],
+    "GetUserDefaultUILanguage": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetUserDefaultLangID": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetSystemDefaultLangID": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetSystemDefaultLCID": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetUserDefaultLCID": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetThreadUILanguage": [
+        {
+            "name": "LangId",
+            "type": "LANGID"
+        }
+    ],
+    "GetThreadUILanguage": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetProcessPreferredUILanguages": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pulNumLanguages",
+            "type": "PULONG"
+        },
+        {
+            "name": "pwszLanguagesBuffer",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchLanguagesBuffer",
+            "type": "PULONG"
+        }
+    ],
+    "SetProcessPreferredUILanguages": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszLanguagesBuffer",
+            "type": "PCZZWSTR"
+        },
+        {
+            "name": "pulNumLanguages",
+            "type": "PULONG"
+        }
+    ],
+    "GetUserPreferredUILanguages": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pulNumLanguages",
+            "type": "PULONG"
+        },
+        {
+            "name": "pwszLanguagesBuffer",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchLanguagesBuffer",
+            "type": "PULONG"
+        }
+    ],
+    "GetSystemPreferredUILanguages": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pulNumLanguages",
+            "type": "PULONG"
+        },
+        {
+            "name": "pwszLanguagesBuffer",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchLanguagesBuffer",
+            "type": "PULONG"
+        }
+    ],
+    "GetThreadPreferredUILanguages": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pulNumLanguages",
+            "type": "PULONG"
+        },
+        {
+            "name": "pwszLanguagesBuffer",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchLanguagesBuffer",
+            "type": "PULONG"
+        }
+    ],
+    "SetThreadPreferredUILanguages": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszLanguagesBuffer",
+            "type": "PCZZWSTR"
+        },
+        {
+            "name": "pulNumLanguages",
+            "type": "PULONG"
+        }
+    ],
+    "GetFileMUIInfo": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcwszFilePath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pFileMUIInfo",
+            "type": "PFILEMUIINFO"
+        },
+        {
+            "name": "pcbFileMUIInfo",
+            "type": "DWORD"
+        }
+    ],
+    "GetFileMUIPath": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcwszFilePath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszLanguage",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchLanguage",
+            "type": "PULONG"
+        },
+        {
+            "name": "pwszFileMUIPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchFileMUIPath",
+            "type": "PULONG"
+        },
+        {
+            "name": "pululEnumerator",
+            "type": "PULONGLONG"
+        }
+    ],
+    "GetUILanguageInfo": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwmszLanguage",
+            "type": "PCZZWSTR"
+        },
+        {
+            "name": "pwszFallbackLanguages",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchFallbackLanguages",
+            "type": "PDWORD"
+        },
+        {
+            "name": "pAttributes",
+            "type": "PDWORD"
+        }
+    ],
+    "NotifyUILanguageChange": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcwstrNewLanguage",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pcwstrPreviousLanguage",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwStatusRtrn",
+            "type": "PDWORD"
+        }
+    ],
+    "GetStringTypeA": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "dwInfoType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSrcStr",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cchSrc",
+            "type": "int"
+        },
+        {
+            "name": "lpCharType",
+            "type": "LPWORD"
+        }
+    ],
+    "FoldStringA": [
+        {
+            "name": "dwMapFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSrcStr",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cchSrc",
+            "type": "int"
+        },
+        {
+            "name": "lpDestStr",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchDest",
+            "type": "int"
+        }
+    ],
+    "EnumSystemLocalesA": [
+        {
+            "name": "lpLocaleEnumProc",
+            "type": "LOCALE_ENUMPROCA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumSystemLocalesW": [
+        {
+            "name": "lpLocaleEnumProc",
+            "type": "LOCALE_ENUMPROCW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumSystemLanguageGroupsA": [
+        {
+            "name": "lpLanguageGroupEnumProc",
+            "type": "LANGUAGEGROUP_ENUMPROCA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG_PTR"
+        }
+    ],
+    "EnumSystemLanguageGroupsW": [
+        {
+            "name": "lpLanguageGroupEnumProc",
+            "type": "LANGUAGEGROUP_ENUMPROCW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG_PTR"
+        }
+    ],
+    "EnumLanguageGroupLocalesA": [
+        {
+            "name": "lpLangGroupLocaleEnumProc",
+            "type": "LANGGROUPLOCALE_ENUMPROCA"
+        },
+        {
+            "name": "LanguageGroup",
+            "type": "LGRPID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG_PTR"
+        }
+    ],
+    "EnumLanguageGroupLocalesW": [
+        {
+            "name": "lpLangGroupLocaleEnumProc",
+            "type": "LANGGROUPLOCALE_ENUMPROCW"
+        },
+        {
+            "name": "LanguageGroup",
+            "type": "LGRPID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG_PTR"
+        }
+    ],
+    "EnumUILanguagesA": [
+        {
+            "name": "lpUILanguageEnumProc",
+            "type": "UILANGUAGE_ENUMPROCA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG_PTR"
+        }
+    ],
+    "EnumUILanguagesW": [
+        {
+            "name": "lpUILanguageEnumProc",
+            "type": "UILANGUAGE_ENUMPROCW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LONG_PTR"
+        }
+    ],
+    "EnumSystemCodePagesA": [
+        {
+            "name": "lpCodePageEnumProc",
+            "type": "CODEPAGE_ENUMPROCA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumSystemCodePagesW": [
+        {
+            "name": "lpCodePageEnumProc",
+            "type": "CODEPAGE_ENUMPROCW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "IdnToAscii": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpUnicodeCharStr",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchUnicodeChar",
+            "type": "int"
+        },
+        {
+            "name": "lpASCIICharStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchASCIIChar",
+            "type": "int"
+        }
+    ],
+    "IdnToUnicode": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpASCIICharStr",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchASCIIChar",
+            "type": "int"
+        },
+        {
+            "name": "lpUnicodeCharStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchUnicodeChar",
+            "type": "int"
+        }
+    ],
+    "IdnToNameprepUnicode": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpUnicodeCharStr",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchUnicodeChar",
+            "type": "int"
+        },
+        {
+            "name": "lpNameprepCharStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchNameprepChar",
+            "type": "int"
+        }
+    ],
+    "NormalizeString": [
+        {
+            "name": "NormForm",
+            "type": "NORM_FORM"
+        },
+        {
+            "name": "lpSrcString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cwSrcLength",
+            "type": "int"
+        },
+        {
+            "name": "lpDstString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cwDstLength",
+            "type": "int"
+        }
+    ],
+    "IsNormalizedString": [
+        {
+            "name": "NormForm",
+            "type": "NORM_FORM"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cwLength",
+            "type": "int"
+        }
+    ],
+    "VerifyScripts": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpLocaleScripts",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchLocaleScripts",
+            "type": "int"
+        },
+        {
+            "name": "lpTestScripts",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchTestScripts",
+            "type": "int"
+        }
+    ],
+    "GetStringScripts": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchString",
+            "type": "int"
+        },
+        {
+            "name": "lpScripts",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchScripts",
+            "type": "int"
+        }
+    ],
+    "GetLocaleInfoEx": [
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "LCType",
+            "type": "LCTYPE"
+        },
+        {
+            "name": "lpLCData",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchData",
+            "type": "int"
+        }
+    ],
+    "GetCalendarInfoEx": [
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Calendar",
+            "type": "CALID"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "CalType",
+            "type": "CALTYPE"
+        },
+        {
+            "name": "lpCalData",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchData",
+            "type": "int"
+        },
+        {
+            "name": "lpValue",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetNumberFormatEx": [
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpFormat",
+            "type": "NUMBERFMTW"
+        },
+        {
+            "name": "lpNumberStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchNumber",
+            "type": "int"
+        }
+    ],
+    "GetCurrencyFormatEx": [
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpFormat",
+            "type": "CURRENCYFMTW"
+        },
+        {
+            "name": "lpCurrencyStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchCurrency",
+            "type": "int"
+        }
+    ],
+    "GetUserDefaultLocaleName": [
+        {
+            "name": "lpLocaleName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchLocaleName",
+            "type": "int"
+        }
+    ],
+    "GetSystemDefaultLocaleName": [
+        {
+            "name": "lpLocaleName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchLocaleName",
+            "type": "int"
+        }
+    ],
+    "IsNLSDefinedString": [
+        {
+            "name": "Function",
+            "type": "NLS_FUNCTION"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpVersionInformation",
+            "type": "LPNLSVERSIONINFO"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchStr",
+            "type": "INT"
+        }
+    ],
+    "GetNLSVersionEx": [
+        {
+            "name": "function",
+            "type": "NLS_FUNCTION"
+        },
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpVersionInformation",
+            "type": "LPNLSVERSIONINFOEX"
+        }
+    ],
+    "IsValidNLSVersion": [
+        {
+            "name": "function",
+            "type": "NLS_FUNCTION"
+        },
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpVersionInformation",
+            "type": "LPNLSVERSIONINFOEX"
+        }
+    ],
+    "FindNLSStringEx": [
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFindNLSStringFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpStringSource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchSource",
+            "type": "int"
+        },
+        {
+            "name": "lpStringValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchValue",
+            "type": "int"
+        },
+        {
+            "name": "pcchFound",
+            "type": "LPINT"
+        },
+        {
+            "name": "lpVersionInformation",
+            "type": "LPNLSVERSIONINFO"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        },
+        {
+            "name": "sortHandle",
+            "type": "LPARAM"
+        }
+    ],
+    "LCMapStringEx": [
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwMapFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSrcStr",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchSrc",
+            "type": "int"
+        },
+        {
+            "name": "lpDestStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchDest",
+            "type": "int"
+        },
+        {
+            "name": "lpVersionInformation",
+            "type": "LPNLSVERSIONINFO"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        },
+        {
+            "name": "sortHandle",
+            "type": "LPARAM"
+        }
+    ],
+    "IsValidLocaleName": [
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "EnumCalendarInfoExEx": [
+        {
+            "name": "pCalInfoEnumProcExEx",
+            "type": "CALINFO_ENUMPROCEXEX"
+        },
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Calendar",
+            "type": "CALID"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "CalType",
+            "type": "CALTYPE"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumDateFormatsExEx": [
+        {
+            "name": "lpDateFmtEnumProcExEx",
+            "type": "DATEFMT_ENUMPROCEXEX"
+        },
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumTimeFormatsEx": [
+        {
+            "name": "lpTimeFmtEnumProcEx",
+            "type": "TIMEFMT_ENUMPROCEX"
+        },
+        {
+            "name": "lpLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumSystemLocalesEx": [
+        {
+            "name": "lpLocaleEnumProcEx",
+            "type": "LOCALE_ENUMPROCEX"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "ResolveLocaleName": [
+        {
+            "name": "lpNameToResolve",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpLocaleName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchLocaleName",
+            "type": "int"
+        }
+    ]
+}

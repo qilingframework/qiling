@@ -1,0 +1,16 @@
+{
+    "IsProcessInJob": [
+        {
+            "name": "ProcessHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "JobHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Result",
+            "type": "PBOOL"
+        }
+    ]
+}

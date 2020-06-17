@@ -1,0 +1,122 @@
+{
+    "ConvertSidToStringSidA": [
+        {
+            "name": "Sid",
+            "type": "PSID"
+        },
+        {
+            "name": "StringSid",
+            "type": "LPSTR"
+        }
+    ],
+    "ConvertSidToStringSidW": [
+        {
+            "name": "Sid",
+            "type": "PSID"
+        },
+        {
+            "name": "StringSid",
+            "type": "LPWSTR"
+        }
+    ],
+    "ConvertStringSidToSidA": [
+        {
+            "name": "StringSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Sid",
+            "type": "PSID"
+        }
+    ],
+    "ConvertStringSidToSidW": [
+        {
+            "name": "StringSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Sid",
+            "type": "PSID"
+        }
+    ],
+    "ConvertStringSecurityDescriptorToSecurityDescriptorA": [
+        {
+            "name": "StringSecurityDescriptor",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "StringSDRevision",
+            "type": "DWORD"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "SecurityDescriptorSize",
+            "type": "PULONG"
+        }
+    ],
+    "ConvertStringSecurityDescriptorToSecurityDescriptorW": [
+        {
+            "name": "StringSecurityDescriptor",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "StringSDRevision",
+            "type": "DWORD"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "SecurityDescriptorSize",
+            "type": "PULONG"
+        }
+    ],
+    "ConvertSecurityDescriptorToStringSecurityDescriptorA": [
+        {
+            "name": "SecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "RequestedStringSDRevision",
+            "type": "DWORD"
+        },
+        {
+            "name": "SecurityInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "StringSecurityDescriptor",
+            "type": "LPSTR"
+        },
+        {
+            "name": "StringSecurityDescriptorLen",
+            "type": "PULONG"
+        }
+    ],
+    "ConvertSecurityDescriptorToStringSecurityDescriptorW": [
+        {
+            "name": "SecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "RequestedStringSDRevision",
+            "type": "DWORD"
+        },
+        {
+            "name": "SecurityInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "StringSecurityDescriptor",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "StringSecurityDescriptorLen",
+            "type": "PULONG"
+        }
+    ]
+}

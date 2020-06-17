@@ -1,0 +1,20 @@
+{
+    "StgPropertyLengthAsVariant": [
+        {
+            "name": "pProp",
+            "type": "SERIALIZEDPROPERTYVALUE"
+        },
+        {
+            "name": "cbProp",
+            "type": "ULONG"
+        },
+        {
+            "name": "CodePage",
+            "type": "USHORT"
+        },
+        {
+            "name": "bReserved",
+            "type": "BYTE"
+        }
+    ]
+}

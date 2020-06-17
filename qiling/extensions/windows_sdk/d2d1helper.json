@@ -1,0 +1,24 @@
+{
+    "Ellipse": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "left",
+            "type": "int"
+        },
+        {
+            "name": "top",
+            "type": "int"
+        },
+        {
+            "name": "right",
+            "type": "int"
+        },
+        {
+            "name": "bottom",
+            "type": "int"
+        }
+    ]
+}

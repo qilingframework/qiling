@@ -1,0 +1,128 @@
+{
+    "FCICreate": [
+        {
+            "name": "perf",
+            "type": "PERF"
+        },
+        {
+            "name": "pfnfcifp",
+            "type": "PFNFCIFILEPLACED"
+        },
+        {
+            "name": "pfna",
+            "type": "PFNFCIALLOC"
+        },
+        {
+            "name": "pfnf",
+            "type": "PFNFCIFREE"
+        },
+        {
+            "name": "pfnopen",
+            "type": "PFNFCIOPEN"
+        },
+        {
+            "name": "pfnread",
+            "type": "PFNFCIREAD"
+        },
+        {
+            "name": "pfnwrite",
+            "type": "PFNFCIWRITE"
+        },
+        {
+            "name": "pfnclose",
+            "type": "PFNFCICLOSE"
+        },
+        {
+            "name": "pfnseek",
+            "type": "PFNFCISEEK"
+        },
+        {
+            "name": "pfndelete",
+            "type": "PFNFCIDELETE"
+        },
+        {
+            "name": "pfnfcigtf",
+            "type": "PFNFCIGETTEMPFILE"
+        },
+        {
+            "name": "pccab",
+            "type": "PCCAB"
+        },
+        {
+            "name": "pv",
+            "type": "void"
+        }
+    ],
+    "FCIAddFile": [
+        {
+            "name": "hfci",
+            "type": "HFCI"
+        },
+        {
+            "name": "pszSourceFile",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pszFileName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "fExecute",
+            "type": "BOOL"
+        },
+        {
+            "name": "pfnfcignc",
+            "type": "PFNFCIGETNEXTCABINET"
+        },
+        {
+            "name": "pfnfcis",
+            "type": "PFNFCISTATUS"
+        },
+        {
+            "name": "pfnfcigoi",
+            "type": "PFNFCIGETOPENINFO"
+        },
+        {
+            "name": "typeCompress",
+            "type": "TCOMP"
+        }
+    ],
+    "FCIFlushCabinet": [
+        {
+            "name": "hfci",
+            "type": "HFCI"
+        },
+        {
+            "name": "fGetNextCab",
+            "type": "BOOL"
+        },
+        {
+            "name": "pfnfcignc",
+            "type": "PFNFCIGETNEXTCABINET"
+        },
+        {
+            "name": "pfnfcis",
+            "type": "PFNFCISTATUS"
+        }
+    ],
+    "FCIFlushFolder": [
+        {
+            "name": "hfci",
+            "type": "HFCI"
+        },
+        {
+            "name": "pfnfcignc",
+            "type": "PFNFCIGETNEXTCABINET"
+        },
+        {
+            "name": "pfnfcis",
+            "type": "PFNFCISTATUS"
+        }
+    ],
+    "FCIDestroy": [
+        {
+            "name": "hfci",
+            "type": "HFCI"
+        }
+    ]
+}

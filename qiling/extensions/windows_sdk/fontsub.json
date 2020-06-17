@@ -1,0 +1,122 @@
+{
+    "CreateFontPackage": [
+        {
+            "name": "puchSrcBuffer",
+            "type": "unsigned char"
+        },
+        {
+            "name": "ulSrcBufferSize",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ppuchFontPackageBuffer",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pulFontPackageBufferSize",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pulBytesWritten",
+            "type": "unsigned long"
+        },
+        {
+            "name": "usFlag",
+            "type": "unsigned short"
+        },
+        {
+            "name": "usTTCIndex",
+            "type": "unsigned short"
+        },
+        {
+            "name": "usSubsetFormat",
+            "type": "unsigned short"
+        },
+        {
+            "name": "usSubsetLanguage",
+            "type": "unsigned short"
+        },
+        {
+            "name": "usSubsetPlatform",
+            "type": "unsigned short"
+        },
+        {
+            "name": "usSubsetEncoding",
+            "type": "unsigned short"
+        },
+        {
+            "name": "pusSubsetKeepList",
+            "type": "unsigned short"
+        },
+        {
+            "name": "usSubsetListCount",
+            "type": "unsigned short"
+        },
+        {
+            "name": "lpfnAllocate",
+            "type": "CFP_ALLOCPROC"
+        },
+        {
+            "name": "lpfnReAllocate",
+            "type": "CFP_REALLOCPROC"
+        },
+        {
+            "name": "lpfnFree",
+            "type": "CFP_FREEPROC"
+        },
+        {
+            "name": "lpvReserved",
+            "type": "void"
+        }
+    ],
+    "MergeFontPackage": [
+        {
+            "name": "puchMergeFontBuffer",
+            "type": "unsigned char"
+        },
+        {
+            "name": "ulMergeFontBufferSize",
+            "type": "unsigned long"
+        },
+        {
+            "name": "puchFontPackageBuffer",
+            "type": "unsigned char"
+        },
+        {
+            "name": "ulFontPackageBufferSize",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ppuchDestBuffer",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pulDestBufferSize",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pulBytesWritten",
+            "type": "unsigned long"
+        },
+        {
+            "name": "usMode",
+            "type": "unsigned short"
+        },
+        {
+            "name": "lpfnAllocate",
+            "type": "CFP_ALLOCPROC"
+        },
+        {
+            "name": "lpfnReAllocate",
+            "type": "CFP_REALLOCPROC"
+        },
+        {
+            "name": "lpfnFree",
+            "type": "CFP_FREEPROC"
+        },
+        {
+            "name": "lpvReserved",
+            "type": "void"
+        }
+    ]
+}

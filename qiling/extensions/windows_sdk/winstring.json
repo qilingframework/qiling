@@ -1,0 +1,294 @@
+{
+    "WindowsCreateString": [
+        {
+            "name": "sourceString",
+            "type": "PCNZWCH"
+        },
+        {
+            "name": "length",
+            "type": "UINT32"
+        },
+        {
+            "name": "string",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsCreateStringReference": [
+        {
+            "name": "sourceString",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "length",
+            "type": "UINT32"
+        },
+        {
+            "name": "hstringHeader",
+            "type": "HSTRING_HEADER"
+        },
+        {
+            "name": "string",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsDeleteString": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsDuplicateString": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsGetStringLen": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsGetStringRawBuffer": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "length",
+            "type": "UINT32"
+        }
+    ],
+    "WindowsIsStringEmpty": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsStringHasEmbeddedNull": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "hasEmbedNull",
+            "type": "BOOL"
+        }
+    ],
+    "WindowsCompareStringOrdinal": [
+        {
+            "name": "string1",
+            "type": "HSTRING"
+        },
+        {
+            "name": "string2",
+            "type": "HSTRING"
+        },
+        {
+            "name": "result",
+            "type": "INT32"
+        }
+    ],
+    "WindowsSubstring": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "startIndex",
+            "type": "UINT32"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsSubstringWithSpecifiedLength": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "startIndex",
+            "type": "UINT32"
+        },
+        {
+            "name": "length",
+            "type": "UINT32"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsConcatString": [
+        {
+            "name": "string1",
+            "type": "HSTRING"
+        },
+        {
+            "name": "string2",
+            "type": "HSTRING"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsReplaceString": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "stringReplaced",
+            "type": "HSTRING"
+        },
+        {
+            "name": "stringReplaceWith",
+            "type": "HSTRING"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsTrimStringStart": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "trimString",
+            "type": "HSTRING"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsTrimStringEnd": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "trimString",
+            "type": "HSTRING"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsPreallocateStringBuffer": [
+        {
+            "name": "length",
+            "type": "UINT32"
+        },
+        {
+            "name": "charBuffer",
+            "type": "WCHAR"
+        },
+        {
+            "name": "bufferHandle",
+            "type": "HSTRING_BUFFER"
+        }
+    ],
+    "WindowsPromoteStringBuffer": [
+        {
+            "name": "bufferHandle",
+            "type": "HSTRING_BUFFER"
+        },
+        {
+            "name": "string",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsDeleteStringBuffer": [
+        {
+            "name": "bufferHandle",
+            "type": "HSTRING_BUFFER"
+        }
+    ],
+    "HSTRING_UserSize": [
+        {
+            "name": "pFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "StartingSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppidl",
+            "type": "HSTRING"
+        }
+    ],
+    "HSTRING_UserFree": [
+        {
+            "name": "pFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppidl",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsInspectString": [
+        {
+            "name": "targetHString",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "machine",
+            "type": "USHORT"
+        },
+        {
+            "name": "callback",
+            "type": "PINSPECT_HSTRING_CALLBACK"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "length",
+            "type": "UINT32"
+        },
+        {
+            "name": "targetStringAddress",
+            "type": "UINT_PTR"
+        }
+    ],
+    "WindowsInspectString2": [
+        {
+            "name": "targetHString",
+            "type": "UINT64"
+        },
+        {
+            "name": "machine",
+            "type": "USHORT"
+        },
+        {
+            "name": "callback",
+            "type": "PINSPECT_HSTRING_CALLBACK2"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "length",
+            "type": "UINT32"
+        },
+        {
+            "name": "targetStringAddress",
+            "type": "UINT64"
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+{
+    "SendIMEMessageExA": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "LPARAM"
+        }
+    ],
+    "SendIMEMessageExW": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "LPARAM"
+        }
+    ]
+}
