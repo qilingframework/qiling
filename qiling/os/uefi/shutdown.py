@@ -17,7 +17,8 @@ def hook_EndOfExecution(ql):
         ql.loader.execute_next_module()
 
 def hook_OutOfOrder_EndOfExecution(ql):
-    ql.stack_pop() # This is a throwaway value, some modules zero this value.
+    # X64 shadow store - The caller is responsible for allocating space for parameters to the callee, and must always allocate sufficient space to store four register parameters
+    ql.reg.rsp += pointer_size * 4
     return_address = ql.stack_pop()
     ql.nprint(f'[+] Back from out of order call, returning to:0x{return_address:x}')
     ql.reg.arch_pc = return_address

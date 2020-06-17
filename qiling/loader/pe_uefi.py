@@ -87,7 +87,8 @@ class QlLoaderPE_UEFI(QlLoader):
                 self.images.append(self.coverage_image(IMAGE_BASE, IMAGE_BASE + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, path))
                 if execute_now:
                     self.OOO_EOE_callbacks.append(callback_ctx)
-                    ql.stack_push(0) # This is a throwaway value, some modules zero this value.
+                    # X64 shadow store - The caller is responsible for allocating space for parameters to the callee, and must always allocate sufficient space to store four register parameters
+                    ql.reg.rsp -= pointer_size * 4
                     self.execute_module(path, IMAGE_BASE, entry_point, self.OOO_EOE_ptr)
                     ql.stack_push(entry_point) # Return from here to the entry point of the loaded module.
 
