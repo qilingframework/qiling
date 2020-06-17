@@ -256,7 +256,7 @@ if __name__ == '__main__':
             with open(options.env, 'rb') as f:
                 ql.env = pickle.load(f)
         else:
-            ql.env = ast.literal_eval(options.env)
+            ql.env = options.env
     
     timeout = 0
     if options.timeout != None:
