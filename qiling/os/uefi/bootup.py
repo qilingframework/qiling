@@ -115,11 +115,12 @@ def SignalEvent(ql, event_id):
             notify_func = event["NotifyFunction"]
             notify_context = event["NotifyContext"]
             if ql.os.notify_immediately:
-                ql.hook_address(hook_EndOfNotify, ql.loader.notify_ptr)
-                ql.nprint(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
-                ql.os.notify_return_address = ql.stack_pop()
-                ql.stack_push(ql.loader.notify_ptr) # Return address from the notify function
+                ql.nprint(f'[+] Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
+                # X64 shadow store - The caller is responsible for allocating space for parameters to the callee, and must always allocate sufficient space to store four register parameters
+                ql.reg.rsp -= pointer_size * 4 
+                ql.stack_push(ql.loader.OOO_EOE_ptr) # Return address from the notify function.
                 ql.stack_push(notify_func) # Return address from here -> the notify function.
+                ql.loader.OOO_EOE_callbacks.append(None) # We don't need a callback.
                 ql.reg.rcx = notify_context
             else:
                 ql.loader.notify_list.append((event_id, notify_func, notify_context))
@@ -219,7 +220,6 @@ def hook_HandleProtocol(ql, address, params):
     "Event": POINTER,
     "Registration": POINTER})
 def hook_RegisterProtocolNotify(ql, address, params):
-    print(params["Protocol"])
     if params['Event'] in ql.loader.events:
         ql.loader.events[params['Event']]['Guid'] = params["Protocol"]
         check_and_notify_protocols(ql)
