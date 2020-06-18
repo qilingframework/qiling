@@ -1,1 +1,72 @@
-{}
+{
+    "D3D10CreateDevice": [
+        {
+            "name": "pAdapter",
+            "type": "IDXGIAdapter"
+        },
+        {
+            "name": "DriverType",
+            "type": "D3D10_DRIVER_TYPE"
+        },
+        {
+            "name": "Software",
+            "type": "HMODULE"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "SDKVersion",
+            "type": "UINT"
+        },
+        {
+            "name": "ppDevice",
+            "type": "ID3D10Device"
+        }
+    ],
+    "D3D10CreateDeviceAndSwapChain": [
+        {
+            "name": "pAdapter",
+            "type": "IDXGIAdapter"
+        },
+        {
+            "name": "DriverType",
+            "type": "D3D10_DRIVER_TYPE"
+        },
+        {
+            "name": "Software",
+            "type": "HMODULE"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "SDKVersion",
+            "type": "UINT"
+        },
+        {
+            "name": "pSwapChainDesc",
+            "type": "DXGI_SWAP_CHAIN_DESC"
+        },
+        {
+            "name": "ppSwapChain",
+            "type": "IDXGISwapChain"
+        },
+        {
+            "name": "ppDevice",
+            "type": "ID3D10Device"
+        }
+    ],
+    "D3D10CreateBlob": [
+        {
+            "name": "NumBytes",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "LPD3D10BLOB"
+        }
+    ]
+}

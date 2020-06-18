@@ -1,64 +1,78 @@
 {
-    "D2D1CreateFactory": [
+    "D2D1CreateDevice": [
         {
-            "name": "factoryType",
-            "type": "D2D1_FACTORY_TYPE"
+            "name": "dxgiDevice",
+            "type": "IDXGIDevice"
         },
         {
-            "name": "riid",
-            "type": "IID"
+            "name": "creationProperties",
+            "type": "D2D1_CREATION_PROPERTIES"
         },
         {
-            "name": "pFactoryOptions",
-            "type": "D2D1_FACTORY_OPTIONS"
-        },
-        {
-            "name": "ppIFactory",
-            "type": "void"
+            "name": "d2dDevice",
+            "type": "ID2D1Device"
         }
     ],
-    "D2D1MakeRotateMatrix": [
+    "D2D1CreateDeviceContext": [
+        {
+            "name": "dxgiSurface",
+            "type": "IDXGISurface"
+        },
+        {
+            "name": "creationProperties",
+            "type": "D2D1_CREATION_PROPERTIES"
+        },
+        {
+            "name": "d2dDeviceContext",
+            "type": "ID2D1DeviceContext"
+        }
+    ],
+    "D2D1ConvertColorSpace": [
+        {
+            "name": "sourceColorSpace",
+            "type": "D2D1_COLOR_SPACE"
+        },
+        {
+            "name": "destinationColorSpace",
+            "type": "D2D1_COLOR_SPACE"
+        },
+        {
+            "name": "color",
+            "type": "D2D1_COLOR_F"
+        }
+    ],
+    "D2D1SinCos": [
         {
             "name": "angle",
             "type": "FLOAT"
         },
         {
-            "name": "center",
-            "type": "D2D1_POINT_2F"
-        },
-        {
-            "name": "matrix",
-            "type": "D2D1_MATRIX_3X2_F"
-        }
-    ],
-    "D2D1MakeSkewMatrix": [
-        {
-            "name": "angleX",
+            "name": "s",
             "type": "FLOAT"
         },
         {
-            "name": "angleY",
+            "name": "c",
+            "type": "FLOAT"
+        }
+    ],
+    "D2D1Tan": [
+        {
+            "name": "angle",
+            "type": "FLOAT"
+        }
+    ],
+    "D2D1Vec3Length": [
+        {
+            "name": "x",
             "type": "FLOAT"
         },
         {
-            "name": "center",
-            "type": "D2D1_POINT_2F"
+            "name": "y",
+            "type": "FLOAT"
         },
         {
-            "name": "matrix",
-            "type": "D2D1_MATRIX_3X2_F"
-        }
-    ],
-    "D2D1IsMatrixInvertible": [
-        {
-            "name": "matrix",
-            "type": "D2D1_MATRIX_3X2_F"
-        }
-    ],
-    "D2D1InvertMatrix": [
-        {
-            "name": "matrix",
-            "type": "D2D1_MATRIX_3X2_F"
+            "name": "z",
+            "type": "FLOAT"
         }
     ]
 }

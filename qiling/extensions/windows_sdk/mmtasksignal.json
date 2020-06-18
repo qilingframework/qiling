@@ -1,0 +1,40 @@
+{
+    "mmTaskCreate": [
+        {
+            "name": "lpfn",
+            "type": "LPTASKCALLBACK"
+        },
+        {
+            "name": "lph",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwInst",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "mmTaskBlock": [
+        {
+            "name": "h",
+            "type": "DWORD"
+        }
+    ],
+    "mmTaskSignal": [
+        {
+            "name": "h",
+            "type": "DWORD"
+        }
+    ],
+    "mmTaskYield": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "mmGetCurrentTask": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ]
+}

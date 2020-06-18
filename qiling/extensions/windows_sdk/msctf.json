@@ -1,44 +1,78 @@
 {
-    "TF_CreateThreadMgr": [
+    "SetInputScope": [
         {
-            "name": "pptim",
-            "type": "ITfThreadMgr"
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "inputscope",
+            "type": "InputScope"
         }
     ],
-    "TF_GetThreadMgr": [
+    "SetInputScopes": [
         {
-            "name": "pptim",
-            "type": "ITfThreadMgr"
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pInputScopes",
+            "type": "InputScope"
+        },
+        {
+            "name": "cInputScopes",
+            "type": "UINT"
+        },
+        {
+            "name": "ppszPhraseList",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cPhrases",
+            "type": "UINT"
+        },
+        {
+            "name": "pszRegExp",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pszSRGS",
+            "type": "PWSTR"
         }
     ],
-    "TF_CreateInputProcessorProfiles": [
+    "SetInputScopeXML": [
         {
-            "name": "ppipr",
-            "type": "ITfInputProcessorProfiles"
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszXML",
+            "type": "PWSTR"
         }
     ],
-    "TF_CreateDisplayAttributeMgr": [
+    "SetInputScopes2": [
         {
-            "name": "ppdam",
-            "type": "ITfDisplayAttributeMgr"
-        }
-    ],
-    "TF_CreateLangBarMgr": [
+            "name": "hwnd",
+            "type": "HWND"
+        },
         {
-            "name": "pppbm",
-            "type": "ITfLangBarMgr"
-        }
-    ],
-    "TF_CreateLangBarItemMgr": [
+            "name": "pInputScopes",
+            "type": "InputScope"
+        },
         {
-            "name": "pplbim",
-            "type": "ITfLangBarItemMgr"
-        }
-    ],
-    "TF_CreateCategoryMgr": [
+            "name": "cInputScopes",
+            "type": "UINT"
+        },
         {
-            "name": "ppcat",
-            "type": "ITfCategoryMgr"
+            "name": "pEnumString",
+            "type": "IEnumString"
+        },
+        {
+            "name": "pszRegExp",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pszSRGS",
+            "type": "PWSTR"
         }
     ]
 }

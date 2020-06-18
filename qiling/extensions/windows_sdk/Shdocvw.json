@@ -1,0 +1,188 @@
+{
+    "GetFileNameFromBrowse": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszFilePath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchFilePath",
+            "type": "UINT"
+        },
+        {
+            "name": "pszWorkingDir",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszDefExt",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszFilters",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszTitle",
+            "type": "PCWSTR"
+        }
+    ],
+    "DriveType": [
+        {
+            "name": "iDrive",
+            "type": "int"
+        }
+    ],
+    "SHChangeNotifyRegisterThread": [
+        {
+            "name": "status",
+            "type": "SCNRT_STATUS"
+        }
+    ],
+    "PathIsSlowA": [
+        {
+            "name": "pszFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwAttr",
+            "type": "DWORD"
+        }
+    ],
+    "PathIsSlowW": [
+        {
+            "name": "pszFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwAttr",
+            "type": "DWORD"
+        }
+    ],
+    "SHCreatePropSheetExtArray": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "max_iface",
+            "type": "UINT"
+        }
+    ],
+    "SHOpenPropSheetA": [
+        {
+            "name": "pszCaption",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ahkeys",
+            "type": "HKEY"
+        },
+        {
+            "name": "ckeys",
+            "type": "UINT"
+        },
+        {
+            "name": "pclsidDefault",
+            "type": "CLSID"
+        },
+        {
+            "name": "pdtobj",
+            "type": "IDataObject"
+        },
+        {
+            "name": "psb",
+            "type": "IShellBrowser"
+        },
+        {
+            "name": "pStartPage",
+            "type": "LPCSTR"
+        }
+    ],
+    "SHOpenPropSheetW": [
+        {
+            "name": "pszCaption",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ahkeys",
+            "type": "HKEY"
+        },
+        {
+            "name": "ckeys",
+            "type": "UINT"
+        },
+        {
+            "name": "pclsidDefault",
+            "type": "CLSID"
+        },
+        {
+            "name": "pdtobj",
+            "type": "IDataObject"
+        },
+        {
+            "name": "psb",
+            "type": "IShellBrowser"
+        },
+        {
+            "name": "pStartPage",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SoftwareUpdateMessageBox": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszDistUnit",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "psdi",
+            "type": "LPSOFTDISTINFO"
+        }
+    ],
+    "SHMultiFileProperties": [
+        {
+            "name": "pdtobj",
+            "type": "IDataObject"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHCreateQueryCancelAutoPlayMoniker": [
+        {
+            "name": "ppmoniker",
+            "type": "IMoniker"
+        }
+    ],
+    "PerUserInit": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SHRunControlPanel": [
+        {
+            "name": "lpcszCmdLine",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "hwndMsgParent",
+            "type": "HWND"
+        }
+    ]
+}
