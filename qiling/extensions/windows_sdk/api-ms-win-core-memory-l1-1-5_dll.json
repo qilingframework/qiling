@@ -1,0 +1,36 @@
+{
+    "MapViewOfFileNuma2": [
+        {
+            "name": "FileMappingHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ProcessHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Offset",
+            "type": "ULONG64"
+        },
+        {
+            "name": "BaseAddress",
+            "type": "PVOID"
+        },
+        {
+            "name": "ViewSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "AllocationType",
+            "type": "ULONG"
+        },
+        {
+            "name": "PageProtection",
+            "type": "ULONG"
+        },
+        {
+            "name": "PreferredNode",
+            "type": "ULONG"
+        }
+    ]
+}

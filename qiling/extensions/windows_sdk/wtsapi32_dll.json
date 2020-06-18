@@ -1,0 +1,1100 @@
+{
+    "WTSSetRenderHint": [
+        {
+            "name": "pRenderHintID",
+            "type": "UINT64"
+        },
+        {
+            "name": "hwndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "renderHintType",
+            "type": "DWORD"
+        },
+        {
+            "name": "cbHintDataLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "pHintData",
+            "type": "BYTE"
+        }
+    ],
+    "WTSStopRemoteControlSession": [
+        {
+            "name": "LogonId",
+            "type": "ULONG"
+        }
+    ],
+    "WTSStartRemoteControlSessionW": [
+        {
+            "name": "pTargetServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "TargetLogonId",
+            "type": "ULONG"
+        },
+        {
+            "name": "HotkeyVk",
+            "type": "BYTE"
+        },
+        {
+            "name": "HotkeyModifiers",
+            "type": "USHORT"
+        }
+    ],
+    "WTSStartRemoteControlSessionA": [
+        {
+            "name": "pTargetServerName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "TargetLogonId",
+            "type": "ULONG"
+        },
+        {
+            "name": "HotkeyVk",
+            "type": "BYTE"
+        },
+        {
+            "name": "HotkeyModifiers",
+            "type": "USHORT"
+        }
+    ],
+    "WTSConnectSessionA": [
+        {
+            "name": "LogonId",
+            "type": "ULONG"
+        },
+        {
+            "name": "TargetLogonId",
+            "type": "ULONG"
+        },
+        {
+            "name": "pPassword",
+            "type": "PSTR"
+        },
+        {
+            "name": "bWait",
+            "type": "BOOL"
+        }
+    ],
+    "WTSConnectSessionW": [
+        {
+            "name": "LogonId",
+            "type": "ULONG"
+        },
+        {
+            "name": "TargetLogonId",
+            "type": "ULONG"
+        },
+        {
+            "name": "pPassword",
+            "type": "PWSTR"
+        },
+        {
+            "name": "bWait",
+            "type": "BOOL"
+        }
+    ],
+    "WTSEnumerateServersW": [
+        {
+            "name": "pDomainName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "Version",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppServerInfo",
+            "type": "PWTS_SERVER_INFOW"
+        },
+        {
+            "name": "pCount",
+            "type": "DWORD"
+        }
+    ],
+    "WTSEnumerateServersA": [
+        {
+            "name": "pDomainName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "Version",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppServerInfo",
+            "type": "PWTS_SERVER_INFOA"
+        },
+        {
+            "name": "pCount",
+            "type": "DWORD"
+        }
+    ],
+    "WTSOpenServerW": [
+        {
+            "name": "pServerName",
+            "type": "LPWSTR"
+        }
+    ],
+    "WTSOpenServerA": [
+        {
+            "name": "pServerName",
+            "type": "LPSTR"
+        }
+    ],
+    "WTSOpenServerExW": [
+        {
+            "name": "pServerName",
+            "type": "LPWSTR"
+        }
+    ],
+    "WTSOpenServerExA": [
+        {
+            "name": "pServerName",
+            "type": "LPSTR"
+        }
+    ],
+    "WTSCloseServer": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        }
+    ],
+    "WTSEnumerateSessionsW": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "Version",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppSessionInfo",
+            "type": "PWTS_SESSION_INFOW"
+        },
+        {
+            "name": "pCount",
+            "type": "DWORD"
+        }
+    ],
+    "WTSEnumerateSessionsA": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "Version",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppSessionInfo",
+            "type": "PWTS_SESSION_INFOA"
+        },
+        {
+            "name": "pCount",
+            "type": "DWORD"
+        }
+    ],
+    "WTSEnumerateSessionsExW": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "Filter",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppSessionInfo",
+            "type": "PWTS_SESSION_INFO_1W"
+        },
+        {
+            "name": "pCount",
+            "type": "DWORD"
+        }
+    ],
+    "WTSEnumerateSessionsExA": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "Filter",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppSessionInfo",
+            "type": "PWTS_SESSION_INFO_1A"
+        },
+        {
+            "name": "pCount",
+            "type": "DWORD"
+        }
+    ],
+    "WTSEnumerateProcessesW": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "Version",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppProcessInfo",
+            "type": "PWTS_PROCESS_INFOW"
+        },
+        {
+            "name": "pCount",
+            "type": "DWORD"
+        }
+    ],
+    "WTSEnumerateProcessesA": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "Version",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppProcessInfo",
+            "type": "PWTS_PROCESS_INFOA"
+        },
+        {
+            "name": "pCount",
+            "type": "DWORD"
+        }
+    ],
+    "WTSTerminateProcess": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ProcessId",
+            "type": "DWORD"
+        },
+        {
+            "name": "ExitCode",
+            "type": "DWORD"
+        }
+    ],
+    "WTSQuerySessionInformationW": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SessionId",
+            "type": "DWORD"
+        },
+        {
+            "name": "WTSInfoClass",
+            "type": "WTS_INFO_CLASS"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pBytesReturned",
+            "type": "DWORD"
+        }
+    ],
+    "WTSQuerySessionInformationA": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SessionId",
+            "type": "DWORD"
+        },
+        {
+            "name": "WTSInfoClass",
+            "type": "WTS_INFO_CLASS"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pBytesReturned",
+            "type": "DWORD"
+        }
+    ],
+    "WTSQueryUserConfigW": [
+        {
+            "name": "pServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pUserName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "WTSConfigClass",
+            "type": "WTS_CONFIG_CLASS"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pBytesReturned",
+            "type": "DWORD"
+        }
+    ],
+    "WTSQueryUserConfigA": [
+        {
+            "name": "pServerName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pUserName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "WTSConfigClass",
+            "type": "WTS_CONFIG_CLASS"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pBytesReturned",
+            "type": "DWORD"
+        }
+    ],
+    "WTSSetUserConfigW": [
+        {
+            "name": "pServerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pUserName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "WTSConfigClass",
+            "type": "WTS_CONFIG_CLASS"
+        },
+        {
+            "name": "pBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "DataLength",
+            "type": "DWORD"
+        }
+    ],
+    "WTSSetUserConfigA": [
+        {
+            "name": "pServerName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pUserName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "WTSConfigClass",
+            "type": "WTS_CONFIG_CLASS"
+        },
+        {
+            "name": "pBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "DataLength",
+            "type": "DWORD"
+        }
+    ],
+    "WTSSendMessageW": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SessionId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pTitle",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "TitleLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "pMessage",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "MessageLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "Style",
+            "type": "DWORD"
+        },
+        {
+            "name": "Timeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "pResponse",
+            "type": "DWORD"
+        },
+        {
+            "name": "bWait",
+            "type": "BOOL"
+        }
+    ],
+    "WTSSendMessageA": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SessionId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pTitle",
+            "type": "LPSTR"
+        },
+        {
+            "name": "TitleLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "pMessage",
+            "type": "LPSTR"
+        },
+        {
+            "name": "MessageLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "Style",
+            "type": "DWORD"
+        },
+        {
+            "name": "Timeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "pResponse",
+            "type": "DWORD"
+        },
+        {
+            "name": "bWait",
+            "type": "BOOL"
+        }
+    ],
+    "WTSDisconnectSession": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SessionId",
+            "type": "DWORD"
+        },
+        {
+            "name": "bWait",
+            "type": "BOOL"
+        }
+    ],
+    "WTSLogoffSession": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SessionId",
+            "type": "DWORD"
+        },
+        {
+            "name": "bWait",
+            "type": "BOOL"
+        }
+    ],
+    "WTSShutdownSystem": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ShutdownFlag",
+            "type": "DWORD"
+        }
+    ],
+    "WTSWaitSystemEvent": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "EventMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "pEventFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WTSVirtualChannelOpen": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SessionId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pVirtualName",
+            "type": "LPSTR"
+        }
+    ],
+    "WTSVirtualChannelOpenEx": [
+        {
+            "name": "SessionId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pVirtualName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "flags",
+            "type": "DWORD"
+        }
+    ],
+    "WTSVirtualChannelClose": [
+        {
+            "name": "hChannelHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "WTSVirtualChannelRead": [
+        {
+            "name": "hChannelHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TimeOut",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pBytesRead",
+            "type": "PULONG"
+        }
+    ],
+    "WTSVirtualChannelWrite": [
+        {
+            "name": "hChannelHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Buffer",
+            "type": "PCHAR"
+        },
+        {
+            "name": "Length",
+            "type": "ULONG"
+        },
+        {
+            "name": "pBytesWritten",
+            "type": "PULONG"
+        }
+    ],
+    "WTSVirtualChannelPurgeInput": [
+        {
+            "name": "hChannelHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "WTSVirtualChannelPurgeOutput": [
+        {
+            "name": "hChannelHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "WTSVirtualChannelQuery": [
+        {
+            "name": "hChannelHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "VOID",
+            "type": "WTS_VIRTUAL_CLASS"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "pBytesReturned",
+            "type": "DWORD"
+        }
+    ],
+    "WTSFreeMemory": [
+        {
+            "name": "pMemory",
+            "type": "PVOID"
+        }
+    ],
+    "WTSRegisterSessionNotification": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WTSUnRegisterSessionNotification": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "WTSRegisterSessionNotificationEx": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WTSUnRegisterSessionNotificationEx": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "WTSQueryUserToken": [
+        {
+            "name": "SessionId",
+            "type": "ULONG"
+        },
+        {
+            "name": "phToken",
+            "type": "PHANDLE"
+        }
+    ],
+    "WTSFreeMemoryExW": [
+        {
+            "name": "WTSTypeClass",
+            "type": "WTS_TYPE_CLASS"
+        },
+        {
+            "name": "pMemory",
+            "type": "PVOID"
+        },
+        {
+            "name": "NumberOfEntries",
+            "type": "ULONG"
+        }
+    ],
+    "WTSFreeMemoryExA": [
+        {
+            "name": "WTSTypeClass",
+            "type": "WTS_TYPE_CLASS"
+        },
+        {
+            "name": "pMemory",
+            "type": "PVOID"
+        },
+        {
+            "name": "NumberOfEntries",
+            "type": "ULONG"
+        }
+    ],
+    "WTSEnumerateProcessesExW": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "SessionId",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppProcessInfo",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pCount",
+            "type": "DWORD"
+        }
+    ],
+    "WTSEnumerateProcessesExA": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "SessionId",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppProcessInfo",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pCount",
+            "type": "DWORD"
+        }
+    ],
+    "WTSEnumerateListenersW": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pListeners",
+            "type": "PWTSLISTENERNAMEW"
+        },
+        {
+            "name": "pCount",
+            "type": "DWORD"
+        }
+    ],
+    "WTSEnumerateListenersA": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pListeners",
+            "type": "PWTSLISTENERNAMEA"
+        },
+        {
+            "name": "pCount",
+            "type": "DWORD"
+        }
+    ],
+    "WTSQueryListenerConfigW": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pListenerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PWTSLISTENERCONFIGW"
+        }
+    ],
+    "WTSQueryListenerConfigA": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pListenerName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PWTSLISTENERCONFIGA"
+        }
+    ],
+    "WTSCreateListenerW": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pListenerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PWTSLISTENERCONFIGW"
+        },
+        {
+            "name": "flag",
+            "type": "DWORD"
+        }
+    ],
+    "WTSCreateListenerA": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pListenerName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PWTSLISTENERCONFIGA"
+        },
+        {
+            "name": "flag",
+            "type": "DWORD"
+        }
+    ],
+    "WTSSetListenerSecurityW": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pListenerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SecurityInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "pSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "WTSSetListenerSecurityA": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pListenerName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "SecurityInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "pSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "WTSGetListenerSecurityW": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pListenerName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SecurityInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "pSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "nLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpnLengthNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "WTSGetListenerSecurityA": [
+        {
+            "name": "hServer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pListenerName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "SecurityInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "pSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "nLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpnLengthNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "WTSEnableChildSessions": [
+        {
+            "name": "bEnable",
+            "type": "BOOL"
+        }
+    ],
+    "WTSIsChildSessionsEnabled": [
+        {
+            "name": "pbEnabled",
+            "type": "PBOOL"
+        }
+    ],
+    "WTSGetChildSessionId": [
+        {
+            "name": "pSessionId",
+            "type": "PULONG"
+        }
+    ]
+}

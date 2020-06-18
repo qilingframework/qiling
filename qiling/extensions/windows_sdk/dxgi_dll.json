@@ -1,0 +1,50 @@
+{
+    "CreateDXGIFactory2": [
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppFactory",
+            "type": "void"
+        }
+    ],
+    "DXGIGetDebugInterface1": [
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "pDebug",
+            "type": "void"
+        }
+    ],
+    "CreateDXGIFactory": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppFactory",
+            "type": "void"
+        }
+    ],
+    "CreateDXGIFactory1": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppFactory",
+            "type": "void"
+        }
+    ]
+}

@@ -1,0 +1,824 @@
+{
+    "NCryptOpenStorageProvider": [
+        {
+            "name": "phProvider",
+            "type": "NCRYPT_PROV_HANDLE"
+        },
+        {
+            "name": "pszProviderName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptEnumAlgorithms": [
+        {
+            "name": "hProvider",
+            "type": "NCRYPT_PROV_HANDLE"
+        },
+        {
+            "name": "dwAlgOperations",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwAlgCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppAlgList",
+            "type": "NCryptAlgorithmName"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptIsAlgSupported": [
+        {
+            "name": "hProvider",
+            "type": "NCRYPT_PROV_HANDLE"
+        },
+        {
+            "name": "pszAlgId",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptEnumKeys": [
+        {
+            "name": "hProvider",
+            "type": "NCRYPT_PROV_HANDLE"
+        },
+        {
+            "name": "pszScope",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppKeyName",
+            "type": "NCryptKeyName"
+        },
+        {
+            "name": "ppEnumState",
+            "type": "PVOID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptEnumStorageProviders": [
+        {
+            "name": "pdwProviderCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppProviderList",
+            "type": "NCryptProviderName"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptFreeBuffer": [
+        {
+            "name": "pvInput",
+            "type": "PVOID"
+        }
+    ],
+    "NCryptOpenKey": [
+        {
+            "name": "hProvider",
+            "type": "NCRYPT_PROV_HANDLE"
+        },
+        {
+            "name": "phKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pszKeyName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwLegacyKeySpec",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptCreatePersistedKey": [
+        {
+            "name": "hProvider",
+            "type": "NCRYPT_PROV_HANDLE"
+        },
+        {
+            "name": "phKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pszAlgId",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszKeyName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwLegacyKeySpec",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptGetProperty": [
+        {
+            "name": "hObject",
+            "type": "NCRYPT_HANDLE"
+        },
+        {
+            "name": "pszProperty",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pbOutput",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbOutput",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbResult",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptSetProperty": [
+        {
+            "name": "hObject",
+            "type": "NCRYPT_HANDLE"
+        },
+        {
+            "name": "pszProperty",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pbInput",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbInput",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptFinalizeKey": [
+        {
+            "name": "hKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptEncrypt": [
+        {
+            "name": "hKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pbInput",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbInput",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPaddingInfo",
+            "type": "void"
+        },
+        {
+            "name": "pbOutput",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbOutput",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbResult",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptDecrypt": [
+        {
+            "name": "hKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pbInput",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbInput",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPaddingInfo",
+            "type": "void"
+        },
+        {
+            "name": "pbOutput",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbOutput",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbResult",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptImportKey": [
+        {
+            "name": "hProvider",
+            "type": "NCRYPT_PROV_HANDLE"
+        },
+        {
+            "name": "hImportKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pszBlobType",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pParameterList",
+            "type": "NCryptBufferDesc"
+        },
+        {
+            "name": "phKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pbData",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptExportKey": [
+        {
+            "name": "hKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "hExportKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pszBlobType",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pParameterList",
+            "type": "NCryptBufferDesc"
+        },
+        {
+            "name": "pbOutput",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbOutput",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbResult",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptSignHash": [
+        {
+            "name": "hKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pPaddingInfo",
+            "type": "void"
+        },
+        {
+            "name": "pbHashValue",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbHashValue",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignature",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbSignature",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbResult",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptVerifySignature": [
+        {
+            "name": "hKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pPaddingInfo",
+            "type": "void"
+        },
+        {
+            "name": "pbHashValue",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbHashValue",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignature",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbSignature",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptDeleteKey": [
+        {
+            "name": "hKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptFreeObject": [
+        {
+            "name": "hObject",
+            "type": "NCRYPT_HANDLE"
+        }
+    ],
+    "NCryptIsKeyHandle": [
+        {
+            "name": "hKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        }
+    ],
+    "NCryptTranslateHandle": [
+        {
+            "name": "phProvider",
+            "type": "NCRYPT_PROV_HANDLE"
+        },
+        {
+            "name": "phKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "hLegacyProv",
+            "type": "HCRYPTPROV"
+        },
+        {
+            "name": "hLegacyKey",
+            "type": "HCRYPTKEY"
+        },
+        {
+            "name": "dwLegacyKeySpec",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptNotifyChangeKey": [
+        {
+            "name": "hProvider",
+            "type": "NCRYPT_PROV_HANDLE"
+        },
+        {
+            "name": "phEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptSecretAgreement": [
+        {
+            "name": "hPrivKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "hPubKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "phAgreedSecret",
+            "type": "NCRYPT_SECRET_HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptDeriveKey": [
+        {
+            "name": "hSharedSecret",
+            "type": "NCRYPT_SECRET_HANDLE"
+        },
+        {
+            "name": "pwszKDF",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pParameterList",
+            "type": "NCryptBufferDesc"
+        },
+        {
+            "name": "pbDerivedKey",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbDerivedKey",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbResult",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "NCryptKeyDerivation": [
+        {
+            "name": "hKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pParameterList",
+            "type": "NCryptBufferDesc"
+        },
+        {
+            "name": "pbDerivedKey",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbDerivedKey",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbResult",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "NCryptCreateClaim": [
+        {
+            "name": "hSubjectKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "hAuthorityKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "dwClaimType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pParameterList",
+            "type": "NCryptBufferDesc"
+        },
+        {
+            "name": "pbClaimBlob",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbClaimBlob",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbResult",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptVerifyClaim": [
+        {
+            "name": "hSubjectKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "hAuthorityKey",
+            "type": "NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "dwClaimType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pParameterList",
+            "type": "NCryptBufferDesc"
+        },
+        {
+            "name": "pbClaimBlob",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbClaimBlob",
+            "type": "DWORD"
+        },
+        {
+            "name": "pOutput",
+            "type": "NCryptBufferDesc"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptRegisterProtectionDescriptorName": [
+        {
+            "name": "pwszName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszDescriptorString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptQueryProtectionDescriptorName": [
+        {
+            "name": "pwszName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszDescriptorString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcDescriptorString",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "NCryptCreateProtectionDescriptor": [
+        {
+            "name": "pwszDescriptorString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phDescriptor",
+            "type": "NCRYPT_DESCRIPTOR_HANDLE"
+        }
+    ],
+    "NCryptCloseProtectionDescriptor": [
+        {
+            "name": "hDescriptor",
+            "type": "NCRYPT_DESCRIPTOR_HANDLE"
+        }
+    ],
+    "NCryptGetProtectionDescriptorInfo": [
+        {
+            "name": "hDescriptor",
+            "type": "NCRYPT_DESCRIPTOR_HANDLE"
+        },
+        {
+            "name": "pMemPara",
+            "type": "NCRYPT_ALLOC_PARA"
+        },
+        {
+            "name": "dwInfoType",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppvInfo",
+            "type": "void"
+        }
+    ],
+    "NCryptProtectSecret": [
+        {
+            "name": "hDescriptor",
+            "type": "NCRYPT_DESCRIPTOR_HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbData",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbData",
+            "type": "ULONG"
+        },
+        {
+            "name": "pMemPara",
+            "type": "NCRYPT_ALLOC_PARA"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "ppbProtectedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbProtectedBlob",
+            "type": "ULONG"
+        }
+    ],
+    "NCryptUnprotectSecret": [
+        {
+            "name": "phDescriptor",
+            "type": "NCRYPT_DESCRIPTOR_HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbProtectedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbProtectedBlob",
+            "type": "ULONG"
+        },
+        {
+            "name": "pMemPara",
+            "type": "NCRYPT_ALLOC_PARA"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "ppbData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbData",
+            "type": "ULONG"
+        }
+    ],
+    "NCryptStreamOpenToProtect": [
+        {
+            "name": "hDescriptor",
+            "type": "NCRYPT_DESCRIPTOR_HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pStreamInfo",
+            "type": "NCRYPT_PROTECT_STREAM_INFO"
+        },
+        {
+            "name": "phStream",
+            "type": "NCRYPT_STREAM_HANDLE"
+        }
+    ],
+    "NCryptStreamOpenToUnprotect": [
+        {
+            "name": "pStreamInfo",
+            "type": "NCRYPT_PROTECT_STREAM_INFO"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "phStream",
+            "type": "NCRYPT_STREAM_HANDLE"
+        }
+    ],
+    "NCryptStreamOpenToUnprotectEx": [
+        {
+            "name": "pStreamInfo",
+            "type": "NCRYPT_PROTECT_STREAM_INFO_EX"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "phStream",
+            "type": "NCRYPT_STREAM_HANDLE"
+        }
+    ],
+    "NCryptStreamUpdate": [
+        {
+            "name": "hStream",
+            "type": "NCRYPT_STREAM_HANDLE"
+        },
+        {
+            "name": "pbData",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbData",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "fFinal",
+            "type": "BOOL"
+        }
+    ],
+    "NCryptStreamClose": [
+        {
+            "name": "hStream",
+            "type": "NCRYPT_STREAM_HANDLE"
+        }
+    ]
+}

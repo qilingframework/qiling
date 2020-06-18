@@ -1,0 +1,932 @@
+{
+    "ImmInstallIMEA": [
+        {
+            "name": "lpszIMEFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszLayoutText",
+            "type": "LPCSTR"
+        }
+    ],
+    "ImmInstallIMEW": [
+        {
+            "name": "lpszIMEFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszLayoutText",
+            "type": "LPCWSTR"
+        }
+    ],
+    "ImmGetDefaultIMEWnd": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        }
+    ],
+    "ImmGetDescriptionA": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "lpszDescription",
+            "type": "LPSTR"
+        },
+        {
+            "name": "uBufLen",
+            "type": "UINT"
+        }
+    ],
+    "ImmGetDescriptionW": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "lpszDescription",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "uBufLen",
+            "type": "UINT"
+        }
+    ],
+    "ImmGetIMEFileNameA": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "lpszFileName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "uBufLen",
+            "type": "UINT"
+        }
+    ],
+    "ImmGetIMEFileNameW": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "lpszFileName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "uBufLen",
+            "type": "UINT"
+        }
+    ],
+    "ImmGetProperty": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "ImmIsIME": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        }
+    ],
+    "ImmSimulateHotKey": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "ImmCreateContext": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "ImmDestroyContext": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        }
+    ],
+    "ImmGetContext": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        }
+    ],
+    "ImmReleaseContext": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        }
+    ],
+    "ImmAssociateContext": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        }
+    ],
+    "ImmAssociateContextEx": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "ImmGetCompositionStringA": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuf",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufLen",
+            "type": "DWORD"
+        }
+    ],
+    "ImmGetCompositionStringW": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuf",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufLen",
+            "type": "DWORD"
+        }
+    ],
+    "ImmSetCompositionStringA": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpComp",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwCompLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpRead",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwReadLen",
+            "type": "DWORD"
+        }
+    ],
+    "ImmSetCompositionStringW": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpComp",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwCompLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpRead",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwReadLen",
+            "type": "DWORD"
+        }
+    ],
+    "ImmGetCandidateListCountA": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lpdwListCount",
+            "type": "LPDWORD"
+        }
+    ],
+    "ImmGetCandidateListCountW": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lpdwListCount",
+            "type": "LPDWORD"
+        }
+    ],
+    "ImmGetCandidateListA": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "deIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpCandList",
+            "type": "LPCANDIDATELIST"
+        },
+        {
+            "name": "dwBufLen",
+            "type": "DWORD"
+        }
+    ],
+    "ImmGetCandidateListW": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "deIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpCandList",
+            "type": "LPCANDIDATELIST"
+        },
+        {
+            "name": "dwBufLen",
+            "type": "DWORD"
+        }
+    ],
+    "ImmGetGuideLineA": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwBufLen",
+            "type": "DWORD"
+        }
+    ],
+    "ImmGetGuideLineW": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwBufLen",
+            "type": "DWORD"
+        }
+    ],
+    "ImmGetConversionStatus": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lpfdwConversion",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpfdwSentence",
+            "type": "LPDWORD"
+        }
+    ],
+    "ImmSetConversionStatus": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "ImmGetOpenStatus": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        }
+    ],
+    "ImmSetOpenStatus": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "VOID",
+            "type": "BOOL"
+        }
+    ],
+    "ImmGetCompositionFontA": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lplf",
+            "type": "LPLOGFONTA"
+        }
+    ],
+    "ImmGetCompositionFontW": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lplf",
+            "type": "LPLOGFONTW"
+        }
+    ],
+    "ImmSetCompositionFontA": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lplf",
+            "type": "LPLOGFONTA"
+        }
+    ],
+    "ImmSetCompositionFontW": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lplf",
+            "type": "LPLOGFONTW"
+        }
+    ],
+    "ImmConfigureIMEA": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        }
+    ],
+    "ImmConfigureIMEW": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        }
+    ],
+    "ImmEscapeA": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "VOID",
+            "type": "UINT"
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        }
+    ],
+    "ImmEscapeW": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "VOID",
+            "type": "UINT"
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        }
+    ],
+    "ImmGetConversionListA": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lpSrc",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpDst",
+            "type": "LPCANDIDATELIST"
+        },
+        {
+            "name": "dwBufLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "uFlag",
+            "type": "UINT"
+        }
+    ],
+    "ImmGetConversionListW": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lpSrc",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDst",
+            "type": "LPCANDIDATELIST"
+        },
+        {
+            "name": "dwBufLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "uFlag",
+            "type": "UINT"
+        }
+    ],
+    "ImmNotifyIME": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "dwAction",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwValue",
+            "type": "DWORD"
+        }
+    ],
+    "ImmGetStatusWindowPos": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lpptPos",
+            "type": "LPPOINT"
+        }
+    ],
+    "ImmSetStatusWindowPos": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lpptPos",
+            "type": "LPPOINT"
+        }
+    ],
+    "ImmGetCompositionWindow": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lpCompForm",
+            "type": "LPCOMPOSITIONFORM"
+        }
+    ],
+    "ImmSetCompositionWindow": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lpCompForm",
+            "type": "LPCOMPOSITIONFORM"
+        }
+    ],
+    "ImmGetCandidateWindow": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpCandidate",
+            "type": "LPCANDIDATEFORM"
+        }
+    ],
+    "ImmSetCandidateWindow": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "lpCandidate",
+            "type": "LPCANDIDATEFORM"
+        }
+    ],
+    "ImmIsUIMessageA": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "UINT"
+        },
+        {
+            "name": "VOID",
+            "type": "WPARAM"
+        },
+        {
+            "name": "VOID",
+            "type": "LPARAM"
+        }
+    ],
+    "ImmIsUIMessageW": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "UINT"
+        },
+        {
+            "name": "VOID",
+            "type": "WPARAM"
+        },
+        {
+            "name": "VOID",
+            "type": "LPARAM"
+        }
+    ],
+    "ImmGetVirtualKey": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        }
+    ],
+    "ImmRegisterWordA": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "lpszReading",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszRegister",
+            "type": "LPCSTR"
+        }
+    ],
+    "ImmRegisterWordW": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "lpszReading",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszRegister",
+            "type": "LPCWSTR"
+        }
+    ],
+    "ImmUnregisterWordA": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "lpszReading",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszUnregister",
+            "type": "LPCSTR"
+        }
+    ],
+    "ImmUnregisterWordW": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "lpszReading",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszUnregister",
+            "type": "LPCWSTR"
+        }
+    ],
+    "ImmGetRegisterWordStyleA": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "nItem",
+            "type": "UINT"
+        },
+        {
+            "name": "lpStyleBuf",
+            "type": "LPSTYLEBUFA"
+        }
+    ],
+    "ImmGetRegisterWordStyleW": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "nItem",
+            "type": "UINT"
+        },
+        {
+            "name": "lpStyleBuf",
+            "type": "LPSTYLEBUFW"
+        }
+    ],
+    "ImmEnumRegisterWordA": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "VOID",
+            "type": "REGISTERWORDENUMPROCA"
+        },
+        {
+            "name": "lpszReading",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszRegister",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        }
+    ],
+    "ImmEnumRegisterWordW": [
+        {
+            "name": "VOID",
+            "type": "HKL"
+        },
+        {
+            "name": "VOID",
+            "type": "REGISTERWORDENUMPROCW"
+        },
+        {
+            "name": "lpszReading",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszRegister",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        }
+    ],
+    "ImmDisableIME": [
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "ImmEnumInputContext": [
+        {
+            "name": "idThread",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpfn",
+            "type": "IMCENUMPROC"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "ImmGetImeMenuItemsA": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpImeParentMenu",
+            "type": "LPIMEMENUITEMINFOA"
+        },
+        {
+            "name": "lpImeMenu",
+            "type": "LPIMEMENUITEMINFOA"
+        },
+        {
+            "name": "dwSize",
+            "type": "DWORD"
+        }
+    ],
+    "ImmGetImeMenuItemsW": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpImeParentMenu",
+            "type": "LPIMEMENUITEMINFOW"
+        },
+        {
+            "name": "lpImeMenu",
+            "type": "LPIMEMENUITEMINFOW"
+        },
+        {
+            "name": "dwSize",
+            "type": "DWORD"
+        }
+    ],
+    "ImmDisableTextFrameService": [
+        {
+            "name": "idThread",
+            "type": "DWORD"
+        }
+    ],
+    "ImmRequestMessageA": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "VOID",
+            "type": "WPARAM"
+        },
+        {
+            "name": "VOID",
+            "type": "LPARAM"
+        }
+    ],
+    "ImmRequestMessageW": [
+        {
+            "name": "VOID",
+            "type": "HIMC"
+        },
+        {
+            "name": "VOID",
+            "type": "WPARAM"
+        },
+        {
+            "name": "VOID",
+            "type": "LPARAM"
+        }
+    ]
+}
