@@ -193,7 +193,17 @@ if __name__ == '__main__':
     if options.console == 'False':
         options.console = False
     else:
-        options.console = True    
+        options.console = True
+
+    if options.env != '':
+        if os.path.exists(options.env):
+            import pickle
+            with open(options.env, 'rb') as f:
+                env = pickle.load(f)
+        else:
+            env = ast.literal_eval(options.env)
+    else:
+        env = {}
     
     if type(options.verbose) != int and options.output not in ("debug", "dump"):
         print("ERROR: verbose mode, must be int and use with --debug or --dump")
@@ -207,11 +217,11 @@ if __name__ == '__main__':
     if (options.subparser_name == 'run'):
         # with argv
         if options.filename is not None and options.run_args == []:
-            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile = options.profile, output=options.output, console=options.console, log_dir=options.log_dir)
+            ql = Qiling(filename=[options.filename] + options.args, rootfs=options.rootfs, profile = options.profile, output=options.output, console=options.console, log_dir=options.log_dir, env=env)
 
         # Without argv
         elif options.filename is None and options.args == [] and options.run_args != []:
-            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, profile = options.profile, output=options.output, console=options.console, log_dir=options.log_dir)
+            ql = Qiling(filename=options.run_args, rootfs=options.rootfs, profile = options.profile, output=options.output, console=options.console, log_dir=options.log_dir, env=env)
         
         else:
             print("ERROR: Command error!")
@@ -250,14 +260,7 @@ if __name__ == '__main__':
     if options.filter:
        ql.filter = options.filter
 
-    if options.env != '':
-        if os.path.exists(options.env):
-            import pickle
-            with open(options.env, 'rb') as f:
-                ql.env = pickle.load(f)
-        else:
-            ql.env = options.env
-    
+
     timeout = 0
     if options.timeout != None:
         timeout = int(options.timeout)
