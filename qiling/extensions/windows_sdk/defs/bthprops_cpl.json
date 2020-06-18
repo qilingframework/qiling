@@ -1,0 +1,12 @@
+{
+    "BluetoothIsVersionAvailable": [
+        {
+            "name": "MajorVersion",
+            "type": "UCHAR"
+        },
+        {
+            "name": "MinorVersion",
+            "type": "UCHAR"
+        }
+    ]
+}

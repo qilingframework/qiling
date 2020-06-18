@@ -1,0 +1,170 @@
+{
+    "AvSetMmThreadCharacteristicsA": [
+        {
+            "name": "TaskName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "TaskIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "AvSetMmThreadCharacteristicsW": [
+        {
+            "name": "TaskName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "TaskIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "AvSetMmMaxThreadCharacteristicsA": [
+        {
+            "name": "FirstTask",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "SecondTask",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "TaskIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "AvSetMmMaxThreadCharacteristicsW": [
+        {
+            "name": "FirstTask",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "SecondTask",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "TaskIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "AvRevertMmThreadCharacteristics": [
+        {
+            "name": "AvrtHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "AvSetMmThreadPriority": [
+        {
+            "name": "AvrtHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Priority",
+            "type": "AVRT_PRIORITY"
+        }
+    ],
+    "AvRtCreateThreadOrderingGroup": [
+        {
+            "name": "Context",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "Period",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "ThreadOrderingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Timeout",
+            "type": "PLARGE_INTEGER"
+        }
+    ],
+    "AvRtCreateThreadOrderingGroupExA": [
+        {
+            "name": "Context",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "Period",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "ThreadOrderingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Timeout",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "TaskName",
+            "type": "LPCSTR"
+        }
+    ],
+    "AvRtCreateThreadOrderingGroupExW": [
+        {
+            "name": "Context",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "Period",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "ThreadOrderingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Timeout",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "TaskName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "AvRtJoinThreadOrderingGroup": [
+        {
+            "name": "Context",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "ThreadOrderingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Before",
+            "type": "BOOL"
+        }
+    ],
+    "AvRtWaitOnThreadOrderingGroup": [
+        {
+            "name": "Context",
+            "type": "HANDLE"
+        }
+    ],
+    "AvRtLeaveThreadOrderingGroup": [
+        {
+            "name": "Context",
+            "type": "HANDLE"
+        }
+    ],
+    "AvRtDeleteThreadOrderingGroup": [
+        {
+            "name": "Context",
+            "type": "HANDLE"
+        }
+    ],
+    "AvQuerySystemResponsiveness": [
+        {
+            "name": "AvrtHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SystemResponsivenessValue",
+            "type": "PULONG"
+        }
+    ]
+}

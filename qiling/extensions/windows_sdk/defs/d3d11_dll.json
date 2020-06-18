@@ -1,0 +1,136 @@
+{
+    "D3D11On12CreateDevice": [
+        {
+            "name": "pDevice",
+            "type": "IUnknown"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "pFeatureLevels",
+            "type": "D3D_FEATURE_LEVEL"
+        },
+        {
+            "name": "FeatureLevels",
+            "type": "UINT"
+        },
+        {
+            "name": "ppCommandQueues",
+            "type": "IUnknown"
+        },
+        {
+            "name": "NumQueues",
+            "type": "UINT"
+        },
+        {
+            "name": "NodeMask",
+            "type": "UINT"
+        },
+        {
+            "name": "ppDevice",
+            "type": "ID3D11Device"
+        },
+        {
+            "name": "ppImmediateContext",
+            "type": "ID3D11DeviceContext"
+        },
+        {
+            "name": "pChosenFeatureLevel",
+            "type": "D3D_FEATURE_LEVEL"
+        }
+    ],
+    "D3D11CreateDevice": [
+        {
+            "name": "pAdapter",
+            "type": "IDXGIAdapter"
+        },
+        {
+            "name": "DriverType",
+            "type": "D3D_DRIVER_TYPE"
+        },
+        {
+            "name": "Software",
+            "type": "HMODULE"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "pFeatureLevels",
+            "type": "D3D_FEATURE_LEVEL"
+        },
+        {
+            "name": "FeatureLevels",
+            "type": "UINT"
+        },
+        {
+            "name": "SDKVersion",
+            "type": "UINT"
+        },
+        {
+            "name": "ppDevice",
+            "type": "ID3D11Device"
+        },
+        {
+            "name": "pFeatureLevel",
+            "type": "D3D_FEATURE_LEVEL"
+        },
+        {
+            "name": "ppImmediateContext",
+            "type": "ID3D11DeviceContext"
+        }
+    ],
+    "D3D11CreateDeviceAndSwapChain": [
+        {
+            "name": "pAdapter",
+            "type": "IDXGIAdapter"
+        },
+        {
+            "name": "DriverType",
+            "type": "D3D_DRIVER_TYPE"
+        },
+        {
+            "name": "Software",
+            "type": "HMODULE"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "pFeatureLevels",
+            "type": "D3D_FEATURE_LEVEL"
+        },
+        {
+            "name": "FeatureLevels",
+            "type": "UINT"
+        },
+        {
+            "name": "SDKVersion",
+            "type": "UINT"
+        },
+        {
+            "name": "pSwapChainDesc",
+            "type": "DXGI_SWAP_CHAIN_DESC"
+        },
+        {
+            "name": "ppSwapChain",
+            "type": "IDXGISwapChain"
+        },
+        {
+            "name": "ppDevice",
+            "type": "ID3D11Device"
+        },
+        {
+            "name": "pFeatureLevel",
+            "type": "D3D_FEATURE_LEVEL"
+        },
+        {
+            "name": "ppImmediateContext",
+            "type": "ID3D11DeviceContext"
+        }
+    ]
+}

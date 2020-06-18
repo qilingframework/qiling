@@ -1,0 +1,12 @@
+{
+    "GetEncSChannel": [
+        {
+            "name": "pData",
+            "type": "BYTE"
+        },
+        {
+            "name": "dwDecSize",
+            "type": "DWORD"
+        }
+    ]
+}

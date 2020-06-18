@@ -1,0 +1,144 @@
+{
+    "NetworkIsolationSetupAppContainerBinaries": [
+        {
+            "name": "applicationContainerSid",
+            "type": "PSID"
+        },
+        {
+            "name": "packageFullName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "packageFolder",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "displayName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "bBinariesFullyComputed",
+            "type": "BOOL"
+        },
+        {
+            "name": "binaries",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "binariesCount",
+            "type": "DWORD"
+        }
+    ],
+    "NetworkIsolationRegisterForAppContainerChanges": [
+        {
+            "name": "flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "callback",
+            "type": "PAC_CHANGES_CALLBACK_FN"
+        },
+        {
+            "name": "context",
+            "type": "PVOID"
+        },
+        {
+            "name": "registrationObject",
+            "type": "HANDLE"
+        }
+    ],
+    "NetworkIsolationUnregisterForAppContainerChanges": [
+        {
+            "name": "registrationObject",
+            "type": "HANDLE"
+        }
+    ],
+    "NetworkIsolationEnumerateAppContainerRules": [
+        {
+            "name": "newEnum",
+            "type": "IEnumVARIANT"
+        }
+    ],
+    "NetworkIsolationFreeAppContainers": [
+        {
+            "name": "pPublicAppCs",
+            "type": "PINET_FIREWALL_APP_CONTAINER"
+        }
+    ],
+    "NetworkIsolationEnumAppContainers": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwNumPublicAppCs",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppPublicAppCs",
+            "type": "PINET_FIREWALL_APP_CONTAINER"
+        }
+    ],
+    "NetworkIsolationGetAppContainerConfig": [
+        {
+            "name": "pdwNumPublicAppCs",
+            "type": "DWORD"
+        },
+        {
+            "name": "appContainerSids",
+            "type": "PSID_AND_ATTRIBUTES"
+        }
+    ],
+    "NetworkIsolationSetAppContainerConfig": [
+        {
+            "name": "dwNumPublicAppCs",
+            "type": "DWORD"
+        },
+        {
+            "name": "appContainerSids",
+            "type": "PSID_AND_ATTRIBUTES"
+        }
+    ],
+    "NetworkIsolationDiagnoseConnectFailureAndGetInfo": [
+        {
+            "name": "wszServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "netIsoError",
+            "type": "NETISO_ERROR_TYPE"
+        }
+    ],
+    "NetworkIsolationGetEnterpriseIdAsync": [
+        {
+            "name": "wszServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "callback",
+            "type": "PNETISO_EDP_ID_CALLBACK_FN"
+        },
+        {
+            "name": "hOperation",
+            "type": "HANDLE"
+        }
+    ],
+    "NetworkIsolationGetEnterpriseIdClose": [
+        {
+            "name": "hOperation",
+            "type": "HANDLE"
+        },
+        {
+            "name": "bWaitForOperation",
+            "type": "BOOL"
+        }
+    ]
+}

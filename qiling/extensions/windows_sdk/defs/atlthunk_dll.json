@@ -1,0 +1,28 @@
+{
+    "AtlThunk_InitData": [
+        {
+            "name": "Thunk",
+            "type": "AtlThunkData_t"
+        },
+        {
+            "name": "Proc",
+            "type": "void"
+        },
+        {
+            "name": "FirstParameter",
+            "type": "size_t"
+        }
+    ],
+    "AtlThunk_DataToCode": [
+        {
+            "name": "VOID",
+            "type": "AtlThunkData_t"
+        }
+    ],
+    "AtlThunk_FreeData": [
+        {
+            "name": "Thunk",
+            "type": "AtlThunkData_t"
+        }
+    ]
+}

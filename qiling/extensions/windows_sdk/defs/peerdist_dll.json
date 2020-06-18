@@ -1,0 +1,438 @@
+{
+    "PeerDistStartup": [
+        {
+            "name": "dwVersionRequested",
+            "type": "DWORD"
+        },
+        {
+            "name": "phPeerDist",
+            "type": "PPEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "pdwSupportedVersion",
+            "type": "PDWORD"
+        }
+    ],
+    "PeerDistShutdown": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        }
+    ],
+    "PeerDistGetStatus": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "pPeerDistStatus",
+            "type": "PEERDIST_STATUS"
+        }
+    ],
+    "PeerDistRegisterForStatusChangeNotification": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hCompletionPort",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ulCompletionKey",
+            "type": "ULONG_PTR"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        },
+        {
+            "name": "pPeerDistStatus",
+            "type": "PEERDIST_STATUS"
+        }
+    ],
+    "PeerDistUnregisterForStatusChangeNotification": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        }
+    ],
+    "PeerDistServerPublishStream": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "cbContentIdentifier",
+            "type": "DWORD"
+        },
+        {
+            "name": "pContentIdentifier",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbContentLength",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "pPublishOptions",
+            "type": "PCPEERDIST_PUBLICATION_OPTIONS"
+        },
+        {
+            "name": "hCompletionPort",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ulCompletionKey",
+            "type": "ULONG_PTR"
+        },
+        {
+            "name": "phStream",
+            "type": "PPEERDIST_STREAM_HANDLE"
+        }
+    ],
+    "PeerDistServerPublishAddToStream": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hStream",
+            "type": "PEERDIST_STREAM_HANDLE"
+        },
+        {
+            "name": "cbNumberOfBytes",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "PeerDistServerPublishCompleteStream": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hStream",
+            "type": "PEERDIST_STREAM_HANDLE"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "PeerDistServerCloseStreamHandle": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hStream",
+            "type": "PEERDIST_STREAM_HANDLE"
+        }
+    ],
+    "PeerDistServerUnpublish": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "cbContentIdentifier",
+            "type": "DWORD"
+        },
+        {
+            "name": "pContentIdentifier",
+            "type": "PBYTE"
+        }
+    ],
+    "PeerDistServerOpenContentInformation": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "cbContentIdentifier",
+            "type": "DWORD"
+        },
+        {
+            "name": "pContentIdentifier",
+            "type": "PBYTE"
+        },
+        {
+            "name": "ullContentOffset",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "cbContentLength",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "hCompletionPort",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ulCompletionKey",
+            "type": "ULONG_PTR"
+        },
+        {
+            "name": "phContentInfo",
+            "type": "PPEERDIST_CONTENTINFO_HANDLE"
+        }
+    ],
+    "PeerDistServerRetrieveContentInformation": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hContentInfo",
+            "type": "PEERDIST_CONTENTINFO_HANDLE"
+        },
+        {
+            "name": "cbMaxNumberOfBytes",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "PeerDistServerCloseContentInformation": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hContentInfo",
+            "type": "PEERDIST_CONTENTINFO_HANDLE"
+        }
+    ],
+    "PeerDistServerCancelAsyncOperation": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "cbContentIdentifier",
+            "type": "DWORD"
+        },
+        {
+            "name": "pContentIdentifier",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "PeerDistClientOpenContent": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "pContentTag",
+            "type": "PCPEERDIST_CONTENT_TAG"
+        },
+        {
+            "name": "hCompletionPort",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ulCompletionKey",
+            "type": "ULONG_PTR"
+        },
+        {
+            "name": "phContentHandle",
+            "type": "PPEERDIST_CONTENT_HANDLE"
+        }
+    ],
+    "PeerDistClientCloseContent": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hContentHandle",
+            "type": "PEERDIST_CONTENT_HANDLE"
+        }
+    ],
+    "PeerDistClientAddContentInformation": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hContentHandle",
+            "type": "PEERDIST_CONTENT_HANDLE"
+        },
+        {
+            "name": "cbNumberOfBytes",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "PeerDistClientCompleteContentInformation": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hContentHandle",
+            "type": "PEERDIST_CONTENT_HANDLE"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "PeerDistClientAddData": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hContentHandle",
+            "type": "PEERDIST_CONTENT_HANDLE"
+        },
+        {
+            "name": "cbNumberOfBytes",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "PeerDistClientBlockRead": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hContentHandle",
+            "type": "PEERDIST_CONTENT_HANDLE"
+        },
+        {
+            "name": "cbMaxNumberOfBytes",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "dwTimeoutInMilliseconds",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "PeerDistClientStreamRead": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hContentHandle",
+            "type": "PEERDIST_CONTENT_HANDLE"
+        },
+        {
+            "name": "cbMaxNumberOfBytes",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "dwTimeoutInMilliseconds",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "PeerDistClientFlushContent": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "pContentTag",
+            "type": "PCPEERDIST_CONTENT_TAG"
+        },
+        {
+            "name": "hCompletionPort",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ulCompletionKey",
+            "type": "ULONG_PTR"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "PeerDistClientCancelAsyncOperation": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hContentHandle",
+            "type": "PEERDIST_CONTENT_HANDLE"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "PeerDistClientGetInformationByHandle": [
+        {
+            "name": "hPeerDist",
+            "type": "PEERDIST_INSTANCE_HANDLE"
+        },
+        {
+            "name": "hContentHandle",
+            "type": "PEERDIST_CONTENT_HANDLE"
+        },
+        {
+            "name": "PeerDistClientInfoClass",
+            "type": "PEERDIST_CLIENT_INFO_BY_HANDLE_CLASS"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInformation",
+            "type": "LPVOID"
+        }
+    ]
+}

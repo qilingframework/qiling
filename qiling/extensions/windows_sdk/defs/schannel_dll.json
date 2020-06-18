@@ -1,0 +1,68 @@
+{
+    "SslEmptyCacheA": [
+        {
+            "name": "pszTargetName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SslEmptyCacheW": [
+        {
+            "name": "pszTargetName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SslCrackCertificate": [
+        {
+            "name": "pbCertificate",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbCertificate",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppCertificate",
+            "type": "PX509Certificate"
+        }
+    ],
+    "SslFreeCertificate": [
+        {
+            "name": "pCertificate",
+            "type": "PX509Certificate"
+        }
+    ],
+    "SslGetServerIdentity": [
+        {
+            "name": "ClientHello",
+            "type": "PBYTE"
+        },
+        {
+            "name": "ClientHelloSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "ServerIdentity",
+            "type": "PBYTE"
+        },
+        {
+            "name": "ServerIdentitySize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ]
+}

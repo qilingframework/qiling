@@ -1,0 +1,20 @@
+{
+    "SoftwareUpdateMessageBox": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszDistUnit",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "psdi",
+            "type": "LPSOFTDISTINFO"
+        }
+    ]
+}

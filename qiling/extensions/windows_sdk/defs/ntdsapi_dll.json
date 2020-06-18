@@ -1,0 +1,1830 @@
+{
+    "DsBindW": [
+        {
+            "name": "DomainControllerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DnsDomainName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsBindA": [
+        {
+            "name": "DomainControllerName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "DnsDomainName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsBindWithCredW": [
+        {
+            "name": "DomainControllerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DnsDomainName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsBindWithCredA": [
+        {
+            "name": "DomainControllerName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "DnsDomainName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsBindWithSpnW": [
+        {
+            "name": "DomainControllerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DnsDomainName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "ServicePrincipalName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsBindWithSpnA": [
+        {
+            "name": "DomainControllerName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "DnsDomainName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "ServicePrincipalName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsBindWithSpnExW": [
+        {
+            "name": "DomainControllerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DnsDomainName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "ServicePrincipalName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "BindFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsBindWithSpnExA": [
+        {
+            "name": "DomainControllerName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "DnsDomainName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "ServicePrincipalName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "BindFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsBindByInstanceW": [
+        {
+            "name": "ServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Annotation",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "InstanceGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "DnsDomainName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "ServicePrincipalName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "BindFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsBindByInstanceA": [
+        {
+            "name": "ServerName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Annotation",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "InstanceGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "DnsDomainName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "ServicePrincipalName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "BindFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsBindToISTGW": [
+        {
+            "name": "SiteName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsBindToISTGA": [
+        {
+            "name": "SiteName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsBindingSetTimeout": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "cTimeoutSecs",
+            "type": "ULONG"
+        }
+    ],
+    "DsUnBindW": [
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsUnBindA": [
+        {
+            "name": "phDS",
+            "type": "HANDLE"
+        }
+    ],
+    "DsMakePasswordCredentialsW": [
+        {
+            "name": "User",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Domain",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Password",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pAuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        }
+    ],
+    "DsMakePasswordCredentialsA": [
+        {
+            "name": "User",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Domain",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Password",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pAuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        }
+    ],
+    "DsFreePasswordCredentials": [
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        }
+    ],
+    "DsCrackNamesW": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "flags",
+            "type": "DS_NAME_FLAGS"
+        },
+        {
+            "name": "formatOffered",
+            "type": "DS_NAME_FORMAT"
+        },
+        {
+            "name": "formatDesired",
+            "type": "DS_NAME_FORMAT"
+        },
+        {
+            "name": "cNames",
+            "type": "DWORD"
+        },
+        {
+            "name": "rpNames",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppResult",
+            "type": "PDS_NAME_RESULTW"
+        }
+    ],
+    "DsCrackNamesA": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "flags",
+            "type": "DS_NAME_FLAGS"
+        },
+        {
+            "name": "formatOffered",
+            "type": "DS_NAME_FORMAT"
+        },
+        {
+            "name": "formatDesired",
+            "type": "DS_NAME_FORMAT"
+        },
+        {
+            "name": "cNames",
+            "type": "DWORD"
+        },
+        {
+            "name": "rpNames",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ppResult",
+            "type": "PDS_NAME_RESULTA"
+        }
+    ],
+    "DsFreeNameResultW": [
+        {
+            "name": "pResult",
+            "type": "DS_NAME_RESULTW"
+        }
+    ],
+    "DsFreeNameResultA": [
+        {
+            "name": "pResult",
+            "type": "DS_NAME_RESULTA"
+        }
+    ],
+    "DsGetSpnA": [
+        {
+            "name": "ServiceType",
+            "type": "DS_SPN_NAME_TYPE"
+        },
+        {
+            "name": "ServiceClass",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ServiceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "InstancePort",
+            "type": "USHORT"
+        },
+        {
+            "name": "cInstanceNames",
+            "type": "USHORT"
+        },
+        {
+            "name": "pInstanceNames",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pInstancePorts",
+            "type": "USHORT"
+        },
+        {
+            "name": "pcSpn",
+            "type": "DWORD"
+        },
+        {
+            "name": "prpszSpn",
+            "type": "LPSTR"
+        }
+    ],
+    "DsGetSpnW": [
+        {
+            "name": "ServiceType",
+            "type": "DS_SPN_NAME_TYPE"
+        },
+        {
+            "name": "ServiceClass",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ServiceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "InstancePort",
+            "type": "USHORT"
+        },
+        {
+            "name": "cInstanceNames",
+            "type": "USHORT"
+        },
+        {
+            "name": "pInstanceNames",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pInstancePorts",
+            "type": "USHORT"
+        },
+        {
+            "name": "pcSpn",
+            "type": "DWORD"
+        },
+        {
+            "name": "prpszSpn",
+            "type": "LPWSTR"
+        }
+    ],
+    "DsFreeSpnArrayA": [
+        {
+            "name": "cSpn",
+            "type": "DWORD"
+        },
+        {
+            "name": "rpszSpn",
+            "type": "LPSTR"
+        }
+    ],
+    "DsFreeSpnArrayW": [
+        {
+            "name": "cSpn",
+            "type": "DWORD"
+        },
+        {
+            "name": "rpszSpn",
+            "type": "LPWSTR"
+        }
+    ],
+    "DsWriteAccountSpnA": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Operation",
+            "type": "DS_SPN_WRITE_OP"
+        },
+        {
+            "name": "pszAccount",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cSpn",
+            "type": "DWORD"
+        },
+        {
+            "name": "rpszSpn",
+            "type": "LPCSTR"
+        }
+    ],
+    "DsWriteAccountSpnW": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Operation",
+            "type": "DS_SPN_WRITE_OP"
+        },
+        {
+            "name": "pszAccount",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cSpn",
+            "type": "DWORD"
+        },
+        {
+            "name": "rpszSpn",
+            "type": "LPCWSTR"
+        }
+    ],
+    "DsClientMakeSpnForTargetServerW": [
+        {
+            "name": "ServiceClass",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ServiceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pcSpnLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszSpn",
+            "type": "LPWSTR"
+        }
+    ],
+    "DsClientMakeSpnForTargetServerA": [
+        {
+            "name": "ServiceClass",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ServiceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pcSpnLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszSpn",
+            "type": "LPSTR"
+        }
+    ],
+    "DsServerRegisterSpnA": [
+        {
+            "name": "Operation",
+            "type": "DS_SPN_WRITE_OP"
+        },
+        {
+            "name": "ServiceClass",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "UserObjectDN",
+            "type": "LPCSTR"
+        }
+    ],
+    "DsServerRegisterSpnW": [
+        {
+            "name": "Operation",
+            "type": "DS_SPN_WRITE_OP"
+        },
+        {
+            "name": "ServiceClass",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "UserObjectDN",
+            "type": "LPCWSTR"
+        }
+    ],
+    "DsReplicaSyncA": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NameContext",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pUuidDsaSrc",
+            "type": "UUID"
+        },
+        {
+            "name": "Options",
+            "type": "ULONG"
+        }
+    ],
+    "DsReplicaSyncW": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NameContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pUuidDsaSrc",
+            "type": "UUID"
+        },
+        {
+            "name": "Options",
+            "type": "ULONG"
+        }
+    ],
+    "DsReplicaAddA": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NameContext",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "SourceDsaDn",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "TransportDn",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "SourceDsaAddress",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pSchedule",
+            "type": "PSCHEDULE"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        }
+    ],
+    "DsReplicaAddW": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NameContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "SourceDsaDn",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "TransportDn",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "SourceDsaAddress",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pSchedule",
+            "type": "PSCHEDULE"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        }
+    ],
+    "DsReplicaDelA": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NameContext",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "DsaSrc",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Options",
+            "type": "ULONG"
+        }
+    ],
+    "DsReplicaDelW": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NameContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DsaSrc",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Options",
+            "type": "ULONG"
+        }
+    ],
+    "DsReplicaModifyA": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NameContext",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pUuidSourceDsa",
+            "type": "UUID"
+        },
+        {
+            "name": "TransportDn",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "SourceDsaAddress",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pSchedule",
+            "type": "PSCHEDULE"
+        },
+        {
+            "name": "ReplicaFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ModifyFields",
+            "type": "DWORD"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        }
+    ],
+    "DsReplicaModifyW": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NameContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pUuidSourceDsa",
+            "type": "UUID"
+        },
+        {
+            "name": "TransportDn",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "SourceDsaAddress",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pSchedule",
+            "type": "PSCHEDULE"
+        },
+        {
+            "name": "ReplicaFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ModifyFields",
+            "type": "DWORD"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        }
+    ],
+    "DsReplicaUpdateRefsA": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NameContext",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "DsaDest",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pUuidDsaDest",
+            "type": "UUID"
+        },
+        {
+            "name": "Options",
+            "type": "ULONG"
+        }
+    ],
+    "DsReplicaUpdateRefsW": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NameContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DsaDest",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pUuidDsaDest",
+            "type": "UUID"
+        },
+        {
+            "name": "Options",
+            "type": "ULONG"
+        }
+    ],
+    "DsReplicaSyncAllA": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszNameContext",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pFnCallBack",
+            "type": "BOOL"
+        },
+        {
+            "name": "pCallbackData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pErrors",
+            "type": "PDS_REPSYNCALL_ERRINFOA"
+        }
+    ],
+    "DsReplicaSyncAllW": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszNameContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pFnCallBack",
+            "type": "BOOL"
+        },
+        {
+            "name": "pCallbackData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pErrors",
+            "type": "PDS_REPSYNCALL_ERRINFOW"
+        }
+    ],
+    "DsRemoveDsServerW": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ServerDN",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "DomainDN",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fLastDcInDomain",
+            "type": "BOOL"
+        },
+        {
+            "name": "fCommit",
+            "type": "BOOL"
+        }
+    ],
+    "DsRemoveDsServerA": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ServerDN",
+            "type": "LPSTR"
+        },
+        {
+            "name": "DomainDN",
+            "type": "LPSTR"
+        },
+        {
+            "name": "fLastDcInDomain",
+            "type": "BOOL"
+        },
+        {
+            "name": "fCommit",
+            "type": "BOOL"
+        }
+    ],
+    "DsRemoveDsDomainW": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "DomainDN",
+            "type": "LPWSTR"
+        }
+    ],
+    "DsRemoveDsDomainA": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "DomainDN",
+            "type": "LPSTR"
+        }
+    ],
+    "DsListSitesA": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppSites",
+            "type": "PDS_NAME_RESULTA"
+        }
+    ],
+    "DsListSitesW": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppSites",
+            "type": "PDS_NAME_RESULTW"
+        }
+    ],
+    "DsListServersInSiteA": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "site",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ppServers",
+            "type": "PDS_NAME_RESULTA"
+        }
+    ],
+    "DsListServersInSiteW": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "site",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppServers",
+            "type": "PDS_NAME_RESULTW"
+        }
+    ],
+    "DsListDomainsInSiteA": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "site",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ppDomains",
+            "type": "PDS_NAME_RESULTA"
+        }
+    ],
+    "DsListDomainsInSiteW": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "site",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppDomains",
+            "type": "PDS_NAME_RESULTW"
+        }
+    ],
+    "DsListServersForDomainInSiteA": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "domain",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "site",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ppServers",
+            "type": "PDS_NAME_RESULTA"
+        }
+    ],
+    "DsListServersForDomainInSiteW": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "domain",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "site",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppServers",
+            "type": "PDS_NAME_RESULTW"
+        }
+    ],
+    "DsListInfoForServerA": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "server",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ppInfo",
+            "type": "PDS_NAME_RESULTA"
+        }
+    ],
+    "DsListInfoForServerW": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "server",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppInfo",
+            "type": "PDS_NAME_RESULTW"
+        }
+    ],
+    "DsListRolesA": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppRoles",
+            "type": "PDS_NAME_RESULTA"
+        }
+    ],
+    "DsListRolesW": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppRoles",
+            "type": "PDS_NAME_RESULTW"
+        }
+    ],
+    "DsQuerySitesByCostW": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pwszFromSite",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "rgwszToSites",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cToSites",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "prgSiteInfo",
+            "type": "PDS_SITE_COST_INFO"
+        }
+    ],
+    "DsQuerySitesByCostA": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszFromSite",
+            "type": "LPSTR"
+        },
+        {
+            "name": "rgszToSites",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cToSites",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "prgSiteInfo",
+            "type": "PDS_SITE_COST_INFO"
+        }
+    ],
+    "DsQuerySitesFree": [
+        {
+            "name": "rgSiteInfo",
+            "type": "PDS_SITE_COST_INFO"
+        }
+    ],
+    "DsMapSchemaGuidsA": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "cGuids",
+            "type": "DWORD"
+        },
+        {
+            "name": "rGuids",
+            "type": "GUID"
+        },
+        {
+            "name": "ppGuidMap",
+            "type": "DS_SCHEMA_GUID_MAPA"
+        }
+    ],
+    "DsFreeSchemaGuidMapA": [
+        {
+            "name": "pGuidMap",
+            "type": "PDS_SCHEMA_GUID_MAPA"
+        }
+    ],
+    "DsMapSchemaGuidsW": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "cGuids",
+            "type": "DWORD"
+        },
+        {
+            "name": "rGuids",
+            "type": "GUID"
+        },
+        {
+            "name": "ppGuidMap",
+            "type": "DS_SCHEMA_GUID_MAPW"
+        }
+    ],
+    "DsFreeSchemaGuidMapW": [
+        {
+            "name": "pGuidMap",
+            "type": "PDS_SCHEMA_GUID_MAPW"
+        }
+    ],
+    "DsGetDomainControllerInfoA": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "DomainName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "InfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppInfo",
+            "type": "void"
+        }
+    ],
+    "DsGetDomainControllerInfoW": [
+        {
+            "name": "hDs",
+            "type": "HANDLE"
+        },
+        {
+            "name": "DomainName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "InfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppInfo",
+            "type": "void"
+        }
+    ],
+    "DsFreeDomainControllerInfoA": [
+        {
+            "name": "InfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "cInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "pInfo",
+            "type": "void"
+        }
+    ],
+    "DsFreeDomainControllerInfoW": [
+        {
+            "name": "InfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "cInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "pInfo",
+            "type": "void"
+        }
+    ],
+    "DsReplicaConsistencyCheck": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TaskID",
+            "type": "DS_KCC_TASKID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "DsReplicaVerifyObjectsW": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NameContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pUuidDsaSrc",
+            "type": "UUID"
+        },
+        {
+            "name": "ulOptions",
+            "type": "ULONG"
+        }
+    ],
+    "DsReplicaVerifyObjectsA": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NameContext",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pUuidDsaSrc",
+            "type": "UUID"
+        },
+        {
+            "name": "ulOptions",
+            "type": "ULONG"
+        }
+    ],
+    "DsReplicaGetInfoW": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "InfoType",
+            "type": "DS_REPL_INFO_TYPE"
+        },
+        {
+            "name": "pszObject",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "puuidForSourceDsaObjGuid",
+            "type": "UUID"
+        },
+        {
+            "name": "ppInfo",
+            "type": "void"
+        }
+    ],
+    "DsReplicaGetInfo2W": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "InfoType",
+            "type": "DS_REPL_INFO_TYPE"
+        },
+        {
+            "name": "pszObject",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "puuidForSourceDsaObjGuid",
+            "type": "UUID"
+        },
+        {
+            "name": "pszAttributeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwEnumerationContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppInfo",
+            "type": "void"
+        }
+    ],
+    "DsReplicaFreeInfo": [
+        {
+            "name": "InfoType",
+            "type": "DS_REPL_INFO_TYPE"
+        },
+        {
+            "name": "pInfo",
+            "type": "void"
+        }
+    ],
+    "DsAddSidHistoryW": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "SrcDomain",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "SrcPrincipal",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "SrcDomainController",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "SrcDomainCreds",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "DstDomain",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DstPrincipal",
+            "type": "LPCWSTR"
+        }
+    ],
+    "DsAddSidHistoryA": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "SrcDomain",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "SrcPrincipal",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "SrcDomainController",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "SrcDomainCreds",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "DstDomain",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "DstPrincipal",
+            "type": "LPCSTR"
+        }
+    ],
+    "DsInheritSecurityIdentityW": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "SrcPrincipal",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DstPrincipal",
+            "type": "LPCWSTR"
+        }
+    ],
+    "DsInheritSecurityIdentityA": [
+        {
+            "name": "hDS",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "SrcPrincipal",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "DstPrincipal",
+            "type": "LPCSTR"
+        }
+    ],
+    "DsMakeSpnW": [
+        {
+            "name": "ServiceClass",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ServiceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "InstancePort",
+            "type": "USHORT"
+        },
+        {
+            "name": "Referrer",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pcSpnLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszSpn",
+            "type": "LPWSTR"
+        }
+    ],
+    "DsMakeSpnA": [
+        {
+            "name": "ServiceClass",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ServiceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "InstancePort",
+            "type": "USHORT"
+        },
+        {
+            "name": "Referrer",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pcSpnLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszSpn",
+            "type": "LPSTR"
+        }
+    ],
+    "DsCrackSpnA": [
+        {
+            "name": "pszSpn",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pcServiceClass",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "ServiceClass",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcServiceName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "ServiceName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcInstanceName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pInstancePort",
+            "type": "USHORT"
+        }
+    ],
+    "DsCrackSpnW": [
+        {
+            "name": "pszSpn",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pcServiceClass",
+            "type": "DWORD"
+        },
+        {
+            "name": "ServiceClass",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcServiceName",
+            "type": "DWORD"
+        },
+        {
+            "name": "ServiceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcInstanceName",
+            "type": "DWORD"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pInstancePort",
+            "type": "USHORT"
+        }
+    ],
+    "DsQuoteRdnValueW": [
+        {
+            "name": "cUnquotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psUnquotedRdnValue",
+            "type": "LPCWCH"
+        },
+        {
+            "name": "pcQuotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psQuotedRdnValue",
+            "type": "LPWCH"
+        }
+    ],
+    "DsQuoteRdnValueA": [
+        {
+            "name": "cUnquotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psUnquotedRdnValue",
+            "type": "LPCCH"
+        },
+        {
+            "name": "pcQuotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psQuotedRdnValue",
+            "type": "LPCH"
+        }
+    ],
+    "DsUnquoteRdnValueW": [
+        {
+            "name": "cQuotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psQuotedRdnValue",
+            "type": "LPCWCH"
+        },
+        {
+            "name": "pcUnquotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psUnquotedRdnValue",
+            "type": "LPWCH"
+        }
+    ],
+    "DsUnquoteRdnValueA": [
+        {
+            "name": "cQuotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psQuotedRdnValue",
+            "type": "LPCCH"
+        },
+        {
+            "name": "pcUnquotedRdnValueLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "psUnquotedRdnValue",
+            "type": "LPCH"
+        }
+    ],
+    "DsGetRdnW": [
+        {
+            "name": "ppDN",
+            "type": "LPCWCH"
+        },
+        {
+            "name": "pcDN",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppKey",
+            "type": "LPCWCH"
+        },
+        {
+            "name": "pcKey",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppVal",
+            "type": "LPCWCH"
+        },
+        {
+            "name": "pcVal",
+            "type": "DWORD"
+        }
+    ],
+    "DsCrackUnquotedMangledRdnW": [
+        {
+            "name": "pszRDN",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchRDN",
+            "type": "DWORD"
+        },
+        {
+            "name": "pGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "peDsMangleFor",
+            "type": "DS_MANGLE_FOR"
+        }
+    ],
+    "DsCrackUnquotedMangledRdnA": [
+        {
+            "name": "pszRDN",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cchRDN",
+            "type": "DWORD"
+        },
+        {
+            "name": "pGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "peDsMangleFor",
+            "type": "DS_MANGLE_FOR"
+        }
+    ],
+    "DsIsMangledRdnValueW": [
+        {
+            "name": "pszRdn",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cRdn",
+            "type": "DWORD"
+        },
+        {
+            "name": "eDsMangleForDesired",
+            "type": "DS_MANGLE_FOR"
+        }
+    ],
+    "DsIsMangledRdnValueA": [
+        {
+            "name": "pszRdn",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cRdn",
+            "type": "DWORD"
+        },
+        {
+            "name": "eDsMangleForDesired",
+            "type": "DS_MANGLE_FOR"
+        }
+    ],
+    "DsIsMangledDnA": [
+        {
+            "name": "pszDn",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "eDsMangleFor",
+            "type": "DS_MANGLE_FOR"
+        }
+    ],
+    "DsIsMangledDnW": [
+        {
+            "name": "pszDn",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "eDsMangleFor",
+            "type": "DS_MANGLE_FOR"
+        }
+    ]
+}

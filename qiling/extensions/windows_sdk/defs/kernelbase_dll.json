@@ -1,0 +1,106 @@
+{
+    "WerRegisterAppLocalDump": [
+        {
+            "name": "localAppDataRelativePath",
+            "type": "PCWSTR"
+        }
+    ],
+    "TlsAlloc": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "TlsGetValue": [
+        {
+            "name": "dwTlsIndex",
+            "type": "DWORD"
+        }
+    ],
+    "TlsSetValue": [
+        {
+            "name": "dwTlsIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpTlsValue",
+            "type": "LPVOID"
+        }
+    ],
+    "TlsFree": [
+        {
+            "name": "dwTlsIndex",
+            "type": "DWORD"
+        }
+    ],
+    "SetProcessValidCallTargets": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "VirtualAddress",
+            "type": "PVOID"
+        },
+        {
+            "name": "RegionSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "NumberOfOffsets",
+            "type": "ULONG"
+        },
+        {
+            "name": "OffsetInformation",
+            "type": "PCFG_CALL_TARGET_INFO"
+        }
+    ],
+    "OpenCommPort": [
+        {
+            "name": "uPortNumber",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlagsAndAttributes",
+            "type": "DWORD"
+        }
+    ],
+    "GetCommPorts": [
+        {
+            "name": "lpPortNumbers",
+            "type": "PULONG"
+        },
+        {
+            "name": "uPortNumbersCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "puPortNumbersFound",
+            "type": "PULONG"
+        }
+    ],
+    "CompareObjectHandles": [
+        {
+            "name": "hFirstObjectHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hSecondObjectHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "SleepEx": [
+        {
+            "name": "dwMilliseconds",
+            "type": "DWORD"
+        },
+        {
+            "name": "bAlertable",
+            "type": "BOOL"
+        }
+    ]
+}

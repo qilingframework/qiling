@@ -1,0 +1,316 @@
+{
+    "DrtCreatePnrpBootstrapResolver": [
+        {
+            "name": "fPublish",
+            "type": "BOOL"
+        },
+        {
+            "name": "pwzPeerName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzCloudName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzPublishingIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppResolver",
+            "type": "DRT_BOOTSTRAP_PROVIDER"
+        }
+    ],
+    "DrtDeletePnrpBootstrapResolver": [
+        {
+            "name": "pResolver",
+            "type": "DRT_BOOTSTRAP_PROVIDER"
+        }
+    ],
+    "DrtCreateDnsBootstrapResolver": [
+        {
+            "name": "port",
+            "type": "USHORT"
+        },
+        {
+            "name": "pwszAddress",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppModule",
+            "type": "DRT_BOOTSTRAP_PROVIDER"
+        }
+    ],
+    "DrtDeleteDnsBootstrapResolver": [
+        {
+            "name": "pResolver",
+            "type": "DRT_BOOTSTRAP_PROVIDER"
+        }
+    ],
+    "DrtCreateIpv6UdpTransport": [
+        {
+            "name": "scope",
+            "type": "DRT_SCOPE"
+        },
+        {
+            "name": "dwScopeId",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwLocalityThreshold",
+            "type": "ULONG"
+        },
+        {
+            "name": "pwPort",
+            "type": "USHORT"
+        },
+        {
+            "name": "phTransport",
+            "type": "HDRT_TRANSPORT"
+        }
+    ],
+    "DrtDeleteIpv6UdpTransport": [
+        {
+            "name": "hTransport",
+            "type": "HDRT_TRANSPORT"
+        }
+    ],
+    "DrtCreateDerivedKeySecurityProvider": [
+        {
+            "name": "pRootCert",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pLocalCert",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "ppSecurityProvider",
+            "type": "DRT_SECURITY_PROVIDER"
+        }
+    ],
+    "DrtCreateDerivedKey": [
+        {
+            "name": "pLocalCert",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pKey",
+            "type": "DRT_DATA"
+        }
+    ],
+    "DrtDeleteDerivedKeySecurityProvider": [
+        {
+            "name": "pSecurityProvider",
+            "type": "DRT_SECURITY_PROVIDER"
+        }
+    ],
+    "DrtCreateNullSecurityProvider": [
+        {
+            "name": "ppSecurityProvider",
+            "type": "DRT_SECURITY_PROVIDER"
+        }
+    ],
+    "DrtDeleteNullSecurityProvider": [
+        {
+            "name": "pSecurityProvider",
+            "type": "DRT_SECURITY_PROVIDER"
+        }
+    ],
+    "DrtOpen": [
+        {
+            "name": "pSettings",
+            "type": "DRT_SETTINGS"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pvContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "phDrt",
+            "type": "HDRT"
+        }
+    ],
+    "DrtClose": [
+        {
+            "name": "hDrt",
+            "type": "HDRT"
+        }
+    ],
+    "DrtGetEventDataSize": [
+        {
+            "name": "hDrt",
+            "type": "HDRT"
+        },
+        {
+            "name": "pulEventDataLen",
+            "type": "ULONG"
+        }
+    ],
+    "DrtGetEventData": [
+        {
+            "name": "hDrt",
+            "type": "HDRT"
+        },
+        {
+            "name": "ulEventDataLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "pEventData",
+            "type": "DRT_EVENT_DATA"
+        }
+    ],
+    "DrtRegisterKey": [
+        {
+            "name": "hDrt",
+            "type": "HDRT"
+        },
+        {
+            "name": "pRegistration",
+            "type": "DRT_REGISTRATION"
+        },
+        {
+            "name": "pvKeyContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "phKeyRegistration",
+            "type": "HDRT_REGISTRATION_CONTEXT"
+        }
+    ],
+    "DrtUpdateKey": [
+        {
+            "name": "hKeyRegistration",
+            "type": "HDRT_REGISTRATION_CONTEXT"
+        },
+        {
+            "name": "pAppData",
+            "type": "DRT_DATA"
+        }
+    ],
+    "DrtUnregisterKey": [
+        {
+            "name": "hKeyRegistration",
+            "type": "HDRT_REGISTRATION_CONTEXT"
+        }
+    ],
+    "DrtStartSearch": [
+        {
+            "name": "hDrt",
+            "type": "HDRT"
+        },
+        {
+            "name": "pKey",
+            "type": "DRT_DATA"
+        },
+        {
+            "name": "pInfo",
+            "type": "DRT_SEARCH_INFO"
+        },
+        {
+            "name": "timeout",
+            "type": "ULONG"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pvContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "hSearchContext",
+            "type": "HDRT_SEARCH_CONTEXT"
+        }
+    ],
+    "DrtContinueSearch": [
+        {
+            "name": "hSearchContext",
+            "type": "HDRT_SEARCH_CONTEXT"
+        }
+    ],
+    "DrtGetSearchResultSize": [
+        {
+            "name": "hSearchContext",
+            "type": "HDRT_SEARCH_CONTEXT"
+        },
+        {
+            "name": "pulSearchResultSize",
+            "type": "ULONG"
+        }
+    ],
+    "DrtGetSearchResult": [
+        {
+            "name": "hSearchContext",
+            "type": "HDRT_SEARCH_CONTEXT"
+        },
+        {
+            "name": "ulSearchResultSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pSearchResult",
+            "type": "DRT_SEARCH_RESULT"
+        }
+    ],
+    "DrtGetSearchPathSize": [
+        {
+            "name": "hSearchContext",
+            "type": "HDRT_SEARCH_CONTEXT"
+        },
+        {
+            "name": "pulSearchPathSize",
+            "type": "ULONG"
+        }
+    ],
+    "DrtGetSearchPath": [
+        {
+            "name": "hSearchContext",
+            "type": "HDRT_SEARCH_CONTEXT"
+        },
+        {
+            "name": "ulSearchPathSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pSearchPath",
+            "type": "DRT_ADDRESS_LIST"
+        }
+    ],
+    "DrtEndSearch": [
+        {
+            "name": "hSearchContext",
+            "type": "HDRT_SEARCH_CONTEXT"
+        }
+    ],
+    "DrtGetInstanceName": [
+        {
+            "name": "hDrt",
+            "type": "HDRT"
+        },
+        {
+            "name": "ulcbInstanceNameSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pwzDrtInstanceName",
+            "type": "PWSTR"
+        }
+    ],
+    "DrtGetInstanceNameSize": [
+        {
+            "name": "hDrt",
+            "type": "HDRT"
+        },
+        {
+            "name": "pulcbInstanceNameSize",
+            "type": "ULONG"
+        }
+    ]
+}

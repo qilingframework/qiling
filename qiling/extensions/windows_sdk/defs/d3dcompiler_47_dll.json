@@ -1,0 +1,522 @@
+{
+    "D3DReadFileToBlob": [
+        {
+            "name": "pFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppContents",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DWriteBlobToFile": [
+        {
+            "name": "pBlob",
+            "type": "ID3DBlob"
+        },
+        {
+            "name": "pFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "bOverwrite",
+            "type": "BOOL"
+        }
+    ],
+    "D3DCompile2": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "pSourceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pDefines",
+            "type": "D3D_SHADER_MACRO"
+        },
+        {
+            "name": "pInclude",
+            "type": "ID3DInclude"
+        },
+        {
+            "name": "pEntrypoint",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pTarget",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Flags1",
+            "type": "UINT"
+        },
+        {
+            "name": "Flags2",
+            "type": "UINT"
+        },
+        {
+            "name": "SecondaryDataFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "pSecondaryData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SecondaryDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ppCode",
+            "type": "ID3DBlob"
+        },
+        {
+            "name": "ppErrorMsgs",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DCompileFromFile": [
+        {
+            "name": "pFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pDefines",
+            "type": "D3D_SHADER_MACRO"
+        },
+        {
+            "name": "pInclude",
+            "type": "ID3DInclude"
+        },
+        {
+            "name": "pEntrypoint",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pTarget",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Flags1",
+            "type": "UINT"
+        },
+        {
+            "name": "Flags2",
+            "type": "UINT"
+        },
+        {
+            "name": "ppCode",
+            "type": "ID3DBlob"
+        },
+        {
+            "name": "ppErrorMsgs",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DPreprocess": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "pSourceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pDefines",
+            "type": "D3D_SHADER_MACRO"
+        },
+        {
+            "name": "pInclude",
+            "type": "ID3DInclude"
+        },
+        {
+            "name": "ppCodeText",
+            "type": "ID3DBlob"
+        },
+        {
+            "name": "ppErrorMsgs",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DGetDebugInfo": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ppDebugInfo",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DReflect": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "pInterface",
+            "type": "IID"
+        },
+        {
+            "name": "ppReflector",
+            "type": "void"
+        }
+    ],
+    "D3DReflectLibrary": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppReflector",
+            "type": "LPVOID"
+        }
+    ],
+    "D3DDisassemble": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "szComments",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ppDisassembly",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DDisassembleRegion": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "szComments",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "StartByteOffset",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "NumInsts",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "pFinishByteOffset",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ppDisassembly",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DCreateLinker": [
+        {
+            "name": "ppLinker",
+            "type": {
+                "name": "ID3D11Linker",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "D3DLoadModule": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "cbSrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ppModule",
+            "type": {
+                "name": "ID3D11Module",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "D3DCreateFunctionLinkingGraph": [
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "ppFunctionLinkingGraph",
+            "type": {
+                "name": "ID3D11FunctionLinkingGraph",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "D3DGetTraceInstructionOffsets": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "StartInstIndex",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "NumInsts",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "pOffsets",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "pTotalInsts",
+            "type": "SIZE_T"
+        }
+    ],
+    "D3DGetInputSignatureBlob": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ppSignatureBlob",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DGetOutputSignatureBlob": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ppSignatureBlob",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DGetInputAndOutputSignatureBlob": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ppSignatureBlob",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DStripShader": [
+        {
+            "name": "pShaderBytecode",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "BytecodeLength",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "uStripFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "ppStrippedBlob",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DGetBlobPart": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "Part",
+            "type": "D3D_BLOB_PART"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "ppPart",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DSetBlobPart": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "Part",
+            "type": "D3D_BLOB_PART"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "pPart",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "PartSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ppNewShader",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DCreateBlob": [
+        {
+            "name": "Size",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ppBlob",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DCompressShaders": [
+        {
+            "name": "uNumShaders",
+            "type": "UINT"
+        },
+        {
+            "name": "pShaderData",
+            "type": "D3D_SHADER_DATA"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "ppCompressedData",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3DDecompressShaders": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "uNumShaders",
+            "type": "UINT"
+        },
+        {
+            "name": "uStartIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "pIndices",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "ppShaders",
+            "type": "ID3DBlob"
+        },
+        {
+            "name": "pTotalShaders",
+            "type": "UINT"
+        }
+    ],
+    "D3DDisassemble10Effect": [
+        {
+            "name": "pEffect",
+            "type": {
+                "name": "ID3D10Effect",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "ppDisassembly",
+            "type": "ID3DBlob"
+        }
+    ]
+}

@@ -1,0 +1,16 @@
+{
+    "ApphelpCheckShellObject": [
+        {
+            "name": "ObjectCLSID",
+            "type": "IID"
+        },
+        {
+            "name": "bShimIfNecessary",
+            "type": "BOOL"
+        },
+        {
+            "name": "pullFlags",
+            "type": "ULONGLONG"
+        }
+    ]
+}

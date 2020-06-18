@@ -1,0 +1,1052 @@
+{
+    "ScriptFreeCache": [
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        }
+    ],
+    "ScriptItemize": [
+        {
+            "name": "pwcInChars",
+            "type": "WCHAR"
+        },
+        {
+            "name": "cInChars",
+            "type": "int"
+        },
+        {
+            "name": "cMaxItems",
+            "type": "int"
+        },
+        {
+            "name": "psControl",
+            "type": "SCRIPT_CONTROL"
+        },
+        {
+            "name": "psState",
+            "type": "SCRIPT_STATE"
+        },
+        {
+            "name": "pItems",
+            "type": "SCRIPT_ITEM"
+        },
+        {
+            "name": "pcItems",
+            "type": "int"
+        }
+    ],
+    "ScriptLayout": [
+        {
+            "name": "cRuns",
+            "type": "int"
+        },
+        {
+            "name": "pbLevel",
+            "type": "BYTE"
+        },
+        {
+            "name": "piVisualToLogical",
+            "type": "int"
+        },
+        {
+            "name": "piLogicalToVisual",
+            "type": "int"
+        }
+    ],
+    "ScriptShape": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "pwcChars",
+            "type": "WCHAR"
+        },
+        {
+            "name": "cChars",
+            "type": "int"
+        },
+        {
+            "name": "cMaxGlyphs",
+            "type": "int"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "pwOutGlyphs",
+            "type": "WORD"
+        },
+        {
+            "name": "pwLogClust",
+            "type": "WORD"
+        },
+        {
+            "name": "psva",
+            "type": "SCRIPT_VISATTR"
+        },
+        {
+            "name": "pcGlyphs",
+            "type": "int"
+        }
+    ],
+    "ScriptPlace": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "pwGlyphs",
+            "type": "WORD"
+        },
+        {
+            "name": "cGlyphs",
+            "type": "int"
+        },
+        {
+            "name": "psva",
+            "type": "SCRIPT_VISATTR"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "piAdvance",
+            "type": "int"
+        },
+        {
+            "name": "pGoffset",
+            "type": "GOFFSET"
+        },
+        {
+            "name": "pABC",
+            "type": "ABC"
+        }
+    ],
+    "ScriptTextOut": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "fuOptions",
+            "type": "UINT"
+        },
+        {
+            "name": "lprc",
+            "type": "RECT"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "pwcReserved",
+            "type": "WCHAR"
+        },
+        {
+            "name": "iReserved",
+            "type": "int"
+        },
+        {
+            "name": "pwGlyphs",
+            "type": "WORD"
+        },
+        {
+            "name": "cGlyphs",
+            "type": "int"
+        },
+        {
+            "name": "piAdvance",
+            "type": "int"
+        },
+        {
+            "name": "piJustify",
+            "type": "int"
+        },
+        {
+            "name": "pGoffset",
+            "type": "GOFFSET"
+        }
+    ],
+    "ScriptJustify": [
+        {
+            "name": "psva",
+            "type": "SCRIPT_VISATTR"
+        },
+        {
+            "name": "piAdvance",
+            "type": "int"
+        },
+        {
+            "name": "cGlyphs",
+            "type": "int"
+        },
+        {
+            "name": "iDx",
+            "type": "int"
+        },
+        {
+            "name": "iMinKashida",
+            "type": "int"
+        },
+        {
+            "name": "piJustify",
+            "type": "int"
+        }
+    ],
+    "ScriptBreak": [
+        {
+            "name": "pwcChars",
+            "type": "WCHAR"
+        },
+        {
+            "name": "cChars",
+            "type": "int"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "psla",
+            "type": "SCRIPT_LOGATTR"
+        }
+    ],
+    "ScriptCPtoX": [
+        {
+            "name": "iCP",
+            "type": "int"
+        },
+        {
+            "name": "fTrailing",
+            "type": "BOOL"
+        },
+        {
+            "name": "cChars",
+            "type": "int"
+        },
+        {
+            "name": "cGlyphs",
+            "type": "int"
+        },
+        {
+            "name": "pwLogClust",
+            "type": "WORD"
+        },
+        {
+            "name": "psva",
+            "type": "SCRIPT_VISATTR"
+        },
+        {
+            "name": "piAdvance",
+            "type": "int"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "piX",
+            "type": "int"
+        }
+    ],
+    "ScriptXtoCP": [
+        {
+            "name": "iX",
+            "type": "int"
+        },
+        {
+            "name": "cChars",
+            "type": "int"
+        },
+        {
+            "name": "cGlyphs",
+            "type": "int"
+        },
+        {
+            "name": "pwLogClust",
+            "type": "WORD"
+        },
+        {
+            "name": "psva",
+            "type": "SCRIPT_VISATTR"
+        },
+        {
+            "name": "piAdvance",
+            "type": "int"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "piCP",
+            "type": "int"
+        },
+        {
+            "name": "piTrailing",
+            "type": "int"
+        }
+    ],
+    "ScriptGetLogicalWidths": [
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "cChars",
+            "type": "int"
+        },
+        {
+            "name": "cGlyphs",
+            "type": "int"
+        },
+        {
+            "name": "piGlyphWidth",
+            "type": "int"
+        },
+        {
+            "name": "pwLogClust",
+            "type": "WORD"
+        },
+        {
+            "name": "psva",
+            "type": "SCRIPT_VISATTR"
+        },
+        {
+            "name": "piDx",
+            "type": "int"
+        }
+    ],
+    "ScriptApplyLogicalWidth": [
+        {
+            "name": "piDx",
+            "type": "int"
+        },
+        {
+            "name": "cChars",
+            "type": "int"
+        },
+        {
+            "name": "cGlyphs",
+            "type": "int"
+        },
+        {
+            "name": "pwLogClust",
+            "type": "WORD"
+        },
+        {
+            "name": "psva",
+            "type": "SCRIPT_VISATTR"
+        },
+        {
+            "name": "piAdvance",
+            "type": "int"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "pABC",
+            "type": "ABC"
+        },
+        {
+            "name": "piJustify",
+            "type": "int"
+        }
+    ],
+    "ScriptGetCMap": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "pwcInChars",
+            "type": "WCHAR"
+        },
+        {
+            "name": "cChars",
+            "type": "int"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwOutGlyphs",
+            "type": "WORD"
+        }
+    ],
+    "ScriptGetGlyphABCWidth": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "wGlyph",
+            "type": "WORD"
+        },
+        {
+            "name": "pABC",
+            "type": "ABC"
+        }
+    ],
+    "ScriptGetProperties": [
+        {
+            "name": "ppSp",
+            "type": "SCRIPT_PROPERTIES"
+        },
+        {
+            "name": "piNumScripts",
+            "type": "int"
+        }
+    ],
+    "ScriptGetFontProperties": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "sfp",
+            "type": "SCRIPT_FONTPROPERTIES"
+        }
+    ],
+    "ScriptCacheGetHeight": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "tmHeight",
+            "type": "long"
+        }
+    ],
+    "ScriptStringAnalyse": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "pString",
+            "type": "void"
+        },
+        {
+            "name": "cString",
+            "type": "int"
+        },
+        {
+            "name": "cGlyphs",
+            "type": "int"
+        },
+        {
+            "name": "iCharset",
+            "type": "int"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "iReqWidth",
+            "type": "int"
+        },
+        {
+            "name": "psControl",
+            "type": "SCRIPT_CONTROL"
+        },
+        {
+            "name": "psState",
+            "type": "SCRIPT_STATE"
+        },
+        {
+            "name": "piDx",
+            "type": "int"
+        },
+        {
+            "name": "pTabdef",
+            "type": "SCRIPT_TABDEF"
+        },
+        {
+            "name": "pbInClass",
+            "type": "BYTE"
+        },
+        {
+            "name": "pssa",
+            "type": "SCRIPT_STRING_ANALYSIS"
+        }
+    ],
+    "ScriptStringFree": [
+        {
+            "name": "pssa",
+            "type": "SCRIPT_STRING_ANALYSIS"
+        }
+    ],
+    "ScriptStringGetOrder": [
+        {
+            "name": "ssa",
+            "type": "SCRIPT_STRING_ANALYSIS"
+        },
+        {
+            "name": "puOrder",
+            "type": "UINT"
+        }
+    ],
+    "ScriptStringCPtoX": [
+        {
+            "name": "ssa",
+            "type": "SCRIPT_STRING_ANALYSIS"
+        },
+        {
+            "name": "icp",
+            "type": "int"
+        },
+        {
+            "name": "fTrailing",
+            "type": "BOOL"
+        },
+        {
+            "name": "pX",
+            "type": "int"
+        }
+    ],
+    "ScriptStringXtoCP": [
+        {
+            "name": "ssa",
+            "type": "SCRIPT_STRING_ANALYSIS"
+        },
+        {
+            "name": "iX",
+            "type": "int"
+        },
+        {
+            "name": "piCh",
+            "type": "int"
+        },
+        {
+            "name": "piTrailing",
+            "type": "int"
+        }
+    ],
+    "ScriptStringGetLogicalWidths": [
+        {
+            "name": "ssa",
+            "type": "SCRIPT_STRING_ANALYSIS"
+        },
+        {
+            "name": "piDx",
+            "type": "int"
+        }
+    ],
+    "ScriptStringValidate": [
+        {
+            "name": "ssa",
+            "type": "SCRIPT_STRING_ANALYSIS"
+        }
+    ],
+    "ScriptStringOut": [
+        {
+            "name": "ssa",
+            "type": "SCRIPT_STRING_ANALYSIS"
+        },
+        {
+            "name": "iX",
+            "type": "int"
+        },
+        {
+            "name": "iY",
+            "type": "int"
+        },
+        {
+            "name": "uOptions",
+            "type": "UINT"
+        },
+        {
+            "name": "prc",
+            "type": "RECT"
+        },
+        {
+            "name": "iMinSel",
+            "type": "int"
+        },
+        {
+            "name": "iMaxSel",
+            "type": "int"
+        },
+        {
+            "name": "fDisabled",
+            "type": "BOOL"
+        }
+    ],
+    "ScriptIsComplex": [
+        {
+            "name": "pwcInChars",
+            "type": "WCHAR"
+        },
+        {
+            "name": "cInChars",
+            "type": "int"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "ScriptRecordDigitSubstitution": [
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "psds",
+            "type": "SCRIPT_DIGITSUBSTITUTE"
+        }
+    ],
+    "ScriptApplyDigitSubstitution": [
+        {
+            "name": "psds",
+            "type": "SCRIPT_DIGITSUBSTITUTE"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CONTROL"
+        },
+        {
+            "name": "pss",
+            "type": "SCRIPT_STATE"
+        }
+    ],
+    "ScriptShapeOpenType": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "tagScript",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "tagLangSys",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "rcRangeChars",
+            "type": "int"
+        },
+        {
+            "name": "rpRangeProperties",
+            "type": "TEXTRANGE_PROPERTIES"
+        },
+        {
+            "name": "cRanges",
+            "type": "int"
+        },
+        {
+            "name": "pwcChars",
+            "type": "WCHAR"
+        },
+        {
+            "name": "cChars",
+            "type": "int"
+        },
+        {
+            "name": "cMaxGlyphs",
+            "type": "int"
+        },
+        {
+            "name": "pwLogClust",
+            "type": "WORD"
+        },
+        {
+            "name": "pCharProps",
+            "type": "SCRIPT_CHARPROP"
+        },
+        {
+            "name": "pwOutGlyphs",
+            "type": "WORD"
+        },
+        {
+            "name": "pOutGlyphProps",
+            "type": "SCRIPT_GLYPHPROP"
+        },
+        {
+            "name": "pcGlyphs",
+            "type": "int"
+        }
+    ],
+    "ScriptPlaceOpenType": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "tagScript",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "tagLangSys",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "rcRangeChars",
+            "type": "int"
+        },
+        {
+            "name": "rpRangeProperties",
+            "type": "TEXTRANGE_PROPERTIES"
+        },
+        {
+            "name": "cRanges",
+            "type": "int"
+        },
+        {
+            "name": "pwcChars",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pwLogClust",
+            "type": "WORD"
+        },
+        {
+            "name": "pCharProps",
+            "type": "SCRIPT_CHARPROP"
+        },
+        {
+            "name": "cChars",
+            "type": "int"
+        },
+        {
+            "name": "pwGlyphs",
+            "type": "WORD"
+        },
+        {
+            "name": "pGlyphProps",
+            "type": "SCRIPT_GLYPHPROP"
+        },
+        {
+            "name": "cGlyphs",
+            "type": "int"
+        },
+        {
+            "name": "piAdvance",
+            "type": "int"
+        },
+        {
+            "name": "pGoffset",
+            "type": "GOFFSET"
+        },
+        {
+            "name": "pABC",
+            "type": "ABC"
+        }
+    ],
+    "ScriptItemizeOpenType": [
+        {
+            "name": "pwcInChars",
+            "type": "WCHAR"
+        },
+        {
+            "name": "cInChars",
+            "type": "int"
+        },
+        {
+            "name": "cMaxItems",
+            "type": "int"
+        },
+        {
+            "name": "psControl",
+            "type": "SCRIPT_CONTROL"
+        },
+        {
+            "name": "psState",
+            "type": "SCRIPT_STATE"
+        },
+        {
+            "name": "pItems",
+            "type": "SCRIPT_ITEM"
+        },
+        {
+            "name": "pScriptTags",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "pcItems",
+            "type": "int"
+        }
+    ],
+    "ScriptGetFontScriptTags": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "cMaxTags",
+            "type": "int"
+        },
+        {
+            "name": "pScriptTags",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "pcTags",
+            "type": "int"
+        }
+    ],
+    "ScriptGetFontLanguageTags": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "tagScript",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "cMaxTags",
+            "type": "int"
+        },
+        {
+            "name": "pLangsysTags",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "pcTags",
+            "type": "int"
+        }
+    ],
+    "ScriptGetFontFeatureTags": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "tagScript",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "tagLangSys",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "cMaxTags",
+            "type": "int"
+        },
+        {
+            "name": "pFeatureTags",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "pcTags",
+            "type": "int"
+        }
+    ],
+    "ScriptGetFontAlternateGlyphs": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "tagScript",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "tagLangSys",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "tagFeature",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "wGlyphId",
+            "type": "WORD"
+        },
+        {
+            "name": "cMaxAlternates",
+            "type": "int"
+        },
+        {
+            "name": "pAlternateGlyphs",
+            "type": "WORD"
+        },
+        {
+            "name": "pcAlternates",
+            "type": "int"
+        }
+    ],
+    "ScriptSubstituteSingleGlyph": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "tagScript",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "tagLangSys",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "tagFeature",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "lParameter",
+            "type": "LONG"
+        },
+        {
+            "name": "wGlyphId",
+            "type": "WORD"
+        },
+        {
+            "name": "pwOutGlyphId",
+            "type": "WORD"
+        }
+    ],
+    "ScriptPositionSingleGlyph": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "psc",
+            "type": "SCRIPT_CACHE"
+        },
+        {
+            "name": "psa",
+            "type": "SCRIPT_ANALYSIS"
+        },
+        {
+            "name": "tagScript",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "tagLangSys",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "tagFeature",
+            "type": "OPENTYPE_TAG"
+        },
+        {
+            "name": "lParameter",
+            "type": "LONG"
+        },
+        {
+            "name": "wGlyphId",
+            "type": "WORD"
+        },
+        {
+            "name": "iAdvance",
+            "type": "int"
+        },
+        {
+            "name": "GOffset",
+            "type": "GOFFSET"
+        },
+        {
+            "name": "piOutAdvance",
+            "type": "int"
+        },
+        {
+            "name": "pOutGoffset",
+            "type": "GOFFSET"
+        }
+    ]
+}

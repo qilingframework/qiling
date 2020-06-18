@@ -1,0 +1,14 @@
+{
+    "HasExpandedResources": [
+        {
+            "name": "hasExpandedResources",
+            "type": "BOOL"
+        }
+    ],
+    "GetExpandedResourceExclusiveCpuCount": [
+        {
+            "name": "exclusiveCpuCount",
+            "type": "ULONG"
+        }
+    ]
+}
