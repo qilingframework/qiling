@@ -77,6 +77,8 @@ class QLOsUtils:
         return real_path
 
     def transform_to_real_path(self, path):
+        from types import FunctionType
+
         if self.ql.multithread:
             cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
@@ -92,14 +94,40 @@ class QLOsUtils:
         from_path = None
         to_path = None
         for fm, to in self.ql.fs_mapper:
-            fm_l = len(fm)
-            if len(relative_path) >= fm_l and relative_path[: fm_l] == fm:
+
+            if isinstance(fm, str):
+                fm_l = len(fm)
+                if len(relative_path) >= fm_l and relative_path[: fm_l] == fm:
+                    from_path = fm
+                    to_path = to
+                    break
+
+            elif to == path and not isinstance(fm, str):
                 from_path = fm
                 to_path = to
                 break
 
-        if from_path is not None:
+        if not isinstance(from_path, str) and from_path != None:
+            breakpoint()
+            class ql_constant_urandom:
+                def __init__(self, from_path, to_path):
+                    self.path = to_path
+                    self.read = from_path
+
+                def fstat(self):
+                    return -1
+
+                def name(self):
+                    return self.path
+
+                def close(self):
+                    return
+
+            real_path = ql_constant_urandom(from_path, to_path)
+
+        elif from_path is not None:
             real_path = os.path.abspath(to_path + relative_path[fm_l:])
+
         else:
             if rootfs is None:
                 rootfs = ""

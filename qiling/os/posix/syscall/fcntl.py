@@ -75,6 +75,9 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
             if ql.archtype== QL_ARCH.ARM:
                 mode = 0
 
+            if openat_path == "/dev/urandom":
+                breakpoint()
+
             openat_flags = ql_open_flag_mapping(ql, openat_flags)
             ql.os.file_des[idx] = ql_file.open(real_path, openat_flags, openat_mode)
             regreturn = idx

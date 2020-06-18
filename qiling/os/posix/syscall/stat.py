@@ -75,7 +75,11 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
 
 
 def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
-    if fstat64_fd < 256 and ql.os.file_des[fstat64_fd] != 0:
+
+    if ql.os.file_des[fstat64_fd].fstat() == -1:
+        regreturn = 0
+
+    elif fstat64_fd < 256 and ql.os.file_des[fstat64_fd] != 0:
         user_fileno = fstat64_fd
         fstat64_info = ql.os.file_des[user_fileno].fstat()
 
