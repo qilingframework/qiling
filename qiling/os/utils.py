@@ -103,27 +103,14 @@ class QLOsUtils:
                     break
 
             elif to == path and not isinstance(fm, str):
-                from_path = fm
+                virtual_path = fm
                 to_path = to
                 break
+        else:
+            virtual_path = None
 
-        if not isinstance(from_path, str) and from_path != None:
-            breakpoint()
-            class ql_constant_urandom:
-                def __init__(self, from_path, to_path):
-                    self.path = to_path
-                    self.read = from_path
-
-                def fstat(self):
-                    return -1
-
-                def name(self):
-                    return self.path
-
-                def close(self):
-                    return
-
-            real_path = ql_constant_urandom(from_path, to_path)
+        if not isinstance(virtual_path, str) and virtual_path != None:
+            real_path = virtual_path
 
         elif from_path is not None:
             real_path = os.path.abspath(to_path + relative_path[fm_l:])
