@@ -259,18 +259,18 @@ def ql_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
 
     try:
         buf = ql.mem.read(write_buf, write_count)
-        ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         if buf:
             ql.dprint(D_CTNT, "[+] write() CONTENT:")
             ql.dprint(D_CTNT, "%s" % buf)
         ql.os.file_des[write_fd].write(buf)
         regreturn = write_count
+        ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
+
     except:
         regreturn = -1
         ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
         if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             raise
-    #ql.nprint("write(%d,%x,%i) = %d" % (write_fd, write_buf, write_count, regreturn))
     #if buf:
     #    ql.nprint(buf.decode(errors='ignore'))
     ql.os.definesyscall_return(regreturn)
