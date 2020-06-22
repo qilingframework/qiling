@@ -57,7 +57,7 @@ class Qldbg(object):
                     self.last_bp = address
                     self.ql.nprint("gdb> Breakpoint found, stop at address: 0x%x" % address)
                           
-            elif address  == self.last_bp:
+            elif address == self.last_bp:
                 self.last_bp = 0x0
 
             self.has_soft_bp = hit_soft_bp
