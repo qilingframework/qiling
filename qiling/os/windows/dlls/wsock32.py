@@ -87,7 +87,7 @@ def hook_gethostbyname(ql, address, params):
     name_ptr = params["name"]
     params["name"] = ql.os.read_cstring(name_ptr)
     hostnet = Hostent(ql, name_ptr, 0, 2, 4, ip)
-    hostnet_addr = ql.heap.alloc(hostnet.size)
+    hostnet_addr = ql.os.heap.alloc(hostnet.size)
     hostnet.write(hostnet_addr)
 
     return hostnet_addr
