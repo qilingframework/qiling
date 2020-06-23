@@ -21,7 +21,7 @@ dllname = 'kernel32_dll'
 #   DWORD  flAllocationType,
 #   DWORD  flProtect
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="VirtualAlloc")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_VirtualAlloc(ql, address, params):
     dwSize = params["dwSize"]
     addr = ql.os.heap.alloc(dwSize)
@@ -33,7 +33,7 @@ def hook_VirtualAlloc(ql, address, params):
 #   SIZE_T dwSize,
 #   DWORD  dwFreeType
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="VirtualFree")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_VirtualFree(ql, address, params):
     lpAddress = params["lpAddress"]
     ql.os.heap.free(lpAddress)
@@ -46,7 +46,7 @@ def hook_VirtualFree(ql, address, params):
 #  DWORD  flNewProtect,
 #  PDWORD lpflOldProtect
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="VirtualProtect", specialtype={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
 def hook_VirtualProtect(ql, address, params):
     return 1
 
@@ -56,7 +56,7 @@ def hook_VirtualProtect(ql, address, params):
 #  PMEMORY_BASIC_INFORMATION lpBuffer,
 #  SIZE_T                    dwLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="VirtualQuery", specialtype={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
 def hook_VirtualQuery(ql, address, params):
     """
     typedef struct _MEMORY_BASIC_INFORMATION {

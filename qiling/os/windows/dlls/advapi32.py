@@ -95,7 +95,7 @@ def RegQueryValue(ql, address, params):
 #   REGSAM samDesired,
 #   PHKEY  phkResult
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegOpenKeyExA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegOpenKeyExA(ql, address, params):
     return _RegOpenKey(ql, address, params)
 
@@ -107,7 +107,7 @@ def hook_RegOpenKeyExA(ql, address, params):
 #   REGSAM  samDesired,
 #   PHKEY   phkResult
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegOpenKeyExW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegOpenKeyExW(ql, address, params):
     return _RegOpenKey(ql, address, params)
 
@@ -117,7 +117,7 @@ def hook_RegOpenKeyExW(ql, address, params):
 #   LPCWSTR lpSubKey,
 #   PHKEY   phkResult
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname='RegOpenKeyW')
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegOpenKeyW(ql, address, params):
     return _RegOpenKey(ql, address, params)
 
@@ -127,7 +127,7 @@ def hook_RegOpenKeyW(ql, address, params):
 #   LPCSTR lpSubKey,
 #   PHKEY   phkResult
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegOpenKeyA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegOpenKeyA(ql, address, params):
     return _RegOpenKey(ql, address, params)
 
@@ -140,7 +140,7 @@ def hook_RegOpenKeyA(ql, address, params):
 #   LPBYTE  lpData,
 #   LPDWORD lpcbData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegQueryValueExA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegQueryValueExA(ql, address, params):
     return RegQueryValue(ql, address, params)
 
@@ -153,7 +153,7 @@ def hook_RegQueryValueExA(ql, address, params):
 #   LPBYTE  lpData,
 #   LPDWORD lpcbData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegQueryValueExW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegQueryValueExW(ql, address, params):
     return RegQueryValue(ql, address, params)
 
@@ -161,7 +161,7 @@ def hook_RegQueryValueExW(ql, address, params):
 # LSTATUS RegCloseKey(
 #   HKEY hKey
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegCloseKey")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegCloseKey(ql, address, params):
     ret = ERROR_SUCCESS
     hKey = params["hKey"]
@@ -174,7 +174,7 @@ def hook_RegCloseKey(ql, address, params):
 #   LPCSTR lpSubKey,
 #   PHKEY  phkResult
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegCreateKeyA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegCreateKeyA(ql, address, params):
     return hook_RegCreateKeyW.__wrapped__(ql, address, params)
 
@@ -184,7 +184,7 @@ def hook_RegCreateKeyA(ql, address, params):
 #   LPCWSTR lpSubKey,
 #   PHKEY  phkResult
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegCreateKeyW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegCreateKeyW(ql, address, params):
     ret = ERROR_SUCCESS
 
@@ -224,7 +224,7 @@ def hook_RegCreateKeyW(ql, address, params):
 #   PHKEY                       phkResult,
 #   LPDWORD                     lpdwDisposition
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegCreateKeyExW", specialtype={'DWORD': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'DWORD': 'POINTER'})
 def hook_RegCreateKeyExW(ql, address, params):
     ret = ERROR_SUCCESS
 
@@ -260,7 +260,7 @@ def hook_RegCreateKeyExW(ql, address, params):
 #   LPCSTR lpData,
 #   DWORD  cbData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegSetValueA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegSetValueA(ql, address, params):
     ret = ERROR_SUCCESS
 
@@ -287,7 +287,7 @@ def hook_RegSetValueA(ql, address, params):
 #   const BYTE *lpData,
 #   DWORD      cbData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegSetValueExW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegSetValueExW(ql, address, params):
     ret = ERROR_SUCCESS
 
@@ -310,7 +310,7 @@ def hook_RegSetValueExW(ql, address, params):
 #   HKEY   hKey,
 #   LPCSTR lpSubKey
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegDeleteKeyA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegDeleteKeyA(ql, address, params):
     return hook_RegDeleteKeyW.__wrapped__(ql, address, params)
 
@@ -319,7 +319,7 @@ def hook_RegDeleteKeyA(ql, address, params):
 #   HKEY   hKey,
 #   LPCWSTR lpSubKey
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegDeleteKeyW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegDeleteKeyW(ql, address, params):
     ret = ERROR_SUCCESS
 
@@ -338,7 +338,7 @@ def hook_RegDeleteKeyW(ql, address, params):
 #   HKEY    hKey,
 #   LPCSTR lpValueName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegDeleteValueA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegDeleteValueA(ql, address, params):
     return hook_RegDeleteValueW.__wrapped__(ql, address, params)
 
@@ -347,7 +347,7 @@ def hook_RegDeleteValueA(ql, address, params):
 #   HKEY    hKey,
 #   LPCWSTR lpValueName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="RegDeleteValueW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegDeleteValueW(ql, address, params):
     ret = ERROR_SUCCESS
 
@@ -369,7 +369,7 @@ def hook_RegDeleteValueW(ql, address, params):
 #   DWORD                   TokenInformationLength,
 #   PDWORD                  ReturnLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetTokenInformation")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetTokenInformation(ql, address, params):
     id_token = params["TokenHandle"]
     information = params["TokenInformationClass"]
@@ -394,7 +394,7 @@ def hook_GetTokenInformation(ql, address, params):
 # PUCHAR GetSidSubAuthorityCount(
 #   PSID pSid
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetSidSubAuthorityCount")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetSidSubAuthorityCount(ql, address, params):
     sid = ql.os.handle_manager.get(params["pSid"]).obj
     addr_authority_count = sid.addr + 1  # +1 because the first byte is revision
@@ -405,7 +405,7 @@ def hook_GetSidSubAuthorityCount(ql, address, params):
 #   PSID  pSid,
 #   DWORD nSubAuthority
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetSidSubAuthority", specialtype={'DWORD': 'INT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'DWORD': 'INT'})
 def hook_GetSidSubAuthority(ql, address, params):
     num = params["nSubAuthority"]
     sid = ql.os.handle_manager.get(params["pSid"]).obj
@@ -426,7 +426,7 @@ def hook_GetSidSubAuthority(ql, address, params):
 #   DWORD                     nSubAuthority7,
 #   PSID                      *pSid
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="AllocateAndInitializeSid")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_AllocateAndInitializeSid(ql, address, params):
     count = params["nSubAuthorityCount"]
     subs = b""
@@ -446,7 +446,7 @@ def hook_AllocateAndInitializeSid(ql, address, params):
 # PVOID FreeSid(
 #   PSID pSid
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="FreeSid")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_FreeSid(ql, address, params):
     ql.os.heap.free(params["pSid"])
     return 0
@@ -456,7 +456,7 @@ def hook_FreeSid(ql, address, params):
 #   PSID pSid1,
 #   PSID pSid2
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="EqualSid")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_EqualSid(ql, address, params):
     # TODO once i have understood better how SID are wrote in memory. Fucking documentation
     # technically this one should be my SID that i created at the start. I said should, because when testing, it has a

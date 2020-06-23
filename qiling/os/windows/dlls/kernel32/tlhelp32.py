@@ -20,7 +20,7 @@ dllname = 'kernel32_dll'
 #   DWORD dwFlags,
 #   DWORD th32ProcessID
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="CreateToolhelp32Snapshot")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateToolhelp32Snapshot(ql, address, params):
     # TODO thinking about implementing an handler, gonna see if is really necessary
     flag = params["dwFlags"]
@@ -35,7 +35,7 @@ def hook_CreateToolhelp32Snapshot(ql, address, params):
 #   HANDLE            hSnapshot,
 #   LPPROCESSENTRY32W lppe
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="Process32FirstW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_Process32FirstW(ql, address, params):
     return 0x1
 
@@ -44,7 +44,7 @@ def hook_Process32FirstW(ql, address, params):
 #   HANDLE            hSnapshot,
 #   LPPROCESSENTRY32W lppe
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="Process32NextW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_Process32NextW(ql, address, params):
     # Return True if more process, 0 else
     if ql.os.syscall_count["Process32NextW"] >= 3:  # I don' know how many process the sample want's to cycle

@@ -54,7 +54,7 @@ def replacetype(type, specialtype=None):
         return type
 
 # x86/x8664 PE should share Windows APIs
-def winsdkapi(cc, param_num=None, dllname=None, funcname=None, specialtype=None, specialtypeEx=None, defparams=None):
+def winsdkapi(cc, param_num=None, dllname=None, specialtype=None, specialtypeEx=None, defparams=None):
     """
     @cc: windows api calling convention, only x86 needs this, x64 is always fastcall
     @param_num: the number of function params, used by variadic functions, e.g printf
@@ -68,6 +68,7 @@ def winsdkapi(cc, param_num=None, dllname=None, funcname=None, specialtype=None,
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
+            funcname = func.__name__[5:]
             params = {}
             paramlist = None
             ql = args[0]

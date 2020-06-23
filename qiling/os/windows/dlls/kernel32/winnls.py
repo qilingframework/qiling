@@ -19,20 +19,20 @@ dllname = 'kernel32_dll'
 # BOOL SetThreadLocale(
 #   LCID Locale
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="SetThreadLocale", specialtype={'LCID': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'LCID': 'UINT'})
 def hook_SetThreadLocale(ql, address, params):
     return 0xC000  # LOCALE_CUSTOM_DEFAULT
 
 
 # LCID GetThreadLocale();
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="SetThreadLocale")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetThreadLocale(ql, address, params):
     return 0xC000  # LOCALE_CUSTOM_DEFAULT
 
 
 # UINT GetACP(
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetACP")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetACP(ql, address, params):
     return OEM_US
 
@@ -41,7 +41,7 @@ def hook_GetACP(ql, address, params):
 #   UINT     CodePage,
 #   LPCPINFO lpCPInfo
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetCPInfo")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetCPInfo(ql, address, params):
     ret = 1
     return ret
@@ -53,8 +53,7 @@ def hook_GetCPInfo(ql, address, params):
 #   LPSTR  lpLCData,
 #   int    cchData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetLocaleInfoA",
-           specialtype={'LCID': 'DWORD', 'LCTYPE': 'DWORD'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'LCID': 'DWORD', 'LCTYPE': 'DWORD'})
 def hook_GetLocaleInfoA(ql, address, params):
     locale_value = params["Locale"]
     lctype_value = params["LCType"]
@@ -77,7 +76,7 @@ def hook_GetLocaleInfoA(ql, address, params):
 # BOOL IsValidCodePage(
 #  UINT CodePage
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="IsValidCodePage")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_IsValidCodePage(ql, address, params):
     return 1
 
@@ -100,7 +99,7 @@ def _LCMapString(ql, address, params):
 #   LPWSTR  lpDestStr,
 #   int     cchDest
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="LCMapStringW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LCMapStringW(ql, address, params):
     return _LCMapString(ql, address, params)
 
@@ -113,7 +112,7 @@ def hook_LCMapStringW(ql, address, params):
 #   LPSTR  lpDestStr,
 #   int    cchDest
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="LCMapStringA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LCMapStringA(ql, address, params):
     return _LCMapString(ql, address, params)
 
@@ -129,13 +128,13 @@ def hook_LCMapStringA(ql, address, params):
 #   LPVOID           lpReserved,
 #   LPARAM           sortHandle
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="LCMapStringEx")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LCMapStringEx(ql, address, params):
     return _LCMapString(ql, address, params)
 
 
 # LANGID GetUserDefaultUILanguage();
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetUserDefaultUILanguage")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetUserDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
@@ -143,7 +142,7 @@ def hook_GetUserDefaultUILanguage(ql, address, params):
 
 
 # LANGID GetSystemDefaultUILanguage();
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetSystemDefaultUILanguage")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetSystemDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
@@ -158,7 +157,7 @@ def hook_GetSystemDefaultUILanguage(ql, address, params):
 #   PCNZCH lpString2,
 #   int    cchCount2
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="CompareStringA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CompareStringA(ql, address, params):
     st1 = params["lpString1"]
     st2 = params["lpString2"]

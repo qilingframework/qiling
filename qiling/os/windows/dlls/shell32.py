@@ -24,7 +24,7 @@ dllname = 'shell32_dll'
 #   UINT        cbFileInfo,
 #   UINT        uFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="SHGetFileInfoA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SHGetFileInfoA(ql, address, params):
     return hook_SHGetFileInfoW.__wrapped__(ql, address, params)
 
@@ -36,7 +36,7 @@ def hook_SHGetFileInfoA(ql, address, params):
 #   UINT        cbFileInfo,
 #   UINT        uFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="SHGetFileInfoW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SHGetFileInfoW(ql, address, params):
     flags = params["uFlags"]
     if flags == SHGFI_LARGEICON:
@@ -69,7 +69,7 @@ def _ShellExecute(ql, obj: ShellExecuteInfoA):
 # BOOL ShellExecuteExW(
 #   SHELLEXECUTEINFOA *pExecInfo
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="ShellExecuteExW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_ShellExecuteExW(ql, address, params):
     pointer = params["pExecInfo"]
 
@@ -93,7 +93,7 @@ def hook_ShellExecuteExW(ql, address, params):
 #   LPCWSTR lpDirectory,
 #   INT     nShowCmd
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="ShellExecuteW", specialtype={'LPCWSTR': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'LPCWSTR': 'POINTER'})
 def hook_ShellExecuteW(ql, address, params):
     shellInfo = ShellExecuteInfoA(ql, hwnd=params["hwnd"], lpVerb=params["lpOperation"], lpFile=params["lpFile"],
                                   lpParams=params["lpParameters"], lpDir=params["lpDirectory"], show=params["nShowCmd"])
@@ -107,7 +107,7 @@ def hook_ShellExecuteW(ql, address, params):
 #   int    csidl,
 #   BOOL   fCreate
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="SHGetSpecialFolderPathW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SHGetSpecialFolderPathW(ql, address, params):
     directory_id = params["csidl"]
     dst = params["pszPath"]

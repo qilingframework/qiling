@@ -20,7 +20,7 @@ dllname = 'kernel32_dll'
 # void Sleep(
 #  DWORD dwMilliseconds
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="Sleep")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_Sleep(ql, address, params):
     # time.sleep(params["dwMilliseconds"] * 10**(-3))
     pass
@@ -29,7 +29,7 @@ def hook_Sleep(ql, address, params):
 # void EnterCriticalSection(
 #  LPCRITICAL_SECTION lpCriticalSection
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="EnterCriticalSection")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_EnterCriticalSection(ql, address, params):
     return 0
 
@@ -37,7 +37,7 @@ def hook_EnterCriticalSection(ql, address, params):
 # void LeaveCriticalSection(
 #  LPCRITICAL_SECTION lpCriticalSection
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="LeaveCriticalSection")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LeaveCriticalSection(ql, address, params):
     return 0
 
@@ -45,7 +45,7 @@ def hook_LeaveCriticalSection(ql, address, params):
 # void DeleteCriticalSection(
 #   LPCRITICAL_SECTION lpCriticalSection
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="DeleteCriticalSection")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_DeleteCriticalSection(ql, address, params):
     return 0
 
@@ -53,7 +53,7 @@ def hook_DeleteCriticalSection(ql, address, params):
 # void InitializeCriticalSection(
 #   LPCRITICAL_SECTION lpCriticalSection
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InitializeCriticalSection")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InitializeCriticalSection(ql, address, params):
     return 1
 
@@ -63,7 +63,7 @@ def hook_InitializeCriticalSection(ql, address, params):
 #   DWORD              dwSpinCount,
 #   DWORD              Flags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InitializeCriticalSectionEx")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InitializeCriticalSectionEx(ql, address, params):
     return 1
 
@@ -72,7 +72,7 @@ def hook_InitializeCriticalSectionEx(ql, address, params):
 #  LPCRITICAL_SECTION lpCriticalSection,
 #  DWORD              dwSpinCount
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InitializeCriticalSectionAndSpinCount", specialtype={'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'DWORD': 'UINT'})
 def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
     return 1
 
@@ -81,7 +81,7 @@ def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
 #   HANDLE hHandle,
 #   DWORD  dwMilliseconds
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="WaitForSingleObject")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_WaitForSingleObject(ql, address, params):
     ret = 0
     hHandle = params["hHandle"]
@@ -100,7 +100,7 @@ def hook_WaitForSingleObject(ql, address, params):
 #   DWORD  dwMilliseconds
 #   BOOL   bAlertable
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="WaitForSingleObjectEx")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_WaitForSingleObjectEx(ql, address, params):
     ret = 0
     hHandle = params["hHandle"]
@@ -119,7 +119,7 @@ def hook_WaitForSingleObjectEx(ql, address, params):
 #   BOOL         bWaitAll,
 #   DWORD        dwMilliseconds
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="WaitForMultipleObjects", specialtype={'HANDLE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'HANDLE': 'POINTER'})
 def hook_WaitForMultipleObjects(ql, address, params):
     ret = 0
     nCount = params["nCount"]
@@ -141,7 +141,7 @@ def hook_WaitForMultipleObjects(ql, address, params):
 #   BOOL    bInheritHandle,
 #   LPCWSTR lpName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="OpenMutexW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_OpenMutexW(ql, address, params):
     # The name can have a "Global" or "Local" prefix to explicitly open an object in the global or session namespace.
     # It can also have no prefix
@@ -177,7 +177,7 @@ def hook_OpenMutexW(ql, address, params):
 #   BOOL    bInheritHandle,
 #   LPCSTR lpName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="OpenMutexA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_OpenMutexA(ql, address, params):
     return hook_OpenMutexW.__wrapped__(ql, address, params)
 
@@ -187,7 +187,7 @@ def hook_OpenMutexA(ql, address, params):
 #   BOOL                  bInitialOwner,
 #   LPCWSTR               lpName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="CreateMutexW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateMutexW(ql, address, params):
     try:
         _type, name = params["lpName"].split("\\")
@@ -215,7 +215,7 @@ def hook_CreateMutexW(ql, address, params):
 #   BOOL                  bInitialOwner,
 #   LPCSTR               lpName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="CreateMutexA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateMutexA(ql, address, params):
     return hook_CreateMutexW.__wrapped__(ql, address, params)
 
@@ -226,7 +226,7 @@ def hook_CreateMutexA(ql, address, params):
 #  BOOL                  bInitialState,
 #  LPCSTR                lpName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="CreateEventA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateEventA(ql, address, params):
     """
     Implementation seems similar enough to Mutex to just use it
@@ -254,7 +254,7 @@ def hook_CreateEventA(ql, address, params):
 #  BOOL                  bInitialState,
 #  LPCWSTR               lpName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="CreateEventW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateEventW(ql, address, params):
     return hook_CreateEventA.__wrapped__(ql, address, params)
 
@@ -262,7 +262,7 @@ def hook_CreateEventW(ql, address, params):
 # void InitializeSRWLock(
 #  PSRWLOCK SRWLock
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InitializeSRWLock")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InitializeSRWLock(ql, address, params):
     return
 
@@ -270,7 +270,7 @@ def hook_InitializeSRWLock(ql, address, params):
 # void AcquireSRWLockExclusive(
 #   PSRWLOCK SRWLock
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="AcquireSRWLockExclusive")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_AcquireSRWLockExclusive(ql, address, params):
     return
 
@@ -278,7 +278,7 @@ def hook_AcquireSRWLockExclusive(ql, address, params):
 # void AcquireSRWLockShared(
 #   PSRWLOCK SRWLock
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="AcquireSRWLockShared")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_AcquireSRWLockShared(ql, address, params):
     return
 
@@ -286,7 +286,7 @@ def hook_AcquireSRWLockShared(ql, address, params):
 # void ReleaseSRWLockExclusive(
 #   PSRWLOCK SRWLock
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="ReleaseSRWLockExclusive")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_ReleaseSRWLockExclusive(ql, address, params):
     return
 
@@ -294,6 +294,6 @@ def hook_ReleaseSRWLockExclusive(ql, address, params):
 # void ReleaseSRWLockShared(
 #   PSRWLOCK SRWLock
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="ReleaseSRWLockShared")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_ReleaseSRWLockShared(ql, address, params):
     return

@@ -20,7 +20,7 @@ dllname = 'kernel32_dll'
 #   SIZE_T dwInitialSize,
 #   SIZE_T dwMaximumSize
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="HeapCreate")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_HeapCreate(ql, address, params):
     dwInitialSize = params["dwInitialSize"]
     addr = ql.os.heap.alloc(dwInitialSize)
@@ -32,7 +32,7 @@ def hook_HeapCreate(ql, address, params):
 #   DWORD  dwFlags,
 #   SIZE_T dwBytes
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="HeapAlloc")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_HeapAlloc(ql, address, params):
     ret = ql.os.heap.alloc(params["dwBytes"])
     return ret
@@ -43,7 +43,7 @@ def hook_HeapAlloc(ql, address, params):
 #   DWORD   dwFlags,
 #   LPCVOID lpMem
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="HeapSize")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_HeapSize(ql, address, params):
     pointer = params["lpMem"]
     return ql.os.heap.size(pointer)
@@ -54,7 +54,7 @@ def hook_HeapSize(ql, address, params):
 #  DWORD                  dwFlags,
 #  _Frees_ptr_opt_ LPVOID lpMem
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="HeapFree")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_HeapFree(ql, address, params):
     return ql.os.heap.free(params['lpMem'])
 
@@ -65,14 +65,14 @@ def hook_HeapFree(ql, address, params):
 #  PVOID                  HeapInformation,
 #  SIZE_T                 HeapInformationLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="HeapSetInformation", specialtype={'SIZE_T': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'SIZE_T': 'UINT'})
 def hook_HeapSetInformation(ql, address, params):
     return 1
 
 
 # HANDLE GetProcessHeap(
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetProcessHeap")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetProcessHeap(ql, address, params):
     ret = ql.os.heap.start_address
     return ret

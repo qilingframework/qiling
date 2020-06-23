@@ -21,7 +21,7 @@ dllname = 'kernel32_dll'
 #   int                           cchSrc,
 #   LPWORD                        lpCharType
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetStringTypeW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetStringTypeW(ql, address, params):
     # TODO implement
     ret = 1
@@ -36,7 +36,7 @@ def hook_GetStringTypeW(ql, address, params):
 #   INT    count,
 #   LPWORD chartype
 #  )
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetStringTypeExA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetStringTypeExA(ql, address, params):
     # TODO implement
     ret = 1
@@ -53,7 +53,7 @@ def hook_GetStringTypeExA(ql, address, params):
 #   LPCCH                              lpDefaultChar,
 #   LPBOOL                             lpUsedDefaultChar
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="WideCharToMultiByte", specialtype={'LPCWCH': 'WSTRING'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'LPCWCH': 'WSTRING'})
 def hook_WideCharToMultiByte(ql, address, params):
     ret = 0
 
@@ -76,7 +76,7 @@ def hook_WideCharToMultiByte(ql, address, params):
 #  LPWSTR                            lpWideCharStr,
 #  int                               cchWideChar
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="MultiByteToWideChar", specialtype={'DWORD': 'UINT', 'LPCCH': 'WSTRING'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'DWORD': 'UINT', 'LPCCH': 'WSTRING'})
 def hook_MultiByteToWideChar(ql, address, params):
     wide_str = (params['lpMultiByteStr']+"\x00").encode('utf-16le')
     if params['cchWideChar'] != 0:

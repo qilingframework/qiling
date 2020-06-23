@@ -34,7 +34,7 @@ def _GetModuleHandle(ql, address, params):
 # HMODULE GetModuleHandleA(
 #   LPCSTR lpModuleName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetModuleHandleA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleHandleA(ql, address, params):
     return _GetModuleHandle(ql, address, params)
 
@@ -42,7 +42,7 @@ def hook_GetModuleHandleA(ql, address, params):
 # HMODULE GetModuleHandleW(
 #   LPCWSTR lpModuleName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetModuleHandleW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleHandleW(ql, address, params):
     return _GetModuleHandle(ql, address, params)
 
@@ -52,7 +52,7 @@ def hook_GetModuleHandleW(ql, address, params):
 #   LPCWSTR lpModuleName,
 #   HMODULE *phModule
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetModuleHandleExW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleHandleExW(ql, address, params):
     res = _GetModuleHandle(ql, address, params)
     dst = params["phModule"]
@@ -65,7 +65,7 @@ def hook_GetModuleHandleExW(ql, address, params):
 #   LPSTR   lpFilename,
 #   DWORD   nSize
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetModuleFileNameA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleFileNameA(ql, address, params):
     ret = 0
     hModule = params["hModule"]
@@ -94,7 +94,7 @@ def hook_GetModuleFileNameA(ql, address, params):
 #   LPSTR   lpFilename,
 #   DWORD   nSize
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetModuleFileNameW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleFileNameW(ql, address, params):
     ret = 0
     hModule = params["hModule"]
@@ -120,7 +120,7 @@ def hook_GetModuleFileNameW(ql, address, params):
 #   HMODULE hModule,
 #   LPCSTR  lpProcName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetProcAddress", specialtype={'LPCSTR': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'LPCSTR': 'POINTER'})
 def hook_GetProcAddress(ql, address, params):
     if params["lpProcName"] > MAXUSHORT:
         # Look up by name
@@ -155,7 +155,7 @@ def hook_GetProcAddress(ql, address, params):
 # HMODULE LoadLibraryA(
 #   LPCSTR lpLibFileName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="LoadLibraryA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LoadLibraryA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
     if lpLibFileName == ql.loader.filepath.decode():
@@ -170,7 +170,7 @@ def hook_LoadLibraryA(ql, address, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="LoadLibraryExA", specialtype={'HANDLE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'HANDLE': 'POINTER'})
 def hook_LoadLibraryExA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
     dll_base = ql.loader.load_dll(lpLibFileName.encode())
@@ -180,7 +180,7 @@ def hook_LoadLibraryExA(ql, address, params):
 # HMODULE LoadLibraryW(
 #   LPCWSTR lpLibFileName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="LoadLibraryW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LoadLibraryW(ql, address, params):
     lpLibFileName = params["lpLibFileName"].encode()
     dll_base = ql.loader.load_dll(lpLibFileName)
@@ -192,7 +192,7 @@ def hook_LoadLibraryW(ql, address, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="LoadLibraryExW", specialtype={'HANDLE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'HANDLE': 'POINTER'})
 def hook_LoadLibraryExW(ql, address, params):
     lpLibFileName = params["lpLibFileName"].encode()
     dll_base = ql.loader.load_dll(lpLibFileName)
@@ -203,7 +203,7 @@ def hook_LoadLibraryExW(ql, address, params):
 #   HMODULE hModule,
 #   HRSRC   hResInfo
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="SizeofResource", specialtype={'HMODULE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllnam, specialtype={'HMODULE': 'POINTER'})
 def hook_SizeofResource(ql, address, params):
     # Return size of resource
     # TODO set a valid value. More tests have to be made to find it.
@@ -214,7 +214,7 @@ def hook_SizeofResource(ql, address, params):
 #   HMODULE hModule,
 #   HRSRC   hResInfo
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="LoadResource", specialtype={'HMODULE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'HMODULE': 'POINTER'})
 def hook_LoadResource(ql, address, params):
     pointer = params["hResInfo"]
     return pointer
@@ -223,7 +223,7 @@ def hook_LoadResource(ql, address, params):
 # LPVOID LockResource(
 #   HGLOBAL hResData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="LockResource", specialtype={'HMODULE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'HMODULE': 'POINTER'})
 def hook_LockResource(ql, address, params):
     pointer = params["hResData"]
     return pointer
@@ -232,7 +232,7 @@ def hook_LockResource(ql, address, params):
 # BOOL DisableThreadLibraryCalls(
 #  HMODULE hLibModule
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="DisableThreadLibraryCalls", specialtype={'HMODULE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'HMODULE': 'POINTER'})
 def hook_DisableThreadLibraryCalls(ql, address, params):
     return 1
 
@@ -240,7 +240,7 @@ def hook_DisableThreadLibraryCalls(ql, address, params):
 # BOOL FreeLibrary(
 #   HMODULE hLibModule
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="FreeLibrary", specialtype={'HMODULE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'HMODULE': 'POINTER'})
 def hook_FreeLibrary(ql, address, params):
     return 1
 
@@ -248,7 +248,7 @@ def hook_FreeLibrary(ql, address, params):
 # BOOL SetDefaultDllDirectories(
 #   DWORD DirectoryFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="SetDefaultDllDirectories")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SetDefaultDllDirectories(ql, address, params):
     value = params["DirectoryFlags"]
     if value == LOAD_LIBRARY_SEARCH_USER_DIRS:

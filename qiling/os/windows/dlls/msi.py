@@ -19,6 +19,6 @@ from qiling.exception import *
 #   INSTALLSTATE *piInstalled,
 #   INSTALLSTATE *piAction
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="MsiGetComponentStateA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_MsiGetComponentStateA(ql, address, params):
     return 6  # INVALID_HANDLE

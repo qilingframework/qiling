@@ -24,7 +24,7 @@ from qiling.exception import *
 #   LPDWORD      lpBytesReturned,
 #   LPOVERLAPPED lpOverlapped
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="DeviceIoControl")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_DeviceIoControl(ql, address, params):
     operation = params["dwIoControlCode"]
     data = params["lpInBuffer"]

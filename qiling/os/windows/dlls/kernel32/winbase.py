@@ -14,7 +14,7 @@ dllname = 'kernel32_dll'
 # __analysis_noreturn VOID FatalExit(
 #   int ExitCode
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="FatalExit")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_FatalExit(ql, address, params):
     ql.emu_stop()
     ql.os.PE_RUN = False
@@ -23,7 +23,7 @@ def hook_FatalExit(ql, address, params):
 # PVOID EncodePointer(
 #  _In_ PVOID Ptr
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="EncodePointer", defparams={"Ptr": POINTER})
+@winsdkapi(cc=STDCALL, dllname=dllname, defparams={"Ptr": POINTER})
 def hook_EncodePointer(ql, address, params):
     return params['Ptr']
 
@@ -31,7 +31,7 @@ def hook_EncodePointer(ql, address, params):
 # PVOID DecodePointer(
 #  _In_ PVOID Ptr
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="DecodePointer", defparams={"Ptr": POINTER})
+@winsdkapi(cc=STDCALL, dllname=dllname, defparams={"Ptr": POINTER})
 def hook_DecodePointer(ql, address, params):
     return params['Ptr']
 
@@ -40,7 +40,7 @@ def hook_DecodePointer(ql, address, params):
 #   LPCSTR lpCmdLine,
 #   UINT   uCmdShow
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="WinExec")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_WinExec(ql, address, params):
     return 33
 
@@ -49,7 +49,7 @@ def hook_WinExec(ql, address, params):
 #   UINT   uFlags,
 #   SIZE_T uBytes
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="LocalAlloc")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LocalAlloc(ql, address, params):
     ret = ql.os.heap.alloc(params["uBytes"])
     return ret
@@ -60,7 +60,7 @@ def hook_LocalAlloc(ql, address, params):
 #   SIZE_T                 uBytes,
 #   UINT                   uFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="LocalReAlloc")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LocalReAlloc(ql, address, params):
     old_mem = params["hMem"]
     ql.os.heap.free(old_mem)
@@ -71,7 +71,7 @@ def hook_LocalReAlloc(ql, address, params):
 # HLOCAL LocalFree(
 #   _Frees_ptr_opt_ HLOCAL hMem
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="LocalFree")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LocalFree(ql, address, params):
     old_mem = params["hMem"]
     ql.os.heap.free(old_mem)
@@ -81,7 +81,7 @@ def hook_LocalFree(ql, address, params):
 # UINT SetHandleCount(
 #   UINT uNumber
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="SetHandleCount")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SetHandleCount(ql, address, params):
     uNumber = params["uNumber"]
     return uNumber
@@ -90,7 +90,7 @@ def hook_SetHandleCount(ql, address, params):
 # LPVOID GlobalLock(
 #  HGLOBAL hMem
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GlobalLock")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GlobalLock(ql, address, params):
     return params['hMem']
 
@@ -98,7 +98,7 @@ def hook_GlobalLock(ql, address, params):
 # LPVOID GlobalUnlock(
 #  HGLOBAL hMem
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GlobalUnlock")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GlobalUnlock(ql, address, params):
     return 1
 
@@ -107,7 +107,7 @@ def hook_GlobalUnlock(ql, address, params):
 #  UINT   uFlags,
 #  SIZE_T dwBytes
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GlobalAlloc", specialtype={'SIZE_T': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'SIZE_T': 'UINT'})
 def hook_GlobalAlloc(ql, address, params):
     return ql.os.heap.alloc(params["dwBytes"])
 
@@ -115,7 +115,7 @@ def hook_GlobalAlloc(ql, address, params):
 # HGLOBAL GlobalFree(
 #   _Frees_ptr_opt_ HGLOBAL hMem
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GlobalFree")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GlobalFree(ql, address, params):
     old_mem = params["hMem"]
     ql.os.heap.free(old_mem)
@@ -125,7 +125,7 @@ def hook_GlobalFree(ql, address, params):
 # HGLOBAL GlobalHandle(
 #   LPCVOID pMem
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GlobalHandle")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GlobalHandle(ql, address, params):
     return params["pMem"]
 
@@ -135,7 +135,7 @@ def hook_GlobalHandle(ql, address, params):
 #   LPCSTR lpString2,
 #   int    iMaxLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="lstrcpynA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcpynA(ql, address, params):
     # Copy String2 into String for max iMaxLength chars
     src = params["lpString2"]
@@ -152,7 +152,7 @@ def hook_lstrcpynA(ql, address, params):
 #   LPCWSTR lpString2,
 #   int    iMaxLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="lstrcpynW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcpynW(ql, address, params):
     # Copy String2 into String for max iMaxLength chars
     src = params["lpString2"]
@@ -168,7 +168,7 @@ def hook_lstrcpynW(ql, address, params):
 #   LPSTR  lpString1,
 #   LPCSTR lpString2,
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="lstrcpyA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcpyA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
@@ -181,7 +181,7 @@ def hook_lstrcpyA(ql, address, params):
 #   LPSTR  lpString1,
 #   LPCSTR lpString2,
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="lstrcpyW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcpyW(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
@@ -194,7 +194,7 @@ def hook_lstrcpyW(ql, address, params):
 #   LPSTR  lpString1,
 #   LPCSTR lpString2
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="lstrcatA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcatA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
@@ -210,7 +210,7 @@ def hook_lstrcatA(ql, address, params):
 #   LPWSTR  lpString1,
 #   LPCWSTR lpString2
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="lstrcatW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcatW(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
@@ -226,7 +226,7 @@ def hook_lstrcatW(ql, address, params):
 #   LPCWSTR lpString1,
 #   LPCWSTR lpString2
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="lstrcmpiW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcmpiW(ql, address, params):
     # Copy String2 into String
     str1 = params["lpString1"]
@@ -243,7 +243,7 @@ def hook_lstrcmpiW(ql, address, params):
 #   LPCSTR lpString1,
 #   LPCSTR lpString2
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="lstrcmpiA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcmpiA(ql, address, params):
     return hook_lstrcmpiW.__wrapped__(ql, address, params)
 
@@ -253,7 +253,7 @@ def hook_lstrcmpiA(ql, address, params):
 #   LPCSTR  lpName,
 #   LPCSTR  lpType
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="FindResourceA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_FindResourceA(ql, address, params):
     # Retrieve a resource
     # Name e Type can be int or strings, this can be a problem
@@ -267,7 +267,7 @@ def hook_FindResourceA(ql, address, params):
 #   const VOID *lp,
 #   UINT_PTR   ucb
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="IsBadReadPtr")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_IsBadReadPtr(ql, address, params):
     # Check read permission for size of memory
     ACCESS_TRUE = 0
@@ -279,7 +279,7 @@ def hook_IsBadReadPtr(ql, address, params):
 #   const VOID *lp,
 #   UINT_PTR   ucb
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="IsBadWritePtr")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_IsBadWritePtr(ql, address, params):
     # Check read permission for size of memory
     ACCESS_TRUE = 0
@@ -322,7 +322,7 @@ def compare(p1, operator, p2):
 #   DWORD              dwTypeMask,
 #   DWORDLONG          dwlConditionMask
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="VerifyVersionInfoW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_VerifyVersionInfoW(ql, address, params):
     #  https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow2
     pointer = params["lpVersionInformation"]
@@ -380,7 +380,7 @@ def hook_VerifyVersionInfoW(ql, address, params):
 #   LPWSTR  lpBuffer,
 #   LPDWORD pcbBuffer
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetUserNameW", defparams={"lpBuffer": POINTER, "pcbBuffer": POINTER})
+@winsdkapi(cc=STDCALL, dllname=dllname, defparams={"lpBuffer": POINTER, "pcbBuffer": POINTER})
 def hook_GetUserNameW(ql, address, params):
     username = (ql.os.profile["USER"]["username"] + "\x00").encode("utf-16le")
     dst = params["lpBuffer"]
@@ -398,7 +398,7 @@ def hook_GetUserNameW(ql, address, params):
 #   LPCSTR  lpBuffer,
 #   LPDWORD pcbBuffer
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetUserNameA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetUserNameA(ql, address, params):
     username = (ql.os.profile["USER"]["username"] + "\x00").encode()
     dst = params["lpBuffer"]
@@ -416,7 +416,7 @@ def hook_GetUserNameA(ql, address, params):
 #   LPWSTR  lpBuffer,
 #   LPDWORD nSize
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetComputerNameW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetComputerNameW(ql, address, params):
     computer = (ql.os.profile["SYSTEM"]["computername"] + "\x00").encode("utf-16le")
     dst = params["lpBuffer"]
@@ -434,7 +434,7 @@ def hook_GetComputerNameW(ql, address, params):
 #   LPCSTR  lpBuffer,
 #   LPDWORD nSize
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetComputerNameA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetComputerNameA(ql, address, params):
     computer = (ql.os.profile["SYSTEM"]["computername"] + "\x00").encode()
     dst = params["lpBuffer"]

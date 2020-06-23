@@ -18,7 +18,7 @@ dllname = 'ole32_dll'
 # HRESULT OleInitialize(
 #   IN LPVOID pvReserved
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="OleInitialize")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_OleInitialize(ql, address, params):
     # I don't think we need to do anything, we hook every call for the COM library and manage them locally
     return S_OK
@@ -28,7 +28,7 @@ def hook_OleInitialize(ql, address, params):
 #   LPMESSAGEFILTER lpMessageFilter,
 #   LPMESSAGEFILTER *lplpMessageFilter
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="CoRegisterMessageFilter")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CoRegisterMessageFilter(ql, address, params):
     return S_OK
 
@@ -37,7 +37,7 @@ def hook_CoRegisterMessageFilter(ql, address, params):
 #   LPVOID pvReserved,
 #   DWORD  dwCoInit
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="CoInitializeEx")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CoInitializeEx(ql, address, params):
     return S_OK
 
@@ -52,7 +52,7 @@ def hook_CoInitializeEx(ql, address, params):
 #   DWORD                       dwCapabilities,
 #   void                        *pReserved3
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="CoInitializeSecurity")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CoInitializeSecurity(ql, address, params):
     return S_OK
 
@@ -64,7 +64,7 @@ def hook_CoInitializeSecurity(ql, address, params):
 #   REFIID    riid,
 #   LPVOID    *ppv
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="CoCreateInstance")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CoCreateInstance(ql, address, params):
     # FIXME: probably this needs implementation
     return S_OK

@@ -17,7 +17,7 @@ from qiling.exception import *
 # void InitializeSListHead(
 #   PSLIST_HEADER ListHead
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InitializeSListHead")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InitializeSListHead(ql, address, params):
     addr = params["ListHead"]
     handle = Handle(obj=[], id=addr)

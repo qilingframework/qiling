@@ -15,7 +15,7 @@ dllname = 'shlwapi_dll'
 # LPCSTR PathFindExtensionA(
 #   LPWSTR pszPath
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="PathFindExtensionA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_PathFindExtensionA(ql, address, params):
     # Must return the address of the dot
     pointer = params["pszPath"]
@@ -29,7 +29,7 @@ def hook_PathFindExtensionA(ql, address, params):
 # LPCSTR PathFindExtensionW(
 #   LPCSTR pszPath
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="PathFindExtensionW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_PathFindExtensionW(ql, address, params):
     # Must return the address of the dot
     pointer = params["pszPath"]
@@ -43,7 +43,7 @@ def hook_PathFindExtensionW(ql, address, params):
 # LPCSTR PathFindFileNameA(
 #   LPCSTR pszPath
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="PathFindFileNameA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_PathFindFileNameA(ql, address, params):
     # Must return the address of the start of the filename
     pointer = params["pszPath"]
@@ -57,7 +57,7 @@ def hook_PathFindFileNameA(ql, address, params):
 # LPCSTR PathFindFileNameW(
 #   LPWSTR pszPath
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="PathFindFileNameW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_PathFindFileNameW(ql, address, params):
     # Must return the address of the start of the filename
     pointer = params["pszPath"]
@@ -72,7 +72,7 @@ def hook_PathFindFileNameW(ql, address, params):
 #   PCWSTR psz1,
 #   PCWSTR psz2
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="StrCmpW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_StrCmpW(ql, address, params):
     # Copy String2 into String
     str1 = params["psz1"]

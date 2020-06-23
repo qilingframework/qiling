@@ -11,7 +11,7 @@ dllname = 'kernel32_dll'
 # HANDLE WINAPI GetStdHandle(
 #   _In_ DWORD nStdHandle
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetStdHandle", defparams={"nStdHandle": DWORD})
+@winsdkapi(cc=STDCALL, dllname=dllname, defparams={"nStdHandle": DWORD})
 def hook_GetStdHandle(ql, address, params):
     nStdHandle = params["nStdHandle"]
     return nStdHandle
@@ -19,7 +19,7 @@ def hook_GetStdHandle(ql, address, params):
 
 # LPSTR GetCommandLineA(
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetCommandLineA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetCommandLineA(ql, address, params):
     cmdline = ql.loader.cmdline + b"\x00"
     addr = ql.os.heap.alloc(len(cmdline))
@@ -29,7 +29,7 @@ def hook_GetCommandLineA(ql, address, params):
 
 # LPSTR GetCommandLineW(
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetCommandLineW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetCommandLineW(ql, address, params):
     cmdline = ql.loader.cmdline.decode('ascii').encode('utf-16le')
     addr = ql.os.heap.alloc(len(cmdline))
@@ -39,7 +39,7 @@ def hook_GetCommandLineW(ql, address, params):
 
 # LPWCH GetEnvironmentStrings(
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetEnvironmentStrings")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetEnvironmentStrings(ql, address, params):
     cmdline = b"\x00"
     addr = ql.os.heap.alloc(len(cmdline))
@@ -49,7 +49,7 @@ def hook_GetEnvironmentStrings(ql, address, params):
 
 # LPWCH GetEnvironmentStringsW(
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetEnvironmentStringsW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetEnvironmentStringsW(ql, address, params):
     cmdline = b"\x00\x00"
     addr = ql.os.heap.alloc(len(cmdline))
@@ -60,7 +60,7 @@ def hook_GetEnvironmentStringsW(ql, address, params):
 # BOOL FreeEnvironmentStringsW(
 #   LPWCH penv
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="FreeEnvironmentStringsW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_FreeEnvironmentStringsW(ql, address, params):
     ret = 1
     return ret
@@ -71,7 +71,7 @@ def hook_FreeEnvironmentStringsW(ql, address, params):
 #   LPWSTR  lpDst,
 #   DWORD   nSize
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="ExpandEnvironmentStringsW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_ExpandEnvironmentStringsW(ql, address, params):
     string: str = params["lpSrc"]
     start = string.find("%")
@@ -94,7 +94,7 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
 #   LPSTR  lpBuffer,
 #   DWORD  nSize
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="GetEnvironmentVariableA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetEnvironmentVariableA(ql, address, params):
     ret = 0
     return ret

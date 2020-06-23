@@ -21,7 +21,7 @@ dllname = 'oleaut32_dll'
 #   const OLECHAR *strIn,
 #   UINT          ui
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="SysAllocStringLen")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SysAllocStringLen(ql, address, params):
     addr = ql.os.heap.alloc(params["ui"] + 1)
     if params["strIn"] != 0:
@@ -32,7 +32,7 @@ def hook_SysAllocStringLen(ql, address, params):
 # void SysFreeString(
 #   BSTR bstrString
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="SysFreeString")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SysFreeString(ql, address, params):
     addr = params["strIn"]
     if addr != 0:
@@ -46,7 +46,7 @@ def hook_SysFreeString(ql, address, params):
 # UINT SysStringLen(
 #   BSTR pbstr
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="SysStringLen")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SysStringLen(ql, address, params):
     string = params["pbstr"]
     if string != 0:
@@ -59,7 +59,7 @@ def hook_SysStringLen(ql, address, params):
 #   const OLECHAR *psz,
 #   unsigned int  len
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="SysReAllocStringLen")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SysReAllocStringLen(ql, address, params):
     content = params["psz"]
     size = params["len"]
@@ -72,7 +72,7 @@ def hook_SysReAllocStringLen(ql, address, params):
 # BSTR SysAllocString(
 #   const OLECHAR *psz
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="SysAllocString")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SysAllocString(ql, address, params):
     string = params["psz"]
     if string == 0:

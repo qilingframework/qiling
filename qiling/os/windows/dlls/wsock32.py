@@ -19,7 +19,7 @@ dllname = 'ws2_32_dll'
 #  WORD      wVersionRequired,
 #  LPWSADATA lpWSAData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="WSAStartup")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_WSAStartup(ql, address, params):
     return 0
 
@@ -32,7 +32,7 @@ def hook_WSAStartup(ql, address, params):
 #  GROUP               g,
 #  DWORD               dwFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="WSASocketA", specialtype={'DWORD': 'INT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'DWORD': 'INT'})
 def hook_WSASocketA(ql, address, params):
     return 0
 
@@ -42,7 +42,7 @@ def hook_WSASocketA(ql, address, params):
 #  const sockaddr *name,
 #  int            namelen
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="connect")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_connect(ql, address, params):
     sin_family = ql.mem.read(params["name"], 1)[0]
     sin_port = int.from_bytes(ql.mem.read(params["name"] + 2, 2), byteorder="big")
@@ -69,7 +69,7 @@ def hook_connect(ql, address, params):
 # hostent * gethostbyname(
 #  const char *name
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="gethostbyname", specialtype={'char': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'char': 'POINTER'})
 def hook_gethostbyname(ql, address, params):
     ip_str = ql.os.profile.getint("NETWORK", "dns_response_ip")
     ip = bytes([int(octet) for octet in ip_str.split('.')[::-1]])

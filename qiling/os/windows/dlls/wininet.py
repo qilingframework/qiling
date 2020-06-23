@@ -17,7 +17,7 @@ dllname = 'wininet_dll'
 #   LPCSTR lpszProxyBypass,
 #   DWORD  dwFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InternetOpenA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InternetOpenA(ql, address, params):
     pass
 
@@ -29,7 +29,7 @@ def hook_InternetOpenA(ql, address, params):
 #   LPCWSTR lpszProxyBypass,
 #   DWORD   dwFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InternetOpenW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InternetOpenW(ql, address, params):
     pass
 
@@ -42,7 +42,7 @@ def hook_InternetOpenW(ql, address, params):
 #   DWORD     dwFlags,
 #   DWORD_PTR dwContext
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InternetOpenUrlA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InternetOpenUrlA(ql, address, params):
     pass
 
@@ -55,7 +55,7 @@ def hook_InternetOpenUrlA(ql, address, params):
 #   DWORD     dwFlags,
 #   DWORD_PTR dwContext
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InternetOpenUrlW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InternetOpenUrlW(ql, address, params):
     pass
 
@@ -63,7 +63,7 @@ def hook_InternetOpenUrlW(ql, address, params):
 # BOOLAPI InternetCloseHandle(
 #   HINTERNET hInternet
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InternetCloseHandle")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InternetCloseHandle(ql, address, params):
     ret = 1
     return ret
@@ -79,7 +79,7 @@ def hook_InternetCloseHandle(ql, address, params):
 #   DWORD         dwFlags,
 #   DWORD_PTR     dwContext
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InternetConnectA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InternetConnectA(ql, address, params):
     pass
 
@@ -94,7 +94,7 @@ def hook_InternetConnectA(ql, address, params):
 #   DWORD         dwFlags,
 #   DWORD_PTR     dwContext
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InternetConnectW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InternetConnectW(ql, address, params):
     pass
 
@@ -104,7 +104,7 @@ def hook_InternetConnectW(ql, address, params):
 #    DWORD  dwFlags,
 #    DWORD  dwReserved
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InternetCheckConnectionA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InternetCheckConnectionA(ql, address, params):
     pass
 
@@ -119,7 +119,7 @@ def hook_InternetCheckConnectionA(ql, address, params):
 #   DWORD     dwFlags,
 #   DWORD_PTR dwContext
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="HttpOpenRequestA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_HttpOpenRequestA(ql, address, params):
     pass
 
@@ -131,7 +131,7 @@ def hook_HttpOpenRequestA(ql, address, params):
 #   DWORD               dwFlags,
 #   DWORD_PTR           dwContext
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="HttpSendRequestExA", specialtypeEx={'lpBuffersIn': 'POINTER', 'lpBuffersOut': 'STRING'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtypeEx={'lpBuffersIn': 'POINTER', 'lpBuffersOut': 'STRING'})
 def hook_HttpSendRequestExA(ql, address, params):
     pass
 
@@ -146,7 +146,7 @@ def hook_HttpSendRequestExA(ql, address, params):
 #   DWORD     dwFlags,
 #   DWORD_PTR dwContext
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="HttpOpenRequestW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_HttpOpenRequestW(ql, address, params):
     pass
 
@@ -157,7 +157,7 @@ def hook_HttpOpenRequestW(ql, address, params):
 #   LPVOID    lpBuffer,
 #   DWORD     dwBufferLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InternetSetOptionA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InternetSetOptionA(ql, address, params):
     return 1
 
@@ -168,7 +168,7 @@ def hook_InternetSetOptionA(ql, address, params):
 #   LPVOID    lpBuffer,
 #   DWORD     dwBufferLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InternetSetOptionW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InternetSetOptionW(ql, address, params):
     return 1
 
@@ -180,7 +180,7 @@ def hook_InternetSetOptionW(ql, address, params):
 #  LPVOID    lpOptional,
 #  DWORD     dwOptionalLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="HttpSendRequestA")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_HttpSendRequestA(ql, address, params):
     return 1
 
@@ -192,7 +192,7 @@ def hook_HttpSendRequestA(ql, address, params):
 #  LPVOID    lpOptional,
 #  DWORD     dwOptionalLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="HttpSendRequestW")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_HttpSendRequestW(ql, address, params):
     return 1
 
@@ -204,7 +204,7 @@ def hook_HttpSendRequestW(ql, address, params):
 #   DWORD     dwFlags,
 #   LPVOID    *lppvData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InternetErrorDlg", specialtype={'HWND': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'HWND': 'POINTER'})
 def hook_InternetErrorDlg(ql, address, params):
     pass
 
@@ -215,7 +215,7 @@ def hook_InternetErrorDlg(ql, address, params):
 #   DWORD     dwNumberOfBytesToRead,
 #   LPDWORD   lpdwNumberOfBytesRead
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InternetReadFile")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InternetReadFile(ql, address, params):
     return 1
 
@@ -226,7 +226,7 @@ def hook_InternetReadFile(ql, address, params):
 #   DWORD     dwNumberOfBytesToWrite,
 #   LPDWORD   lpdwNumberOfBytesWritten
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="InternetWriteFile")
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InternetWriteFile(ql, address, params):
     return 1
 
@@ -237,6 +237,6 @@ def hook_InternetWriteFile(ql, address, params):
 #   DWORD               dwFlags,
 #   DWORD_PTR           dwContext
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, funcname="HttpEndRequestA", specialtype={'LPINTERNET_BUFFERSA': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'LPINTERNET_BUFFERSA': 'POINTER'})
 def hook_HttpEndRequestA(ql, address, params):
     return 1
