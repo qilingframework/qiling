@@ -203,7 +203,7 @@ def hook_LoadLibraryExW(ql, address, params):
 #   HMODULE hModule,
 #   HRSRC   hResInfo
 # );
-@winsdkapi(cc=STDCALL, dllname=dllnam, specialtype={'HMODULE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'HMODULE': 'POINTER'})
 def hook_SizeofResource(ql, address, params):
     # Return size of resource
     # TODO set a valid value. More tests have to be made to find it.

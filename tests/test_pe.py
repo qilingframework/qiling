@@ -200,9 +200,7 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x8664_customapi(self):
-        @winapi(cc=CDECL, params={
-            "str": STRING
-        })
+        @winsdkapi(cc=CDECL, defparams={"str": STRING})
         def my_puts64(ql, address, params):
             ret = 0
             print("\n+++++++++ My Windows 64bit Windows API +++++++++\n")
