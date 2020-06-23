@@ -618,9 +618,9 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.ql.os.function_hook = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)
 
         # map vsyscall section for some specific needs
-        if self.ql.archbit == 64:
-            _vsyscall_addr = self.ql.os.profile.get("OS64", "vsyscall_address")
-            _vsyscall_size = self.ql.os.profile.get("OS64", "vsyscall_size")
+        if self.ql.archtype == QL_ARCH.X8664 and self.ql.ostype == QL_OS.LINUX:
+            _vsyscall_addr = int(self.ql.os.profile.get("OS64", "vsyscall_address"), 16)
+            _vsyscall_size = int(self.ql.os.profile.get("OS64", "vsyscall_size"), 16)
 
             if not self.ql.mem.is_mapped(_vsyscall_addr, _vsyscall_size):
                 # initialize with \xcc then insert syscall entry
