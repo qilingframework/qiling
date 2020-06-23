@@ -3,6 +3,8 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
+import os
+import json
 import struct
 from functools import wraps
 
@@ -15,35 +17,6 @@ from qiling.exception import *
 def replacetype(type, specialtype=None):
     if specialtype is None:
         specialtype = {}
-    reptypedict = {'HKEY': 'HANDLE', 'LPCSTR': 'STRING', 'REGSAM': 'POINTER', 'PHKEY': 'POINTER', 'LPCWSTR': 'WSTRING',
-               'LPFILETIME': 'POINTER', 'LPDWORD': 'POINTER', 'LPBYTE': 'POINTER', 'LPSECURITY_ATTRIBUTES': 'POINTER',
-                'TOKEN_INFORMATION_CLASS': 'DWORD', 'LPVOID': 'POINTER', 'PDWORD': 'POINTER',
-               'PSID': 'HANDLE', 'PSID_IDENTIFIER_AUTHORITY': 'POINTER', 'int': 'INT',
-               'MSIHANDLE': 'POINTER', 'INSTALLSTATE': 'POINTER', 'size_t': 'UINT', 'PROCESSINFOCLASS': 'INT',
-               'PVOID': 'POINTER', 'ULONG': 'UINT', 'PULONG': 'POINTER', 'OBJECT_INFORMATION_CLASS': 'INT',
-               'LPMESSAGEFILTER': 'POINTER', 'PSECURITY_DESCRIPTOR': 'POINTER', 'LONG': 'ULONGLONG',
-               'SOLE_AUTHENTICATION_SERVICE': 'POINTER', 'void': 'POINTER', 'REFCLSID': 'POINTER',
-               'LPUNKNOWN': 'POINTER', 'REFIID': 'POINTER', 'OLECHAR': 'WSTRING', 'BSTR': 'POINTER',
-               'unsigned int': 'UINT', 'SHFILEINFOW': 'POINTER', 'SHELLEXECUTEINFOA': 'POINTER',
-               'SHELLEXECUTEINFOW': 'POINTER', 'HWND': 'HANDLE', 'LPWSTR': 'POINTER', 'DLGPROC': 'POINTER',
-                'LPARAM': 'POINTER', 'HINSTANCE': 'HANDLE', 'INT_PTR': 'POINTER',
-                'LPPOINT': 'POINTER', 'HDC': 'POINTER', 'LPSTR': 'POINTER', 'HOOKPROC': 'POINTER', 'HHOOK': 'POINTER',
-                'WPARAM': 'UINT', 'PCACTCTXW': 'POINTER', 'HINTERNET': 'POINTER', 'DWORD_PTR': 'POINTER',
-                'INTERNET_PORT': 'DWORD', 'LPINTERNET_BUFFERSA': 'POINT', 'WORD': 'DWORD', 'LPWSADATA': 'STRING',
-               'LPWSAPROTOCOL_INFOA': 'POINTER', 'GROUP': 'INT', 'SOCKET': 'INT', 'sockaddr': 'POINTER',
-               'PBOOL': 'POINTER', 'LPTOP_LEVEL_EXCEPTION_FILTER': 'DWORD', '_EXCEPTION_POINTERS': 'POINTER',
-               'ULONG_PTR': 'POINTER', 'PVECTORED_EXCEPTION_HANDLER': 'HANDLE', 'PFLS_CALLBACK_FUNCTION': 'POINTER',
-               'LPWIN32_FIND_DATAA': 'POINTER', 'LPOVERLAPPED': 'POINTER', 'LPCVOID': 'POINTER',
-               'HEAP_INFORMATION_CLASS': 'UINT', 'PSLIST_HEADER': 'POINTER', 'HMODULE': 'HANDLE', 'HRSRC': 'POINTER',
-               'HGLOBAL': 'POINTER', 'PMEMORY_BASIC_INFORMATION': 'POINTER', 'LPWCH': 'POINTER',
-               'LPSTARTUPINFOA': 'POINTER', 'LPSTARTUPINFOW': 'POINTER', 'LPTHREAD_START_ROUTINE': 'POINTER',
-                'LPCONTEXT': 'POINTER', 'LARGE_INTEGER': 'POINTER', 'LPMODULEINFO': 'POINTER', 'LPCWCH': 'POINTER',
-                'LPWORD': 'POINTER', 'LCID': 'POINTER', 'LPCCH': 'POINTER', 'LPBOOL': 'POINTER',
-                'LPCRITICAL_SECTION': 'POINTER', 'PSRWLOCK': 'POINTER', 'LPOSVERSIONINFOA': 'STRING',
-               'LPOSVERSIONINFOW': 'WSTRING', 'LPSYSTEM_INFO': 'POINTER', 'LPSYSTEMTIME': 'POINTER',
-                'LPPROCESSENTRY32W': 'POINTER', 'HLOCAL': 'POINTER', 'UINT_PTR': 'POINTER',
-               'LPOSVERSIONINFOEXW': 'POINTER', 'DWORDLONG': 'ULONGLONG', 'LPCPINFO': 'POINTER',
-                'LPNLSVERSIONINFO': 'POINTER', 'PCNZCH': 'STRING'}
 
     if type in reptypedict.keys():
         if type not in specialtype.keys():
@@ -70,18 +43,19 @@ def winsdkapi(cc, param_num=None, dllname=None, specialtype=None, specialtypeEx=
         def wrapper(*args, **kwargs):
             funcname = func.__name__[5:]
             params = {}
-            paramlist = None
+            paramlist = []
             ql = args[0]
             if defparams is not None:
                 params = defparams
             else:
                 if dllname is not None:
-                    root_path = os.path.abspath(os.path.join(os.getcwd(), "../.."))
-                    with open(root_path+'/qiling/extensions/windows_sdk/'+dllname+'.json', 'r') as f:
+                    windows_abspath = os.path.dirname(os.path.abspath(__file__))
+                    winsdk_path = windows_abspath[:-11]+'/extensions/windows_sdk/' + dllname + '.json'
+                    if os.path.exists(winsdk_path):
+                        f = open(winsdk_path, 'r')
                         funclist = json.load(f)
-                        f.close()
-                    paramlist = funclist[funcname]
-                if funcname is not None:
+                        paramlist = funclist[funcname]
+
                     for para in paramlist:
                         name = list(para.values())[0]
                         if name == 'VOID':
@@ -96,7 +70,6 @@ def winsdkapi(cc, param_num=None, dllname=None, specialtype=None, specialtypeEx=
                             else:
                                 type = replacetype(list(para.values())[1], specialtype)
                         params[name] = eval(type)
-                    print(params)
 
             if ql.archtype == QL_ARCH.X86:
                 if cc == STDCALL:
