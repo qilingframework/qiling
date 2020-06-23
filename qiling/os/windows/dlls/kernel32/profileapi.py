@@ -17,9 +17,7 @@ from qiling.exception import *
 # BOOL QueryPerformanceCounter(
 #   LARGE_INTEGER *lpPerformanceCount
 # );
-@winapi(cc=STDCALL, params={
-    "lpPerformanceCount": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, funcname="QueryPerformanceCounter")
 def hook_QueryPerformanceCounter(ql, address, params):
     ret = 0
     return ret
@@ -28,9 +26,7 @@ def hook_QueryPerformanceCounter(ql, address, params):
 # BOOL QueryPerformanceFrequency(
 #  LARGE_INTEGER *lpFrequency
 # );
-@winapi(cc=STDCALL, params={
-    "lpFrequency": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, funcname="QueryPerformanceFrequency")
 def hook_QueryPerformanceFrequency(ql, address, params):
     ql.mem.write(params['lpFrequency'], (10000000).to_bytes(length=8, byteorder='little'))
     return 1

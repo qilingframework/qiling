@@ -20,15 +20,8 @@ from qiling.os.windows.const import *
 #   DWORD  *pdwSkip,
 #   DWORD  *pdwFlags
 # );
-@winapi(cc=STDCALL, params={
-    "pszString": STRING,
-    "cchString": DWORD,
-    "dwFlags": DWORD,
-    "pbBinary": POINTER,
-    "pcbBinary": POINTER,
-    "pdwSkip": POINTER,
-    "pdwFlags": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, funcname="CryptStringToBinaryA", specialtype={'BYTE': 'POINTER'},
+           specialtypeEx={"pcbBinary": POINTER, "pdwSkip": POINTER, "pdwFlags": POINTER})
 def hook_CryptStringToBinaryA(ql, address, params):
     flag_src = params["dwFlags"]
     string_src = params["pszString"]

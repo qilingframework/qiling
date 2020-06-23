@@ -14,17 +14,14 @@ from qiling.os.windows.const import *
 # void STDMETHODCALLTYPE CorExitProcess (
 #   int  exitCode
 # );
-@winapi(cc=STDCALL, params={
-    "exitCode": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, funcname="CorExitProcess", specialtype={'int': 'DWORD'})
 def hook_CorExitProcess(ql, address, params):
     ql.emu_stop()
     ql.os.PE_RUN = False
 
 
 # __int32 STDMETHODCALLTYPE _CorExeMain ();
-@winapi(cc=STDCALL, params={
-})
+@winsdkapi(cc=STDCALL, dllname='crypt32_dll', funcname="_CorExeMain")
 def hook__CorExeMain(ql, address, params):
     # TODO implement + check call type
     pass

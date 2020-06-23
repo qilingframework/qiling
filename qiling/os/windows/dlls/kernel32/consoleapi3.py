@@ -15,8 +15,7 @@ from qiling.exception import *
 
 
 # HWND WINAPI GetConsoleWindow(void);
-@winapi(cc=STDCALL, params={
-})
+@winsdkapi(cc=STDCALL)
 def hook_GetConsoleWindow(ql, address, params):
     handle = Handle(name="console_window")
     ql.os.handle_manager.append(handle)

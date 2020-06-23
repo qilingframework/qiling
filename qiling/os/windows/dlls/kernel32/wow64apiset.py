@@ -19,10 +19,7 @@ from qiling.exception import *
 #   HANDLE hProcess,
 #   PBOOL  Wow64Process
 # );
-@winapi(cc=STDCALL, params={
-    "hProcess": HANDLE,
-    "Wow64Process": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, funcname="IsWow64Process")
 def hook_IsWow64Process(ql, address, params):
     pointer = params["Wow64Process"]
     false = 0x0.to_bytes(length=1, byteorder='little')

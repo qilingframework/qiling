@@ -20,12 +20,7 @@ from qiling.exception import *
 #   LPMODULEINFO lpmodinfo,
 #   DWORD        cb
 # );
-@winapi(cc=STDCALL, params={
-    "hProcess": HANDLE,
-    "hModule": HANDLE,
-    "lpmodinfo": POINTER,
-    "cb": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, funcname="K32GetModuleInformation")
 def hook_K32GetModuleInformation(self, address, params):
     # TODO
     return 0

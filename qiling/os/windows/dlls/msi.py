@@ -19,11 +19,6 @@ from qiling.exception import *
 #   INSTALLSTATE *piInstalled,
 #   INSTALLSTATE *piAction
 # );
-@winapi(cc=STDCALL, params={
-    "package": POINTER,
-    "szComponent": STRING,
-    "piInstalled": POINTER,
-    "piAction": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, funcname="MsiGetComponentStateA")
 def hook_MsiGetComponentStateA(ql, address, params):
     return 6  # INVALID_HANDLE
