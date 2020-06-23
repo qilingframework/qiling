@@ -628,11 +628,11 @@ class QlLoaderELF(QlLoader, ELFParse):
                 self.ql.mem.map(_vsyscall_addr, _vsyscall_size, info="[vsyscall]")
                 self.ql.mem.write(_vsyscall_addr, _vsyscall_size * b'\xcc')
 
-                _vsyscall_entry_asm = [0x60c0c748, # gettimeofday
-                                       0xc9c0c748, # time
+                _vsyscall_entry_asm = [0x60c0c748, # mov rax, 0x60; syscall gettimeofday
+                                       0xc9c0c748, # mov rax, 0xc9; syscall time
                                        ]
 
                 for idx, val in enumerate(_vsyscall_entry_asm):
-                    self.ql.mem.write(_vsyscall_addr + idx * 0x400 + (idx+0) * 4, self.ql.pack32(val))        # entry
+                    self.ql.mem.write(_vsyscall_addr + idx * 0x400 + (idx+0) * 4, self.ql.pack32(val))        # insert entry
                     self.ql.mem.write(_vsyscall_addr + idx * 0x400 + (idx+1) * 4, self.ql.pack32(0x0f000000)) # syscall
-                    self.ql.mem.write(_vsyscall_addr + idx * 0x400 + (idx+2) * 4, self.ql.pack32(0xccccc305)) # return
+                    self.ql.mem.write(_vsyscall_addr + idx * 0x400 + (idx+2) * 4, self.ql.pack32(0xccccc305)) # ret
