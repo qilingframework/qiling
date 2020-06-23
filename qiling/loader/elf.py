@@ -618,20 +618,21 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.ql.os.function_hook = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)
 
         # map vsyscall section for some specific needs
-        _vsyscall_addr = 0xffffffffff600000
-        _vsyscall_size = 0x1000
+        if self.ql.archbit == 64:
+            _vsyscall_addr = self.ql.os.profile.get("OS64", "vsyscall_address")
+            _vsyscall_size = self.ql.os.profile.get("OS64", "vsyscall_size")
 
-        if not self.ql.mem.is_mapped(_vsyscall_addr, _vsyscall_size):
-            # initialize with \xcc then insert syscall entry
-            # each syscall should be 1KiB(0x400 bytes) away
-            self.ql.mem.map(_vsyscall_addr, _vsyscall_size, info="[vsyscall]")
-            self.ql.mem.write(_vsyscall_addr, _vsyscall_size * b'\xcc')
+            if not self.ql.mem.is_mapped(_vsyscall_addr, _vsyscall_size):
+                # initialize with \xcc then insert syscall entry
+                # each syscall should be 1KiB(0x400 bytes) away
+                self.ql.mem.map(_vsyscall_addr, _vsyscall_size, info="[vsyscall]")
+                self.ql.mem.write(_vsyscall_addr, _vsyscall_size * b'\xcc')
 
-            _vsyscall_entry_asm = [0x60c0c748, # gettimeofday
-                                   0xc9c0c748, # time
-                                   ]
+                _vsyscall_entry_asm = [0x60c0c748, # gettimeofday
+                                       0xc9c0c748, # time
+                                       ]
 
-            for idx, val in enumerate(_vsyscall_entry_asm):
-                self.ql.mem.write(_vsyscall_addr + idx * 0x400 + (idx+0) * 4, self.ql.pack32(val))        # entry
-                self.ql.mem.write(_vsyscall_addr + idx * 0x400 + (idx+1) * 4, self.ql.pack64(0x0f000000)) # syscall
-                self.ql.mem.write(_vsyscall_addr + idx * 0x400 + (idx+2) * 4, self.ql.pack32(0xccccc305)) # return
+                for idx, val in enumerate(_vsyscall_entry_asm):
+                    self.ql.mem.write(_vsyscall_addr + idx * 0x400 + (idx+0) * 4, self.ql.pack32(val))        # entry
+                    self.ql.mem.write(_vsyscall_addr + idx * 0x400 + (idx+1) * 4, self.ql.pack32(0x0f000000)) # syscall
+                    self.ql.mem.write(_vsyscall_addr + idx * 0x400 + (idx+2) * 4, self.ql.pack32(0xccccc305)) # return
