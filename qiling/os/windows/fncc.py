@@ -55,7 +55,7 @@ def winsdkapi(cc, param_num=None, dllname=None, specialtype=None, specialtypeEx=
                         f = open(winsdk_path, 'r')
                         funclist = json.load(f)
                         paramlist = funclist[funcname]
-
+                    print('winsdk_path: '+winsdk_path)
                     for para in paramlist:
                         name = list(para.values())[0]
                         if name == 'VOID':
