@@ -474,10 +474,9 @@ def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
         GUID = str(ql.os.read_guid(GUID_ptr))
         ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
         dic = ql.loader.handle_dict[handle]
-        protocol = params["Protocol"]
-        if protocol not in dic:
+        if GUID not in dic:
             return EFI_INVALID_PARAMETER
-        del dic[protocol]
+        del dic[GUID]
         index +=2
     return EFI_SUCCESS
 

@@ -32,6 +32,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.events = {}
         self.handle_dict = {}
         self.notify_list = []
+        self.last_image_base = 0x10000
 
     @contextmanager
     def map_memory(self, addr, size):
@@ -68,11 +69,12 @@ class QlLoaderPE_UEFI(QlLoader):
         pe = pefile.PE(path, fast_load=True)
 
         # Make sure no module will occupy the NULL page
-        IMAGE_BASE = max(pe.OPTIONAL_HEADER.ImageBase, 0x10000)
+        IMAGE_BASE = max(pe.OPTIONAL_HEADER.ImageBase, self.last_image_base)
         IMAGE_SIZE = ql.mem.align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
 
         while IMAGE_BASE + IMAGE_SIZE < self.heap_base_address:
             if not ql.mem.is_mapped(IMAGE_BASE, 1):
+                self.last_image_base = IMAGE_BASE
                 ql.mem.map(IMAGE_BASE, IMAGE_SIZE)
                 pe.parse_data_directories()
                 data = bytearray(pe.get_memory_mapped_image())
