@@ -10,6 +10,7 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
 
+dllname = 'mscoree_dll'
 
 # void STDMETHODCALLTYPE CorExitProcess (
 #   int  exitCode

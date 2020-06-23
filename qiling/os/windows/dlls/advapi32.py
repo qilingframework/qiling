@@ -10,6 +10,7 @@ from qiling.os.windows.handle import *
 from qiling.os.windows.const import *
 from qiling.os.windows.structs import *
 
+dllname = 'advapi32_dll'
 
 def _RegOpenKey(ql, address, params):
     hKey = params["hKey"]
