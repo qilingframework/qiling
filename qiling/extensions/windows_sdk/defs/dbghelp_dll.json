@@ -1,0 +1,3198 @@
+{
+    "MiniDumpWriteDump": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ProcessId",
+            "type": "DWORD"
+        },
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "DumpType",
+            "type": "MINIDUMP_TYPE"
+        },
+        {
+            "name": "ExceptionParam",
+            "type": "PMINIDUMP_EXCEPTION_INFORMATION"
+        },
+        {
+            "name": "UserStreamParam",
+            "type": "PMINIDUMP_USER_STREAM_INFORMATION"
+        },
+        {
+            "name": "CallbackParam",
+            "type": "PMINIDUMP_CALLBACK_INFORMATION"
+        }
+    ],
+    "MiniDumpReadDumpStream": [
+        {
+            "name": "BaseOfDump",
+            "type": "PVOID"
+        },
+        {
+            "name": "StreamNumber",
+            "type": "ULONG"
+        },
+        {
+            "name": "Dir",
+            "type": "PMINIDUMP_DIRECTORY"
+        },
+        {
+            "name": "StreamPointer",
+            "type": "PVOID"
+        },
+        {
+            "name": "StreamSize",
+            "type": "ULONG"
+        }
+    ],
+    "SymFindDebugInfoFile": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DebugFilePath",
+            "type": "PSTR"
+        },
+        {
+            "name": "Callback",
+            "type": "PFIND_DEBUG_FILE_CALLBACK"
+        },
+        {
+            "name": "CallerData",
+            "type": "PVOID"
+        }
+    ],
+    "SymFindDebugInfoFileW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "FileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "DebugFilePath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "Callback",
+            "type": "PFIND_DEBUG_FILE_CALLBACKW"
+        },
+        {
+            "name": "CallerData",
+            "type": "PVOID"
+        }
+    ],
+    "FindDebugInfoFile": [
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SymbolPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DebugFilePath",
+            "type": "PSTR"
+        }
+    ],
+    "FindDebugInfoFileEx": [
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SymbolPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DebugFilePath",
+            "type": "PSTR"
+        },
+        {
+            "name": "Callback",
+            "type": "PFIND_DEBUG_FILE_CALLBACK"
+        },
+        {
+            "name": "CallerData",
+            "type": "PVOID"
+        }
+    ],
+    "FindDebugInfoFileExW": [
+        {
+            "name": "FileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SymbolPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "DebugFilePath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "Callback",
+            "type": "PFIND_DEBUG_FILE_CALLBACKW"
+        },
+        {
+            "name": "CallerData",
+            "type": "PVOID"
+        }
+    ],
+    "SymFindFileInPath": [
+        {
+            "name": "hprocess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SearchPathA",
+            "type": "PCSTR"
+        },
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "id",
+            "type": "PVOID"
+        },
+        {
+            "name": "two",
+            "type": "DWORD"
+        },
+        {
+            "name": "three",
+            "type": "DWORD"
+        },
+        {
+            "name": "flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "FoundFile",
+            "type": "PSTR"
+        },
+        {
+            "name": "callback",
+            "type": "PFINDFILEINPATHCALLBACK"
+        },
+        {
+            "name": "context",
+            "type": "PVOID"
+        }
+    ],
+    "SymFindFileInPathW": [
+        {
+            "name": "hprocess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SearchPathA",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "FileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "id",
+            "type": "PVOID"
+        },
+        {
+            "name": "two",
+            "type": "DWORD"
+        },
+        {
+            "name": "three",
+            "type": "DWORD"
+        },
+        {
+            "name": "flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "FoundFile",
+            "type": "PWSTR"
+        },
+        {
+            "name": "callback",
+            "type": "PFINDFILEINPATHCALLBACKW"
+        },
+        {
+            "name": "context",
+            "type": "PVOID"
+        }
+    ],
+    "SymFindExecutableImage": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ImageFilePath",
+            "type": "PSTR"
+        },
+        {
+            "name": "Callback",
+            "type": "PFIND_EXE_FILE_CALLBACK"
+        },
+        {
+            "name": "CallerData",
+            "type": "PVOID"
+        }
+    ],
+    "SymFindExecutableImageW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "FileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ImageFilePath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "Callback",
+            "type": "PFIND_EXE_FILE_CALLBACKW"
+        },
+        {
+            "name": "CallerData",
+            "type": "PVOID"
+        }
+    ],
+    "FindExecutableImage": [
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SymbolPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ImageFilePath",
+            "type": "PSTR"
+        }
+    ],
+    "FindExecutableImageEx": [
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SymbolPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ImageFilePath",
+            "type": "PSTR"
+        },
+        {
+            "name": "Callback",
+            "type": "PFIND_EXE_FILE_CALLBACK"
+        },
+        {
+            "name": "CallerData",
+            "type": "PVOID"
+        }
+    ],
+    "FindExecutableImageExW": [
+        {
+            "name": "FileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SymbolPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ImageFilePath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "Callback",
+            "type": "PFIND_EXE_FILE_CALLBACKW"
+        },
+        {
+            "name": "CallerData",
+            "type": "PVOID"
+        }
+    ],
+    "ImageNtHeader": [
+        {
+            "name": "Base",
+            "type": "PVOID"
+        }
+    ],
+    "ImageDirectoryEntryToDataEx": [
+        {
+            "name": "Base",
+            "type": "PVOID"
+        },
+        {
+            "name": "MappedAsImage",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "DirectoryEntry",
+            "type": "USHORT"
+        },
+        {
+            "name": "Size",
+            "type": "PULONG"
+        },
+        {
+            "name": "FoundHeader",
+            "type": "PIMAGE_SECTION_HEADER"
+        }
+    ],
+    "ImageDirectoryEntryToData": [
+        {
+            "name": "Base",
+            "type": "PVOID"
+        },
+        {
+            "name": "MappedAsImage",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "DirectoryEntry",
+            "type": "USHORT"
+        },
+        {
+            "name": "Size",
+            "type": "PULONG"
+        }
+    ],
+    "ImageRvaToSection": [
+        {
+            "name": "NtHeaders",
+            "type": "PIMAGE_NT_HEADERS"
+        },
+        {
+            "name": "Base",
+            "type": "PVOID"
+        },
+        {
+            "name": "Rva",
+            "type": "ULONG"
+        }
+    ],
+    "ImageRvaToVa": [
+        {
+            "name": "NtHeaders",
+            "type": "PIMAGE_NT_HEADERS"
+        },
+        {
+            "name": "Base",
+            "type": "PVOID"
+        },
+        {
+            "name": "Rva",
+            "type": "ULONG"
+        },
+        {
+            "name": "LastRvaSection",
+            "type": "PIMAGE_SECTION_HEADER"
+        }
+    ],
+    "SearchTreeForFile": [
+        {
+            "name": "RootPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "InputPathName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "OutputPathBuffer",
+            "type": "PSTR"
+        }
+    ],
+    "SearchTreeForFileW": [
+        {
+            "name": "RootPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "InputPathName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "OutputPathBuffer",
+            "type": "PWSTR"
+        }
+    ],
+    "EnumDirTree": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "RootPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "InputPathName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "OutputPathBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "cb",
+            "type": "PENUMDIRTREE_CALLBACK"
+        },
+        {
+            "name": "data",
+            "type": "PVOID"
+        }
+    ],
+    "EnumDirTreeW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "RootPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "InputPathName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "OutputPathBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cb",
+            "type": "PENUMDIRTREE_CALLBACKW"
+        },
+        {
+            "name": "data",
+            "type": "PVOID"
+        }
+    ],
+    "MakeSureDirectoryPathExists": [
+        {
+            "name": "DirPath",
+            "type": "PCSTR"
+        }
+    ],
+    "UnDecorateSymbolName": [
+        {
+            "name": "name",
+            "type": "PCSTR"
+        },
+        {
+            "name": "outputString",
+            "type": "PSTR"
+        },
+        {
+            "name": "maxStringLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "flags",
+            "type": "DWORD"
+        }
+    ],
+    "UnDecorateSymbolNameW": [
+        {
+            "name": "name",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "outputString",
+            "type": "PWSTR"
+        },
+        {
+            "name": "maxStringLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "flags",
+            "type": "DWORD"
+        }
+    ],
+    "StackWalk64": [
+        {
+            "name": "MachineType",
+            "type": "DWORD"
+        },
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "StackFrame",
+            "type": "LPSTACKFRAME64"
+        },
+        {
+            "name": "ContextRecord",
+            "type": "PVOID"
+        },
+        {
+            "name": "ReadMemoryRoutine",
+            "type": "PREAD_PROCESS_MEMORY_ROUTINE64"
+        },
+        {
+            "name": "FunctionTableAccessRoutine",
+            "type": "PFUNCTION_TABLE_ACCESS_ROUTINE64"
+        },
+        {
+            "name": "GetModuleBaseRoutine",
+            "type": "PGET_MODULE_BASE_ROUTINE64"
+        },
+        {
+            "name": "TranslateAddress",
+            "type": "PTRANSLATE_ADDRESS_ROUTINE64"
+        }
+    ],
+    "StackWalkEx": [
+        {
+            "name": "MachineType",
+            "type": "DWORD"
+        },
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "StackFrame",
+            "type": "LPSTACKFRAME_EX"
+        },
+        {
+            "name": "ContextRecord",
+            "type": "PVOID"
+        },
+        {
+            "name": "ReadMemoryRoutine",
+            "type": "PREAD_PROCESS_MEMORY_ROUTINE64"
+        },
+        {
+            "name": "FunctionTableAccessRoutine",
+            "type": "PFUNCTION_TABLE_ACCESS_ROUTINE64"
+        },
+        {
+            "name": "GetModuleBaseRoutine",
+            "type": "PGET_MODULE_BASE_ROUTINE64"
+        },
+        {
+            "name": "TranslateAddress",
+            "type": "PTRANSLATE_ADDRESS_ROUTINE64"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "ImagehlpApiVersion": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "ImagehlpApiVersionEx": [
+        {
+            "name": "AppVersion",
+            "type": "LPAPI_VERSION"
+        }
+    ],
+    "GetTimestampForLoadedLibrary": [
+        {
+            "name": "Module",
+            "type": "HMODULE"
+        }
+    ],
+    "SymSetParentWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "SymSetHomeDirectory": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dir",
+            "type": "PCSTR"
+        }
+    ],
+    "SymSetHomeDirectoryW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dir",
+            "type": "PCWSTR"
+        }
+    ],
+    "SymGetHomeDirectory": [
+        {
+            "name": "type",
+            "type": "DWORD"
+        },
+        {
+            "name": "dir",
+            "type": "PSTR"
+        },
+        {
+            "name": "size",
+            "type": "size_t"
+        }
+    ],
+    "SymGetHomeDirectoryW": [
+        {
+            "name": "type",
+            "type": "DWORD"
+        },
+        {
+            "name": "dir",
+            "type": "PWSTR"
+        },
+        {
+            "name": "size",
+            "type": "size_t"
+        }
+    ],
+    "SymGetOmaps": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "DWORD64"
+        },
+        {
+            "name": "OmapTo",
+            "type": "POMAP"
+        },
+        {
+            "name": "cOmapTo",
+            "type": "PDWORD64"
+        },
+        {
+            "name": "OmapFrom",
+            "type": "POMAP"
+        },
+        {
+            "name": "cOmapFrom",
+            "type": "PDWORD64"
+        }
+    ],
+    "SymSetOptions": [
+        {
+            "name": "SymOptions",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetOptions": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SymCleanup": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        }
+    ],
+    "SymGetExtendedOption": [
+        {
+            "name": "option",
+            "type": "IMAGEHLP_EXTENDED_OPTIONS"
+        }
+    ],
+    "SymSetExtendedOption": [
+        {
+            "name": "option",
+            "type": "IMAGEHLP_EXTENDED_OPTIONS"
+        },
+        {
+            "name": "value",
+            "type": "BOOL"
+        }
+    ],
+    "SymMatchString": [
+        {
+            "name": "string",
+            "type": "PCSTR"
+        },
+        {
+            "name": "expression",
+            "type": "PCSTR"
+        },
+        {
+            "name": "fCase",
+            "type": "BOOL"
+        }
+    ],
+    "SymMatchStringW": [
+        {
+            "name": "string",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "expression",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "fCase",
+            "type": "BOOL"
+        }
+    ],
+    "SymEnumSourceFiles": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ModBase",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Mask",
+            "type": "PCSTR"
+        },
+        {
+            "name": "cbSrcFiles",
+            "type": "PSYM_ENUMSOURCEFILES_CALLBACK"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymEnumSourceFilesW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ModBase",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Mask",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cbSrcFiles",
+            "type": "PSYM_ENUMSOURCEFILES_CALLBACKW"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymEnumerateModules64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "EnumModulesCallback",
+            "type": "PSYM_ENUMMODULES_CALLBACK64"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymEnumerateModulesW64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "EnumModulesCallback",
+            "type": "PSYM_ENUMMODULES_CALLBACKW64"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "EnumerateLoadedModulesEx": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "EnumLoadedModulesCallback",
+            "type": "PENUMLOADED_MODULES_CALLBACK64"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "EnumerateLoadedModulesExW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "EnumLoadedModulesCallback",
+            "type": "PENUMLOADED_MODULES_CALLBACKW64"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "EnumerateLoadedModules64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "EnumLoadedModulesCallback",
+            "type": "PENUMLOADED_MODULES_CALLBACK64"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "EnumerateLoadedModulesW64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "EnumLoadedModulesCallback",
+            "type": "PENUMLOADED_MODULES_CALLBACKW64"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymFunctionTableAccess64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "AddrBase",
+            "type": "DWORD64"
+        }
+    ],
+    "SymFunctionTableAccess64AccessRoutines": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "AddrBase",
+            "type": "DWORD64"
+        },
+        {
+            "name": "ReadMemoryRoutine",
+            "type": "PREAD_PROCESS_MEMORY_ROUTINE64"
+        },
+        {
+            "name": "GetModuleBaseRoutine",
+            "type": "PGET_MODULE_BASE_ROUTINE64"
+        }
+    ],
+    "SymGetModuleInfo64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "qwAddr",
+            "type": "DWORD64"
+        },
+        {
+            "name": "ModuleInfo",
+            "type": "PIMAGEHLP_MODULE64"
+        }
+    ],
+    "SymGetModuleInfoW64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "qwAddr",
+            "type": "DWORD64"
+        },
+        {
+            "name": "ModuleInfo",
+            "type": "PIMAGEHLP_MODULEW64"
+        }
+    ],
+    "SymGetModuleBase64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "qwAddr",
+            "type": "DWORD64"
+        }
+    ],
+    "SymEnumLines": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Obj",
+            "type": "PCSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCSTR"
+        },
+        {
+            "name": "EnumLinesCallback",
+            "type": "PSYM_ENUMLINES_CALLBACK"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymEnumLinesW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Obj",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "EnumLinesCallback",
+            "type": "PSYM_ENUMLINES_CALLBACKW"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymGetLineFromAddr64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "qwAddr",
+            "type": "DWORD64"
+        },
+        {
+            "name": "pdwDisplacement",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Line64",
+            "type": "PIMAGEHLP_LINE64"
+        }
+    ],
+    "SymGetLineFromAddrW64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwAddr",
+            "type": "DWORD64"
+        },
+        {
+            "name": "pdwDisplacement",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Line",
+            "type": "PIMAGEHLP_LINEW64"
+        }
+    ],
+    "SymGetLineFromInlineContext": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "qwAddr",
+            "type": "DWORD64"
+        },
+        {
+            "name": "InlineContext",
+            "type": "ULONG"
+        },
+        {
+            "name": "qwModuleBaseAddress",
+            "type": "DWORD64"
+        },
+        {
+            "name": "pdwDisplacement",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Line64",
+            "type": "PIMAGEHLP_LINE64"
+        }
+    ],
+    "SymGetLineFromInlineContextW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwAddr",
+            "type": "DWORD64"
+        },
+        {
+            "name": "InlineContext",
+            "type": "ULONG"
+        },
+        {
+            "name": "qwModuleBaseAddress",
+            "type": "DWORD64"
+        },
+        {
+            "name": "pdwDisplacement",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Line",
+            "type": "PIMAGEHLP_LINEW64"
+        }
+    ],
+    "SymEnumSourceLines": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Obj",
+            "type": "PCSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Line",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "EnumLinesCallback",
+            "type": "PSYM_ENUMLINES_CALLBACK"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymEnumSourceLinesW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Obj",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Line",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "EnumLinesCallback",
+            "type": "PSYM_ENUMLINES_CALLBACKW"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymAddrIncludeInlineTrace": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Address",
+            "type": "DWORD64"
+        }
+    ],
+    "SymCompareInlineTrace": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Address1",
+            "type": "DWORD64"
+        },
+        {
+            "name": "InlineContext1",
+            "type": "DWORD"
+        },
+        {
+            "name": "RetAddress1",
+            "type": "DWORD64"
+        },
+        {
+            "name": "Address2",
+            "type": "DWORD64"
+        },
+        {
+            "name": "RetAddress2",
+            "type": "DWORD64"
+        }
+    ],
+    "SymQueryInlineTrace": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "StartAddress",
+            "type": "DWORD64"
+        },
+        {
+            "name": "StartContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "StartRetAddress",
+            "type": "DWORD64"
+        },
+        {
+            "name": "CurAddress",
+            "type": "DWORD64"
+        },
+        {
+            "name": "CurContext",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "CurFrameIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "SymGetLineFromName64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ModuleName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "dwLineNumber",
+            "type": "DWORD"
+        },
+        {
+            "name": "plDisplacement",
+            "type": "PLONG"
+        },
+        {
+            "name": "Line",
+            "type": "PIMAGEHLP_LINE64"
+        }
+    ],
+    "SymGetLineFromNameW64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ModuleName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "FileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwLineNumber",
+            "type": "DWORD"
+        },
+        {
+            "name": "plDisplacement",
+            "type": "PLONG"
+        },
+        {
+            "name": "Line",
+            "type": "PIMAGEHLP_LINEW64"
+        }
+    ],
+    "SymGetLineNext64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Line",
+            "type": "PIMAGEHLP_LINE64"
+        }
+    ],
+    "SymGetLineNextW64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Line",
+            "type": "PIMAGEHLP_LINEW64"
+        }
+    ],
+    "SymGetLinePrev64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Line",
+            "type": "PIMAGEHLP_LINE64"
+        }
+    ],
+    "SymGetLinePrevW64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Line",
+            "type": "PIMAGEHLP_LINEW64"
+        }
+    ],
+    "SymGetFileLineOffsets64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ModuleName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Buffer",
+            "type": "PDWORD64"
+        },
+        {
+            "name": "BufferLines",
+            "type": "ULONG"
+        }
+    ],
+    "SymMatchFileName": [
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Match",
+            "type": "PCSTR"
+        },
+        {
+            "name": "FileNameStop",
+            "type": "PSTR"
+        },
+        {
+            "name": "MatchStop",
+            "type": "PSTR"
+        }
+    ],
+    "SymMatchFileNameW": [
+        {
+            "name": "FileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Match",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "FileNameStop",
+            "type": "PWSTR"
+        },
+        {
+            "name": "MatchStop",
+            "type": "PWSTR"
+        }
+    ],
+    "SymGetSourceFile": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Params",
+            "type": "PCSTR"
+        },
+        {
+            "name": "FileSpec",
+            "type": "PCSTR"
+        },
+        {
+            "name": "FilePath",
+            "type": "PSTR"
+        },
+        {
+            "name": "Size",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetSourceFileW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Params",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "FileSpec",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "FilePath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "Size",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetSourceFileToken": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG64"
+        },
+        {
+            "name": "FileSpec",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Token",
+            "type": "PVOID"
+        },
+        {
+            "name": "Size",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetSourceFileChecksumW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG64"
+        },
+        {
+            "name": "FileSpec",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pCheckSumType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pChecksum",
+            "type": "BYTE"
+        },
+        {
+            "name": "checksumSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pActualBytesWritten",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetSourceFileChecksum": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG64"
+        },
+        {
+            "name": "FileSpec",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pCheckSumType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pChecksum",
+            "type": "BYTE"
+        },
+        {
+            "name": "checksumSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pActualBytesWritten",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetSourceFileTokenW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG64"
+        },
+        {
+            "name": "FileSpec",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Token",
+            "type": "PVOID"
+        },
+        {
+            "name": "Size",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetSourceFileFromToken": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Token",
+            "type": "PVOID"
+        },
+        {
+            "name": "Params",
+            "type": "PCSTR"
+        },
+        {
+            "name": "FilePath",
+            "type": "PSTR"
+        },
+        {
+            "name": "Size",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetSourceFileFromTokenW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Token",
+            "type": "PVOID"
+        },
+        {
+            "name": "Params",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "FilePath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "Size",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetSourceVarFromToken": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Token",
+            "type": "PVOID"
+        },
+        {
+            "name": "Params",
+            "type": "PCSTR"
+        },
+        {
+            "name": "VarName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Value",
+            "type": "PSTR"
+        },
+        {
+            "name": "Size",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetSourceVarFromTokenW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Token",
+            "type": "PVOID"
+        },
+        {
+            "name": "Params",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "VarName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Value",
+            "type": "PWSTR"
+        },
+        {
+            "name": "Size",
+            "type": "DWORD"
+        }
+    ],
+    "SymEnumSourceFileTokens": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Callback",
+            "type": "PENUMSOURCEFILETOKENSCALLBACK"
+        }
+    ],
+    "SymInitialize": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "UserSearchPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "fInvadeProcess",
+            "type": "BOOL"
+        }
+    ],
+    "SymInitializeW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "UserSearchPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "fInvadeProcess",
+            "type": "BOOL"
+        }
+    ],
+    "SymGetSearchPath": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SearchPathA",
+            "type": "PSTR"
+        },
+        {
+            "name": "SearchPathLength",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetSearchPathW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SearchPathA",
+            "type": "PWSTR"
+        },
+        {
+            "name": "SearchPathLength",
+            "type": "DWORD"
+        }
+    ],
+    "SymSetSearchPath": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SearchPathA",
+            "type": "PCSTR"
+        }
+    ],
+    "SymSetSearchPathW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SearchPathA",
+            "type": "PCWSTR"
+        }
+    ],
+    "SymLoadModuleEx": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ImageName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ModuleName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "DWORD64"
+        },
+        {
+            "name": "DllSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "Data",
+            "type": "PMODLOAD_DATA"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymLoadModuleExW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ImageName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ModuleName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "DWORD64"
+        },
+        {
+            "name": "DllSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "Data",
+            "type": "PMODLOAD_DATA"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymUnloadModule64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "DWORD64"
+        }
+    ],
+    "SymUnDName64": [
+        {
+            "name": "sym",
+            "type": "PIMAGEHLP_SYMBOL64"
+        },
+        {
+            "name": "UnDecName",
+            "type": "PSTR"
+        },
+        {
+            "name": "UnDecNameLength",
+            "type": "DWORD"
+        }
+    ],
+    "SymRegisterCallback64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CallbackFunction",
+            "type": "PSYMBOL_REGISTERED_CALLBACK64"
+        },
+        {
+            "name": "UserContext",
+            "type": "ULONG64"
+        }
+    ],
+    "SymRegisterCallbackW64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CallbackFunction",
+            "type": "PSYMBOL_REGISTERED_CALLBACK64"
+        },
+        {
+            "name": "UserContext",
+            "type": "ULONG64"
+        }
+    ],
+    "SymRegisterFunctionEntryCallback64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CallbackFunction",
+            "type": "PSYMBOL_FUNCENTRY_CALLBACK64"
+        },
+        {
+            "name": "UserContext",
+            "type": "ULONG64"
+        }
+    ],
+    "SymSetContext": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "StackFrame",
+            "type": "PIMAGEHLP_STACK_FRAME"
+        },
+        {
+            "name": "Context",
+            "type": "PIMAGEHLP_CONTEXT"
+        }
+    ],
+    "SymSetScopeFromAddr": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Address",
+            "type": "ULONG64"
+        }
+    ],
+    "SymSetScopeFromInlineContext": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Address",
+            "type": "ULONG64"
+        },
+        {
+            "name": "InlineContext",
+            "type": "ULONG"
+        }
+    ],
+    "SymSetScopeFromIndex": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Index",
+            "type": "DWORD"
+        }
+    ],
+    "SymEnumProcesses": [
+        {
+            "name": "EnumProcessesCallback",
+            "type": "PSYM_ENUMPROCESSES_CALLBACK"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymFromAddr": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Address",
+            "type": "DWORD64"
+        },
+        {
+            "name": "Displacement",
+            "type": "PDWORD64"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFO"
+        }
+    ],
+    "SymFromAddrW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Address",
+            "type": "DWORD64"
+        },
+        {
+            "name": "Displacement",
+            "type": "PDWORD64"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFOW"
+        }
+    ],
+    "SymFromInlineContext": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Address",
+            "type": "DWORD64"
+        },
+        {
+            "name": "InlineContext",
+            "type": "ULONG"
+        },
+        {
+            "name": "Displacement",
+            "type": "PDWORD64"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFO"
+        }
+    ],
+    "SymFromInlineContextW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Address",
+            "type": "DWORD64"
+        },
+        {
+            "name": "InlineContext",
+            "type": "ULONG"
+        },
+        {
+            "name": "Displacement",
+            "type": "PDWORD64"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFOW"
+        }
+    ],
+    "SymFromToken": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "DWORD64"
+        },
+        {
+            "name": "Token",
+            "type": "DWORD"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFO"
+        }
+    ],
+    "SymFromTokenW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "DWORD64"
+        },
+        {
+            "name": "Token",
+            "type": "DWORD"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFOW"
+        }
+    ],
+    "SymNext": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "si",
+            "type": "PSYMBOL_INFO"
+        }
+    ],
+    "SymNextW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "siw",
+            "type": "PSYMBOL_INFOW"
+        }
+    ],
+    "SymPrev": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "si",
+            "type": "PSYMBOL_INFO"
+        }
+    ],
+    "SymPrevW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "siw",
+            "type": "PSYMBOL_INFOW"
+        }
+    ],
+    "SymFromName": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Name",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFO"
+        }
+    ],
+    "SymFromNameW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Name",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFOW"
+        }
+    ],
+    "SymEnumSymbols": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Mask",
+            "type": "PCSTR"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMERATESYMBOLS_CALLBACK"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymEnumSymbolsEx": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Mask",
+            "type": "PCSTR"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMERATESYMBOLS_CALLBACK"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        }
+    ],
+    "SymEnumSymbolsW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Mask",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMERATESYMBOLS_CALLBACKW"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymEnumSymbolsExW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Mask",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMERATESYMBOLS_CALLBACKW"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        }
+    ],
+    "SymEnumSymbolsForAddr": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Address",
+            "type": "DWORD64"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMERATESYMBOLS_CALLBACK"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymEnumSymbolsForAddrW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Address",
+            "type": "DWORD64"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMERATESYMBOLS_CALLBACKW"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymSearch": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Index",
+            "type": "DWORD"
+        },
+        {
+            "name": "SymTag",
+            "type": "DWORD"
+        },
+        {
+            "name": "Mask",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Address",
+            "type": "DWORD64"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMERATESYMBOLS_CALLBACK"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        }
+    ],
+    "SymSearchW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Index",
+            "type": "DWORD"
+        },
+        {
+            "name": "SymTag",
+            "type": "DWORD"
+        },
+        {
+            "name": "Mask",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Address",
+            "type": "DWORD64"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMERATESYMBOLS_CALLBACKW"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "Options",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetScope": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Index",
+            "type": "DWORD"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFO"
+        }
+    ],
+    "SymGetScopeW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Index",
+            "type": "DWORD"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFOW"
+        }
+    ],
+    "SymFromIndex": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Index",
+            "type": "DWORD"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFO"
+        }
+    ],
+    "SymFromIndexW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Index",
+            "type": "DWORD"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFOW"
+        }
+    ],
+    "SymGetTypeInfo": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ModBase",
+            "type": "DWORD64"
+        },
+        {
+            "name": "TypeId",
+            "type": "ULONG"
+        },
+        {
+            "name": "GetType",
+            "type": "IMAGEHLP_SYMBOL_TYPE_INFO"
+        },
+        {
+            "name": "pInfo",
+            "type": "PVOID"
+        }
+    ],
+    "SymGetTypeInfoEx": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ModBase",
+            "type": "DWORD64"
+        },
+        {
+            "name": "Params",
+            "type": "PIMAGEHLP_GET_TYPE_INFO_PARAMS"
+        }
+    ],
+    "SymEnumTypes": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMERATESYMBOLS_CALLBACK"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymEnumTypesW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMERATESYMBOLS_CALLBACKW"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymEnumTypesByName": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "mask",
+            "type": "PCSTR"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMERATESYMBOLS_CALLBACK"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymEnumTypesByNameW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "mask",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMERATESYMBOLS_CALLBACKW"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymGetTypeFromName": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Name",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFO"
+        }
+    ],
+    "SymGetTypeFromNameW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Name",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Symbol",
+            "type": "PSYMBOL_INFOW"
+        }
+    ],
+    "SymAddSymbol": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Name",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Address",
+            "type": "DWORD64"
+        },
+        {
+            "name": "Size",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymAddSymbolW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Name",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Address",
+            "type": "DWORD64"
+        },
+        {
+            "name": "Size",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymDeleteSymbol": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Name",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Address",
+            "type": "DWORD64"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymDeleteSymbolW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Name",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Address",
+            "type": "DWORD64"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymRefreshModuleList": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        }
+    ],
+    "SymAddSourceStream": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG64"
+        },
+        {
+            "name": "StreamFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Buffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "Size",
+            "type": "size_t"
+        }
+    ],
+    "SymAddSourceStreamW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Base",
+            "type": "ULONG64"
+        },
+        {
+            "name": "FileSpec",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Buffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "Size",
+            "type": "size_t"
+        }
+    ],
+    "SymSrvIsStoreW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "path",
+            "type": "PCWSTR"
+        }
+    ],
+    "SymSrvIsStore": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "path",
+            "type": "PCSTR"
+        }
+    ],
+    "SymSrvDeltaName": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SymPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Type",
+            "type": "PCSTR"
+        },
+        {
+            "name": "File1",
+            "type": "PCSTR"
+        },
+        {
+            "name": "File2",
+            "type": "PCSTR"
+        }
+    ],
+    "SymSrvDeltaNameW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SymPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Type",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "File1",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "File2",
+            "type": "PCWSTR"
+        }
+    ],
+    "SymSrvGetSupplement": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SymPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Node",
+            "type": "PCSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCSTR"
+        }
+    ],
+    "SymSrvGetSupplementW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SymPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Node",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCWSTR"
+        }
+    ],
+    "SymSrvGetFileIndexes": [
+        {
+            "name": "File",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Id",
+            "type": "GUID"
+        },
+        {
+            "name": "Val1",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Val2",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymSrvGetFileIndexesW": [
+        {
+            "name": "File",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Id",
+            "type": "GUID"
+        },
+        {
+            "name": "Val1",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Val2",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymSrvGetFileIndexStringW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SrvPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Index",
+            "type": "PWSTR"
+        },
+        {
+            "name": "Size",
+            "type": "size_t"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymSrvGetFileIndexString": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SrvPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Index",
+            "type": "PSTR"
+        },
+        {
+            "name": "Size",
+            "type": "size_t"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymSrvGetFileIndexInfo": [
+        {
+            "name": "File",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Info",
+            "type": "PSYMSRV_INDEX_INFO"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymSrvGetFileIndexInfoW": [
+        {
+            "name": "File",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Info",
+            "type": "PSYMSRV_INDEX_INFOW"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymSrvStoreSupplement": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SrvPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Node",
+            "type": "PCSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymSrvStoreSupplementW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SymPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Node",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymSrvStoreFile": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SrvPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymSrvStoreFileW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SrvPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetSymbolFile": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SymPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ImageFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Type",
+            "type": "DWORD"
+        },
+        {
+            "name": "SymbolFile",
+            "type": "PSTR"
+        },
+        {
+            "name": "cSymbolFile",
+            "type": "size_t"
+        },
+        {
+            "name": "DbgFile",
+            "type": "PSTR"
+        },
+        {
+            "name": "cDbgFile",
+            "type": "size_t"
+        }
+    ],
+    "SymGetSymbolFileW": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SymPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ImageFile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Type",
+            "type": "DWORD"
+        },
+        {
+            "name": "SymbolFile",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cSymbolFile",
+            "type": "size_t"
+        },
+        {
+            "name": "DbgFile",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cDbgFile",
+            "type": "size_t"
+        }
+    ],
+    "SymGetSymFromAddr64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "qwAddr",
+            "type": "DWORD64"
+        },
+        {
+            "name": "pdwDisplacement",
+            "type": "PDWORD64"
+        },
+        {
+            "name": "Symbol",
+            "type": "PIMAGEHLP_SYMBOL64"
+        }
+    ],
+    "SymGetSymFromName64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Name",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Symbol",
+            "type": "PIMAGEHLP_SYMBOL64"
+        }
+    ],
+    "SymEnumerateSymbols64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMSYMBOLS_CALLBACK64"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymEnumerateSymbolsW64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "ULONG64"
+        },
+        {
+            "name": "EnumSymbolsCallback",
+            "type": "PSYM_ENUMSYMBOLS_CALLBACK64W"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "SymLoadModule64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ImageName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ModuleName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "BaseOfDll",
+            "type": "DWORD64"
+        },
+        {
+            "name": "SizeOfDll",
+            "type": "DWORD"
+        }
+    ],
+    "SymGetSymNext64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Symbol",
+            "type": "PIMAGEHLP_SYMBOL64"
+        }
+    ],
+    "SymGetSymPrev64": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Symbol",
+            "type": "PIMAGEHLP_SYMBOL64"
+        }
+    ],
+    "GetSymLoadError": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetSymLoadError": [
+        {
+            "name": "error",
+            "type": "DWORD"
+        }
+    ]
+}

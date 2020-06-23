@@ -1,0 +1,62 @@
+{
+    "MI_Application_InitializeV1": [
+        {
+            "name": "flags",
+            "type": "MI_Uint32"
+        },
+        {
+            "name": "applicationID",
+            "type": "MI_Char"
+        },
+        {
+            "name": "extendedError",
+            "type": "MI_Instance"
+        },
+        {
+            "name": "application",
+            "type": "MI_Application"
+        }
+    ],
+    "MI_Application_NewClass": [
+        {
+            "name": "application",
+            "type": "MI_Application"
+        },
+        {
+            "name": "classDecl",
+            "type": "MI_ClassDecl"
+        },
+        {
+            "name": "namespaceName",
+            "type": "MI_Char"
+        },
+        {
+            "name": "serverName",
+            "type": "MI_Char"
+        },
+        {
+            "name": "classObject",
+            "type": "MI_Class"
+        }
+    ],
+    "MI_OperationOptions_SetResourceUri": [
+        {
+            "name": "options",
+            "type": "MI_OperationOptions"
+        },
+        {
+            "name": "rUri",
+            "type": "MI_Char"
+        }
+    ],
+    "MI_OperationOptions_GetResourceUri": [
+        {
+            "name": "options",
+            "type": "MI_OperationOptions"
+        },
+        {
+            "name": "rUri",
+            "type": "MI_Char"
+        }
+    ]
+}

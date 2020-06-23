@@ -1,0 +1,236 @@
+{
+    "EcOpenSubscriptionEnum": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EcEnumNextSubscription": [
+        {
+            "name": "SubscriptionEnum",
+            "type": "EC_HANDLE"
+        },
+        {
+            "name": "SubscriptionNameBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "SubscriptionNameBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "SubscriptionNameBufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EcOpenSubscription": [
+        {
+            "name": "SubscriptionName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "AccessMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EcSetSubscriptionProperty": [
+        {
+            "name": "Subscription",
+            "type": "EC_HANDLE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "EC_SUBSCRIPTION_PROPERTY_ID"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValue",
+            "type": "PEC_VARIANT"
+        }
+    ],
+    "EcGetSubscriptionProperty": [
+        {
+            "name": "Subscription",
+            "type": "EC_HANDLE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "EC_SUBSCRIPTION_PROPERTY_ID"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValueBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValueBuffer",
+            "type": "PEC_VARIANT"
+        },
+        {
+            "name": "PropertyValueBufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EcSaveSubscription": [
+        {
+            "name": "Subscription",
+            "type": "EC_HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EcDeleteSubscription": [
+        {
+            "name": "SubscriptionName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EcGetObjectArraySize": [
+        {
+            "name": "ObjectArray",
+            "type": "EC_OBJECT_ARRAY_PROPERTY_HANDLE"
+        },
+        {
+            "name": "ObjectArraySize",
+            "type": "PDWORD"
+        }
+    ],
+    "EcSetObjectArrayProperty": [
+        {
+            "name": "ObjectArray",
+            "type": "EC_OBJECT_ARRAY_PROPERTY_HANDLE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "EC_SUBSCRIPTION_PROPERTY_ID"
+        },
+        {
+            "name": "ArrayIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValue",
+            "type": "PEC_VARIANT"
+        }
+    ],
+    "EcGetObjectArrayProperty": [
+        {
+            "name": "ObjectArray",
+            "type": "EC_OBJECT_ARRAY_PROPERTY_HANDLE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "EC_SUBSCRIPTION_PROPERTY_ID"
+        },
+        {
+            "name": "ArrayIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValueBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValueBuffer",
+            "type": "PEC_VARIANT"
+        },
+        {
+            "name": "PropertyValueBufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EcInsertObjectArrayElement": [
+        {
+            "name": "ObjectArray",
+            "type": "EC_OBJECT_ARRAY_PROPERTY_HANDLE"
+        },
+        {
+            "name": "ArrayIndex",
+            "type": "DWORD"
+        }
+    ],
+    "EcRemoveObjectArrayElement": [
+        {
+            "name": "ObjectArray",
+            "type": "EC_OBJECT_ARRAY_PROPERTY_HANDLE"
+        },
+        {
+            "name": "ArrayIndex",
+            "type": "DWORD"
+        }
+    ],
+    "EcGetSubscriptionRunTimeStatus": [
+        {
+            "name": "SubscriptionName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "StatusInfoId",
+            "type": "EC_SUBSCRIPTION_RUNTIME_STATUS_INFO_ID"
+        },
+        {
+            "name": "EventSourceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "StatusValueBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "StatusValueBuffer",
+            "type": "PEC_VARIANT"
+        },
+        {
+            "name": "StatusValueBufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EcRetrySubscription": [
+        {
+            "name": "SubscriptionName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "EventSourceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EcClose": [
+        {
+            "name": "Object",
+            "type": "EC_HANDLE"
+        }
+    ]
+}

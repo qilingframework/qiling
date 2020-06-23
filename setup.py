@@ -48,7 +48,7 @@ setup(
         'Programming Language :: Python :: 3',
     ],
 
-    keywords='qiling binary emulator framework malware analysis uefi IoT',
+    keywords='qiling binary emulator framework malware analysis UEFI IoT',
 
     packages=find_packages(),
     include_package_data=True,

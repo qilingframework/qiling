@@ -1,0 +1,120 @@
+{
+    "TF_CreateThreadMgr": [
+        {
+            "name": "pptim",
+            "type": "ITfThreadMgr"
+        }
+    ],
+    "TF_GetThreadMgr": [
+        {
+            "name": "pptim",
+            "type": "ITfThreadMgr"
+        }
+    ],
+    "TF_CreateInputProcessorProfiles": [
+        {
+            "name": "ppipr",
+            "type": "ITfInputProcessorProfiles"
+        }
+    ],
+    "TF_CreateDisplayAttributeMgr": [
+        {
+            "name": "ppdam",
+            "type": "ITfDisplayAttributeMgr"
+        }
+    ],
+    "TF_CreateLangBarMgr": [
+        {
+            "name": "pppbm",
+            "type": "ITfLangBarMgr"
+        }
+    ],
+    "TF_CreateLangBarItemMgr": [
+        {
+            "name": "pplbim",
+            "type": "ITfLangBarItemMgr"
+        }
+    ],
+    "TF_CreateCategoryMgr": [
+        {
+            "name": "ppcat",
+            "type": "ITfCategoryMgr"
+        }
+    ],
+    "SetInputScope": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "inputscope",
+            "type": "InputScope"
+        }
+    ],
+    "SetInputScopes": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pInputScopes",
+            "type": "InputScope"
+        },
+        {
+            "name": "cInputScopes",
+            "type": "UINT"
+        },
+        {
+            "name": "ppszPhraseList",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cPhrases",
+            "type": "UINT"
+        },
+        {
+            "name": "pszRegExp",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pszSRGS",
+            "type": "PWSTR"
+        }
+    ],
+    "SetInputScopeXML": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszXML",
+            "type": "PWSTR"
+        }
+    ],
+    "SetInputScopes2": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pInputScopes",
+            "type": "InputScope"
+        },
+        {
+            "name": "cInputScopes",
+            "type": "UINT"
+        },
+        {
+            "name": "pEnumString",
+            "type": "IEnumString"
+        },
+        {
+            "name": "pszRegExp",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pszSRGS",
+            "type": "PWSTR"
+        }
+    ]
+}

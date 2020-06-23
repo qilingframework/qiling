@@ -1,0 +1,16 @@
+{
+    "LoadIFilter": [
+        {
+            "name": "pwcsPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pUnkOuter",
+            "type": "IUnknown"
+        },
+        {
+            "name": "ppIUnk",
+            "type": "void"
+        }
+    ]
+}

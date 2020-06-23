@@ -1,0 +1,12 @@
+{
+    "Direct3DCreate9Ex": [
+        {
+            "name": "SDKVersion",
+            "type": "UINT"
+        },
+        {
+            "name": "VOID",
+            "type": "IDirect3D9Ex"
+        }
+    ]
+}

@@ -1,0 +1,4590 @@
+{
+    "MsiCloseHandle": [
+        {
+            "name": "hAny",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiSetInternalUI": [
+        {
+            "name": "dwUILevel",
+            "type": "INSTALLUILEVEL"
+        },
+        {
+            "name": "phWnd",
+            "type": "HWND"
+        }
+    ],
+    "MsiSetExternalUIA": [
+        {
+            "name": "puiHandler",
+            "type": "INSTALLUI_HANDLERA"
+        },
+        {
+            "name": "dwMessageFilter",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvContext",
+            "type": "LPVOID"
+        }
+    ],
+    "MsiSetExternalUIW": [
+        {
+            "name": "puiHandler",
+            "type": "INSTALLUI_HANDLERW"
+        },
+        {
+            "name": "dwMessageFilter",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvContext",
+            "type": "LPVOID"
+        }
+    ],
+    "MsiSetExternalUIRecord": [
+        {
+            "name": "puiHandler",
+            "type": "INSTALLUI_HANDLER_RECORD"
+        },
+        {
+            "name": "dwMessageFilter",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvContext",
+            "type": "LPVOID"
+        },
+        {
+            "name": "ppuiPrevHandler",
+            "type": "PINSTALLUI_HANDLER_RECORD"
+        }
+    ],
+    "MsiEnableLogA": [
+        {
+            "name": "dwLogMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "szLogFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwLogAttributes",
+            "type": "DWORD"
+        }
+    ],
+    "MsiEnableLogW": [
+        {
+            "name": "dwLogMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "szLogFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwLogAttributes",
+            "type": "DWORD"
+        }
+    ],
+    "MsiQueryProductStateA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiQueryProductStateW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiGetProductInfoA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szAttribute",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpValueBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchValueBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetProductInfoW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szAttribute",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpValueBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchValueBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetProductInfoExA": [
+        {
+            "name": "szProductCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szProperty",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szValue",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchValue",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetProductInfoExW": [
+        {
+            "name": "szProductCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szProperty",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szValue",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchValue",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiInstallProductA": [
+        {
+            "name": "szPackagePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szCommandLine",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiInstallProductW": [
+        {
+            "name": "szPackagePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szCommandLine",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiConfigureProductA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iInstallLevel",
+            "type": "int"
+        },
+        {
+            "name": "eInstallState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiConfigureProductW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iInstallLevel",
+            "type": "int"
+        },
+        {
+            "name": "eInstallState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiConfigureProductExA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iInstallLevel",
+            "type": "int"
+        },
+        {
+            "name": "eInstallState",
+            "type": "INSTALLSTATE"
+        },
+        {
+            "name": "szCommandLine",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiConfigureProductExW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iInstallLevel",
+            "type": "int"
+        },
+        {
+            "name": "eInstallState",
+            "type": "INSTALLSTATE"
+        },
+        {
+            "name": "szCommandLine",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiReinstallProductA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szReinstallMode",
+            "type": "DWORD"
+        }
+    ],
+    "MsiReinstallProductW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szReinstallMode",
+            "type": "DWORD"
+        }
+    ],
+    "MsiAdvertiseProductExA": [
+        {
+            "name": "szPackagePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szScriptfilePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szTransforms",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lgidLanguage",
+            "type": "LANGID"
+        },
+        {
+            "name": "dwPlatform",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "MsiAdvertiseProductExW": [
+        {
+            "name": "szPackagePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szScriptfilePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szTransforms",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lgidLanguage",
+            "type": "LANGID"
+        },
+        {
+            "name": "dwPlatform",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "MsiAdvertiseProductA": [
+        {
+            "name": "szPackagePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szScriptfilePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szTransforms",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lgidLanguage",
+            "type": "LANGID"
+        }
+    ],
+    "MsiAdvertiseProductW": [
+        {
+            "name": "szPackagePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szScriptfilePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szTransforms",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lgidLanguage",
+            "type": "LANGID"
+        }
+    ],
+    "MsiProcessAdvertiseScriptA": [
+        {
+            "name": "szScriptFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szIconFolder",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hRegData",
+            "type": "HKEY"
+        },
+        {
+            "name": "fShortcuts",
+            "type": "BOOL"
+        },
+        {
+            "name": "fRemoveItems",
+            "type": "BOOL"
+        }
+    ],
+    "MsiProcessAdvertiseScriptW": [
+        {
+            "name": "szScriptFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szIconFolder",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hRegData",
+            "type": "HKEY"
+        },
+        {
+            "name": "fShortcuts",
+            "type": "BOOL"
+        },
+        {
+            "name": "fRemoveItems",
+            "type": "BOOL"
+        }
+    ],
+    "MsiAdvertiseScriptA": [
+        {
+            "name": "szScriptFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phRegData",
+            "type": "PHKEY"
+        },
+        {
+            "name": "fRemoveItems",
+            "type": "BOOL"
+        }
+    ],
+    "MsiAdvertiseScriptW": [
+        {
+            "name": "szScriptFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phRegData",
+            "type": "PHKEY"
+        },
+        {
+            "name": "fRemoveItems",
+            "type": "BOOL"
+        }
+    ],
+    "MsiGetProductInfoFromScriptA": [
+        {
+            "name": "szScriptFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpProductBuf39",
+            "type": "LPSTR"
+        },
+        {
+            "name": "plgidLanguage",
+            "type": "LANGID"
+        },
+        {
+            "name": "pdwVersion",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpNameBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchNameBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpPackageBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchPackageBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetProductInfoFromScriptW": [
+        {
+            "name": "szScriptFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpProductBuf39",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "plgidLanguage",
+            "type": "LANGID"
+        },
+        {
+            "name": "pdwVersion",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpNameBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchNameBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpPackageBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchPackageBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetProductCodeA": [
+        {
+            "name": "szComponent",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpBuf39",
+            "type": "LPSTR"
+        }
+    ],
+    "MsiGetProductCodeW": [
+        {
+            "name": "szComponent",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpBuf39",
+            "type": "LPWSTR"
+        }
+    ],
+    "MsiGetUserInfoA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpUserNameBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchUserNameBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpOrgNameBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchOrgNameBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpSerialBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchSerialBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetUserInfoW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpUserNameBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchUserNameBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpOrgNameBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchOrgNameBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpSerialBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchSerialBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiCollectUserInfoA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiCollectUserInfoW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiApplyPatchA": [
+        {
+            "name": "szPatchPackage",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szInstallPackage",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "eInstallType",
+            "type": "INSTALLTYPE"
+        },
+        {
+            "name": "szCommandLine",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiApplyPatchW": [
+        {
+            "name": "szPatchPackage",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szInstallPackage",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "eInstallType",
+            "type": "INSTALLTYPE"
+        },
+        {
+            "name": "szCommandLine",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiGetPatchInfoA": [
+        {
+            "name": "szPatch",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szAttribute",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpValueBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchValueBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetPatchInfoW": [
+        {
+            "name": "szPatch",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szAttribute",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpValueBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchValueBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiEnumPatchesA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iPatchIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpPatchBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpTransformsBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchTransformsBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiEnumPatchesW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iPatchIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpPatchBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpTransformsBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchTransformsBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiRemovePatchesA": [
+        {
+            "name": "szPatchList",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szProductCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "eUninstallType",
+            "type": "INSTALLTYPE"
+        },
+        {
+            "name": "szPropertyList",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiRemovePatchesW": [
+        {
+            "name": "szPatchList",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szProductCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "eUninstallType",
+            "type": "INSTALLTYPE"
+        },
+        {
+            "name": "szPropertyList",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiExtractPatchXMLDataA": [
+        {
+            "name": "szPatchPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "szXMLData",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchXMLData",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiExtractPatchXMLDataW": [
+        {
+            "name": "szPatchPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "szXMLData",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchXMLData",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetPatchInfoExA": [
+        {
+            "name": "szPatchCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szProductCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szProperty",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpValue",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchValue",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetPatchInfoExW": [
+        {
+            "name": "szPatchCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szProductCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szProperty",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpValue",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchValue",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiApplyMultiplePatchesA": [
+        {
+            "name": "szPatchPackages",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szProductCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szPropertiesList",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiApplyMultiplePatchesW": [
+        {
+            "name": "szPatchPackages",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szProductCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szPropertiesList",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiDeterminePatchSequenceA": [
+        {
+            "name": "szProductCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "cPatchInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPatchInfo",
+            "type": "PMSIPATCHSEQUENCEINFOA"
+        }
+    ],
+    "MsiDeterminePatchSequenceW": [
+        {
+            "name": "szProductCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "cPatchInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPatchInfo",
+            "type": "PMSIPATCHSEQUENCEINFOW"
+        }
+    ],
+    "MsiDetermineApplicablePatchesA": [
+        {
+            "name": "szProductPackagePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cPatchInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPatchInfo",
+            "type": "PMSIPATCHSEQUENCEINFOA"
+        }
+    ],
+    "MsiDetermineApplicablePatchesW": [
+        {
+            "name": "szProductPackagePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cPatchInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPatchInfo",
+            "type": "PMSIPATCHSEQUENCEINFOW"
+        }
+    ],
+    "MsiEnumPatchesExA": [
+        {
+            "name": "szProductCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFilter",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "szPatchCode",
+            "type": "CHAR"
+        },
+        {
+            "name": "szTargetProductCode",
+            "type": "CHAR"
+        },
+        {
+            "name": "pdwTargetProductContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szTargetUserSid",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchTargetUserSid",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiEnumPatchesExW": [
+        {
+            "name": "szProductCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFilter",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "szPatchCode",
+            "type": "WCHAR"
+        },
+        {
+            "name": "szTargetProductCode",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pdwTargetProductContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szTargetUserSid",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchTargetUserSid",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiQueryFeatureStateA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiQueryFeatureStateW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiQueryFeatureStateExA": [
+        {
+            "name": "szProductCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pdwState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiQueryFeatureStateExW": [
+        {
+            "name": "szProductCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdwState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiUseFeatureA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiUseFeatureW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiUseFeatureExA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwInstallMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "MsiUseFeatureExW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInstallMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "MsiGetFeatureUsageA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pdwUseCount",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pwDateUsed",
+            "type": "LPWORD"
+        }
+    ],
+    "MsiGetFeatureUsageW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdwUseCount",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pwDateUsed",
+            "type": "LPWORD"
+        }
+    ],
+    "MsiConfigureFeatureA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "eInstallState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiConfigureFeatureW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "eInstallState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiReinstallFeatureA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwReinstallMode",
+            "type": "DWORD"
+        }
+    ],
+    "MsiReinstallFeatureW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwReinstallMode",
+            "type": "DWORD"
+        }
+    ],
+    "MsiProvideComponentA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szComponent",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwInstallMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpPathBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchPathBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiProvideComponentW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szComponent",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInstallMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpPathBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchPathBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiProvideQualifiedComponentA": [
+        {
+            "name": "szCategory",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szQualifier",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwInstallMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpPathBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchPathBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiProvideQualifiedComponentW": [
+        {
+            "name": "szCategory",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szQualifier",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInstallMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpPathBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchPathBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiProvideQualifiedComponentExA": [
+        {
+            "name": "szCategory",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szQualifier",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwInstallMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwUnused1",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwUnused2",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpPathBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchPathBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiProvideQualifiedComponentExW": [
+        {
+            "name": "szCategory",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szQualifier",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInstallMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwUnused1",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwUnused2",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpPathBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchPathBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetComponentPathA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szComponent",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpPathBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetComponentPathW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szComponent",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpPathBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetComponentPathExA": [
+        {
+            "name": "szProductCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szComponentCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "lpOutPathBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchOutPathBuffer",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetComponentPathExW": [
+        {
+            "name": "szProductCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szComponentCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "lpOutPathBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchOutPathBuffer",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiProvideAssemblyA": [
+        {
+            "name": "szAssemblyName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szAppContext",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwInstallMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAssemblyInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpPathBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchPathBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiProvideAssemblyW": [
+        {
+            "name": "szAssemblyName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szAppContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInstallMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAssemblyInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpPathBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchPathBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiQueryComponentStateA": [
+        {
+            "name": "szProductCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szComponentCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pdwState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiQueryComponentStateW": [
+        {
+            "name": "szProductCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szComponentCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdwState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiEnumProductsA": [
+        {
+            "name": "iProductIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpProductBuf",
+            "type": "LPSTR"
+        }
+    ],
+    "MsiEnumProductsW": [
+        {
+            "name": "iProductIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpProductBuf",
+            "type": "LPWSTR"
+        }
+    ],
+    "MsiEnumProductsExA": [
+        {
+            "name": "szProductCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "szInstalledProductCode",
+            "type": "CHAR"
+        },
+        {
+            "name": "pdwInstalledContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szSid",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchSid",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiEnumProductsExW": [
+        {
+            "name": "szProductCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "szInstalledProductCode",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pdwInstalledContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szSid",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchSid",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiEnumRelatedProductsA": [
+        {
+            "name": "lpUpgradeCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "iProductIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpProductBuf",
+            "type": "LPSTR"
+        }
+    ],
+    "MsiEnumRelatedProductsW": [
+        {
+            "name": "lpUpgradeCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "iProductIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpProductBuf",
+            "type": "LPWSTR"
+        }
+    ],
+    "MsiEnumFeaturesA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iFeatureIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpFeatureBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpParentBuf",
+            "type": "LPSTR"
+        }
+    ],
+    "MsiEnumFeaturesW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iFeatureIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpFeatureBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpParentBuf",
+            "type": "LPWSTR"
+        }
+    ],
+    "MsiEnumComponentsA": [
+        {
+            "name": "iComponentIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpComponentBuf",
+            "type": "LPSTR"
+        }
+    ],
+    "MsiEnumComponentsW": [
+        {
+            "name": "iComponentIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpComponentBuf",
+            "type": "LPWSTR"
+        }
+    ],
+    "MsiEnumComponentsExA": [
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "szInstalledComponentCode",
+            "type": "CHAR"
+        },
+        {
+            "name": "pdwInstalledContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szSid",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchSid",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiEnumComponentsExW": [
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "szInstalledComponentCode",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pdwInstalledContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szSid",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchSid",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiEnumClientsA": [
+        {
+            "name": "szComponent",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iProductIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpProductBuf",
+            "type": "LPSTR"
+        }
+    ],
+    "MsiEnumClientsW": [
+        {
+            "name": "szComponent",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iProductIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpProductBuf",
+            "type": "LPWSTR"
+        }
+    ],
+    "MsiEnumClientsExA": [
+        {
+            "name": "szComponent",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwProductIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "szProductBuf",
+            "type": "CHAR"
+        },
+        {
+            "name": "pdwInstalledContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szSid",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchSid",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiEnumClientsExW": [
+        {
+            "name": "szComponent",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwProductIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "szProductBuf",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pdwInstalledContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "szSid",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchSid",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiEnumComponentQualifiersA": [
+        {
+            "name": "szComponent",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpQualifierBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchQualifierBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpApplicationDataBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchApplicationDataBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiEnumComponentQualifiersW": [
+        {
+            "name": "szComponent",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpQualifierBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchQualifierBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpApplicationDataBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchApplicationDataBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiOpenProductA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hProduct",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiOpenProductW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hProduct",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiOpenPackageA": [
+        {
+            "name": "szPackagePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hProduct",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiOpenPackageW": [
+        {
+            "name": "szPackagePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hProduct",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiOpenPackageExA": [
+        {
+            "name": "szPackagePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "hProduct",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiOpenPackageExW": [
+        {
+            "name": "szPackagePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "hProduct",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiGetPatchFileListA": [
+        {
+            "name": "szProductCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szPatchPackages",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pcFiles",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pphFileRecords",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiGetPatchFileListW": [
+        {
+            "name": "szProductCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szPatchPackages",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pcFiles",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pphFileRecords",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiGetProductPropertyA": [
+        {
+            "name": "hProduct",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szProperty",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpValueBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchValueBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetProductPropertyW": [
+        {
+            "name": "hProduct",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szProperty",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpValueBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchValueBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiVerifyPackageA": [
+        {
+            "name": "szPackagePath",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiVerifyPackageW": [
+        {
+            "name": "szPackagePath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiGetFeatureInfoA": [
+        {
+            "name": "hProduct",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpAttributes",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpTitleBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchTitleBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpHelpBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchHelpBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetFeatureInfoW": [
+        {
+            "name": "hProduct",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpAttributes",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpTitleBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchTitleBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpHelpBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchHelpBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiInstallMissingComponentA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szComponent",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "eInstallState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiInstallMissingComponentW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szComponent",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "eInstallState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiInstallMissingFileA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szFile",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiInstallMissingFileW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szFile",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiLocateComponentA": [
+        {
+            "name": "szComponent",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpPathBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiLocateComponentW": [
+        {
+            "name": "szComponent",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpPathBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiSourceListClearAllA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "MsiSourceListClearAllW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "MsiSourceListAddSourceA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "szSource",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiSourceListAddSourceW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "szSource",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiSourceListForceResolutionA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "MsiSourceListForceResolutionW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "MsiSourceListAddSourceExA": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "szSource",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        }
+    ],
+    "MsiSourceListAddSourceExW": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "szSource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        }
+    ],
+    "MsiSourceListAddMediaDiskA": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwDiskId",
+            "type": "DWORD"
+        },
+        {
+            "name": "szVolumeLabel",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szDiskPrompt",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiSourceListAddMediaDiskW": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwDiskId",
+            "type": "DWORD"
+        },
+        {
+            "name": "szVolumeLabel",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szDiskPrompt",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiSourceListClearSourceA": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "szSource",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiSourceListClearSourceW": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "szSource",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiSourceListClearMediaDiskA": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwDiskId",
+            "type": "DWORD"
+        }
+    ],
+    "MsiSourceListClearMediaDiskW": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwDiskId",
+            "type": "DWORD"
+        }
+    ],
+    "MsiSourceListClearAllExA": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "MsiSourceListClearAllExW": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "MsiSourceListForceResolutionExA": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "MsiSourceListForceResolutionExW": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        }
+    ],
+    "MsiSourceListSetInfoA": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "szProperty",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szValue",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiSourceListSetInfoW": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "szProperty",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szValue",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiSourceListGetInfoA": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "szProperty",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szValue",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchValue",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiSourceListGetInfoW": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "szProperty",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szValue",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchValue",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiSourceListEnumSourcesA": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "szSource",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchSource",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiSourceListEnumSourcesW": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "szSource",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchSource",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiSourceListEnumMediaDisksA": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwDiskId",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "szVolumeLabel",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchVolumeLabel",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "szDiskPrompt",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchDiskPrompt",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiSourceListEnumMediaDisksW": [
+        {
+            "name": "szProductCodeOrPatchCode",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szUserSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "MSIINSTALLCONTEXT"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwDiskId",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "szVolumeLabel",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchVolumeLabel",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "szDiskPrompt",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchDiskPrompt",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetFileVersionA": [
+        {
+            "name": "szFilePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpVersionBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchVersionBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpLangBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchLangBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetFileVersionW": [
+        {
+            "name": "szFilePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpVersionBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchVersionBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpLangBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchLangBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetFileHashA": [
+        {
+            "name": "szFilePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "pHash",
+            "type": "PMSIFILEHASHINFO"
+        }
+    ],
+    "MsiGetFileHashW": [
+        {
+            "name": "szFilePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "pHash",
+            "type": "PMSIFILEHASHINFO"
+        }
+    ],
+    "MsiGetFileSignatureInformationA": [
+        {
+            "name": "szSignedObjectPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppcCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pbHashData",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "pcbHashData",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetFileSignatureInformationW": [
+        {
+            "name": "szSignedObjectPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppcCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pbHashData",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "pcbHashData",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetShortcutTargetA": [
+        {
+            "name": "szShortcutPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szProductCode",
+            "type": "LPSTR"
+        },
+        {
+            "name": "szFeatureId",
+            "type": "LPSTR"
+        },
+        {
+            "name": "szComponentCode",
+            "type": "LPSTR"
+        }
+    ],
+    "MsiGetShortcutTargetW": [
+        {
+            "name": "szShortcutPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szProductCode",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "szFeatureId",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "szComponentCode",
+            "type": "LPWSTR"
+        }
+    ],
+    "MsiIsProductElevatedA": [
+        {
+            "name": "szProduct",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pfElevated",
+            "type": "BOOL"
+        }
+    ],
+    "MsiIsProductElevatedW": [
+        {
+            "name": "szProduct",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pfElevated",
+            "type": "BOOL"
+        }
+    ],
+    "MsiNotifySidChangeA": [
+        {
+            "name": "pOldSid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pNewSid",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiNotifySidChangeW": [
+        {
+            "name": "pOldSid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pNewSid",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiBeginTransactionA": [
+        {
+            "name": "szName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwTransactionAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "phTransactionHandle",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "phChangeOfOwnerEvent",
+            "type": "HANDLE"
+        }
+    ],
+    "MsiBeginTransactionW": [
+        {
+            "name": "szName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwTransactionAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "phTransactionHandle",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "phChangeOfOwnerEvent",
+            "type": "HANDLE"
+        }
+    ],
+    "MsiEndTransaction": [
+        {
+            "name": "dwTransactionState",
+            "type": "DWORD"
+        }
+    ],
+    "MsiJoinTransaction": [
+        {
+            "name": "hTransactionHandle",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "dwTransactionAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "phChangeOfOwnerEvent",
+            "type": "HANDLE"
+        }
+    ],
+    "MsiDatabaseOpenViewA": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szQuery",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "phView",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiDatabaseOpenViewW": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szQuery",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phView",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiViewGetErrorA": [
+        {
+            "name": "hView",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szColumnNameBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiViewGetErrorW": [
+        {
+            "name": "hView",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szColumnNameBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiViewExecute": [
+        {
+            "name": "hView",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiViewFetch": [
+        {
+            "name": "hView",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "phRecord",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiViewModify": [
+        {
+            "name": "hView",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "eModifyMode",
+            "type": "MSIMODIFY"
+        },
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiViewGetColumnInfo": [
+        {
+            "name": "hView",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "eColumnInfo",
+            "type": "MSICOLINFO"
+        },
+        {
+            "name": "phRecord",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiViewClose": [
+        {
+            "name": "hView",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiDatabaseGetPrimaryKeysA": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTableName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "phRecord",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiDatabaseGetPrimaryKeysW": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTableName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phRecord",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiDatabaseIsTablePersistentA": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTableName",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiDatabaseIsTablePersistentW": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTableName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiGetSummaryInformationA": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szDatabasePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "uiUpdateCount",
+            "type": "UINT"
+        },
+        {
+            "name": "phSummaryInfo",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiGetSummaryInformationW": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szDatabasePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "uiUpdateCount",
+            "type": "UINT"
+        },
+        {
+            "name": "phSummaryInfo",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiSummaryInfoGetPropertyCount": [
+        {
+            "name": "hSummaryInfo",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "puiPropertyCount",
+            "type": "PUINT"
+        }
+    ],
+    "MsiSummaryInfoSetPropertyA": [
+        {
+            "name": "hSummaryInfo",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "uiProperty",
+            "type": "UINT"
+        },
+        {
+            "name": "uiDataType",
+            "type": "UINT"
+        },
+        {
+            "name": "iValue",
+            "type": "INT"
+        },
+        {
+            "name": "pftValue",
+            "type": "FILETIME"
+        },
+        {
+            "name": "szValue",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiSummaryInfoSetPropertyW": [
+        {
+            "name": "hSummaryInfo",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "uiProperty",
+            "type": "UINT"
+        },
+        {
+            "name": "uiDataType",
+            "type": "UINT"
+        },
+        {
+            "name": "iValue",
+            "type": "INT"
+        },
+        {
+            "name": "pftValue",
+            "type": "FILETIME"
+        },
+        {
+            "name": "szValue",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiSummaryInfoGetPropertyA": [
+        {
+            "name": "hSummaryInfo",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "uiProperty",
+            "type": "UINT"
+        },
+        {
+            "name": "puiDataType",
+            "type": "PUINT"
+        },
+        {
+            "name": "piValue",
+            "type": "LPINT"
+        },
+        {
+            "name": "pftValue",
+            "type": "FILETIME"
+        },
+        {
+            "name": "szValueBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchValueBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiSummaryInfoGetPropertyW": [
+        {
+            "name": "hSummaryInfo",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "uiProperty",
+            "type": "UINT"
+        },
+        {
+            "name": "puiDataType",
+            "type": "PUINT"
+        },
+        {
+            "name": "piValue",
+            "type": "LPINT"
+        },
+        {
+            "name": "pftValue",
+            "type": "FILETIME"
+        },
+        {
+            "name": "szValueBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchValueBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiSummaryInfoPersist": [
+        {
+            "name": "hSummaryInfo",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiOpenDatabaseA": [
+        {
+            "name": "szDatabasePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szPersist",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "phDatabase",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiOpenDatabaseW": [
+        {
+            "name": "szDatabasePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szPersist",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phDatabase",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiDatabaseImportA": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFolderPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szFileName",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiDatabaseImportW": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFolderPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szFileName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiDatabaseExportA": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTableName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szFolderPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szFileName",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiDatabaseExportW": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTableName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szFolderPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szFileName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiDatabaseMergeA": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "hDatabaseMerge",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTableName",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiDatabaseMergeW": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "hDatabaseMerge",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTableName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiDatabaseGenerateTransformA": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "hDatabaseReference",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTransformFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iReserved1",
+            "type": "int"
+        },
+        {
+            "name": "iReserved2",
+            "type": "int"
+        }
+    ],
+    "MsiDatabaseGenerateTransformW": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "hDatabaseReference",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTransformFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iReserved1",
+            "type": "int"
+        },
+        {
+            "name": "iReserved2",
+            "type": "int"
+        }
+    ],
+    "MsiDatabaseApplyTransformA": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTransformFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iErrorConditions",
+            "type": "int"
+        }
+    ],
+    "MsiDatabaseApplyTransformW": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTransformFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iErrorConditions",
+            "type": "int"
+        }
+    ],
+    "MsiCreateTransformSummaryInfoA": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "hDatabaseReference",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTransformFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iErrorConditions",
+            "type": "int"
+        },
+        {
+            "name": "iValidation",
+            "type": "int"
+        }
+    ],
+    "MsiCreateTransformSummaryInfoW": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "hDatabaseReference",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTransformFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iErrorConditions",
+            "type": "int"
+        },
+        {
+            "name": "iValidation",
+            "type": "int"
+        }
+    ],
+    "MsiDatabaseCommit": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiGetDatabaseState": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiCreateRecord": [
+        {
+            "name": "cParams",
+            "type": "UINT"
+        }
+    ],
+    "MsiRecordIsNull": [
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "iField",
+            "type": "UINT"
+        }
+    ],
+    "MsiRecordDataSize": [
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "iField",
+            "type": "UINT"
+        }
+    ],
+    "MsiRecordSetInteger": [
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "iField",
+            "type": "UINT"
+        },
+        {
+            "name": "iValue",
+            "type": "int"
+        }
+    ],
+    "MsiRecordSetStringA": [
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "iField",
+            "type": "UINT"
+        },
+        {
+            "name": "szValue",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiRecordSetStringW": [
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "iField",
+            "type": "UINT"
+        },
+        {
+            "name": "szValue",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiRecordGetInteger": [
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "iField",
+            "type": "UINT"
+        }
+    ],
+    "MsiRecordGetStringA": [
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "iField",
+            "type": "UINT"
+        },
+        {
+            "name": "szValueBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchValueBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiRecordGetStringW": [
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "iField",
+            "type": "UINT"
+        },
+        {
+            "name": "szValueBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchValueBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiRecordGetFieldCount": [
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiRecordSetStreamA": [
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "iField",
+            "type": "UINT"
+        },
+        {
+            "name": "szFilePath",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiRecordSetStreamW": [
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "iField",
+            "type": "UINT"
+        },
+        {
+            "name": "szFilePath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiRecordReadStream": [
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "iField",
+            "type": "UINT"
+        },
+        {
+            "name": "szDataBuf",
+            "type": "char"
+        },
+        {
+            "name": "pcbDataBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiRecordClearData": [
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiGetActiveDatabase": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiSetPropertyA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szValue",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiSetPropertyW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szValue",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiGetPropertyA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szValueBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchValueBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetPropertyW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szValueBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchValueBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetLanguage": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiGetMode": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "eRunMode",
+            "type": "MSIRUNMODE"
+        }
+    ],
+    "MsiSetMode": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "eRunMode",
+            "type": "MSIRUNMODE"
+        },
+        {
+            "name": "fState",
+            "type": "BOOL"
+        }
+    ],
+    "MsiFormatRecordA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szResultBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchResultBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiFormatRecordW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szResultBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchResultBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiDoActionA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szAction",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiDoActionW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szAction",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiSequenceA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTable",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iSequenceMode",
+            "type": "INT"
+        }
+    ],
+    "MsiSequenceW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szTable",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iSequenceMode",
+            "type": "INT"
+        }
+    ],
+    "MsiProcessMessage": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "eMessageType",
+            "type": "INSTALLMESSAGE"
+        },
+        {
+            "name": "hRecord",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiEvaluateConditionA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szCondition",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiEvaluateConditionW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szCondition",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiGetFeatureStateA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "piInstalled",
+            "type": "INSTALLSTATE"
+        },
+        {
+            "name": "piAction",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiGetFeatureStateW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "piInstalled",
+            "type": "INSTALLSTATE"
+        },
+        {
+            "name": "piAction",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiSetFeatureStateA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiSetFeatureStateW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiSetFeatureAttributesA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwAttributes",
+            "type": "DWORD"
+        }
+    ],
+    "MsiSetFeatureAttributesW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwAttributes",
+            "type": "DWORD"
+        }
+    ],
+    "MsiGetComponentStateA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szComponent",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "piInstalled",
+            "type": "INSTALLSTATE"
+        },
+        {
+            "name": "piAction",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiGetComponentStateW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szComponent",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "piInstalled",
+            "type": "INSTALLSTATE"
+        },
+        {
+            "name": "piAction",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiSetComponentStateA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szComponent",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiSetComponentStateW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szComponent",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iState",
+            "type": "INSTALLSTATE"
+        }
+    ],
+    "MsiGetFeatureCostA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iCostTree",
+            "type": "MSICOSTTREE"
+        },
+        {
+            "name": "iState",
+            "type": "INSTALLSTATE"
+        },
+        {
+            "name": "piCost",
+            "type": "LPINT"
+        }
+    ],
+    "MsiGetFeatureCostW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iCostTree",
+            "type": "MSICOSTTREE"
+        },
+        {
+            "name": "iState",
+            "type": "INSTALLSTATE"
+        },
+        {
+            "name": "piCost",
+            "type": "LPINT"
+        }
+    ],
+    "MsiEnumComponentCostsA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szComponent",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "iState",
+            "type": "INSTALLSTATE"
+        },
+        {
+            "name": "szDriveBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchDriveBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "piCost",
+            "type": "LPINT"
+        },
+        {
+            "name": "piTempCost",
+            "type": "LPINT"
+        }
+    ],
+    "MsiEnumComponentCostsW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szComponent",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "iState",
+            "type": "INSTALLSTATE"
+        },
+        {
+            "name": "szDriveBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchDriveBuf",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "piCost",
+            "type": "LPINT"
+        },
+        {
+            "name": "piTempCost",
+            "type": "LPINT"
+        }
+    ],
+    "MsiSetInstallLevel": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "iInstallLevel",
+            "type": "int"
+        }
+    ],
+    "MsiGetFeatureValidStatesA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpInstallStates",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetFeatureValidStatesW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFeature",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpInstallStates",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetSourcePathA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFolder",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szPathBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchPathBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetSourcePathW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFolder",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szPathBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchPathBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetTargetPathA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFolder",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szPathBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchPathBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiGetTargetPathW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFolder",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szPathBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchPathBuf",
+            "type": "LPDWORD"
+        }
+    ],
+    "MsiSetTargetPathA": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFolder",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szFolderPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiSetTargetPathW": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szFolder",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szFolderPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiVerifyDiskSpace": [
+        {
+            "name": "hInstall",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiEnableUIPreview": [
+        {
+            "name": "hDatabase",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "phPreview",
+            "type": "MSIHANDLE"
+        }
+    ],
+    "MsiPreviewDialogA": [
+        {
+            "name": "hPreview",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szDialogName",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiPreviewDialogW": [
+        {
+            "name": "hPreview",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szDialogName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MsiPreviewBillboardA": [
+        {
+            "name": "hPreview",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szControlName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szBillboard",
+            "type": "LPCSTR"
+        }
+    ],
+    "MsiPreviewBillboardW": [
+        {
+            "name": "hPreview",
+            "type": "MSIHANDLE"
+        },
+        {
+            "name": "szControlName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szBillboard",
+            "type": "LPCWSTR"
+        }
+    ]
+}

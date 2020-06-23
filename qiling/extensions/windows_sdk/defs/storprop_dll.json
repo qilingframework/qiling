@@ -1,0 +1,50 @@
+{
+    "CdromKnownGoodDigitalPlayback": [
+        {
+            "name": "HDevInfo",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DevInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "CdromEnableDigitalPlayback": [
+        {
+            "name": "DevInfo",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DevInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "ForceUnknown",
+            "type": "BOOLEAN"
+        }
+    ],
+    "CdromDisableDigitalPlayback": [
+        {
+            "name": "DevInfo",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DevInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "CdromIsDigitalPlaybackEnabled": [
+        {
+            "name": "DevInfo",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DevInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "Enabled",
+            "type": "PBOOLEAN"
+        }
+    ]
+}

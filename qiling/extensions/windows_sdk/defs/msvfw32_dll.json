@@ -1,0 +1,734 @@
+{
+    "ICInfo": [
+        {
+            "name": "fccType",
+            "type": "DWORD"
+        },
+        {
+            "name": "fccHandler",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpicinfo",
+            "type": "ICINFO"
+        }
+    ],
+    "ICInstall": [
+        {
+            "name": "fccType",
+            "type": "DWORD"
+        },
+        {
+            "name": "fccHandler",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "szDesc",
+            "type": "LPSTR"
+        },
+        {
+            "name": "wFlags",
+            "type": "UINT"
+        }
+    ],
+    "ICRemove": [
+        {
+            "name": "fccType",
+            "type": "DWORD"
+        },
+        {
+            "name": "fccHandler",
+            "type": "DWORD"
+        },
+        {
+            "name": "wFlags",
+            "type": "UINT"
+        }
+    ],
+    "ICGetInfo": [
+        {
+            "name": "hic",
+            "type": "HIC"
+        },
+        {
+            "name": "picinfo",
+            "type": "ICINFO"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        }
+    ],
+    "ICOpen": [
+        {
+            "name": "fccType",
+            "type": "DWORD"
+        },
+        {
+            "name": "fccHandler",
+            "type": "DWORD"
+        },
+        {
+            "name": "wMode",
+            "type": "UINT"
+        }
+    ],
+    "ICOpenFunction": [
+        {
+            "name": "fccType",
+            "type": "DWORD"
+        },
+        {
+            "name": "fccHandler",
+            "type": "DWORD"
+        },
+        {
+            "name": "wMode",
+            "type": "UINT"
+        },
+        {
+            "name": "lpfnHandler",
+            "type": "FARPROC"
+        }
+    ],
+    "ICClose": [
+        {
+            "name": "hic",
+            "type": "HIC"
+        }
+    ],
+    "ICSendMessage": [
+        {
+            "name": "hic",
+            "type": "HIC"
+        },
+        {
+            "name": "msg",
+            "type": "UINT"
+        },
+        {
+            "name": "dw1",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dw2",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "ICCompress": [
+        {
+            "name": "hic",
+            "type": "HIC"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbiOutput",
+            "type": "LPBITMAPINFOHEADER"
+        },
+        {
+            "name": "lpData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpbiInput",
+            "type": "LPBITMAPINFOHEADER"
+        },
+        {
+            "name": "lpBits",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpckid",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwFlags",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lFrameNum",
+            "type": "LONG"
+        },
+        {
+            "name": "dwFrameSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwQuality",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbiPrev",
+            "type": "LPBITMAPINFOHEADER"
+        },
+        {
+            "name": "lpPrev",
+            "type": "LPVOID"
+        }
+    ],
+    "ICDecompress": [
+        {
+            "name": "hic",
+            "type": "HIC"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbiFormat",
+            "type": "LPBITMAPINFOHEADER"
+        },
+        {
+            "name": "lpData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpbi",
+            "type": "LPBITMAPINFOHEADER"
+        },
+        {
+            "name": "lpBits",
+            "type": "LPVOID"
+        }
+    ],
+    "ICDrawBegin": [
+        {
+            "name": "hic",
+            "type": "HIC"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hpal",
+            "type": "HPALETTE"
+        },
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "xDst",
+            "type": "int"
+        },
+        {
+            "name": "yDst",
+            "type": "int"
+        },
+        {
+            "name": "dxDst",
+            "type": "int"
+        },
+        {
+            "name": "dyDst",
+            "type": "int"
+        },
+        {
+            "name": "lpbi",
+            "type": "LPBITMAPINFOHEADER"
+        },
+        {
+            "name": "xSrc",
+            "type": "int"
+        },
+        {
+            "name": "ySrc",
+            "type": "int"
+        },
+        {
+            "name": "dxSrc",
+            "type": "int"
+        },
+        {
+            "name": "dySrc",
+            "type": "int"
+        },
+        {
+            "name": "dwRate",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwScale",
+            "type": "DWORD"
+        }
+    ],
+    "ICDraw": [
+        {
+            "name": "hic",
+            "type": "HIC"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpFormat",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "lTime",
+            "type": "LONG"
+        }
+    ],
+    "ICLocate": [
+        {
+            "name": "fccType",
+            "type": "DWORD"
+        },
+        {
+            "name": "fccHandler",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpbiIn",
+            "type": "LPBITMAPINFOHEADER"
+        },
+        {
+            "name": "lpbiOut",
+            "type": "LPBITMAPINFOHEADER"
+        },
+        {
+            "name": "wFlags",
+            "type": "WORD"
+        }
+    ],
+    "ICGetDisplayFormat": [
+        {
+            "name": "hic",
+            "type": "HIC"
+        },
+        {
+            "name": "lpbiIn",
+            "type": "LPBITMAPINFOHEADER"
+        },
+        {
+            "name": "lpbiOut",
+            "type": "LPBITMAPINFOHEADER"
+        },
+        {
+            "name": "BitDepth",
+            "type": "int"
+        },
+        {
+            "name": "dx",
+            "type": "int"
+        },
+        {
+            "name": "dy",
+            "type": "int"
+        }
+    ],
+    "ICImageCompress": [
+        {
+            "name": "hic",
+            "type": "HIC"
+        },
+        {
+            "name": "uiFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "lpbiIn",
+            "type": "LPBITMAPINFO"
+        },
+        {
+            "name": "lpBits",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpbiOut",
+            "type": "LPBITMAPINFO"
+        },
+        {
+            "name": "lQuality",
+            "type": "LONG"
+        },
+        {
+            "name": "plSize",
+            "type": "LONG"
+        }
+    ],
+    "ICImageDecompress": [
+        {
+            "name": "hic",
+            "type": "HIC"
+        },
+        {
+            "name": "uiFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "lpbiIn",
+            "type": "LPBITMAPINFO"
+        },
+        {
+            "name": "lpBits",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpbiOut",
+            "type": "LPBITMAPINFO"
+        }
+    ],
+    "ICCompressorChoose": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "uiFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "pvIn",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pc",
+            "type": "PCOMPVARS"
+        },
+        {
+            "name": "lpszTitle",
+            "type": "LPSTR"
+        }
+    ],
+    "ICSeqCompressFrameStart": [
+        {
+            "name": "pc",
+            "type": "PCOMPVARS"
+        },
+        {
+            "name": "lpbiIn",
+            "type": "LPBITMAPINFO"
+        }
+    ],
+    "ICSeqCompressFrameEnd": [
+        {
+            "name": "pc",
+            "type": "PCOMPVARS"
+        }
+    ],
+    "ICSeqCompressFrame": [
+        {
+            "name": "pc",
+            "type": "PCOMPVARS"
+        },
+        {
+            "name": "uiFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "lpBits",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pfKey",
+            "type": "BOOL"
+        },
+        {
+            "name": "plSize",
+            "type": "LONG"
+        }
+    ],
+    "ICCompressorFree": [
+        {
+            "name": "pc",
+            "type": "PCOMPVARS"
+        }
+    ],
+    "DrawDibOpen": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "DrawDibClose": [
+        {
+            "name": "hdd",
+            "type": "HDRAWDIB"
+        }
+    ],
+    "DrawDibGetBuffer": [
+        {
+            "name": "hdd",
+            "type": "HDRAWDIB"
+        },
+        {
+            "name": "lpbi",
+            "type": "LPBITMAPINFOHEADER"
+        },
+        {
+            "name": "dwSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "DrawDibGetPalette": [
+        {
+            "name": "hdd",
+            "type": "HDRAWDIB"
+        }
+    ],
+    "DrawDibSetPalette": [
+        {
+            "name": "hdd",
+            "type": "HDRAWDIB"
+        },
+        {
+            "name": "hpal",
+            "type": "HPALETTE"
+        }
+    ],
+    "DrawDibChangePalette": [
+        {
+            "name": "hdd",
+            "type": "HDRAWDIB"
+        },
+        {
+            "name": "iStart",
+            "type": "int"
+        },
+        {
+            "name": "iLen",
+            "type": "int"
+        },
+        {
+            "name": "lppe",
+            "type": "LPPALETTEENTRY"
+        }
+    ],
+    "DrawDibRealize": [
+        {
+            "name": "hdd",
+            "type": "HDRAWDIB"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "fBackground",
+            "type": "BOOL"
+        }
+    ],
+    "DrawDibStart": [
+        {
+            "name": "hdd",
+            "type": "HDRAWDIB"
+        },
+        {
+            "name": "rate",
+            "type": "DWORD"
+        }
+    ],
+    "DrawDibStop": [
+        {
+            "name": "hdd",
+            "type": "HDRAWDIB"
+        }
+    ],
+    "DrawDibBegin": [
+        {
+            "name": "hdd",
+            "type": "HDRAWDIB"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "dxDst",
+            "type": "int"
+        },
+        {
+            "name": "dyDst",
+            "type": "int"
+        },
+        {
+            "name": "lpbi",
+            "type": "LPBITMAPINFOHEADER"
+        },
+        {
+            "name": "dxSrc",
+            "type": "int"
+        },
+        {
+            "name": "dySrc",
+            "type": "int"
+        },
+        {
+            "name": "wFlags",
+            "type": "UINT"
+        }
+    ],
+    "DrawDibDraw": [
+        {
+            "name": "hdd",
+            "type": "HDRAWDIB"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "xDst",
+            "type": "int"
+        },
+        {
+            "name": "yDst",
+            "type": "int"
+        },
+        {
+            "name": "dxDst",
+            "type": "int"
+        },
+        {
+            "name": "dyDst",
+            "type": "int"
+        },
+        {
+            "name": "lpbi",
+            "type": "LPBITMAPINFOHEADER"
+        },
+        {
+            "name": "lpBits",
+            "type": "LPVOID"
+        },
+        {
+            "name": "xSrc",
+            "type": "int"
+        },
+        {
+            "name": "ySrc",
+            "type": "int"
+        },
+        {
+            "name": "dxSrc",
+            "type": "int"
+        },
+        {
+            "name": "dySrc",
+            "type": "int"
+        },
+        {
+            "name": "wFlags",
+            "type": "UINT"
+        }
+    ],
+    "DrawDibEnd": [
+        {
+            "name": "hdd",
+            "type": "HDRAWDIB"
+        }
+    ],
+    "DrawDibTime": [
+        {
+            "name": "hdd",
+            "type": "HDRAWDIB"
+        },
+        {
+            "name": "lpddtime",
+            "type": "LPDRAWDIBTIME"
+        }
+    ],
+    "DrawDibProfileDisplay": [
+        {
+            "name": "lpbi",
+            "type": "LPBITMAPINFOHEADER"
+        }
+    ],
+    "MCIWndCreateA": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "dwStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "szFile",
+            "type": "LPCSTR"
+        }
+    ],
+    "MCIWndCreateW": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "dwStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "szFile",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MCIWndRegisterClass": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetOpenFileNamePreviewA": [
+        {
+            "name": "lpofn",
+            "type": "LPOPENFILENAMEA"
+        }
+    ],
+    "GetSaveFileNamePreviewA": [
+        {
+            "name": "lpofn",
+            "type": "LPOPENFILENAMEA"
+        }
+    ],
+    "GetOpenFileNamePreviewW": [
+        {
+            "name": "lpofn",
+            "type": "LPOPENFILENAMEW"
+        }
+    ],
+    "GetSaveFileNamePreviewW": [
+        {
+            "name": "lpofn",
+            "type": "LPOPENFILENAMEW"
+        }
+    ]
+}

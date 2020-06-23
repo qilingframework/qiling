@@ -1,0 +1,894 @@
+{
+    "RpcNsBindingExportA": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "BindingVec",
+            "type": "RPC_BINDING_VECTOR"
+        },
+        {
+            "name": "ObjectUuidVec",
+            "type": "UUID_VECTOR"
+        }
+    ],
+    "RpcNsBindingUnexportA": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "ObjectUuidVec",
+            "type": "UUID_VECTOR"
+        }
+    ],
+    "RpcNsBindingExportW": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "BindingVec",
+            "type": "RPC_BINDING_VECTOR"
+        },
+        {
+            "name": "ObjectUuidVec",
+            "type": "UUID_VECTOR"
+        }
+    ],
+    "RpcNsBindingUnexportW": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "ObjectUuidVec",
+            "type": "UUID_VECTOR"
+        }
+    ],
+    "RpcNsBindingExportPnPA": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "ObjectVector",
+            "type": "UUID_VECTOR"
+        }
+    ],
+    "RpcNsBindingUnexportPnPA": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "ObjectVector",
+            "type": "UUID_VECTOR"
+        }
+    ],
+    "RpcNsBindingExportPnPW": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "ObjectVector",
+            "type": "UUID_VECTOR"
+        }
+    ],
+    "RpcNsBindingUnexportPnPW": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "ObjectVector",
+            "type": "UUID_VECTOR"
+        }
+    ],
+    "RpcNsBindingLookupBeginA": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "ObjUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "BindingMaxCount",
+            "type": "unsigned long"
+        },
+        {
+            "name": "LookupContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsBindingLookupBeginW": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "ObjUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "BindingMaxCount",
+            "type": "unsigned long"
+        },
+        {
+            "name": "LookupContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsBindingLookupNext": [
+        {
+            "name": "LookupContext",
+            "type": "RPC_NS_HANDLE"
+        },
+        {
+            "name": "BindingVec",
+            "type": "RPC_BINDING_VECTOR"
+        }
+    ],
+    "RpcNsBindingLookupDone": [
+        {
+            "name": "LookupContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsGroupDeleteA": [
+        {
+            "name": "GroupNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "GroupName",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcNsGroupMbrAddA": [
+        {
+            "name": "GroupNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "GroupName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "MemberNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcNsGroupMbrRemoveA": [
+        {
+            "name": "GroupNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "GroupName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "MemberNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcNsGroupMbrInqBeginA": [
+        {
+            "name": "GroupNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "GroupName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "MemberNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsGroupMbrInqNextA": [
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcNsGroupDeleteW": [
+        {
+            "name": "GroupNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "GroupName",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcNsGroupMbrAddW": [
+        {
+            "name": "GroupNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "GroupName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "MemberNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcNsGroupMbrRemoveW": [
+        {
+            "name": "GroupNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "GroupName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "MemberNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcNsGroupMbrInqBeginW": [
+        {
+            "name": "GroupNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "GroupName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "MemberNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsGroupMbrInqNextW": [
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcNsGroupMbrInqDone": [
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsProfileDeleteA": [
+        {
+            "name": "ProfileNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ProfileName",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcNsProfileEltAddA": [
+        {
+            "name": "ProfileNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ProfileName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "MemberNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "Priority",
+            "type": "unsigned long"
+        },
+        {
+            "name": "Annotation",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcNsProfileEltRemoveA": [
+        {
+            "name": "ProfileNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ProfileName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "MemberNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcNsProfileEltInqBeginA": [
+        {
+            "name": "ProfileNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ProfileName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "InquiryType",
+            "type": "unsigned long"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "VersOption",
+            "type": "unsigned long"
+        },
+        {
+            "name": "MemberNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsProfileEltInqNextA": [
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "Priority",
+            "type": "unsigned long"
+        },
+        {
+            "name": "Annotation",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcNsProfileDeleteW": [
+        {
+            "name": "ProfileNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ProfileName",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcNsProfileEltAddW": [
+        {
+            "name": "ProfileNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ProfileName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "MemberNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "Priority",
+            "type": "unsigned long"
+        },
+        {
+            "name": "Annotation",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcNsProfileEltRemoveW": [
+        {
+            "name": "ProfileNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ProfileName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "MemberNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcNsProfileEltInqBeginW": [
+        {
+            "name": "ProfileNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ProfileName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "InquiryType",
+            "type": "unsigned long"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "VersOption",
+            "type": "unsigned long"
+        },
+        {
+            "name": "MemberNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsProfileEltInqNextW": [
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "MemberName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "Priority",
+            "type": "unsigned long"
+        },
+        {
+            "name": "Annotation",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcNsProfileEltInqDone": [
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsEntryObjectInqBeginA": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsEntryObjectInqBeginW": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsEntryObjectInqNext": [
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        },
+        {
+            "name": "ObjUuid",
+            "type": "UUID"
+        }
+    ],
+    "RpcNsEntryObjectInqDone": [
+        {
+            "name": "InquiryContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsEntryExpandNameA": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "ExpandedName",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcNsMgmtBindingUnexportA": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "VersOption",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ObjectUuidVec",
+            "type": "UUID_VECTOR"
+        }
+    ],
+    "RpcNsMgmtEntryCreateA": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcNsMgmtEntryDeleteA": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcNsMgmtEntryInqIfIdsA": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "IfIdVec",
+            "type": "RPC_IF_ID_VECTOR"
+        }
+    ],
+    "RpcNsMgmtHandleSetExpAge": [
+        {
+            "name": "NsHandle",
+            "type": "RPC_NS_HANDLE"
+        },
+        {
+            "name": "ExpirationAge",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcNsMgmtInqExpAge": [
+        {
+            "name": "ExpirationAge",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcNsMgmtSetExpAge": [
+        {
+            "name": "ExpirationAge",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcNsEntryExpandNameW": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "ExpandedName",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcNsMgmtBindingUnexportW": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "VersOption",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ObjectUuidVec",
+            "type": "UUID_VECTOR"
+        }
+    ],
+    "RpcNsMgmtEntryCreateW": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcNsMgmtEntryDeleteW": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcNsMgmtEntryInqIfIdsW": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "IfIdVec",
+            "type": "RPC_IF_ID_VECTOR"
+        }
+    ],
+    "RpcNsBindingImportBeginA": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "ObjUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "ImportContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsBindingImportBeginW": [
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "ObjUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "ImportContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsBindingImportNext": [
+        {
+            "name": "ImportContext",
+            "type": "RPC_NS_HANDLE"
+        },
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcNsBindingImportDone": [
+        {
+            "name": "ImportContext",
+            "type": "RPC_NS_HANDLE"
+        }
+    ],
+    "RpcNsBindingSelect": [
+        {
+            "name": "BindingVec",
+            "type": "RPC_BINDING_VECTOR"
+        },
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ]
+}

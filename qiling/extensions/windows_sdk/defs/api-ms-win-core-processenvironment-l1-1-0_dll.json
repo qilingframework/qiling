@@ -1,0 +1,22 @@
+{
+    "SetEnvironmentStringsW": [
+        {
+            "name": "NewEnvironment",
+            "type": "LPWCH"
+        }
+    ],
+    "SetStdHandleEx": [
+        {
+            "name": "nStdHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "hHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "phPrevValue",
+            "type": "PHANDLE"
+        }
+    ]
+}

@@ -1,0 +1,270 @@
+{
+    "wglCopyContext": [
+        {
+            "name": "VOID",
+            "type": "HGLRC"
+        },
+        {
+            "name": "VOID",
+            "type": "HGLRC"
+        },
+        {
+            "name": "VOID",
+            "type": "UINT"
+        }
+    ],
+    "wglCreateContext": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        }
+    ],
+    "wglCreateLayerContext": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        },
+        {
+            "name": "VOID",
+            "type": "int"
+        }
+    ],
+    "wglDeleteContext": [
+        {
+            "name": "VOID",
+            "type": "HGLRC"
+        }
+    ],
+    "wglGetCurrentContext": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "wglGetCurrentDC": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "wglGetProcAddress": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        }
+    ],
+    "wglMakeCurrent": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        },
+        {
+            "name": "VOID",
+            "type": "HGLRC"
+        }
+    ],
+    "wglShareLists": [
+        {
+            "name": "VOID",
+            "type": "HGLRC"
+        },
+        {
+            "name": "VOID",
+            "type": "HGLRC"
+        }
+    ],
+    "wglUseFontBitmapsA": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "wglUseFontBitmapsW": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "wglUseFontOutlinesA": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "FLOAT"
+        },
+        {
+            "name": "VOID",
+            "type": "FLOAT"
+        },
+        {
+            "name": "VOID",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "LPGLYPHMETRICSFLOAT"
+        }
+    ],
+    "wglUseFontOutlinesW": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "FLOAT"
+        },
+        {
+            "name": "VOID",
+            "type": "FLOAT"
+        },
+        {
+            "name": "VOID",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "LPGLYPHMETRICSFLOAT"
+        }
+    ],
+    "wglDescribeLayerPlane": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        },
+        {
+            "name": "VOID",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "UINT"
+        },
+        {
+            "name": "VOID",
+            "type": "LPLAYERPLANEDESCRIPTOR"
+        }
+    ],
+    "wglSetLayerPaletteEntries": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        },
+        {
+            "name": "VOID",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "COLORREF"
+        }
+    ],
+    "wglGetLayerPaletteEntries": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        },
+        {
+            "name": "VOID",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "COLORREF"
+        }
+    ],
+    "wglRealizeLayerPalette": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        },
+        {
+            "name": "VOID",
+            "type": "int"
+        },
+        {
+            "name": "VOID",
+            "type": "BOOL"
+        }
+    ],
+    "wglSwapLayerBuffers": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        },
+        {
+            "name": "VOID",
+            "type": "UINT"
+        }
+    ]
+}

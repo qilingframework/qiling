@@ -1,0 +1,68 @@
+{
+    "MappingGetServices": [
+        {
+            "name": "pOptions",
+            "type": "PMAPPING_ENUM_OPTIONS"
+        },
+        {
+            "name": "prgServices",
+            "type": "PMAPPING_SERVICE_INFO"
+        },
+        {
+            "name": "pdwServicesCount",
+            "type": "DWORD"
+        }
+    ],
+    "MappingFreeServices": [
+        {
+            "name": "pServiceInfo",
+            "type": "PMAPPING_SERVICE_INFO"
+        }
+    ],
+    "MappingRecognizeText": [
+        {
+            "name": "pServiceInfo",
+            "type": "PMAPPING_SERVICE_INFO"
+        },
+        {
+            "name": "pszText",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pOptions",
+            "type": "PMAPPING_OPTIONS"
+        },
+        {
+            "name": "pbag",
+            "type": "PMAPPING_PROPERTY_BAG"
+        }
+    ],
+    "MappingDoAction": [
+        {
+            "name": "pBag",
+            "type": "PMAPPING_PROPERTY_BAG"
+        },
+        {
+            "name": "dwRangeIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszActionId",
+            "type": "LPCWSTR"
+        }
+    ],
+    "MappingFreePropertyBag": [
+        {
+            "name": "pBag",
+            "type": "PMAPPING_PROPERTY_BAG"
+        }
+    ]
+}

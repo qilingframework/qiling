@@ -1,0 +1,40 @@
+{
+    "GetSystemWow64Directory2A": [
+        {
+            "name": "lpBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "uSize",
+            "type": "UINT"
+        },
+        {
+            "name": "ImageFileMachineType",
+            "type": "WORD"
+        }
+    ],
+    "GetSystemWow64Directory2W": [
+        {
+            "name": "lpBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "uSize",
+            "type": "UINT"
+        },
+        {
+            "name": "ImageFileMachineType",
+            "type": "WORD"
+        }
+    ],
+    "IsWow64GuestMachineSupported": [
+        {
+            "name": "WowGuestMachine",
+            "type": "USHORT"
+        },
+        {
+            "name": "MachineIsSupported",
+            "type": "BOOL"
+        }
+    ]
+}

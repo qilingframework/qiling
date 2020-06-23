@@ -1,0 +1,16 @@
+{
+    "HeapSummary": [
+        {
+            "name": "hHeap",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSummary",
+            "type": "LPHEAP_SUMMARY"
+        }
+    ]
+}

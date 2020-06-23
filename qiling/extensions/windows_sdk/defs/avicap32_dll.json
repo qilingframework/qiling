@@ -1,0 +1,114 @@
+{
+    "capCreateCaptureWindowA": [
+        {
+            "name": "lpszWindowName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "nWidth",
+            "type": "int"
+        },
+        {
+            "name": "nHeight",
+            "type": "int"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "nID",
+            "type": "int"
+        }
+    ],
+    "capGetDriverDescriptionA": [
+        {
+            "name": "wDriverIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cbName",
+            "type": "int"
+        },
+        {
+            "name": "lpszVer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cbVer",
+            "type": "int"
+        }
+    ],
+    "capCreateCaptureWindowW": [
+        {
+            "name": "lpszWindowName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "nWidth",
+            "type": "int"
+        },
+        {
+            "name": "nHeight",
+            "type": "int"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "nID",
+            "type": "int"
+        }
+    ],
+    "capGetDriverDescriptionW": [
+        {
+            "name": "wDriverIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cbName",
+            "type": "int"
+        },
+        {
+            "name": "lpszVer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cbVer",
+            "type": "int"
+        }
+    ]
+}

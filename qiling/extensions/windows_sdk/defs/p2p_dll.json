@@ -1,0 +1,1162 @@
+{
+    "PeerFreeData": [
+        {
+            "name": "pvData",
+            "type": "LPCVOID"
+        }
+    ],
+    "PeerGetItemCount": [
+        {
+            "name": "hPeerEnum",
+            "type": "HPEERENUM"
+        },
+        {
+            "name": "pCount",
+            "type": "ULONG"
+        }
+    ],
+    "PeerGetNextItem": [
+        {
+            "name": "hPeerEnum",
+            "type": "HPEERENUM"
+        },
+        {
+            "name": "pCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pppvItems",
+            "type": "PVOID"
+        }
+    ],
+    "PeerEndEnumeration": [
+        {
+            "name": "hPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerGroupStartup": [
+        {
+            "name": "wVersionRequested",
+            "type": "WORD"
+        },
+        {
+            "name": "pVersionData",
+            "type": "PPEER_VERSION_DATA"
+        }
+    ],
+    "PeerGroupCreate": [
+        {
+            "name": "pProperties",
+            "type": "PPEER_GROUP_PROPERTIES"
+        },
+        {
+            "name": "phGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "PeerGroupOpen": [
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzGroupPeerName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzCloud",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "phGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "PeerGroupJoin": [
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzInvitation",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzCloud",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "phGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "PeerGroupPasswordJoin": [
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzInvitation",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzPassword",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzCloud",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "phGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "PeerGroupConnect": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "PeerGroupConnectByAddress": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "cAddresses",
+            "type": "ULONG"
+        },
+        {
+            "name": "pAddresses",
+            "type": "PPEER_ADDRESS"
+        }
+    ],
+    "PeerGroupClose": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "PeerGroupDelete": [
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzGroupPeerName",
+            "type": "PCWSTR"
+        }
+    ],
+    "PeerGroupCreateInvitation": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pwzIdentityInfo",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pftExpiration",
+            "type": "FILETIME"
+        },
+        {
+            "name": "cRoles",
+            "type": "ULONG"
+        },
+        {
+            "name": "pRoles",
+            "type": "GUID"
+        },
+        {
+            "name": "ppwzInvitation",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerGroupCreatePasswordInvitation": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "ppwzInvitation",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerGroupParseInvitation": [
+        {
+            "name": "pwzInvitation",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppInvitationInfo",
+            "type": "PPEER_INVITATION_INFO"
+        }
+    ],
+    "PeerGroupGetStatus": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pdwStatus",
+            "type": "DWORD"
+        }
+    ],
+    "PeerGroupGetProperties": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "ppProperties",
+            "type": "PPEER_GROUP_PROPERTIES"
+        }
+    ],
+    "PeerGroupSetProperties": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pProperties",
+            "type": "PPEER_GROUP_PROPERTIES"
+        }
+    ],
+    "PeerGroupEnumMembers": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerGroupOpenDirectConnection": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pAddress",
+            "type": "PPEER_ADDRESS"
+        },
+        {
+            "name": "pullConnectionId",
+            "type": "ULONGLONG"
+        }
+    ],
+    "PeerGroupCloseDirectConnection": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "ullConnectionId",
+            "type": "ULONGLONG"
+        }
+    ],
+    "PeerGroupEnumConnections": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerGroupSendData": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "ullConnectionId",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "pType",
+            "type": "GUID"
+        },
+        {
+            "name": "cbData",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvData",
+            "type": "PVOID"
+        }
+    ],
+    "PeerGroupRegisterEvent": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "cEventRegistration",
+            "type": "DWORD"
+        },
+        {
+            "name": "pEventRegistrations",
+            "type": "PEER_GROUP_EVENT_REGISTRATION"
+        },
+        {
+            "name": "phPeerEvent",
+            "type": "HPEEREVENT"
+        }
+    ],
+    "PeerGroupUnregisterEvent": [
+        {
+            "name": "hPeerEvent",
+            "type": "HPEEREVENT"
+        }
+    ],
+    "PeerGroupGetEventData": [
+        {
+            "name": "hPeerEvent",
+            "type": "HPEEREVENT"
+        },
+        {
+            "name": "ppEventData",
+            "type": "PPEER_GROUP_EVENT_DATA"
+        }
+    ],
+    "PeerGroupGetRecord": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pRecordId",
+            "type": "GUID"
+        },
+        {
+            "name": "ppRecord",
+            "type": "PPEER_RECORD"
+        }
+    ],
+    "PeerGroupAddRecord": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pRecord",
+            "type": "PPEER_RECORD"
+        },
+        {
+            "name": "pRecordId",
+            "type": "GUID"
+        }
+    ],
+    "PeerGroupUpdateRecord": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pRecord",
+            "type": "PPEER_RECORD"
+        }
+    ],
+    "PeerGroupDeleteRecord": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pRecordId",
+            "type": "GUID"
+        }
+    ],
+    "PeerGroupEnumRecords": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pRecordType",
+            "type": "GUID"
+        },
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerGroupSearchRecords": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pwzCriteria",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerGroupExportDatabase": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pwzFilePath",
+            "type": "PCWSTR"
+        }
+    ],
+    "PeerGroupImportDatabase": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pwzFilePath",
+            "type": "PCWSTR"
+        }
+    ],
+    "PeerGroupIssueCredentials": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pwzSubjectIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pCredentialInfo",
+            "type": "PEER_CREDENTIAL_INFO"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppwzInvitation",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerGroupExportConfig": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pwzPassword",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppwzXML",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerGroupImportConfig": [
+        {
+            "name": "pwzXML",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzPassword",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "fOverwrite",
+            "type": "BOOL"
+        },
+        {
+            "name": "ppwzIdentity",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ppwzGroup",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerGroupPeerTimeToUniversalTime": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pftPeerTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "pftUniversalTime",
+            "type": "FILETIME"
+        }
+    ],
+    "PeerGroupUniversalTimeToPeerTime": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "pftUniversalTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "pftPeerTime",
+            "type": "FILETIME"
+        }
+    ],
+    "PeerIdentityCreate": [
+        {
+            "name": "pwzClassifier",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzFriendlyName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV"
+        },
+        {
+            "name": "ppwzIdentity",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerIdentityGetFriendlyName": [
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppwzFriendlyName",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerIdentitySetFriendlyName": [
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzFriendlyName",
+            "type": "PCWSTR"
+        }
+    ],
+    "PeerIdentityGetCryptKey": [
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "phCryptProv",
+            "type": "HCRYPTPROV"
+        }
+    ],
+    "PeerIdentityDelete": [
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        }
+    ],
+    "PeerEnumIdentities": [
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerEnumGroups": [
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerCreatePeerName": [
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzClassifier",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppwzPeerName",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerIdentityGetXML": [
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppwzIdentityXML",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerIdentityExport": [
+        {
+            "name": "pwzIdentity",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzPassword",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppwzExportXML",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerIdentityImport": [
+        {
+            "name": "pwzImportXML",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzPassword",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppwzIdentity",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerIdentityGetDefault": [
+        {
+            "name": "ppwzPeerName",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerCollabStartup": [
+        {
+            "name": "wVersionRequested",
+            "type": "WORD"
+        }
+    ],
+    "PeerCollabSignin": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "dwSigninOptions",
+            "type": "DWORD"
+        }
+    ],
+    "PeerCollabSignout": [
+        {
+            "name": "dwSigninOptions",
+            "type": "DWORD"
+        }
+    ],
+    "PeerCollabGetSigninOptions": [
+        {
+            "name": "pdwSigninOptions",
+            "type": "DWORD"
+        }
+    ],
+    "PeerCollabAsyncInviteContact": [
+        {
+            "name": "pcContact",
+            "type": "PCPEER_CONTACT"
+        },
+        {
+            "name": "pcEndpoint",
+            "type": "PCPEER_ENDPOINT"
+        },
+        {
+            "name": "pcInvitation",
+            "type": "PCPEER_INVITATION"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "phInvitation",
+            "type": "HANDLE"
+        }
+    ],
+    "PeerCollabGetInvitationResponse": [
+        {
+            "name": "hInvitation",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppInvitationResponse",
+            "type": "PPEER_INVITATION_RESPONSE"
+        }
+    ],
+    "PeerCollabCancelInvitation": [
+        {
+            "name": "hInvitation",
+            "type": "HANDLE"
+        }
+    ],
+    "PeerCollabCloseHandle": [
+        {
+            "name": "hInvitation",
+            "type": "HANDLE"
+        }
+    ],
+    "PeerCollabInviteContact": [
+        {
+            "name": "pcContact",
+            "type": "PCPEER_CONTACT"
+        },
+        {
+            "name": "pcEndpoint",
+            "type": "PCPEER_ENDPOINT"
+        },
+        {
+            "name": "pcInvitation",
+            "type": "PCPEER_INVITATION"
+        },
+        {
+            "name": "ppResponse",
+            "type": "PPEER_INVITATION_RESPONSE"
+        }
+    ],
+    "PeerCollabAsyncInviteEndpoint": [
+        {
+            "name": "pcEndpoint",
+            "type": "PCPEER_ENDPOINT"
+        },
+        {
+            "name": "pcInvitation",
+            "type": "PCPEER_INVITATION"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "phInvitation",
+            "type": "HANDLE"
+        }
+    ],
+    "PeerCollabInviteEndpoint": [
+        {
+            "name": "pcEndpoint",
+            "type": "PCPEER_ENDPOINT"
+        },
+        {
+            "name": "pcInvitation",
+            "type": "PCPEER_INVITATION"
+        },
+        {
+            "name": "ppResponse",
+            "type": "PPEER_INVITATION_RESPONSE"
+        }
+    ],
+    "PeerCollabGetAppLaunchInfo": [
+        {
+            "name": "ppLaunchInfo",
+            "type": "PPEER_APP_LAUNCH_INFO"
+        }
+    ],
+    "PeerCollabRegisterApplication": [
+        {
+            "name": "pcApplication",
+            "type": "PCPEER_APPLICATION_REGISTRATION_INFO"
+        },
+        {
+            "name": "registrationType",
+            "type": "PEER_APPLICATION_REGISTRATION_TYPE"
+        }
+    ],
+    "PeerCollabUnregisterApplication": [
+        {
+            "name": "pApplicationId",
+            "type": "GUID"
+        },
+        {
+            "name": "registrationType",
+            "type": "PEER_APPLICATION_REGISTRATION_TYPE"
+        }
+    ],
+    "PeerCollabGetApplicationRegistrationInfo": [
+        {
+            "name": "pApplicationId",
+            "type": "GUID"
+        },
+        {
+            "name": "registrationType",
+            "type": "PEER_APPLICATION_REGISTRATION_TYPE"
+        },
+        {
+            "name": "ppApplication",
+            "type": "PPEER_APPLICATION_REGISTRATION_INFO"
+        }
+    ],
+    "PeerCollabEnumApplicationRegistrationInfo": [
+        {
+            "name": "registrationType",
+            "type": "PEER_APPLICATION_REGISTRATION_TYPE"
+        },
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerCollabGetPresenceInfo": [
+        {
+            "name": "pcEndpoint",
+            "type": "PCPEER_ENDPOINT"
+        },
+        {
+            "name": "ppPresenceInfo",
+            "type": "PPEER_PRESENCE_INFO"
+        }
+    ],
+    "PeerCollabEnumApplications": [
+        {
+            "name": "pcEndpoint",
+            "type": "PCPEER_ENDPOINT"
+        },
+        {
+            "name": "pApplicationId",
+            "type": "GUID"
+        },
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerCollabEnumObjects": [
+        {
+            "name": "pcEndpoint",
+            "type": "PCPEER_ENDPOINT"
+        },
+        {
+            "name": "pObjectId",
+            "type": "GUID"
+        },
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerCollabEnumEndpoints": [
+        {
+            "name": "pcContact",
+            "type": "PCPEER_CONTACT"
+        },
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerCollabRefreshEndpointData": [
+        {
+            "name": "pcEndpoint",
+            "type": "PCPEER_ENDPOINT"
+        }
+    ],
+    "PeerCollabDeleteEndpointData": [
+        {
+            "name": "pcEndpoint",
+            "type": "PCPEER_ENDPOINT"
+        }
+    ],
+    "PeerCollabQueryContactData": [
+        {
+            "name": "pcEndpoint",
+            "type": "PCPEER_ENDPOINT"
+        },
+        {
+            "name": "ppwzContactData",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerCollabSubscribeEndpointData": [
+        {
+            "name": "pcEndpoint",
+            "type": "PCPEER_ENDPOINT"
+        }
+    ],
+    "PeerCollabUnsubscribeEndpointData": [
+        {
+            "name": "pcEndpoint",
+            "type": "PCPEER_ENDPOINT"
+        }
+    ],
+    "PeerCollabSetPresenceInfo": [
+        {
+            "name": "pcPresenceInfo",
+            "type": "PCPEER_PRESENCE_INFO"
+        }
+    ],
+    "PeerCollabGetEndpointName": [
+        {
+            "name": "ppwzEndpointName",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerCollabSetEndpointName": [
+        {
+            "name": "pwzEndpointName",
+            "type": "PCWSTR"
+        }
+    ],
+    "PeerCollabSetObject": [
+        {
+            "name": "pcObject",
+            "type": "PCPEER_OBJECT"
+        }
+    ],
+    "PeerCollabDeleteObject": [
+        {
+            "name": "pObjectId",
+            "type": "GUID"
+        }
+    ],
+    "PeerCollabRegisterEvent": [
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "cEventRegistration",
+            "type": "DWORD"
+        },
+        {
+            "name": "pEventRegistrations",
+            "type": "PEER_COLLAB_EVENT_REGISTRATION"
+        },
+        {
+            "name": "phPeerEvent",
+            "type": "HPEEREVENT"
+        }
+    ],
+    "PeerCollabGetEventData": [
+        {
+            "name": "hPeerEvent",
+            "type": "HPEEREVENT"
+        },
+        {
+            "name": "ppEventData",
+            "type": "PPEER_COLLAB_EVENT_DATA"
+        }
+    ],
+    "PeerCollabUnregisterEvent": [
+        {
+            "name": "hPeerEvent",
+            "type": "HPEEREVENT"
+        }
+    ],
+    "PeerCollabEnumPeopleNearMe": [
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerCollabAddContact": [
+        {
+            "name": "pwzContactData",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppContact",
+            "type": "PPEER_CONTACT"
+        }
+    ],
+    "PeerCollabDeleteContact": [
+        {
+            "name": "pwzPeerName",
+            "type": "PCWSTR"
+        }
+    ],
+    "PeerCollabGetContact": [
+        {
+            "name": "pwzPeerName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppContact",
+            "type": "PPEER_CONTACT"
+        }
+    ],
+    "PeerCollabUpdateContact": [
+        {
+            "name": "pContact",
+            "type": "PCPEER_CONTACT"
+        }
+    ],
+    "PeerCollabEnumContacts": [
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerCollabExportContact": [
+        {
+            "name": "pwzPeerName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppwzContactData",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerCollabParseContact": [
+        {
+            "name": "pwzContactData",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppContact",
+            "type": "PPEER_CONTACT"
+        }
+    ],
+    "PeerNameToPeerHostName": [
+        {
+            "name": "pwzPeerName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppwzHostName",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerHostNameToPeerName": [
+        {
+            "name": "pwzHostName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppwzPeerName",
+            "type": "PWSTR"
+        }
+    ],
+    "PeerPnrpStartup": [
+        {
+            "name": "wVersionRequested",
+            "type": "WORD"
+        }
+    ],
+    "PeerPnrpRegister": [
+        {
+            "name": "pcwzPeerName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pRegistrationInfo",
+            "type": "PPEER_PNRP_REGISTRATION_INFO"
+        },
+        {
+            "name": "phRegistration",
+            "type": "HREGISTRATION"
+        }
+    ],
+    "PeerPnrpUpdateRegistration": [
+        {
+            "name": "hRegistration",
+            "type": "HREGISTRATION"
+        },
+        {
+            "name": "pRegistrationInfo",
+            "type": "PPEER_PNRP_REGISTRATION_INFO"
+        }
+    ],
+    "PeerPnrpUnregister": [
+        {
+            "name": "hRegistration",
+            "type": "HREGISTRATION"
+        }
+    ],
+    "PeerPnrpResolve": [
+        {
+            "name": "pcwzPeerName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pcwzCloudName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pcEndpoints",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppEndpoints",
+            "type": "PPEER_PNRP_ENDPOINT_INFO"
+        }
+    ],
+    "PeerPnrpStartResolve": [
+        {
+            "name": "pcwzPeerName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pcwzCloudName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cMaxEndpoints",
+            "type": "ULONG"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "phResolve",
+            "type": "HRESOLUTION"
+        }
+    ],
+    "PeerPnrpGetCloudInfo": [
+        {
+            "name": "pcNumClouds",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppCloudInfo",
+            "type": "PPEER_PNRP_CLOUD_INFO"
+        }
+    ],
+    "PeerPnrpGetEndpoint": [
+        {
+            "name": "hResolve",
+            "type": "HRESOLUTION"
+        },
+        {
+            "name": "ppEndpoint",
+            "type": "PPEER_PNRP_ENDPOINT_INFO"
+        }
+    ],
+    "PeerPnrpEndResolve": [
+        {
+            "name": "hResolve",
+            "type": "HRESOLUTION"
+        }
+    ]
+}

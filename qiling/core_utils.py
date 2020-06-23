@@ -32,7 +32,7 @@ class QLCoreUtils(object):
         else:
             raise QlErrorOutput("[!] console must be True or False")     
         
-        # FIXME: this is due to console must be able to update duirng runtime
+        # FIXME: this is due to console must be able to update during runtime
         if self.log_file_fd is not None:
             if self.multithread == True and self.os.thread_management is not None and self.os.thread_management.cur_thread is not None:
                 fd = self.os.thread_management.cur_thread.log_file_fd
@@ -92,8 +92,8 @@ class QLCoreUtils(object):
             self.nprint(*args, **kw)
 
 
-    def add_fs_mapper(self, host_src, ql_dest):
-        self.fs_mapper.append([host_src, ql_dest])
+    def add_fs_mapper(self, ql_path, real_dest):
+        self.fs_mapper.append([real_dest, ql_path])
 
 
     # push to stack bottom, and update stack register
