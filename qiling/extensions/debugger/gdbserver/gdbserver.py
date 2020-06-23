@@ -143,7 +143,7 @@ class GDBSERVERsession(object):
             def handle_c(subcmd):
                 self.gdb.resume_emu(self.ql.reg.arch_pc)
 
-                if self.gdb.bp_list is ([self.entry_point]):
+                if self.gdb.bp_list == [self.entry_point]:
                     self.send("W00")
                 else:
                     self.send(('S%.2x' % GDB_SIGNAL_TRAP))
