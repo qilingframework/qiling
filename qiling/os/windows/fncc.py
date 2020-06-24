@@ -50,7 +50,7 @@ def winsdkapi(cc, param_num=None, dllname=None, specialtype=None, specialtypeEx=
             else:
                 if dllname is not None:
                     windows_abspath = os.path.dirname(os.path.abspath(__file__))
-                    winsdk_path = windows_abspath[:-11]+'/extensions/windows_sdk/' + dllname + '.json'
+                    winsdk_path = os.path.join(windows_abspath[:-11]+'/extensions/windows_sdk/' + dllname + '.json')
                     ql.nprint("path==%s" % winsdk_path)
                     if os.path.exists(winsdk_path):
                         f = open(winsdk_path, 'r')
