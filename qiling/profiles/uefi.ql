@@ -31,6 +31,9 @@ vendortable = 0xffffffffffffffff
 guid = 5b1b31a1-9562-11d2-8e3f-00a0c969723b
 revision = 0x1000
 
+[EFI_PCD_PROTOCOL]
+guid = 13a3f0f6-264a-3ef0-f2e0-dec512342f34
+
 [KERNEL]
 pid = 1996
 

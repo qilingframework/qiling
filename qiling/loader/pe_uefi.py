@@ -18,6 +18,7 @@ from qiling.os.uefi.type64 import *
 from qiling.os.uefi.fncc import *
 from qiling.os.uefi.bootup import *
 from qiling.os.uefi.runtime import *
+from qiling.os.uefi.pcd_protocol import *
 
 from qiling.os.windows.fncc import *
 
@@ -32,7 +33,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.events = {}
         self.handle_dict = {}
         self.notify_list = []
-        self.last_image_base = 0x10000
+        self.last_image_base = 0#x10000
 
     @contextmanager
     def map_memory(self, addr, size):
@@ -217,18 +218,24 @@ class QlLoaderPE_UEFI(QlLoader):
         system_table_heap_ptr += pointer_size
         efi_configuration_table.VendorTable = VendorTable_ptr
         self.efi_configuration_table = [self.ql.os.profile["GUID"]["configuration_table"]]
+
+        self.pcd_protocol_ptr = system_table_heap_ptr
+        system_table_heap_ptr += ctypes.sizeof(EFI_PCD_PROTOCOL)
+        system_table_heap_ptr, pcd_protocol = install_EFI_PCD_PROTOCOL(self.ql, system_table_heap_ptr)
+        self.handle_dict[0] = {self.ql.os.profile.get("EFI_PCD_PROTOCOL", "guid"): self.pcd_protocol_ptr} 
+        # self.handle_dict[0] = {self.ql.os.profile.get("EFI_PCD_PROTOCOL", "guid1"): self.pcd_protocol_ptr} 
+
+
         self.ql.mem.write(runtime_services_ptr, convert_struct_to_bytes(runtime_services))
         self.ql.mem.write(boot_services_ptr, convert_struct_to_bytes(boot_services))
         self.ql.mem.write(self.efi_configuration_table_ptr, convert_struct_to_bytes(efi_configuration_table))
         self.ql.mem.write(self.system_table_ptr, convert_struct_to_bytes(system_table))
+        self.ql.mem.write(self.pcd_protocol_ptr, convert_struct_to_bytes(pcd_protocol))
 
-        if len(self.ql.argv) > 1:
-            for dependency in self.ql.argv[1:]:
-                if not self.map_and_load(dependency):
-                    raise QlErrorFileType("Can't map dependency")
+        for dependency in self.ql.argv:
+            if not self.map_and_load(dependency):
+                raise QlErrorFileType("Can't map dependency")
 
-        # Load main module
-        self.map_and_load(self.ql.path)
         self.ql.nprint("[+] Done with loading %s" % self.ql.path)
 
         #return address
