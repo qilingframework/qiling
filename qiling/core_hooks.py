@@ -8,7 +8,6 @@
 # handling hooks                             #
 ##############################################
 
-from unicorn import *
 from unicorn.x86_const import *
 from .utils import catch_KeyboardInterrupt
 from .const import *
