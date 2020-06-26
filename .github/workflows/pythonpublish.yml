@@ -28,5 +28,6 @@ jobs:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.pypi_pass }}
       run: |
+        pip install -r requirements.txt
         python setup.py sdist bdist_wheel
         twine upload dist/*
