@@ -1,6 +1,20 @@
 This file details the changelog of Qiling Framework.
 
 ------------------------------------
+[Version 1.1-alpha2]: June 26th, 2020
+
+- More refactor and bug fix
+- Added Key Developers section in CREDITS.TXT
+- Golang compiled binary support
+- custom ql.fs_mapper
+- fix x86 and arm multithread
+- move all posix syscall mapping to complete syscall table
+- Support more Linux syscalls
+- Support more Windows APIs
+- OnEnter, OnExit for syscall, windows API and Linux LIB C functions
+
+
+------------------------------------
 [Version 1.1-alpha1]: May 26th, 2020
 
 - More refactor and bug fix
