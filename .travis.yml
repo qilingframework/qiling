@@ -70,10 +70,13 @@ matrix:
         directories:
 #          - $HOME/AppData/Local/Temp/chocolatey
           - $HOME/AppData/Local/pip/Cache
-          - $HOME/dist
+          - /c/Python36
 #          - $HOME/AppData/Local/NuGet/Cache
       before_install:
-        - choco install python --version=3.6.8
+        - | 
+          if [[ ! -f /c/Python36/python ]]; then 
+               choco install python --version=3.6.8
+          fi
         #- choco install python
         #- choco install kb2999226
         #- python -m pip install --upgrade pip
