@@ -616,3 +616,25 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.load_address = load_address
         self.images.append(self.coverage_image(load_address, load_address + mem_end, self.path))
         self.ql.os.function_hook = FunctionHook(self.ql, self.elf_phdr + mem_start, self.elf_phnum, self.elf_phent, load_address, load_address + mem_end)
+
+        # map vsyscall section for some specific needs
+        if self.ql.archtype == QL_ARCH.X8664 and self.ql.ostype == QL_OS.LINUX:
+            _vsyscall_addr = int(self.ql.os.profile.get("OS64", "vsyscall_address"), 16)
+            _vsyscall_size = int(self.ql.os.profile.get("OS64", "vsyscall_size"), 16)
+
+            if not self.ql.mem.is_mapped(_vsyscall_addr, _vsyscall_size):
+                # initialize with \xcc then insert syscall entry
+                # each syscall should be 1KiB(0x400 bytes) away
+                self.ql.mem.map(_vsyscall_addr, _vsyscall_size, info="[vsyscall]")
+                self.ql.mem.write(_vsyscall_addr, _vsyscall_size * b'\xcc')
+
+                def _compile(asm):
+                    return self.ql.compile(self.ql.archtype, asm)
+
+                _vsyscall_entry_asm = [ "mov rax, 0x60;",  # syscall gettimeofday
+                                        "mov rax, 0xc9;",  # syscall time
+                                        "mov rax, 0x135;", # syscall getcpu
+                                       ]
+
+                for idx, val in enumerate(_vsyscall_entry_asm):
+                    self.ql.mem.write(_vsyscall_addr + idx * 0x400, _compile(val + "; syscall; ret"))

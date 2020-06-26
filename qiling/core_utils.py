@@ -62,9 +62,9 @@ class QLCoreUtils(object):
                             each_console_handler.removeFilter(each_filter)
             
             if isinstance(args, tuple) or isinstance(args, list):
-                msg = "".join(args)
+                msg = kw.get("sep", " ").join(args)
             else:
-                msg = "".join(str(args))
+                msg = kw.get("sep", " ").join(str(args))
 
             if kw.get("end", None) != None:
                 msg += kw["end"]

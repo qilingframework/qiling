@@ -16,6 +16,29 @@ CHEN huitao (null) <null@qiling.io>
 YU tong (sp1ke) <spikeinhouse@gmail.com>
 Earl MARCUS (klks84) klks84@gmail.com
 
+Key Contributors (in no particular order)
+=========================================
+FOO Kevin (chfl4gs)
+kabeor
+0ssigeno
+liba2k
+assaf_carlsba
+ucgJhe
+jhumble
+
+Contributors (in no particular order)
+=====================================
+WanderingGlitch
+Nguyen Hong Quang (quangnh89)
+re-fox
+t14g0p
+Hcamael
+hugsy
+danielhenrymantilla
+iamyeh
+alfink
+bambu
+
 Alpha testers (in no particular order, named by github id)
 ==========================================================
 klks
@@ -31,24 +54,3 @@ sashs
 knownsec
 hwiosec
 iamyeh
-
-Contributors (in no particular order)
-=====================================
-klks
-FOO Kevin (chfl4gs)
-jhumble
-WanderingGlitch
-Nguyen Hong Quang (quangnh89)
-ucgJhe
-re-fox
-t14g0p
-Hcamael
-hugsy
-danielhenrymantilla
-iamyeh
-alfink
-bambu
-kabeor
-0ssigeno
-liba2k
-assaf_carlsbad

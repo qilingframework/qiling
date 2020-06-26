@@ -43,3 +43,17 @@ Android
 ======
 - Its linux, but a bit more specific support ?
 - maybe a OS by itself
+
+
+-------------------- CHECKLIST before TAG --------------------
+
+1. core.py
+    - __version__ = "1.1" + "-XXXXX"
+2. setup.py
+    - 'Development Status :: 3 - Alpha'
+3. ChangeLog    
+4. commit and push
+5. Merge dev into master
+6. git tag 1.1-Alpha2
+7. git push origin --tags
+8. check for new Pypi package
