@@ -72,3 +72,23 @@ def hook_PathFindFileNameW(ql, address, params):
     size_before_last_slash = len("".join(pathname.split("\\")[:-1])) + pathname.count("\\")
     pointer_start = pointer + size_before_last_slash
     return pointer
+
+
+# int StrCmpW(
+#   PCWSTR psz1,
+#   PCWSTR psz2
+# );
+@winapi(cc=STDCALL, params={
+    "psz1": WSTRING,
+    "psz2": WSTRING,
+})
+def hook_StrCmpW(ql, address, params):
+    # Copy String2 into String
+    str1 = params["psz1"]
+    str2 = params["psz2"]
+    if str(str1) == str(str2):
+        return 0
+    elif str(str1) > str(str2):
+        return 1
+    else:
+        return -1

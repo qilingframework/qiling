@@ -252,7 +252,7 @@ def hook___stdio_common_vfwprintf(ql, address, _):
     _, _, _, p_format, _, p_args = ql.os.get_function_param(6)
     fmt = ql.os.read_wstring(p_format)
 
-    ql.os.printf(address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True, double_pointer=True)
+    ql.os.printf(address, fmt, p_args, '__stdio_common_vfwprintf', wstring=True)
     return ret
 
 
@@ -262,7 +262,7 @@ def hook___stdio_common_vswprintf_s(ql, address, _):
     _, size, p_format, p_args = ql.os.get_function_param(4)
 
     fmt = ql.os.read_wstring(p_format)
-    ql.os.printf(address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True, double_pointer=True)
+    ql.os.printf(address, fmt, p_args, '__stdio_common_vswprintf_s', wstring=True)
 
     return ret
 
@@ -271,26 +271,36 @@ def hook___stdio_common_vswprintf_s(ql, address, _):
 #   LPCSTR lpString
 # );
 @winapi(cc=CDECL, params={
-    'lpString': STRING
+    'lpString': POINTER
 })
 def hook_lstrlenA(ql, address, params):
-    return hook_lstrlenW.__wrapped__(ql, address, params)
+    addr = params["lpString"]
+    string = b""
+    val = ql.mem.read(addr, 1)
+    while bytes(val) != b"\x00":
+        addr += 1
+        string += bytes(val)
+        val = ql.mem.read(addr, 1)
+    params["lpString"] = bytearray(string)
+    return len(string)
 
 
 # int lstrlenW(
 #   LPCWSTR lpString
 # );
 @winapi(cc=CDECL, params={
-    'lpString': WSTRING
+    'lpString': POINTER
 })
 def hook_lstrlenW(ql, address, params):
-    ret = 0
-    string = params["lpString"]
-    if string == 0:
-        ret = 0
-    else:
-        ret = len(string)
-    return ret
+    addr = params["lpString"]
+    string = b""
+    val = ql.mem.read(addr, 2)
+    while bytes(val) != b"\x00\x00":
+        addr += 2
+        string += bytes(val)
+        val = ql.mem.read(addr, 2)
+    params["lpString"] = bytearray(string)
+    return len(string)
 
 
 @winapi(cc=CDECL, params={})

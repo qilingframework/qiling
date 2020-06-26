@@ -63,26 +63,37 @@ class QlLoaderPE_UEFI(QlLoader):
         self.loaded_image_protocol_modules.append(image_base)
 
 
-    def map_and_load(self, path):
+    def map_and_load(self, path, execute_now=False, callback_ctx=None):
+        ql = self.ql
         pe = pefile.PE(path, fast_load=True)
-        
-        IMAGE_BASE = pe.OPTIONAL_HEADER.ImageBase
-        IMAGE_SIZE = self.heap._align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
+
+        # Make sure no module will occupy the NULL page
+        IMAGE_BASE = max(pe.OPTIONAL_HEADER.ImageBase, 0x10000)
+        IMAGE_SIZE = ql.mem.align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
 
         while IMAGE_BASE + IMAGE_SIZE < self.heap_base_address:
-            if not self.ql.mem.is_mapped(IMAGE_BASE, 1):
-                self.ql.mem.map(IMAGE_BASE, IMAGE_SIZE)
+            if not ql.mem.is_mapped(IMAGE_BASE, 1):
+                ql.mem.map(IMAGE_BASE, IMAGE_SIZE)
                 pe.parse_data_directories()
                 data = bytearray(pe.get_memory_mapped_image())
-                self.ql.mem.write(IMAGE_BASE, bytes(data))
-                self.ql.nprint("[+] Loading %s to 0x%x" % (path, IMAGE_BASE))
+                ql.mem.write(IMAGE_BASE, bytes(data))
+                ql.nprint("[+] Loading %s to 0x%x" % (path, IMAGE_BASE))
                 entry_point = IMAGE_BASE + pe.OPTIONAL_HEADER.AddressOfEntryPoint
                 if self.entry_point == 0:
                     # Setting entry point to the first loaded module entry point, so the debugger can break.
                     self.entry_point = entry_point
-                self.ql.nprint("[+] PE entry point at 0x%x" % entry_point)
+                ql.nprint("[+] PE entry point at 0x%x" % entry_point)
                 self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE, entry_point)
-                self.modules.append((path, IMAGE_BASE, entry_point, pe))
+                self.images.append(self.coverage_image(IMAGE_BASE, IMAGE_BASE + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, path))
+                if execute_now:
+                    self.OOO_EOE_callbacks.append(callback_ctx)
+                    # X64 shadow store - The caller is responsible for allocating space for parameters to the callee, and must always allocate sufficient space to store four register parameters
+                    ql.reg.rsp -= pointer_size * 4
+                    self.execute_module(path, IMAGE_BASE, entry_point, self.OOO_EOE_ptr)
+                    ql.stack_push(entry_point) # Return from here to the entry point of the loaded module.
+
+                else:
+                    self.modules.append((path, IMAGE_BASE, entry_point, pe))
                 return True
             else:
                 IMAGE_BASE += 0x10000
@@ -106,14 +117,17 @@ class QlLoaderPE_UEFI(QlLoader):
                 return True
         return False
 
-    def execute_next_module(self):
-        path, image_base, entry_point, pe = self.modules.pop(0)
-        self.ql.stack_push(self.end_of_execution_ptr)
+    def execute_module(self, path, image_base, entry_point, EOE_ptr):
+        self.ql.stack_push(EOE_ptr)
         self.ql.reg.rcx = image_base
         self.ql.reg.rdx = self.system_table_ptr
         self.ql.reg.rip = entry_point
         self.ql.os.entry_point = entry_point
-        self.ql.nprint(f'[+] Running from 0x{self.entry_point:x} of {path}')
+        self.ql.nprint(f'[+] Running from 0x{entry_point:x} of {path}')
+
+    def execute_next_module(self):
+        path, image_base, entry_point, pe = self.modules.pop(0)
+        self.execute_module(path, image_base, entry_point, self.end_of_execution_ptr)
 
 
     def run(self):
@@ -121,12 +135,16 @@ class QlLoaderPE_UEFI(QlLoader):
         self.loaded_image_protocol_modules = []
         self.tpl = 4 # TPL_APPLICATION
         self.user_defined_api = self.ql.os.user_defined_api
+        self.user_defined_api_onenter = self.ql.os.user_defined_api_onenter
+        self.user_defined_api_onexit = self.ql.os.user_defined_api_onexit
+        
         if self.ql.archtype == QL_ARCH.X8664:
             self.heap_base_address = int(self.ql.os.profile.get("OS64", "heap_address"), 16)
             self.heap_base_size = int(self.ql.os.profile.get("OS64", "heap_size"), 16)       
         elif self.ql.archtype == QL_ARCH.X86:
             self.heap_base_address = int(self.ql.os.profile.get("OS32", "heap_address"), 16)
             self.heap_base_size = int(self.ql.os.profile.get("OS32", "heap_size"), 16)
+        
         self.heap = QlMemoryHeap(self.ql, self.heap_base_address, self.heap_base_address + self.heap_base_size)
         self.entry_point = 0
         self.load_address = 0  
@@ -192,30 +210,33 @@ class QlLoaderPE_UEFI(QlLoader):
             efi_configuration_table.VendorGuid.Data4[datalist] = data4_list
             datalist += 1  
         
-        efi_configuration_table.VendorTable = self.ql.os.profile.getint("GUID", "vendortable")
+        VendorTable_ptr = system_table_heap_ptr
+        write_int64(self.ql, VendorTable_ptr, int(self.ql.os.profile.get("GUID", "vendortable"),16))
+        system_table_heap_ptr += pointer_size
+        efi_configuration_table.VendorTable = VendorTable_ptr
         self.efi_configuration_table = [self.ql.os.profile["GUID"]["configuration_table"]]
         self.ql.mem.write(runtime_services_ptr, convert_struct_to_bytes(runtime_services))
         self.ql.mem.write(boot_services_ptr, convert_struct_to_bytes(boot_services))
         self.ql.mem.write(self.efi_configuration_table_ptr, convert_struct_to_bytes(efi_configuration_table))
         self.ql.mem.write(self.system_table_ptr, convert_struct_to_bytes(system_table))
 
-        # Make sure no module will occupy the NULL page
-        with self.map_memory(0, 0x1000):
-            if len(self.ql.argv) > 1:
-                for dependency in self.ql.argv[1:]:
-                    if not self.map_and_load(dependency):
-                        raise QlErrorFileType("Can't map dependency")
+        if len(self.ql.argv) > 1:
+            for dependency in self.ql.argv[1:]:
+                if not self.map_and_load(dependency):
+                    raise QlErrorFileType("Can't map dependency")
 
-            # Load main module
-            self.map_and_load(self.ql.path)
-            self.ql.nprint("[+] Done with loading %s" % self.ql.path)
+        # Load main module
+        self.map_and_load(self.ql.path)
+        self.ql.nprint("[+] Done with loading %s" % self.ql.path)
 
         #return address
         self.end_of_execution_ptr = system_table_heap_ptr
         self.ql.mem.write(self.end_of_execution_ptr, b'\xcc')
         system_table_heap_ptr += pointer_size
         self.ql.hook_address(hook_EndOfExecution, self.end_of_execution_ptr)
-        self.notify_ptr = system_table_heap_ptr
+        self.OOO_EOE_ptr = system_table_heap_ptr
+        self.ql.hook_address(hook_OutOfOrder_EndOfExecution, self.OOO_EOE_ptr)
         system_table_heap_ptr += pointer_size
+        self.OOO_EOE_callbacks = []
 
         self.execute_next_module()

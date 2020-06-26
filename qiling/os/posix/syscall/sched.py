@@ -12,6 +12,7 @@ from qiling.os.posix.const_mapping import *
 from qiling.exception import *
 
 def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, clone_newtls, clone_child_tidptr, *args, **kw):
+   
     CSIGNAL = 0x000000ff	
     CLONE_VM = 0x00000100	
     CLONE_FS = 0x00000200	
@@ -38,9 +39,14 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     CLONE_NEWNET = 0x40000000	
     CLONE_IO = 0x80000000
 
+    # X8664 clone_flags, clone_child_stack, clone_parent_tidptr, clone_child_tidptr, clone_newtls
+    if ql.archtype== QL_ARCH.X8664:
+        ori_clone_newtls = clone_child_tidptr
+        clone_child_tidptr = clone_newtls
+        clone_newtls = ori_clone_newtls
+
     if ql.archtype== QL_ARCH.MIPS:
         clone_child_tidptr = ql.unpack32(ql.mem.read(clone_child_tidptr, 4))
-
 
     f_th = ql.os.thread_management.cur_thread	
     newtls = None

@@ -8,7 +8,7 @@ import os, time
 from unicorn.mips_const import *
 from unicorn.arm_const import *
 
-from qiling.utils import ql_setup_logging_file, ql_setup_logger
+from qiling.utils import ql_setup_logging_file, ql_setup_logger, ql_setup_logging_stream
 from qiling.os.thread import *
 from qiling.arch.x86_const import *
 from qiling.const import *
@@ -46,16 +46,15 @@ class QlLinuxThread(QlThread):
         self.current_path = ql.os.current_path
         self.log_file_fd = None
 
-        _logger = ql_setup_logger(str(self.thread_id)) if ql.log_split else ql_setup_logger()
+        _logger = self.ql.log_file_fd
 
-        if ql.log_dir and ql.log_file != None:
+        if self.ql.log_dir and self.ql.log_file_fd != None:
             if ql.log_split:
                 _logger = ql_setup_logging_file(ql.output, '%s_%s' % (ql.log_file, self.thread_id), _logger)
             else:
-                _logger = ql_setup_logging_file(ql.output, ql.log_file, _logger)
+                _logger = ql_setup_logging_file(ql.output, self.ql.log_filename, _logger)
 
         self.log_file_fd = _logger
-
 
         # For each thread, the kernel maintains two attributes (addresses)
         # called set_child_tid and clear_child_tid.  These two attributes
@@ -87,6 +86,8 @@ class QlLinuxThread(QlThread):
         # The effect of this operation is to wake a single thread that is
         # performing a futex wait on the memory location.  Errors from the
         # futex wake operation are ignored.
+
+        # Source: Linux Man Page
 
         self.set_child_tid_address = set_child_tid_addr
         self.clear_child_tid_address = None
@@ -189,6 +190,8 @@ class QlLinuxThread(QlThread):
         #       set_tid_address(2) system call.  This is used by threading
         #       libraries.
 
+        # Source: Linux Man Page
+
         if self.clear_child_tid_address != None:
             self.ql.mem.write(self.clear_child_tid_address, self.ql.pack32(0))
         self.ql.os.futexm.futex_wake(self.clear_child_tid_address, 1)
@@ -222,15 +225,19 @@ class QlLinuxThread(QlThread):
         return self.return_val
 
     def set_blocking_condition(self, bc_fuc, bc_arg = None):
-        #When a thread encounters a special thing and needs to block,
-        #it will call this function to determine if it needs to continue blocking.
+        
+        # When a thread encounters a special condition and required blocking
+        # it will call this function to determine if this is a function needs blocking.
 
-        # Why do I need such a function, because when I am programming,
-        # I will encounter functions like sleep, wait, etc.
-        # If I don't do any processing, I will block the ThreadManagement if I call it directly.
-        # (This is also a design flaw of mine, because I designed it as Single process).
+        # Why set_blocking_condition is needed?
+        # Functions like sleep, wait, etc will have issue eventually cause issue to ThreadManagement.
+        # This is also a design flaw, this is due to Qiling Framework's multithread is not a real multithread.
+        
         # When implementing system calls, you need to unpack the system calls that are blocked,
         # and check whether the conditions are met on each time slice to prevent program blocking.
+        
+        # From: w1tcher
+
         self.blocking_condition_fuc = bc_fuc
         self.blocking_condition_arg = bc_arg
 
@@ -308,6 +315,8 @@ class QlLinuxX86Thread(QlLinuxThread):
     def restore(self):
         self.restore_regs()
         self.ql.os.gdtm.set_gdt_buf(12, 14 + 1, self.tls)
+        self.ql.reg.gs = self.ql.reg.gs
+        self.ql.reg.fs = self.ql.reg.fs
 
 class QlLinuxX8664Thread(QlLinuxThread):
     """docstring for X8664Thread"""
@@ -374,15 +383,18 @@ class QlLinuxARM64Thread(QlLinuxThread):
     """docstring for QlLinuxARM64Thread"""
     def __init__(self, ql, thread_management = None, start_address = 0, context = None, total_time = 0, set_child_tid_addr = None):
         super(QlLinuxARM64Thread, self).__init__(ql, thread_management, start_address, context, total_time, set_child_tid_addr)
+        self.tls = 0
 
     def clone_thread_tls(self, tls_addr):
-        pass
+        self.tls = tls_addr
 
     def store(self):
         self.store_regs()
+        self.tls = self.ql.reg.tpidr_el0
 
     def restore(self):
         self.restore_regs()
+        self.ql.reg.tpidr_el0 = self.tls
 
 class QlLinuxThreadManagement(QlThreadManagement):
     def __init__(self, ql, time_slice = 1000, count_slice = 1000, bbl_slice = 300, mode = BBL_MODE, ):

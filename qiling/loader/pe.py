@@ -87,7 +87,7 @@ class Process():
                 self.ql.nprint("[+] Cached %s" % path)
 
         dll_base = self.dll_last_address
-        dll_len = self.ql.os.heap._align(len(bytes(data)), 0x1000)
+        dll_len = self.ql.mem.align(len(bytes(data)), 0x1000)
         self.dll_size += dll_len
         self.ql.mem.map(dll_base, dll_len, info=dll_name)
         self.ql.mem.write(dll_base, bytes(data))
@@ -97,6 +97,7 @@ class Process():
         self.add_ldr_data_table_entry(dll_name)
 
         self.ql.nprint("[+] Done with loading %s" % path)
+        
         return dll_base
 
     def set_cmdline(self, name, address, memory):
@@ -154,14 +155,14 @@ class Process():
 
         self.ql.nprint("[+] PEB addr is 0x%x" % peb_addr)
 
-        peb_size = len(PEB(self.ql).bytes())
-
         # we must set an heap, will try to retrieve this value. Is ok to be all \x00
         process_heap = self.ql.os.heap.alloc(0x100)
-        peb_data = PEB(self.ql, base=peb_addr, ldr_address=peb_addr + peb_size, process_heap=process_heap)
-
-        self.ql.mem.write(peb_addr, peb_data.bytes())
-        self.structure_last_addr += peb_size
+        peb_data = PEB(self.ql, base=peb_addr, process_heap=process_heap,
+                       number_processors=self.ql.os.profile.getint("HARDWARE",
+                                                                   "number_processors"))
+        peb_data.LdrAddress = peb_addr + peb_data.size
+        peb_data.write(peb_addr)
+        self.structure_last_addr += peb_data.size
         self.PEB = self.ql.PEB = peb_data
 
     def init_ldr_data(self):
@@ -305,7 +306,9 @@ class QlLoaderPE(QlLoader, Process):
         self.load_address = 0  
         self.ql.os.heap = QlMemoryHeap(self.ql, self.ql.os.heap_base_address, self.ql.os.heap_base_address + self.ql.os.heap_base_size)
         self.ql.os.setupComponents()
+        self.ql.os.entry_point = self.entry_point
         self.cmdline = bytes(((str(self.ql.os.userprofile)) + "Desktop\\" + (self.ql.targetname) + "\x00"), "utf-8")
+        
         self.load()
 
     def init_thread_information_block(self): 
@@ -323,20 +326,20 @@ class QlLoaderPE(QlLoader, Process):
             
             self.pe = pefile.PE(self.path, fast_load=True)
             # for simplicity, no image base relocation
-            self.pe_image_address = self.pe_image_address = self.pe.OPTIONAL_HEADER.ImageBase
-            self.pe_image_address_size = self.pe_image_address_size = self.pe.OPTIONAL_HEADER.SizeOfImage
+            self.pe_image_address = self.pe.OPTIONAL_HEADER.ImageBase
+            self.pe_image_address_size = self.ql.mem.align(self.pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
 
             if self.pe_image_address + self.pe_image_address_size > self.ql.os.heap_base_address:
                 # pe reloc
-                self.pe_image_address = self.pe_image_address = self.image_address
+                self.pe_image_address = self.image_address
                 self.pe.relocate_image(self.image_address)
 
             self.entry_point = self.pe_entry_point = self.pe_image_address + self.pe.OPTIONAL_HEADER.AddressOfEntryPoint
             self.sizeOfStackReserve = self.pe.OPTIONAL_HEADER.SizeOfStackReserve
             self.ql.nprint("[+] Loading %s to 0x%x" % (self.path, self.pe_image_address))
             self.ql.nprint("[+] PE entry point at 0x%x" % self.entry_point)
-
-
+            self.images.append(self.coverage_image(self.pe_image_address, self.pe_image_address + self.pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, self.path))
+            
             # Stack should not init at the very bottom. Will cause errors with Dlls
             sp = self.stack_address + self.stack_size - 0x1000
 
@@ -381,7 +384,8 @@ class QlLoaderPE(QlLoader, Process):
             mod_name = os.path.basename(self.path)
             self.dlls[mod_name] = self.pe_image_address
             super().add_ldr_data_table_entry(mod_name)
-
+            # is necessary to always load ntdll.dll
+            super().load_dll(b"ntdll.dll")
             # parse directory entry import
             if self.pe.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_IMPORT']].VirtualAddress != 0:
                 for entry in self.pe.DIRECTORY_ENTRY_IMPORT:
@@ -425,10 +429,10 @@ class QlLoaderPE(QlLoader, Process):
             except:
                 pass
             
-            # rewrite entrypoint for windows shellcode
-            self.ql.os.entry_point = self.entry_point
-
             self.init_thread_information_block()
             # load dlls
             for each in self.init_dlls:
                 super().load_dll(each)
+        
+        # move entry_point to ql.os
+        self.ql.os.entry_point = self.entry_point

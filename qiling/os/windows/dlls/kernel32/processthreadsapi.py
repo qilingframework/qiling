@@ -128,7 +128,7 @@ def hook_GetCurrentThreadId(ql, address, params):
 @winapi(cc=STDCALL, params={})
 def hook_GetCurrentProcessId(ql, address, params):
     # Let's return a valid value
-    return 0x2005
+    return ql.os.profile.getint("KERNEL", "pid")
 
 
 # BOOL IsProcessorFeaturePresent(
@@ -181,7 +181,8 @@ def hook_CreateThread(ql, address, params):
         thread_status = QlWindowsThread.READY
     else:
         thread_status = QlWindowsThread.RUNNING
-
+    
+    
     # create new thread
     thread_id = new_thread.create(
         lpStartAddress,
@@ -198,8 +199,9 @@ def hook_CreateThread(ql, address, params):
     ret = new_handle.id
 
     # set lpThreadId
-    if lpThreadId != 0:
-        ql.mem.write(lpThreadId, ql.pack(thread_id))
+    # FIXME: Temporary fix for the crash
+    #if lpThreadId != 0:
+        #ql.mem.write(lpThreadId, ql.pack(thread_id))    
 
     # set thread handle
     return ret
@@ -209,8 +211,7 @@ def hook_CreateThread(ql, address, params):
 # );
 @winapi(cc=STDCALL, params={})
 def hook_GetCurrentProcess(ql, address, params):
-    ret = 0
-    return ret
+    return ql.os.profile.getint("KERNEL", "pid")
 
 
 # BOOL TerminateProcess(
@@ -224,8 +225,7 @@ def hook_GetCurrentProcess(ql, address, params):
 def hook_TerminateProcess(ql, address, params):
     # Samples will try to kill other process! We don't want to always stop!
     process = params["hProcess"]
-    # TODO i have no idea on how to find the old ql.pe.image_address
-    if process == 0x0:  # or process == ql.os.image_address:
+    if process == ql.os.profile.getint("KERNEL", "pid"):  # or process == ql.os.image_address:
         ql.emu_stop()
         ql.os.PE_RUN = False
     ret = 1
@@ -256,6 +256,12 @@ def hook_OpenProcess(ql, address, params):
     # the function fails and the last error code is ERROR_INVALID_PARAMETER
     if proc == 0:
         ql.os.last_error = ERROR_INVALID_PARAMETER
+        return 0
+    #  If the specified process is the Idle process or one of the CSRSS processes, this function fails
+    #  and the last error code is ERROR_ACCESS_DENIED because their access restrictions prevent user-level code
+    #  from opening them.
+    if proc == ql.profile.getint("PROCESSES", "csrss.exe"):
+        ql.os.last_error = ERROR_ACCESS_DENIED
         return 0
     return 0xD10C
 
@@ -309,4 +315,22 @@ def hook_OpenThreadToken(ql, address, params):
     new_handle = Handle(obj=token)
     ql.os.handle_manager.append(new_handle)
     ql.mem.write(token_pointer, ql.pack(new_handle.id))
+    return 1
+
+
+# BOOL GetThreadTimes(
+#   HANDLE     hThread,
+#   LPFILETIME lpCreationTime,
+#   LPFILETIME lpExitTime,
+#   LPFILETIME lpKernelTime,
+#   LPFILETIME lpUserTime
+# );
+@winapi(cc=STDCALL, params={
+    "hThread": HANDLE,
+    "lpCreationTime": POINTER,
+    "lpExitTime": POINTER,
+    "lpKernelTime": POINTER,
+    "lpUserTime": POINTER
+})
+def hook_GetThreadTimes(ql, address, params):
     return 1

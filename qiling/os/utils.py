@@ -77,6 +77,8 @@ class QLOsUtils:
         return real_path
 
     def transform_to_real_path(self, path):
+        from types import FunctionType
+
         if self.ql.multithread:
             cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
@@ -91,15 +93,27 @@ class QLOsUtils:
 
         from_path = None
         to_path = None
+        virtual_path = None
         for fm, to in self.ql.fs_mapper:
-            fm_l = len(fm)
-            if len(relative_path) >= fm_l and relative_path[: fm_l] == fm:
-                from_path = fm
+
+            if isinstance(fm, str):
+                fm_l = len(fm)
+                if len(relative_path) >= fm_l and relative_path[: fm_l] == fm:
+                    from_path = fm
+                    to_path = to
+                    break
+
+            elif to == path and not isinstance(fm, str):
+                virtual_path = fm
                 to_path = to
                 break
 
-        if from_path is not None:
+        if not isinstance(virtual_path, str) and virtual_path != None:
+            real_path = virtual_path
+
+        elif from_path is not None:
             real_path = os.path.abspath(to_path + relative_path[fm_l:])
+
         else:
             if rootfs is None:
                 rootfs = ""
@@ -238,10 +252,11 @@ class QLOsUtils:
             self.ql.nprint("%s %s" % (i.mnemonic, i.op_str))
 
         if self.ql.output == QL_OUTPUT.DUMP:
-            for reg in self.ql.reg.table:
-                REG_NAME = reg
-                REG_VAL = self.ql.reg.read(reg)
-                self.ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+            for reg in self.ql.reg.register_mapping:
+                if isinstance(reg, str):
+                    REG_NAME = reg
+                    REG_VAL = self.ql.reg.read(reg)
+                    self.ql.dprint(D_INFO, "[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
 
     def setup_output(self):
         def ql_hook_block_disasm(ql, address, size):
@@ -322,15 +337,14 @@ class QLOsUtils:
         else:
             self.ql.dprint(D_INFO, log)
 
-    def printf(self, address, fmt, params_addr, name, wstring=False, double_pointer=False):
+    def printf(self, address, fmt, params_addr, name, wstring=False):
         count = fmt.count("%")
         params = []
         if count > 0:
             for i in range(count):
-                # We don't need to mem_read here, otherwise we have a problem with strings, since read_wstring/read_cstring
-                #  already take a pointer, and we will have pointer -> pointer -> STRING instead of pointer -> STRING
+                param = self.ql.mem.read(params_addr + i * self.ql.pointersize, self.ql.pointersize)
                 params.append(
-                    params_addr + i * self.ql.pointersize,
+                    self.ql.unpack(param)
                 )
 
             formats = fmt.split("%")[1:]
@@ -338,14 +352,9 @@ class QLOsUtils:
             for f in formats:
                 if f.startswith("s"):
                     if wstring:
-                        if double_pointer:
-                            params[index] = self.ql.unpack32(self.ql.mem.read(params[index], self.ql.pointersize))
                         params[index] = self.ql.os.read_wstring(params[index])
                     else:
                         params[index] = self.ql.os.read_cstring(params[index])
-                else:
-                    # if is not a string, then they are already values!
-                    pass
                 index += 1
 
             output = '%s(format = %s' % (name, repr(fmt))
@@ -363,4 +372,4 @@ class QLOsUtils:
             stdout = fmt
         self.ql.nprint(output)
         self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
-        return len(stdout), stdout            
+        return len(stdout), stdout

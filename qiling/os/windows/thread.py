@@ -83,7 +83,6 @@ class QlWindowsThread(QlThread):
         stack_size = 1024
         new_stack = self.ql.os.heap.alloc(stack_size) + stack_size
         
-        # FIXME : self.ql.os this is ugly, should be self.os.thread_manager
         if self.ql.archtype == QL_ARCH.X86:
             self.ql.mem.write(new_stack - 4, self.ql.pack32(self.ql.os.thread_manager.THREAD_RET_ADDR))
             self.ql.mem.write(new_stack, self.ql.pack32(func_params))
@@ -95,13 +94,16 @@ class QlWindowsThread(QlThread):
         self.saved_context = self.ql.reg.save()
 
         if self.ql.archtype == QL_ARCH.X86:
-            self.saved_context["EIP"] = func_addr
-            self.saved_context["EBP"] = new_stack - 4
-            self.saved_context["ESP"] = new_stack - 4
+            self.saved_context["eip"] = func_addr
+            self.saved_context["ebp"] = new_stack - 4
+            self.saved_context["esp"] = new_stack - 4
         elif self.ql.archtype == QL_ARCH.X8664:
-            self.saved_context["RIP"] = func_addr
-            self.saved_context["RBP"] = new_stack - 8
-            self.saved_context["RSP"] = new_stack - 8
+            self.saved_context["rip"] = func_addr
+            self.saved_context["rbp"] = new_stack - 8
+            self.saved_context["rsp"] = new_stack - 8
+
+        self.status = status
+        return self.id        
 
         self.status = status
         return self.id

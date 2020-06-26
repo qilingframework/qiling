@@ -1,2 +1,2 @@
-recursive-include qiling/debugger/gdbserver/xml *
+recursive-include qiling/extensions/debugger/gdbserver/xml *
 recursive-include qiling/profiles *

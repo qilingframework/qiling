@@ -35,3 +35,59 @@ def hook_OleInitialize(ql, address, params):
 })
 def hook_CoRegisterMessageFilter(ql, address, params):
     return S_OK
+
+
+# HRESULT CoInitializeEx(
+#   LPVOID pvReserved,
+#   DWORD  dwCoInit
+# );
+@winapi(cc=STDCALL, params={
+    "pvReserved": POINTER,
+    "dwCoInit": DWORD
+})
+def hook_CoInitializeEx(ql, address, params):
+    return S_OK
+
+# HRESULT CoInitializeSecurity(
+#   PSECURITY_DESCRIPTOR        pSecDesc,
+#   LONG                        cAuthSvc,
+#   SOLE_AUTHENTICATION_SERVICE *asAuthSvc,
+#   void                        *pReserved1,
+#   DWORD                       dwAuthnLevel,
+#   DWORD                       dwImpLevel,
+#   void                        *pAuthList,
+#   DWORD                       dwCapabilities,
+#   void                        *pReserved3
+# );
+@winapi(cc=STDCALL, params={
+    "pSecDesc": POINTER,
+    "cAuthSvc": ULONGLONG,
+    "asAuthSvc": POINTER,
+    "pReserved1": POINTER,
+    "dwAuthnLevel": DWORD,
+    "dwImpLevel": DWORD,
+    "pAuthList": POINTER,
+    "dwCapabilities": DWORD,
+    "pReserved3": POINTER
+})
+def hook_CoInitializeSecurity(ql, address, params):
+    return S_OK
+
+
+# HRESULT CoCreateInstance(
+#   REFCLSID  rclsid,
+#   LPUNKNOWN pUnkOuter,
+#   DWORD     dwClsContext,
+#   REFIID    riid,
+#   LPVOID    *ppv
+# );
+@winapi(cc=STDCALL, params={
+    "rclsid": POINTER,
+    "pUnkOuter": POINTER,
+    "dwClsContext": DWORD,
+    "riid": POINTER,
+    "ppv": POINTER
+})
+def hook_CoCreateInstance(ql, address, params):
+    # FIXME: probably this needs implementation
+    return S_OK
