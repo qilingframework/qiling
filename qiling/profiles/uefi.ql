@@ -18,14 +18,21 @@ dll_address  = 0x10000000
 entry_point = 0x40000  
 
 
-[GUID]
+[HOB_LIST]
 # EFI_GLOBAL_VARIABLE
-configuration_table = 7739f24c-93d7-11d4-9a3a-0090273fc14d
+guid = 7739f24c-93d7-11d4-9a3a-0090273fc14d
 data1 = 0x7739f24c
 data2 = 0x93d7
 data3 = 0x11d4
 data4 = [0x9a, 0x3a, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d]
 vendortable = 0xffffffffffffffff
+
+[DXE_SERVICE_TABLE]
+guid = 05ad34ba-6f02-4214-952e-4da0398e2bb9
+data1 = 0x05AD34BA
+data2 = 0x6F02
+data3 = 0x4214
+data4 = [0x95, 0x2E, 0x4D, 0xA0, 0x39, 0x8E, 0x2B, 0xB9]
 
 [LOADED_IMAGE_PROTOCOL]
 guid = 5b1b31a1-9562-11d2-8e3f-00a0c969723b
