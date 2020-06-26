@@ -8,7 +8,7 @@
 # handling hooks                             #
 ##############################################
 
-from unicorn.x86_const import *
+from unicorn import *
 from .utils import catch_KeyboardInterrupt
 from .const import *
 from .exception import QlErrorCoreHook
