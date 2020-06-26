@@ -10,6 +10,8 @@ stack_size = 0x30000
 load_address = 0x555555554000
 interp_address = 0x7ffff7dd5000
 mmap_address = 0x7fffb7dd6000
+vsyscall_address = 0xffffffffff600000
+vsyscall_size = 0x1000
 
 
 [OS32]
