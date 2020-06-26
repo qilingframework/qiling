@@ -54,4 +54,6 @@ Android
 3. ChangeLog    
 4. commit and push
 5. Merge dev into master
-6. tag + push -- tags -> check for new Pypi package
+6. git tag 1.1-Alpha2
+7. git push origin --tags
+8. check for new Pypi package

@@ -24,10 +24,10 @@ kabeor
 liba2k
 assaf_carlsba
 ucgJhe
+jhumble
 
 Contributors (in no particular order)
 =====================================
-jhumble
 WanderingGlitch
 Nguyen Hong Quang (quangnh89)
 re-fox
