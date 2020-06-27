@@ -200,4 +200,14 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 - Earl Marcus (klks84) klks84@gmail.com 
 
 #### Travis-CI, Docker and Website
+
 - FOO Kevin (chfl4gs) <chbsd64@qiling.io>
+
+#### Key Contributors (in no particular order)
+
+- kabeor
+- 0ssigeno
+- liba2k
+- assaf_carlsba
+- ucgJhe
+- jhumble
