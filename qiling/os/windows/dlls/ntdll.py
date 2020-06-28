@@ -109,8 +109,8 @@ def _QuerySystemInformation(ql, address, params):
     dst = params["SystemInformation"]
     if (siClass == SystemBasicInformation):
         bufferLength = params["SystemInformationLength"]
-
-        sbi = qiling.os.windows.structs.SystemBasicInforation(ql,
+        if (ql.archtype == QL_ARCH.X8664):
+            sbi = qiling.os.windows.structs.SystemBasicInforation(ql,
                                                               Reserved=0,
                                                               TimerResolution = 156250 ,
                                                               PageSize=ql.os.heap.page_size,
@@ -122,11 +122,23 @@ def _QuerySystemInformation(ql, address, params):
                                                               MaximumUserModeAddress=0x7FFFFFFEFFFF,
                                                               ActiveProcessorsAffinityMask = 0x3F,
                                                               NumberOfProcessors = 0x6)
+        elif(ql.archtype == QL_ARCH.X86):
+            sbi = qiling.os.windows.structs.SystemBasicInforation(ql,
+                                                                  Reserved=0,
+                                                                  TimerResolution=156250,
+                                                                  PageSize=ql.os.heap.page_size,
+                                                                  NumberOfPhysicalPages=0x003FC38A,
+                                                                  LowestPhysicalPageNumber=1,
+                                                                  HighestPhysicalPageNumber=0x0046DFFF,
+                                                                  AllocationGranularity=1,
+                                                                  MinimumUserModeAddress=0x10000,
+                                                                  MaximumUserModeAddress=0x7FFEFFFF,
+                                                                  ActiveProcessorsAffinityMask=0x3F,
+                                                                  NumberOfProcessors=0x6)
         if (bufferLength==sbi.size):
             sbi.write(dst)
             if pt_res != 0:
                 ql.mem.write(pt_res, sbi.size.to_bytes(1, byteorder="little"))
-            data = ql.mem.read(dst,0x40)
         else:
             if pt_res != 0:
                 ql.mem.write(pt_res, sbi.size.to_bytes(1, byteorder="little"))
