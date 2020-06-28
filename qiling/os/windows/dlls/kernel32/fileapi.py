@@ -14,13 +14,12 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 
+dllname = 'kernel32_dll'
 
 # DWORD GetFileType(
 #   HANDLE hFile
 # );
-@winapi(cc=STDCALL, params={
-    "hFile": HANDLE
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetFileType(ql, address, params):
     hFile = params["hFile"]
     if hFile == STD_INPUT_HANDLE or hFile == STD_OUTPUT_HANDLE or hFile == STD_ERROR_HANDLE:
@@ -39,10 +38,7 @@ def hook_GetFileType(ql, address, params):
 #  LPCSTR             lpFileName,
 #  LPWIN32_FIND_DATAA lpFindFileData
 # );
-@winapi(cc=STDCALL, params={
-    "lpFilename": POINTER,
-    "lpFindFileData": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPCSTR': 'POINTER'})
 def hook_FindFirstFileA(ql, address, params):
     pass
 
@@ -51,10 +47,7 @@ def hook_FindFirstFileA(ql, address, params):
 #  LPCSTR             lpFileName,
 #  LPWIN32_FIND_DATAA lpFindFileData
 # );
-@winapi(cc=STDCALL, params={
-    "lpFilename": POINTER,
-    "lpFindFileData": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPCSTR': 'POINTER'})
 def hook_FindNextFileA(ql, address, params):
     pass
 
@@ -62,9 +55,7 @@ def hook_FindNextFileA(ql, address, params):
 # BOOL FindClose(
 #    HANDLE hFindFile
 # );
-@winapi(cc=STDCALL, params={
-    "hFindFile": HANDLE,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_FindClose(ql, address, params):
     pass
 
@@ -76,13 +67,7 @@ def hook_FindClose(ql, address, params):
 #   LPDWORD      lpNumberOfBytesRead,
 #   LPOVERLAPPED lpOverlapped
 # );
-@winapi(cc=STDCALL, params={
-    "hFile": HANDLE,
-    "lpBuffer": POINTER,
-    "nNumberOfBytesToRead": DWORD,
-    "lpNumberOfBytesRead": POINTER,
-    "lpOverlapped": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_ReadFile(ql, address, params):
     ret = 1
     hFile = params["hFile"]
@@ -119,13 +104,7 @@ def hook_ReadFile(ql, address, params):
 #   LPDWORD      lpNumberOfBytesWritten,
 #   LPOVERLAPPED lpOverlapped
 # );
-@winapi(cc=STDCALL, params={
-    "hFile": HANDLE,
-    "lpBuffer": POINTER,
-    "nNumberOfBytesToWrite": DWORD,
-    "lpNumberOfBytesWritten": POINTER,
-    "lpOverlapped": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_WriteFile(ql, address, params):
     ret = 1
     hFile = params["hFile"]
@@ -193,15 +172,7 @@ def _CreateFile(ql, address, params, name):
 #   DWORD                 dwFlagsAndAttributes,
 #   HANDLE                hTemplateFile
 # );
-@winapi(cc=STDCALL, params={
-    "lpFileName": STRING,
-    "dwDesiredAccess": DWORD,
-    "dwShareMode": DWORD,
-    "lpSecurityAttributes": POINTER,
-    "dwCreationDisposition": DWORD,
-    "dwFlagsAndAttributes": DWORD,
-    "hTemplateFile": HANDLE
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateFileA(ql, address, params):
     ret = _CreateFile(ql, address, params, "CreateFileA")
     return ret
@@ -216,15 +187,7 @@ def hook_CreateFileA(ql, address, params):
 #   DWORD                 dwFlagsAndAttributes,
 #   HANDLE                hTemplateFile
 # );
-@winapi(cc=STDCALL, params={
-    "lpFileName": WSTRING,
-    "dwDesiredAccess": DWORD,
-    "dwShareMode": DWORD,
-    "lpSecurityAttributes": POINTER,
-    "dwCreationDisposition": DWORD,
-    "dwFlagsAndAttributes": DWORD,
-    "hTemplateFile": HANDLE
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateFileW(ql, address, params):
     ret = _CreateFile(ql, address, params, "CreateFileW")
     return ret
@@ -234,10 +197,7 @@ def hook_CreateFileW(ql, address, params):
 #   DWORD  nBufferLength,
 #   LPWSTR lpBuffer
 # );
-@winapi(cc=STDCALL, params={
-    "nBufferLength": DWORD,
-    "lpBuffer": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetTempPathW(ql, address, params):
     temp = (ql.os.windir + "Temp" + "\\\x00").encode('utf-16le')
     dest = params["lpBuffer"]
@@ -253,11 +213,7 @@ def hook_GetTempPathW(ql, address, params):
 #   LPWSTR  lpszShortPath,
 #   DWORD   cchBuffer
 # );
-@winapi(cc=STDCALL, params={
-    "lpszLongPath": WSTRING,
-    "lpszShortPath": POINTER,
-    "cchBuffer": DWORD,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetShortPathNameW(ql, address, params):
     paths = params["lpszLongPath"].split("\\")
     dst = params["lpszShortPath"]
@@ -289,16 +245,7 @@ def hook_GetShortPathNameW(ql, address, params):
 #   LPWSTR  lpFileSystemNameBuffer,
 #   DWORD   nFileSystemNameSize
 # );
-@winapi(cc=STDCALL, params={
-    "lpRootPathName": WSTRING,
-    "lpVolumeNameBuffer": POINTER,
-    "nVolumeNameSize": DWORD,
-    "lpVolumeSerialNumber": POINTER,
-    "lpMaximumComponentLength": POINTER,
-    "lpFileSystemFlags": POINTER,
-    "lpFileSystemNameBuffer": POINTER,
-    "nFileSystemNameSize": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetVolumeInformationW(ql, address, params):
     root = params["lpRootPathName"]
     if root != 0:
@@ -334,9 +281,7 @@ def hook_GetVolumeInformationW(ql, address, params):
 # UINT GetDriveTypeW(
 #   LPCWSTR lpRootPathName
 # );
-@winapi(cc=STDCALL, params={
-    "lpRootPathName": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPCWSTR': 'POINTER'})
 def hook_GetDriveTypeW(ql, address, params):
     path = params["lpRootPathName"]
     if path != 0:
@@ -355,13 +300,7 @@ def hook_GetDriveTypeW(ql, address, params):
 #   LPDWORD lpNumberOfFreeClusters,
 #   LPDWORD lpTotalNumberOfClusters
 # );
-@winapi(cc=STDCALL, params={
-    "lpRootPathName": WSTRING,
-    "lpSectorsPerCluster": POINTER,
-    "lpBytesPerSector": POINTER,
-    "lpNumberOfFreeClusters": POINTER,
-    "lpTotalNumberOfClusters": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPCWSTR': 'POINTER'})
 def hook_GetDiskFreeSpaceW(ql, address, params):
     path = params["lpRootPathName"]
     if path == ql.os.profile["PATH"]["systemdrive"]:
@@ -386,10 +325,7 @@ def hook_GetDiskFreeSpaceW(ql, address, params):
 #  LPCSTR                lpPathName,
 #  LPSECURITY_ATTRIBUTES lpSecurityAttributes
 # );
-@winapi(cc=STDCALL, params={
-    "lpPathName": STRING,
-    "lpSecurityAttributes": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateDirectoryA(ql, address, params):
     path_name = params["lpPathName"]
     target_dir = os.path.join(ql.rootfs, path_name.replace("\\", os.sep))
@@ -408,10 +344,7 @@ def hook_CreateDirectoryA(ql, address, params):
 #  HANDLE  hFile,
 #  LPDWORD lpFileSizeHigh
 # );
-@winapi(cc=STDCALL, params={
-    "hFile": HANDLE,
-    "lpFileSizeHigh": DWORD,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPDWORD': 'DWORD'})
 def hook_GetFileSize(ql, address, params):
     try:
         handle = ql.handle_manager.get(params['hFile'].file)
@@ -422,19 +355,19 @@ def hook_GetFileSize(ql, address, params):
 
 
 # BOOL AreFileApisANSI();
-@winapi(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_AreFileApisANSI(ql, address, params):
     # TODO make this coherent with SetFileApisToANSI/OEM calls
     return 1
 
 
 # void SetFileApisToANSI();
-@winapi(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SetFileApisToANSI(ql, address, params):
     return
 
 
 # void SetFileApisToOEM();
-@winapi(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SetFileApisToOEM(ql, address, params):
     return

@@ -572,8 +572,30 @@
             "name": "ReturnLength",
             "type": "PULONG"
         }
-    ],
+    ],    
     "NtQueryObject": [
+        {
+            "name": "Handle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ObjectInformationClass",
+            "type": "OBJECT_INFORMATION_CLASS"
+        },
+        {
+            "name": "ObjectInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "ObjectInformationLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "ReturnLength",
+            "type": "PULONG"
+        }
+    ],
+    "ZwQueryObject": [
         {
             "name": "Handle",
             "type": "HANDLE"

@@ -13,13 +13,12 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
+dllname = 'kernel32_dll'
 
 # LPTOP_LEVEL_EXCEPTION_FILTER SetUnhandledExceptionFilter(
 #   LPTOP_LEVEL_EXCEPTION_FILTER lpTopLevelExceptionFilter
 # );
-@winapi(cc=STDCALL, params={
-    "lpTopLevelExceptionFilter": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SetUnhandledExceptionFilter(ql, address, params):
     addr = params["lpTopLevelExceptionFilter"]
     handle = ql.os.handle_manager.search("TopLevelExceptionHandler")
@@ -32,7 +31,7 @@ def hook_SetUnhandledExceptionFilter(ql, address, params):
 
 
 # _Post_equals_last_error_ DWORD GetLastError();
-@winapi(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetLastError(ql, address, params):
     return ql.os.last_error
 
@@ -40,9 +39,7 @@ def hook_GetLastError(ql, address, params):
 # void SetLastError(
 #  DWORD dwErrCode
 # );
-@winapi(cc=STDCALL, params={
-    "dwErrCode": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'DWORD': 'UINT'})
 def hook_SetLastError(ql, address, params):
     ql.os.last_error = params['dwErrCode']
     return 0
@@ -51,9 +48,7 @@ def hook_SetLastError(ql, address, params):
 # LONG UnhandledExceptionFilter(
 #   _EXCEPTION_POINTERS *ExceptionInfo
 # );
-@winapi(cc=STDCALL, params={
-    "ExceptionInfo": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_UnhandledExceptionFilter(ql, address, params):
     ret = 1
     return ret
@@ -62,9 +57,7 @@ def hook_UnhandledExceptionFilter(ql, address, params):
 # UINT SetErrorMode(
 #   UINT uMode
 # );
-@winapi(cc=STDCALL, params={
-    "uMode": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SetErrorMode(ql, address, params):
     # TODO maybe this need a better implementation
     return 0
@@ -76,12 +69,7 @@ def hook_SetErrorMode(ql, address, params):
 #   DWORD           nNumberOfArguments,
 #   const ULONG_PTR *lpArguments
 # );
-@winapi(cc=STDCALL, params={
-    "dwExceptionCode": DWORD,
-    "dwExceptionFlags": DWORD,
-    "nNumberOfArguments": DWORD,
-    "lpArguments": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RaiseException(ql, address, params):
     func_addr = ql.os.handle_manager.search("TopLevelExceptionHandler").obj
 
@@ -96,10 +84,7 @@ def hook_RaiseException(ql, address, params):
 #   ULONG                       First,
 #   PVECTORED_EXCEPTION_HANDLER Handler
 # );
-@winapi(cc=STDCALL, params={
-    "First": UINT,
-    "Handler": HANDLE
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'ULONG': 'UINT'})
 def hook_AddVectoredExceptionHandler(ql, address, params):
 
     # this case is an anomaly from other interrupts (from what i learned, can be wrong)
@@ -145,10 +130,8 @@ def hook_AddVectoredExceptionHandler(ql, address, params):
 # ULONG RemoveVectoredExceptionHandler(
 #   PVOID Handle
 # );
-@winapi(cc=STDCALL, params={
-    "Handler": HANDLE
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'PVOID': 'HANDLE'})
 def hook_RemoveVectoredExceptionHandler(ql, address, params):
-    hook = ql.os.handle_manager.get(params["Handler"]).obj
+    hook = ql.os.handle_manager.get(params["Handle"]).obj
     hook.remove()
     return 0
