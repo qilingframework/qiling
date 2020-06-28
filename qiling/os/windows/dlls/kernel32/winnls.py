@@ -19,7 +19,7 @@ dllname = 'kernel32_dll'
 # BOOL SetThreadLocale(
 #   LCID Locale
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LCID': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LCID': 'UINT'})
 def hook_SetThreadLocale(ql, address, params):
     return 0xC000  # LOCALE_CUSTOM_DEFAULT
 
@@ -53,7 +53,7 @@ def hook_GetCPInfo(ql, address, params):
 #   LPSTR  lpLCData,
 #   int    cchData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LCID': 'DWORD', 'LCTYPE': 'DWORD'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LCID': 'DWORD', 'LCTYPE': 'DWORD'})
 def hook_GetLocaleInfoA(ql, address, params):
     locale_value = params["Locale"]
     lctype_value = params["LCType"]

@@ -28,7 +28,7 @@ def hook___set_app_type(ql, address, params):
 #    int _DoWildCard,
 # _startupinfo * _StartInfo);
 @winsdkapi(cc=CDECL,
-    replace_typeEx={"_Argc": POINTER, "_Argv": POINTER, "_Env": POINTER, "_DoWildCard": INT, "_StartInfo": POINTER})
+    replace_params={"_Argc": POINTER, "_Argv": POINTER, "_Env": POINTER, "_DoWildCard": INT, "_StartInfo": POINTER})
 def hook___getmainargs(ql, address, params):
     ret = 0
     return ret
@@ -62,7 +62,7 @@ def hook___p__acmdln(self, address, params):
 #    unsigned int new,
 #    unsigned int mask
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"new": UINT, "mask": UINT})
+@winsdkapi(cc=CDECL, replace_params={"new": UINT, "mask": UINT})
 def hook__controlfp(ql, address, params):
     ret = 0x8001f
     return ret
@@ -71,7 +71,7 @@ def hook__controlfp(ql, address, params):
 # int atexit(
 #    void (__cdecl *func)(void)
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"func": POINTER})
+@winsdkapi(cc=CDECL, replace_params={"func": POINTER})
 def hook_atexit(ql, address, params):
     ret = 0
     return ret
@@ -96,7 +96,7 @@ def hook___p__environ(ql, address, params):
 # int puts(
 #    const char *str
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"str": STRING})
+@winsdkapi(cc=CDECL, replace_params={"str": STRING})
 def hook_puts(ql, address, params):
     ret = 0
     string = params["str"]
@@ -115,7 +115,7 @@ def hook__cexit(ql, address, params):
 #    PVFV *,
 #    PVFV *
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"pfbegin": POINTER, "pfend": POINTER})
+@winsdkapi(cc=CDECL, replace_params={"pfbegin": POINTER, "pfend": POINTER})
 def hook__initterm(ql, address, params):
     pass
 
@@ -123,7 +123,7 @@ def hook__initterm(ql, address, params):
 # void exit(
 #    int const status
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"status": INT})
+@winsdkapi(cc=CDECL, replace_params={"status": INT})
 def hook_exit(ql, address, params):
     ql.emu_stop()
     ql.os.PE_RUN = False
@@ -133,7 +133,7 @@ def hook_exit(ql, address, params):
 #    PVFV *,
 #    PVFV *
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"pfbegin": POINTER, "pfend": POINTER})
+@winsdkapi(cc=CDECL, replace_params={"pfbegin": POINTER, "pfend": POINTER})
 def hook__initterm_e(ql, address, params):
     return 0
 
@@ -204,7 +204,7 @@ def hook_printf(ql, address, _):
 
 
 # MSVCRT_FILE * CDECL MSVCRT___acrt_iob_func(unsigned idx)
-@winsdkapi(cc=CDECL, replace_typeEx={"idx": UINT})
+@winsdkapi(cc=CDECL, replace_params={"idx": UINT})
 def hook___acrt_iob_func(ql, address, params):
     ret = 0
     return ret
@@ -246,7 +246,7 @@ def hook___stdio_common_vswprintf_s(ql, address, _):
 # int lstrlenA(
 #   LPCSTR lpString
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={'lpString': POINTER})
+@winsdkapi(cc=CDECL, replace_params={'lpString': POINTER})
 def hook_lstrlenA(ql, address, params):
     addr = params["lpString"]
     string = b""
@@ -262,7 +262,7 @@ def hook_lstrlenA(ql, address, params):
 # int lstrlenW(
 #   LPCWSTR lpString
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={'lpString': POINTER})
+@winsdkapi(cc=CDECL, replace_params={'lpString': POINTER})
 def hook_lstrlenW(ql, address, params):
     addr = params["lpString"]
     string = b""
@@ -284,7 +284,7 @@ def hook___lconv_init(ql, address, params):
 # size_t strlen(
 #    const char *str
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"str": STRING})
+@winsdkapi(cc=CDECL, replace_params={"str": STRING})
 def hook_strlen(ql, address, params):
     _str = params["str"]
     strlen = len(_str)
@@ -296,7 +296,7 @@ def hook_strlen(ql, address, params):
 #    const char *string2,
 #    size_t count
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"string1": STRING, "string2": STRING, "count": SIZE_T})
+@winsdkapi(cc=CDECL, replace_params={"string1": STRING, "string2": STRING, "count": SIZE_T})
 def hook_strncmp(ql, address, params):
     s1 = params["string1"]
     s2 = params["string2"]
@@ -314,7 +314,7 @@ def hook_strncmp(ql, address, params):
 
 
 # void* malloc（unsigned int size)
-@winsdkapi(cc=CDECL, replace_typeEx={"size": UINT})
+@winsdkapi(cc=CDECL, replace_params={"size": UINT})
 def hook_malloc(ql, address, params):
     size = params['size']
     addr = ql.os.heap.alloc(size)
@@ -324,7 +324,7 @@ def hook_malloc(ql, address, params):
 # _onexit_t _onexit(
 #    _onexit_t function
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"function": POINTER})
+@winsdkapi(cc=CDECL, replace_params={"function": POINTER})
 def hook__onexit(ql, address, params):
     function = params['function']
     addr = ql.os.heap.alloc(ql.pointersize)
@@ -337,7 +337,7 @@ def hook__onexit(ql, address, params):
 #    int c,
 #    size_t count
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"dest": POINTER, "c": INT, "count": SIZE_T})
+@winsdkapi(cc=CDECL, replace_params={"dest": POINTER, "c": INT, "count": SIZE_T})
 def hook_memset(ql, address, params):
     dest = params["dest"]
     c = params["c"]
@@ -350,7 +350,7 @@ def hook_memset(ql, address, params):
 #    size_t num,
 #    size_t size
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"num": SIZE_T, "size": SIZE_T})
+@winsdkapi(cc=CDECL, replace_params={"num": SIZE_T, "size": SIZE_T})
 def hook_calloc(ql, address, params):
     num = params['num']
     size = params['size']
@@ -363,7 +363,7 @@ def hook_calloc(ql, address, params):
 #   const void *src,
 #   size_t num
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"dest": POINTER, "src": POINTER, "num": SIZE_T})
+@winsdkapi(cc=CDECL, replace_params={"dest": POINTER, "src": POINTER, "num": SIZE_T})
 def hook_memmove(ql, address, params):
     data = ql.mem.read(params['src'], params['num'])
     ql.mem.write(params['dest'], bytes(data))
@@ -373,7 +373,7 @@ def hook_memmove(ql, address, params):
 # int _ismbblead(
 #    unsigned int c
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"c": UINT})
+@winsdkapi(cc=CDECL, replace_params={"c": UINT})
 def hook__ismbblead(ql, address, params):
     # TODO check if is CDECL or not
     # If locale is utf-8 always return 0
@@ -389,7 +389,7 @@ def hook__ismbblead(ql, address, params):
 #    const wchar_t *filename,
 #    const wchar_t *mode
 # );
-@winsdkapi(cc=CDECL, replace_typeEx={"pFile": POINTER, "filename": WSTRING, "mode": WSTRING})
+@winsdkapi(cc=CDECL, replace_params={"pFile": POINTER, "filename": WSTRING, "mode": WSTRING})
 def hook__wfopen_s(ql, address, params):
     dst = params["pFile"]
     filename = params["filename"]
@@ -403,7 +403,7 @@ def hook__wfopen_s(ql, address, params):
 
 
 # time_t time( time_t *destTime );
-@winsdkapi(cc=CDECL, replace_typeEx={"destTime": POINTER})
+@winsdkapi(cc=CDECL, replace_params={"destTime": POINTER})
 def hook__time64(ql, address, params):
     dst = params["destTime"]
     time_wasted = int(time.time())

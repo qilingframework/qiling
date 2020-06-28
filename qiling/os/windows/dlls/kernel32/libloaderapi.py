@@ -120,7 +120,7 @@ def hook_GetModuleFileNameW(ql, address, params):
 #   HMODULE hModule,
 #   LPCSTR  lpProcName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPCSTR': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCSTR': 'POINTER'})
 def hook_GetProcAddress(ql, address, params):
     if params["lpProcName"] > MAXUSHORT:
         # Look up by name
@@ -170,7 +170,7 @@ def hook_LoadLibraryA(ql, address, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'HANDLE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
 def hook_LoadLibraryExA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
     dll_base = ql.loader.load_dll(lpLibFileName.encode())
@@ -192,7 +192,7 @@ def hook_LoadLibraryW(ql, address, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'HANDLE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
 def hook_LoadLibraryExW(ql, address, params):
     lpLibFileName = params["lpLibFileName"].encode()
     dll_base = ql.loader.load_dll(lpLibFileName)
@@ -203,7 +203,7 @@ def hook_LoadLibraryExW(ql, address, params):
 #   HMODULE hModule,
 #   HRSRC   hResInfo
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'HMODULE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_SizeofResource(ql, address, params):
     # Return size of resource
     # TODO set a valid value. More tests have to be made to find it.
@@ -214,7 +214,7 @@ def hook_SizeofResource(ql, address, params):
 #   HMODULE hModule,
 #   HRSRC   hResInfo
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'HMODULE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_LoadResource(ql, address, params):
     pointer = params["hResInfo"]
     return pointer
@@ -223,7 +223,7 @@ def hook_LoadResource(ql, address, params):
 # LPVOID LockResource(
 #   HGLOBAL hResData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'HMODULE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_LockResource(ql, address, params):
     pointer = params["hResData"]
     return pointer
@@ -232,7 +232,7 @@ def hook_LockResource(ql, address, params):
 # BOOL DisableThreadLibraryCalls(
 #  HMODULE hLibModule
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'HMODULE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_DisableThreadLibraryCalls(ql, address, params):
     return 1
 
@@ -240,7 +240,7 @@ def hook_DisableThreadLibraryCalls(ql, address, params):
 # BOOL FreeLibrary(
 #   HMODULE hLibModule
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'HMODULE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_FreeLibrary(ql, address, params):
     return 1
 

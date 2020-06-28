@@ -15,7 +15,7 @@ dllname = 'mscoree_dll'
 # void STDMETHODCALLTYPE CorExitProcess (
 #   int  exitCode
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'int': 'DWORD'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'int': 'DWORD'})
 def hook_CorExitProcess(ql, address, params):
     ql.emu_stop()
     ql.os.PE_RUN = False

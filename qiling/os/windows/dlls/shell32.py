@@ -93,7 +93,7 @@ def hook_ShellExecuteExW(ql, address, params):
 #   LPCWSTR lpDirectory,
 #   INT     nShowCmd
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPCWSTR': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCWSTR': 'POINTER'})
 def hook_ShellExecuteW(ql, address, params):
     shellInfo = ShellExecuteInfoA(ql, hwnd=params["hwnd"], lpVerb=params["lpOperation"], lpFile=params["lpFile"],
                                   lpParams=params["lpParameters"], lpDir=params["lpDirectory"], show=params["nShowCmd"])

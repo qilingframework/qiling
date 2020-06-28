@@ -46,7 +46,7 @@ def hook_VirtualFree(ql, address, params):
 #  DWORD  flNewProtect,
 #  PDWORD lpflOldProtect
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
 def hook_VirtualProtect(ql, address, params):
     return 1
 
@@ -56,7 +56,7 @@ def hook_VirtualProtect(ql, address, params):
 #  PMEMORY_BASIC_INFORMATION lpBuffer,
 #  SIZE_T                    dwLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
 def hook_VirtualQuery(ql, address, params):
     """
     typedef struct _MEMORY_BASIC_INFORMATION {

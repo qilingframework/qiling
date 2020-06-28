@@ -39,7 +39,7 @@ def hook_GetLastError(ql, address, params):
 # void SetLastError(
 #  DWORD dwErrCode
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'UINT'})
 def hook_SetLastError(ql, address, params):
     ql.os.last_error = params['dwErrCode']
     return 0
@@ -84,7 +84,7 @@ def hook_RaiseException(ql, address, params):
 #   ULONG                       First,
 #   PVECTORED_EXCEPTION_HANDLER Handler
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'ULONG': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'ULONG': 'UINT'})
 def hook_AddVectoredExceptionHandler(ql, address, params):
 
     # this case is an anomaly from other interrupts (from what i learned, can be wrong)
@@ -130,7 +130,7 @@ def hook_AddVectoredExceptionHandler(ql, address, params):
 # ULONG RemoveVectoredExceptionHandler(
 #   PVOID Handle
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'PVOID': 'HANDLE'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'PVOID': 'HANDLE'})
 def hook_RemoveVectoredExceptionHandler(ql, address, params):
     hook = ql.os.handle_manager.get(params["Handle"]).obj
     hook.remove()

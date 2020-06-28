@@ -38,7 +38,7 @@ def hook_GetFileType(ql, address, params):
 #  LPCSTR             lpFileName,
 #  LPWIN32_FIND_DATAA lpFindFileData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPCSTR': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCSTR': 'POINTER'})
 def hook_FindFirstFileA(ql, address, params):
     pass
 
@@ -47,7 +47,7 @@ def hook_FindFirstFileA(ql, address, params):
 #  LPCSTR             lpFileName,
 #  LPWIN32_FIND_DATAA lpFindFileData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPCSTR': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCSTR': 'POINTER'})
 def hook_FindNextFileA(ql, address, params):
     pass
 
@@ -281,7 +281,7 @@ def hook_GetVolumeInformationW(ql, address, params):
 # UINT GetDriveTypeW(
 #   LPCWSTR lpRootPathName
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPCWSTR': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCWSTR': 'POINTER'})
 def hook_GetDriveTypeW(ql, address, params):
     path = params["lpRootPathName"]
     if path != 0:
@@ -300,7 +300,7 @@ def hook_GetDriveTypeW(ql, address, params):
 #   LPDWORD lpNumberOfFreeClusters,
 #   LPDWORD lpTotalNumberOfClusters
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPCWSTR': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCWSTR': 'POINTER'})
 def hook_GetDiskFreeSpaceW(ql, address, params):
     path = params["lpRootPathName"]
     if path == ql.os.profile["PATH"]["systemdrive"]:
@@ -344,7 +344,7 @@ def hook_CreateDirectoryA(ql, address, params):
 #  HANDLE  hFile,
 #  LPDWORD lpFileSizeHigh
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPDWORD': 'DWORD'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPDWORD': 'DWORD'})
 def hook_GetFileSize(ql, address, params):
     try:
         handle = ql.handle_manager.get(params['hFile'].file)

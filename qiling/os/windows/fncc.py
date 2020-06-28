@@ -27,18 +27,15 @@ def replacetype(type, specialtype=None):
         return type
 
 # x86/x8664 PE should share Windows APIs
-def winsdkapi(cc, param_num=None, dllname=None, replace_type=None, replace_typeEx=None):
+def winsdkapi(cc, param_num=None, dllname=None, replace_params_type=None, replace_params={}):
     """
     @cc: windows api calling convention, only x86 needs this, x64 is always fastcall
     @param_num: the number of function params, used by variadic functions, e.g printf
     @dllname: the name of function
-    @replace_type: customize replace type, e.g specialtype={'int':'UINT'} means repalce 'int' to 'UINT'
-    @replace_typeEx: customize replace param_name's type, e.g specialtypeEx={'time':'int'} means
+    @replace_params_type: customize replace type, e.g specialtype={'int':'UINT'} means repalce 'int' to 'UINT'
+    @replace_params: customize replace param_name's type, e.g specialtypeEx={'time':'int'} means
                 replace the original type of time to int
     """
-    if replace_typeEx is None:
-        replace_typeEx = {}
-
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -57,35 +54,35 @@ def winsdkapi(cc, param_num=None, dllname=None, replace_type=None, replace_typeE
                 else:
                     ql.nprint('[!]', winsdk_path, 'not found')
                 if funcname not in funclist:
-                    params = replace_typeEx
+                    params = replace_params
                 else:
                     paramlist = funclist[funcname]
 
-                    if len(replace_typeEx.keys()) == len(paramlist):
-                        params = replace_typeEx
+                    if len(replace_params.keys()) == len(paramlist):
+                        params = replace_params
                         for key in params:
                             if isinstance(params[key], str):
-                                type = replacetype(params[key], replace_type)
+                                type = replacetype(params[key], replace_params_type)
                                 params[key] = eval(type)
                     else:
                         for para in paramlist:
                             name = list(para.values())[0]
-                            if name == 'VOID' or (name in replace_typeEx.keys() and replace_typeEx[name] == ''):
+                            if name == 'VOID' or (name in replace_params.keys() and replace_params[name] == ''):
                                 params = {}
                                 break
-                            elif replace_typeEx is not None and name in replace_typeEx.keys():
-                                type = replace_typeEx[name]
+                            elif replace_params is not None and name in replace_params.keys():
+                                type = replace_params[name]
                                 params[name] = type
                             else:
                                 type = list(para.values())[1]
                                 if isinstance(type, dict):
-                                    type = replacetype(type['name'], replace_type)
+                                    type = replacetype(type['name'], replace_params_type)
                                 else:
-                                    type = replacetype(list(para.values())[1], replace_type)
+                                    type = replacetype(list(para.values())[1], replace_params_type)
                             if isinstance(type, str):
                                 params[name] = eval(type)
             else:
-                params = replace_typeEx
+                params = replace_params
 
             if ql.archtype == QL_ARCH.X86:
                 if cc == STDCALL:

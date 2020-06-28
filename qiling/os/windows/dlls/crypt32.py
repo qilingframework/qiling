@@ -21,8 +21,8 @@ dllname = 'crypt32_dll'
 #   DWORD  *pdwSkip,
 #   DWORD  *pdwFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'BYTE': 'POINTER'},
-           replace_typeEx={"pcbBinary": POINTER, "pdwSkip": POINTER, "pdwFlags": POINTER})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'BYTE': 'POINTER'},
+           replace_params={"pcbBinary": POINTER, "pdwSkip": POINTER, "pdwFlags": POINTER})
 def hook_CryptStringToBinaryA(ql, address, params):
     flag_src = params["dwFlags"]
     string_src = params["pszString"]

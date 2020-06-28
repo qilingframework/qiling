@@ -20,7 +20,7 @@ dllname = 'kernel32_dll'
 # void ExitProcess(
 #   UINT uExitCode
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'UINT': 'DWORD'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'UINT': 'DWORD'})
 def hook_ExitProcess(ql, address, params):
     ql.emu_stop()
     ql.os.PE_RUN = False
@@ -64,7 +64,7 @@ def hook_TlsAlloc(ql, address, params):
 # DWORD TlsFree(
 #  DWORD dwTlsIndex
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"dwTlsIndex": UINT})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"dwTlsIndex": UINT})
 def hook_TlsFree(ql, address, params):
     idx = params['dwTlsIndex']
     if idx not in ql.os.thread_manager.cur_thread.tls:
@@ -78,7 +78,7 @@ def hook_TlsFree(ql, address, params):
 # LPVOID TlsGetValue(
 #  DWORD dwTlsIndex
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"dwTlsIndex": UINT})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"dwTlsIndex": UINT})
 def hook_TlsGetValue(ql, address, params):
     idx = params['dwTlsIndex']
     if idx not in ql.os.thread_manager.cur_thread.tls:
@@ -94,7 +94,7 @@ def hook_TlsGetValue(ql, address, params):
 # LPVOID TlsSetValue(
 #  DWORD dwTlsIndex
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"dwTlsIndex": UINT, "lpTlsValue": POINTER})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"dwTlsIndex": UINT, "lpTlsValue": POINTER})
 def hook_TlsSetValue(ql, address, params):
     idx = params['dwTlsIndex']
     if idx not in ql.os.thread_manager.cur_thread.tls:
@@ -221,7 +221,7 @@ def hook_GetCurrentThread(ql, address, params):
 #   BOOL  bInheritHandle,
 #   DWORD dwProcessId
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'BOOL': 'HANDLE'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'BOOL': 'HANDLE'})
 def hook_OpenProcess(ql, address, params):
     proc = params["dwProcessId"]
     # If the specified process is the System Process (0x00000000),
@@ -244,7 +244,7 @@ def hook_OpenProcess(ql, address, params):
 #   PHANDLE TokenHandle
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname,
-           replace_typeEx={"ProcessHandle": HANDLE, "DesiredAccess": DWORD, "TokenHandle": POINTER})
+           replace_params={"ProcessHandle": HANDLE, "DesiredAccess": DWORD, "TokenHandle": POINTER})
 def hook_OpenProcessToken(ql, address, params):
     token_pointer = params["TokenHandle"]
     token = Token(ql)
@@ -270,7 +270,7 @@ def hook_GetThreadContext(ql, address, params):
 #   PHANDLE TokenHandle
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname,
-           replace_typeEx={"ThreadHandle": HANDLE, "DesiredAccess": DWORD, "OpenAsSelf": BOOL, "TokenHandle": POINTER})
+           replace_params={"ThreadHandle": HANDLE, "DesiredAccess": DWORD, "OpenAsSelf": BOOL, "TokenHandle": POINTER})
 def hook_OpenThreadToken(ql, address, params):
     token_pointer = params["TokenHandle"]
     token = Token(ql)

@@ -20,7 +20,7 @@ dllname = 'ntdll_dll'
 #    const void *src,
 #    size_t count
 # );
-@winsdkapi(cc=CDECL, dllname=dllname, replace_typeEx={"dest": POINTER, "src": POINTER, "count": UINT})
+@winsdkapi(cc=CDECL, dllname=dllname, replace_params={"dest": POINTER, "src": POINTER, "count": UINT})
 def hook_memcpy(ql, address, params):
     try:
         data = bytes(ql.mem.read(params['src'], params['count']))
@@ -70,7 +70,7 @@ def _QueryInformationProcess(ql, address, params):
 #   _Out_opt_ PULONG           ReturnLength
 # );
 @winsdkapi(cc=CDECL, dllname=dllname,
-           replace_typeEx={"ProcessHandle": HANDLE, "ProcessInformationClass": INT, "ProcessInformation": POINTER,
+           replace_params={"ProcessHandle": HANDLE, "ProcessInformationClass": INT, "ProcessInformation": POINTER,
                       "ProcessInformationLength": UINT, "ReturnLength": POINTER})
 def hook_ZwQueryInformationProcess(ql, address, params):
     # TODO have no idea if is cdecl or stdcall
@@ -98,7 +98,7 @@ def hook_NtQueryInformationProcess(ql, address, params):
 #     ObjectAttributes: POBJECT_ATTRIBUTES,
 #     Flags: ULONG
 # ) -> NTSTATUS
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"DebugObjectHandle": HANDLE, "DesiredAccess": INT,
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"DebugObjectHandle": HANDLE, "DesiredAccess": INT,
                                                    "ObjectAttributes": POINTER, "Flags": ULONGLONG})
 def hook_ZwCreateDebugObject(ql, address, params):
     # FIXME: find documentation, almost none was found online, and create the correct object
@@ -161,7 +161,7 @@ def hook_ZwYieldExecution(ql, address, params):
 #  IN PANSI_STRING         FunctionName OPTIONAL,
 #  IN WORD                 Oridinal OPTIONAL,
 #  OUT PVOID               *FunctionAddress );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"ModuleHandle": POINTER,
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"ModuleHandle": POINTER,
     "FunctionName": STRING, "Ordinal": UINT, "FunctionAddress": POINTER})
 def hook_LdrGetProcedureAddress(ql, address, params):
     if params['FunctionName']:
@@ -188,7 +188,7 @@ def hook_LdrGetProcedureAddress(ql, address, params):
 #  ULONG  Flags,
 #  SIZE_T Size
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"HeapHandle": POINTER,
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"HeapHandle": POINTER,
     "Flags": UINT,"Size": SIZE_T})
 def hook_RtlAllocateHeap(ql, address, params):
     ret = ql.os.heap.alloc(params["Size"])
@@ -196,7 +196,7 @@ def hook_RtlAllocateHeap(ql, address, params):
 
 
 # wchar_t* wcsstr( const wchar_t* dest, const wchar_t* src );
-@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"dest": POINTER, "src": WSTRING})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"dest": POINTER, "src": WSTRING})
 def hook_wcsstr(ql, address, params):
     dest = params["dest"]
     value = ql.os.read_wstring(dest)
