@@ -12,7 +12,6 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
-
 @winsdkapi(cc=STDCALL)
 def hook_WudfIsUserDebuggerPresent(ql, address, params):
     return 0

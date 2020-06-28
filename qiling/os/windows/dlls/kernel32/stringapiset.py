@@ -53,7 +53,7 @@ def hook_GetStringTypeExA(ql, address, params):
 #   LPCCH                              lpDefaultChar,
 #   LPBOOL                             lpUsedDefaultChar
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'LPCWCH': 'WSTRING'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPCWCH': 'WSTRING'})
 def hook_WideCharToMultiByte(ql, address, params):
     ret = 0
 
@@ -76,7 +76,7 @@ def hook_WideCharToMultiByte(ql, address, params):
 #  LPWSTR                            lpWideCharStr,
 #  int                               cchWideChar
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'DWORD': 'UINT', 'LPCCH': 'WSTRING'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'DWORD': 'UINT', 'LPCCH': 'WSTRING'})
 def hook_MultiByteToWideChar(ql, address, params):
     wide_str = (params['lpMultiByteStr']+"\x00").encode('utf-16le')
     if params['cchWideChar'] != 0:

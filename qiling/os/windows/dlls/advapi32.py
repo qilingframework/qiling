@@ -225,7 +225,7 @@ def hook_RegCreateKeyW(ql, address, params):
 #   PHKEY                       phkResult,
 #   LPDWORD                     lpdwDisposition
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'DWORD': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'DWORD': 'POINTER'})
 def hook_RegCreateKeyExW(ql, address, params):
     ret = ERROR_SUCCESS
 
@@ -406,7 +406,7 @@ def hook_GetSidSubAuthorityCount(ql, address, params):
 #   PSID  pSid,
 #   DWORD nSubAuthority
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'DWORD': 'INT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'DWORD': 'INT'})
 def hook_GetSidSubAuthority(ql, address, params):
     num = params["nSubAuthority"]
     sid = ql.os.handle_manager.get(params["pSid"]).obj

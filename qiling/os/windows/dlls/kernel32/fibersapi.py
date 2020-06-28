@@ -18,7 +18,7 @@ dllname = 'kernel32_dll'
 # DWORD FlsFree(
 #  DWORD dwFlsIndex
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'DWORD': 'UINT'})
 def hook_FlsFree(ql, address, params):
     return ql.os.fiber_manager.free(params['dwFlsIndex'])
 
@@ -26,7 +26,7 @@ def hook_FlsFree(ql, address, params):
 # LPVOID FlsGetValue(
 #  DWORD dwFlsIndex
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'DWORD': 'UINT'})
 def hook_FlsGetValue(ql, address, params):
     return ql.os.fiber_manager.get(params['dwFlsIndex'])
 
@@ -35,7 +35,7 @@ def hook_FlsGetValue(ql, address, params):
 #  DWORD dwFlsIndex
 #  PVOID lpFlsData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'DWORD': 'UINT'})
 def hook_FlsSetValue(ql, address, params):
     return ql.os.fiber_manager.set(params['dwFlsIndex'], params['lpFlsData'])
 

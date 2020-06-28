@@ -11,7 +11,7 @@ dllname = 'kernel32_dll'
 # HANDLE WINAPI GetStdHandle(
 #   _In_ DWORD nStdHandle
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, defparams={"nStdHandle": DWORD})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"nStdHandle": DWORD})
 def hook_GetStdHandle(ql, address, params):
     nStdHandle = params["nStdHandle"]
     return nStdHandle

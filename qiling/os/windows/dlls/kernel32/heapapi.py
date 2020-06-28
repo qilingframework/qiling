@@ -65,7 +65,7 @@ def hook_HeapFree(ql, address, params):
 #  PVOID                  HeapInformation,
 #  SIZE_T                 HeapInformationLength
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'SIZE_T': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'SIZE_T': 'UINT'})
 def hook_HeapSetInformation(ql, address, params):
     return 1
 

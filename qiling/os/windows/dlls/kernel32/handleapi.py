@@ -24,7 +24,7 @@ dllname = 'kernel32_dll'
 #   BOOL     bInheritHandle,
 #   DWORD    dwOptions
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'HANDLE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'HANDLE': 'POINTER'})
 def hook_DuplicateHandle(ql, address, params):
     # TODO for how we manage handle, i think this doesn't work
     content = params["hSourceHandle"]
@@ -58,7 +58,7 @@ def hook_CloseHandle(ql, address, params):
 #   DWORD  dwMask,
 #   DWORD  dwFlags
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'HANDLE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'HANDLE': 'POINTER'})
 def hook_SetHandleInformation(ql, address, params):
     val = params["hObject"]
     handle = ql.os.handle_manager.get(val)

@@ -12,7 +12,7 @@ dllname = 'kernel32_dll'
 #  LONG volatile *Target,
 #  LONG          Value
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, defparams={"Target": POINTER, "Value": UINT})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"Target": POINTER, "Value": UINT})
 def hook_InterlockedExchange(ql, address, params):
     old = int.from_bytes(ql.mem.read(params['Target'], ql.pointersize), byteorder='little')
     ql.mem.write(params['Target'], params['Value'].to_bytes(length=ql.pointersize, byteorder='little'))
@@ -22,7 +22,7 @@ def hook_InterlockedExchange(ql, address, params):
 # LONG InterlockedIncrement(
 #  LONG volatile *Target,
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, defparams={"Target": POINTER})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"Target": POINTER})
 def hook_InterlockedIncrement(ql, address, params):
     val = int.from_bytes(ql.mem.read(params['Target'], 4), byteorder='little')
     val += 1 & (2 ** 32)  # increment and overflow back to 0 if applicable
@@ -33,7 +33,7 @@ def hook_InterlockedIncrement(ql, address, params):
 # LONG InterlockedDecrement(
 #  LONG volatile *Target,
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, defparams={"Target": POINTER})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"Target": POINTER})
 def hook_InterlockedDecrement(ql, address, params):
     val = int.from_bytes(ql.mem.read(params['Target'], 4), byteorder='little')
     val -= 1
@@ -48,7 +48,7 @@ def hook_InterlockedDecrement(ql, address, params):
 #   DWORD     TypeMask,
 #   BYTE      Condition
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, defparams={"ConditionMask": ULONGLONG, "TypeMask": DWORD, "Condition": BYTE})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"ConditionMask": ULONGLONG, "TypeMask": DWORD, "Condition": BYTE})
 def hook_VerSetConditionMask(ql, address, params):
     # ConditionMask = params["ConditionMask"]
     TypeMask = params["TypeMask"]

@@ -131,7 +131,7 @@ def hook_HttpOpenRequestA(ql, address, params):
 #   DWORD               dwFlags,
 #   DWORD_PTR           dwContext
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtypeEx={'lpBuffersIn': 'POINTER', 'lpBuffersOut': 'STRING'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={'lpBuffersIn': 'POINTER', 'lpBuffersOut': 'STRING'})
 def hook_HttpSendRequestExA(ql, address, params):
     pass
 
@@ -204,7 +204,7 @@ def hook_HttpSendRequestW(ql, address, params):
 #   DWORD     dwFlags,
 #   LPVOID    *lppvData
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'HWND': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'HWND': 'POINTER'})
 def hook_InternetErrorDlg(ql, address, params):
     pass
 
@@ -237,6 +237,6 @@ def hook_InternetWriteFile(ql, address, params):
 #   DWORD               dwFlags,
 #   DWORD_PTR           dwContext
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'LPINTERNET_BUFFERSA': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'LPINTERNET_BUFFERSA': 'POINTER'})
 def hook_HttpEndRequestA(ql, address, params):
     return 1

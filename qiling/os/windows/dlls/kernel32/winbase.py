@@ -23,7 +23,7 @@ def hook_FatalExit(ql, address, params):
 # PVOID EncodePointer(
 #  _In_ PVOID Ptr
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, defparams={"Ptr": POINTER})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"Ptr": POINTER})
 def hook_EncodePointer(ql, address, params):
     return params['Ptr']
 
@@ -31,7 +31,7 @@ def hook_EncodePointer(ql, address, params):
 # PVOID DecodePointer(
 #  _In_ PVOID Ptr
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, defparams={"Ptr": POINTER})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"Ptr": POINTER})
 def hook_DecodePointer(ql, address, params):
     return params['Ptr']
 
@@ -107,7 +107,7 @@ def hook_GlobalUnlock(ql, address, params):
 #  UINT   uFlags,
 #  SIZE_T dwBytes
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'SIZE_T': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'SIZE_T': 'UINT'})
 def hook_GlobalAlloc(ql, address, params):
     return ql.os.heap.alloc(params["dwBytes"])
 
@@ -380,7 +380,7 @@ def hook_VerifyVersionInfoW(ql, address, params):
 #   LPWSTR  lpBuffer,
 #   LPDWORD pcbBuffer
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, defparams={"lpBuffer": POINTER, "pcbBuffer": POINTER})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_typeEx={"lpBuffer": POINTER, "pcbBuffer": POINTER})
 def hook_GetUserNameW(ql, address, params):
     username = (ql.os.profile["USER"]["username"] + "\x00").encode("utf-16le")
     dst = params["lpBuffer"]

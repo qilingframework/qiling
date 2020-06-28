@@ -27,48 +27,65 @@ def replacetype(type, specialtype=None):
         return type
 
 # x86/x8664 PE should share Windows APIs
-def winsdkapi(cc, param_num=None, dllname=None, specialtype=None, specialtypeEx=None, defparams=None):
+def winsdkapi(cc, param_num=None, dllname=None, replace_type=None, replace_typeEx=None):
     """
     @cc: windows api calling convention, only x86 needs this, x64 is always fastcall
     @param_num: the number of function params, used by variadic functions, e.g printf
     @dllname: the name of function
-    @funcname: function's name
-    @specialtype: customize replace type, e.g specialtype={'int':'UINT'} means repalce 'int' to 'UINT'
-    @specialtypeEx: customize replace param_name's type, e.g specialtypeEx={'time':'int'} means
+    @replace_type: customize replace type, e.g specialtype={'int':'UINT'} means repalce 'int' to 'UINT'
+    @replace_typeEx: customize replace param_name's type, e.g specialtypeEx={'time':'int'} means
                 replace the original type of time to int
-    @defparams: customize all params and their type
     """
+    if replace_typeEx is None:
+        replace_typeEx = {}
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             funcname = func.__name__[5:]
             params = {}
-            paramlist = []
+            funclist = []
             ql = args[0]
-            if defparams is not None:
-                params = defparams
-            else:
-                if dllname is not None:
-                    windows_abspath = os.path.dirname(os.path.abspath(__file__))
-                    winsdk_path = os.path.join(windows_abspath[:-11], 'extensions', 'windows_sdk', 'defs', dllname + '.json')
-                    if os.path.exists(winsdk_path):
-                        f = open(winsdk_path, 'r')
-                        funclist = json.load(f)
-                        paramlist = funclist[funcname]
-                    for para in paramlist:
-                        name = list(para.values())[0]
-                        if name == 'VOID':
-                            params = {}
-                            break
-                        elif specialtypeEx is not None and name in specialtypeEx.keys():
-                            type = specialtypeEx[name]
-                        else:
-                            type = list(para.values())[1]
-                            if isinstance(type, dict):
-                                type = replacetype(type['name'], specialtype)
+
+            if dllname is not None:
+                windows_abspath = os.path.dirname(os.path.abspath(__file__))
+                winsdk_path = os.path.join(windows_abspath[:-11], 'extensions', 'windows_sdk', 'defs', dllname + '.json')
+
+                if os.path.exists(winsdk_path):
+                    f = open(winsdk_path, 'r')
+                    funclist = json.load(f)
+                else:
+                    ql.nprint('[!]', winsdk_path, 'not found')
+                if funcname not in funclist:
+                    params = replace_typeEx
+                else:
+                    paramlist = funclist[funcname]
+
+                    if len(replace_typeEx.keys()) == len(paramlist):
+                        params = replace_typeEx
+                        for key in params:
+                            if isinstance(params[key], str):
+                                type = replacetype(params[key], replace_type)
+                                params[key] = eval(type)
+                    else:
+                        for para in paramlist:
+                            name = list(para.values())[0]
+                            if name == 'VOID' or (name in replace_typeEx.keys() and replace_typeEx[name] == ''):
+                                params = {}
+                                break
+                            elif replace_typeEx is not None and name in replace_typeEx.keys():
+                                type = replace_typeEx[name]
+                                params[name] = type
                             else:
-                                type = replacetype(list(para.values())[1], specialtype)
-                        params[name] = eval(type)
+                                type = list(para.values())[1]
+                                if isinstance(type, dict):
+                                    type = replacetype(type['name'], replace_type)
+                                else:
+                                    type = replacetype(list(para.values())[1], replace_type)
+                            if isinstance(type, str):
+                                params[name] = eval(type)
+            else:
+                params = replace_typeEx
 
             if ql.archtype == QL_ARCH.X86:
                 if cc == STDCALL:

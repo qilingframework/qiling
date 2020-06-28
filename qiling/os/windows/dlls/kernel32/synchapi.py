@@ -72,7 +72,7 @@ def hook_InitializeCriticalSectionEx(ql, address, params):
 #  LPCRITICAL_SECTION lpCriticalSection,
 #  DWORD              dwSpinCount
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'DWORD': 'UINT'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'DWORD': 'UINT'})
 def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
     return 1
 
@@ -119,7 +119,7 @@ def hook_WaitForSingleObjectEx(ql, address, params):
 #   BOOL         bWaitAll,
 #   DWORD        dwMilliseconds
 # );
-@winsdkapi(cc=STDCALL, dllname=dllname, specialtype={'HANDLE': 'POINTER'})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_type={'HANDLE': 'POINTER'})
 def hook_WaitForMultipleObjects(ql, address, params):
     ret = 0
     nCount = params["nCount"]
