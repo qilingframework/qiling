@@ -103,8 +103,6 @@ def hook_NtQueryInformationProcess(ql, address, params):
     # TODO have no idea if is cdecl or stdcall
 
     _QueryInformationProcess(ql, address, params)
-
-
 def _QuerySystemInformation(ql, address, params):
     siClass = params["SystemInformationClass"]
     pt_res = params["ReturnLength"]
@@ -113,17 +111,17 @@ def _QuerySystemInformation(ql, address, params):
         bufferLength = params["SystemInformationLength"]
         if (ql.archtype == QL_ARCH.X8664):
             sbi = qiling.os.windows.structs.SystemBasicInforation(ql,
-                                                                  Reserved=0,
-                                                                  TimerResolution=156250,
-                                                                  PageSize=ql.os.heap.page_size,
-                                                                  NumberOfPhysicalPages=0x003FC38A,
-                                                                  LowestPhysicalPageNumber=1,
-                                                                  HighestPhysicalPageNumber=0x0046DFFF,
-                                                                  AllocationGranularity=1,
-                                                                  MinimumUserModeAddress=0x10000,
-                                                                  MaximumUserModeAddress=0x7FFFFFFEFFFF,
-                                                                  ActiveProcessorsAffinityMask=0x3F,
-                                                                  NumberOfProcessors=0x6)
+                                                              Reserved=0,
+                                                              TimerResolution = 156250 ,
+                                                              PageSize=ql.os.heap.page_size,
+                                                              NumberOfPhysicalPages = 0x003FC38A,
+                                                              LowestPhysicalPageNumber=1,
+                                                              HighestPhysicalPageNumber=0x0046DFFF,
+                                                              AllocationGranularity=1,
+                                                              MinimumUserModeAddress=0x10000,
+                                                              MaximumUserModeAddress=0x7FFFFFFEFFFF,
+                                                              ActiveProcessorsAffinityMask = 0x3F,
+                                                              NumberOfProcessors = 0x6)
         elif ql.archtype == QL_ARCH.X86:
             sbi = qiling.os.windows.structs.SystemBasicInforation(ql,
                                                                   Reserved=0,
@@ -137,7 +135,7 @@ def _QuerySystemInformation(ql, address, params):
                                                                   MaximumUserModeAddress=0x7FFEFFFF,
                                                                   ActiveProcessorsAffinityMask=0x3F,
                                                                   NumberOfProcessors=0x6)
-        if (bufferLength == sbi.size):
+        if (bufferLength==sbi.size):
             sbi.write(dst)
             if pt_res != 0:
                 ql.mem.write(pt_res, sbi.size.to_bytes(1, byteorder="little"))
@@ -149,8 +147,8 @@ def _QuerySystemInformation(ql, address, params):
         ql.dprint(D_INFO, str(siClass))
         raise QlErrorNotImplemented("[!] API not implemented")
 
-    return STATUS_SUCCESS
 
+    return STATUS_SUCCESS
 
 # __kernel_entry NTSTATUS NtQuerySystemInformation(
 #   IN SYSTEM_INFORMATION_CLASS SystemInformationClass,
@@ -170,7 +168,6 @@ def hook_NtQuerySystemInformation(ql, address, params):
 
     _QuerySystemInformation(ql, address, params)
 
-
 # pub unsafe extern "system" fn ZwQuerySystemInformation(
 #   IN SYSTEM_INFORMATION_CLASS SystemInformationClass,
 #   OUT PVOID                   SystemInformation,
@@ -188,7 +185,6 @@ def hook_ZwQuerySystemInformation(ql, address, params):
     # #define WINAPI      __stdcall
 
     return _QuerySystemInformation(ql, address, params)
-
 
 # pub unsafe extern "system" fn ZwCreateDebugObject(
 #     DebugObjectHandle: PHANDLE,
