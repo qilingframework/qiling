@@ -15,6 +15,7 @@ from qiling.exception import *
 from qiling.os.windows.structs import *
 from qiling.const import *
 
+dllname = 'shell32_dll'
 
 # DWORD_PTR SHGetFileInfoA(
 #   LPCSTR     pszPath,
@@ -23,13 +24,7 @@ from qiling.const import *
 #   UINT        cbFileInfo,
 #   UINT        uFlags
 # );
-@winapi(cc=STDCALL, params={
-    "pszPath": STRING,
-    "dwFileAttributes": DWORD,
-    "psfi": POINTER,
-    "cbFileInfo": UINT,
-    "uFlags": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SHGetFileInfoA(ql, address, params):
     return hook_SHGetFileInfoW.__wrapped__(ql, address, params)
 
@@ -41,13 +36,7 @@ def hook_SHGetFileInfoA(ql, address, params):
 #   UINT        cbFileInfo,
 #   UINT        uFlags
 # );
-@winapi(cc=STDCALL, params={
-    "pszPath": WSTRING,
-    "dwFileAttributes": DWORD,
-    "psfi": POINTER,
-    "cbFileInfo": UINT,
-    "uFlags": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SHGetFileInfoW(ql, address, params):
     flags = params["uFlags"]
     if flags == SHGFI_LARGEICON:
@@ -80,9 +69,7 @@ def _ShellExecute(ql, obj: ShellExecuteInfoA):
 # BOOL ShellExecuteExW(
 #   SHELLEXECUTEINFOA *pExecInfo
 # );
-@winapi(cc=STDCALL, params={
-    "pExecInfo": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_ShellExecuteExW(ql, address, params):
     pointer = params["pExecInfo"]
 
@@ -106,17 +93,10 @@ def hook_ShellExecuteExW(ql, address, params):
 #   LPCWSTR lpDirectory,
 #   INT     nShowCmd
 # );
-@winapi(cc=STDCALL, params={
-    "hwnd": HANDLE,
-    "lpVerb": POINTER,
-    "lpFile": POINTER,
-    "lpParameters": POINTER,
-    "lpDirectory": POINTER,
-    "nShow": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCWSTR': 'POINTER'})
 def hook_ShellExecuteW(ql, address, params):
-    shellInfo = ShellExecuteInfoA(ql, hwnd=params["hwnd"], lpVerb=params["lpVerb"], lpFile=params["lpFile"],
-                                  lpParams=params["lpParameters"], lpDir=params["lpDirectory"], show=params["nShow"])
+    shellInfo = ShellExecuteInfoA(ql, hwnd=params["hwnd"], lpVerb=params["lpOperation"], lpFile=params["lpFile"],
+                                  lpParams=params["lpParameters"], lpDir=params["lpDirectory"], show=params["nShowCmd"])
     _ = _ShellExecute(ql, shellInfo)
     return 33
 
@@ -127,12 +107,7 @@ def hook_ShellExecuteW(ql, address, params):
 #   int    csidl,
 #   BOOL   fCreate
 # );
-@winapi(cc=STDCALL, params={
-    "hwnd": HANDLE,
-    "pszPath": POINTER,
-    "csidl": INT,
-    "fCreate": BOOL
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SHGetSpecialFolderPathW(ql, address, params):
     directory_id = params["csidl"]
     dst = params["pszPath"]

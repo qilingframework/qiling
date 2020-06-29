@@ -1,0 +1,88 @@
+{
+    "SrpCreateThreadNetworkContext": [
+        {
+            "name": "enterpriseId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "threadNetworkContext",
+            "type": "HTHREAD_NETWORK_CONTEXT"
+        }
+    ],
+    "SrpCloseThreadNetworkContext": [
+        {
+            "name": "threadNetworkContext",
+            "type": "HTHREAD_NETWORK_CONTEXT"
+        }
+    ],
+    "SrpSetTokenEnterpriseId": [
+        {
+            "name": "tokenHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enterpriseId",
+            "type": "PCWSTR"
+        }
+    ],
+    "SrpGetEnterpriseIds": [
+        {
+            "name": "tokenHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numberOfBytes",
+            "type": "PULONG"
+        },
+        {
+            "name": "enterpriseIds",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "enterpriseIdCount",
+            "type": "PULONG"
+        }
+    ],
+    "SrpEnablePermissiveModeFileEncryption": [
+        {
+            "name": "enterpriseId",
+            "type": "PCWSTR"
+        }
+    ],
+    "SrpDisablePermissiveModeFileEncryption": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SrpGetEnterprisePolicy": [
+        {
+            "name": "tokenHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "policyFlags",
+            "type": "ENTERPRISE_DATA_POLICIES"
+        }
+    ],
+    "SrpIsTokenService": [
+        {
+            "name": "TokenHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "IsTokenService",
+            "type": "BOOLEAN"
+        }
+    ],
+    "SrpDoesPolicyAllowAppExecution": [
+        {
+            "name": "packageId",
+            "type": "PACKAGE_ID"
+        },
+        {
+            "name": "isAllowed",
+            "type": "BOOL"
+        }
+    ]
+}

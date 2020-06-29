@@ -1,0 +1,1492 @@
+{
+    "RasDialA": [
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASDIALEXTENSIONS",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASDIALPARAMSA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        },
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        }
+    ],
+    "RasDialW": [
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASDIALEXTENSIONS",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASDIALPARAMSW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        },
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        }
+    ],
+    "RasEnumConnectionsA": [
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASCONNA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasEnumConnectionsW": [
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASCONNW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasEnumEntriesA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASENTRYNAMEA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasEnumEntriesW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASENTRYNAMEW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasGetConnectStatusA": [
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASCONNSTATUSA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasGetConnectStatusW": [
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASCONNSTATUSW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasGetErrorStringA": [
+        {
+            "name": "ResourceId",
+            "type": "UINT"
+        },
+        {
+            "name": "lpszString",
+            "type": "LPSTR"
+        },
+        {
+            "name": "InBufSize",
+            "type": "DWORD"
+        }
+    ],
+    "RasGetErrorStringW": [
+        {
+            "name": "ResourceId",
+            "type": "UINT"
+        },
+        {
+            "name": "lpszString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "InBufSize",
+            "type": "DWORD"
+        }
+    ],
+    "RasHangUpA": [
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        }
+    ],
+    "RasHangUpW": [
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        }
+    ],
+    "RasGetProjectionInfoA": [
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASPROJECTION",
+                "data_type": "Enum",
+                "enumerators": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasGetProjectionInfoW": [
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASPROJECTION",
+                "data_type": "Enum",
+                "enumerators": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasCreatePhonebookEntryA": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        }
+    ],
+    "RasCreatePhonebookEntryW": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RasEditPhonebookEntryA": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        }
+    ],
+    "RasEditPhonebookEntryW": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RasSetEntryDialParamsA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASDIALPARAMSA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "BOOL"
+        }
+    ],
+    "RasSetEntryDialParamsW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASDIALPARAMSW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "BOOL"
+        }
+    ],
+    "RasGetEntryDialParamsA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASDIALPARAMSA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPBOOL"
+        }
+    ],
+    "RasGetEntryDialParamsW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASDIALPARAMSW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPBOOL"
+        }
+    ],
+    "RasEnumDevicesA": [
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASDEVINFOA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasEnumDevicesW": [
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASDEVINFOW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasGetCountryInfoA": [
+        {
+            "name": "VOID",
+            "type": {
+                "name": "RASCTRYINFO",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasGetCountryInfoW": [
+        {
+            "name": "VOID",
+            "type": {
+                "name": "RASCTRYINFO",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasGetEntryPropertiesA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASENTRYA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasGetEntryPropertiesW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASENTRYW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasSetEntryPropertiesA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASENTRYA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "RasSetEntryPropertiesW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASENTRYW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "RasRenameEntryA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        }
+    ],
+    "RasRenameEntryW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RasDeleteEntryA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        }
+    ],
+    "RasDeleteEntryW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RasValidateEntryNameA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        }
+    ],
+    "RasValidateEntryNameW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RasConnectionNotificationA": [
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "VOID",
+            "type": "HANDLE"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "RasConnectionNotificationW": [
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "VOID",
+            "type": "HANDLE"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "RasGetSubEntryHandleA": [
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        }
+    ],
+    "RasGetSubEntryHandleW": [
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        }
+    ],
+    "RasGetCredentialsA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASCREDENTIALSA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasGetCredentialsW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASCREDENTIALSW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasSetCredentialsA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASCREDENTIALSA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "BOOL"
+        }
+    ],
+    "RasSetCredentialsW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASCREDENTIALSW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "BOOL"
+        }
+    ],
+    "RasGetSubEntryPropertiesA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASSUBENTRYA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasGetSubEntryPropertiesW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASSUBENTRYW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasSetSubEntryPropertiesA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASSUBENTRYA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "RasSetSubEntryPropertiesW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASSUBENTRYW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "RasGetAutodialAddressA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASAUTODIALENTRYA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasGetAutodialAddressW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASAUTODIALENTRYW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasSetAutodialAddressA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASAUTODIALENTRYA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "RasSetAutodialAddressW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASAUTODIALENTRYW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "RasEnumAutodialAddressesA": [
+        {
+            "name": "lppRasAutodialAddresses",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpdwcbRasAutodialAddresses",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwcRasAutodialAddresses",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasEnumAutodialAddressesW": [
+        {
+            "name": "lppRasAutodialAddresses",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpdwcbRasAutodialAddresses",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwcRasAutodialAddresses",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasGetAutodialEnableA": [
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPBOOL"
+        }
+    ],
+    "RasGetAutodialEnableW": [
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPBOOL"
+        }
+    ],
+    "RasSetAutodialEnableA": [
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "BOOL"
+        }
+    ],
+    "RasSetAutodialEnableW": [
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "BOOL"
+        }
+    ],
+    "RasGetAutodialParamA": [
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasGetAutodialParamW": [
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        },
+        {
+            "name": "VOID",
+            "type": "LPDWORD"
+        }
+    ],
+    "RasSetAutodialParamA": [
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "RasSetAutodialParamW": [
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": "LPVOID"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "RasInvokeEapUI": [
+        {
+            "name": "VOID",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        },
+        {
+            "name": "VOID",
+            "type": {
+                "name": "tagRASDIALEXTENSIONS",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "VOID",
+            "type": "HWND"
+        }
+    ],
+    "RasGetLinkStatistics": [
+        {
+            "name": "hRasConn",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "dwSubEntry",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpStatistics",
+            "type": "RAS_STATS"
+        }
+    ],
+    "RasGetConnectionStatistics": [
+        {
+            "name": "hRasConn",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "lpStatistics",
+            "type": "RAS_STATS"
+        }
+    ],
+    "RasClearLinkStatistics": [
+        {
+            "name": "hRasConn",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "dwSubEntry",
+            "type": "DWORD"
+        }
+    ],
+    "RasClearConnectionStatistics": [
+        {
+            "name": "hRasConn",
+            "type": "HRASCONN"
+        }
+    ],
+    "RasGetEapUserDataA": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszPhonebook",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszEntry",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pbEapData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdwSizeofEapData",
+            "type": "DWORD"
+        }
+    ],
+    "RasGetEapUserDataW": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszPhonebook",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszEntry",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pbEapData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdwSizeofEapData",
+            "type": "DWORD"
+        }
+    ],
+    "RasSetEapUserDataA": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszPhonebook",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszEntry",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pbEapData",
+            "type": "BYTE"
+        },
+        {
+            "name": "dwSizeofEapData",
+            "type": "DWORD"
+        }
+    ],
+    "RasSetEapUserDataW": [
+        {
+            "name": "hToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszPhonebook",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszEntry",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pbEapData",
+            "type": "BYTE"
+        },
+        {
+            "name": "dwSizeofEapData",
+            "type": "DWORD"
+        }
+    ],
+    "RasGetCustomAuthDataA": [
+        {
+            "name": "pszPhonebook",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszEntry",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pbCustomAuthData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdwSizeofCustomAuthData",
+            "type": "DWORD"
+        }
+    ],
+    "RasGetCustomAuthDataW": [
+        {
+            "name": "pszPhonebook",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszEntry",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pbCustomAuthData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdwSizeofCustomAuthData",
+            "type": "DWORD"
+        }
+    ],
+    "RasSetCustomAuthDataA": [
+        {
+            "name": "pszPhonebook",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszEntry",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pbCustomAuthData",
+            "type": "BYTE"
+        },
+        {
+            "name": "dwSizeofCustomAuthData",
+            "type": "DWORD"
+        }
+    ],
+    "RasSetCustomAuthDataW": [
+        {
+            "name": "pszPhonebook",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszEntry",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pbCustomAuthData",
+            "type": "BYTE"
+        },
+        {
+            "name": "dwSizeofCustomAuthData",
+            "type": "DWORD"
+        }
+    ],
+    "RasGetEapUserIdentityW": [
+        {
+            "name": "pszPhonebook",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszEntry",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "ppRasEapUserIdentity",
+            "type": {
+                "name": "tagRASEAPUSERIDENTITYW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasGetEapUserIdentityA": [
+        {
+            "name": "pszPhonebook",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszEntry",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "ppRasEapUserIdentity",
+            "type": {
+                "name": "tagRASEAPUSERIDENTITYA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasFreeEapUserIdentityW": [
+        {
+            "name": "pRasEapUserIdentity",
+            "type": {
+                "name": "tagRASEAPUSERIDENTITYW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasFreeEapUserIdentityA": [
+        {
+            "name": "pRasEapUserIdentity",
+            "type": {
+                "name": "tagRASEAPUSERIDENTITYA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasDeleteSubEntryA": [
+        {
+            "name": "pszPhonebook",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszEntry",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwSubentryId",
+            "type": "DWORD"
+        }
+    ],
+    "RasDeleteSubEntryW": [
+        {
+            "name": "pszPhonebook",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszEntry",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwSubEntryId",
+            "type": "DWORD"
+        }
+    ],
+    "RasUpdateConnection": [
+        {
+            "name": "hrasconn",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "lprasupdateconn",
+            "type": {
+                "name": "tagRASUPDATECONN",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasGetProjectionInfoEx": [
+        {
+            "name": "hrasconn",
+            "type": "HRASCONN"
+        },
+        {
+            "name": "pRasProjection",
+            "type": "PRAS_PROJECTION_INFO"
+        },
+        {
+            "name": "lpdwSize",
+            "type": "LPDWORD"
+        }
+    ]
+}

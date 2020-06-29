@@ -1,0 +1,398 @@
+{
+    "WSARecvEx": [
+        {
+            "name": "s",
+            "type": "SOCKET"
+        },
+        {
+            "name": "buf",
+            "type": "char"
+        },
+        {
+            "name": "len",
+            "type": "int"
+        },
+        {
+            "name": "flags",
+            "type": "int"
+        }
+    ],
+    "TransmitFile": [
+        {
+            "name": "hSocket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "nNumberOfBytesToWrite",
+            "type": "DWORD"
+        },
+        {
+            "name": "nNumberOfBytesPerSend",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        },
+        {
+            "name": "lpTransmitBuffers",
+            "type": "LPTRANSMIT_FILE_BUFFERS"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "AcceptEx": [
+        {
+            "name": "sListenSocket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "sAcceptSocket",
+            "type": "SOCKET"
+        },
+        {
+            "name": "lpOutputBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "dwReceiveDataLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwLocalAddressLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwRemoteAddressLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwBytesReceived",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "GetAcceptExSockaddrs": [
+        {
+            "name": "lpOutputBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "dwReceiveDataLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwLocalAddressLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwRemoteAddressLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "LocalSockaddr",
+            "type": {
+                "name": "sockaddr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "LocalSockaddrLength",
+            "type": "LPINT"
+        },
+        {
+            "name": "RemoteSockaddr",
+            "type": {
+                "name": "sockaddr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "RemoteSockaddrLength",
+            "type": "LPINT"
+        }
+    ],
+    "EnumProtocolsA": [
+        {
+            "name": "lpiProtocols",
+            "type": "LPINT"
+        },
+        {
+            "name": "lpProtocolBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "EnumProtocolsW": [
+        {
+            "name": "lpiProtocols",
+            "type": "LPINT"
+        },
+        {
+            "name": "lpProtocolBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetAddressByNameA": [
+        {
+            "name": "dwNameSpace",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServiceType",
+            "type": "LPGUID"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpiProtocols",
+            "type": "LPINT"
+        },
+        {
+            "name": "dwResolution",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServiceAsyncInfo",
+            "type": "LPSERVICE_ASYNC_INFO"
+        },
+        {
+            "name": "lpCsaddrBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpAliasBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpdwAliasBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetAddressByNameW": [
+        {
+            "name": "dwNameSpace",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServiceType",
+            "type": "LPGUID"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpiProtocols",
+            "type": "LPINT"
+        },
+        {
+            "name": "dwResolution",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServiceAsyncInfo",
+            "type": "LPSERVICE_ASYNC_INFO"
+        },
+        {
+            "name": "lpCsaddrBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpAliasBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpdwAliasBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetTypeByNameA": [
+        {
+            "name": "lpServiceName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpServiceType",
+            "type": "LPGUID"
+        }
+    ],
+    "GetTypeByNameW": [
+        {
+            "name": "lpServiceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpServiceType",
+            "type": "LPGUID"
+        }
+    ],
+    "GetNameByTypeA": [
+        {
+            "name": "lpServiceType",
+            "type": "LPGUID"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwNameLength",
+            "type": "DWORD"
+        }
+    ],
+    "GetNameByTypeW": [
+        {
+            "name": "lpServiceType",
+            "type": "LPGUID"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwNameLength",
+            "type": "DWORD"
+        }
+    ],
+    "SetServiceA": [
+        {
+            "name": "dwNameSpace",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwOperation",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServiceInfo",
+            "type": "LPSERVICE_INFOA"
+        },
+        {
+            "name": "lpServiceAsyncInfo",
+            "type": "LPSERVICE_ASYNC_INFO"
+        },
+        {
+            "name": "lpdwStatusFlags",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetServiceW": [
+        {
+            "name": "dwNameSpace",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwOperation",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpServiceInfo",
+            "type": "LPSERVICE_INFOW"
+        },
+        {
+            "name": "lpServiceAsyncInfo",
+            "type": "LPSERVICE_ASYNC_INFO"
+        },
+        {
+            "name": "lpdwStatusFlags",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetServiceA": [
+        {
+            "name": "dwNameSpace",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwProperties",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpdwBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpServiceAsyncInfo",
+            "type": "LPSERVICE_ASYNC_INFO"
+        }
+    ],
+    "GetServiceW": [
+        {
+            "name": "dwNameSpace",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "lpServiceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwProperties",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpdwBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpServiceAsyncInfo",
+            "type": "LPSERVICE_ASYNC_INFO"
+        }
+    ]
+}

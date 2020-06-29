@@ -1,0 +1,302 @@
+{
+    "PathIsUNCEx": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppszServer",
+            "type": "PCWSTR"
+        }
+    ],
+    "PathCchIsRoot": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "PathCchAddBackslashEx": [
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "size_t"
+        },
+        {
+            "name": "ppszEnd",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchRemaining",
+            "type": "size_t"
+        }
+    ],
+    "PathCchAddBackslash": [
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "size_t"
+        }
+    ],
+    "PathCchRemoveBackslashEx": [
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "size_t"
+        },
+        {
+            "name": "ppszEnd",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchRemaining",
+            "type": "size_t"
+        }
+    ],
+    "PathCchRemoveBackslash": [
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "size_t"
+        }
+    ],
+    "PathCchSkipRoot": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppszRootEnd",
+            "type": "PCWSTR"
+        }
+    ],
+    "PathCchStripToRoot": [
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "size_t"
+        }
+    ],
+    "PathCchRemoveFileSpec": [
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "size_t"
+        }
+    ],
+    "PathCchFindExtension": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "size_t"
+        },
+        {
+            "name": "ppszExt",
+            "type": "PCWSTR"
+        }
+    ],
+    "PathCchAddExtension": [
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "size_t"
+        },
+        {
+            "name": "pszExt",
+            "type": "PCWSTR"
+        }
+    ],
+    "PathCchRenameExtension": [
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "size_t"
+        },
+        {
+            "name": "pszExt",
+            "type": "PCWSTR"
+        }
+    ],
+    "PathCchRemoveExtension": [
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "size_t"
+        }
+    ],
+    "PathCchCanonicalizeEx": [
+        {
+            "name": "pszPathOut",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPathOut",
+            "type": "size_t"
+        },
+        {
+            "name": "pszPathIn",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "PathCchCanonicalize": [
+        {
+            "name": "pszPathOut",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPathOut",
+            "type": "size_t"
+        },
+        {
+            "name": "pszPathIn",
+            "type": "PCWSTR"
+        }
+    ],
+    "PathCchCombineEx": [
+        {
+            "name": "pszPathOut",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPathOut",
+            "type": "size_t"
+        },
+        {
+            "name": "pszPathIn",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszMore",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "PathCchCombine": [
+        {
+            "name": "pszPathOut",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPathOut",
+            "type": "size_t"
+        },
+        {
+            "name": "pszPathIn",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszMore",
+            "type": "PCWSTR"
+        }
+    ],
+    "PathCchAppendEx": [
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "size_t"
+        },
+        {
+            "name": "pszMore",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "PathCchAppend": [
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "size_t"
+        },
+        {
+            "name": "pszMore",
+            "type": "PCWSTR"
+        }
+    ],
+    "PathCchStripPrefix": [
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchPath",
+            "type": "size_t"
+        }
+    ],
+    "PathAllocCombine": [
+        {
+            "name": "pszPathIn",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszMore",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppszPathOut",
+            "type": "PWSTR"
+        }
+    ],
+    "PathAllocCanonicalize": [
+        {
+            "name": "pszPathIn",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppszPathOut",
+            "type": "PWSTR"
+        }
+    ]
+}

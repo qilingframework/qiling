@@ -1,0 +1,26 @@
+{
+    "SCardUIDlgSelectCardA": [
+        {
+            "name": "VOID",
+            "type": "LPOPENCARDNAME_EXA"
+        }
+    ],
+    "SCardUIDlgSelectCardW": [
+        {
+            "name": "VOID",
+            "type": "LPOPENCARDNAME_EXW"
+        }
+    ],
+    "GetOpenCardNameA": [
+        {
+            "name": "VOID",
+            "type": "LPOPENCARDNAMEA"
+        }
+    ],
+    "GetOpenCardNameW": [
+        {
+            "name": "VOID",
+            "type": "LPOPENCARDNAMEW"
+        }
+    ]
+}

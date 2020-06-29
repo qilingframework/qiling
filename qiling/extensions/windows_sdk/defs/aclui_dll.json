@@ -1,0 +1,32 @@
+{
+    "CreateSecurityPage": [
+        {
+            "name": "psi",
+            "type": "LPSECURITYINFO"
+        }
+    ],
+    "EditSecurity": [
+        {
+            "name": "hwndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "psi",
+            "type": "LPSECURITYINFO"
+        }
+    ],
+    "EditSecurityAdvanced": [
+        {
+            "name": "hwndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "psi",
+            "type": "LPSECURITYINFO"
+        },
+        {
+            "name": "uSIPage",
+            "type": "SI_PAGE_TYPE"
+        }
+    ]
+}

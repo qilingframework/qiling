@@ -1,0 +1,244 @@
+{
+    "OleUIAddVerbMenuW": [
+        {
+            "name": "lpOleObj",
+            "type": "LPOLEOBJECT"
+        },
+        {
+            "name": "lpszShortType",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uPos",
+            "type": "UINT"
+        },
+        {
+            "name": "uIDVerbMin",
+            "type": "UINT"
+        },
+        {
+            "name": "uIDVerbMax",
+            "type": "UINT"
+        },
+        {
+            "name": "bAddConvert",
+            "type": "BOOL"
+        },
+        {
+            "name": "idConvert",
+            "type": "UINT"
+        },
+        {
+            "name": "lphMenu",
+            "type": "HMENU"
+        }
+    ],
+    "OleUIAddVerbMenuA": [
+        {
+            "name": "lpOleObj",
+            "type": "LPOLEOBJECT"
+        },
+        {
+            "name": "lpszShortType",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uPos",
+            "type": "UINT"
+        },
+        {
+            "name": "uIDVerbMin",
+            "type": "UINT"
+        },
+        {
+            "name": "uIDVerbMax",
+            "type": "UINT"
+        },
+        {
+            "name": "bAddConvert",
+            "type": "BOOL"
+        },
+        {
+            "name": "idConvert",
+            "type": "UINT"
+        },
+        {
+            "name": "lphMenu",
+            "type": "HMENU"
+        }
+    ],
+    "OleUIInsertObjectW": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUIINSERTOBJECTW"
+        }
+    ],
+    "OleUIInsertObjectA": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUIINSERTOBJECTA"
+        }
+    ],
+    "OleUIPasteSpecialW": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUIPASTESPECIALW"
+        }
+    ],
+    "OleUIPasteSpecialA": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUIPASTESPECIALA"
+        }
+    ],
+    "OleUIEditLinksW": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUIEDITLINKSW"
+        }
+    ],
+    "OleUIEditLinksA": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUIEDITLINKSA"
+        }
+    ],
+    "OleUIChangeIconW": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUICHANGEICONW"
+        }
+    ],
+    "OleUIChangeIconA": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUICHANGEICONA"
+        }
+    ],
+    "OleUIConvertW": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUICONVERTW"
+        }
+    ],
+    "OleUIConvertA": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUICONVERTA"
+        }
+    ],
+    "OleUICanConvertOrActivateAs": [
+        {
+            "name": "rClsid",
+            "type": "IID"
+        },
+        {
+            "name": "fIsLinkedObject",
+            "type": "BOOL"
+        },
+        {
+            "name": "wFormat",
+            "type": "WORD"
+        }
+    ],
+    "OleUIBusyW": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUIBUSYW"
+        }
+    ],
+    "OleUIBusyA": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUIBUSYA"
+        }
+    ],
+    "OleUIChangeSourceW": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUICHANGESOURCEW"
+        }
+    ],
+    "OleUIChangeSourceA": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUICHANGESOURCEA"
+        }
+    ],
+    "OleUIObjectPropertiesW": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUIOBJECTPROPSW"
+        }
+    ],
+    "OleUIObjectPropertiesA": [
+        {
+            "name": "VOID",
+            "type": "LPOLEUIOBJECTPROPSA"
+        }
+    ],
+    "OleUIPromptUserW": [
+        {
+            "name": "nTemplate",
+            "type": "int"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        }
+    ],
+    "OleUIPromptUserA": [
+        {
+            "name": "nTemplate",
+            "type": "int"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        }
+    ],
+    "OleUIUpdateLinksW": [
+        {
+            "name": "lpOleUILinkCntr",
+            "type": "LPOLEUILINKCONTAINERW"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpszTitle",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cLinks",
+            "type": "int"
+        }
+    ],
+    "OleUIUpdateLinksA": [
+        {
+            "name": "lpOleUILinkCntr",
+            "type": "LPOLEUILINKCONTAINERA"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpszTitle",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cLinks",
+            "type": "int"
+        }
+    ]
+}

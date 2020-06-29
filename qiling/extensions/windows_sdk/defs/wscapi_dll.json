@@ -1,0 +1,36 @@
+{
+    "WscRegisterForChanges": [
+        {
+            "name": "Reserved",
+            "type": "LPVOID"
+        },
+        {
+            "name": "phCallbackRegistration",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "lpCallbackAddress",
+            "type": "LPTHREAD_START_ROUTINE"
+        },
+        {
+            "name": "pContext",
+            "type": "PVOID"
+        }
+    ],
+    "WscUnRegisterChanges": [
+        {
+            "name": "hRegistrationHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "WscGetSecurityProviderHealth": [
+        {
+            "name": "Providers",
+            "type": "DWORD"
+        },
+        {
+            "name": "pHealth",
+            "type": "PWSC_SECURITY_PROVIDER_HEALTH"
+        }
+    ]
+}

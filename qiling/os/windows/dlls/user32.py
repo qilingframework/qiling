@@ -11,6 +11,7 @@ from qiling.os.windows.const import *
 from qiling.const import *
 from qiling.os.windows.structs import *
 
+dllname = 'user32_dll'
 
 # INT_PTR DialogBoxParamA(
 #   HINSTANCE hInstance,
@@ -19,13 +20,7 @@ from qiling.os.windows.structs import *
 #   DLGPROC   lpDialogFunc,
 #   LPARAM    dwInitParam
 # );
-@winapi(cc=STDCALL, params={
-    "hInstance": HANDLE,
-    "lpTemplateName": POINTER,
-    "hWndParent": HANDLE,
-    "lpDialogFunc": POINTER,
-    "dwInitParam": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCSTR': 'POINTER'})
 def hook_DialogBoxParamA(ql, address, params):
     ret = 0
     return ret
@@ -37,12 +32,7 @@ def hook_DialogBoxParamA(ql, address, params):
 # 	LPSTR lpString,
 # 	int   cchMax
 # );
-@winapi(cc=STDCALL, params={
-    "hDlg": HANDLE,
-    "nIDDlgItem": INT,
-    "lpString": POINTER,
-    "cchMax": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetDlgItemTextA(ql, address, params):
     ret = 0
     hDlg = params["hDlg"]
@@ -62,10 +52,7 @@ def hook_GetDlgItemTextA(ql, address, params):
 #   HWND    hDlg,
 #   INT_PTR nResult
 # );
-@winapi(cc=STDCALL, params={
-    "hDlg": HANDLE,
-    "nResult": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_EndDialog(ql, address, params):
     ret = 1
     return ret
@@ -73,7 +60,7 @@ def hook_EndDialog(ql, address, params):
 
 # HWND GetDesktopWindow((
 # );
-@winapi(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetDesktopWindow(ql, address, params):
     pass
 
@@ -81,15 +68,13 @@ def hook_GetDesktopWindow(ql, address, params):
 # BOOL OpenClipboard(
 #  HWND hWndNewOwner
 # );
-@winapi(cc=STDCALL, params={
-    "hWndNewOwner": HANDLE
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_OpenClipboard(ql, address, params):
     return ql.os.clipboard.open(params['hWndNewOwner'])
 
 
 # BOOL CloseClipboard();
-@winapi(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CloseClipboard(ql, address, params):
     return ql.os.clipboard.close()
 
@@ -98,10 +83,7 @@ def hook_CloseClipboard(ql, address, params):
 #  UINT   uFormat,
 #  HANDLE hMem
 # );
-@winapi(cc=STDCALL, params={
-    "uFormat": UINT,
-    "hMem": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SetClipboardData(ql, address, params):
     try:
         data = bytes(params['hMem'], 'ascii', 'ignore')
@@ -113,9 +95,7 @@ def hook_SetClipboardData(ql, address, params):
 # HANDLE GetClipboardData(
 #  UINT uFormat
 # );
-@winapi(cc=STDCALL, params={
-    "uFormat": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetClipboardData(ql, address, params):
     data = ql.os.clipboard.get_data(params['uFormat'])
     if data:
@@ -130,9 +110,7 @@ def hook_GetClipboardData(ql, address, params):
 # BOOL IsClipboardFormatAvailable(
 #  UINT format
 # );
-@winapi(cc=STDCALL, params={
-    "uFormat": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_IsClipboardFormatAvailable(ql, address, params):
     rtn = ql.os.clipboard.format_available(params['uFormat'])
     return rtn
@@ -142,10 +120,7 @@ def hook_IsClipboardFormatAvailable(ql, address, params):
 #   UINT uCode,
 #   UINT uMapType
 # );
-@winapi(cc=STDCALL, params={
-    "uCode": UINT,
-    "uMapType": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_MapVirtualKeyW(ql, address, params):
     map_value = params["uMapType"]
     code_value = params["uCode"]
@@ -165,9 +140,7 @@ def hook_MapVirtualKeyW(ql, address, params):
 # SHORT GetKeyState(
 #   int nVirtKey
 # );
-@winapi(cc=STDCALL, params={
-    "nVirtKey": UINT,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'int': 'UINT'})
 def hook_GetKeyState(ql, address, params):
     let = chr(params["nVirtKey"])
     ql.dprint(0, let)
@@ -179,9 +152,7 @@ def hook_GetKeyState(ql, address, params):
 # UINT RegisterWindowMessageA(
 #   LPCSTR lpString
 # );
-@winapi(cc=STDCALL, params={
-    "lpString": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegisterWindowMessageA(ql, address, params):
     return hook_RegisterWindowMessageW.__wrapped__(ql, address, params)
 
@@ -189,17 +160,14 @@ def hook_RegisterWindowMessageA(ql, address, params):
 # UINT RegisterWindowMessageW(
 #   LPCWSTR lpString
 # );
-@winapi(cc=STDCALL, params={
-    "lpString": WSTRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_RegisterWindowMessageW(ql, address, params):
     # maybe some samples really use this and we need to have a real implementation
     return 0xD10C
 
 
 # HWND GetActiveWindow();
-@winapi(cc=STDCALL, params={
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetActiveWindow(ql, address, params):
     # maybe some samples really use this and we need to have a real implementation
     return 0xD10C
@@ -208,9 +176,7 @@ def hook_GetActiveWindow(ql, address, params):
 # HWND GetLastActivePopup(
 #   HWND hWnd
 # );
-@winapi(cc=STDCALL, params={
-    "hWnd": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetLastActivePopup(ql, address, params):
     hwnd = params["hWnd"]
     return hwnd
@@ -219,9 +185,7 @@ def hook_GetLastActivePopup(ql, address, params):
 # BOOL GetPhysicalCursorPos(
 #   LPPOINT lpPoint
 # );
-@winapi(cc=STDCALL, params={
-    "lpPoint": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetPhysicalCursorPos(ql, address, params):
     return 1
 
@@ -229,9 +193,7 @@ def hook_GetPhysicalCursorPos(ql, address, params):
 # int GetSystemMetrics(
 #   int nIndex
 # );
-@winapi(cc=STDCALL, params={
-    "nIndex": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetSystemMetrics(ql, address, params):
     info = params["nIndex"]
     if info == SM_CXICON or info == SM_CYICON:
@@ -249,9 +211,7 @@ def hook_GetSystemMetrics(ql, address, params):
 # HDC GetDC(
 #   HWND hWnd
 # );
-@winapi(cc=STDCALL, params={
-    "hWnd": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetDC(ql, address, params):
     handler = params["hWnd"]
     # Maybe we should really emulate the handling of screens and windows. Is going to be a pain
@@ -262,10 +222,7 @@ def hook_GetDC(ql, address, params):
 #   HDC hdc,
 #   int index
 # );
-@winapi(cc=STDCALL, params={
-    "hdc": POINTER,
-    "index": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetDeviceCaps(ql, address, params):
     # Maybe we should really emulate the handling of screens and windows. Is going to be a pain
     return 1
@@ -275,10 +232,7 @@ def hook_GetDeviceCaps(ql, address, params):
 #   HWND hWnd,
 #   HDC  hDC
 # );
-@winapi(cc=STDCALL, params={
-    "hWnd": POINTER,
-    "hdc": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HWND': 'POINTER'})
 def hook_ReleaseDC(ql, address, params):
     return 1
 
@@ -286,9 +240,7 @@ def hook_ReleaseDC(ql, address, params):
 # DWORD GetSysColor(
 #   int nIndex
 # );
-@winapi(cc=STDCALL, params={
-    "nIndex": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetSysColor(ql, address, params):
     info = params["nIndex"]
     return 0
@@ -297,9 +249,7 @@ def hook_GetSysColor(ql, address, params):
 # HBRUSH GetSysColorBrush(
 #   int nIndex
 # );
-@winapi(cc=STDCALL, params={
-    "nIndex": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetSysColorBrush(ql, address, params):
     info = params["nIndex"]
     return 0xd10c
@@ -309,10 +259,7 @@ def hook_GetSysColorBrush(ql, address, params):
 #   HINSTANCE hInstance,
 #   LPCSTR    lpCursorName
 # );
-@winapi(cc=STDCALL, params={
-    "hInstance": POINTER,
-    "lpCursorName": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HINSTANCE': 'POINTER', 'LPCSTR': 'INT'})
 def hook_LoadCursorA(ql, address, params):
     return 0xd10c
 
@@ -320,19 +267,15 @@ def hook_LoadCursorA(ql, address, params):
 # HCURSOR LoadCursorFromFileA(
 #   LPCSTR lpFileName
 # );
-@winapi(cc=STDCALL, params={
-    "lpFileName": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LoadCursorFromFileA(ql, address, params):
     return hook_LoadCursorFromFileW.__wrapped__(ql, address, params)
 
 
-# HCURSOR LoadCursorFromFileA(
+# HCURSOR LoadCursorFromFileW(
 #   LPCSTR lpFileName
 # );
-@winapi(cc=STDCALL, params={
-    "lpFileName": WSTRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LoadCursorFromFileW(ql, address, params):
     handle = Handle()
     ql.os.handle_manager.append(handle)
@@ -340,8 +283,7 @@ def hook_LoadCursorFromFileW(ql, address, params):
 
 
 # UINT GetOEMCP();
-@winapi(cc=STDCALL, params={
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetOEMCP(ql, address, params):
     return OEM_US
 
@@ -352,12 +294,7 @@ def hook_GetOEMCP(ql, address, params):
 #   LPSTR     lpBuffer,
 #   int       cchBufferMax
 # );
-@winapi(cc=STDCALL, params={
-    "hInstance": POINTER,
-    "uID": UINT,
-    "lpBuffer": POINTER,
-    "cchBufferMax": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HINSTANCE': 'POINTER'})
 def hook_LoadStringW(ql, address, params):
     dst = params["lpBuffer"]
     max_len = params["cchBufferMax"]
@@ -378,12 +315,7 @@ def hook_LoadStringW(ql, address, params):
 #   LPSTR     lpBuffer,
 #   int       cchBufferMax
 # );
-@winapi(cc=STDCALL, params={
-    "hInstance": POINTER,
-    "uID": UINT,
-    "lpBuffer": POINTER,
-    "cchBufferMax": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HINSTANCE': 'POINTER'})
 def hook_LoadStringA(ql, address, params):
     dst = params["lpBuffer"]
     max_len = params["cchBufferMax"]
@@ -401,9 +333,7 @@ def hook_LoadStringA(ql, address, params):
 # BOOL MessageBeep(
 #   UINT uType
 # );
-@winapi(cc=STDCALL, params={
-    "uType": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_MessageBeep(ql, address, params):
     return 1
 
@@ -414,12 +344,7 @@ def hook_MessageBeep(ql, address, params):
 #   HINSTANCE hmod,
 #   DWORD     dwThreadId
 # );
-@winapi(cc=STDCALL, params={
-    "idHook": INT,
-    "lpfn": POINTER,
-    "hmod": POINTER,
-    "dwThreadId": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HINSTANCE': 'POINTER'})
 def hook_SetWindowsHookExA(ql, address, params):
     # Should hook a procedure to a dll
     hook = params["lpfn"]
@@ -429,9 +354,7 @@ def hook_SetWindowsHookExA(ql, address, params):
 # BOOL UnhookWindowsHookEx(
 #   HHOOK hhk
 # );
-@winapi(cc=STDCALL, params={
-    "hhk": POINTER,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_UnhookWindowsHookEx(ql, address, params):
     return 1
 
@@ -440,10 +363,7 @@ def hook_UnhookWindowsHookEx(ql, address, params):
 #   HWND hWnd,
 #   int  nCmdShow
 # );
-@winapi(cc=STDCALL, params={
-    "hWnd": POINTER,
-    "nCmdShow": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HWND': 'POINTER'})
 def hook_ShowWindow(ql, address, params):
     # return value depends on sample goal (evasion on just display error)
     return 0x1
@@ -453,10 +373,7 @@ def hook_ShowWindow(ql, address, params):
 #   HINSTANCE hInstance,
 #   LPCSTR    lpIconName
 # );
-@winapi(cc=STDCALL, params={
-    "hInstance": POINTER,
-    "lpIconName": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HINSTANCE': 'POINTER', 'LPCSTR': 'UINT'})
 def hook_LoadIconA(ql, address, params):
     return hook_LoadIconW(ql, address, params)
 
@@ -465,10 +382,7 @@ def hook_LoadIconA(ql, address, params):
 #   HINSTANCE hInstance,
 #   LPCWSTR    lpIconName
 # );
-@winapi(cc=STDCALL, params={
-    "hInstance": POINTER,
-    "lpIconName": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HINSTANCE': 'POINTER', 'LPCWSTR': 'UINT'})
 def hook_LoadIconW(ql, address, params):
     handle = Handle()
     ql.os.handle_manager.append(handle)
@@ -478,9 +392,7 @@ def hook_LoadIconW(ql, address, params):
 # BOOL IsWindow(
 #   HWND hWnd
 # );
-@winapi(cc=STDCALL, params={
-    "hWnd": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HWND': 'POINTER'})
 def hook_IsWindow(ql, address, params):
     # return value depends on sample  goal (evasion on just display error)
     return 0x1
@@ -492,12 +404,7 @@ def hook_IsWindow(ql, address, params):
 #   WPARAM wParam,
 #   LPARAM lParam
 # );
-@winapi(cc=STDCALL, params={
-    "hWnd": POINTER,
-    "Msg": UINT,
-    "wParam": UINT,
-    "lParam": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HWND': 'POINTER', 'LPARAM': 'UINT'})
 def hook_SendMessageA(ql, address, params):
     # TODO don't know how to get right return value
     return 0xD10C
@@ -509,12 +416,7 @@ def hook_SendMessageA(ql, address, params):
 #   WPARAM wParam,
 #   LPARAM lParam
 # );
-@winapi(cc=STDCALL, params={
-    "hWnd": POINTER,
-    "Msg": UINT,
-    "wParam": UINT,
-    "lParam": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HWND': 'POINTER', 'LPARAM': 'UINT'})
 def hook_DefWindowProcA(ql, address, params):
     # TODO don't know how to get right return value
     return 0xD10C
@@ -523,9 +425,7 @@ def hook_DefWindowProcA(ql, address, params):
 # LPWSTR CharNextW(
 #   LPCWSTR lpsz
 # );
-@winapi(cc=STDCALL, params={
-    "lpsz": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCWSTR': 'POINTER'})
 def hook_CharNextW(ql, address, params):
     # Return next char if is different from \x00
     point = params["lpsz"][0]
@@ -538,11 +438,9 @@ def hook_CharNextW(ql, address, params):
 
 
 # LPWSTR CharNextA(
-#   LPCWSTR lpsz
+#   LPCSTR lpsz
 # );
-@winapi(cc=STDCALL, params={
-    "lpsz": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CharNextA(ql, address, params):
     # Return next char if is different from \x00
     point = params["lpsz"][0]
@@ -558,10 +456,7 @@ def hook_CharNextA(ql, address, params):
 #   LPCWSTR lpszStart,
 #   LPCWSTR lpszCurrent
 # );
-@winapi(cc=STDCALL, params={
-    "lpszStart": POINTER,
-    "lpszCurrent": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCWSTR': 'POINTER'})
 def hook_CharPrevW(ql, address, params):
     # Return next char if is different from \x00
     current = params["lpszCurrent"]
@@ -577,13 +472,10 @@ def hook_CharPrevW(ql, address, params):
 
 
 # LPWSTR CharPrevA(
-#   LPCWSTR lpszStart,
-#   LPCWSTR lpszCurrent
+#   LPCSTR lpszStart,
+#   LPCSTR lpszCurrent
 # );
-@winapi(cc=STDCALL, params={
-    "lpszStart": POINTER,
-    "lpszCurrent": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCSTR': 'POINTER'})
 def hook_CharPrevA(ql, address, params):
     # Return next char if is different from \x00
     current = params["lpszCurrent"]
@@ -603,7 +495,7 @@ def hook_CharPrevA(ql, address, params):
 #   LPCWSTR ,
 #   ...
 # );
-@winapi(cc=CDECL, param_num=3)
+@winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
 def hook_wsprintfW(ql, address, params):
     dst, p_format = ql.os.get_function_param(2)
 
@@ -626,7 +518,7 @@ def hook_wsprintfW(ql, address, params):
 #   LPCWSTR ,
 #   ...
 # );
-@winapi(cc=CDECL, param_num=3)
+@winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
 def hook_sprintf(ql, address, params):
     dst, p_format, p_args = ql.os.get_function_param(3)
     format_string = ql.os.read_wstring(p_format)
@@ -642,8 +534,7 @@ def hook_sprintf(ql, address, params):
 
 
 # HWND GetForegroundWindow();
-@winapi(cc=STDCALL, params={
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetForegroundWindow(ql, address, params):
     return 0xF02E620D  # Value so we can recognize inside dumps
 
@@ -656,15 +547,7 @@ def hook_GetForegroundWindow(ql, address, params):
 #   int  nHeight,
 #   BOOL bRepaint
 # )
-@winapi(cc=STDCALL, params={
-    "hWnd": HANDLE,
-    "X": INT,
-    "Y": INT,
-    "nWidth": INT,
-    "nHeight": INT,
-    "bRepaint": BOOL
-
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_MoveWindow(ql, address, params):
     return 1
 
@@ -672,12 +555,10 @@ def hook_MoveWindow(ql, address, params):
 # int GetKeyboardType(
 #  int nTypeFlag
 # );
-@winapi(cc=STDCALL, params={
-    "nTypeFlag": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'int': 'UINT'})
 def hook_GetKeyboardType(ql, address, params):
-    """ 
-    See https://salsa.debian.org/wine-team/wine/-/blob/master/dlls/user32/input.c 
+    """
+    See https://salsa.debian.org/wine-team/wine/-/blob/master/dlls/user32/input.c
     """
     _type = params['nTypeFlag']
     if _type == 0:  # 0: Keyboard Type, 1: Keyboard subtype, 2: num func keys
@@ -695,12 +576,7 @@ def hook_GetKeyboardType(ql, address, params):
 #   LPCWSTR lpCaption,
 #   UINT    uType
 # );
-@winapi(cc=STDCALL, params={
-    "hWnd": HANDLE,
-    "lpText": WSTRING,
-    "lpCaption": WSTRING,
-    "uType": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_MessageBoxW(ql, address, params):
     # We always return a positive result
     type_box = params["uType"]
@@ -719,12 +595,7 @@ def hook_MessageBoxW(ql, address, params):
 #   LPCWSTR lpCaption,
 #   UINT    uType
 # );
-@winapi(cc=STDCALL, params={
-    "hWnd": HANDLE,
-    "lpText": STRING,
-    "lpCaption": STRING,
-    "uType": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_MessageBoxA(ql, address, params):
     return hook_MessageBoxW.__wrapped__(ql, address, params)
 
@@ -732,9 +603,7 @@ def hook_MessageBoxA(ql, address, params):
 # BOOL GetCursorPos(
 #   LPPOINT lpPoint
 # );
-@winapi(cc=STDCALL, params={
-    "lpPoint": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetCursorPos(ql, address, params):
     # TODO maybe we can add it to the profile too
     p = Point(ql, 50, 50)
@@ -746,9 +615,7 @@ def hook_GetCursorPos(ql, address, params):
 # HANDLE CreateActCtxW(
 #   PCACTCTXW pActCtx
 # );
-@winapi(cc=STDCALL, params={
-    "pActCtx": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateActCtxW(ql, address, params):
     # TODo maybe is necessary to really create this
     addr = params["pActCtx"]
@@ -761,10 +628,7 @@ def hook_CreateActCtxW(ql, address, params):
 #   HWND    hWnd,
 #   LPDWORD lpdwProcessId
 # );
-@winapi(cc=STDCALL, params={
-    "hWnd": HANDLE,
-    "lpdwProcessId": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetWindowThreadProcessId(ql, address, params):
     target = params["hWnd"]
     if target == ql.os.profile.getint("KERNEL", "pid") or target == ql.os.profile.getint("KERNEL", "shell_pid"):
@@ -778,7 +642,6 @@ def hook_GetWindowThreadProcessId(ql, address, params):
 
 
 # HWND GetShellWindow();
-@winapi(cc=STDCALL, params={
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetShellWindow(ql, address, params):
     return ql.os.profile.getint("KERNEL", "shell_pid")

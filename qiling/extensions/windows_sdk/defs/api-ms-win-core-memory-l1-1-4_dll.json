@@ -1,0 +1,28 @@
+{
+    "QueryVirtualMemoryInformation": [
+        {
+            "name": "Process",
+            "type": "HANDLE"
+        },
+        {
+            "name": "VirtualAddress",
+            "type": "void"
+        },
+        {
+            "name": "MemoryInformationClass",
+            "type": "WIN32_MEMORY_INFORMATION_CLASS"
+        },
+        {
+            "name": "MemoryInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "MemoryInformationSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ReturnSize",
+            "type": "PSIZE_T"
+        }
+    ]
+}

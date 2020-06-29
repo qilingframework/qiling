@@ -1,0 +1,30 @@
+{
+    "GetNetScheduleAccountInformation": [
+        {
+            "name": "pwszServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ccAccount",
+            "type": "DWORD"
+        },
+        {
+            "name": "wszAccount",
+            "type": "WCHAR"
+        }
+    ],
+    "SetNetScheduleAccountInformation": [
+        {
+            "name": "pwszServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszAccount",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszPassword",
+            "type": "LPCWSTR"
+        }
+    ]
+}

@@ -1,0 +1,20 @@
+{
+    "CallEnclave": [
+        {
+            "name": "lpRoutine",
+            "type": "LPENCLAVE_ROUTINE"
+        },
+        {
+            "name": "lpParameter",
+            "type": "LPVOID"
+        },
+        {
+            "name": "fWaitForThread",
+            "type": "BOOL"
+        },
+        {
+            "name": "lpReturnValue",
+            "type": "LPVOID"
+        }
+    ]
+}

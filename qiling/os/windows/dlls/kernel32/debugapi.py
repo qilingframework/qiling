@@ -13,10 +13,10 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
+dllname = 'kernel32_dll'
 
 # BOOL IsDebuggerPresent();
-@winapi(cc=STDCALL, params={
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_IsDebuggerPresent(ql, address, params):
     return 0
 
@@ -25,10 +25,7 @@ def hook_IsDebuggerPresent(ql, address, params):
 #   HANDLE hProcess,
 #   PBOOL  pbDebuggerPresent
 # );
-@winapi(cc=STDCALL, params={
-    "hProcess": HANDLE,
-    "pbDebuggerPresent": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CheckRemoteDebuggerPresent(ql, address, params):
     pointer = params["pbDebuggerPresent"]
     ql.mem.write(pointer, 0x0.to_bytes(1, byteorder="little"))
@@ -38,9 +35,7 @@ def hook_CheckRemoteDebuggerPresent(ql, address, params):
 # void OutputDebugStringW(
 #   LPCWSTR lpOutputString
 # );
-@winapi(cc=STDCALL, params={
-    "lpOutputString": WSTRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_OutputDebugStringW(ql, address, params):
     string = params["lpOutputString"]
     ql.nprint('OutputDebugStringW: "%s"' % (string.encode()))
@@ -50,9 +45,7 @@ def hook_OutputDebugStringW(ql, address, params):
 # void OutputDebugStringA(
 #  LPCSTR lpOutputString
 # );
-@winapi(cc=STDCALL, params={
-    "lpOutputString": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_OutputDebugStringA(ql, address, params):
     ql.nprint('OutputDebugStringA: "%s"' % (params['lpOutputString']))
     return 0

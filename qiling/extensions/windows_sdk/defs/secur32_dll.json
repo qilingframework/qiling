@@ -1,0 +1,176 @@
+{
+    "LsaRegisterLogonProcess": [
+        {
+            "name": "LogonProcessName",
+            "type": "PLSA_STRING"
+        },
+        {
+            "name": "LsaHandle",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "SecurityMode",
+            "type": "PLSA_OPERATIONAL_MODE"
+        }
+    ],
+    "LsaLogonUser": [
+        {
+            "name": "LsaHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "OriginName",
+            "type": "PLSA_STRING"
+        },
+        {
+            "name": "LogonType",
+            "type": "SECURITY_LOGON_TYPE"
+        },
+        {
+            "name": "AuthenticationPackage",
+            "type": "ULONG"
+        },
+        {
+            "name": "AuthenticationInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "AuthenticationInformationLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "LocalGroups",
+            "type": "PTOKEN_GROUPS"
+        },
+        {
+            "name": "SourceContext",
+            "type": "PTOKEN_SOURCE"
+        },
+        {
+            "name": "ProfileBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "ProfileBufferLength",
+            "type": "PULONG"
+        },
+        {
+            "name": "LogonId",
+            "type": "PLUID"
+        },
+        {
+            "name": "Token",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "Quotas",
+            "type": "PQUOTA_LIMITS"
+        },
+        {
+            "name": "SubStatus",
+            "type": "PNTSTATUS"
+        }
+    ],
+    "LsaLookupAuthenticationPackage": [
+        {
+            "name": "LsaHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "PackageName",
+            "type": "PLSA_STRING"
+        },
+        {
+            "name": "AuthenticationPackage",
+            "type": "PULONG"
+        }
+    ],
+    "LsaFreeReturnBuffer": [
+        {
+            "name": "Buffer",
+            "type": "PVOID"
+        }
+    ],
+    "LsaCallAuthenticationPackage": [
+        {
+            "name": "LsaHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "AuthenticationPackage",
+            "type": "ULONG"
+        },
+        {
+            "name": "ProtocolSubmitBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "SubmitBufferLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "ProtocolReturnBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "ReturnBufferLength",
+            "type": "PULONG"
+        },
+        {
+            "name": "ProtocolStatus",
+            "type": "PNTSTATUS"
+        }
+    ],
+    "LsaDeregisterLogonProcess": [
+        {
+            "name": "LsaHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "LsaConnectUntrusted": [
+        {
+            "name": "LsaHandle",
+            "type": "PHANDLE"
+        }
+    ],
+    "LsaEnumerateLogonSessions": [
+        {
+            "name": "LogonSessionCount",
+            "type": "PULONG"
+        },
+        {
+            "name": "LogonSessionList",
+            "type": "PLUID"
+        }
+    ],
+    "LsaGetLogonSessionData": [
+        {
+            "name": "LogonId",
+            "type": "PLUID"
+        },
+        {
+            "name": "ppLogonSessionData",
+            "type": "PSECURITY_LOGON_SESSION_DATA"
+        }
+    ],
+    "LsaRegisterPolicyChangeNotification": [
+        {
+            "name": "InformationClass",
+            "type": "POLICY_NOTIFICATION_INFORMATION_CLASS"
+        },
+        {
+            "name": "NotificationEventHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "LsaUnregisterPolicyChangeNotification": [
+        {
+            "name": "InformationClass",
+            "type": "POLICY_NOTIFICATION_INFORMATION_CLASS"
+        },
+        {
+            "name": "NotificationEventHandle",
+            "type": "HANDLE"
+        }
+    ]
+}

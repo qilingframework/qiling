@@ -1,0 +1,24 @@
+{
+    "SLQueryLicenseValueFromApp": [
+        {
+            "name": "valueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "valueType",
+            "type": "ULONG"
+        },
+        {
+            "name": "dataBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "dataSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "resultDataSize",
+            "type": "ULONG"
+        }
+    ]
+}

@@ -1,0 +1,94 @@
+{
+    "DiInstallDevice": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "DriverInfoData",
+            "type": "PSP_DRVINFO_DATA"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "NeedReboot",
+            "type": "PBOOL"
+        }
+    ],
+    "DiUninstallDevice": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "NeedReboot",
+            "type": "PBOOL"
+        }
+    ],
+    "DiShowUpdateDevice": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "NeedReboot",
+            "type": "PBOOL"
+        }
+    ],
+    "DiRollbackDriver": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "NeedReboot",
+            "type": "PBOOL"
+        }
+    ]
+}

@@ -1,0 +1,70 @@
+{
+    "InstallPerfDllW": [
+        {
+            "name": "szComputerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpIniFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "InstallPerfDllA": [
+        {
+            "name": "szComputerName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpIniFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "LoadPerfCounterTextStringsA": [
+        {
+            "name": "lpCommandLine",
+            "type": "LPSTR"
+        },
+        {
+            "name": "bQuietModeArg",
+            "type": "BOOL"
+        }
+    ],
+    "LoadPerfCounterTextStringsW": [
+        {
+            "name": "lpCommandLine",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "bQuietModeArg",
+            "type": "BOOL"
+        }
+    ],
+    "UnloadPerfCounterTextStringsW": [
+        {
+            "name": "lpCommandLine",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "bQuietModeArg",
+            "type": "BOOL"
+        }
+    ],
+    "UnloadPerfCounterTextStringsA": [
+        {
+            "name": "lpCommandLine",
+            "type": "LPSTR"
+        },
+        {
+            "name": "bQuietModeArg",
+            "type": "BOOL"
+        }
+    ]
+}

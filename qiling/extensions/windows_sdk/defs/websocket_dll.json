@@ -1,0 +1,240 @@
+{
+    "WebSocketCreateClientHandle": [
+        {
+            "name": "pProperties",
+            "type": "PWEB_SOCKET_PROPERTY"
+        },
+        {
+            "name": "ulPropertyCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "phWebSocket",
+            "type": "WEB_SOCKET_HANDLE"
+        }
+    ],
+    "WebSocketBeginClientHandshake": [
+        {
+            "name": "hWebSocket",
+            "type": "WEB_SOCKET_HANDLE"
+        },
+        {
+            "name": "pszSubprotocols",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ulSubprotocolCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszExtensions",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ulExtensionCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pInitialHeaders",
+            "type": "PWEB_SOCKET_HTTP_HEADER"
+        },
+        {
+            "name": "ulInitialHeaderCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pAdditionalHeaders",
+            "type": "PWEB_SOCKET_HTTP_HEADER"
+        },
+        {
+            "name": "pulAdditionalHeaderCount",
+            "type": "ULONG"
+        }
+    ],
+    "WebSocketEndClientHandshake": [
+        {
+            "name": "hWebSocket",
+            "type": "WEB_SOCKET_HANDLE"
+        },
+        {
+            "name": "pResponseHeaders",
+            "type": "PWEB_SOCKET_HTTP_HEADER"
+        },
+        {
+            "name": "ulReponseHeaderCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulSelectedExtensions",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulSelectedExtensionCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulSelectedSubprotocol",
+            "type": "ULONG"
+        }
+    ],
+    "WebSocketCreateServerHandle": [
+        {
+            "name": "pProperties",
+            "type": "PWEB_SOCKET_PROPERTY"
+        },
+        {
+            "name": "ulPropertyCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "phWebSocket",
+            "type": "WEB_SOCKET_HANDLE"
+        }
+    ],
+    "WebSocketBeginServerHandshake": [
+        {
+            "name": "hWebSocket",
+            "type": "WEB_SOCKET_HANDLE"
+        },
+        {
+            "name": "pszSubprotocolSelected",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszExtensionSelected",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ulExtensionSelectedCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pRequestHeaders",
+            "type": "PWEB_SOCKET_HTTP_HEADER"
+        },
+        {
+            "name": "ulRequestHeaderCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pResponseHeaders",
+            "type": "PWEB_SOCKET_HTTP_HEADER"
+        },
+        {
+            "name": "pulResponseHeaderCount",
+            "type": "ULONG"
+        }
+    ],
+    "WebSocketEndServerHandshake": [
+        {
+            "name": "hWebSocket",
+            "type": "WEB_SOCKET_HANDLE"
+        }
+    ],
+    "WebSocketSend": [
+        {
+            "name": "hWebSocket",
+            "type": "WEB_SOCKET_HANDLE"
+        },
+        {
+            "name": "BufferType",
+            "type": "WEB_SOCKET_BUFFER_TYPE"
+        },
+        {
+            "name": "pBuffer",
+            "type": "WEB_SOCKET_BUFFER"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        }
+    ],
+    "WebSocketReceive": [
+        {
+            "name": "hWebSocket",
+            "type": "WEB_SOCKET_HANDLE"
+        },
+        {
+            "name": "pBuffer",
+            "type": "WEB_SOCKET_BUFFER"
+        },
+        {
+            "name": "pvContext",
+            "type": "PVOID"
+        }
+    ],
+    "WebSocketGetAction": [
+        {
+            "name": "hWebSocket",
+            "type": "WEB_SOCKET_HANDLE"
+        },
+        {
+            "name": "eActionQueue",
+            "type": "WEB_SOCKET_ACTION_QUEUE"
+        },
+        {
+            "name": "pDataBuffers",
+            "type": "WEB_SOCKET_BUFFER"
+        },
+        {
+            "name": "pulDataBufferCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pAction",
+            "type": "WEB_SOCKET_ACTION"
+        },
+        {
+            "name": "pBufferType",
+            "type": "WEB_SOCKET_BUFFER_TYPE"
+        },
+        {
+            "name": "pvApplicationContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "pvActionContext",
+            "type": "PVOID"
+        }
+    ],
+    "WebSocketCompleteAction": [
+        {
+            "name": "hWebSocket",
+            "type": "WEB_SOCKET_HANDLE"
+        },
+        {
+            "name": "pvActionContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "ulBytesTransferred",
+            "type": "ULONG"
+        }
+    ],
+    "WebSocketAbortHandle": [
+        {
+            "name": "hWebSocket",
+            "type": "WEB_SOCKET_HANDLE"
+        }
+    ],
+    "WebSocketDeleteHandle": [
+        {
+            "name": "hWebSocket",
+            "type": "WEB_SOCKET_HANDLE"
+        }
+    ],
+    "WebSocketGetGlobalProperty": [
+        {
+            "name": "eType",
+            "type": "WEB_SOCKET_PROPERTY_TYPE"
+        },
+        {
+            "name": "pvValue",
+            "type": "PVOID"
+        },
+        {
+            "name": "ulSize",
+            "type": "ULONG"
+        }
+    ]
+}

@@ -1,0 +1,380 @@
+{
+    "WinVerifyTrust": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pgActionID",
+            "type": "GUID"
+        },
+        {
+            "name": "pWVTData",
+            "type": "LPVOID"
+        }
+    ],
+    "WinVerifyTrustEx": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pgActionID",
+            "type": "GUID"
+        },
+        {
+            "name": "pWinTrustData",
+            "type": "WINTRUST_DATA"
+        }
+    ],
+    "WintrustGetRegPolicyFlags": [
+        {
+            "name": "pdwPolicyFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WintrustSetRegPolicyFlags": [
+        {
+            "name": "dwPolicyFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WintrustAddActionID": [
+        {
+            "name": "pgActionID",
+            "type": "GUID"
+        },
+        {
+            "name": "fdwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "psProvInfo",
+            "type": "CRYPT_REGISTER_ACTIONID"
+        }
+    ],
+    "WintrustRemoveActionID": [
+        {
+            "name": "pgActionID",
+            "type": "GUID"
+        }
+    ],
+    "WintrustLoadFunctionPointers": [
+        {
+            "name": "pgActionID",
+            "type": "GUID"
+        },
+        {
+            "name": "pPfns",
+            "type": "CRYPT_PROVIDER_FUNCTIONS"
+        }
+    ],
+    "WintrustAddDefaultForUsage": [
+        {
+            "name": "pszUsageOID",
+            "type": "char"
+        },
+        {
+            "name": "psDefUsage",
+            "type": "CRYPT_PROVIDER_REGDEFUSAGE"
+        }
+    ],
+    "WintrustGetDefaultForUsage": [
+        {
+            "name": "dwAction",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszUsageOID",
+            "type": "char"
+        },
+        {
+            "name": "psUsage",
+            "type": "CRYPT_PROVIDER_DEFUSAGE"
+        }
+    ],
+    "WTHelperCertIsSelfSigned": [
+        {
+            "name": "dwEncoding",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCert",
+            "type": "CERT_INFO"
+        }
+    ],
+    "WTHelperCertCheckValidSignature": [
+        {
+            "name": "pProvData",
+            "type": "CRYPT_PROVIDER_DATA"
+        }
+    ],
+    "OpenPersonalTrustDBDialogEx": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "PVOID"
+        }
+    ],
+    "OpenPersonalTrustDBDialog": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        }
+    ],
+    "WintrustSetDefaultIncludePEPageHashes": [
+        {
+            "name": "fIncludePEPageHashes",
+            "type": "BOOL"
+        }
+    ],
+    "CryptCATOpen": [
+        {
+            "name": "pwszFileName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fdwOpenFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hProv",
+            "type": "HCRYPTPROV"
+        },
+        {
+            "name": "dwPublicVersion",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        }
+    ],
+    "CryptCATClose": [
+        {
+            "name": "hCatalog",
+            "type": "HANDLE"
+        }
+    ],
+    "CryptCATHandleFromStore": [
+        {
+            "name": "pCatStore",
+            "type": "CRYPTCATSTORE"
+        }
+    ],
+    "CryptCATPersistStore": [
+        {
+            "name": "hCatalog",
+            "type": "HANDLE"
+        }
+    ],
+    "CryptCATCDFClose": [
+        {
+            "name": "pCDF",
+            "type": "CRYPTCATCDF"
+        }
+    ],
+    "IsCatalogFile": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pwszFileName",
+            "type": "WCHAR"
+        }
+    ],
+    "CryptCATAdminAcquireContext": [
+        {
+            "name": "phCatAdmin",
+            "type": "HCATADMIN"
+        },
+        {
+            "name": "pgSubsystem",
+            "type": "GUID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptCATAdminAcquireContext2": [
+        {
+            "name": "phCatAdmin",
+            "type": "HCATADMIN"
+        },
+        {
+            "name": "pgSubsystem",
+            "type": "GUID"
+        },
+        {
+            "name": "pwszHashAlgorithm",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pStrongHashPolicy",
+            "type": "PCCERT_STRONG_SIGN_PARA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptCATAdminReleaseContext": [
+        {
+            "name": "hCatAdmin",
+            "type": "HCATADMIN"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptCATAdminReleaseCatalogContext": [
+        {
+            "name": "hCatAdmin",
+            "type": "HCATADMIN"
+        },
+        {
+            "name": "hCatInfo",
+            "type": "HCATINFO"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptCATAdminEnumCatalogFromHash": [
+        {
+            "name": "hCatAdmin",
+            "type": "HCATADMIN"
+        },
+        {
+            "name": "pbHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbHash",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phPrevCatInfo",
+            "type": "HCATINFO"
+        }
+    ],
+    "CryptCATAdminCalcHashFromFileHandle": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pcbHash",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptCATAdminCalcHashFromFileHandle2": [
+        {
+            "name": "hCatAdmin",
+            "type": "HCATADMIN"
+        },
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pcbHash",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptCATAdminAddCatalog": [
+        {
+            "name": "hCatAdmin",
+            "type": "HCATADMIN"
+        },
+        {
+            "name": "pwszCatalogFile",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pwszSelectBaseName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptCATAdminRemoveCatalog": [
+        {
+            "name": "hCatAdmin",
+            "type": "HCATADMIN"
+        },
+        {
+            "name": "pwszCatalogFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptCATCatalogInfoFromContext": [
+        {
+            "name": "hCatInfo",
+            "type": "HCATINFO"
+        },
+        {
+            "name": "psCatInfo",
+            "type": "CATALOG_INFO"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptCATAdminResolveCatalogPath": [
+        {
+            "name": "hCatAdmin",
+            "type": "HCATADMIN"
+        },
+        {
+            "name": "pwszCatalogFile",
+            "type": "WCHAR"
+        },
+        {
+            "name": "psCatInfo",
+            "type": "CATALOG_INFO"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ]
+}

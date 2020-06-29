@@ -1,0 +1,4292 @@
+{
+    "SetupGetInfInformationA": [
+        {
+            "name": "InfSpec",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SearchControl",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PSP_INF_INFORMATION"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupGetInfInformationW": [
+        {
+            "name": "InfSpec",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SearchControl",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PSP_INF_INFORMATION"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupQueryInfFileInformationA": [
+        {
+            "name": "InfInformation",
+            "type": "PSP_INF_INFORMATION"
+        },
+        {
+            "name": "InfIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupQueryInfFileInformationW": [
+        {
+            "name": "InfInformation",
+            "type": "PSP_INF_INFORMATION"
+        },
+        {
+            "name": "InfIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupQueryInfOriginalFileInformationA": [
+        {
+            "name": "InfInformation",
+            "type": "PSP_INF_INFORMATION"
+        },
+        {
+            "name": "InfIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "AlternatePlatformInfo",
+            "type": "PSP_ALTPLATFORM_INFO"
+        },
+        {
+            "name": "OriginalFileInfo",
+            "type": "PSP_ORIGINAL_FILE_INFO_A"
+        }
+    ],
+    "SetupQueryInfOriginalFileInformationW": [
+        {
+            "name": "InfInformation",
+            "type": "PSP_INF_INFORMATION"
+        },
+        {
+            "name": "InfIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "AlternatePlatformInfo",
+            "type": "PSP_ALTPLATFORM_INFO"
+        },
+        {
+            "name": "OriginalFileInfo",
+            "type": "PSP_ORIGINAL_FILE_INFO_W"
+        }
+    ],
+    "SetupQueryInfVersionInformationA": [
+        {
+            "name": "InfInformation",
+            "type": "PSP_INF_INFORMATION"
+        },
+        {
+            "name": "InfIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "Key",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupQueryInfVersionInformationW": [
+        {
+            "name": "InfInformation",
+            "type": "PSP_INF_INFORMATION"
+        },
+        {
+            "name": "InfIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "Key",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupGetInfFileListA": [
+        {
+            "name": "DirectoryPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "InfStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupGetInfFileListW": [
+        {
+            "name": "DirectoryPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "InfStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupOpenInfFileW": [
+        {
+            "name": "FileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "InfClass",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "InfStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "ErrorLine",
+            "type": "PUINT"
+        }
+    ],
+    "SetupOpenInfFileA": [
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "InfClass",
+            "type": "PCSTR"
+        },
+        {
+            "name": "InfStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "ErrorLine",
+            "type": "PUINT"
+        }
+    ],
+    "SetupOpenMasterInf": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetupOpenAppendInfFileW": [
+        {
+            "name": "FileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "ErrorLine",
+            "type": "PUINT"
+        }
+    ],
+    "SetupOpenAppendInfFileA": [
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "ErrorLine",
+            "type": "PUINT"
+        }
+    ],
+    "SetupCloseInfFile": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        }
+    ],
+    "SetupFindFirstLineA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Key",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        }
+    ],
+    "SetupFindFirstLineW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Key",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        }
+    ],
+    "SetupFindNextLine": [
+        {
+            "name": "ContextIn",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "ContextOut",
+            "type": "PINFCONTEXT"
+        }
+    ],
+    "SetupFindNextMatchLineA": [
+        {
+            "name": "ContextIn",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "Key",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ContextOut",
+            "type": "PINFCONTEXT"
+        }
+    ],
+    "SetupFindNextMatchLineW": [
+        {
+            "name": "ContextIn",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "Key",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ContextOut",
+            "type": "PINFCONTEXT"
+        }
+    ],
+    "SetupGetLineByIndexA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Index",
+            "type": "DWORD"
+        },
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        }
+    ],
+    "SetupGetLineByIndexW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Index",
+            "type": "DWORD"
+        },
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        }
+    ],
+    "SetupGetLineCountA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCSTR"
+        }
+    ],
+    "SetupGetLineCountW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCWSTR"
+        }
+    ],
+    "SetupGetLineTextA": [
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Key",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupGetLineTextW": [
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Key",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupGetFieldCount": [
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        }
+    ],
+    "SetupGetStringFieldA": [
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "FieldIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupGetStringFieldW": [
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "FieldIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupGetIntField": [
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "FieldIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "IntegerValue",
+            "type": "PINT"
+        }
+    ],
+    "SetupGetMultiSzFieldA": [
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "FieldIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetupGetMultiSzFieldW": [
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "FieldIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetupGetBinaryField": [
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "FieldIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetupGetFileCompressionInfoA": [
+        {
+            "name": "SourceFileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ActualSourceFileName",
+            "type": "PSTR"
+        },
+        {
+            "name": "SourceFileSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "TargetFileSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "CompressionType",
+            "type": "PUINT"
+        }
+    ],
+    "SetupGetFileCompressionInfoW": [
+        {
+            "name": "SourceFileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ActualSourceFileName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "SourceFileSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "TargetFileSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "CompressionType",
+            "type": "PUINT"
+        }
+    ],
+    "SetupGetFileCompressionInfoExA": [
+        {
+            "name": "SourceFileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ActualSourceFileNameBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "ActualSourceFileNameBufferLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredBufferLen",
+            "type": "PDWORD"
+        },
+        {
+            "name": "SourceFileSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "TargetFileSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "CompressionType",
+            "type": "PUINT"
+        }
+    ],
+    "SetupGetFileCompressionInfoExW": [
+        {
+            "name": "SourceFileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ActualSourceFileNameBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ActualSourceFileNameBufferLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredBufferLen",
+            "type": "PDWORD"
+        },
+        {
+            "name": "SourceFileSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "TargetFileSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "CompressionType",
+            "type": "PUINT"
+        }
+    ],
+    "SetupDecompressOrCopyFileA": [
+        {
+            "name": "SourceFileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "TargetFileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "CompressionType",
+            "type": "PUINT"
+        }
+    ],
+    "SetupDecompressOrCopyFileW": [
+        {
+            "name": "SourceFileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "TargetFileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "CompressionType",
+            "type": "PUINT"
+        }
+    ],
+    "SetupGetSourceFileLocationA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "InfContext",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourceId",
+            "type": "PUINT"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupGetSourceFileLocationW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "InfContext",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "FileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourceId",
+            "type": "PUINT"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupGetSourceFileSizeA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "InfContext",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "FileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Section",
+            "type": "PCSTR"
+        },
+        {
+            "name": "FileSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "RoundingFactor",
+            "type": "UINT"
+        }
+    ],
+    "SetupGetSourceFileSizeW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "InfContext",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "FileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Section",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "FileSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "RoundingFactor",
+            "type": "UINT"
+        }
+    ],
+    "SetupGetTargetPathA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "InfContext",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "Section",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupGetTargetPathW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "InfContext",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "Section",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupSetSourceListA": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "SourceList",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourceCount",
+            "type": "UINT"
+        }
+    ],
+    "SetupSetSourceListW": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "SourceList",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourceCount",
+            "type": "UINT"
+        }
+    ],
+    "SetupCancelTemporarySourceList": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetupAddToSourceListA": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Source",
+            "type": "PCSTR"
+        }
+    ],
+    "SetupAddToSourceListW": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Source",
+            "type": "PCWSTR"
+        }
+    ],
+    "SetupRemoveFromSourceListA": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Source",
+            "type": "PCSTR"
+        }
+    ],
+    "SetupRemoveFromSourceListW": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Source",
+            "type": "PCWSTR"
+        }
+    ],
+    "SetupQuerySourceListA": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "List",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Count",
+            "type": "PUINT"
+        }
+    ],
+    "SetupQuerySourceListW": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "List",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Count",
+            "type": "PUINT"
+        }
+    ],
+    "SetupFreeSourceListA": [
+        {
+            "name": "List",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Count",
+            "type": "UINT"
+        }
+    ],
+    "SetupFreeSourceListW": [
+        {
+            "name": "List",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Count",
+            "type": "UINT"
+        }
+    ],
+    "SetupPromptForDiskA": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DialogTitle",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DiskName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "PathToSource",
+            "type": "PCSTR"
+        },
+        {
+            "name": "FileSought",
+            "type": "PCSTR"
+        },
+        {
+            "name": "TagFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DiskPromptStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "PathBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "PathBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "PathRequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupPromptForDiskW": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DialogTitle",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "DiskName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "PathToSource",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "FileSought",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "TagFile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "DiskPromptStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "PathBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "PathBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "PathRequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupCopyErrorA": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DialogTitle",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DiskName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "PathToSource",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourceFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "TargetPathFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Win32ErrorCode",
+            "type": "UINT"
+        },
+        {
+            "name": "Style",
+            "type": "DWORD"
+        },
+        {
+            "name": "PathBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "PathBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "PathRequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupCopyErrorW": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DialogTitle",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "DiskName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "PathToSource",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourceFile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "TargetPathFile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Win32ErrorCode",
+            "type": "UINT"
+        },
+        {
+            "name": "Style",
+            "type": "DWORD"
+        },
+        {
+            "name": "PathBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "PathBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "PathRequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupRenameErrorA": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DialogTitle",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourceFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "TargetFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Win32ErrorCode",
+            "type": "UINT"
+        },
+        {
+            "name": "Style",
+            "type": "DWORD"
+        }
+    ],
+    "SetupRenameErrorW": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DialogTitle",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourceFile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "TargetFile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Win32ErrorCode",
+            "type": "UINT"
+        },
+        {
+            "name": "Style",
+            "type": "DWORD"
+        }
+    ],
+    "SetupDeleteErrorA": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DialogTitle",
+            "type": "PCSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Win32ErrorCode",
+            "type": "UINT"
+        },
+        {
+            "name": "Style",
+            "type": "DWORD"
+        }
+    ],
+    "SetupDeleteErrorW": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DialogTitle",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "File",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Win32ErrorCode",
+            "type": "UINT"
+        },
+        {
+            "name": "Style",
+            "type": "DWORD"
+        }
+    ],
+    "SetupBackupErrorA": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DialogTitle",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourceFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "TargetFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Win32ErrorCode",
+            "type": "UINT"
+        },
+        {
+            "name": "Style",
+            "type": "DWORD"
+        }
+    ],
+    "SetupBackupErrorW": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DialogTitle",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourceFile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "TargetFile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Win32ErrorCode",
+            "type": "UINT"
+        },
+        {
+            "name": "Style",
+            "type": "DWORD"
+        }
+    ],
+    "SetupSetDirectoryIdA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Id",
+            "type": "DWORD"
+        },
+        {
+            "name": "Directory",
+            "type": "PCSTR"
+        }
+    ],
+    "SetupSetDirectoryIdW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Id",
+            "type": "DWORD"
+        },
+        {
+            "name": "Directory",
+            "type": "PCWSTR"
+        }
+    ],
+    "SetupSetDirectoryIdExA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Id",
+            "type": "DWORD"
+        },
+        {
+            "name": "Directory",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved1",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved2",
+            "type": "PVOID"
+        }
+    ],
+    "SetupSetDirectoryIdExW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Id",
+            "type": "DWORD"
+        },
+        {
+            "name": "Directory",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved1",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved2",
+            "type": "PVOID"
+        }
+    ],
+    "SetupGetSourceInfoA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SourceId",
+            "type": "UINT"
+        },
+        {
+            "name": "InfoDesired",
+            "type": "UINT"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupGetSourceInfoW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SourceId",
+            "type": "UINT"
+        },
+        {
+            "name": "InfoDesired",
+            "type": "UINT"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupInstallFileA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "InfContext",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "SourceFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourcePathRoot",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DestinationName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "CopyStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "CopyMsgHandler",
+            "type": "PSP_FILE_CALLBACK_A"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        }
+    ],
+    "SetupInstallFileW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "InfContext",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "SourceFile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourcePathRoot",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "DestinationName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "CopyStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "CopyMsgHandler",
+            "type": "PSP_FILE_CALLBACK_W"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        }
+    ],
+    "SetupInstallFileExA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "InfContext",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "SourceFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourcePathRoot",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DestinationName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "CopyStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "CopyMsgHandler",
+            "type": "PSP_FILE_CALLBACK_A"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        },
+        {
+            "name": "FileWasInUse",
+            "type": "PBOOL"
+        }
+    ],
+    "SetupInstallFileExW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "InfContext",
+            "type": "PINFCONTEXT"
+        },
+        {
+            "name": "SourceFile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourcePathRoot",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "DestinationName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "CopyStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "CopyMsgHandler",
+            "type": "PSP_FILE_CALLBACK_W"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        },
+        {
+            "name": "FileWasInUse",
+            "type": "PBOOL"
+        }
+    ],
+    "SetupOpenFileQueue": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetupCloseFileQueue": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        }
+    ],
+    "SetupSetFileQueueAlternatePlatformA": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "AlternatePlatformInfo",
+            "type": "PSP_ALTPLATFORM_INFO"
+        },
+        {
+            "name": "AlternateDefaultCatalogFile",
+            "type": "PCSTR"
+        }
+    ],
+    "SetupSetFileQueueAlternatePlatformW": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "AlternatePlatformInfo",
+            "type": "PSP_ALTPLATFORM_INFO"
+        },
+        {
+            "name": "AlternateDefaultCatalogFile",
+            "type": "PCWSTR"
+        }
+    ],
+    "SetupSetPlatformPathOverrideA": [
+        {
+            "name": "Override",
+            "type": "PCSTR"
+        }
+    ],
+    "SetupSetPlatformPathOverrideW": [
+        {
+            "name": "Override",
+            "type": "PCWSTR"
+        }
+    ],
+    "SetupQueueCopyA": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "SourceRootPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourcePath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourceFilename",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourceDescription",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourceTagfile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "TargetDirectory",
+            "type": "PCSTR"
+        },
+        {
+            "name": "TargetFilename",
+            "type": "PCSTR"
+        },
+        {
+            "name": "CopyStyle",
+            "type": "DWORD"
+        }
+    ],
+    "SetupQueueCopyW": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "SourceRootPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourcePath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourceFilename",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourceDescription",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourceTagfile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "TargetDirectory",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "TargetFilename",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "CopyStyle",
+            "type": "DWORD"
+        }
+    ],
+    "SetupQueueCopyIndirectA": [
+        {
+            "name": "CopyParams",
+            "type": "PSP_FILE_COPY_PARAMS_A"
+        }
+    ],
+    "SetupQueueCopyIndirectW": [
+        {
+            "name": "CopyParams",
+            "type": "PSP_FILE_COPY_PARAMS_W"
+        }
+    ],
+    "SetupQueueDefaultCopyA": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SourceRootPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourceFilename",
+            "type": "PCSTR"
+        },
+        {
+            "name": "TargetFilename",
+            "type": "PCSTR"
+        },
+        {
+            "name": "CopyStyle",
+            "type": "DWORD"
+        }
+    ],
+    "SetupQueueDefaultCopyW": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SourceRootPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourceFilename",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "TargetFilename",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "CopyStyle",
+            "type": "DWORD"
+        }
+    ],
+    "SetupQueueCopySectionA": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "SourceRootPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "ListInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCSTR"
+        },
+        {
+            "name": "CopyStyle",
+            "type": "DWORD"
+        }
+    ],
+    "SetupQueueCopySectionW": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "SourceRootPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "ListInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "CopyStyle",
+            "type": "DWORD"
+        }
+    ],
+    "SetupQueueDeleteA": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "PathPart1",
+            "type": "PCSTR"
+        },
+        {
+            "name": "PathPart2",
+            "type": "PCSTR"
+        }
+    ],
+    "SetupQueueDeleteW": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "PathPart1",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "PathPart2",
+            "type": "PCWSTR"
+        }
+    ],
+    "SetupQueueDeleteSectionA": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "ListInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCSTR"
+        }
+    ],
+    "SetupQueueDeleteSectionW": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "ListInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCWSTR"
+        }
+    ],
+    "SetupQueueRenameA": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "SourcePath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourceFilename",
+            "type": "PCSTR"
+        },
+        {
+            "name": "TargetPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "TargetFilename",
+            "type": "PCSTR"
+        }
+    ],
+    "SetupQueueRenameW": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "SourcePath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourceFilename",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "TargetPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "TargetFilename",
+            "type": "PCWSTR"
+        }
+    ],
+    "SetupQueueRenameSectionA": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "ListInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCSTR"
+        }
+    ],
+    "SetupQueueRenameSectionW": [
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "ListInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Section",
+            "type": "PCWSTR"
+        }
+    ],
+    "SetupCommitFileQueueA": [
+        {
+            "name": "Owner",
+            "type": "HWND"
+        },
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "MsgHandler",
+            "type": "PSP_FILE_CALLBACK_A"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        }
+    ],
+    "SetupCommitFileQueueW": [
+        {
+            "name": "Owner",
+            "type": "HWND"
+        },
+        {
+            "name": "QueueHandle",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "MsgHandler",
+            "type": "PSP_FILE_CALLBACK_W"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        }
+    ],
+    "SetupScanFileQueueA": [
+        {
+            "name": "FileQueue",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Window",
+            "type": "HWND"
+        },
+        {
+            "name": "CallbackRoutine",
+            "type": "PSP_FILE_CALLBACK_A"
+        },
+        {
+            "name": "CallbackContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "Result",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupScanFileQueueW": [
+        {
+            "name": "FileQueue",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Window",
+            "type": "HWND"
+        },
+        {
+            "name": "CallbackRoutine",
+            "type": "PSP_FILE_CALLBACK_W"
+        },
+        {
+            "name": "CallbackContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "Result",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupGetFileQueueCount": [
+        {
+            "name": "FileQueue",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "SubQueueFileOp",
+            "type": "UINT"
+        },
+        {
+            "name": "NumOperations",
+            "type": "PUINT"
+        }
+    ],
+    "SetupGetFileQueueFlags": [
+        {
+            "name": "FileQueue",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "Flags",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupSetFileQueueFlags": [
+        {
+            "name": "FileQueue",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "FlagMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupCopyOEMInfA": [
+        {
+            "name": "SourceInfFileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "OEMSourceMediaLocation",
+            "type": "PCSTR"
+        },
+        {
+            "name": "OEMSourceMediaType",
+            "type": "DWORD"
+        },
+        {
+            "name": "CopyStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "DestinationInfFileName",
+            "type": "PSTR"
+        },
+        {
+            "name": "DestinationInfFileNameSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "DestinationInfFileNameComponent",
+            "type": "PSTR"
+        }
+    ],
+    "SetupCopyOEMInfW": [
+        {
+            "name": "SourceInfFileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "OEMSourceMediaLocation",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "OEMSourceMediaType",
+            "type": "DWORD"
+        },
+        {
+            "name": "CopyStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "DestinationInfFileName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "DestinationInfFileNameSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "DestinationInfFileNameComponent",
+            "type": "PWSTR"
+        }
+    ],
+    "SetupUninstallOEMInfA": [
+        {
+            "name": "InfFileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved",
+            "type": "PVOID"
+        }
+    ],
+    "SetupUninstallOEMInfW": [
+        {
+            "name": "InfFileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved",
+            "type": "PVOID"
+        }
+    ],
+    "SetupUninstallNewlyCopiedInfs": [
+        {
+            "name": "FileQueue",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved",
+            "type": "PVOID"
+        }
+    ],
+    "SetupCreateDiskSpaceListA": [
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        }
+    ],
+    "SetupCreateDiskSpaceListW": [
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        }
+    ],
+    "SetupDuplicateDiskSpaceListA": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        }
+    ],
+    "SetupDuplicateDiskSpaceListW": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        }
+    ],
+    "SetupDestroyDiskSpaceList": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        }
+    ],
+    "SetupQueryDrivesInDiskSpaceListA": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupQueryDrivesInDiskSpaceListW": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "ReturnBuffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupQuerySpaceRequiredOnDriveA": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "DriveSpec",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SpaceRequired",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupQuerySpaceRequiredOnDriveW": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "DriveSpec",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SpaceRequired",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupAdjustDiskSpaceListA": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "DriveRoot",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Amount",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupAdjustDiskSpaceListW": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "DriveRoot",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Amount",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupAddToDiskSpaceListA": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "TargetFilespec",
+            "type": "PCSTR"
+        },
+        {
+            "name": "FileSize",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "Operation",
+            "type": "UINT"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupAddToDiskSpaceListW": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "TargetFilespec",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "FileSize",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "Operation",
+            "type": "UINT"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupAddSectionToDiskSpaceListA": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "ListInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Operation",
+            "type": "UINT"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupAddSectionToDiskSpaceListW": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "ListInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Operation",
+            "type": "UINT"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupAddInstallSectionToDiskSpaceListA": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "LayoutInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupAddInstallSectionToDiskSpaceListW": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "LayoutInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupRemoveFromDiskSpaceListA": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "TargetFilespec",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Operation",
+            "type": "UINT"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupRemoveFromDiskSpaceListW": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "TargetFilespec",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Operation",
+            "type": "UINT"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupRemoveSectionFromDiskSpaceListA": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "ListInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Operation",
+            "type": "UINT"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupRemoveSectionFromDiskSpaceListW": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "ListInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Operation",
+            "type": "UINT"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupRemoveInstallSectionFromDiskSpaceListA": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "LayoutInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupRemoveInstallSectionFromDiskSpaceListW": [
+        {
+            "name": "DiskSpace",
+            "type": "HDSKSPC"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "LayoutInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "UINT"
+        }
+    ],
+    "SetupIterateCabinetA": [
+        {
+            "name": "CabinetFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "MsgHandler",
+            "type": "PSP_FILE_CALLBACK_A"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        }
+    ],
+    "SetupIterateCabinetW": [
+        {
+            "name": "CabinetFile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "MsgHandler",
+            "type": "PSP_FILE_CALLBACK_W"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        }
+    ],
+    "SetupPromptReboot": [
+        {
+            "name": "FileQueue",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "Owner",
+            "type": "HWND"
+        },
+        {
+            "name": "ScanOnly",
+            "type": "BOOL"
+        }
+    ],
+    "SetupInitDefaultQueueCallback": [
+        {
+            "name": "OwnerWindow",
+            "type": "HWND"
+        }
+    ],
+    "SetupInitDefaultQueueCallbackEx": [
+        {
+            "name": "OwnerWindow",
+            "type": "HWND"
+        },
+        {
+            "name": "AlternateProgressWindow",
+            "type": "HWND"
+        },
+        {
+            "name": "ProgressMessage",
+            "type": "UINT"
+        },
+        {
+            "name": "Reserved1",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved2",
+            "type": "PVOID"
+        }
+    ],
+    "SetupTermDefaultQueueCallback": [
+        {
+            "name": "Context",
+            "type": "PVOID"
+        }
+    ],
+    "SetupDefaultQueueCallbackA": [
+        {
+            "name": "Context",
+            "type": "PVOID"
+        },
+        {
+            "name": "Notification",
+            "type": "UINT"
+        },
+        {
+            "name": "Param1",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "Param2",
+            "type": "UINT_PTR"
+        }
+    ],
+    "SetupDefaultQueueCallbackW": [
+        {
+            "name": "Context",
+            "type": "PVOID"
+        },
+        {
+            "name": "Notification",
+            "type": "UINT"
+        },
+        {
+            "name": "Param1",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "Param2",
+            "type": "UINT_PTR"
+        }
+    ],
+    "SetupInstallFromInfSectionA": [
+        {
+            "name": "Owner",
+            "type": "HWND"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "RelativeKeyRoot",
+            "type": "HKEY"
+        },
+        {
+            "name": "SourceRootPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "CopyFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "MsgHandler",
+            "type": "PSP_FILE_CALLBACK_A"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        },
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupInstallFromInfSectionW": [
+        {
+            "name": "Owner",
+            "type": "HWND"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "RelativeKeyRoot",
+            "type": "HKEY"
+        },
+        {
+            "name": "SourceRootPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "CopyFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "MsgHandler",
+            "type": "PSP_FILE_CALLBACK_W"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        },
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupInstallFilesFromInfSectionA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "LayoutInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "FileQueue",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourceRootPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "CopyFlags",
+            "type": "UINT"
+        }
+    ],
+    "SetupInstallFilesFromInfSectionW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "LayoutInfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "FileQueue",
+            "type": "HSPFILEQ"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourceRootPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "CopyFlags",
+            "type": "UINT"
+        }
+    ],
+    "SetupInstallServicesFromInfSectionA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupInstallServicesFromInfSectionW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupInstallServicesFromInfSectionExA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "PVOID"
+        }
+    ],
+    "SetupInstallServicesFromInfSectionExW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "Reserved2",
+            "type": "PVOID"
+        }
+    ],
+    "InstallHinfSectionA": [
+        {
+            "name": "Window",
+            "type": "HWND"
+        },
+        {
+            "name": "ModuleHandle",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "CommandLine",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ShowCommand",
+            "type": "INT"
+        }
+    ],
+    "InstallHinfSectionW": [
+        {
+            "name": "Window",
+            "type": "HWND"
+        },
+        {
+            "name": "ModuleHandle",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "CommandLine",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ShowCommand",
+            "type": "INT"
+        }
+    ],
+    "SetupInitializeFileLogA": [
+        {
+            "name": "LogFileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupInitializeFileLogW": [
+        {
+            "name": "LogFileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupTerminateFileLog": [
+        {
+            "name": "FileLogHandle",
+            "type": "HSPFILELOG"
+        }
+    ],
+    "SetupLogFileA": [
+        {
+            "name": "FileLogHandle",
+            "type": "HSPFILELOG"
+        },
+        {
+            "name": "LogSectionName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SourceFilename",
+            "type": "PCSTR"
+        },
+        {
+            "name": "TargetFilename",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Checksum",
+            "type": "DWORD"
+        },
+        {
+            "name": "DiskTagfile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DiskDescription",
+            "type": "PCSTR"
+        },
+        {
+            "name": "OtherInfo",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupLogFileW": [
+        {
+            "name": "FileLogHandle",
+            "type": "HSPFILELOG"
+        },
+        {
+            "name": "LogSectionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "SourceFilename",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "TargetFilename",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Checksum",
+            "type": "DWORD"
+        },
+        {
+            "name": "DiskTagfile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "DiskDescription",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "OtherInfo",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupRemoveFileLogEntryA": [
+        {
+            "name": "FileLogHandle",
+            "type": "HSPFILELOG"
+        },
+        {
+            "name": "LogSectionName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "TargetFilename",
+            "type": "PCSTR"
+        }
+    ],
+    "SetupRemoveFileLogEntryW": [
+        {
+            "name": "FileLogHandle",
+            "type": "HSPFILELOG"
+        },
+        {
+            "name": "LogSectionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "TargetFilename",
+            "type": "PCWSTR"
+        }
+    ],
+    "SetupQueryFileLogA": [
+        {
+            "name": "FileLogHandle",
+            "type": "HSPFILELOG"
+        },
+        {
+            "name": "LogSectionName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "TargetFilename",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DesiredInfo",
+            "type": "SetupFileLogInfo"
+        },
+        {
+            "name": "DataOut",
+            "type": "PSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupQueryFileLogW": [
+        {
+            "name": "FileLogHandle",
+            "type": "HSPFILELOG"
+        },
+        {
+            "name": "LogSectionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "TargetFilename",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "DesiredInfo",
+            "type": "SetupFileLogInfo"
+        },
+        {
+            "name": "DataOut",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ReturnBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupOpenLog": [
+        {
+            "name": "Erase",
+            "type": "BOOL"
+        }
+    ],
+    "SetupLogErrorA": [
+        {
+            "name": "MessageString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Severity",
+            "type": "DWORD"
+        }
+    ],
+    "SetupLogErrorW": [
+        {
+            "name": "MessageString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Severity",
+            "type": "DWORD"
+        }
+    ],
+    "SetupCloseLog": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetupWriteTextLogInfLine": [
+        {
+            "name": "LogToken",
+            "type": "SP_LOG_TOKEN"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Context",
+            "type": "PINFCONTEXT"
+        }
+    ],
+    "SetupSetNonInteractiveMode": [
+        {
+            "name": "NonInteractiveFlag",
+            "type": "BOOL"
+        }
+    ],
+    "SetupGetNonInteractiveMode": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetupDiCreateDeviceInfoList": [
+        {
+            "name": "ClassGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        }
+    ],
+    "SetupDiGetDeviceInfoListClass": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "ClassGuid",
+            "type": "LPGUID"
+        }
+    ],
+    "SetupDiDeleteDeviceInfo": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiEnumDeviceInfo": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "MemberIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiDestroyDeviceInfoList": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        }
+    ],
+    "SetupDiEnumDeviceInterfaces": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "InterfaceClassGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "MemberIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "DeviceInterfaceData",
+            "type": "PSP_DEVICE_INTERFACE_DATA"
+        }
+    ],
+    "SetupDiGetDeviceInterfaceAlias": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInterfaceData",
+            "type": "PSP_DEVICE_INTERFACE_DATA"
+        },
+        {
+            "name": "AliasInterfaceClassGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "AliasDeviceInterfaceData",
+            "type": "PSP_DEVICE_INTERFACE_DATA"
+        }
+    ],
+    "SetupDiDeleteDeviceInterfaceData": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInterfaceData",
+            "type": "PSP_DEVICE_INTERFACE_DATA"
+        }
+    ],
+    "SetupDiRemoveDeviceInterface": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInterfaceData",
+            "type": "PSP_DEVICE_INTERFACE_DATA"
+        }
+    ],
+    "SetupDiInstallDeviceInterfaces": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiSetDeviceInterfaceDefault": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInterfaceData",
+            "type": "PSP_DEVICE_INTERFACE_DATA"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved",
+            "type": "PVOID"
+        }
+    ],
+    "SetupDiRegisterDeviceInfo": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "CompareProc",
+            "type": "PSP_DETSIG_CMPPROC"
+        },
+        {
+            "name": "CompareContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "DupDeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiBuildDriverInfoList": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "DriverType",
+            "type": "DWORD"
+        }
+    ],
+    "SetupDiCancelDriverInfoSearch": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        }
+    ],
+    "SetupDiDestroyDriverInfoList": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "DriverType",
+            "type": "DWORD"
+        }
+    ],
+    "SetupDiGetClassDevsA": [
+        {
+            "name": "ClassGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Enumerator",
+            "type": "PCSTR"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupDiGetClassDevsW": [
+        {
+            "name": "ClassGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Enumerator",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupDiBuildClassInfoList": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ClassGuidList",
+            "type": "LPGUID"
+        },
+        {
+            "name": "ClassGuidListSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupDiCallClassInstaller": [
+        {
+            "name": "InstallFunction",
+            "type": "DI_FUNCTION"
+        },
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiSelectDevice": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiSelectBestCompatDrv": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiInstallDevice": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiInstallDriverFiles": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiRegisterCoDeviceInstallers": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiRemoveDevice": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiUnremoveDevice": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiRestartDevices": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiChangeState": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiOpenClassRegKey": [
+        {
+            "name": "ClassGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        }
+    ],
+    "SetupDiOpenDeviceInterfaceRegKey": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInterfaceData",
+            "type": "PSP_DEVICE_INTERFACE_DATA"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        }
+    ],
+    "SetupDiDeleteDeviceInterfaceRegKey": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInterfaceData",
+            "type": "PSP_DEVICE_INTERFACE_DATA"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        }
+    ],
+    "SetupDiOpenDevRegKey": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "Scope",
+            "type": "DWORD"
+        },
+        {
+            "name": "HwProfile",
+            "type": "DWORD"
+        },
+        {
+            "name": "KeyType",
+            "type": "DWORD"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        }
+    ],
+    "SetupDiDeleteDevRegKey": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "Scope",
+            "type": "DWORD"
+        },
+        {
+            "name": "HwProfile",
+            "type": "DWORD"
+        },
+        {
+            "name": "KeyType",
+            "type": "DWORD"
+        }
+    ],
+    "SetupDiGetHwProfileList": [
+        {
+            "name": "HwProfileList",
+            "type": "PDWORD"
+        },
+        {
+            "name": "HwProfileListSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "CurrentlyActiveIndex",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupDiGetDevicePropertyKeys": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "PropertyKeyArray",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyKeyCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredPropertyKeyCount",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupDiGetDevicePropertyW": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "PropertyKey",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyType",
+            "type": "DEVPROPTYPE"
+        },
+        {
+            "name": "PropertyBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "PropertyBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupDiGetDeviceInterfacePropertyKeys": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInterfaceData",
+            "type": "PSP_DEVICE_INTERFACE_DATA"
+        },
+        {
+            "name": "PropertyKeyArray",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyKeyCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredPropertyKeyCount",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupDiGetClassPropertyKeys": [
+        {
+            "name": "ClassGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PropertyKeyArray",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyKeyCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredPropertyKeyCount",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupDiLoadClassIcon": [
+        {
+            "name": "ClassGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "LargeIcon",
+            "type": "HICON"
+        },
+        {
+            "name": "MiniIconIndex",
+            "type": "PINT"
+        }
+    ],
+    "SetupDiLoadDeviceIcon": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "cxIcon",
+            "type": "UINT"
+        },
+        {
+            "name": "cyIcon",
+            "type": "UINT"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hIcon",
+            "type": "HICON"
+        }
+    ],
+    "SetupDiDrawMiniIcon": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "rc",
+            "type": "RECT"
+        },
+        {
+            "name": "MiniIconIndex",
+            "type": "INT"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupDiGetClassBitmapIndex": [
+        {
+            "name": "ClassGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "MiniIconIndex",
+            "type": "PINT"
+        }
+    ],
+    "SetupDiGetClassImageList": [
+        {
+            "name": "ClassImageListData",
+            "type": "PSP_CLASSIMAGELIST_DATA"
+        }
+    ],
+    "SetupDiGetClassImageIndex": [
+        {
+            "name": "ClassImageListData",
+            "type": "PSP_CLASSIMAGELIST_DATA"
+        },
+        {
+            "name": "ClassGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "ImageIndex",
+            "type": "PINT"
+        }
+    ],
+    "SetupDiDestroyClassImageList": [
+        {
+            "name": "ClassImageListData",
+            "type": "PSP_CLASSIMAGELIST_DATA"
+        }
+    ],
+    "SetupDiAskForOEMDisk": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiSelectOEMDrv": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiGetSelectedDevice": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupDiSetSelectedDevice": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        }
+    ],
+    "SetupEnumInfSectionsA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Index",
+            "type": "UINT"
+        },
+        {
+            "name": "Buffer",
+            "type": "PSTR"
+        },
+        {
+            "name": "Size",
+            "type": "UINT"
+        },
+        {
+            "name": "SizeNeeded",
+            "type": "UINT"
+        }
+    ],
+    "SetupEnumInfSectionsW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "Index",
+            "type": "UINT"
+        },
+        {
+            "name": "Buffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "Size",
+            "type": "UINT"
+        },
+        {
+            "name": "SizeNeeded",
+            "type": "UINT"
+        }
+    ],
+    "SetupVerifyInfFileA": [
+        {
+            "name": "InfName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "AltPlatformInfo",
+            "type": "PSP_ALTPLATFORM_INFO"
+        },
+        {
+            "name": "InfSignerInfo",
+            "type": "PSP_INF_SIGNER_INFO_A"
+        }
+    ],
+    "SetupVerifyInfFileW": [
+        {
+            "name": "InfName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "AltPlatformInfo",
+            "type": "PSP_ALTPLATFORM_INFO"
+        },
+        {
+            "name": "InfSignerInfo",
+            "type": "PSP_INF_SIGNER_INFO_W"
+        }
+    ],
+    "SetupDiGetCustomDevicePropertyA": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "CustomPropertyName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyRegDataType",
+            "type": "PDWORD"
+        },
+        {
+            "name": "PropertyBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "PropertyBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupDiGetCustomDevicePropertyW": [
+        {
+            "name": "DeviceInfoSet",
+            "type": "HDEVINFO"
+        },
+        {
+            "name": "DeviceInfoData",
+            "type": "PSP_DEVINFO_DATA"
+        },
+        {
+            "name": "CustomPropertyName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyRegDataType",
+            "type": "PDWORD"
+        },
+        {
+            "name": "PropertyBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "PropertyBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "RequiredSize",
+            "type": "PDWORD"
+        }
+    ],
+    "SetupConfigureWmiFromInfSectionA": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetupConfigureWmiFromInfSectionW": [
+        {
+            "name": "InfHandle",
+            "type": "HINF"
+        },
+        {
+            "name": "SectionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ]
+}

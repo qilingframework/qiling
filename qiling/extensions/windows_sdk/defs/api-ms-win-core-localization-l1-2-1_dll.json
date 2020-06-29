@@ -1,0 +1,30 @@
+{
+    "VerLanguageNameA": [
+        {
+            "name": "wLang",
+            "type": "DWORD"
+        },
+        {
+            "name": "szLang",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchLang",
+            "type": "DWORD"
+        }
+    ],
+    "VerLanguageNameW": [
+        {
+            "name": "wLang",
+            "type": "DWORD"
+        },
+        {
+            "name": "szLang",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchLang",
+            "type": "DWORD"
+        }
+    ]
+}

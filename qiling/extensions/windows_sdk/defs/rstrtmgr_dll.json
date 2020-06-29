@@ -1,0 +1,176 @@
+{
+    "RmStartSession": [
+        {
+            "name": "pSessionHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwSessionFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "strSessionKey",
+            "type": "WCHAR"
+        }
+    ],
+    "RmJoinSession": [
+        {
+            "name": "pSessionHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "strSessionKey",
+            "type": "WCHAR"
+        }
+    ],
+    "RmEndSession": [
+        {
+            "name": "dwSessionHandle",
+            "type": "DWORD"
+        }
+    ],
+    "RmRegisterResources": [
+        {
+            "name": "dwSessionHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "nFiles",
+            "type": "UINT"
+        },
+        {
+            "name": "rgsFileNames",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "nApplications",
+            "type": "UINT"
+        },
+        {
+            "name": "rgApplications",
+            "type": "RM_UNIQUE_PROCESS"
+        },
+        {
+            "name": "nServices",
+            "type": "UINT"
+        },
+        {
+            "name": "rgsServiceNames",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RmGetList": [
+        {
+            "name": "dwSessionHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "pnProcInfoNeeded",
+            "type": "UINT"
+        },
+        {
+            "name": "pnProcInfo",
+            "type": "UINT"
+        },
+        {
+            "name": "rgAffectedApps",
+            "type": "RM_PROCESS_INFO"
+        },
+        {
+            "name": "lpdwRebootReasons",
+            "type": "LPDWORD"
+        }
+    ],
+    "RmShutdown": [
+        {
+            "name": "dwSessionHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "lActionFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "fnStatus",
+            "type": "RM_WRITE_STATUS_CALLBACK"
+        }
+    ],
+    "RmRestart": [
+        {
+            "name": "dwSessionHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwRestartFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "fnStatus",
+            "type": "RM_WRITE_STATUS_CALLBACK"
+        }
+    ],
+    "RmCancelCurrentTask": [
+        {
+            "name": "dwSessionHandle",
+            "type": "DWORD"
+        }
+    ],
+    "RmAddFilter": [
+        {
+            "name": "dwSessionHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "strModuleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pProcess",
+            "type": "RM_UNIQUE_PROCESS"
+        },
+        {
+            "name": "strServiceShortName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "FilterAction",
+            "type": "RM_FILTER_ACTION"
+        }
+    ],
+    "RmRemoveFilter": [
+        {
+            "name": "dwSessionHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "strModuleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pProcess",
+            "type": "RM_UNIQUE_PROCESS"
+        },
+        {
+            "name": "strServiceShortName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RmGetFilterList": [
+        {
+            "name": "dwSessionHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbFilterBuf",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbFilterBuf",
+            "type": "DWORD"
+        },
+        {
+            "name": "cbFilterBufNeeded",
+            "type": "LPDWORD"
+        }
+    ]
+}

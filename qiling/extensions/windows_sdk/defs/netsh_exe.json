@@ -1,0 +1,114 @@
+{
+    "MatchEnumTag": [
+        {
+            "name": "hModule",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pwcArg",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwNumArg",
+            "type": "DWORD"
+        },
+        {
+            "name": "pEnumTable",
+            "type": "TOKEN_VALUE"
+        },
+        {
+            "name": "pdwValue",
+            "type": "PDWORD"
+        }
+    ],
+    "MatchToken": [
+        {
+            "name": "pwszUserToken",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszCmdToken",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PreprocessCommand": [
+        {
+            "name": "hModule",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppwcArguments",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwCurrentIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwArgCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pttTags",
+            "type": "TAG_TYPE"
+        },
+        {
+            "name": "dwTagCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwMinArgs",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwMaxArgs",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwTagType",
+            "type": "DWORD"
+        }
+    ],
+    "PrintError": [
+        {
+            "name": "hModule",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwErrId",
+            "type": "DWORD"
+        }
+    ],
+    "PrintMessageFromModule": [
+        {
+            "name": "hModule",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwMsgId",
+            "type": "DWORD"
+        }
+    ],
+    "PrintMessage": [
+        {
+            "name": "pwszFormat",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RegisterContext": [
+        {
+            "name": "pChildContext",
+            "type": "NS_CONTEXT_ATTRIBUTES"
+        }
+    ],
+    "RegisterHelper": [
+        {
+            "name": "pguidParentContext",
+            "type": "GUID"
+        },
+        {
+            "name": "pfnRegisterSubContext",
+            "type": "NS_HELPER_ATTRIBUTES"
+        }
+    ]
+}
