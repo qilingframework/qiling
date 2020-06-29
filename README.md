@@ -208,6 +208,6 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 - kabeor
 - 0ssigeno
 - liba2k
-- assaf_carlsba
+- assafcarlsbad
 - ucgJhe
 - jhumble
