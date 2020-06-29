@@ -29,6 +29,10 @@ int main()
 	printf("AllocationGranularity : 0x%x\n", sbi.AllocationGranularity);
 	printf("HighestPhysicalPageNumber : 0x%x\n", sbi.HighestPhysicalPageNumber);
 	printf("LowestPhysicalPageNumber : 0x%x\n", sbi.LowestPhysicalPageNumber);
+
+	printf("MaximumUserModeAddress : 0x%x\n", sbi.MaximumUserModeAddress);
+	printf("MinimumUserModeAddress : 0x%x\n", sbi.MinimumUserModeAddress);
+
 	printf("MaximumUserModeAddress : 0x%x\n", sbi.MaximumUserModeAddress);
 	printf("MinimumUserModeAddress : 0x%x\n", sbi.MinimumUserModeAddress);
 	printf("NumberOfPhysicalPages : 0x%x\n", sbi.NumberOfPhysicalPages);
