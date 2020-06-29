@@ -101,3 +101,4 @@ class QlSanitizedMemoryHeap():
             if canary.count(self.canary_byte) != len(canary):
                 return False
         return True
+        
