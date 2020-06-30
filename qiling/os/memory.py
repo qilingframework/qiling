@@ -453,3 +453,9 @@ class QlMemoryHeap:
                 chunk.inuse = False
                 return True
         return False
+
+    def _find(self, addr):
+        for chunk in self.chunks:
+            if addr == chunk.address:
+                return chunk
+        return None
