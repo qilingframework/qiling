@@ -184,19 +184,24 @@ class QlMemoryManager:
         that match
         """
 
+        addrs = []
         if (begin and end) and end > begin:
             haystack = self.read(begin, end - begin)
+            addrs = [x.start(0) + begin for x in re.finditer(needle, haystack)]
 
-        elif begin and not end: # search from begin till last mapped region
-            haystack = self.read(begin, self.map_info[-1][1])
+        if not begin:
+            begin = self.map_info[0][0] # search from first mapped region till end 
+        if not end:
+            end = self.map_info[-1][1] # search from begin till last mapped region
 
-        elif end and not begin: # search from first mapped region till end
-            haystack = self.read(self.map_info[0][0], end)
+        mapped_range = [(_begin, _end) for _begin, _end, _ in self.ql.uc.mem_regions()
+                if begin in range(_begin, _end) or end in range(_begin, _end)]
+        
+        for _begin, _end in mapped_range:
+            haystack = self.read(_begin, _end - _begin)
+            addrs += [x.start(0) + _begin for x in re.finditer(needle, haystack)]
 
-        else: # search entire mapped memory
-            haystack = self.read(self.map_info[0][0], self.map_info[-1][1])
-
-        return [x.start(0) + begin for x in re.finditer(needle, haystack)]
+        return addrs
 
     def unmap(self, addr, size) -> None:
         '''
