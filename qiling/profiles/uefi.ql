@@ -41,6 +41,9 @@ revision = 0x1000
 [EFI_PCD_PROTOCOL]
 guid = 13a3f0f6-264a-3ef0-f2e0-dec512342f34
 
+[EFI_SMM_BASE2_PROTOCOL]
+guid = f4ccbfb7-f6e0-47fd-9dd4-10a8f150c191
+
 [KERNEL]
 pid = 1996
 

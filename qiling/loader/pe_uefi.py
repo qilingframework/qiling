@@ -20,6 +20,7 @@ from qiling.os.uefi.bootup import *
 from qiling.os.uefi.runtime import *
 from qiling.os.uefi.pcd_protocol import *
 from qiling.os.uefi.dxe_service import *
+from qiling.os.uefi.smm_base2_protocol import *
 
 from qiling.os.windows.fncc import *
 
@@ -225,7 +226,12 @@ class QlLoaderPE_UEFI(QlLoader):
         self.pcd_protocol_ptr = system_table_heap_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_PCD_PROTOCOL)
         system_table_heap_ptr, pcd_protocol = install_EFI_PCD_PROTOCOL(self.ql, system_table_heap_ptr)
-        self.handle_dict[0] = {self.ql.os.profile.get("EFI_PCD_PROTOCOL", "guid"): self.pcd_protocol_ptr}
+        self.handle_dict[1] = {self.ql.os.profile.get("EFI_PCD_PROTOCOL", "guid"): self.pcd_protocol_ptr}
+        # self.handle_dict[1] = {}
+        self.smm_base2_protocol_ptr = system_table_heap_ptr
+        system_table_heap_ptr += ctypes.sizeof(EFI_SMM_BASE2_PROTOCOL)
+        system_table_heap_ptr, smm_base2_protocol = install_EFI_SMM_BASE2_PROTOCOL(self.ql, system_table_heap_ptr)
+        self.handle_dict[1][self.ql.os.profile.get("EFI_SMM_BASE2_PROTOCOL", "guid")] = self.smm_base2_protocol_ptr
 
         self.dxe_services_ptr = system_table_heap_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_DXE_SERVICES)
@@ -249,7 +255,8 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.mem.write(runtime_services_ptr, convert_struct_to_bytes(runtime_services))
         self.ql.mem.write(boot_services_ptr, convert_struct_to_bytes(boot_services))
         self.ql.mem.write(self.system_table_ptr, convert_struct_to_bytes(system_table))
-        self.ql.mem.write(self.pcd_protocol_ptr, convert_struct_to_bytes(pcd_protocol))
+        # self.ql.mem.write(self.pcd_protocol_ptr, convert_struct_to_bytes(pcd_protocol))
+        self.ql.mem.write(self.smm_base2_protocol_ptr, convert_struct_to_bytes(smm_base2_protocol))
         self.ql.mem.write(self.dxe_services_ptr, convert_struct_to_bytes(dxe_services))
 
         for dependency in self.ql.argv:
