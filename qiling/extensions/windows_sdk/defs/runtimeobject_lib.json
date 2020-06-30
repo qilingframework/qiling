@@ -1,0 +1,76 @@
+{
+    "RoResolveRestrictedErrorInfoReference": [
+        {
+            "name": "reference",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppRestrictedErrorInfo",
+            "type": "IRestrictedErrorInfo"
+        }
+    ],
+    "RoOriginateErrorW": [
+        {
+            "name": "error",
+            "type": "HRESULT"
+        },
+        {
+            "name": "cchMax",
+            "type": "UINT"
+        },
+        {
+            "name": "message",
+            "type": "PCWSTR"
+        }
+    ],
+    "RoOriginateError": [
+        {
+            "name": "error",
+            "type": "HRESULT"
+        },
+        {
+            "name": "message",
+            "type": "HSTRING"
+        }
+    ],
+    "RoReportFailedDelegate": [
+        {
+            "name": "punkDelegate",
+            "type": "IUnknown"
+        },
+        {
+            "name": "pRestrictedErrorInfo",
+            "type": "IRestrictedErrorInfo"
+        }
+    ],
+    "IsErrorPropagationEnabled": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RoGetActivatableClassRegistration": [
+        {
+            "name": "activatableClassId",
+            "type": "HSTRING"
+        },
+        {
+            "name": "activatableClassRegistration",
+            "type": "PActivatableClassRegistration"
+        }
+    ],
+    "RoGetServerActivatableClasses": [
+        {
+            "name": "serverName",
+            "type": "HSTRING"
+        },
+        {
+            "name": "activatableClassIds",
+            "type": "HSTRING"
+        },
+        {
+            "name": "count",
+            "type": "DWORD"
+        }
+    ]
+}

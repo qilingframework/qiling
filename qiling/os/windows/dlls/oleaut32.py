@@ -13,6 +13,7 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
+dllname = 'oleaut32_dll'
 
 # TODO this file is VERY experimental.
 
@@ -20,10 +21,7 @@ from qiling.exception import *
 #   const OLECHAR *strIn,
 #   UINT          ui
 # );
-@winapi(cc=STDCALL, params={
-    "strIn": WSTRING,
-    "ui": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SysAllocStringLen(ql, address, params):
     addr = ql.os.heap.alloc(params["ui"] + 1)
     if params["strIn"] != 0:
@@ -34,9 +32,7 @@ def hook_SysAllocStringLen(ql, address, params):
 # void SysFreeString(
 #   BSTR bstrString
 # );
-@winapi(cc=STDCALL, params={
-    "strIn": POINTER,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SysFreeString(ql, address, params):
     addr = params["strIn"]
     if addr != 0:
@@ -50,9 +46,7 @@ def hook_SysFreeString(ql, address, params):
 # UINT SysStringLen(
 #   BSTR pbstr
 # );
-@winapi(cc=STDCALL, params={
-    "pbstr": WSTRING,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SysStringLen(ql, address, params):
     string = params["pbstr"]
     if string != 0:
@@ -65,11 +59,7 @@ def hook_SysStringLen(ql, address, params):
 #   const OLECHAR *psz,
 #   unsigned int  len
 # );
-@winapi(cc=STDCALL, params={
-    "pbstr": POINTER,
-    "psz": WSTRING,
-    "len": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SysReAllocStringLen(ql, address, params):
     content = params["psz"]
     size = params["len"]
@@ -82,9 +72,7 @@ def hook_SysReAllocStringLen(ql, address, params):
 # BSTR SysAllocString(
 #   const OLECHAR *psz
 # );
-@winapi(cc=STDCALL, params={
-    "psz": WSTRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SysAllocString(ql, address, params):
     string = params["psz"]
     if string == 0:

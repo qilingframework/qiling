@@ -1,0 +1,1710 @@
+{
+    "joyGetPosEx": [
+        {
+            "name": "uJoyID",
+            "type": "UINT"
+        },
+        {
+            "name": "pji",
+            "type": "LPJOYINFOEX"
+        }
+    ],
+    "joyGetNumDevs": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "joyGetDevCapsW": [
+        {
+            "name": "uJoyID",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "pjc",
+            "type": "LPJOYCAPSW"
+        },
+        {
+            "name": "cbjc",
+            "type": "UINT"
+        }
+    ],
+    "joyGetPos": [
+        {
+            "name": "uJoyID",
+            "type": "UINT"
+        },
+        {
+            "name": "pji",
+            "type": "LPJOYINFO"
+        }
+    ],
+    "joyGetThreshold": [
+        {
+            "name": "uJoyID",
+            "type": "UINT"
+        },
+        {
+            "name": "puThreshold",
+            "type": "LPUINT"
+        }
+    ],
+    "joyReleaseCapture": [
+        {
+            "name": "uJoyID",
+            "type": "UINT"
+        }
+    ],
+    "joySetCapture": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "uJoyID",
+            "type": "UINT"
+        },
+        {
+            "name": "uPeriod",
+            "type": "UINT"
+        },
+        {
+            "name": "fChanged",
+            "type": "BOOL"
+        }
+    ],
+    "joySetThreshold": [
+        {
+            "name": "uJoyID",
+            "type": "UINT"
+        },
+        {
+            "name": "uThreshold",
+            "type": "UINT"
+        }
+    ],
+    "joyConfigChanged": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "mmTaskCreate": [
+        {
+            "name": "lpfn",
+            "type": "LPTASKCALLBACK"
+        },
+        {
+            "name": "lph",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwInst",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "mmTaskBlock": [
+        {
+            "name": "h",
+            "type": "DWORD"
+        }
+    ],
+    "mmTaskYield": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "mmGetCurrentTask": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "waveOutGetNumDevs": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "waveOutGetVolume": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        },
+        {
+            "name": "pdwVolume",
+            "type": "LPDWORD"
+        }
+    ],
+    "waveOutSetVolume": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        },
+        {
+            "name": "dwVolume",
+            "type": "DWORD"
+        }
+    ],
+    "waveOutOpen": [
+        {
+            "name": "phwo",
+            "type": "LPHWAVEOUT"
+        },
+        {
+            "name": "uDeviceID",
+            "type": "UINT"
+        },
+        {
+            "name": "pwfx",
+            "type": "LPCWAVEFORMATEX"
+        },
+        {
+            "name": "dwCallback",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dwInstance",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "fdwOpen",
+            "type": "DWORD"
+        }
+    ],
+    "waveOutClose": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        }
+    ],
+    "waveOutPrepareHeader": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        },
+        {
+            "name": "pwh",
+            "type": "LPWAVEHDR"
+        },
+        {
+            "name": "cbwh",
+            "type": "UINT"
+        }
+    ],
+    "waveOutUnprepareHeader": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        },
+        {
+            "name": "pwh",
+            "type": "LPWAVEHDR"
+        },
+        {
+            "name": "cbwh",
+            "type": "UINT"
+        }
+    ],
+    "waveOutWrite": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        },
+        {
+            "name": "pwh",
+            "type": "LPWAVEHDR"
+        },
+        {
+            "name": "cbwh",
+            "type": "UINT"
+        }
+    ],
+    "waveOutPause": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        }
+    ],
+    "waveOutRestart": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        }
+    ],
+    "waveOutReset": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        }
+    ],
+    "waveOutBreakLoop": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        }
+    ],
+    "waveOutGetPosition": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        },
+        {
+            "name": "pmmt",
+            "type": "LPMMTIME"
+        },
+        {
+            "name": "cbmmt",
+            "type": "UINT"
+        }
+    ],
+    "waveOutGetPitch": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        },
+        {
+            "name": "pdwPitch",
+            "type": "LPDWORD"
+        }
+    ],
+    "waveOutSetPitch": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        },
+        {
+            "name": "dwPitch",
+            "type": "DWORD"
+        }
+    ],
+    "waveOutGetPlaybackRate": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        },
+        {
+            "name": "pdwRate",
+            "type": "LPDWORD"
+        }
+    ],
+    "waveOutSetPlaybackRate": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        },
+        {
+            "name": "dwRate",
+            "type": "DWORD"
+        }
+    ],
+    "waveOutGetID": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        },
+        {
+            "name": "puDeviceID",
+            "type": "LPUINT"
+        }
+    ],
+    "waveOutMessage": [
+        {
+            "name": "hwo",
+            "type": "HWAVEOUT"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "dw1",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dw2",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "waveInGetNumDevs": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "waveInOpen": [
+        {
+            "name": "phwi",
+            "type": "LPHWAVEIN"
+        },
+        {
+            "name": "uDeviceID",
+            "type": "UINT"
+        },
+        {
+            "name": "pwfx",
+            "type": "LPCWAVEFORMATEX"
+        },
+        {
+            "name": "dwCallback",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dwInstance",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "fdwOpen",
+            "type": "DWORD"
+        }
+    ],
+    "waveInClose": [
+        {
+            "name": "hwi",
+            "type": "HWAVEIN"
+        }
+    ],
+    "waveInPrepareHeader": [
+        {
+            "name": "hwi",
+            "type": "HWAVEIN"
+        },
+        {
+            "name": "pwh",
+            "type": "LPWAVEHDR"
+        },
+        {
+            "name": "cbwh",
+            "type": "UINT"
+        }
+    ],
+    "waveInUnprepareHeader": [
+        {
+            "name": "hwi",
+            "type": "HWAVEIN"
+        },
+        {
+            "name": "pwh",
+            "type": "LPWAVEHDR"
+        },
+        {
+            "name": "cbwh",
+            "type": "UINT"
+        }
+    ],
+    "waveInAddBuffer": [
+        {
+            "name": "hwi",
+            "type": "HWAVEIN"
+        },
+        {
+            "name": "pwh",
+            "type": "LPWAVEHDR"
+        },
+        {
+            "name": "cbwh",
+            "type": "UINT"
+        }
+    ],
+    "waveInStart": [
+        {
+            "name": "hwi",
+            "type": "HWAVEIN"
+        }
+    ],
+    "waveInStop": [
+        {
+            "name": "hwi",
+            "type": "HWAVEIN"
+        }
+    ],
+    "waveInReset": [
+        {
+            "name": "hwi",
+            "type": "HWAVEIN"
+        }
+    ],
+    "waveInGetPosition": [
+        {
+            "name": "hwi",
+            "type": "HWAVEIN"
+        },
+        {
+            "name": "pmmt",
+            "type": "LPMMTIME"
+        },
+        {
+            "name": "cbmmt",
+            "type": "UINT"
+        }
+    ],
+    "waveInGetID": [
+        {
+            "name": "hwi",
+            "type": "HWAVEIN"
+        },
+        {
+            "name": "puDeviceID",
+            "type": "LPUINT"
+        }
+    ],
+    "waveInMessage": [
+        {
+            "name": "hwi",
+            "type": "HWAVEIN"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "dw1",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dw2",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "midiOutGetNumDevs": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "midiStreamOpen": [
+        {
+            "name": "phms",
+            "type": "LPHMIDISTRM"
+        },
+        {
+            "name": "puDeviceID",
+            "type": "LPUINT"
+        },
+        {
+            "name": "cMidi",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwCallback",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dwInstance",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "fdwOpen",
+            "type": "DWORD"
+        }
+    ],
+    "midiStreamClose": [
+        {
+            "name": "hms",
+            "type": "HMIDISTRM"
+        }
+    ],
+    "midiStreamProperty": [
+        {
+            "name": "hms",
+            "type": "HMIDISTRM"
+        },
+        {
+            "name": "lppropdata",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwProperty",
+            "type": "DWORD"
+        }
+    ],
+    "midiStreamPosition": [
+        {
+            "name": "hms",
+            "type": "HMIDISTRM"
+        },
+        {
+            "name": "lpmmt",
+            "type": "LPMMTIME"
+        },
+        {
+            "name": "cbmmt",
+            "type": "UINT"
+        }
+    ],
+    "midiStreamOut": [
+        {
+            "name": "hms",
+            "type": "HMIDISTRM"
+        },
+        {
+            "name": "pmh",
+            "type": "LPMIDIHDR"
+        },
+        {
+            "name": "cbmh",
+            "type": "UINT"
+        }
+    ],
+    "midiStreamPause": [
+        {
+            "name": "hms",
+            "type": "HMIDISTRM"
+        }
+    ],
+    "midiStreamRestart": [
+        {
+            "name": "hms",
+            "type": "HMIDISTRM"
+        }
+    ],
+    "midiStreamStop": [
+        {
+            "name": "hms",
+            "type": "HMIDISTRM"
+        }
+    ],
+    "midiConnect": [
+        {
+            "name": "hmi",
+            "type": "HMIDI"
+        },
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        },
+        {
+            "name": "pReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "midiDisconnect": [
+        {
+            "name": "hmi",
+            "type": "HMIDI"
+        },
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        },
+        {
+            "name": "pReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "midiOutGetDevCapsA": [
+        {
+            "name": "uDeviceID",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "pmoc",
+            "type": "LPMIDIOUTCAPSA"
+        },
+        {
+            "name": "cbmoc",
+            "type": "UINT"
+        }
+    ],
+    "midiOutGetDevCapsW": [
+        {
+            "name": "uDeviceID",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "pmoc",
+            "type": "LPMIDIOUTCAPSW"
+        },
+        {
+            "name": "cbmoc",
+            "type": "UINT"
+        }
+    ],
+    "midiOutGetVolume": [
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        },
+        {
+            "name": "pdwVolume",
+            "type": "LPDWORD"
+        }
+    ],
+    "midiOutSetVolume": [
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        },
+        {
+            "name": "dwVolume",
+            "type": "DWORD"
+        }
+    ],
+    "midiOutGetErrorTextA": [
+        {
+            "name": "mmrError",
+            "type": "MMRESULT"
+        },
+        {
+            "name": "pszText",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchText",
+            "type": "UINT"
+        }
+    ],
+    "midiOutGetErrorTextW": [
+        {
+            "name": "mmrError",
+            "type": "MMRESULT"
+        },
+        {
+            "name": "pszText",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchText",
+            "type": "UINT"
+        }
+    ],
+    "midiOutOpen": [
+        {
+            "name": "phmo",
+            "type": "LPHMIDIOUT"
+        },
+        {
+            "name": "uDeviceID",
+            "type": "UINT"
+        },
+        {
+            "name": "dwCallback",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dwInstance",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "fdwOpen",
+            "type": "DWORD"
+        }
+    ],
+    "midiOutClose": [
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        }
+    ],
+    "midiOutPrepareHeader": [
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        },
+        {
+            "name": "pmh",
+            "type": "LPMIDIHDR"
+        },
+        {
+            "name": "cbmh",
+            "type": "UINT"
+        }
+    ],
+    "midiOutUnprepareHeader": [
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        },
+        {
+            "name": "pmh",
+            "type": "LPMIDIHDR"
+        },
+        {
+            "name": "cbmh",
+            "type": "UINT"
+        }
+    ],
+    "midiOutShortMsg": [
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        },
+        {
+            "name": "dwMsg",
+            "type": "DWORD"
+        }
+    ],
+    "midiOutLongMsg": [
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        },
+        {
+            "name": "pmh",
+            "type": "LPMIDIHDR"
+        },
+        {
+            "name": "cbmh",
+            "type": "UINT"
+        }
+    ],
+    "midiOutReset": [
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        }
+    ],
+    "midiOutCachePatches": [
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        },
+        {
+            "name": "uBank",
+            "type": "UINT"
+        },
+        {
+            "name": "pwpa",
+            "type": "LPWORD"
+        },
+        {
+            "name": "fuCache",
+            "type": "UINT"
+        }
+    ],
+    "midiOutCacheDrumPatches": [
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        },
+        {
+            "name": "uPatch",
+            "type": "UINT"
+        },
+        {
+            "name": "pwkya",
+            "type": "LPWORD"
+        },
+        {
+            "name": "fuCache",
+            "type": "UINT"
+        }
+    ],
+    "midiOutGetID": [
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        },
+        {
+            "name": "puDeviceID",
+            "type": "LPUINT"
+        }
+    ],
+    "midiOutMessage": [
+        {
+            "name": "hmo",
+            "type": "HMIDIOUT"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "dw1",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dw2",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "midiInGetNumDevs": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "midiInGetDevCapsA": [
+        {
+            "name": "uDeviceID",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "pmic",
+            "type": "LPMIDIINCAPSA"
+        },
+        {
+            "name": "cbmic",
+            "type": "UINT"
+        }
+    ],
+    "midiInGetDevCapsW": [
+        {
+            "name": "uDeviceID",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "pmic",
+            "type": "LPMIDIINCAPSW"
+        },
+        {
+            "name": "cbmic",
+            "type": "UINT"
+        }
+    ],
+    "midiInGetErrorTextA": [
+        {
+            "name": "mmrError",
+            "type": "MMRESULT"
+        },
+        {
+            "name": "pszText",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchText",
+            "type": "UINT"
+        }
+    ],
+    "midiInGetErrorTextW": [
+        {
+            "name": "mmrError",
+            "type": "MMRESULT"
+        },
+        {
+            "name": "pszText",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchText",
+            "type": "UINT"
+        }
+    ],
+    "midiInOpen": [
+        {
+            "name": "phmi",
+            "type": "LPHMIDIIN"
+        },
+        {
+            "name": "uDeviceID",
+            "type": "UINT"
+        },
+        {
+            "name": "dwCallback",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dwInstance",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "fdwOpen",
+            "type": "DWORD"
+        }
+    ],
+    "midiInClose": [
+        {
+            "name": "hmi",
+            "type": "HMIDIIN"
+        }
+    ],
+    "midiInPrepareHeader": [
+        {
+            "name": "hmi",
+            "type": "HMIDIIN"
+        },
+        {
+            "name": "pmh",
+            "type": "LPMIDIHDR"
+        },
+        {
+            "name": "cbmh",
+            "type": "UINT"
+        }
+    ],
+    "midiInUnprepareHeader": [
+        {
+            "name": "hmi",
+            "type": "HMIDIIN"
+        },
+        {
+            "name": "pmh",
+            "type": "LPMIDIHDR"
+        },
+        {
+            "name": "cbmh",
+            "type": "UINT"
+        }
+    ],
+    "midiInAddBuffer": [
+        {
+            "name": "hmi",
+            "type": "HMIDIIN"
+        },
+        {
+            "name": "pmh",
+            "type": "LPMIDIHDR"
+        },
+        {
+            "name": "cbmh",
+            "type": "UINT"
+        }
+    ],
+    "midiInStart": [
+        {
+            "name": "hmi",
+            "type": "HMIDIIN"
+        }
+    ],
+    "midiInStop": [
+        {
+            "name": "hmi",
+            "type": "HMIDIIN"
+        }
+    ],
+    "midiInReset": [
+        {
+            "name": "hmi",
+            "type": "HMIDIIN"
+        }
+    ],
+    "midiInGetID": [
+        {
+            "name": "hmi",
+            "type": "HMIDIIN"
+        },
+        {
+            "name": "puDeviceID",
+            "type": "LPUINT"
+        }
+    ],
+    "midiInMessage": [
+        {
+            "name": "hmi",
+            "type": "HMIDIIN"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "dw1",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dw2",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "auxGetNumDevs": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "auxGetDevCapsA": [
+        {
+            "name": "uDeviceID",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "pac",
+            "type": "LPAUXCAPSA"
+        },
+        {
+            "name": "cbac",
+            "type": "UINT"
+        }
+    ],
+    "auxGetDevCapsW": [
+        {
+            "name": "uDeviceID",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "pac",
+            "type": "LPAUXCAPSW"
+        },
+        {
+            "name": "cbac",
+            "type": "UINT"
+        }
+    ],
+    "auxSetVolume": [
+        {
+            "name": "uDeviceID",
+            "type": "UINT"
+        },
+        {
+            "name": "dwVolume",
+            "type": "DWORD"
+        }
+    ],
+    "auxGetVolume": [
+        {
+            "name": "uDeviceID",
+            "type": "UINT"
+        },
+        {
+            "name": "pdwVolume",
+            "type": "LPDWORD"
+        }
+    ],
+    "auxOutMessage": [
+        {
+            "name": "uDeviceID",
+            "type": "UINT"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "dw1",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dw2",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "mixerGetNumDevs": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "mixerGetDevCapsA": [
+        {
+            "name": "uMxId",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "pmxcaps",
+            "type": "LPMIXERCAPSA"
+        },
+        {
+            "name": "cbmxcaps",
+            "type": "UINT"
+        }
+    ],
+    "mixerGetDevCapsW": [
+        {
+            "name": "uMxId",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "pmxcaps",
+            "type": "LPMIXERCAPSW"
+        },
+        {
+            "name": "cbmxcaps",
+            "type": "UINT"
+        }
+    ],
+    "mixerOpen": [
+        {
+            "name": "phmx",
+            "type": "LPHMIXER"
+        },
+        {
+            "name": "uMxId",
+            "type": "UINT"
+        },
+        {
+            "name": "dwCallback",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dwInstance",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "fdwOpen",
+            "type": "DWORD"
+        }
+    ],
+    "mixerClose": [
+        {
+            "name": "hmx",
+            "type": "HMIXER"
+        }
+    ],
+    "mixerMessage": [
+        {
+            "name": "hmx",
+            "type": "HMIXER"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "dwParam1",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dwParam2",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "mixerGetLineInfoA": [
+        {
+            "name": "hmxobj",
+            "type": "HMIXEROBJ"
+        },
+        {
+            "name": "pmxl",
+            "type": "LPMIXERLINEA"
+        },
+        {
+            "name": "fdwInfo",
+            "type": "DWORD"
+        }
+    ],
+    "mixerGetLineInfoW": [
+        {
+            "name": "hmxobj",
+            "type": "HMIXEROBJ"
+        },
+        {
+            "name": "pmxl",
+            "type": "LPMIXERLINEW"
+        },
+        {
+            "name": "fdwInfo",
+            "type": "DWORD"
+        }
+    ],
+    "mixerGetID": [
+        {
+            "name": "hmxobj",
+            "type": "HMIXEROBJ"
+        },
+        {
+            "name": "puMxId",
+            "type": "UINT"
+        },
+        {
+            "name": "fdwId",
+            "type": "DWORD"
+        }
+    ],
+    "mixerGetLineControlsA": [
+        {
+            "name": "hmxobj",
+            "type": "HMIXEROBJ"
+        },
+        {
+            "name": "pmxlc",
+            "type": "LPMIXERLINECONTROLSA"
+        },
+        {
+            "name": "fdwControls",
+            "type": "DWORD"
+        }
+    ],
+    "mixerGetLineControlsW": [
+        {
+            "name": "hmxobj",
+            "type": "HMIXEROBJ"
+        },
+        {
+            "name": "pmxlc",
+            "type": "LPMIXERLINECONTROLSW"
+        },
+        {
+            "name": "fdwControls",
+            "type": "DWORD"
+        }
+    ],
+    "mixerGetControlDetailsA": [
+        {
+            "name": "hmxobj",
+            "type": "HMIXEROBJ"
+        },
+        {
+            "name": "pmxcd",
+            "type": "LPMIXERCONTROLDETAILS"
+        },
+        {
+            "name": "fdwDetails",
+            "type": "DWORD"
+        }
+    ],
+    "mixerGetControlDetailsW": [
+        {
+            "name": "hmxobj",
+            "type": "HMIXEROBJ"
+        },
+        {
+            "name": "pmxcd",
+            "type": "LPMIXERCONTROLDETAILS"
+        },
+        {
+            "name": "fdwDetails",
+            "type": "DWORD"
+        }
+    ],
+    "mixerSetControlDetails": [
+        {
+            "name": "hmxobj",
+            "type": "HMIXEROBJ"
+        },
+        {
+            "name": "pmxcd",
+            "type": "LPMIXERCONTROLDETAILS"
+        },
+        {
+            "name": "fdwDetails",
+            "type": "DWORD"
+        }
+    ],
+    "timeGetSystemTime": [
+        {
+            "name": "pmmt",
+            "type": "LPMMTIME"
+        },
+        {
+            "name": "cbmmt",
+            "type": "UINT"
+        }
+    ],
+    "timeGetTime": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "timeGetDevCaps": [
+        {
+            "name": "ptc",
+            "type": "LPTIMECAPS"
+        },
+        {
+            "name": "cbtc",
+            "type": "UINT"
+        }
+    ],
+    "timeBeginPeriod": [
+        {
+            "name": "uPeriod",
+            "type": "UINT"
+        }
+    ],
+    "timeEndPeriod": [
+        {
+            "name": "uPeriod",
+            "type": "UINT"
+        }
+    ],
+    "CloseDriver": [
+        {
+            "name": "hDriver",
+            "type": "HDRVR"
+        },
+        {
+            "name": "lParam1",
+            "type": "LPARAM"
+        },
+        {
+            "name": "lParam2",
+            "type": "LPARAM"
+        }
+    ],
+    "OpenDriver": [
+        {
+            "name": "szDriverName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szSectionName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lParam2",
+            "type": "LPARAM"
+        }
+    ],
+    "SendDriverMessage": [
+        {
+            "name": "hDriver",
+            "type": "HDRVR"
+        },
+        {
+            "name": "message",
+            "type": "UINT"
+        },
+        {
+            "name": "lParam1",
+            "type": "LPARAM"
+        },
+        {
+            "name": "lParam2",
+            "type": "LPARAM"
+        }
+    ],
+    "DrvGetModuleHandle": [
+        {
+            "name": "hDriver",
+            "type": "HDRVR"
+        }
+    ],
+    "GetDriverModuleHandle": [
+        {
+            "name": "hDriver",
+            "type": "HDRVR"
+        }
+    ],
+    "DefDriverProc": [
+        {
+            "name": "dwDriverIdentifier",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "hdrvr",
+            "type": "HDRVR"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "lParam1",
+            "type": "LPARAM"
+        },
+        {
+            "name": "lParam2",
+            "type": "LPARAM"
+        }
+    ],
+    "DriverCallback": [
+        {
+            "name": "dwCallback",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hDevice",
+            "type": "HDRVR"
+        },
+        {
+            "name": "dwMsg",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwUser",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dwParam1",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dwParam2",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "mmioStringToFOURCCA": [
+        {
+            "name": "sz",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "mmioStringToFOURCCW": [
+        {
+            "name": "sz",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "mmioInstallIOProcA": [
+        {
+            "name": "fccIOProc",
+            "type": "FOURCC"
+        },
+        {
+            "name": "pIOProc",
+            "type": "LPMMIOPROC"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "mmioInstallIOProcW": [
+        {
+            "name": "fccIOProc",
+            "type": "FOURCC"
+        },
+        {
+            "name": "pIOProc",
+            "type": "LPMMIOPROC"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "mmioOpenA": [
+        {
+            "name": "pszFileName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pmmioinfo",
+            "type": "LPMMIOINFO"
+        },
+        {
+            "name": "fdwOpen",
+            "type": "DWORD"
+        }
+    ],
+    "mmioOpenW": [
+        {
+            "name": "pszFileName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pmmioinfo",
+            "type": "LPMMIOINFO"
+        },
+        {
+            "name": "fdwOpen",
+            "type": "DWORD"
+        }
+    ],
+    "mmioRenameA": [
+        {
+            "name": "pszFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszNewFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pmmioinfo",
+            "type": "LPCMMIOINFO"
+        },
+        {
+            "name": "fdwRename",
+            "type": "DWORD"
+        }
+    ],
+    "mmioRenameW": [
+        {
+            "name": "pszFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszNewFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pmmioinfo",
+            "type": "LPCMMIOINFO"
+        },
+        {
+            "name": "fdwRename",
+            "type": "DWORD"
+        }
+    ],
+    "mmioClose": [
+        {
+            "name": "hmmio",
+            "type": "HMMIO"
+        },
+        {
+            "name": "fuClose",
+            "type": "UINT"
+        }
+    ],
+    "mmioRead": [
+        {
+            "name": "hmmio",
+            "type": "HMMIO"
+        },
+        {
+            "name": "pch",
+            "type": "HPSTR"
+        },
+        {
+            "name": "cch",
+            "type": "LONG"
+        }
+    ],
+    "mmioWrite": [
+        {
+            "name": "hmmio",
+            "type": "HMMIO"
+        },
+        {
+            "name": "pch",
+            "type": "char"
+        },
+        {
+            "name": "cch",
+            "type": "LONG"
+        }
+    ],
+    "mmioSeek": [
+        {
+            "name": "hmmio",
+            "type": "HMMIO"
+        },
+        {
+            "name": "lOffset",
+            "type": "LONG"
+        },
+        {
+            "name": "iOrigin",
+            "type": "int"
+        }
+    ],
+    "mmioGetInfo": [
+        {
+            "name": "hmmio",
+            "type": "HMMIO"
+        },
+        {
+            "name": "pmmioinfo",
+            "type": "LPMMIOINFO"
+        },
+        {
+            "name": "fuInfo",
+            "type": "UINT"
+        }
+    ],
+    "mmioSetInfo": [
+        {
+            "name": "hmmio",
+            "type": "HMMIO"
+        },
+        {
+            "name": "pmmioinfo",
+            "type": "LPCMMIOINFO"
+        },
+        {
+            "name": "fuInfo",
+            "type": "UINT"
+        }
+    ],
+    "mmioSetBuffer": [
+        {
+            "name": "hmmio",
+            "type": "HMMIO"
+        },
+        {
+            "name": "pchBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchBuffer",
+            "type": "LONG"
+        },
+        {
+            "name": "fuBuffer",
+            "type": "UINT"
+        }
+    ],
+    "mmioFlush": [
+        {
+            "name": "hmmio",
+            "type": "HMMIO"
+        },
+        {
+            "name": "fuFlush",
+            "type": "UINT"
+        }
+    ],
+    "mmioAdvance": [
+        {
+            "name": "hmmio",
+            "type": "HMMIO"
+        },
+        {
+            "name": "pmmioinfo",
+            "type": "LPMMIOINFO"
+        },
+        {
+            "name": "fuAdvance",
+            "type": "UINT"
+        }
+    ],
+    "mmioSendMessage": [
+        {
+            "name": "hmmio",
+            "type": "HMMIO"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "lParam1",
+            "type": "LPARAM"
+        },
+        {
+            "name": "lParam2",
+            "type": "LPARAM"
+        }
+    ],
+    "mmioDescend": [
+        {
+            "name": "hmmio",
+            "type": "HMMIO"
+        },
+        {
+            "name": "pmmcki",
+            "type": "LPMMCKINFO"
+        },
+        {
+            "name": "pmmckiParent",
+            "type": "MMCKINFO"
+        },
+        {
+            "name": "fuDescend",
+            "type": "UINT"
+        }
+    ],
+    "mmioAscend": [
+        {
+            "name": "hmmio",
+            "type": "HMMIO"
+        },
+        {
+            "name": "pmmcki",
+            "type": "LPMMCKINFO"
+        },
+        {
+            "name": "fuAscend",
+            "type": "UINT"
+        }
+    ],
+    "mmioCreateChunk": [
+        {
+            "name": "hmmio",
+            "type": "HMMIO"
+        },
+        {
+            "name": "pmmcki",
+            "type": "LPMMCKINFO"
+        },
+        {
+            "name": "fuCreate",
+            "type": "UINT"
+        }
+    ]
+}

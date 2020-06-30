@@ -1,0 +1,2720 @@
+{
+    "GetNodeClusterState": [
+        {
+            "name": "lpszNodeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdwClusterState",
+            "type": "LPDWORD"
+        }
+    ],
+    "OpenCluster": [
+        {
+            "name": "lpszClusterName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "OpenClusterEx": [
+        {
+            "name": "lpszClusterName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "GrantedAccess",
+            "type": "DWORD"
+        }
+    ],
+    "CloseCluster": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        }
+    ],
+    "SetClusterName": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszNewClusterName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetClusterInformation": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszClusterName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchClusterName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpClusterInfo",
+            "type": "LPCLUSTERVERSIONINFO"
+        }
+    ],
+    "GetClusterQuorumResource": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszResourceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchResourceName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszDeviceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchDeviceName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwMaxQuorumLogSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetClusterQuorumResource": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "lpszDeviceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwMaxQuoLogSize",
+            "type": "DWORD"
+        }
+    ],
+    "BackupClusterDatabase": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszPathName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RestoreClusterDatabase": [
+        {
+            "name": "lpszPathName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "bForce",
+            "type": "BOOL"
+        },
+        {
+            "name": "lpszQuorumDriveLetter",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SetClusterNetworkPriorityOrder": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "NetworkCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "NetworkList",
+            "type": "HNETWORK"
+        }
+    ],
+    "SetClusterServiceAccountPassword": [
+        {
+            "name": "lpszClusterName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszNewPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpReturnStatusBuffer",
+            "type": "PCLUSTER_SET_PASSWORD_STATUS"
+        },
+        {
+            "name": "lpcbReturnStatusBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterControl": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "hHostNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwControlCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOutBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nOutBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterUpgradeFunctionalLevel": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "perform",
+            "type": "BOOL"
+        },
+        {
+            "name": "pfnProgressCallback",
+            "type": "PCLUSTER_UPGRADE_PROGRESS_CALLBACK"
+        },
+        {
+            "name": "pvCallbackArg",
+            "type": "PVOID"
+        }
+    ],
+    "CreateClusterNotifyPortV2": [
+        {
+            "name": "hChange",
+            "type": "HCHANGE"
+        },
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "Filters",
+            "type": "NOTIFY_FILTER_AND_TYPE"
+        },
+        {
+            "name": "dwFilterCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwNotifyKey",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "RegisterClusterNotifyV2": [
+        {
+            "name": "hChange",
+            "type": "HCHANGE"
+        },
+        {
+            "name": "Filter",
+            "type": "NOTIFY_FILTER_AND_TYPE"
+        },
+        {
+            "name": "hObject",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwNotifyKey",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "GetNotifyEventHandle": [
+        {
+            "name": "hChange",
+            "type": "HCHANGE"
+        },
+        {
+            "name": "lphTargetEvent",
+            "type": "LPHANDLE"
+        }
+    ],
+    "GetClusterNotifyV2": [
+        {
+            "name": "hChange",
+            "type": "HCHANGE"
+        },
+        {
+            "name": "lpdwNotifyKey",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "pFilterAndType",
+            "type": "PNOTIFY_FILTER_AND_TYPE"
+        },
+        {
+            "name": "buffer",
+            "type": "BYTE"
+        },
+        {
+            "name": "lpbBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszObjectId",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchObjectId",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszParentId",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchParentId",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszType",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwMilliseconds",
+            "type": "DWORD"
+        }
+    ],
+    "CreateClusterNotifyPort": [
+        {
+            "name": "hChange",
+            "type": "HCHANGE"
+        },
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "dwFilter",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwNotifyKey",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "RegisterClusterNotify": [
+        {
+            "name": "hChange",
+            "type": "HCHANGE"
+        },
+        {
+            "name": "dwFilterType",
+            "type": "DWORD"
+        },
+        {
+            "name": "hObject",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwNotifyKey",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "GetClusterNotify": [
+        {
+            "name": "hChange",
+            "type": "HCHANGE"
+        },
+        {
+            "name": "lpdwNotifyKey",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "lpdwFilterType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwMilliseconds",
+            "type": "DWORD"
+        }
+    ],
+    "CloseClusterNotifyPort": [
+        {
+            "name": "hChange",
+            "type": "HCHANGE"
+        }
+    ],
+    "ClusterOpenEnum": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        }
+    ],
+    "ClusterGetEnumCount": [
+        {
+            "name": "hEnum",
+            "type": "HCLUSENUM"
+        }
+    ],
+    "ClusterEnum": [
+        {
+            "name": "hEnum",
+            "type": "HCLUSENUM"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterCloseEnum": [
+        {
+            "name": "hEnum",
+            "type": "HCLUSENUM"
+        }
+    ],
+    "ClusterGetEnumCountEx": [
+        {
+            "name": "hClusterEnum",
+            "type": "HCLUSENUMEX"
+        }
+    ],
+    "ClusterEnumEx": [
+        {
+            "name": "hClusterEnum",
+            "type": "HCLUSENUMEX"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pItem",
+            "type": "PCLUSTER_ENUM_ITEM"
+        },
+        {
+            "name": "cbItem",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterCloseEnumEx": [
+        {
+            "name": "hClusterEnum",
+            "type": "HCLUSENUMEX"
+        }
+    ],
+    "CreateClusterGroupSet": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "groupSetName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "OpenClusterGroupSet": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszGroupSetName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CloseClusterGroupSet": [
+        {
+            "name": "hGroupSet",
+            "type": "HGROUPSET"
+        }
+    ],
+    "DeleteClusterGroupSet": [
+        {
+            "name": "hGroupSet",
+            "type": "HGROUPSET"
+        }
+    ],
+    "ClusterAddGroupToGroupSet": [
+        {
+            "name": "hGroupSet",
+            "type": "HGROUPSET"
+        },
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "ClusterRemoveGroupFromGroupSet": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "ClusterGroupSetControl": [
+        {
+            "name": "hGroupSet",
+            "type": "HGROUPSET"
+        },
+        {
+            "name": "hHostNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwControlCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOutBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbOutBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "AddClusterGroupDependency": [
+        {
+            "name": "hDependentGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "hProviderGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "SetGroupDependencyExpression": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "lpszDependencyExpression",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RemoveClusterGroupDependency": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "hDependsOn",
+            "type": "HGROUP"
+        }
+    ],
+    "AddClusterGroupSetDependency": [
+        {
+            "name": "hDependentGroupSet",
+            "type": "HGROUPSET"
+        },
+        {
+            "name": "hProviderGroupSet",
+            "type": "HGROUPSET"
+        }
+    ],
+    "SetClusterGroupSetDependencyExpression": [
+        {
+            "name": "hGroupSet",
+            "type": "HGROUPSET"
+        },
+        {
+            "name": "lpszDependencyExprssion",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RemoveClusterGroupSetDependency": [
+        {
+            "name": "hGroupSet",
+            "type": "HGROUPSET"
+        },
+        {
+            "name": "hDependsOn",
+            "type": "HGROUPSET"
+        }
+    ],
+    "AddClusterGroupToGroupSetDependency": [
+        {
+            "name": "hDependentGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "hProviderGroupSet",
+            "type": "HGROUPSET"
+        }
+    ],
+    "RemoveClusterGroupToGroupSetDependency": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "hDependsOn",
+            "type": "HGROUPSET"
+        }
+    ],
+    "ClusterGroupSetOpenEnum": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        }
+    ],
+    "ClusterGroupSetGetEnumCount": [
+        {
+            "name": "hGroupSetEnum",
+            "type": "HGROUPSETENUM"
+        }
+    ],
+    "ClusterGroupSetCloseEnum": [
+        {
+            "name": "hGroupSetEnum",
+            "type": "HGROUPSETENUM"
+        }
+    ],
+    "OpenClusterNode": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszNodeName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "OpenClusterNodeEx": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszNodeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwGrantedAccess",
+            "type": "DWORD"
+        }
+    ],
+    "CloseClusterNode": [
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        }
+    ],
+    "GetClusterNodeState": [
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        }
+    ],
+    "GetClusterNodeId": [
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "lpszNodeId",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetClusterFromNode": [
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        }
+    ],
+    "PauseClusterNode": [
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        }
+    ],
+    "ResumeClusterNode": [
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        }
+    ],
+    "EvictClusterNode": [
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        }
+    ],
+    "ClusterNetInterfaceOpenEnum": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszNodeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszNetworkName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "ClusterNetInterfaceEnum": [
+        {
+            "name": "hNetInterfaceEnum",
+            "type": "HNETINTERFACEENUM"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterNetInterfaceCloseEnum": [
+        {
+            "name": "hNetInterfaceEnum",
+            "type": "HNETINTERFACEENUM"
+        }
+    ],
+    "ClusterNodeOpenEnum": [
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        }
+    ],
+    "ClusterNodeGetEnumCountEx": [
+        {
+            "name": "hNodeEnum",
+            "type": "HNODEENUMEX"
+        }
+    ],
+    "ClusterNodeEnumEx": [
+        {
+            "name": "hNodeEnum",
+            "type": "HNODEENUMEX"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pItem",
+            "type": "PCLUSTER_ENUM_ITEM"
+        },
+        {
+            "name": "cbItem",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterNodeCloseEnumEx": [
+        {
+            "name": "hNodeEnum",
+            "type": "HNODEENUMEX"
+        }
+    ],
+    "ClusterNodeGetEnumCount": [
+        {
+            "name": "hNodeEnum",
+            "type": "HNODEENUM"
+        }
+    ],
+    "ClusterNodeCloseEnum": [
+        {
+            "name": "hNodeEnum",
+            "type": "HNODEENUM"
+        }
+    ],
+    "ClusterNodeEnum": [
+        {
+            "name": "hNodeEnum",
+            "type": "HNODEENUM"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        }
+    ],
+    "EvictClusterNodeEx": [
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwTimeOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "phrCleanupStatus",
+            "type": "HRESULT"
+        }
+    ],
+    "GetClusterResourceTypeKey": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszTypeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        }
+    ],
+    "CreateClusterGroup": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszGroupName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "OpenClusterGroup": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszGroupName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "OpenClusterGroupEx": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszGroupName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwGrantedAccess",
+            "type": "DWORD"
+        }
+    ],
+    "ResumeClusterNodeEx": [
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "eResumeFailbackType",
+            "type": "CLUSTER_NODE_RESUME_FAILBACK_TYPE"
+        },
+        {
+            "name": "dwResumeFlagsReserved",
+            "type": "DWORD"
+        }
+    ],
+    "CreateClusterGroupEx": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszGroupName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pGroupInfo",
+            "type": "PCLUSTER_CREATE_GROUP_INFO"
+        }
+    ],
+    "ClusterGroupOpenEnumEx": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszProperties",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cbProperties",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszRoProperties",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cbRoProperties",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "ClusterGroupGetEnumCountEx": [
+        {
+            "name": "hGroupEnumEx",
+            "type": "HGROUPENUMEX"
+        }
+    ],
+    "ClusterGroupEnumEx": [
+        {
+            "name": "hGroupEnumEx",
+            "type": "HGROUPENUMEX"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pItem",
+            "type": "PCLUSTER_GROUP_ENUM_ITEM"
+        },
+        {
+            "name": "cbItem",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterGroupCloseEnumEx": [
+        {
+            "name": "hGroupEnumEx",
+            "type": "HGROUPENUMEX"
+        }
+    ],
+    "ClusterResourceOpenEnumEx": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszProperties",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cbProperties",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszRoProperties",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cbRoProperties",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "ClusterResourceGetEnumCountEx": [
+        {
+            "name": "hResourceEnumEx",
+            "type": "HRESENUMEX"
+        }
+    ],
+    "ClusterResourceEnumEx": [
+        {
+            "name": "hResourceEnumEx",
+            "type": "HRESENUMEX"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pItem",
+            "type": "PCLUSTER_RESOURCE_ENUM_ITEM"
+        },
+        {
+            "name": "cbItem",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterResourceCloseEnumEx": [
+        {
+            "name": "hResourceEnumEx",
+            "type": "HRESENUMEX"
+        }
+    ],
+    "OnlineClusterGroupEx": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "hDestinationNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwOnlineFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbInBufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "OfflineClusterGroupEx": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "dwOfflineFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbInBufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "OnlineClusterResourceEx": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "dwOnlineFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbInBufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "OfflineClusterResourceEx": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "dwOfflineFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbInBufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "MoveClusterGroupEx": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "hDestinationNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwMoveFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbInBufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "CancelClusterGroupOperation": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "dwCancelFlags_RESERVED",
+            "type": "DWORD"
+        }
+    ],
+    "CloseClusterGroup": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "GetClusterFromGroup": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "GetClusterGroupState": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "lpszNodeName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchNodeName",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetClusterGroupName": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "lpszGroupName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SetClusterGroupNodeList": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "NodeCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "NodeList",
+            "type": "HNODE"
+        }
+    ],
+    "OnlineClusterGroup": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "hDestinationNode",
+            "type": "HNODE"
+        }
+    ],
+    "MoveClusterGroup": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "hDestinationNode",
+            "type": "HNODE"
+        }
+    ],
+    "OfflineClusterGroup": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "DeleteClusterGroup": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "DestroyClusterGroup": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "ClusterGroupOpenEnum": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        }
+    ],
+    "ClusterGroupGetEnumCount": [
+        {
+            "name": "hGroupEnum",
+            "type": "HGROUPENUM"
+        }
+    ],
+    "ClusterGroupEnum": [
+        {
+            "name": "hGroupEnum",
+            "type": "HGROUPENUM"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszResourceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterGroupCloseEnum": [
+        {
+            "name": "hGroupEnum",
+            "type": "HGROUPENUM"
+        }
+    ],
+    "CreateClusterResource": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "lpszResourceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszResourceType",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "OpenClusterResource": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszResourceName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "OpenClusterResourceEx": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszResourceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwGrantedAccess",
+            "type": "DWORD"
+        }
+    ],
+    "CloseClusterResource": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        }
+    ],
+    "GetClusterFromResource": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        }
+    ],
+    "DeleteClusterResource": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        }
+    ],
+    "GetClusterResourceState": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "lpszNodeName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchNodeName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszGroupName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchGroupName",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetClusterResourceName": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "lpszResourceName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "FailClusterResource": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        }
+    ],
+    "OnlineClusterResource": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        }
+    ],
+    "OfflineClusterResource": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        }
+    ],
+    "ChangeClusterResourceGroup": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        }
+    ],
+    "AddClusterResourceNode": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        }
+    ],
+    "RemoveClusterResourceNode": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        }
+    ],
+    "AddClusterResourceDependency": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "hDependsOn",
+            "type": "HRESOURCE"
+        }
+    ],
+    "RemoveClusterResourceDependency": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "hDependsOn",
+            "type": "HRESOURCE"
+        }
+    ],
+    "SetClusterResourceDependencyExpression": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "lpszDependencyExpression",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetClusterResourceDependencyExpression": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "lpszDependencyExpression",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchDependencyExpression",
+            "type": "LPDWORD"
+        }
+    ],
+    "AddResourceToClusterSharedVolumes": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        }
+    ],
+    "RemoveResourceFromClusterSharedVolumes": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        }
+    ],
+    "IsFileOnClusterSharedVolume": [
+        {
+            "name": "lpszPathName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pbFileIsOnSharedVolume",
+            "type": "PBOOL"
+        }
+    ],
+    "ClusterSharedVolumeSetSnapshotState": [
+        {
+            "name": "guidSnapshotSet",
+            "type": "GUID"
+        },
+        {
+            "name": "lpszVolumeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "state",
+            "type": "CLUSTER_SHARED_VOLUME_SNAPSHOT_STATE"
+        }
+    ],
+    "CanResourceBeDependent": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "hResourceDependent",
+            "type": "HRESOURCE"
+        }
+    ],
+    "ClusterResourceControl": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "hHostNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwControlCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOutBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbOutBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterResourceControlAsUser": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "hHostNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwControlCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOutBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbOutBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterResourceTypeControl": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszResourceTypeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hHostNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwControlCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOutBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nOutBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterResourceTypeControlAsUser": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszResourceTypeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hHostNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwControlCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOutBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nOutBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterGroupControl": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "hHostNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwControlCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOutBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nOutBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterNodeControl": [
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "hHostNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwControlCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOutBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nOutBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetClusterResourceNetworkName": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterResourceOpenEnum": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        }
+    ],
+    "ClusterResourceGetEnumCount": [
+        {
+            "name": "hResEnum",
+            "type": "HRESENUM"
+        }
+    ],
+    "ClusterResourceEnum": [
+        {
+            "name": "hResEnum",
+            "type": "HRESENUM"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterResourceCloseEnum": [
+        {
+            "name": "hResEnum",
+            "type": "HRESENUM"
+        }
+    ],
+    "CreateClusterResourceType": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszResourceTypeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszDisplayName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszResourceTypeDll",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwLooksAlivePollInterval",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIsAlivePollInterval",
+            "type": "DWORD"
+        }
+    ],
+    "DeleteClusterResourceType": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszResourceTypeName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "ClusterResourceTypeOpenEnum": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszResourceTypeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        }
+    ],
+    "ClusterResourceTypeGetEnumCount": [
+        {
+            "name": "hResTypeEnum",
+            "type": "HRESTYPEENUM"
+        }
+    ],
+    "ClusterResourceTypeEnum": [
+        {
+            "name": "hResTypeEnum",
+            "type": "HRESTYPEENUM"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterResourceTypeCloseEnum": [
+        {
+            "name": "hResTypeEnum",
+            "type": "HRESTYPEENUM"
+        }
+    ],
+    "OpenClusterNetwork": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszNetworkName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "OpenClusterNetworkEx": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszNetworkName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwGrantedAccess",
+            "type": "DWORD"
+        }
+    ],
+    "CloseClusterNetwork": [
+        {
+            "name": "hNetwork",
+            "type": "HNETWORK"
+        }
+    ],
+    "GetClusterFromNetwork": [
+        {
+            "name": "hNetwork",
+            "type": "HNETWORK"
+        }
+    ],
+    "ClusterNetworkOpenEnum": [
+        {
+            "name": "hNetwork",
+            "type": "HNETWORK"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        }
+    ],
+    "ClusterNetworkGetEnumCount": [
+        {
+            "name": "hNetworkEnum",
+            "type": "HNETWORKENUM"
+        }
+    ],
+    "ClusterNetworkEnum": [
+        {
+            "name": "hNetworkEnum",
+            "type": "HNETWORKENUM"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterNetworkCloseEnum": [
+        {
+            "name": "hNetworkEnum",
+            "type": "HNETWORKENUM"
+        }
+    ],
+    "GetClusterNetworkState": [
+        {
+            "name": "hNetwork",
+            "type": "HNETWORK"
+        }
+    ],
+    "SetClusterNetworkName": [
+        {
+            "name": "hNetwork",
+            "type": "HNETWORK"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetClusterNetworkId": [
+        {
+            "name": "hNetwork",
+            "type": "HNETWORK"
+        },
+        {
+            "name": "lpszNetworkId",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterNetworkControl": [
+        {
+            "name": "hNetwork",
+            "type": "HNETWORK"
+        },
+        {
+            "name": "hHostNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwControlCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOutBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nOutBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "OpenClusterNetInterface": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszInterfaceName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "OpenClusterNetInterfaceEx": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszInterfaceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwGrantedAccess",
+            "type": "DWORD"
+        }
+    ],
+    "GetClusterNetInterface": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszNodeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszNetworkName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszInterfaceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchInterfaceName",
+            "type": "LPDWORD"
+        }
+    ],
+    "CloseClusterNetInterface": [
+        {
+            "name": "hNetInterface",
+            "type": "HNETINTERFACE"
+        }
+    ],
+    "GetClusterFromNetInterface": [
+        {
+            "name": "hNetInterface",
+            "type": "HNETINTERFACE"
+        }
+    ],
+    "GetClusterNetInterfaceState": [
+        {
+            "name": "hNetInterface",
+            "type": "HNETINTERFACE"
+        }
+    ],
+    "ClusterNetInterfaceControl": [
+        {
+            "name": "hNetInterface",
+            "type": "HNETINTERFACE"
+        },
+        {
+            "name": "hHostNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "dwControlCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOutBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nOutBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetClusterKey": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        }
+    ],
+    "GetClusterGroupKey": [
+        {
+            "name": "hGroup",
+            "type": "HGROUP"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        }
+    ],
+    "GetClusterResourceKey": [
+        {
+            "name": "hResource",
+            "type": "HRESOURCE"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        }
+    ],
+    "GetClusterNodeKey": [
+        {
+            "name": "hNode",
+            "type": "HNODE"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        }
+    ],
+    "GetClusterNetworkKey": [
+        {
+            "name": "hNetwork",
+            "type": "HNETWORK"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        }
+    ],
+    "GetClusterNetInterfaceKey": [
+        {
+            "name": "hNetInterface",
+            "type": "HNETINTERFACE"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        }
+    ],
+    "ClusterRegCreateKey": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpszSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        },
+        {
+            "name": "lpdwDisposition",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterRegOpenKey": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpszSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "phkResult",
+            "type": "PHKEY"
+        }
+    ],
+    "ClusterRegDeleteKey": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpszSubKey",
+            "type": "LPCWSTR"
+        }
+    ],
+    "ClusterRegCloseKey": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        }
+    ],
+    "ClusterRegEnumKey": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpftLastWriteTime",
+            "type": "PFILETIME"
+        }
+    ],
+    "ClusterRegSetValue": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpszValueName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        }
+    ],
+    "ClusterRegDeleteValue": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpszValueName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "ClusterRegQueryValue": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpszValueName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpdwValueType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpcbData",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterRegEnumValue": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszValueName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcchValueName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "lpcbData",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterRegQueryInfoKey": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "lpcSubKeys",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcchMaxSubKeyLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcValues",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcchMaxValueNameLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcbMaxValueLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpcbSecurityDescriptor",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpftLastWriteTime",
+            "type": "PFILETIME"
+        }
+    ],
+    "ClusterRegGetKeySecurity": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "RequestedInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "pSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "lpcbSecurityDescriptor",
+            "type": "LPDWORD"
+        }
+    ],
+    "ClusterRegSetKeySecurity": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SecurityInformation",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "pSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "ClusterRegSyncDatabase": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "flags",
+            "type": "DWORD"
+        }
+    ],
+    "ClusterRegCreateBatch": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pHREGBATCH",
+            "type": "HREGBATCH"
+        }
+    ],
+    "ClusterRegBatchAddCommand": [
+        {
+            "name": "hRegBatch",
+            "type": "HREGBATCH"
+        },
+        {
+            "name": "dwCommand",
+            "type": "CLUSTER_REG_COMMAND"
+        },
+        {
+            "name": "wzName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "void"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        }
+    ],
+    "ClusterRegCloseBatch": [
+        {
+            "name": "hRegBatch",
+            "type": "HREGBATCH"
+        },
+        {
+            "name": "bCommit",
+            "type": "BOOL"
+        },
+        {
+            "name": "failedCommandNumber",
+            "type": "INT"
+        }
+    ],
+    "ClusterRegCloseBatchEx": [
+        {
+            "name": "hRegBatch",
+            "type": "HREGBATCH"
+        },
+        {
+            "name": "flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "failedCommandNumber",
+            "type": "INT"
+        }
+    ],
+    "ClusterRegBatchReadCommand": [
+        {
+            "name": "hBatchNotification",
+            "type": "HREGBATCHNOTIFICATION"
+        },
+        {
+            "name": "pBatchCommand",
+            "type": "CLUSTER_BATCH_COMMAND"
+        }
+    ],
+    "ClusterRegBatchCloseNotification": [
+        {
+            "name": "hBatchNotification",
+            "type": "HREGBATCHNOTIFICATION"
+        }
+    ],
+    "ClusterRegCreateBatchNotifyPort": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "phBatchNotifyPort",
+            "type": "HREGBATCHPORT"
+        }
+    ],
+    "ClusterRegCloseBatchNotifyPort": [
+        {
+            "name": "hBatchNotifyPort",
+            "type": "HREGBATCHPORT"
+        }
+    ],
+    "ClusterRegGetBatchNotification": [
+        {
+            "name": "hBatchNotify",
+            "type": "HREGBATCHPORT"
+        },
+        {
+            "name": "phBatchNotification",
+            "type": "HREGBATCHNOTIFICATION"
+        }
+    ],
+    "ClusterRegCreateReadBatch": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "phRegReadBatch",
+            "type": "HREGREADBATCH"
+        }
+    ],
+    "ClusterRegReadBatchAddCommand": [
+        {
+            "name": "hRegReadBatch",
+            "type": "HREGREADBATCH"
+        },
+        {
+            "name": "wzSubkeyName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "wzValueName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "ClusterRegCloseReadBatch": [
+        {
+            "name": "hRegReadBatch",
+            "type": "HREGREADBATCH"
+        },
+        {
+            "name": "phRegReadBatchReply",
+            "type": "HREGREADBATCHREPLY"
+        }
+    ],
+    "ClusterRegCloseReadBatchEx": [
+        {
+            "name": "hRegReadBatch",
+            "type": "HREGREADBATCH"
+        },
+        {
+            "name": "flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phRegReadBatchReply",
+            "type": "HREGREADBATCHREPLY"
+        }
+    ],
+    "ClusterRegReadBatchReplyNextCommand": [
+        {
+            "name": "hRegReadBatchReply",
+            "type": "HREGREADBATCHREPLY"
+        },
+        {
+            "name": "pBatchCommand",
+            "type": "CLUSTER_READ_BATCH_COMMAND"
+        }
+    ],
+    "ClusterRegCloseReadBatchReply": [
+        {
+            "name": "hRegReadBatchReply",
+            "type": "HREGREADBATCHREPLY"
+        }
+    ],
+    "ClusterSetAccountAccess": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "szAccountSID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwControlType",
+            "type": "DWORD"
+        }
+    ],
+    "CreateCluster": [
+        {
+            "name": "pConfig",
+            "type": "PCREATE_CLUSTER_CONFIG"
+        },
+        {
+            "name": "pfnProgressCallback",
+            "type": "PCLUSTER_SETUP_PROGRESS_CALLBACK"
+        },
+        {
+            "name": "pvCallbackArg",
+            "type": "PVOID"
+        }
+    ],
+    "CreateClusterCNOless": [
+        {
+            "name": "pConfig",
+            "type": "PCREATE_CLUSTER_CONFIG"
+        },
+        {
+            "name": "pfnProgressCallback",
+            "type": "PCLUSTER_SETUP_PROGRESS_CALLBACK"
+        },
+        {
+            "name": "pvCallbackArg",
+            "type": "PVOID"
+        }
+    ],
+    "CreateClusterNameAccount": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "pConfig",
+            "type": "PCREATE_CLUSTER_NAME_ACCOUNT"
+        },
+        {
+            "name": "pfnProgressCallback",
+            "type": "PCLUSTER_SETUP_PROGRESS_CALLBACK"
+        },
+        {
+            "name": "pvCallbackArg",
+            "type": "PVOID"
+        }
+    ],
+    "RegisterClusterResourceTypeNotifyV2": [
+        {
+            "name": "hChange",
+            "type": "HCHANGE"
+        },
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "Flags",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "resTypeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwNotifyKey",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "AddClusterNode": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "lpszNodeName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pfnProgressCallback",
+            "type": "PCLUSTER_SETUP_PROGRESS_CALLBACK"
+        },
+        {
+            "name": "pvCallbackArg",
+            "type": "PVOID"
+        }
+    ],
+    "DestroyCluster": [
+        {
+            "name": "hCluster",
+            "type": "HCLUSTER"
+        },
+        {
+            "name": "pfnProgressCallback",
+            "type": "PCLUSTER_SETUP_PROGRESS_CALLBACK"
+        },
+        {
+            "name": "pvCallbackArg",
+            "type": "PVOID"
+        },
+        {
+            "name": "fdeleteVirtualComputerObjects",
+            "type": "BOOL"
+        }
+    ]
+}

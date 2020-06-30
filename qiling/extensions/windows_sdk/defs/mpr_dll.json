@@ -1,0 +1,638 @@
+{
+    "WNetAddConnectionA": [
+        {
+            "name": "lpRemoteName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpPassword",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpLocalName",
+            "type": "LPCSTR"
+        }
+    ],
+    "WNetAddConnectionW": [
+        {
+            "name": "lpRemoteName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpLocalName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "WNetAddConnection2A": [
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEA"
+        },
+        {
+            "name": "lpPassword",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpUserName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WNetAddConnection2W": [
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEW"
+        },
+        {
+            "name": "lpPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpUserName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WNetAddConnection3A": [
+        {
+            "name": "hwndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEA"
+        },
+        {
+            "name": "lpPassword",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpUserName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WNetAddConnection3W": [
+        {
+            "name": "hwndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEW"
+        },
+        {
+            "name": "lpPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpUserName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WNetCancelConnectionA": [
+        {
+            "name": "lpName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "fForce",
+            "type": "BOOL"
+        }
+    ],
+    "WNetCancelConnectionW": [
+        {
+            "name": "lpName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fForce",
+            "type": "BOOL"
+        }
+    ],
+    "WNetCancelConnection2A": [
+        {
+            "name": "lpName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "fForce",
+            "type": "BOOL"
+        }
+    ],
+    "WNetCancelConnection2W": [
+        {
+            "name": "lpName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "fForce",
+            "type": "BOOL"
+        }
+    ],
+    "WNetGetConnectionA": [
+        {
+            "name": "lpLocalName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpRemoteName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpnLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetGetConnectionW": [
+        {
+            "name": "lpLocalName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpRemoteName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpnLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetUseConnectionA": [
+        {
+            "name": "hwndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEA"
+        },
+        {
+            "name": "lpPassword",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpUserId",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpAccessName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpResult",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetUseConnectionW": [
+        {
+            "name": "hwndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEW"
+        },
+        {
+            "name": "lpPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpUserId",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpAccessName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpResult",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetConnectionDialog": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        }
+    ],
+    "WNetDisconnectDialog": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        }
+    ],
+    "WNetConnectionDialog1A": [
+        {
+            "name": "lpConnDlgStruct",
+            "type": "LPCONNECTDLGSTRUCTA"
+        }
+    ],
+    "WNetConnectionDialog1W": [
+        {
+            "name": "lpConnDlgStruct",
+            "type": "LPCONNECTDLGSTRUCTW"
+        }
+    ],
+    "WNetDisconnectDialog1A": [
+        {
+            "name": "lpConnDlgStruct",
+            "type": "LPDISCDLGSTRUCTA"
+        }
+    ],
+    "WNetDisconnectDialog1W": [
+        {
+            "name": "lpConnDlgStruct",
+            "type": "LPDISCDLGSTRUCTW"
+        }
+    ],
+    "WNetOpenEnumA": [
+        {
+            "name": "dwScope",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwUsage",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEA"
+        },
+        {
+            "name": "lphEnum",
+            "type": "LPHANDLE"
+        }
+    ],
+    "WNetOpenEnumW": [
+        {
+            "name": "dwScope",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwUsage",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEW"
+        },
+        {
+            "name": "lphEnum",
+            "type": "LPHANDLE"
+        }
+    ],
+    "WNetEnumResourceA": [
+        {
+            "name": "hEnum",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpcCount",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetEnumResourceW": [
+        {
+            "name": "hEnum",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpcCount",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetCloseEnum": [
+        {
+            "name": "hEnum",
+            "type": "HANDLE"
+        }
+    ],
+    "WNetGetResourceParentA": [
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEA"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpcbBuffer",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetGetResourceParentW": [
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEW"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpcbBuffer",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetGetResourceInformationA": [
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEA"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpcbBuffer",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lplpSystem",
+            "type": "LPSTR"
+        }
+    ],
+    "WNetGetResourceInformationW": [
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEW"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpcbBuffer",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lplpSystem",
+            "type": "LPWSTR"
+        }
+    ],
+    "WNetGetUniversalNameA": [
+        {
+            "name": "lpLocalPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwInfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetGetUniversalNameW": [
+        {
+            "name": "lpLocalPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetGetUserA": [
+        {
+            "name": "lpName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpUserName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpnLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetGetUserW": [
+        {
+            "name": "lpName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpUserName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpnLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetGetProviderNameA": [
+        {
+            "name": "dwNetType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpProviderName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetGetProviderNameW": [
+        {
+            "name": "dwNetType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpProviderName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "WNetGetNetworkInformationA": [
+        {
+            "name": "lpProvider",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpNetInfoStruct",
+            "type": "LPNETINFOSTRUCT"
+        }
+    ],
+    "WNetGetNetworkInformationW": [
+        {
+            "name": "lpProvider",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpNetInfoStruct",
+            "type": "LPNETINFOSTRUCT"
+        }
+    ],
+    "WNetGetLastErrorA": [
+        {
+            "name": "lpError",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpErrorBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nErrorBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpNameBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nNameBufSize",
+            "type": "DWORD"
+        }
+    ],
+    "WNetGetLastErrorW": [
+        {
+            "name": "lpError",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpErrorBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nErrorBufSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpNameBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nNameBufSize",
+            "type": "DWORD"
+        }
+    ],
+    "MultinetGetConnectionPerformanceA": [
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEA"
+        },
+        {
+            "name": "lpNetConnectInfoStruct",
+            "type": "LPNETCONNECTINFOSTRUCT"
+        }
+    ],
+    "MultinetGetConnectionPerformanceW": [
+        {
+            "name": "lpNetResource",
+            "type": "LPNETRESOURCEW"
+        },
+        {
+            "name": "lpNetConnectInfoStruct",
+            "type": "LPNETCONNECTINFOSTRUCT"
+        }
+    ],
+    "WNetSetLastErrorA": [
+        {
+            "name": "err",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpError",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpProviders",
+            "type": "LPSTR"
+        }
+    ]
+}

@@ -14,26 +14,25 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 from qiling.const import *
 
+dllname = 'kernel32_dll'
 
 # BOOL SetThreadLocale(
 #   LCID Locale
 # );
-@winapi(cc=STDCALL, params={
-    "Locale": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LCID': 'UINT'})
 def hook_SetThreadLocale(ql, address, params):
     return 0xC000  # LOCALE_CUSTOM_DEFAULT
 
 
 # LCID GetThreadLocale();
-@winapi(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetThreadLocale(ql, address, params):
     return 0xC000  # LOCALE_CUSTOM_DEFAULT
 
 
 # UINT GetACP(
 # );
-@winapi(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetACP(ql, address, params):
     return OEM_US
 
@@ -42,10 +41,7 @@ def hook_GetACP(ql, address, params):
 #   UINT     CodePage,
 #   LPCPINFO lpCPInfo
 # );
-@winapi(cc=STDCALL, params={
-    "CodePage": UINT,
-    "lpCPInfo": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetCPInfo(ql, address, params):
     ret = 1
     return ret
@@ -57,12 +53,7 @@ def hook_GetCPInfo(ql, address, params):
 #   LPSTR  lpLCData,
 #   int    cchData
 # );
-@winapi(cc=STDCALL, params={
-    "Locale": DWORD,
-    "LCType": DWORD,
-    "lpLCData": POINTER,
-    "cchData": INT,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LCID': 'DWORD', 'LCTYPE': 'DWORD'})
 def hook_GetLocaleInfoA(ql, address, params):
     locale_value = params["Locale"]
     lctype_value = params["LCType"]
@@ -85,9 +76,7 @@ def hook_GetLocaleInfoA(ql, address, params):
 # BOOL IsValidCodePage(
 #  UINT CodePage
 # );
-@winapi(cc=STDCALL, params={
-    "CodePage": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_IsValidCodePage(ql, address, params):
     return 1
 
@@ -110,14 +99,7 @@ def _LCMapString(ql, address, params):
 #   LPWSTR  lpDestStr,
 #   int     cchDest
 # );
-@winapi(cc=STDCALL, params={
-    "Locale": POINTER,
-    "dwMapFlags": DWORD,
-    "lpSrcStr": WSTRING,
-    "cchSrc": INT,
-    "lpDestStr": POINTER,
-    "cchDest": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LCMapStringW(ql, address, params):
     return _LCMapString(ql, address, params)
 
@@ -130,14 +112,7 @@ def hook_LCMapStringW(ql, address, params):
 #   LPSTR  lpDestStr,
 #   int    cchDest
 # );
-@winapi(cc=STDCALL, params={
-    "Locale": POINTER,
-    "dwMapFlags": DWORD,
-    "lpSrcStr": STRING,
-    "cchSrc": INT,
-    "lpDestStr": POINTER,
-    "cchDest": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LCMapStringA(ql, address, params):
     return _LCMapString(ql, address, params)
 
@@ -153,25 +128,13 @@ def hook_LCMapStringA(ql, address, params):
 #   LPVOID           lpReserved,
 #   LPARAM           sortHandle
 # );
-@winapi(cc=STDCALL, params={
-    "lpLocaleName": POINTER,
-    "dwMapFlags": DWORD,
-    "lpSrcStr": WSTRING,
-    "cchSrc": INT,
-    "lpDestStr": POINTER,
-    "cchDest": INT,
-    "lpVersionInformation": POINTER,
-    "lpReserved": UINT,
-    "sortHandle": UINT
-
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LCMapStringEx(ql, address, params):
     return _LCMapString(ql, address, params)
 
 
 # LANGID GetUserDefaultUILanguage();
-@winapi(cc=STDCALL, params={
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetUserDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
@@ -179,8 +142,7 @@ def hook_GetUserDefaultUILanguage(ql, address, params):
 
 
 # LANGID GetSystemDefaultUILanguage();
-@winapi(cc=STDCALL, params={
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetSystemDefaultUILanguage(ql, address, params):
     # TODO find better documentation
     # https://docs.microsoft.com/it-it/windows/win32/intl/language-identifiers
@@ -195,14 +157,7 @@ def hook_GetSystemDefaultUILanguage(ql, address, params):
 #   PCNZCH lpString2,
 #   int    cchCount2
 # );
-@winapi(cc=STDCALL, params={
-    "Locale": POINTER,
-    "dwCmpFlags": DWORD,
-    "lpString1": STRING,
-    "cchCount1": INT,
-    "lpString2": STRING,
-    "cchCount2": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CompareStringA(ql, address, params):
     st1 = params["lpString1"]
     st2 = params["lpString2"]

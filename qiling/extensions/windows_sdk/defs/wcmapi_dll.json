@@ -1,0 +1,88 @@
+{
+    "WcmQueryProperty": [
+        {
+            "name": "pInterface",
+            "type": "GUID"
+        },
+        {
+            "name": "strProfileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Property",
+            "type": "WCM_PROPERTY"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "pdwDataSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "ppData",
+            "type": "PBYTE"
+        }
+    ],
+    "WcmSetProperty": [
+        {
+            "name": "pInterface",
+            "type": "GUID"
+        },
+        {
+            "name": "strProfileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Property",
+            "type": "WCM_PROPERTY"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "dwDataSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbData",
+            "type": "BYTE"
+        }
+    ],
+    "WcmGetProfileList": [
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "ppProfileList",
+            "type": "WCM_PROFILE_INFO_LIST"
+        }
+    ],
+    "WcmSetProfileList": [
+        {
+            "name": "pProfileList",
+            "type": "WCM_PROFILE_INFO_LIST"
+        },
+        {
+            "name": "dwPosition",
+            "type": "DWORD"
+        },
+        {
+            "name": "fIgnoreUnknownProfiles",
+            "type": "BOOL"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        }
+    ],
+    "WcmFreeMemory": [
+        {
+            "name": "pMemory",
+            "type": "PVOID"
+        }
+    ]
+}

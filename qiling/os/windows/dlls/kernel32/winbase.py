@@ -9,15 +9,12 @@ from qiling.os.windows.thread import *
 from qiling.exception import *
 from qiling.os.windows.structs import *
 
+dllname = 'kernel32_dll'
 
 # __analysis_noreturn VOID FatalExit(
 #   int ExitCode
 # );
-
-
-@winapi(cc=STDCALL, params={
-    "ExitCode": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_FatalExit(ql, address, params):
     ql.emu_stop()
     ql.os.PE_RUN = False
@@ -26,9 +23,7 @@ def hook_FatalExit(ql, address, params):
 # PVOID EncodePointer(
 #  _In_ PVOID Ptr
 # );
-@winapi(cc=STDCALL, params={
-    "Ptr": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"Ptr": POINTER})
 def hook_EncodePointer(ql, address, params):
     return params['Ptr']
 
@@ -36,9 +31,7 @@ def hook_EncodePointer(ql, address, params):
 # PVOID DecodePointer(
 #  _In_ PVOID Ptr
 # );
-@winapi(cc=STDCALL, params={
-    "Ptr": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"Ptr": POINTER})
 def hook_DecodePointer(ql, address, params):
     return params['Ptr']
 
@@ -47,10 +40,7 @@ def hook_DecodePointer(ql, address, params):
 #   LPCSTR lpCmdLine,
 #   UINT   uCmdShow
 # );
-@winapi(cc=STDCALL, params={
-    "lpCmdLine": STRING,
-    "uCmdShow": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_WinExec(ql, address, params):
     return 33
 
@@ -59,10 +49,7 @@ def hook_WinExec(ql, address, params):
 #   UINT   uFlags,
 #   SIZE_T uBytes
 # );
-@winapi(cc=STDCALL, params={
-    "uFlags": UINT,
-    "uBytes": SIZE_T
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LocalAlloc(ql, address, params):
     ret = ql.os.heap.alloc(params["uBytes"])
     return ret
@@ -73,11 +60,7 @@ def hook_LocalAlloc(ql, address, params):
 #   SIZE_T                 uBytes,
 #   UINT                   uFlags
 # );
-@winapi(cc=STDCALL, params={
-    "hMem": POINTER,
-    "uBytes": SIZE_T,
-    "uFlags": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LocalReAlloc(ql, address, params):
     old_mem = params["hMem"]
     ql.os.heap.free(old_mem)
@@ -88,9 +71,7 @@ def hook_LocalReAlloc(ql, address, params):
 # HLOCAL LocalFree(
 #   _Frees_ptr_opt_ HLOCAL hMem
 # );
-@winapi(cc=STDCALL, params={
-    "hMem": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LocalFree(ql, address, params):
     old_mem = params["hMem"]
     ql.os.heap.free(old_mem)
@@ -100,9 +81,7 @@ def hook_LocalFree(ql, address, params):
 # UINT SetHandleCount(
 #   UINT uNumber
 # );
-@winapi(cc=STDCALL, params={
-    "uNumber": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SetHandleCount(ql, address, params):
     uNumber = params["uNumber"]
     return uNumber
@@ -111,9 +90,7 @@ def hook_SetHandleCount(ql, address, params):
 # LPVOID GlobalLock(
 #  HGLOBAL hMem
 # );
-@winapi(cc=STDCALL, params={
-    "hMem": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GlobalLock(ql, address, params):
     return params['hMem']
 
@@ -121,9 +98,7 @@ def hook_GlobalLock(ql, address, params):
 # LPVOID GlobalUnlock(
 #  HGLOBAL hMem
 # );
-@winapi(cc=STDCALL, params={
-    "hMem": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GlobalUnlock(ql, address, params):
     return 1
 
@@ -132,10 +107,7 @@ def hook_GlobalUnlock(ql, address, params):
 #  UINT   uFlags,
 #  SIZE_T dwBytes
 # );
-@winapi(cc=STDCALL, params={
-    "uFlags": UINT,
-    "dwBytes": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'SIZE_T': 'UINT'})
 def hook_GlobalAlloc(ql, address, params):
     return ql.os.heap.alloc(params["dwBytes"])
 
@@ -143,9 +115,7 @@ def hook_GlobalAlloc(ql, address, params):
 # HGLOBAL GlobalFree(
 #   _Frees_ptr_opt_ HGLOBAL hMem
 # );
-@winapi(cc=STDCALL, params={
-    "hMem": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GlobalFree(ql, address, params):
     old_mem = params["hMem"]
     ql.os.heap.free(old_mem)
@@ -155,9 +125,7 @@ def hook_GlobalFree(ql, address, params):
 # HGLOBAL GlobalHandle(
 #   LPCVOID pMem
 # );
-@winapi(cc=STDCALL, params={
-    "pMem": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GlobalHandle(ql, address, params):
     return params["pMem"]
 
@@ -167,11 +135,7 @@ def hook_GlobalHandle(ql, address, params):
 #   LPCSTR lpString2,
 #   int    iMaxLength
 # );
-@winapi(cc=STDCALL, params={
-    "lpString1": POINTER,
-    "lpString2": STRING,
-    "iMaxLength": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcpynA(ql, address, params):
     # Copy String2 into String for max iMaxLength chars
     src = params["lpString2"]
@@ -188,11 +152,7 @@ def hook_lstrcpynA(ql, address, params):
 #   LPCWSTR lpString2,
 #   int    iMaxLength
 # );
-@winapi(cc=STDCALL, params={
-    "lpString1": POINTER,
-    "lpString2": WSTRING,
-    "iMaxLength": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcpynW(ql, address, params):
     # Copy String2 into String for max iMaxLength chars
     src = params["lpString2"]
@@ -208,10 +168,7 @@ def hook_lstrcpynW(ql, address, params):
 #   LPSTR  lpString1,
 #   LPCSTR lpString2,
 # );
-@winapi(cc=STDCALL, params={
-    "lpString1": POINTER,
-    "lpString2": STRING,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcpyA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
@@ -224,10 +181,7 @@ def hook_lstrcpyA(ql, address, params):
 #   LPSTR  lpString1,
 #   LPCSTR lpString2,
 # );
-@winapi(cc=STDCALL, params={
-    "lpString1": POINTER,
-    "lpString2": WSTRING,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcpyW(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
@@ -240,10 +194,7 @@ def hook_lstrcpyW(ql, address, params):
 #   LPSTR  lpString1,
 #   LPCSTR lpString2
 # );
-@winapi(cc=STDCALL, params={
-    "lpString1": POINTER,
-    "lpString2": STRING,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcatA(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
@@ -259,10 +210,7 @@ def hook_lstrcatA(ql, address, params):
 #   LPWSTR  lpString1,
 #   LPCWSTR lpString2
 # );
-@winapi(cc=STDCALL, params={
-    "lpString1": POINTER,
-    "lpString2": WSTRING,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcatW(ql, address, params):
     # Copy String2 into String
     src = params["lpString2"]
@@ -278,10 +226,7 @@ def hook_lstrcatW(ql, address, params):
 #   LPCWSTR lpString1,
 #   LPCWSTR lpString2
 # );
-@winapi(cc=STDCALL, params={
-    "lpString1": WSTRING,
-    "lpString2": WSTRING,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcmpiW(ql, address, params):
     # Copy String2 into String
     str1 = params["lpString1"]
@@ -298,10 +243,7 @@ def hook_lstrcmpiW(ql, address, params):
 #   LPCSTR lpString1,
 #   LPCSTR lpString2
 # );
-@winapi(cc=STDCALL, params={
-    "lpString1": STRING,
-    "lpString2": STRING,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_lstrcmpiA(ql, address, params):
     return hook_lstrcmpiW.__wrapped__(ql, address, params)
 
@@ -311,11 +253,7 @@ def hook_lstrcmpiA(ql, address, params):
 #   LPCSTR  lpName,
 #   LPCSTR  lpType
 # );
-@winapi(cc=STDCALL, params={
-    "hModule": POINTER,
-    "lpName": POINTER,
-    "lpType": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_FindResourceA(ql, address, params):
     # Retrieve a resource
     # Name e Type can be int or strings, this can be a problem
@@ -329,10 +267,7 @@ def hook_FindResourceA(ql, address, params):
 #   const VOID *lp,
 #   UINT_PTR   ucb
 # );
-@winapi(cc=STDCALL, params={
-    "lp": POINTER,
-    "ucb": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_IsBadReadPtr(ql, address, params):
     # Check read permission for size of memory
     ACCESS_TRUE = 0
@@ -344,10 +279,7 @@ def hook_IsBadReadPtr(ql, address, params):
 #   const VOID *lp,
 #   UINT_PTR   ucb
 # );
-@winapi(cc=STDCALL, params={
-    "lp": POINTER,
-    "ucb": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_IsBadWritePtr(ql, address, params):
     # Check read permission for size of memory
     ACCESS_TRUE = 0
@@ -390,11 +322,7 @@ def compare(p1, operator, p2):
 #   DWORD              dwTypeMask,
 #   DWORDLONG          dwlConditionMask
 # );
-@winapi(cc=STDCALL, params={
-    "lpVersionInformation": POINTER,
-    "dwTypeMask": DWORD,
-    "dwlConditionMask": ULONGLONG
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_VerifyVersionInfoW(ql, address, params):
     #  https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-verifyversioninfow2
     pointer = params["lpVersionInformation"]
@@ -452,10 +380,7 @@ def hook_VerifyVersionInfoW(ql, address, params):
 #   LPWSTR  lpBuffer,
 #   LPDWORD pcbBuffer
 # );
-@winapi(cc=STDCALL, params={
-    "lpBuffer": POINTER,
-    "pcbBuffer": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"lpBuffer": POINTER, "pcbBuffer": POINTER})
 def hook_GetUserNameW(ql, address, params):
     username = (ql.os.profile["USER"]["username"] + "\x00").encode("utf-16le")
     dst = params["lpBuffer"]
@@ -473,10 +398,7 @@ def hook_GetUserNameW(ql, address, params):
 #   LPCSTR  lpBuffer,
 #   LPDWORD pcbBuffer
 # );
-@winapi(cc=STDCALL, params={
-    "lpBuffer": POINTER,
-    "pcbBuffer": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetUserNameA(ql, address, params):
     username = (ql.os.profile["USER"]["username"] + "\x00").encode()
     dst = params["lpBuffer"]
@@ -494,10 +416,7 @@ def hook_GetUserNameA(ql, address, params):
 #   LPWSTR  lpBuffer,
 #   LPDWORD nSize
 # );
-@winapi(cc=STDCALL, params={
-    "lpBuffer": POINTER,
-    "nSize": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetComputerNameW(ql, address, params):
     computer = (ql.os.profile["SYSTEM"]["computername"] + "\x00").encode("utf-16le")
     dst = params["lpBuffer"]
@@ -515,10 +434,7 @@ def hook_GetComputerNameW(ql, address, params):
 #   LPCSTR  lpBuffer,
 #   LPDWORD nSize
 # );
-@winapi(cc=STDCALL, params={
-    "lpBuffer": POINTER,
-    "nSize": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetComputerNameA(ql, address, params):
     computer = (ql.os.profile["SYSTEM"]["computername"] + "\x00").encode()
     dst = params["lpBuffer"]

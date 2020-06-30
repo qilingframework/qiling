@@ -1,0 +1,3140 @@
+{
+    "InternetTimeFromSystemTimeA": [
+        {
+            "name": "pst",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "dwRFC",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszTime",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cbTime",
+            "type": "DWORD"
+        }
+    ],
+    "InternetTimeFromSystemTimeW": [
+        {
+            "name": "pst",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "dwRFC",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszTime",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cbTime",
+            "type": "DWORD"
+        }
+    ],
+    "InternetTimeFromSystemTime": [
+        {
+            "name": "pst",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "dwRFC",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszTime",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cbTime",
+            "type": "DWORD"
+        }
+    ],
+    "InternetTimeToSystemTimeA": [
+        {
+            "name": "lpszTime",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pst",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetTimeToSystemTimeW": [
+        {
+            "name": "lpszTime",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pst",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetTimeToSystemTime": [
+        {
+            "name": "lpszTime",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pst",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetCrackUrlA": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwUrlLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpUrlComponents",
+            "type": "LPURL_COMPONENTSA"
+        }
+    ],
+    "InternetCrackUrlW": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwUrlLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpUrlComponents",
+            "type": "LPURL_COMPONENTSW"
+        }
+    ],
+    "InternetCreateUrlA": [
+        {
+            "name": "lpUrlComponents",
+            "type": "LPURL_COMPONENTSA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszUrl",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpdwUrlLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "InternetCreateUrlW": [
+        {
+            "name": "lpUrlComponents",
+            "type": "LPURL_COMPONENTSW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszUrl",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpdwUrlLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "InternetCanonicalizeUrlA": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "InternetCanonicalizeUrlW": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "InternetCombineUrlA": [
+        {
+            "name": "lpszBaseUrl",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszRelativeUrl",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "InternetCombineUrlW": [
+        {
+            "name": "lpszBaseUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszRelativeUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "InternetOpenA": [
+        {
+            "name": "lpszAgent",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwAccessType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszProxy",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszProxyBypass",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "InternetOpenW": [
+        {
+            "name": "lpszAgent",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwAccessType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszProxy",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszProxyBypass",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "InternetCloseHandle": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        }
+    ],
+    "InternetConnectA": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszServerName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "nServerPort",
+            "type": "INTERNET_PORT"
+        },
+        {
+            "name": "lpszUserName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszPassword",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwService",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "InternetConnectW": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszServerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "nServerPort",
+            "type": "INTERNET_PORT"
+        },
+        {
+            "name": "lpszUserName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwService",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "InternetOpenUrlA": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszUrl",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszHeaders",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwHeadersLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "InternetOpenUrlW": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszHeaders",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwHeadersLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "InternetReadFile": [
+        {
+            "name": "hFile",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwNumberOfBytesToRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwNumberOfBytesRead",
+            "type": "LPDWORD"
+        }
+    ],
+    "InternetReadFileExA": [
+        {
+            "name": "hFile",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpBuffersOut",
+            "type": "LPINTERNET_BUFFERSA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "InternetReadFileExW": [
+        {
+            "name": "hFile",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpBuffersOut",
+            "type": "LPINTERNET_BUFFERSW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "InternetSetFilePointer": [
+        {
+            "name": "hFile",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lDistanceToMove",
+            "type": "LONG"
+        },
+        {
+            "name": "lpDistanceToMoveHigh",
+            "type": "PLONG"
+        },
+        {
+            "name": "dwMoveMethod",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "InternetWriteFile": [
+        {
+            "name": "hFile",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "dwNumberOfBytesToWrite",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwNumberOfBytesWritten",
+            "type": "LPDWORD"
+        }
+    ],
+    "InternetQueryDataAvailable": [
+        {
+            "name": "hFile",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpdwNumberOfBytesAvailable",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "InternetFindNextFileA": [
+        {
+            "name": "hFind",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpvFindData",
+            "type": "LPVOID"
+        }
+    ],
+    "InternetFindNextFileW": [
+        {
+            "name": "hFind",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpvFindData",
+            "type": "LPVOID"
+        }
+    ],
+    "InternetQueryOptionA": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwOption",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "InternetQueryOptionW": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwOption",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "InternetSetOptionA": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwOption",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferLength",
+            "type": "DWORD"
+        }
+    ],
+    "InternetSetOptionW": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwOption",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferLength",
+            "type": "DWORD"
+        }
+    ],
+    "InternetSetOptionExA": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwOption",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "InternetSetOptionExW": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwOption",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "InternetLockRequestFile": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lphLockRequestInfo",
+            "type": "HANDLE"
+        }
+    ],
+    "InternetUnlockRequestFile": [
+        {
+            "name": "hLockRequestInfo",
+            "type": "HANDLE"
+        }
+    ],
+    "InternetGetLastResponseInfoA": [
+        {
+            "name": "lpdwError",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "InternetGetLastResponseInfoW": [
+        {
+            "name": "lpdwError",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "InternetSetStatusCallbackA": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpfnInternetCallback",
+            "type": "INTERNET_STATUS_CALLBACK"
+        }
+    ],
+    "InternetSetStatusCallbackW": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpfnInternetCallback",
+            "type": "INTERNET_STATUS_CALLBACK"
+        }
+    ],
+    "InternetSetStatusCallback": [
+        {
+            "name": "hInternet",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpfnInternetCallback",
+            "type": "INTERNET_STATUS_CALLBACK"
+        }
+    ],
+    "FtpFindFirstFileA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszSearchFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpFindFileData",
+            "type": "LPWIN32_FIND_DATAA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "FtpFindFirstFileW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszSearchFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpFindFileData",
+            "type": "LPWIN32_FIND_DATAW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "FtpGetFileA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszRemoteFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszNewFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "fFailIfExists",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwFlagsAndAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "FtpGetFileW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszRemoteFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszNewFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fFailIfExists",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwFlagsAndAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "FtpPutFileA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszLocalFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszNewRemoteFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "FtpPutFileW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszLocalFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszNewRemoteFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "FtpDeleteFileA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszFileName",
+            "type": "LPCSTR"
+        }
+    ],
+    "FtpDeleteFileW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszFileName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "FtpRenameFileA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszExisting",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszNew",
+            "type": "LPCSTR"
+        }
+    ],
+    "FtpRenameFileW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszExisting",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszNew",
+            "type": "LPCWSTR"
+        }
+    ],
+    "FtpOpenFileA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "FtpOpenFileW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "FtpCreateDirectoryA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszDirectory",
+            "type": "LPCSTR"
+        }
+    ],
+    "FtpCreateDirectoryW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszDirectory",
+            "type": "LPCWSTR"
+        }
+    ],
+    "FtpRemoveDirectoryA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszDirectory",
+            "type": "LPCSTR"
+        }
+    ],
+    "FtpRemoveDirectoryW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszDirectory",
+            "type": "LPCWSTR"
+        }
+    ],
+    "FtpSetCurrentDirectoryA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszDirectory",
+            "type": "LPCSTR"
+        }
+    ],
+    "FtpSetCurrentDirectoryW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszDirectory",
+            "type": "LPCWSTR"
+        }
+    ],
+    "FtpGetCurrentDirectoryA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszCurrentDirectory",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpdwCurrentDirectory",
+            "type": "LPDWORD"
+        }
+    ],
+    "FtpGetCurrentDirectoryW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszCurrentDirectory",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpdwCurrentDirectory",
+            "type": "LPDWORD"
+        }
+    ],
+    "FtpCommandA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "fExpectResponse",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszCommand",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "phFtpCommand",
+            "type": "HINTERNET"
+        }
+    ],
+    "FtpCommandW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "fExpectResponse",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszCommand",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "phFtpCommand",
+            "type": "HINTERNET"
+        }
+    ],
+    "FtpGetFileSize": [
+        {
+            "name": "hFile",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpdwFileSizeHigh",
+            "type": "LPDWORD"
+        }
+    ],
+    "GopherCreateLocatorA": [
+        {
+            "name": "lpszHost",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "nServerPort",
+            "type": "INTERNET_PORT"
+        },
+        {
+            "name": "lpszDisplayString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszSelectorString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwGopherType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszLocator",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "GopherCreateLocatorW": [
+        {
+            "name": "lpszHost",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "nServerPort",
+            "type": "INTERNET_PORT"
+        },
+        {
+            "name": "lpszDisplayString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszSelectorString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwGopherType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszLocator",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "GopherGetLocatorTypeA": [
+        {
+            "name": "lpszLocator",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpdwGopherType",
+            "type": "LPDWORD"
+        }
+    ],
+    "GopherGetLocatorTypeW": [
+        {
+            "name": "lpszLocator",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpdwGopherType",
+            "type": "LPDWORD"
+        }
+    ],
+    "GopherFindFirstFileA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszLocator",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszSearchString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpFindData",
+            "type": "LPGOPHER_FIND_DATAA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "GopherFindFirstFileW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszLocator",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszSearchString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpFindData",
+            "type": "LPGOPHER_FIND_DATAW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "GopherOpenFileA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszLocator",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszView",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "GopherOpenFileW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszLocator",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszView",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "GopherGetAttributeA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszLocator",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszAttributeName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwCharactersReturned",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpfnEnumerator",
+            "type": "GOPHER_ATTRIBUTE_ENUMERATOR"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "GopherGetAttributeW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszLocator",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszAttributeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwCharactersReturned",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpfnEnumerator",
+            "type": "GOPHER_ATTRIBUTE_ENUMERATOR"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "HttpOpenRequestA": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszVerb",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszObjectName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszVersion",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszReferrer",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lplpszAcceptTypes",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "HttpOpenRequestW": [
+        {
+            "name": "hConnect",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszVerb",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszObjectName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszVersion",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszReferrer",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lplpszAcceptTypes",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "HttpAddRequestHeadersA": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszHeaders",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwHeadersLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwModifiers",
+            "type": "DWORD"
+        }
+    ],
+    "HttpAddRequestHeadersW": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszHeaders",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwHeadersLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwModifiers",
+            "type": "DWORD"
+        }
+    ],
+    "HttpSendRequestA": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszHeaders",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwHeadersLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOptional",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwOptionalLength",
+            "type": "DWORD"
+        }
+    ],
+    "HttpSendRequestW": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpszHeaders",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwHeadersLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOptional",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwOptionalLength",
+            "type": "DWORD"
+        }
+    ],
+    "HttpSendRequestExA": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpBuffersIn",
+            "type": "LPINTERNET_BUFFERSA"
+        },
+        {
+            "name": "lpBuffersOut",
+            "type": "LPINTERNET_BUFFERSA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "HttpSendRequestExW": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpBuffersIn",
+            "type": "LPINTERNET_BUFFERSW"
+        },
+        {
+            "name": "lpBuffersOut",
+            "type": "LPINTERNET_BUFFERSW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "HttpEndRequestA": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpBuffersOut",
+            "type": "LPINTERNET_BUFFERSA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "HttpEndRequestW": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "lpBuffersOut",
+            "type": "LPINTERNET_BUFFERSW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContext",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "HttpQueryInfoA": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwInfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "HttpQueryInfoW": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwInfoLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpdwBufferLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "InternetSetCookieA": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszCookieName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszCookieData",
+            "type": "LPCSTR"
+        }
+    ],
+    "InternetSetCookieW": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszCookieName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszCookieData",
+            "type": "LPCWSTR"
+        }
+    ],
+    "InternetGetCookieA": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszCookieName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszCookieData",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpdwSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "InternetGetCookieW": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszCookieName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszCookieData",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpdwSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "InternetSetCookieExA": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszCookieName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszCookieData",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "InternetSetCookieExW": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszCookieName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszCookieData",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "InternetGetCookieExA": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszCookieName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszCookieData",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpdwSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "InternetGetCookieExW": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszCookieName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszCookieData",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpdwSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "InternetAttemptConnect": [
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetCheckConnectionA": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetCheckConnectionW": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "ResumeSuspendedDownload": [
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwResultCode",
+            "type": "DWORD"
+        }
+    ],
+    "InternetErrorDlg": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hRequest",
+            "type": "HINTERNET"
+        },
+        {
+            "name": "dwError",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lppvData",
+            "type": "LPVOID"
+        }
+    ],
+    "InternetConfirmZoneCrossingA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "szUrlPrev",
+            "type": "LPSTR"
+        },
+        {
+            "name": "szUrlNew",
+            "type": "LPSTR"
+        },
+        {
+            "name": "bPost",
+            "type": "BOOL"
+        }
+    ],
+    "InternetConfirmZoneCrossingW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "szUrlPrev",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "szUrlNew",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "bPost",
+            "type": "BOOL"
+        }
+    ],
+    "InternetConfirmZoneCrossing": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "szUrlPrev",
+            "type": "LPSTR"
+        },
+        {
+            "name": "szUrlNew",
+            "type": "LPSTR"
+        },
+        {
+            "name": "bPost",
+            "type": "BOOL"
+        }
+    ],
+    "CreateUrlCacheEntryA": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwExpectedFileSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszFileExtension",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszFileName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "CreateUrlCacheEntryW": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwExpectedFileSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszFileExtension",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszFileName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "CommitUrlCacheEntryA": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszLocalFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ExpireTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "LastModifiedTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "CacheEntryType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpHeaderInfo",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cchHeaderInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszFileExtension",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszOriginalUrl",
+            "type": "LPCSTR"
+        }
+    ],
+    "CommitUrlCacheEntryW": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszLocalFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ExpireTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "LastModifiedTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "CacheEntryType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszHeaderInfo",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchHeaderInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszFileExtension",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszOriginalUrl",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RetrieveUrlCacheEntryFileA": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOA"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "RetrieveUrlCacheEntryFileW": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOW"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "UnlockUrlCacheEntryFileA": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "UnlockUrlCacheEntryFileW": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "UnlockUrlCacheEntryFile": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "RetrieveUrlCacheEntryStreamA": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOA"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "fRandomRead",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "RetrieveUrlCacheEntryStreamW": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOW"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "fRandomRead",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "ReadUrlCacheEntryStream": [
+        {
+            "name": "hUrlCacheStream",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwLocation",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpdwLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        }
+    ],
+    "UnlockUrlCacheEntryStream": [
+        {
+            "name": "hUrlCacheStream",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Reserved",
+            "type": "DWORD"
+        }
+    ],
+    "GetUrlCacheEntryInfoA": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOA"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetUrlCacheEntryInfoW": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOW"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        }
+    ],
+    "FindFirstUrlCacheGroup": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFilter",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpSearchCondition",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwSearchCondition",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpGroupId",
+            "type": "GROUPID"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "FindNextUrlCacheGroup": [
+        {
+            "name": "hFind",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpGroupId",
+            "type": "GROUPID"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "GetUrlCacheGroupAttributeA": [
+        {
+            "name": "gid",
+            "type": "GROUPID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpGroupInfo",
+            "type": "LPINTERNET_CACHE_GROUP_INFOA"
+        },
+        {
+            "name": "lpcbGroupInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "GetUrlCacheGroupAttributeW": [
+        {
+            "name": "gid",
+            "type": "GROUPID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpGroupInfo",
+            "type": "LPINTERNET_CACHE_GROUP_INFOW"
+        },
+        {
+            "name": "lpcbGroupInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "SetUrlCacheGroupAttributeA": [
+        {
+            "name": "gid",
+            "type": "GROUPID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpGroupInfo",
+            "type": "LPINTERNET_CACHE_GROUP_INFOA"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "SetUrlCacheGroupAttributeW": [
+        {
+            "name": "gid",
+            "type": "GROUPID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpGroupInfo",
+            "type": "LPINTERNET_CACHE_GROUP_INFOW"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "GetUrlCacheEntryInfoExA": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOA"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszRedirectUrl",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpcbRedirectUrl",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetUrlCacheEntryInfoExW": [
+        {
+            "name": "lpszUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOW"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszRedirectUrl",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpcbRedirectUrl",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SetUrlCacheEntryInfoA": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOA"
+        },
+        {
+            "name": "dwFieldControl",
+            "type": "DWORD"
+        }
+    ],
+    "SetUrlCacheEntryInfoW": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOW"
+        },
+        {
+            "name": "dwFieldControl",
+            "type": "DWORD"
+        }
+    ],
+    "CreateUrlCacheGroup": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "DeleteUrlCacheGroup": [
+        {
+            "name": "GroupId",
+            "type": "GROUPID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "SetUrlCacheEntryGroupA": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "GroupId",
+            "type": "GROUPID"
+        },
+        {
+            "name": "pbGroupAttributes",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbGroupAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "SetUrlCacheEntryGroupW": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "GroupId",
+            "type": "GROUPID"
+        },
+        {
+            "name": "pbGroupAttributes",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbGroupAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "SetUrlCacheEntryGroup": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "GroupId",
+            "type": "GROUPID"
+        },
+        {
+            "name": "pbGroupAttributes",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbGroupAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "FindFirstUrlCacheEntryExA": [
+        {
+            "name": "lpszUrlSearchPattern",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFilter",
+            "type": "DWORD"
+        },
+        {
+            "name": "GroupId",
+            "type": "GROUPID"
+        },
+        {
+            "name": "lpFirstCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOA"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpGroupAttributes",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpcbGroupAttributes",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "FindFirstUrlCacheEntryExW": [
+        {
+            "name": "lpszUrlSearchPattern",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFilter",
+            "type": "DWORD"
+        },
+        {
+            "name": "GroupId",
+            "type": "GROUPID"
+        },
+        {
+            "name": "lpFirstCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOW"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpGroupAttributes",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpcbGroupAttributes",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "FindNextUrlCacheEntryExA": [
+        {
+            "name": "hEnumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpNextCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOA"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpGroupAttributes",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpcbGroupAttributes",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "FindNextUrlCacheEntryExW": [
+        {
+            "name": "hEnumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpNextCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOW"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpGroupAttributes",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpcbGroupAttributes",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "FindFirstUrlCacheEntryA": [
+        {
+            "name": "lpszUrlSearchPattern",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpFirstCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOA"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        }
+    ],
+    "FindFirstUrlCacheEntryW": [
+        {
+            "name": "lpszUrlSearchPattern",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpFirstCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOW"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        }
+    ],
+    "FindNextUrlCacheEntryA": [
+        {
+            "name": "hEnumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpNextCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOA"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        }
+    ],
+    "FindNextUrlCacheEntryW": [
+        {
+            "name": "hEnumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpNextCacheEntryInfo",
+            "type": "LPINTERNET_CACHE_ENTRY_INFOW"
+        },
+        {
+            "name": "lpcbCacheEntryInfo",
+            "type": "LPDWORD"
+        }
+    ],
+    "FindCloseUrlCache": [
+        {
+            "name": "hEnumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "DeleteUrlCacheEntryA": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCSTR"
+        }
+    ],
+    "DeleteUrlCacheEntryW": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "DeleteUrlCacheEntry": [
+        {
+            "name": "lpszUrlName",
+            "type": "LPCSTR"
+        }
+    ],
+    "InternetDialA": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpszConnectoid",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwConnection",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetDialW": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpszConnectoid",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwConnection",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetDial": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpszConnectoid",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwConnection",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetHangUp": [
+        {
+            "name": "dwConnection",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetGoOnlineA": [
+        {
+            "name": "lpszURL",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "InternetGoOnlineW": [
+        {
+            "name": "lpszURL",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "InternetGoOnline": [
+        {
+            "name": "lpszURL",
+            "type": "LPSTR"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "InternetAutodial": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        }
+    ],
+    "InternetAutodialHangup": [
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetGetConnectedState": [
+        {
+            "name": "lpdwFlags",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetGetConnectedStateExA": [
+        {
+            "name": "lpdwFlags",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszConnectionName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchNameLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetGetConnectedStateExW": [
+        {
+            "name": "lpdwFlags",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszConnectionName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchNameLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "DetectAutoProxyUrl": [
+        {
+            "name": "pszAutoProxyUrl",
+            "type": "PSTR"
+        },
+        {
+            "name": "cchAutoProxyUrl",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwDetectFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CreateMD5SSOHash": [
+        {
+            "name": "pszChallengeInfo",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pwszRealm",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pwszTarget",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pbHexHash",
+            "type": "PBYTE"
+        }
+    ],
+    "InternetGetConnectedStateEx": [
+        {
+            "name": "lpdwFlags",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpszConnectionName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwNameLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetSetDialStateA": [
+        {
+            "name": "lpszConnectoid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwState",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetSetDialStateW": [
+        {
+            "name": "lpszConnectoid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwState",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetSetDialState": [
+        {
+            "name": "lpszConnectoid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwState",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "InternetSetPerSiteCookieDecisionA": [
+        {
+            "name": "pchHostName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwDecision",
+            "type": "DWORD"
+        }
+    ],
+    "InternetSetPerSiteCookieDecisionW": [
+        {
+            "name": "pchHostName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwDecision",
+            "type": "DWORD"
+        }
+    ],
+    "InternetGetPerSiteCookieDecisionA": [
+        {
+            "name": "pchHostName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pResult",
+            "type": "unsigned long"
+        }
+    ],
+    "InternetGetPerSiteCookieDecisionW": [
+        {
+            "name": "pchHostName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pResult",
+            "type": "unsigned long"
+        }
+    ],
+    "InternetEnumPerSiteCookieDecisionA": [
+        {
+            "name": "pszSiteName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcSiteNameSize",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pdwDecision",
+            "type": "unsigned long"
+        },
+        {
+            "name": "dwIndex",
+            "type": "unsigned long"
+        }
+    ],
+    "InternetEnumPerSiteCookieDecisionW": [
+        {
+            "name": "pszSiteName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcSiteNameSize",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pdwDecision",
+            "type": "unsigned long"
+        },
+        {
+            "name": "dwIndex",
+            "type": "unsigned long"
+        }
+    ],
+    "PrivacySetZonePreferenceW": [
+        {
+            "name": "dwZone",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwTemplate",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszPreference",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PrivacyGetZonePreferenceW": [
+        {
+            "name": "dwZone",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwTemplate",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pszBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pdwBufferLength",
+            "type": "LPDWORD"
+        }
+    ]
+}

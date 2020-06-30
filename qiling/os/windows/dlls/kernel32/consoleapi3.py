@@ -13,10 +13,10 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
+dllname = 'kernel32_dll'
 
 # HWND WINAPI GetConsoleWindow(void);
-@winapi(cc=STDCALL, params={
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetConsoleWindow(ql, address, params):
     handle = Handle(name="console_window")
     ql.os.handle_manager.append(handle)

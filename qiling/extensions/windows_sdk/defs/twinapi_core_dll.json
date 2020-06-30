@@ -1,0 +1,22 @@
+{
+    "RegisterAppStateChangeNotification": [
+        {
+            "name": "Routine",
+            "type": "PAPPSTATE_CHANGE_ROUTINE"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        },
+        {
+            "name": "Registration",
+            "type": "PAPPSTATE_REGISTRATION"
+        }
+    ],
+    "UnregisterAppStateChangeNotification": [
+        {
+            "name": "Registration",
+            "type": "PAPPSTATE_REGISTRATION"
+        }
+    ]
+}

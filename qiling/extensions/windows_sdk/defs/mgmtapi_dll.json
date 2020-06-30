@@ -1,0 +1,164 @@
+{
+    "SnmpMgrOpen": [
+        {
+            "name": "lpAgentAddress",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpAgentCommunity",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nTimeOut",
+            "type": "INT"
+        },
+        {
+            "name": "nRetries",
+            "type": "INT"
+        }
+    ],
+    "SnmpMgrCtl": [
+        {
+            "name": "session",
+            "type": "LPSNMP_MGR_SESSION"
+        },
+        {
+            "name": "dwCtlCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpvInBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbInBuffer",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpvOUTBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbOUTBuffer",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpcbBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "SnmpMgrClose": [
+        {
+            "name": "session",
+            "type": "LPSNMP_MGR_SESSION"
+        }
+    ],
+    "SnmpMgrRequest": [
+        {
+            "name": "session",
+            "type": "LPSNMP_MGR_SESSION"
+        },
+        {
+            "name": "requestType",
+            "type": "BYTE"
+        },
+        {
+            "name": "variableBindings",
+            "type": "SnmpVarBindList"
+        },
+        {
+            "name": "errorStatus",
+            "type": "AsnInteger32"
+        },
+        {
+            "name": "errorIndex",
+            "type": "AsnInteger32"
+        }
+    ],
+    "SnmpMgrStrToOid": [
+        {
+            "name": "string",
+            "type": "LPSTR"
+        },
+        {
+            "name": "oid",
+            "type": "AsnObjectIdentifier"
+        }
+    ],
+    "SnmpMgrOidToStr": [
+        {
+            "name": "oid",
+            "type": "AsnObjectIdentifier"
+        },
+        {
+            "name": "string",
+            "type": "LPSTR"
+        }
+    ],
+    "SnmpMgrTrapListen": [
+        {
+            "name": "phTrapAvailable",
+            "type": "HANDLE"
+        }
+    ],
+    "SnmpMgrGetTrap": [
+        {
+            "name": "enterprise",
+            "type": "AsnObjectIdentifier"
+        },
+        {
+            "name": "IPAddress",
+            "type": "AsnNetworkAddress"
+        },
+        {
+            "name": "genericTrap",
+            "type": "AsnInteger32"
+        },
+        {
+            "name": "specificTrap",
+            "type": "AsnInteger32"
+        },
+        {
+            "name": "timeStamp",
+            "type": "AsnTimeticks"
+        },
+        {
+            "name": "variableBindings",
+            "type": "SnmpVarBindList"
+        }
+    ],
+    "SnmpMgrGetTrapEx": [
+        {
+            "name": "enterprise",
+            "type": "AsnObjectIdentifier"
+        },
+        {
+            "name": "agentAddress",
+            "type": "AsnNetworkAddress"
+        },
+        {
+            "name": "sourceAddress",
+            "type": "AsnNetworkAddress"
+        },
+        {
+            "name": "genericTrap",
+            "type": "AsnInteger32"
+        },
+        {
+            "name": "specificTrap",
+            "type": "AsnInteger32"
+        },
+        {
+            "name": "community",
+            "type": "AsnOctetString"
+        },
+        {
+            "name": "timeStamp",
+            "type": "AsnTimeticks"
+        },
+        {
+            "name": "variableBindings",
+            "type": "SnmpVarBindList"
+        }
+    ]
+}

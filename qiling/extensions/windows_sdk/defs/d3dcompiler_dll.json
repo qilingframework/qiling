@@ -1,0 +1,48 @@
+{
+    "D3DCompile": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "pSourceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pDefines",
+            "type": "D3D_SHADER_MACRO"
+        },
+        {
+            "name": "pInclude",
+            "type": "ID3DInclude"
+        },
+        {
+            "name": "pEntrypoint",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pTarget",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Flags1",
+            "type": "UINT"
+        },
+        {
+            "name": "Flags2",
+            "type": "UINT"
+        },
+        {
+            "name": "ppCode",
+            "type": "ID3DBlob"
+        },
+        {
+            "name": "ppErrorMsgs",
+            "type": "ID3DBlob"
+        }
+    ]
+}

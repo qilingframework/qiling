@@ -77,6 +77,8 @@ class QLOsUtils:
         return real_path
 
     def transform_to_real_path(self, path):
+        from types import FunctionType
+
         if self.ql.multithread:
             cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
@@ -91,15 +93,27 @@ class QLOsUtils:
 
         from_path = None
         to_path = None
+        virtual_path = None
         for fm, to in self.ql.fs_mapper:
-            fm_l = len(fm)
-            if len(relative_path) >= fm_l and relative_path[: fm_l] == fm:
-                from_path = fm
+
+            if isinstance(fm, str):
+                fm_l = len(fm)
+                if len(relative_path) >= fm_l and relative_path[: fm_l] == fm:
+                    from_path = fm
+                    to_path = to
+                    break
+
+            elif to == path and not isinstance(fm, str):
+                virtual_path = fm
                 to_path = to
                 break
 
-        if from_path is not None:
+        if not isinstance(virtual_path, str) and virtual_path != None:
+            real_path = virtual_path
+
+        elif from_path is not None:
             real_path = os.path.abspath(to_path + relative_path[fm_l:])
+
         else:
             if rootfs is None:
                 rootfs = ""

@@ -1,0 +1,86 @@
+{
+    "Dhcpv6RequestParams": [
+        {
+            "name": "forceNewInform",
+            "type": "BOOL"
+        },
+        {
+            "name": "reserved",
+            "type": "LPVOID"
+        },
+        {
+            "name": "adapterName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "classId",
+            "type": "LPDHCPV6CAPI_CLASSID"
+        },
+        {
+            "name": "recdParams",
+            "type": "DHCPV6CAPI_PARAMS_ARRAY"
+        },
+        {
+            "name": "buffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "pSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "Dhcpv6RequestPrefix": [
+        {
+            "name": "adapterName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pclassId",
+            "type": "LPDHCPV6CAPI_CLASSID"
+        },
+        {
+            "name": "prefixleaseInfo",
+            "type": "LPDHCPV6PrefixLeaseInformation"
+        },
+        {
+            "name": "pdwTimeToWait",
+            "type": "DWORD"
+        }
+    ],
+    "Dhcpv6RenewPrefix": [
+        {
+            "name": "adapterName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pclassId",
+            "type": "LPDHCPV6CAPI_CLASSID"
+        },
+        {
+            "name": "prefixleaseInfo",
+            "type": "LPDHCPV6PrefixLeaseInformation"
+        },
+        {
+            "name": "pdwTimeToWait",
+            "type": "DWORD"
+        },
+        {
+            "name": "bValidatePrefix",
+            "type": "DWORD"
+        }
+    ],
+    "Dhcpv6ReleasePrefix": [
+        {
+            "name": "adapterName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "classId",
+            "type": "LPDHCPV6CAPI_CLASSID"
+        },
+        {
+            "name": "leaseInfo",
+            "type": "LPDHCPV6PrefixLeaseInformation"
+        }
+    ]
+}

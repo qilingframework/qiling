@@ -1,0 +1,16 @@
+{
+    "WindowsCompareStringOrdinal": [
+        {
+            "name": "string1",
+            "type": "HSTRING"
+        },
+        {
+            "name": "string2",
+            "type": "HSTRING"
+        },
+        {
+            "name": "result",
+            "type": "INT32"
+        }
+    ]
+}

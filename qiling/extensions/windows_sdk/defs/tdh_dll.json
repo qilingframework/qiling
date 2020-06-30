@@ -1,0 +1,398 @@
+{
+    "TdhCreatePayloadFilter": [
+        {
+            "name": "ProviderGuid",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "EventDescriptor",
+            "type": "PCEVENT_DESCRIPTOR"
+        },
+        {
+            "name": "EventMatchANY",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "PayloadPredicateCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "PayloadPredicates",
+            "type": "PPAYLOAD_FILTER_PREDICATE"
+        },
+        {
+            "name": "PayloadFilter",
+            "type": "PVOID"
+        }
+    ],
+    "TdhDeletePayloadFilter": [
+        {
+            "name": "PayloadFilter",
+            "type": "PVOID"
+        }
+    ],
+    "TdhAggregatePayloadFilters": [
+        {
+            "name": "PayloadFilterCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "PayloadFilterPtrs",
+            "type": "PVOID"
+        },
+        {
+            "name": "EventMatchALLFlags",
+            "type": "PBOOLEAN"
+        },
+        {
+            "name": "EventFilterDescriptor",
+            "type": "PEVENT_FILTER_DESCRIPTOR"
+        }
+    ],
+    "TdhCleanupPayloadEventFilterDescriptor": [
+        {
+            "name": "EventFilterDescriptor",
+            "type": "PEVENT_FILTER_DESCRIPTOR"
+        }
+    ],
+    "TdhGetEventInformation": [
+        {
+            "name": "Event",
+            "type": "PEVENT_RECORD"
+        },
+        {
+            "name": "TdhContextCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "TdhContext",
+            "type": "PTDH_CONTEXT"
+        },
+        {
+            "name": "Buffer",
+            "type": "PTRACE_EVENT_INFO"
+        },
+        {
+            "name": "BufferSize",
+            "type": "PULONG"
+        }
+    ],
+    "TdhGetEventMapInformation": [
+        {
+            "name": "pEvent",
+            "type": "PEVENT_RECORD"
+        },
+        {
+            "name": "pMapName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PEVENT_MAP_INFO"
+        },
+        {
+            "name": "pBufferSize",
+            "type": "ULONG"
+        }
+    ],
+    "TdhGetPropertySize": [
+        {
+            "name": "pEvent",
+            "type": "PEVENT_RECORD"
+        },
+        {
+            "name": "TdhContextCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pTdhContext",
+            "type": "PTDH_CONTEXT"
+        },
+        {
+            "name": "PropertyDataCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pPropertyData",
+            "type": "PPROPERTY_DATA_DESCRIPTOR"
+        },
+        {
+            "name": "pPropertySize",
+            "type": "ULONG"
+        }
+    ],
+    "TdhGetProperty": [
+        {
+            "name": "pEvent",
+            "type": "PEVENT_RECORD"
+        },
+        {
+            "name": "TdhContextCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pTdhContext",
+            "type": "PTDH_CONTEXT"
+        },
+        {
+            "name": "PropertyDataCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pPropertyData",
+            "type": "PPROPERTY_DATA_DESCRIPTOR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PBYTE"
+        }
+    ],
+    "TdhEnumerateProviders": [
+        {
+            "name": "pBuffer",
+            "type": "PPROVIDER_ENUMERATION_INFO"
+        },
+        {
+            "name": "pBufferSize",
+            "type": "ULONG"
+        }
+    ],
+    "TdhQueryProviderFieldInformation": [
+        {
+            "name": "pGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "EventFieldValue",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "EventFieldType",
+            "type": "EVENT_FIELD_TYPE"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PPROVIDER_FIELD_INFOARRAY"
+        },
+        {
+            "name": "pBufferSize",
+            "type": "ULONG"
+        }
+    ],
+    "TdhEnumerateProviderFieldInformation": [
+        {
+            "name": "pGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "EventFieldType",
+            "type": "EVENT_FIELD_TYPE"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PPROVIDER_FIELD_INFOARRAY"
+        },
+        {
+            "name": "pBufferSize",
+            "type": "ULONG"
+        }
+    ],
+    "TdhEnumerateProviderFilters": [
+        {
+            "name": "Guid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "TdhContextCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "TdhContext",
+            "type": "PTDH_CONTEXT"
+        },
+        {
+            "name": "FilterCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PPROVIDER_FILTER_INFO"
+        },
+        {
+            "name": "BufferSize",
+            "type": "ULONG"
+        }
+    ],
+    "TdhLoadManifest": [
+        {
+            "name": "Manifest",
+            "type": "PWSTR"
+        }
+    ],
+    "TdhUnloadManifest": [
+        {
+            "name": "Manifest",
+            "type": "PWSTR"
+        }
+    ],
+    "TdhFormatProperty": [
+        {
+            "name": "EventInfo",
+            "type": "PTRACE_EVENT_INFO"
+        },
+        {
+            "name": "MapInfo",
+            "type": "PEVENT_MAP_INFO"
+        },
+        {
+            "name": "PointerSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "PropertyInType",
+            "type": "USHORT"
+        },
+        {
+            "name": "PropertyOutType",
+            "type": "USHORT"
+        },
+        {
+            "name": "PropertyLength",
+            "type": "USHORT"
+        },
+        {
+            "name": "UserDataLength",
+            "type": "USHORT"
+        },
+        {
+            "name": "UserData",
+            "type": "PBYTE"
+        },
+        {
+            "name": "BufferSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PWCHAR"
+        },
+        {
+            "name": "UserDataConsumed",
+            "type": "PUSHORT"
+        }
+    ],
+    "TdhOpenDecodingHandle": [
+        {
+            "name": "Handle",
+            "type": "PTDH_HANDLE"
+        }
+    ],
+    "TdhSetDecodingParameter": [
+        {
+            "name": "Handle",
+            "type": "TDH_HANDLE"
+        },
+        {
+            "name": "TdhContext",
+            "type": "PTDH_CONTEXT"
+        }
+    ],
+    "TdhGetDecodingParameter": [
+        {
+            "name": "Handle",
+            "type": "TDH_HANDLE"
+        },
+        {
+            "name": "TdhContext",
+            "type": "PTDH_CONTEXT"
+        }
+    ],
+    "TdhGetWppProperty": [
+        {
+            "name": "Handle",
+            "type": "TDH_HANDLE"
+        },
+        {
+            "name": "EventRecord",
+            "type": "PEVENT_RECORD"
+        },
+        {
+            "name": "PropertyName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PBYTE"
+        }
+    ],
+    "TdhGetWppMessage": [
+        {
+            "name": "Handle",
+            "type": "TDH_HANDLE"
+        },
+        {
+            "name": "EventRecord",
+            "type": "PEVENT_RECORD"
+        },
+        {
+            "name": "BufferSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PBYTE"
+        }
+    ],
+    "TdhCloseDecodingHandle": [
+        {
+            "name": "Handle",
+            "type": "TDH_HANDLE"
+        }
+    ],
+    "TdhLoadManifestFromBinary": [
+        {
+            "name": "BinaryPath",
+            "type": "PWSTR"
+        }
+    ],
+    "TdhEnumerateManifestProviderEvents": [
+        {
+            "name": "ProviderGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "Buffer",
+            "type": "PPROVIDER_EVENT_INFO"
+        },
+        {
+            "name": "BufferSize",
+            "type": "ULONG"
+        }
+    ],
+    "TdhGetManifestEventInformation": [
+        {
+            "name": "ProviderGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "EventDescriptor",
+            "type": "PEVENT_DESCRIPTOR"
+        },
+        {
+            "name": "Buffer",
+            "type": "PTRACE_EVENT_INFO"
+        },
+        {
+            "name": "BufferSize",
+            "type": "ULONG"
+        }
+    ]
+}
