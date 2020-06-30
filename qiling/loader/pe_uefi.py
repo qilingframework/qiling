@@ -18,7 +18,6 @@ from qiling.os.uefi.type64 import *
 from qiling.os.uefi.fncc import *
 from qiling.os.uefi.bootup import *
 from qiling.os.uefi.runtime import *
-from qiling.os.uefi.pcd_protocol import *
 from qiling.os.uefi.dxe_service import *
 from qiling.os.uefi.smm_base2_protocol import *
 
@@ -35,7 +34,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.events = {}
         self.handle_dict = {}
         self.notify_list = []
-        self.last_image_base = 0#x10000
+        self.next_image_base = 0x10000
 
     @contextmanager
     def map_memory(self, addr, size):
@@ -72,12 +71,16 @@ class QlLoaderPE_UEFI(QlLoader):
         pe = pefile.PE(path, fast_load=True)
 
         # Make sure no module will occupy the NULL page
-        IMAGE_BASE = max(pe.OPTIONAL_HEADER.ImageBase, self.last_image_base)
+        if self.next_image_base > pe.OPTIONAL_HEADER.ImageBase:
+            IMAGE_BASE = self.next_image_base
+            pe.relocate_image(IMAGE_BASE)
+        else:
+            IMAGE_BASE = pe.OPTIONAL_HEADER.ImageBase
         IMAGE_SIZE = ql.mem.align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
 
         while IMAGE_BASE + IMAGE_SIZE < self.heap_base_address:
             if not ql.mem.is_mapped(IMAGE_BASE, 1):
-                self.last_image_base = IMAGE_BASE
+                self.next_image_base = IMAGE_BASE + 0x10000
                 ql.mem.map(IMAGE_BASE, IMAGE_SIZE)
                 pe.parse_data_directories()
                 data = bytearray(pe.get_memory_mapped_image())
@@ -222,16 +225,10 @@ class QlLoaderPE_UEFI(QlLoader):
         self.efi_configuration_table = [self.ql.os.profile["HOB_LIST"]["guid"]]
         self.ql.mem.write(self.efi_configuration_table_ptr, convert_struct_to_bytes(efi_configuration_table))
 
-
-        self.pcd_protocol_ptr = system_table_heap_ptr
-        system_table_heap_ptr += ctypes.sizeof(EFI_PCD_PROTOCOL)
-        system_table_heap_ptr, pcd_protocol = install_EFI_PCD_PROTOCOL(self.ql, system_table_heap_ptr)
-        self.handle_dict[1] = {self.ql.os.profile.get("EFI_PCD_PROTOCOL", "guid"): self.pcd_protocol_ptr}
-        # self.handle_dict[1] = {}
         self.smm_base2_protocol_ptr = system_table_heap_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_SMM_BASE2_PROTOCOL)
         system_table_heap_ptr, smm_base2_protocol = install_EFI_SMM_BASE2_PROTOCOL(self.ql, system_table_heap_ptr)
-        self.handle_dict[1][self.ql.os.profile.get("EFI_SMM_BASE2_PROTOCOL", "guid")] = self.smm_base2_protocol_ptr
+        self.handle_dict[1] = {self.ql.os.profile.get("EFI_SMM_BASE2_PROTOCOL", "guid"): self.smm_base2_protocol_ptr}
 
         self.dxe_services_ptr = system_table_heap_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_DXE_SERVICES)
