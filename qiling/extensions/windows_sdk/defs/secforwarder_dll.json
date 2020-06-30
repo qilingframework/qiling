@@ -1,0 +1,36 @@
+{
+    "CryptCreateAsyncHandle": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phAsync",
+            "type": "PHCRYPTASYNC"
+        }
+    ],
+    "CryptGetAsyncParam": [
+        {
+            "name": "hAsync",
+            "type": "HCRYPTASYNC"
+        },
+        {
+            "name": "pszParamOid",
+            "type": "LPSTR"
+        },
+        {
+            "name": "ppvParam",
+            "type": "LPVOID"
+        },
+        {
+            "name": "ppfnFree",
+            "type": "PFN_CRYPT_ASYNC_PARAM_FREE_FUNC"
+        }
+    ],
+    "CryptCloseAsyncHandle": [
+        {
+            "name": "hAsync",
+            "type": "HCRYPTASYNC"
+        }
+    ]
+}

@@ -1,0 +1,60 @@
+{
+    "RegisterForPrintAsyncNotifications": [
+        {
+            "name": "pszName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pNotificationType",
+            "type": "PrintAsyncNotificationType"
+        },
+        {
+            "name": "eUserFilter",
+            "type": "PrintAsyncNotifyUserFilter"
+        },
+        {
+            "name": "eConversationStyle",
+            "type": "PrintAsyncNotifyConversationStyle"
+        },
+        {
+            "name": "pCallback",
+            "type": "IPrintAsyncNotifyCallback"
+        },
+        {
+            "name": "phNotify",
+            "type": "HANDLE"
+        }
+    ],
+    "UnRegisterForPrintAsyncNotifications": [
+        {
+            "name": "VOID",
+            "type": "HANDLE"
+        }
+    ],
+    "CreatePrintAsyncNotifyChannel": [
+        {
+            "name": "pszName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pNotificationType",
+            "type": "PrintAsyncNotificationType"
+        },
+        {
+            "name": "eUserFilter",
+            "type": "PrintAsyncNotifyUserFilter"
+        },
+        {
+            "name": "eConversationStyle",
+            "type": "PrintAsyncNotifyConversationStyle"
+        },
+        {
+            "name": "pCallback",
+            "type": "IPrintAsyncNotifyCallback"
+        },
+        {
+            "name": "ppIAsynchNotification",
+            "type": "IPrintAsyncNotifyChannel"
+        }
+    ]
+}

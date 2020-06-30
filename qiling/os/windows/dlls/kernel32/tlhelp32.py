@@ -14,16 +14,13 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 from qiling.const import *
 
+dllname = 'kernel32_dll'
 
 # HANDLE CreateToolhelp32Snapshot(
 #   DWORD dwFlags,
 #   DWORD th32ProcessID
 # );
-@winapi(cc=STDCALL, params={
-    "dwFlags": DWORD,
-    "th32ProcessID": DWORD
-
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateToolhelp32Snapshot(ql, address, params):
     # TODO thinking about implementing an handler, gonna see if is really necessary
     flag = params["dwFlags"]
@@ -38,11 +35,7 @@ def hook_CreateToolhelp32Snapshot(ql, address, params):
 #   HANDLE            hSnapshot,
 #   LPPROCESSENTRY32W lppe
 # );
-@winapi(cc=STDCALL, params={
-    "hSnapshot": HANDLE,
-    "lppe": POINTER
-
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_Process32FirstW(ql, address, params):
     return 0x1
 
@@ -51,11 +44,7 @@ def hook_Process32FirstW(ql, address, params):
 #   HANDLE            hSnapshot,
 #   LPPROCESSENTRY32W lppe
 # );
-@winapi(cc=STDCALL, params={
-    "hSnapshot": HANDLE,
-    "lppe": POINTER
-
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_Process32NextW(ql, address, params):
     # Return True if more process, 0 else
     if ql.os.syscall_count["Process32NextW"] >= 3:  # I don' know how many process the sample want's to cycle

@@ -1,0 +1,150 @@
+{
+    "CryptRetrieveObjectByUrlA": [
+        {
+            "name": "pszUrl",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszObjectOid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwRetrievalFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppvObject",
+            "type": "LPVOID"
+        },
+        {
+            "name": "hAsyncRetrieve",
+            "type": "HCRYPTASYNC"
+        },
+        {
+            "name": "pCredentials",
+            "type": "PCRYPT_CREDENTIALS"
+        },
+        {
+            "name": "pvVerify",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pAuxInfo",
+            "type": "PCRYPT_RETRIEVE_AUX_INFO"
+        }
+    ],
+    "CryptRetrieveObjectByUrlW": [
+        {
+            "name": "pszUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszObjectOid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwRetrievalFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppvObject",
+            "type": "LPVOID"
+        },
+        {
+            "name": "hAsyncRetrieve",
+            "type": "HCRYPTASYNC"
+        },
+        {
+            "name": "pCredentials",
+            "type": "PCRYPT_CREDENTIALS"
+        },
+        {
+            "name": "pvVerify",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pAuxInfo",
+            "type": "PCRYPT_RETRIEVE_AUX_INFO"
+        }
+    ],
+    "CryptGetObjectUrl": [
+        {
+            "name": "pszUrlOid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pvPara",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pUrlArray",
+            "type": "PCRYPT_URL_ARRAY"
+        },
+        {
+            "name": "pcbUrlArray",
+            "type": "DWORD"
+        },
+        {
+            "name": "pUrlInfo",
+            "type": "PCRYPT_URL_INFO"
+        },
+        {
+            "name": "pcbUrlInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "CryptGetTimeValidObject": [
+        {
+            "name": "pszTimeValidOid",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pvPara",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pIssuer",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pftValidFor",
+            "type": "LPFILETIME"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppvObject",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pCredentials",
+            "type": "PCRYPT_CREDENTIALS"
+        },
+        {
+            "name": "pExtraInfo",
+            "type": "PCRYPT_GET_TIME_VALID_OBJECT_EXTRA_INFO"
+        }
+    ]
+}

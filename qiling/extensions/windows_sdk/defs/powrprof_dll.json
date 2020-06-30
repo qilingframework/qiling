@@ -1,0 +1,1238 @@
+{
+    "GetPwrDiskSpindownRange": [
+        {
+            "name": "puiMax",
+            "type": "PUINT"
+        },
+        {
+            "name": "puiMin",
+            "type": "PUINT"
+        }
+    ],
+    "EnumPwrSchemes": [
+        {
+            "name": "lpfn",
+            "type": "PWRSCHEMESENUMPROC"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "ReadGlobalPwrPolicy": [
+        {
+            "name": "pGlobalPowerPolicy",
+            "type": "PGLOBAL_POWER_POLICY"
+        }
+    ],
+    "ReadPwrScheme": [
+        {
+            "name": "uiID",
+            "type": "UINT"
+        },
+        {
+            "name": "pPowerPolicy",
+            "type": "PPOWER_POLICY"
+        }
+    ],
+    "WritePwrScheme": [
+        {
+            "name": "puiID",
+            "type": "PUINT"
+        },
+        {
+            "name": "lpszSchemeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszDescription",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpScheme",
+            "type": "PPOWER_POLICY"
+        }
+    ],
+    "WriteGlobalPwrPolicy": [
+        {
+            "name": "pGlobalPowerPolicy",
+            "type": "PGLOBAL_POWER_POLICY"
+        }
+    ],
+    "DeletePwrScheme": [
+        {
+            "name": "uiID",
+            "type": "UINT"
+        }
+    ],
+    "GetActivePwrScheme": [
+        {
+            "name": "puiID",
+            "type": "PUINT"
+        }
+    ],
+    "SetActivePwrScheme": [
+        {
+            "name": "uiID",
+            "type": "UINT"
+        },
+        {
+            "name": "pGlobalPowerPolicy",
+            "type": "PGLOBAL_POWER_POLICY"
+        },
+        {
+            "name": "pPowerPolicy",
+            "type": "PPOWER_POLICY"
+        }
+    ],
+    "IsPwrSuspendAllowed": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "IsPwrHibernateAllowed": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "IsPwrShutdownAllowed": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetSuspendState": [
+        {
+            "name": "bHibernate",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "bForce",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "bWakeupEventsDisabled",
+            "type": "BOOLEAN"
+        }
+    ],
+    "GetCurrentPowerPolicies": [
+        {
+            "name": "pGlobalPowerPolicy",
+            "type": "PGLOBAL_POWER_POLICY"
+        },
+        {
+            "name": "pPowerPolicy",
+            "type": "PPOWER_POLICY"
+        }
+    ],
+    "CanUserWritePwrScheme": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "ReadProcessorPwrScheme": [
+        {
+            "name": "uiID",
+            "type": "UINT"
+        },
+        {
+            "name": "pMachineProcessorPowerPolicy",
+            "type": "PMACHINE_PROCESSOR_POWER_POLICY"
+        }
+    ],
+    "WriteProcessorPwrScheme": [
+        {
+            "name": "uiID",
+            "type": "UINT"
+        },
+        {
+            "name": "pMachineProcessorPowerPolicy",
+            "type": "PMACHINE_PROCESSOR_POWER_POLICY"
+        }
+    ],
+    "PowerIsSettingRangeDefined": [
+        {
+            "name": "SubKeyGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SettingGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerSettingAccessCheckEx": [
+        {
+            "name": "AccessFlags",
+            "type": "POWER_DATA_ACCESSOR"
+        },
+        {
+            "name": "PowerGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "AccessType",
+            "type": "REGSAM"
+        }
+    ],
+    "PowerSettingAccessCheck": [
+        {
+            "name": "AccessFlags",
+            "type": "POWER_DATA_ACCESSOR"
+        },
+        {
+            "name": "PowerGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerReadACValueIndex": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "AcValueIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadDCValueIndex": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "DcValueIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadFriendlyName": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Buffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadDescription": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Buffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadPossibleValue": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Type",
+            "type": "PULONG"
+        },
+        {
+            "name": "PossibleSettingIndex",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadPossibleFriendlyName": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PossibleSettingIndex",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadPossibleDescription": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PossibleSettingIndex",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadValueMin": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "ValueMinimum",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadValueMax": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "ValueMaximum",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadValueIncrement": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "ValueIncrement",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadValueUnitsSpecifier": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Buffer",
+            "type": "UCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadACDefaultIndex": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemePersonalityGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "AcDefaultIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadDCDefaultIndex": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemePersonalityGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "DcDefaultIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadIconResourceSpecifier": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Buffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadSettingAttributes": [
+        {
+            "name": "SubGroupGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerWriteFriendlyName": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Buffer",
+            "type": "UCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWriteDescription": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Buffer",
+            "type": "UCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWritePossibleValue": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Type",
+            "type": "ULONG"
+        },
+        {
+            "name": "PossibleSettingIndex",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "UCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWritePossibleFriendlyName": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PossibleSettingIndex",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "UCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWritePossibleDescription": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PossibleSettingIndex",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "UCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWriteValueMin": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "ValueMinimum",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWriteValueMax": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "ValueMaximum",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWriteValueIncrement": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "ValueIncrement",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWriteValueUnitsSpecifier": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Buffer",
+            "type": "UCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWriteACDefaultIndex": [
+        {
+            "name": "RootSystemPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemePersonalityGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "DefaultAcIndex",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWriteDCDefaultIndex": [
+        {
+            "name": "RootSystemPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemePersonalityGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "DefaultDcIndex",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWriteIconResourceSpecifier": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Buffer",
+            "type": "UCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWriteSettingAttributes": [
+        {
+            "name": "SubGroupGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Attributes",
+            "type": "DWORD"
+        }
+    ],
+    "PowerDuplicateScheme": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SourceSchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "DestinationSchemeGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerImportPowerScheme": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "ImportFileNamePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "DestinationSchemeGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerDeleteScheme": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerRemovePowerSetting": [
+        {
+            "name": "PowerSettingSubKeyGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerCreateSetting": [
+        {
+            "name": "RootSystemPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerCreatePossibleSetting": [
+        {
+            "name": "RootSystemPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PossibleSettingIndex",
+            "type": "ULONG"
+        }
+    ],
+    "PowerEnumerate": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "AccessFlags",
+            "type": "POWER_DATA_ACCESSOR"
+        },
+        {
+            "name": "Index",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "UCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "PowerCanRestoreIndividualDefaultPowerScheme": [
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerRestoreIndividualDefaultPowerScheme": [
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerRestoreDefaultPowerSchemes": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "PowerReplaceDefaultPowerSchemes": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "PowerDeterminePlatformRole": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "DevicePowerEnumDevices": [
+        {
+            "name": "QueryIndex",
+            "type": "ULONG"
+        },
+        {
+            "name": "QueryInterpretationFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "QueryFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pReturnBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pBufferSize",
+            "type": "PULONG"
+        }
+    ],
+    "DevicePowerSetDeviceState": [
+        {
+            "name": "DeviceDescription",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "SetFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "SetData",
+            "type": "PVOID"
+        }
+    ],
+    "DevicePowerOpen": [
+        {
+            "name": "DebugMask",
+            "type": "ULONG"
+        }
+    ],
+    "DevicePowerClose": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "PowerReportThermalEvent": [
+        {
+            "name": "Event",
+            "type": "PTHERMAL_EVENT"
+        }
+    ],
+    "CallNtPowerInformation": [
+        {
+            "name": "InformationLevel",
+            "type": "POWER_INFORMATION_LEVEL"
+        },
+        {
+            "name": "InputBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "InputBufferLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "OutputBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "OutputBufferLength",
+            "type": "ULONG"
+        }
+    ],
+    "GetPwrCapabilities": [
+        {
+            "name": "lpspc",
+            "type": "PSYSTEM_POWER_CAPABILITIES"
+        }
+    ],
+    "PowerDeterminePlatformRoleEx": [
+        {
+            "name": "Version",
+            "type": "ULONG"
+        }
+    ],
+    "PowerRegisterSuspendResumeNotification": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Recipient",
+            "type": "HANDLE"
+        },
+        {
+            "name": "RegistrationHandle",
+            "type": "PHPOWERNOTIFY"
+        }
+    ],
+    "PowerUnregisterSuspendResumeNotification": [
+        {
+            "name": "RegistrationHandle",
+            "type": "HPOWERNOTIFY"
+        }
+    ],
+    "PowerReadACValue": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Type",
+            "type": "PULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "BufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerReadDCValue": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "Type",
+            "type": "PULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "BufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PowerWriteACValueIndex": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "AcValueIndex",
+            "type": "DWORD"
+        }
+    ],
+    "PowerWriteDCValueIndex": [
+        {
+            "name": "RootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "SubGroupOfPowerSettingsGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "DcValueIndex",
+            "type": "DWORD"
+        }
+    ],
+    "PowerGetActiveScheme": [
+        {
+            "name": "UserRootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "ActivePolicyGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerSetActiveScheme": [
+        {
+            "name": "UserRootPowerKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "SchemeGuid",
+            "type": "GUID"
+        }
+    ],
+    "PowerSettingRegisterNotification": [
+        {
+            "name": "SettingGuid",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Recipient",
+            "type": "HANDLE"
+        },
+        {
+            "name": "RegistrationHandle",
+            "type": "PHPOWERNOTIFY"
+        }
+    ],
+    "PowerSettingUnregisterNotification": [
+        {
+            "name": "RegistrationHandle",
+            "type": "HPOWERNOTIFY"
+        }
+    ],
+    "PowerRegisterForEffectivePowerModeNotifications": [
+        {
+            "name": "Version",
+            "type": "ULONG"
+        },
+        {
+            "name": "Callback",
+            "type": "EFFECTIVE_POWER_MODE_CALLBACK"
+        },
+        {
+            "name": "Context",
+            "type": "void"
+        },
+        {
+            "name": "RegistrationHandle",
+            "type": "void"
+        }
+    ],
+    "PowerUnregisterFromEffectivePowerModeNotifications": [
+        {
+            "name": "RegistrationHandle",
+            "type": "void"
+        }
+    ]
+}

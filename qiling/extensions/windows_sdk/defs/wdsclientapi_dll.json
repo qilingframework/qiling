@@ -1,0 +1,400 @@
+{
+    "WdsCliClose": [
+        {
+            "name": "Handle",
+            "type": "HANDLE"
+        }
+    ],
+    "WdsCliRegisterTrace": [
+        {
+            "name": "pfn",
+            "type": "PFN_WdsCliTraceFunction"
+        }
+    ],
+    "WdsCliFreeStringArray": [
+        {
+            "name": "ppwszArray",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ulCount",
+            "type": "ULONG"
+        }
+    ],
+    "WdsCliFindFirstImage": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "phFindHandle",
+            "type": "PHANDLE"
+        }
+    ],
+    "WdsCliFindNextImage": [
+        {
+            "name": "Handle",
+            "type": "HANDLE"
+        }
+    ],
+    "WdsCliGetEnumerationFlags": [
+        {
+            "name": "Handle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pdwFlags",
+            "type": "PDWORD"
+        }
+    ],
+    "WdsCliGetImageHandleFromFindHandle": [
+        {
+            "name": "FindHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "phImageHandle",
+            "type": "PHANDLE"
+        }
+    ],
+    "WdsCliGetImageHandleFromTransferHandle": [
+        {
+            "name": "hTransfer",
+            "type": "HANDLE"
+        },
+        {
+            "name": "phImageHandle",
+            "type": "PHANDLE"
+        }
+    ],
+    "WdsCliCreateSession": [
+        {
+            "name": "pwszServer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pCred",
+            "type": "PWDS_CLI_CRED"
+        },
+        {
+            "name": "phSession",
+            "type": "PHANDLE"
+        }
+    ],
+    "WdsCliAuthorizeSession": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pCred",
+            "type": "PWDS_CLI_CRED"
+        }
+    ],
+    "WdsCliInitializeLog": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ulClientArchitecture",
+            "type": "ULONG"
+        },
+        {
+            "name": "pwszClientId",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pwszClientAddress",
+            "type": "PWSTR"
+        }
+    ],
+    "WdsCliLog": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ulLogLevel",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulMessageCode",
+            "type": "ULONG"
+        }
+    ],
+    "WdsCliGetImageName": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppwszValue",
+            "type": "PWSTR"
+        }
+    ],
+    "WdsCliGetImageDescription": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppwszValue",
+            "type": "PWSTR"
+        }
+    ],
+    "WdsCliGetImageLanguage": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppwszValue",
+            "type": "PWSTR"
+        }
+    ],
+    "WdsCliGetImageLanguages": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pppszValues",
+            "type": "PTSTR"
+        },
+        {
+            "name": "pdwNumValues",
+            "type": "PDWORD"
+        }
+    ],
+    "WdsCliGetImageVersion": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppwszValue",
+            "type": "PWSTR"
+        }
+    ],
+    "WdsCliGetImagePath": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppwszValue",
+            "type": "PWSTR"
+        }
+    ],
+    "WdsCliGetImageIndex": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pdwValue",
+            "type": "PDWORD"
+        }
+    ],
+    "WdsCliGetImageArchitecture": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pdwValue",
+            "type": "PDWORD"
+        }
+    ],
+    "WdsCliGetImageLastModifiedTime": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppSysTimeValue",
+            "type": "PSYSTEMTIME"
+        }
+    ],
+    "WdsCliGetImageSize": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pullValue",
+            "type": "PULONGLONG"
+        }
+    ],
+    "WdsCliGetImageHalName": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppwszValue",
+            "type": "PWSTR"
+        }
+    ],
+    "WdsCliGetImageGroup": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppwszValue",
+            "type": "PWSTR"
+        }
+    ],
+    "WdsCliGetImageNamespace": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppwszValue",
+            "type": "PWSTR"
+        }
+    ],
+    "WdsCliGetTransferSize": [
+        {
+            "name": "hIfh",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pullValue",
+            "type": "PULONGLONG"
+        }
+    ],
+    "WdsCliTransferImage": [
+        {
+            "name": "hImage",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pwszLocalPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pfnWdsCliCallback",
+            "type": "PFN_WdsCliCallback"
+        },
+        {
+            "name": "pvUserData",
+            "type": "PVOID"
+        },
+        {
+            "name": "phTransfer",
+            "type": "PHANDLE"
+        }
+    ],
+    "WdsCliTransferFile": [
+        {
+            "name": "pwszServer",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszNamespace",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszRemoteFilePath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszLocalFilePath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pfnWdsCliCallback",
+            "type": "PFN_WdsCliCallback"
+        },
+        {
+            "name": "pvUserData",
+            "type": "PVOID"
+        },
+        {
+            "name": "phTransfer",
+            "type": "PHANDLE"
+        }
+    ],
+    "WdsCliCancelTransfer": [
+        {
+            "name": "hTransfer",
+            "type": "HANDLE"
+        }
+    ],
+    "WdsCliWaitForTransfer": [
+        {
+            "name": "hTransfer",
+            "type": "HANDLE"
+        }
+    ],
+    "WdsCliObtainDriverPackages": [
+        {
+            "name": "hImage",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ppwszServerName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pppwszDriverPackages",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pulCount",
+            "type": "ULONG"
+        }
+    ],
+    "WdsCliObtainDriverPackagesEx": [
+        {
+            "name": "hSession",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pwszMachineInfo",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ppwszServerName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pppwszDriverPackages",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pulCount",
+            "type": "ULONG"
+        }
+    ],
+    "WdsCliGetDriverQueryXml": [
+        {
+            "name": "pwszWinDirPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ppwszDriverQuery",
+            "type": "PWSTR"
+        }
+    ]
+}

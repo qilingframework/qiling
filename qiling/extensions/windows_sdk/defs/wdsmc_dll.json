@@ -1,0 +1,86 @@
+{
+    "WdsTransportServerRegisterCallback": [
+        {
+            "name": "hProvider",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CallbackId",
+            "type": "TRANSPORTPROVIDER_CALLBACK_ID"
+        },
+        {
+            "name": "pfnCallback",
+            "type": "PVOID"
+        }
+    ],
+    "WdsTransportServerCompleteRead": [
+        {
+            "name": "hProvider",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ulBytesRead",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvUserData",
+            "type": "PVOID"
+        },
+        {
+            "name": "hReadResult",
+            "type": "HRESULT"
+        }
+    ],
+    "WdsTransportServerTrace": [
+        {
+            "name": "hProvider",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Severity",
+            "type": "WDS_MC_SEVERITY"
+        },
+        {
+            "name": "pwszFormat",
+            "type": "LPCWSTR"
+        }
+    ],
+    "WdsTransportServerTraceV": [
+        {
+            "name": "hProvider",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Severity",
+            "type": "WDS_MC_SEVERITY"
+        },
+        {
+            "name": "pwszFormat",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Params",
+            "type": "va_list"
+        }
+    ],
+    "WdsTransportServerAllocateBuffer": [
+        {
+            "name": "hProvider",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ulBufferSize",
+            "type": "ULONG"
+        }
+    ],
+    "WdsTransportServerFreeBuffer": [
+        {
+            "name": "hProvider",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pvBuffer",
+            "type": "PVOID"
+        }
+    ]
+}

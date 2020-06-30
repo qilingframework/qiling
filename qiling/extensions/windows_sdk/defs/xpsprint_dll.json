@@ -1,0 +1,74 @@
+{
+    "StartXpsPrintJob": [
+        {
+            "name": "printerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "jobName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "outputFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "progressEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "completionEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "printablePagesOn",
+            "type": "UINT8"
+        },
+        {
+            "name": "printablePagesOnCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "xpsPrintJob",
+            "type": "IXpsPrintJob"
+        },
+        {
+            "name": "documentStream",
+            "type": "IXpsPrintJobStream"
+        },
+        {
+            "name": "printTicketStream",
+            "type": "IXpsPrintJobStream"
+        }
+    ],
+    "StartXpsPrintJob1": [
+        {
+            "name": "printerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "jobName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "outputFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "progressEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "completionEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "xpsPrintJob",
+            "type": "IXpsPrintJob"
+        },
+        {
+            "name": "printContentReceiver",
+            "type": "IXpsOMPackageTarget"
+        }
+    ]
+}

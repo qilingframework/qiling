@@ -1,0 +1,138 @@
+{
+    "DSCreateISecurityInfoObject": [
+        {
+            "name": "pwszObjectPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszObjectClass",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppSI",
+            "type": "LPSECURITYINFO"
+        },
+        {
+            "name": "pfnReadSD",
+            "type": "PFNREADOBJECTSECURITY"
+        },
+        {
+            "name": "pfnWriteSD",
+            "type": "PFNWRITEOBJECTSECURITY"
+        },
+        {
+            "name": "lpContext",
+            "type": "LPARAM"
+        }
+    ],
+    "DSCreateISecurityInfoObjectEx": [
+        {
+            "name": "pwszObjectPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszObjectClass",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszServer",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszUserName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppSI",
+            "type": "LPSECURITYINFO"
+        },
+        {
+            "name": "pfnReadSD",
+            "type": "PFNREADOBJECTSECURITY"
+        },
+        {
+            "name": "pfnWriteSD",
+            "type": "PFNWRITEOBJECTSECURITY"
+        },
+        {
+            "name": "lpContext",
+            "type": "LPARAM"
+        }
+    ],
+    "DSCreateSecurityPage": [
+        {
+            "name": "pwszObjectPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszObjectClass",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phPage",
+            "type": "HPROPSHEETPAGE"
+        },
+        {
+            "name": "pfnReadSD",
+            "type": "PFNREADOBJECTSECURITY"
+        },
+        {
+            "name": "pfnWriteSD",
+            "type": "PFNWRITEOBJECTSECURITY"
+        },
+        {
+            "name": "lpContext",
+            "type": "LPARAM"
+        }
+    ],
+    "DSEditSecurity": [
+        {
+            "name": "hwndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "pwszObjectPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszObjectClass",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszCaption",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pfnReadSD",
+            "type": "PFNREADOBJECTSECURITY"
+        },
+        {
+            "name": "pfnWriteSD",
+            "type": "PFNWRITEOBJECTSECURITY"
+        },
+        {
+            "name": "lpContext",
+            "type": "LPARAM"
+        }
+    ]
+}

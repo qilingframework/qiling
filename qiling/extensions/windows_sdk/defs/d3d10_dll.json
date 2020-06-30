@@ -1,0 +1,290 @@
+{
+    "D3D10StateBlockMaskUnion": [
+        {
+            "name": "pA",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        },
+        {
+            "name": "pB",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        },
+        {
+            "name": "pResult",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        }
+    ],
+    "D3D10StateBlockMaskIntersect": [
+        {
+            "name": "pA",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        },
+        {
+            "name": "pB",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        },
+        {
+            "name": "pResult",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        }
+    ],
+    "D3D10StateBlockMaskDifference": [
+        {
+            "name": "pA",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        },
+        {
+            "name": "pB",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        },
+        {
+            "name": "pResult",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        }
+    ],
+    "D3D10StateBlockMaskEnableCapture": [
+        {
+            "name": "pMask",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        },
+        {
+            "name": "StateType",
+            "type": "D3D10_DEVICE_STATE_TYPES"
+        },
+        {
+            "name": "RangeStart",
+            "type": "UINT"
+        },
+        {
+            "name": "RangeLength",
+            "type": "UINT"
+        }
+    ],
+    "D3D10StateBlockMaskDisableCapture": [
+        {
+            "name": "pMask",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        },
+        {
+            "name": "StateType",
+            "type": "D3D10_DEVICE_STATE_TYPES"
+        },
+        {
+            "name": "RangeStart",
+            "type": "UINT"
+        },
+        {
+            "name": "RangeLength",
+            "type": "UINT"
+        }
+    ],
+    "D3D10StateBlockMaskEnableAll": [
+        {
+            "name": "pMask",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        }
+    ],
+    "D3D10StateBlockMaskDisableAll": [
+        {
+            "name": "pMask",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        }
+    ],
+    "D3D10StateBlockMaskGetSetting": [
+        {
+            "name": "pMask",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        },
+        {
+            "name": "StateType",
+            "type": "D3D10_DEVICE_STATE_TYPES"
+        },
+        {
+            "name": "Entry",
+            "type": "UINT"
+        }
+    ],
+    "D3D10CreateStateBlock": [
+        {
+            "name": "pDevice",
+            "type": "ID3D10Device"
+        },
+        {
+            "name": "pStateBlockMask",
+            "type": "D3D10_STATE_BLOCK_MASK"
+        },
+        {
+            "name": "ppStateBlock",
+            "type": "ID3D10StateBlock"
+        }
+    ],
+    "D3D10CompileEffectFromMemory": [
+        {
+            "name": "pData",
+            "type": "void"
+        },
+        {
+            "name": "DataLength",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "pSrcFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pDefines",
+            "type": "D3D10_SHADER_MACRO"
+        },
+        {
+            "name": "pInclude",
+            "type": "ID3D10Include"
+        },
+        {
+            "name": "HLSLFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "FXFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "ppCompiledEffect",
+            "type": "ID3D10Blob"
+        },
+        {
+            "name": "ppErrors",
+            "type": "ID3D10Blob"
+        }
+    ],
+    "D3D10CreateEffectFromMemory": [
+        {
+            "name": "pData",
+            "type": "void"
+        },
+        {
+            "name": "DataLength",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "FXFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "pDevice",
+            "type": "ID3D10Device"
+        },
+        {
+            "name": "pEffectPool",
+            "type": "ID3D10EffectPool"
+        },
+        {
+            "name": "ppEffect",
+            "type": "ID3D10Effect"
+        }
+    ],
+    "D3D10CreateEffectPoolFromMemory": [
+        {
+            "name": "pData",
+            "type": "void"
+        },
+        {
+            "name": "DataLength",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "FXFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "pDevice",
+            "type": "ID3D10Device"
+        },
+        {
+            "name": "ppEffectPool",
+            "type": "ID3D10EffectPool"
+        }
+    ],
+    "D3D10DisassembleEffect": [
+        {
+            "name": "pEffect",
+            "type": "ID3D10Effect"
+        },
+        {
+            "name": "EnableColorCode",
+            "type": "BOOL"
+        },
+        {
+            "name": "ppDisassembly",
+            "type": "ID3D10Blob"
+        }
+    ],
+    "D3D10CreateDevice": [
+        {
+            "name": "pAdapter",
+            "type": "IDXGIAdapter"
+        },
+        {
+            "name": "DriverType",
+            "type": "D3D10_DRIVER_TYPE"
+        },
+        {
+            "name": "Software",
+            "type": "HMODULE"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "SDKVersion",
+            "type": "UINT"
+        },
+        {
+            "name": "ppDevice",
+            "type": "ID3D10Device"
+        }
+    ],
+    "D3D10CreateDeviceAndSwapChain": [
+        {
+            "name": "pAdapter",
+            "type": "IDXGIAdapter"
+        },
+        {
+            "name": "DriverType",
+            "type": "D3D10_DRIVER_TYPE"
+        },
+        {
+            "name": "Software",
+            "type": "HMODULE"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "SDKVersion",
+            "type": "UINT"
+        },
+        {
+            "name": "pSwapChainDesc",
+            "type": "DXGI_SWAP_CHAIN_DESC"
+        },
+        {
+            "name": "ppSwapChain",
+            "type": "IDXGISwapChain"
+        },
+        {
+            "name": "ppDevice",
+            "type": "ID3D10Device"
+        }
+    ],
+    "D3D10CreateBlob": [
+        {
+            "name": "NumBytes",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "LPD3D10BLOB"
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "WDStatus": [
+        {
+            "name": "pfEnabled",
+            "type": "BOOL"
+        }
+    ],
+    "WDEnable": [
+        {
+            "name": "fEnable",
+            "type": "BOOL"
+        }
+    ]
+}

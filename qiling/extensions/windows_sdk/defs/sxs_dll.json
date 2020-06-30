@@ -1,0 +1,30 @@
+{
+    "CreateAssemblyNameObject": [
+        {
+            "name": "ppAssemblyNameObj",
+            "type": "LPASSEMBLYNAME"
+        },
+        {
+            "name": "szAssemblyName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "CreateAssemblyCache": [
+        {
+            "name": "ppAsmCache",
+            "type": "IAssemblyCache"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ]
+}

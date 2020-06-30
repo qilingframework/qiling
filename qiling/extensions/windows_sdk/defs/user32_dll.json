@@ -1,0 +1,9508 @@
+{
+    "WINNLSEnableIME": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "BOOL"
+        }
+    ],
+    "SendIMEMessageExA": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "LPARAM"
+        }
+    ],
+    "SendIMEMessageExW": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "LPARAM"
+        }
+    ],
+    "DdeSetQualityOfService": [
+        {
+            "name": "hwndClient",
+            "type": "HWND"
+        },
+        {
+            "name": "pqosNew",
+            "type": "SECURITY_QUALITY_OF_SERVICE"
+        },
+        {
+            "name": "pqosPrev",
+            "type": "PSECURITY_QUALITY_OF_SERVICE"
+        }
+    ],
+    "ImpersonateDdeClientWindow": [
+        {
+            "name": "hWndClient",
+            "type": "HWND"
+        },
+        {
+            "name": "hWndServer",
+            "type": "HWND"
+        }
+    ],
+    "PackDDElParam": [
+        {
+            "name": "msg",
+            "type": "UINT"
+        },
+        {
+            "name": "uiLo",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "uiHi",
+            "type": "UINT_PTR"
+        }
+    ],
+    "UnpackDDElParam": [
+        {
+            "name": "msg",
+            "type": "UINT"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "puiLo",
+            "type": "PUINT_PTR"
+        },
+        {
+            "name": "puiHi",
+            "type": "PUINT_PTR"
+        }
+    ],
+    "FreeDDElParam": [
+        {
+            "name": "msg",
+            "type": "UINT"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "ReuseDDElParam": [
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "msgIn",
+            "type": "UINT"
+        },
+        {
+            "name": "msgOut",
+            "type": "UINT"
+        },
+        {
+            "name": "uiLo",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "uiHi",
+            "type": "UINT_PTR"
+        }
+    ],
+    "DdeInitializeA": [
+        {
+            "name": "pidInst",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pfnCallback",
+            "type": "PFNCALLBACK"
+        },
+        {
+            "name": "afCmd",
+            "type": "DWORD"
+        },
+        {
+            "name": "ulRes",
+            "type": "DWORD"
+        }
+    ],
+    "DdeInitializeW": [
+        {
+            "name": "pidInst",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pfnCallback",
+            "type": "PFNCALLBACK"
+        },
+        {
+            "name": "afCmd",
+            "type": "DWORD"
+        },
+        {
+            "name": "ulRes",
+            "type": "DWORD"
+        }
+    ],
+    "DdeUninitialize": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        }
+    ],
+    "DdeConnectList": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hszService",
+            "type": "HSZ"
+        },
+        {
+            "name": "hszTopic",
+            "type": "HSZ"
+        },
+        {
+            "name": "hConvList",
+            "type": "HCONVLIST"
+        },
+        {
+            "name": "pCC",
+            "type": "PCONVCONTEXT"
+        }
+    ],
+    "DdeQueryNextServer": [
+        {
+            "name": "hConvList",
+            "type": "HCONVLIST"
+        },
+        {
+            "name": "hConvPrev",
+            "type": "HCONV"
+        }
+    ],
+    "DdeDisconnectList": [
+        {
+            "name": "hConvList",
+            "type": "HCONVLIST"
+        }
+    ],
+    "DdeConnect": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hszService",
+            "type": "HSZ"
+        },
+        {
+            "name": "hszTopic",
+            "type": "HSZ"
+        },
+        {
+            "name": "pCC",
+            "type": "PCONVCONTEXT"
+        }
+    ],
+    "DdeDisconnect": [
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        }
+    ],
+    "DdeReconnect": [
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        }
+    ],
+    "DdeQueryConvInfo": [
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        },
+        {
+            "name": "idTransaction",
+            "type": "DWORD"
+        },
+        {
+            "name": "pConvInfo",
+            "type": "PCONVINFO"
+        }
+    ],
+    "DdeSetUserHandle": [
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        },
+        {
+            "name": "id",
+            "type": "DWORD"
+        },
+        {
+            "name": "hUser",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "DdeAbandonTransaction": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        },
+        {
+            "name": "idTransaction",
+            "type": "DWORD"
+        }
+    ],
+    "DdePostAdvise": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hszTopic",
+            "type": "HSZ"
+        },
+        {
+            "name": "hszItem",
+            "type": "HSZ"
+        }
+    ],
+    "DdeEnableCallback": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        },
+        {
+            "name": "wCmd",
+            "type": "UINT"
+        }
+    ],
+    "DdeImpersonateClient": [
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        }
+    ],
+    "DdeNameService": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hsz1",
+            "type": "HSZ"
+        },
+        {
+            "name": "hsz2",
+            "type": "HSZ"
+        },
+        {
+            "name": "afCmd",
+            "type": "UINT"
+        }
+    ],
+    "DdeClientTransaction": [
+        {
+            "name": "pData",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "hConv",
+            "type": "HCONV"
+        },
+        {
+            "name": "hszItem",
+            "type": "HSZ"
+        },
+        {
+            "name": "wFmt",
+            "type": "UINT"
+        },
+        {
+            "name": "wType",
+            "type": "UINT"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwResult",
+            "type": "LPDWORD"
+        }
+    ],
+    "DdeCreateDataHandle": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "pSrc",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        },
+        {
+            "name": "cbOff",
+            "type": "DWORD"
+        },
+        {
+            "name": "hszItem",
+            "type": "HSZ"
+        },
+        {
+            "name": "wFmt",
+            "type": "UINT"
+        },
+        {
+            "name": "afCmd",
+            "type": "UINT"
+        }
+    ],
+    "DdeAddData": [
+        {
+            "name": "hData",
+            "type": "HDDEDATA"
+        },
+        {
+            "name": "pSrc",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        },
+        {
+            "name": "cbOff",
+            "type": "DWORD"
+        }
+    ],
+    "DdeGetData": [
+        {
+            "name": "hData",
+            "type": "HDDEDATA"
+        },
+        {
+            "name": "pDst",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbMax",
+            "type": "DWORD"
+        },
+        {
+            "name": "cbOff",
+            "type": "DWORD"
+        }
+    ],
+    "DdeAccessData": [
+        {
+            "name": "hData",
+            "type": "HDDEDATA"
+        },
+        {
+            "name": "pcbDataSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "DdeUnaccessData": [
+        {
+            "name": "hData",
+            "type": "HDDEDATA"
+        }
+    ],
+    "DdeFreeDataHandle": [
+        {
+            "name": "hData",
+            "type": "HDDEDATA"
+        }
+    ],
+    "DdeGetLastError": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        }
+    ],
+    "DdeCreateStringHandleA": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "psz",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iCodePage",
+            "type": "int"
+        }
+    ],
+    "DdeCreateStringHandleW": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "psz",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iCodePage",
+            "type": "int"
+        }
+    ],
+    "DdeQueryStringA": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hsz",
+            "type": "HSZ"
+        },
+        {
+            "name": "psz",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "DWORD"
+        },
+        {
+            "name": "iCodePage",
+            "type": "int"
+        }
+    ],
+    "DdeQueryStringW": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hsz",
+            "type": "HSZ"
+        },
+        {
+            "name": "psz",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "DWORD"
+        },
+        {
+            "name": "iCodePage",
+            "type": "int"
+        }
+    ],
+    "DdeFreeStringHandle": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hsz",
+            "type": "HSZ"
+        }
+    ],
+    "DdeKeepStringHandle": [
+        {
+            "name": "idInst",
+            "type": "DWORD"
+        },
+        {
+            "name": "hsz",
+            "type": "HSZ"
+        }
+    ],
+    "DdeCmpStringHandles": [
+        {
+            "name": "hsz1",
+            "type": "HSZ"
+        },
+        {
+            "name": "hsz2",
+            "type": "HSZ"
+        }
+    ],
+    "OpenThemeDataForDpi": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszClassList",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dpi",
+            "type": "UINT"
+        }
+    ],
+    "LoadStringA": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "uID",
+            "type": "UINT"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchBufferMax",
+            "type": "int"
+        }
+    ],
+    "LoadStringW": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "uID",
+            "type": "UINT"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchBufferMax",
+            "type": "int"
+        }
+    ],
+    "wvsprintfA": [
+        {
+            "name": "VOID",
+            "type": "LPSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "arglist",
+            "type": "va_list"
+        }
+    ],
+    "wvsprintfW": [
+        {
+            "name": "VOID",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "arglist",
+            "type": "va_list"
+        }
+    ],
+    "wsprintfA": [
+        {
+            "name": "VOID",
+            "type": "LPSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        }
+    ],
+    "wsprintfW": [
+        {
+            "name": "VOID",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        }
+    ],
+    "LoadKeyboardLayoutA": [
+        {
+            "name": "pwszKLID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        }
+    ],
+    "LoadKeyboardLayoutW": [
+        {
+            "name": "pwszKLID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        }
+    ],
+    "ActivateKeyboardLayout": [
+        {
+            "name": "hkl",
+            "type": "HKL"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        }
+    ],
+    "ToUnicodeEx": [
+        {
+            "name": "wVirtKey",
+            "type": "UINT"
+        },
+        {
+            "name": "wScanCode",
+            "type": "UINT"
+        },
+        {
+            "name": "lpKeyState",
+            "type": "BYTE"
+        },
+        {
+            "name": "pwszBuff",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchBuff",
+            "type": "int"
+        },
+        {
+            "name": "wFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "dwhkl",
+            "type": "HKL"
+        }
+    ],
+    "UnloadKeyboardLayout": [
+        {
+            "name": "hkl",
+            "type": "HKL"
+        }
+    ],
+    "GetKeyboardLayoutNameA": [
+        {
+            "name": "pwszKLID",
+            "type": "LPSTR"
+        }
+    ],
+    "GetKeyboardLayoutNameW": [
+        {
+            "name": "pwszKLID",
+            "type": "LPWSTR"
+        }
+    ],
+    "GetKeyboardLayoutList": [
+        {
+            "name": "nBuff",
+            "type": "int"
+        },
+        {
+            "name": "lpList",
+            "type": "HKL"
+        }
+    ],
+    "GetKeyboardLayout": [
+        {
+            "name": "idThread",
+            "type": "DWORD"
+        }
+    ],
+    "GetMouseMovePointsEx": [
+        {
+            "name": "cbSize",
+            "type": "UINT"
+        },
+        {
+            "name": "lppt",
+            "type": "LPMOUSEMOVEPOINT"
+        },
+        {
+            "name": "lpptBuf",
+            "type": "LPMOUSEMOVEPOINT"
+        },
+        {
+            "name": "nBufPoints",
+            "type": "int"
+        },
+        {
+            "name": "resolution",
+            "type": "DWORD"
+        }
+    ],
+    "CreateDesktopA": [
+        {
+            "name": "lpszDesktop",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszDevice",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pDevmode",
+            "type": "DEVMODEA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "ACCESS_MASK"
+        },
+        {
+            "name": "lpsa",
+            "type": "LPSECURITY_ATTRIBUTES"
+        }
+    ],
+    "CreateDesktopW": [
+        {
+            "name": "lpszDesktop",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszDevice",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pDevmode",
+            "type": "DEVMODEW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "ACCESS_MASK"
+        },
+        {
+            "name": "lpsa",
+            "type": "LPSECURITY_ATTRIBUTES"
+        }
+    ],
+    "CreateDesktopExA": [
+        {
+            "name": "lpszDesktop",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszDevice",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pDevmode",
+            "type": "DEVMODEA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "ACCESS_MASK"
+        },
+        {
+            "name": "lpsa",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "ulHeapSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvoid",
+            "type": "PVOID"
+        }
+    ],
+    "CreateDesktopExW": [
+        {
+            "name": "lpszDesktop",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszDevice",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pDevmode",
+            "type": "DEVMODEW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "ACCESS_MASK"
+        },
+        {
+            "name": "lpsa",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "ulHeapSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvoid",
+            "type": "PVOID"
+        }
+    ],
+    "OpenDesktopA": [
+        {
+            "name": "lpszDesktop",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "fInherit",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "ACCESS_MASK"
+        }
+    ],
+    "OpenDesktopW": [
+        {
+            "name": "lpszDesktop",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "fInherit",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "ACCESS_MASK"
+        }
+    ],
+    "OpenInputDesktop": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "fInherit",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "ACCESS_MASK"
+        }
+    ],
+    "EnumDesktopsA": [
+        {
+            "name": "hwinsta",
+            "type": "HWINSTA"
+        },
+        {
+            "name": "lpEnumFunc",
+            "type": "DESKTOPENUMPROCA"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumDesktopsW": [
+        {
+            "name": "hwinsta",
+            "type": "HWINSTA"
+        },
+        {
+            "name": "lpEnumFunc",
+            "type": "DESKTOPENUMPROCW"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumDesktopWindows": [
+        {
+            "name": "hDesktop",
+            "type": "HDESK"
+        },
+        {
+            "name": "lpfn",
+            "type": "WNDENUMPROC"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "SwitchDesktop": [
+        {
+            "name": "hDesktop",
+            "type": "HDESK"
+        }
+    ],
+    "SetThreadDesktop": [
+        {
+            "name": "hDesktop",
+            "type": "HDESK"
+        }
+    ],
+    "CloseDesktop": [
+        {
+            "name": "hDesktop",
+            "type": "HDESK"
+        }
+    ],
+    "GetThreadDesktop": [
+        {
+            "name": "dwThreadId",
+            "type": "DWORD"
+        }
+    ],
+    "CreateWindowStationA": [
+        {
+            "name": "lpwinsta",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "ACCESS_MASK"
+        },
+        {
+            "name": "lpsa",
+            "type": "LPSECURITY_ATTRIBUTES"
+        }
+    ],
+    "CreateWindowStationW": [
+        {
+            "name": "lpwinsta",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "ACCESS_MASK"
+        },
+        {
+            "name": "lpsa",
+            "type": "LPSECURITY_ATTRIBUTES"
+        }
+    ],
+    "OpenWindowStationA": [
+        {
+            "name": "lpszWinSta",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "fInherit",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "ACCESS_MASK"
+        }
+    ],
+    "OpenWindowStationW": [
+        {
+            "name": "lpszWinSta",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fInherit",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwDesiredAccess",
+            "type": "ACCESS_MASK"
+        }
+    ],
+    "EnumWindowStationsA": [
+        {
+            "name": "lpEnumFunc",
+            "type": "WINSTAENUMPROCA"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumWindowStationsW": [
+        {
+            "name": "lpEnumFunc",
+            "type": "WINSTAENUMPROCW"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "CloseWindowStation": [
+        {
+            "name": "hWinSta",
+            "type": "HWINSTA"
+        }
+    ],
+    "SetProcessWindowStation": [
+        {
+            "name": "hWinSta",
+            "type": "HWINSTA"
+        }
+    ],
+    "GetProcessWindowStation": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetUserObjectSecurity": [
+        {
+            "name": "hObj",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pSIRequested",
+            "type": "PSECURITY_INFORMATION"
+        },
+        {
+            "name": "pSID",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "GetUserObjectSecurity": [
+        {
+            "name": "hObj",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pSIRequested",
+            "type": "PSECURITY_INFORMATION"
+        },
+        {
+            "name": "pSID",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "nLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpnLengthNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetUserObjectInformationA": [
+        {
+            "name": "hObj",
+            "type": "HANDLE"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "pvInfo",
+            "type": "PVOID"
+        },
+        {
+            "name": "nLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpnLengthNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetUserObjectInformationW": [
+        {
+            "name": "hObj",
+            "type": "HANDLE"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "pvInfo",
+            "type": "PVOID"
+        },
+        {
+            "name": "nLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpnLengthNeeded",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetUserObjectInformationA": [
+        {
+            "name": "hObj",
+            "type": "HANDLE"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "pvInfo",
+            "type": "PVOID"
+        },
+        {
+            "name": "nLength",
+            "type": "DWORD"
+        }
+    ],
+    "SetUserObjectInformationW": [
+        {
+            "name": "hObj",
+            "type": "HANDLE"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "pvInfo",
+            "type": "PVOID"
+        },
+        {
+            "name": "nLength",
+            "type": "DWORD"
+        }
+    ],
+    "IsHungAppWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "DisableProcessWindowsGhosting": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RegisterWindowMessageA": [
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        }
+    ],
+    "RegisterWindowMessageW": [
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        }
+    ],
+    "TrackMouseEvent": [
+        {
+            "name": "lpEventTrack",
+            "type": "LPTRACKMOUSEEVENT"
+        }
+    ],
+    "DrawEdge": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "qrc",
+            "type": "LPRECT"
+        },
+        {
+            "name": "edge",
+            "type": "UINT"
+        },
+        {
+            "name": "grfFlags",
+            "type": "UINT"
+        }
+    ],
+    "DrawFrameControl": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        },
+        {
+            "name": "VOID",
+            "type": "LPRECT"
+        },
+        {
+            "name": "VOID",
+            "type": "UINT"
+        },
+        {
+            "name": "VOID",
+            "type": "UINT"
+        }
+    ],
+    "DrawCaption": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lprect",
+            "type": "RECT"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "DrawAnimatedRects": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "idAni",
+            "type": "int"
+        },
+        {
+            "name": "lprcFrom",
+            "type": "RECT"
+        },
+        {
+            "name": "lprcTo",
+            "type": "RECT"
+        }
+    ],
+    "GetMessageA": [
+        {
+            "name": "lpMsg",
+            "type": "LPMSG"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "wMsgFilterMin",
+            "type": "UINT"
+        },
+        {
+            "name": "wMsgFilterMax",
+            "type": "UINT"
+        }
+    ],
+    "GetMessageW": [
+        {
+            "name": "lpMsg",
+            "type": "LPMSG"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "wMsgFilterMin",
+            "type": "UINT"
+        },
+        {
+            "name": "wMsgFilterMax",
+            "type": "UINT"
+        }
+    ],
+    "TranslateMessage": [
+        {
+            "name": "lpMsg",
+            "type": "MSG"
+        }
+    ],
+    "DispatchMessageA": [
+        {
+            "name": "lpMsg",
+            "type": "MSG"
+        }
+    ],
+    "DispatchMessageW": [
+        {
+            "name": "lpMsg",
+            "type": "MSG"
+        }
+    ],
+    "PeekMessageA": [
+        {
+            "name": "lpMsg",
+            "type": "LPMSG"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "wMsgFilterMin",
+            "type": "UINT"
+        },
+        {
+            "name": "wMsgFilterMax",
+            "type": "UINT"
+        },
+        {
+            "name": "wRemoveMsg",
+            "type": "UINT"
+        }
+    ],
+    "PeekMessageW": [
+        {
+            "name": "lpMsg",
+            "type": "LPMSG"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "wMsgFilterMin",
+            "type": "UINT"
+        },
+        {
+            "name": "wMsgFilterMax",
+            "type": "UINT"
+        },
+        {
+            "name": "wRemoveMsg",
+            "type": "UINT"
+        }
+    ],
+    "RegisterHotKey": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "id",
+            "type": "int"
+        },
+        {
+            "name": "fsModifiers",
+            "type": "UINT"
+        },
+        {
+            "name": "vk",
+            "type": "UINT"
+        }
+    ],
+    "UnregisterHotKey": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "id",
+            "type": "int"
+        }
+    ],
+    "ExitWindowsEx": [
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "dwReason",
+            "type": "DWORD"
+        }
+    ],
+    "SwapMouseButton": [
+        {
+            "name": "fSwap",
+            "type": "BOOL"
+        }
+    ],
+    "GetMessagePos": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetMessageTime": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetMessageExtraInfo": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetUnpredictedMessagePos": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "IsWow64Message": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetMessageExtraInfo": [
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "SendMessageA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "SendMessageW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "SendMessageTimeoutA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "fuFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "uTimeout",
+            "type": "UINT"
+        },
+        {
+            "name": "lpdwResult",
+            "type": "PDWORD_PTR"
+        }
+    ],
+    "SendMessageTimeoutW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "fuFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "uTimeout",
+            "type": "UINT"
+        },
+        {
+            "name": "lpdwResult",
+            "type": "PDWORD_PTR"
+        }
+    ],
+    "SendNotifyMessageA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "SendNotifyMessageW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "SendMessageCallbackA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "lpResultCallBack",
+            "type": "SENDASYNCPROC"
+        },
+        {
+            "name": "dwData",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "SendMessageCallbackW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "lpResultCallBack",
+            "type": "SENDASYNCPROC"
+        },
+        {
+            "name": "dwData",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "BroadcastSystemMessageExA": [
+        {
+            "name": "flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "pbsmInfo",
+            "type": "PBSMINFO"
+        }
+    ],
+    "BroadcastSystemMessageExW": [
+        {
+            "name": "flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "pbsmInfo",
+            "type": "PBSMINFO"
+        }
+    ],
+    "BroadcastSystemMessageW": [
+        {
+            "name": "flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpInfo",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "RegisterDeviceNotificationA": [
+        {
+            "name": "hRecipient",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NotificationFilter",
+            "type": "LPVOID"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "RegisterDeviceNotificationW": [
+        {
+            "name": "hRecipient",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NotificationFilter",
+            "type": "LPVOID"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "UnregisterDeviceNotification": [
+        {
+            "name": "Handle",
+            "type": "HDEVNOTIFY"
+        }
+    ],
+    "RegisterPowerSettingNotification": [
+        {
+            "name": "hRecipient",
+            "type": "HANDLE"
+        },
+        {
+            "name": "PowerSettingGuid",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "UnregisterPowerSettingNotification": [
+        {
+            "name": "Handle",
+            "type": "HPOWERNOTIFY"
+        }
+    ],
+    "RegisterSuspendResumeNotification": [
+        {
+            "name": "hRecipient",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "UnregisterSuspendResumeNotification": [
+        {
+            "name": "Handle",
+            "type": "HPOWERNOTIFY"
+        }
+    ],
+    "PostMessageA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "PostMessageW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "PostThreadMessageA": [
+        {
+            "name": "idThread",
+            "type": "DWORD"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "PostThreadMessageW": [
+        {
+            "name": "idThread",
+            "type": "DWORD"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "AttachThreadInput": [
+        {
+            "name": "idAttach",
+            "type": "DWORD"
+        },
+        {
+            "name": "idAttachTo",
+            "type": "DWORD"
+        },
+        {
+            "name": "fAttach",
+            "type": "BOOL"
+        }
+    ],
+    "ReplyMessage": [
+        {
+            "name": "lResult",
+            "type": "LRESULT"
+        }
+    ],
+    "WaitMessage": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "WaitForInputIdle": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwMilliseconds",
+            "type": "DWORD"
+        }
+    ],
+    "DefWindowProcA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "DefWindowProcW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "PostQuitMessage": [
+        {
+            "name": "nExitCode",
+            "type": "int"
+        }
+    ],
+    "CallWindowProcA": [
+        {
+            "name": "lpPrevWndFunc",
+            "type": "WNDPROC"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "CallWindowProcW": [
+        {
+            "name": "lpPrevWndFunc",
+            "type": "WNDPROC"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "InSendMessage": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "InSendMessageEx": [
+        {
+            "name": "lpReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "GetDoubleClickTime": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetDoubleClickTime": [
+        {
+            "name": "VOID",
+            "type": "UINT"
+        }
+    ],
+    "RegisterClassA": [
+        {
+            "name": "lpWndClass",
+            "type": "WNDCLASSA"
+        }
+    ],
+    "RegisterClassW": [
+        {
+            "name": "lpWndClass",
+            "type": "WNDCLASSW"
+        }
+    ],
+    "UnregisterClassA": [
+        {
+            "name": "lpClassName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        }
+    ],
+    "UnregisterClassW": [
+        {
+            "name": "lpClassName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        }
+    ],
+    "GetClassInfoA": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpClassName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpWndClass",
+            "type": "LPWNDCLASSA"
+        }
+    ],
+    "GetClassInfoW": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpClassName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpWndClass",
+            "type": "LPWNDCLASSW"
+        }
+    ],
+    "RegisterClassExA": [
+        {
+            "name": "VOID",
+            "type": "WNDCLASSEXA"
+        }
+    ],
+    "RegisterClassExW": [
+        {
+            "name": "VOID",
+            "type": "WNDCLASSEXW"
+        }
+    ],
+    "GetClassInfoExA": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpszClass",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpwcx",
+            "type": "LPWNDCLASSEXA"
+        }
+    ],
+    "GetClassInfoExW": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpszClass",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpwcx",
+            "type": "LPWNDCLASSEXW"
+        }
+    ],
+    "CreateWindowExA": [
+        {
+            "name": "dwExStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpClassName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpWindowName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "X",
+            "type": "int"
+        },
+        {
+            "name": "Y",
+            "type": "int"
+        },
+        {
+            "name": "nWidth",
+            "type": "int"
+        },
+        {
+            "name": "nHeight",
+            "type": "int"
+        },
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpParam",
+            "type": "LPVOID"
+        }
+    ],
+    "CreateWindowExW": [
+        {
+            "name": "dwExStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpClassName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpWindowName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "X",
+            "type": "int"
+        },
+        {
+            "name": "Y",
+            "type": "int"
+        },
+        {
+            "name": "nWidth",
+            "type": "int"
+        },
+        {
+            "name": "nHeight",
+            "type": "int"
+        },
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpParam",
+            "type": "LPVOID"
+        }
+    ],
+    "IsWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "IsMenu": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        }
+    ],
+    "IsChild": [
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "DestroyWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "ShowWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nCmdShow",
+            "type": "int"
+        }
+    ],
+    "AnimateWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwTime",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UpdateLayeredWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hdcDst",
+            "type": "HDC"
+        },
+        {
+            "name": "pptDst",
+            "type": "POINT"
+        },
+        {
+            "name": "psize",
+            "type": "SIZE"
+        },
+        {
+            "name": "hdcSrc",
+            "type": "HDC"
+        },
+        {
+            "name": "pptSrc",
+            "type": "POINT"
+        },
+        {
+            "name": "crKey",
+            "type": "COLORREF"
+        },
+        {
+            "name": "pblend",
+            "type": "BLENDFUNCTION"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetLayeredWindowAttributes": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pcrKey",
+            "type": "COLORREF"
+        },
+        {
+            "name": "pbAlpha",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PrintWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hdcBlt",
+            "type": "HDC"
+        },
+        {
+            "name": "nFlags",
+            "type": "UINT"
+        }
+    ],
+    "SetLayeredWindowAttributes": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "crKey",
+            "type": "COLORREF"
+        },
+        {
+            "name": "bAlpha",
+            "type": "BYTE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "ShowWindowAsync": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nCmdShow",
+            "type": "int"
+        }
+    ],
+    "FlashWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "bInvert",
+            "type": "BOOL"
+        }
+    ],
+    "FlashWindowEx": [
+        {
+            "name": "pfwi",
+            "type": "PFLASHWINFO"
+        }
+    ],
+    "ShowOwnedPopups": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "fShow",
+            "type": "BOOL"
+        }
+    ],
+    "OpenIcon": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "CloseWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "MoveWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "X",
+            "type": "int"
+        },
+        {
+            "name": "Y",
+            "type": "int"
+        },
+        {
+            "name": "nWidth",
+            "type": "int"
+        },
+        {
+            "name": "nHeight",
+            "type": "int"
+        },
+        {
+            "name": "bRepaint",
+            "type": "BOOL"
+        }
+    ],
+    "SetWindowPos": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hWndInsertAfter",
+            "type": "HWND"
+        },
+        {
+            "name": "X",
+            "type": "int"
+        },
+        {
+            "name": "Y",
+            "type": "int"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "GetWindowPlacement": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpwndpl",
+            "type": "WINDOWPLACEMENT"
+        }
+    ],
+    "SetWindowPlacement": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpwndpl",
+            "type": "WINDOWPLACEMENT"
+        }
+    ],
+    "GetWindowDisplayAffinity": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pdwAffinity",
+            "type": "DWORD"
+        }
+    ],
+    "SetWindowDisplayAffinity": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwAffinity",
+            "type": "DWORD"
+        }
+    ],
+    "BeginDeferWindowPos": [
+        {
+            "name": "nNumWindows",
+            "type": "int"
+        }
+    ],
+    "DeferWindowPos": [
+        {
+            "name": "hWinPosInfo",
+            "type": "HDWP"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hWndInsertAfter",
+            "type": "HWND"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "EndDeferWindowPos": [
+        {
+            "name": "hWinPosInfo",
+            "type": "HDWP"
+        }
+    ],
+    "IsWindowVisible": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "IsIconic": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "AnyPopup": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "BringWindowToTop": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "IsZoomed": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "CreateDialogParamA": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpTemplateName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpDialogFunc",
+            "type": "DLGPROC"
+        },
+        {
+            "name": "dwInitParam",
+            "type": "LPARAM"
+        }
+    ],
+    "CreateDialogParamW": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpTemplateName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpDialogFunc",
+            "type": "DLGPROC"
+        },
+        {
+            "name": "dwInitParam",
+            "type": "LPARAM"
+        }
+    ],
+    "CreateDialogIndirectParamA": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpTemplate",
+            "type": "LPCDLGTEMPLATEA"
+        },
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpDialogFunc",
+            "type": "DLGPROC"
+        },
+        {
+            "name": "dwInitParam",
+            "type": "LPARAM"
+        }
+    ],
+    "CreateDialogIndirectParamW": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpTemplate",
+            "type": "LPCDLGTEMPLATEW"
+        },
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpDialogFunc",
+            "type": "DLGPROC"
+        },
+        {
+            "name": "dwInitParam",
+            "type": "LPARAM"
+        }
+    ],
+    "DialogBoxParamA": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpTemplateName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpDialogFunc",
+            "type": "DLGPROC"
+        },
+        {
+            "name": "dwInitParam",
+            "type": "LPARAM"
+        }
+    ],
+    "DialogBoxParamW": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpTemplateName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpDialogFunc",
+            "type": "DLGPROC"
+        },
+        {
+            "name": "dwInitParam",
+            "type": "LPARAM"
+        }
+    ],
+    "DialogBoxIndirectParamA": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "hDialogTemplate",
+            "type": "LPCDLGTEMPLATEA"
+        },
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpDialogFunc",
+            "type": "DLGPROC"
+        },
+        {
+            "name": "dwInitParam",
+            "type": "LPARAM"
+        }
+    ],
+    "DialogBoxIndirectParamW": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "hDialogTemplate",
+            "type": "LPCDLGTEMPLATEW"
+        },
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpDialogFunc",
+            "type": "DLGPROC"
+        },
+        {
+            "name": "dwInitParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EndDialog": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "nResult",
+            "type": "INT_PTR"
+        }
+    ],
+    "GetDlgItem": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDDlgItem",
+            "type": "int"
+        }
+    ],
+    "SetDlgItemInt": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDDlgItem",
+            "type": "int"
+        },
+        {
+            "name": "uValue",
+            "type": "UINT"
+        },
+        {
+            "name": "bSigned",
+            "type": "BOOL"
+        }
+    ],
+    "GetDlgItemInt": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDDlgItem",
+            "type": "int"
+        },
+        {
+            "name": "lpTranslated",
+            "type": "BOOL"
+        },
+        {
+            "name": "bSigned",
+            "type": "BOOL"
+        }
+    ],
+    "SetDlgItemTextA": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDDlgItem",
+            "type": "int"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        }
+    ],
+    "SetDlgItemTextW": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDDlgItem",
+            "type": "int"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetDlgItemTextA": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDDlgItem",
+            "type": "int"
+        },
+        {
+            "name": "lpString",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "int"
+        }
+    ],
+    "GetDlgItemTextW": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDDlgItem",
+            "type": "int"
+        },
+        {
+            "name": "lpString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "int"
+        }
+    ],
+    "CheckDlgButton": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDButton",
+            "type": "int"
+        },
+        {
+            "name": "uCheck",
+            "type": "UINT"
+        }
+    ],
+    "CheckRadioButton": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDFirstButton",
+            "type": "int"
+        },
+        {
+            "name": "nIDLastButton",
+            "type": "int"
+        },
+        {
+            "name": "nIDCheckButton",
+            "type": "int"
+        }
+    ],
+    "IsDlgButtonChecked": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDButton",
+            "type": "int"
+        }
+    ],
+    "SendDlgItemMessageA": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDDlgItem",
+            "type": "int"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "SendDlgItemMessageW": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDDlgItem",
+            "type": "int"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "GetNextDlgGroupItem": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "hCtl",
+            "type": "HWND"
+        },
+        {
+            "name": "bPrevious",
+            "type": "BOOL"
+        }
+    ],
+    "GetNextDlgTabItem": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "hCtl",
+            "type": "HWND"
+        },
+        {
+            "name": "bPrevious",
+            "type": "BOOL"
+        }
+    ],
+    "GetDlgCtrlID": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "GetDialogBaseUnits": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "DefDlgProcW": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "Msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "GetDialogControlDpiChangeBehavior": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "SetDialogDpiChangeBehavior": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "mask",
+            "type": "DIALOG_DPI_CHANGE_BEHAVIORS"
+        },
+        {
+            "name": "values",
+            "type": "DIALOG_DPI_CHANGE_BEHAVIORS"
+        }
+    ],
+    "GetDialogDpiChangeBehavior": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        }
+    ],
+    "CallMsgFilterA": [
+        {
+            "name": "lpMsg",
+            "type": "LPMSG"
+        },
+        {
+            "name": "nCode",
+            "type": "int"
+        }
+    ],
+    "CallMsgFilterW": [
+        {
+            "name": "lpMsg",
+            "type": "LPMSG"
+        },
+        {
+            "name": "nCode",
+            "type": "int"
+        }
+    ],
+    "OpenClipboard": [
+        {
+            "name": "hWndNewOwner",
+            "type": "HWND"
+        }
+    ],
+    "CloseClipboard": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetClipboardSequenceNumber": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetClipboardOwner": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetClipboardViewer": [
+        {
+            "name": "hWndNewViewer",
+            "type": "HWND"
+        }
+    ],
+    "GetClipboardViewer": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "ChangeClipboardChain": [
+        {
+            "name": "hWndRemove",
+            "type": "HWND"
+        },
+        {
+            "name": "hWndNewNext",
+            "type": "HWND"
+        }
+    ],
+    "SetClipboardData": [
+        {
+            "name": "uFormat",
+            "type": "UINT"
+        },
+        {
+            "name": "hMem",
+            "type": "HANDLE"
+        }
+    ],
+    "GetClipboardData": [
+        {
+            "name": "uFormat",
+            "type": "UINT"
+        }
+    ],
+    "RegisterClipboardFormatA": [
+        {
+            "name": "lpszFormat",
+            "type": "LPCSTR"
+        }
+    ],
+    "RegisterClipboardFormatW": [
+        {
+            "name": "lpszFormat",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CountClipboardFormats": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "EnumClipboardFormats": [
+        {
+            "name": "format",
+            "type": "UINT"
+        }
+    ],
+    "GetClipboardFormatNameA": [
+        {
+            "name": "format",
+            "type": "UINT"
+        },
+        {
+            "name": "lpszFormatName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchMaxCount",
+            "type": "int"
+        }
+    ],
+    "GetClipboardFormatNameW": [
+        {
+            "name": "format",
+            "type": "UINT"
+        },
+        {
+            "name": "lpszFormatName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMaxCount",
+            "type": "int"
+        }
+    ],
+    "EmptyClipboard": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "IsClipboardFormatAvailable": [
+        {
+            "name": "format",
+            "type": "UINT"
+        }
+    ],
+    "GetPriorityClipboardFormat": [
+        {
+            "name": "paFormatPriorityList",
+            "type": "UINT"
+        },
+        {
+            "name": "cFormats",
+            "type": "int"
+        }
+    ],
+    "GetOpenClipboardWindow": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "AddClipboardFormatListener": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "RemoveClipboardFormatListener": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "GetUpdatedClipboardFormats": [
+        {
+            "name": "lpuiFormats",
+            "type": "PUINT"
+        },
+        {
+            "name": "cFormats",
+            "type": "UINT"
+        },
+        {
+            "name": "pcFormatsOut",
+            "type": "PUINT"
+        }
+    ],
+    "CharToOemA": [
+        {
+            "name": "pSrc",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pDst",
+            "type": "LPSTR"
+        }
+    ],
+    "CharToOemW": [
+        {
+            "name": "pSrc",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pDst",
+            "type": "LPSTR"
+        }
+    ],
+    "OemToCharA": [
+        {
+            "name": "pSrc",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pDst",
+            "type": "LPSTR"
+        }
+    ],
+    "OemToCharW": [
+        {
+            "name": "pSrc",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pDst",
+            "type": "LPWSTR"
+        }
+    ],
+    "CharToOemBuffA": [
+        {
+            "name": "lpszSrc",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszDst",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchDstLength",
+            "type": "DWORD"
+        }
+    ],
+    "CharToOemBuffW": [
+        {
+            "name": "lpszSrc",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszDst",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchDstLength",
+            "type": "DWORD"
+        }
+    ],
+    "OemToCharBuffA": [
+        {
+            "name": "lpszSrc",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszDst",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchDstLength",
+            "type": "DWORD"
+        }
+    ],
+    "OemToCharBuffW": [
+        {
+            "name": "lpszSrc",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszDst",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchDstLength",
+            "type": "DWORD"
+        }
+    ],
+    "CharUpperA": [
+        {
+            "name": "lpsz",
+            "type": "LPSTR"
+        }
+    ],
+    "CharUpperW": [
+        {
+            "name": "lpsz",
+            "type": "LPWSTR"
+        }
+    ],
+    "CharUpperBuffA": [
+        {
+            "name": "lpsz",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchLength",
+            "type": "DWORD"
+        }
+    ],
+    "CharUpperBuffW": [
+        {
+            "name": "lpsz",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchLength",
+            "type": "DWORD"
+        }
+    ],
+    "CharLowerA": [
+        {
+            "name": "lpsz",
+            "type": "LPSTR"
+        }
+    ],
+    "CharLowerW": [
+        {
+            "name": "lpsz",
+            "type": "LPWSTR"
+        }
+    ],
+    "CharLowerBuffA": [
+        {
+            "name": "lpsz",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchLength",
+            "type": "DWORD"
+        }
+    ],
+    "CharLowerBuffW": [
+        {
+            "name": "lpsz",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchLength",
+            "type": "DWORD"
+        }
+    ],
+    "CharNextA": [
+        {
+            "name": "lpsz",
+            "type": "LPCSTR"
+        }
+    ],
+    "CharNextW": [
+        {
+            "name": "lpsz",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CharPrevA": [
+        {
+            "name": "lpszStart",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszCurrent",
+            "type": "LPCSTR"
+        }
+    ],
+    "CharPrevW": [
+        {
+            "name": "lpszStart",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszCurrent",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CharNextExA": [
+        {
+            "name": "CodePage",
+            "type": "WORD"
+        },
+        {
+            "name": "lpCurrentChar",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CharPrevExA": [
+        {
+            "name": "CodePage",
+            "type": "WORD"
+        },
+        {
+            "name": "lpStart",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpCurrentChar",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "IsCharAlphaA": [
+        {
+            "name": "ch",
+            "type": "CHAR"
+        }
+    ],
+    "IsCharAlphaW": [
+        {
+            "name": "ch",
+            "type": "WCHAR"
+        }
+    ],
+    "IsCharAlphaNumericA": [
+        {
+            "name": "ch",
+            "type": "CHAR"
+        }
+    ],
+    "IsCharAlphaNumericW": [
+        {
+            "name": "ch",
+            "type": "WCHAR"
+        }
+    ],
+    "IsCharUpperA": [
+        {
+            "name": "ch",
+            "type": "CHAR"
+        }
+    ],
+    "IsCharUpperW": [
+        {
+            "name": "ch",
+            "type": "WCHAR"
+        }
+    ],
+    "IsCharLowerA": [
+        {
+            "name": "ch",
+            "type": "CHAR"
+        }
+    ],
+    "IsCharLowerW": [
+        {
+            "name": "ch",
+            "type": "WCHAR"
+        }
+    ],
+    "SetFocus": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "GetActiveWindow": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetFocus": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetKBCodePage": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetKeyState": [
+        {
+            "name": "nVirtKey",
+            "type": "int"
+        }
+    ],
+    "GetAsyncKeyState": [
+        {
+            "name": "vKey",
+            "type": "int"
+        }
+    ],
+    "GetKeyboardState": [
+        {
+            "name": "lpKeyState",
+            "type": "PBYTE"
+        }
+    ],
+    "SetKeyboardState": [
+        {
+            "name": "lpKeyState",
+            "type": "LPBYTE"
+        }
+    ],
+    "GetKeyNameTextA": [
+        {
+            "name": "lParam",
+            "type": "LONG"
+        },
+        {
+            "name": "lpString",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchSize",
+            "type": "int"
+        }
+    ],
+    "GetKeyNameTextW": [
+        {
+            "name": "lParam",
+            "type": "LONG"
+        },
+        {
+            "name": "lpString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchSize",
+            "type": "int"
+        }
+    ],
+    "GetKeyboardType": [
+        {
+            "name": "nTypeFlag",
+            "type": "int"
+        }
+    ],
+    "ToAscii": [
+        {
+            "name": "uVirtKey",
+            "type": "UINT"
+        },
+        {
+            "name": "uScanCode",
+            "type": "UINT"
+        },
+        {
+            "name": "lpKeyState",
+            "type": "BYTE"
+        },
+        {
+            "name": "lpChar",
+            "type": "LPWORD"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "ToAsciiEx": [
+        {
+            "name": "uVirtKey",
+            "type": "UINT"
+        },
+        {
+            "name": "uScanCode",
+            "type": "UINT"
+        },
+        {
+            "name": "lpKeyState",
+            "type": "BYTE"
+        },
+        {
+            "name": "lpChar",
+            "type": "LPWORD"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "dwhkl",
+            "type": "HKL"
+        }
+    ],
+    "ToUnicode": [
+        {
+            "name": "wVirtKey",
+            "type": "UINT"
+        },
+        {
+            "name": "wScanCode",
+            "type": "UINT"
+        },
+        {
+            "name": "lpKeyState",
+            "type": "BYTE"
+        },
+        {
+            "name": "pwszBuff",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchBuff",
+            "type": "int"
+        },
+        {
+            "name": "wFlags",
+            "type": "UINT"
+        }
+    ],
+    "OemKeyScan": [
+        {
+            "name": "wOemChar",
+            "type": "WORD"
+        }
+    ],
+    "VkKeyScanA": [
+        {
+            "name": "ch",
+            "type": "CHAR"
+        }
+    ],
+    "VkKeyScanW": [
+        {
+            "name": "ch",
+            "type": "WCHAR"
+        }
+    ],
+    "VkKeyScanExA": [
+        {
+            "name": "ch",
+            "type": "CHAR"
+        },
+        {
+            "name": "dwhkl",
+            "type": "HKL"
+        }
+    ],
+    "VkKeyScanExW": [
+        {
+            "name": "ch",
+            "type": "WCHAR"
+        },
+        {
+            "name": "dwhkl",
+            "type": "HKL"
+        }
+    ],
+    "keybd_event": [
+        {
+            "name": "bVk",
+            "type": "BYTE"
+        },
+        {
+            "name": "bScan",
+            "type": "BYTE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwExtraInfo",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "mouse_event": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dx",
+            "type": "DWORD"
+        },
+        {
+            "name": "dy",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwData",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwExtraInfo",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "SendInput": [
+        {
+            "name": "cInputs",
+            "type": "UINT"
+        },
+        {
+            "name": "pInputs",
+            "type": "LPINPUT"
+        },
+        {
+            "name": "cbSize",
+            "type": "int"
+        }
+    ],
+    "GetTouchInputInfo": [
+        {
+            "name": "hTouchInput",
+            "type": "HTOUCHINPUT"
+        },
+        {
+            "name": "cInputs",
+            "type": "UINT"
+        },
+        {
+            "name": "pInputs",
+            "type": "PTOUCHINPUT"
+        },
+        {
+            "name": "cbSize",
+            "type": "int"
+        }
+    ],
+    "CloseTouchInputHandle": [
+        {
+            "name": "hTouchInput",
+            "type": "HTOUCHINPUT"
+        }
+    ],
+    "RegisterTouchWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "UnregisterTouchWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "IsTouchWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pulFlags",
+            "type": "PULONG"
+        }
+    ],
+    "InitializeTouchInjection": [
+        {
+            "name": "maxCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "dwMode",
+            "type": "DWORD"
+        }
+    ],
+    "InjectTouchInput": [
+        {
+            "name": "count",
+            "type": "UINT32"
+        },
+        {
+            "name": "contacts",
+            "type": "POINTER_TOUCH_INFO"
+        }
+    ],
+    "GetPointerType": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerType",
+            "type": "POINTER_INPUT_TYPE"
+        }
+    ],
+    "GetPointerCursorId": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "cursorId",
+            "type": "UINT32"
+        }
+    ],
+    "GetPointerInfo": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerInfo",
+            "type": "POINTER_INFO"
+        }
+    ],
+    "GetPointerInfoHistory": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "entriesCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerInfo",
+            "type": "POINTER_INFO"
+        }
+    ],
+    "GetPointerFrameInfo": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerInfo",
+            "type": "POINTER_INFO"
+        }
+    ],
+    "GetPointerFrameInfoHistory": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "entriesCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerInfo",
+            "type": "POINTER_INFO"
+        }
+    ],
+    "GetPointerTouchInfo": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "touchInfo",
+            "type": "POINTER_TOUCH_INFO"
+        }
+    ],
+    "GetPointerTouchInfoHistory": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "entriesCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "touchInfo",
+            "type": "POINTER_TOUCH_INFO"
+        }
+    ],
+    "GetPointerFrameTouchInfo": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "touchInfo",
+            "type": "POINTER_TOUCH_INFO"
+        }
+    ],
+    "GetPointerFrameTouchInfoHistory": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "entriesCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "touchInfo",
+            "type": "POINTER_TOUCH_INFO"
+        }
+    ],
+    "GetPointerPenInfo": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "penInfo",
+            "type": "POINTER_PEN_INFO"
+        }
+    ],
+    "GetPointerPenInfoHistory": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "entriesCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "penInfo",
+            "type": "POINTER_PEN_INFO"
+        }
+    ],
+    "GetPointerFramePenInfo": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "penInfo",
+            "type": "POINTER_PEN_INFO"
+        }
+    ],
+    "GetPointerFramePenInfoHistory": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "entriesCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "penInfo",
+            "type": "POINTER_PEN_INFO"
+        }
+    ],
+    "SkipPointerFrameMessages": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        }
+    ],
+    "RegisterPointerInputTarget": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pointerType",
+            "type": "POINTER_INPUT_TYPE"
+        }
+    ],
+    "UnregisterPointerInputTarget": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pointerType",
+            "type": "POINTER_INPUT_TYPE"
+        }
+    ],
+    "RegisterPointerInputTargetEx": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pointerType",
+            "type": "POINTER_INPUT_TYPE"
+        },
+        {
+            "name": "fObserve",
+            "type": "BOOL"
+        }
+    ],
+    "UnregisterPointerInputTargetEx": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pointerType",
+            "type": "POINTER_INPUT_TYPE"
+        }
+    ],
+    "CreateSyntheticPointerDevice": [
+        {
+            "name": "pointerType",
+            "type": "POINTER_INPUT_TYPE"
+        },
+        {
+            "name": "maxCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "mode",
+            "type": "POINTER_FEEDBACK_MODE"
+        }
+    ],
+    "InjectSyntheticPointerInput": [
+        {
+            "name": "device",
+            "type": "HSYNTHETICPOINTERDEVICE"
+        },
+        {
+            "name": "pointerInfo",
+            "type": "POINTER_TYPE_INFO"
+        },
+        {
+            "name": "count",
+            "type": "UINT32"
+        }
+    ],
+    "DestroySyntheticPointerDevice": [
+        {
+            "name": "device",
+            "type": "HSYNTHETICPOINTERDEVICE"
+        }
+    ],
+    "EnableMouseInPointer": [
+        {
+            "name": "fEnable",
+            "type": "BOOL"
+        }
+    ],
+    "IsMouseInPointerEnabled": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RegisterTouchHitTestingWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "value",
+            "type": "ULONG"
+        }
+    ],
+    "EvaluateProximityToRect": [
+        {
+            "name": "controlBoundingBox",
+            "type": "RECT"
+        },
+        {
+            "name": "pHitTestingInput",
+            "type": "TOUCH_HIT_TESTING_INPUT"
+        },
+        {
+            "name": "pProximityEval",
+            "type": "TOUCH_HIT_TESTING_PROXIMITY_EVALUATION"
+        }
+    ],
+    "EvaluateProximityToPolygon": [
+        {
+            "name": "numVertices",
+            "type": "UINT32"
+        },
+        {
+            "name": "controlPolygon",
+            "type": "POINT"
+        },
+        {
+            "name": "pHitTestingInput",
+            "type": "TOUCH_HIT_TESTING_INPUT"
+        },
+        {
+            "name": "pProximityEval",
+            "type": "TOUCH_HIT_TESTING_PROXIMITY_EVALUATION"
+        }
+    ],
+    "PackTouchHitTestingProximityEvaluation": [
+        {
+            "name": "pHitTestingInput",
+            "type": "TOUCH_HIT_TESTING_INPUT"
+        },
+        {
+            "name": "pProximityEval",
+            "type": "TOUCH_HIT_TESTING_PROXIMITY_EVALUATION"
+        }
+    ],
+    "GetWindowFeedbackSetting": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "feedback",
+            "type": "FEEDBACK_TYPE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pSize",
+            "type": "UINT32"
+        },
+        {
+            "name": "config",
+            "type": "void"
+        }
+    ],
+    "SetWindowFeedbackSetting": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "feedback",
+            "type": "FEEDBACK_TYPE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "size",
+            "type": "UINT32"
+        },
+        {
+            "name": "configuration",
+            "type": "void"
+        }
+    ],
+    "GetPointerInputTransform": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "historyCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "inputTransform",
+            "type": "INPUT_TRANSFORM"
+        }
+    ],
+    "GetLastInputInfo": [
+        {
+            "name": "plii",
+            "type": "PLASTINPUTINFO"
+        }
+    ],
+    "MapVirtualKeyA": [
+        {
+            "name": "uCode",
+            "type": "UINT"
+        },
+        {
+            "name": "uMapType",
+            "type": "UINT"
+        }
+    ],
+    "MapVirtualKeyW": [
+        {
+            "name": "uCode",
+            "type": "UINT"
+        },
+        {
+            "name": "uMapType",
+            "type": "UINT"
+        }
+    ],
+    "MapVirtualKeyExA": [
+        {
+            "name": "uCode",
+            "type": "UINT"
+        },
+        {
+            "name": "uMapType",
+            "type": "UINT"
+        },
+        {
+            "name": "dwhkl",
+            "type": "HKL"
+        }
+    ],
+    "MapVirtualKeyExW": [
+        {
+            "name": "uCode",
+            "type": "UINT"
+        },
+        {
+            "name": "uMapType",
+            "type": "UINT"
+        },
+        {
+            "name": "dwhkl",
+            "type": "HKL"
+        }
+    ],
+    "GetInputState": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetQueueStatus": [
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "GetCapture": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetCapture": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "ReleaseCapture": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "MsgWaitForMultipleObjects": [
+        {
+            "name": "nCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pHandles",
+            "type": "HANDLE"
+        },
+        {
+            "name": "fWaitAll",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwMilliseconds",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwWakeMask",
+            "type": "DWORD"
+        }
+    ],
+    "MsgWaitForMultipleObjectsEx": [
+        {
+            "name": "nCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pHandles",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwMilliseconds",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwWakeMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SetTimer": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDEvent",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "uElapse",
+            "type": "UINT"
+        },
+        {
+            "name": "lpTimerFunc",
+            "type": "TIMERPROC"
+        }
+    ],
+    "SetCoalescableTimer": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIDEvent",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "uElapse",
+            "type": "UINT"
+        },
+        {
+            "name": "lpTimerFunc",
+            "type": "TIMERPROC"
+        },
+        {
+            "name": "uToleranceDelay",
+            "type": "ULONG"
+        }
+    ],
+    "KillTimer": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "uIDEvent",
+            "type": "UINT_PTR"
+        }
+    ],
+    "IsWindowUnicode": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "EnableWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "bEnable",
+            "type": "BOOL"
+        }
+    ],
+    "IsWindowEnabled": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "LoadAcceleratorsA": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpTableName",
+            "type": "LPCSTR"
+        }
+    ],
+    "LoadAcceleratorsW": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpTableName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CreateAcceleratorTableA": [
+        {
+            "name": "paccel",
+            "type": "LPACCEL"
+        },
+        {
+            "name": "cAccel",
+            "type": "int"
+        }
+    ],
+    "CreateAcceleratorTableW": [
+        {
+            "name": "paccel",
+            "type": "LPACCEL"
+        },
+        {
+            "name": "cAccel",
+            "type": "int"
+        }
+    ],
+    "DestroyAcceleratorTable": [
+        {
+            "name": "hAccel",
+            "type": "HACCEL"
+        }
+    ],
+    "CopyAcceleratorTableA": [
+        {
+            "name": "hAccelSrc",
+            "type": "HACCEL"
+        },
+        {
+            "name": "lpAccelDst",
+            "type": "LPACCEL"
+        },
+        {
+            "name": "cAccelEntries",
+            "type": "int"
+        }
+    ],
+    "CopyAcceleratorTableW": [
+        {
+            "name": "hAccelSrc",
+            "type": "HACCEL"
+        },
+        {
+            "name": "lpAccelDst",
+            "type": "LPACCEL"
+        },
+        {
+            "name": "cAccelEntries",
+            "type": "int"
+        }
+    ],
+    "TranslateAcceleratorA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hAccTable",
+            "type": "HACCEL"
+        },
+        {
+            "name": "lpMsg",
+            "type": "LPMSG"
+        }
+    ],
+    "TranslateAcceleratorW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hAccTable",
+            "type": "HACCEL"
+        },
+        {
+            "name": "lpMsg",
+            "type": "LPMSG"
+        }
+    ],
+    "GetSystemMetrics": [
+        {
+            "name": "nIndex",
+            "type": "int"
+        }
+    ],
+    "GetSystemMetricsForDpi": [
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "dpi",
+            "type": "UINT"
+        }
+    ],
+    "LoadMenuA": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpMenuName",
+            "type": "LPCSTR"
+        }
+    ],
+    "LoadMenuW": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpMenuName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "LoadMenuIndirectA": [
+        {
+            "name": "lpMenuTemplate",
+            "type": "MENUTEMPLATEA"
+        }
+    ],
+    "LoadMenuIndirectW": [
+        {
+            "name": "lpMenuTemplate",
+            "type": "MENUTEMPLATEW"
+        }
+    ],
+    "GetMenu": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "SetMenu": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        }
+    ],
+    "HiliteMenuItem": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uIDHiliteItem",
+            "type": "UINT"
+        },
+        {
+            "name": "uHilite",
+            "type": "UINT"
+        }
+    ],
+    "GetMenuStringA": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uIDItem",
+            "type": "UINT"
+        },
+        {
+            "name": "lpString",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "int"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "GetMenuStringW": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uIDItem",
+            "type": "UINT"
+        },
+        {
+            "name": "lpString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "int"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "GetMenuState": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uId",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "DrawMenuBar": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "GetSystemMenu": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "bRevert",
+            "type": "BOOL"
+        }
+    ],
+    "CreateMenu": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CreatePopupMenu": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "DestroyMenu": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        }
+    ],
+    "CheckMenuItem": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uIDCheckItem",
+            "type": "UINT"
+        },
+        {
+            "name": "uCheck",
+            "type": "UINT"
+        }
+    ],
+    "EnableMenuItem": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uIDEnableItem",
+            "type": "UINT"
+        },
+        {
+            "name": "uEnable",
+            "type": "UINT"
+        }
+    ],
+    "GetSubMenu": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "nPos",
+            "type": "int"
+        }
+    ],
+    "GetMenuItemID": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "nPos",
+            "type": "int"
+        }
+    ],
+    "GetMenuItemCount": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        }
+    ],
+    "InsertMenuA": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uPosition",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "uIDNewItem",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "lpNewItem",
+            "type": "LPCSTR"
+        }
+    ],
+    "InsertMenuW": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uPosition",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "uIDNewItem",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "lpNewItem",
+            "type": "LPCWSTR"
+        }
+    ],
+    "AppendMenuA": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "uIDNewItem",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "lpNewItem",
+            "type": "LPCSTR"
+        }
+    ],
+    "AppendMenuW": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "uIDNewItem",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "lpNewItem",
+            "type": "LPCWSTR"
+        }
+    ],
+    "ModifyMenuA": [
+        {
+            "name": "hMnu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uPosition",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "uIDNewItem",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "lpNewItem",
+            "type": "LPCSTR"
+        }
+    ],
+    "ModifyMenuW": [
+        {
+            "name": "hMnu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uPosition",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "uIDNewItem",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "lpNewItem",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RemoveMenu": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uPosition",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "DeleteMenu": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uPosition",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "SetMenuItemBitmaps": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uPosition",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "hBitmapUnchecked",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "hBitmapChecked",
+            "type": "HBITMAP"
+        }
+    ],
+    "GetMenuCheckMarkDimensions": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "TrackPopupMenu": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "nReserved",
+            "type": "int"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "prcRect",
+            "type": "RECT"
+        }
+    ],
+    "TrackPopupMenuEx": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lptpm",
+            "type": "LPTPMPARAMS"
+        }
+    ],
+    "CalculatePopupWindowPosition": [
+        {
+            "name": "anchorPoint",
+            "type": "POINT"
+        },
+        {
+            "name": "windowSize",
+            "type": "SIZE"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        },
+        {
+            "name": "excludeRect",
+            "type": "RECT"
+        },
+        {
+            "name": "popupWindowPosition",
+            "type": "RECT"
+        }
+    ],
+    "GetMenuInfo": [
+        {
+            "name": "VOID",
+            "type": "HMENU"
+        },
+        {
+            "name": "VOID",
+            "type": "LPMENUINFO"
+        }
+    ],
+    "SetMenuInfo": [
+        {
+            "name": "VOID",
+            "type": "HMENU"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCMENUINFO"
+        }
+    ],
+    "EndMenu": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "InsertMenuItemA": [
+        {
+            "name": "hmenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "item",
+            "type": "UINT"
+        },
+        {
+            "name": "fByPosition",
+            "type": "BOOL"
+        },
+        {
+            "name": "lpmi",
+            "type": "LPCMENUITEMINFOA"
+        }
+    ],
+    "InsertMenuItemW": [
+        {
+            "name": "hmenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "item",
+            "type": "UINT"
+        },
+        {
+            "name": "fByPosition",
+            "type": "BOOL"
+        },
+        {
+            "name": "lpmi",
+            "type": "LPCMENUITEMINFOW"
+        }
+    ],
+    "GetMenuItemInfoA": [
+        {
+            "name": "hmenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "item",
+            "type": "UINT"
+        },
+        {
+            "name": "fByPosition",
+            "type": "BOOL"
+        },
+        {
+            "name": "lpmii",
+            "type": "LPMENUITEMINFOA"
+        }
+    ],
+    "GetMenuItemInfoW": [
+        {
+            "name": "hmenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "item",
+            "type": "UINT"
+        },
+        {
+            "name": "fByPosition",
+            "type": "BOOL"
+        },
+        {
+            "name": "lpmii",
+            "type": "LPMENUITEMINFOW"
+        }
+    ],
+    "SetMenuItemInfoA": [
+        {
+            "name": "hmenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "item",
+            "type": "UINT"
+        },
+        {
+            "name": "fByPositon",
+            "type": "BOOL"
+        },
+        {
+            "name": "lpmii",
+            "type": "LPCMENUITEMINFOA"
+        }
+    ],
+    "SetMenuItemInfoW": [
+        {
+            "name": "hmenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "item",
+            "type": "UINT"
+        },
+        {
+            "name": "fByPositon",
+            "type": "BOOL"
+        },
+        {
+            "name": "lpmii",
+            "type": "LPCMENUITEMINFOW"
+        }
+    ],
+    "GetMenuDefaultItem": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "fByPos",
+            "type": "UINT"
+        },
+        {
+            "name": "gmdiFlags",
+            "type": "UINT"
+        }
+    ],
+    "SetMenuDefaultItem": [
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uItem",
+            "type": "UINT"
+        },
+        {
+            "name": "fByPos",
+            "type": "UINT"
+        }
+    ],
+    "GetMenuItemRect": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "uItem",
+            "type": "UINT"
+        },
+        {
+            "name": "lprcItem",
+            "type": "LPRECT"
+        }
+    ],
+    "MenuItemFromPoint": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hMenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "ptScreen",
+            "type": "POINT"
+        }
+    ],
+    "DragDetect": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pt",
+            "type": "POINT"
+        }
+    ],
+    "DrawIcon": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "X",
+            "type": "int"
+        },
+        {
+            "name": "Y",
+            "type": "int"
+        },
+        {
+            "name": "hIcon",
+            "type": "HICON"
+        }
+    ],
+    "DrawTextA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpchText",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cchText",
+            "type": "int"
+        },
+        {
+            "name": "lprc",
+            "type": "LPRECT"
+        },
+        {
+            "name": "format",
+            "type": "UINT"
+        }
+    ],
+    "DrawTextW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpchText",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchText",
+            "type": "int"
+        },
+        {
+            "name": "lprc",
+            "type": "LPRECT"
+        },
+        {
+            "name": "format",
+            "type": "UINT"
+        }
+    ],
+    "DrawTextExA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpchText",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchText",
+            "type": "int"
+        },
+        {
+            "name": "lprc",
+            "type": "LPRECT"
+        },
+        {
+            "name": "format",
+            "type": "UINT"
+        },
+        {
+            "name": "lpdtp",
+            "type": "LPDRAWTEXTPARAMS"
+        }
+    ],
+    "DrawTextExW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpchText",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchText",
+            "type": "int"
+        },
+        {
+            "name": "lprc",
+            "type": "LPRECT"
+        },
+        {
+            "name": "format",
+            "type": "UINT"
+        },
+        {
+            "name": "lpdtp",
+            "type": "LPDRAWTEXTPARAMS"
+        }
+    ],
+    "GrayStringA": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "hBrush",
+            "type": "HBRUSH"
+        },
+        {
+            "name": "lpOutputFunc",
+            "type": "GRAYSTRINGPROC"
+        },
+        {
+            "name": "lpData",
+            "type": "LPARAM"
+        },
+        {
+            "name": "nCount",
+            "type": "int"
+        },
+        {
+            "name": "X",
+            "type": "int"
+        },
+        {
+            "name": "Y",
+            "type": "int"
+        },
+        {
+            "name": "nWidth",
+            "type": "int"
+        },
+        {
+            "name": "nHeight",
+            "type": "int"
+        }
+    ],
+    "GrayStringW": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "hBrush",
+            "type": "HBRUSH"
+        },
+        {
+            "name": "lpOutputFunc",
+            "type": "GRAYSTRINGPROC"
+        },
+        {
+            "name": "lpData",
+            "type": "LPARAM"
+        },
+        {
+            "name": "nCount",
+            "type": "int"
+        },
+        {
+            "name": "X",
+            "type": "int"
+        },
+        {
+            "name": "Y",
+            "type": "int"
+        },
+        {
+            "name": "nWidth",
+            "type": "int"
+        },
+        {
+            "name": "nHeight",
+            "type": "int"
+        }
+    ],
+    "DrawStateA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hbrFore",
+            "type": "HBRUSH"
+        },
+        {
+            "name": "qfnCallBack",
+            "type": "DRAWSTATEPROC"
+        },
+        {
+            "name": "lData",
+            "type": "LPARAM"
+        },
+        {
+            "name": "wData",
+            "type": "WPARAM"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "DrawStateW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hbrFore",
+            "type": "HBRUSH"
+        },
+        {
+            "name": "qfnCallBack",
+            "type": "DRAWSTATEPROC"
+        },
+        {
+            "name": "lData",
+            "type": "LPARAM"
+        },
+        {
+            "name": "wData",
+            "type": "WPARAM"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        }
+    ],
+    "TabbedTextOutA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "chCount",
+            "type": "int"
+        },
+        {
+            "name": "nTabPositions",
+            "type": "int"
+        },
+        {
+            "name": "lpnTabStopPositions",
+            "type": "INT"
+        },
+        {
+            "name": "nTabOrigin",
+            "type": "int"
+        }
+    ],
+    "TabbedTextOutW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "chCount",
+            "type": "int"
+        },
+        {
+            "name": "nTabPositions",
+            "type": "int"
+        },
+        {
+            "name": "lpnTabStopPositions",
+            "type": "INT"
+        },
+        {
+            "name": "nTabOrigin",
+            "type": "int"
+        }
+    ],
+    "GetTabbedTextExtentA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "chCount",
+            "type": "int"
+        },
+        {
+            "name": "nTabPositions",
+            "type": "int"
+        },
+        {
+            "name": "lpnTabStopPositions",
+            "type": "INT"
+        }
+    ],
+    "GetTabbedTextExtentW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "chCount",
+            "type": "int"
+        },
+        {
+            "name": "nTabPositions",
+            "type": "int"
+        },
+        {
+            "name": "lpnTabStopPositions",
+            "type": "INT"
+        }
+    ],
+    "UpdateWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "SetActiveWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "GetForegroundWindow": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "PaintDesktop": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "SwitchToThisWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "fUnknown",
+            "type": "BOOL"
+        }
+    ],
+    "SetForegroundWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "AllowSetForegroundWindow": [
+        {
+            "name": "dwProcessId",
+            "type": "DWORD"
+        }
+    ],
+    "LockSetForegroundWindow": [
+        {
+            "name": "uLockCode",
+            "type": "UINT"
+        }
+    ],
+    "WindowFromDC": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        }
+    ],
+    "GetDC": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "GetDCEx": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hrgnClip",
+            "type": "HRGN"
+        },
+        {
+            "name": "flags",
+            "type": "DWORD"
+        }
+    ],
+    "GetWindowDC": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "ReleaseDC": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hDC",
+            "type": "HDC"
+        }
+    ],
+    "BeginPaint": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpPaint",
+            "type": "LPPAINTSTRUCT"
+        }
+    ],
+    "EndPaint": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpPaint",
+            "type": "PAINTSTRUCT"
+        }
+    ],
+    "GetUpdateRect": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpRect",
+            "type": "LPRECT"
+        },
+        {
+            "name": "bErase",
+            "type": "BOOL"
+        }
+    ],
+    "GetUpdateRgn": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hRgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "bErase",
+            "type": "BOOL"
+        }
+    ],
+    "SetWindowRgn": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hRgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "bRedraw",
+            "type": "BOOL"
+        }
+    ],
+    "GetWindowRgn": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hRgn",
+            "type": "HRGN"
+        }
+    ],
+    "GetWindowRgnBox": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lprc",
+            "type": "LPRECT"
+        }
+    ],
+    "ExcludeUpdateRgn": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "InvalidateRect": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpRect",
+            "type": "RECT"
+        },
+        {
+            "name": "bErase",
+            "type": "BOOL"
+        }
+    ],
+    "ValidateRect": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpRect",
+            "type": "RECT"
+        }
+    ],
+    "InvalidateRgn": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hRgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "bErase",
+            "type": "BOOL"
+        }
+    ],
+    "ValidateRgn": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hRgn",
+            "type": "HRGN"
+        }
+    ],
+    "RedrawWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lprcUpdate",
+            "type": "RECT"
+        },
+        {
+            "name": "hrgnUpdate",
+            "type": "HRGN"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "LockWindowUpdate": [
+        {
+            "name": "hWndLock",
+            "type": "HWND"
+        }
+    ],
+    "ScrollWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "XAmount",
+            "type": "int"
+        },
+        {
+            "name": "YAmount",
+            "type": "int"
+        },
+        {
+            "name": "lpRect",
+            "type": "RECT"
+        },
+        {
+            "name": "lpClipRect",
+            "type": "RECT"
+        }
+    ],
+    "ScrollDC": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "dx",
+            "type": "int"
+        },
+        {
+            "name": "dy",
+            "type": "int"
+        },
+        {
+            "name": "lprcScroll",
+            "type": "RECT"
+        },
+        {
+            "name": "lprcClip",
+            "type": "RECT"
+        },
+        {
+            "name": "hrgnUpdate",
+            "type": "HRGN"
+        },
+        {
+            "name": "lprcUpdate",
+            "type": "LPRECT"
+        }
+    ],
+    "ScrollWindowEx": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dx",
+            "type": "int"
+        },
+        {
+            "name": "dy",
+            "type": "int"
+        },
+        {
+            "name": "prcScroll",
+            "type": "RECT"
+        },
+        {
+            "name": "prcClip",
+            "type": "RECT"
+        },
+        {
+            "name": "hrgnUpdate",
+            "type": "HRGN"
+        },
+        {
+            "name": "prcUpdate",
+            "type": "LPRECT"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "SetScrollPos": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nBar",
+            "type": "int"
+        },
+        {
+            "name": "nPos",
+            "type": "int"
+        },
+        {
+            "name": "bRedraw",
+            "type": "BOOL"
+        }
+    ],
+    "GetScrollPos": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nBar",
+            "type": "int"
+        }
+    ],
+    "SetScrollRange": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nBar",
+            "type": "int"
+        },
+        {
+            "name": "nMinPos",
+            "type": "int"
+        },
+        {
+            "name": "nMaxPos",
+            "type": "int"
+        },
+        {
+            "name": "bRedraw",
+            "type": "BOOL"
+        }
+    ],
+    "GetScrollRange": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nBar",
+            "type": "int"
+        },
+        {
+            "name": "lpMinPos",
+            "type": "LPINT"
+        },
+        {
+            "name": "lpMaxPos",
+            "type": "LPINT"
+        }
+    ],
+    "ShowScrollBar": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "wBar",
+            "type": "int"
+        },
+        {
+            "name": "bShow",
+            "type": "BOOL"
+        }
+    ],
+    "EnableScrollBar": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "wSBflags",
+            "type": "UINT"
+        },
+        {
+            "name": "wArrows",
+            "type": "UINT"
+        }
+    ],
+    "SetPropA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hData",
+            "type": "HANDLE"
+        }
+    ],
+    "SetPropW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hData",
+            "type": "HANDLE"
+        }
+    ],
+    "GetPropA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        }
+    ],
+    "GetPropW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RemovePropA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        }
+    ],
+    "RemovePropW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        }
+    ],
+    "EnumPropsExA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpEnumFunc",
+            "type": "PROPENUMPROCEXA"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumPropsExW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpEnumFunc",
+            "type": "PROPENUMPROCEXW"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumPropsA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpEnumFunc",
+            "type": "PROPENUMPROCA"
+        }
+    ],
+    "EnumPropsW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpEnumFunc",
+            "type": "PROPENUMPROCW"
+        }
+    ],
+    "SetWindowTextA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        }
+    ],
+    "SetWindowTextW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetWindowTextA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nMaxCount",
+            "type": "int"
+        }
+    ],
+    "GetWindowTextW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nMaxCount",
+            "type": "int"
+        }
+    ],
+    "GetWindowTextLengthA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "GetWindowTextLengthW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "GetClientRect": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpRect",
+            "type": "LPRECT"
+        }
+    ],
+    "GetWindowRect": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpRect",
+            "type": "LPRECT"
+        }
+    ],
+    "AdjustWindowRect": [
+        {
+            "name": "lpRect",
+            "type": "LPRECT"
+        },
+        {
+            "name": "dwStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "bMenu",
+            "type": "BOOL"
+        }
+    ],
+    "AdjustWindowRectEx": [
+        {
+            "name": "lpRect",
+            "type": "LPRECT"
+        },
+        {
+            "name": "dwStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "bMenu",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwExStyle",
+            "type": "DWORD"
+        }
+    ],
+    "AdjustWindowRectExForDpi": [
+        {
+            "name": "lpRect",
+            "type": "LPRECT"
+        },
+        {
+            "name": "dwStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "bMenu",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwExStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "dpi",
+            "type": "UINT"
+        }
+    ],
+    "SetWindowContextHelpId": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "GetWindowContextHelpId": [
+        {
+            "name": "VOID",
+            "type": "HWND"
+        }
+    ],
+    "SetMenuContextHelpId": [
+        {
+            "name": "VOID",
+            "type": "HMENU"
+        },
+        {
+            "name": "VOID",
+            "type": "DWORD"
+        }
+    ],
+    "GetMenuContextHelpId": [
+        {
+            "name": "VOID",
+            "type": "HMENU"
+        }
+    ],
+    "MessageBoxA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpText",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpCaption",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "uType",
+            "type": "UINT"
+        }
+    ],
+    "MessageBoxW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpText",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpCaption",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "uType",
+            "type": "UINT"
+        }
+    ],
+    "MessageBoxExA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpText",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpCaption",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "uType",
+            "type": "UINT"
+        },
+        {
+            "name": "wLanguageId",
+            "type": "WORD"
+        }
+    ],
+    "MessageBoxExW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpText",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpCaption",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "uType",
+            "type": "UINT"
+        },
+        {
+            "name": "wLanguageId",
+            "type": "WORD"
+        }
+    ],
+    "MessageBoxIndirectA": [
+        {
+            "name": "lpmbp",
+            "type": "MSGBOXPARAMSA"
+        }
+    ],
+    "MessageBoxIndirectW": [
+        {
+            "name": "lpmbp",
+            "type": "MSGBOXPARAMSW"
+        }
+    ],
+    "MessageBeep": [
+        {
+            "name": "uType",
+            "type": "UINT"
+        }
+    ],
+    "ShowCursor": [
+        {
+            "name": "bShow",
+            "type": "BOOL"
+        }
+    ],
+    "SetCursorPos": [
+        {
+            "name": "X",
+            "type": "int"
+        },
+        {
+            "name": "Y",
+            "type": "int"
+        }
+    ],
+    "SetPhysicalCursorPos": [
+        {
+            "name": "X",
+            "type": "int"
+        },
+        {
+            "name": "Y",
+            "type": "int"
+        }
+    ],
+    "SetCursor": [
+        {
+            "name": "hCursor",
+            "type": "HCURSOR"
+        }
+    ],
+    "GetCursorPos": [
+        {
+            "name": "lpPoint",
+            "type": "LPPOINT"
+        }
+    ],
+    "GetPhysicalCursorPos": [
+        {
+            "name": "lpPoint",
+            "type": "LPPOINT"
+        }
+    ],
+    "GetClipCursor": [
+        {
+            "name": "lpRect",
+            "type": "LPRECT"
+        }
+    ],
+    "GetCursor": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CreateCaret": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hBitmap",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "nWidth",
+            "type": "int"
+        },
+        {
+            "name": "nHeight",
+            "type": "int"
+        }
+    ],
+    "GetCaretBlinkTime": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetCaretBlinkTime": [
+        {
+            "name": "uMSeconds",
+            "type": "UINT"
+        }
+    ],
+    "DestroyCaret": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "HideCaret": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "ShowCaret": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "SetCaretPos": [
+        {
+            "name": "X",
+            "type": "int"
+        },
+        {
+            "name": "Y",
+            "type": "int"
+        }
+    ],
+    "GetCaretPos": [
+        {
+            "name": "lpPoint",
+            "type": "LPPOINT"
+        }
+    ],
+    "ClientToScreen": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpPoint",
+            "type": "LPPOINT"
+        }
+    ],
+    "ScreenToClient": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpPoint",
+            "type": "LPPOINT"
+        }
+    ],
+    "LogicalToPhysicalPoint": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpPoint",
+            "type": "LPPOINT"
+        }
+    ],
+    "PhysicalToLogicalPoint": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpPoint",
+            "type": "LPPOINT"
+        }
+    ],
+    "LogicalToPhysicalPointForPerMonitorDPI": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpPoint",
+            "type": "LPPOINT"
+        }
+    ],
+    "PhysicalToLogicalPointForPerMonitorDPI": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpPoint",
+            "type": "LPPOINT"
+        }
+    ],
+    "MapWindowPoints": [
+        {
+            "name": "hWndFrom",
+            "type": "HWND"
+        },
+        {
+            "name": "hWndTo",
+            "type": "HWND"
+        },
+        {
+            "name": "lpPoints",
+            "type": "LPPOINT"
+        },
+        {
+            "name": "cPoints",
+            "type": "UINT"
+        }
+    ],
+    "WindowFromPoint": [
+        {
+            "name": "Point",
+            "type": "POINT"
+        }
+    ],
+    "WindowFromPhysicalPoint": [
+        {
+            "name": "Point",
+            "type": "POINT"
+        }
+    ],
+    "ChildWindowFromPoint": [
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "Point",
+            "type": "POINT"
+        }
+    ],
+    "ClipCursor": [
+        {
+            "name": "lpRect",
+            "type": "RECT"
+        }
+    ],
+    "ChildWindowFromPointEx": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pt",
+            "type": "POINT"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "GetSysColor": [
+        {
+            "name": "nIndex",
+            "type": "int"
+        }
+    ],
+    "GetSysColorBrush": [
+        {
+            "name": "nIndex",
+            "type": "int"
+        }
+    ],
+    "SetSysColors": [
+        {
+            "name": "cElements",
+            "type": "int"
+        },
+        {
+            "name": "lpaElements",
+            "type": "INT"
+        },
+        {
+            "name": "lpaRgbValues",
+            "type": "COLORREF"
+        }
+    ],
+    "DrawFocusRect": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "lprc",
+            "type": "RECT"
+        }
+    ],
+    "FillRect": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "lprc",
+            "type": "RECT"
+        },
+        {
+            "name": "hbr",
+            "type": "HBRUSH"
+        }
+    ],
+    "FrameRect": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "lprc",
+            "type": "RECT"
+        },
+        {
+            "name": "hbr",
+            "type": "HBRUSH"
+        }
+    ],
+    "InvertRect": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "lprc",
+            "type": "RECT"
+        }
+    ],
+    "SetRect": [
+        {
+            "name": "lprc",
+            "type": "LPRECT"
+        },
+        {
+            "name": "xLeft",
+            "type": "int"
+        },
+        {
+            "name": "yTop",
+            "type": "int"
+        },
+        {
+            "name": "xRight",
+            "type": "int"
+        },
+        {
+            "name": "yBottom",
+            "type": "int"
+        }
+    ],
+    "SetRectEmpty": [
+        {
+            "name": "lprc",
+            "type": "LPRECT"
+        }
+    ],
+    "CopyRect": [
+        {
+            "name": "lprcDst",
+            "type": "LPRECT"
+        },
+        {
+            "name": "lprcSrc",
+            "type": "RECT"
+        }
+    ],
+    "InflateRect": [
+        {
+            "name": "lprc",
+            "type": "LPRECT"
+        },
+        {
+            "name": "dx",
+            "type": "int"
+        },
+        {
+            "name": "dy",
+            "type": "int"
+        }
+    ],
+    "IntersectRect": [
+        {
+            "name": "lprcDst",
+            "type": "LPRECT"
+        },
+        {
+            "name": "lprcSrc1",
+            "type": "RECT"
+        },
+        {
+            "name": "lprcSrc2",
+            "type": "RECT"
+        }
+    ],
+    "UnionRect": [
+        {
+            "name": "lprcDst",
+            "type": "LPRECT"
+        },
+        {
+            "name": "lprcSrc1",
+            "type": "RECT"
+        },
+        {
+            "name": "lprcSrc2",
+            "type": "RECT"
+        }
+    ],
+    "SubtractRect": [
+        {
+            "name": "lprcDst",
+            "type": "LPRECT"
+        },
+        {
+            "name": "lprcSrc1",
+            "type": "RECT"
+        },
+        {
+            "name": "lprcSrc2",
+            "type": "RECT"
+        }
+    ],
+    "OffsetRect": [
+        {
+            "name": "lprc",
+            "type": "LPRECT"
+        },
+        {
+            "name": "dx",
+            "type": "int"
+        },
+        {
+            "name": "dy",
+            "type": "int"
+        }
+    ],
+    "IsRectEmpty": [
+        {
+            "name": "lprc",
+            "type": "RECT"
+        }
+    ],
+    "EqualRect": [
+        {
+            "name": "lprc1",
+            "type": "RECT"
+        },
+        {
+            "name": "lprc2",
+            "type": "RECT"
+        }
+    ],
+    "PtInRect": [
+        {
+            "name": "lprc",
+            "type": "RECT"
+        },
+        {
+            "name": "pt",
+            "type": "POINT"
+        }
+    ],
+    "GetWindowLongA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        }
+    ],
+    "GetWindowLongW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        }
+    ],
+    "SetWindowLongA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "dwNewLong",
+            "type": "LONG"
+        }
+    ],
+    "SetWindowLongW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "dwNewLong",
+            "type": "LONG"
+        }
+    ],
+    "GetWindowLongPtrA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        }
+    ],
+    "GetWindowLongPtrW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        }
+    ],
+    "SetWindowLongPtrA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "dwNewLong",
+            "type": "LONG_PTR"
+        }
+    ],
+    "SetWindowLongPtrW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "dwNewLong",
+            "type": "LONG_PTR"
+        }
+    ],
+    "GetClassWord": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        }
+    ],
+    "SetClassWord": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "wNewWord",
+            "type": "WORD"
+        }
+    ],
+    "GetClassLongA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        }
+    ],
+    "GetClassLongW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        }
+    ],
+    "SetClassLongA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "dwNewLong",
+            "type": "LONG"
+        }
+    ],
+    "SetClassLongW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "dwNewLong",
+            "type": "LONG"
+        }
+    ],
+    "GetClassLongPtrA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        }
+    ],
+    "GetClassLongPtrW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        }
+    ],
+    "SetClassLongPtrA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "dwNewLong",
+            "type": "LONG_PTR"
+        }
+    ],
+    "SetClassLongPtrW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nIndex",
+            "type": "int"
+        },
+        {
+            "name": "dwNewLong",
+            "type": "LONG_PTR"
+        }
+    ],
+    "GetProcessDefaultLayout": [
+        {
+            "name": "pdwDefaultLayout",
+            "type": "DWORD"
+        }
+    ],
+    "SetProcessDefaultLayout": [
+        {
+            "name": "dwDefaultLayout",
+            "type": "DWORD"
+        }
+    ],
+    "GetDesktopWindow": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetParent": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "SetParent": [
+        {
+            "name": "hWndChild",
+            "type": "HWND"
+        },
+        {
+            "name": "hWndNewParent",
+            "type": "HWND"
+        }
+    ],
+    "EnumChildWindows": [
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "lpEnumFunc",
+            "type": "WNDENUMPROC"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "FindWindowA": [
+        {
+            "name": "lpClassName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpWindowName",
+            "type": "LPCSTR"
+        }
+    ],
+    "FindWindowW": [
+        {
+            "name": "lpClassName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpWindowName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "FindWindowExA": [
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "hWndChildAfter",
+            "type": "HWND"
+        },
+        {
+            "name": "lpszClass",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszWindow",
+            "type": "LPCSTR"
+        }
+    ],
+    "FindWindowExW": [
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "hWndChildAfter",
+            "type": "HWND"
+        },
+        {
+            "name": "lpszClass",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszWindow",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetShellWindow": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RegisterShellHookWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "DeregisterShellHookWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "EnumWindows": [
+        {
+            "name": "lpEnumFunc",
+            "type": "WNDENUMPROC"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumThreadWindows": [
+        {
+            "name": "dwThreadId",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpfn",
+            "type": "WNDENUMPROC"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "GetClassNameA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpClassName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nMaxCount",
+            "type": "int"
+        }
+    ],
+    "GetClassNameW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nMaxCount",
+            "type": "int"
+        }
+    ],
+    "GetTopWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "GetWindowThreadProcessId": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpdwProcessId",
+            "type": "LPDWORD"
+        }
+    ],
+    "IsGUIThread": [
+        {
+            "name": "bConvert",
+            "type": "BOOL"
+        }
+    ],
+    "GetLastActivePopup": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "GetWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "uCmd",
+            "type": "UINT"
+        }
+    ],
+    "SetWindowsHookExA": [
+        {
+            "name": "idHook",
+            "type": "int"
+        },
+        {
+            "name": "lpfn",
+            "type": "HOOKPROC"
+        },
+        {
+            "name": "hmod",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "dwThreadId",
+            "type": "DWORD"
+        }
+    ],
+    "SetWindowsHookExW": [
+        {
+            "name": "idHook",
+            "type": "int"
+        },
+        {
+            "name": "lpfn",
+            "type": "HOOKPROC"
+        },
+        {
+            "name": "hmod",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "dwThreadId",
+            "type": "DWORD"
+        }
+    ],
+    "UnhookWindowsHookEx": [
+        {
+            "name": "hhk",
+            "type": "HHOOK"
+        }
+    ],
+    "CallNextHookEx": [
+        {
+            "name": "hhk",
+            "type": "HHOOK"
+        },
+        {
+            "name": "nCode",
+            "type": "int"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "CheckMenuRadioItem": [
+        {
+            "name": "hmenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "first",
+            "type": "UINT"
+        },
+        {
+            "name": "last",
+            "type": "UINT"
+        },
+        {
+            "name": "check",
+            "type": "UINT"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "LoadBitmapA": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpBitmapName",
+            "type": "LPCSTR"
+        }
+    ],
+    "LoadBitmapW": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpBitmapName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "LoadCursorA": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpCursorName",
+            "type": "LPCSTR"
+        }
+    ],
+    "LoadCursorW": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpCursorName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "LoadCursorFromFileA": [
+        {
+            "name": "lpFileName",
+            "type": "LPCSTR"
+        }
+    ],
+    "LoadCursorFromFileW": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CreateCursor": [
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "xHotSpot",
+            "type": "int"
+        },
+        {
+            "name": "yHotSpot",
+            "type": "int"
+        },
+        {
+            "name": "nWidth",
+            "type": "int"
+        },
+        {
+            "name": "nHeight",
+            "type": "int"
+        },
+        {
+            "name": "pvANDPlane",
+            "type": "void"
+        },
+        {
+            "name": "pvXORPlane",
+            "type": "void"
+        }
+    ],
+    "DestroyCursor": [
+        {
+            "name": "hCursor",
+            "type": "HCURSOR"
+        }
+    ],
+    "SetSystemCursor": [
+        {
+            "name": "hcur",
+            "type": "HCURSOR"
+        },
+        {
+            "name": "id",
+            "type": "DWORD"
+        }
+    ],
+    "LoadIconA": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpIconName",
+            "type": "LPCSTR"
+        }
+    ],
+    "LoadIconW": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lpIconName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PrivateExtractIconsA": [
+        {
+            "name": "szFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "nIconIndex",
+            "type": "int"
+        },
+        {
+            "name": "cxIcon",
+            "type": "int"
+        },
+        {
+            "name": "cyIcon",
+            "type": "int"
+        },
+        {
+            "name": "phicon",
+            "type": "HICON"
+        },
+        {
+            "name": "piconid",
+            "type": "UINT"
+        },
+        {
+            "name": "nIcons",
+            "type": "UINT"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "PrivateExtractIconsW": [
+        {
+            "name": "szFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "nIconIndex",
+            "type": "int"
+        },
+        {
+            "name": "cxIcon",
+            "type": "int"
+        },
+        {
+            "name": "cyIcon",
+            "type": "int"
+        },
+        {
+            "name": "phicon",
+            "type": "HICON"
+        },
+        {
+            "name": "piconid",
+            "type": "UINT"
+        },
+        {
+            "name": "nIcons",
+            "type": "UINT"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "CreateIcon": [
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "nWidth",
+            "type": "int"
+        },
+        {
+            "name": "nHeight",
+            "type": "int"
+        },
+        {
+            "name": "cPlanes",
+            "type": "BYTE"
+        },
+        {
+            "name": "cBitsPixel",
+            "type": "BYTE"
+        },
+        {
+            "name": "lpbANDbits",
+            "type": "BYTE"
+        },
+        {
+            "name": "lpbXORbits",
+            "type": "BYTE"
+        }
+    ],
+    "DestroyIcon": [
+        {
+            "name": "hIcon",
+            "type": "HICON"
+        }
+    ],
+    "LookupIconIdFromDirectory": [
+        {
+            "name": "presbits",
+            "type": "PBYTE"
+        },
+        {
+            "name": "fIcon",
+            "type": "BOOL"
+        }
+    ],
+    "LookupIconIdFromDirectoryEx": [
+        {
+            "name": "presbits",
+            "type": "PBYTE"
+        },
+        {
+            "name": "fIcon",
+            "type": "BOOL"
+        },
+        {
+            "name": "cxDesired",
+            "type": "int"
+        },
+        {
+            "name": "cyDesired",
+            "type": "int"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        }
+    ],
+    "CreateIconFromResource": [
+        {
+            "name": "presbits",
+            "type": "PBYTE"
+        },
+        {
+            "name": "dwResSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "fIcon",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwVer",
+            "type": "DWORD"
+        }
+    ],
+    "CreateIconFromResourceEx": [
+        {
+            "name": "presbits",
+            "type": "PBYTE"
+        },
+        {
+            "name": "dwResSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "fIcon",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwVer",
+            "type": "DWORD"
+        },
+        {
+            "name": "cxDesired",
+            "type": "int"
+        },
+        {
+            "name": "cyDesired",
+            "type": "int"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        }
+    ],
+    "LoadImageA": [
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "name",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "type",
+            "type": "UINT"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        },
+        {
+            "name": "fuLoad",
+            "type": "UINT"
+        }
+    ],
+    "LoadImageW": [
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "name",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "type",
+            "type": "UINT"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        },
+        {
+            "name": "fuLoad",
+            "type": "UINT"
+        }
+    ],
+    "CopyImage": [
+        {
+            "name": "h",
+            "type": "HANDLE"
+        },
+        {
+            "name": "type",
+            "type": "UINT"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "DrawIconEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "xLeft",
+            "type": "int"
+        },
+        {
+            "name": "yTop",
+            "type": "int"
+        },
+        {
+            "name": "hIcon",
+            "type": "HICON"
+        },
+        {
+            "name": "cxWidth",
+            "type": "int"
+        },
+        {
+            "name": "cyWidth",
+            "type": "int"
+        },
+        {
+            "name": "istepIfAniCur",
+            "type": "UINT"
+        },
+        {
+            "name": "hbrFlickerFreeDraw",
+            "type": "HBRUSH"
+        },
+        {
+            "name": "diFlags",
+            "type": "UINT"
+        }
+    ],
+    "CreateIconIndirect": [
+        {
+            "name": "piconinfo",
+            "type": "PICONINFO"
+        }
+    ],
+    "CopyIcon": [
+        {
+            "name": "hIcon",
+            "type": "HICON"
+        }
+    ],
+    "GetIconInfo": [
+        {
+            "name": "hIcon",
+            "type": "HICON"
+        },
+        {
+            "name": "piconinfo",
+            "type": "PICONINFO"
+        }
+    ],
+    "GetIconInfoExA": [
+        {
+            "name": "hicon",
+            "type": "HICON"
+        },
+        {
+            "name": "piconinfo",
+            "type": "PICONINFOEXA"
+        }
+    ],
+    "GetIconInfoExW": [
+        {
+            "name": "hicon",
+            "type": "HICON"
+        },
+        {
+            "name": "piconinfo",
+            "type": "PICONINFOEXW"
+        }
+    ],
+    "IsDialogMessageA": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "lpMsg",
+            "type": "LPMSG"
+        }
+    ],
+    "IsDialogMessageW": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "lpMsg",
+            "type": "LPMSG"
+        }
+    ],
+    "MapDialogRect": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "lpRect",
+            "type": "LPRECT"
+        }
+    ],
+    "DlgDirListA": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "lpPathSpec",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nIDListBox",
+            "type": "int"
+        },
+        {
+            "name": "nIDStaticPath",
+            "type": "int"
+        },
+        {
+            "name": "uFileType",
+            "type": "UINT"
+        }
+    ],
+    "DlgDirListW": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "lpPathSpec",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nIDListBox",
+            "type": "int"
+        },
+        {
+            "name": "nIDStaticPath",
+            "type": "int"
+        },
+        {
+            "name": "uFileType",
+            "type": "UINT"
+        }
+    ],
+    "DlgDirSelectExA": [
+        {
+            "name": "hwndDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPSTR"
+        },
+        {
+            "name": "chCount",
+            "type": "int"
+        },
+        {
+            "name": "idListBox",
+            "type": "int"
+        }
+    ],
+    "DlgDirSelectExW": [
+        {
+            "name": "hwndDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "chCount",
+            "type": "int"
+        },
+        {
+            "name": "idListBox",
+            "type": "int"
+        }
+    ],
+    "DlgDirListComboBoxA": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "lpPathSpec",
+            "type": "LPSTR"
+        },
+        {
+            "name": "nIDComboBox",
+            "type": "int"
+        },
+        {
+            "name": "nIDStaticPath",
+            "type": "int"
+        },
+        {
+            "name": "uFiletype",
+            "type": "UINT"
+        }
+    ],
+    "DlgDirListComboBoxW": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "lpPathSpec",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "nIDComboBox",
+            "type": "int"
+        },
+        {
+            "name": "nIDStaticPath",
+            "type": "int"
+        },
+        {
+            "name": "uFiletype",
+            "type": "UINT"
+        }
+    ],
+    "DlgDirSelectComboBoxExA": [
+        {
+            "name": "hwndDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchOut",
+            "type": "int"
+        },
+        {
+            "name": "idComboBox",
+            "type": "int"
+        }
+    ],
+    "DlgDirSelectComboBoxExW": [
+        {
+            "name": "hwndDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "lpString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchOut",
+            "type": "int"
+        },
+        {
+            "name": "idComboBox",
+            "type": "int"
+        }
+    ],
+    "SetScrollInfo": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nBar",
+            "type": "int"
+        },
+        {
+            "name": "lpsi",
+            "type": "LPCSCROLLINFO"
+        },
+        {
+            "name": "redraw",
+            "type": "BOOL"
+        }
+    ],
+    "GetScrollInfo": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "nBar",
+            "type": "int"
+        },
+        {
+            "name": "lpsi",
+            "type": "LPSCROLLINFO"
+        }
+    ],
+    "DefFrameProcA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hWndMDIClient",
+            "type": "HWND"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "DefFrameProcW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hWndMDIClient",
+            "type": "HWND"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "DefMDIChildProcA": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "DefMDIChildProcW": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "TranslateMDISysAccel": [
+        {
+            "name": "hWndClient",
+            "type": "HWND"
+        },
+        {
+            "name": "lpMsg",
+            "type": "LPMSG"
+        }
+    ],
+    "ArrangeIconicWindows": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "CreateMDIWindowA": [
+        {
+            "name": "lpClassName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpWindowName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "X",
+            "type": "int"
+        },
+        {
+            "name": "Y",
+            "type": "int"
+        },
+        {
+            "name": "nWidth",
+            "type": "int"
+        },
+        {
+            "name": "nHeight",
+            "type": "int"
+        },
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "CreateMDIWindowW": [
+        {
+            "name": "lpClassName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpWindowName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "X",
+            "type": "int"
+        },
+        {
+            "name": "Y",
+            "type": "int"
+        },
+        {
+            "name": "nWidth",
+            "type": "int"
+        },
+        {
+            "name": "nHeight",
+            "type": "int"
+        },
+        {
+            "name": "hWndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "hInstance",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "TileWindows": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "wHow",
+            "type": "UINT"
+        },
+        {
+            "name": "lpRect",
+            "type": "RECT"
+        },
+        {
+            "name": "cKids",
+            "type": "UINT"
+        },
+        {
+            "name": "lpKids",
+            "type": "HWND"
+        }
+    ],
+    "CascadeWindows": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "wHow",
+            "type": "UINT"
+        },
+        {
+            "name": "lpRect",
+            "type": "RECT"
+        },
+        {
+            "name": "cKids",
+            "type": "UINT"
+        },
+        {
+            "name": "lpKids",
+            "type": "HWND"
+        }
+    ],
+    "WinHelpA": [
+        {
+            "name": "hWndMain",
+            "type": "HWND"
+        },
+        {
+            "name": "lpszHelp",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "uCommand",
+            "type": "UINT"
+        },
+        {
+            "name": "dwData",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "WinHelpW": [
+        {
+            "name": "hWndMain",
+            "type": "HWND"
+        },
+        {
+            "name": "lpszHelp",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "uCommand",
+            "type": "UINT"
+        },
+        {
+            "name": "dwData",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "GetGuiResources": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "uiFlags",
+            "type": "DWORD"
+        }
+    ],
+    "ChangeDisplaySettingsA": [
+        {
+            "name": "lpDevMode",
+            "type": "DEVMODEA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "ChangeDisplaySettingsW": [
+        {
+            "name": "lpDevMode",
+            "type": "DEVMODEW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "ChangeDisplaySettingsExA": [
+        {
+            "name": "lpszDeviceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpDevMode",
+            "type": "DEVMODEA"
+        },
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwflags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LPVOID"
+        }
+    ],
+    "ChangeDisplaySettingsExW": [
+        {
+            "name": "lpszDeviceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDevMode",
+            "type": "DEVMODEW"
+        },
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwflags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lParam",
+            "type": "LPVOID"
+        }
+    ],
+    "EnumDisplaySettingsA": [
+        {
+            "name": "lpszDeviceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iModeNum",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpDevMode",
+            "type": "DEVMODEA"
+        }
+    ],
+    "EnumDisplaySettingsW": [
+        {
+            "name": "lpszDeviceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iModeNum",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpDevMode",
+            "type": "DEVMODEW"
+        }
+    ],
+    "EnumDisplaySettingsExA": [
+        {
+            "name": "lpszDeviceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iModeNum",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpDevMode",
+            "type": "DEVMODEA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumDisplaySettingsExW": [
+        {
+            "name": "lpszDeviceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iModeNum",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpDevMode",
+            "type": "DEVMODEW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumDisplayDevicesA": [
+        {
+            "name": "lpDevice",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iDevNum",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpDisplayDevice",
+            "type": "PDISPLAY_DEVICEA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumDisplayDevicesW": [
+        {
+            "name": "lpDevice",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iDevNum",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpDisplayDevice",
+            "type": "PDISPLAY_DEVICEW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetDisplayConfigBufferSizes": [
+        {
+            "name": "flags",
+            "type": "UINT32"
+        },
+        {
+            "name": "numPathArrayElements",
+            "type": "UINT32"
+        },
+        {
+            "name": "numModeInfoArrayElements",
+            "type": "UINT32"
+        }
+    ],
+    "SetDisplayConfig": [
+        {
+            "name": "numPathArrayElements",
+            "type": "UINT32"
+        },
+        {
+            "name": "pathArray",
+            "type": "DISPLAYCONFIG_PATH_INFO"
+        },
+        {
+            "name": "numModeInfoArrayElements",
+            "type": "UINT32"
+        },
+        {
+            "name": "modeInfoArray",
+            "type": "DISPLAYCONFIG_MODE_INFO"
+        },
+        {
+            "name": "flags",
+            "type": "UINT32"
+        }
+    ],
+    "QueryDisplayConfig": [
+        {
+            "name": "flags",
+            "type": "UINT32"
+        },
+        {
+            "name": "numPathArrayElements",
+            "type": "UINT32"
+        },
+        {
+            "name": "pathArray",
+            "type": "DISPLAYCONFIG_PATH_INFO"
+        },
+        {
+            "name": "numModeInfoArrayElements",
+            "type": "UINT32"
+        },
+        {
+            "name": "modeInfoArray",
+            "type": "DISPLAYCONFIG_MODE_INFO"
+        },
+        {
+            "name": "currentTopologyId",
+            "type": "DISPLAYCONFIG_TOPOLOGY_ID"
+        }
+    ],
+    "DisplayConfigGetDeviceInfo": [
+        {
+            "name": "requestPacket",
+            "type": "DISPLAYCONFIG_DEVICE_INFO_HEADER"
+        }
+    ],
+    "DisplayConfigSetDeviceInfo": [
+        {
+            "name": "setPacket",
+            "type": "DISPLAYCONFIG_DEVICE_INFO_HEADER"
+        }
+    ],
+    "SystemParametersInfoA": [
+        {
+            "name": "uiAction",
+            "type": "UINT"
+        },
+        {
+            "name": "uiParam",
+            "type": "UINT"
+        },
+        {
+            "name": "pvParam",
+            "type": "PVOID"
+        },
+        {
+            "name": "fWinIni",
+            "type": "UINT"
+        }
+    ],
+    "SystemParametersInfoW": [
+        {
+            "name": "uiAction",
+            "type": "UINT"
+        },
+        {
+            "name": "uiParam",
+            "type": "UINT"
+        },
+        {
+            "name": "pvParam",
+            "type": "PVOID"
+        },
+        {
+            "name": "fWinIni",
+            "type": "UINT"
+        }
+    ],
+    "SystemParametersInfoForDpi": [
+        {
+            "name": "uiAction",
+            "type": "UINT"
+        },
+        {
+            "name": "uiParam",
+            "type": "UINT"
+        },
+        {
+            "name": "pvParam",
+            "type": "PVOID"
+        },
+        {
+            "name": "fWinIni",
+            "type": "UINT"
+        },
+        {
+            "name": "dpi",
+            "type": "UINT"
+        }
+    ],
+    "SoundSentry": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetLastErrorEx": [
+        {
+            "name": "dwErrCode",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        }
+    ],
+    "InternalGetWindowText": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMaxCount",
+            "type": "int"
+        }
+    ],
+    "MonitorFromPoint": [
+        {
+            "name": "pt",
+            "type": "POINT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "MonitorFromRect": [
+        {
+            "name": "lprc",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "MonitorFromWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetMonitorInfoA": [
+        {
+            "name": "hMonitor",
+            "type": "HMONITOR"
+        },
+        {
+            "name": "lpmi",
+            "type": "LPMONITORINFO"
+        }
+    ],
+    "GetMonitorInfoW": [
+        {
+            "name": "hMonitor",
+            "type": "HMONITOR"
+        },
+        {
+            "name": "lpmi",
+            "type": "LPMONITORINFO"
+        }
+    ],
+    "EnumDisplayMonitors": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lprcClip",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "lpfnEnum",
+            "type": "MONITORENUMPROC"
+        },
+        {
+            "name": "dwData",
+            "type": "LPARAM"
+        }
+    ],
+    "NotifyWinEvent": [
+        {
+            "name": "event",
+            "type": "DWORD"
+        },
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "idObject",
+            "type": "LONG"
+        },
+        {
+            "name": "idChild",
+            "type": "LONG"
+        }
+    ],
+    "SetWinEventHook": [
+        {
+            "name": "eventMin",
+            "type": "DWORD"
+        },
+        {
+            "name": "eventMax",
+            "type": "DWORD"
+        },
+        {
+            "name": "hmodWinEventProc",
+            "type": "HMODULE"
+        },
+        {
+            "name": "pfnWinEventProc",
+            "type": "WINEVENTPROC"
+        },
+        {
+            "name": "idProcess",
+            "type": "DWORD"
+        },
+        {
+            "name": "idThread",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "IsWinEventHookInstalled": [
+        {
+            "name": "event",
+            "type": "DWORD"
+        }
+    ],
+    "UnhookWinEvent": [
+        {
+            "name": "hWinEventHook",
+            "type": "HWINEVENTHOOK"
+        }
+    ],
+    "GetGUIThreadInfo": [
+        {
+            "name": "idThread",
+            "type": "DWORD"
+        },
+        {
+            "name": "pgui",
+            "type": "PGUITHREADINFO"
+        }
+    ],
+    "BlockInput": [
+        {
+            "name": "fBlockIt",
+            "type": "BOOL"
+        }
+    ],
+    "SetProcessDPIAware": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "IsProcessDPIAware": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetThreadDpiAwarenessContext": [
+        {
+            "name": "dpiContext",
+            "type": "DPI_AWARENESS_CONTEXT"
+        }
+    ],
+    "GetThreadDpiAwarenessContext": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetWindowDpiAwarenessContext": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "GetAwarenessFromDpiAwarenessContext": [
+        {
+            "name": "value",
+            "type": "DPI_AWARENESS_CONTEXT"
+        }
+    ],
+    "GetDpiFromDpiAwarenessContext": [
+        {
+            "name": "value",
+            "type": "DPI_AWARENESS_CONTEXT"
+        }
+    ],
+    "AreDpiAwarenessContextsEqual": [
+        {
+            "name": "dpiContextA",
+            "type": "DPI_AWARENESS_CONTEXT"
+        },
+        {
+            "name": "dpiContextB",
+            "type": "DPI_AWARENESS_CONTEXT"
+        }
+    ],
+    "IsValidDpiAwarenessContext": [
+        {
+            "name": "value",
+            "type": "DPI_AWARENESS_CONTEXT"
+        }
+    ],
+    "GetDpiForWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "GetDpiForSystem": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetSystemDpiForProcess": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        }
+    ],
+    "EnableNonClientDpiScaling": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "SetProcessDpiAwarenessContext": [
+        {
+            "name": "value",
+            "type": "DPI_AWARENESS_CONTEXT"
+        }
+    ],
+    "SetThreadDpiHostingBehavior": [
+        {
+            "name": "value",
+            "type": "DPI_HOSTING_BEHAVIOR"
+        }
+    ],
+    "GetThreadDpiHostingBehavior": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetWindowDpiHostingBehavior": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "GetWindowModuleFileNameA": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszFileName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchFileNameMax",
+            "type": "UINT"
+        }
+    ],
+    "GetWindowModuleFileNameW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszFileName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchFileNameMax",
+            "type": "UINT"
+        }
+    ],
+    "GetCursorInfo": [
+        {
+            "name": "pci",
+            "type": "PCURSORINFO"
+        }
+    ],
+    "GetWindowInfo": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pwi",
+            "type": "PWINDOWINFO"
+        }
+    ],
+    "GetTitleBarInfo": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pti",
+            "type": "PTITLEBARINFO"
+        }
+    ],
+    "GetMenuBarInfo": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "idObject",
+            "type": "LONG"
+        },
+        {
+            "name": "idItem",
+            "type": "LONG"
+        },
+        {
+            "name": "pmbi",
+            "type": "PMENUBARINFO"
+        }
+    ],
+    "GetScrollBarInfo": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "idObject",
+            "type": "LONG"
+        },
+        {
+            "name": "psbi",
+            "type": "PSCROLLBARINFO"
+        }
+    ],
+    "GetComboBoxInfo": [
+        {
+            "name": "hwndCombo",
+            "type": "HWND"
+        },
+        {
+            "name": "pcbi",
+            "type": "PCOMBOBOXINFO"
+        }
+    ],
+    "GetAncestor": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "gaFlags",
+            "type": "UINT"
+        }
+    ],
+    "RealChildWindowFromPoint": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "ptParentClientCoords",
+            "type": "POINT"
+        }
+    ],
+    "RealGetWindowClassW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "ptszClassName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchClassNameMax",
+            "type": "UINT"
+        }
+    ],
+    "GetAltTabInfoA": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "iItem",
+            "type": "int"
+        },
+        {
+            "name": "pati",
+            "type": "PALTTABINFO"
+        },
+        {
+            "name": "pszItemText",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchItemText",
+            "type": "UINT"
+        }
+    ],
+    "GetAltTabInfoW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "iItem",
+            "type": "int"
+        },
+        {
+            "name": "pati",
+            "type": "PALTTABINFO"
+        },
+        {
+            "name": "pszItemText",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchItemText",
+            "type": "UINT"
+        }
+    ],
+    "GetListBoxInfo": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "LockWorkStation": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "UserHandleGrantAccess": [
+        {
+            "name": "hUserHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hJob",
+            "type": "HANDLE"
+        },
+        {
+            "name": "bGrant",
+            "type": "BOOL"
+        }
+    ],
+    "GetRawInputData": [
+        {
+            "name": "hRawInput",
+            "type": "HRAWINPUT"
+        },
+        {
+            "name": "uiCommand",
+            "type": "UINT"
+        },
+        {
+            "name": "pData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pcbSize",
+            "type": "PUINT"
+        },
+        {
+            "name": "cbSizeHeader",
+            "type": "UINT"
+        }
+    ],
+    "GetRawInputDeviceInfoA": [
+        {
+            "name": "hDevice",
+            "type": "HANDLE"
+        },
+        {
+            "name": "uiCommand",
+            "type": "UINT"
+        },
+        {
+            "name": "pData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pcbSize",
+            "type": "PUINT"
+        }
+    ],
+    "GetRawInputDeviceInfoW": [
+        {
+            "name": "hDevice",
+            "type": "HANDLE"
+        },
+        {
+            "name": "uiCommand",
+            "type": "UINT"
+        },
+        {
+            "name": "pData",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pcbSize",
+            "type": "PUINT"
+        }
+    ],
+    "GetRawInputBuffer": [
+        {
+            "name": "pData",
+            "type": "PRAWINPUT"
+        },
+        {
+            "name": "pcbSize",
+            "type": "PUINT"
+        },
+        {
+            "name": "cbSizeHeader",
+            "type": "UINT"
+        }
+    ],
+    "RegisterRawInputDevices": [
+        {
+            "name": "pRawInputDevices",
+            "type": "PCRAWINPUTDEVICE"
+        },
+        {
+            "name": "uiNumDevices",
+            "type": "UINT"
+        },
+        {
+            "name": "cbSize",
+            "type": "UINT"
+        }
+    ],
+    "GetRegisteredRawInputDevices": [
+        {
+            "name": "pRawInputDevices",
+            "type": "PRAWINPUTDEVICE"
+        },
+        {
+            "name": "puiNumDevices",
+            "type": "PUINT"
+        },
+        {
+            "name": "cbSize",
+            "type": "UINT"
+        }
+    ],
+    "GetRawInputDeviceList": [
+        {
+            "name": "pRawInputDeviceList",
+            "type": "PRAWINPUTDEVICELIST"
+        },
+        {
+            "name": "puiNumDevices",
+            "type": "PUINT"
+        },
+        {
+            "name": "cbSize",
+            "type": "UINT"
+        }
+    ],
+    "DefRawInputProc": [
+        {
+            "name": "paRawInput",
+            "type": "PRAWINPUT"
+        },
+        {
+            "name": "nInput",
+            "type": "INT"
+        },
+        {
+            "name": "cbSizeHeader",
+            "type": "UINT"
+        }
+    ],
+    "GetPointerDevices": [
+        {
+            "name": "deviceCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerDevices",
+            "type": "POINTER_DEVICE_INFO"
+        }
+    ],
+    "GetPointerDevice": [
+        {
+            "name": "device",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pointerDevice",
+            "type": "POINTER_DEVICE_INFO"
+        }
+    ],
+    "GetPointerDeviceProperties": [
+        {
+            "name": "device",
+            "type": "HANDLE"
+        },
+        {
+            "name": "propertyCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerProperties",
+            "type": "POINTER_DEVICE_PROPERTY"
+        }
+    ],
+    "RegisterPointerDeviceNotifications": [
+        {
+            "name": "window",
+            "type": "HWND"
+        },
+        {
+            "name": "notifyRange",
+            "type": "BOOL"
+        }
+    ],
+    "GetPointerDeviceRects": [
+        {
+            "name": "device",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pointerDeviceRect",
+            "type": "RECT"
+        },
+        {
+            "name": "displayRect",
+            "type": "RECT"
+        }
+    ],
+    "GetPointerDeviceCursors": [
+        {
+            "name": "device",
+            "type": "HANDLE"
+        },
+        {
+            "name": "cursorCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "deviceCursors",
+            "type": "POINTER_DEVICE_CURSOR_INFO"
+        }
+    ],
+    "GetRawPointerDeviceData": [
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        },
+        {
+            "name": "historyCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "propertiesCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "pProperties",
+            "type": "POINTER_DEVICE_PROPERTY"
+        },
+        {
+            "name": "pValues",
+            "type": "LONG"
+        }
+    ],
+    "ChangeWindowMessageFilter": [
+        {
+            "name": "message",
+            "type": "UINT"
+        },
+        {
+            "name": "dwFlag",
+            "type": "DWORD"
+        }
+    ],
+    "ChangeWindowMessageFilterEx": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "message",
+            "type": "UINT"
+        },
+        {
+            "name": "action",
+            "type": "DWORD"
+        },
+        {
+            "name": "pChangeFilterStruct",
+            "type": "PCHANGEFILTERSTRUCT"
+        }
+    ],
+    "GetGestureInfo": [
+        {
+            "name": "hGestureInfo",
+            "type": "HGESTUREINFO"
+        },
+        {
+            "name": "pGestureInfo",
+            "type": "PGESTUREINFO"
+        }
+    ],
+    "GetGestureExtraArgs": [
+        {
+            "name": "hGestureInfo",
+            "type": "HGESTUREINFO"
+        },
+        {
+            "name": "cbExtraArgs",
+            "type": "UINT"
+        },
+        {
+            "name": "pExtraArgs",
+            "type": "PBYTE"
+        }
+    ],
+    "CloseGestureInfoHandle": [
+        {
+            "name": "hGestureInfo",
+            "type": "HGESTUREINFO"
+        }
+    ],
+    "SetGestureConfig": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "cIDs",
+            "type": "UINT"
+        },
+        {
+            "name": "pGestureConfig",
+            "type": "PGESTURECONFIG"
+        },
+        {
+            "name": "cbSize",
+            "type": "UINT"
+        }
+    ],
+    "GetGestureConfig": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcIDs",
+            "type": "PUINT"
+        },
+        {
+            "name": "pGestureConfig",
+            "type": "PGESTURECONFIG"
+        },
+        {
+            "name": "cbSize",
+            "type": "UINT"
+        }
+    ],
+    "ShutdownBlockReasonCreate": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pwszReason",
+            "type": "LPCWSTR"
+        }
+    ],
+    "ShutdownBlockReasonQuery": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pwszBuff",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchBuff",
+            "type": "DWORD"
+        }
+    ],
+    "ShutdownBlockReasonDestroy": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        }
+    ],
+    "GetCurrentInputMessageSource": [
+        {
+            "name": "inputMessageSource",
+            "type": "INPUT_MESSAGE_SOURCE"
+        }
+    ],
+    "GetCIMSSM": [
+        {
+            "name": "inputMessageSource",
+            "type": "INPUT_MESSAGE_SOURCE"
+        }
+    ],
+    "IsImmersiveProcess": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        }
+    ],
+    "SetProcessRestrictionExemption": [
+        {
+            "name": "fEnableExemption",
+            "type": "BOOL"
+        }
+    ]
+}

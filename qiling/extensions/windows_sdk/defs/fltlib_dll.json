@@ -1,0 +1,466 @@
+{
+    "FilterLoad": [
+        {
+            "name": "lpFilterName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "FilterUnload": [
+        {
+            "name": "lpFilterName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "FilterCreate": [
+        {
+            "name": "lpFilterName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hFilter",
+            "type": "HFILTER"
+        }
+    ],
+    "FilterClose": [
+        {
+            "name": "hFilter",
+            "type": "HFILTER"
+        }
+    ],
+    "FilterInstanceCreate": [
+        {
+            "name": "lpFilterName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpVolumeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpInstanceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hInstance",
+            "type": "HFILTER_INSTANCE"
+        }
+    ],
+    "FilterInstanceClose": [
+        {
+            "name": "hInstance",
+            "type": "HFILTER_INSTANCE"
+        }
+    ],
+    "FilterAttach": [
+        {
+            "name": "lpFilterName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpVolumeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpInstanceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwCreatedInstanceNameLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpCreatedInstanceName",
+            "type": "LPWSTR"
+        }
+    ],
+    "FilterAttachAtAltitude": [
+        {
+            "name": "lpFilterName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpVolumeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpAltitude",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpInstanceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwCreatedInstanceNameLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpCreatedInstanceName",
+            "type": "LPWSTR"
+        }
+    ],
+    "FilterDetach": [
+        {
+            "name": "lpFilterName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpVolumeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpInstanceName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "FilterFindFirst": [
+        {
+            "name": "dwInformationClass",
+            "type": "FILTER_INFORMATION_CLASS"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpFilterFind",
+            "type": "LPHANDLE"
+        }
+    ],
+    "FilterFindNext": [
+        {
+            "name": "hFilterFind",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwInformationClass",
+            "type": "FILTER_INFORMATION_CLASS"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "FilterFindClose": [
+        {
+            "name": "hFilterFind",
+            "type": "HANDLE"
+        }
+    ],
+    "FilterVolumeFindFirst": [
+        {
+            "name": "dwInformationClass",
+            "type": "FILTER_VOLUME_INFORMATION_CLASS"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpVolumeFind",
+            "type": "PHANDLE"
+        }
+    ],
+    "FilterVolumeFindNext": [
+        {
+            "name": "hVolumeFind",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwInformationClass",
+            "type": "FILTER_VOLUME_INFORMATION_CLASS"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "FilterVolumeFindClose": [
+        {
+            "name": "hVolumeFind",
+            "type": "HANDLE"
+        }
+    ],
+    "FilterInstanceFindFirst": [
+        {
+            "name": "lpFilterName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInformationClass",
+            "type": "INSTANCE_INFORMATION_CLASS"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpFilterInstanceFind",
+            "type": "LPHANDLE"
+        }
+    ],
+    "FilterInstanceFindNext": [
+        {
+            "name": "hFilterInstanceFind",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwInformationClass",
+            "type": "INSTANCE_INFORMATION_CLASS"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "FilterInstanceFindClose": [
+        {
+            "name": "hFilterInstanceFind",
+            "type": "HANDLE"
+        }
+    ],
+    "FilterVolumeInstanceFindFirst": [
+        {
+            "name": "lpVolumeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInformationClass",
+            "type": "INSTANCE_INFORMATION_CLASS"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpVolumeInstanceFind",
+            "type": "LPHANDLE"
+        }
+    ],
+    "FilterVolumeInstanceFindNext": [
+        {
+            "name": "hVolumeInstanceFind",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwInformationClass",
+            "type": "INSTANCE_INFORMATION_CLASS"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "FilterVolumeInstanceFindClose": [
+        {
+            "name": "hVolumeInstanceFind",
+            "type": "HANDLE"
+        }
+    ],
+    "FilterGetInformation": [
+        {
+            "name": "hFilter",
+            "type": "HFILTER"
+        },
+        {
+            "name": "dwInformationClass",
+            "type": "FILTER_INFORMATION_CLASS"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "FilterInstanceGetInformation": [
+        {
+            "name": "hInstance",
+            "type": "HFILTER_INSTANCE"
+        },
+        {
+            "name": "dwInformationClass",
+            "type": "INSTANCE_INFORMATION_CLASS"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "FilterConnectCommunicationPort": [
+        {
+            "name": "lpPortName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpContext",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "wSizeOfContext",
+            "type": "WORD"
+        },
+        {
+            "name": "lpSecurityAttributes",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "hPort",
+            "type": "HANDLE"
+        }
+    ],
+    "FilterSendMessage": [
+        {
+            "name": "hPort",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpInBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwInBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOutBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwOutBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpBytesReturned",
+            "type": "LPDWORD"
+        }
+    ],
+    "FilterGetMessage": [
+        {
+            "name": "hPort",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpMessageBuffer",
+            "type": "PFILTER_MESSAGE_HEADER"
+        },
+        {
+            "name": "dwMessageBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "FilterReplyMessage": [
+        {
+            "name": "hPort",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpReplyBuffer",
+            "type": "PFILTER_REPLY_HEADER"
+        },
+        {
+            "name": "dwReplyBufferSize",
+            "type": "DWORD"
+        }
+    ],
+    "FilterGetDosName": [
+        {
+            "name": "lpVolumeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpDosName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwDosNameBufferSize",
+            "type": "DWORD"
+        }
+    ]
+}

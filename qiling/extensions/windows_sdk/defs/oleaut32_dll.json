@@ -1,0 +1,4768 @@
+{
+    "LPSAFEARRAY_UserSize": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "LPSAFEARRAY"
+        }
+    ],
+    "LPSAFEARRAY_UserFree": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "LPSAFEARRAY"
+        }
+    ],
+    "LPSAFEARRAY_UserSize64": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "LPSAFEARRAY"
+        }
+    ],
+    "LPSAFEARRAY_UserFree64": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "LPSAFEARRAY"
+        }
+    ],
+    "OleCreatePropertyFrame": [
+        {
+            "name": "hwndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "x",
+            "type": "UINT"
+        },
+        {
+            "name": "y",
+            "type": "UINT"
+        },
+        {
+            "name": "lpszCaption",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "cObjects",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppUnk",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "cPages",
+            "type": "ULONG"
+        },
+        {
+            "name": "pPageClsID",
+            "type": "LPCLSID"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreatePropertyFrameIndirect": [
+        {
+            "name": "lpParams",
+            "type": "LPOCPFIPARAMS"
+        }
+    ],
+    "OleTranslateColor": [
+        {
+            "name": "clr",
+            "type": "OLE_COLOR"
+        },
+        {
+            "name": "hpal",
+            "type": "HPALETTE"
+        },
+        {
+            "name": "lpcolorref",
+            "type": "COLORREF"
+        }
+    ],
+    "OleCreateFontIndirect": [
+        {
+            "name": "lpFontDesc",
+            "type": "LPFONTDESC"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "lplpvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreatePictureIndirect": [
+        {
+            "name": "lpPictDesc",
+            "type": "LPPICTDESC"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "fOwn",
+            "type": "BOOL"
+        },
+        {
+            "name": "lplpvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleLoadPicture": [
+        {
+            "name": "lpstream",
+            "type": "LPSTREAM"
+        },
+        {
+            "name": "lSize",
+            "type": "LONG"
+        },
+        {
+            "name": "fRunmode",
+            "type": "BOOL"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "lplpvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleLoadPictureEx": [
+        {
+            "name": "lpstream",
+            "type": "LPSTREAM"
+        },
+        {
+            "name": "lSize",
+            "type": "LONG"
+        },
+        {
+            "name": "fRunmode",
+            "type": "BOOL"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "xSizeDesired",
+            "type": "DWORD"
+        },
+        {
+            "name": "ySizeDesired",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleLoadPicturePath": [
+        {
+            "name": "szURLorPath",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "punkCaller",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "clrReserved",
+            "type": "OLE_COLOR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvRet",
+            "type": "LPVOID"
+        }
+    ],
+    "OleLoadPictureFile": [
+        {
+            "name": "varFileName",
+            "type": "VARIANT"
+        },
+        {
+            "name": "lplpdispPicture",
+            "type": "LPDISPATCH"
+        }
+    ],
+    "OleLoadPictureFileEx": [
+        {
+            "name": "varFileName",
+            "type": "VARIANT"
+        },
+        {
+            "name": "xSizeDesired",
+            "type": "DWORD"
+        },
+        {
+            "name": "ySizeDesired",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lplpdispPicture",
+            "type": "LPDISPATCH"
+        }
+    ],
+    "OleSavePictureFile": [
+        {
+            "name": "lpdispPicture",
+            "type": "LPDISPATCH"
+        },
+        {
+            "name": "bstrFileName",
+            "type": "BSTR"
+        }
+    ],
+    "OleIconToCursor": [
+        {
+            "name": "hinstExe",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "hIcon",
+            "type": "HICON"
+        }
+    ],
+    "SysAllocString": [
+        {
+            "name": "psz",
+            "type": "OLECHAR"
+        }
+    ],
+    "SysReAllocString": [
+        {
+            "name": "pbstr",
+            "type": "BSTR"
+        },
+        {
+            "name": "psz",
+            "type": "OLECHAR"
+        }
+    ],
+    "SysAllocStringLen": [
+        {
+            "name": "strIn",
+            "type": "OLECHAR"
+        },
+        {
+            "name": "ui",
+            "type": "UINT"
+        }
+    ],
+    "SysReAllocStringLen": [
+        {
+            "name": "pbstr",
+            "type": "BSTR"
+        },
+        {
+            "name": "psz",
+            "type": "OLECHAR"
+        },
+        {
+            "name": "len",
+            "type": "unsigned int"
+        }
+    ],
+    "SysAddRefString": [
+        {
+            "name": "bstrString",
+            "type": "BSTR"
+        }
+    ],
+    "SysReleaseString": [
+        {
+            "name": "bstrString",
+            "type": "BSTR"
+        }
+    ],
+    "SysFreeString": [
+        {
+            "name": "bstrString",
+            "type": "BSTR"
+        }
+    ],
+    "SysStringLen": [
+        {
+            "name": "pbstr",
+            "type": "BSTR"
+        }
+    ],
+    "SysStringByteLen": [
+        {
+            "name": "bstr",
+            "type": "BSTR"
+        }
+    ],
+    "SysAllocStringByteLen": [
+        {
+            "name": "psz",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "len",
+            "type": "UINT"
+        }
+    ],
+    "DosDateTimeToVariantTime": [
+        {
+            "name": "wDosDate",
+            "type": "USHORT"
+        },
+        {
+            "name": "wDosTime",
+            "type": "USHORT"
+        },
+        {
+            "name": "pvtime",
+            "type": "DOUBLE"
+        }
+    ],
+    "VariantTimeToDosDateTime": [
+        {
+            "name": "vtime",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "pwDosDate",
+            "type": "USHORT"
+        },
+        {
+            "name": "pwDosTime",
+            "type": "USHORT"
+        }
+    ],
+    "SystemTimeToVariantTime": [
+        {
+            "name": "lpSystemTime",
+            "type": "LPSYSTEMTIME"
+        },
+        {
+            "name": "pvtime",
+            "type": "DOUBLE"
+        }
+    ],
+    "VariantTimeToSystemTime": [
+        {
+            "name": "vtime",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "lpSystemTime",
+            "type": "LPSYSTEMTIME"
+        }
+    ],
+    "SafeArrayAllocDescriptor": [
+        {
+            "name": "cDims",
+            "type": "UINT"
+        },
+        {
+            "name": "ppsaOut",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayAllocDescriptorEx": [
+        {
+            "name": "vt",
+            "type": "VARTYPE"
+        },
+        {
+            "name": "cDims",
+            "type": "UINT"
+        },
+        {
+            "name": "ppsaOut",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayAllocData": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayCopyData": [
+        {
+            "name": "psaSource",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "psaTarget",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayReleaseDescriptor": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayDestroyDescriptor": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayReleaseData": [
+        {
+            "name": "pData",
+            "type": "PVOID"
+        }
+    ],
+    "SafeArrayDestroyData": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayAddRef": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "ppDataToRelease",
+            "type": "PVOID"
+        }
+    ],
+    "SafeArrayDestroy": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayRedim": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "psaboundNew",
+            "type": "SAFEARRAYBOUND"
+        }
+    ],
+    "SafeArrayGetDim": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayGetElemsize": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayGetUBound": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "nDim",
+            "type": "UINT"
+        },
+        {
+            "name": "plUbound",
+            "type": "LONG"
+        }
+    ],
+    "SafeArrayGetLBound": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "nDim",
+            "type": "UINT"
+        },
+        {
+            "name": "plLbound",
+            "type": "LONG"
+        }
+    ],
+    "SafeArrayLock": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayUnlock": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayAccessData": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "ppvData",
+            "type": "void"
+        }
+    ],
+    "SafeArrayUnaccessData": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayGetElement": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "rgIndices",
+            "type": "LONG"
+        },
+        {
+            "name": "pv",
+            "type": "void"
+        }
+    ],
+    "SafeArrayPutElement": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "rgIndices",
+            "type": "LONG"
+        },
+        {
+            "name": "pv",
+            "type": "void"
+        }
+    ],
+    "SafeArrayCopy": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "ppsaOut",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "SafeArrayPtrOfIndex": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "rgIndices",
+            "type": "LONG"
+        },
+        {
+            "name": "ppvData",
+            "type": "void"
+        }
+    ],
+    "SafeArraySetRecordInfo": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "prinfo",
+            "type": "IRecordInfo"
+        }
+    ],
+    "SafeArrayGetRecordInfo": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "prinfo",
+            "type": "IRecordInfo"
+        }
+    ],
+    "SafeArraySetIID": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "guid",
+            "type": "GUID"
+        }
+    ],
+    "SafeArrayGetIID": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "pguid",
+            "type": "GUID"
+        }
+    ],
+    "SafeArrayGetVartype": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "pvt",
+            "type": "VARTYPE"
+        }
+    ],
+    "VariantInit": [
+        {
+            "name": "pvarg",
+            "type": "VARIANTARG"
+        }
+    ],
+    "VariantClear": [
+        {
+            "name": "pvarg",
+            "type": "VARIANTARG"
+        }
+    ],
+    "VariantCopy": [
+        {
+            "name": "pvargDest",
+            "type": "VARIANTARG"
+        },
+        {
+            "name": "pvargSrc",
+            "type": "VARIANTARG"
+        }
+    ],
+    "VariantCopyInd": [
+        {
+            "name": "pvarDest",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pvargSrc",
+            "type": "VARIANTARG"
+        }
+    ],
+    "VariantChangeType": [
+        {
+            "name": "pvargDest",
+            "type": "VARIANTARG"
+        },
+        {
+            "name": "pvarSrc",
+            "type": "VARIANTARG"
+        },
+        {
+            "name": "wFlags",
+            "type": "USHORT"
+        },
+        {
+            "name": "vt",
+            "type": "VARTYPE"
+        }
+    ],
+    "VariantChangeTypeEx": [
+        {
+            "name": "pvargDest",
+            "type": "VARIANTARG"
+        },
+        {
+            "name": "pvarSrc",
+            "type": "VARIANTARG"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "wFlags",
+            "type": "USHORT"
+        },
+        {
+            "name": "vt",
+            "type": "VARTYPE"
+        }
+    ],
+    "VectorFromBstr": [
+        {
+            "name": "bstr",
+            "type": "BSTR"
+        },
+        {
+            "name": "ppsa",
+            "type": "SAFEARRAY"
+        }
+    ],
+    "BstrFromVector": [
+        {
+            "name": "psa",
+            "type": "SAFEARRAY"
+        },
+        {
+            "name": "pbstr",
+            "type": "BSTR"
+        }
+    ],
+    "VarUI1FromI2": [
+        {
+            "name": "sIn",
+            "type": "SHORT"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromI4": [
+        {
+            "name": "lIn",
+            "type": "LONG"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromI8": [
+        {
+            "name": "i64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromUI8": [
+        {
+            "name": "ui64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarUI1FromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "pbOut",
+            "type": "BYTE"
+        }
+    ],
+    "VarI2FromUI1": [
+        {
+            "name": "bIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromI4": [
+        {
+            "name": "lIn",
+            "type": "LONG"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromI8": [
+        {
+            "name": "i64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromUI8": [
+        {
+            "name": "ui64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI2FromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "psOut",
+            "type": "SHORT"
+        }
+    ],
+    "VarI4FromUI1": [
+        {
+            "name": "bIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromI2": [
+        {
+            "name": "sIn",
+            "type": "SHORT"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromI8": [
+        {
+            "name": "i64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromUI8": [
+        {
+            "name": "ui64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI4FromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "plOut",
+            "type": "LONG"
+        }
+    ],
+    "VarI8FromUI1": [
+        {
+            "name": "bIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarI8FromI2": [
+        {
+            "name": "sIn",
+            "type": "SHORT"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarI8FromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarI8FromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarI8FromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarI8FromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarI8FromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarI8FromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarI8FromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarI8FromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarI8FromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarI8FromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarI8FromUI8": [
+        {
+            "name": "ui64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarI8FromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "pi64Out",
+            "type": "LONG64"
+        }
+    ],
+    "VarR4FromUI1": [
+        {
+            "name": "bIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromI2": [
+        {
+            "name": "sIn",
+            "type": "SHORT"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromI4": [
+        {
+            "name": "lIn",
+            "type": "LONG"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromI8": [
+        {
+            "name": "i64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromUI8": [
+        {
+            "name": "ui64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR4FromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "pfltOut",
+            "type": "FLOAT"
+        }
+    ],
+    "VarR8FromUI1": [
+        {
+            "name": "bIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromI2": [
+        {
+            "name": "sIn",
+            "type": "SHORT"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromI4": [
+        {
+            "name": "lIn",
+            "type": "LONG"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromI8": [
+        {
+            "name": "i64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromUI8": [
+        {
+            "name": "ui64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarR8FromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "pdblOut",
+            "type": "DOUBLE"
+        }
+    ],
+    "VarDateFromUI1": [
+        {
+            "name": "bIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromI2": [
+        {
+            "name": "sIn",
+            "type": "SHORT"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromI4": [
+        {
+            "name": "lIn",
+            "type": "LONG"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromI8": [
+        {
+            "name": "i64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromUI8": [
+        {
+            "name": "ui64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarCyFromUI1": [
+        {
+            "name": "bIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromI2": [
+        {
+            "name": "sIn",
+            "type": "SHORT"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromI4": [
+        {
+            "name": "lIn",
+            "type": "LONG"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromI8": [
+        {
+            "name": "i64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromUI8": [
+        {
+            "name": "ui64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarCyFromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "pcyOut",
+            "type": "CY"
+        }
+    ],
+    "VarBstrFromUI1": [
+        {
+            "name": "bVal",
+            "type": "BYTE"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromI2": [
+        {
+            "name": "iVal",
+            "type": "SHORT"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromI4": [
+        {
+            "name": "lIn",
+            "type": "LONG"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromI8": [
+        {
+            "name": "i64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromUI8": [
+        {
+            "name": "ui64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBstrFromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarBoolFromUI1": [
+        {
+            "name": "bIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromI2": [
+        {
+            "name": "sIn",
+            "type": "SHORT"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromI4": [
+        {
+            "name": "lIn",
+            "type": "LONG"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromI8": [
+        {
+            "name": "i64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromUI8": [
+        {
+            "name": "i64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarBoolFromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "pboolOut",
+            "type": "VARIANT_BOOL"
+        }
+    ],
+    "VarI1FromUI1": [
+        {
+            "name": "bIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromI2": [
+        {
+            "name": "uiIn",
+            "type": "SHORT"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromI4": [
+        {
+            "name": "lIn",
+            "type": "LONG"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromI8": [
+        {
+            "name": "i64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromUI8": [
+        {
+            "name": "i64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarI1FromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "pcOut",
+            "type": "CHAR"
+        }
+    ],
+    "VarUI2FromUI1": [
+        {
+            "name": "bIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromI2": [
+        {
+            "name": "uiIn",
+            "type": "SHORT"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromI4": [
+        {
+            "name": "lIn",
+            "type": "LONG"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromI8": [
+        {
+            "name": "i64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromUI8": [
+        {
+            "name": "i64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI2FromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "puiOut",
+            "type": "USHORT"
+        }
+    ],
+    "VarUI4FromUI1": [
+        {
+            "name": "bIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "pulOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromI2": [
+        {
+            "name": "uiIn",
+            "type": "SHORT"
+        },
+        {
+            "name": "pulOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromI4": [
+        {
+            "name": "lIn",
+            "type": "LONG"
+        },
+        {
+            "name": "pulOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromI8": [
+        {
+            "name": "i64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "plOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "pulOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "pulOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "pulOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pulOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pulOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "pulOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "pulOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "pulOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromUI8": [
+        {
+            "name": "ui64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "plOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI4FromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "pulOut",
+            "type": "ULONG"
+        }
+    ],
+    "VarUI8FromUI1": [
+        {
+            "name": "bIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarUI8FromI2": [
+        {
+            "name": "sIn",
+            "type": "SHORT"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarUI8FromI8": [
+        {
+            "name": "ui64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarUI8FromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarUI8FromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarUI8FromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarUI8FromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarUI8FromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarUI8FromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarUI8FromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarUI8FromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarUI8FromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarUI8FromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarUI8FromDec": [
+        {
+            "name": "pdecIn",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "pi64Out",
+            "type": "ULONG64"
+        }
+    ],
+    "VarDecFromUI1": [
+        {
+            "name": "bIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromI2": [
+        {
+            "name": "uiIn",
+            "type": "SHORT"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromI4": [
+        {
+            "name": "lIn",
+            "type": "LONG"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromI8": [
+        {
+            "name": "i64In",
+            "type": "LONG64"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromR4": [
+        {
+            "name": "fltIn",
+            "type": "FLOAT"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromR8": [
+        {
+            "name": "dblIn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromCy": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromDisp": [
+        {
+            "name": "pdispIn",
+            "type": "IDispatch"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromBool": [
+        {
+            "name": "boolIn",
+            "type": "VARIANT_BOOL"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromI1": [
+        {
+            "name": "cIn",
+            "type": "CHAR"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromUI2": [
+        {
+            "name": "uiIn",
+            "type": "USHORT"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromUI4": [
+        {
+            "name": "ulIn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarDecFromUI8": [
+        {
+            "name": "ui64In",
+            "type": "ULONG64"
+        },
+        {
+            "name": "pdecOut",
+            "type": "DECIMAL"
+        }
+    ],
+    "VarParseNumFromStr": [
+        {
+            "name": "strIn",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnumprs",
+            "type": "NUMPARSE"
+        },
+        {
+            "name": "rgbDig",
+            "type": "BYTE"
+        }
+    ],
+    "VarNumFromParseNum": [
+        {
+            "name": "pnumprs",
+            "type": "NUMPARSE"
+        },
+        {
+            "name": "rgbDig",
+            "type": "BYTE"
+        },
+        {
+            "name": "dwVtBits",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "VarAdd": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarAnd": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarCat": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarDiv": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarEqv": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarIdiv": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarImp": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarMod": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarMul": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarOr": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarPow": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarSub": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarXor": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarAbs": [
+        {
+            "name": "pvarIn",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarFix": [
+        {
+            "name": "pvarIn",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarInt": [
+        {
+            "name": "pvarIn",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarNeg": [
+        {
+            "name": "pvarIn",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarNot": [
+        {
+            "name": "pvarIn",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarRound": [
+        {
+            "name": "pvarIn",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "cDecimals",
+            "type": "int"
+        },
+        {
+            "name": "pvarResult",
+            "type": "LPVARIANT"
+        }
+    ],
+    "VarCmp": [
+        {
+            "name": "pvarLeft",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pvarRight",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "VarDecAdd": [
+        {
+            "name": "pdecLeft",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "pdecRight",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "pdecResult",
+            "type": "LPDECIMAL"
+        }
+    ],
+    "VarDecDiv": [
+        {
+            "name": "pdecLeft",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "pdecRight",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "pdecResult",
+            "type": "LPDECIMAL"
+        }
+    ],
+    "VarDecMul": [
+        {
+            "name": "pdecLeft",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "pdecRight",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "pdecResult",
+            "type": "LPDECIMAL"
+        }
+    ],
+    "VarDecSub": [
+        {
+            "name": "pdecLeft",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "pdecRight",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "pdecResult",
+            "type": "LPDECIMAL"
+        }
+    ],
+    "VarDecAbs": [
+        {
+            "name": "pdecIn",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "pdecResult",
+            "type": "LPDECIMAL"
+        }
+    ],
+    "VarDecFix": [
+        {
+            "name": "pdecIn",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "pdecResult",
+            "type": "LPDECIMAL"
+        }
+    ],
+    "VarDecInt": [
+        {
+            "name": "pdecIn",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "pdecResult",
+            "type": "LPDECIMAL"
+        }
+    ],
+    "VarDecNeg": [
+        {
+            "name": "pdecIn",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "pdecResult",
+            "type": "LPDECIMAL"
+        }
+    ],
+    "VarDecRound": [
+        {
+            "name": "pdecIn",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "cDecimals",
+            "type": "int"
+        },
+        {
+            "name": "pdecResult",
+            "type": "LPDECIMAL"
+        }
+    ],
+    "VarDecCmp": [
+        {
+            "name": "pdecLeft",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "pdecRight",
+            "type": "LPDECIMAL"
+        }
+    ],
+    "VarDecCmpR8": [
+        {
+            "name": "pdecLeft",
+            "type": "LPDECIMAL"
+        },
+        {
+            "name": "dblRight",
+            "type": "double"
+        }
+    ],
+    "VarCyAdd": [
+        {
+            "name": "cyLeft",
+            "type": "CY"
+        },
+        {
+            "name": "cyRight",
+            "type": "CY"
+        },
+        {
+            "name": "pcyResult",
+            "type": "LPCY"
+        }
+    ],
+    "VarCyMul": [
+        {
+            "name": "cyLeft",
+            "type": "CY"
+        },
+        {
+            "name": "cyRight",
+            "type": "CY"
+        },
+        {
+            "name": "pcyResult",
+            "type": "LPCY"
+        }
+    ],
+    "VarCyMulI4": [
+        {
+            "name": "cyLeft",
+            "type": "CY"
+        },
+        {
+            "name": "lRight",
+            "type": "LONG"
+        },
+        {
+            "name": "pcyResult",
+            "type": "LPCY"
+        }
+    ],
+    "VarCyMulI8": [
+        {
+            "name": "cyLeft",
+            "type": "CY"
+        },
+        {
+            "name": "lRight",
+            "type": "LONG64"
+        },
+        {
+            "name": "pcyResult",
+            "type": "LPCY"
+        }
+    ],
+    "VarCySub": [
+        {
+            "name": "cyLeft",
+            "type": "CY"
+        },
+        {
+            "name": "cyRight",
+            "type": "CY"
+        },
+        {
+            "name": "pcyResult",
+            "type": "LPCY"
+        }
+    ],
+    "VarCyAbs": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pcyResult",
+            "type": "LPCY"
+        }
+    ],
+    "VarCyFix": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pcyResult",
+            "type": "LPCY"
+        }
+    ],
+    "VarCyInt": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pcyResult",
+            "type": "LPCY"
+        }
+    ],
+    "VarCyNeg": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "pcyResult",
+            "type": "LPCY"
+        }
+    ],
+    "VarCyRound": [
+        {
+            "name": "cyIn",
+            "type": "CY"
+        },
+        {
+            "name": "cDecimals",
+            "type": "int"
+        },
+        {
+            "name": "pcyResult",
+            "type": "LPCY"
+        }
+    ],
+    "VarCyCmp": [
+        {
+            "name": "cyLeft",
+            "type": "CY"
+        },
+        {
+            "name": "cyRight",
+            "type": "CY"
+        }
+    ],
+    "VarCyCmpR8": [
+        {
+            "name": "cyLeft",
+            "type": "CY"
+        },
+        {
+            "name": "dblRight",
+            "type": "double"
+        }
+    ],
+    "VarBstrCat": [
+        {
+            "name": "bstrLeft",
+            "type": "BSTR"
+        },
+        {
+            "name": "bstrRight",
+            "type": "BSTR"
+        },
+        {
+            "name": "pbstrResult",
+            "type": "LPBSTR"
+        }
+    ],
+    "VarBstrCmp": [
+        {
+            "name": "bstrLeft",
+            "type": "BSTR"
+        },
+        {
+            "name": "bstrRight",
+            "type": "BSTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "VarR8Pow": [
+        {
+            "name": "dblLeft",
+            "type": "double"
+        },
+        {
+            "name": "dblRight",
+            "type": "double"
+        },
+        {
+            "name": "pdblResult",
+            "type": "double"
+        }
+    ],
+    "VarR4CmpR8": [
+        {
+            "name": "fltLeft",
+            "type": "float"
+        },
+        {
+            "name": "dblRight",
+            "type": "double"
+        }
+    ],
+    "VarR8Round": [
+        {
+            "name": "dblIn",
+            "type": "double"
+        },
+        {
+            "name": "cDecimals",
+            "type": "int"
+        },
+        {
+            "name": "pdblResult",
+            "type": "double"
+        }
+    ],
+    "VarDateFromUdate": [
+        {
+            "name": "pudateIn",
+            "type": "UDATE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarDateFromUdateEx": [
+        {
+            "name": "pudateIn",
+            "type": "UDATE"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pdateOut",
+            "type": "DATE"
+        }
+    ],
+    "VarUdateFromDate": [
+        {
+            "name": "dateIn",
+            "type": "DATE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pudateOut",
+            "type": "UDATE"
+        }
+    ],
+    "GetAltMonthNames": [
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "prgp",
+            "type": "LPOLESTR"
+        }
+    ],
+    "VarFormat": [
+        {
+            "name": "pvarIn",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pstrFormat",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "iFirstDay",
+            "type": "int"
+        },
+        {
+            "name": "iFirstWeek",
+            "type": "int"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarFormatDateTime": [
+        {
+            "name": "pvarIn",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "iNamedFormat",
+            "type": "int"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarFormatNumber": [
+        {
+            "name": "pvarIn",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "iNumDig",
+            "type": "int"
+        },
+        {
+            "name": "iIncLead",
+            "type": "int"
+        },
+        {
+            "name": "iUseParens",
+            "type": "int"
+        },
+        {
+            "name": "iGroup",
+            "type": "int"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarFormatPercent": [
+        {
+            "name": "pvarIn",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "iNumDig",
+            "type": "int"
+        },
+        {
+            "name": "iIncLead",
+            "type": "int"
+        },
+        {
+            "name": "iUseParens",
+            "type": "int"
+        },
+        {
+            "name": "iGroup",
+            "type": "int"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarFormatCurrency": [
+        {
+            "name": "pvarIn",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "iNumDig",
+            "type": "int"
+        },
+        {
+            "name": "iIncLead",
+            "type": "int"
+        },
+        {
+            "name": "iUseParens",
+            "type": "int"
+        },
+        {
+            "name": "iGroup",
+            "type": "int"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarWeekdayName": [
+        {
+            "name": "iWeekday",
+            "type": "int"
+        },
+        {
+            "name": "fAbbrev",
+            "type": "int"
+        },
+        {
+            "name": "iFirstDay",
+            "type": "int"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarMonthName": [
+        {
+            "name": "iMonth",
+            "type": "int"
+        },
+        {
+            "name": "fAbbrev",
+            "type": "int"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "VarFormatFromTokens": [
+        {
+            "name": "pvarIn",
+            "type": "LPVARIANT"
+        },
+        {
+            "name": "pstrFormat",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "pbTokCur",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        }
+    ],
+    "VarTokenizeFormatString": [
+        {
+            "name": "pstrFormat",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "rgbTok",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbTok",
+            "type": "int"
+        },
+        {
+            "name": "iFirstDay",
+            "type": "int"
+        },
+        {
+            "name": "iFirstWeek",
+            "type": "int"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pcbActual",
+            "type": "int"
+        }
+    ],
+    "LHashValOfNameSysA": [
+        {
+            "name": "syskind",
+            "type": "SYSKIND"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "szName",
+            "type": "LPCSTR"
+        }
+    ],
+    "LHashValOfNameSys": [
+        {
+            "name": "syskind",
+            "type": "SYSKIND"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "szName",
+            "type": "OLECHAR"
+        }
+    ],
+    "LoadTypeLib": [
+        {
+            "name": "szFile",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "pptlib",
+            "type": "ITypeLib"
+        }
+    ],
+    "LoadTypeLibEx": [
+        {
+            "name": "szFile",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "regkind",
+            "type": "REGKIND"
+        },
+        {
+            "name": "pptlib",
+            "type": "ITypeLib"
+        }
+    ],
+    "LoadRegTypeLib": [
+        {
+            "name": "rguid",
+            "type": "GUID"
+        },
+        {
+            "name": "wVerMajor",
+            "type": "WORD"
+        },
+        {
+            "name": "wVerMinor",
+            "type": "WORD"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pptlib",
+            "type": "ITypeLib"
+        }
+    ],
+    "QueryPathOfRegTypeLib": [
+        {
+            "name": "guid",
+            "type": "GUID"
+        },
+        {
+            "name": "wMaj",
+            "type": "USHORT"
+        },
+        {
+            "name": "wMin",
+            "type": "USHORT"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "lpbstrPathName",
+            "type": "LPBSTR"
+        }
+    ],
+    "RegisterTypeLib": [
+        {
+            "name": "ptlib",
+            "type": "ITypeLib"
+        },
+        {
+            "name": "szFullPath",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "szHelpDir",
+            "type": "LPCOLESTR"
+        }
+    ],
+    "UnRegisterTypeLib": [
+        {
+            "name": "libID",
+            "type": "GUID"
+        },
+        {
+            "name": "wVerMajor",
+            "type": "WORD"
+        },
+        {
+            "name": "wVerMinor",
+            "type": "WORD"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "syskind",
+            "type": "SYSKIND"
+        }
+    ],
+    "RegisterTypeLibForUser": [
+        {
+            "name": "ptlib",
+            "type": "ITypeLib"
+        },
+        {
+            "name": "szFullPath",
+            "type": "OLECHAR"
+        },
+        {
+            "name": "szHelpDir",
+            "type": "OLECHAR"
+        }
+    ],
+    "UnRegisterTypeLibForUser": [
+        {
+            "name": "libID",
+            "type": "GUID"
+        },
+        {
+            "name": "wMajorVerNum",
+            "type": "WORD"
+        },
+        {
+            "name": "wMinorVerNum",
+            "type": "WORD"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "syskind",
+            "type": "SYSKIND"
+        }
+    ],
+    "CreateTypeLib": [
+        {
+            "name": "syskind",
+            "type": "SYSKIND"
+        },
+        {
+            "name": "szFile",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "ppctlib",
+            "type": "ICreateTypeLib"
+        }
+    ],
+    "CreateTypeLib2": [
+        {
+            "name": "syskind",
+            "type": "SYSKIND"
+        },
+        {
+            "name": "szFile",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "ppctlib",
+            "type": "ICreateTypeLib2"
+        }
+    ],
+    "DispGetParam": [
+        {
+            "name": "pdispparams",
+            "type": "DISPPARAMS"
+        },
+        {
+            "name": "position",
+            "type": "UINT"
+        },
+        {
+            "name": "vtTarg",
+            "type": "VARTYPE"
+        },
+        {
+            "name": "pvarResult",
+            "type": "VARIANT"
+        },
+        {
+            "name": "puArgErr",
+            "type": "UINT"
+        }
+    ],
+    "DispGetIDsOfNames": [
+        {
+            "name": "ptinfo",
+            "type": "ITypeInfo"
+        },
+        {
+            "name": "rgszNames",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "cNames",
+            "type": "UINT"
+        },
+        {
+            "name": "rgdispid",
+            "type": "DISPID"
+        }
+    ],
+    "DispInvoke": [
+        {
+            "name": "_this",
+            "type": "void"
+        },
+        {
+            "name": "ptinfo",
+            "type": "ITypeInfo"
+        },
+        {
+            "name": "dispidMember",
+            "type": "DISPID"
+        },
+        {
+            "name": "wFlags",
+            "type": "WORD"
+        },
+        {
+            "name": "pparams",
+            "type": "DISPPARAMS"
+        },
+        {
+            "name": "pvarResult",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pexcepinfo",
+            "type": "EXCEPINFO"
+        },
+        {
+            "name": "puArgErr",
+            "type": "UINT"
+        }
+    ],
+    "CreateDispTypeInfo": [
+        {
+            "name": "pidata",
+            "type": "INTERFACEDATA"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "pptinfo",
+            "type": "ITypeInfo"
+        }
+    ],
+    "CreateStdDispatch": [
+        {
+            "name": "punkOuter",
+            "type": "IUnknown"
+        },
+        {
+            "name": "pvThis",
+            "type": "void"
+        },
+        {
+            "name": "ptinfo",
+            "type": "ITypeInfo"
+        },
+        {
+            "name": "ppunkStdDisp",
+            "type": "IUnknown"
+        }
+    ],
+    "DispCallFunc": [
+        {
+            "name": "pvInstance",
+            "type": "void"
+        },
+        {
+            "name": "oVft",
+            "type": "ULONG_PTR"
+        },
+        {
+            "name": "cc",
+            "type": "CALLCONV"
+        },
+        {
+            "name": "vtReturn",
+            "type": "VARTYPE"
+        },
+        {
+            "name": "cActuals",
+            "type": "UINT"
+        },
+        {
+            "name": "prgvt",
+            "type": "VARTYPE"
+        },
+        {
+            "name": "prgpvarg",
+            "type": "VARIANTARG"
+        },
+        {
+            "name": "pvargResult",
+            "type": "VARIANT"
+        }
+    ],
+    "RegisterActiveObject": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwRegister",
+            "type": "DWORD"
+        }
+    ],
+    "RevokeActiveObject": [
+        {
+            "name": "dwRegister",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        }
+    ],
+    "GetActiveObject": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "ppunk",
+            "type": "IUnknown"
+        }
+    ],
+    "SetErrorInfo": [
+        {
+            "name": "dwReserved",
+            "type": "ULONG"
+        },
+        {
+            "name": "perrinfo",
+            "type": "IErrorInfo"
+        }
+    ],
+    "GetErrorInfo": [
+        {
+            "name": "dwReserved",
+            "type": "ULONG"
+        },
+        {
+            "name": "pperrinfo",
+            "type": "IErrorInfo"
+        }
+    ],
+    "CreateErrorInfo": [
+        {
+            "name": "pperrinfo",
+            "type": "ICreateErrorInfo"
+        }
+    ],
+    "GetRecordInfoFromTypeInfo": [
+        {
+            "name": "pTypeInfo",
+            "type": "ITypeInfo"
+        },
+        {
+            "name": "ppRecInfo",
+            "type": "IRecordInfo"
+        }
+    ],
+    "GetRecordInfoFromGuids": [
+        {
+            "name": "rGuidTypeLib",
+            "type": "GUID"
+        },
+        {
+            "name": "uVerMajor",
+            "type": "ULONG"
+        },
+        {
+            "name": "uVerMinor",
+            "type": "ULONG"
+        },
+        {
+            "name": "lcid",
+            "type": "LCID"
+        },
+        {
+            "name": "rGuidTypeInfo",
+            "type": "GUID"
+        },
+        {
+            "name": "ppRecInfo",
+            "type": "IRecordInfo"
+        }
+    ],
+    "OaBuildVersion": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "ClearCustData": [
+        {
+            "name": "pCustData",
+            "type": "LPCUSTDATA"
+        }
+    ],
+    "OaEnablePerUserTLibRegistration": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "BSTR_UserSize": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "BSTR"
+        }
+    ],
+    "BSTR_UserFree": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "BSTR"
+        }
+    ],
+    "VARIANT_UserSize": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "VARIANT"
+        }
+    ],
+    "VARIANT_UserFree": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "VARIANT"
+        }
+    ],
+    "BSTR_UserSize64": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "BSTR"
+        }
+    ],
+    "BSTR_UserFree64": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "BSTR"
+        }
+    ],
+    "VARIANT_UserSize64": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "VARIANT"
+        }
+    ],
+    "VARIANT_UserFree64": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "VARIANT"
+        }
+    ]
+}

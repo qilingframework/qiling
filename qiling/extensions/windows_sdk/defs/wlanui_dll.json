@@ -1,0 +1,32 @@
+{
+    "WlanUIEditProfile": [
+        {
+            "name": "dwClientVersion",
+            "type": "DWORD"
+        },
+        {
+            "name": "wstrProfileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pInterfaceGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "wlStartPage",
+            "type": "WL_DISPLAY_PAGES"
+        },
+        {
+            "name": "pReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "pWlanReasonCode",
+            "type": "PWLAN_REASON_CODE"
+        }
+    ]
+}

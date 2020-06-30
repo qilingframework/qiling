@@ -1,0 +1,2942 @@
+{
+    "PropVariantToWinRTPropertyValue": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "WinRTPropertyValueToPropVariant": [
+        {
+            "name": "punkPropertyValue",
+            "type": "IUnknown"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PSFormatForDisplay": [
+        {
+            "name": "propkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pdfFlags",
+            "type": "PROPDESC_FORMAT_FLAGS"
+        },
+        {
+            "name": "pwszText",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchText",
+            "type": "DWORD"
+        }
+    ],
+    "PSFormatForDisplayAlloc": [
+        {
+            "name": "key",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pdff",
+            "type": "PROPDESC_FORMAT_FLAGS"
+        },
+        {
+            "name": "ppszDisplay",
+            "type": "PWSTR"
+        }
+    ],
+    "PSFormatPropertyValue": [
+        {
+            "name": "pps",
+            "type": "IPropertyStore"
+        },
+        {
+            "name": "ppd",
+            "type": "IPropertyDescription"
+        },
+        {
+            "name": "pdff",
+            "type": "PROPDESC_FORMAT_FLAGS"
+        },
+        {
+            "name": "ppszDisplay",
+            "type": "LPWSTR"
+        }
+    ],
+    "PSGetImageReferenceForValue": [
+        {
+            "name": "propkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "ppszImageRes",
+            "type": "PWSTR"
+        }
+    ],
+    "PSStringFromPropertyKey": [
+        {
+            "name": "pkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "psz",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cch",
+            "type": "UINT"
+        }
+    ],
+    "PSPropertyKeyFromString": [
+        {
+            "name": "pszString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pkey",
+            "type": "PROPERTYKEY"
+        }
+    ],
+    "PSCreateMemoryPropertyStore": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreateDelayedMultiplexPropertyStore": [
+        {
+            "name": "flags",
+            "type": "GETPROPERTYSTOREFLAGS"
+        },
+        {
+            "name": "pdpsf",
+            "type": "IDelayedPropertyStoreFactory"
+        },
+        {
+            "name": "rgStoreIds",
+            "type": "DWORD"
+        },
+        {
+            "name": "cStores",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreateMultiplexPropertyStore": [
+        {
+            "name": "prgpunkStores",
+            "type": "IUnknown"
+        },
+        {
+            "name": "cStores",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreatePropertyChangeArray": [
+        {
+            "name": "rgpropkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "rgflags",
+            "type": "PKA_FLAGS"
+        },
+        {
+            "name": "rgpropvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "cChanges",
+            "type": "UINT"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreateSimplePropertyChange": [
+        {
+            "name": "flags",
+            "type": "PKA_FLAGS"
+        },
+        {
+            "name": "key",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetPropertyDescription": [
+        {
+            "name": "propkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetPropertyDescriptionByName": [
+        {
+            "name": "pszCanonicalName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSLookupPropertyHandlerCLSID": [
+        {
+            "name": "pszFilePath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pclsid",
+            "type": "CLSID"
+        }
+    ],
+    "PSGetItemPropertyHandler": [
+        {
+            "name": "punkItem",
+            "type": "IUnknown"
+        },
+        {
+            "name": "fReadWrite",
+            "type": "BOOL"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetItemPropertyHandlerWithCreateObject": [
+        {
+            "name": "punkItem",
+            "type": "IUnknown"
+        },
+        {
+            "name": "fReadWrite",
+            "type": "BOOL"
+        },
+        {
+            "name": "punkCreateObject",
+            "type": "IUnknown"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetPropertyValue": [
+        {
+            "name": "pps",
+            "type": "IPropertyStore"
+        },
+        {
+            "name": "ppd",
+            "type": "IPropertyDescription"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PSSetPropertyValue": [
+        {
+            "name": "pps",
+            "type": "IPropertyStore"
+        },
+        {
+            "name": "ppd",
+            "type": "IPropertyDescription"
+        },
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PSRegisterPropertySchema": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "PSUnregisterPropertySchema": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "PSRefreshPropertySchema": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "PSEnumeratePropertyDescriptions": [
+        {
+            "name": "filterOn",
+            "type": "PROPDESC_ENUMFILTER"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetPropertyKeyFromName": [
+        {
+            "name": "pszName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppropkey",
+            "type": "PROPERTYKEY"
+        }
+    ],
+    "PSGetNameFromPropertyKey": [
+        {
+            "name": "propkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "ppszCanonicalName",
+            "type": "PWSTR"
+        }
+    ],
+    "PSCoerceToCanonicalValue": [
+        {
+            "name": "key",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PSGetPropertyDescriptionListFromString": [
+        {
+            "name": "pszPropList",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreatePropertyStoreFromPropertySetStorage": [
+        {
+            "name": "ppss",
+            "type": "IPropertySetStorage"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreatePropertyStoreFromObject": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSCreateAdapterFromPropertyStore": [
+        {
+            "name": "pps",
+            "type": "IPropertyStore"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetPropertySystem": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSGetPropertyFromPropertyStorage": [
+        {
+            "name": "psps",
+            "type": "PCUSERIALIZEDPROPSTORAGE"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        },
+        {
+            "name": "rpkey",
+            "type": "PROPERTYKEY"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PSGetNamedPropertyFromPropertyStorage": [
+        {
+            "name": "psps",
+            "type": "PCUSERIALIZEDPROPSTORAGE"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PSPropertyBag_ReadType": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "type",
+            "type": "VARTYPE"
+        }
+    ],
+    "PSPropertyBag_ReadStr": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "characterCount",
+            "type": "int"
+        }
+    ],
+    "PSPropertyBag_ReadStrAlloc": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "PWSTR"
+        }
+    ],
+    "PSPropertyBag_ReadBSTR": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "BSTR"
+        }
+    ],
+    "PSPropertyBag_WriteStr": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PSPropertyBag_WriteBSTR": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "BSTR"
+        }
+    ],
+    "PSPropertyBag_ReadInt": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "INT"
+        }
+    ],
+    "PSPropertyBag_WriteInt": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "INT"
+        }
+    ],
+    "PSPropertyBag_ReadSHORT": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "SHORT"
+        }
+    ],
+    "PSPropertyBag_WriteSHORT": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "SHORT"
+        }
+    ],
+    "PSPropertyBag_ReadLONG": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "LONG"
+        }
+    ],
+    "PSPropertyBag_WriteLONG": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "LONG"
+        }
+    ],
+    "PSPropertyBag_ReadDWORD": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "DWORD"
+        }
+    ],
+    "PSPropertyBag_WriteDWORD": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "DWORD"
+        }
+    ],
+    "PSPropertyBag_ReadBOOL": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "BOOL"
+        }
+    ],
+    "PSPropertyBag_WriteBOOL": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "BOOL"
+        }
+    ],
+    "PSPropertyBag_ReadPOINTL": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "POINTL"
+        }
+    ],
+    "PSPropertyBag_WritePOINTL": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "POINTL"
+        }
+    ],
+    "PSPropertyBag_ReadPOINTS": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "POINTS"
+        }
+    ],
+    "PSPropertyBag_WritePOINTS": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "POINTS"
+        }
+    ],
+    "PSPropertyBag_ReadRECTL": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "RECTL"
+        }
+    ],
+    "PSPropertyBag_WriteRECTL": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "RECTL"
+        }
+    ],
+    "PSPropertyBag_ReadStream": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "IStream"
+        }
+    ],
+    "PSPropertyBag_WriteStream": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "IStream"
+        }
+    ],
+    "PSPropertyBag_Delete": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PSPropertyBag_ReadULONGLONG": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "ULONGLONG"
+        }
+    ],
+    "PSPropertyBag_WriteULONGLONG": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "ULONGLONG"
+        }
+    ],
+    "PSPropertyBag_ReadUnknown": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "PSPropertyBag_WriteUnknown": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        }
+    ],
+    "PSPropertyBag_ReadGUID": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "GUID"
+        }
+    ],
+    "PSPropertyBag_WriteGUID": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "GUID"
+        }
+    ],
+    "PSPropertyBag_ReadPropertyKey": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "PROPERTYKEY"
+        }
+    ],
+    "PSPropertyBag_WritePropertyKey": [
+        {
+            "name": "propBag",
+            "type": "IPropertyBag"
+        },
+        {
+            "name": "propName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "value",
+            "type": "PROPERTYKEY"
+        }
+    ],
+    "InitPropVariantFromResource": [
+        {
+            "name": "hinst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "id",
+            "type": "UINT"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromBuffer": [
+        {
+            "name": "pv",
+            "type": "void"
+        },
+        {
+            "name": "cb",
+            "type": "UINT"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromCLSID": [
+        {
+            "name": "clsid",
+            "type": "IID"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromGUIDAsString": [
+        {
+            "name": "guid",
+            "type": "GUID"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromFileTime": [
+        {
+            "name": "pftIn",
+            "type": "FILETIME"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromPropVariantVectorElem": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantVectorFromPropVariant": [
+        {
+            "name": "propvarSingle",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "ppropvarVector",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromStrRet": [
+        {
+            "name": "pstrret",
+            "type": "STRRET"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromBooleanVector": [
+        {
+            "name": "prgf",
+            "type": "BOOL"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromInt16Vector": [
+        {
+            "name": "prgn",
+            "type": "SHORT"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromUInt16Vector": [
+        {
+            "name": "prgn",
+            "type": "USHORT"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromInt32Vector": [
+        {
+            "name": "prgn",
+            "type": "LONG"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromUInt32Vector": [
+        {
+            "name": "prgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromInt64Vector": [
+        {
+            "name": "prgn",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromUInt64Vector": [
+        {
+            "name": "prgn",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromDoubleVector": [
+        {
+            "name": "prgn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromFileTimeVector": [
+        {
+            "name": "prgft",
+            "type": "FILETIME"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromStringVector": [
+        {
+            "name": "prgsz",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitPropVariantFromStringAsVector": [
+        {
+            "name": "psz",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PropVariantToBooleanWithDefault": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "fDefault",
+            "type": "BOOL"
+        }
+    ],
+    "PropVariantToInt16WithDefault": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "iDefault",
+            "type": "SHORT"
+        }
+    ],
+    "PropVariantToUInt16WithDefault": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "uiDefault",
+            "type": "USHORT"
+        }
+    ],
+    "PropVariantToInt32WithDefault": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "lDefault",
+            "type": "LONG"
+        }
+    ],
+    "PropVariantToUInt32WithDefault": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "ulDefault",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToInt64WithDefault": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "llDefault",
+            "type": "LONGLONG"
+        }
+    ],
+    "PropVariantToUInt64WithDefault": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "ullDefault",
+            "type": "ULONGLONG"
+        }
+    ],
+    "PropVariantToDoubleWithDefault": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "dblDefault",
+            "type": "DOUBLE"
+        }
+    ],
+    "PropVariantToStringWithDefault": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pszDefault",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PropVariantToBoolean": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pfRet",
+            "type": "BOOL"
+        }
+    ],
+    "PropVariantToInt16": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "piRet",
+            "type": "SHORT"
+        }
+    ],
+    "PropVariantToUInt16": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "puiRet",
+            "type": "USHORT"
+        }
+    ],
+    "PropVariantToInt32": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "plRet",
+            "type": "LONG"
+        }
+    ],
+    "PropVariantToUInt32": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pulRet",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToInt64": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pllRet",
+            "type": "LONGLONG"
+        }
+    ],
+    "PropVariantToUInt64": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pullRet",
+            "type": "ULONGLONG"
+        }
+    ],
+    "PropVariantToDouble": [
+        {
+            "name": "propvarIn",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pdblRet",
+            "type": "DOUBLE"
+        }
+    ],
+    "PropVariantToBuffer": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pv",
+            "type": "void"
+        },
+        {
+            "name": "cb",
+            "type": "UINT"
+        }
+    ],
+    "PropVariantToString": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "psz",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cch",
+            "type": "UINT"
+        }
+    ],
+    "PropVariantToGUID": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pguid",
+            "type": "GUID"
+        }
+    ],
+    "PropVariantToStringAlloc": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "ppszOut",
+            "type": "PWSTR"
+        }
+    ],
+    "PropVariantToBSTR": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pbstrOut",
+            "type": "BSTR"
+        }
+    ],
+    "PropVariantToStrRet": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pstrret",
+            "type": "STRRET"
+        }
+    ],
+    "PropVariantToFileTime": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pstfOut",
+            "type": "PSTIME_FLAGS"
+        },
+        {
+            "name": "pftOut",
+            "type": "FILETIME"
+        }
+    ],
+    "PropVariantGetElementCount": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PropVariantToBooleanVector": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "prgf",
+            "type": "BOOL"
+        },
+        {
+            "name": "crgf",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToInt16Vector": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "SHORT"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToUInt16Vector": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "USHORT"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToInt32Vector": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "LONG"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToUInt32Vector": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToInt64Vector": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToUInt64Vector": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToDoubleVector": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToFileTimeVector": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "prgft",
+            "type": "FILETIME"
+        },
+        {
+            "name": "crgft",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToStringVector": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "prgsz",
+            "type": "PWSTR"
+        },
+        {
+            "name": "crgsz",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToBooleanVectorAlloc": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pprgf",
+            "type": "BOOL"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToInt16VectorAlloc": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "SHORT"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToUInt16VectorAlloc": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "USHORT"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToInt32VectorAlloc": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "LONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToUInt32VectorAlloc": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToInt64VectorAlloc": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToUInt64VectorAlloc": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToDoubleVectorAlloc": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToFileTimeVectorAlloc": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pprgft",
+            "type": "FILETIME"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantToStringVectorAlloc": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pprgsz",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantGetBooleanElem": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pfVal",
+            "type": "BOOL"
+        }
+    ],
+    "PropVariantGetInt16Elem": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "SHORT"
+        }
+    ],
+    "PropVariantGetUInt16Elem": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "USHORT"
+        }
+    ],
+    "PropVariantGetInt32Elem": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "LONG"
+        }
+    ],
+    "PropVariantGetUInt32Elem": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "ULONG"
+        }
+    ],
+    "PropVariantGetInt64Elem": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "LONGLONG"
+        }
+    ],
+    "PropVariantGetUInt64Elem": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "ULONGLONG"
+        }
+    ],
+    "PropVariantGetDoubleElem": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "DOUBLE"
+        }
+    ],
+    "PropVariantGetFileTimeElem": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pftVal",
+            "type": "FILETIME"
+        }
+    ],
+    "PropVariantGetStringElem": [
+        {
+            "name": "propvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppszVal",
+            "type": "PWSTR"
+        }
+    ],
+    "ClearPropVariantArray": [
+        {
+            "name": "rgPropVar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "cVars",
+            "type": "UINT"
+        }
+    ],
+    "PropVariantCompareEx": [
+        {
+            "name": "propvar1",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "propvar2",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "unit",
+            "type": "PROPVAR_COMPARE_UNIT"
+        },
+        {
+            "name": "flags",
+            "type": "PROPVAR_COMPARE_FLAGS"
+        }
+    ],
+    "PropVariantChangeType": [
+        {
+            "name": "ppropvarDest",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "propvarSrc",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "flags",
+            "type": "PROPVAR_CHANGE_FLAGS"
+        },
+        {
+            "name": "vt",
+            "type": "VARTYPE"
+        }
+    ],
+    "PropVariantToVariant": [
+        {
+            "name": "pPropVar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pVar",
+            "type": "VARIANT"
+        }
+    ],
+    "VariantToPropVariant": [
+        {
+            "name": "pVar",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pPropVar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "StgSerializePropVariant": [
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "ppProp",
+            "type": "SERIALIZEDPROPERTYVALUE"
+        },
+        {
+            "name": "pcb",
+            "type": "ULONG"
+        }
+    ],
+    "StgDeserializePropVariant": [
+        {
+            "name": "pprop",
+            "type": "SERIALIZEDPROPERTYVALUE"
+        },
+        {
+            "name": "cbMax",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppropvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "InitVariantFromResource": [
+        {
+            "name": "hinst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "id",
+            "type": "UINT"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromBuffer": [
+        {
+            "name": "pv",
+            "type": "void"
+        },
+        {
+            "name": "cb",
+            "type": "UINT"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromGUIDAsString": [
+        {
+            "name": "guid",
+            "type": "GUID"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromFileTime": [
+        {
+            "name": "pft",
+            "type": "FILETIME"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromFileTimeArray": [
+        {
+            "name": "prgft",
+            "type": "FILETIME"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromStrRet": [
+        {
+            "name": "pstrret",
+            "type": "STRRET"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromVariantArrayElem": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromBooleanArray": [
+        {
+            "name": "prgf",
+            "type": "BOOL"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromInt16Array": [
+        {
+            "name": "prgn",
+            "type": "SHORT"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromUInt16Array": [
+        {
+            "name": "prgn",
+            "type": "USHORT"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromInt32Array": [
+        {
+            "name": "prgn",
+            "type": "LONG"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromUInt32Array": [
+        {
+            "name": "prgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromInt64Array": [
+        {
+            "name": "prgn",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromUInt64Array": [
+        {
+            "name": "prgn",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromDoubleArray": [
+        {
+            "name": "prgn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "InitVariantFromStringArray": [
+        {
+            "name": "prgsz",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cElems",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvar",
+            "type": "VARIANT"
+        }
+    ],
+    "VariantToBooleanWithDefault": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "fDefault",
+            "type": "BOOL"
+        }
+    ],
+    "VariantToInt16WithDefault": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "iDefault",
+            "type": "SHORT"
+        }
+    ],
+    "VariantToUInt16WithDefault": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "uiDefault",
+            "type": "USHORT"
+        }
+    ],
+    "VariantToInt32WithDefault": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "lDefault",
+            "type": "LONG"
+        }
+    ],
+    "VariantToUInt32WithDefault": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "ulDefault",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToInt64WithDefault": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "llDefault",
+            "type": "LONGLONG"
+        }
+    ],
+    "VariantToUInt64WithDefault": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "ullDefault",
+            "type": "ULONGLONG"
+        }
+    ],
+    "VariantToDoubleWithDefault": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "dblDefault",
+            "type": "DOUBLE"
+        }
+    ],
+    "VariantToStringWithDefault": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pszDefault",
+            "type": "LPCWSTR"
+        }
+    ],
+    "VariantToBoolean": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pfRet",
+            "type": "BOOL"
+        }
+    ],
+    "VariantToInt16": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "piRet",
+            "type": "SHORT"
+        }
+    ],
+    "VariantToUInt16": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "puiRet",
+            "type": "USHORT"
+        }
+    ],
+    "VariantToInt32": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "plRet",
+            "type": "LONG"
+        }
+    ],
+    "VariantToUInt32": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pulRet",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToInt64": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pllRet",
+            "type": "LONGLONG"
+        }
+    ],
+    "VariantToUInt64": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pullRet",
+            "type": "ULONGLONG"
+        }
+    ],
+    "VariantToDouble": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pdblRet",
+            "type": "DOUBLE"
+        }
+    ],
+    "VariantToBuffer": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pv",
+            "type": "void"
+        },
+        {
+            "name": "cb",
+            "type": "UINT"
+        }
+    ],
+    "VariantToGUID": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pguid",
+            "type": "GUID"
+        }
+    ],
+    "VariantToString": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pszBuf",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "VariantToStringAlloc": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "ppszBuf",
+            "type": "PWSTR"
+        }
+    ],
+    "VariantToDosDateTime": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pwDate",
+            "type": "WORD"
+        },
+        {
+            "name": "pwTime",
+            "type": "WORD"
+        }
+    ],
+    "VariantToStrRet": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pstrret",
+            "type": "STRRET"
+        }
+    ],
+    "VariantToFileTime": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        },
+        {
+            "name": "stfOut",
+            "type": "PSTIME_FLAGS"
+        },
+        {
+            "name": "pftOut",
+            "type": "FILETIME"
+        }
+    ],
+    "VariantGetElementCount": [
+        {
+            "name": "varIn",
+            "type": "VARIANT"
+        }
+    ],
+    "VariantToBooleanArray": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "prgf",
+            "type": "BOOL"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToInt16Array": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "SHORT"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToUInt16Array": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "USHORT"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToInt32Array": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "LONG"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToUInt32Array": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToInt64Array": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToUInt64Array": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToDoubleArray": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "prgn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "crgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToStringArray": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "prgsz",
+            "type": "PWSTR"
+        },
+        {
+            "name": "crgsz",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToBooleanArrayAlloc": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pprgf",
+            "type": "BOOL"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToInt16ArrayAlloc": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "SHORT"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToUInt16ArrayAlloc": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "USHORT"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToInt32ArrayAlloc": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "LONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToUInt32ArrayAlloc": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToInt64ArrayAlloc": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToUInt64ArrayAlloc": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToDoubleArrayAlloc": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pprgn",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantToStringArrayAlloc": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pprgsz",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcElem",
+            "type": "ULONG"
+        }
+    ],
+    "VariantGetBooleanElem": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pfVal",
+            "type": "BOOL"
+        }
+    ],
+    "VariantGetInt16Elem": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "SHORT"
+        }
+    ],
+    "VariantGetUInt16Elem": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "USHORT"
+        }
+    ],
+    "VariantGetInt32Elem": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "LONG"
+        }
+    ],
+    "VariantGetUInt32Elem": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "ULONG"
+        }
+    ],
+    "VariantGetInt64Elem": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "LONGLONG"
+        }
+    ],
+    "VariantGetUInt64Elem": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "ULONGLONG"
+        }
+    ],
+    "VariantGetDoubleElem": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "pnVal",
+            "type": "DOUBLE"
+        }
+    ],
+    "VariantGetStringElem": [
+        {
+            "name": "var",
+            "type": "VARIANT"
+        },
+        {
+            "name": "iElem",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppszVal",
+            "type": "PWSTR"
+        }
+    ],
+    "ClearVariantArray": [
+        {
+            "name": "pvars",
+            "type": "VARIANT"
+        },
+        {
+            "name": "cvars",
+            "type": "UINT"
+        }
+    ],
+    "VariantCompare": [
+        {
+            "name": "var1",
+            "type": "VARIANT"
+        },
+        {
+            "name": "var2",
+            "type": "VARIANT"
+        }
+    ]
+}

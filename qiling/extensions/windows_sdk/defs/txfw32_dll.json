@@ -1,0 +1,94 @@
+{
+    "TxfLogCreateFileReadContext": [
+        {
+            "name": "LogPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "BeginningLsn",
+            "type": "CLFS_LSN"
+        },
+        {
+            "name": "EndingLsn",
+            "type": "CLFS_LSN"
+        },
+        {
+            "name": "TxfFileId",
+            "type": "PTXF_ID"
+        },
+        {
+            "name": "TxfLogContext",
+            "type": "PVOID"
+        }
+    ],
+    "TxfLogCreateRangeReadContext": [
+        {
+            "name": "LogPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "BeginningLsn",
+            "type": "CLFS_LSN"
+        },
+        {
+            "name": "EndingLsn",
+            "type": "CLFS_LSN"
+        },
+        {
+            "name": "BeginningVirtualClock",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "EndingVirtualClock",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "RecordTypeMask",
+            "type": "ULONG"
+        },
+        {
+            "name": "TxfLogContext",
+            "type": "PVOID"
+        }
+    ],
+    "TxfLogDestroyReadContext": [
+        {
+            "name": "TxfLogContext",
+            "type": "PVOID"
+        }
+    ],
+    "TxfLogReadRecords": [
+        {
+            "name": "TxfLogContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "BufferLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "BytesUsed",
+            "type": "PULONG"
+        },
+        {
+            "name": "RecordCount",
+            "type": "PULONG"
+        }
+    ],
+    "TxfSetThreadMiniVersionForCreate": [
+        {
+            "name": "MiniVersion",
+            "type": "USHORT"
+        }
+    ],
+    "TxfGetThreadMiniVersionForCreate": [
+        {
+            "name": "MiniVersion",
+            "type": "PUSHORT"
+        }
+    ]
+}

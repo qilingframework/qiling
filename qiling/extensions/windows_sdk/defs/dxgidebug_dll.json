@@ -1,0 +1,12 @@
+{
+    "DXGIGetDebugInterface": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppDebug",
+            "type": "void"
+        }
+    ]
+}

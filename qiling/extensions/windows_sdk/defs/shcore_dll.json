@@ -1,0 +1,146 @@
+{
+    "CreateRandomAccessStreamOnFile": [
+        {
+            "name": "filePath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "accessMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "CreateRandomAccessStreamOverStream": [
+        {
+            "name": "stream",
+            "type": "IStream"
+        },
+        {
+            "name": "options",
+            "type": "BSOS_OPTIONS"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "CreateStreamOverRandomAccessStream": [
+        {
+            "name": "randomAccessStream",
+            "type": "IUnknown"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "GetScaleFactorForDevice": [
+        {
+            "name": "deviceType",
+            "type": "DISPLAY_DEVICE_TYPE"
+        }
+    ],
+    "RegisterScaleChangeNotifications": [
+        {
+            "name": "displayDevice",
+            "type": "DISPLAY_DEVICE_TYPE"
+        },
+        {
+            "name": "hwndNotify",
+            "type": "HWND"
+        },
+        {
+            "name": "uMsgNotify",
+            "type": "UINT"
+        },
+        {
+            "name": "pdwCookie",
+            "type": "DWORD"
+        }
+    ],
+    "RevokeScaleChangeNotifications": [
+        {
+            "name": "displayDevice",
+            "type": "DISPLAY_DEVICE_TYPE"
+        },
+        {
+            "name": "dwCookie",
+            "type": "DWORD"
+        }
+    ],
+    "GetScaleFactorForMonitor": [
+        {
+            "name": "hMon",
+            "type": "HMONITOR"
+        },
+        {
+            "name": "pScale",
+            "type": "DEVICE_SCALE_FACTOR"
+        }
+    ],
+    "RegisterScaleChangeEvent": [
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pdwCookie",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "UnregisterScaleChangeEvent": [
+        {
+            "name": "dwCookie",
+            "type": "DWORD_PTR"
+        }
+    ],
+    "SetProcessDpiAwareness": [
+        {
+            "name": "value",
+            "type": "PROCESS_DPI_AWARENESS"
+        }
+    ],
+    "GetProcessDpiAwareness": [
+        {
+            "name": "hprocess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "value",
+            "type": "PROCESS_DPI_AWARENESS"
+        }
+    ],
+    "GetDpiForMonitor": [
+        {
+            "name": "hmonitor",
+            "type": "HMONITOR"
+        },
+        {
+            "name": "dpiType",
+            "type": "MONITOR_DPI_TYPE"
+        },
+        {
+            "name": "dpiX",
+            "type": "UINT"
+        },
+        {
+            "name": "dpiY",
+            "type": "UINT"
+        }
+    ]
+}

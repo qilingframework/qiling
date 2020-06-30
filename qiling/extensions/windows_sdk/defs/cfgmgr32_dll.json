@@ -1,0 +1,1408 @@
+{
+    "CM_Add_Empty_Log_Conf": [
+        {
+            "name": "plcLogConf",
+            "type": "PLOG_CONF"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "Priority",
+            "type": "PRIORITY"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Add_Empty_Log_Conf_Ex": [
+        {
+            "name": "plcLogConf",
+            "type": "PLOG_CONF"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "Priority",
+            "type": "PRIORITY"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Add_Res_Des": [
+        {
+            "name": "prdResDes",
+            "type": "PRES_DES"
+        },
+        {
+            "name": "lcLogConf",
+            "type": "LOG_CONF"
+        },
+        {
+            "name": "ResourceID",
+            "type": "RESOURCEID"
+        },
+        {
+            "name": "ResourceData",
+            "type": "PCVOID"
+        },
+        {
+            "name": "ResourceLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Add_Res_Des_Ex": [
+        {
+            "name": "prdResDes",
+            "type": "PRES_DES"
+        },
+        {
+            "name": "lcLogConf",
+            "type": "LOG_CONF"
+        },
+        {
+            "name": "ResourceID",
+            "type": "RESOURCEID"
+        },
+        {
+            "name": "ResourceData",
+            "type": "PCVOID"
+        },
+        {
+            "name": "ResourceLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Delete_Class_Key": [
+        {
+            "name": "ClassGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Delete_DevNode_Key": [
+        {
+            "name": "dnDevNode",
+            "type": "DEVNODE"
+        },
+        {
+            "name": "ulHardwareProfile",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Disable_DevNode": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Disconnect_Machine": [
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Enable_DevNode": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Enumerate_Classes": [
+        {
+            "name": "ulClassIndex",
+            "type": "ULONG"
+        },
+        {
+            "name": "ClassGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Enumerate_Classes_Ex": [
+        {
+            "name": "ulClassIndex",
+            "type": "ULONG"
+        },
+        {
+            "name": "ClassGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Free_Log_Conf": [
+        {
+            "name": "lcLogConfToBeFreed",
+            "type": "LOG_CONF"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Free_Log_Conf_Ex": [
+        {
+            "name": "lcLogConfToBeFreed",
+            "type": "LOG_CONF"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Free_Log_Conf_Handle": [
+        {
+            "name": "lcLogConf",
+            "type": "LOG_CONF"
+        }
+    ],
+    "CM_Free_Res_Des": [
+        {
+            "name": "prdResDes",
+            "type": "PRES_DES"
+        },
+        {
+            "name": "rdResDes",
+            "type": "RES_DES"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Free_Res_Des_Ex": [
+        {
+            "name": "prdResDes",
+            "type": "PRES_DES"
+        },
+        {
+            "name": "rdResDes",
+            "type": "RES_DES"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Free_Res_Des_Handle": [
+        {
+            "name": "rdResDes",
+            "type": "RES_DES"
+        }
+    ],
+    "CM_Get_Child": [
+        {
+            "name": "pdnDevInst",
+            "type": "PDEVINST"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Child_Ex": [
+        {
+            "name": "pdnDevInst",
+            "type": "PDEVINST"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_Depth": [
+        {
+            "name": "pulDepth",
+            "type": "PULONG"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Depth_Ex": [
+        {
+            "name": "pulDepth",
+            "type": "PULONG"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_Device_ID_ListA": [
+        {
+            "name": "pszFilter",
+            "type": "PCSTR"
+        },
+        {
+            "name": "Buffer",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "BufferLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Device_ID_ListW": [
+        {
+            "name": "pszFilter",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "Buffer",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "BufferLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Device_ID_List_SizeA": [
+        {
+            "name": "pulLen",
+            "type": "PULONG"
+        },
+        {
+            "name": "pszFilter",
+            "type": "PCSTR"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Device_ID_List_SizeW": [
+        {
+            "name": "pulLen",
+            "type": "PULONG"
+        },
+        {
+            "name": "pszFilter",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Device_ID_Size": [
+        {
+            "name": "pulLen",
+            "type": "PULONG"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Device_ID_Size_Ex": [
+        {
+            "name": "pulLen",
+            "type": "PULONG"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_DevNode_PropertyW": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "PropertyKey",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyType",
+            "type": "DEVPROPTYPE"
+        },
+        {
+            "name": "PropertyBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "PropertyBufferSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_DevNode_Property_Keys": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "PropertyKeyArray",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyKeyCount",
+            "type": "PULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_DevNode_Property_Keys_Ex": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "PropertyKeyArray",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyKeyCount",
+            "type": "PULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_DevNode_Status": [
+        {
+            "name": "pulStatus",
+            "type": "PULONG"
+        },
+        {
+            "name": "pulProblemNumber",
+            "type": "PULONG"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_DevNode_Status_Ex": [
+        {
+            "name": "pulStatus",
+            "type": "PULONG"
+        },
+        {
+            "name": "pulProblemNumber",
+            "type": "PULONG"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_First_Log_Conf": [
+        {
+            "name": "plcLogConf",
+            "type": "PLOG_CONF"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_First_Log_Conf_Ex": [
+        {
+            "name": "plcLogConf",
+            "type": "PLOG_CONF"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_Device_Interface_ListA": [
+        {
+            "name": "InterfaceClassGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "pDeviceID",
+            "type": "DEVINSTID_A"
+        },
+        {
+            "name": "Buffer",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "BufferLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Device_Interface_ListW": [
+        {
+            "name": "InterfaceClassGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "pDeviceID",
+            "type": "DEVINSTID_W"
+        },
+        {
+            "name": "Buffer",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "BufferLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Device_Interface_List_SizeA": [
+        {
+            "name": "pulLen",
+            "type": "PULONG"
+        },
+        {
+            "name": "InterfaceClassGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "pDeviceID",
+            "type": "DEVINSTID_A"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Device_Interface_List_SizeW": [
+        {
+            "name": "pulLen",
+            "type": "PULONG"
+        },
+        {
+            "name": "InterfaceClassGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "pDeviceID",
+            "type": "DEVINSTID_W"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Device_Interface_Property_ExW": [
+        {
+            "name": "pszDeviceInterface",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "PropertyKey",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyType",
+            "type": "DEVPROPTYPE"
+        },
+        {
+            "name": "PropertyBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "PropertyBufferSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_Log_Conf_Priority": [
+        {
+            "name": "lcLogConf",
+            "type": "LOG_CONF"
+        },
+        {
+            "name": "pPriority",
+            "type": "PPRIORITY"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Log_Conf_Priority_Ex": [
+        {
+            "name": "lcLogConf",
+            "type": "LOG_CONF"
+        },
+        {
+            "name": "pPriority",
+            "type": "PPRIORITY"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_Next_Log_Conf": [
+        {
+            "name": "plcLogConf",
+            "type": "PLOG_CONF"
+        },
+        {
+            "name": "lcLogConf",
+            "type": "LOG_CONF"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Next_Log_Conf_Ex": [
+        {
+            "name": "plcLogConf",
+            "type": "PLOG_CONF"
+        },
+        {
+            "name": "lcLogConf",
+            "type": "LOG_CONF"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_Parent": [
+        {
+            "name": "pdnDevInst",
+            "type": "PDEVINST"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Parent_Ex": [
+        {
+            "name": "pdnDevInst",
+            "type": "PDEVINST"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_Res_Des_Data": [
+        {
+            "name": "rdResDes",
+            "type": "RES_DES"
+        },
+        {
+            "name": "Buffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "BufferLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Res_Des_Data_Ex": [
+        {
+            "name": "rdResDes",
+            "type": "RES_DES"
+        },
+        {
+            "name": "Buffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "BufferLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_Res_Des_Data_Size": [
+        {
+            "name": "pulSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "rdResDes",
+            "type": "RES_DES"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Res_Des_Data_Size_Ex": [
+        {
+            "name": "pulSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "rdResDes",
+            "type": "RES_DES"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_Sibling": [
+        {
+            "name": "pdnDevInst",
+            "type": "PDEVINST"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Sibling_Ex": [
+        {
+            "name": "pdnDevInst",
+            "type": "PDEVINST"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_Version": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CM_Get_Version_Ex": [
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Is_Version_Available": [
+        {
+            "name": "wVersion",
+            "type": "WORD"
+        }
+    ],
+    "CM_Is_Version_Available_Ex": [
+        {
+            "name": "wVersion",
+            "type": "WORD"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Locate_DevNodeA": [
+        {
+            "name": "pdnDevInst",
+            "type": "PDEVINST"
+        },
+        {
+            "name": "pDeviceID",
+            "type": "DEVINSTID_A"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Locate_DevNodeW": [
+        {
+            "name": "pdnDevInst",
+            "type": "PDEVINST"
+        },
+        {
+            "name": "pDeviceID",
+            "type": "DEVINSTID_W"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Modify_Res_Des": [
+        {
+            "name": "prdResDes",
+            "type": "PRES_DES"
+        },
+        {
+            "name": "rdResDes",
+            "type": "RES_DES"
+        },
+        {
+            "name": "ResourceID",
+            "type": "RESOURCEID"
+        },
+        {
+            "name": "ResourceData",
+            "type": "PCVOID"
+        },
+        {
+            "name": "ResourceLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Modify_Res_Des_Ex": [
+        {
+            "name": "prdResDes",
+            "type": "PRES_DES"
+        },
+        {
+            "name": "rdResDes",
+            "type": "RES_DES"
+        },
+        {
+            "name": "ResourceID",
+            "type": "RESOURCEID"
+        },
+        {
+            "name": "ResourceData",
+            "type": "PCVOID"
+        },
+        {
+            "name": "ResourceLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Get_Next_Res_Des": [
+        {
+            "name": "prdResDes",
+            "type": "PRES_DES"
+        },
+        {
+            "name": "rdResDes",
+            "type": "RES_DES"
+        },
+        {
+            "name": "ForResource",
+            "type": "RESOURCEID"
+        },
+        {
+            "name": "pResourceID",
+            "type": "PRESOURCEID"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Next_Res_Des_Ex": [
+        {
+            "name": "prdResDes",
+            "type": "PRES_DES"
+        },
+        {
+            "name": "rdResDes",
+            "type": "RES_DES"
+        },
+        {
+            "name": "ForResource",
+            "type": "RESOURCEID"
+        },
+        {
+            "name": "pResourceID",
+            "type": "PRESOURCEID"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Open_DevNode_Key": [
+        {
+            "name": "dnDevNode",
+            "type": "DEVINST"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "ulHardwareProfile",
+            "type": "ULONG"
+        },
+        {
+            "name": "Disposition",
+            "type": "REGDISPOSITION"
+        },
+        {
+            "name": "phkDevice",
+            "type": "PHKEY"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Reenumerate_DevNode": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Reenumerate_DevNode_Ex": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Set_DevNode_Problem_Ex": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulProblem",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Set_DevNode_Problem": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulProblem",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Is_Dock_Station_Present": [
+        {
+            "name": "pbPresent",
+            "type": "PBOOL"
+        }
+    ],
+    "CM_Is_Dock_Station_Present_Ex": [
+        {
+            "name": "pbPresent",
+            "type": "PBOOL"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Request_Eject_PC": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CM_Request_Eject_PC_Ex": [
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Setup_DevNode": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Uninstall_DevNode": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVNODE"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Query_Resource_Conflict_List": [
+        {
+            "name": "pclConflictList",
+            "type": "PCONFLICT_LIST"
+        },
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ResourceID",
+            "type": "RESOURCEID"
+        },
+        {
+            "name": "ResourceData",
+            "type": "PCVOID"
+        },
+        {
+            "name": "ResourceLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Free_Resource_Conflict_Handle": [
+        {
+            "name": "clConflictList",
+            "type": "CONFLICT_LIST"
+        }
+    ],
+    "CM_Get_Resource_Conflict_Count": [
+        {
+            "name": "clConflictList",
+            "type": "CONFLICT_LIST"
+        },
+        {
+            "name": "pulCount",
+            "type": "PULONG"
+        }
+    ],
+    "CM_Get_Class_Property_Keys": [
+        {
+            "name": "ClassGUID",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "PropertyKeyArray",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyKeyCount",
+            "type": "PULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Class_Property_Keys_Ex": [
+        {
+            "name": "ClassGUID",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "PropertyKeyArray",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyKeyCount",
+            "type": "PULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Register_Notification": [
+        {
+            "name": "pFilter",
+            "type": "PCM_NOTIFY_FILTER"
+        },
+        {
+            "name": "pContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "pCallback",
+            "type": "PCM_NOTIFY_CALLBACK"
+        },
+        {
+            "name": "pNotifyContext",
+            "type": "PHCMNOTIFICATION"
+        }
+    ],
+    "CM_Unregister_Notification": [
+        {
+            "name": "NotifyContext",
+            "type": "HCMNOTIFICATION"
+        }
+    ],
+    "CM_MapCrToWin32Err": [
+        {
+            "name": "CmReturnCode",
+            "type": "CONFIGRET"
+        },
+        {
+            "name": "DefaultErr",
+            "type": "DWORD"
+        }
+    ],
+    "SwDeviceCreate": [
+        {
+            "name": "pszEnumeratorName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszParentDeviceInstance",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pCreateInfo",
+            "type": "SW_DEVICE_CREATE_INFO"
+        },
+        {
+            "name": "cPropertyCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pProperties",
+            "type": "DEVPROPERTY"
+        },
+        {
+            "name": "pCallback",
+            "type": "SW_DEVICE_CREATE_CALLBACK"
+        },
+        {
+            "name": "pContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "phSwDevice",
+            "type": "PHSWDEVICE"
+        }
+    ],
+    "SwDeviceClose": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        }
+    ],
+    "SwDeviceSetLifetime": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        },
+        {
+            "name": "Lifetime",
+            "type": "SW_DEVICE_LIFETIME"
+        }
+    ],
+    "SwDeviceGetLifetime": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        },
+        {
+            "name": "pLifetime",
+            "type": "PSW_DEVICE_LIFETIME"
+        }
+    ],
+    "SwDevicePropertySet": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        },
+        {
+            "name": "cPropertyCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pProperties",
+            "type": "DEVPROPERTY"
+        }
+    ],
+    "SwDeviceInterfaceRegister": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        },
+        {
+            "name": "pInterfaceClassGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "pszReferenceString",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cPropertyCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pProperties",
+            "type": "DEVPROPERTY"
+        },
+        {
+            "name": "fEnabled",
+            "type": "BOOL"
+        },
+        {
+            "name": "ppszDeviceInterfaceId",
+            "type": "PWSTR"
+        }
+    ],
+    "SwMemFree": [
+        {
+            "name": "pMem",
+            "type": "PVOID"
+        }
+    ],
+    "SwDeviceInterfaceSetState": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        },
+        {
+            "name": "pszDeviceInterfaceId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "fEnabled",
+            "type": "BOOL"
+        }
+    ],
+    "SwDeviceInterfacePropertySet": [
+        {
+            "name": "hSwDevice",
+            "type": "HSWDEVICE"
+        },
+        {
+            "name": "pszDeviceInterfaceId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cPropertyCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pProperties",
+            "type": "DEVPROPERTY"
+        }
+    ]
+}

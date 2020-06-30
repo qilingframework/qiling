@@ -1,0 +1,70 @@
+{
+    "D3D10CreateDevice1": [
+        {
+            "name": "pAdapter",
+            "type": "IDXGIAdapter"
+        },
+        {
+            "name": "DriverType",
+            "type": "D3D10_DRIVER_TYPE"
+        },
+        {
+            "name": "Software",
+            "type": "HMODULE"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "HardwareLevel",
+            "type": "D3D10_FEATURE_LEVEL1"
+        },
+        {
+            "name": "SDKVersion",
+            "type": "UINT"
+        },
+        {
+            "name": "ppDevice",
+            "type": "ID3D10Device1"
+        }
+    ],
+    "D3D10CreateDeviceAndSwapChain1": [
+        {
+            "name": "pAdapter",
+            "type": "IDXGIAdapter"
+        },
+        {
+            "name": "DriverType",
+            "type": "D3D10_DRIVER_TYPE"
+        },
+        {
+            "name": "Software",
+            "type": "HMODULE"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "HardwareLevel",
+            "type": "D3D10_FEATURE_LEVEL1"
+        },
+        {
+            "name": "SDKVersion",
+            "type": "UINT"
+        },
+        {
+            "name": "pSwapChainDesc",
+            "type": "DXGI_SWAP_CHAIN_DESC"
+        },
+        {
+            "name": "ppSwapChain",
+            "type": "IDXGISwapChain"
+        },
+        {
+            "name": "ppDevice",
+            "type": "ID3D10Device1"
+        }
+    ]
+}

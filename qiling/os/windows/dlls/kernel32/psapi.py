@@ -13,6 +13,7 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
+dllname = 'kernel32_dll'
 
 # BOOL GetModuleInformation(
 #   HANDLE       hProcess,
@@ -20,12 +21,7 @@ from qiling.exception import *
 #   LPMODULEINFO lpmodinfo,
 #   DWORD        cb
 # );
-@winapi(cc=STDCALL, params={
-    "hProcess": HANDLE,
-    "hModule": HANDLE,
-    "lpmodinfo": POINTER,
-    "cb": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_K32GetModuleInformation(self, address, params):
     # TODO
     return 0

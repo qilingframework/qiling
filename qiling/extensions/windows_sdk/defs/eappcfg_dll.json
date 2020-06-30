@@ -1,0 +1,402 @@
+{
+    "EapHostPeerGetMethods": [
+        {
+            "name": "pEapMethodInfoArray",
+            "type": "EAP_METHOD_INFO_ARRAY"
+        },
+        {
+            "name": "ppEapError",
+            "type": "EAP_ERROR"
+        }
+    ],
+    "EapHostPeerGetMethodProperties": [
+        {
+            "name": "dwVersion",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "eapMethodType",
+            "type": "EAP_METHOD_TYPE"
+        },
+        {
+            "name": "hUserImpersonationToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwEapConnDataSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbEapConnData",
+            "type": "BYTE"
+        },
+        {
+            "name": "dwUserDataSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbUserData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pMethodPropertyArray",
+            "type": "EAP_METHOD_PROPERTY_ARRAY"
+        },
+        {
+            "name": "ppEapError",
+            "type": "EAP_ERROR"
+        }
+    ],
+    "EapHostPeerInvokeConfigUI": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "eapMethodType",
+            "type": "EAP_METHOD_TYPE"
+        },
+        {
+            "name": "dwSizeOfConfigIn",
+            "type": "DWORD"
+        },
+        {
+            "name": "pConfigIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdwSizeOfConfigOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppConfigOut",
+            "type": "BYTE"
+        },
+        {
+            "name": "ppEapError",
+            "type": "EAP_ERROR"
+        }
+    ],
+    "EapHostPeerQueryCredentialInputFields": [
+        {
+            "name": "hUserImpersonationToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "eapMethodType",
+            "type": "EAP_METHOD_TYPE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwEapConnDataSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbEapConnData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pEapConfigInputFieldArray",
+            "type": "EAP_CONFIG_INPUT_FIELD_ARRAY"
+        },
+        {
+            "name": "ppEapError",
+            "type": "EAP_ERROR"
+        }
+    ],
+    "EapHostPeerQueryUserBlobFromCredentialInputFields": [
+        {
+            "name": "hUserImpersonationToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "eapMethodType",
+            "type": "EAP_METHOD_TYPE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwEapConnDataSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbEapConnData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pEapConfigInputFieldArray",
+            "type": "EAP_CONFIG_INPUT_FIELD_ARRAY"
+        },
+        {
+            "name": "pdwUserBlobSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppbUserBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "ppEapError",
+            "type": "EAP_ERROR"
+        }
+    ],
+    "EapHostPeerInvokeIdentityUI": [
+        {
+            "name": "dwVersion",
+            "type": "DWORD"
+        },
+        {
+            "name": "eapMethodType",
+            "type": "EAP_METHOD_TYPE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "dwSizeofConnectionData",
+            "type": "DWORD"
+        },
+        {
+            "name": "pConnectionData",
+            "type": "BYTE"
+        },
+        {
+            "name": "dwSizeofUserData",
+            "type": "DWORD"
+        },
+        {
+            "name": "pUserData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdwSizeOfUserDataOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppUserDataOut",
+            "type": "BYTE"
+        },
+        {
+            "name": "ppwszIdentity",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ppEapError",
+            "type": "EAP_ERROR"
+        },
+        {
+            "name": "ppvReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "EapHostPeerInvokeInteractiveUI": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "dwSizeofUIContextData",
+            "type": "DWORD"
+        },
+        {
+            "name": "pUIContextData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdwSizeOfDataFromInteractiveUI",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppDataFromInteractiveUI",
+            "type": "BYTE"
+        },
+        {
+            "name": "ppEapError",
+            "type": "EAP_ERROR"
+        }
+    ],
+    "EapHostPeerQueryInteractiveUIInputFields": [
+        {
+            "name": "dwVersion",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwSizeofUIContextData",
+            "type": "DWORD"
+        },
+        {
+            "name": "pUIContextData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pEapInteractiveUIData",
+            "type": "EAP_INTERACTIVE_UI_DATA"
+        },
+        {
+            "name": "ppEapError",
+            "type": "EAP_ERROR"
+        },
+        {
+            "name": "ppvReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "EapHostPeerQueryUIBlobFromInteractiveUIInputFields": [
+        {
+            "name": "dwVersion",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwSizeofUIContextData",
+            "type": "DWORD"
+        },
+        {
+            "name": "pUIContextData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pEapInteractiveUIData",
+            "type": "EAP_INTERACTIVE_UI_DATA"
+        },
+        {
+            "name": "pdwSizeOfDataFromInteractiveUI",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppDataFromInteractiveUI",
+            "type": "BYTE"
+        },
+        {
+            "name": "ppEapError",
+            "type": "EAP_ERROR"
+        },
+        {
+            "name": "ppvReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "EapHostPeerConfigXml2Blob": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pConfigDoc",
+            "type": "IXMLDOMNode"
+        },
+        {
+            "name": "pdwSizeOfConfigOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppConfigOut",
+            "type": "BYTE"
+        },
+        {
+            "name": "pEapMethodType",
+            "type": "EAP_METHOD_TYPE"
+        },
+        {
+            "name": "ppEapError",
+            "type": "EAP_ERROR"
+        }
+    ],
+    "EapHostPeerCredentialsXml2Blob": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCredentialsDoc",
+            "type": "IXMLDOMNode"
+        },
+        {
+            "name": "dwSizeOfConfigIn",
+            "type": "DWORD"
+        },
+        {
+            "name": "pConfigIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdwSizeOfCredentialsOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppCredentialsOut",
+            "type": "BYTE"
+        },
+        {
+            "name": "pEapMethodType",
+            "type": "EAP_METHOD_TYPE"
+        },
+        {
+            "name": "ppEapError",
+            "type": "EAP_ERROR"
+        }
+    ],
+    "EapHostPeerConfigBlob2Xml": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "eapMethodType",
+            "type": "EAP_METHOD_TYPE"
+        },
+        {
+            "name": "dwSizeOfConfigIn",
+            "type": "DWORD"
+        },
+        {
+            "name": "pConfigIn",
+            "type": "BYTE"
+        },
+        {
+            "name": "ppConfigDoc",
+            "type": "IXMLDOMDocument2"
+        },
+        {
+            "name": "ppEapError",
+            "type": "EAP_ERROR"
+        }
+    ],
+    "EapHostPeerFreeMemory": [
+        {
+            "name": "pData",
+            "type": "BYTE"
+        }
+    ],
+    "EapHostPeerFreeErrorMemory": [
+        {
+            "name": "pEapError",
+            "type": "EAP_ERROR"
+        }
+    ]
+}

@@ -1,0 +1,4486 @@
+{
+    "CryptProtectData": [
+        {
+            "name": "pDataIn",
+            "type": "DATA_BLOB"
+        },
+        {
+            "name": "szDataDescr",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pOptionalEntropy",
+            "type": "DATA_BLOB"
+        },
+        {
+            "name": "pvReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "pPromptStruct",
+            "type": "CRYPTPROTECT_PROMPTSTRUCT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pDataOut",
+            "type": "DATA_BLOB"
+        }
+    ],
+    "CryptUnprotectData": [
+        {
+            "name": "pDataIn",
+            "type": "DATA_BLOB"
+        },
+        {
+            "name": "ppszDataDescr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pOptionalEntropy",
+            "type": "DATA_BLOB"
+        },
+        {
+            "name": "pvReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "pPromptStruct",
+            "type": "CRYPTPROTECT_PROMPTSTRUCT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pDataOut",
+            "type": "DATA_BLOB"
+        }
+    ],
+    "CryptUpdateProtectedState": [
+        {
+            "name": "pOldSid",
+            "type": "PSID"
+        },
+        {
+            "name": "pwszOldPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwSuccessCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwFailureCount",
+            "type": "DWORD"
+        }
+    ],
+    "CryptProtectMemory": [
+        {
+            "name": "pDataIn",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbDataIn",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptUnprotectMemory": [
+        {
+            "name": "pDataIn",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbDataIn",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptFormatObject": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFormatType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFormatStrType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pFormatStruct",
+            "type": "void"
+        },
+        {
+            "name": "lpszStructType",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pbEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbEncoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbFormat",
+            "type": "void"
+        },
+        {
+            "name": "pcbFormat",
+            "type": "DWORD"
+        }
+    ],
+    "CryptEncodeObjectEx": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszStructType",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pvStructInfo",
+            "type": "void"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pEncodePara",
+            "type": "PCRYPT_ENCODE_PARA"
+        },
+        {
+            "name": "pvEncoded",
+            "type": "void"
+        },
+        {
+            "name": "pcbEncoded",
+            "type": "DWORD"
+        }
+    ],
+    "CryptEncodeObject": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszStructType",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pvStructInfo",
+            "type": "void"
+        },
+        {
+            "name": "pbEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbEncoded",
+            "type": "DWORD"
+        }
+    ],
+    "CryptDecodeObjectEx": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszStructType",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pbEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbEncoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pDecodePara",
+            "type": "PCRYPT_DECODE_PARA"
+        },
+        {
+            "name": "pvStructInfo",
+            "type": "void"
+        },
+        {
+            "name": "pcbStructInfo",
+            "type": "DWORD"
+        }
+    ],
+    "CryptDecodeObject": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszStructType",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pbEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbEncoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvStructInfo",
+            "type": "void"
+        },
+        {
+            "name": "pcbStructInfo",
+            "type": "DWORD"
+        }
+    ],
+    "CryptInstallOIDFunctionAddress": [
+        {
+            "name": "hModule",
+            "type": "HMODULE"
+        },
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszFuncName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cFuncEntry",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgFuncEntry",
+            "type": "CRYPT_OID_FUNC_ENTRY"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptInitOIDFunctionSet": [
+        {
+            "name": "pszFuncName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptGetOIDFunctionAddress": [
+        {
+            "name": "hFuncSet",
+            "type": "HCRYPTOIDFUNCSET"
+        },
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppvFuncAddr",
+            "type": "void"
+        },
+        {
+            "name": "phFuncAddr",
+            "type": "HCRYPTOIDFUNCADDR"
+        }
+    ],
+    "CryptGetDefaultOIDDllList": [
+        {
+            "name": "hFuncSet",
+            "type": "HCRYPTOIDFUNCSET"
+        },
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszDllList",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pcchDllList",
+            "type": "DWORD"
+        }
+    ],
+    "CryptGetDefaultOIDFunctionAddress": [
+        {
+            "name": "hFuncSet",
+            "type": "HCRYPTOIDFUNCSET"
+        },
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszDll",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppvFuncAddr",
+            "type": "void"
+        },
+        {
+            "name": "phFuncAddr",
+            "type": "HCRYPTOIDFUNCADDR"
+        }
+    ],
+    "CryptFreeOIDFunctionAddress": [
+        {
+            "name": "hFuncAddr",
+            "type": "HCRYPTOIDFUNCADDR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptRegisterOIDFunction": [
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszFuncName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pwszDll",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszOverrideFuncName",
+            "type": "LPCSTR"
+        }
+    ],
+    "CryptUnregisterOIDFunction": [
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszFuncName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszOID",
+            "type": "LPCSTR"
+        }
+    ],
+    "CryptRegisterDefaultOIDFunction": [
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszFuncName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszDll",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CryptUnregisterDefaultOIDFunction": [
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszFuncName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pwszDll",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CryptSetOIDFunctionValue": [
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszFuncName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwValueType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbValueData",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbValueData",
+            "type": "DWORD"
+        }
+    ],
+    "CryptGetOIDFunctionValue": [
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszFuncName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdwValueType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbValueData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbValueData",
+            "type": "DWORD"
+        }
+    ],
+    "CryptEnumOIDFunction": [
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszFuncName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvArg",
+            "type": "void"
+        },
+        {
+            "name": "pfnEnumOIDFunc",
+            "type": "PFN_CRYPT_ENUM_OID_FUNC"
+        }
+    ],
+    "CryptFindOIDInfo": [
+        {
+            "name": "dwKeyType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvKey",
+            "type": "void"
+        },
+        {
+            "name": "dwGroupId",
+            "type": "DWORD"
+        }
+    ],
+    "CryptRegisterOIDInfo": [
+        {
+            "name": "pInfo",
+            "type": "PCCRYPT_OID_INFO"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptUnregisterOIDInfo": [
+        {
+            "name": "pInfo",
+            "type": "PCCRYPT_OID_INFO"
+        }
+    ],
+    "CryptEnumOIDInfo": [
+        {
+            "name": "dwGroupId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvArg",
+            "type": "void"
+        },
+        {
+            "name": "pfnEnumOIDInfo",
+            "type": "PFN_CRYPT_ENUM_OID_INFO"
+        }
+    ],
+    "CryptFindLocalizedName": [
+        {
+            "name": "pwszCryptName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CryptMsgOpenToEncode": [
+        {
+            "name": "dwMsgEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwMsgType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvMsgEncodeInfo",
+            "type": "void"
+        },
+        {
+            "name": "pszInnerContentObjID",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pStreamInfo",
+            "type": "PCMSG_STREAM_INFO"
+        }
+    ],
+    "CryptMsgCalculateEncodedLength": [
+        {
+            "name": "dwMsgEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwMsgType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvMsgEncodeInfo",
+            "type": "void"
+        },
+        {
+            "name": "pszInnerContentObjID",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        }
+    ],
+    "CryptMsgOpenToDecode": [
+        {
+            "name": "dwMsgEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwMsgType",
+            "type": "DWORD"
+        },
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV_LEGACY"
+        },
+        {
+            "name": "pRecipientInfo",
+            "type": "PCERT_INFO"
+        },
+        {
+            "name": "pStreamInfo",
+            "type": "PCMSG_STREAM_INFO"
+        }
+    ],
+    "CryptMsgDuplicate": [
+        {
+            "name": "hCryptMsg",
+            "type": "HCRYPTMSG"
+        }
+    ],
+    "CryptMsgClose": [
+        {
+            "name": "hCryptMsg",
+            "type": "HCRYPTMSG"
+        }
+    ],
+    "CryptMsgUpdate": [
+        {
+            "name": "hCryptMsg",
+            "type": "HCRYPTMSG"
+        },
+        {
+            "name": "pbData",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "fFinal",
+            "type": "BOOL"
+        }
+    ],
+    "CryptMsgGetParam": [
+        {
+            "name": "hCryptMsg",
+            "type": "HCRYPTMSG"
+        },
+        {
+            "name": "dwParamType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        }
+    ],
+    "CryptMsgControl": [
+        {
+            "name": "hCryptMsg",
+            "type": "HCRYPTMSG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwCtrlType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvCtrlPara",
+            "type": "void"
+        }
+    ],
+    "CryptMsgVerifyCountersignatureEncoded": [
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV_LEGACY"
+        },
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignerInfo",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbSignerInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignerInfoCountersignature",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbSignerInfoCountersignature",
+            "type": "DWORD"
+        },
+        {
+            "name": "pciCountersigner",
+            "type": "PCERT_INFO"
+        }
+    ],
+    "CryptMsgVerifyCountersignatureEncodedEx": [
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV_LEGACY"
+        },
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignerInfo",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbSignerInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignerInfoCountersignature",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbSignerInfoCountersignature",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwSignerType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvSigner",
+            "type": "void"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvExtra",
+            "type": "void"
+        }
+    ],
+    "CryptMsgCountersign": [
+        {
+            "name": "hCryptMsg",
+            "type": "HCRYPTMSG"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "cCountersigners",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgCountersigners",
+            "type": "PCMSG_SIGNER_ENCODE_INFO"
+        }
+    ],
+    "CryptMsgCountersignEncoded": [
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignerInfo",
+            "type": "PBYTE"
+        },
+        {
+            "name": "cbSignerInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "cCountersigners",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgCountersigners",
+            "type": "PCMSG_SIGNER_ENCODE_INFO"
+        },
+        {
+            "name": "pbCountersignature",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pcbCountersignature",
+            "type": "PDWORD"
+        }
+    ],
+    "CertOpenStore": [
+        {
+            "name": "lpszStoreProvider",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV_LEGACY"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvPara",
+            "type": "void"
+        }
+    ],
+    "CertDuplicateStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        }
+    ],
+    "CertSaveStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwSaveAs",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwSaveTo",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvSaveToPara",
+            "type": "void"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CertCloseStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CertGetSubjectCertificateFromStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCertId",
+            "type": "PCERT_INFO"
+        }
+    ],
+    "CertEnumCertificatesInStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pPrevCertContext",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CertFindCertificateInStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFindFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFindType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvFindPara",
+            "type": "void"
+        },
+        {
+            "name": "pPrevCertContext",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CertGetIssuerCertificateFromStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pSubjectContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pPrevIssuerContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pdwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CertVerifySubjectCertificateContext": [
+        {
+            "name": "pSubject",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pIssuer",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pdwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CertDuplicateCertificateContext": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CertCreateCertificateContext": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbCertEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbCertEncoded",
+            "type": "DWORD"
+        }
+    ],
+    "CertFreeCertificateContext": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CertSetCertificateContextProperty": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        }
+    ],
+    "CertGetCertificateContextProperty": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        }
+    ],
+    "CertEnumCertificateContextProperties": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        }
+    ],
+    "CertCreateCTLEntryFromCertificateContextProperties": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "cOptAttr",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgOptAttr",
+            "type": "PCRYPT_ATTRIBUTE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "pCtlEntry",
+            "type": "PCTL_ENTRY"
+        },
+        {
+            "name": "pcbCtlEntry",
+            "type": "DWORD"
+        }
+    ],
+    "CertSetCertificateContextPropertiesFromCTLEntry": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pCtlEntry",
+            "type": "PCTL_ENTRY"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CertGetCRLFromStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pIssuerContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pPrevCrlContext",
+            "type": "PCCRL_CONTEXT"
+        },
+        {
+            "name": "pdwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CertEnumCRLsInStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pPrevCrlContext",
+            "type": "PCCRL_CONTEXT"
+        }
+    ],
+    "CertFindCRLInStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFindFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFindType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvFindPara",
+            "type": "void"
+        },
+        {
+            "name": "pPrevCrlContext",
+            "type": "PCCRL_CONTEXT"
+        }
+    ],
+    "CertDuplicateCRLContext": [
+        {
+            "name": "pCrlContext",
+            "type": "PCCRL_CONTEXT"
+        }
+    ],
+    "CertCreateCRLContext": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbCrlEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbCrlEncoded",
+            "type": "DWORD"
+        }
+    ],
+    "CertFreeCRLContext": [
+        {
+            "name": "pCrlContext",
+            "type": "PCCRL_CONTEXT"
+        }
+    ],
+    "CertSetCRLContextProperty": [
+        {
+            "name": "pCrlContext",
+            "type": "PCCRL_CONTEXT"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        }
+    ],
+    "CertGetCRLContextProperty": [
+        {
+            "name": "pCrlContext",
+            "type": "PCCRL_CONTEXT"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        }
+    ],
+    "CertEnumCRLContextProperties": [
+        {
+            "name": "pCrlContext",
+            "type": "PCCRL_CONTEXT"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        }
+    ],
+    "CertFindCertificateInCRL": [
+        {
+            "name": "pCert",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pCrlContext",
+            "type": "PCCRL_CONTEXT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "ppCrlEntry",
+            "type": "PCRL_ENTRY"
+        }
+    ],
+    "CertIsValidCRLForCertificate": [
+        {
+            "name": "pCert",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pCrl",
+            "type": "PCCRL_CONTEXT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        }
+    ],
+    "CertAddEncodedCertificateToStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbCertEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbCertEncoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAddDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppCertContext",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CertAddCertificateContextToStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "dwAddDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppStoreContext",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CertAddSerializedElementToStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pbElement",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbElement",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAddDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwContextTypeFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwContextType",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppvContext",
+            "type": "void"
+        }
+    ],
+    "CertDeleteCertificateFromStore": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CertAddEncodedCRLToStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbCrlEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbCrlEncoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAddDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppCrlContext",
+            "type": "PCCRL_CONTEXT"
+        }
+    ],
+    "CertAddCRLContextToStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pCrlContext",
+            "type": "PCCRL_CONTEXT"
+        },
+        {
+            "name": "dwAddDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppStoreContext",
+            "type": "PCCRL_CONTEXT"
+        }
+    ],
+    "CertDeleteCRLFromStore": [
+        {
+            "name": "pCrlContext",
+            "type": "PCCRL_CONTEXT"
+        }
+    ],
+    "CertSerializeCertificateStoreElement": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbElement",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbElement",
+            "type": "DWORD"
+        }
+    ],
+    "CertSerializeCRLStoreElement": [
+        {
+            "name": "pCrlContext",
+            "type": "PCCRL_CONTEXT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbElement",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbElement",
+            "type": "DWORD"
+        }
+    ],
+    "CertDuplicateCTLContext": [
+        {
+            "name": "pCtlContext",
+            "type": "PCCTL_CONTEXT"
+        }
+    ],
+    "CertCreateCTLContext": [
+        {
+            "name": "dwMsgAndCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbCtlEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbCtlEncoded",
+            "type": "DWORD"
+        }
+    ],
+    "CertFreeCTLContext": [
+        {
+            "name": "pCtlContext",
+            "type": "PCCTL_CONTEXT"
+        }
+    ],
+    "CertSetCTLContextProperty": [
+        {
+            "name": "pCtlContext",
+            "type": "PCCTL_CONTEXT"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        }
+    ],
+    "CertGetCTLContextProperty": [
+        {
+            "name": "pCtlContext",
+            "type": "PCCTL_CONTEXT"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        }
+    ],
+    "CertEnumCTLContextProperties": [
+        {
+            "name": "pCtlContext",
+            "type": "PCCTL_CONTEXT"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        }
+    ],
+    "CertEnumCTLsInStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pPrevCtlContext",
+            "type": "PCCTL_CONTEXT"
+        }
+    ],
+    "CertFindSubjectInCTL": [
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwSubjectType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvSubject",
+            "type": "void"
+        },
+        {
+            "name": "pCtlContext",
+            "type": "PCCTL_CONTEXT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CertFindCTLInStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwMsgAndCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFindFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFindType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvFindPara",
+            "type": "void"
+        },
+        {
+            "name": "pPrevCtlContext",
+            "type": "PCCTL_CONTEXT"
+        }
+    ],
+    "CertAddEncodedCTLToStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwMsgAndCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbCtlEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbCtlEncoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAddDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppCtlContext",
+            "type": "PCCTL_CONTEXT"
+        }
+    ],
+    "CertAddCTLContextToStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pCtlContext",
+            "type": "PCCTL_CONTEXT"
+        },
+        {
+            "name": "dwAddDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppStoreContext",
+            "type": "PCCTL_CONTEXT"
+        }
+    ],
+    "CertSerializeCTLStoreElement": [
+        {
+            "name": "pCtlContext",
+            "type": "PCCTL_CONTEXT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbElement",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbElement",
+            "type": "DWORD"
+        }
+    ],
+    "CertDeleteCTLFromStore": [
+        {
+            "name": "pCtlContext",
+            "type": "PCCTL_CONTEXT"
+        }
+    ],
+    "CertAddCertificateLinkToStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "dwAddDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppStoreContext",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CertAddCRLLinkToStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pCrlContext",
+            "type": "PCCRL_CONTEXT"
+        },
+        {
+            "name": "dwAddDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppStoreContext",
+            "type": "PCCRL_CONTEXT"
+        }
+    ],
+    "CertAddCTLLinkToStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pCtlContext",
+            "type": "PCCTL_CONTEXT"
+        },
+        {
+            "name": "dwAddDisposition",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppStoreContext",
+            "type": "PCCTL_CONTEXT"
+        }
+    ],
+    "CertAddStoreToCollection": [
+        {
+            "name": "hCollectionStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "hSiblingStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwUpdateFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwPriority",
+            "type": "DWORD"
+        }
+    ],
+    "CertRemoveStoreFromCollection": [
+        {
+            "name": "hCollectionStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "hSiblingStore",
+            "type": "HCERTSTORE"
+        }
+    ],
+    "CertControlStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwCtrlType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvCtrlPara",
+            "type": "void"
+        }
+    ],
+    "CertSetStoreProperty": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        }
+    ],
+    "CertGetStoreProperty": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        }
+    ],
+    "CertRegisterSystemStore": [
+        {
+            "name": "pvSystemStore",
+            "type": "void"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pStoreInfo",
+            "type": "PCERT_SYSTEM_STORE_INFO"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        }
+    ],
+    "CertRegisterPhysicalStore": [
+        {
+            "name": "pvSystemStore",
+            "type": "void"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszStoreName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pStoreInfo",
+            "type": "PCERT_PHYSICAL_STORE_INFO"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        }
+    ],
+    "CertUnregisterSystemStore": [
+        {
+            "name": "pvSystemStore",
+            "type": "void"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CertUnregisterPhysicalStore": [
+        {
+            "name": "pvSystemStore",
+            "type": "void"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszStoreName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CertEnumSystemStoreLocation": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvArg",
+            "type": "void"
+        },
+        {
+            "name": "pfnEnum",
+            "type": "PFN_CERT_ENUM_SYSTEM_STORE_LOCATION"
+        }
+    ],
+    "CertEnumSystemStore": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvSystemStoreLocationPara",
+            "type": "void"
+        },
+        {
+            "name": "pvArg",
+            "type": "void"
+        },
+        {
+            "name": "pfnEnum",
+            "type": "PFN_CERT_ENUM_SYSTEM_STORE"
+        }
+    ],
+    "CertEnumPhysicalStore": [
+        {
+            "name": "pvSystemStore",
+            "type": "void"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvArg",
+            "type": "void"
+        },
+        {
+            "name": "pfnEnum",
+            "type": "PFN_CERT_ENUM_PHYSICAL_STORE"
+        }
+    ],
+    "CertGetEnhancedKeyUsage": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pUsage",
+            "type": "PCERT_ENHKEY_USAGE"
+        },
+        {
+            "name": "pcbUsage",
+            "type": "DWORD"
+        }
+    ],
+    "CertSetEnhancedKeyUsage": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pUsage",
+            "type": "PCERT_ENHKEY_USAGE"
+        }
+    ],
+    "CertAddEnhancedKeyUsageIdentifier": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pszUsageIdentifier",
+            "type": "LPCSTR"
+        }
+    ],
+    "CertRemoveEnhancedKeyUsageIdentifier": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pszUsageIdentifier",
+            "type": "LPCSTR"
+        }
+    ],
+    "CertGetValidUsages": [
+        {
+            "name": "cCerts",
+            "type": "DWORD"
+        },
+        {
+            "name": "rghCerts",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "cNumOIDs",
+            "type": "int"
+        },
+        {
+            "name": "rghOIDs",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcbOIDs",
+            "type": "DWORD"
+        }
+    ],
+    "CryptMsgGetAndVerifySigner": [
+        {
+            "name": "hCryptMsg",
+            "type": "HCRYPTMSG"
+        },
+        {
+            "name": "cSignerStore",
+            "type": "DWORD"
+        },
+        {
+            "name": "rghSignerStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppSigner",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pdwSignerIndex",
+            "type": "DWORD"
+        }
+    ],
+    "CryptMsgSignCTL": [
+        {
+            "name": "dwMsgEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbCtlContent",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbCtlContent",
+            "type": "DWORD"
+        },
+        {
+            "name": "pSignInfo",
+            "type": "PCMSG_SIGNED_ENCODE_INFO"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbEncoded",
+            "type": "DWORD"
+        }
+    ],
+    "CryptMsgEncodeAndSignCTL": [
+        {
+            "name": "dwMsgEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCtlInfo",
+            "type": "PCTL_INFO"
+        },
+        {
+            "name": "pSignInfo",
+            "type": "PCMSG_SIGNED_ENCODE_INFO"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbEncoded",
+            "type": "DWORD"
+        }
+    ],
+    "CertFindSubjectInSortedCTL": [
+        {
+            "name": "pSubjectIdentifier",
+            "type": "PCRYPT_DATA_BLOB"
+        },
+        {
+            "name": "pCtlContext",
+            "type": "PCCTL_CONTEXT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "pEncodedAttributes",
+            "type": "PCRYPT_DER_BLOB"
+        }
+    ],
+    "CertEnumSubjectInSortedCTL": [
+        {
+            "name": "pCtlContext",
+            "type": "PCCTL_CONTEXT"
+        },
+        {
+            "name": "ppvNextSubject",
+            "type": "void"
+        },
+        {
+            "name": "pSubjectIdentifier",
+            "type": "PCRYPT_DER_BLOB"
+        },
+        {
+            "name": "pEncodedAttributes",
+            "type": "PCRYPT_DER_BLOB"
+        }
+    ],
+    "CertVerifyCTLUsage": [
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwSubjectType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvSubject",
+            "type": "void"
+        },
+        {
+            "name": "pSubjectUsage",
+            "type": "PCTL_USAGE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pVerifyUsagePara",
+            "type": "PCTL_VERIFY_USAGE_PARA"
+        },
+        {
+            "name": "pVerifyUsageStatus",
+            "type": "PCTL_VERIFY_USAGE_STATUS"
+        }
+    ],
+    "CertVerifyRevocation": [
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwRevType",
+            "type": "DWORD"
+        },
+        {
+            "name": "cContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgpvContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pRevPara",
+            "type": "PCERT_REVOCATION_PARA"
+        },
+        {
+            "name": "pRevStatus",
+            "type": "PCERT_REVOCATION_STATUS"
+        }
+    ],
+    "CertCompareIntegerBlob": [
+        {
+            "name": "pInt1",
+            "type": "PCRYPT_INTEGER_BLOB"
+        },
+        {
+            "name": "pInt2",
+            "type": "PCRYPT_INTEGER_BLOB"
+        }
+    ],
+    "CertCompareCertificate": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCertId1",
+            "type": "PCERT_INFO"
+        },
+        {
+            "name": "pCertId2",
+            "type": "PCERT_INFO"
+        }
+    ],
+    "CertCompareCertificateName": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCertName1",
+            "type": "PCERT_NAME_BLOB"
+        },
+        {
+            "name": "pCertName2",
+            "type": "PCERT_NAME_BLOB"
+        }
+    ],
+    "CertIsRDNAttrsInCertificateName": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCertName",
+            "type": "PCERT_NAME_BLOB"
+        },
+        {
+            "name": "pRDN",
+            "type": "PCERT_RDN"
+        }
+    ],
+    "CertComparePublicKeyInfo": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPublicKey1",
+            "type": "PCERT_PUBLIC_KEY_INFO"
+        },
+        {
+            "name": "pPublicKey2",
+            "type": "PCERT_PUBLIC_KEY_INFO"
+        }
+    ],
+    "CertGetPublicKeyLength": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPublicKey",
+            "type": "PCERT_PUBLIC_KEY_INFO"
+        }
+    ],
+    "CryptVerifyCertificateSignature": [
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV_LEGACY"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbEncoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPublicKey",
+            "type": "PCERT_PUBLIC_KEY_INFO"
+        }
+    ],
+    "CryptVerifyCertificateSignatureEx": [
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV_LEGACY"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwSubjectType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvSubject",
+            "type": "void"
+        },
+        {
+            "name": "dwIssuerType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvIssuer",
+            "type": "void"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvExtra",
+            "type": "void"
+        }
+    ],
+    "CertIsStrongHashToSign": [
+        {
+            "name": "pStrongSignPara",
+            "type": "PCCERT_STRONG_SIGN_PARA"
+        },
+        {
+            "name": "pwszCNGHashAlgid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pSigningCert",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CryptHashToBeSigned": [
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV_LEGACY"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbEncoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbComputedHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbComputedHash",
+            "type": "DWORD"
+        }
+    ],
+    "CryptHashCertificate": [
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV_LEGACY"
+        },
+        {
+            "name": "Algid",
+            "type": "ALG_ID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbEncoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbComputedHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbComputedHash",
+            "type": "DWORD"
+        }
+    ],
+    "CryptHashCertificate2": [
+        {
+            "name": "pwszCNGHashAlgid",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "pbEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbEncoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbComputedHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbComputedHash",
+            "type": "DWORD"
+        }
+    ],
+    "CryptSignCertificate": [
+        {
+            "name": "hCryptProvOrNCryptKey",
+            "type": "HCRYPTPROV_OR_NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "dwKeySpec",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbEncodedToBeSigned",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbEncodedToBeSigned",
+            "type": "DWORD"
+        },
+        {
+            "name": "pSignatureAlgorithm",
+            "type": "PCRYPT_ALGORITHM_IDENTIFIER"
+        },
+        {
+            "name": "pvHashAuxInfo",
+            "type": "void"
+        },
+        {
+            "name": "pbSignature",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbSignature",
+            "type": "DWORD"
+        }
+    ],
+    "CryptSignAndEncodeCertificate": [
+        {
+            "name": "hCryptProvOrNCryptKey",
+            "type": "HCRYPTPROV_OR_NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "dwKeySpec",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszStructType",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pvStructInfo",
+            "type": "void"
+        },
+        {
+            "name": "pSignatureAlgorithm",
+            "type": "PCRYPT_ALGORITHM_IDENTIFIER"
+        },
+        {
+            "name": "pvHashAuxInfo",
+            "type": "void"
+        },
+        {
+            "name": "pbEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbEncoded",
+            "type": "DWORD"
+        }
+    ],
+    "CertVerifyTimeValidity": [
+        {
+            "name": "pTimeToVerify",
+            "type": "LPFILETIME"
+        },
+        {
+            "name": "pCertInfo",
+            "type": "PCERT_INFO"
+        }
+    ],
+    "CertVerifyCRLTimeValidity": [
+        {
+            "name": "pTimeToVerify",
+            "type": "LPFILETIME"
+        },
+        {
+            "name": "pCrlInfo",
+            "type": "PCRL_INFO"
+        }
+    ],
+    "CertVerifyValidityNesting": [
+        {
+            "name": "pSubjectInfo",
+            "type": "PCERT_INFO"
+        },
+        {
+            "name": "pIssuerInfo",
+            "type": "PCERT_INFO"
+        }
+    ],
+    "CertVerifyCRLRevocation": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCertId",
+            "type": "PCERT_INFO"
+        },
+        {
+            "name": "cCrlInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgpCrlInfo",
+            "type": "PCRL_INFO"
+        }
+    ],
+    "CertAlgIdToOID": [
+        {
+            "name": "dwAlgId",
+            "type": "DWORD"
+        }
+    ],
+    "CertOIDToAlgId": [
+        {
+            "name": "pszObjId",
+            "type": "LPCSTR"
+        }
+    ],
+    "CertFindExtension": [
+        {
+            "name": "pszObjId",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cExtensions",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgExtensions",
+            "type": "CERT_EXTENSION"
+        }
+    ],
+    "CertFindAttribute": [
+        {
+            "name": "pszObjId",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cAttr",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgAttr",
+            "type": "CRYPT_ATTRIBUTE"
+        }
+    ],
+    "CertFindRDNAttr": [
+        {
+            "name": "pszObjId",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pName",
+            "type": "PCERT_NAME_INFO"
+        }
+    ],
+    "CertGetIntendedKeyUsage": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCertInfo",
+            "type": "PCERT_INFO"
+        },
+        {
+            "name": "pbKeyUsage",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbKeyUsage",
+            "type": "DWORD"
+        }
+    ],
+    "CryptInstallDefaultContext": [
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV"
+        },
+        {
+            "name": "dwDefaultType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvDefaultPara",
+            "type": "void"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "phDefaultContext",
+            "type": "HCRYPTDEFAULTCONTEXT"
+        }
+    ],
+    "CryptUninstallDefaultContext": [
+        {
+            "name": "hDefaultContext",
+            "type": "HCRYPTDEFAULTCONTEXT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        }
+    ],
+    "CryptExportPublicKeyInfo": [
+        {
+            "name": "hCryptProvOrNCryptKey",
+            "type": "HCRYPTPROV_OR_NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "dwKeySpec",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pInfo",
+            "type": "PCERT_PUBLIC_KEY_INFO"
+        },
+        {
+            "name": "pcbInfo",
+            "type": "DWORD"
+        }
+    ],
+    "CryptExportPublicKeyInfoEx": [
+        {
+            "name": "hCryptProvOrNCryptKey",
+            "type": "HCRYPTPROV_OR_NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "dwKeySpec",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszPublicKeyObjId",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvAuxInfo",
+            "type": "void"
+        },
+        {
+            "name": "pInfo",
+            "type": "PCERT_PUBLIC_KEY_INFO"
+        },
+        {
+            "name": "pcbInfo",
+            "type": "DWORD"
+        }
+    ],
+    "CryptExportPublicKeyInfoFromBCryptKeyHandle": [
+        {
+            "name": "hBCryptKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszPublicKeyObjId",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvAuxInfo",
+            "type": "void"
+        },
+        {
+            "name": "pInfo",
+            "type": "PCERT_PUBLIC_KEY_INFO"
+        },
+        {
+            "name": "pcbInfo",
+            "type": "DWORD"
+        }
+    ],
+    "CryptImportPublicKeyInfo": [
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pInfo",
+            "type": "PCERT_PUBLIC_KEY_INFO"
+        },
+        {
+            "name": "phKey",
+            "type": "HCRYPTKEY"
+        }
+    ],
+    "CryptImportPublicKeyInfoEx": [
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pInfo",
+            "type": "PCERT_PUBLIC_KEY_INFO"
+        },
+        {
+            "name": "aiKeyAlg",
+            "type": "ALG_ID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvAuxInfo",
+            "type": "void"
+        },
+        {
+            "name": "phKey",
+            "type": "HCRYPTKEY"
+        }
+    ],
+    "CryptImportPublicKeyInfoEx2": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pInfo",
+            "type": "PCERT_PUBLIC_KEY_INFO"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvAuxInfo",
+            "type": "void"
+        },
+        {
+            "name": "phKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        }
+    ],
+    "CryptAcquireCertificatePrivateKey": [
+        {
+            "name": "pCert",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvParameters",
+            "type": "void"
+        },
+        {
+            "name": "phCryptProvOrNCryptKey",
+            "type": "HCRYPTPROV_OR_NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pdwKeySpec",
+            "type": "DWORD"
+        },
+        {
+            "name": "pfCallerFreeProvOrNCryptKey",
+            "type": "BOOL"
+        }
+    ],
+    "CryptFindCertificateKeyProvInfo": [
+        {
+            "name": "pCert",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        }
+    ],
+    "CryptImportPKCS8": [
+        {
+            "name": "sPrivateKeyAndParams",
+            "type": "CRYPT_PKCS8_IMPORT_PARAMS"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phCryptProv",
+            "type": "HCRYPTPROV"
+        },
+        {
+            "name": "pvAuxInfo",
+            "type": "void"
+        }
+    ],
+    "CryptExportPKCS8": [
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV"
+        },
+        {
+            "name": "dwKeySpec",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszPrivateKeyObjId",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvAuxInfo",
+            "type": "void"
+        },
+        {
+            "name": "pbPrivateKeyBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbPrivateKeyBlob",
+            "type": "DWORD"
+        }
+    ],
+    "CryptExportPKCS8Ex": [
+        {
+            "name": "psExportParams",
+            "type": "CRYPT_PKCS8_EXPORT_PARAMS"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvAuxInfo",
+            "type": "void"
+        },
+        {
+            "name": "pbPrivateKeyBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbPrivateKeyBlob",
+            "type": "DWORD"
+        }
+    ],
+    "CryptHashPublicKeyInfo": [
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV_LEGACY"
+        },
+        {
+            "name": "Algid",
+            "type": "ALG_ID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pInfo",
+            "type": "PCERT_PUBLIC_KEY_INFO"
+        },
+        {
+            "name": "pbComputedHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbComputedHash",
+            "type": "DWORD"
+        }
+    ],
+    "CertRDNValueToStrA": [
+        {
+            "name": "dwValueType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pValue",
+            "type": "PCERT_RDN_VALUE_BLOB"
+        },
+        {
+            "name": "psz",
+            "type": "LPSTR"
+        },
+        {
+            "name": "csz",
+            "type": "DWORD"
+        }
+    ],
+    "CertRDNValueToStrW": [
+        {
+            "name": "dwValueType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pValue",
+            "type": "PCERT_RDN_VALUE_BLOB"
+        },
+        {
+            "name": "psz",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "csz",
+            "type": "DWORD"
+        }
+    ],
+    "CertNameToStrA": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pName",
+            "type": "PCERT_NAME_BLOB"
+        },
+        {
+            "name": "dwStrType",
+            "type": "DWORD"
+        },
+        {
+            "name": "psz",
+            "type": "LPSTR"
+        },
+        {
+            "name": "csz",
+            "type": "DWORD"
+        }
+    ],
+    "CertNameToStrW": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pName",
+            "type": "PCERT_NAME_BLOB"
+        },
+        {
+            "name": "dwStrType",
+            "type": "DWORD"
+        },
+        {
+            "name": "psz",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "csz",
+            "type": "DWORD"
+        }
+    ],
+    "CertStrToNameA": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszX500",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwStrType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "pbEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbEncoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppszError",
+            "type": "LPCSTR"
+        }
+    ],
+    "CertStrToNameW": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszX500",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwStrType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "pbEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbEncoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppszError",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CertGetNameStringA": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvTypePara",
+            "type": "void"
+        },
+        {
+            "name": "pszNameString",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchNameString",
+            "type": "DWORD"
+        }
+    ],
+    "CertGetNameStringW": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvTypePara",
+            "type": "void"
+        },
+        {
+            "name": "pszNameString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchNameString",
+            "type": "DWORD"
+        }
+    ],
+    "CryptSignMessage": [
+        {
+            "name": "pSignPara",
+            "type": "PCRYPT_SIGN_MESSAGE_PARA"
+        },
+        {
+            "name": "fDetachedSignature",
+            "type": "BOOL"
+        },
+        {
+            "name": "cToBeSigned",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgpbToBeSigned",
+            "type": "BYTE"
+        },
+        {
+            "name": "rgcbToBeSigned",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbSignedBlob",
+            "type": "DWORD"
+        }
+    ],
+    "CryptVerifyMessageSignature": [
+        {
+            "name": "pVerifyPara",
+            "type": "PCRYPT_VERIFY_MESSAGE_PARA"
+        },
+        {
+            "name": "dwSignerIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbSignedBlob",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbDecoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbDecoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppSignerCert",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CryptGetMessageSignerCount": [
+        {
+            "name": "dwMsgEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbSignedBlob",
+            "type": "DWORD"
+        }
+    ],
+    "CryptGetMessageCertificates": [
+        {
+            "name": "dwMsgAndCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "hCryptProv",
+            "type": "HCRYPTPROV_LEGACY"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbSignedBlob",
+            "type": "DWORD"
+        }
+    ],
+    "CryptVerifyDetachedMessageSignature": [
+        {
+            "name": "pVerifyPara",
+            "type": "PCRYPT_VERIFY_MESSAGE_PARA"
+        },
+        {
+            "name": "dwSignerIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbDetachedSignBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbDetachedSignBlob",
+            "type": "DWORD"
+        },
+        {
+            "name": "cToBeSigned",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgpbToBeSigned",
+            "type": "BYTE"
+        },
+        {
+            "name": "rgcbToBeSigned",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppSignerCert",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CryptEncryptMessage": [
+        {
+            "name": "pEncryptPara",
+            "type": "PCRYPT_ENCRYPT_MESSAGE_PARA"
+        },
+        {
+            "name": "cRecipientCert",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgpRecipientCert",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pbToBeEncrypted",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbToBeEncrypted",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbEncryptedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbEncryptedBlob",
+            "type": "DWORD"
+        }
+    ],
+    "CryptDecryptMessage": [
+        {
+            "name": "pDecryptPara",
+            "type": "PCRYPT_DECRYPT_MESSAGE_PARA"
+        },
+        {
+            "name": "pbEncryptedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbEncryptedBlob",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbDecrypted",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbDecrypted",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppXchgCert",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CryptSignAndEncryptMessage": [
+        {
+            "name": "pSignPara",
+            "type": "PCRYPT_SIGN_MESSAGE_PARA"
+        },
+        {
+            "name": "pEncryptPara",
+            "type": "PCRYPT_ENCRYPT_MESSAGE_PARA"
+        },
+        {
+            "name": "cRecipientCert",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgpRecipientCert",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pbToBeSignedAndEncrypted",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbToBeSignedAndEncrypted",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignedAndEncryptedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbSignedAndEncryptedBlob",
+            "type": "DWORD"
+        }
+    ],
+    "CryptDecryptAndVerifyMessageSignature": [
+        {
+            "name": "pDecryptPara",
+            "type": "PCRYPT_DECRYPT_MESSAGE_PARA"
+        },
+        {
+            "name": "pVerifyPara",
+            "type": "PCRYPT_VERIFY_MESSAGE_PARA"
+        },
+        {
+            "name": "dwSignerIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbEncryptedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbEncryptedBlob",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbDecrypted",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbDecrypted",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppXchgCert",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "ppSignerCert",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CryptDecodeMessage": [
+        {
+            "name": "dwMsgTypeFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pDecryptPara",
+            "type": "PCRYPT_DECRYPT_MESSAGE_PARA"
+        },
+        {
+            "name": "pVerifyPara",
+            "type": "PCRYPT_VERIFY_MESSAGE_PARA"
+        },
+        {
+            "name": "dwSignerIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbEncodedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbEncodedBlob",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwPrevInnerContentType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwMsgType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwInnerContentType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbDecoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbDecoded",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppXchgCert",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "ppSignerCert",
+            "type": "PCCERT_CONTEXT"
+        }
+    ],
+    "CryptHashMessage": [
+        {
+            "name": "pHashPara",
+            "type": "PCRYPT_HASH_MESSAGE_PARA"
+        },
+        {
+            "name": "fDetachedHash",
+            "type": "BOOL"
+        },
+        {
+            "name": "cToBeHashed",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgpbToBeHashed",
+            "type": "BYTE"
+        },
+        {
+            "name": "rgcbToBeHashed",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbHashedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbHashedBlob",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbComputedHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbComputedHash",
+            "type": "DWORD"
+        }
+    ],
+    "CryptVerifyMessageHash": [
+        {
+            "name": "pHashPara",
+            "type": "PCRYPT_HASH_MESSAGE_PARA"
+        },
+        {
+            "name": "pbHashedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbHashedBlob",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbToBeHashed",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbToBeHashed",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbComputedHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbComputedHash",
+            "type": "DWORD"
+        }
+    ],
+    "CryptVerifyDetachedMessageHash": [
+        {
+            "name": "pHashPara",
+            "type": "PCRYPT_HASH_MESSAGE_PARA"
+        },
+        {
+            "name": "pbDetachedHashBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbDetachedHashBlob",
+            "type": "DWORD"
+        },
+        {
+            "name": "cToBeHashed",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgpbToBeHashed",
+            "type": "BYTE"
+        },
+        {
+            "name": "rgcbToBeHashed",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbComputedHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbComputedHash",
+            "type": "DWORD"
+        }
+    ],
+    "CryptSignMessageWithKey": [
+        {
+            "name": "pSignPara",
+            "type": "PCRYPT_KEY_SIGN_MESSAGE_PARA"
+        },
+        {
+            "name": "pbToBeSigned",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbToBeSigned",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbSignedBlob",
+            "type": "DWORD"
+        }
+    ],
+    "CryptVerifyMessageSignatureWithKey": [
+        {
+            "name": "pVerifyPara",
+            "type": "PCRYPT_KEY_VERIFY_MESSAGE_PARA"
+        },
+        {
+            "name": "pPublicKeyInfo",
+            "type": "PCERT_PUBLIC_KEY_INFO"
+        },
+        {
+            "name": "pbSignedBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbSignedBlob",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbDecoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbDecoded",
+            "type": "DWORD"
+        }
+    ],
+    "CertOpenSystemStoreA": [
+        {
+            "name": "hProv",
+            "type": "HCRYPTPROV_LEGACY"
+        },
+        {
+            "name": "szSubsystemProtocol",
+            "type": "LPCSTR"
+        }
+    ],
+    "CertOpenSystemStoreW": [
+        {
+            "name": "hProv",
+            "type": "HCRYPTPROV_LEGACY"
+        },
+        {
+            "name": "szSubsystemProtocol",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CertAddEncodedCertificateToSystemStoreA": [
+        {
+            "name": "szCertStoreName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pbCertEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbCertEncoded",
+            "type": "DWORD"
+        }
+    ],
+    "CertAddEncodedCertificateToSystemStoreW": [
+        {
+            "name": "szCertStoreName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pbCertEncoded",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbCertEncoded",
+            "type": "DWORD"
+        }
+    ],
+    "CryptQueryObject": [
+        {
+            "name": "dwObjectType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvObject",
+            "type": "void"
+        },
+        {
+            "name": "dwExpectedContentTypeFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwExpectedFormatTypeFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwMsgAndCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwContentType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwFormatType",
+            "type": "DWORD"
+        },
+        {
+            "name": "phCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "phMsg",
+            "type": "HCRYPTMSG"
+        },
+        {
+            "name": "ppvContext",
+            "type": "void"
+        }
+    ],
+    "CryptMemAlloc": [
+        {
+            "name": "cbSize",
+            "type": "ULONG"
+        }
+    ],
+    "CryptMemRealloc": [
+        {
+            "name": "pv",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cbSize",
+            "type": "ULONG"
+        }
+    ],
+    "CryptMemFree": [
+        {
+            "name": "pv",
+            "type": "LPVOID"
+        }
+    ],
+    "CertCreateSelfSignCertificate": [
+        {
+            "name": "hCryptProvOrNCryptKey",
+            "type": "HCRYPTPROV_OR_NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pSubjectIssuerBlob",
+            "type": "PCERT_NAME_BLOB"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pKeyProvInfo",
+            "type": "PCRYPT_KEY_PROV_INFO"
+        },
+        {
+            "name": "pSignatureAlgorithm",
+            "type": "PCRYPT_ALGORITHM_IDENTIFIER"
+        },
+        {
+            "name": "pStartTime",
+            "type": "PSYSTEMTIME"
+        },
+        {
+            "name": "pEndTime",
+            "type": "PSYSTEMTIME"
+        },
+        {
+            "name": "pExtensions",
+            "type": "PCERT_EXTENSIONS"
+        }
+    ],
+    "CryptGetKeyIdentifierProperty": [
+        {
+            "name": "pKeyIdentifier",
+            "type": "CRYPT_HASH_BLOB"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszComputerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        }
+    ],
+    "CryptSetKeyIdentifierProperty": [
+        {
+            "name": "pKeyIdentifier",
+            "type": "CRYPT_HASH_BLOB"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszComputerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        }
+    ],
+    "CryptEnumKeyIdentifierProperties": [
+        {
+            "name": "pKeyIdentifier",
+            "type": "CRYPT_HASH_BLOB"
+        },
+        {
+            "name": "dwPropId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszComputerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "pvArg",
+            "type": "void"
+        },
+        {
+            "name": "pfnEnum",
+            "type": "PFN_CRYPT_ENUM_KEYID_PROP"
+        }
+    ],
+    "CryptCreateKeyIdentifierFromCSP": [
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszPubKeyOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pPubKeyStruc",
+            "type": "PUBLICKEYSTRUC"
+        },
+        {
+            "name": "cbPubKeyStruc",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "pbHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbHash",
+            "type": "DWORD"
+        }
+    ],
+    "CertCreateCertificateChainEngine": [
+        {
+            "name": "pConfig",
+            "type": "PCERT_CHAIN_ENGINE_CONFIG"
+        },
+        {
+            "name": "phChainEngine",
+            "type": "HCERTCHAINENGINE"
+        }
+    ],
+    "CertFreeCertificateChainEngine": [
+        {
+            "name": "hChainEngine",
+            "type": "HCERTCHAINENGINE"
+        }
+    ],
+    "CertResyncCertificateChainEngine": [
+        {
+            "name": "hChainEngine",
+            "type": "HCERTCHAINENGINE"
+        }
+    ],
+    "CertGetCertificateChain": [
+        {
+            "name": "hChainEngine",
+            "type": "HCERTCHAINENGINE"
+        },
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pTime",
+            "type": "LPFILETIME"
+        },
+        {
+            "name": "hAdditionalStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pChainPara",
+            "type": "PCERT_CHAIN_PARA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "LPVOID"
+        },
+        {
+            "name": "ppChainContext",
+            "type": "PCCERT_CHAIN_CONTEXT"
+        }
+    ],
+    "CertFreeCertificateChain": [
+        {
+            "name": "pChainContext",
+            "type": "PCCERT_CHAIN_CONTEXT"
+        }
+    ],
+    "CertDuplicateCertificateChain": [
+        {
+            "name": "pChainContext",
+            "type": "PCCERT_CHAIN_CONTEXT"
+        }
+    ],
+    "CertFindChainInStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "dwCertEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFindFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFindType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvFindPara",
+            "type": "void"
+        },
+        {
+            "name": "pPrevChainContext",
+            "type": "PCCERT_CHAIN_CONTEXT"
+        }
+    ],
+    "CertVerifyCertificateChainPolicy": [
+        {
+            "name": "pszPolicyOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pChainContext",
+            "type": "PCCERT_CHAIN_CONTEXT"
+        },
+        {
+            "name": "pPolicyPara",
+            "type": "PCERT_CHAIN_POLICY_PARA"
+        },
+        {
+            "name": "pPolicyStatus",
+            "type": "PCERT_CHAIN_POLICY_STATUS"
+        }
+    ],
+    "CryptStringToBinaryA": [
+        {
+            "name": "pszString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cchString",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbBinary",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbBinary",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwSkip",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptStringToBinaryW": [
+        {
+            "name": "pszString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchString",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbBinary",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbBinary",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwSkip",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptBinaryToStringA": [
+        {
+            "name": "pbBinary",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbBinary",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszString",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchString",
+            "type": "DWORD"
+        }
+    ],
+    "CryptBinaryToStringW": [
+        {
+            "name": "pbBinary",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbBinary",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchString",
+            "type": "DWORD"
+        }
+    ],
+    "PFXImportCertStore": [
+        {
+            "name": "pPFX",
+            "type": "CRYPT_DATA_BLOB"
+        },
+        {
+            "name": "szPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PFXIsPFXBlob": [
+        {
+            "name": "pPFX",
+            "type": "CRYPT_DATA_BLOB"
+        }
+    ],
+    "PFXVerifyPassword": [
+        {
+            "name": "pPFX",
+            "type": "CRYPT_DATA_BLOB"
+        },
+        {
+            "name": "szPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PFXExportCertStoreEx": [
+        {
+            "name": "hStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pPFX",
+            "type": "CRYPT_DATA_BLOB"
+        },
+        {
+            "name": "szPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pvPara",
+            "type": "void"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PFXExportCertStore": [
+        {
+            "name": "hStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pPFX",
+            "type": "CRYPT_DATA_BLOB"
+        },
+        {
+            "name": "szPassword",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CertOpenServerOcspResponse": [
+        {
+            "name": "pChainContext",
+            "type": "PCCERT_CHAIN_CONTEXT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pOpenPara",
+            "type": "PCERT_SERVER_OCSP_RESPONSE_OPEN_PARA"
+        }
+    ],
+    "CertAddRefServerOcspResponse": [
+        {
+            "name": "hServerOcspResponse",
+            "type": "HCERT_SERVER_OCSP_RESPONSE"
+        }
+    ],
+    "CertCloseServerOcspResponse": [
+        {
+            "name": "hServerOcspResponse",
+            "type": "HCERT_SERVER_OCSP_RESPONSE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CertGetServerOcspResponseContext": [
+        {
+            "name": "hServerOcspResponse",
+            "type": "HCERT_SERVER_OCSP_RESPONSE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "CertAddRefServerOcspResponseContext": [
+        {
+            "name": "pServerOcspResponseContext",
+            "type": "PCCERT_SERVER_OCSP_RESPONSE_CONTEXT"
+        }
+    ],
+    "CertFreeServerOcspResponseContext": [
+        {
+            "name": "pServerOcspResponseContext",
+            "type": "PCCERT_SERVER_OCSP_RESPONSE_CONTEXT"
+        }
+    ],
+    "CertRetrieveLogoOrBiometricInfo": [
+        {
+            "name": "pCertContext",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "lpszLogoOrBiometricType",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwRetrievalFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "ppbData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppwszMimeType",
+            "type": "LPWSTR"
+        }
+    ],
+    "CertSelectCertificateChains": [
+        {
+            "name": "pSelectionContext",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pChainParameters",
+            "type": "PCCERT_SELECT_CHAIN_PARA"
+        },
+        {
+            "name": "cCriteria",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgpCriteria",
+            "type": "PCCERT_SELECT_CRITERIA"
+        },
+        {
+            "name": "hStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pcSelection",
+            "type": "PDWORD"
+        },
+        {
+            "name": "pprgpSelection",
+            "type": "PCCERT_CHAIN_CONTEXT"
+        }
+    ],
+    "CertFreeCertificateChainList": [
+        {
+            "name": "prgpSelection",
+            "type": "PCCERT_CHAIN_CONTEXT"
+        }
+    ],
+    "CryptRetrieveTimeStamp": [
+        {
+            "name": "wszUrl",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwRetrievalFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszHashId",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pPara",
+            "type": "CRYPT_TIMESTAMP_PARA"
+        },
+        {
+            "name": "pbData",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppTsContext",
+            "type": "PCRYPT_TIMESTAMP_CONTEXT"
+        },
+        {
+            "name": "ppTsSigner",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "phStore",
+            "type": "HCERTSTORE"
+        }
+    ],
+    "CryptVerifyTimeStampSignature": [
+        {
+            "name": "pbTSContentInfo",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbTSContentInfo",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbData",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "hAdditionalStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "ppTsContext",
+            "type": "PCRYPT_TIMESTAMP_CONTEXT"
+        },
+        {
+            "name": "ppTsSigner",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "phStore",
+            "type": "HCERTSTORE"
+        }
+    ],
+    "CryptSIPGetSignedDataMsg": [
+        {
+            "name": "pSubjectInfo",
+            "type": "SIP_SUBJECTINFO"
+        },
+        {
+            "name": "pdwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbSignedDataMsg",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignedDataMsg",
+            "type": "BYTE"
+        }
+    ],
+    "CryptSIPPutSignedDataMsg": [
+        {
+            "name": "pSubjectInfo",
+            "type": "SIP_SUBJECTINFO"
+        },
+        {
+            "name": "dwEncodingType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "cbSignedDataMsg",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbSignedDataMsg",
+            "type": "BYTE"
+        }
+    ],
+    "CryptSIPCreateIndirectData": [
+        {
+            "name": "pSubjectInfo",
+            "type": "SIP_SUBJECTINFO"
+        },
+        {
+            "name": "pcbIndirectData",
+            "type": "DWORD"
+        },
+        {
+            "name": "pIndirectData",
+            "type": "SIP_INDIRECT_DATA"
+        }
+    ],
+    "CryptSIPVerifyIndirectData": [
+        {
+            "name": "pSubjectInfo",
+            "type": "SIP_SUBJECTINFO"
+        },
+        {
+            "name": "pIndirectData",
+            "type": "SIP_INDIRECT_DATA"
+        }
+    ],
+    "CryptSIPRemoveSignedDataMsg": [
+        {
+            "name": "pSubjectInfo",
+            "type": "SIP_SUBJECTINFO"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        }
+    ],
+    "CryptSIPLoad": [
+        {
+            "name": "pgSubject",
+            "type": "GUID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pSipDispatch",
+            "type": "SIP_DISPATCH_INFO"
+        }
+    ],
+    "CryptSIPRetrieveSubjectGuid": [
+        {
+            "name": "FileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hFileIn",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pgSubject",
+            "type": "GUID"
+        }
+    ],
+    "CryptSIPRetrieveSubjectGuidForCatalogFile": [
+        {
+            "name": "FileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hFileIn",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pgSubject",
+            "type": "GUID"
+        }
+    ],
+    "CryptSIPAddProvider": [
+        {
+            "name": "psNewProv",
+            "type": "SIP_ADD_NEWPROVIDER"
+        }
+    ],
+    "CryptSIPRemoveProvider": [
+        {
+            "name": "pgProv",
+            "type": "GUID"
+        }
+    ],
+    "CryptSIPGetCaps": [
+        {
+            "name": "pSubjInfo",
+            "type": "SIP_SUBJECTINFO"
+        },
+        {
+            "name": "pCaps",
+            "type": "SIP_CAP_SET"
+        }
+    ]
+}

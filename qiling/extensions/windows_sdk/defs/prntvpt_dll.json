@@ -1,0 +1,196 @@
+{
+    "PTQuerySchemaVersionSupport": [
+        {
+            "name": "pszPrinterName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pMaxVersion",
+            "type": "DWORD"
+        }
+    ],
+    "PTOpenProvider": [
+        {
+            "name": "pszPrinterName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwVersion",
+            "type": "DWORD"
+        },
+        {
+            "name": "phProvider",
+            "type": "HPTPROVIDER"
+        }
+    ],
+    "PTOpenProviderEx": [
+        {
+            "name": "pszPrinterName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwMaxVersion",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwPrefVersion",
+            "type": "DWORD"
+        },
+        {
+            "name": "phProvider",
+            "type": "HPTPROVIDER"
+        },
+        {
+            "name": "pUsedVersion",
+            "type": "DWORD"
+        }
+    ],
+    "PTCloseProvider": [
+        {
+            "name": "hProvider",
+            "type": "HPTPROVIDER"
+        }
+    ],
+    "PTReleaseMemory": [
+        {
+            "name": "pBuffer",
+            "type": "PVOID"
+        }
+    ],
+    "PTGetPrintCapabilities": [
+        {
+            "name": "hProvider",
+            "type": "HPTPROVIDER"
+        },
+        {
+            "name": "pPrintTicket",
+            "type": "IStream"
+        },
+        {
+            "name": "pCapabilities",
+            "type": "IStream"
+        },
+        {
+            "name": "pbstrErrorMessage",
+            "type": "BSTR"
+        }
+    ],
+    "PTGetPrintDeviceCapabilities": [
+        {
+            "name": "hProvider",
+            "type": "HPTPROVIDER"
+        },
+        {
+            "name": "pPrintTicket",
+            "type": "IStream"
+        },
+        {
+            "name": "pDeviceCapabilities",
+            "type": "IStream"
+        },
+        {
+            "name": "pbstrErrorMessage",
+            "type": "BSTR"
+        }
+    ],
+    "PTGetPrintDeviceResources": [
+        {
+            "name": "hProvider",
+            "type": "HPTPROVIDER"
+        },
+        {
+            "name": "pszLocaleName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pPrintTicket",
+            "type": "IStream"
+        },
+        {
+            "name": "pDeviceResources",
+            "type": "IStream"
+        },
+        {
+            "name": "pbstrErrorMessage",
+            "type": "BSTR"
+        }
+    ],
+    "PTMergeAndValidatePrintTicket": [
+        {
+            "name": "hProvider",
+            "type": "HPTPROVIDER"
+        },
+        {
+            "name": "pBaseTicket",
+            "type": "IStream"
+        },
+        {
+            "name": "pDeltaTicket",
+            "type": "IStream"
+        },
+        {
+            "name": "scope",
+            "type": "EPrintTicketScope"
+        },
+        {
+            "name": "pResultTicket",
+            "type": "IStream"
+        },
+        {
+            "name": "pbstrErrorMessage",
+            "type": "BSTR"
+        }
+    ],
+    "PTConvertPrintTicketToDevMode": [
+        {
+            "name": "hProvider",
+            "type": "HPTPROVIDER"
+        },
+        {
+            "name": "pPrintTicket",
+            "type": "IStream"
+        },
+        {
+            "name": "baseDevmodeType",
+            "type": "EDefaultDevmodeType"
+        },
+        {
+            "name": "scope",
+            "type": "EPrintTicketScope"
+        },
+        {
+            "name": "pcbDevmode",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppDevmode",
+            "type": "PDEVMODE"
+        },
+        {
+            "name": "pbstrErrorMessage",
+            "type": "BSTR"
+        }
+    ],
+    "PTConvertDevModeToPrintTicket": [
+        {
+            "name": "hProvider",
+            "type": "HPTPROVIDER"
+        },
+        {
+            "name": "cbDevmode",
+            "type": "ULONG"
+        },
+        {
+            "name": "pDevmode",
+            "type": "PDEVMODE"
+        },
+        {
+            "name": "scope",
+            "type": "EPrintTicketScope"
+        },
+        {
+            "name": "pPrintTicket",
+            "type": "IStream"
+        }
+    ]
+}

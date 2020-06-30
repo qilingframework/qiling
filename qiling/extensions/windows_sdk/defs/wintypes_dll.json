@@ -1,0 +1,8 @@
+{
+    "RoGetBufferMarshaler": [
+        {
+            "name": "bufferMarshaler",
+            "type": "IMarshal"
+        }
+    ]
+}

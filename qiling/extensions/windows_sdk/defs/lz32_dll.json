@@ -1,0 +1,100 @@
+{
+    "LZCopy": [
+        {
+            "name": "hfSource",
+            "type": "INT"
+        },
+        {
+            "name": "hfDest",
+            "type": "INT"
+        }
+    ],
+    "LZInit": [
+        {
+            "name": "hfSource",
+            "type": "INT"
+        }
+    ],
+    "GetExpandedNameA": [
+        {
+            "name": "lpszSource",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpszBuffer",
+            "type": "LPSTR"
+        }
+    ],
+    "GetExpandedNameW": [
+        {
+            "name": "lpszSource",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpszBuffer",
+            "type": "LPWSTR"
+        }
+    ],
+    "LZOpenFileA": [
+        {
+            "name": "lpFileName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpReOpenBuf",
+            "type": "LPOFSTRUCT"
+        },
+        {
+            "name": "wStyle",
+            "type": "WORD"
+        }
+    ],
+    "LZOpenFileW": [
+        {
+            "name": "lpFileName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpReOpenBuf",
+            "type": "LPOFSTRUCT"
+        },
+        {
+            "name": "wStyle",
+            "type": "WORD"
+        }
+    ],
+    "LZSeek": [
+        {
+            "name": "hFile",
+            "type": "INT"
+        },
+        {
+            "name": "lOffset",
+            "type": "LONG"
+        },
+        {
+            "name": "iOrigin",
+            "type": "INT"
+        }
+    ],
+    "LZRead": [
+        {
+            "name": "hFile",
+            "type": "INT"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "CHAR"
+        },
+        {
+            "name": "cbRead",
+            "type": "INT"
+        }
+    ],
+    "LZClose": [
+        {
+            "name": "hFile",
+            "type": "INT"
+        }
+    ]
+}

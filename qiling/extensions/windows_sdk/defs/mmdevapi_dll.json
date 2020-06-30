@@ -1,0 +1,24 @@
+{
+    "ActivateAudioInterfaceAsync": [
+        {
+            "name": "deviceInterfacePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "activationParams",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "completionHandler",
+            "type": "IActivateAudioInterfaceCompletionHandler"
+        },
+        {
+            "name": "activationOperation",
+            "type": "IActivateAudioInterfaceAsyncOperation"
+        }
+    ]
+}
