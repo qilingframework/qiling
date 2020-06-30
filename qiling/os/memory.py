@@ -183,19 +183,20 @@ class QlMemoryManager:
         Search for a sequence of bytes in memory. Returns all sequences
         that match
         """
-        addrs = []
-        for region in list(self.ql.uc.mem_regions()):
-            if (begin and end) and end > begin:
-                haystack = self.read(begin, end)
-            else:  
-                haystack = self.read(region[0], region[1] - region[0])
-            
-            addrs += [
-                x.start(0) + region[0]
-                for x in re.finditer(needle, haystack)
-            ]
-        return addrs
 
+        if (begin and end) and end > begin:
+            haystack = self.read(begin, end - begin)
+
+        elif begin and not end: # search from begin till last mapped region
+            haystack = self.read(begin, self.map_info[-1][1])
+
+        elif end and not begin: # search from first mapped region till end
+            haystack = self.read(self.map_info[0][0], end)
+
+        else: # search entire mapped memory
+            haystack = self.read(self.map_info[0][0], self.map_info[-1][1])
+
+        return [x.start(0) + begin for x in re.finditer(needle, haystack)]
 
     def unmap(self, addr, size) -> None:
         '''
