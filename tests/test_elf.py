@@ -159,9 +159,11 @@ class ELFTest(unittest.TestCase):
         ql.set_syscall(1, write_onexit, QL_INTERCEPT.EXIT)
         ql.mem.map(0x1000, 0x1000)
         ql.mem.write(0x1000, b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD")
+        ql.mem.map(0x2000, 0x1000)
+        ql.mem.write(0x2000, b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD")
         ql.run()
 
-        self.assertEqual([0x1000], ql.mem.search(b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD"))
+        self.assertEqual([0x1000,0x2000], ql.mem.search(b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD"))
         self.assertEqual(93824992233162, self.set_api)
         self.assertEqual(True, self.set_api_onexit)
         self.assertEqual(True, self.set_api_onenter)
