@@ -18,6 +18,8 @@ from qiling.os.uefi.type64 import *
 from qiling.os.uefi.fncc import *
 from qiling.os.uefi.bootup import *
 from qiling.os.uefi.runtime import *
+from qiling.os.uefi.dxe_service import *
+from qiling.os.uefi.smm_base2_protocol import *
 
 from qiling.os.windows.fncc import *
 
@@ -32,6 +34,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.events = {}
         self.handle_dict = {}
         self.notify_list = []
+        self.next_image_base = 0x10000
 
     @contextmanager
     def map_memory(self, addr, size):
@@ -68,11 +71,16 @@ class QlLoaderPE_UEFI(QlLoader):
         pe = pefile.PE(path, fast_load=True)
 
         # Make sure no module will occupy the NULL page
-        IMAGE_BASE = max(pe.OPTIONAL_HEADER.ImageBase, 0x10000)
+        if self.next_image_base > pe.OPTIONAL_HEADER.ImageBase:
+            IMAGE_BASE = self.next_image_base
+            pe.relocate_image(IMAGE_BASE)
+        else:
+            IMAGE_BASE = pe.OPTIONAL_HEADER.ImageBase
         IMAGE_SIZE = ql.mem.align(pe.OPTIONAL_HEADER.SizeOfImage, 0x1000)
 
         while IMAGE_BASE + IMAGE_SIZE < self.heap_base_address:
             if not ql.mem.is_mapped(IMAGE_BASE, 1):
+                self.next_image_base = IMAGE_BASE + 0x10000
                 ql.mem.map(IMAGE_BASE, IMAGE_SIZE)
                 pe.parse_data_directories()
                 data = bytearray(pe.get_memory_mapped_image())
@@ -195,38 +203,62 @@ class QlLoaderPE_UEFI(QlLoader):
 
         self.efi_configuration_table_ptr = system_table_heap_ptr
         system_table.ConfigurationTable = self.efi_configuration_table_ptr
-        system_table.NumberOfTableEntries = 1
+        system_table.NumberOfTableEntries = 2
         system_table_heap_ptr += ctypes.sizeof(EFI_CONFIGURATION_TABLE) * 100 # We don't expect more then a few entries.
         efi_configuration_table = EFI_CONFIGURATION_TABLE()
 
         #   0x7739f24c, 0x93d7, 0x11d4, {0x9a, 0x3a, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d } \
-        efi_configuration_table.VendorGuid.Data1 = int(self.ql.os.profile.get("GUID", "data1"), 16)
-        efi_configuration_table.VendorGuid.Data2 = int(self.ql.os.profile.get("GUID", "data2"), 16)
-        efi_configuration_table.VendorGuid.Data3 = int(self.ql.os.profile.get("GUID", "data3"), 16)
+        efi_configuration_table.VendorGuid.Data1 = int(self.ql.os.profile.get("HOB_LIST", "data1"), 16)
+        efi_configuration_table.VendorGuid.Data2 = int(self.ql.os.profile.get("HOB_LIST", "data2"), 16)
+        efi_configuration_table.VendorGuid.Data3 = int(self.ql.os.profile.get("HOB_LIST", "data3"), 16)
         
-        data4 = ast.literal_eval(self.ql.os.profile.get("GUID", "data4"))
+        data4 = ast.literal_eval(self.ql.os.profile.get("HOB_LIST", "data4"))
         datalist = 0
         for data4_list in data4:
             efi_configuration_table.VendorGuid.Data4[datalist] = data4_list
             datalist += 1  
         
         VendorTable_ptr = system_table_heap_ptr
-        write_int64(self.ql, VendorTable_ptr, int(self.ql.os.profile.get("GUID", "vendortable"),16))
+        write_int64(self.ql, VendorTable_ptr, int(self.ql.os.profile.get("HOB_LIST", "vendortable"),16))
         system_table_heap_ptr += pointer_size
         efi_configuration_table.VendorTable = VendorTable_ptr
-        self.efi_configuration_table = [self.ql.os.profile["GUID"]["configuration_table"]]
+        self.efi_configuration_table = [self.ql.os.profile["HOB_LIST"]["guid"]]
+        self.ql.mem.write(self.efi_configuration_table_ptr, convert_struct_to_bytes(efi_configuration_table))
+
+        self.smm_base2_protocol_ptr = system_table_heap_ptr
+        system_table_heap_ptr += ctypes.sizeof(EFI_SMM_BASE2_PROTOCOL)
+        system_table_heap_ptr, smm_base2_protocol = install_EFI_SMM_BASE2_PROTOCOL(self.ql, system_table_heap_ptr)
+        self.handle_dict[1] = {self.ql.os.profile.get("EFI_SMM_BASE2_PROTOCOL", "guid"): self.smm_base2_protocol_ptr}
+
+        self.dxe_services_ptr = system_table_heap_ptr
+        system_table_heap_ptr += ctypes.sizeof(EFI_DXE_SERVICES)
+        system_table_heap_ptr, dxe_services = install_EFI_DXE_SERVICES(self.ql, system_table_heap_ptr)
+        efi_configuration_table = EFI_CONFIGURATION_TABLE()
+        efi_configuration_table.VendorGuid.Data1 = int(self.ql.os.profile.get("DXE_SERVICE_TABLE", "data1"), 16)
+        efi_configuration_table.VendorGuid.Data2 = int(self.ql.os.profile.get("DXE_SERVICE_TABLE", "data2"), 16)
+        efi_configuration_table.VendorGuid.Data3 = int(self.ql.os.profile.get("DXE_SERVICE_TABLE", "data3"), 16)
+        
+        data4 = ast.literal_eval(self.ql.os.profile.get("DXE_SERVICE_TABLE", "data4"))
+        datalist = 0
+        for data4_list in data4:
+            efi_configuration_table.VendorGuid.Data4[datalist] = data4_list
+            datalist += 1  
+       
+        efi_configuration_table.VendorTable = self.dxe_services_ptr
+        self.ql.mem.write(self.efi_configuration_table_ptr + ctypes.sizeof(EFI_CONFIGURATION_TABLE), convert_struct_to_bytes(efi_configuration_table))
+        self.efi_configuration_table.append(self.ql.os.profile.get("DXE_SERVICE_TABLE", "guid"))
+        
+
         self.ql.mem.write(runtime_services_ptr, convert_struct_to_bytes(runtime_services))
         self.ql.mem.write(boot_services_ptr, convert_struct_to_bytes(boot_services))
-        self.ql.mem.write(self.efi_configuration_table_ptr, convert_struct_to_bytes(efi_configuration_table))
         self.ql.mem.write(self.system_table_ptr, convert_struct_to_bytes(system_table))
+        self.ql.mem.write(self.smm_base2_protocol_ptr, convert_struct_to_bytes(smm_base2_protocol))
+        self.ql.mem.write(self.dxe_services_ptr, convert_struct_to_bytes(dxe_services))
 
-        if len(self.ql.argv) > 1:
-            for dependency in self.ql.argv[1:]:
-                if not self.map_and_load(dependency):
-                    raise QlErrorFileType("Can't map dependency")
+        for dependency in self.ql.argv:
+            if not self.map_and_load(dependency):
+                raise QlErrorFileType("Can't map dependency")
 
-        # Load main module
-        self.map_and_load(self.ql.path)
         self.ql.nprint("[+] Done with loading %s" % self.ql.path)
 
         #return address
