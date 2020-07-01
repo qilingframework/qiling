@@ -15,6 +15,13 @@ from qiling.exception import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from unicorn.x86_const import *
+from zipfile import ZipFile
+
+def unzip(zip_path, name, password):
+    with ZipFile(zip_path) as zip_reader:
+        with zip_reader.open(name, 'r', password) as f:
+            return f.read()
+    return None
 
 class PETest(unittest.TestCase):
     def test_pe_win_x8664_hello(self):
@@ -33,6 +40,10 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_uselessdisk(self):
+        data = unzip("../examples/rootfs/x86_windows/bin/UselessDisk.bin.zip", "UselessDisk.bin", b'infected')
+        assert data is not None, "Invalid zip file"
+        with open("../examples/rootfs/x86_windows/bin/UselessDisk.bin", 'wb') as f:
+            f.write(data)
         ql = Qiling(["../examples/rootfs/x86_windows/bin/UselessDisk.bin"], "../examples/rootfs/x86_windows",
                     output="debug")
         ql.run()
@@ -40,6 +51,7 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_gandcrab(self):
+
         def stop(ql, default_values):
             print("Ok for now")
             ql.emu_stop()
@@ -82,6 +94,10 @@ class PETest(unittest.TestCase):
             else:
                 raise QlErrorNotImplemented("[!] API not implemented")
 
+        data = unzip("../examples/rootfs/x86_windows/bin/GandCrab502.bin.zip", "GandCrab502.bin", b'infected')
+        assert data is not None, "Invalid zip file"
+        with open("../examples/rootfs/x86_windows/bin/GandCrab502.bin", 'wb') as f:
+            f.write(data)
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
                     output="debug", profile="profiles/windows_gandcrab_admin.ql")
         default_user = ql.os.profile["USER"]["username"]
@@ -165,7 +181,10 @@ class PETest(unittest.TestCase):
             ql.console = False
             ql.nprint("No Print")
             ql.emu_stop()
-
+        data = unzip("../examples/rootfs/x86_windows/bin/wannacry.bin.zip", "wannacry.bin", b'infected')
+        assert data is not None, "Invalid zip file"
+        with open("../examples/rootfs/x86_windows/bin/wannacry.bin", 'wb') as f:
+            f.write(data)
         ql = Qiling(["../examples/rootfs/x86_windows/bin/wannacry.bin"], "../examples/rootfs/x86_windows")
         ql.hook_address(stop, 0x40819a)
         ql.run()
@@ -173,6 +192,10 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_al_khaser(self):
+        data = unzip("../examples/rootfs/x86_windows/bin/al-khaser.bin.zip", "al-khaser.bin", b'infected')
+        assert data is not None, "Invalid zip file"
+        with open("../examples/rootfs/x86_windows/bin/al-khaser.bin", 'wb') as f:
+            f.write(data)
         ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
 
         # The hooks are to remove the prints to file. It crashes. will debug why in the future
