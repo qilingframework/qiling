@@ -252,7 +252,6 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.mem.write(runtime_services_ptr, convert_struct_to_bytes(runtime_services))
         self.ql.mem.write(boot_services_ptr, convert_struct_to_bytes(boot_services))
         self.ql.mem.write(self.system_table_ptr, convert_struct_to_bytes(system_table))
-        # self.ql.mem.write(self.pcd_protocol_ptr, convert_struct_to_bytes(pcd_protocol))
         self.ql.mem.write(self.smm_base2_protocol_ptr, convert_struct_to_bytes(smm_base2_protocol))
         self.ql.mem.write(self.dxe_services_ptr, convert_struct_to_bytes(dxe_services))
 
