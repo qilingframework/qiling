@@ -91,6 +91,82 @@ def hook_NtQueryInformationProcess(ql, address, params):
 
     _QueryInformationProcess(ql, address, params)
 
+def _QuerySystemInformation(ql, address, params):
+    siClass = params["SystemInformationClass"]
+    pt_res = params["ReturnLength"]
+    dst = params["SystemInformation"]
+    if (siClass == SystemBasicInformation):
+        bufferLength = params["SystemInformationLength"]
+        if (ql.archtype == QL_ARCH.X8664):
+            sbi = qiling.os.windows.structs.SystemBasicInforation(ql,
+                                                              Reserved=0,
+                                                              TimerResolution = 156250 ,
+                                                              PageSize=ql.os.heap.page_size,
+                                                              NumberOfPhysicalPages = 0x003FC38A,
+                                                              LowestPhysicalPageNumber=1,
+                                                              HighestPhysicalPageNumber=0x0046DFFF,
+                                                              AllocationGranularity=1,
+                                                              MinimumUserModeAddress=0x10000,
+                                                              MaximumUserModeAddress=0x7FFFFFFEFFFF,
+                                                              ActiveProcessorsAffinityMask = 0x3F,
+                                                              NumberOfProcessors = 0x6)
+        elif ql.archtype == QL_ARCH.X86:
+            sbi = qiling.os.windows.structs.SystemBasicInforation(ql,
+                                                                  Reserved=0,
+                                                                  TimerResolution=156250,
+                                                                  PageSize=ql.os.heap.page_size,
+                                                                  NumberOfPhysicalPages=0x003FC38A,
+                                                                  LowestPhysicalPageNumber=1,
+                                                                  HighestPhysicalPageNumber=0x0046DFFF,
+                                                                  AllocationGranularity=1,
+                                                                  MinimumUserModeAddress=0x10000,
+                                                                  MaximumUserModeAddress=0x7FFEFFFF,
+                                                                  ActiveProcessorsAffinityMask=0x3F,
+                                                                  NumberOfProcessors=0x6)
+        if (bufferLength==sbi.size):
+            sbi.write(dst)
+            if pt_res != 0:
+                ql.mem.write(pt_res, sbi.size.to_bytes(1, byteorder="little"))
+        else:
+            if pt_res != 0:
+                ql.mem.write(pt_res, sbi.size.to_bytes(1, byteorder="little"))
+            return STATUS_INFO_LENGTH_MISMATCH
+    else:
+        ql.dprint(D_INFO, str(siClass))
+        raise QlErrorNotImplemented("[!] API not implemented")
+
+
+    return STATUS_SUCCESS
+
+# __kernel_entry NTSTATUS NtQuerySystemInformation(
+#   IN SYSTEM_INFORMATION_CLASS SystemInformationClass,
+#   OUT PVOID                   SystemInformation,
+#   IN ULONG                    SystemInformationLength,
+#   OUT PULONG                  ReturnLength
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname,
+                replace_params={"SystemInformationClass": UINT, "SystemInformation": POINTER, "SystemInformationLength": SIZE_T,
+                    "ReturnLength": POINTER})
+def hook_NtQuerySystemInformation(ql, address, params):
+    # In minwindef.h
+    # #define WINAPI      __stdcall
+
+    _QuerySystemInformation(ql, address, params)
+
+# pub unsafe extern "system" fn ZwQuerySystemInformation(
+#   IN SYSTEM_INFORMATION_CLASS SystemInformationClass,
+#   OUT PVOID                   SystemInformation,
+#   IN ULONG                    SystemInformationLength,
+#   OUT PULONG                  ReturnLength
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname,
+                replace_params={"SystemInformationClass": UINT, "SystemInformation": POINTER, "SystemInformationLength": SIZE_T,
+                    "ReturnLength": POINTER})
+def hook_ZwQuerySystemInformation(ql, address, params):
+    # In minwindef.h
+    # #define WINAPI      __stdcall
+
+    return _QuerySystemInformation(ql, address, params)
 
 # pub unsafe extern "system" fn ZwCreateDebugObject(
 #     DebugObjectHandle: PHANDLE,
