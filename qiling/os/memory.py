@@ -190,12 +190,12 @@ class QlMemoryManager:
             addrs = [x.start(0) + begin for x in re.finditer(needle, haystack)]
 
         if not begin:
-            begin = self.map_info[0][0] # search from first mapped region till end 
+            begin = self.map_info[0][0] # search from the first mapped region 
         if not end:
-            end = self.map_info[-1][1] # search from begin till last mapped region
+            end = self.map_info[-1][1] # search till the last mapped region
 
         mapped_range = [(_begin, _end) for _begin, _end, _ in self.ql.uc.mem_regions()
-                if begin in range(_begin, _end) or end in range(_begin, _end)]
+                if _begin in range(begin, end) or _end in range(begin, end)]
         
         for _begin, _end in mapped_range:
             haystack = self.read(_begin, _end - _begin)
