@@ -1,0 +1,92 @@
+{
+    "XInputGetState": [
+        {
+            "name": "dwUserIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pState",
+            "type": "XINPUT_STATE"
+        }
+    ],
+    "XInputSetState": [
+        {
+            "name": "dwUserIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pVibration",
+            "type": "XINPUT_VIBRATION"
+        }
+    ],
+    "XInputGetCapabilities": [
+        {
+            "name": "dwUserIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCapabilities",
+            "type": "XINPUT_CAPABILITIES"
+        }
+    ],
+    "XInputEnable": [
+        {
+            "name": "enable",
+            "type": "BOOL"
+        }
+    ],
+    "XInputGetAudioDeviceIds": [
+        {
+            "name": "dwUserIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pRenderDeviceId",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pRenderCount",
+            "type": "UINT"
+        },
+        {
+            "name": "pCaptureDeviceId",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pCaptureCount",
+            "type": "UINT"
+        }
+    ],
+    "XInputGetBatteryInformation": [
+        {
+            "name": "dwUserIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "devType",
+            "type": "BYTE"
+        },
+        {
+            "name": "pBatteryInformation",
+            "type": "XINPUT_BATTERY_INFORMATION"
+        }
+    ],
+    "XInputGetKeystroke": [
+        {
+            "name": "dwUserIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pKeystroke",
+            "type": "PXINPUT_KEYSTROKE"
+        }
+    ]
+}

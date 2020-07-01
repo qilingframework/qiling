@@ -1,0 +1,276 @@
+{
+    "BluetoothGATTGetServices": [
+        {
+            "name": "hDevice",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ServicesBufferCount",
+            "type": "USHORT"
+        },
+        {
+            "name": "ServicesBuffer",
+            "type": "PBTH_LE_GATT_SERVICE"
+        },
+        {
+            "name": "ServicesBufferActual",
+            "type": "USHORT"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "BluetoothGATTGetIncludedServices": [
+        {
+            "name": "hDevice",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ParentService",
+            "type": "PBTH_LE_GATT_SERVICE"
+        },
+        {
+            "name": "IncludedServicesBufferCount",
+            "type": "USHORT"
+        },
+        {
+            "name": "IncludedServicesBuffer",
+            "type": "PBTH_LE_GATT_SERVICE"
+        },
+        {
+            "name": "IncludedServicesBufferActual",
+            "type": "USHORT"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "BluetoothGATTGetCharacteristics": [
+        {
+            "name": "hDevice",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Service",
+            "type": "PBTH_LE_GATT_SERVICE"
+        },
+        {
+            "name": "CharacteristicsBufferCount",
+            "type": "USHORT"
+        },
+        {
+            "name": "CharacteristicsBuffer",
+            "type": "PBTH_LE_GATT_CHARACTERISTIC"
+        },
+        {
+            "name": "CharacteristicsBufferActual",
+            "type": "USHORT"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "BluetoothGATTGetDescriptors": [
+        {
+            "name": "hDevice",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Characteristic",
+            "type": "PBTH_LE_GATT_CHARACTERISTIC"
+        },
+        {
+            "name": "DescriptorsBufferCount",
+            "type": "USHORT"
+        },
+        {
+            "name": "DescriptorsBuffer",
+            "type": "PBTH_LE_GATT_DESCRIPTOR"
+        },
+        {
+            "name": "DescriptorsBufferActual",
+            "type": "USHORT"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "BluetoothGATTGetCharacteristicValue": [
+        {
+            "name": "hDevice",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Characteristic",
+            "type": "PBTH_LE_GATT_CHARACTERISTIC"
+        },
+        {
+            "name": "CharacteristicValueDataSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "CharacteristicValue",
+            "type": "PBTH_LE_GATT_CHARACTERISTIC_VALUE"
+        },
+        {
+            "name": "CharacteristicValueSizeRequired",
+            "type": "USHORT"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "BluetoothGATTGetDescriptorValue": [
+        {
+            "name": "hDevice",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Descriptor",
+            "type": "PBTH_LE_GATT_DESCRIPTOR"
+        },
+        {
+            "name": "DescriptorValueDataSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "DescriptorValue",
+            "type": "PBTH_LE_GATT_DESCRIPTOR_VALUE"
+        },
+        {
+            "name": "DescriptorValueSizeRequired",
+            "type": "USHORT"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "BluetoothGATTBeginReliableWrite": [
+        {
+            "name": "hDevice",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ReliableWriteContext",
+            "type": "PBTH_LE_GATT_RELIABLE_WRITE_CONTEXT"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "BluetoothGATTSetCharacteristicValue": [
+        {
+            "name": "hDevice",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Characteristic",
+            "type": "PBTH_LE_GATT_CHARACTERISTIC"
+        },
+        {
+            "name": "CharacteristicValue",
+            "type": "PBTH_LE_GATT_CHARACTERISTIC_VALUE"
+        },
+        {
+            "name": "ReliableWriteContext",
+            "type": "BTH_LE_GATT_RELIABLE_WRITE_CONTEXT"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "BluetoothGATTEndReliableWrite": [
+        {
+            "name": "hDevice",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ReliableWriteContext",
+            "type": "BTH_LE_GATT_RELIABLE_WRITE_CONTEXT"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "BluetoothGATTAbortReliableWrite": [
+        {
+            "name": "hDevice",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ReliableWriteContext",
+            "type": "BTH_LE_GATT_RELIABLE_WRITE_CONTEXT"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "BluetoothGATTSetDescriptorValue": [
+        {
+            "name": "hDevice",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Descriptor",
+            "type": "PBTH_LE_GATT_DESCRIPTOR"
+        },
+        {
+            "name": "DescriptorValue",
+            "type": "PBTH_LE_GATT_DESCRIPTOR_VALUE"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "BluetoothGATTRegisterEvent": [
+        {
+            "name": "hService",
+            "type": "HANDLE"
+        },
+        {
+            "name": "EventType",
+            "type": "BTH_LE_GATT_EVENT_TYPE"
+        },
+        {
+            "name": "EventParameterIn",
+            "type": "PVOID"
+        },
+        {
+            "name": "Callback",
+            "type": "PFNBLUETOOTH_GATT_EVENT_CALLBACK"
+        },
+        {
+            "name": "CallbackContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "pEventHandle",
+            "type": "BLUETOOTH_GATT_EVENT_HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "BluetoothGATTUnregisterEvent": [
+        {
+            "name": "EventHandle",
+            "type": "BLUETOOTH_GATT_EVENT_HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ]
+}

@@ -1,0 +1,884 @@
+{
+    "SLOpen": [
+        {
+            "name": "phSLC",
+            "type": "HSLC"
+        }
+    ],
+    "SLClose": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        }
+    ],
+    "SLInstallProofOfPurchase": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pwszPKeyAlgorithm",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszPKeyString",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cbPKeySpecificData",
+            "type": "UINT"
+        },
+        {
+            "name": "pbPKeySpecificData",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pPkeyId",
+            "type": "SLID"
+        }
+    ],
+    "SLInstallProofOfPurchaseEx": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pApplicationId",
+            "type": "SLID"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "pwszPKeyAlgorithm",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszPKeyString",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cbPKeySpecificData",
+            "type": "UINT"
+        },
+        {
+            "name": "pbPKeySpecificData",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pPkeyId",
+            "type": "SLID"
+        }
+    ],
+    "SLUninstallProofOfPurchase": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pPKeyId",
+            "type": "SLID"
+        }
+    ],
+    "SLInstallLicense": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "cbLicenseBlob",
+            "type": "UINT"
+        },
+        {
+            "name": "pbLicenseBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "pLicenseFileId",
+            "type": "SLID"
+        }
+    ],
+    "SLUninstallLicense": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pLicenseFileId",
+            "type": "SLID"
+        }
+    ],
+    "SLConsumeRight": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pAppId",
+            "type": "SLID"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "pwszRightName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pvReserved",
+            "type": "PVOID"
+        }
+    ],
+    "SLGetProductSkuInformation": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "peDataType",
+            "type": "SLDATATYPE"
+        },
+        {
+            "name": "pcbValue",
+            "type": "UINT"
+        },
+        {
+            "name": "ppbValue",
+            "type": "PBYTE"
+        }
+    ],
+    "SLGetPKeyInformation": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pPKeyId",
+            "type": "SLID"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "peDataType",
+            "type": "SLDATATYPE"
+        },
+        {
+            "name": "pcbValue",
+            "type": "UINT"
+        },
+        {
+            "name": "ppbValue",
+            "type": "PBYTE"
+        }
+    ],
+    "SLGetLicenseInformation": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pSLLicenseId",
+            "type": "SLID"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "peDataType",
+            "type": "SLDATATYPE"
+        },
+        {
+            "name": "pcbValue",
+            "type": "UINT"
+        },
+        {
+            "name": "ppbValue",
+            "type": "PBYTE"
+        }
+    ],
+    "SLGetLicensingStatusInformation": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pAppID",
+            "type": "SLID"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "pwszRightName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pnStatusCount",
+            "type": "UINT"
+        },
+        {
+            "name": "ppLicensingStatus",
+            "type": "SL_LICENSING_STATUS"
+        }
+    ],
+    "SLGetPolicyInformation": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "peDataType",
+            "type": "SLDATATYPE"
+        },
+        {
+            "name": "pcbValue",
+            "type": "UINT"
+        },
+        {
+            "name": "ppbValue",
+            "type": "PBYTE"
+        }
+    ],
+    "SLGetPolicyInformationDWORD": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pdwValue",
+            "type": "DWORD"
+        }
+    ],
+    "SLGetServiceInformation": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "peDataType",
+            "type": "SLDATATYPE"
+        },
+        {
+            "name": "pcbValue",
+            "type": "UINT"
+        },
+        {
+            "name": "ppbValue",
+            "type": "PBYTE"
+        }
+    ],
+    "SLGetApplicationInformation": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pApplicationId",
+            "type": "SLID"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "peDataType",
+            "type": "SLDATATYPE"
+        },
+        {
+            "name": "pcbValue",
+            "type": "UINT"
+        },
+        {
+            "name": "ppbValue",
+            "type": "PBYTE"
+        }
+    ],
+    "SLActivateProduct": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "cbAppSpecificData",
+            "type": "UINT"
+        },
+        {
+            "name": "pvAppSpecificData",
+            "type": "PVOID"
+        },
+        {
+            "name": "pActivationInfo",
+            "type": "SL_ACTIVATION_INFO_HEADER"
+        },
+        {
+            "name": "pwszProxyServer",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "wProxyPort",
+            "type": "WORD"
+        }
+    ],
+    "SLGetServerStatus": [
+        {
+            "name": "pwszServerURL",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszAcquisitionType",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszProxyServer",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "wProxyPort",
+            "type": "WORD"
+        },
+        {
+            "name": "phrStatus",
+            "type": "HRESULT"
+        }
+    ],
+    "SLReArm": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pApplicationId",
+            "type": "SLID"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SLGenerateOfflineInstallationId": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "ppwszInstallationId",
+            "type": "PWSTR"
+        }
+    ],
+    "SLGenerateOfflineInstallationIdEx": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "pActivationInfo",
+            "type": "SL_ACTIVATION_INFO_HEADER"
+        },
+        {
+            "name": "ppwszInstallationId",
+            "type": "PWSTR"
+        }
+    ],
+    "SLDepositOfflineConfirmationId": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "pwszInstallationId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszConfirmationId",
+            "type": "PCWSTR"
+        }
+    ],
+    "SLDepositOfflineConfirmationIdEx": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "pActivationInfo",
+            "type": "SL_ACTIVATION_INFO_HEADER"
+        },
+        {
+            "name": "pwszInstallationId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszConfirmationId",
+            "type": "PCWSTR"
+        }
+    ],
+    "SLGetPKeyId": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pwszPKeyAlgorithm",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszPKeyString",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cbPKeySpecificData",
+            "type": "UINT"
+        },
+        {
+            "name": "pbPKeySpecificData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pPKeyId",
+            "type": "SLID"
+        }
+    ],
+    "SLGetInstalledProductKeyIds": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "pnProductKeyIds",
+            "type": "UINT"
+        },
+        {
+            "name": "ppProductKeyIds",
+            "type": "SLID"
+        }
+    ],
+    "SLSetCurrentProductKey": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "pProductKeyId",
+            "type": "SLID"
+        }
+    ],
+    "SLGetSLIDList": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "eQueryIdType",
+            "type": "SLIDTYPE"
+        },
+        {
+            "name": "pQueryId",
+            "type": "SLID"
+        },
+        {
+            "name": "eReturnIdType",
+            "type": "SLIDTYPE"
+        },
+        {
+            "name": "pnReturnIds",
+            "type": "UINT"
+        },
+        {
+            "name": "ppReturnIds",
+            "type": "SLID"
+        }
+    ],
+    "SLGetLicenseFileId": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "cbLicenseBlob",
+            "type": "UINT"
+        },
+        {
+            "name": "pbLicenseBlob",
+            "type": "BYTE"
+        },
+        {
+            "name": "pLicenseFileId",
+            "type": "SLID"
+        }
+    ],
+    "SLGetLicense": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pLicenseFileId",
+            "type": "SLID"
+        },
+        {
+            "name": "pcbLicenseFile",
+            "type": "UINT"
+        },
+        {
+            "name": "ppbLicenseFile",
+            "type": "PBYTE"
+        }
+    ],
+    "SLFireEvent": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pwszEventId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pApplicationId",
+            "type": "SLID"
+        }
+    ],
+    "SLRegisterEvent": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pwszEventId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pApplicationId",
+            "type": "SLID"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        }
+    ],
+    "SLUnregisterEvent": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pwszEventId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pApplicationId",
+            "type": "SLID"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        }
+    ],
+    "SLGetWindowsInformation": [
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "peDataType",
+            "type": "SLDATATYPE"
+        },
+        {
+            "name": "pcbValue",
+            "type": "UINT"
+        },
+        {
+            "name": "ppbValue",
+            "type": "PBYTE"
+        }
+    ],
+    "SLGetWindowsInformationDWORD": [
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pdwValue",
+            "type": "DWORD"
+        }
+    ],
+    "SLSetGenuineInformation": [
+        {
+            "name": "pQueryId",
+            "type": "SLID"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "eDataType",
+            "type": "SLDATATYPE"
+        },
+        {
+            "name": "cbValue",
+            "type": "UINT"
+        },
+        {
+            "name": "pbValue",
+            "type": "BYTE"
+        }
+    ],
+    "SLGetReferralInformation": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "eReferralType",
+            "type": "SLREFERRALTYPE"
+        },
+        {
+            "name": "pSkuOrAppId",
+            "type": "SLID"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppwszValue",
+            "type": "PWSTR"
+        }
+    ],
+    "SLPersistRTSPayloadOverride": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pApplicationId",
+            "type": "SLID"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "pbData",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        }
+    ],
+    "SLPersistApplicationPolicies": [
+        {
+            "name": "pApplicationId",
+            "type": "SLID"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SLGetApplicationPolicy": [
+        {
+            "name": "hPolicyContext",
+            "type": "HSLP"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "peDataType",
+            "type": "SLDATATYPE"
+        },
+        {
+            "name": "pcbValue",
+            "type": "UINT"
+        },
+        {
+            "name": "ppbValue",
+            "type": "PBYTE"
+        }
+    ],
+    "SLLoadApplicationPolicies": [
+        {
+            "name": "pApplicationId",
+            "type": "SLID"
+        },
+        {
+            "name": "pProductSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phPolicyContext",
+            "type": "HSLP"
+        }
+    ],
+    "SLUnloadApplicationPolicies": [
+        {
+            "name": "hPolicyContext",
+            "type": "HSLP"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SLGetAuthenticationResult": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "pcbValue",
+            "type": "UINT"
+        },
+        {
+            "name": "ppbValue",
+            "type": "PBYTE"
+        }
+    ],
+    "SLSetAuthenticationData": [
+        {
+            "name": "hSLC",
+            "type": "HSLC"
+        },
+        {
+            "name": "cbValue",
+            "type": "UINT"
+        },
+        {
+            "name": "pbValue",
+            "type": "BYTE"
+        }
+    ],
+    "SLGetGenuineInformation": [
+        {
+            "name": "pQueryId",
+            "type": "SLID"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "peDataType",
+            "type": "SLDATATYPE"
+        },
+        {
+            "name": "pcbValue",
+            "type": "UINT"
+        },
+        {
+            "name": "ppbValue",
+            "type": "BYTE"
+        }
+    ],
+    "SLGetGenuineInformationEx": [
+        {
+            "name": "pAppId",
+            "type": "SLID"
+        },
+        {
+            "name": "pwszValueName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "peDataType",
+            "type": "SLDATATYPE"
+        },
+        {
+            "name": "pcbValue",
+            "type": "UINT"
+        },
+        {
+            "name": "ppbValue",
+            "type": "BYTE"
+        }
+    ],
+    "SLGatherMigrationBlob": [
+        {
+            "name": "bMigratableOnly",
+            "type": "BOOL"
+        },
+        {
+            "name": "pwszEncryptorUri",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        }
+    ],
+    "SLDepositMigrationBlob": [
+        {
+            "name": "hFile",
+            "type": "HANDLE"
+        }
+    ]
+}

@@ -1,0 +1,20 @@
+{
+    "sndOpenSound": [
+        {
+            "name": "EventName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "AppName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "INT32"
+        },
+        {
+            "name": "FileHandle",
+            "type": "PHANDLE"
+        }
+    ]
+}

@@ -1,0 +1,6030 @@
+{
+    "_CrtCheckMemory": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_CrtDbgReport": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        },
+        {
+            "name": "param5",
+            "type": "POINTER"
+        }
+    ],
+    "_CrtDumpMemoryLeaks": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_CrtSetBreakAlloc": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_CrtSetDbgFlag": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_CrtSetDumpClient": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_CrtSetReportHook": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_CrtSetReportMode": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_CxxThrowException": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_EH_prolog": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_Getdays": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_Getmonths": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_Gettnames": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_Strftime": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "STRING"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        },
+        {
+            "name": "param5",
+            "type": "POINTER"
+        }
+    ],
+    "_XcptFilter": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "__CxxFrameHandler": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "__CxxLongjmpUnwind": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "__RTCastToVoid": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "__RTDynamicCast": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        },
+        {
+            "name": "param5",
+            "type": "INT"
+        }
+    ],
+    "__RTtypeid": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "__STRINGTOLD": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "STRING"
+        },
+        {
+            "name": "param4",
+            "type": "INT"
+        }
+    ],
+    "___mb_cur_max_func": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__crtCompareStringA": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "STRING"
+        },
+        {
+            "name": "param4",
+            "type": "INT"
+        },
+        {
+            "name": "param5",
+            "type": "STRING"
+        },
+        {
+            "name": "param6",
+            "type": "INT"
+        }
+    ],
+    "__crtGetLocaleInfoW": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "INT"
+        }
+    ],
+    "__crtLCMapStringA": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "STRING"
+        },
+        {
+            "name": "param4",
+            "type": "INT"
+        },
+        {
+            "name": "param5",
+            "type": "POINTER"
+        },
+        {
+            "name": "param6",
+            "type": "INT"
+        },
+        {
+            "name": "param7",
+            "type": "INT"
+        },
+        {
+            "name": "param8",
+            "type": "INT"
+        }
+    ],
+    "__dllonexit": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "__doserrno": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__fpecode": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__getmainargs": [
+        {
+            "name": "_Argc",
+            "type": "int"
+        },
+        {
+            "name": "_Argv",
+            "type": "char"
+        },
+        {
+            "name": "_Env",
+            "type": "char"
+        },
+        {
+            "name": "_DoWildCard",
+            "type": "int"
+        },
+        {
+            "name": "_StartInfo",
+            "type": "POINTER"
+        }
+    ],
+    "__isascii": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "__iscsym": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "__iscsymf": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "__lconv_init": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p___argc": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p___argv": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p___initenv": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p___mb_cur_max": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p___wargv": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p___winitenv": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__acmdln": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__amblksiz": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__commode": [
+        {
+            "name": "VOID",
+            "type": ""
+        }
+    ],
+    "__p__crtAssertBusy": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__crtBreakAlloc": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__crtDbgFlag": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__daylight": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__dstbias": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__environ": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__fmode": [
+        {
+            "name": "VOID",
+            "type": ""
+        }
+    ],
+    "__p__iob": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__mbctype": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__osver": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__pctype": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__pgmptr": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__timezone": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__tzname": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__wcmdln": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__wenviron": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__winmajor": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__winminor": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__winver": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__p__wpgmptr": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__pctype_func": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__pxcptinfoptrs": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__set_app_type": [
+        {
+            "name": "at",
+            "type": "int"
+        }
+    ],
+    "__setusermatherr": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "__threadhandle": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__threadid": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "__toascii": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "__unDName": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        },
+        {
+            "name": "param5",
+            "type": "POINTER"
+        },
+        {
+            "name": "param6",
+            "type": "INT"
+        }
+    ],
+    "__unDNameEx": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        },
+        {
+            "name": "param5",
+            "type": "POINTER"
+        },
+        {
+            "name": "param6",
+            "type": "POINTER"
+        },
+        {
+            "name": "param7",
+            "type": "INT"
+        }
+    ],
+    "__wgetmainargs": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "INT"
+        },
+        {
+            "name": "param5",
+            "type": "POINTER"
+        }
+    ],
+    "_abnormal_termination": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_access": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_adj_fdiv_m16i": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_adj_fdiv_m32": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_adj_fdiv_m32i": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_adj_fdiv_m64": [
+        {
+            "name": "param1",
+            "type": "INT64"
+        }
+    ],
+    "_adj_fdiv_r": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_adj_fdivr_m16i": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_adj_fdivr_m32": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_adj_fdivr_m32i": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_adj_fdivr_m64": [
+        {
+            "name": "param1",
+            "type": "INT64"
+        }
+    ],
+    "_adj_fpatan": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_adj_fprem": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_adj_fprem1": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_adj_fptan": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_amsg_exit": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_assert": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_atodbl": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_atoi64": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_atoldbl": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_beep": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_beginthread": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "_beginthreadex": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        },
+        {
+            "name": "param5",
+            "type": "INT"
+        },
+        {
+            "name": "param6",
+            "type": "POINTER"
+        }
+    ],
+    "_c_exit": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_cabs": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_callnewh": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_calloc_dbg": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_cexit": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_cgets": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_chdir": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_chdrive": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_chgsign": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "_chkesp": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_chmod": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_chsize": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_clearfp": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_close": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_commit": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_control87": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_controlfp": [
+        {
+            "name": "new",
+            "type": "unsigned int"
+        },
+        {
+            "name": "mask",
+            "type": "unsigned int"
+        }
+    ],
+    "_copysign": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "param2",
+            "type": "DOUBLE"
+        }
+    ],
+    "_cprintf": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_cputs": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_creat": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_cscanf": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_cwait": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_dup": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_dup2": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_ecvt": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "_endthread": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_endthreadex": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_eof": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_errno": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_except_handler2": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "_except_handler3": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "_execl": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_execle": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_execlp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_execlpe": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_execv": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_execve": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "_execvp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_execvpe": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "_exit": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_expand": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_expand_dbg": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_fcloseall": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_fcvt": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "_fdopen": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_fgetchar": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_fgetwchar": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_filbuf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_filelength": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_filelengthi64": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_fileno": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_findclose": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_findfirst": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_findfirsti64": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_findnext": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_findnexti64": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_finite": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "_flsbuf": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_flushall": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_fpclass": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "_fpieee_flt": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "_fpreset": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_fputchar": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_fputwchar": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_free_dbg": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_fsopen": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_fstat": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_fstati64": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_ftime": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_ftol": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_fullpath": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_futime": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_gcvt": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "STRING"
+        }
+    ],
+    "_get_osfhandle": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_get_sbh_threshold": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_getch": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_getche": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_getcwd": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_getdcwd": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_getdiskfree": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_getdllprocaddr": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_getdrive": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_getdrives": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_getmaxstdio": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_getmbcp": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_getpid": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_getw": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_getws": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_global_unwind2": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_heapadd": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_heapchk": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_heapmin": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_heapset": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_heapwalk": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_hypot": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "param2",
+            "type": "DOUBLE"
+        }
+    ],
+    "_i64toa": [
+        {
+            "name": "param1",
+            "type": "INT64"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_i64tow": [
+        {
+            "name": "param1",
+            "type": "INT64"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_initterm": [
+        {
+            "name": "pfbegin",
+            "type": "POINTER"
+        },
+        {
+            "name": "pfend",
+            "type": "POINTER"
+        }
+    ],
+    "_initterm_e": [
+        {
+            "name": "pfbegin",
+            "type": "POINTER"
+        },
+        {
+            "name": "pfend",
+            "type": "POINTER"
+        }
+    ],
+    "_isatty": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_isctype": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_ismbbkana": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbblead": [
+        {
+            "name": "c",
+            "type": "unsigned int"
+        }
+    ],
+    "_ismbbtrail": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbcalnum": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbcalpha": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbcdigit": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbcgraph": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbchira": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbckata": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbcl0": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbcl1": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbcl2": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbclegal": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbclower": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbcprint": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbcpunct": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbcspace": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbcsymbol": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbcupper": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ismbslead": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_ismbstrail": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_isnan": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "_itoa": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_itow": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_j0": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "_j1": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "_jn": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "DOUBLE"
+        }
+    ],
+    "_kbhit": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_lfind": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "INT"
+        },
+        {
+            "name": "param5",
+            "type": "POINTER"
+        }
+    ],
+    "_loaddll": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_local_unwind": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_local_unwind2": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_lock": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_locking": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_logb": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "_longjmpex": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_lrotl": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_lrotr": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_lsearch": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "INT"
+        },
+        {
+            "name": "param5",
+            "type": "POINTER"
+        }
+    ],
+    "_lseek": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_lseeki64": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT64"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_ltoa": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_ltow": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_makepath": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "STRING"
+        },
+        {
+            "name": "param4",
+            "type": "STRING"
+        },
+        {
+            "name": "param5",
+            "type": "STRING"
+        }
+    ],
+    "_malloc_dbg": [
+        {
+            "name": "size",
+            "type": "UINT"
+        }
+    ],
+    "_mbbtombc": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_mbbtype": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_mbccpy": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_mbcjistojms": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_mbcjmstojis": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_mbclen": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_mbctohira": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_mbctokata": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_mbctolower": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_mbctombb": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_mbctoupper": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_mbsbtype": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_mbscat": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_mbschr": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_mbscmp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_mbscoll": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_mbscpy": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_mbscspn": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_mbsdec": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_mbsdup": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_mbsicmp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_mbsicoll": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_mbsinc": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_mbslen": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_mbslwr": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_mbsnbcat": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_mbsnbcmp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_mbsnbcnt": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_mbsnbcoll": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_mbsnbcpy": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_mbsnbicmp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_mbsnbicoll": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_mbsnbset": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_mbsncat": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_mbsnccnt": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_mbsncmp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_mbsncpy": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_mbsnextc": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_mbsnicmp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_mbsninc": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_mbsnset": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_mbspbrk": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_mbsrchr": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_mbsrev": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_mbsset": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_mbsspn": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_mbsspnp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_mbsstr": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_mbstok": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_mbstrlen": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_mbsupr": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_memccpy": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        },
+        {
+            "name": "param4",
+            "type": "INT"
+        }
+    ],
+    "_memicmp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_mkdir": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_mktemp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_msize": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_msize_dbg": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_nextafter": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "param2",
+            "type": "DOUBLE"
+        }
+    ],
+    "_onexit": [
+        {
+            "name": "function",
+            "type": "POINTER"
+        }
+    ],
+    "_open": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_open_osfhandle": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_pclose": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_pipe": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_popen": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_purecall": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_putch": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_putenv": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_putw": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_putws": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_read": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_realloc_dbg": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_rmdir": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_rmtmp": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_rotl": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_rotr": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_safe_fdiv": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_safe_fdivr": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_safe_fprem": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_safe_fprem1": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_scalb": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_searchenv": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "_seh_longjmp_unwind4": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_seh_longjmp_unwind": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_set_error_mode": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_set_sbh_threshold": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_seterrormode": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_setjmp": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_setjmp3": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_setmaxstdio": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_setmbcp": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_setmode": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_sleep": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_snprintf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "STRING"
+        }
+    ],
+    "_snwprintf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "WSTRING"
+        }
+    ],
+    "_sopen": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_spawnl": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "STRING"
+        }
+    ],
+    "_spawnle": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "STRING"
+        }
+    ],
+    "_spawnlp": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "STRING"
+        }
+    ],
+    "_spawnlpe": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "STRING"
+        }
+    ],
+    "_spawnv": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "_spawnve": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "_spawnvp": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "_spawnvpe": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "_splitpath": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        },
+        {
+            "name": "param5",
+            "type": "POINTER"
+        }
+    ],
+    "_stat": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_stati64": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_statusfp": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_strcmpi": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_strdate": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_strdup": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_strerror": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_stricmp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_stricoll": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_strlwr": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_strncoll": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_strnicmp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_strnicoll": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_strnset": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_strrev": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_strset": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_strtime": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_strupr": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_swab": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_tell": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_telli64": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_tempnam": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "_tolower": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_toupper": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_tzset": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "_ui64toa": [
+        {
+            "name": "param1",
+            "type": "INT64"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_ui64tow": [
+        {
+            "name": "param1",
+            "type": "INT64"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_ultoa": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_ultow": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_umask": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_ungetch": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_unlink": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "_unloaddll": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_unlock": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "_utime": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_vsnprintf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "STRING"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "_vsnwprintf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "_waccess": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_wasctime": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_wchdir": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wchmod": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_wcreat": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_wcsdup": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wcsicmp": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "_wcsicoll": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "_wcslwr": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wcsncoll": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_wcsnicmp": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_wcsnicoll": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_wcsnset": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_wcsrev": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wcsset": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_wcsupr": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wctime": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_wexecl": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "_wexecle": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "_wexeclp": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "_wexeclpe": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "_wexecv": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_wexecve": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "_wexecvp": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_wexecvpe": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "_wfdopen": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "_wfindfirst": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_wfindfirsti64": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_wfindnext": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_wfindnexti64": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_wfopen": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "_wfopen_s": [
+        {
+            "name": "pFile",
+            "type": "POINTER"
+        },
+        {
+            "name": "filename",
+            "type": "WSTRING"
+        },
+        {
+            "name": "mode",
+            "type": "WSTRING"
+        }
+    ],
+    "_wfreopen": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "_wfsopen": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_wfullpath": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_wgetcwd": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_wgetdcwd": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_wgetenv": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wmakepath": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param4",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param5",
+            "type": "WSTRING"
+        }
+    ],
+    "_wmkdir": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wmktemp": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wopen": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "_wperror": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wpopen": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "_wputenv": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wremove": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wrename": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "_write": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_wrmdir": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wsearchenv": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "_wsetlocale": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "_wsopen": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "_wspawnl": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "WSTRING"
+        }
+    ],
+    "_wspawnle": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "WSTRING"
+        }
+    ],
+    "_wspawnlp": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "WSTRING"
+        }
+    ],
+    "_wspawnlpe": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "WSTRING"
+        }
+    ],
+    "_wspawnv": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "_wspawnve": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "_wspawnvp": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "_wspawnvpe": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "_wsplitpath": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        },
+        {
+            "name": "param5",
+            "type": "POINTER"
+        }
+    ],
+    "_wstat": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_wstati64": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_wstrdate": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_wstrtime": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_wsystem": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wtempnam": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "_wtmpnam": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "_wtoi": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wtoi64": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wtol": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wunlink": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "_wutime": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "_y0": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "_y1": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "_yn": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "DOUBLE"
+        }
+    ],
+    "abort": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "abs": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "acos": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "asctime": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "asin": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "atan": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "atan2": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "param2",
+            "type": "DOUBLE"
+        }
+    ],
+    "atexit": [
+        {
+            "name": "func",
+            "type": "void"
+        }
+    ],
+    "atof": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "atoi": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "atol": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "bsearch": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        },
+        {
+            "name": "param4",
+            "type": "INT"
+        },
+        {
+            "name": "param5",
+            "type": "POINTER"
+        }
+    ],
+    "calloc": [
+        {
+            "name": "num",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "size",
+            "type": "SIZE_T"
+        }
+    ],
+    "ceil": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "clearerr": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "clock": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "cos": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "cosh": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "ctime": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "difftime": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "div": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "exit": [
+        {
+            "name": "status",
+            "type": "INT"
+        }
+    ],
+    "exp": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "fabs": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "fclose": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "feof": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "ferror": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "fflush": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "fgetc": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "fgetpos": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "fgets": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "fgetwc": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "fgetws": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "floor": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "fmod": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "param2",
+            "type": "DOUBLE"
+        }
+    ],
+    "fopen": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "fprintf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "fputc": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "fputs": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "fputwc": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "fputws": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "fread": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "free": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "freopen": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "frexp": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "fscanf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "fseek": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "fsetpos": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "ftell": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "fwprintf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "fwrite": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "fwscanf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "getc": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "getchar": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "getenv": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "gets": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "getwc": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "getwchar": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "gmtime": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "is_wctype": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "isalnum": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "isalpha": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "iscntrl": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "isdigit": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "isgraph": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "isleadbyte": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "islower": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "isprint": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "ispunct": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "isspace": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "isupper": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "iswalnum": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "iswalpha": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "iswascii": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "iswcntrl": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "iswctype": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "iswdigit": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "iswgraph": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "iswlower": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "iswprint": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "iswpunct": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "iswspace": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "iswupper": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "iswxdigit": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "isxdigit": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "labs": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "ldexp": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "ldiv": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "localeconv": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "localtime": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "log": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "log10": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "longjmp": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "lstrlenA": [
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        }
+    ],
+    "lstrlenW": [
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        }
+    ],
+    "malloc": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "mblen": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "mbstowcs": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "mbtowc": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "memchr": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "memcmp": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "memcpy": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "memmove": [
+        {
+            "name": "dest",
+            "type": "POINTER"
+        },
+        {
+            "name": "src",
+            "type": "POINTER"
+        },
+        {
+            "name": "num",
+            "type": "INT"
+        }
+    ],
+    "memset": [
+        {
+            "name": "dest",
+            "type": "POINTER"
+        },
+        {
+            "name": "c",
+            "type": "INT"
+        },
+        {
+            "name": "count",
+            "type": "INT"
+        }
+    ],
+    "mktime": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "modf": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "perror": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "pow": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        },
+        {
+            "name": "param2",
+            "type": "DOUBLE"
+        }
+    ],
+    "printf": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "putc": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "putchar": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "puts": [
+        {
+            "name": "str",
+            "type": "STRING"
+        }
+    ],
+    "putwc": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "putwchar": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "qsort": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "raise": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "rand": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "realloc": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "remove": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "rename": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "rewind": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "scanf": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "setbuf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "setlocale": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "setvbuf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        },
+        {
+            "name": "param4",
+            "type": "INT"
+        }
+    ],
+    "signal": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "sin": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "sinh": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "sprintf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "sqrt": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "srand": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "sscanf": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "strcat": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "strchr": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "strcmp": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "strcoll": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "strcpy": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "strcspn": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "strerror": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "strftime": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "STRING"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "strlen": [
+        {
+            "name": "str",
+            "type": "STRING"
+        }
+    ],
+    "strncat": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "strncmp": [
+        {
+            "name": "string1",
+            "type": "STRING"
+        },
+        {
+            "name": "string2",
+            "type": "STRING"
+        },
+        {
+            "name": "count",
+            "type": "INT"
+        }
+    ],
+    "strncpy": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "strpbrk": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "strrchr": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "strspn": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "strstr": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "strtod": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "strtok": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        }
+    ],
+    "strtol": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "strtoul": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "strxfrm": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "swprintf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "swscanf": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "system": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        }
+    ],
+    "tan": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "tanh": [
+        {
+            "name": "param1",
+            "type": "DOUBLE"
+        }
+    ],
+    "time": [
+        {
+            "name": "destTime",
+            "type": "POINTER"
+        }
+    ],
+    "tmpfile": [
+        {
+            "name": "param1",
+            "type": ""
+        }
+    ],
+    "tmpnam": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        }
+    ],
+    "tolower": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "toupper": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "towlower": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "towupper": [
+        {
+            "name": "param1",
+            "type": "INT"
+        }
+    ],
+    "ungetc": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "ungetwc": [
+        {
+            "name": "param1",
+            "type": "INT"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "vfprintf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "vfwprintf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "vprintf": [
+        {
+            "name": "param1",
+            "type": "STRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "vsprintf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "STRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "vswprintf": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "POINTER"
+        }
+    ],
+    "vwprintf": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "wcscat": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "wcschr": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "wcscmp": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "wcscoll": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "wcscpy": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "wcscspn": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "wcsftime": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        },
+        {
+            "name": "param3",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param4",
+            "type": "POINTER"
+        }
+    ],
+    "wcslen": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "wcsncat": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "wcsncmp": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "wcsncpy": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "wcspbrk": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "wcsrchr": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "wcsspn": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "wcsstr": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "wcstod": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        }
+    ],
+    "wcstok": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        }
+    ],
+    "wcstol": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "wcstombs": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "wcstoul": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param2",
+            "type": "POINTER"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "wcsxfrm": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "WSTRING"
+        },
+        {
+            "name": "param3",
+            "type": "INT"
+        }
+    ],
+    "wctomb": [
+        {
+            "name": "param1",
+            "type": "POINTER"
+        },
+        {
+            "name": "param2",
+            "type": "INT"
+        }
+    ],
+    "wprintf": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ],
+    "wscanf": [
+        {
+            "name": "param1",
+            "type": "WSTRING"
+        }
+    ]
+}

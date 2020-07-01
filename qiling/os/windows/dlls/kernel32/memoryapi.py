@@ -13,6 +13,7 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
+dllname = 'kernel32_dll'
 
 # LPVOID VirtualAlloc(
 #   LPVOID lpAddress,
@@ -20,12 +21,7 @@ from qiling.exception import *
 #   DWORD  flAllocationType,
 #   DWORD  flProtect
 # );
-@winapi(cc=STDCALL, params={
-    "lpAddress": POINTER,
-    "dwSize": SIZE_T,
-    "flAllocationType": DWORD,
-    "flProtect": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_VirtualAlloc(ql, address, params):
     dwSize = params["dwSize"]
     addr = ql.os.heap.alloc(dwSize)
@@ -37,11 +33,7 @@ def hook_VirtualAlloc(ql, address, params):
 #   SIZE_T dwSize,
 #   DWORD  dwFreeType
 # );
-@winapi(cc=STDCALL, params={
-    "lpAddress": POINTER,
-    "dwSize": SIZE_T,
-    "dwFreeType": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_VirtualFree(ql, address, params):
     lpAddress = params["lpAddress"]
     ql.os.heap.free(lpAddress)
@@ -54,12 +46,7 @@ def hook_VirtualFree(ql, address, params):
 #  DWORD  flNewProtect,
 #  PDWORD lpflOldProtect
 # );
-@winapi(cc=STDCALL, params={
-    "lpAddress": POINTER,
-    "dwSize": UINT,
-    "flNewProtect": UINT,
-    "lpflOldProtect": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
 def hook_VirtualProtect(ql, address, params):
     return 1
 
@@ -69,11 +56,7 @@ def hook_VirtualProtect(ql, address, params):
 #  PMEMORY_BASIC_INFORMATION lpBuffer,
 #  SIZE_T                    dwLength
 # );
-@winapi(cc=STDCALL, params={
-    "lpAddress": POINTER,
-    "lpBuffer": POINTER,
-    "dwLength": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'SIZE_T': 'UINT', 'DWORD': 'UINT'})
 def hook_VirtualQuery(ql, address, params):
     """
     typedef struct _MEMORY_BASIC_INFORMATION {

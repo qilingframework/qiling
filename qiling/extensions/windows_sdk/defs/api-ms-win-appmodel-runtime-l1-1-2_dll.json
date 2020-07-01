@@ -1,0 +1,82 @@
+{
+    "AppPolicyGetLifecycleManagement": [
+        {
+            "name": "processToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "policy",
+            "type": "AppPolicyLifecycleManagement"
+        }
+    ],
+    "AppPolicyGetWindowingModel": [
+        {
+            "name": "processToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "policy",
+            "type": "AppPolicyWindowingModel"
+        }
+    ],
+    "AppPolicyGetMediaFoundationCodecLoading": [
+        {
+            "name": "processToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "policy",
+            "type": "AppPolicyMediaFoundationCodecLoading"
+        }
+    ],
+    "AppPolicyGetClrCompat": [
+        {
+            "name": "processToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "policy",
+            "type": "AppPolicyClrCompat"
+        }
+    ],
+    "AppPolicyGetThreadInitializationType": [
+        {
+            "name": "processToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "policy",
+            "type": "AppPolicyThreadInitializationType"
+        }
+    ],
+    "AppPolicyGetShowDeveloperDiagnostic": [
+        {
+            "name": "processToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "policy",
+            "type": "AppPolicyShowDeveloperDiagnostic"
+        }
+    ],
+    "AppPolicyGetProcessTerminationMethod": [
+        {
+            "name": "processToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "policy",
+            "type": "AppPolicyProcessTerminationMethod"
+        }
+    ],
+    "AppPolicyGetCreateFileAccess": [
+        {
+            "name": "processToken",
+            "type": "HANDLE"
+        },
+        {
+            "name": "policy",
+            "type": "AppPolicyCreateFileAccess"
+        }
+    ]
+}

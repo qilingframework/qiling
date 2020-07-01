@@ -1,0 +1,86 @@
+{
+    "AllJoynConnectToBus": [
+        {
+            "name": "connectionSpec",
+            "type": "PCWSTR"
+        }
+    ],
+    "AllJoynCloseBusHandle": [
+        {
+            "name": "busHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "AllJoynSendToBus": [
+        {
+            "name": "connectedBusHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "buffer",
+            "type": "void"
+        },
+        {
+            "name": "bytesToWrite",
+            "type": "DWORD"
+        },
+        {
+            "name": "bytesTransferred",
+            "type": "PDWORD"
+        },
+        {
+            "name": "reserved",
+            "type": "PVOID"
+        }
+    ],
+    "AllJoynReceiveFromBus": [
+        {
+            "name": "connectedBusHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "buffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "bytesToRead",
+            "type": "DWORD"
+        },
+        {
+            "name": "bytesTransferred",
+            "type": "PDWORD"
+        },
+        {
+            "name": "reserved",
+            "type": "PVOID"
+        }
+    ],
+    "AllJoynEventSelect": [
+        {
+            "name": "connectedBusHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "eventHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "eventTypes",
+            "type": "DWORD"
+        }
+    ],
+    "AllJoynEnumEvents": [
+        {
+            "name": "connectedBusHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "eventToReset",
+            "type": "HANDLE"
+        },
+        {
+            "name": "eventTypes",
+            "type": "PDWORD"
+        }
+    ]
+}

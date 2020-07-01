@@ -1,0 +1,478 @@
+{
+    "PeerGraphStartup": [
+        {
+            "name": "wVersionRequested",
+            "type": "WORD"
+        },
+        {
+            "name": "pVersionData",
+            "type": "PPEER_VERSION_DATA"
+        }
+    ],
+    "PeerGraphFreeData": [
+        {
+            "name": "pvData",
+            "type": "PVOID"
+        }
+    ],
+    "PeerGraphGetItemCount": [
+        {
+            "name": "hPeerEnum",
+            "type": "HPEERENUM"
+        },
+        {
+            "name": "pCount",
+            "type": "ULONG"
+        }
+    ],
+    "PeerGraphGetNextItem": [
+        {
+            "name": "hPeerEnum",
+            "type": "HPEERENUM"
+        },
+        {
+            "name": "pCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "pppvItems",
+            "type": "PVOID"
+        }
+    ],
+    "PeerGraphEndEnumeration": [
+        {
+            "name": "hPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerGraphCreate": [
+        {
+            "name": "pGraphProperties",
+            "type": "PPEER_GRAPH_PROPERTIES"
+        },
+        {
+            "name": "pwzDatabaseName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pSecurityInterface",
+            "type": "PPEER_SECURITY_INTERFACE"
+        },
+        {
+            "name": "phGraph",
+            "type": "HGRAPH"
+        }
+    ],
+    "PeerGraphOpen": [
+        {
+            "name": "pwzGraphId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzPeerId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzDatabaseName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pSecurityInterface",
+            "type": "PPEER_SECURITY_INTERFACE"
+        },
+        {
+            "name": "cRecordTypeSyncPrecedence",
+            "type": "ULONG"
+        },
+        {
+            "name": "pRecordTypeSyncPrecedence",
+            "type": "GUID"
+        },
+        {
+            "name": "phGraph",
+            "type": "HGRAPH"
+        }
+    ],
+    "PeerGraphListen": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "dwScope",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwScopeId",
+            "type": "DWORD"
+        },
+        {
+            "name": "wPort",
+            "type": "WORD"
+        }
+    ],
+    "PeerGraphConnect": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pwzPeerId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pAddress",
+            "type": "PPEER_ADDRESS"
+        },
+        {
+            "name": "pullConnectionId",
+            "type": "ULONGLONG"
+        }
+    ],
+    "PeerGraphClose": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        }
+    ],
+    "PeerGraphDelete": [
+        {
+            "name": "pwzGraphId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzPeerId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzDatabaseName",
+            "type": "PCWSTR"
+        }
+    ],
+    "PeerGraphGetStatus": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pdwStatus",
+            "type": "DWORD"
+        }
+    ],
+    "PeerGraphGetProperties": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "ppGraphProperties",
+            "type": "PPEER_GRAPH_PROPERTIES"
+        }
+    ],
+    "PeerGraphSetProperties": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pGraphProperties",
+            "type": "PPEER_GRAPH_PROPERTIES"
+        }
+    ],
+    "PeerGraphRegisterEvent": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "hEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "cEventRegistrations",
+            "type": "ULONG"
+        },
+        {
+            "name": "pEventRegistrations",
+            "type": "PEER_GRAPH_EVENT_REGISTRATION"
+        },
+        {
+            "name": "phPeerEvent",
+            "type": "HPEEREVENT"
+        }
+    ],
+    "PeerGraphUnregisterEvent": [
+        {
+            "name": "hPeerEvent",
+            "type": "HPEEREVENT"
+        }
+    ],
+    "PeerGraphGetEventData": [
+        {
+            "name": "hPeerEvent",
+            "type": "HPEEREVENT"
+        },
+        {
+            "name": "ppEventData",
+            "type": "PPEER_GRAPH_EVENT_DATA"
+        }
+    ],
+    "PeerGraphGetRecord": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pRecordId",
+            "type": "GUID"
+        },
+        {
+            "name": "ppRecord",
+            "type": "PPEER_RECORD"
+        }
+    ],
+    "PeerGraphAddRecord": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pRecord",
+            "type": "PPEER_RECORD"
+        },
+        {
+            "name": "pRecordId",
+            "type": "GUID"
+        }
+    ],
+    "PeerGraphUpdateRecord": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pRecord",
+            "type": "PPEER_RECORD"
+        }
+    ],
+    "PeerGraphDeleteRecord": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pRecordId",
+            "type": "GUID"
+        },
+        {
+            "name": "fLocal",
+            "type": "BOOL"
+        }
+    ],
+    "PeerGraphEnumRecords": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pRecordType",
+            "type": "GUID"
+        },
+        {
+            "name": "pwzPeerId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerGraphSearchRecords": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pwzCriteria",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerGraphExportDatabase": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pwzFilePath",
+            "type": "PCWSTR"
+        }
+    ],
+    "PeerGraphImportDatabase": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pwzFilePath",
+            "type": "PCWSTR"
+        }
+    ],
+    "PeerGraphValidateDeferredRecords": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "cRecordIds",
+            "type": "ULONG"
+        },
+        {
+            "name": "pRecordIds",
+            "type": "GUID"
+        }
+    ],
+    "PeerGraphOpenDirectConnection": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pwzPeerId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pAddress",
+            "type": "PPEER_ADDRESS"
+        },
+        {
+            "name": "pullConnectionId",
+            "type": "ULONGLONG"
+        }
+    ],
+    "PeerGraphSendData": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "ullConnectionId",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "pType",
+            "type": "GUID"
+        },
+        {
+            "name": "cbData",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvData",
+            "type": "PVOID"
+        }
+    ],
+    "PeerGraphCloseDirectConnection": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "ullConnectionId",
+            "type": "ULONGLONG"
+        }
+    ],
+    "PeerGraphEnumConnections": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerGraphEnumNodes": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pwzPeerId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "phPeerEnum",
+            "type": "HPEERENUM"
+        }
+    ],
+    "PeerGraphSetPresence": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "fPresent",
+            "type": "BOOL"
+        }
+    ],
+    "PeerGraphGetNodeInfo": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "ullNodeId",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "ppNodeInfo",
+            "type": "PPEER_NODE_INFO"
+        }
+    ],
+    "PeerGraphSetNodeAttributes": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pwzAttributes",
+            "type": "PCWSTR"
+        }
+    ],
+    "PeerGraphPeerTimeToUniversalTime": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pftPeerTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "pftUniversalTime",
+            "type": "FILETIME"
+        }
+    ],
+    "PeerGraphUniversalTimeToPeerTime": [
+        {
+            "name": "hGraph",
+            "type": "HGRAPH"
+        },
+        {
+            "name": "pftUniversalTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "pftPeerTime",
+            "type": "FILETIME"
+        }
+    ]
+}

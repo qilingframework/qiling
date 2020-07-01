@@ -1,0 +1,814 @@
+{
+    "WinBioEnumServiceProviders": [
+        {
+            "name": "Factor",
+            "type": "WINBIO_BIOMETRIC_TYPE"
+        },
+        {
+            "name": "BspSchemaArray",
+            "type": "WINBIO_BSP_SCHEMA"
+        },
+        {
+            "name": "BspCount",
+            "type": "SIZE_T"
+        }
+    ],
+    "WinBioEnumBiometricUnits": [
+        {
+            "name": "Factor",
+            "type": "WINBIO_BIOMETRIC_TYPE"
+        },
+        {
+            "name": "UnitSchemaArray",
+            "type": "WINBIO_UNIT_SCHEMA"
+        },
+        {
+            "name": "UnitCount",
+            "type": "SIZE_T"
+        }
+    ],
+    "WinBioEnumDatabases": [
+        {
+            "name": "Factor",
+            "type": "WINBIO_BIOMETRIC_TYPE"
+        },
+        {
+            "name": "StorageSchemaArray",
+            "type": "WINBIO_STORAGE_SCHEMA"
+        },
+        {
+            "name": "StorageCount",
+            "type": "SIZE_T"
+        }
+    ],
+    "WinBioAsyncOpenFramework": [
+        {
+            "name": "NotificationMethod",
+            "type": "WINBIO_ASYNC_NOTIFICATION_METHOD"
+        },
+        {
+            "name": "TargetWindow",
+            "type": "HWND"
+        },
+        {
+            "name": "MessageCode",
+            "type": "UINT"
+        },
+        {
+            "name": "CallbackRoutine",
+            "type": "PWINBIO_ASYNC_COMPLETION_CALLBACK"
+        },
+        {
+            "name": "UserData",
+            "type": "PVOID"
+        },
+        {
+            "name": "AsynchronousOpen",
+            "type": "BOOL"
+        },
+        {
+            "name": "FrameworkHandle",
+            "type": "WINBIO_FRAMEWORK_HANDLE"
+        }
+    ],
+    "WinBioCloseFramework": [
+        {
+            "name": "FrameworkHandle",
+            "type": "WINBIO_FRAMEWORK_HANDLE"
+        }
+    ],
+    "WinBioAsyncEnumServiceProviders": [
+        {
+            "name": "FrameworkHandle",
+            "type": "WINBIO_FRAMEWORK_HANDLE"
+        },
+        {
+            "name": "Factor",
+            "type": "WINBIO_BIOMETRIC_TYPE"
+        }
+    ],
+    "WinBioAsyncEnumBiometricUnits": [
+        {
+            "name": "FrameworkHandle",
+            "type": "WINBIO_FRAMEWORK_HANDLE"
+        },
+        {
+            "name": "Factor",
+            "type": "WINBIO_BIOMETRIC_TYPE"
+        }
+    ],
+    "WinBioAsyncEnumDatabases": [
+        {
+            "name": "FrameworkHandle",
+            "type": "WINBIO_FRAMEWORK_HANDLE"
+        },
+        {
+            "name": "Factor",
+            "type": "WINBIO_BIOMETRIC_TYPE"
+        }
+    ],
+    "WinBioAsyncMonitorFrameworkChanges": [
+        {
+            "name": "FrameworkHandle",
+            "type": "WINBIO_FRAMEWORK_HANDLE"
+        },
+        {
+            "name": "ChangeTypes",
+            "type": "WINBIO_FRAMEWORK_CHANGE_TYPE"
+        }
+    ],
+    "WinBioOpenSession": [
+        {
+            "name": "Factor",
+            "type": "WINBIO_BIOMETRIC_TYPE"
+        },
+        {
+            "name": "PoolType",
+            "type": "WINBIO_POOL_TYPE"
+        },
+        {
+            "name": "Flags",
+            "type": "WINBIO_SESSION_FLAGS"
+        },
+        {
+            "name": "UnitArray",
+            "type": "WINBIO_UNIT_ID"
+        },
+        {
+            "name": "UnitCount",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "DatabaseId",
+            "type": "GUID"
+        },
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        }
+    ],
+    "WinBioAsyncOpenSession": [
+        {
+            "name": "Factor",
+            "type": "WINBIO_BIOMETRIC_TYPE"
+        },
+        {
+            "name": "PoolType",
+            "type": "WINBIO_POOL_TYPE"
+        },
+        {
+            "name": "Flags",
+            "type": "WINBIO_SESSION_FLAGS"
+        },
+        {
+            "name": "UnitArray",
+            "type": "WINBIO_UNIT_ID"
+        },
+        {
+            "name": "UnitCount",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "DatabaseId",
+            "type": "GUID"
+        },
+        {
+            "name": "NotificationMethod",
+            "type": "WINBIO_ASYNC_NOTIFICATION_METHOD"
+        },
+        {
+            "name": "TargetWindow",
+            "type": "HWND"
+        },
+        {
+            "name": "MessageCode",
+            "type": "UINT"
+        },
+        {
+            "name": "CallbackRoutine",
+            "type": "PWINBIO_ASYNC_COMPLETION_CALLBACK"
+        },
+        {
+            "name": "UserData",
+            "type": "PVOID"
+        },
+        {
+            "name": "AsynchronousOpen",
+            "type": "BOOL"
+        },
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        }
+    ],
+    "WinBioCloseSession": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        }
+    ],
+    "WinBioVerify": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "Identity",
+            "type": "WINBIO_IDENTITY"
+        },
+        {
+            "name": "SubFactor",
+            "type": "WINBIO_BIOMETRIC_SUBTYPE"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        },
+        {
+            "name": "Match",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "RejectDetail",
+            "type": "WINBIO_REJECT_DETAIL"
+        }
+    ],
+    "WinBioVerifyWithCallback": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "Identity",
+            "type": "WINBIO_IDENTITY"
+        },
+        {
+            "name": "SubFactor",
+            "type": "WINBIO_BIOMETRIC_SUBTYPE"
+        },
+        {
+            "name": "VerifyCallback",
+            "type": "PWINBIO_VERIFY_CALLBACK"
+        },
+        {
+            "name": "VerifyCallbackContext",
+            "type": "PVOID"
+        }
+    ],
+    "WinBioIdentify": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        },
+        {
+            "name": "Identity",
+            "type": "WINBIO_IDENTITY"
+        },
+        {
+            "name": "SubFactor",
+            "type": "WINBIO_BIOMETRIC_SUBTYPE"
+        },
+        {
+            "name": "RejectDetail",
+            "type": "WINBIO_REJECT_DETAIL"
+        }
+    ],
+    "WinBioIdentifyWithCallback": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "IdentifyCallback",
+            "type": "PWINBIO_IDENTIFY_CALLBACK"
+        },
+        {
+            "name": "IdentifyCallbackContext",
+            "type": "PVOID"
+        }
+    ],
+    "WinBioWait": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        }
+    ],
+    "WinBioCancel": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        }
+    ],
+    "WinBioLocateSensor": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        }
+    ],
+    "WinBioLocateSensorWithCallback": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "LocateCallback",
+            "type": "PWINBIO_LOCATE_SENSOR_CALLBACK"
+        },
+        {
+            "name": "LocateCallbackContext",
+            "type": "PVOID"
+        }
+    ],
+    "WinBioEnrollBegin": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "SubFactor",
+            "type": "WINBIO_BIOMETRIC_SUBTYPE"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        }
+    ],
+    "WinBioEnrollSelect": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "SelectorValue",
+            "type": "ULONGLONG"
+        }
+    ],
+    "WinBioEnrollCapture": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "RejectDetail",
+            "type": "WINBIO_REJECT_DETAIL"
+        }
+    ],
+    "WinBioEnrollCaptureWithCallback": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "EnrollCallback",
+            "type": "PWINBIO_ENROLL_CAPTURE_CALLBACK"
+        },
+        {
+            "name": "EnrollCallbackContext",
+            "type": "PVOID"
+        }
+    ],
+    "WinBioEnrollCommit": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "Identity",
+            "type": "WINBIO_IDENTITY"
+        },
+        {
+            "name": "IsNewTemplate",
+            "type": "BOOLEAN"
+        }
+    ],
+    "WinBioEnrollDiscard": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        }
+    ],
+    "WinBioEnumEnrollments": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        },
+        {
+            "name": "Identity",
+            "type": "WINBIO_IDENTITY"
+        },
+        {
+            "name": "SubFactorArray",
+            "type": "WINBIO_BIOMETRIC_SUBTYPE"
+        },
+        {
+            "name": "SubFactorCount",
+            "type": "SIZE_T"
+        }
+    ],
+    "WinBioRegisterEventMonitor": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "EventMask",
+            "type": "WINBIO_EVENT_TYPE"
+        },
+        {
+            "name": "EventCallback",
+            "type": "PWINBIO_EVENT_CALLBACK"
+        },
+        {
+            "name": "EventCallbackContext",
+            "type": "PVOID"
+        }
+    ],
+    "WinBioUnregisterEventMonitor": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        }
+    ],
+    "WinBioMonitorPresence": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        }
+    ],
+    "WinBioCaptureSample": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "Purpose",
+            "type": "WINBIO_BIR_PURPOSE"
+        },
+        {
+            "name": "Flags",
+            "type": "WINBIO_BIR_DATA_FLAGS"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        },
+        {
+            "name": "Sample",
+            "type": "PWINBIO_BIR"
+        },
+        {
+            "name": "SampleSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "RejectDetail",
+            "type": "WINBIO_REJECT_DETAIL"
+        }
+    ],
+    "WinBioCaptureSampleWithCallback": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "Purpose",
+            "type": "WINBIO_BIR_PURPOSE"
+        },
+        {
+            "name": "Flags",
+            "type": "WINBIO_BIR_DATA_FLAGS"
+        },
+        {
+            "name": "CaptureCallback",
+            "type": "PWINBIO_CAPTURE_CALLBACK"
+        },
+        {
+            "name": "CaptureCallbackContext",
+            "type": "PVOID"
+        }
+    ],
+    "WinBioDeleteTemplate": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        },
+        {
+            "name": "Identity",
+            "type": "WINBIO_IDENTITY"
+        },
+        {
+            "name": "SubFactor",
+            "type": "WINBIO_BIOMETRIC_SUBTYPE"
+        }
+    ],
+    "WinBioLockUnit": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        }
+    ],
+    "WinBioUnlockUnit": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        }
+    ],
+    "WinBioControlUnit": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        },
+        {
+            "name": "Component",
+            "type": "WINBIO_COMPONENT"
+        },
+        {
+            "name": "ControlCode",
+            "type": "ULONG"
+        },
+        {
+            "name": "SendBuffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "SendBufferSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ReceiveBuffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "ReceiveBufferSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ReceiveDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "OperationStatus",
+            "type": "ULONG"
+        }
+    ],
+    "WinBioControlUnitPrivileged": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        },
+        {
+            "name": "Component",
+            "type": "WINBIO_COMPONENT"
+        },
+        {
+            "name": "ControlCode",
+            "type": "ULONG"
+        },
+        {
+            "name": "SendBuffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "SendBufferSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ReceiveBuffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "ReceiveBufferSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "ReceiveDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "OperationStatus",
+            "type": "ULONG"
+        }
+    ],
+    "WinBioGetProperty": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "PropertyType",
+            "type": "WINBIO_PROPERTY_TYPE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "WINBIO_PROPERTY_ID"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        },
+        {
+            "name": "Identity",
+            "type": "WINBIO_IDENTITY"
+        },
+        {
+            "name": "SubFactor",
+            "type": "WINBIO_BIOMETRIC_SUBTYPE"
+        },
+        {
+            "name": "PropertyBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "PropertyBufferSize",
+            "type": "SIZE_T"
+        }
+    ],
+    "WinBioSetProperty": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        },
+        {
+            "name": "PropertyType",
+            "type": "WINBIO_PROPERTY_TYPE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "WINBIO_PROPERTY_ID"
+        },
+        {
+            "name": "UnitId",
+            "type": "WINBIO_UNIT_ID"
+        },
+        {
+            "name": "Identity",
+            "type": "WINBIO_IDENTITY"
+        },
+        {
+            "name": "SubFactor",
+            "type": "WINBIO_BIOMETRIC_SUBTYPE"
+        },
+        {
+            "name": "PropertyBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "PropertyBufferSize",
+            "type": "SIZE_T"
+        }
+    ],
+    "WinBioFree": [
+        {
+            "name": "Address",
+            "type": "PVOID"
+        }
+    ],
+    "WinBioSetCredential": [
+        {
+            "name": "Type",
+            "type": "WINBIO_CREDENTIAL_TYPE"
+        },
+        {
+            "name": "Credential",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "CredentialSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "Format",
+            "type": "WINBIO_CREDENTIAL_FORMAT"
+        }
+    ],
+    "WinBioRemoveCredential": [
+        {
+            "name": "Identity",
+            "type": "WINBIO_IDENTITY"
+        },
+        {
+            "name": "Type",
+            "type": "WINBIO_CREDENTIAL_TYPE"
+        }
+    ],
+    "WinBioRemoveAllCredentials": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "WinBioRemoveAllDomainCredentials": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "WinBioGetCredentialState": [
+        {
+            "name": "Identity",
+            "type": "WINBIO_IDENTITY"
+        },
+        {
+            "name": "Type",
+            "type": "WINBIO_CREDENTIAL_TYPE"
+        },
+        {
+            "name": "CredentialState",
+            "type": "WINBIO_CREDENTIAL_STATE"
+        }
+    ],
+    "WinBioLogonIdentifiedUser": [
+        {
+            "name": "SessionHandle",
+            "type": "WINBIO_SESSION_HANDLE"
+        }
+    ],
+    "WinBioGetEnrolledFactors": [
+        {
+            "name": "AccountOwner",
+            "type": "WINBIO_IDENTITY"
+        },
+        {
+            "name": "EnrolledFactors",
+            "type": "WINBIO_BIOMETRIC_TYPE"
+        }
+    ],
+    "WinBioGetEnabledSetting": [
+        {
+            "name": "Value",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "Source",
+            "type": "PWINBIO_SETTING_SOURCE_TYPE"
+        }
+    ],
+    "WinBioGetLogonSetting": [
+        {
+            "name": "Value",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "Source",
+            "type": "PWINBIO_SETTING_SOURCE_TYPE"
+        }
+    ],
+    "WinBioGetDomainLogonSetting": [
+        {
+            "name": "Value",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "Source",
+            "type": "PWINBIO_SETTING_SOURCE_TYPE"
+        }
+    ],
+    "WinBioAcquireFocus": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "WinBioReleaseFocus": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ]
+}

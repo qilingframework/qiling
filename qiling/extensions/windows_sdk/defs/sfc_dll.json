@@ -1,0 +1,36 @@
+{
+    "SfcGetNextProtectedFile": [
+        {
+            "name": "RpcHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ProtFileData",
+            "type": "PPROTECTED_FILE_DATA"
+        }
+    ],
+    "SfcIsFileProtected": [
+        {
+            "name": "RpcHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ProtFileName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SfcIsKeyProtected": [
+        {
+            "name": "KeyHandle",
+            "type": "HKEY"
+        },
+        {
+            "name": "SubKeyName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "KeySam",
+            "type": "REGSAM"
+        }
+    ]
+}

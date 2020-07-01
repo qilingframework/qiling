@@ -1,0 +1,116 @@
+{
+    "D3D12SerializeRootSignature": [
+        {
+            "name": "pRootSignature",
+            "type": "D3D12_ROOT_SIGNATURE_DESC"
+        },
+        {
+            "name": "Version",
+            "type": "D3D_ROOT_SIGNATURE_VERSION"
+        },
+        {
+            "name": "ppBlob",
+            "type": "ID3DBlob"
+        },
+        {
+            "name": "ppErrorBlob",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3D12CreateRootSignatureDeserializer": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSizeInBytes",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "pRootSignatureDeserializerInterface",
+            "type": "IID"
+        },
+        {
+            "name": "ppRootSignatureDeserializer",
+            "type": "void"
+        }
+    ],
+    "D3D12SerializeVersionedRootSignature": [
+        {
+            "name": "pRootSignature",
+            "type": "D3D12_VERSIONED_ROOT_SIGNATURE_DESC"
+        },
+        {
+            "name": "ppBlob",
+            "type": "ID3DBlob"
+        },
+        {
+            "name": "ppErrorBlob",
+            "type": "ID3DBlob"
+        }
+    ],
+    "D3D12CreateVersionedRootSignatureDeserializer": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSizeInBytes",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "pRootSignatureDeserializerInterface",
+            "type": "IID"
+        },
+        {
+            "name": "ppRootSignatureDeserializer",
+            "type": "void"
+        }
+    ],
+    "D3D12CreateDevice": [
+        {
+            "name": "pAdapter",
+            "type": "IUnknown"
+        },
+        {
+            "name": "MinimumFeatureLevel",
+            "type": "D3D_FEATURE_LEVEL"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppDevice",
+            "type": "void"
+        }
+    ],
+    "D3D12GetDebugInterface": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvDebug",
+            "type": "void"
+        }
+    ],
+    "D3D12EnableExperimentalFeatures": [
+        {
+            "name": "NumFeatures",
+            "type": "UINT"
+        },
+        {
+            "name": "pIIDs",
+            "type": "IID"
+        },
+        {
+            "name": "pConfigurationStructs",
+            "type": "void"
+        },
+        {
+            "name": "pConfigurationStructSizes",
+            "type": "UINT"
+        }
+    ]
+}

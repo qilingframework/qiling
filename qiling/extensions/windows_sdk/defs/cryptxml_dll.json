@@ -1,0 +1,304 @@
+{
+    "CryptXmlClose": [
+        {
+            "name": "hCryptXml",
+            "type": "HCRYPTXML"
+        }
+    ],
+    "CryptXmlGetTransforms": [
+        {
+            "name": "ppConfig",
+            "type": "CRYPT_XML_TRANSFORM_CHAIN_CONFIG"
+        }
+    ],
+    "CryptXmlOpenToEncode": [
+        {
+            "name": "pConfig",
+            "type": "CRYPT_XML_TRANSFORM_CHAIN_CONFIG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "wszId",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "rgProperty",
+            "type": "CRYPT_XML_PROPERTY"
+        },
+        {
+            "name": "cProperty",
+            "type": "ULONG"
+        },
+        {
+            "name": "pEncoded",
+            "type": "CRYPT_XML_BLOB"
+        },
+        {
+            "name": "phSignature",
+            "type": "HCRYPTXML"
+        }
+    ],
+    "CryptXmlOpenToDecode": [
+        {
+            "name": "pConfig",
+            "type": "CRYPT_XML_TRANSFORM_CHAIN_CONFIG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgProperty",
+            "type": "CRYPT_XML_PROPERTY"
+        },
+        {
+            "name": "cProperty",
+            "type": "ULONG"
+        },
+        {
+            "name": "pEncoded",
+            "type": "CRYPT_XML_BLOB"
+        },
+        {
+            "name": "phCryptXml",
+            "type": "HCRYPTXML"
+        }
+    ],
+    "CryptXmlAddObject": [
+        {
+            "name": "hSignatureOrObject",
+            "type": "HCRYPTXML"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgProperty",
+            "type": "CRYPT_XML_PROPERTY"
+        },
+        {
+            "name": "cProperty",
+            "type": "ULONG"
+        },
+        {
+            "name": "pEncoded",
+            "type": "CRYPT_XML_BLOB"
+        },
+        {
+            "name": "ppObject",
+            "type": "CRYPT_XML_OBJECT"
+        }
+    ],
+    "CryptXmlCreateReference": [
+        {
+            "name": "hCryptXml",
+            "type": "HCRYPTXML"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "wszId",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "wszURI",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "wszType",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pDigestMethod",
+            "type": "CRYPT_XML_ALGORITHM"
+        },
+        {
+            "name": "cTransform",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgTransform",
+            "type": "CRYPT_XML_ALGORITHM"
+        },
+        {
+            "name": "phReference",
+            "type": "HCRYPTXML"
+        }
+    ],
+    "CryptXmlDigestReference": [
+        {
+            "name": "hReference",
+            "type": "HCRYPTXML"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pDataProviderIn",
+            "type": "CRYPT_XML_DATA_PROVIDER"
+        }
+    ],
+    "CryptXmlSetHMACSecret": [
+        {
+            "name": "hSignature",
+            "type": "HCRYPTXML"
+        },
+        {
+            "name": "pbSecret",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbSecret",
+            "type": "ULONG"
+        }
+    ],
+    "CryptXmlSign": [
+        {
+            "name": "hSignature",
+            "type": "HCRYPTXML"
+        },
+        {
+            "name": "hKey",
+            "type": "HCRYPTPROV_OR_NCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "dwKeySpec",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwKeyInfoSpec",
+            "type": "CRYPT_XML_KEYINFO_SPEC"
+        },
+        {
+            "name": "pvKeyInfoSpec",
+            "type": "void"
+        },
+        {
+            "name": "pSignatureMethod",
+            "type": "CRYPT_XML_ALGORITHM"
+        },
+        {
+            "name": "pCanonicalization",
+            "type": "CRYPT_XML_ALGORITHM"
+        }
+    ],
+    "CryptXmlImportPublicKey": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pKeyValue",
+            "type": "CRYPT_XML_KEY_VALUE"
+        },
+        {
+            "name": "phKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        }
+    ],
+    "CryptXmlVerifySignature": [
+        {
+            "name": "hSignature",
+            "type": "HCRYPTXML"
+        },
+        {
+            "name": "hKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CryptXmlGetDocContext": [
+        {
+            "name": "hCryptXml",
+            "type": "HCRYPTXML"
+        },
+        {
+            "name": "ppStruct",
+            "type": "CRYPT_XML_DOC_CTXT"
+        }
+    ],
+    "CryptXmlGetSignature": [
+        {
+            "name": "hCryptXml",
+            "type": "HCRYPTXML"
+        },
+        {
+            "name": "ppStruct",
+            "type": "CRYPT_XML_SIGNATURE"
+        }
+    ],
+    "CryptXmlGetReference": [
+        {
+            "name": "hCryptXml",
+            "type": "HCRYPTXML"
+        },
+        {
+            "name": "ppStruct",
+            "type": "CRYPT_XML_REFERENCE"
+        }
+    ],
+    "CryptXmlGetStatus": [
+        {
+            "name": "hCryptXml",
+            "type": "HCRYPTXML"
+        },
+        {
+            "name": "pStatus",
+            "type": "CRYPT_XML_STATUS"
+        }
+    ],
+    "CryptXmlEncode": [
+        {
+            "name": "hCryptXml",
+            "type": "HCRYPTXML"
+        },
+        {
+            "name": "dwCharset",
+            "type": "CRYPT_XML_CHARSET"
+        },
+        {
+            "name": "rgProperty",
+            "type": "CRYPT_XML_PROPERTY"
+        },
+        {
+            "name": "cProperty",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvCallbackState",
+            "type": "void"
+        },
+        {
+            "name": "pfnWrite",
+            "type": "PFN_CRYPT_XML_WRITE_CALLBACK"
+        }
+    ],
+    "CryptXmlGetAlgorithmInfo": [
+        {
+            "name": "pXmlAlgorithm",
+            "type": "CRYPT_XML_ALGORITHM"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppAlgInfo",
+            "type": "CRYPT_XML_ALGORITHM_INFO"
+        }
+    ]
+}

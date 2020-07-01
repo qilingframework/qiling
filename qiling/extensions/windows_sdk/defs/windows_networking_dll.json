@@ -1,0 +1,8 @@
+{
+    "SetSocketMediaStreamingMode": [
+        {
+            "name": "value",
+            "type": "BOOL"
+        }
+    ]
+}

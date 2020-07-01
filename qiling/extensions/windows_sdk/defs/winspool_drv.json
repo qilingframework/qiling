@@ -1,0 +1,46 @@
+{
+    "DeviceCapabilitiesA": [
+        {
+            "name": "pDevice",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pPort",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "fwCapability",
+            "type": "WORD"
+        },
+        {
+            "name": "pOutput",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pDevMode",
+            "type": "DEVMODEA"
+        }
+    ],
+    "DeviceCapabilitiesW": [
+        {
+            "name": "pDevice",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pPort",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fwCapability",
+            "type": "WORD"
+        },
+        {
+            "name": "pOutput",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pDevMode",
+            "type": "DEVMODEW"
+        }
+    ]
+}

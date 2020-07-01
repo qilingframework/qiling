@@ -1,0 +1,36 @@
+{
+    "D3DDisassemble11Trace": [
+        {
+            "name": "pSrcData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "SrcDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "pTrace",
+            "type": "ID3D11ShaderTrace"
+        },
+        {
+            "name": "StartStep",
+            "type": "UINT"
+        },
+        {
+            "name": "NumSteps",
+            "type": "UINT"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT"
+        },
+        {
+            "name": "ppDisassembly",
+            "type": {
+                "name": "ID3D10Blob",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ]
+}

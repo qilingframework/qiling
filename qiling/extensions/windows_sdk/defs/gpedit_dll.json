@@ -1,0 +1,58 @@
+{
+    "CreateGPOLink": [
+        {
+            "name": "lpGPO",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "lpContainer",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "fHighPriority",
+            "type": "BOOL"
+        }
+    ],
+    "DeleteGPOLink": [
+        {
+            "name": "lpGPO",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "lpContainer",
+            "type": "LPOLESTR"
+        }
+    ],
+    "DeleteAllGPOLinks": [
+        {
+            "name": "lpContainer",
+            "type": "LPOLESTR"
+        }
+    ],
+    "BrowseForGPO": [
+        {
+            "name": "lpBrowseInfo",
+            "type": "LPGPOBROWSEINFO"
+        }
+    ],
+    "ImportRSoPData": [
+        {
+            "name": "lpNameSpace",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "lpFileName",
+            "type": "LPOLESTR"
+        }
+    ],
+    "ExportRSoPData": [
+        {
+            "name": "lpNameSpace",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "lpFileName",
+            "type": "LPOLESTR"
+        }
+    ]
+}

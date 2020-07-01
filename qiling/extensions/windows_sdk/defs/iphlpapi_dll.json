@@ -1,0 +1,806 @@
+{
+    "GetNumberOfInterfaces": [
+        {
+            "name": "pdwNumIf",
+            "type": "PDWORD"
+        }
+    ],
+    "GetIfEntry": [
+        {
+            "name": "pIfRow",
+            "type": "PMIB_IFROW"
+        }
+    ],
+    "GetIfTable": [
+        {
+            "name": "pIfTable",
+            "type": "PMIB_IFTABLE"
+        },
+        {
+            "name": "pdwSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "bOrder",
+            "type": "BOOL"
+        }
+    ],
+    "GetIpAddrTable": [
+        {
+            "name": "pIpAddrTable",
+            "type": "PMIB_IPADDRTABLE"
+        },
+        {
+            "name": "pdwSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "bOrder",
+            "type": "BOOL"
+        }
+    ],
+    "GetIpNetTable": [
+        {
+            "name": "IpNetTable",
+            "type": "PMIB_IPNETTABLE"
+        },
+        {
+            "name": "SizePointer",
+            "type": "PULONG"
+        },
+        {
+            "name": "Order",
+            "type": "BOOL"
+        }
+    ],
+    "GetIpForwardTable": [
+        {
+            "name": "pIpForwardTable",
+            "type": "PMIB_IPFORWARDTABLE"
+        },
+        {
+            "name": "pdwSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "bOrder",
+            "type": "BOOL"
+        }
+    ],
+    "GetTcpTable": [
+        {
+            "name": "TcpTable",
+            "type": "PMIB_TCPTABLE"
+        },
+        {
+            "name": "SizePointer",
+            "type": "PULONG"
+        },
+        {
+            "name": "Order",
+            "type": "BOOL"
+        }
+    ],
+    "GetExtendedTcpTable": [
+        {
+            "name": "pTcpTable",
+            "type": "PVOID"
+        },
+        {
+            "name": "pdwSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "bOrder",
+            "type": "BOOL"
+        },
+        {
+            "name": "ulAf",
+            "type": "ULONG"
+        },
+        {
+            "name": "TableClass",
+            "type": "TCP_TABLE_CLASS"
+        },
+        {
+            "name": "Reserved",
+            "type": "ULONG"
+        }
+    ],
+    "GetOwnerModuleFromTcpEntry": [
+        {
+            "name": "pTcpEntry",
+            "type": "PMIB_TCPROW_OWNER_MODULE"
+        },
+        {
+            "name": "Class",
+            "type": "TCPIP_OWNER_MODULE_INFO_CLASS"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "pdwSize",
+            "type": "PDWORD"
+        }
+    ],
+    "GetUdpTable": [
+        {
+            "name": "UdpTable",
+            "type": "PMIB_UDPTABLE"
+        },
+        {
+            "name": "SizePointer",
+            "type": "PULONG"
+        },
+        {
+            "name": "Order",
+            "type": "BOOL"
+        }
+    ],
+    "GetExtendedUdpTable": [
+        {
+            "name": "pUdpTable",
+            "type": "PVOID"
+        },
+        {
+            "name": "pdwSize",
+            "type": "PDWORD"
+        },
+        {
+            "name": "bOrder",
+            "type": "BOOL"
+        },
+        {
+            "name": "ulAf",
+            "type": "ULONG"
+        },
+        {
+            "name": "TableClass",
+            "type": "UDP_TABLE_CLASS"
+        },
+        {
+            "name": "Reserved",
+            "type": "ULONG"
+        }
+    ],
+    "GetOwnerModuleFromUdpEntry": [
+        {
+            "name": "pUdpEntry",
+            "type": "PMIB_UDPROW_OWNER_MODULE"
+        },
+        {
+            "name": "Class",
+            "type": "TCPIP_OWNER_MODULE_INFO_CLASS"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "pdwSize",
+            "type": "PDWORD"
+        }
+    ],
+    "GetTcpTable2": [
+        {
+            "name": "TcpTable",
+            "type": "PMIB_TCPTABLE2"
+        },
+        {
+            "name": "SizePointer",
+            "type": "PULONG"
+        },
+        {
+            "name": "Order",
+            "type": "BOOL"
+        }
+    ],
+    "GetIpStatistics": [
+        {
+            "name": "Statistics",
+            "type": "PMIB_IPSTATS"
+        }
+    ],
+    "GetIcmpStatistics": [
+        {
+            "name": "Statistics",
+            "type": "PMIB_ICMP"
+        }
+    ],
+    "GetTcpStatistics": [
+        {
+            "name": "Statistics",
+            "type": "PMIB_TCPSTATS"
+        }
+    ],
+    "GetUdpStatistics": [
+        {
+            "name": "Stats",
+            "type": "PMIB_UDPSTATS"
+        }
+    ],
+    "SetIpStatisticsEx": [
+        {
+            "name": "Statistics",
+            "type": "PMIB_IPSTATS"
+        },
+        {
+            "name": "Family",
+            "type": "ULONG"
+        }
+    ],
+    "GetIpStatisticsEx": [
+        {
+            "name": "Statistics",
+            "type": "PMIB_IPSTATS"
+        },
+        {
+            "name": "Family",
+            "type": "ULONG"
+        }
+    ],
+    "GetIcmpStatisticsEx": [
+        {
+            "name": "Statistics",
+            "type": "PMIB_ICMP_EX"
+        },
+        {
+            "name": "Family",
+            "type": "ULONG"
+        }
+    ],
+    "GetTcpStatisticsEx": [
+        {
+            "name": "Statistics",
+            "type": "PMIB_TCPSTATS"
+        },
+        {
+            "name": "Family",
+            "type": "ULONG"
+        }
+    ],
+    "GetUdpStatisticsEx": [
+        {
+            "name": "Statistics",
+            "type": "PMIB_UDPSTATS"
+        },
+        {
+            "name": "Family",
+            "type": "ULONG"
+        }
+    ],
+    "GetTcpStatisticsEx2": [
+        {
+            "name": "Statistics",
+            "type": "PMIB_TCPSTATS2"
+        },
+        {
+            "name": "Family",
+            "type": "ULONG"
+        }
+    ],
+    "GetUdpStatisticsEx2": [
+        {
+            "name": "Statistics",
+            "type": "PMIB_UDPSTATS2"
+        },
+        {
+            "name": "Family",
+            "type": "ULONG"
+        }
+    ],
+    "SetIfEntry": [
+        {
+            "name": "pIfRow",
+            "type": "PMIB_IFROW"
+        }
+    ],
+    "CreateIpForwardEntry": [
+        {
+            "name": "pRoute",
+            "type": "PMIB_IPFORWARDROW"
+        }
+    ],
+    "SetIpForwardEntry": [
+        {
+            "name": "pRoute",
+            "type": "PMIB_IPFORWARDROW"
+        }
+    ],
+    "DeleteIpForwardEntry": [
+        {
+            "name": "pRoute",
+            "type": "PMIB_IPFORWARDROW"
+        }
+    ],
+    "SetIpStatistics": [
+        {
+            "name": "pIpStats",
+            "type": "PMIB_IPSTATS"
+        }
+    ],
+    "SetIpTTL": [
+        {
+            "name": "nTTL",
+            "type": "UINT"
+        }
+    ],
+    "CreateIpNetEntry": [
+        {
+            "name": "pArpEntry",
+            "type": "PMIB_IPNETROW"
+        }
+    ],
+    "SetIpNetEntry": [
+        {
+            "name": "pArpEntry",
+            "type": "PMIB_IPNETROW"
+        }
+    ],
+    "DeleteIpNetEntry": [
+        {
+            "name": "pArpEntry",
+            "type": "PMIB_IPNETROW"
+        }
+    ],
+    "FlushIpNetTable": [
+        {
+            "name": "dwIfIndex",
+            "type": "DWORD"
+        }
+    ],
+    "CreateProxyArpEntry": [
+        {
+            "name": "dwAddress",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIfIndex",
+            "type": "DWORD"
+        }
+    ],
+    "DeleteProxyArpEntry": [
+        {
+            "name": "dwAddress",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwIfIndex",
+            "type": "DWORD"
+        }
+    ],
+    "SetTcpEntry": [
+        {
+            "name": "pTcpRow",
+            "type": "PMIB_TCPROW"
+        }
+    ],
+    "GetInterfaceInfo": [
+        {
+            "name": "pIfTable",
+            "type": "PIP_INTERFACE_INFO"
+        },
+        {
+            "name": "dwOutBufLen",
+            "type": "PULONG"
+        }
+    ],
+    "GetUniDirectionalAdapterInfo": [
+        {
+            "name": "pIPIfInfo",
+            "type": "PIP_UNIDIRECTIONAL_ADAPTER_ADDRESS"
+        },
+        {
+            "name": "dwOutBufLen",
+            "type": "PULONG"
+        }
+    ],
+    "NhpAllocateAndGetInterfaceInfoFromStack": [
+        {
+            "name": "ppTable",
+            "type": "IP_INTERFACE_NAME_INFO"
+        },
+        {
+            "name": "pdwCount",
+            "type": "PDWORD"
+        },
+        {
+            "name": "bOrder",
+            "type": "BOOL"
+        },
+        {
+            "name": "hHeap",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetBestInterface": [
+        {
+            "name": "dwDestAddr",
+            "type": "IPAddr"
+        },
+        {
+            "name": "pdwBestIfIndex",
+            "type": "PDWORD"
+        }
+    ],
+    "GetBestInterfaceEx": [
+        {
+            "name": "pDestAddr",
+            "type": {
+                "name": "sockaddr",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "pdwBestIfIndex",
+            "type": "PDWORD"
+        }
+    ],
+    "GetBestRoute": [
+        {
+            "name": "dwDestAddr",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwSourceAddr",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBestRoute",
+            "type": "PMIB_IPFORWARDROW"
+        }
+    ],
+    "NotifyAddrChange": [
+        {
+            "name": "Handle",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "NotifyRouteChange": [
+        {
+            "name": "Handle",
+            "type": "PHANDLE"
+        },
+        {
+            "name": "overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "CancelIPChangeNotify": [
+        {
+            "name": "notifyOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "GetAdapterIndex": [
+        {
+            "name": "AdapterName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "IfIndex",
+            "type": "PULONG"
+        }
+    ],
+    "AddIPAddress": [
+        {
+            "name": "Address",
+            "type": "IPAddr"
+        },
+        {
+            "name": "IpMask",
+            "type": "IPMask"
+        },
+        {
+            "name": "IfIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "NTEContext",
+            "type": "PULONG"
+        },
+        {
+            "name": "NTEInstance",
+            "type": "PULONG"
+        }
+    ],
+    "DeleteIPAddress": [
+        {
+            "name": "NTEContext",
+            "type": "ULONG"
+        }
+    ],
+    "GetNetworkParams": [
+        {
+            "name": "pFixedInfo",
+            "type": "PFIXED_INFO"
+        },
+        {
+            "name": "pOutBufLen",
+            "type": "PULONG"
+        }
+    ],
+    "GetAdaptersInfo": [
+        {
+            "name": "AdapterInfo",
+            "type": "PIP_ADAPTER_INFO"
+        },
+        {
+            "name": "SizePointer",
+            "type": "PULONG"
+        }
+    ],
+    "GetAdapterOrderMap": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetPerAdapterInfo": [
+        {
+            "name": "IfIndex",
+            "type": "ULONG"
+        },
+        {
+            "name": "pPerAdapterInfo",
+            "type": "PIP_PER_ADAPTER_INFO"
+        },
+        {
+            "name": "pOutBufLen",
+            "type": "PULONG"
+        }
+    ],
+    "GetInterfaceCurrentTimestampCapabilities": [
+        {
+            "name": "InterfaceLuid",
+            "type": "NET_LUID"
+        },
+        {
+            "name": "TimestampCapabilites",
+            "type": "PINTERFACE_TIMESTAMP_CAPABILITIES"
+        }
+    ],
+    "GetInterfaceHardwareTimestampCapabilities": [
+        {
+            "name": "InterfaceLuid",
+            "type": "NET_LUID"
+        },
+        {
+            "name": "TimestampCapabilites",
+            "type": "PINTERFACE_TIMESTAMP_CAPABILITIES"
+        }
+    ],
+    "CaptureInterfaceHardwareCrossTimestamp": [
+        {
+            "name": "InterfaceLuid",
+            "type": "NET_LUID"
+        },
+        {
+            "name": "CrossTimestamp",
+            "type": "PINTERFACE_HARDWARE_CROSSTIMESTAMP"
+        }
+    ],
+    "NotifyIfTimestampConfigChange": [
+        {
+            "name": "CallerContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "Callback",
+            "type": "PINTERFACE_TIMESTAMP_CONFIG_CHANGE_CALLBACK"
+        },
+        {
+            "name": "NotificationHandle",
+            "type": "HIFTIMESTAMPCHANGE"
+        }
+    ],
+    "CancelIfTimestampConfigChange": [
+        {
+            "name": "NotificationHandle",
+            "type": "HIFTIMESTAMPCHANGE"
+        }
+    ],
+    "IpReleaseAddress": [
+        {
+            "name": "AdapterInfo",
+            "type": "PIP_ADAPTER_INDEX_MAP"
+        }
+    ],
+    "IpRenewAddress": [
+        {
+            "name": "AdapterInfo",
+            "type": "PIP_ADAPTER_INDEX_MAP"
+        }
+    ],
+    "SendARP": [
+        {
+            "name": "DestIP",
+            "type": "IPAddr"
+        },
+        {
+            "name": "SrcIP",
+            "type": "IPAddr"
+        },
+        {
+            "name": "pMacAddr",
+            "type": "PVOID"
+        },
+        {
+            "name": "PhyAddrLen",
+            "type": "PULONG"
+        }
+    ],
+    "GetRTTAndHopCount": [
+        {
+            "name": "DestIpAddress",
+            "type": "IPAddr"
+        },
+        {
+            "name": "HopCount",
+            "type": "PULONG"
+        },
+        {
+            "name": "MaxHops",
+            "type": "ULONG"
+        },
+        {
+            "name": "RTT",
+            "type": "PULONG"
+        }
+    ],
+    "GetFriendlyIfIndex": [
+        {
+            "name": "IfIndex",
+            "type": "DWORD"
+        }
+    ],
+    "EnableRouter": [
+        {
+            "name": "pHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "OVERLAPPED"
+        }
+    ],
+    "UnenableRouter": [
+        {
+            "name": "pOverlapped",
+            "type": "OVERLAPPED"
+        },
+        {
+            "name": "lpdwEnableCount",
+            "type": "LPDWORD"
+        }
+    ],
+    "DisableMediaSense": [
+        {
+            "name": "pHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pOverLapped",
+            "type": "OVERLAPPED"
+        }
+    ],
+    "RestoreMediaSense": [
+        {
+            "name": "pOverlapped",
+            "type": "OVERLAPPED"
+        },
+        {
+            "name": "lpdwEnableCount",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetIpErrorString": [
+        {
+            "name": "ErrorCode",
+            "type": "IP_STATUS"
+        },
+        {
+            "name": "Buffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "Size",
+            "type": "PDWORD"
+        }
+    ],
+    "CreatePersistentTcpPortReservation": [
+        {
+            "name": "StartPort",
+            "type": "USHORT"
+        },
+        {
+            "name": "NumberOfPorts",
+            "type": "USHORT"
+        },
+        {
+            "name": "Token",
+            "type": "PULONG64"
+        }
+    ],
+    "CreatePersistentUdpPortReservation": [
+        {
+            "name": "StartPort",
+            "type": "USHORT"
+        },
+        {
+            "name": "NumberOfPorts",
+            "type": "USHORT"
+        },
+        {
+            "name": "Token",
+            "type": "PULONG64"
+        }
+    ],
+    "DeletePersistentTcpPortReservation": [
+        {
+            "name": "StartPort",
+            "type": "USHORT"
+        },
+        {
+            "name": "NumberOfPorts",
+            "type": "USHORT"
+        }
+    ],
+    "DeletePersistentUdpPortReservation": [
+        {
+            "name": "StartPort",
+            "type": "USHORT"
+        },
+        {
+            "name": "NumberOfPorts",
+            "type": "USHORT"
+        }
+    ],
+    "LookupPersistentTcpPortReservation": [
+        {
+            "name": "StartPort",
+            "type": "USHORT"
+        },
+        {
+            "name": "NumberOfPorts",
+            "type": "USHORT"
+        },
+        {
+            "name": "Token",
+            "type": "PULONG64"
+        }
+    ],
+    "LookupPersistentUdpPortReservation": [
+        {
+            "name": "StartPort",
+            "type": "USHORT"
+        },
+        {
+            "name": "NumberOfPorts",
+            "type": "USHORT"
+        },
+        {
+            "name": "Token",
+            "type": "PULONG64"
+        }
+    ]
+}

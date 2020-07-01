@@ -1,0 +1,32 @@
+{
+    "NlsDllCodePageTranslation": [
+        {
+            "name": "CodePage",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpMultiByteStr",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchMultiByte",
+            "type": "int"
+        },
+        {
+            "name": "lpWideCharStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchWideChar",
+            "type": "int"
+        },
+        {
+            "name": "lpCPInfo",
+            "type": "LPCPINFO"
+        }
+    ]
+}

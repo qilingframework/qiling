@@ -1,0 +1,262 @@
+{
+    "CertSrvIsServerOnlineW": [
+        {
+            "name": "pwszServerName",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pfServerOnline",
+            "type": "BOOL"
+        }
+    ],
+    "CertSrvBackupGetDynamicFileListW": [
+        {
+            "name": "hbc",
+            "type": "HCSBC"
+        },
+        {
+            "name": "ppwszzFileList",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcbSize",
+            "type": "DWORD"
+        }
+    ],
+    "CertSrvBackupPrepareW": [
+        {
+            "name": "pwszServerName",
+            "type": "WCHAR"
+        },
+        {
+            "name": "grbitJet",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwBackupFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "phbc",
+            "type": "HCSBC"
+        }
+    ],
+    "CertSrvBackupGetDatabaseNamesW": [
+        {
+            "name": "hbc",
+            "type": "HCSBC"
+        },
+        {
+            "name": "ppwszzAttachmentInformation",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcbSize",
+            "type": "DWORD"
+        }
+    ],
+    "CertSrvBackupOpenFileW": [
+        {
+            "name": "hbc",
+            "type": "HCSBC"
+        },
+        {
+            "name": "pwszAttachmentName",
+            "type": "WCHAR"
+        },
+        {
+            "name": "cbReadHintSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pliFileSize",
+            "type": "LARGE_INTEGER"
+        }
+    ],
+    "CertSrvBackupRead": [
+        {
+            "name": "hbc",
+            "type": "HCSBC"
+        },
+        {
+            "name": "pvBuffer",
+            "type": "void"
+        },
+        {
+            "name": "cbBuffer",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbRead",
+            "type": "DWORD"
+        }
+    ],
+    "CertSrvBackupClose": [
+        {
+            "name": "hbc",
+            "type": "HCSBC"
+        }
+    ],
+    "CertSrvBackupGetBackupLogsW": [
+        {
+            "name": "hbc",
+            "type": "HCSBC"
+        },
+        {
+            "name": "ppwszzBackupLogFiles",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcbSize",
+            "type": "DWORD"
+        }
+    ],
+    "CertSrvBackupTruncateLogs": [
+        {
+            "name": "hbc",
+            "type": "HCSBC"
+        }
+    ],
+    "CertSrvBackupEnd": [
+        {
+            "name": "hbc",
+            "type": "HCSBC"
+        }
+    ],
+    "CertSrvBackupFree": [
+        {
+            "name": "pv",
+            "type": "void"
+        }
+    ],
+    "CertSrvRestoreGetDatabaseLocationsW": [
+        {
+            "name": "hbc",
+            "type": "HCSBC"
+        },
+        {
+            "name": "ppwszzDatabaseLocationList",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcbSize",
+            "type": "DWORD"
+        }
+    ],
+    "CertSrvRestorePrepareW": [
+        {
+            "name": "pwszServerName",
+            "type": "WCHAR"
+        },
+        {
+            "name": "dwRestoreFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "phbc",
+            "type": "HCSBC"
+        }
+    ],
+    "CertSrvRestoreRegisterW": [
+        {
+            "name": "hbc",
+            "type": "HCSBC"
+        },
+        {
+            "name": "pwszCheckPointFilePath",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pwszLogPath",
+            "type": "WCHAR"
+        },
+        {
+            "name": "rgrstmap",
+            "type": "CSEDB_RSTMAPW"
+        },
+        {
+            "name": "crstmap",
+            "type": "LONG"
+        },
+        {
+            "name": "pwszBackupLogPath",
+            "type": "WCHAR"
+        },
+        {
+            "name": "genLow",
+            "type": "ULONG"
+        },
+        {
+            "name": "genHigh",
+            "type": "ULONG"
+        }
+    ],
+    "CertSrvRestoreRegisterThroughFile": [
+        {
+            "name": "hbc",
+            "type": "HCSBC"
+        },
+        {
+            "name": "pwszCheckPointFilePath",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pwszLogPath",
+            "type": "WCHAR"
+        },
+        {
+            "name": "rgrstmap",
+            "type": "CSEDB_RSTMAPW"
+        },
+        {
+            "name": "crstmap",
+            "type": "LONG"
+        },
+        {
+            "name": "pwszBackupLogPath",
+            "type": "WCHAR"
+        },
+        {
+            "name": "genLow",
+            "type": "ULONG"
+        },
+        {
+            "name": "genHigh",
+            "type": "ULONG"
+        }
+    ],
+    "CertSrvRestoreRegisterComplete": [
+        {
+            "name": "hbc",
+            "type": "HCSBC"
+        },
+        {
+            "name": "hrRestoreState",
+            "type": "HRESULT"
+        }
+    ],
+    "CertSrvRestoreEnd": [
+        {
+            "name": "hbc",
+            "type": "HCSBC"
+        }
+    ],
+    "CertSrvServerControlW": [
+        {
+            "name": "pwszServerName",
+            "type": "WCHAR"
+        },
+        {
+            "name": "dwControlFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppbOut",
+            "type": "BYTE"
+        }
+    ]
+}

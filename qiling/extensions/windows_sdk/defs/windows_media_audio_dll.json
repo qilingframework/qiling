@@ -1,0 +1,44 @@
+{
+    "CreateFX": [
+        {
+            "name": "clsid",
+            "type": "IID"
+        },
+        {
+            "name": "pEffect",
+            "type": "IUnknown"
+        },
+        {
+            "name": "pInitDat",
+            "type": "void"
+        },
+        {
+            "name": "InitDataByteSize",
+            "type": "UINT32"
+        }
+    ],
+    "XAudio2Create": [
+        {
+            "name": "ppXAudio2",
+            "type": "IXAudio2"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT32"
+        },
+        {
+            "name": "XAudio2Processor",
+            "type": "XAUDIO2_PROCESSOR"
+        }
+    ],
+    "XAudio2CreateReverb": [
+        {
+            "name": "ppApo",
+            "type": "IUnknown"
+        },
+        {
+            "name": "Flags",
+            "type": "UINT32"
+        }
+    ]
+}

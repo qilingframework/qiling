@@ -1,0 +1,416 @@
+{
+    "BluetoothFindFirstRadio": [
+        {
+            "name": "pbtfrp",
+            "type": "BLUETOOTH_FIND_RADIO_PARAMS"
+        },
+        {
+            "name": "phRadio",
+            "type": "HANDLE"
+        }
+    ],
+    "BluetoothFindNextRadio": [
+        {
+            "name": "hFind",
+            "type": "HBLUETOOTH_RADIO_FIND"
+        },
+        {
+            "name": "phRadio",
+            "type": "HANDLE"
+        }
+    ],
+    "BluetoothFindRadioClose": [
+        {
+            "name": "hFind",
+            "type": "HBLUETOOTH_RADIO_FIND"
+        }
+    ],
+    "BluetoothGetRadioInfo": [
+        {
+            "name": "hRadio",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pRadioInfo",
+            "type": "PBLUETOOTH_RADIO_INFO"
+        }
+    ],
+    "BluetoothFindFirstDevice": [
+        {
+            "name": "pbtsp",
+            "type": "BLUETOOTH_DEVICE_SEARCH_PARAMS"
+        },
+        {
+            "name": "pbtdi",
+            "type": "BLUETOOTH_DEVICE_INFO_STRUCT"
+        }
+    ],
+    "BluetoothFindNextDevice": [
+        {
+            "name": "hFind",
+            "type": "HBLUETOOTH_DEVICE_FIND"
+        },
+        {
+            "name": "pbtdi",
+            "type": "BLUETOOTH_DEVICE_INFO_STRUCT"
+        }
+    ],
+    "BluetoothFindDeviceClose": [
+        {
+            "name": "hFind",
+            "type": "HBLUETOOTH_DEVICE_FIND"
+        }
+    ],
+    "BluetoothGetDeviceInfo": [
+        {
+            "name": "hRadio",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pbtdi",
+            "type": "BLUETOOTH_DEVICE_INFO_STRUCT"
+        }
+    ],
+    "BluetoothUpdateDeviceRecord": [
+        {
+            "name": "pbtdi",
+            "type": "BLUETOOTH_DEVICE_INFO_STRUCT"
+        }
+    ],
+    "BluetoothRemoveDevice": [
+        {
+            "name": "pAddress",
+            "type": "BLUETOOTH_ADDRESS_STRUCT"
+        }
+    ],
+    "BluetoothSelectDevices": [
+        {
+            "name": "pbtsdp",
+            "type": "BLUETOOTH_SELECT_DEVICE_PARAMS"
+        }
+    ],
+    "BluetoothSelectDevicesFree": [
+        {
+            "name": "pbtsdp",
+            "type": "BLUETOOTH_SELECT_DEVICE_PARAMS"
+        }
+    ],
+    "BluetoothDisplayDeviceProperties": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "pbtdi",
+            "type": "BLUETOOTH_DEVICE_INFO_STRUCT"
+        }
+    ],
+    "BluetoothAuthenticateDevice": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "hRadio",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pbtbi",
+            "type": "BLUETOOTH_DEVICE_INFO_STRUCT"
+        },
+        {
+            "name": "pszPasskey",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ulPasskeyLength",
+            "type": "ULONG"
+        }
+    ],
+    "BluetoothAuthenticateDeviceEx": [
+        {
+            "name": "hwndParentIn",
+            "type": "HWND"
+        },
+        {
+            "name": "hRadioIn",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pbtdiInout",
+            "type": "BLUETOOTH_DEVICE_INFO_STRUCT"
+        },
+        {
+            "name": "pbtOobData",
+            "type": "PBLUETOOTH_OOB_DATA_INFO"
+        },
+        {
+            "name": "authenticationRequirement",
+            "type": "AUTHENTICATION_REQUIREMENTS"
+        }
+    ],
+    "BluetoothAuthenticateMultipleDevices": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "hRadio",
+            "type": "HANDLE"
+        },
+        {
+            "name": "cDevices",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgbtdi",
+            "type": "BLUETOOTH_DEVICE_INFO_STRUCT"
+        }
+    ],
+    "BluetoothSetServiceState": [
+        {
+            "name": "hRadio",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pbtdi",
+            "type": "BLUETOOTH_DEVICE_INFO_STRUCT"
+        },
+        {
+            "name": "pGuidService",
+            "type": "GUID"
+        },
+        {
+            "name": "dwServiceFlags",
+            "type": "DWORD"
+        }
+    ],
+    "BluetoothEnumerateInstalledServices": [
+        {
+            "name": "hRadio",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pbtdi",
+            "type": "BLUETOOTH_DEVICE_INFO_STRUCT"
+        },
+        {
+            "name": "pcServiceInout",
+            "type": "DWORD"
+        },
+        {
+            "name": "pGuidServices",
+            "type": "GUID"
+        }
+    ],
+    "BluetoothEnableDiscovery": [
+        {
+            "name": "hRadio",
+            "type": "HANDLE"
+        },
+        {
+            "name": "fEnabled",
+            "type": "BOOL"
+        }
+    ],
+    "BluetoothIsDiscoverable": [
+        {
+            "name": "hRadio",
+            "type": "HANDLE"
+        }
+    ],
+    "BluetoothEnableIncomingConnections": [
+        {
+            "name": "hRadio",
+            "type": "HANDLE"
+        },
+        {
+            "name": "fEnabled",
+            "type": "BOOL"
+        }
+    ],
+    "BluetoothIsConnectable": [
+        {
+            "name": "hRadio",
+            "type": "HANDLE"
+        }
+    ],
+    "BluetoothRegisterForAuthentication": [
+        {
+            "name": "pbtdi",
+            "type": "BLUETOOTH_DEVICE_INFO_STRUCT"
+        },
+        {
+            "name": "phRegHandle",
+            "type": "HBLUETOOTH_AUTHENTICATION_REGISTRATION"
+        },
+        {
+            "name": "pfnCallback",
+            "type": "PFN_AUTHENTICATION_CALLBACK"
+        },
+        {
+            "name": "pvParam",
+            "type": "PVOID"
+        }
+    ],
+    "BluetoothRegisterForAuthenticationEx": [
+        {
+            "name": "pbtdiIn",
+            "type": "BLUETOOTH_DEVICE_INFO_STRUCT"
+        },
+        {
+            "name": "phRegHandleOut",
+            "type": "HBLUETOOTH_AUTHENTICATION_REGISTRATION"
+        },
+        {
+            "name": "pfnCallbackIn",
+            "type": "PFN_AUTHENTICATION_CALLBACK_EX"
+        },
+        {
+            "name": "pvParam",
+            "type": "PVOID"
+        }
+    ],
+    "BluetoothUnregisterAuthentication": [
+        {
+            "name": "hRegHandle",
+            "type": "HBLUETOOTH_AUTHENTICATION_REGISTRATION"
+        }
+    ],
+    "BluetoothSendAuthenticationResponse": [
+        {
+            "name": "hRadio",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pbtdi",
+            "type": "BLUETOOTH_DEVICE_INFO_STRUCT"
+        },
+        {
+            "name": "pszPasskey",
+            "type": "LPCWSTR"
+        }
+    ],
+    "BluetoothSendAuthenticationResponseEx": [
+        {
+            "name": "hRadioIn",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pauthResponse",
+            "type": "PBLUETOOTH_AUTHENTICATE_RESPONSE"
+        }
+    ],
+    "BluetoothSdpGetElementData": [
+        {
+            "name": "pSdpStream",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbSdpStreamLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "pData",
+            "type": "PSDP_ELEMENT_DATA"
+        }
+    ],
+    "BluetoothSdpGetContainerElementData": [
+        {
+            "name": "pContainerStream",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbContainerLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "pElement",
+            "type": "HBLUETOOTH_CONTAINER_ELEMENT"
+        },
+        {
+            "name": "pData",
+            "type": "PSDP_ELEMENT_DATA"
+        }
+    ],
+    "BluetoothSdpGetAttributeValue": [
+        {
+            "name": "pRecordStream",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbRecordLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "usAttributeId",
+            "type": "USHORT"
+        },
+        {
+            "name": "pAttributeData",
+            "type": "PSDP_ELEMENT_DATA"
+        }
+    ],
+    "BluetoothSdpGetString": [
+        {
+            "name": "pRecordStream",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbRecordLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "pStringData",
+            "type": "PSDP_STRING_TYPE_DATA"
+        },
+        {
+            "name": "usStringOffset",
+            "type": "USHORT"
+        },
+        {
+            "name": "pszString",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchStringLength",
+            "type": "PULONG"
+        }
+    ],
+    "BluetoothSdpEnumAttributes": [
+        {
+            "name": "pSDPStream",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cbStreamSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pfnCallback",
+            "type": "PFN_BLUETOOTH_ENUM_ATTRIBUTES_CALLBACK"
+        },
+        {
+            "name": "pvParam",
+            "type": "LPVOID"
+        }
+    ],
+    "BluetoothSetLocalServiceInfo": [
+        {
+            "name": "hRadioIn",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pClassGuid",
+            "type": "GUID"
+        },
+        {
+            "name": "ulInstance",
+            "type": "ULONG"
+        },
+        {
+            "name": "pServiceInfoIn",
+            "type": "BLUETOOTH_LOCAL_SERVICE_INFO_STRUCT"
+        }
+    ]
+}
