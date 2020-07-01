@@ -171,6 +171,12 @@ class PETest(unittest.TestCase):
         ql.run()
         del ql
 
+    def test_pe_win_x86_NtQueryInformationSystem(self):
+        ql = Qiling(
+        ["../examples/rootfs/x86_windows/bin/NtQuerySystemInformation.exe"],
+        "../examples/rootfs/x86_windows")
+        ql.run()
+        del ql
 
     def test_pe_win_al_khaser(self):
         ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
