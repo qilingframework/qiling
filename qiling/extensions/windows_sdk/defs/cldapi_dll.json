@@ -1,0 +1,476 @@
+{
+    "CfGetPlatformInfo": [
+        {
+            "name": "PlatformVersion",
+            "type": "CF_PLATFORM_INFO"
+        }
+    ],
+    "CfRegisterSyncRoot": [
+        {
+            "name": "SyncRootPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Registration",
+            "type": "CF_SYNC_REGISTRATION"
+        },
+        {
+            "name": "Policies",
+            "type": "CF_SYNC_POLICIES"
+        },
+        {
+            "name": "RegisterFlags",
+            "type": "CF_REGISTER_FLAGS"
+        }
+    ],
+    "CfUnregisterSyncRoot": [
+        {
+            "name": "SyncRootPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CfConnectSyncRoot": [
+        {
+            "name": "SyncRootPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "CallbackTable",
+            "type": "CF_CALLBACK_REGISTRATION"
+        },
+        {
+            "name": "CallbackContext",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "ConnectFlags",
+            "type": "CF_CONNECT_FLAGS"
+        },
+        {
+            "name": "ConnectionKey",
+            "type": "CF_CONNECTION_KEY"
+        }
+    ],
+    "CfDisconnectSyncRoot": [
+        {
+            "name": "ConnectionKey",
+            "type": "CF_CONNECTION_KEY"
+        }
+    ],
+    "CfGetTransferKey": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TransferKey",
+            "type": "CF_TRANSFER_KEY"
+        }
+    ],
+    "CfReleaseTransferKey": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TransferKey",
+            "type": "CF_TRANSFER_KEY"
+        }
+    ],
+    "CfExecute": [
+        {
+            "name": "OpInfo",
+            "type": "CF_OPERATION_INFO"
+        },
+        {
+            "name": "OpParams",
+            "type": "CF_OPERATION_PARAMETERS"
+        }
+    ],
+    "CfUpdateSyncProviderStatus": [
+        {
+            "name": "ConnectionKey",
+            "type": "CF_CONNECTION_KEY"
+        },
+        {
+            "name": "ProviderStatus",
+            "type": "CF_SYNC_PROVIDER_STATUS"
+        }
+    ],
+    "CfQuerySyncProviderStatus": [
+        {
+            "name": "ConnectionKey",
+            "type": "CF_CONNECTION_KEY"
+        },
+        {
+            "name": "ProviderStatus",
+            "type": "CF_SYNC_PROVIDER_STATUS"
+        }
+    ],
+    "CfReportSyncStatus": [
+        {
+            "name": "SyncRootPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "SyncStatus",
+            "type": "CF_SYNC_STATUS"
+        }
+    ],
+    "CfCreatePlaceholders": [
+        {
+            "name": "BaseDirectoryPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "PlaceholderArray",
+            "type": "CF_PLACEHOLDER_CREATE_INFO"
+        },
+        {
+            "name": "PlaceholderCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "CreateFlags",
+            "type": "CF_CREATE_FLAGS"
+        },
+        {
+            "name": "EntriesProcessed",
+            "type": "PDWORD"
+        }
+    ],
+    "CfOpenFileWithOplock": [
+        {
+            "name": "FilePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "CF_OPEN_FILE_FLAGS"
+        },
+        {
+            "name": "ProtectedHandle",
+            "type": "PHANDLE"
+        }
+    ],
+    "CfReferenceProtectedHandle": [
+        {
+            "name": "ProtectedHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "CfGetWin32HandleFromProtectedHandle": [
+        {
+            "name": "ProtectedHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "CfReleaseProtectedHandle": [
+        {
+            "name": "ProtectedHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "CfCloseHandle": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "CfConvertToPlaceholder": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "FileIdentity",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "FileIdentityLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "ConvertFlags",
+            "type": "CF_CONVERT_FLAGS"
+        },
+        {
+            "name": "ConvertUsn",
+            "type": "USN"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "CfUpdatePlaceholder": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "FsMetadata",
+            "type": "CF_FS_METADATA"
+        },
+        {
+            "name": "FileIdentity",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "FileIdentityLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "DehydrateRangeArray",
+            "type": "CF_FILE_RANGE"
+        },
+        {
+            "name": "DehydrateRangeCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "UpdateFlags",
+            "type": "CF_UPDATE_FLAGS"
+        },
+        {
+            "name": "UpdateUsn",
+            "type": "USN"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "CfRevertPlaceholder": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "RevertFlags",
+            "type": "CF_REVERT_FLAGS"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "CfHydratePlaceholder": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "StartingOffset",
+            "type": "LARGE_INTEGER"
+        },
+        {
+            "name": "Length",
+            "type": "LARGE_INTEGER"
+        },
+        {
+            "name": "HydrateFlags",
+            "type": "CF_HYDRATE_FLAGS"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "CfSetPinState": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "PinState",
+            "type": "CF_PIN_STATE"
+        },
+        {
+            "name": "PinFlags",
+            "type": "CF_SET_PIN_FLAGS"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "CfSetInSyncState": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "InSyncState",
+            "type": "CF_IN_SYNC_STATE"
+        },
+        {
+            "name": "InSyncFlags",
+            "type": "CF_SET_IN_SYNC_FLAGS"
+        },
+        {
+            "name": "InSyncUsn",
+            "type": "USN"
+        }
+    ],
+    "CfSetCorrelationVector": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CorrelationVector",
+            "type": "PCORRELATION_VECTOR"
+        }
+    ],
+    "CfGetCorrelationVector": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CorrelationVector",
+            "type": "PCORRELATION_VECTOR"
+        }
+    ],
+    "CfGetPlaceholderStateFromAttributeTag": [
+        {
+            "name": "FileAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReparseTag",
+            "type": "DWORD"
+        }
+    ],
+    "CfGetPlaceholderStateFromFileInfo": [
+        {
+            "name": "InfoBuffer",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "InfoClass",
+            "type": "FILE_INFO_BY_HANDLE_CLASS"
+        }
+    ],
+    "CfGetPlaceholderStateFromFindData": [
+        {
+            "name": "FindData",
+            "type": "WIN32_FIND_DATA"
+        }
+    ],
+    "CfGetPlaceholderInfo": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "InfoClass",
+            "type": "CF_PLACEHOLDER_INFO_CLASS"
+        },
+        {
+            "name": "InfoBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "InfoBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnedLength",
+            "type": "PDWORD"
+        }
+    ],
+    "CfGetSyncRootInfoByPath": [
+        {
+            "name": "FilePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "InfoClass",
+            "type": "CF_SYNC_ROOT_INFO_CLASS"
+        },
+        {
+            "name": "InfoBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "InfoBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnedLength",
+            "type": "DWORD"
+        }
+    ],
+    "CfGetSyncRootInfoByHandle": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "InfoClass",
+            "type": "CF_SYNC_ROOT_INFO_CLASS"
+        },
+        {
+            "name": "InfoBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "InfoBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnedLength",
+            "type": "DWORD"
+        }
+    ],
+    "CfGetPlaceholderRangeInfo": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "InfoClass",
+            "type": "CF_PLACEHOLDER_RANGE_INFO_CLASS"
+        },
+        {
+            "name": "StartingOffset",
+            "type": "LARGE_INTEGER"
+        },
+        {
+            "name": "Length",
+            "type": "LARGE_INTEGER"
+        },
+        {
+            "name": "InfoBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "InfoBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "ReturnedLength",
+            "type": "PDWORD"
+        }
+    ],
+    "CfReportProviderProgress": [
+        {
+            "name": "ConnectionKey",
+            "type": "CF_CONNECTION_KEY"
+        },
+        {
+            "name": "TransferKey",
+            "type": "CF_TRANSFER_KEY"
+        },
+        {
+            "name": "ProviderProgressTotal",
+            "type": "LARGE_INTEGER"
+        },
+        {
+            "name": "ProviderProgressCompleted",
+            "type": "LARGE_INTEGER"
+        }
+    ]
+}

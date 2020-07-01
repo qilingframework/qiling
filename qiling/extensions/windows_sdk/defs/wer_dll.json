@@ -1,0 +1,200 @@
+{
+    "WerReportCreate": [
+        {
+            "name": "pwzEventType",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "repType",
+            "type": "WER_REPORT_TYPE"
+        },
+        {
+            "name": "pReportInformation",
+            "type": "PWER_REPORT_INFORMATION"
+        },
+        {
+            "name": "phReportHandle",
+            "type": "HREPORT"
+        }
+    ],
+    "WerReportSetParameter": [
+        {
+            "name": "hReportHandle",
+            "type": "HREPORT"
+        },
+        {
+            "name": "dwparamID",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwzName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzValue",
+            "type": "PCWSTR"
+        }
+    ],
+    "WerReportAddFile": [
+        {
+            "name": "hReportHandle",
+            "type": "HREPORT"
+        },
+        {
+            "name": "pwzPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "repFileType",
+            "type": "WER_FILE_TYPE"
+        },
+        {
+            "name": "dwFileFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WerReportSetUIOption": [
+        {
+            "name": "hReportHandle",
+            "type": "HREPORT"
+        },
+        {
+            "name": "repUITypeID",
+            "type": "WER_REPORT_UI"
+        },
+        {
+            "name": "pwzValue",
+            "type": "PCWSTR"
+        }
+    ],
+    "WerReportSubmit": [
+        {
+            "name": "hReportHandle",
+            "type": "HREPORT"
+        },
+        {
+            "name": "consent",
+            "type": "WER_CONSENT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pSubmitResult",
+            "type": "PWER_SUBMIT_RESULT"
+        }
+    ],
+    "WerReportAddDump": [
+        {
+            "name": "hReportHandle",
+            "type": "HREPORT"
+        },
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "hThread",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dumpType",
+            "type": "WER_DUMP_TYPE"
+        },
+        {
+            "name": "pExceptionParam",
+            "type": "PWER_EXCEPTION_INFORMATION"
+        },
+        {
+            "name": "pDumpCustomOptions",
+            "type": "PWER_DUMP_CUSTOM_OPTIONS"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "WerReportCloseHandle": [
+        {
+            "name": "hReportHandle",
+            "type": "HREPORT"
+        }
+    ],
+    "WerAddExcludedApplication": [
+        {
+            "name": "pwzExeName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "bAllUsers",
+            "type": "BOOL"
+        }
+    ],
+    "WerRemoveExcludedApplication": [
+        {
+            "name": "pwzExeName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "bAllUsers",
+            "type": "BOOL"
+        }
+    ],
+    "WerStoreOpen": [
+        {
+            "name": "repStoreType",
+            "type": "REPORT_STORE_TYPES"
+        },
+        {
+            "name": "phReportStore",
+            "type": "PHREPORTSTORE"
+        }
+    ],
+    "WerStoreClose": [
+        {
+            "name": "hReportStore",
+            "type": "HREPORTSTORE"
+        }
+    ],
+    "WerStoreGetFirstReportKey": [
+        {
+            "name": "hReportStore",
+            "type": "HREPORTSTORE"
+        },
+        {
+            "name": "ppszReportKey",
+            "type": "PCWSTR"
+        }
+    ],
+    "WerStoreGetNextReportKey": [
+        {
+            "name": "hReportStore",
+            "type": "HREPORTSTORE"
+        },
+        {
+            "name": "ppszReportKey",
+            "type": "PCWSTR"
+        }
+    ],
+    "WerStoreQueryReportMetadataV2": [
+        {
+            "name": "hReportStore",
+            "type": "HREPORTSTORE"
+        },
+        {
+            "name": "pszReportKey",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pReportMetadata",
+            "type": "PWER_REPORT_METADATA_V2"
+        }
+    ],
+    "WerFreeString": [
+        {
+            "name": "pwszStr",
+            "type": "PCWSTR"
+        }
+    ]
+}

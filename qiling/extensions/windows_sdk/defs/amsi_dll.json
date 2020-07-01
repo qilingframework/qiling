@@ -1,0 +1,86 @@
+{
+    "AmsiInitialize": [
+        {
+            "name": "appName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "amsiContext",
+            "type": "HAMSICONTEXT"
+        }
+    ],
+    "AmsiUninitialize": [
+        {
+            "name": "amsiContext",
+            "type": "HAMSICONTEXT"
+        }
+    ],
+    "AmsiOpenSession": [
+        {
+            "name": "amsiContext",
+            "type": "HAMSICONTEXT"
+        },
+        {
+            "name": "amsiSession",
+            "type": "HAMSISESSION"
+        }
+    ],
+    "AmsiCloseSession": [
+        {
+            "name": "amsiContext",
+            "type": "HAMSICONTEXT"
+        },
+        {
+            "name": "amsiSession",
+            "type": "HAMSISESSION"
+        }
+    ],
+    "AmsiScanBuffer": [
+        {
+            "name": "amsiContext",
+            "type": "HAMSICONTEXT"
+        },
+        {
+            "name": "buffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "length",
+            "type": "ULONG"
+        },
+        {
+            "name": "contentName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "amsiSession",
+            "type": "HAMSISESSION"
+        },
+        {
+            "name": "result",
+            "type": "AMSI_RESULT"
+        }
+    ],
+    "AmsiScanString": [
+        {
+            "name": "amsiContext",
+            "type": "HAMSICONTEXT"
+        },
+        {
+            "name": "string",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "contentName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "amsiSession",
+            "type": "HAMSISESSION"
+        },
+        {
+            "name": "result",
+            "type": "AMSI_RESULT"
+        }
+    ]
+}

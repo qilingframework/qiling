@@ -1,0 +1,12 @@
+{
+    "SendToFaxRecipient": [
+        {
+            "name": "sndMode",
+            "type": "SendToMode"
+        },
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        }
+    ]
+}

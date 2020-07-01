@@ -1,0 +1,1402 @@
+{
+    "BeginPanningFeedback": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "UpdatePanningFeedback": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lTotalOverpanOffsetX",
+            "type": "LONG"
+        },
+        {
+            "name": "lTotalOverpanOffsetY",
+            "type": "LONG"
+        },
+        {
+            "name": "fInInertia",
+            "type": "BOOL"
+        }
+    ],
+    "EndPanningFeedback": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "fAnimateBack",
+            "type": "BOOL"
+        }
+    ],
+    "GetThemeAnimationProperty": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iStoryboardId",
+            "type": "int"
+        },
+        {
+            "name": "iTargetId",
+            "type": "int"
+        },
+        {
+            "name": "eProperty",
+            "type": "TA_PROPERTY"
+        },
+        {
+            "name": "pvProperty",
+            "type": "void"
+        },
+        {
+            "name": "cbSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbSizeOut",
+            "type": "DWORD"
+        }
+    ],
+    "GetThemeAnimationTransform": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iStoryboardId",
+            "type": "int"
+        },
+        {
+            "name": "iTargetId",
+            "type": "int"
+        },
+        {
+            "name": "dwTransformIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pTransform",
+            "type": "TA_TRANSFORM"
+        },
+        {
+            "name": "cbSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbSizeOut",
+            "type": "DWORD"
+        }
+    ],
+    "GetThemeTimingFunction": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iTimingFunctionId",
+            "type": "int"
+        },
+        {
+            "name": "pTimingFunction",
+            "type": "TA_TIMINGFUNCTION"
+        },
+        {
+            "name": "cbSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcbSizeOut",
+            "type": "DWORD"
+        }
+    ],
+    "OpenThemeData": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszClassList",
+            "type": "LPCWSTR"
+        }
+    ],
+    "OpenThemeDataEx": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszClassList",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CloseThemeData": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        }
+    ],
+    "DrawThemeBackground": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "pRect",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "pClipRect",
+            "type": "LPCRECT"
+        }
+    ],
+    "DrawThemeBackgroundEx": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "pRect",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "pOptions",
+            "type": "DTBGOPTS"
+        }
+    ],
+    "DrawThemeText": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "pszText",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchText",
+            "type": "int"
+        },
+        {
+            "name": "dwTextFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwTextFlags2",
+            "type": "DWORD"
+        },
+        {
+            "name": "pRect",
+            "type": "LPCRECT"
+        }
+    ],
+    "GetThemeBackgroundContentRect": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "pBoundingRect",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "pContentRect",
+            "type": "LPRECT"
+        }
+    ],
+    "GetThemeBackgroundExtent": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "pContentRect",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "pExtentRect",
+            "type": "LPRECT"
+        }
+    ],
+    "GetThemeBackgroundRegion": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "pRect",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "pRegion",
+            "type": "HRGN"
+        }
+    ],
+    "GetThemePartSize": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "prc",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "eSize",
+            "type": {
+                "name": "THEMESIZE",
+                "data_type": "Enum",
+                "enumerators": []
+            }
+        },
+        {
+            "name": "psz",
+            "type": "SIZE"
+        }
+    ],
+    "GetThemeTextExtent": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "pszText",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchCharCount",
+            "type": "int"
+        },
+        {
+            "name": "dwTextFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBoundingRect",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "pExtentRect",
+            "type": "LPRECT"
+        }
+    ],
+    "GetThemeTextMetrics": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "ptm",
+            "type": "TEXTMETRICW"
+        }
+    ],
+    "HitTestThemeBackground": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "dwOptions",
+            "type": "DWORD"
+        },
+        {
+            "name": "pRect",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "ptTest",
+            "type": "POINT"
+        },
+        {
+            "name": "pwHitTestCode",
+            "type": "WORD"
+        }
+    ],
+    "DrawThemeEdge": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "pDestRect",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "uEdge",
+            "type": "UINT"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "pContentRect",
+            "type": "LPRECT"
+        }
+    ],
+    "DrawThemeIcon": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "pRect",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "himl",
+            "type": "HIMAGELIST"
+        },
+        {
+            "name": "iImageIndex",
+            "type": "int"
+        }
+    ],
+    "IsThemePartDefined": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        }
+    ],
+    "IsThemeBackgroundPartiallyTransparent": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        }
+    ],
+    "GetThemeColor": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "pColor",
+            "type": "COLORREF"
+        }
+    ],
+    "GetThemeMetric": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "piVal",
+            "type": "int"
+        }
+    ],
+    "GetThemeString": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "pszBuff",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMaxBuffChars",
+            "type": "int"
+        }
+    ],
+    "GetThemeBool": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "pfVal",
+            "type": "BOOL"
+        }
+    ],
+    "GetThemeInt": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "piVal",
+            "type": "int"
+        }
+    ],
+    "GetThemeEnumValue": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "piVal",
+            "type": "int"
+        }
+    ],
+    "GetThemePosition": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "pPoint",
+            "type": "POINT"
+        }
+    ],
+    "GetThemeFont": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "pFont",
+            "type": "LOGFONTW"
+        }
+    ],
+    "GetThemeRect": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "pRect",
+            "type": "LPRECT"
+        }
+    ],
+    "GetThemeMargins": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "prc",
+            "type": "LPCRECT"
+        },
+        {
+            "name": "pMargins",
+            "type": "MARGINS"
+        }
+    ],
+    "GetThemeIntList": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "pIntList",
+            "type": "INTLIST"
+        }
+    ],
+    "GetThemePropertyOrigin": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "pOrigin",
+            "type": {
+                "name": "PROPERTYORIGIN",
+                "data_type": "Enum",
+                "enumerators": []
+            }
+        }
+    ],
+    "SetWindowTheme": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszSubAppName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszSubIdList",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetThemeFilename": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "pszThemeFileName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMaxBuffChars",
+            "type": "int"
+        }
+    ],
+    "GetThemeSysColor": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iColorId",
+            "type": "int"
+        }
+    ],
+    "GetThemeSysColorBrush": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iColorId",
+            "type": "int"
+        }
+    ],
+    "GetThemeSysBool": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iBoolId",
+            "type": "int"
+        }
+    ],
+    "GetThemeSysSize": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iSizeId",
+            "type": "int"
+        }
+    ],
+    "GetThemeSysFont": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iFontId",
+            "type": "int"
+        },
+        {
+            "name": "plf",
+            "type": "LOGFONTW"
+        }
+    ],
+    "GetThemeSysString": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iStringId",
+            "type": "int"
+        },
+        {
+            "name": "pszStringBuff",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMaxStringChars",
+            "type": "int"
+        }
+    ],
+    "GetThemeSysInt": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iIntId",
+            "type": "int"
+        },
+        {
+            "name": "piValue",
+            "type": "int"
+        }
+    ],
+    "IsThemeActive": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "IsAppThemed": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GetWindowTheme": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "EnableThemeDialogTexture": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "IsThemeDialogTextureEnabled": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "GetThemeAppProperties": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetThemeAppProperties": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetCurrentThemeName": [
+        {
+            "name": "pszThemeFileName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMaxNameChars",
+            "type": "int"
+        },
+        {
+            "name": "pszColorBuff",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMaxColorChars",
+            "type": "int"
+        },
+        {
+            "name": "pszSizeBuff",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMaxSizeChars",
+            "type": "int"
+        }
+    ],
+    "GetThemeDocumentationProperty": [
+        {
+            "name": "pszThemeName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszPropertyName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszValueBuff",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchMaxValChars",
+            "type": "int"
+        }
+    ],
+    "DrawThemeParentBackground": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "prc",
+            "type": "RECT"
+        }
+    ],
+    "EnableTheming": [
+        {
+            "name": "fEnable",
+            "type": "BOOL"
+        }
+    ],
+    "DrawThemeParentBackgroundEx": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "prc",
+            "type": "RECT"
+        }
+    ],
+    "SetWindowThemeAttribute": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "eAttribute",
+            "type": {
+                "name": "WINDOWTHEMEATTRIBUTETYPE",
+                "data_type": "Enum",
+                "enumerators": []
+            }
+        },
+        {
+            "name": "pvAttribute",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbAttribute",
+            "type": "DWORD"
+        }
+    ],
+    "SetWindowThemeNonClientAttributes": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAttributes",
+            "type": "DWORD"
+        }
+    ],
+    "DrawThemeTextEx": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "pszText",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchText",
+            "type": "int"
+        },
+        {
+            "name": "dwTextFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pRect",
+            "type": "LPRECT"
+        },
+        {
+            "name": "pOptions",
+            "type": "DTTOPTS"
+        }
+    ],
+    "GetThemeBitmap": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "phBitmap",
+            "type": "HBITMAP"
+        }
+    ],
+    "GetThemeStream": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateId",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "ppvStream",
+            "type": "void"
+        },
+        {
+            "name": "pcbStream",
+            "type": "DWORD"
+        },
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        }
+    ],
+    "BufferedPaintInit": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "BufferedPaintUnInit": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "BeginBufferedPaint": [
+        {
+            "name": "hdcTarget",
+            "type": "HDC"
+        },
+        {
+            "name": "prcTarget",
+            "type": "RECT"
+        },
+        {
+            "name": "dwFormat",
+            "type": "BP_BUFFERFORMAT"
+        },
+        {
+            "name": "pPaintParams",
+            "type": "BP_PAINTPARAMS"
+        },
+        {
+            "name": "phdc",
+            "type": "HDC"
+        }
+    ],
+    "EndBufferedPaint": [
+        {
+            "name": "hBufferedPaint",
+            "type": "HPAINTBUFFER"
+        },
+        {
+            "name": "fUpdateTarget",
+            "type": "BOOL"
+        }
+    ],
+    "GetBufferedPaintTargetRect": [
+        {
+            "name": "hBufferedPaint",
+            "type": "HPAINTBUFFER"
+        },
+        {
+            "name": "prc",
+            "type": "RECT"
+        }
+    ],
+    "GetBufferedPaintTargetDC": [
+        {
+            "name": "hBufferedPaint",
+            "type": "HPAINTBUFFER"
+        }
+    ],
+    "GetBufferedPaintDC": [
+        {
+            "name": "hBufferedPaint",
+            "type": "HPAINTBUFFER"
+        }
+    ],
+    "GetBufferedPaintBits": [
+        {
+            "name": "hBufferedPaint",
+            "type": "HPAINTBUFFER"
+        },
+        {
+            "name": "ppbBuffer",
+            "type": "RGBQUAD"
+        },
+        {
+            "name": "pcxRow",
+            "type": "int"
+        }
+    ],
+    "BufferedPaintClear": [
+        {
+            "name": "hBufferedPaint",
+            "type": "HPAINTBUFFER"
+        },
+        {
+            "name": "prc",
+            "type": "RECT"
+        }
+    ],
+    "BufferedPaintSetAlpha": [
+        {
+            "name": "hBufferedPaint",
+            "type": "HPAINTBUFFER"
+        },
+        {
+            "name": "prc",
+            "type": "RECT"
+        },
+        {
+            "name": "alpha",
+            "type": "BYTE"
+        }
+    ],
+    "BufferedPaintStopAllAnimations": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "BeginBufferedAnimation": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hdcTarget",
+            "type": "HDC"
+        },
+        {
+            "name": "prcTarget",
+            "type": "RECT"
+        },
+        {
+            "name": "dwFormat",
+            "type": "BP_BUFFERFORMAT"
+        },
+        {
+            "name": "pPaintParams",
+            "type": "BP_PAINTPARAMS"
+        },
+        {
+            "name": "pAnimationParams",
+            "type": "BP_ANIMATIONPARAMS"
+        },
+        {
+            "name": "phdcFrom",
+            "type": "HDC"
+        },
+        {
+            "name": "phdcTo",
+            "type": "HDC"
+        }
+    ],
+    "EndBufferedAnimation": [
+        {
+            "name": "hbpAnimation",
+            "type": "HANIMATIONBUFFER"
+        },
+        {
+            "name": "fUpdateTarget",
+            "type": "BOOL"
+        }
+    ],
+    "BufferedPaintRenderAnimation": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hdcTarget",
+            "type": "HDC"
+        }
+    ],
+    "GetThemeTransitionDuration": [
+        {
+            "name": "hTheme",
+            "type": "HTHEME"
+        },
+        {
+            "name": "iPartId",
+            "type": "int"
+        },
+        {
+            "name": "iStateIdFrom",
+            "type": "int"
+        },
+        {
+            "name": "iStateIdTo",
+            "type": "int"
+        },
+        {
+            "name": "iPropId",
+            "type": "int"
+        },
+        {
+            "name": "pdwDuration",
+            "type": "DWORD"
+        }
+    ]
+}

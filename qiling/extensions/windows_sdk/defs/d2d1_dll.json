@@ -1,0 +1,234 @@
+{
+    "D2D1ComputeMaximumScaleFactor": [
+        {
+            "name": "matrix",
+            "type": "D2D1_MATRIX_3X2_F"
+        }
+    ],
+    "D2D1GetGradientMeshInteriorPointsFromCoonsPatch": [
+        {
+            "name": "pPoint0",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pPoint1",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pPoint2",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pPoint3",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pPoint4",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pPoint5",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pPoint6",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pPoint7",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pPoint8",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pPoint9",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pPoint10",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pPoint11",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pTensorPoint11",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pTensorPoint12",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pTensorPoint21",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "pTensorPoint22",
+            "type": "D2D1_POINT_2F"
+        }
+    ],
+    "D2D1CreateDevice": [
+        {
+            "name": "dxgiDevice",
+            "type": "IDXGIDevice"
+        },
+        {
+            "name": "creationProperties",
+            "type": "D2D1_CREATION_PROPERTIES"
+        },
+        {
+            "name": "d2dDevice",
+            "type": "ID2D1Device"
+        }
+    ],
+    "D2D1CreateDeviceContext": [
+        {
+            "name": "dxgiSurface",
+            "type": "IDXGISurface"
+        },
+        {
+            "name": "creationProperties",
+            "type": "D2D1_CREATION_PROPERTIES"
+        },
+        {
+            "name": "d2dDeviceContext",
+            "type": "ID2D1DeviceContext"
+        }
+    ],
+    "D2D1ConvertColorSpace": [
+        {
+            "name": "sourceColorSpace",
+            "type": "D2D1_COLOR_SPACE"
+        },
+        {
+            "name": "destinationColorSpace",
+            "type": "D2D1_COLOR_SPACE"
+        },
+        {
+            "name": "color",
+            "type": "D2D1_COLOR_F"
+        }
+    ],
+    "D2D1SinCos": [
+        {
+            "name": "angle",
+            "type": "FLOAT"
+        },
+        {
+            "name": "s",
+            "type": "FLOAT"
+        },
+        {
+            "name": "c",
+            "type": "FLOAT"
+        }
+    ],
+    "D2D1Tan": [
+        {
+            "name": "angle",
+            "type": "FLOAT"
+        }
+    ],
+    "D2D1Vec3Length": [
+        {
+            "name": "x",
+            "type": "FLOAT"
+        },
+        {
+            "name": "y",
+            "type": "FLOAT"
+        },
+        {
+            "name": "z",
+            "type": "FLOAT"
+        }
+    ],
+    "Ellipse": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "left",
+            "type": "int"
+        },
+        {
+            "name": "top",
+            "type": "int"
+        },
+        {
+            "name": "right",
+            "type": "int"
+        },
+        {
+            "name": "bottom",
+            "type": "int"
+        }
+    ],
+    "D2D1CreateFactory": [
+        {
+            "name": "factoryType",
+            "type": "D2D1_FACTORY_TYPE"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "pFactoryOptions",
+            "type": "D2D1_FACTORY_OPTIONS"
+        },
+        {
+            "name": "ppIFactory",
+            "type": "void"
+        }
+    ],
+    "D2D1MakeRotateMatrix": [
+        {
+            "name": "angle",
+            "type": "FLOAT"
+        },
+        {
+            "name": "center",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "matrix",
+            "type": "D2D1_MATRIX_3X2_F"
+        }
+    ],
+    "D2D1MakeSkewMatrix": [
+        {
+            "name": "angleX",
+            "type": "FLOAT"
+        },
+        {
+            "name": "angleY",
+            "type": "FLOAT"
+        },
+        {
+            "name": "center",
+            "type": "D2D1_POINT_2F"
+        },
+        {
+            "name": "matrix",
+            "type": "D2D1_MATRIX_3X2_F"
+        }
+    ],
+    "D2D1IsMatrixInvertible": [
+        {
+            "name": "matrix",
+            "type": "D2D1_MATRIX_3X2_F"
+        }
+    ],
+    "D2D1InvertMatrix": [
+        {
+            "name": "matrix",
+            "type": "D2D1_MATRIX_3X2_F"
+        }
+    ]
+}

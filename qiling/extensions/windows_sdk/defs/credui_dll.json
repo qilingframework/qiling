@@ -1,0 +1,450 @@
+{
+    "CredUnPackAuthenticationBufferW": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pAuthBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbAuthBuffer",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszUserName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchMaxUserName",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszDomainName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchMaxDomainName",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszPassword",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchMaxPassword",
+            "type": "DWORD"
+        }
+    ],
+    "CredUnPackAuthenticationBufferA": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pAuthBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbAuthBuffer",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszUserName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchlMaxUserName",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszDomainName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchMaxDomainName",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszPassword",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchMaxPassword",
+            "type": "DWORD"
+        }
+    ],
+    "CredPackAuthenticationBufferW": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszUserName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pszPassword",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pPackedCredentials",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pcbPackedCredentials",
+            "type": "DWORD"
+        }
+    ],
+    "CredPackAuthenticationBufferA": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszUserName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pszPassword",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pPackedCredentials",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pcbPackedCredentials",
+            "type": "DWORD"
+        }
+    ],
+    "CredUIPromptForCredentialsW": [
+        {
+            "name": "pUiInfo",
+            "type": "PCREDUI_INFOW"
+        },
+        {
+            "name": "pszTargetName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pContext",
+            "type": "PCtxtHandle"
+        },
+        {
+            "name": "dwAuthError",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszUserName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ulUserNameBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszPassword",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ulPasswordBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "save",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CredUIPromptForCredentialsA": [
+        {
+            "name": "pUiInfo",
+            "type": "PCREDUI_INFOA"
+        },
+        {
+            "name": "pszTargetName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pContext",
+            "type": "PCtxtHandle"
+        },
+        {
+            "name": "dwAuthError",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszUserName",
+            "type": "PSTR"
+        },
+        {
+            "name": "ulUserNameBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszPassword",
+            "type": "PSTR"
+        },
+        {
+            "name": "ulPasswordBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "save",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CredUIPromptForWindowsCredentialsW": [
+        {
+            "name": "pUiInfo",
+            "type": "PCREDUI_INFOW"
+        },
+        {
+            "name": "dwAuthError",
+            "type": "DWORD"
+        },
+        {
+            "name": "pulAuthPackage",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvInAuthBuffer",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "ulInAuthBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppvOutAuthBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pulOutAuthBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pfSave",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CredUIPromptForWindowsCredentialsA": [
+        {
+            "name": "pUiInfo",
+            "type": "PCREDUI_INFOA"
+        },
+        {
+            "name": "dwAuthError",
+            "type": "DWORD"
+        },
+        {
+            "name": "pulAuthPackage",
+            "type": "ULONG"
+        },
+        {
+            "name": "pvInAuthBuffer",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "ulInAuthBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppvOutAuthBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "pulOutAuthBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pfSave",
+            "type": "BOOL"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CredUIParseUserNameW": [
+        {
+            "name": "UserName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "user",
+            "type": "WCHAR"
+        },
+        {
+            "name": "userBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "domain",
+            "type": "WCHAR"
+        },
+        {
+            "name": "domainBufferSize",
+            "type": "ULONG"
+        }
+    ],
+    "CredUIParseUserNameA": [
+        {
+            "name": "userName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "user",
+            "type": "CHAR"
+        },
+        {
+            "name": "userBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "domain",
+            "type": "CHAR"
+        },
+        {
+            "name": "domainBufferSize",
+            "type": "ULONG"
+        }
+    ],
+    "CredUICmdLinePromptForCredentialsW": [
+        {
+            "name": "pszTargetName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pContext",
+            "type": "PCtxtHandle"
+        },
+        {
+            "name": "dwAuthError",
+            "type": "DWORD"
+        },
+        {
+            "name": "UserName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ulUserBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszPassword",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ulPasswordBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pfSave",
+            "type": "PBOOL"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CredUICmdLinePromptForCredentialsA": [
+        {
+            "name": "pszTargetName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pContext",
+            "type": "PCtxtHandle"
+        },
+        {
+            "name": "dwAuthError",
+            "type": "DWORD"
+        },
+        {
+            "name": "UserName",
+            "type": "PSTR"
+        },
+        {
+            "name": "ulUserBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszPassword",
+            "type": "PSTR"
+        },
+        {
+            "name": "ulPasswordBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pfSave",
+            "type": "PBOOL"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "CredUIConfirmCredentialsW": [
+        {
+            "name": "pszTargetName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "bConfirm",
+            "type": "BOOL"
+        }
+    ],
+    "CredUIConfirmCredentialsA": [
+        {
+            "name": "pszTargetName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "bConfirm",
+            "type": "BOOL"
+        }
+    ],
+    "CredUIStoreSSOCredW": [
+        {
+            "name": "pszRealm",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszUsername",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszPassword",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "bPersist",
+            "type": "BOOL"
+        }
+    ],
+    "CredUIReadSSOCredW": [
+        {
+            "name": "pszRealm",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppszUsername",
+            "type": "PWSTR"
+        }
+    ]
+}

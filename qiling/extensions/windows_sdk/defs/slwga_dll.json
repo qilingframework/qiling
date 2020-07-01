@@ -1,0 +1,30 @@
+{
+    "SLIsGenuineLocal": [
+        {
+            "name": "pAppId",
+            "type": "SLID"
+        },
+        {
+            "name": "pGenuineState",
+            "type": "SL_GENUINE_STATE"
+        },
+        {
+            "name": "pUIOptions",
+            "type": "SL_NONGENUINE_UI_OPTIONS"
+        }
+    ],
+    "SLIsGenuineLocalEx": [
+        {
+            "name": "pAppId",
+            "type": "SLID"
+        },
+        {
+            "name": "pSkuId",
+            "type": "SLID"
+        },
+        {
+            "name": "pGenuineState",
+            "type": "SL_GENUINE_STATE"
+        }
+    ]
+}

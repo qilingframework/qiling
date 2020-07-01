@@ -13,6 +13,7 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
+dllname = 'kernel32_dll'
 
 # BOOL GetStringTypeW(
 #   DWORD                         dwInfoType,
@@ -20,12 +21,7 @@ from qiling.exception import *
 #   int                           cchSrc,
 #   LPWORD                        lpCharType
 # );
-@winapi(cc=STDCALL, params={
-    "dwInfoType": DWORD,
-    "lpSrcStr": POINTER,
-    "cchSrc": INT,
-    "lpCharType": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetStringTypeW(ql, address, params):
     # TODO implement
     ret = 1
@@ -40,13 +36,7 @@ def hook_GetStringTypeW(ql, address, params):
 #   INT    count,
 #   LPWORD chartype
 #  )
-@winapi(cc=STDCALL, params={
-    "locale": POINTER,
-    "type": DWORD,
-    "src": STRING,
-    "count": INT,
-    "chartype": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetStringTypeExA(ql, address, params):
     # TODO implement
     ret = 1
@@ -63,16 +53,7 @@ def hook_GetStringTypeExA(ql, address, params):
 #   LPCCH                              lpDefaultChar,
 #   LPBOOL                             lpUsedDefaultChar
 # );
-@winapi(cc=STDCALL, params={
-    "CodePage": UINT,
-    "dwFlags": DWORD,
-    "lpWideCharStr": WSTRING,
-    "cchWideChar": INT,
-    "lpMultiByteStr": POINTER,
-    "cbMultiByte": INT,
-    "lpDefaultChar": POINTER,
-    "lpUsedDefaultChar": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCWCH': 'WSTRING'})
 def hook_WideCharToMultiByte(ql, address, params):
     ret = 0
 
@@ -95,14 +76,7 @@ def hook_WideCharToMultiByte(ql, address, params):
 #  LPWSTR                            lpWideCharStr,
 #  int                               cchWideChar
 # );
-@winapi(cc=STDCALL, params={
-    "CodePage": UINT,
-    "dwFlags": UINT,
-    "lpMultiByteStr": WSTRING,
-    "cbMultiByte": INT,
-    "lpWideCharStr": POINTER,
-    "cchWideChar": INT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'UINT', 'LPCCH': 'WSTRING'})
 def hook_MultiByteToWideChar(ql, address, params):
     wide_str = (params['lpMultiByteStr']+"\x00").encode('utf-16le')
     if params['cchWideChar'] != 0:

@@ -1,0 +1,276 @@
+{
+    "CreateInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        }
+    ],
+    "DestroyInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        }
+    ],
+    "RegisterOutputCallbackInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "outputCallback",
+            "type": "INTERACTION_CONTEXT_OUTPUT_CALLBACK"
+        },
+        {
+            "name": "clientData",
+            "type": "void"
+        }
+    ],
+    "SetInteractionConfigurationInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "configurationCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "configuration",
+            "type": "INTERACTION_CONTEXT_CONFIGURATION"
+        }
+    ],
+    "GetInteractionConfigurationInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "configurationCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "configuration",
+            "type": "INTERACTION_CONTEXT_CONFIGURATION"
+        }
+    ],
+    "SetPropertyInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "contextProperty",
+            "type": "INTERACTION_CONTEXT_PROPERTY"
+        },
+        {
+            "name": "value",
+            "type": "UINT32"
+        }
+    ],
+    "GetPropertyInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "contextProperty",
+            "type": "INTERACTION_CONTEXT_PROPERTY"
+        },
+        {
+            "name": "value",
+            "type": "UINT32"
+        }
+    ],
+    "SetInertiaParameterInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "inertiaParameter",
+            "type": "INERTIA_PARAMETER"
+        },
+        {
+            "name": "value",
+            "type": "float"
+        }
+    ],
+    "GetInertiaParameterInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "inertiaParameter",
+            "type": "INERTIA_PARAMETER"
+        },
+        {
+            "name": "value",
+            "type": "float"
+        }
+    ],
+    "SetCrossSlideParametersInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "parameterCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "crossSlideParameters",
+            "type": "CROSS_SLIDE_PARAMETER"
+        }
+    ],
+    "GetCrossSlideParameterInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "threshold",
+            "type": "CROSS_SLIDE_THRESHOLD"
+        },
+        {
+            "name": "distance",
+            "type": "float"
+        }
+    ],
+    "SetMouseWheelParameterInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "parameter",
+            "type": "MOUSE_WHEEL_PARAMETER"
+        },
+        {
+            "name": "value",
+            "type": "float"
+        }
+    ],
+    "GetMouseWheelParameterInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "parameter",
+            "type": "MOUSE_WHEEL_PARAMETER"
+        },
+        {
+            "name": "value",
+            "type": "float"
+        }
+    ],
+    "ResetInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        }
+    ],
+    "GetStateInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "pointerInfo",
+            "type": "POINTER_INFO"
+        },
+        {
+            "name": "state",
+            "type": "INTERACTION_STATE"
+        }
+    ],
+    "AddPointerInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        }
+    ],
+    "RemovePointerInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "pointerId",
+            "type": "UINT32"
+        }
+    ],
+    "ProcessPointerFramesInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "entriesCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerInfo",
+            "type": "POINTER_INFO"
+        }
+    ],
+    "BufferPointerPacketsInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "entriesCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "pointerInfo",
+            "type": "POINTER_INFO"
+        }
+    ],
+    "ProcessBufferedPacketsInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        }
+    ],
+    "ProcessInertiaInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        }
+    ],
+    "StopInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        }
+    ],
+    "SetPivotInteractionContext": [
+        {
+            "name": "interactionContext",
+            "type": "HINTERACTIONCONTEXT"
+        },
+        {
+            "name": "x",
+            "type": "float"
+        },
+        {
+            "name": "y",
+            "type": "float"
+        },
+        {
+            "name": "radius",
+            "type": "float"
+        }
+    ]
+}

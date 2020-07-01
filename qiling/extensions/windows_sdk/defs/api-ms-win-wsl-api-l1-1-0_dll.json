@@ -1,0 +1,112 @@
+{
+    "WslIsDistributionRegistered": [
+        {
+            "name": "distributionName",
+            "type": "PCWSTR"
+        }
+    ],
+    "WslRegisterDistribution": [
+        {
+            "name": "distributionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "tarGzFilename",
+            "type": "PCWSTR"
+        }
+    ],
+    "WslUnregisterDistribution": [
+        {
+            "name": "distributionName",
+            "type": "PCWSTR"
+        }
+    ],
+    "WslConfigureDistribution": [
+        {
+            "name": "distributionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "defaultUID",
+            "type": "ULONG"
+        },
+        {
+            "name": "wslDistributionFlags",
+            "type": "WSL_DISTRIBUTION_FLAGS"
+        }
+    ],
+    "WslGetDistributionConfiguration": [
+        {
+            "name": "distributionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "distributionVersion",
+            "type": "ULONG"
+        },
+        {
+            "name": "defaultUID",
+            "type": "ULONG"
+        },
+        {
+            "name": "wslDistributionFlags",
+            "type": "WSL_DISTRIBUTION_FLAGS"
+        },
+        {
+            "name": "defaultEnvironmentVariables",
+            "type": "PSTR"
+        },
+        {
+            "name": "defaultEnvironmentVariableCount",
+            "type": "ULONG"
+        }
+    ],
+    "WslLaunchInteractive": [
+        {
+            "name": "distributionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "command",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "useCurrentWorkingDirectory",
+            "type": "BOOL"
+        },
+        {
+            "name": "exitCode",
+            "type": "DWORD"
+        }
+    ],
+    "WslLaunch": [
+        {
+            "name": "distributionName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "command",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "useCurrentWorkingDirectory",
+            "type": "BOOL"
+        },
+        {
+            "name": "stdIn",
+            "type": "HANDLE"
+        },
+        {
+            "name": "stdOut",
+            "type": "HANDLE"
+        },
+        {
+            "name": "stdErr",
+            "type": "HANDLE"
+        },
+        {
+            "name": "process",
+            "type": "HANDLE"
+        }
+    ]
+}

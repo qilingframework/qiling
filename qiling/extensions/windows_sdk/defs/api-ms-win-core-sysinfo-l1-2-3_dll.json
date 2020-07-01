@@ -1,0 +1,8 @@
+{
+    "GetIntegratedDisplaySize": [
+        {
+            "name": "sizeInInches",
+            "type": "double"
+        }
+    ]
+}

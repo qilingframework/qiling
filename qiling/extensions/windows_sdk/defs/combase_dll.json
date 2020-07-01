@@ -1,0 +1,350 @@
+{
+    "WindowsPreallocateStringBuffer": [
+        {
+            "name": "length",
+            "type": "UINT32"
+        },
+        {
+            "name": "charBuffer",
+            "type": "WCHAR"
+        },
+        {
+            "name": "bufferHandle",
+            "type": "HSTRING_BUFFER"
+        }
+    ],
+    "WindowsPromoteStringBuffer": [
+        {
+            "name": "bufferHandle",
+            "type": "HSTRING_BUFFER"
+        },
+        {
+            "name": "string",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsDeleteStringBuffer": [
+        {
+            "name": "bufferHandle",
+            "type": "HSTRING_BUFFER"
+        }
+    ],
+    "HSTRING_UserSize": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "HSTRING"
+        }
+    ],
+    "HSTRING_UserFree": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsInspectString": [
+        {
+            "name": "targetHString",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "machine",
+            "type": "USHORT"
+        },
+        {
+            "name": "callback",
+            "type": "PINSPECT_HSTRING_CALLBACK"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "length",
+            "type": "UINT32"
+        },
+        {
+            "name": "targetStringAddress",
+            "type": "UINT_PTR"
+        }
+    ],
+    "WindowsInspectString2": [
+        {
+            "name": "targetHString",
+            "type": "UINT64"
+        },
+        {
+            "name": "machine",
+            "type": "USHORT"
+        },
+        {
+            "name": "callback",
+            "type": "PINSPECT_HSTRING_CALLBACK2"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "length",
+            "type": "UINT32"
+        },
+        {
+            "name": "targetStringAddress",
+            "type": "UINT64"
+        }
+    ],
+    "CoDecodeProxy": [
+        {
+            "name": "dwClientPid",
+            "type": "DWORD"
+        },
+        {
+            "name": "ui64ProxyAddress",
+            "type": "UINT64"
+        },
+        {
+            "name": "pServerInformation",
+            "type": "PServerInformation"
+        }
+    ],
+    "CoFreeUnusedLibrariesEx": [
+        {
+            "name": "dwUnloadDelay",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "CoCreateInstanceFromApp": [
+        {
+            "name": "Clsid",
+            "type": "IID"
+        },
+        {
+            "name": "punkOuter",
+            "type": "IUnknown"
+        },
+        {
+            "name": "dwClsCtx",
+            "type": "DWORD"
+        },
+        {
+            "name": "reserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "dwCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pResults",
+            "type": "MULTI_QI"
+        }
+    ],
+    "CoWaitForMultipleObjects": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "cHandles",
+            "type": "ULONG"
+        },
+        {
+            "name": "pHandles",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpdwindex",
+            "type": "LPDWORD"
+        }
+    ],
+    "HSTRING_UserSize64": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "HSTRING"
+        }
+    ],
+    "HSTRING_UserFree64": [
+        {
+            "name": "VOID",
+            "type": "unsigned long"
+        },
+        {
+            "name": "VOID",
+            "type": "HSTRING"
+        }
+    ],
+    "SetRestrictedErrorInfo": [
+        {
+            "name": "pRestrictedErrorInfo",
+            "type": "IRestrictedErrorInfo"
+        }
+    ],
+    "GetRestrictedErrorInfo": [
+        {
+            "name": "ppRestrictedErrorInfo",
+            "type": "IRestrictedErrorInfo"
+        }
+    ],
+    "RoCaptureErrorContext": [
+        {
+            "name": "hr",
+            "type": "HRESULT"
+        }
+    ],
+    "RoFailFastWithErrorContext": [
+        {
+            "name": "hrError",
+            "type": "HRESULT"
+        }
+    ],
+    "RoOriginateLanguageException": [
+        {
+            "name": "error",
+            "type": "HRESULT"
+        },
+        {
+            "name": "message",
+            "type": "HSTRING"
+        },
+        {
+            "name": "languageException",
+            "type": "IUnknown"
+        }
+    ],
+    "RoClearError": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RoInspectThreadErrorInfo": [
+        {
+            "name": "targetTebAddress",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "machine",
+            "type": "USHORT"
+        },
+        {
+            "name": "readMemoryCallback",
+            "type": "PINSPECT_MEMORY_CALLBACK"
+        },
+        {
+            "name": "context",
+            "type": "PVOID"
+        },
+        {
+            "name": "targetErrorInfoAddress",
+            "type": "UINT_PTR"
+        }
+    ],
+    "RoInspectCapturedStackBackTrace": [
+        {
+            "name": "targetErrorInfoAddress",
+            "type": "UINT_PTR"
+        },
+        {
+            "name": "machine",
+            "type": "USHORT"
+        },
+        {
+            "name": "readMemoryCallback",
+            "type": "PINSPECT_MEMORY_CALLBACK"
+        },
+        {
+            "name": "context",
+            "type": "PVOID"
+        },
+        {
+            "name": "frameCount",
+            "type": "UINT32"
+        },
+        {
+            "name": "targetBackTraceAddress",
+            "type": "UINT_PTR"
+        }
+    ],
+    "CoGetSystemSecurityPermissions": [
+        {
+            "name": "comSDType",
+            "type": "COMSD"
+        },
+        {
+            "name": "ppSD",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "CoGetInstanceFromFile": [
+        {
+            "name": "pServerInfo",
+            "type": "COSERVERINFO"
+        },
+        {
+            "name": "pClsid",
+            "type": "CLSID"
+        },
+        {
+            "name": "punkOuter",
+            "type": "IUnknown"
+        },
+        {
+            "name": "dwClsCtx",
+            "type": "DWORD"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwszName",
+            "type": "OLECHAR"
+        },
+        {
+            "name": "dwCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pResults",
+            "type": "MULTI_QI"
+        }
+    ],
+    "CoRegisterChannelHook": [
+        {
+            "name": "ExtensionUuid",
+            "type": "GUID"
+        },
+        {
+            "name": "pChannelHook",
+            "type": "IChannelHook"
+        }
+    ]
+}
