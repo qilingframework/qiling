@@ -90,6 +90,7 @@ def hook_NtQueryInformationProcess(ql, address, params):
     # TODO have no idea if is cdecl or stdcall
 
     _QueryInformationProcess(ql, address, params)
+
 def _QuerySystemInformation(ql, address, params):
     siClass = params["SystemInformationClass"]
     pt_res = params["ReturnLength"]
@@ -143,12 +144,9 @@ def _QuerySystemInformation(ql, address, params):
 #   IN ULONG                    SystemInformationLength,
 #   OUT PULONG                  ReturnLength
 # );
-@winapi(cc=STDCALL, params={
-    "SystemInformationClass": UINT,
-    "SystemInformation": POINTER,
-    "SystemInformationLength": UINT,
-    "ReturnLength": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname,
+                replace_params={"SystemInformationClass": UINT, "SystemInformation": POINTER, "SystemInformationLength": SIZE_T,
+                    "ReturnLength": POINTER})
 def hook_NtQuerySystemInformation(ql, address, params):
     # In minwindef.h
     # #define WINAPI      __stdcall
@@ -161,12 +159,9 @@ def hook_NtQuerySystemInformation(ql, address, params):
 #   IN ULONG                    SystemInformationLength,
 #   OUT PULONG                  ReturnLength
 # );
-@winapi(cc=STDCALL, params={
-    "SystemInformationClass": UINT,
-    "SystemInformation": POINTER,
-    "SystemInformationLength": UINT,
-    "ReturnLength": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname,
+                replace_params={"SystemInformationClass": UINT, "SystemInformation": POINTER, "SystemInformationLength": SIZE_T,
+                    "ReturnLength": POINTER})
 def hook_ZwQuerySystemInformation(ql, address, params):
     # In minwindef.h
     # #define WINAPI      __stdcall
