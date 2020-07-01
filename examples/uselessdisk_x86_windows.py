@@ -7,20 +7,8 @@
 import sys
 sys.path.append("..")
 from qiling import *
-from zipfile import ZipFile
-
-def unzip(zip_path, name, password):
-    with ZipFile(zip_path) as zip_reader:
-        with zip_reader.open(name, 'r', password) as f:
-            return f.read()
-    return None
 
 
 if __name__ == "__main__":
-    data = unzip("rootfs/x86_windows/bin/UselessDisk.bin.zip", "UselessDisk.bin", b'infected')
-    assert data is not None, "Invalid zip file"
-    with open("rootfs/x86_windows/bin/UselessDisk.bin", 'wb') as f:
-        f.write(data)
-        
     ql = Qiling(["rootfs/x86_windows/bin/UselessDisk.bin"], "rootfs/x86_windows", output = "debug")
     ql.run()
