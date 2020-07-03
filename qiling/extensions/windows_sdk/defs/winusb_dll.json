@@ -1,0 +1,542 @@
+{
+    "WinUsb_Initialize": [
+        {
+            "name": "DeviceHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "InterfaceHandle",
+            "type": "PWINUSB_INTERFACE_HANDLE"
+        }
+    ],
+    "WinUsb_Free": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        }
+    ],
+    "WinUsb_GetAssociatedInterface": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "AssociatedInterfaceIndex",
+            "type": "UCHAR"
+        },
+        {
+            "name": "AssociatedInterfaceHandle",
+            "type": "PWINUSB_INTERFACE_HANDLE"
+        }
+    ],
+    "WinUsb_GetDescriptor": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "DescriptorType",
+            "type": "UCHAR"
+        },
+        {
+            "name": "Index",
+            "type": "UCHAR"
+        },
+        {
+            "name": "LanguageID",
+            "type": "USHORT"
+        },
+        {
+            "name": "Buffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "BufferLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "LengthTransferred",
+            "type": "PULONG"
+        }
+    ],
+    "WinUsb_QueryInterfaceSettings": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "AlternateInterfaceNumber",
+            "type": "UCHAR"
+        },
+        {
+            "name": "UsbAltInterfaceDescriptor",
+            "type": "PUSB_INTERFACE_DESCRIPTOR"
+        }
+    ],
+    "WinUsb_QueryDeviceInformation": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "InformationType",
+            "type": "ULONG"
+        },
+        {
+            "name": "BufferLength",
+            "type": "PULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PVOID"
+        }
+    ],
+    "WinUsb_SetCurrentAlternateSetting": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "SettingNumber",
+            "type": "UCHAR"
+        }
+    ],
+    "WinUsb_GetCurrentAlternateSetting": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "SettingNumber",
+            "type": "PUCHAR"
+        }
+    ],
+    "WinUsb_QueryPipe": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "AlternateInterfaceNumber",
+            "type": "UCHAR"
+        },
+        {
+            "name": "PipeIndex",
+            "type": "UCHAR"
+        },
+        {
+            "name": "PipeInformation",
+            "type": "PWINUSB_PIPE_INFORMATION"
+        }
+    ],
+    "WinUsb_QueryPipeEx": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "AlternateSettingNumber",
+            "type": "UCHAR"
+        },
+        {
+            "name": "PipeIndex",
+            "type": "UCHAR"
+        },
+        {
+            "name": "PipeInformationEx",
+            "type": "PWINUSB_PIPE_INFORMATION_EX"
+        }
+    ],
+    "WinUsb_SetPipePolicy": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "PipeID",
+            "type": "UCHAR"
+        },
+        {
+            "name": "PolicyType",
+            "type": "ULONG"
+        },
+        {
+            "name": "ValueLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "Value",
+            "type": "PVOID"
+        }
+    ],
+    "WinUsb_GetPipePolicy": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "PipeID",
+            "type": "UCHAR"
+        },
+        {
+            "name": "PolicyType",
+            "type": "ULONG"
+        },
+        {
+            "name": "ValueLength",
+            "type": "PULONG"
+        },
+        {
+            "name": "Value",
+            "type": "PVOID"
+        }
+    ],
+    "WinUsb_ReadPipe": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "PipeID",
+            "type": "UCHAR"
+        },
+        {
+            "name": "Buffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "BufferLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "LengthTransferred",
+            "type": "PULONG"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "WinUsb_WritePipe": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "PipeID",
+            "type": "UCHAR"
+        },
+        {
+            "name": "Buffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "BufferLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "LengthTransferred",
+            "type": "PULONG"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "WinUsb_ControlTransfer": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "SetupPacket",
+            "type": "WINUSB_SETUP_PACKET"
+        },
+        {
+            "name": "Buffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "BufferLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "LengthTransferred",
+            "type": "PULONG"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "WinUsb_ResetPipe": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "PipeID",
+            "type": "UCHAR"
+        }
+    ],
+    "WinUsb_AbortPipe": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "PipeID",
+            "type": "UCHAR"
+        }
+    ],
+    "WinUsb_FlushPipe": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "PipeID",
+            "type": "UCHAR"
+        }
+    ],
+    "WinUsb_SetPowerPolicy": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "PolicyType",
+            "type": "ULONG"
+        },
+        {
+            "name": "ValueLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "Value",
+            "type": "PVOID"
+        }
+    ],
+    "WinUsb_GetPowerPolicy": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "PolicyType",
+            "type": "ULONG"
+        },
+        {
+            "name": "ValueLength",
+            "type": "PULONG"
+        },
+        {
+            "name": "Value",
+            "type": "PVOID"
+        }
+    ],
+    "WinUsb_GetOverlappedResult": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        },
+        {
+            "name": "lpNumberOfBytesTransferred",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "bWait",
+            "type": "BOOL"
+        }
+    ],
+    "WinUsb_GetCurrentFrameNumber": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "CurrentFrameNumber",
+            "type": "PULONG"
+        },
+        {
+            "name": "TimeStamp",
+            "type": "LARGE_INTEGER"
+        }
+    ],
+    "WinUsb_GetAdjustedFrameNumber": [
+        {
+            "name": "CurrentFrameNumber",
+            "type": "PULONG"
+        },
+        {
+            "name": "TimeStamp",
+            "type": "LARGE_INTEGER"
+        }
+    ],
+    "WinUsb_RegisterIsochBuffer": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "PipeID",
+            "type": "UCHAR"
+        },
+        {
+            "name": "Buffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "BufferLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "IsochBufferHandle",
+            "type": "PWINUSB_ISOCH_BUFFER_HANDLE"
+        }
+    ],
+    "WinUsb_UnregisterIsochBuffer": [
+        {
+            "name": "IsochBufferHandle",
+            "type": "WINUSB_ISOCH_BUFFER_HANDLE"
+        }
+    ],
+    "WinUsb_WriteIsochPipe": [
+        {
+            "name": "BufferHandle",
+            "type": "WINUSB_ISOCH_BUFFER_HANDLE"
+        },
+        {
+            "name": "Offset",
+            "type": "ULONG"
+        },
+        {
+            "name": "Length",
+            "type": "ULONG"
+        },
+        {
+            "name": "FrameNumber",
+            "type": "PULONG"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "WinUsb_ReadIsochPipe": [
+        {
+            "name": "BufferHandle",
+            "type": "WINUSB_ISOCH_BUFFER_HANDLE"
+        },
+        {
+            "name": "Offset",
+            "type": "ULONG"
+        },
+        {
+            "name": "Length",
+            "type": "ULONG"
+        },
+        {
+            "name": "FrameNumber",
+            "type": "PULONG"
+        },
+        {
+            "name": "NumberOfPackets",
+            "type": "ULONG"
+        },
+        {
+            "name": "IsoPacketDescriptors",
+            "type": "PUSBD_ISO_PACKET_DESCRIPTOR"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "WinUsb_WriteIsochPipeAsap": [
+        {
+            "name": "BufferHandle",
+            "type": "WINUSB_ISOCH_BUFFER_HANDLE"
+        },
+        {
+            "name": "Offset",
+            "type": "ULONG"
+        },
+        {
+            "name": "Length",
+            "type": "ULONG"
+        },
+        {
+            "name": "ContinueStream",
+            "type": "BOOL"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "WinUsb_ReadIsochPipeAsap": [
+        {
+            "name": "BufferHandle",
+            "type": "WINUSB_ISOCH_BUFFER_HANDLE"
+        },
+        {
+            "name": "Offset",
+            "type": "ULONG"
+        },
+        {
+            "name": "Length",
+            "type": "ULONG"
+        },
+        {
+            "name": "ContinueStream",
+            "type": "BOOL"
+        },
+        {
+            "name": "NumberOfPackets",
+            "type": "ULONG"
+        },
+        {
+            "name": "IsoPacketDescriptors",
+            "type": "PUSBD_ISO_PACKET_DESCRIPTOR"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "WinUsb_StartTrackingForTimeSync": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "StartTrackingInfo",
+            "type": "PUSB_START_TRACKING_FOR_TIME_SYNC_INFORMATION"
+        }
+    ],
+    "WinUsb_GetCurrentFrameNumberAndQpc": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "FrameQpcInfo",
+            "type": "PUSB_FRAME_NUMBER_AND_QPC_FOR_TIME_SYNC_INFORMATION"
+        }
+    ],
+    "WinUsb_StopTrackingForTimeSync": [
+        {
+            "name": "InterfaceHandle",
+            "type": "WINUSB_INTERFACE_HANDLE"
+        },
+        {
+            "name": "StopTrackingInfo",
+            "type": "PUSB_STOP_TRACKING_FOR_TIME_SYNC_INFORMATION"
+        }
+    ]
+}

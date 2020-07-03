@@ -1,2 +1,3 @@
 recursive-include qiling/extensions/debugger/gdbserver/xml *
+recursive-include qiling/extensions/windows_sdk/defs *
 recursive-include qiling/profiles *

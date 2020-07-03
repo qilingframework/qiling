@@ -1,0 +1,80 @@
+{
+    "CertSelectCertificateA": [
+        {
+            "name": "pCertSelectInfo",
+            "type": "PCERT_SELECT_STRUCT_A"
+        }
+    ],
+    "CertSelectCertificateW": [
+        {
+            "name": "pCertSelectInfo",
+            "type": "PCERT_SELECT_STRUCT_W"
+        }
+    ],
+    "CertViewPropertiesA": [
+        {
+            "name": "pCertViewInfo",
+            "type": "PCERT_VIEWPROPERTIES_STRUCT_A"
+        }
+    ],
+    "CertViewPropertiesW": [
+        {
+            "name": "pCertViewInfo",
+            "type": "PCERT_VIEWPROPERTIES_STRUCT_W"
+        }
+    ],
+    "GetFriendlyNameOfCertA": [
+        {
+            "name": "pccert",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pch",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cch",
+            "type": "DWORD"
+        }
+    ],
+    "GetFriendlyNameOfCertW": [
+        {
+            "name": "pccert",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "pwch",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cwch",
+            "type": "DWORD"
+        }
+    ],
+    "CertModifyCertificatesToTrust": [
+        {
+            "name": "cCerts",
+            "type": "int"
+        },
+        {
+            "name": "rgCerts",
+            "type": "PCTL_MODIFY_REQUEST"
+        },
+        {
+            "name": "szPurpose",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hcertstoreTrust",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "pccertSigner",
+            "type": "PCCERT_CONTEXT"
+        }
+    ]
+}

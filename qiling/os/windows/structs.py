@@ -493,6 +493,50 @@ class Point(WindowsStruct):
     def read(self, addr):
         super().generic_read(addr, [self.x, self.y])
 
+# typedef struct _SYSTEM_BASIC_INFORMATION
+# {
+# 	ULONG Reserved;
+# 	ULONG TimerResolution;
+# 	ULONG PageSize;
+# 	ULONG NumberOfPhysicalPages;
+# 	ULONG LowestPhysicalPageNumber;
+# 	ULONG HighestPhysicalPageNumber;
+# 	ULONG AllocationGranularity;
+# 	ULONG_PTR c;
+# 	ULONG_PTR MaximumUserModeAddress;
+# 	ULONG_PTR ActiveProcessorsAffinityMask;
+# 	CCHAR NumberOfProcessors;
+# } SYSTEM_BASIC_INFORMATION, * PSYSTEM_BASIC_INFORMATION;
+
+class SystemBasicInforation(WindowsStruct):
+    def __init__(self,ql, Reserved,TimerResolution,PageSize=None, NumberOfPhysicalPages=None, LowestPhysicalPageNumber=None,
+                 HighestPhysicalPageNumber=None, AllocationGranularity=None,MinimumUserModeAddress=None,
+                 MaximumUserModeAddress=None,ActiveProcessorsAffinityMask=None,NumberOfProcessors=None):
+        super().__init__(ql)
+        self.size=self.BYTE_SIZE * 24 + 5*self.POINTER_SIZE
+        self.Reserved =[Reserved, self.DWORD_SIZE, "little", int]
+        self.TimerResolution=[TimerResolution, self.DWORD_SIZE, "little", int]
+        self.PageSize=[PageSize, self.DWORD_SIZE, "little", int]
+        self.NumberOfPhysicalPages = [NumberOfPhysicalPages, self.DWORD_SIZE, "little", int]
+        self.LowestPhysicalPageNumber = [LowestPhysicalPageNumber, self.DWORD_SIZE, "little", int]
+        self.HighestPhysicalPageNumber = [HighestPhysicalPageNumber, self.DWORD_SIZE, "little", int]
+        self.AllocationGranularity = [AllocationGranularity, self.DWORD_SIZE, "little", int]
+        self.MinimumUserModeAddress = [MinimumUserModeAddress, self.POINTER_SIZE, "little", int]
+        self.MaximumUserModeAddress = [MaximumUserModeAddress, self.POINTER_SIZE, "little", int]
+        self.ActiveProcessorsAffinityMask = [ActiveProcessorsAffinityMask, self.POINTER_SIZE, "little", int]
+        self.NumberOfProcessors = [NumberOfProcessors, self.POINTER_SIZE, "little", int]
+    def write(self, addr):
+
+        super().generic_write(addr, [self.Reserved, self.TimerResolution, self.PageSize, self.NumberOfPhysicalPages,
+               self.LowestPhysicalPageNumber, self.HighestPhysicalPageNumber ,self.AllocationGranularity,
+               self.MinimumUserModeAddress,self.MaximumUserModeAddress,self.ActiveProcessorsAffinityMask,
+               self.NumberOfProcessors])
+
+    def read(self, addr):
+        super().generic_read(addr, [self.Reserved, self.TimerResolution, self.PageSize, self.NumberOfPhysicalPages,
+               self.LowestPhysicalPageNumber, self.HighestPhysicalPageNumber ,self.AllocationGranularity,
+               self.MinimumUserModeAddress,self.MaximumUserModeAddress,self.ActiveProcessorsAffinityMask,
+               self.NumberOfProcessors])
 
 # typedef struct hostent {
 #  char  *h_name;

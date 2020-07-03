@@ -93,6 +93,7 @@ class QLOsUtils:
 
         from_path = None
         to_path = None
+        virtual_path = None
         for fm, to in self.ql.fs_mapper:
 
             if isinstance(fm, str):
@@ -106,8 +107,6 @@ class QLOsUtils:
                 virtual_path = fm
                 to_path = to
                 break
-        else:
-            virtual_path = None
 
         if not isinstance(virtual_path, str) and virtual_path != None:
             real_path = virtual_path

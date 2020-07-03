@@ -1,0 +1,104 @@
+{
+    "IdnToAscii": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpUnicodeCharStr",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchUnicodeChar",
+            "type": "int"
+        },
+        {
+            "name": "lpASCIICharStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchASCIIChar",
+            "type": "int"
+        }
+    ],
+    "IdnToUnicode": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpASCIICharStr",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchASCIIChar",
+            "type": "int"
+        },
+        {
+            "name": "lpUnicodeCharStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchUnicodeChar",
+            "type": "int"
+        }
+    ],
+    "IdnToNameprepUnicode": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpUnicodeCharStr",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchUnicodeChar",
+            "type": "int"
+        },
+        {
+            "name": "lpNameprepCharStr",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchNameprepChar",
+            "type": "int"
+        }
+    ],
+    "NormalizeString": [
+        {
+            "name": "NormForm",
+            "type": "NORM_FORM"
+        },
+        {
+            "name": "lpSrcString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cwSrcLength",
+            "type": "int"
+        },
+        {
+            "name": "lpDstString",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cwDstLength",
+            "type": "int"
+        }
+    ],
+    "IsNormalizedString": [
+        {
+            "name": "NormForm",
+            "type": "NORM_FORM"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cwLength",
+            "type": "int"
+        }
+    ]
+}

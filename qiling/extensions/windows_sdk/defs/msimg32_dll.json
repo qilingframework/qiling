@@ -1,0 +1,120 @@
+{
+    "AlphaBlend": [
+        {
+            "name": "hdcDest",
+            "type": "HDC"
+        },
+        {
+            "name": "xoriginDest",
+            "type": "int"
+        },
+        {
+            "name": "yoriginDest",
+            "type": "int"
+        },
+        {
+            "name": "wDest",
+            "type": "int"
+        },
+        {
+            "name": "hDest",
+            "type": "int"
+        },
+        {
+            "name": "hdcSrc",
+            "type": "HDC"
+        },
+        {
+            "name": "xoriginSrc",
+            "type": "int"
+        },
+        {
+            "name": "yoriginSrc",
+            "type": "int"
+        },
+        {
+            "name": "wSrc",
+            "type": "int"
+        },
+        {
+            "name": "hSrc",
+            "type": "int"
+        },
+        {
+            "name": "ftn",
+            "type": "BLENDFUNCTION"
+        }
+    ],
+    "TransparentBlt": [
+        {
+            "name": "hdcDest",
+            "type": "HDC"
+        },
+        {
+            "name": "xoriginDest",
+            "type": "int"
+        },
+        {
+            "name": "yoriginDest",
+            "type": "int"
+        },
+        {
+            "name": "wDest",
+            "type": "int"
+        },
+        {
+            "name": "hDest",
+            "type": "int"
+        },
+        {
+            "name": "hdcSrc",
+            "type": "HDC"
+        },
+        {
+            "name": "xoriginSrc",
+            "type": "int"
+        },
+        {
+            "name": "yoriginSrc",
+            "type": "int"
+        },
+        {
+            "name": "wSrc",
+            "type": "int"
+        },
+        {
+            "name": "hSrc",
+            "type": "int"
+        },
+        {
+            "name": "crTransparent",
+            "type": "UINT"
+        }
+    ],
+    "GradientFill": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "pVertex",
+            "type": "PTRIVERTEX"
+        },
+        {
+            "name": "nVertex",
+            "type": "ULONG"
+        },
+        {
+            "name": "pMesh",
+            "type": "PVOID"
+        },
+        {
+            "name": "nMesh",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulMode",
+            "type": "ULONG"
+        }
+    ]
+}

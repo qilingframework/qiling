@@ -1,0 +1,48 @@
+{
+    "DavGetTheLockOwnerOfTheFile": [
+        {
+            "name": "FileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "LockOwnerName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "LockOwnerNameLengthInBytes",
+            "type": "PULONG"
+        }
+    ],
+    "DavInvalidateCache": [
+        {
+            "name": "URLName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "DavCancelConnectionsToServer": [
+        {
+            "name": "lpName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fForce",
+            "type": "BOOL"
+        }
+    ],
+    "DavRegisterAuthCallback": [
+        {
+            "name": "CallBack",
+            "type": "PFNDAVAUTHCALLBACK"
+        },
+        {
+            "name": "Version",
+            "type": "ULONG"
+        }
+    ],
+    "DavUnregisterAuthCallback": [
+        {
+            "name": "hCallback",
+            "type": "DWORD"
+        }
+    ]
+}

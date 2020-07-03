@@ -1,0 +1,26 @@
+{
+    "MFCreateSensorProfile": [
+        {
+            "name": "ProfileType",
+            "type": "GUID"
+        },
+        {
+            "name": "ProfileIndex",
+            "type": "UINT32"
+        },
+        {
+            "name": "Constraints",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppProfile",
+            "type": "IMFSensorProfile"
+        }
+    ],
+    "MFCreateSensorProfileCollection": [
+        {
+            "name": "ppSensorProfile",
+            "type": "IMFSensorProfileCollection"
+        }
+    ]
+}

@@ -1,0 +1,896 @@
+{
+    "LsnContainer": [
+        {
+            "name": "plsn",
+            "type": "CLFS_LSN"
+        }
+    ],
+    "LsnCreate": [
+        {
+            "name": "cidContainer",
+            "type": "CLFS_CONTAINER_ID"
+        },
+        {
+            "name": "offBlock",
+            "type": "ULONG"
+        },
+        {
+            "name": "cRecord",
+            "type": "ULONG"
+        }
+    ],
+    "LsnBlockOffset": [
+        {
+            "name": "plsn",
+            "type": "CLFS_LSN"
+        }
+    ],
+    "LsnRecordSequence": [
+        {
+            "name": "plsn",
+            "type": "CLFS_LSN"
+        }
+    ],
+    "CreateLogFile": [
+        {
+            "name": "pszLogFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fDesiredAccess",
+            "type": "ACCESS_MASK"
+        },
+        {
+            "name": "dwShareMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "psaLogFile",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "fCreateDisposition",
+            "type": "ULONG"
+        },
+        {
+            "name": "fFlagsAndAttributes",
+            "type": "ULONG"
+        }
+    ],
+    "DeleteLogByHandle": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        }
+    ],
+    "DeleteLogFile": [
+        {
+            "name": "pszLogFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pvReserved",
+            "type": "PVOID"
+        }
+    ],
+    "AddLogContainer": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pcbContainer",
+            "type": "PULONGLONG"
+        },
+        {
+            "name": "pwszContainerPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "AddLogContainerSet": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        },
+        {
+            "name": "cContainer",
+            "type": "USHORT"
+        },
+        {
+            "name": "pcbContainer",
+            "type": "PULONGLONG"
+        },
+        {
+            "name": "rgwszContainerPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "RemoveLogContainer": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pwszContainerPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fForce",
+            "type": "BOOL"
+        },
+        {
+            "name": "pReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "RemoveLogContainerSet": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        },
+        {
+            "name": "cContainer",
+            "type": "USHORT"
+        },
+        {
+            "name": "rgwszContainerPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "fForce",
+            "type": "BOOL"
+        },
+        {
+            "name": "pReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "SetLogArchiveTail": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        },
+        {
+            "name": "plsnArchiveTail",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "pReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "SetEndOfLog": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        },
+        {
+            "name": "plsnEnd",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "TruncateLog": [
+        {
+            "name": "pvMarshal",
+            "type": "PVOID"
+        },
+        {
+            "name": "plsnEnd",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "lpOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "CreateLogContainerScanContext": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        },
+        {
+            "name": "cFromContainer",
+            "type": "ULONG"
+        },
+        {
+            "name": "cContainers",
+            "type": "ULONG"
+        },
+        {
+            "name": "eScanMode",
+            "type": "CLFS_SCAN_MODE"
+        },
+        {
+            "name": "pcxScan",
+            "type": "PCLFS_SCAN_CONTEXT"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "ScanLogContainers": [
+        {
+            "name": "pcxScan",
+            "type": "PCLFS_SCAN_CONTEXT"
+        },
+        {
+            "name": "eScanMode",
+            "type": "CLFS_SCAN_MODE"
+        },
+        {
+            "name": "pReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "AlignReservedLog": [
+        {
+            "name": "pvMarshal",
+            "type": "PVOID"
+        },
+        {
+            "name": "cReservedRecords",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgcbReservation",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "pcbAlignReservation",
+            "type": "PLONGLONG"
+        }
+    ],
+    "AllocReservedLog": [
+        {
+            "name": "pvMarshal",
+            "type": "PVOID"
+        },
+        {
+            "name": "cReservedRecords",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbAdjustment",
+            "type": "PLONGLONG"
+        }
+    ],
+    "FreeReservedLog": [
+        {
+            "name": "pvMarshal",
+            "type": "PVOID"
+        },
+        {
+            "name": "cReservedRecords",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbAdjustment",
+            "type": "PLONGLONG"
+        }
+    ],
+    "GetLogFileInformation": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pinfoBuffer",
+            "type": "PCLFS_INFORMATION"
+        },
+        {
+            "name": "cbBuffer",
+            "type": "PULONG"
+        }
+    ],
+    "SetLogArchiveMode": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        },
+        {
+            "name": "eMode",
+            "type": "CLFS_LOG_ARCHIVE_MODE"
+        }
+    ],
+    "ReadLogRestartArea": [
+        {
+            "name": "pvMarshal",
+            "type": "PVOID"
+        },
+        {
+            "name": "ppvRestartBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "pcbRestartBuffer",
+            "type": "PULONG"
+        },
+        {
+            "name": "plsn",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "ppvContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "ReadPreviousLogRestartArea": [
+        {
+            "name": "pvReadContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "ppvRestartBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "pcbRestartBuffer",
+            "type": "PULONG"
+        },
+        {
+            "name": "plsnRestart",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "WriteLogRestartArea": [
+        {
+            "name": "pvMarshal",
+            "type": "PVOID"
+        },
+        {
+            "name": "pvRestartBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbRestartBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "plsnBase",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "fFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbWritten",
+            "type": "PULONG"
+        },
+        {
+            "name": "plsnNext",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "AdvanceLogBase": [
+        {
+            "name": "pvMarshal",
+            "type": "PVOID"
+        },
+        {
+            "name": "plsnBase",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "fFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "CloseAndResetLogFile": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        }
+    ],
+    "CreateLogMarshallingArea": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pfnAllocBuffer",
+            "type": "CLFS_BLOCK_ALLOCATION"
+        },
+        {
+            "name": "pfnFreeBuffer",
+            "type": "CLFS_BLOCK_DEALLOCATION"
+        },
+        {
+            "name": "pvBlockAllocContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbMarshallingBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "cMaxWriteBuffers",
+            "type": "ULONG"
+        },
+        {
+            "name": "cMaxReadBuffers",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppvMarshal",
+            "type": "PVOID"
+        }
+    ],
+    "DeleteLogMarshallingArea": [
+        {
+            "name": "pvMarshal",
+            "type": "PVOID"
+        }
+    ],
+    "ReserveAndAppendLog": [
+        {
+            "name": "pvMarshal",
+            "type": "PVOID"
+        },
+        {
+            "name": "rgWriteEntries",
+            "type": "PCLFS_WRITE_ENTRY"
+        },
+        {
+            "name": "cWriteEntries",
+            "type": "ULONG"
+        },
+        {
+            "name": "plsnUndoNext",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "plsnPrevious",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "cReserveRecords",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgcbReservation",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "fFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "plsn",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "ReserveAndAppendLogAligned": [
+        {
+            "name": "pvMarshal",
+            "type": "PVOID"
+        },
+        {
+            "name": "rgWriteEntries",
+            "type": "PCLFS_WRITE_ENTRY"
+        },
+        {
+            "name": "cWriteEntries",
+            "type": "ULONG"
+        },
+        {
+            "name": "cbEntryAlignment",
+            "type": "ULONG"
+        },
+        {
+            "name": "plsnUndoNext",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "plsnPrevious",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "cReserveRecords",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgcbReservation",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "fFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "plsn",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "FlushLogBuffers": [
+        {
+            "name": "pvMarshal",
+            "type": "PVOID"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "FlushLogToLsn": [
+        {
+            "name": "pvMarshalContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "plsnFlush",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "plsnLastFlushed",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "ReadLogRecord": [
+        {
+            "name": "pvMarshal",
+            "type": "PVOID"
+        },
+        {
+            "name": "plsnFirst",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "eContextMode",
+            "type": "CLFS_CONTEXT_MODE"
+        },
+        {
+            "name": "ppvReadBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "pcbReadBuffer",
+            "type": "PULONG"
+        },
+        {
+            "name": "peRecordType",
+            "type": "PCLFS_RECORD_TYPE"
+        },
+        {
+            "name": "plsnUndoNext",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "plsnPrevious",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "ppvReadContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "ReadNextLogRecord": [
+        {
+            "name": "pvReadContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "ppvBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "pcbBuffer",
+            "type": "PULONG"
+        },
+        {
+            "name": "peRecordType",
+            "type": "PCLFS_RECORD_TYPE"
+        },
+        {
+            "name": "plsnUser",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "plsnUndoNext",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "plsnPrevious",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "plsnRecord",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "pOverlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "TerminateReadLog": [
+        {
+            "name": "pvCursorContext",
+            "type": "PVOID"
+        }
+    ],
+    "DumpLogRecords": [
+        {
+            "name": "pwszLogFileName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "fRecordType",
+            "type": "CLFS_RECORD_TYPE"
+        },
+        {
+            "name": "plsnStart",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "plsnEnd",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "pstrmOut",
+            "type": "PFILE"
+        },
+        {
+            "name": "pfnPrintRecord",
+            "type": "CLFS_PRINT_RECORD_ROUTINE"
+        },
+        {
+            "name": "pfnAllocBlock",
+            "type": "CLFS_BLOCK_ALLOCATION"
+        },
+        {
+            "name": "pfnFreeBlock",
+            "type": "CLFS_BLOCK_DEALLOCATION"
+        },
+        {
+            "name": "pvBlockAllocContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbBlock",
+            "type": "ULONG"
+        },
+        {
+            "name": "cMaxBlocks",
+            "type": "ULONG"
+        }
+    ],
+    "PrepareLogArchive": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszBaseLogFileName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "plsnLow",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "plsnHigh",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "pcActualLength",
+            "type": "PULONG"
+        },
+        {
+            "name": "poffBaseLogFileData",
+            "type": "PULONGLONG"
+        },
+        {
+            "name": "pcbBaseLogFileLength",
+            "type": "PULONGLONG"
+        },
+        {
+            "name": "plsnBase",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "plsnLast",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "plsnCurrentArchiveTail",
+            "type": "PCLFS_LSN"
+        },
+        {
+            "name": "ppvArchiveContext",
+            "type": "PCLFS_LOG_ARCHIVE_CONTEXT"
+        }
+    ],
+    "ReadLogArchiveMetadata": [
+        {
+            "name": "pvArchiveContext",
+            "type": "CLFS_LOG_ARCHIVE_CONTEXT"
+        },
+        {
+            "name": "cbOffset",
+            "type": "ULONG"
+        },
+        {
+            "name": "cbBytesToRead",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbReadBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "pcbBytesRead",
+            "type": "PULONG"
+        }
+    ],
+    "GetNextLogArchiveExtent": [
+        {
+            "name": "pvArchiveContext",
+            "type": "CLFS_LOG_ARCHIVE_CONTEXT"
+        },
+        {
+            "name": "rgadExtent",
+            "type": "CLFS_ARCHIVE_DESCRIPTOR"
+        },
+        {
+            "name": "cDescriptors",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcDescriptorsReturned",
+            "type": "PULONG"
+        }
+    ],
+    "TerminateLogArchive": [
+        {
+            "name": "pvArchiveContext",
+            "type": "CLFS_LOG_ARCHIVE_CONTEXT"
+        }
+    ],
+    "ValidateLog": [
+        {
+            "name": "pszLogFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "psaLogFile",
+            "type": "LPSECURITY_ATTRIBUTES"
+        },
+        {
+            "name": "pinfoBuffer",
+            "type": "PCLFS_INFORMATION"
+        },
+        {
+            "name": "pcbBuffer",
+            "type": "PULONG"
+        }
+    ],
+    "GetLogContainerName": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        },
+        {
+            "name": "cidLogicalContainer",
+            "type": "CLFS_CONTAINER_ID"
+        },
+        {
+            "name": "pwstrContainerName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cLenContainerName",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcActualLenContainerName",
+            "type": "PULONG"
+        }
+    ],
+    "GetLogIoStatistics": [
+        {
+            "name": "hLog",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pvStatsBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbStatsBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "eStatsClass",
+            "type": "CLFS_IOSTATS_CLASS"
+        },
+        {
+            "name": "pcbStatsWritten",
+            "type": "PULONG"
+        }
+    ],
+    "LsnEqual": [
+        {
+            "name": "plsn1",
+            "type": "CLFS_LSN"
+        },
+        {
+            "name": "plsn2",
+            "type": "CLFS_LSN"
+        }
+    ],
+    "LsnLess": [
+        {
+            "name": "plsn1",
+            "type": "CLFS_LSN"
+        },
+        {
+            "name": "plsn2",
+            "type": "CLFS_LSN"
+        }
+    ],
+    "LsnGreater": [
+        {
+            "name": "plsn1",
+            "type": "CLFS_LSN"
+        },
+        {
+            "name": "plsn2",
+            "type": "CLFS_LSN"
+        }
+    ],
+    "LsnNull": [
+        {
+            "name": "plsn",
+            "type": "CLFS_LSN"
+        }
+    ]
+}

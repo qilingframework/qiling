@@ -1,0 +1,26 @@
+{
+    "VDMEnumProcessWOW": [
+        {
+            "name": "fp",
+            "type": "PROCESSENUMPROC"
+        },
+        {
+            "name": "lparam",
+            "type": "LPARAM"
+        }
+    ],
+    "VDMEnumTaskWOWEx": [
+        {
+            "name": "dwProcessId",
+            "type": "DWORD"
+        },
+        {
+            "name": "fp",
+            "type": "TASKENUMPROCEX"
+        },
+        {
+            "name": "lparam",
+            "type": "LPARAM"
+        }
+    ]
+}

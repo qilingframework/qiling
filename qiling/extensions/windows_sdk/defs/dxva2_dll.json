@@ -1,0 +1,410 @@
+{
+    "GetVCPFeatureAndVCPFeatureReply": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "bVCPCode",
+            "type": "BYTE"
+        },
+        {
+            "name": "pvct",
+            "type": "LPMC_VCP_CODE_TYPE"
+        },
+        {
+            "name": "pdwCurrentValue",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwMaximumValue",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetVCPFeature": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "bVCPCode",
+            "type": "BYTE"
+        },
+        {
+            "name": "dwNewValue",
+            "type": "DWORD"
+        }
+    ],
+    "SaveCurrentSettings": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        }
+    ],
+    "GetCapabilitiesStringLength": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pdwCapabilitiesStringLengthInCharacters",
+            "type": "LPDWORD"
+        }
+    ],
+    "CapabilitiesRequestAndCapabilitiesReply": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pszASCIICapabilitiesString",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwCapabilitiesStringLengthInCharacters",
+            "type": "DWORD"
+        }
+    ],
+    "GetTimingReport": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pmtrMonitorTimingReport",
+            "type": "LPMC_TIMING_REPORT"
+        }
+    ],
+    "GetMonitorCapabilities": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pdwMonitorCapabilities",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwSupportedColorTemperatures",
+            "type": "LPDWORD"
+        }
+    ],
+    "SaveCurrentMonitorSettings": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        }
+    ],
+    "GetMonitorTechnologyType": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pdtyDisplayTechnologyType",
+            "type": "LPMC_DISPLAY_TECHNOLOGY_TYPE"
+        }
+    ],
+    "GetMonitorBrightness": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pdwMinimumBrightness",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwCurrentBrightness",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwMaximumBrightness",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetMonitorContrast": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pdwMinimumContrast",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwCurrentContrast",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwMaximumContrast",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetMonitorColorTemperature": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pctCurrentColorTemperature",
+            "type": "LPMC_COLOR_TEMPERATURE"
+        }
+    ],
+    "GetMonitorRedGreenOrBlueDrive": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dtDriveType",
+            "type": "MC_DRIVE_TYPE"
+        },
+        {
+            "name": "pdwMinimumDrive",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwCurrentDrive",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwMaximumDrive",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetMonitorRedGreenOrBlueGain": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "gtGainType",
+            "type": "MC_GAIN_TYPE"
+        },
+        {
+            "name": "pdwMinimumGain",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwCurrentGain",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwMaximumGain",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetMonitorBrightness": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwNewBrightness",
+            "type": "DWORD"
+        }
+    ],
+    "SetMonitorContrast": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwNewContrast",
+            "type": "DWORD"
+        }
+    ],
+    "SetMonitorColorTemperature": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ctCurrentColorTemperature",
+            "type": "MC_COLOR_TEMPERATURE"
+        }
+    ],
+    "SetMonitorRedGreenOrBlueDrive": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dtDriveType",
+            "type": "MC_DRIVE_TYPE"
+        },
+        {
+            "name": "dwNewDrive",
+            "type": "DWORD"
+        }
+    ],
+    "SetMonitorRedGreenOrBlueGain": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "gtGainType",
+            "type": "MC_GAIN_TYPE"
+        },
+        {
+            "name": "dwNewGain",
+            "type": "DWORD"
+        }
+    ],
+    "DegaussMonitor": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        }
+    ],
+    "GetMonitorDisplayAreaSize": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "stSizeType",
+            "type": "MC_SIZE_TYPE"
+        },
+        {
+            "name": "pdwMinimumWidthOrHeight",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwCurrentWidthOrHeight",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwMaximumWidthOrHeight",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetMonitorDisplayAreaPosition": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ptPositionType",
+            "type": "MC_POSITION_TYPE"
+        },
+        {
+            "name": "pdwMinimumPosition",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwCurrentPosition",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwMaximumPosition",
+            "type": "LPDWORD"
+        }
+    ],
+    "SetMonitorDisplayAreaSize": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "stSizeType",
+            "type": "MC_SIZE_TYPE"
+        },
+        {
+            "name": "dwNewDisplayAreaWidthOrHeight",
+            "type": "DWORD"
+        }
+    ],
+    "SetMonitorDisplayAreaPosition": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ptPositionType",
+            "type": "MC_POSITION_TYPE"
+        },
+        {
+            "name": "dwNewPosition",
+            "type": "DWORD"
+        }
+    ],
+    "RestoreMonitorFactoryColorDefaults": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        }
+    ],
+    "RestoreMonitorFactoryDefaults": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        }
+    ],
+    "GetNumberOfPhysicalMonitorsFromHMONITOR": [
+        {
+            "name": "hMonitor",
+            "type": "HMONITOR"
+        },
+        {
+            "name": "pdwNumberOfPhysicalMonitors",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetNumberOfPhysicalMonitorsFromIDirect3DDevice9": [
+        {
+            "name": "pDirect3DDevice9",
+            "type": "IDirect3DDevice9"
+        },
+        {
+            "name": "pdwNumberOfPhysicalMonitors",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetPhysicalMonitorsFromHMONITOR": [
+        {
+            "name": "hMonitor",
+            "type": "HMONITOR"
+        },
+        {
+            "name": "dwPhysicalMonitorArraySize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPhysicalMonitorArray",
+            "type": "LPPHYSICAL_MONITOR"
+        }
+    ],
+    "GetPhysicalMonitorsFromIDirect3DDevice9": [
+        {
+            "name": "pDirect3DDevice9",
+            "type": "IDirect3DDevice9"
+        },
+        {
+            "name": "dwPhysicalMonitorArraySize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPhysicalMonitorArray",
+            "type": "LPPHYSICAL_MONITOR"
+        }
+    ],
+    "DestroyPhysicalMonitor": [
+        {
+            "name": "hMonitor",
+            "type": "HANDLE"
+        }
+    ],
+    "DestroyPhysicalMonitors": [
+        {
+            "name": "dwPhysicalMonitorArraySize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPhysicalMonitorArray",
+            "type": "LPPHYSICAL_MONITOR"
+        }
+    ]
+}

@@ -1,0 +1,3020 @@
+{
+    "CoGetMalloc": [
+        {
+            "name": "dwMemContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppMalloc",
+            "type": "LPMALLOC"
+        }
+    ],
+    "CreateStreamOnHGlobal": [
+        {
+            "name": "hGlobal",
+            "type": "HGLOBAL"
+        },
+        {
+            "name": "fDeleteOnRelease",
+            "type": "BOOL"
+        },
+        {
+            "name": "ppstm",
+            "type": "LPSTREAM"
+        }
+    ],
+    "GetHGlobalFromStream": [
+        {
+            "name": "pstm",
+            "type": "LPSTREAM"
+        },
+        {
+            "name": "phglobal",
+            "type": "HGLOBAL"
+        }
+    ],
+    "CoUninitialize": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CoGetCurrentProcess": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CoInitializeEx": [
+        {
+            "name": "pvReserved",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwCoInit",
+            "type": "DWORD"
+        }
+    ],
+    "CoGetCallerTID": [
+        {
+            "name": "lpdwTID",
+            "type": "LPDWORD"
+        }
+    ],
+    "CoGetCurrentLogicalThreadId": [
+        {
+            "name": "pguid",
+            "type": "GUID"
+        }
+    ],
+    "CoGetContextToken": [
+        {
+            "name": "pToken",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "CoGetDefaultContext": [
+        {
+            "name": "aptType",
+            "type": "APTTYPE"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "CoGetApartmentType": [
+        {
+            "name": "pAptType",
+            "type": "APTTYPE"
+        },
+        {
+            "name": "pAptQualifier",
+            "type": "APTTYPEQUALIFIER"
+        }
+    ],
+    "CoIncrementMTAUsage": [
+        {
+            "name": "pCookie",
+            "type": "CO_MTA_USAGE_COOKIE"
+        }
+    ],
+    "CoDecrementMTAUsage": [
+        {
+            "name": "Cookie",
+            "type": "CO_MTA_USAGE_COOKIE"
+        }
+    ],
+    "CoAllowUnmarshalerCLSID": [
+        {
+            "name": "clsid",
+            "type": "IID"
+        }
+    ],
+    "CoGetObjectContext": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "LPVOID"
+        }
+    ],
+    "CoGetClassObject": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "dwClsContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "LPVOID"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "LPVOID"
+        }
+    ],
+    "CoRegisterClassObject": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "pUnk",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "dwClsContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwRegister",
+            "type": "LPDWORD"
+        }
+    ],
+    "CoRevokeClassObject": [
+        {
+            "name": "dwRegister",
+            "type": "DWORD"
+        }
+    ],
+    "CoResumeClassObjects": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CoSuspendClassObjects": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CoAddRefServerProcess": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CoReleaseServerProcess": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CoGetPSClsid": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "pClsid",
+            "type": "CLSID"
+        }
+    ],
+    "CoRegisterPSClsid": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "rclsid",
+            "type": "IID"
+        }
+    ],
+    "CoRegisterSurrogate": [
+        {
+            "name": "pSurrogate",
+            "type": "LPSURROGATE"
+        }
+    ],
+    "CoGetMarshalSizeMax": [
+        {
+            "name": "pulSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "pUnk",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "dwDestContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvDestContext",
+            "type": "LPVOID"
+        },
+        {
+            "name": "mshlflags",
+            "type": "DWORD"
+        }
+    ],
+    "CoMarshalInterface": [
+        {
+            "name": "pStm",
+            "type": "LPSTREAM"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "pUnk",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "dwDestContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvDestContext",
+            "type": "LPVOID"
+        },
+        {
+            "name": "mshlflags",
+            "type": "DWORD"
+        }
+    ],
+    "CoUnmarshalInterface": [
+        {
+            "name": "pStm",
+            "type": "LPSTREAM"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "LPVOID"
+        }
+    ],
+    "CoMarshalHresult": [
+        {
+            "name": "pstm",
+            "type": "LPSTREAM"
+        },
+        {
+            "name": "hresult",
+            "type": "HRESULT"
+        }
+    ],
+    "CoUnmarshalHresult": [
+        {
+            "name": "pstm",
+            "type": "LPSTREAM"
+        },
+        {
+            "name": "phresult",
+            "type": "HRESULT"
+        }
+    ],
+    "CoReleaseMarshalData": [
+        {
+            "name": "pStm",
+            "type": "LPSTREAM"
+        }
+    ],
+    "CoDisconnectObject": [
+        {
+            "name": "pUnk",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        }
+    ],
+    "CoLockObjectExternal": [
+        {
+            "name": "pUnk",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "fLock",
+            "type": "BOOL"
+        },
+        {
+            "name": "fLastUnlockReleases",
+            "type": "BOOL"
+        }
+    ],
+    "CoGetStandardMarshal": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "pUnk",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "dwDestContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvDestContext",
+            "type": "LPVOID"
+        },
+        {
+            "name": "mshlflags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppMarshal",
+            "type": "LPMARSHAL"
+        }
+    ],
+    "CoGetStdMarshalEx": [
+        {
+            "name": "pUnkOuter",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "smexflags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppUnkInner",
+            "type": "LPUNKNOWN"
+        }
+    ],
+    "CoIsHandlerConnected": [
+        {
+            "name": "pUnk",
+            "type": "LPUNKNOWN"
+        }
+    ],
+    "CoMarshalInterThreadInterfaceInStream": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "pUnk",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "ppStm",
+            "type": "LPSTREAM"
+        }
+    ],
+    "CoGetInterfaceAndReleaseStream": [
+        {
+            "name": "pStm",
+            "type": "LPSTREAM"
+        },
+        {
+            "name": "iid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "LPVOID"
+        }
+    ],
+    "CoCreateFreeThreadedMarshaler": [
+        {
+            "name": "punkOuter",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "ppunkMarshal",
+            "type": "LPUNKNOWN"
+        }
+    ],
+    "CoFreeUnusedLibraries": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CoDisconnectContext": [
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        }
+    ],
+    "CoInitializeSecurity": [
+        {
+            "name": "pSecDesc",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "cAuthSvc",
+            "type": "LONG"
+        },
+        {
+            "name": "asAuthSvc",
+            "type": "SOLE_AUTHENTICATION_SERVICE"
+        },
+        {
+            "name": "pReserved1",
+            "type": "void"
+        },
+        {
+            "name": "dwAuthnLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwImpLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "pAuthList",
+            "type": "void"
+        },
+        {
+            "name": "dwCapabilities",
+            "type": "DWORD"
+        },
+        {
+            "name": "pReserved3",
+            "type": "void"
+        }
+    ],
+    "CoGetCallContext": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppInterface",
+            "type": "void"
+        }
+    ],
+    "CoQueryProxyBlanket": [
+        {
+            "name": "pProxy",
+            "type": "IUnknown"
+        },
+        {
+            "name": "pwAuthnSvc",
+            "type": "DWORD"
+        },
+        {
+            "name": "pAuthzSvc",
+            "type": "DWORD"
+        },
+        {
+            "name": "pServerPrincName",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "pAuthnLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "pImpLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "pAuthInfo",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "pCapabilites",
+            "type": "DWORD"
+        }
+    ],
+    "CoSetProxyBlanket": [
+        {
+            "name": "pProxy",
+            "type": "IUnknown"
+        },
+        {
+            "name": "dwAuthnSvc",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAuthzSvc",
+            "type": "DWORD"
+        },
+        {
+            "name": "pServerPrincName",
+            "type": "OLECHAR"
+        },
+        {
+            "name": "dwAuthnLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwImpLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "pAuthInfo",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "dwCapabilities",
+            "type": "DWORD"
+        }
+    ],
+    "CoCopyProxy": [
+        {
+            "name": "pProxy",
+            "type": "IUnknown"
+        },
+        {
+            "name": "ppCopy",
+            "type": "IUnknown"
+        }
+    ],
+    "CoQueryClientBlanket": [
+        {
+            "name": "pAuthnSvc",
+            "type": "DWORD"
+        },
+        {
+            "name": "pAuthzSvc",
+            "type": "DWORD"
+        },
+        {
+            "name": "pServerPrincName",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "pAuthnLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "pImpLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPrivs",
+            "type": "RPC_AUTHZ_HANDLE"
+        },
+        {
+            "name": "pCapabilities",
+            "type": "DWORD"
+        }
+    ],
+    "CoImpersonateClient": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CoRevertToSelf": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CoQueryAuthenticationServices": [
+        {
+            "name": "pcAuthSvc",
+            "type": "DWORD"
+        },
+        {
+            "name": "asAuthSvc",
+            "type": "SOLE_AUTHENTICATION_SERVICE"
+        }
+    ],
+    "CoSwitchCallContext": [
+        {
+            "name": "pNewObject",
+            "type": "IUnknown"
+        },
+        {
+            "name": "ppOldObject",
+            "type": "IUnknown"
+        }
+    ],
+    "CoCreateInstance": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "pUnkOuter",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "dwClsContext",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "LPVOID"
+        }
+    ],
+    "CoCreateInstanceEx": [
+        {
+            "name": "Clsid",
+            "type": "IID"
+        },
+        {
+            "name": "punkOuter",
+            "type": "IUnknown"
+        },
+        {
+            "name": "dwClsCtx",
+            "type": "DWORD"
+        },
+        {
+            "name": "pServerInfo",
+            "type": "COSERVERINFO"
+        },
+        {
+            "name": "dwCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pResults",
+            "type": "MULTI_QI"
+        }
+    ],
+    "CoRegisterActivationFilter": [
+        {
+            "name": "pActivationFilter",
+            "type": "IActivationFilter"
+        }
+    ],
+    "CoGetCancelObject": [
+        {
+            "name": "dwThreadId",
+            "type": "DWORD"
+        },
+        {
+            "name": "iid",
+            "type": "IID"
+        },
+        {
+            "name": "ppUnk",
+            "type": "void"
+        }
+    ],
+    "CoSetCancelObject": [
+        {
+            "name": "pUnk",
+            "type": "IUnknown"
+        }
+    ],
+    "CoCancelCall": [
+        {
+            "name": "dwThreadId",
+            "type": "DWORD"
+        },
+        {
+            "name": "ulTimeout",
+            "type": "ULONG"
+        }
+    ],
+    "CoTestCancel": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CoEnableCallCancellation": [
+        {
+            "name": "pReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "CoDisableCallCancellation": [
+        {
+            "name": "pReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "StringFromCLSID": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "lplpsz",
+            "type": "LPOLESTR"
+        }
+    ],
+    "CLSIDFromString": [
+        {
+            "name": "lpsz",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "pclsid",
+            "type": "LPCLSID"
+        }
+    ],
+    "StringFromIID": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "lplpsz",
+            "type": "LPOLESTR"
+        }
+    ],
+    "IIDFromString": [
+        {
+            "name": "lpsz",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lpiid",
+            "type": "LPIID"
+        }
+    ],
+    "ProgIDFromCLSID": [
+        {
+            "name": "clsid",
+            "type": "IID"
+        },
+        {
+            "name": "lplpszProgID",
+            "type": "LPOLESTR"
+        }
+    ],
+    "CLSIDFromProgID": [
+        {
+            "name": "lpszProgID",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lpclsid",
+            "type": "LPCLSID"
+        }
+    ],
+    "StringFromGUID2": [
+        {
+            "name": "rguid",
+            "type": "GUID"
+        },
+        {
+            "name": "lpsz",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "int"
+        }
+    ],
+    "CoCreateGuid": [
+        {
+            "name": "pguid",
+            "type": "GUID"
+        }
+    ],
+    "PropVariantCopy": [
+        {
+            "name": "pvarDest",
+            "type": "PROPVARIANT"
+        },
+        {
+            "name": "pvarSrc",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "PropVariantClear": [
+        {
+            "name": "pvar",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "FreePropVariantArray": [
+        {
+            "name": "cVariants",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgvars",
+            "type": "PROPVARIANT"
+        }
+    ],
+    "CoWaitForMultipleHandles": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwTimeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "cHandles",
+            "type": "ULONG"
+        },
+        {
+            "name": "pHandles",
+            "type": "LPHANDLE"
+        },
+        {
+            "name": "lpdwindex",
+            "type": "LPDWORD"
+        }
+    ],
+    "CoGetTreatAsClass": [
+        {
+            "name": "clsidOld",
+            "type": "IID"
+        },
+        {
+            "name": "pClsidNew",
+            "type": "LPCLSID"
+        }
+    ],
+    "CoInvalidateRemoteMachineBindings": [
+        {
+            "name": "pszMachineName",
+            "type": "LPOLESTR"
+        }
+    ],
+    "RoGetAgileReference": [
+        {
+            "name": "options",
+            "type": {
+                "name": "AgileReferenceOptions",
+                "data_type": "Enum",
+                "enumerators": []
+            }
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "pUnk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "ppAgileReference",
+            "type": "IAgileReference"
+        }
+    ],
+    "CoTaskMemAlloc": [
+        {
+            "name": "cb",
+            "type": "SIZE_T"
+        }
+    ],
+    "CoTaskMemRealloc": [
+        {
+            "name": "pv",
+            "type": "LPVOID"
+        },
+        {
+            "name": "cb",
+            "type": "SIZE_T"
+        }
+    ],
+    "CoTaskMemFree": [
+        {
+            "name": "pv",
+            "type": "LPVOID"
+        }
+    ],
+    "CoFileTimeNow": [
+        {
+            "name": "lpFileTime",
+            "type": "FILETIME"
+        }
+    ],
+    "CLSIDFromProgIDEx": [
+        {
+            "name": "lpszProgID",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lpclsid",
+            "type": "LPCLSID"
+        }
+    ],
+    "CreateDataAdviseHolder": [
+        {
+            "name": "ppDAHolder",
+            "type": "LPDATAADVISEHOLDER"
+        }
+    ],
+    "OleBuildVersion": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "WriteFmtUserTypeStg": [
+        {
+            "name": "pstg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "cf",
+            "type": "CLIPFORMAT"
+        },
+        {
+            "name": "lpszUserType",
+            "type": "LPOLESTR"
+        }
+    ],
+    "ReadFmtUserTypeStg": [
+        {
+            "name": "pstg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "pcf",
+            "type": "CLIPFORMAT"
+        },
+        {
+            "name": "lplpszUserType",
+            "type": "LPOLESTR"
+        }
+    ],
+    "OleInitialize": [
+        {
+            "name": "pvReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "OleUninitialize": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "OleQueryLinkFromData": [
+        {
+            "name": "pSrcDataObject",
+            "type": "LPDATAOBJECT"
+        }
+    ],
+    "OleQueryCreateFromData": [
+        {
+            "name": "pSrcDataObject",
+            "type": "LPDATAOBJECT"
+        }
+    ],
+    "OleCreate": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPOLECLIENT"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LHCLIENTDOC"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPOLEOBJECT"
+        },
+        {
+            "name": "VOID",
+            "type": "OLEOPT_RENDER"
+        },
+        {
+            "name": "VOID",
+            "type": "OLECLIPFORMAT"
+        }
+    ],
+    "OleCreateEx": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "renderopt",
+            "type": "DWORD"
+        },
+        {
+            "name": "cFormats",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgAdvf",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgFormatEtc",
+            "type": "LPFORMATETC"
+        },
+        {
+            "name": "lpAdviseSink",
+            "type": "IAdviseSink"
+        },
+        {
+            "name": "rgdwConnection",
+            "type": "DWORD"
+        },
+        {
+            "name": "pClientSite",
+            "type": "LPOLECLIENTSITE"
+        },
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "ppvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreateFromData": [
+        {
+            "name": "pSrcDataObj",
+            "type": "LPDATAOBJECT"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "renderopt",
+            "type": "DWORD"
+        },
+        {
+            "name": "pFormatEtc",
+            "type": "LPFORMATETC"
+        },
+        {
+            "name": "pClientSite",
+            "type": "LPOLECLIENTSITE"
+        },
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "ppvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreateFromDataEx": [
+        {
+            "name": "pSrcDataObj",
+            "type": "LPDATAOBJECT"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "renderopt",
+            "type": "DWORD"
+        },
+        {
+            "name": "cFormats",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgAdvf",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgFormatEtc",
+            "type": "LPFORMATETC"
+        },
+        {
+            "name": "lpAdviseSink",
+            "type": "IAdviseSink"
+        },
+        {
+            "name": "rgdwConnection",
+            "type": "DWORD"
+        },
+        {
+            "name": "pClientSite",
+            "type": "LPOLECLIENTSITE"
+        },
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "ppvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreateLinkFromData": [
+        {
+            "name": "pSrcDataObj",
+            "type": "LPDATAOBJECT"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "renderopt",
+            "type": "DWORD"
+        },
+        {
+            "name": "pFormatEtc",
+            "type": "LPFORMATETC"
+        },
+        {
+            "name": "pClientSite",
+            "type": "LPOLECLIENTSITE"
+        },
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "ppvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreateLinkFromDataEx": [
+        {
+            "name": "pSrcDataObj",
+            "type": "LPDATAOBJECT"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "renderopt",
+            "type": "DWORD"
+        },
+        {
+            "name": "cFormats",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgAdvf",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgFormatEtc",
+            "type": "LPFORMATETC"
+        },
+        {
+            "name": "lpAdviseSink",
+            "type": "IAdviseSink"
+        },
+        {
+            "name": "rgdwConnection",
+            "type": "DWORD"
+        },
+        {
+            "name": "pClientSite",
+            "type": "LPOLECLIENTSITE"
+        },
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "ppvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreateStaticFromData": [
+        {
+            "name": "pSrcDataObj",
+            "type": "LPDATAOBJECT"
+        },
+        {
+            "name": "iid",
+            "type": "IID"
+        },
+        {
+            "name": "renderopt",
+            "type": "DWORD"
+        },
+        {
+            "name": "pFormatEtc",
+            "type": "LPFORMATETC"
+        },
+        {
+            "name": "pClientSite",
+            "type": "LPOLECLIENTSITE"
+        },
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "ppvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreateLink": [
+        {
+            "name": "pmkLinkSrc",
+            "type": "LPMONIKER"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "renderopt",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpFormatEtc",
+            "type": "LPFORMATETC"
+        },
+        {
+            "name": "pClientSite",
+            "type": "LPOLECLIENTSITE"
+        },
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "ppvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreateLinkEx": [
+        {
+            "name": "pmkLinkSrc",
+            "type": "LPMONIKER"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "renderopt",
+            "type": "DWORD"
+        },
+        {
+            "name": "cFormats",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgAdvf",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgFormatEtc",
+            "type": "LPFORMATETC"
+        },
+        {
+            "name": "lpAdviseSink",
+            "type": "IAdviseSink"
+        },
+        {
+            "name": "rgdwConnection",
+            "type": "DWORD"
+        },
+        {
+            "name": "pClientSite",
+            "type": "LPOLECLIENTSITE"
+        },
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "ppvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreateLinkToFile": [
+        {
+            "name": "lpszFileName",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "renderopt",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpFormatEtc",
+            "type": "LPFORMATETC"
+        },
+        {
+            "name": "pClientSite",
+            "type": "LPOLECLIENTSITE"
+        },
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "ppvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreateLinkToFileEx": [
+        {
+            "name": "lpszFileName",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "renderopt",
+            "type": "DWORD"
+        },
+        {
+            "name": "cFormats",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgAdvf",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgFormatEtc",
+            "type": "LPFORMATETC"
+        },
+        {
+            "name": "lpAdviseSink",
+            "type": "IAdviseSink"
+        },
+        {
+            "name": "rgdwConnection",
+            "type": "DWORD"
+        },
+        {
+            "name": "pClientSite",
+            "type": "LPOLECLIENTSITE"
+        },
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "ppvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreateFromFile": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPOLECLIENT"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LHCLIENTDOC"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPOLEOBJECT"
+        },
+        {
+            "name": "VOID",
+            "type": "OLEOPT_RENDER"
+        },
+        {
+            "name": "VOID",
+            "type": "OLECLIPFORMAT"
+        }
+    ],
+    "OleCreateFromFileEx": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "lpszFileName",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "renderopt",
+            "type": "DWORD"
+        },
+        {
+            "name": "cFormats",
+            "type": "ULONG"
+        },
+        {
+            "name": "rgAdvf",
+            "type": "DWORD"
+        },
+        {
+            "name": "rgFormatEtc",
+            "type": "LPFORMATETC"
+        },
+        {
+            "name": "lpAdviseSink",
+            "type": "IAdviseSink"
+        },
+        {
+            "name": "rgdwConnection",
+            "type": "DWORD"
+        },
+        {
+            "name": "pClientSite",
+            "type": "LPOLECLIENTSITE"
+        },
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "ppvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleLoad": [
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "pClientSite",
+            "type": "LPOLECLIENTSITE"
+        },
+        {
+            "name": "ppvObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleSave": [
+        {
+            "name": "pPS",
+            "type": "LPPERSISTSTORAGE"
+        },
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "fSameAsLoad",
+            "type": "BOOL"
+        }
+    ],
+    "OleLoadFromStream": [
+        {
+            "name": "VOID",
+            "type": "LPOLESTREAM"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPOLECLIENT"
+        },
+        {
+            "name": "VOID",
+            "type": "LHCLIENTDOC"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "VOID",
+            "type": "LPOLEOBJECT"
+        }
+    ],
+    "OleSaveToStream": [
+        {
+            "name": "VOID",
+            "type": "LPOLEOBJECT"
+        },
+        {
+            "name": "VOID",
+            "type": "LPOLESTREAM"
+        }
+    ],
+    "OleSetContainedObject": [
+        {
+            "name": "pUnknown",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "fContained",
+            "type": "BOOL"
+        }
+    ],
+    "OleNoteObjectVisible": [
+        {
+            "name": "pUnknown",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "fVisible",
+            "type": "BOOL"
+        }
+    ],
+    "RegisterDragDrop": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pDropTarget",
+            "type": "LPDROPTARGET"
+        }
+    ],
+    "RevokeDragDrop": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "DoDragDrop": [
+        {
+            "name": "pDataObj",
+            "type": "LPDATAOBJECT"
+        },
+        {
+            "name": "pDropSource",
+            "type": "LPDROPSOURCE"
+        },
+        {
+            "name": "dwOKEffects",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwEffect",
+            "type": "LPDWORD"
+        }
+    ],
+    "OleSetClipboard": [
+        {
+            "name": "pDataObj",
+            "type": "LPDATAOBJECT"
+        }
+    ],
+    "OleGetClipboard": [
+        {
+            "name": "ppDataObj",
+            "type": "LPDATAOBJECT"
+        }
+    ],
+    "OleGetClipboardWithEnterpriseInfo": [
+        {
+            "name": "dataObject",
+            "type": "IDataObject"
+        },
+        {
+            "name": "dataEnterpriseId",
+            "type": "PWSTR"
+        },
+        {
+            "name": "sourceDescription",
+            "type": "PWSTR"
+        },
+        {
+            "name": "targetDescription",
+            "type": "PWSTR"
+        },
+        {
+            "name": "dataDescription",
+            "type": "PWSTR"
+        }
+    ],
+    "OleFlushClipboard": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "OleIsCurrentClipboard": [
+        {
+            "name": "pDataObj",
+            "type": "LPDATAOBJECT"
+        }
+    ],
+    "OleCreateMenuDescriptor": [
+        {
+            "name": "hmenuCombined",
+            "type": "HMENU"
+        },
+        {
+            "name": "lpMenuWidths",
+            "type": "LPOLEMENUGROUPWIDTHS"
+        }
+    ],
+    "OleSetMenuDescriptor": [
+        {
+            "name": "holemenu",
+            "type": "HOLEMENU"
+        },
+        {
+            "name": "hwndFrame",
+            "type": "HWND"
+        },
+        {
+            "name": "hwndActiveObject",
+            "type": "HWND"
+        },
+        {
+            "name": "lpFrame",
+            "type": "LPOLEINPLACEFRAME"
+        },
+        {
+            "name": "lpActiveObj",
+            "type": "LPOLEINPLACEACTIVEOBJECT"
+        }
+    ],
+    "OleDestroyMenuDescriptor": [
+        {
+            "name": "holemenu",
+            "type": "HOLEMENU"
+        }
+    ],
+    "OleTranslateAccelerator": [
+        {
+            "name": "lpFrame",
+            "type": "LPOLEINPLACEFRAME"
+        },
+        {
+            "name": "lpFrameInfo",
+            "type": "LPOLEINPLACEFRAMEINFO"
+        },
+        {
+            "name": "lpmsg",
+            "type": "LPMSG"
+        }
+    ],
+    "OleDuplicateData": [
+        {
+            "name": "hSrc",
+            "type": "HANDLE"
+        },
+        {
+            "name": "cfFormat",
+            "type": "CLIPFORMAT"
+        },
+        {
+            "name": "uiFlags",
+            "type": "UINT"
+        }
+    ],
+    "OleDraw": [
+        {
+            "name": "VOID",
+            "type": "LPOLEOBJECT"
+        },
+        {
+            "name": "VOID",
+            "type": "HDC"
+        },
+        {
+            "name": "VOID",
+            "type": "RECT"
+        },
+        {
+            "name": "VOID",
+            "type": "RECT"
+        },
+        {
+            "name": "VOID",
+            "type": "HDC"
+        }
+    ],
+    "OleRun": [
+        {
+            "name": "pUnknown",
+            "type": "LPUNKNOWN"
+        }
+    ],
+    "OleIsRunning": [
+        {
+            "name": "pObject",
+            "type": "LPOLEOBJECT"
+        }
+    ],
+    "OleLockRunning": [
+        {
+            "name": "pUnknown",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "fLock",
+            "type": "BOOL"
+        },
+        {
+            "name": "fLastUnlockCloses",
+            "type": "BOOL"
+        }
+    ],
+    "ReleaseStgMedium": [
+        {
+            "name": "VOID",
+            "type": "LPSTGMEDIUM"
+        }
+    ],
+    "CreateOleAdviseHolder": [
+        {
+            "name": "ppOAHolder",
+            "type": "LPOLEADVISEHOLDER"
+        }
+    ],
+    "OleCreateDefaultHandler": [
+        {
+            "name": "clsid",
+            "type": "IID"
+        },
+        {
+            "name": "pUnkOuter",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "lplpObj",
+            "type": "LPVOID"
+        }
+    ],
+    "OleCreateEmbeddingHelper": [
+        {
+            "name": "clsid",
+            "type": "IID"
+        },
+        {
+            "name": "pUnkOuter",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pCF",
+            "type": "LPCLASSFACTORY"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "lplpObj",
+            "type": "LPVOID"
+        }
+    ],
+    "IsAccelerator": [
+        {
+            "name": "hAccel",
+            "type": "HACCEL"
+        },
+        {
+            "name": "cAccelEntries",
+            "type": "int"
+        },
+        {
+            "name": "lpMsg",
+            "type": "LPMSG"
+        },
+        {
+            "name": "lpwCmd",
+            "type": "WORD"
+        }
+    ],
+    "OleGetIconOfFile": [
+        {
+            "name": "lpszPath",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "fUseFileAsLabel",
+            "type": "BOOL"
+        }
+    ],
+    "OleGetIconOfClass": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "lpszLabel",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "fUseTypeAsLabel",
+            "type": "BOOL"
+        }
+    ],
+    "OleMetafilePictFromIconAndLabel": [
+        {
+            "name": "hIcon",
+            "type": "HICON"
+        },
+        {
+            "name": "lpszLabel",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "lpszSourceFile",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "iIconIndex",
+            "type": "UINT"
+        }
+    ],
+    "OleRegGetUserType": [
+        {
+            "name": "clsid",
+            "type": "IID"
+        },
+        {
+            "name": "dwFormOfType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszUserType",
+            "type": "LPOLESTR"
+        }
+    ],
+    "OleRegGetMiscStatus": [
+        {
+            "name": "clsid",
+            "type": "IID"
+        },
+        {
+            "name": "dwAspect",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwStatus",
+            "type": "DWORD"
+        }
+    ],
+    "OleRegEnumFormatEtc": [
+        {
+            "name": "clsid",
+            "type": "IID"
+        },
+        {
+            "name": "dwDirection",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppenum",
+            "type": "LPENUMFORMATETC"
+        }
+    ],
+    "OleRegEnumVerbs": [
+        {
+            "name": "clsid",
+            "type": "IID"
+        },
+        {
+            "name": "ppenum",
+            "type": "LPENUMOLEVERB"
+        }
+    ],
+    "OleConvertOLESTREAMToIStorage": [
+        {
+            "name": "lpolestream",
+            "type": "LPOLESTREAM"
+        },
+        {
+            "name": "pstg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "ptd",
+            "type": "DVTARGETDEVICE"
+        }
+    ],
+    "OleConvertIStorageToOLESTREAM": [
+        {
+            "name": "pstg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "lpolestream",
+            "type": "LPOLESTREAM"
+        }
+    ],
+    "OleDoAutoConvert": [
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "pClsidNew",
+            "type": "LPCLSID"
+        }
+    ],
+    "OleGetAutoConvert": [
+        {
+            "name": "clsidOld",
+            "type": "IID"
+        },
+        {
+            "name": "pClsidNew",
+            "type": "LPCLSID"
+        }
+    ],
+    "OleSetAutoConvert": [
+        {
+            "name": "clsidOld",
+            "type": "IID"
+        },
+        {
+            "name": "clsidNew",
+            "type": "IID"
+        }
+    ],
+    "SetConvertStg": [
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "fConvert",
+            "type": "BOOL"
+        }
+    ],
+    "OleConvertIStorageToOLESTREAMEx": [
+        {
+            "name": "pstg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "cfFormat",
+            "type": "CLIPFORMAT"
+        },
+        {
+            "name": "lWidth",
+            "type": "LONG"
+        },
+        {
+            "name": "lHeight",
+            "type": "LONG"
+        },
+        {
+            "name": "dwSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pmedium",
+            "type": "LPSTGMEDIUM"
+        },
+        {
+            "name": "polestm",
+            "type": "LPOLESTREAM"
+        }
+    ],
+    "OleConvertOLESTREAMToIStorageEx": [
+        {
+            "name": "polestm",
+            "type": "LPOLESTREAM"
+        },
+        {
+            "name": "pstg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "pcfFormat",
+            "type": "CLIPFORMAT"
+        },
+        {
+            "name": "plwWidth",
+            "type": "LONG"
+        },
+        {
+            "name": "plHeight",
+            "type": "LONG"
+        },
+        {
+            "name": "pdwSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pmedium",
+            "type": "LPSTGMEDIUM"
+        }
+    ],
+    "CoGetInterceptor": [
+        {
+            "name": "iidIntercepted",
+            "type": "IID"
+        },
+        {
+            "name": "punkOuter",
+            "type": "IUnknown"
+        },
+        {
+            "name": "iid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "CStdStubBuffer2_QueryInterface": [
+        {
+            "name": "This",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvObject",
+            "type": "void"
+        }
+    ],
+    "CStdStubBuffer2_Connect": [
+        {
+            "name": "pthis",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "pUnkServer",
+            "type": "IUnknown"
+        }
+    ],
+    "CStdStubBuffer2_Disconnect": [
+        {
+            "name": "pthis",
+            "type": "IRpcStubBuffer"
+        }
+    ],
+    "CStdStubBuffer2_CountRefs": [
+        {
+            "name": "pthis",
+            "type": "IRpcStubBuffer"
+        }
+    ],
+    "CStdAsyncStubBuffer_QueryInterface": [
+        {
+            "name": "pthis",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvObject",
+            "type": "void"
+        }
+    ],
+    "CStdAsyncStubBuffer_AddRef": [
+        {
+            "name": "pthis",
+            "type": "IRpcStubBuffer"
+        }
+    ],
+    "CStdAsyncStubBuffer_Release": [
+        {
+            "name": "pthis",
+            "type": "IRpcStubBuffer"
+        }
+    ],
+    "CStdAsyncStubBuffer_Connect": [
+        {
+            "name": "pthis",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "pUnkServer",
+            "type": "IUnknown"
+        }
+    ],
+    "CStdAsyncStubBuffer_Disconnect": [
+        {
+            "name": "pthis",
+            "type": "IRpcStubBuffer"
+        }
+    ],
+    "CStdAsyncStubBuffer_Invoke": [
+        {
+            "name": "pthis",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "_prpcmsg",
+            "type": "RPCOLEMESSAGE"
+        },
+        {
+            "name": "_pRpcChannelBuffer",
+            "type": "IRpcChannelBuffer"
+        }
+    ],
+    "CStdAsyncStubBuffer2_Release": [
+        {
+            "name": "pthis",
+            "type": "IRpcStubBuffer"
+        }
+    ],
+    "CStdAsyncStubBuffer2_Connect": [
+        {
+            "name": "pthis",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "pUnkServer",
+            "type": "IUnknown"
+        }
+    ],
+    "CStdAsyncStubBuffer2_Disconnect": [
+        {
+            "name": "pthis",
+            "type": "IRpcStubBuffer"
+        }
+    ],
+    "DllRegisterServer": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "DllUnregisterServer": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "StgPropertyLengthAsVariant": [
+        {
+            "name": "pProp",
+            "type": "SERIALIZEDPROPERTYVALUE"
+        },
+        {
+            "name": "cbProp",
+            "type": "ULONG"
+        },
+        {
+            "name": "CodePage",
+            "type": "USHORT"
+        },
+        {
+            "name": "bReserved",
+            "type": "BYTE"
+        }
+    ],
+    "StgCreateDocfile": [
+        {
+            "name": "pwcsName",
+            "type": "WCHAR"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppstgOpen",
+            "type": "IStorage"
+        }
+    ],
+    "StgCreateDocfileOnILockBytes": [
+        {
+            "name": "plkbyt",
+            "type": "ILockBytes"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppstgOpen",
+            "type": "IStorage"
+        }
+    ],
+    "StgOpenStorage": [
+        {
+            "name": "pwcsName",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pstgPriority",
+            "type": "IStorage"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "snbExclude",
+            "type": "SNB"
+        },
+        {
+            "name": "reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppstgOpen",
+            "type": "IStorage"
+        }
+    ],
+    "StgOpenStorageOnILockBytes": [
+        {
+            "name": "plkbyt",
+            "type": "ILockBytes"
+        },
+        {
+            "name": "pstgPriority",
+            "type": "IStorage"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "snbExclude",
+            "type": "SNB"
+        },
+        {
+            "name": "reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppstgOpen",
+            "type": "IStorage"
+        }
+    ],
+    "StgIsStorageFile": [
+        {
+            "name": "pwcsName",
+            "type": "WCHAR"
+        }
+    ],
+    "StgIsStorageILockBytes": [
+        {
+            "name": "plkbyt",
+            "type": "ILockBytes"
+        }
+    ],
+    "StgSetTimes": [
+        {
+            "name": "lpszName",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pctime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "patime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "pmtime",
+            "type": "FILETIME"
+        }
+    ],
+    "StgCreateStorageEx": [
+        {
+            "name": "pwcsName",
+            "type": "WCHAR"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "stgfmt",
+            "type": "DWORD"
+        },
+        {
+            "name": "grfAttrs",
+            "type": "DWORD"
+        },
+        {
+            "name": "pStgOptions",
+            "type": "STGOPTIONS"
+        },
+        {
+            "name": "pSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppObjectOpen",
+            "type": "void"
+        }
+    ],
+    "StgOpenStorageEx": [
+        {
+            "name": "pwcsName",
+            "type": "WCHAR"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "stgfmt",
+            "type": "DWORD"
+        },
+        {
+            "name": "grfAttrs",
+            "type": "DWORD"
+        },
+        {
+            "name": "pStgOptions",
+            "type": "STGOPTIONS"
+        },
+        {
+            "name": "pSecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppObjectOpen",
+            "type": "void"
+        }
+    ],
+    "StgCreatePropStg": [
+        {
+            "name": "pUnk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "fmtid",
+            "type": "IID"
+        },
+        {
+            "name": "pclsid",
+            "type": "CLSID"
+        },
+        {
+            "name": "grfFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppPropStg",
+            "type": "IPropertyStorage"
+        }
+    ],
+    "StgOpenPropStg": [
+        {
+            "name": "pUnk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "fmtid",
+            "type": "IID"
+        },
+        {
+            "name": "grfFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppPropStg",
+            "type": "IPropertyStorage"
+        }
+    ],
+    "StgCreatePropSetStg": [
+        {
+            "name": "pStorage",
+            "type": "IStorage"
+        },
+        {
+            "name": "dwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppPropSetStg",
+            "type": "IPropertySetStorage"
+        }
+    ],
+    "FmtIdToPropStgName": [
+        {
+            "name": "pfmtid",
+            "type": "FMTID"
+        },
+        {
+            "name": "oszName",
+            "type": "LPOLESTR"
+        }
+    ],
+    "PropStgNameToFmtId": [
+        {
+            "name": "oszName",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "pfmtid",
+            "type": "FMTID"
+        }
+    ],
+    "ReadClassStg": [
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "pclsid",
+            "type": "CLSID"
+        }
+    ],
+    "WriteClassStg": [
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        },
+        {
+            "name": "rclsid",
+            "type": "IID"
+        }
+    ],
+    "ReadClassStm": [
+        {
+            "name": "pStm",
+            "type": "LPSTREAM"
+        },
+        {
+            "name": "pclsid",
+            "type": "CLSID"
+        }
+    ],
+    "WriteClassStm": [
+        {
+            "name": "pStm",
+            "type": "LPSTREAM"
+        },
+        {
+            "name": "rclsid",
+            "type": "IID"
+        }
+    ],
+    "GetHGlobalFromILockBytes": [
+        {
+            "name": "plkbyt",
+            "type": "LPLOCKBYTES"
+        },
+        {
+            "name": "phglobal",
+            "type": "HGLOBAL"
+        }
+    ],
+    "CreateILockBytesOnHGlobal": [
+        {
+            "name": "hGlobal",
+            "type": "HGLOBAL"
+        },
+        {
+            "name": "fDeleteOnRelease",
+            "type": "BOOL"
+        },
+        {
+            "name": "pplkbyt",
+            "type": "LPLOCKBYTES"
+        }
+    ],
+    "GetConvertStg": [
+        {
+            "name": "pStg",
+            "type": "LPSTORAGE"
+        }
+    ],
+    "CoInitialize": [
+        {
+            "name": "pvReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "CoRegisterMallocSpy": [
+        {
+            "name": "pMallocSpy",
+            "type": "LPMALLOCSPY"
+        }
+    ],
+    "CoRevokeMallocSpy": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CoRegisterInitializeSpy": [
+        {
+            "name": "pSpy",
+            "type": "IInitializeSpy"
+        },
+        {
+            "name": "puliCookie",
+            "type": "ULARGE_INTEGER"
+        }
+    ],
+    "CoRevokeInitializeSpy": [
+        {
+            "name": "uliCookie",
+            "type": "ULARGE_INTEGER"
+        }
+    ],
+    "CoLoadLibrary": [
+        {
+            "name": "lpszLibName",
+            "type": "LPOLESTR"
+        },
+        {
+            "name": "bAutoFree",
+            "type": "BOOL"
+        }
+    ],
+    "CoFreeLibrary": [
+        {
+            "name": "hInst",
+            "type": "HINSTANCE"
+        }
+    ],
+    "CoFreeAllLibraries": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "CoGetInstanceFromIStorage": [
+        {
+            "name": "pServerInfo",
+            "type": "COSERVERINFO"
+        },
+        {
+            "name": "pClsid",
+            "type": "CLSID"
+        },
+        {
+            "name": "punkOuter",
+            "type": "IUnknown"
+        },
+        {
+            "name": "dwClsCtx",
+            "type": "DWORD"
+        },
+        {
+            "name": "pstg",
+            "type": {
+                "name": "IStorage",
+                "data_type": "Struct",
+                "elements": []
+            }
+        },
+        {
+            "name": "dwCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "pResults",
+            "type": "MULTI_QI"
+        }
+    ],
+    "CoAllowSetForegroundWindow": [
+        {
+            "name": "pUnk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "lpvReserved",
+            "type": "LPVOID"
+        }
+    ],
+    "CoIsOle1Class": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        }
+    ],
+    "CoFileTimeToDosDateTime": [
+        {
+            "name": "lpFileTime",
+            "type": "FILETIME"
+        },
+        {
+            "name": "lpDosDate",
+            "type": "LPWORD"
+        },
+        {
+            "name": "lpDosTime",
+            "type": "LPWORD"
+        }
+    ],
+    "CoDosDateTimeToFileTime": [
+        {
+            "name": "nDosDate",
+            "type": "WORD"
+        },
+        {
+            "name": "nDosTime",
+            "type": "WORD"
+        },
+        {
+            "name": "lpFileTime",
+            "type": "FILETIME"
+        }
+    ],
+    "CoRegisterMessageFilter": [
+        {
+            "name": "lpMessageFilter",
+            "type": "LPMESSAGEFILTER"
+        },
+        {
+            "name": "lplpMessageFilter",
+            "type": "LPMESSAGEFILTER"
+        }
+    ],
+    "CoTreatAsClass": [
+        {
+            "name": "clsidOld",
+            "type": "IID"
+        },
+        {
+            "name": "clsidNew",
+            "type": "IID"
+        }
+    ],
+    "CreateDataCache": [
+        {
+            "name": "pUnkOuter",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "iid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "LPVOID"
+        }
+    ],
+    "StgOpenAsyncDocfileOnIFillLockBytes": [
+        {
+            "name": "pflb",
+            "type": "IFillLockBytes"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "asyncFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppstgOpen",
+            "type": "IStorage"
+        }
+    ],
+    "StgGetIFillLockBytesOnILockBytes": [
+        {
+            "name": "pilb",
+            "type": "ILockBytes"
+        },
+        {
+            "name": "ppflb",
+            "type": "IFillLockBytes"
+        }
+    ],
+    "StgGetIFillLockBytesOnFile": [
+        {
+            "name": "pwcsName",
+            "type": "OLECHAR"
+        },
+        {
+            "name": "ppflb",
+            "type": "IFillLockBytes"
+        }
+    ],
+    "CoInstall": [
+        {
+            "name": "pbc",
+            "type": "IBindCtx"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pClassSpec",
+            "type": "uCLSSPEC"
+        },
+        {
+            "name": "pQuery",
+            "type": "QUERYCONTEXT"
+        },
+        {
+            "name": "pszCodeBase",
+            "type": "LPWSTR"
+        }
+    ],
+    "BindMoniker": [
+        {
+            "name": "pmk",
+            "type": "LPMONIKER"
+        },
+        {
+            "name": "grfOpt",
+            "type": "DWORD"
+        },
+        {
+            "name": "iidResult",
+            "type": "IID"
+        },
+        {
+            "name": "ppvResult",
+            "type": "LPVOID"
+        }
+    ],
+    "CoGetObject": [
+        {
+            "name": "pszName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pBindOptions",
+            "type": "BIND_OPTS"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "MkParseDisplayName": [
+        {
+            "name": "pbc",
+            "type": "LPBC"
+        },
+        {
+            "name": "szUserName",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "pchEaten",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppmk",
+            "type": "LPMONIKER"
+        }
+    ],
+    "MonikerRelativePathTo": [
+        {
+            "name": "pmkSrc",
+            "type": "LPMONIKER"
+        },
+        {
+            "name": "pmkDest",
+            "type": "LPMONIKER"
+        },
+        {
+            "name": "ppmkRelPath",
+            "type": "LPMONIKER"
+        },
+        {
+            "name": "dwReserved",
+            "type": "BOOL"
+        }
+    ],
+    "MonikerCommonPrefixWith": [
+        {
+            "name": "pmkThis",
+            "type": "LPMONIKER"
+        },
+        {
+            "name": "pmkOther",
+            "type": "LPMONIKER"
+        },
+        {
+            "name": "ppmkCommon",
+            "type": "LPMONIKER"
+        }
+    ],
+    "CreateBindCtx": [
+        {
+            "name": "reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppbc",
+            "type": "LPBC"
+        }
+    ],
+    "CreateGenericComposite": [
+        {
+            "name": "pmkFirst",
+            "type": "LPMONIKER"
+        },
+        {
+            "name": "pmkRest",
+            "type": "LPMONIKER"
+        },
+        {
+            "name": "ppmkComposite",
+            "type": "LPMONIKER"
+        }
+    ],
+    "GetClassFile": [
+        {
+            "name": "szFilename",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "pclsid",
+            "type": "CLSID"
+        }
+    ],
+    "CreateClassMoniker": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "ppmk",
+            "type": "LPMONIKER"
+        }
+    ],
+    "CreateFileMoniker": [
+        {
+            "name": "lpszPathName",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "ppmk",
+            "type": "LPMONIKER"
+        }
+    ],
+    "CreateItemMoniker": [
+        {
+            "name": "lpszDelim",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "lpszItem",
+            "type": "LPCOLESTR"
+        },
+        {
+            "name": "ppmk",
+            "type": "LPMONIKER"
+        }
+    ],
+    "CreateAntiMoniker": [
+        {
+            "name": "ppmk",
+            "type": "LPMONIKER"
+        }
+    ],
+    "CreatePointerMoniker": [
+        {
+            "name": "punk",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "ppmk",
+            "type": "LPMONIKER"
+        }
+    ],
+    "CreateObjrefMoniker": [
+        {
+            "name": "punk",
+            "type": "LPUNKNOWN"
+        },
+        {
+            "name": "ppmk",
+            "type": "LPMONIKER"
+        }
+    ],
+    "GetRunningObjectTable": [
+        {
+            "name": "reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pprot",
+            "type": "LPRUNNINGOBJECTTABLE"
+        }
+    ]
+}

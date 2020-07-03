@@ -13,7 +13,7 @@ from .utils import ql_is_valid_arch, ql_is_valid_ostype
 from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
 from .utils import ql_setup_filter
 from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
-from .const import D_INFO
+from .const import D_INFO, D_DRPT
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 from .loader.utils import ql_checkostype
 
@@ -61,10 +61,8 @@ class QLCoreUtils(object):
                         if '_FalseFilter' in each_filter.__class__.__name__:
                             each_console_handler.removeFilter(each_filter)
             
-            if isinstance(args, tuple) or isinstance(args, list):
-                msg = "".join(args)
-            else:
-                msg = "".join(str(args))
+            args = map(str, args)
+            msg = kw.get("sep", " ").join(args)
 
             if kw.get("end", None) != None:
                 msg += kw["end"]
@@ -89,6 +87,9 @@ class QLCoreUtils(object):
             self.verbose = 99
 
         if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+            if int(self.verbose) >= D_DRPT:
+                args = (("0x%x:" % self.reg.arch_pc), args)
+                
             self.nprint(*args, **kw)
 
 

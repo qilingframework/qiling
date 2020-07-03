@@ -1,0 +1,20 @@
+{
+    "StgOpenLayoutDocfile": [
+        {
+            "name": "pwcsDfName",
+            "type": "OLECHAR"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppstgOpen",
+            "type": "IStorage"
+        }
+    ]
+}

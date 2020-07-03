@@ -171,6 +171,12 @@ class PETest(unittest.TestCase):
         ql.run()
         del ql
 
+    def test_pe_win_x86_NtQueryInformationSystem(self):
+        ql = Qiling(
+        ["../examples/rootfs/x86_windows/bin/NtQuerySystemInformation.exe"],
+        "../examples/rootfs/x86_windows")
+        ql.run()
+        del ql
 
     def test_pe_win_al_khaser(self):
         ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
@@ -200,9 +206,7 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x8664_customapi(self):
-        @winapi(cc=CDECL, params={
-            "str": STRING
-        })
+        @winsdkapi(cc=CDECL, replace_params={"str": STRING})
         def my_puts64(ql, address, params):
             ret = 0
             print("\n+++++++++ My Windows 64bit Windows API +++++++++\n")

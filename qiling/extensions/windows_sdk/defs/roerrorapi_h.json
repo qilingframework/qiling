@@ -1,0 +1,46 @@
+{
+    "RoGetErrorReportingFlags": [
+        {
+            "name": "pflags",
+            "type": "UINT32"
+        }
+    ],
+    "RoSetErrorReportingFlags": [
+        {
+            "name": "flags",
+            "type": "UINT32"
+        }
+    ],
+    "RoTransformErrorW": [
+        {
+            "name": "oldError",
+            "type": "HRESULT"
+        },
+        {
+            "name": "newError",
+            "type": "HRESULT"
+        },
+        {
+            "name": "cchMax",
+            "type": "UINT"
+        },
+        {
+            "name": "message",
+            "type": "PCWSTR"
+        }
+    ],
+    "RoTransformError": [
+        {
+            "name": "oldError",
+            "type": "HRESULT"
+        },
+        {
+            "name": "newError",
+            "type": "HRESULT"
+        },
+        {
+            "name": "message",
+            "type": "HSTRING"
+        }
+    ]
+}

@@ -4,7 +4,7 @@
 ---
 
 <p align="center">
-<img width="150" height="150" src="docs/qiling_small.png">
+<img width="150" height="150" src="https://raw.githubusercontent.com/qilingframework/qiling/master/docs/qiling_small.png">
 </p>
 
 Qiling is an advanced binary emulation framework, with the following features:
@@ -27,7 +27,7 @@ Visit our website https://www.qiling.io for more information.
 
 #### License
 
-This project is released and distributed under [free software license GPLv2](COPYING).
+This project is released and distributed under [free software license GPLv2](https://github.com/qilingframework/qiling/blob/master/COPYING).
 
 ---
 
@@ -54,7 +54,7 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 ---
 
 #### Installation
-Please see [setup guide](https://docs.qiling.io/en/latest/howto/) file for how to install Qiling Framework.
+Please see [setup guide](https://docs.qiling.io/en/latest/install/) file for how to install Qiling Framework.
 
 ---
 
@@ -199,5 +199,15 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 - YU tong (sp1ke) <spikeinhouse@gmail.com>
 - Earl Marcus (klks84) klks84@gmail.com 
 
-#### Travis-CI, Docker and Website
+#### Travis-CI, Docker, Website and Documentation
+
 - FOO Kevin (chfl4gs) <chbsd64@qiling.io>
+
+#### Key Contributors (in no particular order)
+
+- kabeor
+- 0ssigeno
+- liba2k
+- assafcarlsbad
+- ucgJhe
+- jhumble
