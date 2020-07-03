@@ -45,7 +45,7 @@ def LocateHandles(ql, address, params):
     handles = []
     if params["SearchType"] == SEARCHTYPE_AllHandles:
         handles = ql.loader.handle_dict.keys()
-    elif params["SearchType"] == SEARCHTYPE_ByProtoco:
+    elif params["SearchType"] == SEARCHTYPE_ByProtocol:
         for handle, guid_dic in ql.loader.handle_dict.items():
             if params["Protocol"] in guid_dic:
                 handles.append(handle)
