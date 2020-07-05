@@ -25,6 +25,7 @@ def catch_KeyboardInterrupt(ql):
     return decorator
 
 def ql_get_arch_bits(arch):
+    arch_16b = [QL_ARCH.A8086]
     arch_32b = [QL_ARCH.ARM, QL_ARCH.MIPS, QL_ARCH.X86]
     arch_64b = [QL_ARCH.ARM64, QL_ARCH.X8664]
 
@@ -32,6 +33,8 @@ def ql_get_arch_bits(arch):
         return 32
     if arch in arch_64b:
         return 64
+    if arch in arch_16b:
+        return 16
     raise QlErrorArch("[!] Invalid Arch")
 
 def ql_is_valid_ostype(ostype):
@@ -51,6 +54,7 @@ def loadertype_convert_str(ostype):
         QL_OS.FREEBSD: "ELF",
         QL_OS.WINDOWS: "PE",
         QL_OS.UEFI: "PE_UEFI",
+        QL_OS.DOS: "DOS"
     }
     return adapter.get(ostype)
 

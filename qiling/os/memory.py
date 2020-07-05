@@ -30,6 +30,8 @@ class QlMemoryManager:
             max_addr = 0xFFFFFFFFFFFFFFFF
         elif self.ql.archbit == 32:
             max_addr = 0xFFFFFFFF
+        elif self.ql.archbit == 16:
+            max_addr = 0xFFFF
 
         self.max_addr = max_addr
         self.max_mem_addr = max_addr            

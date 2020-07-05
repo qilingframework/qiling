@@ -38,7 +38,9 @@ class QlOs(QLOsUtils):
         if self.ql.archbit == 32:
             EMU_END = 0x8fffffff
         elif self.ql.archbit == 64:
-            EMU_END = 0xffffffffffffffff        
+            EMU_END = 0xffffffffffffffff
+        elif self.ql.archbit == 16:
+            EMU_END = 0xffff     
         
         # defult exit point
         self.exit_point = EMU_END
