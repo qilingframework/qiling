@@ -47,7 +47,7 @@ class QlLoaderPE_UEFI(QlLoader):
             self.ql.mem.unmap(addr, size)
 
 
-    def install_loaded_image_protocol(self, image_base, image_size, entry_point):
+    def install_loaded_image_protocol(self, image_base, image_size):
         loaded_image_protocol = EFI_LOADED_IMAGE_PROTOCOL()
         loaded_image_protocol.Revision = int(self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["revision"], 16)
         loaded_image_protocol.ParentHandle = 0
@@ -93,7 +93,7 @@ class QlLoaderPE_UEFI(QlLoader):
                     # Setting entry point to the first loaded module entry point, so the debugger can break.
                     self.entry_point = entry_point
                 ql.nprint("[+] PE entry point at 0x%x" % entry_point)
-                self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE, entry_point)
+                self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE)
                 self.images.append(self.coverage_image(IMAGE_BASE, IMAGE_BASE + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, path))
                 if execute_now:
                     self.OOO_EOE_callbacks.append(callback_ctx)
