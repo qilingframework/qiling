@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import ctypes, types, struct, ast
+import configparser
 from contextlib import contextmanager
 
 from unicorn import *
@@ -22,6 +23,7 @@ from qiling.os.uefi.dxe_service import *
 from qiling.os.uefi.smm_base2_protocol import *
 from qiling.os.uefi.mm_access_protocol import *
 from qiling.os.uefi.smm_sw_dispatch2_protocol import *
+from qiling.os.uefi.firmware_volume2_protocol import *
 
 from qiling.os.windows.fncc import *
 
@@ -47,12 +49,12 @@ class QlLoaderPE_UEFI(QlLoader):
             self.ql.mem.unmap(addr, size)
 
 
-    def install_loaded_image_protocol(self, image_base, image_size):
+    def install_loaded_image_protocol(self, image_base, image_size, device_handle=0):
         loaded_image_protocol = EFI_LOADED_IMAGE_PROTOCOL()
         loaded_image_protocol.Revision = int(self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["revision"], 16)
         loaded_image_protocol.ParentHandle = 0
         loaded_image_protocol.SystemTable = self.system_table_ptr
-        loaded_image_protocol.DeviceHandle = image_base
+        loaded_image_protocol.DeviceHandle = device_handle
         loaded_image_protocol.FilePath = 0 # This is a handle to a complex path object, skip it for now.
         loaded_image_protocol.LoadOptionsSize = 0
         loaded_image_protocol.LoadOptions = 0
@@ -68,7 +70,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.loaded_image_protocol_modules.append(image_base)
 
 
-    def map_and_load(self, path, execute_now=False, callback_ctx=None):
+    def map_and_load(self, path, execute_now=False, callback_ctx=None, device_handle=0):
         ql = self.ql
         pe = pefile.PE(path, fast_load=True)
 
@@ -93,7 +95,7 @@ class QlLoaderPE_UEFI(QlLoader):
                     # Setting entry point to the first loaded module entry point, so the debugger can break.
                     self.entry_point = entry_point
                 ql.nprint("[+] PE entry point at 0x%x" % entry_point)
-                self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE)
+                self.install_loaded_image_protocol(IMAGE_BASE, IMAGE_SIZE, device_handle)
                 self.images.append(self.coverage_image(IMAGE_BASE, IMAGE_BASE + pe.NT_HEADERS.OPTIONAL_HEADER.SizeOfImage, path))
                 if execute_now:
                     self.OOO_EOE_callbacks.append(callback_ctx)
@@ -139,6 +141,21 @@ class QlLoaderPE_UEFI(QlLoader):
         path, image_base, entry_point, pe = self.modules.pop(0)
         self.execute_module(path, image_base, entry_point, self.end_of_execution_ptr)
 
+    def install_firmware_volume_driver(self, start_ptr):
+        try:
+            rom_file = self.ql.os.profile.get("EFI_FIRMWARE_VOLUME2_PROTOCOL", "rom_file")
+            volume_guid = self.ql.os.profile.get("EFI_FIRMWARE_VOLUME2_PROTOCOL", "volume_guid")
+        except configparser.NoOptionError:
+            volume_driver_handle = 0
+        else:
+            self.firmware_volume2_protocol_ptr = start_ptr
+            start_ptr += ctypes.sizeof(EFI_FIRMWARE_VOLUME2_PROTOCOL)
+            start_ptr, firmware_volume2_protocol = install_FIRMWARE_VOLUME2_PROTOCOL(self.ql, start_ptr, rom_file, volume_guid)
+            volume_driver_handle = self.heap.alloc(1)
+            self.handle_dict[volume_driver_handle] = {self.ql.os.profile.get("EFI_FIRMWARE_VOLUME2_PROTOCOL", "guid"): self.firmware_volume2_protocol_ptr}
+            self.ql.mem.write(self.firmware_volume2_protocol_ptr, convert_struct_to_bytes(firmware_volume2_protocol))
+
+        return (start_ptr, volume_driver_handle)
 
     def run(self):
         self.loaded_image_protocol_guid = self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["guid"]
@@ -244,6 +261,8 @@ class QlLoaderPE_UEFI(QlLoader):
         system_table_heap_ptr += ctypes.sizeof(EFI_SMM_SW_DISPATCH2_PROTOCOL)
         system_table_heap_ptr, smm_sw_dispatch2_protocol = install_EFI_SMM_SW_DISPATCH2_PROTOCOL(self.ql, system_table_heap_ptr)
         self.handle_dict[1][self.ql.os.profile.get("EFI_SMM_SW_DISPATCH2_PROTOCOL", "guid")] = self.smm_sw_dispatch2_protocol_ptr
+        
+        (system_table_heap_ptr, volume_driver_handle) = self.install_firmware_volume_driver(system_table_heap_ptr)
 
         self.dxe_services_ptr = system_table_heap_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_DXE_SERVICES)
@@ -274,7 +293,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.mem.write(self.dxe_services_ptr, convert_struct_to_bytes(dxe_services))
 
         for dependency in self.ql.argv:
-            if not self.map_and_load(dependency):
+            if not self.map_and_load(dependency, device_handle=volume_driver_handle):
                 raise QlErrorFileType("Can't map dependency")
 
         self.ql.nprint("[+] Done with loading %s" % self.ql.path)

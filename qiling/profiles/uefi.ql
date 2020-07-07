@@ -38,6 +38,11 @@ data4 = [0x95, 0x2E, 0x4D, 0xA0, 0x39, 0x8E, 0x2B, 0xB9]
 guid = 5b1b31a1-9562-11d2-8e3f-00a0c969723b
 revision = 0x1000
 
+[EFI_FIRMWARE_VOLUME2_PROTOCOL]
+guid = 220e73b6-6bdb-4413-8405-b974b108619a
+# rom_file = /path/to/uefi/rom.bin
+# volume_guid = xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
 [EFI_SMM_BASE2_PROTOCOL]
 guid = f4ccbfb7-f6e0-47fd-9dd4-10a8f150c191
 
