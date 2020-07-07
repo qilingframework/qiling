@@ -105,7 +105,10 @@ def ql_open_flag_mapping(ql, flags):
         'O_DIRECTORY': 0x100000,
     }
 
-    if ql.archtype!= QL_ARCH.MIPS:
+    f = {}
+    t = {}
+
+    if ql.archtype != QL_ARCH.MIPS:
         if ql.platform == None or ql.platform == ql.ostype:
             return flags
 
@@ -117,10 +120,13 @@ def ql_open_flag_mapping(ql, flags):
             f = mac_open_flags
             t = linux_open_flags
 
-    elif ql.archtype== QL_ARCH.MIPS and ql.platform == QL_OS.LINUX:
-        f = mips_open_flags
-        t = linux_open_flags
-
+    else:
+        if ql.platform == QL_OS.LINUX:
+            f = mips_open_flags
+            t = linux_open_flags
+        elif ql.platform == QL_OS.MACOS:
+            f = mips_open_flags
+            t = mac_open_flags
 
     return flag_mapping(flags, open_flags_name, f, t)
 
@@ -157,7 +163,7 @@ def mmap_flag_mapping(flags):
 
 
 def mmap_prot_mapping(prots):
-    
+
     if prots == 0x0:
         return 'PROT_NONE'
 
@@ -196,5 +202,5 @@ def socket_domain_mapping(p, arch):
             #FIXME: QL_OS.MACOS is QL_OS
             #QL_OS.MACOS: "macos_socket_domain",
             }.get(arch)
-    
+
     return _constant_mapping(p, socket_domain_map, single_mapping=True)
