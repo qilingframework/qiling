@@ -41,7 +41,10 @@ revision = 0x1000
 [EFI_FIRMWARE_VOLUME2_PROTOCOL]
 guid = 220e73b6-6bdb-4413-8405-b974b108619a
 # rom_file = /path/to/uefi/rom.bin
-# volume_guid = xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+# volume_guids =
+#   xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+#   yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
+#   zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz
 
 [EFI_SMM_BASE2_PROTOCOL]
 guid = f4ccbfb7-f6e0-47fd-9dd4-10a8f150c191

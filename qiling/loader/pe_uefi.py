@@ -141,21 +141,25 @@ class QlLoaderPE_UEFI(QlLoader):
         path, image_base, entry_point, pe = self.modules.pop(0)
         self.execute_module(path, image_base, entry_point, self.end_of_execution_ptr)
 
-    def install_firmware_volume_driver(self, start_ptr):
+    def install_firmware_volume_drivers(self, start_ptr):
+        def volume2_protocol_get(name):
+            return self.ql.os.profile.get("EFI_FIRMWARE_VOLUME2_PROTOCOL", name)
+
         try:
-            rom_file = self.ql.os.profile.get("EFI_FIRMWARE_VOLUME2_PROTOCOL", "rom_file")
-            volume_guid = self.ql.os.profile.get("EFI_FIRMWARE_VOLUME2_PROTOCOL", "volume_guid")
+            firmware_volume2_protocol_guid = volume2_protocol_get("guid")
+            rom_file = volume2_protocol_get("rom_file")
+            volume_guids = volume2_protocol_get("volume_guids").split()
         except configparser.NoOptionError:
-            volume_driver_handle = 0
-        else:
-            self.firmware_volume2_protocol_ptr = start_ptr
-            start_ptr += ctypes.sizeof(EFI_FIRMWARE_VOLUME2_PROTOCOL)
+            return start_ptr
+
+        for volume_guid in volume_guids:
+            firmware_volume2_protocol_ptr = start_ptr
             start_ptr, firmware_volume2_protocol = install_FIRMWARE_VOLUME2_PROTOCOL(self.ql, start_ptr, rom_file, volume_guid)
             volume_driver_handle = self.heap.alloc(1)
-            self.handle_dict[volume_driver_handle] = {self.ql.os.profile.get("EFI_FIRMWARE_VOLUME2_PROTOCOL", "guid"): self.firmware_volume2_protocol_ptr}
-            self.ql.mem.write(self.firmware_volume2_protocol_ptr, convert_struct_to_bytes(firmware_volume2_protocol))
+            self.handle_dict[volume_driver_handle] = {firmware_volume2_protocol_guid: firmware_volume2_protocol_ptr}
+            self.ql.mem.write(firmware_volume2_protocol_ptr, convert_struct_to_bytes(firmware_volume2_protocol))
 
-        return (start_ptr, volume_driver_handle)
+        return start_ptr
 
     def run(self):
         self.loaded_image_protocol_guid = self.ql.os.profile["LOADED_IMAGE_PROTOCOL"]["guid"]
@@ -262,7 +266,7 @@ class QlLoaderPE_UEFI(QlLoader):
         system_table_heap_ptr, smm_sw_dispatch2_protocol = install_EFI_SMM_SW_DISPATCH2_PROTOCOL(self.ql, system_table_heap_ptr)
         self.handle_dict[1][self.ql.os.profile.get("EFI_SMM_SW_DISPATCH2_PROTOCOL", "guid")] = self.smm_sw_dispatch2_protocol_ptr
         
-        (system_table_heap_ptr, volume_driver_handle) = self.install_firmware_volume_driver(system_table_heap_ptr)
+        system_table_heap_ptr = self.install_firmware_volume_drivers(system_table_heap_ptr)
 
         self.dxe_services_ptr = system_table_heap_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_DXE_SERVICES)
@@ -293,7 +297,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.mem.write(self.dxe_services_ptr, convert_struct_to_bytes(dxe_services))
 
         for dependency in self.ql.argv:
-            if not self.map_and_load(dependency, device_handle=volume_driver_handle):
+            if not self.map_and_load(dependency):
                 raise QlErrorFileType("Can't map dependency")
 
         self.ql.nprint("[+] Done with loading %s" % self.ql.path)
