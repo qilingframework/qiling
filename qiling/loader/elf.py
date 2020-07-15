@@ -568,8 +568,6 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.elf_phent    = (elfhead['e_phentsize'])
         self.elf_phnum    = (elfhead['e_phnum'])
         self.elf_pagesz   = 0x1000
-        if self.ql.archendian == QL_ENDIAN.EB:
-            self.elf_pagesz   = 0x0010
         self.elf_guid     = self.ql.os.uid
         self.elf_flags    = 0
         self.elf_entry    = (load_address + elfhead['e_entry'])
