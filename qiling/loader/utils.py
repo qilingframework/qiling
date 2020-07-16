@@ -45,8 +45,7 @@ def ql_elf_check_archtype(path):
 
         if osabi == 0x09:
             ostype = QL_OS.FREEBSD
-        else:
-        #if osabi == 0x11 or osabi == 0x03 or osabi == 0x0:
+        elif osabi in (0x0, 0x03) or osabi >= 0x11:
             ostype = QL_OS.LINUX
 
         if e_machine == b"\x03\x00":
