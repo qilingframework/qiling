@@ -43,12 +43,11 @@ def ql_elf_check_archtype(path):
         osabi = ident[0x7]
         e_machine = ident[0x12:0x14]
 
-        if osabi == 0x11 or osabi == 0x03 or osabi == 0x0:
-            ostype = QL_OS.LINUX
-        elif osabi == 0x09:
+        if osabi == 0x09:
             ostype = QL_OS.FREEBSD
         else:
-            ostype = None
+        #if osabi == 0x11 or osabi == 0x03 or osabi == 0x0:
+            ostype = QL_OS.LINUX
 
         if e_machine == b"\x03\x00":
             archendian = QL_ENDIAN.EL
