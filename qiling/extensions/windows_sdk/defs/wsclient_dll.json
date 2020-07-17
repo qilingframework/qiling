@@ -1,0 +1,24 @@
+{
+    "CheckDeveloperLicense": [
+        {
+            "name": "pExpiration",
+            "type": "FILETIME"
+        }
+    ],
+    "AcquireDeveloperLicense": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "pExpiration",
+            "type": "FILETIME"
+        }
+    ],
+    "RemoveDeveloperLicense": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        }
+    ]
+}

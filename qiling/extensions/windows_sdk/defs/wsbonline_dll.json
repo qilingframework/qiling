@@ -1,0 +1,20 @@
+{
+    "RegisterOnlineBackupWithWindowsServerBackup": [
+        {
+            "name": "pOBRegistrationInfo",
+            "type": "WSB_OB_REGISTRATION_INFO"
+        }
+    ],
+    "DeregisterOnlineBackupFromWindowsServerBackup": [
+        {
+            "name": "guidSnapinId",
+            "type": "GUID"
+        }
+    ],
+    "UpdateOBStatusInWindowsServerBackup": [
+        {
+            "name": "pOBRegistrationInfo",
+            "type": "WSB_OB_STATUS_INFO"
+        }
+    ]
+}

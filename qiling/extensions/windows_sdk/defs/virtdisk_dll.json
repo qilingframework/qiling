@@ -1,0 +1,458 @@
+{
+    "OpenVirtualDisk": [
+        {
+            "name": "VirtualStorageType",
+            "type": "PVIRTUAL_STORAGE_TYPE"
+        },
+        {
+            "name": "Path",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "VirtualDiskAccessMask",
+            "type": "VIRTUAL_DISK_ACCESS_MASK"
+        },
+        {
+            "name": "Flags",
+            "type": "OPEN_VIRTUAL_DISK_FLAG"
+        },
+        {
+            "name": "Parameters",
+            "type": "POPEN_VIRTUAL_DISK_PARAMETERS"
+        },
+        {
+            "name": "Handle",
+            "type": "PHANDLE"
+        }
+    ],
+    "CreateVirtualDisk": [
+        {
+            "name": "VirtualStorageType",
+            "type": "PVIRTUAL_STORAGE_TYPE"
+        },
+        {
+            "name": "Path",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "VirtualDiskAccessMask",
+            "type": "VIRTUAL_DISK_ACCESS_MASK"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "Flags",
+            "type": "CREATE_VIRTUAL_DISK_FLAG"
+        },
+        {
+            "name": "ProviderSpecificFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "Parameters",
+            "type": "PCREATE_VIRTUAL_DISK_PARAMETERS"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        },
+        {
+            "name": "Handle",
+            "type": "PHANDLE"
+        }
+    ],
+    "AttachVirtualDisk": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "Flags",
+            "type": "ATTACH_VIRTUAL_DISK_FLAG"
+        },
+        {
+            "name": "ProviderSpecificFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "Parameters",
+            "type": "PATTACH_VIRTUAL_DISK_PARAMETERS"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "DetachVirtualDisk": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "DETACH_VIRTUAL_DISK_FLAG"
+        },
+        {
+            "name": "ProviderSpecificFlags",
+            "type": "ULONG"
+        }
+    ],
+    "GetVirtualDiskPhysicalPath": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "DiskPathSizeInBytes",
+            "type": "PULONG"
+        },
+        {
+            "name": "DiskPath",
+            "type": "PWSTR"
+        }
+    ],
+    "GetStorageDependencyInformation": [
+        {
+            "name": "ObjectHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "GET_STORAGE_DEPENDENCY_FLAG"
+        },
+        {
+            "name": "StorageDependencyInfoSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "StorageDependencyInfo",
+            "type": "PSTORAGE_DEPENDENCY_INFO"
+        },
+        {
+            "name": "SizeUsed",
+            "type": "PULONG"
+        }
+    ],
+    "GetVirtualDiskInformation": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "VirtualDiskInfoSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "VirtualDiskInfo",
+            "type": "PGET_VIRTUAL_DISK_INFO"
+        },
+        {
+            "name": "SizeUsed",
+            "type": "PULONG"
+        }
+    ],
+    "SetVirtualDiskInformation": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "VirtualDiskInfo",
+            "type": "PSET_VIRTUAL_DISK_INFO"
+        }
+    ],
+    "EnumerateVirtualDiskMetadata": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "NumberOfItems",
+            "type": "PULONG"
+        },
+        {
+            "name": "Items",
+            "type": "GUID"
+        }
+    ],
+    "GetVirtualDiskMetadata": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Item",
+            "type": "GUID"
+        },
+        {
+            "name": "MetaDataSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "MetaData",
+            "type": "PVOID"
+        }
+    ],
+    "SetVirtualDiskMetadata": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Item",
+            "type": "GUID"
+        },
+        {
+            "name": "MetaDataSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "MetaData",
+            "type": "void"
+        }
+    ],
+    "DeleteVirtualDiskMetadata": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Item",
+            "type": "GUID"
+        }
+    ],
+    "GetVirtualDiskOperationProgress": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        },
+        {
+            "name": "Progress",
+            "type": "PVIRTUAL_DISK_PROGRESS"
+        }
+    ],
+    "CompactVirtualDisk": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "COMPACT_VIRTUAL_DISK_FLAG"
+        },
+        {
+            "name": "Parameters",
+            "type": "PCOMPACT_VIRTUAL_DISK_PARAMETERS"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "MergeVirtualDisk": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "MERGE_VIRTUAL_DISK_FLAG"
+        },
+        {
+            "name": "Parameters",
+            "type": "PMERGE_VIRTUAL_DISK_PARAMETERS"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "ExpandVirtualDisk": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "EXPAND_VIRTUAL_DISK_FLAG"
+        },
+        {
+            "name": "Parameters",
+            "type": "PEXPAND_VIRTUAL_DISK_PARAMETERS"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "ResizeVirtualDisk": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "RESIZE_VIRTUAL_DISK_FLAG"
+        },
+        {
+            "name": "Parameters",
+            "type": "PRESIZE_VIRTUAL_DISK_PARAMETERS"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "MirrorVirtualDisk": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "MIRROR_VIRTUAL_DISK_FLAG"
+        },
+        {
+            "name": "Parameters",
+            "type": "PMIRROR_VIRTUAL_DISK_PARAMETERS"
+        },
+        {
+            "name": "Overlapped",
+            "type": "LPOVERLAPPED"
+        }
+    ],
+    "BreakMirrorVirtualDisk": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "AddVirtualDiskParent": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ParentPath",
+            "type": "PCWSTR"
+        }
+    ],
+    "QueryChangesVirtualDisk": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ChangeTrackingId",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ByteOffset",
+            "type": "ULONG64"
+        },
+        {
+            "name": "ByteLength",
+            "type": "ULONG64"
+        },
+        {
+            "name": "Flags",
+            "type": "QUERY_CHANGES_VIRTUAL_DISK_FLAG"
+        },
+        {
+            "name": "Ranges",
+            "type": "PQUERY_CHANGES_VIRTUAL_DISK_RANGE"
+        },
+        {
+            "name": "RangeCount",
+            "type": "PULONG"
+        },
+        {
+            "name": "ProcessedLength",
+            "type": "PULONG64"
+        }
+    ],
+    "TakeSnapshotVhdSet": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Parameters",
+            "type": "PTAKE_SNAPSHOT_VHDSET_PARAMETERS"
+        },
+        {
+            "name": "Flags",
+            "type": "TAKE_SNAPSHOT_VHDSET_FLAG"
+        }
+    ],
+    "DeleteSnapshotVhdSet": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Parameters",
+            "type": "PDELETE_SNAPSHOT_VHDSET_PARAMETERS"
+        },
+        {
+            "name": "Flags",
+            "type": "DELETE_SNAPSHOT_VHDSET_FLAG"
+        }
+    ],
+    "ModifyVhdSet": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Parameters",
+            "type": "PMODIFY_VHDSET_PARAMETERS"
+        },
+        {
+            "name": "Flags",
+            "type": "MODIFY_VHDSET_FLAG"
+        }
+    ],
+    "ApplySnapshotVhdSet": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Parameters",
+            "type": "PAPPLY_SNAPSHOT_VHDSET_PARAMETERS"
+        },
+        {
+            "name": "Flags",
+            "type": "APPLY_SNAPSHOT_VHDSET_FLAG"
+        }
+    ],
+    "RawSCSIVirtualDisk": [
+        {
+            "name": "VirtualDiskHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Parameters",
+            "type": "PRAW_SCSI_VIRTUAL_DISK_PARAMETERS"
+        },
+        {
+            "name": "Flags",
+            "type": "RAW_SCSI_VIRTUAL_DISK_FLAG"
+        },
+        {
+            "name": "Response",
+            "type": "PRAW_SCSI_VIRTUAL_DISK_RESPONSE"
+        }
+    ]
+}

@@ -1,0 +1,3162 @@
+{
+    "RpcBindingCopy": [
+        {
+            "name": "SourceBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "DestinationBinding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcBindingFree": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcBindingSetOption": [
+        {
+            "name": "hBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "option",
+            "type": "unsigned long"
+        },
+        {
+            "name": "optionValue",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "RpcBindingInqOption": [
+        {
+            "name": "hBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "option",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pOptionValue",
+            "type": "ULONG_PTR"
+        }
+    ],
+    "RpcBindingFromStringBindingA": [
+        {
+            "name": "StringBinding",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcBindingFromStringBindingW": [
+        {
+            "name": "StringBinding",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcBindingInqObject": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ObjectUuid",
+            "type": "UUID"
+        }
+    ],
+    "RpcBindingReset": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcBindingSetObject": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ObjectUuid",
+            "type": "UUID"
+        }
+    ],
+    "RpcMgmtInqDefaultProtectLevel": [
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthnLevel",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcBindingToStringBindingA": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "StringBinding",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcBindingToStringBindingW": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "StringBinding",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcBindingVectorFree": [
+        {
+            "name": "BindingVector",
+            "type": "RPC_BINDING_VECTOR"
+        }
+    ],
+    "RpcStringBindingComposeA": [
+        {
+            "name": "ObjUuid",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "ProtSeq",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "NetworkAddr",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "Endpoint",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "Options",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "StringBinding",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcStringBindingComposeW": [
+        {
+            "name": "ObjUuid",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "ProtSeq",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "NetworkAddr",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "Endpoint",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "Options",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "StringBinding",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcStringBindingParseA": [
+        {
+            "name": "StringBinding",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "ObjUuid",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "Protseq",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "NetworkAddr",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "Endpoint",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "NetworkOptions",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcStringBindingParseW": [
+        {
+            "name": "StringBinding",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "ObjUuid",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "Protseq",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "NetworkAddr",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "Endpoint",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "NetworkOptions",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcStringFreeA": [
+        {
+            "name": "String",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcStringFreeW": [
+        {
+            "name": "String",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcIfInqId": [
+        {
+            "name": "RpcIfHandle",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "RpcIfId",
+            "type": "RPC_IF_ID"
+        }
+    ],
+    "RpcNetworkIsProtseqValidA": [
+        {
+            "name": "Protseq",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcNetworkIsProtseqValidW": [
+        {
+            "name": "Protseq",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcMgmtInqComTimeout": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Timeout",
+            "type": "unsigned int"
+        }
+    ],
+    "RpcMgmtSetComTimeout": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Timeout",
+            "type": "unsigned int"
+        }
+    ],
+    "RpcMgmtSetCancelTimeout": [
+        {
+            "name": "Timeout",
+            "type": "long"
+        }
+    ],
+    "RpcNetworkInqProtseqsA": [
+        {
+            "name": "ProtseqVector",
+            "type": "RPC_PROTSEQ_VECTORA"
+        }
+    ],
+    "RpcNetworkInqProtseqsW": [
+        {
+            "name": "ProtseqVector",
+            "type": "RPC_PROTSEQ_VECTORW"
+        }
+    ],
+    "RpcObjectInqType": [
+        {
+            "name": "ObjUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "TypeUuid",
+            "type": "UUID"
+        }
+    ],
+    "RpcObjectSetInqFn": [
+        {
+            "name": "InquiryFn",
+            "type": "RPC_OBJECT_INQ_FN"
+        }
+    ],
+    "RpcObjectSetType": [
+        {
+            "name": "ObjUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "TypeUuid",
+            "type": "UUID"
+        }
+    ],
+    "RpcProtseqVectorFreeA": [
+        {
+            "name": "ProtseqVector",
+            "type": "RPC_PROTSEQ_VECTORA"
+        }
+    ],
+    "RpcProtseqVectorFreeW": [
+        {
+            "name": "ProtseqVector",
+            "type": "RPC_PROTSEQ_VECTORW"
+        }
+    ],
+    "RpcServerInqBindings": [
+        {
+            "name": "BindingVector",
+            "type": "RPC_BINDING_VECTOR"
+        }
+    ],
+    "RpcServerInqIf": [
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "MgrTypeUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "MgrEpv",
+            "type": "void"
+        }
+    ],
+    "RpcServerListen": [
+        {
+            "name": "MinimumCallThreads",
+            "type": "unsigned int"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "DontWait",
+            "type": "unsigned int"
+        }
+    ],
+    "RpcServerRegisterIf": [
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "MgrTypeUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "MgrEpv",
+            "type": "void"
+        }
+    ],
+    "RpcServerRegisterIfEx": [
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "MgrTypeUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "MgrEpv",
+            "type": "void"
+        },
+        {
+            "name": "Flags",
+            "type": "unsigned int"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "IfCallback",
+            "type": "RPC_IF_CALLBACK_FN"
+        }
+    ],
+    "RpcServerRegisterIf2": [
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "MgrTypeUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "MgrEpv",
+            "type": "void"
+        },
+        {
+            "name": "Flags",
+            "type": "unsigned int"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "MaxRpcSize",
+            "type": "unsigned int"
+        },
+        {
+            "name": "IfCallbackFn",
+            "type": "RPC_IF_CALLBACK_FN"
+        }
+    ],
+    "RpcServerRegisterIf3": [
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "MgrTypeUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "MgrEpv",
+            "type": "void"
+        },
+        {
+            "name": "Flags",
+            "type": "unsigned int"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "MaxRpcSize",
+            "type": "unsigned int"
+        },
+        {
+            "name": "IfCallback",
+            "type": "RPC_IF_CALLBACK_FN"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        }
+    ],
+    "RpcServerUnregisterIf": [
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "MgrTypeUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "WaitForCallsToComplete",
+            "type": "unsigned int"
+        }
+    ],
+    "RpcServerUnregisterIfEx": [
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "MgrTypeUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "RundownContextHandles",
+            "type": "int"
+        }
+    ],
+    "RpcServerUseAllProtseqs": [
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        }
+    ],
+    "RpcServerUseAllProtseqsEx": [
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        },
+        {
+            "name": "Policy",
+            "type": "PRPC_POLICY"
+        }
+    ],
+    "RpcServerUseAllProtseqsIf": [
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        }
+    ],
+    "RpcServerUseAllProtseqsIfEx": [
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        },
+        {
+            "name": "Policy",
+            "type": "PRPC_POLICY"
+        }
+    ],
+    "RpcServerUseProtseqA": [
+        {
+            "name": "Protseq",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        }
+    ],
+    "RpcServerUseProtseqExA": [
+        {
+            "name": "Protseq",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        },
+        {
+            "name": "Policy",
+            "type": "PRPC_POLICY"
+        }
+    ],
+    "RpcServerUseProtseqW": [
+        {
+            "name": "Protseq",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        }
+    ],
+    "RpcServerUseProtseqExW": [
+        {
+            "name": "Protseq",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        },
+        {
+            "name": "Policy",
+            "type": "PRPC_POLICY"
+        }
+    ],
+    "RpcServerUseProtseqEpA": [
+        {
+            "name": "Protseq",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "Endpoint",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        }
+    ],
+    "RpcServerUseProtseqEpExA": [
+        {
+            "name": "Protseq",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "Endpoint",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        },
+        {
+            "name": "Policy",
+            "type": "PRPC_POLICY"
+        }
+    ],
+    "RpcServerUseProtseqEpW": [
+        {
+            "name": "Protseq",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "Endpoint",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        }
+    ],
+    "RpcServerUseProtseqEpExW": [
+        {
+            "name": "Protseq",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "Endpoint",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        },
+        {
+            "name": "Policy",
+            "type": "PRPC_POLICY"
+        }
+    ],
+    "RpcServerUseProtseqIfA": [
+        {
+            "name": "Protseq",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        }
+    ],
+    "RpcServerUseProtseqIfExA": [
+        {
+            "name": "Protseq",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        },
+        {
+            "name": "Policy",
+            "type": "PRPC_POLICY"
+        }
+    ],
+    "RpcServerUseProtseqIfW": [
+        {
+            "name": "Protseq",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        }
+    ],
+    "RpcServerUseProtseqIfExW": [
+        {
+            "name": "Protseq",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "MaxCalls",
+            "type": "unsigned int"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "SecurityDescriptor",
+            "type": "void"
+        },
+        {
+            "name": "Policy",
+            "type": "PRPC_POLICY"
+        }
+    ],
+    "RpcMgmtStatsVectorFree": [
+        {
+            "name": "StatsVector",
+            "type": "RPC_STATS_VECTOR"
+        }
+    ],
+    "RpcMgmtInqStats": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Statistics",
+            "type": "RPC_STATS_VECTOR"
+        }
+    ],
+    "RpcMgmtIsServerListening": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcMgmtStopServerListening": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcMgmtWaitServerListen": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcMgmtSetServerStackSize": [
+        {
+            "name": "ThreadStackSize",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcSsDontSerializeContext": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcMgmtEnableIdleCleanup": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcMgmtInqIfIds": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "IfIdVector",
+            "type": "RPC_IF_ID_VECTOR"
+        }
+    ],
+    "RpcIfIdVectorFree": [
+        {
+            "name": "IfIdVector",
+            "type": "RPC_IF_ID_VECTOR"
+        }
+    ],
+    "RpcMgmtInqServerPrincNameA": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcMgmtInqServerPrincNameW": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcServerInqDefaultPrincNameA": [
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "PrincName",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcServerInqDefaultPrincNameW": [
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "PrincName",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcEpResolveBinding": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        }
+    ],
+    "RpcNsBindingInqEntryNameA": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcNsBindingInqEntryNameW": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "EntryNameSyntax",
+            "type": "unsigned long"
+        },
+        {
+            "name": "EntryName",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcBindingCreateA": [
+        {
+            "name": "Template",
+            "type": "RPC_BINDING_HANDLE_TEMPLATE_V1_A"
+        },
+        {
+            "name": "Security",
+            "type": "RPC_BINDING_HANDLE_SECURITY_V1_A"
+        },
+        {
+            "name": "Options",
+            "type": "RPC_BINDING_HANDLE_OPTIONS_V1"
+        },
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcBindingCreateW": [
+        {
+            "name": "Template",
+            "type": "RPC_BINDING_HANDLE_TEMPLATE_V1_W"
+        },
+        {
+            "name": "Security",
+            "type": "RPC_BINDING_HANDLE_SECURITY_V1_W"
+        },
+        {
+            "name": "Options",
+            "type": "RPC_BINDING_HANDLE_OPTIONS_V1"
+        },
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcServerInqBindingHandle": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcImpersonateClient": [
+        {
+            "name": "BindingHandle",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcRevertToSelfEx": [
+        {
+            "name": "BindingHandle",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcRevertToSelf": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcImpersonateClientContainer": [
+        {
+            "name": "BindingHandle",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcRevertContainerImpersonation": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcBindingInqAuthClientA": [
+        {
+            "name": "ClientBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Privs",
+            "type": "RPC_AUTHZ_HANDLE"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "AuthnLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthzSvc",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcBindingInqAuthClientW": [
+        {
+            "name": "ClientBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Privs",
+            "type": "RPC_AUTHZ_HANDLE"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "AuthnLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthzSvc",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcBindingInqAuthClientExA": [
+        {
+            "name": "ClientBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Privs",
+            "type": "RPC_AUTHZ_HANDLE"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "AuthnLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthzSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "Flags",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcBindingInqAuthClientExW": [
+        {
+            "name": "ClientBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Privs",
+            "type": "RPC_AUTHZ_HANDLE"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "AuthnLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthzSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "Flags",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcBindingInqAuthInfoA": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "AuthnLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "AuthzSvc",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcBindingInqAuthInfoW": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "AuthnLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "AuthzSvc",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcBindingSetAuthInfoA": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "AuthnLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "AuthzSvc",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcBindingSetAuthInfoExA": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "AuthnLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "AuthzSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "SecurityQos",
+            "type": "RPC_SECURITY_QOS"
+        }
+    ],
+    "RpcBindingSetAuthInfoW": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "AuthnLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "AuthzSvc",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcBindingSetAuthInfoExW": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "AuthnLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "AuthzSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "SecurityQOS",
+            "type": "RPC_SECURITY_QOS"
+        }
+    ],
+    "RpcBindingInqAuthInfoExA": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "AuthnLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "AuthzSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "RpcQosVersion",
+            "type": "unsigned long"
+        },
+        {
+            "name": "SecurityQOS",
+            "type": "RPC_SECURITY_QOS"
+        }
+    ],
+    "RpcBindingInqAuthInfoExW": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "AuthnLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "AuthIdentity",
+            "type": "RPC_AUTH_IDENTITY_HANDLE"
+        },
+        {
+            "name": "AuthzSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "RpcQosVersion",
+            "type": "unsigned long"
+        },
+        {
+            "name": "SecurityQOS",
+            "type": "RPC_SECURITY_QOS"
+        }
+    ],
+    "RpcServerCompleteSecurityCallback": [
+        {
+            "name": "BindingHandle",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Status",
+            "type": "RPC_STATUS"
+        }
+    ],
+    "RpcServerRegisterAuthInfoA": [
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "GetKeyFn",
+            "type": "RPC_AUTH_KEY_RETRIEVAL_FN"
+        },
+        {
+            "name": "Arg",
+            "type": "void"
+        }
+    ],
+    "RpcServerRegisterAuthInfoW": [
+        {
+            "name": "ServerPrincName",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "AuthnSvc",
+            "type": "unsigned long"
+        },
+        {
+            "name": "GetKeyFn",
+            "type": "RPC_AUTH_KEY_RETRIEVAL_FN"
+        },
+        {
+            "name": "Arg",
+            "type": "void"
+        }
+    ],
+    "RpcBindingServerFromClient": [
+        {
+            "name": "ClientBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ServerBinding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcRaiseException": [
+        {
+            "name": "exception",
+            "type": "RPC_STATUS"
+        }
+    ],
+    "RpcTestCancel": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcServerTestCancel": [
+        {
+            "name": "BindingHandle",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "RpcCancelThread": [
+        {
+            "name": "Thread",
+            "type": "void"
+        }
+    ],
+    "RpcCancelThreadEx": [
+        {
+            "name": "Thread",
+            "type": "void"
+        },
+        {
+            "name": "Timeout",
+            "type": "long"
+        }
+    ],
+    "UuidCreate": [
+        {
+            "name": "Uuid",
+            "type": "UUID"
+        }
+    ],
+    "UuidCreateSequential": [
+        {
+            "name": "Uuid",
+            "type": "UUID"
+        }
+    ],
+    "UuidToStringA": [
+        {
+            "name": "Uuid",
+            "type": "UUID"
+        },
+        {
+            "name": "StringUuid",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "UuidFromStringA": [
+        {
+            "name": "StringUuid",
+            "type": "RPC_CSTR"
+        },
+        {
+            "name": "Uuid",
+            "type": "UUID"
+        }
+    ],
+    "UuidToStringW": [
+        {
+            "name": "Uuid",
+            "type": "UUID"
+        },
+        {
+            "name": "StringUuid",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "UuidFromStringW": [
+        {
+            "name": "StringUuid",
+            "type": "RPC_WSTR"
+        },
+        {
+            "name": "Uuid",
+            "type": "UUID"
+        }
+    ],
+    "UuidCompare": [
+        {
+            "name": "Uuid1",
+            "type": "UUID"
+        },
+        {
+            "name": "Uuid2",
+            "type": "UUID"
+        },
+        {
+            "name": "Status",
+            "type": "RPC_STATUS"
+        }
+    ],
+    "UuidCreateNil": [
+        {
+            "name": "NilUuid",
+            "type": "UUID"
+        }
+    ],
+    "UuidEqual": [
+        {
+            "name": "Uuid1",
+            "type": "UUID"
+        },
+        {
+            "name": "Uuid2",
+            "type": "UUID"
+        },
+        {
+            "name": "Status",
+            "type": "RPC_STATUS"
+        }
+    ],
+    "UuidHash": [
+        {
+            "name": "Uuid",
+            "type": "UUID"
+        },
+        {
+            "name": "Status",
+            "type": "RPC_STATUS"
+        }
+    ],
+    "UuidIsNil": [
+        {
+            "name": "Uuid",
+            "type": "UUID"
+        },
+        {
+            "name": "Status",
+            "type": "RPC_STATUS"
+        }
+    ],
+    "RpcEpRegisterNoReplaceA": [
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "BindingVector",
+            "type": "RPC_BINDING_VECTOR"
+        },
+        {
+            "name": "UuidVector",
+            "type": "UUID_VECTOR"
+        },
+        {
+            "name": "Annotation",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcEpRegisterNoReplaceW": [
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "BindingVector",
+            "type": "RPC_BINDING_VECTOR"
+        },
+        {
+            "name": "UuidVector",
+            "type": "UUID_VECTOR"
+        },
+        {
+            "name": "Annotation",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcEpRegisterA": [
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "BindingVector",
+            "type": "RPC_BINDING_VECTOR"
+        },
+        {
+            "name": "UuidVector",
+            "type": "UUID_VECTOR"
+        },
+        {
+            "name": "Annotation",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcEpRegisterW": [
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "BindingVector",
+            "type": "RPC_BINDING_VECTOR"
+        },
+        {
+            "name": "UuidVector",
+            "type": "UUID_VECTOR"
+        },
+        {
+            "name": "Annotation",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcEpUnregister": [
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        },
+        {
+            "name": "BindingVector",
+            "type": "RPC_BINDING_VECTOR"
+        },
+        {
+            "name": "UuidVector",
+            "type": "UUID_VECTOR"
+        }
+    ],
+    "DceErrorInqTextA": [
+        {
+            "name": "RpcStatus",
+            "type": "RPC_STATUS"
+        },
+        {
+            "name": "ErrorText",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "DceErrorInqTextW": [
+        {
+            "name": "RpcStatus",
+            "type": "RPC_STATUS"
+        },
+        {
+            "name": "ErrorText",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcMgmtEpEltInqBegin": [
+        {
+            "name": "EpBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "InquiryType",
+            "type": "unsigned long"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "VersOption",
+            "type": "unsigned long"
+        },
+        {
+            "name": "ObjectUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "InquiryContext",
+            "type": "RPC_EP_INQ_HANDLE"
+        }
+    ],
+    "RpcMgmtEpEltInqDone": [
+        {
+            "name": "InquiryContext",
+            "type": "RPC_EP_INQ_HANDLE"
+        }
+    ],
+    "RpcMgmtEpEltInqNextA": [
+        {
+            "name": "InquiryContext",
+            "type": "RPC_EP_INQ_HANDLE"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ObjectUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "Annotation",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcMgmtEpEltInqNextW": [
+        {
+            "name": "InquiryContext",
+            "type": "RPC_EP_INQ_HANDLE"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ObjectUuid",
+            "type": "UUID"
+        },
+        {
+            "name": "Annotation",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcMgmtEpUnregister": [
+        {
+            "name": "EpBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "IfId",
+            "type": "RPC_IF_ID"
+        },
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ObjectUuid",
+            "type": "UUID"
+        }
+    ],
+    "RpcMgmtSetAuthorizationFn": [
+        {
+            "name": "AuthorizationFn",
+            "type": "RPC_MGMT_AUTHORIZATION_FN"
+        }
+    ],
+    "RpcExceptionFilter": [
+        {
+            "name": "ExceptionCode",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcServerInterfaceGroupCreateW": [
+        {
+            "name": "Interfaces",
+            "type": "RPC_INTERFACE_TEMPLATEW"
+        },
+        {
+            "name": "NumIfs",
+            "type": "unsigned long"
+        },
+        {
+            "name": "Endpoints",
+            "type": "RPC_ENDPOINT_TEMPLATEW"
+        },
+        {
+            "name": "NumEndpoints",
+            "type": "unsigned long"
+        },
+        {
+            "name": "IdlePeriod",
+            "type": "unsigned long"
+        },
+        {
+            "name": "IdleCallbackFn",
+            "type": "RPC_INTERFACE_GROUP_IDLE_CALLBACK_FN"
+        },
+        {
+            "name": "IdleCallbackContext",
+            "type": "void"
+        },
+        {
+            "name": "IfGroup",
+            "type": "PRPC_INTERFACE_GROUP"
+        }
+    ],
+    "RpcServerInterfaceGroupCreateA": [
+        {
+            "name": "Interfaces",
+            "type": "RPC_INTERFACE_TEMPLATEA"
+        },
+        {
+            "name": "NumIfs",
+            "type": "unsigned long"
+        },
+        {
+            "name": "Endpoints",
+            "type": "RPC_ENDPOINT_TEMPLATEA"
+        },
+        {
+            "name": "NumEndpoints",
+            "type": "unsigned long"
+        },
+        {
+            "name": "IdlePeriod",
+            "type": "unsigned long"
+        },
+        {
+            "name": "IdleCallbackFn",
+            "type": "RPC_INTERFACE_GROUP_IDLE_CALLBACK_FN"
+        },
+        {
+            "name": "IdleCallbackContext",
+            "type": "void"
+        },
+        {
+            "name": "IfGroup",
+            "type": "PRPC_INTERFACE_GROUP"
+        }
+    ],
+    "RpcServerInterfaceGroupClose": [
+        {
+            "name": "IfGroup",
+            "type": "RPC_INTERFACE_GROUP"
+        }
+    ],
+    "RpcServerInterfaceGroupActivate": [
+        {
+            "name": "IfGroup",
+            "type": "RPC_INTERFACE_GROUP"
+        }
+    ],
+    "RpcServerInterfaceGroupDeactivate": [
+        {
+            "name": "IfGroup",
+            "type": "RPC_INTERFACE_GROUP"
+        },
+        {
+            "name": "ForceDeactivation",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcServerInterfaceGroupInqBindings": [
+        {
+            "name": "IfGroup",
+            "type": "RPC_INTERFACE_GROUP"
+        },
+        {
+            "name": "BindingVector",
+            "type": "RPC_BINDING_VECTOR"
+        }
+    ],
+    "MesEncodeIncrementalHandleCreate": [
+        {
+            "name": "UserState",
+            "type": "void"
+        },
+        {
+            "name": "AllocFn",
+            "type": "MIDL_ES_ALLOC"
+        },
+        {
+            "name": "WriteFn",
+            "type": "MIDL_ES_WRITE"
+        },
+        {
+            "name": "pHandle",
+            "type": "handle_t"
+        }
+    ],
+    "MesDecodeIncrementalHandleCreate": [
+        {
+            "name": "UserState",
+            "type": "void"
+        },
+        {
+            "name": "ReadFn",
+            "type": "MIDL_ES_READ"
+        },
+        {
+            "name": "pHandle",
+            "type": "handle_t"
+        }
+    ],
+    "MesIncrementalHandleReset": [
+        {
+            "name": "Handle",
+            "type": "handle_t"
+        },
+        {
+            "name": "UserState",
+            "type": "void"
+        },
+        {
+            "name": "AllocFn",
+            "type": "MIDL_ES_ALLOC"
+        },
+        {
+            "name": "WriteFn",
+            "type": "MIDL_ES_WRITE"
+        },
+        {
+            "name": "ReadFn",
+            "type": "MIDL_ES_READ"
+        },
+        {
+            "name": "Operation",
+            "type": "MIDL_ES_CODE"
+        }
+    ],
+    "MesEncodeFixedBufferHandleCreate": [
+        {
+            "name": "pBuffer",
+            "type": "char"
+        },
+        {
+            "name": "BufferSize",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pEncodedSize",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pHandle",
+            "type": "handle_t"
+        }
+    ],
+    "MesEncodeDynBufferHandleCreate": [
+        {
+            "name": "pBuffer",
+            "type": "char"
+        },
+        {
+            "name": "pEncodedSize",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pHandle",
+            "type": "handle_t"
+        }
+    ],
+    "MesDecodeBufferHandleCreate": [
+        {
+            "name": "Buffer",
+            "type": "char"
+        },
+        {
+            "name": "BufferSize",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pHandle",
+            "type": "handle_t"
+        }
+    ],
+    "MesBufferHandleReset": [
+        {
+            "name": "Handle",
+            "type": "handle_t"
+        },
+        {
+            "name": "HandleStyle",
+            "type": "unsigned long"
+        },
+        {
+            "name": "Operation",
+            "type": "MIDL_ES_CODE"
+        },
+        {
+            "name": "pBuffer",
+            "type": "char"
+        },
+        {
+            "name": "BufferSize",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pEncodedSize",
+            "type": "unsigned long"
+        }
+    ],
+    "MesHandleFree": [
+        {
+            "name": "Handle",
+            "type": "handle_t"
+        }
+    ],
+    "MesInqProcEncodingId": [
+        {
+            "name": "Handle",
+            "type": "handle_t"
+        },
+        {
+            "name": "pInterfaceId",
+            "type": "PRPC_SYNTAX_IDENTIFIER"
+        },
+        {
+            "name": "pProcNum",
+            "type": "unsigned long"
+        }
+    ],
+    "NdrMesProcEncodeDecode2": [
+        {
+            "name": "Handle",
+            "type": "handle_t"
+        },
+        {
+            "name": "pStubDesc",
+            "type": "MIDL_STUB_DESC"
+        },
+        {
+            "name": "pFormatString",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "IUnknown_QueryInterface_Proxy": [
+        {
+            "name": "This",
+            "type": "IUnknown"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvObject",
+            "type": "void"
+        }
+    ],
+    "IUnknown_AddRef_Proxy": [
+        {
+            "name": "This",
+            "type": "IUnknown"
+        }
+    ],
+    "IUnknown_Release_Proxy": [
+        {
+            "name": "This",
+            "type": "IUnknown"
+        }
+    ],
+    "NdrProxyInitialize": [
+        {
+            "name": "This",
+            "type": "void"
+        },
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        },
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pStubDescriptor",
+            "type": "PMIDL_STUB_DESC"
+        },
+        {
+            "name": "ProcNum",
+            "type": "unsigned int"
+        }
+    ],
+    "NdrProxyGetBuffer": [
+        {
+            "name": "This",
+            "type": "void"
+        },
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        }
+    ],
+    "NdrProxySendReceive": [
+        {
+            "name": "This",
+            "type": "void"
+        },
+        {
+            "name": "pStubMsg",
+            "type": "MIDL_STUB_MESSAGE"
+        }
+    ],
+    "NdrProxyFreeBuffer": [
+        {
+            "name": "This",
+            "type": "void"
+        },
+        {
+            "name": "pStubMsg",
+            "type": "MIDL_STUB_MESSAGE"
+        }
+    ],
+    "NdrProxyErrorHandler": [
+        {
+            "name": "dwExceptionCode",
+            "type": "DWORD"
+        }
+    ],
+    "NdrStubInitialize": [
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        },
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pStubDescriptor",
+            "type": "PMIDL_STUB_DESC"
+        },
+        {
+            "name": "pRpcChannelBuffer",
+            "type": "IRpcChannelBuffer"
+        }
+    ],
+    "NdrStubForwardingFunction": [
+        {
+            "name": "This",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "pChannel",
+            "type": "IRpcChannelBuffer"
+        },
+        {
+            "name": "pmsg",
+            "type": "PRPC_MESSAGE"
+        },
+        {
+            "name": "pdwStubPhase",
+            "type": "DWORD"
+        }
+    ],
+    "NdrStubGetBuffer": [
+        {
+            "name": "This",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "pRpcChannelBuffer",
+            "type": "IRpcChannelBuffer"
+        },
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        }
+    ],
+    "CStdStubBuffer_QueryInterface": [
+        {
+            "name": "This",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvObject",
+            "type": "void"
+        }
+    ],
+    "CStdStubBuffer_AddRef": [
+        {
+            "name": "This",
+            "type": "IRpcStubBuffer"
+        }
+    ],
+    "NdrCStdStubBuffer_Release": [
+        {
+            "name": "This",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "pPSF",
+            "type": "IPSFactoryBuffer"
+        }
+    ],
+    "CStdStubBuffer_Connect": [
+        {
+            "name": "This",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "pUnkServer",
+            "type": "IUnknown"
+        }
+    ],
+    "CStdStubBuffer_Disconnect": [
+        {
+            "name": "This",
+            "type": "IRpcStubBuffer"
+        }
+    ],
+    "CStdStubBuffer_Invoke": [
+        {
+            "name": "This",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "pRpcMsg",
+            "type": "RPCOLEMESSAGE"
+        },
+        {
+            "name": "pRpcChannelBuffer",
+            "type": "IRpcChannelBuffer"
+        }
+    ],
+    "CStdStubBuffer_CountRefs": [
+        {
+            "name": "This",
+            "type": "IRpcStubBuffer"
+        }
+    ],
+    "CStdStubBuffer_DebugServerQueryInterface": [
+        {
+            "name": "This",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "CStdStubBuffer_DebugServerRelease": [
+        {
+            "name": "This",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "pv",
+            "type": "void"
+        }
+    ],
+    "NdrCStdStubBuffer2_Release": [
+        {
+            "name": "This",
+            "type": "IRpcStubBuffer"
+        },
+        {
+            "name": "pPSF",
+            "type": "IPSFactoryBuffer"
+        }
+    ],
+    "NdrDllGetClassObject": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        },
+        {
+            "name": "pProxyFileList",
+            "type": "ProxyFileInfo"
+        },
+        {
+            "name": "pclsid",
+            "type": "CLSID"
+        },
+        {
+            "name": "pPSFactoryBuffer",
+            "type": "CStdPSFactoryBuffer"
+        }
+    ],
+    "NdrDllCanUnloadNow": [
+        {
+            "name": "pPSFactoryBuffer",
+            "type": "CStdPSFactoryBuffer"
+        }
+    ],
+    "NdrDllRegisterProxy": [
+        {
+            "name": "hDll",
+            "type": "HMODULE"
+        },
+        {
+            "name": "pProxyFileList",
+            "type": "ProxyFileInfo"
+        },
+        {
+            "name": "pclsid",
+            "type": "CLSID"
+        }
+    ],
+    "NdrDllUnregisterProxy": [
+        {
+            "name": "hDll",
+            "type": "HMODULE"
+        },
+        {
+            "name": "pProxyFileList",
+            "type": "ProxyFileInfo"
+        },
+        {
+            "name": "pclsid",
+            "type": "CLSID"
+        }
+    ],
+    "RpcCertGeneratePrincipalNameW": [
+        {
+            "name": "Context",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBuffer",
+            "type": "RPC_WSTR"
+        }
+    ],
+    "RpcCertGeneratePrincipalNameA": [
+        {
+            "name": "Context",
+            "type": "PCCERT_CONTEXT"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBuffer",
+            "type": "RPC_CSTR"
+        }
+    ],
+    "RpcSsDestroyClientContext": [
+        {
+            "name": "ContextHandle",
+            "type": "void"
+        }
+    ],
+    "NdrSimpleTypeMarshall": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "FormatChar",
+            "type": "unsigned char"
+        }
+    ],
+    "NdrSimpleTypeUnmarshall": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "FormatChar",
+            "type": "unsigned char"
+        }
+    ],
+    "NdrContextHandleInitialize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrPointerBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrSimpleStructBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrComplexStructBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrConformantArrayBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrComplexArrayBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrConformantStringBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrUserMarshalBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrInterfacePointerBufferSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrContextHandleSize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrContextHandleMemorySize": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrPointerFree": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrUserMarshalFree": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrInterfacePointerFree": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pMemory",
+            "type": "unsigned char"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrConvert": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrClientCall2": [
+        {
+            "name": "pStubDescriptor",
+            "type": "PMIDL_STUB_DESC"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrClientCall": [
+        {
+            "name": "pStubDescriptor",
+            "type": "PMIDL_STUB_DESC"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrAsyncClientCall": [
+        {
+            "name": "pStubDescriptor",
+            "type": "PMIDL_STUB_DESC"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrDcomAsyncClientCall": [
+        {
+            "name": "pStubDescriptor",
+            "type": "PMIDL_STUB_DESC"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        }
+    ],
+    "NdrAsyncServerCall": [
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        }
+    ],
+    "NdrStubCall2": [
+        {
+            "name": "pThis",
+            "type": "void"
+        },
+        {
+            "name": "pChannel",
+            "type": "void"
+        },
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        },
+        {
+            "name": "pdwStubPhase",
+            "type": "unsigned long"
+        }
+    ],
+    "NdrServerCall2": [
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        }
+    ],
+    "RpcSsDisableAllocate": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcSsEnableAllocate": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcSsFree": [
+        {
+            "name": "NodeToFree",
+            "type": "void"
+        }
+    ],
+    "RpcSsGetThreadHandle": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcSsSetClientAllocFree": [
+        {
+            "name": "ClientAlloc",
+            "type": "RPC_CLIENT_ALLOC"
+        },
+        {
+            "name": "ClientFree",
+            "type": "RPC_CLIENT_FREE"
+        }
+    ],
+    "RpcSsSetThreadHandle": [
+        {
+            "name": "Id",
+            "type": "RPC_SS_THREAD_HANDLE"
+        }
+    ],
+    "RpcSsSwapClientAllocFree": [
+        {
+            "name": "ClientAlloc",
+            "type": "RPC_CLIENT_ALLOC"
+        },
+        {
+            "name": "ClientFree",
+            "type": "RPC_CLIENT_FREE"
+        },
+        {
+            "name": "OldClientAlloc",
+            "type": "RPC_CLIENT_ALLOC"
+        },
+        {
+            "name": "OldClientFree",
+            "type": "RPC_CLIENT_FREE"
+        }
+    ],
+    "RpcSmClientFree": [
+        {
+            "name": "pNodeToFree",
+            "type": "void"
+        }
+    ],
+    "RpcSmDestroyClientContext": [
+        {
+            "name": "ContextHandle",
+            "type": "void"
+        }
+    ],
+    "RpcSmDisableAllocate": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcSmEnableAllocate": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcSmFree": [
+        {
+            "name": "NodeToFree",
+            "type": "void"
+        }
+    ],
+    "RpcSmGetThreadHandle": [
+        {
+            "name": "pStatus",
+            "type": "RPC_STATUS"
+        }
+    ],
+    "RpcSmSetClientAllocFree": [
+        {
+            "name": "ClientAlloc",
+            "type": "RPC_CLIENT_ALLOC"
+        },
+        {
+            "name": "ClientFree",
+            "type": "RPC_CLIENT_FREE"
+        }
+    ],
+    "RpcSmSetThreadHandle": [
+        {
+            "name": "Id",
+            "type": "RPC_SS_THREAD_HANDLE"
+        }
+    ],
+    "RpcSmSwapClientAllocFree": [
+        {
+            "name": "ClientAlloc",
+            "type": "RPC_CLIENT_ALLOC"
+        },
+        {
+            "name": "ClientFree",
+            "type": "RPC_CLIENT_FREE"
+        },
+        {
+            "name": "OldClientAlloc",
+            "type": "RPC_CLIENT_ALLOC"
+        },
+        {
+            "name": "OldClientFree",
+            "type": "RPC_CLIENT_FREE"
+        }
+    ],
+    "NdrClearOutParameters": [
+        {
+            "name": "pStubMsg",
+            "type": "PMIDL_STUB_MESSAGE"
+        },
+        {
+            "name": "pFormat",
+            "type": "PFORMAT_STRING"
+        },
+        {
+            "name": "ArgAddr",
+            "type": "void"
+        }
+    ],
+    "NdrOleFree": [
+        {
+            "name": "NodeToFree",
+            "type": "void"
+        }
+    ],
+    "NdrGetUserMarshalInfo": [
+        {
+            "name": "pFlags",
+            "type": "unsigned long"
+        },
+        {
+            "name": "InformationLevel",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pMarshalInfo",
+            "type": "NDR_USER_MARSHAL_INFO"
+        }
+    ],
+    "NdrClientCall3": [
+        {
+            "name": "pProxyInfo",
+            "type": "MIDL_STUBLESS_PROXY_INFO"
+        },
+        {
+            "name": "nProcNum",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pReturnValue",
+            "type": "void"
+        }
+    ],
+    "Ndr64AsyncClientCall": [
+        {
+            "name": "pProxyInfo",
+            "type": "MIDL_STUBLESS_PROXY_INFO"
+        },
+        {
+            "name": "nProcNum",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pReturnValue",
+            "type": "void"
+        }
+    ],
+    "Ndr64AsyncServerCallAll": [
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        }
+    ],
+    "NdrStubCall3": [
+        {
+            "name": "pThis",
+            "type": "void"
+        },
+        {
+            "name": "pChannel",
+            "type": "void"
+        },
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        },
+        {
+            "name": "pdwStubPhase",
+            "type": "unsigned long"
+        }
+    ],
+    "NdrServerCallAll": [
+        {
+            "name": "pRpcMsg",
+            "type": "PRPC_MESSAGE"
+        }
+    ],
+    "RpcUserFree": [
+        {
+            "name": "AsyncHandle",
+            "type": "handle_t"
+        },
+        {
+            "name": "pBuffer",
+            "type": "void"
+        }
+    ],
+    "RpcAsyncRegisterInfo": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        }
+    ],
+    "RpcAsyncInitializeHandle": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        },
+        {
+            "name": "Size",
+            "type": "unsigned int"
+        }
+    ],
+    "RpcAsyncGetCallStatus": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        }
+    ],
+    "RpcAsyncCompleteCall": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        },
+        {
+            "name": "Reply",
+            "type": "void"
+        }
+    ],
+    "RpcAsyncAbortCall": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        },
+        {
+            "name": "ExceptionCode",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcAsyncCancelCall": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        },
+        {
+            "name": "fAbort",
+            "type": "BOOL"
+        }
+    ],
+    "RpcErrorStartEnumeration": [
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        }
+    ],
+    "RpcErrorGetNextRecord": [
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        },
+        {
+            "name": "CopyStrings",
+            "type": "BOOL"
+        },
+        {
+            "name": "ErrorInfo",
+            "type": "RPC_EXTENDED_ERROR_INFO"
+        }
+    ],
+    "RpcErrorEndEnumeration": [
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        }
+    ],
+    "RpcErrorResetEnumeration": [
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        }
+    ],
+    "RpcErrorGetNumberOfRecords": [
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        },
+        {
+            "name": "Records",
+            "type": "int"
+        }
+    ],
+    "RpcErrorSaveErrorInfo": [
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        },
+        {
+            "name": "ErrorBlob",
+            "type": "PVOID"
+        },
+        {
+            "name": "BlobSize",
+            "type": "size_t"
+        }
+    ],
+    "RpcErrorLoadErrorInfo": [
+        {
+            "name": "ErrorBlob",
+            "type": "PVOID"
+        },
+        {
+            "name": "BlobSize",
+            "type": "size_t"
+        },
+        {
+            "name": "EnumHandle",
+            "type": "RPC_ERROR_ENUM_HANDLE"
+        }
+    ],
+    "RpcErrorAddRecord": [
+        {
+            "name": "ErrorInfo",
+            "type": "RPC_EXTENDED_ERROR_INFO"
+        }
+    ],
+    "RpcErrorClearInformation": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "RpcGetAuthorizationContextForClient": [
+        {
+            "name": "ClientBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "ImpersonateOnReturn",
+            "type": "BOOL"
+        },
+        {
+            "name": "Reserved1",
+            "type": "PVOID"
+        },
+        {
+            "name": "pExpirationTime",
+            "type": "PLARGE_INTEGER"
+        },
+        {
+            "name": "Reserved2",
+            "type": "LUID"
+        },
+        {
+            "name": "Reserved3",
+            "type": "DWORD"
+        },
+        {
+            "name": "Reserved4",
+            "type": "PVOID"
+        },
+        {
+            "name": "pAuthzClientContext",
+            "type": "PVOID"
+        }
+    ],
+    "RpcFreeAuthorizationContext": [
+        {
+            "name": "pAuthzClientContext",
+            "type": "PVOID"
+        }
+    ],
+    "RpcSsContextLockExclusive": [
+        {
+            "name": "ServerBindingHandle",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "RpcSsContextLockShared": [
+        {
+            "name": "ServerBindingHandle",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "UserContext",
+            "type": "PVOID"
+        }
+    ],
+    "RpcServerInqCallAttributesW": [
+        {
+            "name": "ClientBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "RpcCallAttributes",
+            "type": "void"
+        }
+    ],
+    "RpcServerInqCallAttributesA": [
+        {
+            "name": "ClientBinding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "RpcCallAttributes",
+            "type": "void"
+        }
+    ],
+    "RpcServerSubscribeForNotification": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Notification",
+            "type": "RPC_NOTIFICATIONS"
+        },
+        {
+            "name": "NotificationType",
+            "type": "RPC_NOTIFICATION_TYPES"
+        },
+        {
+            "name": "NotificationInfo",
+            "type": "RPC_ASYNC_NOTIFICATION_INFO"
+        }
+    ],
+    "RpcServerUnsubscribeForNotification": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Notification",
+            "type": "RPC_NOTIFICATIONS"
+        },
+        {
+            "name": "NotificationsQueued",
+            "type": "unsigned long"
+        }
+    ],
+    "RpcBindingBind": [
+        {
+            "name": "pAsync",
+            "type": "PRPC_ASYNC_STATE"
+        },
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "IfSpec",
+            "type": "RPC_IF_HANDLE"
+        }
+    ],
+    "RpcBindingUnbind": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        }
+    ],
+    "I_RpcExceptionFilter": [
+        {
+            "name": "ExceptionCode",
+            "type": "unsigned long"
+        }
+    ],
+    "I_RpcBindingInqLocalClientPID": [
+        {
+            "name": "Binding",
+            "type": "RPC_BINDING_HANDLE"
+        },
+        {
+            "name": "Pid",
+            "type": "unsigned long"
+        }
+    ]
+}

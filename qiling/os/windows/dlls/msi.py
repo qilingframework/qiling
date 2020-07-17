@@ -12,6 +12,7 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
+dllname = 'msi_dll'
 
 # UINT MsiGetComponentStateA(
 #   MSIHANDLE    hInstall,
@@ -19,11 +20,6 @@ from qiling.exception import *
 #   INSTALLSTATE *piInstalled,
 #   INSTALLSTATE *piAction
 # );
-@winapi(cc=STDCALL, params={
-    "package": POINTER,
-    "szComponent": STRING,
-    "piInstalled": POINTER,
-    "piAction": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_MsiGetComponentStateA(ql, address, params):
     return 6  # INVALID_HANDLE

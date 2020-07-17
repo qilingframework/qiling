@@ -1,0 +1,1732 @@
+{
+    "DRMSetGlobalOptions": [
+        {
+            "name": "eGlobalOptions",
+            "type": "DRMGLOBALOPTIONS"
+        },
+        {
+            "name": "pvdata",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwlen",
+            "type": "DWORD"
+        }
+    ],
+    "DRMGetClientVersion": [
+        {
+            "name": "pDRMClientVersionInfo",
+            "type": "DRM_CLIENT_VERSION_INFO"
+        }
+    ],
+    "DRMInitEnvironment": [
+        {
+            "name": "eSecurityProviderType",
+            "type": "DRMSECURITYPROVIDERTYPE"
+        },
+        {
+            "name": "eSpecification",
+            "type": "DRMSPECTYPE"
+        },
+        {
+            "name": "wszSecurityProvider",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszManifestCredentials",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszMachineCredentials",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phEnv",
+            "type": "DRMENVHANDLE"
+        },
+        {
+            "name": "phDefaultLibrary",
+            "type": "DRMHANDLE"
+        }
+    ],
+    "DRMLoadLibrary": [
+        {
+            "name": "hEnv",
+            "type": "DRMENVHANDLE"
+        },
+        {
+            "name": "eSpecification",
+            "type": "DRMSPECTYPE"
+        },
+        {
+            "name": "wszLibraryProvider",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszCredentials",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phLibrary",
+            "type": "DRMHANDLE"
+        }
+    ],
+    "DRMCreateEnablingPrincipal": [
+        {
+            "name": "hEnv",
+            "type": "DRMENVHANDLE"
+        },
+        {
+            "name": "hLibrary",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "wszObject",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pidPrincipal",
+            "type": "DRMID"
+        },
+        {
+            "name": "wszCredentials",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phEnablingPrincipal",
+            "type": "DRMHANDLE"
+        }
+    ],
+    "DRMCloseHandle": [
+        {
+            "name": "handle",
+            "type": "DRMHANDLE"
+        }
+    ],
+    "DRMCloseEnvironmentHandle": [
+        {
+            "name": "hEnv",
+            "type": "DRMENVHANDLE"
+        }
+    ],
+    "DRMDuplicateHandle": [
+        {
+            "name": "hToCopy",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "phCopy",
+            "type": "DRMHANDLE"
+        }
+    ],
+    "DRMDuplicateEnvironmentHandle": [
+        {
+            "name": "hToCopy",
+            "type": "DRMENVHANDLE"
+        },
+        {
+            "name": "phCopy",
+            "type": "DRMENVHANDLE"
+        }
+    ],
+    "DRMRegisterRevocationList": [
+        {
+            "name": "hEnv",
+            "type": "DRMENVHANDLE"
+        },
+        {
+            "name": "wszRevocationList",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMCheckSecurity": [
+        {
+            "name": "hEnv",
+            "type": "DRMENVHANDLE"
+        },
+        {
+            "name": "cLevel",
+            "type": "UINT"
+        }
+    ],
+    "DRMRegisterContent": [
+        {
+            "name": "fRegister",
+            "type": "BOOL"
+        }
+    ],
+    "DRMEncrypt": [
+        {
+            "name": "hCryptoProvider",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "iPosition",
+            "type": "UINT"
+        },
+        {
+            "name": "cNumInBytes",
+            "type": "UINT"
+        },
+        {
+            "name": "pbInData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcNumOutBytes",
+            "type": "UINT"
+        },
+        {
+            "name": "pbOutData",
+            "type": "BYTE"
+        }
+    ],
+    "DRMDecrypt": [
+        {
+            "name": "hCryptoProvider",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "iPosition",
+            "type": "UINT"
+        },
+        {
+            "name": "cNumInBytes",
+            "type": "UINT"
+        },
+        {
+            "name": "pbInData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pcNumOutBytes",
+            "type": "UINT"
+        },
+        {
+            "name": "pbOutData",
+            "type": "BYTE"
+        }
+    ],
+    "DRMCreateBoundLicense": [
+        {
+            "name": "hEnv",
+            "type": "DRMENVHANDLE"
+        },
+        {
+            "name": "pParams",
+            "type": "DRMBOUNDLICENSEPARAMS"
+        },
+        {
+            "name": "wszLicenseChain",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phBoundLicense",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "phErrorLog",
+            "type": "DRMHANDLE"
+        }
+    ],
+    "DRMCreateEnablingBitsDecryptor": [
+        {
+            "name": "hBoundLicense",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "wszRight",
+            "type": "PWSTR"
+        },
+        {
+            "name": "hAuxLib",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "wszAuxPlug",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phDecryptor",
+            "type": "DRMHANDLE"
+        }
+    ],
+    "DRMCreateEnablingBitsEncryptor": [
+        {
+            "name": "hBoundLicense",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "wszRight",
+            "type": "PWSTR"
+        },
+        {
+            "name": "hAuxLib",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "wszAuxPlug",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phEncryptor",
+            "type": "DRMHANDLE"
+        }
+    ],
+    "DRMAttest": [
+        {
+            "name": "hEnablingPrincipal",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "wszData",
+            "type": "PWSTR"
+        },
+        {
+            "name": "eType",
+            "type": "DRMATTESTTYPE"
+        },
+        {
+            "name": "pcAttestedBlob",
+            "type": "UINT"
+        },
+        {
+            "name": "wszAttestedBlob",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMGetTime": [
+        {
+            "name": "hEnv",
+            "type": "DRMENVHANDLE"
+        },
+        {
+            "name": "eTimerIdType",
+            "type": "DRMTIMETYPE"
+        },
+        {
+            "name": "poTimeObject",
+            "type": "SYSTEMTIME"
+        }
+    ],
+    "DRMGetInfo": [
+        {
+            "name": "handle",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "wszAttribute",
+            "type": "PWSTR"
+        },
+        {
+            "name": "peEncoding",
+            "type": "DRMENCODINGTYPE"
+        },
+        {
+            "name": "pcBuffer",
+            "type": "UINT"
+        },
+        {
+            "name": "pbBuffer",
+            "type": "BYTE"
+        }
+    ],
+    "DRMGetEnvironmentInfo": [
+        {
+            "name": "handle",
+            "type": "DRMENVHANDLE"
+        },
+        {
+            "name": "wszAttribute",
+            "type": "PWSTR"
+        },
+        {
+            "name": "peEncoding",
+            "type": "DRMENCODINGTYPE"
+        },
+        {
+            "name": "pcBuffer",
+            "type": "UINT"
+        },
+        {
+            "name": "pbBuffer",
+            "type": "BYTE"
+        }
+    ],
+    "DRMGetProcAddress": [
+        {
+            "name": "hLibrary",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "wszProcName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ppfnProcAddress",
+            "type": "FARPROC"
+        }
+    ],
+    "DRMGetBoundLicenseObjectCount": [
+        {
+            "name": "hQueryRoot",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "wszSubObjectType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcSubObjects",
+            "type": "UINT"
+        }
+    ],
+    "DRMGetBoundLicenseObject": [
+        {
+            "name": "hQueryRoot",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "wszSubObjectType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "iWhich",
+            "type": "UINT"
+        },
+        {
+            "name": "phSubObject",
+            "type": "DRMHANDLE"
+        }
+    ],
+    "DRMGetBoundLicenseAttributeCount": [
+        {
+            "name": "hQueryRoot",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "wszAttribute",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcAttributes",
+            "type": "UINT"
+        }
+    ],
+    "DRMGetBoundLicenseAttribute": [
+        {
+            "name": "hQueryRoot",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "wszAttribute",
+            "type": "PWSTR"
+        },
+        {
+            "name": "iWhich",
+            "type": "UINT"
+        },
+        {
+            "name": "peEncoding",
+            "type": "DRMENCODINGTYPE"
+        },
+        {
+            "name": "pcBuffer",
+            "type": "UINT"
+        },
+        {
+            "name": "pbBuffer",
+            "type": "BYTE"
+        }
+    ],
+    "DRMCreateClientSession": [
+        {
+            "name": "pfnCallback",
+            "type": "DRMCALLBACK"
+        },
+        {
+            "name": "uCallbackVersion",
+            "type": "UINT"
+        },
+        {
+            "name": "wszGroupIDProviderType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszGroupID",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phClient",
+            "type": "DRMHSESSION"
+        }
+    ],
+    "DRMIsActivated": [
+        {
+            "name": "hClient",
+            "type": "DRMHSESSION"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "pActServInfo",
+            "type": "DRM_ACTSERV_INFO"
+        }
+    ],
+    "DRMActivate": [
+        {
+            "name": "hClient",
+            "type": "DRMHSESSION"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "uLangID",
+            "type": "UINT"
+        },
+        {
+            "name": "pActServInfo",
+            "type": "DRM_ACTSERV_INFO"
+        },
+        {
+            "name": "pvContext",
+            "type": "void"
+        },
+        {
+            "name": "hParentWnd",
+            "type": "HWND"
+        }
+    ],
+    "DRMGetServiceLocation": [
+        {
+            "name": "hClient",
+            "type": "DRMHSESSION"
+        },
+        {
+            "name": "uServiceType",
+            "type": "UINT"
+        },
+        {
+            "name": "uServiceLocation",
+            "type": "UINT"
+        },
+        {
+            "name": "wszIssuanceLicense",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puServiceURLLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszServiceURL",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMCreateLicenseStorageSession": [
+        {
+            "name": "hEnv",
+            "type": "DRMENVHANDLE"
+        },
+        {
+            "name": "hDefaultLibrary",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "hClient",
+            "type": "DRMHSESSION"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "wszIssuanceLicense",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phLicenseStorage",
+            "type": "DRMHSESSION"
+        }
+    ],
+    "DRMAddLicense": [
+        {
+            "name": "hLicenseStorage",
+            "type": "DRMHSESSION"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "wszLicense",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMAcquireAdvisories": [
+        {
+            "name": "hLicenseStorage",
+            "type": "DRMHSESSION"
+        },
+        {
+            "name": "wszLicense",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszURL",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pvContext",
+            "type": "void"
+        }
+    ],
+    "DRMEnumerateLicense": [
+        {
+            "name": "hSession",
+            "type": "DRMHSESSION"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "uIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "pfSharedFlag",
+            "type": "BOOL"
+        },
+        {
+            "name": "puCertificateDataLen",
+            "type": "UINT"
+        },
+        {
+            "name": "wszCertificateData",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMAcquireLicense": [
+        {
+            "name": "hSession",
+            "type": "DRMHSESSION"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "wszGroupIdentityCredential",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszRequestedRights",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszCustomData",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszURL",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pvContext",
+            "type": "void"
+        }
+    ],
+    "DRMDeleteLicense": [
+        {
+            "name": "hSession",
+            "type": "DRMHSESSION"
+        },
+        {
+            "name": "wszLicenseId",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMCloseSession": [
+        {
+            "name": "hSession",
+            "type": "DRMHSESSION"
+        }
+    ],
+    "DRMDuplicateSession": [
+        {
+            "name": "hSessionIn",
+            "type": "DRMHSESSION"
+        },
+        {
+            "name": "phSessionOut",
+            "type": "DRMHSESSION"
+        }
+    ],
+    "DRMGetSecurityProvider": [
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "puTypeLen",
+            "type": "UINT"
+        },
+        {
+            "name": "wszType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puPathLen",
+            "type": "UINT"
+        },
+        {
+            "name": "wszPath",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMEncode": [
+        {
+            "name": "wszAlgID",
+            "type": "PWSTR"
+        },
+        {
+            "name": "uDataLen",
+            "type": "UINT"
+        },
+        {
+            "name": "pbDecodedData",
+            "type": "BYTE"
+        },
+        {
+            "name": "puEncodedStringLen",
+            "type": "UINT"
+        },
+        {
+            "name": "wszEncodedString",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMDecode": [
+        {
+            "name": "wszAlgID",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszEncodedString",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puDecodedDataLen",
+            "type": "UINT"
+        },
+        {
+            "name": "pbDecodedData",
+            "type": "BYTE"
+        }
+    ],
+    "DRMConstructCertificateChain": [
+        {
+            "name": "cCertificates",
+            "type": "UINT"
+        },
+        {
+            "name": "rgwszCertificates",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcChain",
+            "type": "UINT"
+        },
+        {
+            "name": "wszChain",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMParseUnboundLicense": [
+        {
+            "name": "wszCertificate",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phQueryRoot",
+            "type": "DRMQUERYHANDLE"
+        }
+    ],
+    "DRMCloseQueryHandle": [
+        {
+            "name": "hQuery",
+            "type": "DRMQUERYHANDLE"
+        }
+    ],
+    "DRMGetUnboundLicenseObjectCount": [
+        {
+            "name": "hQueryRoot",
+            "type": "DRMQUERYHANDLE"
+        },
+        {
+            "name": "wszSubObjectType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcSubObjects",
+            "type": "UINT"
+        }
+    ],
+    "DRMGetUnboundLicenseObject": [
+        {
+            "name": "hQueryRoot",
+            "type": "DRMQUERYHANDLE"
+        },
+        {
+            "name": "wszSubObjectType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "iIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "phSubQuery",
+            "type": "DRMQUERYHANDLE"
+        }
+    ],
+    "DRMGetUnboundLicenseAttributeCount": [
+        {
+            "name": "hQueryRoot",
+            "type": "DRMQUERYHANDLE"
+        },
+        {
+            "name": "wszAttributeType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcAttributes",
+            "type": "UINT"
+        }
+    ],
+    "DRMGetUnboundLicenseAttribute": [
+        {
+            "name": "hQueryRoot",
+            "type": "DRMQUERYHANDLE"
+        },
+        {
+            "name": "wszAttributeType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "iWhich",
+            "type": "UINT"
+        },
+        {
+            "name": "peEncoding",
+            "type": "DRMENCODINGTYPE"
+        },
+        {
+            "name": "pcBuffer",
+            "type": "UINT"
+        },
+        {
+            "name": "pbBuffer",
+            "type": "BYTE"
+        }
+    ],
+    "DRMGetCertificateChainCount": [
+        {
+            "name": "wszChain",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcCertCount",
+            "type": "UINT"
+        }
+    ],
+    "DRMDeconstructCertificateChain": [
+        {
+            "name": "wszChain",
+            "type": "PWSTR"
+        },
+        {
+            "name": "iWhich",
+            "type": "UINT"
+        },
+        {
+            "name": "pcCert",
+            "type": "UINT"
+        },
+        {
+            "name": "wszCert",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMVerify": [
+        {
+            "name": "wszData",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcAttestedData",
+            "type": "UINT"
+        },
+        {
+            "name": "wszAttestedData",
+            "type": "PWSTR"
+        },
+        {
+            "name": "peType",
+            "type": "DRMATTESTTYPE"
+        },
+        {
+            "name": "pcPrincipal",
+            "type": "UINT"
+        },
+        {
+            "name": "wszPrincipal",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcManifest",
+            "type": "UINT"
+        },
+        {
+            "name": "wszManifest",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMCreateUser": [
+        {
+            "name": "wszUserName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszUserId",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszUserIdType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phUser",
+            "type": "DRMPUBHANDLE"
+        }
+    ],
+    "DRMCreateRight": [
+        {
+            "name": "wszRightName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pstFrom",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "pstUntil",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "cExtendedInfo",
+            "type": "UINT"
+        },
+        {
+            "name": "pwszExtendedInfoName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pwszExtendedInfoValue",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phRight",
+            "type": "DRMPUBHANDLE"
+        }
+    ],
+    "DRMCreateIssuanceLicense": [
+        {
+            "name": "pstTimeFrom",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "pstTimeUntil",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "wszReferralInfoName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszReferralInfoURL",
+            "type": "PWSTR"
+        },
+        {
+            "name": "hOwner",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "wszIssuanceLicense",
+            "type": "PWSTR"
+        },
+        {
+            "name": "hBoundLicense",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "phIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        }
+    ],
+    "DRMAddRightWithUser": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "hRight",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "hUser",
+            "type": "DRMPUBHANDLE"
+        }
+    ],
+    "DRMClearAllRights": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        }
+    ],
+    "DRMSetMetaData": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "wszContentId",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszContentIdType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszSKUId",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszSKUIdType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszContentType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszContentName",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMSetUsagePolicy": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "eUsagePolicyType",
+            "type": "DRM_USAGEPOLICY_TYPE"
+        },
+        {
+            "name": "fDelete",
+            "type": "BOOL"
+        },
+        {
+            "name": "fExclusion",
+            "type": "BOOL"
+        },
+        {
+            "name": "wszName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszMinVersion",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszMaxVersion",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszPublicKey",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszDigestAlgorithm",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pbDigest",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbDigest",
+            "type": "UINT"
+        }
+    ],
+    "DRMSetRevocationPoint": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "fDelete",
+            "type": "BOOL"
+        },
+        {
+            "name": "wszId",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszIdType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszURL",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pstFrequency",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "wszName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszPublicKey",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMSetApplicationSpecificData": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "fDelete",
+            "type": "BOOL"
+        },
+        {
+            "name": "wszName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszValue",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMSetNameAndDescription": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "fDelete",
+            "type": "BOOL"
+        },
+        {
+            "name": "lcid",
+            "type": "UINT"
+        },
+        {
+            "name": "wszName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszDescription",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMSetIntervalTime": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "cDays",
+            "type": "UINT"
+        }
+    ],
+    "DRMGetIssuanceLicenseTemplate": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "puIssuanceLicenseTemplateLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszIssuanceLicenseTemplate",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMGetSignedIssuanceLicense": [
+        {
+            "name": "hEnv",
+            "type": "DRMENVHANDLE"
+        },
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "pbSymKey",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbSymKey",
+            "type": "UINT"
+        },
+        {
+            "name": "wszSymKeyType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszClientLicensorCertificate",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pfnCallback",
+            "type": "DRMCALLBACK"
+        },
+        {
+            "name": "wszURL",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pvContext",
+            "type": "void"
+        }
+    ],
+    "DRMGetSignedIssuanceLicenseEx": [
+        {
+            "name": "hEnv",
+            "type": "DRMENVHANDLE"
+        },
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "pbSymKey",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbSymKey",
+            "type": "UINT"
+        },
+        {
+            "name": "wszSymKeyType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pvReserved",
+            "type": "PVOID"
+        },
+        {
+            "name": "hEnablingPrincipal",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "hBoundLicenseCLC",
+            "type": "DRMHANDLE"
+        },
+        {
+            "name": "pfnCallback",
+            "type": "DRMCALLBACK"
+        },
+        {
+            "name": "pvContext",
+            "type": "PVOID"
+        }
+    ],
+    "DRMClosePubHandle": [
+        {
+            "name": "hPub",
+            "type": "DRMPUBHANDLE"
+        }
+    ],
+    "DRMDuplicatePubHandle": [
+        {
+            "name": "hPubIn",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "phPubOut",
+            "type": "DRMPUBHANDLE"
+        }
+    ],
+    "DRMGetUserInfo": [
+        {
+            "name": "hUser",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "puUserNameLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszUserName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puUserIdLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszUserId",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puUserIdTypeLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszUserIdType",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMGetRightInfo": [
+        {
+            "name": "hRight",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "puRightNameLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszRightName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pstFrom",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "pstUntil",
+            "type": "SYSTEMTIME"
+        }
+    ],
+    "DRMGetRightExtendedInfo": [
+        {
+            "name": "hRight",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "uIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "puExtendedInfoNameLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszExtendedInfoName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puExtendedInfoValueLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszExtendedInfoValue",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMGetUsers": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "uIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "phUser",
+            "type": "DRMPUBHANDLE"
+        }
+    ],
+    "DRMGetUserRights": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "hUser",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "uIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "phRight",
+            "type": "DRMPUBHANDLE"
+        }
+    ],
+    "DRMGetMetaData": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "puContentIdLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszContentId",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puContentIdTypeLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszContentIdType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puSKUIdLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszSKUId",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puSKUIdTypeLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszSKUIdType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puContentTypeLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszContentType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puContentNameLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszContentName",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMGetApplicationSpecificData": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "uIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "puNameLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puValueLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszValue",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMGetIssuanceLicenseInfo": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "pstTimeFrom",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "pstTimeUntil",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "puDistributionPointNameLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszDistributionPointName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puDistributionPointURLLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszDistributionPointURL",
+            "type": "PWSTR"
+        },
+        {
+            "name": "phOwner",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "pfOfficial",
+            "type": "BOOL"
+        }
+    ],
+    "DRMGetRevocationPoint": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "puIdLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszId",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puIdTypeLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszIdType",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puURLLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszRL",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pstFrequency",
+            "type": "SYSTEMTIME"
+        },
+        {
+            "name": "puNameLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puPublicKeyLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszPublicKey",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMGetUsagePolicy": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "uIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "peUsagePolicyType",
+            "type": "DRM_USAGEPOLICY_TYPE"
+        },
+        {
+            "name": "pfExclusion",
+            "type": "BOOL"
+        },
+        {
+            "name": "puNameLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puMinVersionLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszMinVersion",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puMaxVersionLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszMaxVersion",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puPublicKeyLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszPublicKey",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puDigestAlgorithmLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszDigestAlgorithm",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcbDigest",
+            "type": "UINT"
+        },
+        {
+            "name": "pbDigest",
+            "type": "BYTE"
+        }
+    ],
+    "DRMGetNameAndDescription": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "uIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "pulcid",
+            "type": "UINT"
+        },
+        {
+            "name": "puNameLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "puDescriptionLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszDescription",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMGetOwnerLicense": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "puOwnerLicenseLength",
+            "type": "UINT"
+        },
+        {
+            "name": "wszOwnerLicense",
+            "type": "PWSTR"
+        }
+    ],
+    "DRMGetIntervalTime": [
+        {
+            "name": "hIssuanceLicense",
+            "type": "DRMPUBHANDLE"
+        },
+        {
+            "name": "pcDays",
+            "type": "UINT"
+        }
+    ],
+    "DRMRegisterProtectedWindow": [
+        {
+            "name": "hEnv",
+            "type": "DRMENVHANDLE"
+        },
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "DRMIsWindowProtected": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pfProtected",
+            "type": "BOOL"
+        }
+    ],
+    "DRMAcquireIssuanceLicenseTemplate": [
+        {
+            "name": "hClient",
+            "type": "DRMHSESSION"
+        },
+        {
+            "name": "uFlags",
+            "type": "UINT"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        },
+        {
+            "name": "cTemplates",
+            "type": "UINT"
+        },
+        {
+            "name": "pwszTemplateIds",
+            "type": "PWSTR"
+        },
+        {
+            "name": "wszUrl",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pvContext",
+            "type": "void"
+        }
+    ]
+}

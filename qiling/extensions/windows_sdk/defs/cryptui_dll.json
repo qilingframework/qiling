@@ -1,0 +1,170 @@
+{
+    "CryptUIDlgViewContext": [
+        {
+            "name": "dwContextType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvContext",
+            "type": "void"
+        },
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pwszTitle",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        }
+    ],
+    "CryptUIDlgSelectCertificateFromStore": [
+        {
+            "name": "hCertStore",
+            "type": "HCERTSTORE"
+        },
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pwszTitle",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszDisplayString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwDontUseColumn",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvReserved",
+            "type": "void"
+        }
+    ],
+    "CertSelectionGetSerializedBlob": [
+        {
+            "name": "pcsi",
+            "type": "PCERT_SELECTUI_INPUT"
+        },
+        {
+            "name": "ppOutBuffer",
+            "type": "void"
+        },
+        {
+            "name": "pulOutBufferSize",
+            "type": "ULONG"
+        }
+    ],
+    "CryptUIDlgCertMgr": [
+        {
+            "name": "pCryptUICertMgr",
+            "type": "PCCRYPTUI_CERT_MGR_STRUCT"
+        }
+    ],
+    "CryptUIWizDigitalSign": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "pwszWizardTitle",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pDigitalSignInfo",
+            "type": "PCCRYPTUI_WIZ_DIGITAL_SIGN_INFO"
+        },
+        {
+            "name": "ppSignContext",
+            "type": "PCCRYPTUI_WIZ_DIGITAL_SIGN_CONTEXT"
+        }
+    ],
+    "CryptUIWizFreeDigitalSignContext": [
+        {
+            "name": "pSignContext",
+            "type": "PCCRYPTUI_WIZ_DIGITAL_SIGN_CONTEXT"
+        }
+    ],
+    "CryptUIDlgViewCertificateW": [
+        {
+            "name": "pCertViewInfo",
+            "type": "PCCRYPTUI_VIEWCERTIFICATE_STRUCTW"
+        },
+        {
+            "name": "pfPropertiesChanged",
+            "type": "BOOL"
+        }
+    ],
+    "CryptUIDlgViewCertificateA": [
+        {
+            "name": "pCertViewInfo",
+            "type": "PCCRYPTUI_VIEWCERTIFICATE_STRUCTA"
+        },
+        {
+            "name": "pfPropertiesChanged",
+            "type": "BOOL"
+        }
+    ],
+    "CryptUIWizExport": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "pwszWizardTitle",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pExportInfo",
+            "type": "PCCRYPTUI_WIZ_EXPORT_INFO"
+        },
+        {
+            "name": "pvoid",
+            "type": "void"
+        }
+    ],
+    "CryptUIWizImport": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "pwszWizardTitle",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pImportSrc",
+            "type": "PCCRYPTUI_WIZ_IMPORT_SRC_INFO"
+        },
+        {
+            "name": "hDestCertStore",
+            "type": "HCERTSTORE"
+        }
+    ]
+}

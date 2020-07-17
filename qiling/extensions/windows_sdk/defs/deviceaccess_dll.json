@@ -1,0 +1,16 @@
+{
+    "CreateDeviceAccessInstance": [
+        {
+            "name": "deviceInterfacePath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "desiredAccess",
+            "type": "DWORD"
+        },
+        {
+            "name": "createAsync",
+            "type": "ICreateDeviceAccessAsync"
+        }
+    ]
+}

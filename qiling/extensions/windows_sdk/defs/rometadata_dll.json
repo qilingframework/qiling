@@ -1,0 +1,16 @@
+{
+    "MetaDataGetDispenser": [
+        {
+            "name": "rclsid",
+            "type": "IID"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "LPVOID"
+        }
+    ]
+}

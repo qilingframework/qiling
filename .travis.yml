@@ -77,7 +77,10 @@ matrix:
           if [[ ! -f /c/Python36/python ]]; then 
                choco install python --version=3.6.8
           fi
-        #- choco install python
+        # Prevent worker settings failure 
+        - powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableArchiveScanning \$true'"
+        - powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableBehaviorMonitoring \$true'"
+        - powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableRealtimeMonitoring \$true'"
         #- choco install kb2999226
         #- python -m pip install --upgrade pip
       install:

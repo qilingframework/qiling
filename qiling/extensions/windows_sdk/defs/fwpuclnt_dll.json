@@ -1,0 +1,3034 @@
+{
+    "FwpmFreeMemory0": [
+        {
+            "name": "p",
+            "type": "void"
+        }
+    ],
+    "FwpmEngineOpen0": [
+        {
+            "name": "serverName",
+            "type": "wchar_t"
+        },
+        {
+            "name": "authnService",
+            "type": "UINT32"
+        },
+        {
+            "name": "authIdentity",
+            "type": "SEC_WINNT_AUTH_IDENTITY_W"
+        },
+        {
+            "name": "session",
+            "type": "FWPM_SESSION0"
+        },
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmEngineClose0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmEngineGetOption0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "option",
+            "type": "FWPM_ENGINE_OPTION"
+        },
+        {
+            "name": "value",
+            "type": "FWP_VALUE0"
+        }
+    ],
+    "FwpmEngineSetOption0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "option",
+            "type": "FWPM_ENGINE_OPTION"
+        },
+        {
+            "name": "newValue",
+            "type": "FWP_VALUE0"
+        }
+    ],
+    "FwpmEngineGetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "FwpmEngineSetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ],
+    "FwpmSessionCreateEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumTemplate",
+            "type": "FWPM_SESSION_ENUM_TEMPLATE0"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmSessionEnum0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_SESSION0"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmSessionDestroyEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmTransactionBegin0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "flags",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmTransactionCommit0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmTransactionAbort0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmProviderAdd0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "provider",
+            "type": "FWPM_PROVIDER0"
+        },
+        {
+            "name": "sd",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "FwpmProviderDeleteByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        }
+    ],
+    "FwpmProviderGetByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "provider",
+            "type": "FWPM_PROVIDER0"
+        }
+    ],
+    "FwpmProviderCreateEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumTemplate",
+            "type": "FWPM_PROVIDER_ENUM_TEMPLATE0"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmProviderEnum0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_PROVIDER0"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmProviderDestroyEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmProviderGetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "FwpmProviderSetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ],
+    "FwpmProviderSubscribeChanges0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "subscription",
+            "type": "FWPM_PROVIDER_SUBSCRIPTION0"
+        },
+        {
+            "name": "callback",
+            "type": "FWPM_PROVIDER_CHANGE_CALLBACK0"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "changeHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmProviderUnsubscribeChanges0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "changeHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmProviderSubscriptionsGet0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_PROVIDER_SUBSCRIPTION0"
+        },
+        {
+            "name": "numEntries",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmProviderContextAdd0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "providerContext",
+            "type": "FWPM_PROVIDER_CONTEXT0"
+        },
+        {
+            "name": "sd",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        }
+    ],
+    "FwpmProviderContextAdd1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "providerContext",
+            "type": "FWPM_PROVIDER_CONTEXT1"
+        },
+        {
+            "name": "sd",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        }
+    ],
+    "FwpmProviderContextAdd2": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "providerContext",
+            "type": "FWPM_PROVIDER_CONTEXT2"
+        },
+        {
+            "name": "sd",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        }
+    ],
+    "FwpmProviderContextDeleteById0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        }
+    ],
+    "FwpmProviderContextDeleteByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        }
+    ],
+    "FwpmProviderContextGetById0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "providerContext",
+            "type": "FWPM_PROVIDER_CONTEXT0"
+        }
+    ],
+    "FwpmProviderContextGetById1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "providerContext",
+            "type": "FWPM_PROVIDER_CONTEXT1"
+        }
+    ],
+    "FwpmProviderContextGetById2": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "providerContext",
+            "type": "FWPM_PROVIDER_CONTEXT2"
+        }
+    ],
+    "FwpmProviderContextGetByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "providerContext",
+            "type": "FWPM_PROVIDER_CONTEXT0"
+        }
+    ],
+    "FwpmProviderContextGetByKey1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "providerContext",
+            "type": "FWPM_PROVIDER_CONTEXT1"
+        }
+    ],
+    "FwpmProviderContextGetByKey2": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "providerContext",
+            "type": "FWPM_PROVIDER_CONTEXT2"
+        }
+    ],
+    "FwpmProviderContextCreateEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumTemplate",
+            "type": "FWPM_PROVIDER_CONTEXT_ENUM_TEMPLATE0"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmProviderContextEnum0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_PROVIDER_CONTEXT0"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmProviderContextEnum1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_PROVIDER_CONTEXT1"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmProviderContextEnum2": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_PROVIDER_CONTEXT2"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmProviderContextDestroyEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmProviderContextGetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "FwpmProviderContextSetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ],
+    "FwpmProviderContextSubscribeChanges0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "subscription",
+            "type": "FWPM_PROVIDER_CONTEXT_SUBSCRIPTION0"
+        },
+        {
+            "name": "callback",
+            "type": "FWPM_PROVIDER_CONTEXT_CHANGE_CALLBACK0"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "changeHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmProviderContextUnsubscribeChanges0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "changeHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmProviderContextSubscriptionsGet0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_PROVIDER_CONTEXT_SUBSCRIPTION0"
+        },
+        {
+            "name": "numEntries",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmSubLayerAdd0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "subLayer",
+            "type": "FWPM_SUBLAYER0"
+        },
+        {
+            "name": "sd",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "FwpmSubLayerDeleteByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        }
+    ],
+    "FwpmSubLayerGetByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "subLayer",
+            "type": "FWPM_SUBLAYER0"
+        }
+    ],
+    "FwpmSubLayerCreateEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumTemplate",
+            "type": "FWPM_SUBLAYER_ENUM_TEMPLATE0"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmSubLayerEnum0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_SUBLAYER0"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmSubLayerDestroyEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmSubLayerGetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "FwpmSubLayerSetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ],
+    "FwpmSubLayerSubscribeChanges0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "subscription",
+            "type": "FWPM_SUBLAYER_SUBSCRIPTION0"
+        },
+        {
+            "name": "callback",
+            "type": "FWPM_SUBLAYER_CHANGE_CALLBACK0"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "changeHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmSubLayerUnsubscribeChanges0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "changeHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmSubLayerSubscriptionsGet0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_SUBLAYER_SUBSCRIPTION0"
+        },
+        {
+            "name": "numEntries",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmLayerGetById0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT16"
+        },
+        {
+            "name": "layer",
+            "type": "FWPM_LAYER0"
+        }
+    ],
+    "FwpmLayerGetByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "layer",
+            "type": "FWPM_LAYER0"
+        }
+    ],
+    "FwpmLayerCreateEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumTemplate",
+            "type": "FWPM_LAYER_ENUM_TEMPLATE0"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmLayerEnum0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_LAYER0"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmLayerDestroyEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmLayerGetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "FwpmLayerSetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ],
+    "FwpmCalloutAdd0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "callout",
+            "type": "FWPM_CALLOUT0"
+        },
+        {
+            "name": "sd",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "id",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmCalloutDeleteById0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmCalloutDeleteByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        }
+    ],
+    "FwpmCalloutGetById0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT32"
+        },
+        {
+            "name": "callout",
+            "type": "FWPM_CALLOUT0"
+        }
+    ],
+    "FwpmCalloutGetByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "callout",
+            "type": "FWPM_CALLOUT0"
+        }
+    ],
+    "FwpmCalloutCreateEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumTemplate",
+            "type": "FWPM_CALLOUT_ENUM_TEMPLATE0"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmCalloutEnum0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_CALLOUT0"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmCalloutDestroyEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmCalloutGetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "FwpmCalloutSetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ],
+    "FwpmCalloutSubscribeChanges0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "subscription",
+            "type": "FWPM_CALLOUT_SUBSCRIPTION0"
+        },
+        {
+            "name": "callback",
+            "type": "FWPM_CALLOUT_CHANGE_CALLBACK0"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "changeHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmCalloutUnsubscribeChanges0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "changeHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmCalloutSubscriptionsGet0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_CALLOUT_SUBSCRIPTION0"
+        },
+        {
+            "name": "numEntries",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmFilterAdd0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "filter",
+            "type": "FWPM_FILTER0"
+        },
+        {
+            "name": "sd",
+            "type": "PSECURITY_DESCRIPTOR"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        }
+    ],
+    "FwpmFilterDeleteById0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        }
+    ],
+    "FwpmFilterDeleteByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        }
+    ],
+    "FwpmFilterGetById0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "filter",
+            "type": "FWPM_FILTER0"
+        }
+    ],
+    "FwpmFilterGetByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "filter",
+            "type": "FWPM_FILTER0"
+        }
+    ],
+    "FwpmFilterCreateEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumTemplate",
+            "type": "FWPM_FILTER_ENUM_TEMPLATE0"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmFilterEnum0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_FILTER0"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmFilterDestroyEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmFilterGetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "FwpmFilterSetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ],
+    "FwpmFilterSubscribeChanges0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "subscription",
+            "type": "FWPM_FILTER_SUBSCRIPTION0"
+        },
+        {
+            "name": "callback",
+            "type": "FWPM_FILTER_CHANGE_CALLBACK0"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "changeHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmFilterUnsubscribeChanges0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "changeHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmFilterSubscriptionsGet0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_FILTER_SUBSCRIPTION0"
+        },
+        {
+            "name": "numEntries",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmGetAppIdFromFileName0": [
+        {
+            "name": "fileName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "appId",
+            "type": "FWP_BYTE_BLOB"
+        }
+    ],
+    "FwpmIPsecTunnelAdd2": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "flags",
+            "type": "UINT32"
+        },
+        {
+            "name": "mainModePolicy",
+            "type": "FWPM_PROVIDER_CONTEXT2"
+        },
+        {
+            "name": "tunnelPolicy",
+            "type": "FWPM_PROVIDER_CONTEXT2"
+        },
+        {
+            "name": "numFilterConditions",
+            "type": "UINT32"
+        },
+        {
+            "name": "filterConditions",
+            "type": "FWPM_FILTER_CONDITION0"
+        },
+        {
+            "name": "keyModKey",
+            "type": "GUID"
+        },
+        {
+            "name": "sd",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "FwpmIPsecTunnelDeleteByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "key",
+            "type": "GUID"
+        }
+    ],
+    "IPsecGetStatistics0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ipsecStatistics",
+            "type": "IPSEC_STATISTICS0"
+        }
+    ],
+    "IPsecGetStatistics1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ipsecStatistics",
+            "type": "IPSEC_STATISTICS1"
+        }
+    ],
+    "IPsecSaContextCreate0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "outboundTraffic",
+            "type": "IPSEC_TRAFFIC0"
+        },
+        {
+            "name": "inboundFilterId",
+            "type": "UINT64"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        }
+    ],
+    "IPsecSaContextCreate1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "outboundTraffic",
+            "type": "IPSEC_TRAFFIC1"
+        },
+        {
+            "name": "virtualIfTunnelInfo",
+            "type": "IPSEC_VIRTUAL_IF_TUNNEL_INFO0"
+        },
+        {
+            "name": "inboundFilterId",
+            "type": "UINT64"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        }
+    ],
+    "IPsecSaContextDeleteById0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        }
+    ],
+    "IPsecSaContextGetById0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "saContext",
+            "type": "IPSEC_SA_CONTEXT0"
+        }
+    ],
+    "IPsecSaContextGetById1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "saContext",
+            "type": "IPSEC_SA_CONTEXT1"
+        }
+    ],
+    "IPsecSaContextGetSpi0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "getSpi",
+            "type": "IPSEC_GETSPI0"
+        },
+        {
+            "name": "inboundSpi",
+            "type": "IPSEC_SA_SPI"
+        }
+    ],
+    "IPsecSaContextGetSpi1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "getSpi",
+            "type": "IPSEC_GETSPI1"
+        },
+        {
+            "name": "inboundSpi",
+            "type": "IPSEC_SA_SPI"
+        }
+    ],
+    "IPsecSaContextSetSpi0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "getSpi",
+            "type": "IPSEC_GETSPI1"
+        },
+        {
+            "name": "inboundSpi",
+            "type": "IPSEC_SA_SPI"
+        }
+    ],
+    "IPsecSaContextAddInbound0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "inboundBundle",
+            "type": "IPSEC_SA_BUNDLE0"
+        }
+    ],
+    "IPsecSaContextAddOutbound0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "outboundBundle",
+            "type": "IPSEC_SA_BUNDLE0"
+        }
+    ],
+    "IPsecSaContextAddInbound1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "inboundBundle",
+            "type": "IPSEC_SA_BUNDLE1"
+        }
+    ],
+    "IPsecSaContextAddOutbound1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "outboundBundle",
+            "type": "IPSEC_SA_BUNDLE1"
+        }
+    ],
+    "IPsecSaContextExpire0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        }
+    ],
+    "IPsecSaContextUpdate0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "flags",
+            "type": "UINT64"
+        },
+        {
+            "name": "newValues",
+            "type": "IPSEC_SA_CONTEXT1"
+        }
+    ],
+    "IPsecSaContextCreateEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumTemplate",
+            "type": "IPSEC_SA_CONTEXT_ENUM_TEMPLATE0"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "IPsecSaContextEnum0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "IPSEC_SA_CONTEXT0"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "IPsecSaContextEnum1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "IPSEC_SA_CONTEXT1"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "IPsecSaContextDestroyEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "IPsecSaContextSubscribe0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "subscription",
+            "type": "IPSEC_SA_CONTEXT_SUBSCRIPTION0"
+        },
+        {
+            "name": "callback",
+            "type": "IPSEC_SA_CONTEXT_CALLBACK0"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "eventsHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "IPsecSaContextUnsubscribe0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "eventsHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "IPsecSaContextSubscriptionsGet0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "entries",
+            "type": "IPSEC_SA_CONTEXT_SUBSCRIPTION0"
+        },
+        {
+            "name": "numEntries",
+            "type": "UINT32"
+        }
+    ],
+    "IPsecSaCreateEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumTemplate",
+            "type": "IPSEC_SA_ENUM_TEMPLATE0"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "IPsecSaEnum0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "IPSEC_SA_DETAILS0"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "IPsecSaEnum1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "IPSEC_SA_DETAILS1"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "IPsecSaDestroyEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "IPsecSaDbGetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "IPsecSaDbSetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ],
+    "IPsecDospGetStatistics0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "idpStatistics",
+            "type": "IPSEC_DOSP_STATISTICS0"
+        }
+    ],
+    "IPsecDospStateCreateEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumTemplate",
+            "type": "IPSEC_DOSP_STATE_ENUM_TEMPLATE0"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "IPsecDospStateEnum0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "IPSEC_DOSP_STATE0"
+        },
+        {
+            "name": "numEntries",
+            "type": "UINT32"
+        }
+    ],
+    "IPsecDospStateDestroyEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "IPsecDospGetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "IPsecDospSetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ],
+    "IPsecKeyManagerAddAndRegister0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "keyManager",
+            "type": "IPSEC_KEY_MANAGER0"
+        },
+        {
+            "name": "keyManagerCallbacks",
+            "type": "IPSEC_KEY_MANAGER_CALLBACKS0"
+        },
+        {
+            "name": "keyMgmtHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "IPsecKeyManagerUnregisterAndDelete0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "keyMgmtHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "IPsecKeyManagersGet0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "entries",
+            "type": "IPSEC_KEY_MANAGER0"
+        },
+        {
+            "name": "numEntries",
+            "type": "UINT32"
+        }
+    ],
+    "IPsecKeyManagerGetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "reserved",
+            "type": "void"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "IPsecKeyManagerSetSecurityInfoByKey0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "reserved",
+            "type": "void"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ],
+    "IkeextGetStatistics0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ikeextStatistics",
+            "type": "IKEEXT_STATISTICS0"
+        }
+    ],
+    "IkeextGetStatistics1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ikeextStatistics",
+            "type": "IKEEXT_STATISTICS1"
+        }
+    ],
+    "IkeextSaDeleteById0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        }
+    ],
+    "IkeextSaGetById0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "sa",
+            "type": "IKEEXT_SA_DETAILS0"
+        }
+    ],
+    "IkeextSaGetById1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "saLookupContext",
+            "type": "GUID"
+        },
+        {
+            "name": "sa",
+            "type": "IKEEXT_SA_DETAILS1"
+        }
+    ],
+    "IkeextSaGetById2": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "saLookupContext",
+            "type": "GUID"
+        },
+        {
+            "name": "sa",
+            "type": "IKEEXT_SA_DETAILS2"
+        }
+    ],
+    "IkeextSaCreateEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumTemplate",
+            "type": "IKEEXT_SA_ENUM_TEMPLATE0"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "IkeextSaEnum0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "IKEEXT_SA_DETAILS0"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "IkeextSaEnum1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "IKEEXT_SA_DETAILS1"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "IkeextSaEnum2": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "IKEEXT_SA_DETAILS2"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "IkeextSaDestroyEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "IkeextSaDbGetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "IkeextSaDbSetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ],
+    "FwpmNetEventCreateEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumTemplate",
+            "type": "FWPM_NET_EVENT_ENUM_TEMPLATE0"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmNetEventEnum0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_NET_EVENT0"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmNetEventEnum1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_NET_EVENT1"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmNetEventEnum2": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_NET_EVENT2"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmNetEventEnum3": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_NET_EVENT3"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmNetEventDestroyEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmNetEventsGetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "FwpmNetEventsSetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ],
+    "FwpmNetEventSubscribe0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "subscription",
+            "type": "FWPM_NET_EVENT_SUBSCRIPTION0"
+        },
+        {
+            "name": "callback",
+            "type": "FWPM_NET_EVENT_CALLBACK0"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "eventsHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmNetEventUnsubscribe0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "eventsHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmNetEventSubscriptionsGet0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_NET_EVENT_SUBSCRIPTION0"
+        },
+        {
+            "name": "numEntries",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmNetEventSubscribe1": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "subscription",
+            "type": "FWPM_NET_EVENT_SUBSCRIPTION0"
+        },
+        {
+            "name": "callback",
+            "type": "FWPM_NET_EVENT_CALLBACK1"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "eventsHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmNetEventSubscribe2": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "subscription",
+            "type": "FWPM_NET_EVENT_SUBSCRIPTION0"
+        },
+        {
+            "name": "callback",
+            "type": "FWPM_NET_EVENT_CALLBACK2"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "eventsHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmSystemPortsGet0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "sysPorts",
+            "type": "FWPM_SYSTEM_PORTS0"
+        }
+    ],
+    "FwpmSystemPortsSubscribe0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "reserved",
+            "type": "void"
+        },
+        {
+            "name": "callback",
+            "type": "FWPM_SYSTEM_PORTS_CALLBACK0"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "sysPortsHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmSystemPortsUnsubscribe0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "sysPortsHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmConnectionGetById0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "id",
+            "type": "UINT64"
+        },
+        {
+            "name": "connection",
+            "type": "FWPM_CONNECTION0"
+        }
+    ],
+    "FwpmConnectionEnum0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "numEntriesRequested",
+            "type": "UINT32"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_CONNECTION0"
+        },
+        {
+            "name": "numEntriesReturned",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmConnectionCreateEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumTemplate",
+            "type": "FWPM_CONNECTION_ENUM_TEMPLATE0"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmConnectionDestroyEnumHandle0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "enumHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmConnectionGetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "FwpmConnectionSetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ],
+    "FwpmConnectionSubscribe0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "subscription",
+            "type": "FWPM_CONNECTION_SUBSCRIPTION0"
+        },
+        {
+            "name": "callback",
+            "type": "FWPM_CONNECTION_CALLBACK0"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "eventsHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmConnectionUnsubscribe0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "eventsHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmConnectionSubscriptionsGet0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "entries",
+            "type": "FWPM_CONNECTION_SUBSCRIPTION0"
+        },
+        {
+            "name": "numEntries",
+            "type": "UINT32"
+        }
+    ],
+    "FwpmvSwitchEventSubscribe0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "subscription",
+            "type": "FWPM_VSWITCH_EVENT_SUBSCRIPTION0"
+        },
+        {
+            "name": "callback",
+            "type": "FWPM_VSWITCH_EVENT_CALLBACK0"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        },
+        {
+            "name": "subscriptionHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmvSwitchEventUnsubscribe0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "subscriptionHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "FwpmvSwitchEventsGetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "PSID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "PSID"
+        },
+        {
+            "name": "dacl",
+            "type": "PACL"
+        },
+        {
+            "name": "sacl",
+            "type": "PACL"
+        },
+        {
+            "name": "securityDescriptor",
+            "type": "PSECURITY_DESCRIPTOR"
+        }
+    ],
+    "FwpmvSwitchEventsSetSecurityInfo0": [
+        {
+            "name": "engineHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "securityInfo",
+            "type": "SECURITY_INFORMATION"
+        },
+        {
+            "name": "sidOwner",
+            "type": "SID"
+        },
+        {
+            "name": "sidGroup",
+            "type": "SID"
+        },
+        {
+            "name": "dacl",
+            "type": "ACL"
+        },
+        {
+            "name": "sacl",
+            "type": "ACL"
+        }
+    ]
+}

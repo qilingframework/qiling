@@ -16,6 +16,7 @@ ERROR_INVALID_PARAMETER = 0x57
 ERROR_INSUFFICIENT_BUFFER = 0x7A
 ERROR_ALREADY_EXISTS = 0xB7
 ERROR_MORE_DATA = 0xEA
+ERROR_NOT_OWNER = 0x120
 ERROR_OLD_WIN_VERSION = 0X47E
 # ...
 
@@ -379,6 +380,18 @@ LOCALE = {
     0x409: LOCALE_EN_US,
     "default": LOCALE_EN_US
 }
+# SYSTEM_INFORMATION_CLASS
+# Defined in Winternl.h
+# Used by NTQuerySystemInformation and ZwQuerySystemInformation
+SystemBasicInformation = 0
+SystemPerformanceInformation = 2
+SystemTimeOfDayInformation = 3
+SystemProcessInformation = 5
+SystemProcessorPerformanceInformation = 8
+SystemInterruptInformation = 23
+SystemExceptionInformation = 33
+SystemRegistryQuotaInformation = 37
+SystemLookasideInformation = 45
 # Code Page Identifiers
 # https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
 OEM_US = 437

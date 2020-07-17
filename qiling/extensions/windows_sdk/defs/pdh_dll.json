@@ -1,0 +1,1534 @@
+{
+    "PdhGetDllVersion": [
+        {
+            "name": "lpdwVersion",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhOpenQueryW": [
+        {
+            "name": "szDataSource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwUserData",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "phQuery",
+            "type": "PDH_HQUERY"
+        }
+    ],
+    "PdhOpenQueryA": [
+        {
+            "name": "szDataSource",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwUserData",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "phQuery",
+            "type": "PDH_HQUERY"
+        }
+    ],
+    "PdhAddCounterW": [
+        {
+            "name": "hQuery",
+            "type": "PDH_HQUERY"
+        },
+        {
+            "name": "szFullCounterPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwUserData",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "phCounter",
+            "type": "PDH_HCOUNTER"
+        }
+    ],
+    "PdhAddCounterA": [
+        {
+            "name": "hQuery",
+            "type": "PDH_HQUERY"
+        },
+        {
+            "name": "szFullCounterPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwUserData",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "phCounter",
+            "type": "PDH_HCOUNTER"
+        }
+    ],
+    "PdhAddEnglishCounterW": [
+        {
+            "name": "hQuery",
+            "type": "PDH_HQUERY"
+        },
+        {
+            "name": "szFullCounterPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwUserData",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "phCounter",
+            "type": "PDH_HCOUNTER"
+        }
+    ],
+    "PdhAddEnglishCounterA": [
+        {
+            "name": "hQuery",
+            "type": "PDH_HQUERY"
+        },
+        {
+            "name": "szFullCounterPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwUserData",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "phCounter",
+            "type": "PDH_HCOUNTER"
+        }
+    ],
+    "PdhCollectQueryDataWithTime": [
+        {
+            "name": "hQuery",
+            "type": "PDH_HQUERY"
+        },
+        {
+            "name": "pllTimeStamp",
+            "type": "LONGLONG"
+        }
+    ],
+    "PdhValidatePathExW": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szFullPathBuffer",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PdhValidatePathExA": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szFullPathBuffer",
+            "type": "LPCSTR"
+        }
+    ],
+    "PdhRemoveCounter": [
+        {
+            "name": "hCounter",
+            "type": "PDH_HCOUNTER"
+        }
+    ],
+    "PdhCollectQueryData": [
+        {
+            "name": "hQuery",
+            "type": "PDH_HQUERY"
+        }
+    ],
+    "PdhCloseQuery": [
+        {
+            "name": "hQuery",
+            "type": "PDH_HQUERY"
+        }
+    ],
+    "PdhGetFormattedCounterValue": [
+        {
+            "name": "hCounter",
+            "type": "PDH_HCOUNTER"
+        },
+        {
+            "name": "dwFormat",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pValue",
+            "type": "PPDH_FMT_COUNTERVALUE"
+        }
+    ],
+    "PdhGetFormattedCounterArrayA": [
+        {
+            "name": "hCounter",
+            "type": "PDH_HCOUNTER"
+        },
+        {
+            "name": "dwFormat",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwItemCount",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "ItemBuffer",
+            "type": "PPDH_FMT_COUNTERVALUE_ITEM_A"
+        }
+    ],
+    "PdhGetFormattedCounterArrayW": [
+        {
+            "name": "hCounter",
+            "type": "PDH_HCOUNTER"
+        },
+        {
+            "name": "dwFormat",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwItemCount",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "ItemBuffer",
+            "type": "PPDH_FMT_COUNTERVALUE_ITEM_W"
+        }
+    ],
+    "PdhGetRawCounterValue": [
+        {
+            "name": "hCounter",
+            "type": "PDH_HCOUNTER"
+        },
+        {
+            "name": "lpdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pValue",
+            "type": "PPDH_RAW_COUNTER"
+        }
+    ],
+    "PdhGetRawCounterArrayA": [
+        {
+            "name": "hCounter",
+            "type": "PDH_HCOUNTER"
+        },
+        {
+            "name": "lpdwBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwItemCount",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "ItemBuffer",
+            "type": "PPDH_RAW_COUNTER_ITEM_A"
+        }
+    ],
+    "PdhGetRawCounterArrayW": [
+        {
+            "name": "hCounter",
+            "type": "PDH_HCOUNTER"
+        },
+        {
+            "name": "lpdwBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpdwItemCount",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "ItemBuffer",
+            "type": "PPDH_RAW_COUNTER_ITEM_W"
+        }
+    ],
+    "PdhCalculateCounterFromRawValue": [
+        {
+            "name": "hCounter",
+            "type": "PDH_HCOUNTER"
+        },
+        {
+            "name": "dwFormat",
+            "type": "DWORD"
+        },
+        {
+            "name": "rawValue1",
+            "type": "PPDH_RAW_COUNTER"
+        },
+        {
+            "name": "rawValue2",
+            "type": "PPDH_RAW_COUNTER"
+        },
+        {
+            "name": "fmtValue",
+            "type": "PPDH_FMT_COUNTERVALUE"
+        }
+    ],
+    "PdhComputeCounterStatistics": [
+        {
+            "name": "hCounter",
+            "type": "PDH_HCOUNTER"
+        },
+        {
+            "name": "dwFormat",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFirstEntry",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwNumEntries",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpRawValueArray",
+            "type": "PPDH_RAW_COUNTER"
+        },
+        {
+            "name": "data",
+            "type": "PPDH_STATISTICS"
+        }
+    ],
+    "PdhGetCounterInfoW": [
+        {
+            "name": "hCounter",
+            "type": "PDH_HCOUNTER"
+        },
+        {
+            "name": "bRetrieveExplainText",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "pdwBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "PPDH_COUNTER_INFO_W"
+        }
+    ],
+    "PdhGetCounterInfoA": [
+        {
+            "name": "hCounter",
+            "type": "PDH_HCOUNTER"
+        },
+        {
+            "name": "bRetrieveExplainText",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "pdwBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "PPDH_COUNTER_INFO_A"
+        }
+    ],
+    "PdhSetCounterScaleFactor": [
+        {
+            "name": "hCounter",
+            "type": "PDH_HCOUNTER"
+        },
+        {
+            "name": "lFactor",
+            "type": "LONG"
+        }
+    ],
+    "PdhConnectMachineW": [
+        {
+            "name": "szMachineName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PdhConnectMachineA": [
+        {
+            "name": "szMachineName",
+            "type": "LPCSTR"
+        }
+    ],
+    "PdhEnumMachinesW": [
+        {
+            "name": "szDataSource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "mszMachineList",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhEnumMachinesA": [
+        {
+            "name": "szDataSource",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "mszMachineList",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhEnumObjectsW": [
+        {
+            "name": "szDataSource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "mszObjectList",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwDetailLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "bRefresh",
+            "type": "BOOL"
+        }
+    ],
+    "PdhEnumObjectsA": [
+        {
+            "name": "szDataSource",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "mszObjectList",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwDetailLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "bRefresh",
+            "type": "BOOL"
+        }
+    ],
+    "PdhEnumObjectItemsW": [
+        {
+            "name": "szDataSource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szObjectName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "mszCounterList",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchCounterListLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "mszInstanceList",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchInstanceListLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwDetailLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PdhEnumObjectItemsA": [
+        {
+            "name": "szDataSource",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szObjectName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "mszCounterList",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "pcchCounterListLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "mszInstanceList",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "pcchInstanceListLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwDetailLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PdhMakeCounterPathW": [
+        {
+            "name": "pCounterPathElements",
+            "type": "PPDH_COUNTER_PATH_ELEMENTS_W"
+        },
+        {
+            "name": "szFullPathBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PdhMakeCounterPathA": [
+        {
+            "name": "pCounterPathElements",
+            "type": "PPDH_COUNTER_PATH_ELEMENTS_A"
+        },
+        {
+            "name": "szFullPathBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PdhParseCounterPathW": [
+        {
+            "name": "szFullPathBuffer",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pCounterPathElements",
+            "type": "PPDH_COUNTER_PATH_ELEMENTS_W"
+        },
+        {
+            "name": "pdwBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PdhParseCounterPathA": [
+        {
+            "name": "szFullPathBuffer",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pCounterPathElements",
+            "type": "PPDH_COUNTER_PATH_ELEMENTS_A"
+        },
+        {
+            "name": "pdwBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PdhParseInstanceNameW": [
+        {
+            "name": "szInstanceString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szInstanceName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchInstanceNameLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "szParentName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchParentNameLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhParseInstanceNameA": [
+        {
+            "name": "szInstanceString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szInstanceName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchInstanceNameLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "szParentName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchParentNameLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "lpIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhValidatePathW": [
+        {
+            "name": "szFullPathBuffer",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PdhValidatePathA": [
+        {
+            "name": "szFullPathBuffer",
+            "type": "LPCSTR"
+        }
+    ],
+    "PdhGetDefaultPerfObjectW": [
+        {
+            "name": "szDataSource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szDefaultObjectName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhGetDefaultPerfObjectA": [
+        {
+            "name": "szDataSource",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szDefaultObjectName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhGetDefaultPerfCounterW": [
+        {
+            "name": "szDataSource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szObjectName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szDefaultCounterName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhGetDefaultPerfCounterA": [
+        {
+            "name": "szDataSource",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szObjectName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szDefaultCounterName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhBrowseCountersW": [
+        {
+            "name": "pBrowseDlgData",
+            "type": "PPDH_BROWSE_DLG_CONFIG_W"
+        }
+    ],
+    "PdhBrowseCountersA": [
+        {
+            "name": "pBrowseDlgData",
+            "type": "PPDH_BROWSE_DLG_CONFIG_A"
+        }
+    ],
+    "PdhExpandCounterPathW": [
+        {
+            "name": "szWildCardPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "mszExpandedPathList",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchPathListLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhExpandCounterPathA": [
+        {
+            "name": "szWildCardPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "mszExpandedPathList",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "pcchPathListLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhLookupPerfNameByIndexW": [
+        {
+            "name": "szMachineName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwNameIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "szNameBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchNameBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhLookupPerfNameByIndexA": [
+        {
+            "name": "szMachineName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwNameIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "szNameBuffer",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchNameBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhLookupPerfIndexByNameW": [
+        {
+            "name": "szMachineName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szNameBuffer",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdwIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhLookupPerfIndexByNameA": [
+        {
+            "name": "szMachineName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szNameBuffer",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pdwIndex",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhExpandWildCardPathA": [
+        {
+            "name": "szDataSource",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szWildCardPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "mszExpandedPathList",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "pcchPathListLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PdhExpandWildCardPathW": [
+        {
+            "name": "szDataSource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szWildCardPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "mszExpandedPathList",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchPathListLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PdhOpenLogW": [
+        {
+            "name": "szLogFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwAccessFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwLogType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "hQuery",
+            "type": "PDH_HQUERY"
+        },
+        {
+            "name": "dwMaxSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "szUserCaption",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phLog",
+            "type": "PDH_HLOG"
+        }
+    ],
+    "PdhOpenLogA": [
+        {
+            "name": "szLogFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwAccessFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpdwLogType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "hQuery",
+            "type": "PDH_HQUERY"
+        },
+        {
+            "name": "dwMaxSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "szUserCaption",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "phLog",
+            "type": "PDH_HLOG"
+        }
+    ],
+    "PdhUpdateLogW": [
+        {
+            "name": "hLog",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szUserString",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PdhUpdateLogA": [
+        {
+            "name": "hLog",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szUserString",
+            "type": "LPCSTR"
+        }
+    ],
+    "PdhUpdateLogFileCatalog": [
+        {
+            "name": "hLog",
+            "type": "PDH_HLOG"
+        }
+    ],
+    "PdhGetLogFileSize": [
+        {
+            "name": "hLog",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "llSize",
+            "type": "LONGLONG"
+        }
+    ],
+    "PdhCloseLog": [
+        {
+            "name": "hLog",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PdhSelectDataSourceW": [
+        {
+            "name": "hWndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "szDataSource",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhSelectDataSourceA": [
+        {
+            "name": "hWndOwner",
+            "type": "HWND"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "szDataSource",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhIsRealTimeQuery": [
+        {
+            "name": "hQuery",
+            "type": "PDH_HQUERY"
+        }
+    ],
+    "PdhSetQueryTimeRange": [
+        {
+            "name": "hQuery",
+            "type": "PDH_HQUERY"
+        },
+        {
+            "name": "pInfo",
+            "type": "PPDH_TIME_INFO"
+        }
+    ],
+    "PdhGetDataSourceTimeRangeW": [
+        {
+            "name": "szDataSource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdwNumEntries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pInfo",
+            "type": "PPDH_TIME_INFO"
+        },
+        {
+            "name": "pdwBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhGetDataSourceTimeRangeA": [
+        {
+            "name": "szDataSource",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pdwNumEntries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pInfo",
+            "type": "PPDH_TIME_INFO"
+        },
+        {
+            "name": "pdwBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhCollectQueryDataEx": [
+        {
+            "name": "hQuery",
+            "type": "PDH_HQUERY"
+        },
+        {
+            "name": "dwIntervalTime",
+            "type": "DWORD"
+        },
+        {
+            "name": "hNewDataEvent",
+            "type": "HANDLE"
+        }
+    ],
+    "PdhFormatFromRawValue": [
+        {
+            "name": "dwCounterType",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFormat",
+            "type": "DWORD"
+        },
+        {
+            "name": "pTimeBase",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "pRawValue1",
+            "type": "PPDH_RAW_COUNTER"
+        },
+        {
+            "name": "pRawValue2",
+            "type": "PPDH_RAW_COUNTER"
+        },
+        {
+            "name": "pFmtValue",
+            "type": "PPDH_FMT_COUNTERVALUE"
+        }
+    ],
+    "PdhGetCounterTimeBase": [
+        {
+            "name": "hCounter",
+            "type": "PDH_HCOUNTER"
+        },
+        {
+            "name": "pTimeBase",
+            "type": "LONGLONG"
+        }
+    ],
+    "PdhReadRawLogRecord": [
+        {
+            "name": "hLog",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "ftRecord",
+            "type": "FILETIME"
+        },
+        {
+            "name": "pRawLogRecord",
+            "type": "PPDH_RAW_LOG_RECORD"
+        },
+        {
+            "name": "pdwBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhSetDefaultRealTimeDataSource": [
+        {
+            "name": "dwDataSourceId",
+            "type": "DWORD"
+        }
+    ],
+    "PdhBindInputDataSourceW": [
+        {
+            "name": "phDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "LogFileNameList",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PdhBindInputDataSourceA": [
+        {
+            "name": "phDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "LogFileNameList",
+            "type": "LPCSTR"
+        }
+    ],
+    "PdhOpenQueryH": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "dwUserData",
+            "type": "DWORD_PTR"
+        },
+        {
+            "name": "phQuery",
+            "type": "PDH_HQUERY"
+        }
+    ],
+    "PdhEnumMachinesHW": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "mszMachineList",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhEnumMachinesHA": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "mszMachineList",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhEnumObjectsHW": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "mszObjectList",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwDetailLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "bRefresh",
+            "type": "BOOL"
+        }
+    ],
+    "PdhEnumObjectsHA": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "mszObjectList",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwDetailLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "bRefresh",
+            "type": "BOOL"
+        }
+    ],
+    "PdhEnumObjectItemsHW": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szObjectName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "mszCounterList",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchCounterListLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "mszInstanceList",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchInstanceListLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwDetailLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PdhEnumObjectItemsHA": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szObjectName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "mszCounterList",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "pcchCounterListLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "mszInstanceList",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "pcchInstanceListLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwDetailLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PdhExpandWildCardPathHW": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szWildCardPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "mszExpandedPathList",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchPathListLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PdhExpandWildCardPathHA": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szWildCardPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "mszExpandedPathList",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "pcchPathListLength",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PdhGetDataSourceTimeRangeH": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "pdwNumEntries",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pInfo",
+            "type": "PPDH_TIME_INFO"
+        },
+        {
+            "name": "pdwBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhGetDefaultPerfObjectHW": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szDefaultObjectName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhGetDefaultPerfObjectHA": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szDefaultObjectName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhGetDefaultPerfCounterHW": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szObjectName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szDefaultCounterName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhGetDefaultPerfCounterHA": [
+        {
+            "name": "hDataSource",
+            "type": "PDH_HLOG"
+        },
+        {
+            "name": "szMachineName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szObjectName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szDefaultCounterName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchBufferSize",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhBrowseCountersHW": [
+        {
+            "name": "pBrowseDlgData",
+            "type": "PPDH_BROWSE_DLG_CONFIG_HW"
+        }
+    ],
+    "PdhBrowseCountersHA": [
+        {
+            "name": "pBrowseDlgData",
+            "type": "PPDH_BROWSE_DLG_CONFIG_HA"
+        }
+    ],
+    "PdhEnumLogSetNamesW": [
+        {
+            "name": "szDataSource",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "mszDataSetNameList",
+            "type": "PZZWSTR"
+        },
+        {
+            "name": "pcchBufferLength",
+            "type": "LPDWORD"
+        }
+    ],
+    "PdhEnumLogSetNamesA": [
+        {
+            "name": "szDataSource",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "mszDataSetNameList",
+            "type": "PZZSTR"
+        },
+        {
+            "name": "pcchBufferLength",
+            "type": "LPDWORD"
+        }
+    ]
+}

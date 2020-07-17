@@ -1,0 +1,12 @@
+{
+    "MFCreateSensorActivityMonitor": [
+        {
+            "name": "pCallback",
+            "type": "IMFSensorActivitiesReportCallback"
+        },
+        {
+            "name": "ppActivityMonitor",
+            "type": "IMFSensorActivityMonitor"
+        }
+    ]
+}

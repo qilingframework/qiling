@@ -1,0 +1,14 @@
+{
+    "WlxReconnectNotify": [
+        {
+            "name": "pWlxContext",
+            "type": "PVOID"
+        }
+    ],
+    "WlxDisconnectNotify": [
+        {
+            "name": "pWlxContext",
+            "type": "PVOID"
+        }
+    ]
+}

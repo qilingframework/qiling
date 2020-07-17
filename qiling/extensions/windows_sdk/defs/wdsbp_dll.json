@@ -1,0 +1,112 @@
+{
+    "WdsBpParseInitialize": [
+        {
+            "name": "pPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbPacketType",
+            "type": "PBYTE"
+        },
+        {
+            "name": "phHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "WdsBpParseInitializev6": [
+        {
+            "name": "pPacket",
+            "type": "PVOID"
+        },
+        {
+            "name": "uPacketLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbPacketType",
+            "type": "PBYTE"
+        },
+        {
+            "name": "phHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "WdsBpInitialize": [
+        {
+            "name": "bPacketType",
+            "type": "BYTE"
+        },
+        {
+            "name": "phHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "WdsBpCloseHandle": [
+        {
+            "name": "hHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "WdsBpQueryOption": [
+        {
+            "name": "hHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "uOption",
+            "type": "ULONG"
+        },
+        {
+            "name": "uValueLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "pValue",
+            "type": "PVOID"
+        },
+        {
+            "name": "puBytes",
+            "type": "PULONG"
+        }
+    ],
+    "WdsBpAddOption": [
+        {
+            "name": "hHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "uOption",
+            "type": "ULONG"
+        },
+        {
+            "name": "uValueLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "pValue",
+            "type": "PVOID"
+        }
+    ],
+    "WdsBpGetOptionBuffer": [
+        {
+            "name": "hHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "uBufferLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "pBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "puBytes",
+            "type": "PULONG"
+        }
+    ]
+}

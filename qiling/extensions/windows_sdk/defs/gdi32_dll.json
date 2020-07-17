@@ -1,0 +1,5004 @@
+{
+    "AddFontResourceA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        }
+    ],
+    "AddFontResourceW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        }
+    ],
+    "AnimatePalette": [
+        {
+            "name": "hPal",
+            "type": "HPALETTE"
+        },
+        {
+            "name": "iStartIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "cEntries",
+            "type": "UINT"
+        },
+        {
+            "name": "ppe",
+            "type": "PALETTEENTRY"
+        }
+    ],
+    "Arc": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x1",
+            "type": "int"
+        },
+        {
+            "name": "y1",
+            "type": "int"
+        },
+        {
+            "name": "x2",
+            "type": "int"
+        },
+        {
+            "name": "y2",
+            "type": "int"
+        },
+        {
+            "name": "x3",
+            "type": "int"
+        },
+        {
+            "name": "y3",
+            "type": "int"
+        },
+        {
+            "name": "x4",
+            "type": "int"
+        },
+        {
+            "name": "y4",
+            "type": "int"
+        }
+    ],
+    "BitBlt": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        },
+        {
+            "name": "hdcSrc",
+            "type": "HDC"
+        },
+        {
+            "name": "x1",
+            "type": "int"
+        },
+        {
+            "name": "y1",
+            "type": "int"
+        },
+        {
+            "name": "rop",
+            "type": "DWORD"
+        }
+    ],
+    "CancelDC": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "Chord": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x1",
+            "type": "int"
+        },
+        {
+            "name": "y1",
+            "type": "int"
+        },
+        {
+            "name": "x2",
+            "type": "int"
+        },
+        {
+            "name": "y2",
+            "type": "int"
+        },
+        {
+            "name": "x3",
+            "type": "int"
+        },
+        {
+            "name": "y3",
+            "type": "int"
+        },
+        {
+            "name": "x4",
+            "type": "int"
+        },
+        {
+            "name": "y4",
+            "type": "int"
+        }
+    ],
+    "ChoosePixelFormat": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "ppfd",
+            "type": "PIXELFORMATDESCRIPTOR"
+        }
+    ],
+    "CloseMetaFile": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "CombineRgn": [
+        {
+            "name": "hrgnDst",
+            "type": "HRGN"
+        },
+        {
+            "name": "hrgnSrc1",
+            "type": "HRGN"
+        },
+        {
+            "name": "hrgnSrc2",
+            "type": "HRGN"
+        },
+        {
+            "name": "iMode",
+            "type": "int"
+        }
+    ],
+    "CopyMetaFileA": [
+        {
+            "name": "VOID",
+            "type": "HMETAFILE"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        }
+    ],
+    "CopyMetaFileW": [
+        {
+            "name": "VOID",
+            "type": "HMETAFILE"
+        },
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CreateBitmap": [
+        {
+            "name": "nWidth",
+            "type": "int"
+        },
+        {
+            "name": "nHeight",
+            "type": "int"
+        },
+        {
+            "name": "nPlanes",
+            "type": "UINT"
+        },
+        {
+            "name": "nBitCount",
+            "type": "UINT"
+        },
+        {
+            "name": "lpBits",
+            "type": "void"
+        }
+    ],
+    "CreateBitmapIndirect": [
+        {
+            "name": "pbm",
+            "type": "BITMAP"
+        }
+    ],
+    "CreateBrushIndirect": [
+        {
+            "name": "plbrush",
+            "type": "LOGBRUSH"
+        }
+    ],
+    "CreateCompatibleBitmap": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        }
+    ],
+    "CreateDiscardableBitmap": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "cx",
+            "type": "int"
+        },
+        {
+            "name": "cy",
+            "type": "int"
+        }
+    ],
+    "CreateCompatibleDC": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "CreateDCA": [
+        {
+            "name": "pwszDriver",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pwszDevice",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszPort",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pdm",
+            "type": "DEVMODEA"
+        }
+    ],
+    "CreateDCW": [
+        {
+            "name": "pwszDriver",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszDevice",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszPort",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdm",
+            "type": "DEVMODEW"
+        }
+    ],
+    "CreateDIBitmap": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "pbmih",
+            "type": "BITMAPINFOHEADER"
+        },
+        {
+            "name": "flInit",
+            "type": "DWORD"
+        },
+        {
+            "name": "pjBits",
+            "type": "void"
+        },
+        {
+            "name": "pbmi",
+            "type": "BITMAPINFO"
+        },
+        {
+            "name": "iUsage",
+            "type": "UINT"
+        }
+    ],
+    "CreateDIBPatternBrush": [
+        {
+            "name": "h",
+            "type": "HGLOBAL"
+        },
+        {
+            "name": "iUsage",
+            "type": "UINT"
+        }
+    ],
+    "CreateDIBPatternBrushPt": [
+        {
+            "name": "lpPackedDIB",
+            "type": "void"
+        },
+        {
+            "name": "iUsage",
+            "type": "UINT"
+        }
+    ],
+    "CreateEllipticRgn": [
+        {
+            "name": "x1",
+            "type": "int"
+        },
+        {
+            "name": "y1",
+            "type": "int"
+        },
+        {
+            "name": "x2",
+            "type": "int"
+        },
+        {
+            "name": "y2",
+            "type": "int"
+        }
+    ],
+    "CreateEllipticRgnIndirect": [
+        {
+            "name": "lprect",
+            "type": "RECT"
+        }
+    ],
+    "CreateFontIndirectA": [
+        {
+            "name": "lplf",
+            "type": "LOGFONTA"
+        }
+    ],
+    "CreateFontIndirectW": [
+        {
+            "name": "lplf",
+            "type": "LOGFONTW"
+        }
+    ],
+    "CreateFontA": [
+        {
+            "name": "cHeight",
+            "type": "int"
+        },
+        {
+            "name": "cWidth",
+            "type": "int"
+        },
+        {
+            "name": "cEscapement",
+            "type": "int"
+        },
+        {
+            "name": "cOrientation",
+            "type": "int"
+        },
+        {
+            "name": "cWeight",
+            "type": "int"
+        },
+        {
+            "name": "bItalic",
+            "type": "DWORD"
+        },
+        {
+            "name": "bUnderline",
+            "type": "DWORD"
+        },
+        {
+            "name": "bStrikeOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "iCharSet",
+            "type": "DWORD"
+        },
+        {
+            "name": "iOutPrecision",
+            "type": "DWORD"
+        },
+        {
+            "name": "iClipPrecision",
+            "type": "DWORD"
+        },
+        {
+            "name": "iQuality",
+            "type": "DWORD"
+        },
+        {
+            "name": "iPitchAndFamily",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszFaceName",
+            "type": "LPCSTR"
+        }
+    ],
+    "CreateFontW": [
+        {
+            "name": "cHeight",
+            "type": "int"
+        },
+        {
+            "name": "cWidth",
+            "type": "int"
+        },
+        {
+            "name": "cEscapement",
+            "type": "int"
+        },
+        {
+            "name": "cOrientation",
+            "type": "int"
+        },
+        {
+            "name": "cWeight",
+            "type": "int"
+        },
+        {
+            "name": "bItalic",
+            "type": "DWORD"
+        },
+        {
+            "name": "bUnderline",
+            "type": "DWORD"
+        },
+        {
+            "name": "bStrikeOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "iCharSet",
+            "type": "DWORD"
+        },
+        {
+            "name": "iOutPrecision",
+            "type": "DWORD"
+        },
+        {
+            "name": "iClipPrecision",
+            "type": "DWORD"
+        },
+        {
+            "name": "iQuality",
+            "type": "DWORD"
+        },
+        {
+            "name": "iPitchAndFamily",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszFaceName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CreateHatchBrush": [
+        {
+            "name": "iHatch",
+            "type": "int"
+        },
+        {
+            "name": "color",
+            "type": "COLORREF"
+        }
+    ],
+    "CreateICA": [
+        {
+            "name": "pszDriver",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszDevice",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszPort",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pdm",
+            "type": "DEVMODEA"
+        }
+    ],
+    "CreateICW": [
+        {
+            "name": "pszDriver",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszDevice",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszPort",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdm",
+            "type": "DEVMODEW"
+        }
+    ],
+    "CreateMetaFileA": [
+        {
+            "name": "pszFile",
+            "type": "LPCSTR"
+        }
+    ],
+    "CreateMetaFileW": [
+        {
+            "name": "pszFile",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CreatePalette": [
+        {
+            "name": "plpal",
+            "type": "LOGPALETTE"
+        }
+    ],
+    "CreatePen": [
+        {
+            "name": "iStyle",
+            "type": "int"
+        },
+        {
+            "name": "cWidth",
+            "type": "int"
+        },
+        {
+            "name": "color",
+            "type": "COLORREF"
+        }
+    ],
+    "CreatePenIndirect": [
+        {
+            "name": "plpen",
+            "type": "LOGPEN"
+        }
+    ],
+    "CreatePolyPolygonRgn": [
+        {
+            "name": "pptl",
+            "type": "POINT"
+        },
+        {
+            "name": "pc",
+            "type": "INT"
+        },
+        {
+            "name": "cPoly",
+            "type": "int"
+        },
+        {
+            "name": "iMode",
+            "type": "int"
+        }
+    ],
+    "CreatePatternBrush": [
+        {
+            "name": "hbm",
+            "type": "HBITMAP"
+        }
+    ],
+    "CreateRectRgn": [
+        {
+            "name": "x1",
+            "type": "int"
+        },
+        {
+            "name": "y1",
+            "type": "int"
+        },
+        {
+            "name": "x2",
+            "type": "int"
+        },
+        {
+            "name": "y2",
+            "type": "int"
+        }
+    ],
+    "CreateRectRgnIndirect": [
+        {
+            "name": "lprect",
+            "type": "RECT"
+        }
+    ],
+    "CreateRoundRectRgn": [
+        {
+            "name": "x1",
+            "type": "int"
+        },
+        {
+            "name": "y1",
+            "type": "int"
+        },
+        {
+            "name": "x2",
+            "type": "int"
+        },
+        {
+            "name": "y2",
+            "type": "int"
+        },
+        {
+            "name": "w",
+            "type": "int"
+        },
+        {
+            "name": "h",
+            "type": "int"
+        }
+    ],
+    "CreateScalableFontResourceA": [
+        {
+            "name": "fdwHidden",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszFont",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "CreateScalableFontResourceW": [
+        {
+            "name": "fdwHidden",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszFont",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CreateSolidBrush": [
+        {
+            "name": "color",
+            "type": "COLORREF"
+        }
+    ],
+    "DeleteDC": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "DeleteMetaFile": [
+        {
+            "name": "hmf",
+            "type": "HMETAFILE"
+        }
+    ],
+    "DeleteObject": [
+        {
+            "name": "ho",
+            "type": "HGDIOBJ"
+        }
+    ],
+    "DescribePixelFormat": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iPixelFormat",
+            "type": "int"
+        },
+        {
+            "name": "nBytes",
+            "type": "UINT"
+        },
+        {
+            "name": "ppfd",
+            "type": "LPPIXELFORMATDESCRIPTOR"
+        }
+    ],
+    "DrawEscape": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iEscape",
+            "type": "int"
+        },
+        {
+            "name": "cjIn",
+            "type": "int"
+        },
+        {
+            "name": "lpIn",
+            "type": "LPCSTR"
+        }
+    ],
+    "Ellipse": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "left",
+            "type": "int"
+        },
+        {
+            "name": "top",
+            "type": "int"
+        },
+        {
+            "name": "right",
+            "type": "int"
+        },
+        {
+            "name": "bottom",
+            "type": "int"
+        }
+    ],
+    "EnumFontFamiliesExA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpLogfont",
+            "type": "LPLOGFONTA"
+        },
+        {
+            "name": "lpProc",
+            "type": "FONTENUMPROCA"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumFontFamiliesExW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpLogfont",
+            "type": "LPLOGFONTW"
+        },
+        {
+            "name": "lpProc",
+            "type": "FONTENUMPROCW"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "EnumFontFamiliesA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpLogfont",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpProc",
+            "type": "FONTENUMPROCA"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumFontFamiliesW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpLogfont",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpProc",
+            "type": "FONTENUMPROCW"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumFontsA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpLogfont",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpProc",
+            "type": "FONTENUMPROCA"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumFontsW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpLogfont",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpProc",
+            "type": "FONTENUMPROCW"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumObjects": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "nType",
+            "type": "int"
+        },
+        {
+            "name": "lpFunc",
+            "type": "GOBJENUMPROC"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "EqualRgn": [
+        {
+            "name": "hrgn1",
+            "type": "HRGN"
+        },
+        {
+            "name": "hrgn2",
+            "type": "HRGN"
+        }
+    ],
+    "Escape": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iEscape",
+            "type": "int"
+        },
+        {
+            "name": "cjIn",
+            "type": "int"
+        },
+        {
+            "name": "pvIn",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pvOut",
+            "type": "LPVOID"
+        }
+    ],
+    "ExtEscape": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iEscape",
+            "type": "int"
+        },
+        {
+            "name": "cjInput",
+            "type": "int"
+        },
+        {
+            "name": "lpInData",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cjOutput",
+            "type": "int"
+        },
+        {
+            "name": "lpOutData",
+            "type": "LPSTR"
+        }
+    ],
+    "ExcludeClipRect": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "left",
+            "type": "int"
+        },
+        {
+            "name": "top",
+            "type": "int"
+        },
+        {
+            "name": "right",
+            "type": "int"
+        },
+        {
+            "name": "bottom",
+            "type": "int"
+        }
+    ],
+    "ExtCreateRegion": [
+        {
+            "name": "lpx",
+            "type": "XFORM"
+        },
+        {
+            "name": "nCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "RGNDATA"
+        }
+    ],
+    "ExtFloodFill": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "color",
+            "type": "COLORREF"
+        },
+        {
+            "name": "type",
+            "type": "UINT"
+        }
+    ],
+    "FillRgn": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "hbr",
+            "type": "HBRUSH"
+        }
+    ],
+    "FloodFill": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "color",
+            "type": "COLORREF"
+        }
+    ],
+    "FrameRgn": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "hbr",
+            "type": "HBRUSH"
+        },
+        {
+            "name": "w",
+            "type": "int"
+        },
+        {
+            "name": "h",
+            "type": "int"
+        }
+    ],
+    "GetROP2": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetAspectRatioFilterEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpsize",
+            "type": "LPSIZE"
+        }
+    ],
+    "GetBkColor": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetDCBrushColor": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetDCPenColor": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetBkMode": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetBitmapBits": [
+        {
+            "name": "hbit",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "cb",
+            "type": "LONG"
+        },
+        {
+            "name": "lpvBits",
+            "type": "LPVOID"
+        }
+    ],
+    "GetBitmapDimensionEx": [
+        {
+            "name": "hbit",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "lpsize",
+            "type": "LPSIZE"
+        }
+    ],
+    "GetBoundsRect": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lprect",
+            "type": "LPRECT"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "GetBrushOrgEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lppt",
+            "type": "LPPOINT"
+        }
+    ],
+    "GetCharWidthA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iFirst",
+            "type": "UINT"
+        },
+        {
+            "name": "iLast",
+            "type": "UINT"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPINT"
+        }
+    ],
+    "GetCharWidthW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iFirst",
+            "type": "UINT"
+        },
+        {
+            "name": "iLast",
+            "type": "UINT"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPINT"
+        }
+    ],
+    "GetCharWidth32A": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iFirst",
+            "type": "UINT"
+        },
+        {
+            "name": "iLast",
+            "type": "UINT"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPINT"
+        }
+    ],
+    "GetCharWidth32W": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iFirst",
+            "type": "UINT"
+        },
+        {
+            "name": "iLast",
+            "type": "UINT"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPINT"
+        }
+    ],
+    "GetCharWidthFloatA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iFirst",
+            "type": "UINT"
+        },
+        {
+            "name": "iLast",
+            "type": "UINT"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "PFLOAT"
+        }
+    ],
+    "GetCharWidthFloatW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iFirst",
+            "type": "UINT"
+        },
+        {
+            "name": "iLast",
+            "type": "UINT"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "PFLOAT"
+        }
+    ],
+    "GetCharABCWidthsA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "wFirst",
+            "type": "UINT"
+        },
+        {
+            "name": "wLast",
+            "type": "UINT"
+        },
+        {
+            "name": "lpABC",
+            "type": "LPABC"
+        }
+    ],
+    "GetCharABCWidthsW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "wFirst",
+            "type": "UINT"
+        },
+        {
+            "name": "wLast",
+            "type": "UINT"
+        },
+        {
+            "name": "lpABC",
+            "type": "LPABC"
+        }
+    ],
+    "GetCharABCWidthsFloatA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iFirst",
+            "type": "UINT"
+        },
+        {
+            "name": "iLast",
+            "type": "UINT"
+        },
+        {
+            "name": "lpABC",
+            "type": "LPABCFLOAT"
+        }
+    ],
+    "GetCharABCWidthsFloatW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iFirst",
+            "type": "UINT"
+        },
+        {
+            "name": "iLast",
+            "type": "UINT"
+        },
+        {
+            "name": "lpABC",
+            "type": "LPABCFLOAT"
+        }
+    ],
+    "GetClipBox": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lprect",
+            "type": "LPRECT"
+        }
+    ],
+    "GetClipRgn": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        }
+    ],
+    "GetMetaRgn": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        }
+    ],
+    "GetCurrentObject": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "type",
+            "type": "UINT"
+        }
+    ],
+    "GetCurrentPositionEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lppt",
+            "type": "LPPOINT"
+        }
+    ],
+    "GetDeviceCaps": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "index",
+            "type": "int"
+        }
+    ],
+    "GetDIBits": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hbm",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "start",
+            "type": "UINT"
+        },
+        {
+            "name": "cLines",
+            "type": "UINT"
+        },
+        {
+            "name": "lpvBits",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpbmi",
+            "type": "LPBITMAPINFO"
+        },
+        {
+            "name": "usage",
+            "type": "UINT"
+        }
+    ],
+    "GetFontData": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "dwTable",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwOffset",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "cjBuffer",
+            "type": "DWORD"
+        }
+    ],
+    "GetGlyphOutlineA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "uChar",
+            "type": "UINT"
+        },
+        {
+            "name": "fuFormat",
+            "type": "UINT"
+        },
+        {
+            "name": "lpgm",
+            "type": "LPGLYPHMETRICS"
+        },
+        {
+            "name": "cjBuffer",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpmat2",
+            "type": "MAT2"
+        }
+    ],
+    "GetGlyphOutlineW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "uChar",
+            "type": "UINT"
+        },
+        {
+            "name": "fuFormat",
+            "type": "UINT"
+        },
+        {
+            "name": "lpgm",
+            "type": "LPGLYPHMETRICS"
+        },
+        {
+            "name": "cjBuffer",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpmat2",
+            "type": "MAT2"
+        }
+    ],
+    "GetGraphicsMode": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetMapMode": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetMetaFileBitsEx": [
+        {
+            "name": "hMF",
+            "type": "HMETAFILE"
+        },
+        {
+            "name": "cbBuffer",
+            "type": "UINT"
+        },
+        {
+            "name": "lpData",
+            "type": "LPVOID"
+        }
+    ],
+    "GetMetaFileA": [
+        {
+            "name": "lpName",
+            "type": "LPCSTR"
+        }
+    ],
+    "GetMetaFileW": [
+        {
+            "name": "lpName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetNearestColor": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "color",
+            "type": "COLORREF"
+        }
+    ],
+    "GetNearestPaletteIndex": [
+        {
+            "name": "h",
+            "type": "HPALETTE"
+        },
+        {
+            "name": "color",
+            "type": "COLORREF"
+        }
+    ],
+    "GetObjectType": [
+        {
+            "name": "h",
+            "type": "HGDIOBJ"
+        }
+    ],
+    "GetOutlineTextMetricsA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "cjCopy",
+            "type": "UINT"
+        },
+        {
+            "name": "potm",
+            "type": "LPOUTLINETEXTMETRICA"
+        }
+    ],
+    "GetOutlineTextMetricsW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "cjCopy",
+            "type": "UINT"
+        },
+        {
+            "name": "potm",
+            "type": "LPOUTLINETEXTMETRICW"
+        }
+    ],
+    "GetPaletteEntries": [
+        {
+            "name": "hpal",
+            "type": "HPALETTE"
+        },
+        {
+            "name": "iStart",
+            "type": "UINT"
+        },
+        {
+            "name": "cEntries",
+            "type": "UINT"
+        },
+        {
+            "name": "pPalEntries",
+            "type": "LPPALETTEENTRY"
+        }
+    ],
+    "GetPixel": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        }
+    ],
+    "GetPixelFormat": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetPolyFillMode": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetRasterizerCaps": [
+        {
+            "name": "lpraststat",
+            "type": "LPRASTERIZER_STATUS"
+        },
+        {
+            "name": "cjBytes",
+            "type": "UINT"
+        }
+    ],
+    "GetRandomRgn": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "i",
+            "type": "INT"
+        }
+    ],
+    "GetRegionData": [
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "nCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpRgnData",
+            "type": "LPRGNDATA"
+        }
+    ],
+    "GetRgnBox": [
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "lprc",
+            "type": "LPRECT"
+        }
+    ],
+    "GetStockObject": [
+        {
+            "name": "i",
+            "type": "int"
+        }
+    ],
+    "GetStretchBltMode": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetSystemPaletteEntries": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iStart",
+            "type": "UINT"
+        },
+        {
+            "name": "cEntries",
+            "type": "UINT"
+        },
+        {
+            "name": "pPalEntries",
+            "type": "LPPALETTEENTRY"
+        }
+    ],
+    "GetSystemPaletteUse": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetTextCharacterExtra": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetTextAlign": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetTextColor": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetTextExtentPointA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        },
+        {
+            "name": "lpsz",
+            "type": "LPSIZE"
+        }
+    ],
+    "GetTextExtentPointW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        },
+        {
+            "name": "lpsz",
+            "type": "LPSIZE"
+        }
+    ],
+    "GetTextExtentPoint32A": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        },
+        {
+            "name": "psizl",
+            "type": "LPSIZE"
+        }
+    ],
+    "GetTextExtentPoint32W": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        },
+        {
+            "name": "psizl",
+            "type": "LPSIZE"
+        }
+    ],
+    "GetTextExtentExPointA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpszString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cchString",
+            "type": "int"
+        },
+        {
+            "name": "nMaxExtent",
+            "type": "int"
+        },
+        {
+            "name": "lpnFit",
+            "type": "LPINT"
+        },
+        {
+            "name": "lpnDx",
+            "type": "LPINT"
+        },
+        {
+            "name": "lpSize",
+            "type": "LPSIZE"
+        }
+    ],
+    "GetTextExtentExPointW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpszString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchString",
+            "type": "int"
+        },
+        {
+            "name": "nMaxExtent",
+            "type": "int"
+        },
+        {
+            "name": "lpnFit",
+            "type": "LPINT"
+        },
+        {
+            "name": "lpnDx",
+            "type": "LPINT"
+        },
+        {
+            "name": "lpSize",
+            "type": "LPSIZE"
+        }
+    ],
+    "GetTextCharset": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetTextCharsetInfo": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpSig",
+            "type": "LPFONTSIGNATURE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "TranslateCharsetInfo": [
+        {
+            "name": "lpSrc",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpCs",
+            "type": "LPCHARSETINFO"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetFontLanguageInfo": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetCharacterPlacementA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "nCount",
+            "type": "int"
+        },
+        {
+            "name": "nMexExtent",
+            "type": "int"
+        },
+        {
+            "name": "lpResults",
+            "type": "LPGCP_RESULTSA"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetCharacterPlacementW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "nCount",
+            "type": "int"
+        },
+        {
+            "name": "nMexExtent",
+            "type": "int"
+        },
+        {
+            "name": "lpResults",
+            "type": "LPGCP_RESULTSW"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "GetFontUnicodeRanges": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpgs",
+            "type": "LPGLYPHSET"
+        }
+    ],
+    "GetGlyphIndicesA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpstr",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        },
+        {
+            "name": "pgi",
+            "type": "LPWORD"
+        },
+        {
+            "name": "fl",
+            "type": "DWORD"
+        }
+    ],
+    "GetGlyphIndicesW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpstr",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        },
+        {
+            "name": "pgi",
+            "type": "LPWORD"
+        },
+        {
+            "name": "fl",
+            "type": "DWORD"
+        }
+    ],
+    "GetTextExtentPointI": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "pgiIn",
+            "type": "LPWORD"
+        },
+        {
+            "name": "cgi",
+            "type": "int"
+        },
+        {
+            "name": "psize",
+            "type": "LPSIZE"
+        }
+    ],
+    "GetTextExtentExPointI": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpwszString",
+            "type": "LPWORD"
+        },
+        {
+            "name": "cwchString",
+            "type": "int"
+        },
+        {
+            "name": "nMaxExtent",
+            "type": "int"
+        },
+        {
+            "name": "lpnFit",
+            "type": "LPINT"
+        },
+        {
+            "name": "lpnDx",
+            "type": "LPINT"
+        },
+        {
+            "name": "lpSize",
+            "type": "LPSIZE"
+        }
+    ],
+    "GetCharWidthI": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "giFirst",
+            "type": "UINT"
+        },
+        {
+            "name": "cgi",
+            "type": "UINT"
+        },
+        {
+            "name": "pgi",
+            "type": "LPWORD"
+        },
+        {
+            "name": "piWidths",
+            "type": "LPINT"
+        }
+    ],
+    "GetCharABCWidthsI": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "giFirst",
+            "type": "UINT"
+        },
+        {
+            "name": "cgi",
+            "type": "UINT"
+        },
+        {
+            "name": "pgi",
+            "type": "LPWORD"
+        },
+        {
+            "name": "pabc",
+            "type": "LPABC"
+        }
+    ],
+    "AddFontResourceExA": [
+        {
+            "name": "name",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "fl",
+            "type": "DWORD"
+        },
+        {
+            "name": "res",
+            "type": "PVOID"
+        }
+    ],
+    "AddFontResourceExW": [
+        {
+            "name": "name",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fl",
+            "type": "DWORD"
+        },
+        {
+            "name": "res",
+            "type": "PVOID"
+        }
+    ],
+    "RemoveFontResourceExA": [
+        {
+            "name": "name",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "fl",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdv",
+            "type": "PVOID"
+        }
+    ],
+    "RemoveFontResourceExW": [
+        {
+            "name": "name",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fl",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdv",
+            "type": "PVOID"
+        }
+    ],
+    "AddFontMemResourceEx": [
+        {
+            "name": "pFileView",
+            "type": "PVOID"
+        },
+        {
+            "name": "cjSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvResrved",
+            "type": "PVOID"
+        },
+        {
+            "name": "pNumFonts",
+            "type": "DWORD"
+        }
+    ],
+    "RemoveFontMemResourceEx": [
+        {
+            "name": "h",
+            "type": "HANDLE"
+        }
+    ],
+    "CreateFontIndirectExA": [
+        {
+            "name": "VOID",
+            "type": "ENUMLOGFONTEXDVA"
+        }
+    ],
+    "CreateFontIndirectExW": [
+        {
+            "name": "VOID",
+            "type": "ENUMLOGFONTEXDVW"
+        }
+    ],
+    "GetViewportExtEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpsize",
+            "type": "LPSIZE"
+        }
+    ],
+    "GetViewportOrgEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lppoint",
+            "type": "LPPOINT"
+        }
+    ],
+    "GetWindowExtEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpsize",
+            "type": "LPSIZE"
+        }
+    ],
+    "GetWindowOrgEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lppoint",
+            "type": "LPPOINT"
+        }
+    ],
+    "IntersectClipRect": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "left",
+            "type": "int"
+        },
+        {
+            "name": "top",
+            "type": "int"
+        },
+        {
+            "name": "right",
+            "type": "int"
+        },
+        {
+            "name": "bottom",
+            "type": "int"
+        }
+    ],
+    "InvertRgn": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        }
+    ],
+    "LineDDA": [
+        {
+            "name": "xStart",
+            "type": "int"
+        },
+        {
+            "name": "yStart",
+            "type": "int"
+        },
+        {
+            "name": "xEnd",
+            "type": "int"
+        },
+        {
+            "name": "yEnd",
+            "type": "int"
+        },
+        {
+            "name": "lpProc",
+            "type": "LINEDDAPROC"
+        },
+        {
+            "name": "data",
+            "type": "LPARAM"
+        }
+    ],
+    "LineTo": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        }
+    ],
+    "MaskBlt": [
+        {
+            "name": "hdcDest",
+            "type": "HDC"
+        },
+        {
+            "name": "xDest",
+            "type": "int"
+        },
+        {
+            "name": "yDest",
+            "type": "int"
+        },
+        {
+            "name": "width",
+            "type": "int"
+        },
+        {
+            "name": "height",
+            "type": "int"
+        },
+        {
+            "name": "hdcSrc",
+            "type": "HDC"
+        },
+        {
+            "name": "xSrc",
+            "type": "int"
+        },
+        {
+            "name": "ySrc",
+            "type": "int"
+        },
+        {
+            "name": "hbmMask",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "xMask",
+            "type": "int"
+        },
+        {
+            "name": "yMask",
+            "type": "int"
+        },
+        {
+            "name": "rop",
+            "type": "DWORD"
+        }
+    ],
+    "PlgBlt": [
+        {
+            "name": "hdcDest",
+            "type": "HDC"
+        },
+        {
+            "name": "lpPoint",
+            "type": "POINT"
+        },
+        {
+            "name": "hdcSrc",
+            "type": "HDC"
+        },
+        {
+            "name": "xSrc",
+            "type": "int"
+        },
+        {
+            "name": "ySrc",
+            "type": "int"
+        },
+        {
+            "name": "width",
+            "type": "int"
+        },
+        {
+            "name": "height",
+            "type": "int"
+        },
+        {
+            "name": "hbmMask",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "xMask",
+            "type": "int"
+        },
+        {
+            "name": "yMask",
+            "type": "int"
+        }
+    ],
+    "OffsetClipRgn": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        }
+    ],
+    "OffsetRgn": [
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        }
+    ],
+    "PatBlt": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "w",
+            "type": "int"
+        },
+        {
+            "name": "h",
+            "type": "int"
+        },
+        {
+            "name": "rop",
+            "type": "DWORD"
+        }
+    ],
+    "Pie": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "left",
+            "type": "int"
+        },
+        {
+            "name": "top",
+            "type": "int"
+        },
+        {
+            "name": "right",
+            "type": "int"
+        },
+        {
+            "name": "bottom",
+            "type": "int"
+        },
+        {
+            "name": "xr1",
+            "type": "int"
+        },
+        {
+            "name": "yr1",
+            "type": "int"
+        },
+        {
+            "name": "xr2",
+            "type": "int"
+        },
+        {
+            "name": "yr2",
+            "type": "int"
+        }
+    ],
+    "PlayMetaFile": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hmf",
+            "type": "HMETAFILE"
+        }
+    ],
+    "PaintRgn": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        }
+    ],
+    "PolyPolygon": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "apt",
+            "type": "POINT"
+        },
+        {
+            "name": "asz",
+            "type": "INT"
+        },
+        {
+            "name": "csz",
+            "type": "int"
+        }
+    ],
+    "PtInRegion": [
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        }
+    ],
+    "PtVisible": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        }
+    ],
+    "RectInRegion": [
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "lprect",
+            "type": "RECT"
+        }
+    ],
+    "RectVisible": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lprect",
+            "type": "RECT"
+        }
+    ],
+    "Rectangle": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "left",
+            "type": "int"
+        },
+        {
+            "name": "top",
+            "type": "int"
+        },
+        {
+            "name": "right",
+            "type": "int"
+        },
+        {
+            "name": "bottom",
+            "type": "int"
+        }
+    ],
+    "RestoreDC": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "nSavedDC",
+            "type": "int"
+        }
+    ],
+    "ResetDCA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpdm",
+            "type": "DEVMODEA"
+        }
+    ],
+    "ResetDCW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpdm",
+            "type": "DEVMODEW"
+        }
+    ],
+    "RealizePalette": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "RemoveFontResourceA": [
+        {
+            "name": "lpFileName",
+            "type": "LPCSTR"
+        }
+    ],
+    "RemoveFontResourceW": [
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "RoundRect": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "left",
+            "type": "int"
+        },
+        {
+            "name": "top",
+            "type": "int"
+        },
+        {
+            "name": "right",
+            "type": "int"
+        },
+        {
+            "name": "bottom",
+            "type": "int"
+        },
+        {
+            "name": "width",
+            "type": "int"
+        },
+        {
+            "name": "height",
+            "type": "int"
+        }
+    ],
+    "ResizePalette": [
+        {
+            "name": "hpal",
+            "type": "HPALETTE"
+        },
+        {
+            "name": "n",
+            "type": "UINT"
+        }
+    ],
+    "SaveDC": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "SelectClipRgn": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        }
+    ],
+    "ExtSelectClipRgn": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "mode",
+            "type": "int"
+        }
+    ],
+    "SetMetaRgn": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "SelectObject": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "h",
+            "type": "HGDIOBJ"
+        }
+    ],
+    "SelectPalette": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hPal",
+            "type": "HPALETTE"
+        },
+        {
+            "name": "bForceBkgd",
+            "type": "BOOL"
+        }
+    ],
+    "SetBkColor": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "color",
+            "type": "COLORREF"
+        }
+    ],
+    "SetDCBrushColor": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "color",
+            "type": "COLORREF"
+        }
+    ],
+    "SetDCPenColor": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "color",
+            "type": "COLORREF"
+        }
+    ],
+    "SetBkMode": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "mode",
+            "type": "int"
+        }
+    ],
+    "SetBitmapBits": [
+        {
+            "name": "hbm",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvBits",
+            "type": "void"
+        }
+    ],
+    "SetBoundsRect": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lprect",
+            "type": "RECT"
+        },
+        {
+            "name": "flags",
+            "type": "UINT"
+        }
+    ],
+    "SetDIBits": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hbm",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "start",
+            "type": "UINT"
+        },
+        {
+            "name": "cLines",
+            "type": "UINT"
+        },
+        {
+            "name": "lpBits",
+            "type": "void"
+        },
+        {
+            "name": "lpbmi",
+            "type": "BITMAPINFO"
+        },
+        {
+            "name": "ColorUse",
+            "type": "UINT"
+        }
+    ],
+    "SetDIBitsToDevice": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "xDest",
+            "type": "int"
+        },
+        {
+            "name": "yDest",
+            "type": "int"
+        },
+        {
+            "name": "w",
+            "type": "DWORD"
+        },
+        {
+            "name": "h",
+            "type": "DWORD"
+        },
+        {
+            "name": "xSrc",
+            "type": "int"
+        },
+        {
+            "name": "ySrc",
+            "type": "int"
+        },
+        {
+            "name": "StartScan",
+            "type": "UINT"
+        },
+        {
+            "name": "cLines",
+            "type": "UINT"
+        },
+        {
+            "name": "lpvBits",
+            "type": "void"
+        },
+        {
+            "name": "lpbmi",
+            "type": "BITMAPINFO"
+        },
+        {
+            "name": "ColorUse",
+            "type": "UINT"
+        }
+    ],
+    "SetMapperFlags": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "flags",
+            "type": "DWORD"
+        }
+    ],
+    "SetGraphicsMode": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iMode",
+            "type": "int"
+        }
+    ],
+    "SetMapMode": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iMode",
+            "type": "int"
+        }
+    ],
+    "SetLayout": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "l",
+            "type": "DWORD"
+        }
+    ],
+    "GetLayout": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "SetMetaFileBitsEx": [
+        {
+            "name": "cbBuffer",
+            "type": "UINT"
+        },
+        {
+            "name": "lpData",
+            "type": "BYTE"
+        }
+    ],
+    "SetPaletteEntries": [
+        {
+            "name": "hpal",
+            "type": "HPALETTE"
+        },
+        {
+            "name": "iStart",
+            "type": "UINT"
+        },
+        {
+            "name": "cEntries",
+            "type": "UINT"
+        },
+        {
+            "name": "pPalEntries",
+            "type": "PALETTEENTRY"
+        }
+    ],
+    "SetPixel": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "color",
+            "type": "COLORREF"
+        }
+    ],
+    "SetPixelV": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "color",
+            "type": "COLORREF"
+        }
+    ],
+    "SetPixelFormat": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "format",
+            "type": "int"
+        },
+        {
+            "name": "ppfd",
+            "type": "PIXELFORMATDESCRIPTOR"
+        }
+    ],
+    "SetPolyFillMode": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "mode",
+            "type": "int"
+        }
+    ],
+    "StretchBlt": [
+        {
+            "name": "hdcDest",
+            "type": "HDC"
+        },
+        {
+            "name": "xDest",
+            "type": "int"
+        },
+        {
+            "name": "yDest",
+            "type": "int"
+        },
+        {
+            "name": "wDest",
+            "type": "int"
+        },
+        {
+            "name": "hDest",
+            "type": "int"
+        },
+        {
+            "name": "hdcSrc",
+            "type": "HDC"
+        },
+        {
+            "name": "xSrc",
+            "type": "int"
+        },
+        {
+            "name": "ySrc",
+            "type": "int"
+        },
+        {
+            "name": "wSrc",
+            "type": "int"
+        },
+        {
+            "name": "hSrc",
+            "type": "int"
+        },
+        {
+            "name": "rop",
+            "type": "DWORD"
+        }
+    ],
+    "SetRectRgn": [
+        {
+            "name": "hrgn",
+            "type": "HRGN"
+        },
+        {
+            "name": "left",
+            "type": "int"
+        },
+        {
+            "name": "top",
+            "type": "int"
+        },
+        {
+            "name": "right",
+            "type": "int"
+        },
+        {
+            "name": "bottom",
+            "type": "int"
+        }
+    ],
+    "StretchDIBits": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "xDest",
+            "type": "int"
+        },
+        {
+            "name": "yDest",
+            "type": "int"
+        },
+        {
+            "name": "DestWidth",
+            "type": "int"
+        },
+        {
+            "name": "DestHeight",
+            "type": "int"
+        },
+        {
+            "name": "xSrc",
+            "type": "int"
+        },
+        {
+            "name": "ySrc",
+            "type": "int"
+        },
+        {
+            "name": "SrcWidth",
+            "type": "int"
+        },
+        {
+            "name": "SrcHeight",
+            "type": "int"
+        },
+        {
+            "name": "lpBits",
+            "type": "void"
+        },
+        {
+            "name": "lpbmi",
+            "type": "BITMAPINFO"
+        },
+        {
+            "name": "iUsage",
+            "type": "UINT"
+        },
+        {
+            "name": "rop",
+            "type": "DWORD"
+        }
+    ],
+    "SetROP2": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "rop2",
+            "type": "int"
+        }
+    ],
+    "SetStretchBltMode": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "mode",
+            "type": "int"
+        }
+    ],
+    "SetSystemPaletteUse": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "use",
+            "type": "UINT"
+        }
+    ],
+    "SetTextCharacterExtra": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "extra",
+            "type": "int"
+        }
+    ],
+    "SetTextColor": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "color",
+            "type": "COLORREF"
+        }
+    ],
+    "SetTextAlign": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "align",
+            "type": "UINT"
+        }
+    ],
+    "SetTextJustification": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "extra",
+            "type": "int"
+        },
+        {
+            "name": "count",
+            "type": "int"
+        }
+    ],
+    "UpdateColors": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GdiAlphaBlend": [
+        {
+            "name": "hdcDest",
+            "type": "HDC"
+        },
+        {
+            "name": "xoriginDest",
+            "type": "int"
+        },
+        {
+            "name": "yoriginDest",
+            "type": "int"
+        },
+        {
+            "name": "wDest",
+            "type": "int"
+        },
+        {
+            "name": "hDest",
+            "type": "int"
+        },
+        {
+            "name": "hdcSrc",
+            "type": "HDC"
+        },
+        {
+            "name": "xoriginSrc",
+            "type": "int"
+        },
+        {
+            "name": "yoriginSrc",
+            "type": "int"
+        },
+        {
+            "name": "wSrc",
+            "type": "int"
+        },
+        {
+            "name": "hSrc",
+            "type": "int"
+        },
+        {
+            "name": "ftn",
+            "type": "BLENDFUNCTION"
+        }
+    ],
+    "GdiTransparentBlt": [
+        {
+            "name": "hdcDest",
+            "type": "HDC"
+        },
+        {
+            "name": "xoriginDest",
+            "type": "int"
+        },
+        {
+            "name": "yoriginDest",
+            "type": "int"
+        },
+        {
+            "name": "wDest",
+            "type": "int"
+        },
+        {
+            "name": "hDest",
+            "type": "int"
+        },
+        {
+            "name": "hdcSrc",
+            "type": "HDC"
+        },
+        {
+            "name": "xoriginSrc",
+            "type": "int"
+        },
+        {
+            "name": "yoriginSrc",
+            "type": "int"
+        },
+        {
+            "name": "wSrc",
+            "type": "int"
+        },
+        {
+            "name": "hSrc",
+            "type": "int"
+        },
+        {
+            "name": "crTransparent",
+            "type": "UINT"
+        }
+    ],
+    "GdiGradientFill": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "pVertex",
+            "type": "PTRIVERTEX"
+        },
+        {
+            "name": "nVertex",
+            "type": "ULONG"
+        },
+        {
+            "name": "pMesh",
+            "type": "PVOID"
+        },
+        {
+            "name": "nCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulMode",
+            "type": "ULONG"
+        }
+    ],
+    "PlayMetaFileRecord": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpHandleTable",
+            "type": "LPHANDLETABLE"
+        },
+        {
+            "name": "lpMR",
+            "type": "LPMETARECORD"
+        },
+        {
+            "name": "noObjs",
+            "type": "UINT"
+        }
+    ],
+    "EnumMetaFile": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hmf",
+            "type": "HMETAFILE"
+        },
+        {
+            "name": "proc",
+            "type": "MFENUMPROC"
+        },
+        {
+            "name": "param",
+            "type": "LPARAM"
+        }
+    ],
+    "CloseEnhMetaFile": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "CopyEnhMetaFileA": [
+        {
+            "name": "hEnh",
+            "type": "HENHMETAFILE"
+        },
+        {
+            "name": "lpFileName",
+            "type": "LPCSTR"
+        }
+    ],
+    "CopyEnhMetaFileW": [
+        {
+            "name": "hEnh",
+            "type": "HENHMETAFILE"
+        },
+        {
+            "name": "lpFileName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "CreateEnhMetaFileA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpFilename",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lprc",
+            "type": "RECT"
+        },
+        {
+            "name": "lpDesc",
+            "type": "LPCSTR"
+        }
+    ],
+    "CreateEnhMetaFileW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpFilename",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lprc",
+            "type": "RECT"
+        },
+        {
+            "name": "lpDesc",
+            "type": "LPCWSTR"
+        }
+    ],
+    "DeleteEnhMetaFile": [
+        {
+            "name": "hmf",
+            "type": "HENHMETAFILE"
+        }
+    ],
+    "EnumEnhMetaFile": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hmf",
+            "type": "HENHMETAFILE"
+        },
+        {
+            "name": "proc",
+            "type": "ENHMFENUMPROC"
+        },
+        {
+            "name": "param",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpRect",
+            "type": "RECT"
+        }
+    ],
+    "GetEnhMetaFileA": [
+        {
+            "name": "lpName",
+            "type": "LPCSTR"
+        }
+    ],
+    "GetEnhMetaFileW": [
+        {
+            "name": "lpName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "GetEnhMetaFileBits": [
+        {
+            "name": "hEMF",
+            "type": "HENHMETAFILE"
+        },
+        {
+            "name": "nSize",
+            "type": "UINT"
+        },
+        {
+            "name": "lpData",
+            "type": "LPBYTE"
+        }
+    ],
+    "GetEnhMetaFileDescriptionA": [
+        {
+            "name": "hemf",
+            "type": "HENHMETAFILE"
+        },
+        {
+            "name": "cchBuffer",
+            "type": "UINT"
+        },
+        {
+            "name": "lpDescription",
+            "type": "LPSTR"
+        }
+    ],
+    "GetEnhMetaFileDescriptionW": [
+        {
+            "name": "hemf",
+            "type": "HENHMETAFILE"
+        },
+        {
+            "name": "cchBuffer",
+            "type": "UINT"
+        },
+        {
+            "name": "lpDescription",
+            "type": "LPWSTR"
+        }
+    ],
+    "GetEnhMetaFileHeader": [
+        {
+            "name": "hemf",
+            "type": "HENHMETAFILE"
+        },
+        {
+            "name": "nSize",
+            "type": "UINT"
+        },
+        {
+            "name": "lpEnhMetaHeader",
+            "type": "LPENHMETAHEADER"
+        }
+    ],
+    "GetEnhMetaFilePaletteEntries": [
+        {
+            "name": "hemf",
+            "type": "HENHMETAFILE"
+        },
+        {
+            "name": "nNumEntries",
+            "type": "UINT"
+        },
+        {
+            "name": "lpPaletteEntries",
+            "type": "LPPALETTEENTRY"
+        }
+    ],
+    "GetEnhMetaFilePixelFormat": [
+        {
+            "name": "hemf",
+            "type": "HENHMETAFILE"
+        },
+        {
+            "name": "cbBuffer",
+            "type": "UINT"
+        },
+        {
+            "name": "ppfd",
+            "type": "PIXELFORMATDESCRIPTOR"
+        }
+    ],
+    "GetWinMetaFileBits": [
+        {
+            "name": "hemf",
+            "type": "HENHMETAFILE"
+        },
+        {
+            "name": "cbData16",
+            "type": "UINT"
+        },
+        {
+            "name": "pData16",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "iMapMode",
+            "type": "INT"
+        },
+        {
+            "name": "hdcRef",
+            "type": "HDC"
+        }
+    ],
+    "PlayEnhMetaFile": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hmf",
+            "type": "HENHMETAFILE"
+        },
+        {
+            "name": "lprect",
+            "type": "RECT"
+        }
+    ],
+    "PlayEnhMetaFileRecord": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "pht",
+            "type": "LPHANDLETABLE"
+        },
+        {
+            "name": "pmr",
+            "type": "ENHMETARECORD"
+        },
+        {
+            "name": "cht",
+            "type": "UINT"
+        }
+    ],
+    "SetEnhMetaFileBits": [
+        {
+            "name": "nSize",
+            "type": "UINT"
+        },
+        {
+            "name": "pb",
+            "type": "BYTE"
+        }
+    ],
+    "SetWinMetaFileBits": [
+        {
+            "name": "nSize",
+            "type": "UINT"
+        },
+        {
+            "name": "lpMeta16Data",
+            "type": "BYTE"
+        },
+        {
+            "name": "hdcRef",
+            "type": "HDC"
+        },
+        {
+            "name": "lpMFP",
+            "type": "METAFILEPICT"
+        }
+    ],
+    "GdiComment": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "nSize",
+            "type": "UINT"
+        },
+        {
+            "name": "lpData",
+            "type": "BYTE"
+        }
+    ],
+    "GetTextMetricsA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lptm",
+            "type": "LPTEXTMETRICA"
+        }
+    ],
+    "GetTextMetricsW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lptm",
+            "type": "LPTEXTMETRICW"
+        }
+    ],
+    "AngleArc": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "r",
+            "type": "DWORD"
+        },
+        {
+            "name": "StartAngle",
+            "type": "FLOAT"
+        },
+        {
+            "name": "SweepAngle",
+            "type": "FLOAT"
+        }
+    ],
+    "PolyPolyline": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "apt",
+            "type": "POINT"
+        },
+        {
+            "name": "asz",
+            "type": "DWORD"
+        },
+        {
+            "name": "csz",
+            "type": "DWORD"
+        }
+    ],
+    "GetWorldTransform": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpxf",
+            "type": "LPXFORM"
+        }
+    ],
+    "SetWorldTransform": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpxf",
+            "type": "XFORM"
+        }
+    ],
+    "ModifyWorldTransform": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpxf",
+            "type": "XFORM"
+        },
+        {
+            "name": "mode",
+            "type": "DWORD"
+        }
+    ],
+    "CombineTransform": [
+        {
+            "name": "lpxfOut",
+            "type": "LPXFORM"
+        },
+        {
+            "name": "lpxf1",
+            "type": "XFORM"
+        },
+        {
+            "name": "lpxf2",
+            "type": "XFORM"
+        }
+    ],
+    "CreateDIBSection": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "pbmi",
+            "type": "BITMAPINFO"
+        },
+        {
+            "name": "usage",
+            "type": "UINT"
+        },
+        {
+            "name": "ppvBits",
+            "type": "void"
+        },
+        {
+            "name": "hSection",
+            "type": "HANDLE"
+        },
+        {
+            "name": "offset",
+            "type": "DWORD"
+        }
+    ],
+    "GetDIBColorTable": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iStart",
+            "type": "UINT"
+        },
+        {
+            "name": "cEntries",
+            "type": "UINT"
+        },
+        {
+            "name": "prgbq",
+            "type": "RGBQUAD"
+        }
+    ],
+    "SetDIBColorTable": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "iStart",
+            "type": "UINT"
+        },
+        {
+            "name": "cEntries",
+            "type": "UINT"
+        },
+        {
+            "name": "prgbq",
+            "type": "RGBQUAD"
+        }
+    ],
+    "SetColorAdjustment": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpca",
+            "type": "COLORADJUSTMENT"
+        }
+    ],
+    "GetColorAdjustment": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpca",
+            "type": "LPCOLORADJUSTMENT"
+        }
+    ],
+    "CreateHalftonePalette": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "StartDocA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpdi",
+            "type": "DOCINFOA"
+        }
+    ],
+    "StartDocW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpdi",
+            "type": "DOCINFOW"
+        }
+    ],
+    "EndDoc": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "StartPage": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "EndPage": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "AbortDoc": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "SetAbortProc": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "proc",
+            "type": "ABORTPROC"
+        }
+    ],
+    "AbortPath": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "ArcTo": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "left",
+            "type": "int"
+        },
+        {
+            "name": "top",
+            "type": "int"
+        },
+        {
+            "name": "right",
+            "type": "int"
+        },
+        {
+            "name": "bottom",
+            "type": "int"
+        },
+        {
+            "name": "xr1",
+            "type": "int"
+        },
+        {
+            "name": "yr1",
+            "type": "int"
+        },
+        {
+            "name": "xr2",
+            "type": "int"
+        },
+        {
+            "name": "yr2",
+            "type": "int"
+        }
+    ],
+    "BeginPath": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "CloseFigure": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "EndPath": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "FillPath": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "FlattenPath": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetPath": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "apt",
+            "type": "LPPOINT"
+        },
+        {
+            "name": "aj",
+            "type": "LPBYTE"
+        },
+        {
+            "name": "cpt",
+            "type": "int"
+        }
+    ],
+    "PathToRegion": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "PolyDraw": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "apt",
+            "type": "POINT"
+        },
+        {
+            "name": "aj",
+            "type": "BYTE"
+        },
+        {
+            "name": "cpt",
+            "type": "int"
+        }
+    ],
+    "SelectClipPath": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "mode",
+            "type": "int"
+        }
+    ],
+    "SetArcDirection": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "dir",
+            "type": "int"
+        }
+    ],
+    "SetMiterLimit": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "limit",
+            "type": "FLOAT"
+        },
+        {
+            "name": "old",
+            "type": "PFLOAT"
+        }
+    ],
+    "StrokeAndFillPath": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "StrokePath": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "WidenPath": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "ExtCreatePen": [
+        {
+            "name": "iPenStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "cWidth",
+            "type": "DWORD"
+        },
+        {
+            "name": "plbrush",
+            "type": "LOGBRUSH"
+        },
+        {
+            "name": "cStyle",
+            "type": "DWORD"
+        },
+        {
+            "name": "pstyle",
+            "type": "DWORD"
+        }
+    ],
+    "GetMiterLimit": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "plimit",
+            "type": "PFLOAT"
+        }
+    ],
+    "GetArcDirection": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetObjectA": [
+        {
+            "name": "h",
+            "type": "HANDLE"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        },
+        {
+            "name": "pv",
+            "type": "LPVOID"
+        }
+    ],
+    "GetObjectW": [
+        {
+            "name": "h",
+            "type": "HANDLE"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        },
+        {
+            "name": "pv",
+            "type": "LPVOID"
+        }
+    ],
+    "MoveToEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "lppt",
+            "type": "LPPOINT"
+        }
+    ],
+    "TextOutA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        }
+    ],
+    "TextOutW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        }
+    ],
+    "ExtTextOutA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "options",
+            "type": "UINT"
+        },
+        {
+            "name": "lprect",
+            "type": "RECT"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "c",
+            "type": "UINT"
+        },
+        {
+            "name": "lpDx",
+            "type": "INT"
+        }
+    ],
+    "ExtTextOutW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "options",
+            "type": "UINT"
+        },
+        {
+            "name": "lprect",
+            "type": "RECT"
+        },
+        {
+            "name": "lpString",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "c",
+            "type": "UINT"
+        },
+        {
+            "name": "lpDx",
+            "type": "INT"
+        }
+    ],
+    "PolyTextOutA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "ppt",
+            "type": "POLYTEXTA"
+        },
+        {
+            "name": "nstrings",
+            "type": "int"
+        }
+    ],
+    "PolyTextOutW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "ppt",
+            "type": "POLYTEXTW"
+        },
+        {
+            "name": "nstrings",
+            "type": "int"
+        }
+    ],
+    "CreatePolygonRgn": [
+        {
+            "name": "pptl",
+            "type": "POINT"
+        },
+        {
+            "name": "cPoint",
+            "type": "int"
+        },
+        {
+            "name": "iMode",
+            "type": "int"
+        }
+    ],
+    "DPtoLP": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lppt",
+            "type": "LPPOINT"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        }
+    ],
+    "LPtoDP": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lppt",
+            "type": "LPPOINT"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        }
+    ],
+    "Polygon": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "apt",
+            "type": "POINT"
+        },
+        {
+            "name": "cpt",
+            "type": "int"
+        }
+    ],
+    "Polyline": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "apt",
+            "type": "POINT"
+        },
+        {
+            "name": "cpt",
+            "type": "int"
+        }
+    ],
+    "PolyBezier": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "apt",
+            "type": "POINT"
+        },
+        {
+            "name": "cpt",
+            "type": "DWORD"
+        }
+    ],
+    "PolyBezierTo": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "apt",
+            "type": "POINT"
+        },
+        {
+            "name": "cpt",
+            "type": "DWORD"
+        }
+    ],
+    "PolylineTo": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "apt",
+            "type": "POINT"
+        },
+        {
+            "name": "cpt",
+            "type": "DWORD"
+        }
+    ],
+    "SetViewportExtEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "lpsz",
+            "type": "LPSIZE"
+        }
+    ],
+    "SetViewportOrgEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "lppt",
+            "type": "LPPOINT"
+        }
+    ],
+    "SetWindowExtEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "lpsz",
+            "type": "LPSIZE"
+        }
+    ],
+    "SetWindowOrgEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "lppt",
+            "type": "LPPOINT"
+        }
+    ],
+    "OffsetViewportOrgEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "lppt",
+            "type": "LPPOINT"
+        }
+    ],
+    "OffsetWindowOrgEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "lppt",
+            "type": "LPPOINT"
+        }
+    ],
+    "ScaleViewportExtEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "xn",
+            "type": "int"
+        },
+        {
+            "name": "dx",
+            "type": "int"
+        },
+        {
+            "name": "yn",
+            "type": "int"
+        },
+        {
+            "name": "yd",
+            "type": "int"
+        },
+        {
+            "name": "lpsz",
+            "type": "LPSIZE"
+        }
+    ],
+    "ScaleWindowExtEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "xn",
+            "type": "int"
+        },
+        {
+            "name": "xd",
+            "type": "int"
+        },
+        {
+            "name": "yn",
+            "type": "int"
+        },
+        {
+            "name": "yd",
+            "type": "int"
+        },
+        {
+            "name": "lpsz",
+            "type": "LPSIZE"
+        }
+    ],
+    "SetBitmapDimensionEx": [
+        {
+            "name": "hbm",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "w",
+            "type": "int"
+        },
+        {
+            "name": "h",
+            "type": "int"
+        },
+        {
+            "name": "lpsz",
+            "type": "LPSIZE"
+        }
+    ],
+    "SetBrushOrgEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "x",
+            "type": "int"
+        },
+        {
+            "name": "y",
+            "type": "int"
+        },
+        {
+            "name": "lppt",
+            "type": "LPPOINT"
+        }
+    ],
+    "GetTextFaceA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        },
+        {
+            "name": "lpName",
+            "type": "LPSTR"
+        }
+    ],
+    "GetTextFaceW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "c",
+            "type": "int"
+        },
+        {
+            "name": "lpName",
+            "type": "LPWSTR"
+        }
+    ],
+    "GetKerningPairsA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "nPairs",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpKernPair",
+            "type": "LPKERNINGPAIR"
+        }
+    ],
+    "GetKerningPairsW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "nPairs",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpKernPair",
+            "type": "LPKERNINGPAIR"
+        }
+    ],
+    "GetDCOrgEx": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lppt",
+            "type": "LPPOINT"
+        }
+    ],
+    "UnrealizeObject": [
+        {
+            "name": "h",
+            "type": "HGDIOBJ"
+        }
+    ],
+    "GdiFlush": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "GdiSetBatchLimit": [
+        {
+            "name": "dw",
+            "type": "DWORD"
+        }
+    ],
+    "GdiGetBatchLimit": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SetICMMode": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "mode",
+            "type": "int"
+        }
+    ],
+    "CheckColorsInGamut": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpRGBTriple",
+            "type": "LPRGBTRIPLE"
+        },
+        {
+            "name": "dlpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "nCount",
+            "type": "DWORD"
+        }
+    ],
+    "GetColorSpace": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "GetLogColorSpaceA": [
+        {
+            "name": "hColorSpace",
+            "type": "HCOLORSPACE"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPLOGCOLORSPACEA"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "GetLogColorSpaceW": [
+        {
+            "name": "hColorSpace",
+            "type": "HCOLORSPACE"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPLOGCOLORSPACEW"
+        },
+        {
+            "name": "nSize",
+            "type": "DWORD"
+        }
+    ],
+    "CreateColorSpaceA": [
+        {
+            "name": "lplcs",
+            "type": "LPLOGCOLORSPACEA"
+        }
+    ],
+    "CreateColorSpaceW": [
+        {
+            "name": "lplcs",
+            "type": "LPLOGCOLORSPACEW"
+        }
+    ],
+    "SetColorSpace": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hcs",
+            "type": "HCOLORSPACE"
+        }
+    ],
+    "DeleteColorSpace": [
+        {
+            "name": "hcs",
+            "type": "HCOLORSPACE"
+        }
+    ],
+    "GetICMProfileA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "pBufSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pszFilename",
+            "type": "LPSTR"
+        }
+    ],
+    "GetICMProfileW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "pBufSize",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pszFilename",
+            "type": "LPWSTR"
+        }
+    ],
+    "SetICMProfileA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpFileName",
+            "type": "LPSTR"
+        }
+    ],
+    "SetICMProfileW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpFileName",
+            "type": "LPWSTR"
+        }
+    ],
+    "GetDeviceGammaRamp": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpRamp",
+            "type": "LPVOID"
+        }
+    ],
+    "SetDeviceGammaRamp": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "lpRamp",
+            "type": "LPVOID"
+        }
+    ],
+    "ColorMatchToTarget": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hdcTarget",
+            "type": "HDC"
+        },
+        {
+            "name": "action",
+            "type": "DWORD"
+        }
+    ],
+    "EnumICMProfilesA": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "proc",
+            "type": "ICMENUMPROCA"
+        },
+        {
+            "name": "param",
+            "type": "LPARAM"
+        }
+    ],
+    "EnumICMProfilesW": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "proc",
+            "type": "ICMENUMPROCW"
+        },
+        {
+            "name": "param",
+            "type": "LPARAM"
+        }
+    ],
+    "UpdateICMRegKeyA": [
+        {
+            "name": "reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszCMID",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpszFileName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "command",
+            "type": "UINT"
+        }
+    ],
+    "UpdateICMRegKeyW": [
+        {
+            "name": "reserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszCMID",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpszFileName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "command",
+            "type": "UINT"
+        }
+    ],
+    "ColorCorrectPalette": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        },
+        {
+            "name": "hPal",
+            "type": "HPALETTE"
+        },
+        {
+            "name": "deFirst",
+            "type": "DWORD"
+        },
+        {
+            "name": "num",
+            "type": "DWORD"
+        }
+    ],
+    "SwapBuffers": [
+        {
+            "name": "VOID",
+            "type": "HDC"
+        }
+    ]
+}
