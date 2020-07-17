@@ -903,5 +903,24 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    def test_elf_linux_x86(self):
+        class Fake_urandom:
+
+            def read(self, size):
+                return b"\x01"
+
+            def fstat(self):
+                return -1
+            
+            def close(self):
+                return 0
+
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_fetch_urandom"],  "../examples/rootfs/x86_linux", output="debug")
+        ql.add_fs_mapper("/dev/urandom", Fake_urandom())
+        ql.run()
+        del ql
+
+
+
 if __name__ == "__main__":
     unittest.main()
