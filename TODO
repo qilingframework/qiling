@@ -48,12 +48,12 @@ Android
 -------------------- CHECKLIST before TAG --------------------
 
 1. core.py
-    - __version__ = "1.1" + "-XXXXX"
+    - __version__ = "1.1" + "-rc1"
 2. setup.py
     - 'Development Status :: 3 - Alpha'
 3. ChangeLog    
 4. commit and push
 5. Merge dev into master
-6. git tag 1.1-Alpha2
+6. git tag 1.1-rc1
 7. git push origin --tags
 8. check for new Pypi package

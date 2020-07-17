@@ -98,6 +98,13 @@ def hook_GetWindowsDirectoryW(ql, address, params):
     ql.mem.write(dst, value)
     return len(value) - 2
 
+# UINT GetSystemWindowsDirectoryW(
+#   LPWSTR lpBuffer,
+#   UINT   uSize
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_GetSystemWindowsDirectoryW(ql, address, params):
+    return hook_GetWindowsDirectoryW.__wrapped__(ql, address, params)
 
 # void GetNativeSystemInfo(
 #   LPSYSTEM_INFO lpSystemInfo

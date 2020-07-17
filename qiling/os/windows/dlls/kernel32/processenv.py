@@ -98,3 +98,13 @@ def hook_ExpandEnvironmentStringsW(ql, address, params):
 def hook_GetEnvironmentVariableA(ql, address, params):
     ret = 0
     return ret
+
+# DWORD GetEnvironmentVariableW(
+#   LPCWSTR lpName,
+#   LPWSTR  lpBuffer,
+#   DWORD  nSize
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_GetEnvironmentVariableW(ql, address, params):
+    ret = 0
+    return ret

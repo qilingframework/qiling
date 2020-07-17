@@ -219,6 +219,29 @@ def hook_CreateMutexW(ql, address, params):
 def hook_CreateMutexA(ql, address, params):
     return hook_CreateMutexW.__wrapped__(ql, address, params)
 
+# BOOL ReleaseMutex(
+#   HANDLE hMutex
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_ReleaseMutex(ql, address, params):
+    hMutex = params["hMutex"]
+    handle = ql.os.handle_manager.get(hMutex)
+    if not handle:
+        ql.os.last_error = ERROR_INVALID_HANDLE
+        return 0
+
+    mutex = handle.obj
+
+    if not mutex or not isinstance(mutex, Mutex):
+        return 0
+
+    if mutex.isFree():
+        ql.os.last_error = ERROR_NOT_OWNER
+        return 0
+
+    # FIXME: Only the owner is allowed to do this!
+    mutex.unlock()
+    return 1
 
 # HANDLE CreateEventA(
 #  LPSECURITY_ATTRIBUTES lpEventAttributes,
