@@ -96,6 +96,9 @@ class Process():
         # add dll to ldr data
         self.add_ldr_data_table_entry(dll_name)
 
+        # add DLL to coverage images
+        self.images.append(self.coverage_image(dll_base, dll_base+dll_len, path))
+
         self.ql.nprint("[+] Done with loading %s" % path)
         
         return dll_base
