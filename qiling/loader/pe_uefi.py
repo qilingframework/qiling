@@ -20,6 +20,7 @@ from qiling.os.uefi.bootup import *
 from qiling.os.uefi.runtime import *
 from qiling.os.uefi.dxe_service import *
 from qiling.os.uefi.smm_base2_protocol import *
+from qiling.os.uefi.mm_access_protocol import *
 
 from qiling.os.windows.fncc import *
 
@@ -199,10 +200,11 @@ class QlLoaderPE_UEFI(QlLoader):
         boot_services_ptr = system_table_heap_ptr
         system_table.BootServices = boot_services_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_BOOT_SERVICES)
-        system_table_heap_ptr, boot_services = hook_EFI_BOOT_SERVICES(self.ql, system_table_heap_ptr)
+        system_table_heap_ptr, boot_services, efi_mm_system_table = hook_EFI_BOOT_SERVICES(self.ql, system_table_heap_ptr)
 
         self.efi_configuration_table_ptr = system_table_heap_ptr
         system_table.ConfigurationTable = self.efi_configuration_table_ptr
+        efi_mm_system_table.MmConfigurationTable = self.efi_configuration_table_ptr
         system_table.NumberOfTableEntries = 2
         system_table_heap_ptr += ctypes.sizeof(EFI_CONFIGURATION_TABLE) * 100 # We don't expect more then a few entries.
         efi_configuration_table = EFI_CONFIGURATION_TABLE()
@@ -225,10 +227,17 @@ class QlLoaderPE_UEFI(QlLoader):
         self.efi_configuration_table = [self.ql.os.profile["HOB_LIST"]["guid"]]
         self.ql.mem.write(self.efi_configuration_table_ptr, convert_struct_to_bytes(efi_configuration_table))
 
+        self.mm_system_table_ptr = system_table_heap_ptr
+        system_table_heap_ptr += ctypes.sizeof(EFI_MM_SYSTEM_TABLE)
         self.smm_base2_protocol_ptr = system_table_heap_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_SMM_BASE2_PROTOCOL)
-        system_table_heap_ptr, smm_base2_protocol = install_EFI_SMM_BASE2_PROTOCOL(self.ql, system_table_heap_ptr)
+        system_table_heap_ptr, smm_base2_protocol, efi_mm_system_table = install_EFI_SMM_BASE2_PROTOCOL(self.ql, system_table_heap_ptr, efi_mm_system_table)
         self.handle_dict[1] = {self.ql.os.profile.get("EFI_SMM_BASE2_PROTOCOL", "guid"): self.smm_base2_protocol_ptr}
+
+        self.mm_access_protocol_ptr = system_table_heap_ptr
+        system_table_heap_ptr += ctypes.sizeof(EFI_MM_ACCESS_PROTOCOL)
+        system_table_heap_ptr, mm_access_protocol = install_EFI_MM_ACCESS_PROTOCOL(self.ql, system_table_heap_ptr)
+        self.handle_dict[1][self.ql.os.profile.get("EFI_MM_ACCESS_PROTOCOL", "guid")] = self.mm_access_protocol_ptr
 
         self.dxe_services_ptr = system_table_heap_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_DXE_SERVICES)
@@ -252,7 +261,9 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.mem.write(runtime_services_ptr, convert_struct_to_bytes(runtime_services))
         self.ql.mem.write(boot_services_ptr, convert_struct_to_bytes(boot_services))
         self.ql.mem.write(self.system_table_ptr, convert_struct_to_bytes(system_table))
+        self.ql.mem.write(self.mm_system_table_ptr, convert_struct_to_bytes(efi_mm_system_table))
         self.ql.mem.write(self.smm_base2_protocol_ptr, convert_struct_to_bytes(smm_base2_protocol))
+        self.ql.mem.write(self.mm_access_protocol_ptr, convert_struct_to_bytes(mm_access_protocol))
         self.ql.mem.write(self.dxe_services_ptr, convert_struct_to_bytes(dxe_services))
 
         for dependency in self.ql.argv:

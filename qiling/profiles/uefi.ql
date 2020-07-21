@@ -41,6 +41,9 @@ revision = 0x1000
 [EFI_SMM_BASE2_PROTOCOL]
 guid = f4ccbfb7-f6e0-47fd-9dd4-10a8f150c191
 
+[EFI_MM_ACCESS_PROTOCOL]
+guid = c2702b74-800c-4131-8746-8fb5b89ce4ac
+
 [KERNEL]
 pid = 1996
 
