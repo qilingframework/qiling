@@ -192,10 +192,10 @@ class QlLoaderPE_UEFI(QlLoader):
         system_table = EFI_SYSTEM_TABLE()
         system_table_heap_ptr = system_table_heap + ctypes.sizeof(EFI_SYSTEM_TABLE)
         
-        runtime_services_ptr = system_table_heap_ptr
-        system_table.RuntimeServices = runtime_services_ptr
+        self.runtime_services_ptr = system_table_heap_ptr
+        system_table.RuntimeServices = self.runtime_services_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_RUNTIME_SERVICES)
-        system_table_heap_ptr, runtime_services = hook_EFI_RUNTIME_SERVICES(self.ql, system_table_heap_ptr)
+        system_table_heap_ptr, self.runtime_services = hook_EFI_RUNTIME_SERVICES(self.ql, system_table_heap_ptr)
 
         boot_services_ptr = system_table_heap_ptr
         system_table.BootServices = boot_services_ptr
@@ -258,7 +258,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.efi_configuration_table.append(self.ql.os.profile.get("DXE_SERVICE_TABLE", "guid"))
         
 
-        self.ql.mem.write(runtime_services_ptr, convert_struct_to_bytes(runtime_services))
+        self.ql.mem.write(self.runtime_services_ptr, convert_struct_to_bytes(self.runtime_services))
         self.ql.mem.write(boot_services_ptr, convert_struct_to_bytes(boot_services))
         self.ql.mem.write(self.system_table_ptr, convert_struct_to_bytes(system_table))
         self.ql.mem.write(self.mm_system_table_ptr, convert_struct_to_bytes(efi_mm_system_table))
@@ -283,3 +283,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.OOO_EOE_callbacks = []
 
         self.execute_next_module()
+
+    def restore_runtime_services(self):
+        self.ql.mem.write(self.runtime_services_ptr, convert_struct_to_bytes(self.runtime_services))
+
