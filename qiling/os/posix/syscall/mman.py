@@ -22,19 +22,19 @@ from qiling.exception import *
 
 def ql_syscall_munmap(ql, munmap_addr , munmap_len, *args, **kw):
 
-    # get all mapped fd with flag MAP_SHARED
-    mapped_fd = [(idx, fd) for idx, fd in enumerate(ql.os.file_des) if fd != 0 and fd._is_map_shared]
+    # get all mapped fd with flag MAP_SHARED and we definitely dont want to wipe out share library
+    mapped_fd = [fd for fd in ql.os.file_des if fd != 0 and fd._is_map_shared and not fd.name.endswith(".so")]
     if len(mapped_fd):
-        all_mem_info = [_mem_info for _, _, _,  _mem_info in ql.mem.map_info]
+        all_mem_info = [_mem_info for _, _, _,  _mem_info in ql.mem.map_info if _mem_info not in ("[mapped]", "[stack]", "hook mem")]
 
-        for idx, _fd in mapped_fd:
+        for _fd in mapped_fd:
             if _fd.name in all_mem_info:
                 # flushes changes to disk file
                 _buff = ql.mem.read(munmap_addr, munmap_len)
-                # TODO: need a better solution for this part
+                # FIXME: need a better solution for this part
                 # overwrite file content from the beginning for now
-                ql.os.file_des[idx].lseek(0)
-                ql.os.file_des[idx].write(_buff)
+                _fd.lseek(0)
+                _fd.write(_buff)
 
     munmap_len = ((munmap_len + 0x1000 - 1) // 0x1000) * 0x1000
     ql.mem.unmap(munmap_addr, munmap_len)
