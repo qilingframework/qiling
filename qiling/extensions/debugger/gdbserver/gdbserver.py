@@ -172,7 +172,7 @@ class GDBSERVERsession(object):
                 elif self.ql.archtype == QL_ARCH.ARM:
                     mode = self.ql.arch.check_thumb()
                     
-                    for reg in self.tables[QL_ARCH.ARM]:
+                    for reg in self.tables[QL_ARCH.ARM][:17]:
                         r = self.ql.reg.read(reg)
                         if mode == UC_MODE_THUMB and reg == "pc":
                             r += 1
@@ -181,13 +181,13 @@ class GDBSERVERsession(object):
                         s += tmp
 
                 elif self.ql.archtype== QL_ARCH.ARM64:
-                    for reg in self.tables[QL_ARCH.ARM64]:
+                    for reg in self.tables[QL_ARCH.ARM64][:33]:
                         r = self.ql.reg.read(reg)
                         tmp = self.ql.arch.addr_to_str(r)
                         s += tmp
 
                 elif self.ql.archtype== QL_ARCH.MIPS:
-                    for reg in self.tables[QL_ARCH.MIPS]:
+                    for reg in self.tables[QL_ARCH.MIPS][:38]:
                         r = self.ql.reg.read(reg)
                         if self.ql.archendian == QL_ENDIAN.EB:
                             tmp = self.ql.arch.addr_to_str(r, endian ="little")
