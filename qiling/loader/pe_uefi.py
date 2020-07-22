@@ -21,6 +21,7 @@ from qiling.os.uefi.runtime import *
 from qiling.os.uefi.dxe_service import *
 from qiling.os.uefi.smm_base2_protocol import *
 from qiling.os.uefi.mm_access_protocol import *
+from qiling.os.uefi.smm_sw_dispatch2_protocol import *
 
 from qiling.os.windows.fncc import *
 
@@ -239,6 +240,11 @@ class QlLoaderPE_UEFI(QlLoader):
         system_table_heap_ptr, mm_access_protocol = install_EFI_MM_ACCESS_PROTOCOL(self.ql, system_table_heap_ptr)
         self.handle_dict[1][self.ql.os.profile.get("EFI_MM_ACCESS_PROTOCOL", "guid")] = self.mm_access_protocol_ptr
 
+        self.smm_sw_dispatch2_protocol_ptr = system_table_heap_ptr
+        system_table_heap_ptr += ctypes.sizeof(EFI_SMM_SW_DISPATCH2_PROTOCOL)
+        system_table_heap_ptr, smm_sw_dispatch2_protocol = install_EFI_SMM_SW_DISPATCH2_PROTOCOL(self.ql, system_table_heap_ptr)
+        self.handle_dict[1][self.ql.os.profile.get("EFI_SMM_SW_DISPATCH2_PROTOCOL", "guid")] = self.smm_sw_dispatch2_protocol_ptr
+
         self.dxe_services_ptr = system_table_heap_ptr
         system_table_heap_ptr += ctypes.sizeof(EFI_DXE_SERVICES)
         system_table_heap_ptr, dxe_services = install_EFI_DXE_SERVICES(self.ql, system_table_heap_ptr)
@@ -264,6 +270,7 @@ class QlLoaderPE_UEFI(QlLoader):
         self.ql.mem.write(self.mm_system_table_ptr, convert_struct_to_bytes(efi_mm_system_table))
         self.ql.mem.write(self.smm_base2_protocol_ptr, convert_struct_to_bytes(smm_base2_protocol))
         self.ql.mem.write(self.mm_access_protocol_ptr, convert_struct_to_bytes(mm_access_protocol))
+        self.ql.mem.write(self.smm_sw_dispatch2_protocol_ptr, convert_struct_to_bytes(smm_sw_dispatch2_protocol))
         self.ql.mem.write(self.dxe_services_ptr, convert_struct_to_bytes(dxe_services))
 
         for dependency in self.ql.argv:
