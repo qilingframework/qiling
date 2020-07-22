@@ -16,6 +16,7 @@ class ql_file:
     def __init__(self, path, fd):
         self.__path = path
         self.__fd = fd
+        self._is_map_shared = False
 
     @classmethod
     def open(self, open_path, open_flags, open_mode):
