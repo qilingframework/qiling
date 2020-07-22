@@ -21,6 +21,21 @@ from qiling.exception import *
 
 
 def ql_syscall_munmap(ql, munmap_addr , munmap_len, *args, **kw):
+
+    # get all mapped fd with flag MAP_SHARED
+    mapped_fd = [(idx, fd) for idx, fd in enumerate(ql.os.file_des) if fd != 0 and fd._is_map_shared]
+    if len(mapped_fd):
+        all_mem_info = [_mem_info for _, _, _,  _mem_info in ql.mem.map_info]
+
+        for idx, _fd in mapped_fd:
+            if _fd.name in all_mem_info:
+                # flushes changes to disk file
+                _buff = ql.mem.read(munmap_addr, munmap_len)
+                # TODO: need a better solution for this part
+                # overwrite file content from the beginning for now
+                ql.os.file_des[idx].lseek(0)
+                ql.os.file_des[idx].write(_buff)
+
     munmap_len = ((munmap_len + 0x1000 - 1) // 0x1000) * 0x1000
     ql.mem.unmap(munmap_addr, munmap_len)
     regreturn = 0
@@ -102,6 +117,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
         ql.os.file_des[mmap_fd].lseek(mmap_offset)
         data = ql.os.file_des[mmap_fd].read(mmap_length)
         mem_info = str(ql.os.file_des[mmap_fd].name)
+        ql.os.file_des[mmap_fd]._is_map_shared = True
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
         ql.dprint(D_INFO, "[+] log mem mmap  : " + mem_info)
@@ -172,6 +188,7 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
         ql.os.file_des[mmap_fd].lseek(mmap_pgoffset)
         data = ql.os.file_des[mmap_fd].read(mmap_length)
         mem_info = str(ql.os.file_des[mmap_fd].name)
+        ql.os.file_des[mmap_fd]._is_map_shared = True
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
         ql.dprint(D_INFO, "[+] log mem mmap  : " + mem_info)
@@ -235,6 +252,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         ql.os.file_des[mmap2_fd].lseek(mmap2_pgoffset)
         data = ql.os.file_des[mmap2_fd].read(mmap2_length)
         mem_info = str(ql.os.file_des[mmap2_fd].name)
+        ql.os.file_des[mmap_fd]._is_map_shared = True
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
         ql.dprint(D_INFO, "[+] log mem mmap2  : " + mem_info)
