@@ -252,7 +252,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         ql.os.file_des[mmap2_fd].lseek(mmap2_pgoffset)
         data = ql.os.file_des[mmap2_fd].read(mmap2_length)
         mem_info = str(ql.os.file_des[mmap2_fd].name)
-        ql.os.file_des[mmap_fd]._is_map_shared = True
+        ql.os.file_des[mmap2_fd]._is_map_shared = True
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
         ql.dprint(D_INFO, "[+] log mem mmap2  : " + mem_info)
