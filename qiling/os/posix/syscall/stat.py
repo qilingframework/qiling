@@ -75,7 +75,11 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
 
 
 def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
-    if fstat64_fd < 256 and ql.os.file_des[fstat64_fd] != 0:
+
+    if ql.os.file_des[fstat64_fd].fstat() == -1:
+        regreturn = 0
+
+    elif fstat64_fd < 256 and ql.os.file_des[fstat64_fd] != 0:
         user_fileno = fstat64_fd
         fstat64_info = ql.os.file_des[user_fileno].fstat()
 
@@ -219,6 +223,40 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
             fstat_buf += ql.pack64(fstat_info.st_rdev)
             fstat_buf += ql.pack64(fstat_info.st_size)
             fstat_buf += ql.pack64(fstat_info.st_blksize)
+            fstat_buf += ql.pack64(fstat_info.st_blocks)
+            fstat_buf += ql.pack64(int(fstat_info.st_atime))
+            fstat_buf += ql.pack64(0)
+            fstat_buf += ql.pack64(int(fstat_info.st_mtime))
+            fstat_buf += ql.pack64(0)
+            fstat_buf += ql.pack64(int(fstat_info.st_ctime))
+            fstat_buf += ql.pack64(0)
+        elif ql.archtype== QL_ARCH.ARM64:
+            # struct stat is : 80 addr is : 0x4000811bc8
+            # buf.st_dev offest 0 8 0
+            # buf.st_ino offest 8 8 0
+            # buf.st_mode offest 10 4 0
+            # buf.st_nlink offest 14 4 0
+            # buf.st_uid offest 18 4 0
+            # buf.st_gid offest 1c 4 0
+            # buf.st_rdev offest 20 8 0
+            # buf.st_size offest 30 8 274886889936
+            # buf.st_blksize offest 38 4 8461328
+            # buf.st_blocks offest 40 8 274877909532
+            # buf.st_atime offest 48 8 274886368336
+            # buf.st_mtime offest 58 8 274877909472
+            # buf.st_ctime offest 68 8 274886368336
+            # buf.__glibc_reserved offest 78 8
+            fstat_buf = ql.pack64(fstat_info.st_dev)
+            fstat_buf += ql.pack64(fstat_info.st_ino)
+            fstat_buf += ql.pack32(fstat_info.st_mode)
+            fstat_buf += ql.pack32(fstat_info.st_nlink)
+            fstat_buf += ql.pack32(ql.os.uid)
+            fstat_buf += ql.pack32(ql.os.gid)
+            fstat_buf += ql.pack64(fstat_info.st_rdev)
+            fstat_buf += ql.pack64(0)
+            fstat_buf += ql.pack64(fstat_info.st_size)
+            fstat_buf += ql.pack32(fstat_info.st_blksize)
+            fstat_buf += ql.pack32(0)
             fstat_buf += ql.pack64(fstat_info.st_blocks)
             fstat_buf += ql.pack64(int(fstat_info.st_atime))
             fstat_buf += ql.pack64(0)

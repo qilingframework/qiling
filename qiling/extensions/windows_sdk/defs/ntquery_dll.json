@@ -1,0 +1,48 @@
+{
+    "BindIFilterFromStorage": [
+        {
+            "name": "pStg",
+            "type": "IStorage"
+        },
+        {
+            "name": "pUnkOuter",
+            "type": "IUnknown"
+        },
+        {
+            "name": "ppIUnk",
+            "type": "void"
+        }
+    ],
+    "BindIFilterFromStream": [
+        {
+            "name": "pStm",
+            "type": "IStream"
+        },
+        {
+            "name": "pUnkOuter",
+            "type": "IUnknown"
+        },
+        {
+            "name": "ppIUnk",
+            "type": "void"
+        }
+    ],
+    "SetCatalogState": [
+        {
+            "name": "pwcsCat",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pwcsMachine",
+            "type": "WCHAR"
+        },
+        {
+            "name": "dwNewState",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwOldState",
+            "type": "DWORD"
+        }
+    ]
+}

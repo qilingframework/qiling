@@ -1,0 +1,2 @@
+[SYSTEM]
+permission = user

@@ -16,9 +16,9 @@ from .utils import ql_setup_logging_env, ql_setup_logging_stream
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 from .core_utils import QLCoreUtils
-from .debugger import ql_debugger_init
+from .extensions.debugger import ql_debugger_init
 
-__version__ = "1.1" + "-alpha1"
+__version__ = "1.1" + "-dev"
 
 class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):    
     def __init__(
@@ -131,7 +131,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
          # Log's configuration
         if self.log_dir != "" and type(self.log_dir) == str:
-            _logger = ql_setup_logging_env(self)    
+            _logger = ql_setup_logging_env(self)
             self.log_file_fd = _logger
         elif self.console == True:
             _logger = ql_setup_logging_stream(self)
@@ -177,6 +177,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # Run the loader
         self.loader.run()
 
+
     # Emulate the binary from begin until @end, with timeout in @timeout and
     # number of emulated instructions in @count
     def run(self, begin=None, end=None, timeout=0, count=0):
@@ -208,40 +209,48 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         else:
             self.patch_lib.append((addr, code, file_name.decode()))
     
+
     # ql.output var getter
     @property
     def output(self):
         return self._output
+
 
     # ql.output - output var setter eg. QL_OUTPUT.DEFAULT and etc
     @output.setter
     def output(self, output):
         self._output = output_convert(output)
     
+
     # ql.platform - platform var = host os getter eg. LINUX and etc
     @property
     def platform(self):
         return self._platform
+
 
     # ql.platform - platform var = host os setter eg. LINUX and etc
     @platform.setter
     def platform(self, value):
         self._platform = ostype_convert(value.lower())
 
+
     def __enable_bin_patch(self):
         for addr, code in self.patch_bin:
             self.mem.write(self.loader.load_address + addr, code)
+
 
     def enable_lib_patch(self):
         for addr, code, filename in self.patch_lib:
             try:
                 self.mem.write(self.mem.get_lib_base(filename) + addr, code)
             except:
-                raise RuntimeError("Fail to patch filename %s at addr 0x%x" % (filename, addr))
+                raise RuntimeError("Fail to patch %s at address 0x%x" % (filename, addr))
+
 
     # stop emulation
     def emu_stop(self):
         self.uc.emu_stop()
+
 
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):

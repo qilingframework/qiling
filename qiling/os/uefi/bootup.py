@@ -72,15 +72,15 @@ def hook_GetMemoryMap(ql, address, params):
 def hook_AllocatePool(ql, address, params):
     address = ql.loader.heap.alloc(params["Size"])
     write_int64(ql, params["Buffer"], address)
-    return EFI_SUCCESS
+    return EFI_SUCCESS if address else EFI_OUT_OF_RESOURCES
 
 @dxeapi(params={
     "Buffer": POINTER, #POINTER_T(None)
 })
 def hook_FreePool(ql, address, params):
     address = params["Buffer"]
-    ql.loader.heap.free(address)
-    return EFI_SUCCESS
+    freed = ql.loader.heap.free(address)
+    return EFI_SUCCESS if freed else EFI_INVALID_PARAMETER 
 
 @dxeapi(params={
     "Type": UINT,
@@ -115,11 +115,12 @@ def SignalEvent(ql, event_id):
             notify_func = event["NotifyFunction"]
             notify_context = event["NotifyContext"]
             if ql.os.notify_immediately:
-                ql.hook_address(hook_EndOfNotify, ql.loader.notify_ptr)
-                ql.nprint(f'Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
-                ql.os.notify_return_address = ql.stack_pop()
-                ql.stack_push(ql.loader.notify_ptr) # Return address from the notify function
+                ql.nprint(f'[+] Notify event:{event_id} calling:{notify_func:x} context:{notify_context:x}')
+                # X64 shadow store - The caller is responsible for allocating space for parameters to the callee, and must always allocate sufficient space to store four register parameters
+                ql.reg.rsp -= pointer_size * 4 
+                ql.stack_push(ql.loader.OOO_EOE_ptr) # Return address from the notify function.
                 ql.stack_push(notify_func) # Return address from here -> the notify function.
+                ql.loader.OOO_EOE_callbacks.append(None) # We don't need a callback.
                 ql.reg.rcx = notify_context
             else:
                 ql.loader.notify_list.append((event_id, notify_func, notify_context))
@@ -219,7 +220,6 @@ def hook_HandleProtocol(ql, address, params):
     "Event": POINTER,
     "Registration": POINTER})
 def hook_RegisterProtocolNotify(ql, address, params):
-    print(params["Protocol"])
     if params['Event'] in ql.loader.events:
         ql.loader.events[params['Event']]['Guid'] = params["Protocol"]
         check_and_notify_protocols(ql)
@@ -420,9 +420,11 @@ def hook_LocateHandleBuffer(ql, address, params):
         return EFI_NOT_FOUND
     address = ql.loader.heap.alloc(buffer_size)
     write_int64(ql, params["Buffer"], address)
+    if address == 0:
+        return EFI_OUT_OF_RESOURCES
     for handle in handles:
-            write_int64(ql, address, handle)
-            address += pointer_size
+        write_int64(ql, address, handle)
+        address += pointer_size
     return EFI_SUCCESS
 
 @dxeapi(params={
@@ -472,10 +474,9 @@ def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
         GUID = str(ql.os.read_guid(GUID_ptr))
         ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
         dic = ql.loader.handle_dict[handle]
-        protocol = params["Protocol"]
-        if protocol not in dic:
+        if GUID not in dic:
             return EFI_INVALID_PARAMETER
-        del dic[protocol]
+        del dic[GUID]
         index +=2
     return EFI_SUCCESS
 

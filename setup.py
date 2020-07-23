@@ -5,12 +5,14 @@
 
 from setuptools import setup, find_packages
 
-VERSION = '1.1-alpha1'
+from qiling import __version__ as ql_version
+
+VERSION = ql_version
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
 
-with open("README.md", "r") as ld:
+with open("README.md", "r", encoding="utf-8") as ld:
     long_description = ld.read()
 
 setup(
@@ -46,7 +48,7 @@ setup(
         'Programming Language :: Python :: 3',
     ],
 
-    keywords='qiling binary emulator framework malware analysis uefi IoT',
+    keywords='qiling binary emulator framework malware analysis UEFI IoT',
 
     packages=find_packages(),
     include_package_data=True,

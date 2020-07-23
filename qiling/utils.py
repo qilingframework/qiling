@@ -18,7 +18,7 @@ def catch_KeyboardInterrupt(ql):
             try:
                 return func(*args, **kw)
             except BaseException as e:
-                # THREAD_EVENT_UNEXECPT_EVENT = 2
+                from .os.const import THREAD_EVENT_UNEXECPT_EVENT
                 ql.os.stop(stop_event=2)
                 ql.internal_exception = e
         return wrapper
@@ -176,9 +176,11 @@ def ql_setup_logging_env(ql, logger=None):
     ql.log_filename = ql.targetname + ql.append          
     ql.log_file = os.path.join(ql.log_dir, ql.log_filename) 
 
-    #_logger = ql_setup_logging_file(ql.output, ql.log_file + "_" + str(pid), logger)
     _logger = ql_setup_logging_stream(ql)
-    _logger = ql_setup_logging_file(ql.output, ql.log_file, _logger)
+
+    if ql.log_split == False:
+        _logger = ql_setup_logging_file(ql.output, ql.log_file, _logger)
+
     return _logger
 
 

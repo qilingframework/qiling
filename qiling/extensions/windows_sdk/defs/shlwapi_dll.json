@@ -1,0 +1,4596 @@
+{
+    "ShellMessageBoxA": [
+        {
+            "name": "hAppInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpcText",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpcTitle",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "fuStyle",
+            "type": "UINT"
+        }
+    ],
+    "ShellMessageBoxW": [
+        {
+            "name": "hAppInst",
+            "type": "HINSTANCE"
+        },
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "lpcText",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpcTitle",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fuStyle",
+            "type": "UINT"
+        }
+    ],
+    "StrChrA": [
+        {
+            "name": "pszStart",
+            "type": "PCSTR"
+        },
+        {
+            "name": "wMatch",
+            "type": "WORD"
+        }
+    ],
+    "StrChrW": [
+        {
+            "name": "pszStart",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "wMatch",
+            "type": "WCHAR"
+        }
+    ],
+    "StrChrIA": [
+        {
+            "name": "pszStart",
+            "type": "PCSTR"
+        },
+        {
+            "name": "wMatch",
+            "type": "WORD"
+        }
+    ],
+    "StrChrIW": [
+        {
+            "name": "pszStart",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "wMatch",
+            "type": "WCHAR"
+        }
+    ],
+    "StrChrNW": [
+        {
+            "name": "pszStart",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "wMatch",
+            "type": "WCHAR"
+        },
+        {
+            "name": "cchMax",
+            "type": "UINT"
+        }
+    ],
+    "StrChrNIW": [
+        {
+            "name": "pszStart",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "wMatch",
+            "type": "WCHAR"
+        },
+        {
+            "name": "cchMax",
+            "type": "UINT"
+        }
+    ],
+    "StrCmpNA": [
+        {
+            "name": "psz1",
+            "type": "PCSTR"
+        },
+        {
+            "name": "psz2",
+            "type": "PCSTR"
+        },
+        {
+            "name": "nChar",
+            "type": "int"
+        }
+    ],
+    "StrCmpNW": [
+        {
+            "name": "psz1",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "psz2",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "nChar",
+            "type": "int"
+        }
+    ],
+    "StrCmpNIA": [
+        {
+            "name": "psz1",
+            "type": "PCSTR"
+        },
+        {
+            "name": "psz2",
+            "type": "PCSTR"
+        },
+        {
+            "name": "nChar",
+            "type": "int"
+        }
+    ],
+    "StrCmpNIW": [
+        {
+            "name": "psz1",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "psz2",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "nChar",
+            "type": "int"
+        }
+    ],
+    "StrCSpnA": [
+        {
+            "name": "pszStr",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszSet",
+            "type": "PCSTR"
+        }
+    ],
+    "StrCSpnW": [
+        {
+            "name": "pszStr",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszSet",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrCSpnIA": [
+        {
+            "name": "pszStr",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszSet",
+            "type": "PCSTR"
+        }
+    ],
+    "StrCSpnIW": [
+        {
+            "name": "pszStr",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszSet",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrDupA": [
+        {
+            "name": "pszSrch",
+            "type": "PCSTR"
+        }
+    ],
+    "StrDupW": [
+        {
+            "name": "pszSrch",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrFormatByteSizeEx": [
+        {
+            "name": "ull",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "flags",
+            "type": "SFBS_FLAGS"
+        },
+        {
+            "name": "pszBuf",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "StrFormatByteSizeA": [
+        {
+            "name": "dw",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszBuf",
+            "type": "PSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "StrFormatByteSize64A": [
+        {
+            "name": "qdw",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "pszBuf",
+            "type": "PSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "StrFormatByteSizeW": [
+        {
+            "name": "qdw",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "pszBuf",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "StrFormatKBSizeW": [
+        {
+            "name": "qdw",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "pszBuf",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "StrFormatKBSizeA": [
+        {
+            "name": "qdw",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "pszBuf",
+            "type": "PSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "StrFromTimeIntervalA": [
+        {
+            "name": "pszOut",
+            "type": "PSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "UINT"
+        },
+        {
+            "name": "dwTimeMS",
+            "type": "DWORD"
+        },
+        {
+            "name": "digits",
+            "type": "int"
+        }
+    ],
+    "StrFromTimeIntervalW": [
+        {
+            "name": "pszOut",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "UINT"
+        },
+        {
+            "name": "dwTimeMS",
+            "type": "DWORD"
+        },
+        {
+            "name": "digits",
+            "type": "int"
+        }
+    ],
+    "StrIsIntlEqualA": [
+        {
+            "name": "fCaseSens",
+            "type": "BOOL"
+        },
+        {
+            "name": "pszString1",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszString2",
+            "type": "PCSTR"
+        },
+        {
+            "name": "nChar",
+            "type": "int"
+        }
+    ],
+    "StrIsIntlEqualW": [
+        {
+            "name": "fCaseSens",
+            "type": "BOOL"
+        },
+        {
+            "name": "pszString1",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszString2",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "nChar",
+            "type": "int"
+        }
+    ],
+    "StrNCatA": [
+        {
+            "name": "psz1",
+            "type": "PSTR"
+        },
+        {
+            "name": "psz2",
+            "type": "PCSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "int"
+        }
+    ],
+    "StrNCatW": [
+        {
+            "name": "psz1",
+            "type": "PWSTR"
+        },
+        {
+            "name": "psz2",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "int"
+        }
+    ],
+    "StrPBrkA": [
+        {
+            "name": "psz",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszSet",
+            "type": "PCSTR"
+        }
+    ],
+    "StrPBrkW": [
+        {
+            "name": "psz",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszSet",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrRChrA": [
+        {
+            "name": "pszStart",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszEnd",
+            "type": "PCSTR"
+        },
+        {
+            "name": "wMatch",
+            "type": "WORD"
+        }
+    ],
+    "StrRChrW": [
+        {
+            "name": "pszStart",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszEnd",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "wMatch",
+            "type": "WCHAR"
+        }
+    ],
+    "StrRChrIA": [
+        {
+            "name": "pszStart",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszEnd",
+            "type": "PCSTR"
+        },
+        {
+            "name": "wMatch",
+            "type": "WORD"
+        }
+    ],
+    "StrRChrIW": [
+        {
+            "name": "pszStart",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszEnd",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "wMatch",
+            "type": "WCHAR"
+        }
+    ],
+    "StrRStrIA": [
+        {
+            "name": "pszSource",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszLast",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszSrch",
+            "type": "PCSTR"
+        }
+    ],
+    "StrRStrIW": [
+        {
+            "name": "pszSource",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszLast",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszSrch",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrSpnA": [
+        {
+            "name": "psz",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszSet",
+            "type": "PCSTR"
+        }
+    ],
+    "StrSpnW": [
+        {
+            "name": "psz",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszSet",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrStrA": [
+        {
+            "name": "pszFirst",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszSrch",
+            "type": "PCSTR"
+        }
+    ],
+    "StrStrW": [
+        {
+            "name": "pszFirst",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszSrch",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrStrIA": [
+        {
+            "name": "pszFirst",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszSrch",
+            "type": "PCSTR"
+        }
+    ],
+    "StrStrIW": [
+        {
+            "name": "pszFirst",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszSrch",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrToIntA": [
+        {
+            "name": "pszSrc",
+            "type": "PCSTR"
+        }
+    ],
+    "StrToIntW": [
+        {
+            "name": "pszSrc",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrToIntExA": [
+        {
+            "name": "pszString",
+            "type": "PCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "STIF_FLAGS"
+        },
+        {
+            "name": "piRet",
+            "type": "int"
+        }
+    ],
+    "StrToIntExW": [
+        {
+            "name": "pszString",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "STIF_FLAGS"
+        },
+        {
+            "name": "piRet",
+            "type": "int"
+        }
+    ],
+    "StrToInt64ExA": [
+        {
+            "name": "pszString",
+            "type": "PCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "STIF_FLAGS"
+        },
+        {
+            "name": "pllRet",
+            "type": "LONGLONG"
+        }
+    ],
+    "StrToInt64ExW": [
+        {
+            "name": "pszString",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "STIF_FLAGS"
+        },
+        {
+            "name": "pllRet",
+            "type": "LONGLONG"
+        }
+    ],
+    "StrTrimA": [
+        {
+            "name": "psz",
+            "type": "PSTR"
+        },
+        {
+            "name": "pszTrimChars",
+            "type": "PCSTR"
+        }
+    ],
+    "StrTrimW": [
+        {
+            "name": "psz",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pszTrimChars",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrCatW": [
+        {
+            "name": "psz1",
+            "type": "PWSTR"
+        },
+        {
+            "name": "psz2",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrCmpW": [
+        {
+            "name": "psz1",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "psz2",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrCmpIW": [
+        {
+            "name": "psz1",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "psz2",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrCpyW": [
+        {
+            "name": "psz1",
+            "type": "PWSTR"
+        },
+        {
+            "name": "psz2",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrCpyNW": [
+        {
+            "name": "pszDst",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pszSrc",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "int"
+        }
+    ],
+    "StrCatBuffW": [
+        {
+            "name": "pszDest",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pszSrc",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "cchDestBuffSize",
+            "type": "int"
+        }
+    ],
+    "StrCatBuffA": [
+        {
+            "name": "pszDest",
+            "type": "PSTR"
+        },
+        {
+            "name": "pszSrc",
+            "type": "PCSTR"
+        },
+        {
+            "name": "cchDestBuffSize",
+            "type": "int"
+        }
+    ],
+    "ChrCmpIA": [
+        {
+            "name": "w1",
+            "type": "WORD"
+        },
+        {
+            "name": "w2",
+            "type": "WORD"
+        }
+    ],
+    "ChrCmpIW": [
+        {
+            "name": "w1",
+            "type": "WCHAR"
+        },
+        {
+            "name": "w2",
+            "type": "WCHAR"
+        }
+    ],
+    "wvnsprintfA": [
+        {
+            "name": "pszDest",
+            "type": "PSTR"
+        },
+        {
+            "name": "cchDest",
+            "type": "int"
+        },
+        {
+            "name": "pszFmt",
+            "type": "PCSTR"
+        },
+        {
+            "name": "arglist",
+            "type": "va_list"
+        }
+    ],
+    "wvnsprintfW": [
+        {
+            "name": "pszDest",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchDest",
+            "type": "int"
+        },
+        {
+            "name": "pszFmt",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "arglist",
+            "type": "va_list"
+        }
+    ],
+    "wnsprintfA": [
+        {
+            "name": "pszDest",
+            "type": "PSTR"
+        },
+        {
+            "name": "cchDest",
+            "type": "int"
+        },
+        {
+            "name": "pszFmt",
+            "type": "PCSTR"
+        }
+    ],
+    "wnsprintfW": [
+        {
+            "name": "pszDest",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchDest",
+            "type": "int"
+        },
+        {
+            "name": "pszFmt",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrRetToStrA": [
+        {
+            "name": "pstr",
+            "type": "STRRET"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "ppsz",
+            "type": "LPSTR"
+        }
+    ],
+    "StrRetToStrW": [
+        {
+            "name": "pstr",
+            "type": "STRRET"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "ppsz",
+            "type": "LPWSTR"
+        }
+    ],
+    "StrRetToBufA": [
+        {
+            "name": "pstr",
+            "type": "STRRET"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pszBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "StrRetToBufW": [
+        {
+            "name": "pstr",
+            "type": "STRRET"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pszBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "SHStrDupA": [
+        {
+            "name": "psz",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "ppwsz",
+            "type": "LPWSTR"
+        }
+    ],
+    "SHStrDupW": [
+        {
+            "name": "psz",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppwsz",
+            "type": "LPWSTR"
+        }
+    ],
+    "StrCmpLogicalW": [
+        {
+            "name": "psz1",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "psz2",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrCatChainW": [
+        {
+            "name": "pszDst",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchDst",
+            "type": "DWORD"
+        },
+        {
+            "name": "ichAt",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszSrc",
+            "type": "PCWSTR"
+        }
+    ],
+    "StrRetToBSTR": [
+        {
+            "name": "pstr",
+            "type": "STRRET"
+        },
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pbstr",
+            "type": "BSTR"
+        }
+    ],
+    "SHLoadIndirectString": [
+        {
+            "name": "pszSource",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszOutBuf",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchOutBuf",
+            "type": "UINT"
+        },
+        {
+            "name": "ppvReserved",
+            "type": "void"
+        }
+    ],
+    "IsCharSpaceA": [
+        {
+            "name": "wch",
+            "type": "CHAR"
+        }
+    ],
+    "IsCharSpaceW": [
+        {
+            "name": "wch",
+            "type": "WCHAR"
+        }
+    ],
+    "StrCmpCA": [
+        {
+            "name": "pszStr1",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszStr2",
+            "type": "LPCSTR"
+        }
+    ],
+    "StrCmpCW": [
+        {
+            "name": "pszStr1",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszStr2",
+            "type": "LPCWSTR"
+        }
+    ],
+    "StrCmpICA": [
+        {
+            "name": "pszStr1",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszStr2",
+            "type": "LPCSTR"
+        }
+    ],
+    "StrCmpICW": [
+        {
+            "name": "pszStr1",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszStr2",
+            "type": "LPCWSTR"
+        }
+    ],
+    "StrCmpNCA": [
+        {
+            "name": "pszStr1",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszStr2",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "nChar",
+            "type": "int"
+        }
+    ],
+    "StrCmpNCW": [
+        {
+            "name": "pszStr1",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszStr2",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "nChar",
+            "type": "int"
+        }
+    ],
+    "StrCmpNICA": [
+        {
+            "name": "pszStr1",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszStr2",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "nChar",
+            "type": "int"
+        }
+    ],
+    "StrCmpNICW": [
+        {
+            "name": "pszStr1",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszStr2",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "nChar",
+            "type": "int"
+        }
+    ],
+    "IntlStrEqWorkerA": [
+        {
+            "name": "fCaseSens",
+            "type": "BOOL"
+        },
+        {
+            "name": "lpString1",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpString2",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "nChar",
+            "type": "int"
+        }
+    ],
+    "IntlStrEqWorkerW": [
+        {
+            "name": "fCaseSens",
+            "type": "BOOL"
+        },
+        {
+            "name": "lpString1",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpString2",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "nChar",
+            "type": "int"
+        }
+    ],
+    "PathAddBackslashA": [
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        }
+    ],
+    "PathAddBackslashW": [
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathBuildRootA": [
+        {
+            "name": "pszRoot",
+            "type": "LPSTR"
+        },
+        {
+            "name": "iDrive",
+            "type": "int"
+        }
+    ],
+    "PathBuildRootW": [
+        {
+            "name": "pszRoot",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "iDrive",
+            "type": "int"
+        }
+    ],
+    "PathCombineA": [
+        {
+            "name": "pszDest",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pszDir",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszFile",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathCombineW": [
+        {
+            "name": "pszDest",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pszDir",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszFile",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathCompactPathA": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dx",
+            "type": "UINT"
+        }
+    ],
+    "PathCompactPathW": [
+        {
+            "name": "hDC",
+            "type": "HDC"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dx",
+            "type": "UINT"
+        }
+    ],
+    "PathCompactPathExA": [
+        {
+            "name": "pszOut",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pszSrc",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "UINT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PathCompactPathExW": [
+        {
+            "name": "pszOut",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pszSrc",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "UINT"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PathCommonPrefixA": [
+        {
+            "name": "pszFile1",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszFile2",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "achPath",
+            "type": "LPSTR"
+        }
+    ],
+    "PathCommonPrefixW": [
+        {
+            "name": "pszFile1",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszFile2",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "achPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathFileExistsA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathFileExistsW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathFindExtensionA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathFindExtensionW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathFindFileNameA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathFindFileNameW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathFindNextComponentA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathFindNextComponentW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathFindOnPathA": [
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        },
+        {
+            "name": "ppszOtherDirs",
+            "type": "PZPCSTR"
+        }
+    ],
+    "PathFindOnPathW": [
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ppszOtherDirs",
+            "type": "PZPCWSTR"
+        }
+    ],
+    "PathFindSuffixArrayA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "apszSuffix",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "iArraySize",
+            "type": "int"
+        }
+    ],
+    "PathFindSuffixArrayW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "apszSuffix",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "iArraySize",
+            "type": "int"
+        }
+    ],
+    "PathGetArgsA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathGetArgsW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsLFNFileSpecA": [
+        {
+            "name": "pszName",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsLFNFileSpecW": [
+        {
+            "name": "pszName",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathGetCharTypeA": [
+        {
+            "name": "ch",
+            "type": "UCHAR"
+        }
+    ],
+    "PathGetCharTypeW": [
+        {
+            "name": "ch",
+            "type": "WCHAR"
+        }
+    ],
+    "PathGetDriveNumberA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathGetDriveNumberW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsDirectoryA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsDirectoryW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsDirectoryEmptyA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsDirectoryEmptyW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsFileSpecA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsFileSpecW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsPrefixA": [
+        {
+            "name": "pszPrefix",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsPrefixW": [
+        {
+            "name": "pszPrefix",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsRelativeA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsRelativeW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsRootA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsRootW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsSameRootA": [
+        {
+            "name": "pszPath1",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszPath2",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsSameRootW": [
+        {
+            "name": "pszPath1",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszPath2",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsUNCA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsUNCW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsNetworkPathA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsNetworkPathW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsUNCServerA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsUNCServerW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsUNCServerShareA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsUNCServerShareW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsContentTypeA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszContentType",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsContentTypeW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszContentType",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsURLA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathIsURLW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathMakePrettyA": [
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        }
+    ],
+    "PathMakePrettyW": [
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathMatchSpecA": [
+        {
+            "name": "pszFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszSpec",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathMatchSpecW": [
+        {
+            "name": "pszFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszSpec",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathMatchSpecExA": [
+        {
+            "name": "pszFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszSpec",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PathMatchSpecExW": [
+        {
+            "name": "pszFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszSpec",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PathParseIconLocationA": [
+        {
+            "name": "pszIconFile",
+            "type": "LPSTR"
+        }
+    ],
+    "PathParseIconLocationW": [
+        {
+            "name": "pszIconFile",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathQuoteSpacesA": [
+        {
+            "name": "lpsz",
+            "type": "LPSTR"
+        }
+    ],
+    "PathQuoteSpacesW": [
+        {
+            "name": "lpsz",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathRelativePathToA": [
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pszFrom",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwAttrFrom",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszTo",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwAttrTo",
+            "type": "DWORD"
+        }
+    ],
+    "PathRelativePathToW": [
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pszFrom",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwAttrFrom",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszTo",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwAttrTo",
+            "type": "DWORD"
+        }
+    ],
+    "PathRemoveArgsA": [
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        }
+    ],
+    "PathRemoveArgsW": [
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathRemoveBackslashA": [
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        }
+    ],
+    "PathRemoveBackslashW": [
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathRemoveBlanksA": [
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        }
+    ],
+    "PathRemoveBlanksW": [
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathRemoveExtensionA": [
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        }
+    ],
+    "PathRemoveExtensionW": [
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathRemoveFileSpecA": [
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        }
+    ],
+    "PathRemoveFileSpecW": [
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathRenameExtensionA": [
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pszExt",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathRenameExtensionW": [
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pszExt",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathSearchAndQualifyA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "PathSearchAndQualifyW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "PathSetDlgItemPathA": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "id",
+            "type": "int"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathSetDlgItemPathW": [
+        {
+            "name": "hDlg",
+            "type": "HWND"
+        },
+        {
+            "name": "id",
+            "type": "int"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathSkipRootA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathSkipRootW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathStripPathA": [
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        }
+    ],
+    "PathStripPathW": [
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathStripToRootA": [
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        }
+    ],
+    "PathStripToRootW": [
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathUnquoteSpacesA": [
+        {
+            "name": "lpsz",
+            "type": "LPSTR"
+        }
+    ],
+    "PathUnquoteSpacesW": [
+        {
+            "name": "lpsz",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathMakeSystemFolderA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathMakeSystemFolderW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathUnmakeSystemFolderA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        }
+    ],
+    "PathUnmakeSystemFolderW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        }
+    ],
+    "PathIsSystemFolderA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwAttrb",
+            "type": "DWORD"
+        }
+    ],
+    "PathIsSystemFolderW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwAttrb",
+            "type": "DWORD"
+        }
+    ],
+    "PathUndecorateA": [
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        }
+    ],
+    "PathUndecorateW": [
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        }
+    ],
+    "PathUnExpandEnvStringsA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "PathUnExpandEnvStringsW": [
+        {
+            "name": "pszPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "UrlCompareA": [
+        {
+            "name": "psz1",
+            "type": "PCSTR"
+        },
+        {
+            "name": "psz2",
+            "type": "PCSTR"
+        },
+        {
+            "name": "fIgnoreSlash",
+            "type": "BOOL"
+        }
+    ],
+    "UrlCompareW": [
+        {
+            "name": "psz1",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "psz2",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "fIgnoreSlash",
+            "type": "BOOL"
+        }
+    ],
+    "UrlCombineA": [
+        {
+            "name": "pszBase",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszRelative",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszCombined",
+            "type": "PSTR"
+        },
+        {
+            "name": "pcchCombined",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UrlCombineW": [
+        {
+            "name": "pszBase",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszRelative",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszCombined",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchCombined",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UrlCanonicalizeA": [
+        {
+            "name": "pszUrl",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszCanonicalized",
+            "type": "PSTR"
+        },
+        {
+            "name": "pcchCanonicalized",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UrlCanonicalizeW": [
+        {
+            "name": "pszUrl",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszCanonicalized",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchCanonicalized",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UrlIsOpaqueA": [
+        {
+            "name": "pszURL",
+            "type": "PCSTR"
+        }
+    ],
+    "UrlIsOpaqueW": [
+        {
+            "name": "pszURL",
+            "type": "PCWSTR"
+        }
+    ],
+    "UrlIsNoHistoryA": [
+        {
+            "name": "pszURL",
+            "type": "PCSTR"
+        }
+    ],
+    "UrlIsNoHistoryW": [
+        {
+            "name": "pszURL",
+            "type": "PCWSTR"
+        }
+    ],
+    "UrlIsA": [
+        {
+            "name": "pszUrl",
+            "type": "PCSTR"
+        },
+        {
+            "name": "UrlIs",
+            "type": "URLIS"
+        }
+    ],
+    "UrlIsW": [
+        {
+            "name": "pszUrl",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "UrlIs",
+            "type": "URLIS"
+        }
+    ],
+    "UrlGetLocationA": [
+        {
+            "name": "pszURL",
+            "type": "PCSTR"
+        }
+    ],
+    "UrlGetLocationW": [
+        {
+            "name": "pszURL",
+            "type": "PCWSTR"
+        }
+    ],
+    "UrlUnescapeA": [
+        {
+            "name": "pszUrl",
+            "type": "PSTR"
+        },
+        {
+            "name": "pszUnescaped",
+            "type": "PSTR"
+        },
+        {
+            "name": "pcchUnescaped",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UrlUnescapeW": [
+        {
+            "name": "pszUrl",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pszUnescaped",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchUnescaped",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UrlEscapeA": [
+        {
+            "name": "pszUrl",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszEscaped",
+            "type": "PSTR"
+        },
+        {
+            "name": "pcchEscaped",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UrlEscapeW": [
+        {
+            "name": "pszUrl",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszEscaped",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchEscaped",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UrlCreateFromPathA": [
+        {
+            "name": "pszPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszUrl",
+            "type": "PSTR"
+        },
+        {
+            "name": "pcchUrl",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UrlCreateFromPathW": [
+        {
+            "name": "pszPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszUrl",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchUrl",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PathCreateFromUrlA": [
+        {
+            "name": "pszUrl",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszPath",
+            "type": "PSTR"
+        },
+        {
+            "name": "pcchPath",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PathCreateFromUrlW": [
+        {
+            "name": "pszUrl",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszPath",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchPath",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "PathCreateFromUrlAlloc": [
+        {
+            "name": "pszIn",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppszOut",
+            "type": "PWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UrlHashA": [
+        {
+            "name": "pszUrl",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pbHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbHash",
+            "type": "DWORD"
+        }
+    ],
+    "UrlHashW": [
+        {
+            "name": "pszUrl",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pbHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbHash",
+            "type": "DWORD"
+        }
+    ],
+    "UrlGetPartW": [
+        {
+            "name": "pszIn",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszOut",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwPart",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UrlGetPartA": [
+        {
+            "name": "pszIn",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszOut",
+            "type": "PSTR"
+        },
+        {
+            "name": "pcchOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwPart",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UrlApplySchemeA": [
+        {
+            "name": "pszIn",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszOut",
+            "type": "PSTR"
+        },
+        {
+            "name": "pcchOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "UrlApplySchemeW": [
+        {
+            "name": "pszIn",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszOut",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchOut",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "HashData": [
+        {
+            "name": "pbData",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "pbHash",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbHash",
+            "type": "DWORD"
+        }
+    ],
+    "UrlFixupW": [
+        {
+            "name": "pcszUrl",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszTranslatedUrl",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cchMax",
+            "type": "DWORD"
+        }
+    ],
+    "SHDeleteEmptyKeyA": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCSTR"
+        }
+    ],
+    "SHDeleteEmptyKeyW": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SHDeleteKeyA": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCSTR"
+        }
+    ],
+    "SHDeleteKeyW": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SHRegDuplicateHKey": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        }
+    ],
+    "SHDeleteValueA": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCSTR"
+        }
+    ],
+    "SHDeleteValueW": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SHGetValueA": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pdwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        }
+    ],
+    "SHGetValueW": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        }
+    ],
+    "SHSetValueA": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        }
+    ],
+    "SHSetValueW": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegGetValueA": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "srrfFlags",
+            "type": "SRRF"
+        },
+        {
+            "name": "pdwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegGetValueW": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "srrfFlags",
+            "type": "SRRF"
+        },
+        {
+            "name": "pdwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegSetValue": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "srrfFlags",
+            "type": "SRRF"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegGetValueFromHKCUHKLM": [
+        {
+            "name": "pwszKey",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwszValue",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "srrfFlags",
+            "type": "SRRF"
+        },
+        {
+            "name": "pdwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        }
+    ],
+    "SHQueryValueExA": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pdwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        }
+    ],
+    "SHQueryValueExW": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdwReserved",
+            "type": "DWORD"
+        },
+        {
+            "name": "pdwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        }
+    ],
+    "SHEnumKeyExA": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchName",
+            "type": "LPDWORD"
+        }
+    ],
+    "SHEnumKeyExW": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchName",
+            "type": "LPDWORD"
+        }
+    ],
+    "SHEnumValueA": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszValueName",
+            "type": "PSTR"
+        },
+        {
+            "name": "pcchValueName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "LPDWORD"
+        }
+    ],
+    "SHEnumValueW": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszValueName",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pcchValueName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "LPDWORD"
+        }
+    ],
+    "SHQueryInfoKeyA": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pcSubKeys",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pcchMaxSubKeyLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pcValues",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pcchMaxValueNameLen",
+            "type": "LPDWORD"
+        }
+    ],
+    "SHQueryInfoKeyW": [
+        {
+            "name": "hkey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pcSubKeys",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pcchMaxSubKeyLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pcValues",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pcchMaxValueNameLen",
+            "type": "LPDWORD"
+        }
+    ],
+    "SHCopyKeyA": [
+        {
+            "name": "hkeySrc",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSrcSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "hkeyDest",
+            "type": "HKEY"
+        },
+        {
+            "name": "fReserved",
+            "type": "DWORD"
+        }
+    ],
+    "SHCopyKeyW": [
+        {
+            "name": "hkeySrc",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszSrcSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "hkeyDest",
+            "type": "HKEY"
+        },
+        {
+            "name": "fReserved",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegGetPathA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pcszSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pcszValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegGetPathW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pcszSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pcszValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszPath",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegSetPathA": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pcszSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pcszValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pcszPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegSetPathW": [
+        {
+            "name": "hKey",
+            "type": "HKEY"
+        },
+        {
+            "name": "pcszSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pcszValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pcszPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegCreateUSKeyA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "hRelativeUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "phNewUSKey",
+            "type": "PHUSKEY"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegCreateUSKeyW": [
+        {
+            "name": "pwzPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "hRelativeUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "phNewUSKey",
+            "type": "PHUSKEY"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegOpenUSKeyA": [
+        {
+            "name": "pszPath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "hRelativeUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "phNewUSKey",
+            "type": "PHUSKEY"
+        },
+        {
+            "name": "fIgnoreHKCU",
+            "type": "BOOL"
+        }
+    ],
+    "SHRegOpenUSKeyW": [
+        {
+            "name": "pwzPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "hRelativeUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "phNewUSKey",
+            "type": "PHUSKEY"
+        },
+        {
+            "name": "fIgnoreHKCU",
+            "type": "BOOL"
+        }
+    ],
+    "SHRegQueryUSValueA": [
+        {
+            "name": "hUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pdwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "fIgnoreHKCU",
+            "type": "BOOL"
+        },
+        {
+            "name": "pvDefaultData",
+            "type": "void"
+        },
+        {
+            "name": "dwDefaultDataSize",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegQueryUSValueW": [
+        {
+            "name": "hUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "fIgnoreHKCU",
+            "type": "BOOL"
+        },
+        {
+            "name": "pvDefaultData",
+            "type": "void"
+        },
+        {
+            "name": "dwDefaultDataSize",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegWriteUSValueA": [
+        {
+            "name": "hUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegWriteUSValueW": [
+        {
+            "name": "hUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "pwzValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegDeleteUSValueA": [
+        {
+            "name": "hUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "delRegFlags",
+            "type": "SHREGDEL_FLAGS"
+        }
+    ],
+    "SHRegDeleteUSValueW": [
+        {
+            "name": "hUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "pwzValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "delRegFlags",
+            "type": "SHREGDEL_FLAGS"
+        }
+    ],
+    "SHRegDeleteEmptyUSKeyW": [
+        {
+            "name": "hUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "pwzSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "delRegFlags",
+            "type": "SHREGDEL_FLAGS"
+        }
+    ],
+    "SHRegDeleteEmptyUSKeyA": [
+        {
+            "name": "hUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "pszSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "delRegFlags",
+            "type": "SHREGDEL_FLAGS"
+        }
+    ],
+    "SHRegEnumUSKeyA": [
+        {
+            "name": "hUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "enumRegFlags",
+            "type": "SHREGENUM_FLAGS"
+        }
+    ],
+    "SHRegEnumUSKeyW": [
+        {
+            "name": "hUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pwzName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "enumRegFlags",
+            "type": "SHREGENUM_FLAGS"
+        }
+    ],
+    "SHRegEnumUSValueA": [
+        {
+            "name": "hUSkey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszValueName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchValueName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "enumRegFlags",
+            "type": "SHREGENUM_FLAGS"
+        }
+    ],
+    "SHRegEnumUSValueW": [
+        {
+            "name": "hUSkey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "dwIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszValueName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchValueName",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pdwType",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "enumRegFlags",
+            "type": "SHREGENUM_FLAGS"
+        }
+    ],
+    "SHRegQueryInfoUSKeyA": [
+        {
+            "name": "hUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "pcSubKeys",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pcchMaxSubKeyLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pcValues",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pcchMaxValueNameLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "enumRegFlags",
+            "type": "SHREGENUM_FLAGS"
+        }
+    ],
+    "SHRegQueryInfoUSKeyW": [
+        {
+            "name": "hUSKey",
+            "type": "HUSKEY"
+        },
+        {
+            "name": "pcSubKeys",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pcchMaxSubKeyLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pcValues",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "pcchMaxValueNameLen",
+            "type": "LPDWORD"
+        },
+        {
+            "name": "enumRegFlags",
+            "type": "SHREGENUM_FLAGS"
+        }
+    ],
+    "SHRegCloseUSKey": [
+        {
+            "name": "hUSKey",
+            "type": "HUSKEY"
+        }
+    ],
+    "SHRegGetUSValueA": [
+        {
+            "name": "pszSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pdwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "fIgnoreHKCU",
+            "type": "BOOL"
+        },
+        {
+            "name": "pvDefaultData",
+            "type": "void"
+        },
+        {
+            "name": "dwDefaultDataSize",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegGetUSValueW": [
+        {
+            "name": "pszSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pdwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "pcbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "fIgnoreHKCU",
+            "type": "BOOL"
+        },
+        {
+            "name": "pvDefaultData",
+            "type": "void"
+        },
+        {
+            "name": "dwDefaultDataSize",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegSetUSValueA": [
+        {
+            "name": "pszSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegSetUSValueW": [
+        {
+            "name": "pwzSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwzValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "cbData",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHRegGetIntW": [
+        {
+            "name": "hk",
+            "type": "HKEY"
+        },
+        {
+            "name": "pwzKey",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "iDefault",
+            "type": "int"
+        }
+    ],
+    "SHRegGetBoolUSValueA": [
+        {
+            "name": "pszSubKey",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "fIgnoreHKCU",
+            "type": "BOOL"
+        },
+        {
+            "name": "fDefault",
+            "type": "BOOL"
+        }
+    ],
+    "SHRegGetBoolUSValueW": [
+        {
+            "name": "pszSubKey",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszValue",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "fIgnoreHKCU",
+            "type": "BOOL"
+        },
+        {
+            "name": "fDefault",
+            "type": "BOOL"
+        }
+    ],
+    "AssocCreate": [
+        {
+            "name": "clsid",
+            "type": "CLSID"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHGetAssocKeys": [
+        {
+            "name": "pqa",
+            "type": "IQueryAssociations"
+        },
+        {
+            "name": "rgKeys",
+            "type": "HKEY"
+        },
+        {
+            "name": "cKeys",
+            "type": "DWORD"
+        }
+    ],
+    "AssocQueryStringA": [
+        {
+            "name": "flags",
+            "type": "ASSOCF"
+        },
+        {
+            "name": "str",
+            "type": "ASSOCSTR"
+        },
+        {
+            "name": "pszAssoc",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszExtra",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszOut",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchOut",
+            "type": "DWORD"
+        }
+    ],
+    "AssocQueryStringW": [
+        {
+            "name": "flags",
+            "type": "ASSOCF"
+        },
+        {
+            "name": "str",
+            "type": "ASSOCSTR"
+        },
+        {
+            "name": "pszAssoc",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszExtra",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszOut",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchOut",
+            "type": "DWORD"
+        }
+    ],
+    "AssocQueryStringByKeyA": [
+        {
+            "name": "flags",
+            "type": "ASSOCF"
+        },
+        {
+            "name": "str",
+            "type": "ASSOCSTR"
+        },
+        {
+            "name": "hkAssoc",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszExtra",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszOut",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchOut",
+            "type": "DWORD"
+        }
+    ],
+    "AssocQueryStringByKeyW": [
+        {
+            "name": "flags",
+            "type": "ASSOCF"
+        },
+        {
+            "name": "str",
+            "type": "ASSOCSTR"
+        },
+        {
+            "name": "hkAssoc",
+            "type": "HKEY"
+        },
+        {
+            "name": "pszExtra",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszOut",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchOut",
+            "type": "DWORD"
+        }
+    ],
+    "AssocQueryKeyA": [
+        {
+            "name": "flags",
+            "type": "ASSOCF"
+        },
+        {
+            "name": "key",
+            "type": "ASSOCKEY"
+        },
+        {
+            "name": "pszAssoc",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszExtra",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "phkeyOut",
+            "type": "HKEY"
+        }
+    ],
+    "AssocQueryKeyW": [
+        {
+            "name": "flags",
+            "type": "ASSOCF"
+        },
+        {
+            "name": "key",
+            "type": "ASSOCKEY"
+        },
+        {
+            "name": "pszAssoc",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszExtra",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phkeyOut",
+            "type": "HKEY"
+        }
+    ],
+    "AssocIsDangerous": [
+        {
+            "name": "pszAssoc",
+            "type": "PCWSTR"
+        }
+    ],
+    "AssocGetPerceivedType": [
+        {
+            "name": "pszExt",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ptype",
+            "type": "PERCEIVED"
+        },
+        {
+            "name": "pflag",
+            "type": "PERCEIVEDFLAG"
+        },
+        {
+            "name": "ppszType",
+            "type": "PWSTR"
+        }
+    ],
+    "SHCreateStreamOnFileA": [
+        {
+            "name": "pszFile",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppstm",
+            "type": "IStream"
+        }
+    ],
+    "SHCreateStreamOnFileW": [
+        {
+            "name": "pszFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppstm",
+            "type": "IStream"
+        }
+    ],
+    "SHCreateStreamOnFileEx": [
+        {
+            "name": "pszFile",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "grfMode",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwAttributes",
+            "type": "DWORD"
+        },
+        {
+            "name": "fCreate",
+            "type": "BOOL"
+        },
+        {
+            "name": "pstmTemplate",
+            "type": "IStream"
+        },
+        {
+            "name": "ppstm",
+            "type": "IStream"
+        }
+    ],
+    "GetAcceptLanguagesA": [
+        {
+            "name": "pszLanguages",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pcchLanguages",
+            "type": "DWORD"
+        }
+    ],
+    "GetAcceptLanguagesW": [
+        {
+            "name": "pszLanguages",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "pcchLanguages",
+            "type": "DWORD"
+        }
+    ],
+    "IUnknown_Set": [
+        {
+            "name": "ppunk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        }
+    ],
+    "IUnknown_AtomicRelease": [
+        {
+            "name": "ppunk",
+            "type": "void"
+        }
+    ],
+    "IUnknown_GetWindow": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "phwnd",
+            "type": "HWND"
+        }
+    ],
+    "IUnknown_SetSite": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "punkSite",
+            "type": "IUnknown"
+        }
+    ],
+    "IUnknown_GetSite": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "IUnknown_QueryService": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "guidService",
+            "type": "GUID"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvOut",
+            "type": "void"
+        }
+    ],
+    "IStream_Read": [
+        {
+            "name": "pstm",
+            "type": "IStream"
+        },
+        {
+            "name": "pv",
+            "type": "void"
+        },
+        {
+            "name": "cb",
+            "type": "ULONG"
+        }
+    ],
+    "IStream_Write": [
+        {
+            "name": "pstm",
+            "type": "IStream"
+        },
+        {
+            "name": "pv",
+            "type": "void"
+        },
+        {
+            "name": "cb",
+            "type": "ULONG"
+        }
+    ],
+    "IStream_Reset": [
+        {
+            "name": "pstm",
+            "type": "IStream"
+        }
+    ],
+    "IStream_Size": [
+        {
+            "name": "pstm",
+            "type": "IStream"
+        },
+        {
+            "name": "pui",
+            "type": "ULARGE_INTEGER"
+        }
+    ],
+    "ConnectToConnectionPoint": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        },
+        {
+            "name": "riidEvent",
+            "type": "IID"
+        },
+        {
+            "name": "fConnect",
+            "type": "BOOL"
+        },
+        {
+            "name": "punkTarget",
+            "type": "IUnknown"
+        },
+        {
+            "name": "pdwCookie",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppcpOut",
+            "type": "IConnectionPoint"
+        }
+    ],
+    "IStream_ReadPidl": [
+        {
+            "name": "pstm",
+            "type": "IStream"
+        },
+        {
+            "name": "ppidlOut",
+            "type": "LPITEMIDLIST"
+        }
+    ],
+    "IStream_WritePidl": [
+        {
+            "name": "pstm",
+            "type": "IStream"
+        },
+        {
+            "name": "pidlWrite",
+            "type": "LPCITEMIDLIST"
+        }
+    ],
+    "IStream_ReadStr": [
+        {
+            "name": "pstm",
+            "type": "IStream"
+        },
+        {
+            "name": "ppsz",
+            "type": "PWSTR"
+        }
+    ],
+    "IStream_WriteStr": [
+        {
+            "name": "pstm",
+            "type": "IStream"
+        },
+        {
+            "name": "psz",
+            "type": "PCWSTR"
+        }
+    ],
+    "IStream_Copy": [
+        {
+            "name": "pstmFrom",
+            "type": "IStream"
+        },
+        {
+            "name": "pstmTo",
+            "type": "IStream"
+        },
+        {
+            "name": "cb",
+            "type": "DWORD"
+        }
+    ],
+    "SHGetViewStatePropertyBag": [
+        {
+            "name": "pidl",
+            "type": "LPCITEMIDLIST"
+        },
+        {
+            "name": "pszBagName",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHFormatDateTimeA": [
+        {
+            "name": "pft",
+            "type": "FILETIME"
+        },
+        {
+            "name": "pdwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszBuf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "SHFormatDateTimeW": [
+        {
+            "name": "pft",
+            "type": "FILETIME"
+        },
+        {
+            "name": "pdwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pszBuf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "UINT"
+        }
+    ],
+    "SHAnsiToUnicode": [
+        {
+            "name": "pszSrc",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pwszDst",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cwchBuf",
+            "type": "int"
+        }
+    ],
+    "SHAnsiToAnsi": [
+        {
+            "name": "pszSrc",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszDst",
+            "type": "PSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "int"
+        }
+    ],
+    "SHUnicodeToAnsi": [
+        {
+            "name": "pwszSrc",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszDst",
+            "type": "PSTR"
+        },
+        {
+            "name": "cchBuf",
+            "type": "int"
+        }
+    ],
+    "SHUnicodeToUnicode": [
+        {
+            "name": "pwzSrc",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pwzDst",
+            "type": "PWSTR"
+        },
+        {
+            "name": "cwchBuf",
+            "type": "int"
+        }
+    ],
+    "SHMessageBoxCheckA": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszText",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pszCaption",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "uType",
+            "type": "UINT"
+        },
+        {
+            "name": "iDefault",
+            "type": "int"
+        },
+        {
+            "name": "pszRegVal",
+            "type": "LPCSTR"
+        }
+    ],
+    "SHMessageBoxCheckW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pszText",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszCaption",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "uType",
+            "type": "UINT"
+        },
+        {
+            "name": "iDefault",
+            "type": "int"
+        },
+        {
+            "name": "pszRegVal",
+            "type": "LPCWSTR"
+        }
+    ],
+    "SHSendMessageBroadcastA": [
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "SHSendMessageBroadcastW": [
+        {
+            "name": "uMsg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        }
+    ],
+    "SHStripMneumonicA": [
+        {
+            "name": "pszMenu",
+            "type": "LPSTR"
+        }
+    ],
+    "SHStripMneumonicW": [
+        {
+            "name": "pszMenu",
+            "type": "LPWSTR"
+        }
+    ],
+    "IsOS": [
+        {
+            "name": "dwOS",
+            "type": "DWORD"
+        }
+    ],
+    "SHGlobalCounterGetValue": [
+        {
+            "name": "id",
+            "type": "SHGLOBALCOUNTER"
+        }
+    ],
+    "SHGlobalCounterIncrement": [
+        {
+            "name": "id",
+            "type": "SHGLOBALCOUNTER"
+        }
+    ],
+    "SHGlobalCounterDecrement": [
+        {
+            "name": "id",
+            "type": "SHGLOBALCOUNTER"
+        }
+    ],
+    "SHAllocShared": [
+        {
+            "name": "pvData",
+            "type": "void"
+        },
+        {
+            "name": "dwSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwProcessId",
+            "type": "DWORD"
+        }
+    ],
+    "SHFreeShared": [
+        {
+            "name": "hData",
+            "type": "HANDLE"
+        },
+        {
+            "name": "dwProcessId",
+            "type": "DWORD"
+        }
+    ],
+    "SHUnlockShared": [
+        {
+            "name": "pvData",
+            "type": "void"
+        }
+    ],
+    "WhichPlatform": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "QISearch": [
+        {
+            "name": "that",
+            "type": "void"
+        },
+        {
+            "name": "pqit",
+            "type": "LPCQITAB"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppv",
+            "type": "void"
+        }
+    ],
+    "SHIsLowMemoryMachine": [
+        {
+            "name": "dwType",
+            "type": "DWORD"
+        }
+    ],
+    "GetMenuPosFromID": [
+        {
+            "name": "hmenu",
+            "type": "HMENU"
+        },
+        {
+            "name": "id",
+            "type": "UINT"
+        }
+    ],
+    "SHGetInverseCMAP": [
+        {
+            "name": "pbMap",
+            "type": "BYTE"
+        },
+        {
+            "name": "cbMap",
+            "type": "ULONG"
+        }
+    ],
+    "SHAutoComplete": [
+        {
+            "name": "hwndEdit",
+            "type": "HWND"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ],
+    "SHCreateThreadRef": [
+        {
+            "name": "pcRef",
+            "type": "LONG"
+        },
+        {
+            "name": "ppunk",
+            "type": "IUnknown"
+        }
+    ],
+    "SHSetThreadRef": [
+        {
+            "name": "punk",
+            "type": "IUnknown"
+        }
+    ],
+    "SHGetThreadRef": [
+        {
+            "name": "ppunk",
+            "type": "IUnknown"
+        }
+    ],
+    "SHSkipJunction": [
+        {
+            "name": "pbc",
+            "type": "IBindCtx"
+        },
+        {
+            "name": "pclsid",
+            "type": "CLSID"
+        }
+    ],
+    "SHCreateThread": [
+        {
+            "name": "pfnThreadProc",
+            "type": "LPTHREAD_START_ROUTINE"
+        },
+        {
+            "name": "pData",
+            "type": "void"
+        },
+        {
+            "name": "flags",
+            "type": "SHCT_FLAGS"
+        },
+        {
+            "name": "pfnCallback",
+            "type": "LPTHREAD_START_ROUTINE"
+        }
+    ],
+    "SHCreateThreadWithHandle": [
+        {
+            "name": "pfnThreadProc",
+            "type": "LPTHREAD_START_ROUTINE"
+        },
+        {
+            "name": "pData",
+            "type": "void"
+        },
+        {
+            "name": "flags",
+            "type": "SHCT_FLAGS"
+        },
+        {
+            "name": "pfnCallback",
+            "type": "LPTHREAD_START_ROUTINE"
+        },
+        {
+            "name": "pHandle",
+            "type": "HANDLE"
+        }
+    ],
+    "SHReleaseThreadRef": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "SHCreateShellPalette": [
+        {
+            "name": "hdc",
+            "type": "HDC"
+        }
+    ],
+    "ColorRGBToHLS": [
+        {
+            "name": "clrRGB",
+            "type": "COLORREF"
+        },
+        {
+            "name": "pwHue",
+            "type": "WORD"
+        },
+        {
+            "name": "pwLuminance",
+            "type": "WORD"
+        },
+        {
+            "name": "pwSaturation",
+            "type": "WORD"
+        }
+    ],
+    "ColorHLSToRGB": [
+        {
+            "name": "wHue",
+            "type": "WORD"
+        },
+        {
+            "name": "wLuminance",
+            "type": "WORD"
+        },
+        {
+            "name": "wSaturation",
+            "type": "WORD"
+        }
+    ],
+    "ColorAdjustLuma": [
+        {
+            "name": "clrRGB",
+            "type": "COLORREF"
+        },
+        {
+            "name": "n",
+            "type": "int"
+        },
+        {
+            "name": "fScale",
+            "type": "BOOL"
+        }
+    ],
+    "DllInstall": [
+        {
+            "name": "bInstall",
+            "type": "BOOL"
+        },
+        {
+            "name": "pszCmdLine",
+            "type": "PCWSTR"
+        }
+    ],
+    "IsInternetESCEnabled": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ]
+}

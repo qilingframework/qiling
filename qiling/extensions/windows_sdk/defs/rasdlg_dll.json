@@ -1,0 +1,118 @@
+{
+    "RasPhonebookDlgA": [
+        {
+            "name": "lpszPhonebook",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpszEntry",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpInfo",
+            "type": {
+                "name": "tagRASPBDLGA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasPhonebookDlgW": [
+        {
+            "name": "lpszPhonebook",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpszEntry",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpInfo",
+            "type": {
+                "name": "tagRASPBDLGW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasEntryDlgA": [
+        {
+            "name": "lpszPhonebook",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpszEntry",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpInfo",
+            "type": {
+                "name": "tagRASENTRYDLGA",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasEntryDlgW": [
+        {
+            "name": "lpszPhonebook",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpszEntry",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpInfo",
+            "type": {
+                "name": "tagRASENTRYDLGW",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasDialDlgA": [
+        {
+            "name": "lpszPhonebook",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpszEntry",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpszPhoneNumber",
+            "type": "LPSTR"
+        },
+        {
+            "name": "lpInfo",
+            "type": {
+                "name": "tagRASDIALDLG",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ],
+    "RasDialDlgW": [
+        {
+            "name": "lpszPhonebook",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpszEntry",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpszPhoneNumber",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "lpInfo",
+            "type": {
+                "name": "tagRASDIALDLG",
+                "data_type": "Struct",
+                "elements": []
+            }
+        }
+    ]
+}

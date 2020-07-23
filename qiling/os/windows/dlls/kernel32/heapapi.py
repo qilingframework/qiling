@@ -13,17 +13,14 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
+dllname = 'kernel32_dll'
 
 # HANDLE HeapCreate(
 #   DWORD  flOptions,
 #   SIZE_T dwInitialSize,
 #   SIZE_T dwMaximumSize
 # );
-@winapi(cc=STDCALL, params={
-    "flOptions": DWORD,
-    "dwInitialSize": SIZE_T,
-    "dwMaximumSize": SIZE_T
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_HeapCreate(ql, address, params):
     dwInitialSize = params["dwInitialSize"]
     addr = ql.os.heap.alloc(dwInitialSize)
@@ -35,11 +32,7 @@ def hook_HeapCreate(ql, address, params):
 #   DWORD  dwFlags,
 #   SIZE_T dwBytes
 # );
-@winapi(cc=STDCALL, params={
-    "hHeap": HANDLE,
-    "dwFlags": DWORD,
-    "dwBytes": SIZE_T
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_HeapAlloc(ql, address, params):
     ret = ql.os.heap.alloc(params["dwBytes"])
     return ret
@@ -50,11 +43,7 @@ def hook_HeapAlloc(ql, address, params):
 #   DWORD   dwFlags,
 #   LPCVOID lpMem
 # );
-@winapi(cc=STDCALL, params={
-    "hHeap": HANDLE,
-    "dwFlags": DWORD,
-    "lpMem": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_HeapSize(ql, address, params):
     pointer = params["lpMem"]
     return ql.os.heap.size(pointer)
@@ -65,11 +54,7 @@ def hook_HeapSize(ql, address, params):
 #  DWORD                  dwFlags,
 #  _Frees_ptr_opt_ LPVOID lpMem
 # );
-@winapi(cc=STDCALL, params={
-    "hHeap": HANDLE,
-    "dwFlags": DWORD,
-    "lpMem": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_HeapFree(ql, address, params):
     return ql.os.heap.free(params['lpMem'])
 
@@ -80,19 +65,14 @@ def hook_HeapFree(ql, address, params):
 #  PVOID                  HeapInformation,
 #  SIZE_T                 HeapInformationLength
 # );
-@winapi(cc=STDCALL, params={
-    "HeapHandle": HANDLE,
-    "HeapInformationClass": UINT,
-    "HeapInformation": POINTER,
-    "HeapInformationLength": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'SIZE_T': 'UINT'})
 def hook_HeapSetInformation(ql, address, params):
     return 1
 
 
 # HANDLE GetProcessHeap(
 # );
-@winapi(cc=STDCALL, params={})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetProcessHeap(ql, address, params):
     ret = ql.os.heap.start_address
     return ret

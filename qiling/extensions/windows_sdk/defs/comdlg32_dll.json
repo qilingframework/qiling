@@ -1,0 +1,84 @@
+{
+    "GetOpenFileNameA": [
+        {
+            "name": "VOID",
+            "type": "LPOPENFILENAMEA"
+        }
+    ],
+    "GetOpenFileNameW": [
+        {
+            "name": "VOID",
+            "type": "LPOPENFILENAMEW"
+        }
+    ],
+    "GetSaveFileNameA": [
+        {
+            "name": "VOID",
+            "type": "LPOPENFILENAMEA"
+        }
+    ],
+    "GetSaveFileNameW": [
+        {
+            "name": "VOID",
+            "type": "LPOPENFILENAMEW"
+        }
+    ],
+    "GetFileTitleA": [
+        {
+            "name": "VOID",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Buf",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchSize",
+            "type": "WORD"
+        }
+    ],
+    "GetFileTitleW": [
+        {
+            "name": "VOID",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Buf",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchSize",
+            "type": "WORD"
+        }
+    ],
+    "FindTextA": [
+        {
+            "name": "VOID",
+            "type": "LPFINDREPLACEA"
+        }
+    ],
+    "FindTextW": [
+        {
+            "name": "VOID",
+            "type": "LPFINDREPLACEW"
+        }
+    ],
+    "ReplaceTextA": [
+        {
+            "name": "VOID",
+            "type": "LPFINDREPLACEA"
+        }
+    ],
+    "ReplaceTextW": [
+        {
+            "name": "VOID",
+            "type": "LPFINDREPLACEW"
+        }
+    ],
+    "CommDlgExtendedError": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ]
+}

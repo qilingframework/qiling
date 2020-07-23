@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import os, sys
+import os, sys, types
 
 from .utils import QLOsUtils
 from .const import *
@@ -55,20 +55,31 @@ class QlOs(QLOsUtils):
         self.appeared_strings = {}
         self.setup_output()
 
+    def find_containing_image(self, pc):
+        for image in self.ql.loader.images:
+            if image.base <= pc <= image.end:
+                return image
+
     def emu_error(self):
         self.ql.nprint("[!] Emulation Error")
         
         self.ql.nprint("\n")
-        for reg in self.ql.reg.table:
-            REG_NAME = reg
-            REG_VAL = self.ql.reg.read(reg)
-            self.ql.nprint("[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
+        for reg in self.ql.reg.register_mapping:
+            if isinstance(reg, str):
+                REG_NAME = reg
+                REG_VAL = self.ql.reg.read(reg)
+                self.ql.nprint("[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
         
         self.ql.nprint("\n")
-        self.ql.nprint("[+] PC = 0x%x" %(self.ql.reg.arch_pc))
+        self.ql.nprint("[+] PC = 0x%x" % (self.ql.reg.arch_pc), end="")
+        containing_image = self.find_containing_image(self.ql.reg.arch_pc)
+        if containing_image:
+            offset = self.ql.reg.arch_pc - containing_image.base
+            self.ql.nprint(" (%s+0x%x)" % (containing_image.path, offset))
+        else:
+            self.ql.nprint("\n")
         self.ql.mem.show_mapinfo()
         
-        self.ql.nprint("\n")
         buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
         self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
         
@@ -141,26 +152,20 @@ class QlOs(QLOsUtils):
                     out_params[each] = high << 32 + low
                 else:
                     out_params[each] = self.get_param_by_index(index)
-            elif in_params[each] == STRING or in_params[each] == STRING_ADDR:
+            elif in_params[each] == STRING:
                 ptr = self.get_param_by_index(index)
                 if ptr == 0:
                     out_params[each] = 0
                 else:
                     content = self.read_cstring(ptr)
-                    if in_params[each] == STRING_ADDR:
-                        out_params[each] = (ptr, content)
-                    else:
-                        out_params[each] = content
-            elif in_params[each] == WSTRING or in_params[each] == WSTRING_ADDR:
+                    out_params[each] = content
+            elif in_params[each] == WSTRING:
                 ptr = self.get_param_by_index(index)
                 if ptr == 0:
                     out_params[each] = 0
                 else:
                     content = self.read_wstring(ptr)
-                    if in_params[each] == WSTRING_ADDR:
-                        out_params[each] = (ptr, content)
-                    else:
-                        out_params[each] = content
+                    out_params[each] = content
             elif in_params[each] == GUID:
                 ptr = self.get_param_by_index(index)
                 if ptr == 0:
@@ -199,8 +204,19 @@ class QlOs(QLOsUtils):
         # read params
         if params is not None:
             param_num = self.set_function_params(params, args[2])
+        
+        if isinstance(self.winapi_func_onenter, types.FunctionType):
+            address, params = self.winapi_func_onenter(*args, **kwargs)
+            args = (self.ql, address, params)
+            onEnter = True
+        else:
+            onEnter = False  
+
         # call function
         result = func(*args, **kwargs)
+        
+        if isinstance(self.winapi_func_onexit, types.FunctionType):
+            self.winapi_func_onexit(*args, **kwargs)
 
         # set return value
         if result is not None:

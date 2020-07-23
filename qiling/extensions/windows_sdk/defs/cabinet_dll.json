@@ -1,0 +1,406 @@
+{
+    "FCICreate": [
+        {
+            "name": "perf",
+            "type": "PERF"
+        },
+        {
+            "name": "pfnfcifp",
+            "type": "PFNFCIFILEPLACED"
+        },
+        {
+            "name": "pfna",
+            "type": "PFNFCIALLOC"
+        },
+        {
+            "name": "pfnf",
+            "type": "PFNFCIFREE"
+        },
+        {
+            "name": "pfnopen",
+            "type": "PFNFCIOPEN"
+        },
+        {
+            "name": "pfnread",
+            "type": "PFNFCIREAD"
+        },
+        {
+            "name": "pfnwrite",
+            "type": "PFNFCIWRITE"
+        },
+        {
+            "name": "pfnclose",
+            "type": "PFNFCICLOSE"
+        },
+        {
+            "name": "pfnseek",
+            "type": "PFNFCISEEK"
+        },
+        {
+            "name": "pfndelete",
+            "type": "PFNFCIDELETE"
+        },
+        {
+            "name": "pfnfcigtf",
+            "type": "PFNFCIGETTEMPFILE"
+        },
+        {
+            "name": "pccab",
+            "type": "PCCAB"
+        },
+        {
+            "name": "pv",
+            "type": "void"
+        }
+    ],
+    "FCIAddFile": [
+        {
+            "name": "hfci",
+            "type": "HFCI"
+        },
+        {
+            "name": "pszSourceFile",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pszFileName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "fExecute",
+            "type": "BOOL"
+        },
+        {
+            "name": "pfnfcignc",
+            "type": "PFNFCIGETNEXTCABINET"
+        },
+        {
+            "name": "pfnfcis",
+            "type": "PFNFCISTATUS"
+        },
+        {
+            "name": "pfnfcigoi",
+            "type": "PFNFCIGETOPENINFO"
+        },
+        {
+            "name": "typeCompress",
+            "type": "TCOMP"
+        }
+    ],
+    "FCIFlushCabinet": [
+        {
+            "name": "hfci",
+            "type": "HFCI"
+        },
+        {
+            "name": "fGetNextCab",
+            "type": "BOOL"
+        },
+        {
+            "name": "pfnfcignc",
+            "type": "PFNFCIGETNEXTCABINET"
+        },
+        {
+            "name": "pfnfcis",
+            "type": "PFNFCISTATUS"
+        }
+    ],
+    "FCIFlushFolder": [
+        {
+            "name": "hfci",
+            "type": "HFCI"
+        },
+        {
+            "name": "pfnfcignc",
+            "type": "PFNFCIGETNEXTCABINET"
+        },
+        {
+            "name": "pfnfcis",
+            "type": "PFNFCISTATUS"
+        }
+    ],
+    "FCIDestroy": [
+        {
+            "name": "hfci",
+            "type": "HFCI"
+        }
+    ],
+    "FDICreate": [
+        {
+            "name": "pfnalloc",
+            "type": "PFNALLOC"
+        },
+        {
+            "name": "pfnfree",
+            "type": "PFNFREE"
+        },
+        {
+            "name": "pfnopen",
+            "type": "PFNOPEN"
+        },
+        {
+            "name": "pfnread",
+            "type": "PFNREAD"
+        },
+        {
+            "name": "pfnwrite",
+            "type": "PFNWRITE"
+        },
+        {
+            "name": "pfnclose",
+            "type": "PFNCLOSE"
+        },
+        {
+            "name": "pfnseek",
+            "type": "PFNSEEK"
+        },
+        {
+            "name": "cpuType",
+            "type": "int"
+        },
+        {
+            "name": "perf",
+            "type": "PERF"
+        }
+    ],
+    "FDIIsCabinet": [
+        {
+            "name": "hfdi",
+            "type": "HFDI"
+        },
+        {
+            "name": "hf",
+            "type": "INT_PTR"
+        },
+        {
+            "name": "pfdici",
+            "type": "PFDICABINETINFO"
+        }
+    ],
+    "FDICopy": [
+        {
+            "name": "hfdi",
+            "type": "HFDI"
+        },
+        {
+            "name": "pszCabinet",
+            "type": "LPSTR"
+        },
+        {
+            "name": "pszCabPath",
+            "type": "LPSTR"
+        },
+        {
+            "name": "flags",
+            "type": "int"
+        },
+        {
+            "name": "pfnfdin",
+            "type": "PFNFDINOTIFY"
+        },
+        {
+            "name": "pfnfdid",
+            "type": "PFNFDIDECRYPT"
+        },
+        {
+            "name": "pvUser",
+            "type": "void"
+        }
+    ],
+    "FDIDestroy": [
+        {
+            "name": "hfdi",
+            "type": "HFDI"
+        }
+    ],
+    "FDITruncateCabinet": [
+        {
+            "name": "hfdi",
+            "type": "HFDI"
+        },
+        {
+            "name": "pszCabinetName",
+            "type": "LPSTR"
+        },
+        {
+            "name": "iFolderToDelete",
+            "type": "USHORT"
+        }
+    ],
+    "CreateCompressor": [
+        {
+            "name": "Algorithm",
+            "type": "DWORD"
+        },
+        {
+            "name": "AllocationRoutines",
+            "type": "PCOMPRESS_ALLOCATION_ROUTINES"
+        },
+        {
+            "name": "CompressorHandle",
+            "type": "PCOMPRESSOR_HANDLE"
+        }
+    ],
+    "SetCompressorInformation": [
+        {
+            "name": "CompressorHandle",
+            "type": "COMPRESSOR_HANDLE"
+        },
+        {
+            "name": "CompressInformationClass",
+            "type": "COMPRESS_INFORMATION_CLASS"
+        },
+        {
+            "name": "CompressInformation",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "CompressInformationSize",
+            "type": "SIZE_T"
+        }
+    ],
+    "QueryCompressorInformation": [
+        {
+            "name": "CompressorHandle",
+            "type": "COMPRESSOR_HANDLE"
+        },
+        {
+            "name": "CompressInformationClass",
+            "type": "COMPRESS_INFORMATION_CLASS"
+        },
+        {
+            "name": "CompressInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "CompressInformationSize",
+            "type": "SIZE_T"
+        }
+    ],
+    "Compress": [
+        {
+            "name": "CompressorHandle",
+            "type": "COMPRESSOR_HANDLE"
+        },
+        {
+            "name": "UncompressedData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "UncompressedDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "CompressedBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "CompressedBufferSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "CompressedDataSize",
+            "type": "PSIZE_T"
+        }
+    ],
+    "ResetCompressor": [
+        {
+            "name": "CompressorHandle",
+            "type": "COMPRESSOR_HANDLE"
+        }
+    ],
+    "CloseCompressor": [
+        {
+            "name": "CompressorHandle",
+            "type": "COMPRESSOR_HANDLE"
+        }
+    ],
+    "CreateDecompressor": [
+        {
+            "name": "Algorithm",
+            "type": "DWORD"
+        },
+        {
+            "name": "AllocationRoutines",
+            "type": "PCOMPRESS_ALLOCATION_ROUTINES"
+        },
+        {
+            "name": "DecompressorHandle",
+            "type": "PDECOMPRESSOR_HANDLE"
+        }
+    ],
+    "SetDecompressorInformation": [
+        {
+            "name": "DecompressorHandle",
+            "type": "DECOMPRESSOR_HANDLE"
+        },
+        {
+            "name": "CompressInformationClass",
+            "type": "COMPRESS_INFORMATION_CLASS"
+        },
+        {
+            "name": "CompressInformation",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "CompressInformationSize",
+            "type": "SIZE_T"
+        }
+    ],
+    "QueryDecompressorInformation": [
+        {
+            "name": "DecompressorHandle",
+            "type": "DECOMPRESSOR_HANDLE"
+        },
+        {
+            "name": "CompressInformationClass",
+            "type": "COMPRESS_INFORMATION_CLASS"
+        },
+        {
+            "name": "CompressInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "CompressInformationSize",
+            "type": "SIZE_T"
+        }
+    ],
+    "Decompress": [
+        {
+            "name": "DecompressorHandle",
+            "type": "DECOMPRESSOR_HANDLE"
+        },
+        {
+            "name": "CompressedData",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "CompressedDataSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "UncompressedBuffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "UncompressedBufferSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "UncompressedDataSize",
+            "type": "PSIZE_T"
+        }
+    ],
+    "ResetDecompressor": [
+        {
+            "name": "DecompressorHandle",
+            "type": "DECOMPRESSOR_HANDLE"
+        }
+    ],
+    "CloseDecompressor": [
+        {
+            "name": "DecompressorHandle",
+            "type": "DECOMPRESSOR_HANDLE"
+        }
+    ]
+}

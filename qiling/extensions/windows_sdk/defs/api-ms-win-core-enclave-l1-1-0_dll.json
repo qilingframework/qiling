@@ -1,0 +1,102 @@
+{
+    "IsEnclaveTypeSupported": [
+        {
+            "name": "flEnclaveType",
+            "type": "DWORD"
+        }
+    ],
+    "CreateEnclave": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpAddress",
+            "type": "LPVOID"
+        },
+        {
+            "name": "dwSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "dwInitialCommitment",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "flEnclaveType",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpEnclaveInformation",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "dwInfoLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpEnclaveError",
+            "type": "LPDWORD"
+        }
+    ],
+    "LoadEnclaveData": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpAddress",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpBuffer",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "nSize",
+            "type": "SIZE_T"
+        },
+        {
+            "name": "flProtect",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpPageInformation",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "dwInfoLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpNumberOfBytesWritten",
+            "type": "PSIZE_T"
+        },
+        {
+            "name": "lpEnclaveError",
+            "type": "LPDWORD"
+        }
+    ],
+    "InitializeEnclave": [
+        {
+            "name": "hProcess",
+            "type": "HANDLE"
+        },
+        {
+            "name": "lpAddress",
+            "type": "LPVOID"
+        },
+        {
+            "name": "lpEnclaveInformation",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "dwInfoLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpEnclaveError",
+            "type": "LPDWORD"
+        }
+    ]
+}

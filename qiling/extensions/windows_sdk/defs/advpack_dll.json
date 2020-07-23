@@ -1,0 +1,30 @@
+{
+    "RegInstallA": [
+        {
+            "name": "hmod",
+            "type": "HMODULE"
+        },
+        {
+            "name": "pszSection",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "pstTable",
+            "type": "STRTABLEA"
+        }
+    ],
+    "RegInstallW": [
+        {
+            "name": "hmod",
+            "type": "HMODULE"
+        },
+        {
+            "name": "pszSection",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pstTable",
+            "type": "STRTABLEW"
+        }
+    ]
+}

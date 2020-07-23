@@ -8,6 +8,10 @@ Advisor
 =======
 NGUYEN Anh Quynh <aquynh@gmail.com>
 
+Travis, Website and Documentations
+==================================
+FOO Kevin (chfl4gs)
+
 Core Developers
 ===============
 DING tianze (D1iv3) <dddliv3@gmail.com>
@@ -15,6 +19,28 @@ SUN bowen (w1tcher) <w1tcher.bupt@gmail.com>
 CHEN huitao (null) <null@qiling.io>
 YU tong (sp1ke) <spikeinhouse@gmail.com>
 Earl MARCUS (klks84) klks84@gmail.com
+
+Key Contributors (in no particular order)
+=========================================
+kabeor
+0ssigeno
+liba2k
+assafcarlsbad
+ucgJhe
+jhumble
+
+Contributors (in no particular order)
+=====================================
+WanderingGlitch
+Nguyen Hong Quang (quangnh89)
+re-fox
+t14g0p
+Hcamael
+hugsy
+danielhenrymantilla
+iamyeh
+alfink
+bambu
 
 Alpha testers (in no particular order, named by github id)
 ==========================================================
@@ -31,23 +57,3 @@ sashs
 knownsec
 hwiosec
 iamyeh
-
-Contributors (in no particular order)
-=====================================
-klks
-FOO Kevin (chfl4gs)
-jhumble
-WanderingGlitch
-Nguyen Hong Quang (quangnh89)
-ucgJhe
-re-fox
-t14g0p
-Hcamael
-hugsy
-danielhenrymantilla
-iamyeh
-alfink
-bambu
-kabeor
-0ssigeno
-liba2k

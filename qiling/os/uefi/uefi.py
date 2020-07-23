@@ -17,6 +17,8 @@ class QlOsUefi(QlOs):
         self.ql = ql
         self.entry_point = 0
         self.user_defined_api = {}
+        self.user_defined_api_onenter = {}
+        self.user_defined_api_onexit = {}
         self.notify_immediately = False
         self.PE_RUN = True
     

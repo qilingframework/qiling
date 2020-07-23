@@ -1,0 +1,128 @@
+{
+    "TokenBindingGenerateBinding": [
+        {
+            "name": "keyType",
+            "type": "TOKENBINDING_KEY_PARAMETERS_TYPE"
+        },
+        {
+            "name": "targetURL",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "bindingType",
+            "type": "TOKENBINDING_TYPE"
+        },
+        {
+            "name": "tlsEKM",
+            "type": "void"
+        },
+        {
+            "name": "tlsEKMSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "extensionFormat",
+            "type": "TOKENBINDING_EXTENSION_FORMAT"
+        },
+        {
+            "name": "extensionData",
+            "type": "void"
+        },
+        {
+            "name": "tokenBinding",
+            "type": "void"
+        },
+        {
+            "name": "tokenBindingSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "resultData",
+            "type": "TOKENBINDING_RESULT_DATA"
+        }
+    ],
+    "TokenBindingGenerateMessage": [
+        {
+            "name": "tokenBindings",
+            "type": "void"
+        },
+        {
+            "name": "tokenBindingsSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "tokenBindingsCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "tokenBindingMessage",
+            "type": "void"
+        },
+        {
+            "name": "tokenBindingMessageSize",
+            "type": "DWORD"
+        }
+    ],
+    "TokenBindingVerifyMessage": [
+        {
+            "name": "tokenBindingMessage",
+            "type": "void"
+        },
+        {
+            "name": "tokenBindingMessageSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "keyType",
+            "type": "TOKENBINDING_KEY_PARAMETERS_TYPE"
+        },
+        {
+            "name": "tlsEKM",
+            "type": "void"
+        },
+        {
+            "name": "tlsEKMSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "resultList",
+            "type": "TOKENBINDING_RESULT_LIST"
+        }
+    ],
+    "TokenBindingGetKeyTypesClient": [
+        {
+            "name": "keyTypes",
+            "type": "TOKENBINDING_KEY_TYPES"
+        }
+    ],
+    "TokenBindingGetKeyTypesServer": [
+        {
+            "name": "keyTypes",
+            "type": "TOKENBINDING_KEY_TYPES"
+        }
+    ],
+    "TokenBindingDeleteBinding": [
+        {
+            "name": "targetURL",
+            "type": "PCWSTR"
+        }
+    ],
+    "TokenBindingGenerateID": [
+        {
+            "name": "keyType",
+            "type": "TOKENBINDING_KEY_PARAMETERS_TYPE"
+        },
+        {
+            "name": "publicKey",
+            "type": "void"
+        },
+        {
+            "name": "publicKeySize",
+            "type": "DWORD"
+        },
+        {
+            "name": "resultData",
+            "type": "TOKENBINDING_RESULT_DATA"
+        }
+    ]
+}

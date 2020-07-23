@@ -1,0 +1,174 @@
+{
+    "WindowsCreateString": [
+        {
+            "name": "sourceString",
+            "type": "PCNZWCH"
+        },
+        {
+            "name": "length",
+            "type": "UINT32"
+        },
+        {
+            "name": "string",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsCreateStringReference": [
+        {
+            "name": "sourceString",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "length",
+            "type": "UINT32"
+        },
+        {
+            "name": "hstringHeader",
+            "type": "HSTRING_HEADER"
+        },
+        {
+            "name": "string",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsDeleteString": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsDuplicateString": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsGetStringLen": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsGetStringRawBuffer": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "length",
+            "type": "UINT32"
+        }
+    ],
+    "WindowsIsStringEmpty": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsStringHasEmbeddedNull": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "hasEmbedNull",
+            "type": "BOOL"
+        }
+    ],
+    "WindowsSubstring": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "startIndex",
+            "type": "UINT32"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsSubstringWithSpecifiedLength": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "startIndex",
+            "type": "UINT32"
+        },
+        {
+            "name": "length",
+            "type": "UINT32"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsConcatString": [
+        {
+            "name": "string1",
+            "type": "HSTRING"
+        },
+        {
+            "name": "string2",
+            "type": "HSTRING"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsReplaceString": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "stringReplaced",
+            "type": "HSTRING"
+        },
+        {
+            "name": "stringReplaceWith",
+            "type": "HSTRING"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsTrimStringStart": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "trimString",
+            "type": "HSTRING"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ],
+    "WindowsTrimStringEnd": [
+        {
+            "name": "string",
+            "type": "HSTRING"
+        },
+        {
+            "name": "trimString",
+            "type": "HSTRING"
+        },
+        {
+            "name": "newString",
+            "type": "HSTRING"
+        }
+    ]
+}

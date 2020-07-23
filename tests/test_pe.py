@@ -3,13 +3,14 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import sys, random, unittest
+import os, random, sys, unittest
 import string as st
 from binascii import unhexlify
 
 sys.path.insert(0, "..")
 
 from qiling import *
+from qiling.const import *
 from qiling.exception import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
@@ -32,6 +33,8 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_uselessdisk(self):
+        if 'QL_FAST_TEST' in os.environ:
+            return
         ql = Qiling(["../examples/rootfs/x86_windows/bin/UselessDisk.bin"], "../examples/rootfs/x86_windows",
                     output="debug")
         ql.run()
@@ -39,6 +42,8 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_gandcrab(self):
+        if 'QL_FAST_TEST' in os.environ:
+            return
         def stop(ql, default_values):
             print("Ok for now")
             ql.emu_stop()
@@ -82,7 +87,7 @@ class PETest(unittest.TestCase):
                 raise QlErrorNotImplemented("[!] API not implemented")
 
         ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
-                    output="debug", profile="profiles/windows_gandcrab.ql")
+                    output="debug", profile="profiles/windows_gandcrab_admin.ql")
         default_user = ql.os.profile["USER"]["username"]
         default_computer = ql.os.profile["SYSTEM"]["computername"]
 
@@ -90,13 +95,41 @@ class PETest(unittest.TestCase):
         randomize_config_value(ql, "USER", "username")
         randomize_config_value(ql, "SYSTEM", "computername")
         randomize_config_value(ql, "VOLUME", "serial_number")
+        num_syscalls_admin = ql.os.syscalls_counter
         ql.run()
         del ql
 
+        # RUN AS USER
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
+                    output="debug", profile="profiles/windows_gandcrab_user.ql")
+
+        ql.run()
+        num_syscalls_user = ql.os.syscalls_counter
+
+        del ql
+
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/GandCrab502.bin"], "../examples/rootfs/x86_windows",
+                    output="debug", profile="profiles/windows_gandcrab_russian_keyboard.ql")
+        num_syscalls_russ = ql.os.syscalls_counter
+
+        ql.run()
+        del ql
+        # let's check that gandcrab behave takes a different path if a different environment is found
+        assert num_syscalls_admin != num_syscalls_user != num_syscalls_russ
 
     def test_pe_win_x86_multithread(self):
+        def ThreadId_onEnter(ql, address, params):
+            self.thread_id = ql.os.thread_manager.cur_thread.id
+            return address, params
+
         ql = Qiling(["../examples/rootfs/x86_windows/bin/MultiThread.exe"], "../examples/rootfs/x86_windows")
+        ql.set_api("GetCurrentThreadId", ThreadId_onEnter, QL_INTERCEPT.ENTER)
         ql.run()
+        
+        self.assertGreater(255, self.thread_id)
+        self.assertLessEqual(1, self.thread_id)
+        
+        del self.thread_id
         del ql
 
 
@@ -131,6 +164,8 @@ class PETest(unittest.TestCase):
 
 
     def test_pe_win_x86_wannacry(self):
+        if 'QL_FAST_TEST' in os.environ:
+            return
         def stop(ql):
             ql.nprint("killerswtichfound")
             ql.console = False
@@ -142,8 +177,16 @@ class PETest(unittest.TestCase):
         ql.run()
         del ql
 
+    def test_pe_win_x86_NtQueryInformationSystem(self):
+        ql = Qiling(
+        ["../examples/rootfs/x86_windows/bin/NtQuerySystemInformation.exe"],
+        "../examples/rootfs/x86_windows")
+        ql.run()
+        del ql
 
     def test_pe_win_al_khaser(self):
+        if 'QL_FAST_TEST' in os.environ:
+            return
         ql = Qiling(["../examples/rootfs/x86_windows/bin/al-khaser.bin"], "../examples/rootfs/x86_windows")
 
         # The hooks are to remove the prints to file. It crashes. will debug why in the future
@@ -160,34 +203,55 @@ class PETest(unittest.TestCase):
         # I have no idea of why this code should work without this patch
         ql.patch(0x00401984, b'\xb8\x04\x00\x00\x00')
 
-        # This should call an interrupt. Other than we don't listen to interrupts, this interrupt is shit.
-        ql.patch(0x0040145c, b'\x90' * 5)
-
         def end(ql):
             print("We are finally done")
             ql.emu_stop()
 
-        ql.hook_address(end, 0x0040148d)
+        ql.hook_address(end, 0x004016ae)
 
         ql.run()
         del ql
 
 
     def test_pe_win_x8664_customapi(self):
-        @winapi(cc=CDECL, params={
-            "str": STRING
-        })
+        @winsdkapi(cc=CDECL, replace_params={"str": STRING})
         def my_puts64(ql, address, params):
             ret = 0
-            ql.nprint("\n+++++++++\nMy Windows 64bit Windows API\n+++++++++\n")
-            string = params["str"]
-            ret = len(string)
+            print("\n+++++++++ My Windows 64bit Windows API +++++++++\n")
+            print("params: ", params)
+            print("+++++++++\n")
+            params["str"] = "Hello Hello Hello"
+            ret = len(params["str"])
+            self.set_api = len(params["str"])
             return ret
+
+        def my_onenter(ql, address, params):
+            print("\n+++++++++\nmy OnEnter")
+            print("params: ", params)
+            print("+++++++++\n")
+            self.set_api_onenter = self.set_api = len( params["str"])
+            return  address, params
+
+        def my_onexit(ql, address, params):
+            print("\n+++++++++\nmy OnExit")
+            print("params: ", params)
+            print("+++++++++\n")
+            self.set_api_onexit = self.set_api = len( params["str"])
 
         def my_sandbox(path, rootfs):
             ql = Qiling(path, rootfs, output="debug")
-            ql.set_syscall("puts", my_puts64)
+            ql.set_api("puts", my_onenter, QL_INTERCEPT.ENTER)
+            ql.set_api("puts", my_puts64)
+            ql.set_api("puts", my_onexit, QL_INTERCEPT.EXIT)
             ql.run()
+            
+            self.assertEqual(17, self.set_api)
+            self.assertEqual(12, self.set_api_onenter)
+            self.assertEqual(17, self.set_api_onexit)
+            
+            del self.set_api
+            del self.set_api_onenter
+            del self.set_api_onexit
             del ql
 
         my_sandbox(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows")

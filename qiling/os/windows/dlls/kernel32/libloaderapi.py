@@ -13,6 +13,7 @@ from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 
+dllname = 'kernel32_dll'
 
 def _GetModuleHandle(ql, address, params):
     lpModuleName = params["lpModuleName"]
@@ -26,23 +27,14 @@ def _GetModuleHandle(ql, address, params):
             ret = ql.loader.dlls[lpModuleName]
         else:
             ql.dprint(D_INFO, "[!] Library %s not imported" % lpModuleName)
-            # Let's try to import it if the sample think is default dll and was imported at the start
-            # Probably we can optimize here since load_dll already do a lot of checks, but not a real problem
-            path = os.path.join(ql.rootfs, ql.dlls, lpModuleName)
-            if is_file_library(lpModuleName) and os.path.exists(path):
-                ret = ql.loader.load_dll(lpModuleName.encode())
-            else:
-                ql.dprint(D_INFO, "[!] Library %s not found" % lpModuleName)
-                ret = 0
+            ret = 0
     return ret
 
 
 # HMODULE GetModuleHandleA(
 #   LPCSTR lpModuleName
 # );
-@winapi(cc=STDCALL, params={
-    "lpModuleName": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleHandleA(ql, address, params):
     return _GetModuleHandle(ql, address, params)
 
@@ -50,9 +42,7 @@ def hook_GetModuleHandleA(ql, address, params):
 # HMODULE GetModuleHandleW(
 #   LPCWSTR lpModuleName
 # );
-@winapi(cc=STDCALL, params={
-    "lpModuleName": WSTRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleHandleW(ql, address, params):
     return _GetModuleHandle(ql, address, params)
 
@@ -62,11 +52,7 @@ def hook_GetModuleHandleW(ql, address, params):
 #   LPCWSTR lpModuleName,
 #   HMODULE *phModule
 # );
-@winapi(cc=STDCALL, params={
-    "dwFlags": DWORD,
-    "lpModuleName": WSTRING,
-    "phModule": HANDLE
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleHandleExW(ql, address, params):
     res = _GetModuleHandle(ql, address, params)
     dst = params["phModule"]
@@ -79,11 +65,7 @@ def hook_GetModuleHandleExW(ql, address, params):
 #   LPSTR   lpFilename,
 #   DWORD   nSize
 # );
-@winapi(cc=STDCALL, params={
-    "hModule": HANDLE,
-    "lpFilename": POINTER,
-    "nSize": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleFileNameA(ql, address, params):
     ret = 0
     hModule = params["hModule"]
@@ -112,11 +94,7 @@ def hook_GetModuleFileNameA(ql, address, params):
 #   LPSTR   lpFilename,
 #   DWORD   nSize
 # );
-@winapi(cc=STDCALL, params={
-    "hModule": HANDLE,
-    "lpFilename": POINTER,
-    "nSize": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_GetModuleFileNameW(ql, address, params):
     ret = 0
     hModule = params["hModule"]
@@ -142,10 +120,7 @@ def hook_GetModuleFileNameW(ql, address, params):
 #   HMODULE hModule,
 #   LPCSTR  lpProcName
 # );
-@winapi(cc=STDCALL, params={
-    "hModule": POINTER,
-    "lpProcName": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCSTR': 'POINTER'})
 def hook_GetProcAddress(ql, address, params):
     if params["lpProcName"] > MAXUSHORT:
         # Look up by name
@@ -180,9 +155,7 @@ def hook_GetProcAddress(ql, address, params):
 # HMODULE LoadLibraryA(
 #   LPCSTR lpLibFileName
 # );
-@winapi(cc=STDCALL, params={
-    "lpLibFileName": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LoadLibraryA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
     if lpLibFileName == ql.loader.filepath.decode():
@@ -197,11 +170,7 @@ def hook_LoadLibraryA(ql, address, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 # );
-@winapi(cc=STDCALL, params={
-    "lpLibFileName": STRING,
-    "hFile": POINTER,
-    "dwFlags": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
 def hook_LoadLibraryExA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
     dll_base = ql.loader.load_dll(lpLibFileName.encode())
@@ -211,9 +180,7 @@ def hook_LoadLibraryExA(ql, address, params):
 # HMODULE LoadLibraryW(
 #   LPCWSTR lpLibFileName
 # );
-@winapi(cc=STDCALL, params={
-    "lpLibFileName": WSTRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LoadLibraryW(ql, address, params):
     lpLibFileName = params["lpLibFileName"].encode()
     dll_base = ql.loader.load_dll(lpLibFileName)
@@ -225,11 +192,7 @@ def hook_LoadLibraryW(ql, address, params):
 #   HANDLE hFile,
 #   DWORD  dwFlags
 # );
-@winapi(cc=STDCALL, params={
-    "lpLibFileName": WSTRING,
-    "hFile": POINTER,
-    "dwFlags": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
 def hook_LoadLibraryExW(ql, address, params):
     lpLibFileName = params["lpLibFileName"].encode()
     dll_base = ql.loader.load_dll(lpLibFileName)
@@ -240,10 +203,7 @@ def hook_LoadLibraryExW(ql, address, params):
 #   HMODULE hModule,
 #   HRSRC   hResInfo
 # );
-@winapi(cc=STDCALL, params={
-    "hModule": POINTER,
-    "hResInfo": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_SizeofResource(ql, address, params):
     # Return size of resource
     # TODO set a valid value. More tests have to be made to find it.
@@ -254,10 +214,7 @@ def hook_SizeofResource(ql, address, params):
 #   HMODULE hModule,
 #   HRSRC   hResInfo
 # );
-@winapi(cc=STDCALL, params={
-    "hModule": POINTER,
-    "hResInfo": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_LoadResource(ql, address, params):
     pointer = params["hResInfo"]
     return pointer
@@ -266,9 +223,7 @@ def hook_LoadResource(ql, address, params):
 # LPVOID LockResource(
 #   HGLOBAL hResData
 # );
-@winapi(cc=STDCALL, params={
-    "hResData": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_LockResource(ql, address, params):
     pointer = params["hResData"]
     return pointer
@@ -277,9 +232,7 @@ def hook_LockResource(ql, address, params):
 # BOOL DisableThreadLibraryCalls(
 #  HMODULE hLibModule
 # );
-@winapi(cc=STDCALL, params={
-    "hLibModule": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_DisableThreadLibraryCalls(ql, address, params):
     return 1
 
@@ -287,9 +240,7 @@ def hook_DisableThreadLibraryCalls(ql, address, params):
 # BOOL FreeLibrary(
 #   HMODULE hLibModule
 # );
-@winapi(cc=STDCALL, params={
-    "hLibModule": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HMODULE': 'POINTER'})
 def hook_FreeLibrary(ql, address, params):
     return 1
 
@@ -297,9 +248,7 @@ def hook_FreeLibrary(ql, address, params):
 # BOOL SetDefaultDllDirectories(
 #   DWORD DirectoryFlags
 # );
-@winapi(cc=STDCALL, params={
-    "DirectoryFlags": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_SetDefaultDllDirectories(ql, address, params):
     value = params["DirectoryFlags"]
     if value == LOAD_LIBRARY_SEARCH_USER_DIRS:

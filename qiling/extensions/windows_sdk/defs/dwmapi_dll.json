@@ -1,0 +1,354 @@
+{
+    "DwmDefWindowProc": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "msg",
+            "type": "UINT"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "lParam",
+            "type": "LPARAM"
+        },
+        {
+            "name": "plResult",
+            "type": "LRESULT"
+        }
+    ],
+    "DwmEnableBlurBehindWindow": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pBlurBehind",
+            "type": "DWM_BLURBEHIND"
+        }
+    ],
+    "DwmEnableComposition": [
+        {
+            "name": "uCompositionAction",
+            "type": "UINT"
+        }
+    ],
+    "DwmEnableMMCSS": [
+        {
+            "name": "fEnableMMCSS",
+            "type": "BOOL"
+        }
+    ],
+    "DwmExtendFrameIntoClientArea": [
+        {
+            "name": "hWnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pMarInset",
+            "type": "MARGINS"
+        }
+    ],
+    "DwmGetColorizationColor": [
+        {
+            "name": "pcrColorization",
+            "type": "DWORD"
+        },
+        {
+            "name": "pfOpaqueBlend",
+            "type": "BOOL"
+        }
+    ],
+    "DwmGetCompositionTimingInfo": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pTimingInfo",
+            "type": "DWM_TIMING_INFO"
+        }
+    ],
+    "DwmGetWindowAttribute": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwAttribute",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvAttribute",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbAttribute",
+            "type": "DWORD"
+        }
+    ],
+    "DwmIsCompositionEnabled": [
+        {
+            "name": "pfEnabled",
+            "type": "BOOL"
+        }
+    ],
+    "DwmModifyPreviousDxFrameDuration": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "cRefreshes",
+            "type": "INT"
+        },
+        {
+            "name": "fRelative",
+            "type": "BOOL"
+        }
+    ],
+    "DwmQueryThumbnailSourceSize": [
+        {
+            "name": "hThumbnail",
+            "type": "HTHUMBNAIL"
+        },
+        {
+            "name": "pSize",
+            "type": "PSIZE"
+        }
+    ],
+    "DwmRegisterThumbnail": [
+        {
+            "name": "hwndDestination",
+            "type": "HWND"
+        },
+        {
+            "name": "hwndSource",
+            "type": "HWND"
+        },
+        {
+            "name": "phThumbnailId",
+            "type": "PHTHUMBNAIL"
+        }
+    ],
+    "DwmSetDxFrameDuration": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "cRefreshes",
+            "type": "INT"
+        }
+    ],
+    "DwmSetPresentParameters": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pPresentParams",
+            "type": "DWM_PRESENT_PARAMETERS"
+        }
+    ],
+    "DwmSetWindowAttribute": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwAttribute",
+            "type": "DWORD"
+        },
+        {
+            "name": "pvAttribute",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "cbAttribute",
+            "type": "DWORD"
+        }
+    ],
+    "DwmUnregisterThumbnail": [
+        {
+            "name": "hThumbnailId",
+            "type": "HTHUMBNAIL"
+        }
+    ],
+    "DwmUpdateThumbnailProperties": [
+        {
+            "name": "hThumbnailId",
+            "type": "HTHUMBNAIL"
+        },
+        {
+            "name": "ptnProperties",
+            "type": "DWM_THUMBNAIL_PROPERTIES"
+        }
+    ],
+    "DwmSetIconicThumbnail": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hbmp",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "dwSITFlags",
+            "type": "DWORD"
+        }
+    ],
+    "DwmSetIconicLivePreviewBitmap": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "hbmp",
+            "type": "HBITMAP"
+        },
+        {
+            "name": "pptClient",
+            "type": "POINT"
+        },
+        {
+            "name": "dwSITFlags",
+            "type": "DWORD"
+        }
+    ],
+    "DwmInvalidateIconicBitmaps": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "DwmAttachMilContent": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "DwmDetachMilContent": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        }
+    ],
+    "DwmGetGraphicsStreamTransformHint": [
+        {
+            "name": "uIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "pTransform",
+            "type": "MilMatrix3x2D"
+        }
+    ],
+    "DwmGetGraphicsStreamClient": [
+        {
+            "name": "uIndex",
+            "type": "UINT"
+        },
+        {
+            "name": "pClientUuid",
+            "type": "UUID"
+        }
+    ],
+    "DwmGetTransportAttributes": [
+        {
+            "name": "pfIsRemoting",
+            "type": "BOOL"
+        },
+        {
+            "name": "pfIsConnected",
+            "type": "BOOL"
+        },
+        {
+            "name": "pDwGeneration",
+            "type": "DWORD"
+        }
+    ],
+    "DwmTransitionOwnedWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "target",
+            "type": {
+                "name": "DWMTRANSITION_OWNEDWINDOW_TARGET",
+                "data_type": "Enum",
+                "enumerators": []
+            }
+        }
+    ],
+    "DwmRenderGesture": [
+        {
+            "name": "gt",
+            "type": {
+                "name": "GESTURE_TYPE",
+                "data_type": "Enum",
+                "enumerators": []
+            }
+        },
+        {
+            "name": "cContacts",
+            "type": "UINT"
+        },
+        {
+            "name": "pdwPointerID",
+            "type": "DWORD"
+        },
+        {
+            "name": "pPoints",
+            "type": "POINT"
+        }
+    ],
+    "DwmTetherContact": [
+        {
+            "name": "dwPointerID",
+            "type": "DWORD"
+        },
+        {
+            "name": "fEnable",
+            "type": "BOOL"
+        },
+        {
+            "name": "ptTether",
+            "type": "POINT"
+        }
+    ],
+    "DwmShowContact": [
+        {
+            "name": "dwPointerID",
+            "type": "DWORD"
+        },
+        {
+            "name": "eShowContact",
+            "type": {
+                "name": "DWM_SHOWCONTACT",
+                "data_type": "Enum",
+                "enumerators": []
+            }
+        }
+    ],
+    "DwmGetUnmetTabRequirements": [
+        {
+            "name": "appWindow",
+            "type": "HWND"
+        },
+        {
+            "name": "value",
+            "type": {
+                "name": "DWM_TAB_WINDOW_REQUIREMENTS",
+                "data_type": "Enum",
+                "enumerators": []
+            }
+        }
+    ]
+}

@@ -7,6 +7,7 @@ from unicorn.x86_const import *
 from qiling.os.windows.utils import *
 from enum import IntEnum
 from qiling.os.windows.handle import *
+from qiling.exception import *
 
 
 class TEB:
@@ -83,7 +84,8 @@ class PEB:
                  process_heap=0,
                  fast_peb_lock=0,
                  alt_thunk_s_list_ptr=0,
-                 ifeo_key=0):
+                 ifeo_key=0,
+                 number_processors=0):
         self.ql = ql
         self.base = base
         self.flag = flag
@@ -96,20 +98,27 @@ class PEB:
         self.FastPebLock = fast_peb_lock
         self.AtlThunkSListPtr = alt_thunk_s_list_ptr
         self.IFEOKey = ifeo_key
+        self.numberOfProcessors = number_processors
+        if self.ql.archtype == 32:
+            self.size = 0x0468
+        else:
+            self.size = 0x07B0
 
-    def bytes(self):
+    def write(self, addr):
         s = b''
         s += self.ql.pack(self.flag)  # 0x0 / 0x0
         s += self.ql.pack(self.Mutant)  # 0x4 / 0x8
         s += self.ql.pack(self.ImageBaseAddress)  # 0x8 / 0x10
         s += self.ql.pack(self.LdrAddress)  # 0xc / 0x18
-        s += self.ql.pack(self.ProcessParameters)
-        s += self.ql.pack(self.SubSystemData)
-        s += self.ql.pack(self.ProcessHeap)
-        s += self.ql.pack(self.FastPebLock)
-        s += self.ql.pack(self.AtlThunkSListPtr)
-        s += self.ql.pack(self.IFEOKey)
-        return s
+        s += self.ql.pack(self.ProcessParameters)  # 0x10 / 0x20
+        s += self.ql.pack(self.SubSystemData)  # 0x14 / 0x28
+        s += self.ql.pack(self.ProcessHeap)  # 0x18 / 0x30
+        s += self.ql.pack(self.FastPebLock)  # 0x1c / 0x38
+        s += self.ql.pack(self.AtlThunkSListPtr)  # 0x20 / 0x40
+        s += self.ql.pack(self.IFEOKey)  # 0x24 / 0x48
+        self.ql.mem.write(addr, s)
+        # FIXME: understand how each attribute of the PEB works before adding it
+        self.ql.mem.write(addr + 0x64, self.ql.pack(self.numberOfProcessors))
 
 
 class LdrData:
@@ -274,6 +283,7 @@ class WindowsStruct:
         self.WORD_SIZE = 2
         self.SHORT_SIZE = 2
         self.BYTE_SIZE = 1
+        self.USHORT_SIZE = 2
 
     def write(self, addr):
         # I want to force the subclasses to implement it
@@ -284,33 +294,47 @@ class WindowsStruct:
         raise NotImplementedError
 
     def generic_write(self, addr: int, attributes: list):
+        self.ql.dprint(D_RPRT, "[+] Writing Windows object " + self.__class__.__name__)
         already_written = 0
         for elem in attributes:
-            (val, size, endianness, type) = elem
-            if type == int:
+            (val, size, endianness, typ) = elem
+            if typ == int:
                 value = val.to_bytes(size, endianness)
-            elif type == bytes:
+                self.ql.dprint(D_RPRT, "[+] Writing to %d with value %s" % (addr + already_written, value))
+                self.ql.mem.write(addr + already_written, value)
+            elif typ == bytes:
                 if isinstance(val, bytearray):
                     value = bytes(val)
                 else:
                     value = val
+                self.ql.dprint(D_RPRT, "[+] Writing at addr %d value %s" % (addr + already_written, value))
+
+                self.ql.mem.write(addr + already_written, value)
+            elif issubclass(typ, WindowsStruct):
+                val.write(addr)
             else:
-                raise
-            self.ql.mem.write(addr + already_written, value)
+                raise QlErrorNotImplemented("[!] API not implemented")
+
             already_written += size
         self.addr = addr
 
     def generic_read(self, addr: int, attributes: list):
+        self.ql.dprint(D_RPRT, "[+] Reading Windows object " + self.__class__.__name__)
         already_read = 0
         for elem in attributes:
             (val, size, endianness, type) = elem
             value = self.ql.mem.read(addr + already_read, size)
+            self.ql.dprint(D_RPRT, "[+] Reading from %d value %s" % (addr + already_read, value))
             if type == int:
                 elem[0] = int.from_bytes(value, endianness)
             elif type == bytes:
                 elem[0] = value
+            elif issubclass(type, WindowsStruct):
+                obj = type(self.ql)
+                obj.read(addr)
+                elem[0] = obj
             else:
-                raise
+                raise QlErrorNotImplemented("[!] API not implemented")
             already_read += size
         self.addr = addr
 
@@ -417,6 +441,7 @@ class Sid(WindowsStruct):
         super().__init__(ql)
         self.revision = [revision, self.BYTE_SIZE, "little", int]
         self.subs_count = [subs_count, self.BYTE_SIZE, "little", int]
+        # FIXME: understand if is correct to set them as big
         self.identifier = [identifier, 6, "big", int]
         self.subs = [subs, self.subs_count[0] * self.DWORD_SIZE, "little", bytes]
         self.size = 2 + 6 + self.subs_count[0] * 4
@@ -468,6 +493,50 @@ class Point(WindowsStruct):
     def read(self, addr):
         super().generic_read(addr, [self.x, self.y])
 
+# typedef struct _SYSTEM_BASIC_INFORMATION
+# {
+# 	ULONG Reserved;
+# 	ULONG TimerResolution;
+# 	ULONG PageSize;
+# 	ULONG NumberOfPhysicalPages;
+# 	ULONG LowestPhysicalPageNumber;
+# 	ULONG HighestPhysicalPageNumber;
+# 	ULONG AllocationGranularity;
+# 	ULONG_PTR c;
+# 	ULONG_PTR MaximumUserModeAddress;
+# 	ULONG_PTR ActiveProcessorsAffinityMask;
+# 	CCHAR NumberOfProcessors;
+# } SYSTEM_BASIC_INFORMATION, * PSYSTEM_BASIC_INFORMATION;
+
+class SystemBasicInforation(WindowsStruct):
+    def __init__(self,ql, Reserved,TimerResolution,PageSize=None, NumberOfPhysicalPages=None, LowestPhysicalPageNumber=None,
+                 HighestPhysicalPageNumber=None, AllocationGranularity=None,MinimumUserModeAddress=None,
+                 MaximumUserModeAddress=None,ActiveProcessorsAffinityMask=None,NumberOfProcessors=None):
+        super().__init__(ql)
+        self.size=self.BYTE_SIZE * 24 + 5*self.POINTER_SIZE
+        self.Reserved =[Reserved, self.DWORD_SIZE, "little", int]
+        self.TimerResolution=[TimerResolution, self.DWORD_SIZE, "little", int]
+        self.PageSize=[PageSize, self.DWORD_SIZE, "little", int]
+        self.NumberOfPhysicalPages = [NumberOfPhysicalPages, self.DWORD_SIZE, "little", int]
+        self.LowestPhysicalPageNumber = [LowestPhysicalPageNumber, self.DWORD_SIZE, "little", int]
+        self.HighestPhysicalPageNumber = [HighestPhysicalPageNumber, self.DWORD_SIZE, "little", int]
+        self.AllocationGranularity = [AllocationGranularity, self.DWORD_SIZE, "little", int]
+        self.MinimumUserModeAddress = [MinimumUserModeAddress, self.POINTER_SIZE, "little", int]
+        self.MaximumUserModeAddress = [MaximumUserModeAddress, self.POINTER_SIZE, "little", int]
+        self.ActiveProcessorsAffinityMask = [ActiveProcessorsAffinityMask, self.POINTER_SIZE, "little", int]
+        self.NumberOfProcessors = [NumberOfProcessors, self.POINTER_SIZE, "little", int]
+    def write(self, addr):
+
+        super().generic_write(addr, [self.Reserved, self.TimerResolution, self.PageSize, self.NumberOfPhysicalPages,
+               self.LowestPhysicalPageNumber, self.HighestPhysicalPageNumber ,self.AllocationGranularity,
+               self.MinimumUserModeAddress,self.MaximumUserModeAddress,self.ActiveProcessorsAffinityMask,
+               self.NumberOfProcessors])
+
+    def read(self, addr):
+        super().generic_read(addr, [self.Reserved, self.TimerResolution, self.PageSize, self.NumberOfPhysicalPages,
+               self.LowestPhysicalPageNumber, self.HighestPhysicalPageNumber ,self.AllocationGranularity,
+               self.MinimumUserModeAddress,self.MaximumUserModeAddress,self.ActiveProcessorsAffinityMask,
+               self.NumberOfProcessors])
 
 # typedef struct hostent {
 #  char  *h_name;
@@ -720,7 +789,8 @@ class ShellExecuteInfoA(WindowsStruct):
         super().__init__(ql)
         self.size = self.DWORD_SIZE + self.ULONG_SIZE + self.INT_SIZE * 2 + self.POINTER_SIZE * 11
         self.cb = [self.size, self.DWORD_SIZE, "little", int]
-        self.mask = [fMask, self.ULONG_SIZE, "little", int]
+        # FIXME: check how longs behave, is strange that i have to put big here
+        self.mask = [fMask, self.ULONG_SIZE, "big", int]
         self.hwnd = [hwnd, self.POINTER_SIZE, "little", int]
         self.verb = [lpVerb, self.POINTER_SIZE, "little", int]
         self.file = [lpFile, self.POINTER_SIZE, "little", int]
@@ -745,3 +815,96 @@ class ShellExecuteInfoA(WindowsStruct):
                                     self.show, self.instApp, self.id_list, self.class_name, self.class_key,
                                     self.hot_key, self.dummy, self.process])
         self.size = self.cb
+
+
+# private struct PROCESS_BASIC_INFORMATION
+# {
+#   public NtStatus ExitStatus;
+#   public IntPtr PebBaseAddress;
+#   public UIntPtr AffinityMask;
+#   public int BasePriority;
+#   public UIntPtr UniqueProcessId;
+#   public UIntPtr InheritedFromUniqueProcessId;
+# }
+class ProcessBasicInformation(WindowsStruct):
+    def __init__(self, ql, exitStatus=None, pebBaseAddress=None, affinityMask=None, basePriority=None, uniqueId=None,
+                 parentPid=None):
+        super().__init__(ql)
+        self.size = self.DWORD_SIZE + self.POINTER_SIZE * 4 + self.INT_SIZE
+        self.exitStatus = [exitStatus, self.DWORD_SIZE, "little", int]
+        self.pebBaseAddress = [pebBaseAddress, self.POINTER_SIZE, "little", int]
+        self.affinityMask = [affinityMask, self.INT_SIZE, "little", int]
+        self.basePriority = [basePriority, self.POINTER_SIZE, "little", int]
+        self.pid = [uniqueId, self.POINTER_SIZE, "little", int]
+        self.parentPid = [parentPid, self.POINTER_SIZE, "little", int]
+
+    def write(self, addr):
+        super().generic_write(addr,
+                              [self.exitStatus, self.pebBaseAddress, self.affinityMask, self.basePriority, self.pid,
+                               self.parentPid])
+
+    def read(self, addr):
+        super().generic_read(addr,
+                             [self.exitStatus, self.pebBaseAddress, self.affinityMask, self.basePriority, self.pid,
+                              self.parentPid])
+
+
+# typedef struct _UNICODE_STRING {
+#   USHORT Length;
+#   USHORT MaximumLength;
+#   PWSTR  Buffer;
+# } UNICODE_STRING
+class UnicodeString(WindowsStruct):
+    def write(self, addr):
+        super().generic_write(addr, [self.length, self.maxLength, self.buffer])
+
+    def read(self, addr):
+        super().generic_read(addr, [self.length, self.maxLength, self.buffer])
+
+    def __init__(self, ql, length=None, maxLength=None, buffer=None):
+        super().__init__(ql)
+        self.size = self.USHORT_SIZE * 2 + self.POINTER_SIZE
+        self.length = [length, self.USHORT_SIZE, "little", int]
+        self.maxLength = [maxLength, self.USHORT_SIZE, "little", int]
+        self.buffer = [buffer, self.POINTER_SIZE, "little", int]
+
+
+# typedef struct _OBJECT_TYPE_INFORMATION {
+# 	UNICODE_STRING TypeName;
+# 	ULONG TotalNumberOfObjects;
+# 	ULONG TotalNumberOfHandles;
+# } OBJECT_TYPE_INFORMATION, *POBJECT_TYPE_INFORMATION;
+class ObjectTypeInformation(WindowsStruct):
+    def write(self, addr):
+        super().generic_write(addr, [self.us, self.handles, self.objects])
+
+    def read(self, addr):
+        super().generic_read(addr, [self.us, self.handles, self.objects])
+
+    def __init__(self, ql, typeName: UnicodeString = None, handles=None, objects=None):
+        super().__init__(ql)
+        self.size = self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE)
+        self.us = [typeName, self.USHORT_SIZE * 2 + self.POINTER_SIZE, "little", UnicodeString]
+        # FIXME: understand if is correct to set them as big
+        self.handles = [handles, self.ULONG_SIZE, "big", int]
+        self.objects = [objects, self.ULONG_SIZE, "big", int]
+
+
+# typedef struct _OBJECT_ALL_TYPES_INFORMATION {
+# 	ULONG NumberOfObjectTypes;
+# 	OBJECT_TYPE_INFORMATION ObjectTypeInformation[1];
+# } OBJECT_ALL_TYPES_INFORMATION, *POBJECT_ALL_TYPES_INFORMATION;
+class ObjectAllTypesInformation(WindowsStruct):
+    def write(self, addr):
+        super().generic_write(addr, [self.number, self.typeInfo])
+
+    def read(self, addr):
+        super().generic_read(addr, [self.number, self.typeInfo])
+
+    def __init__(self, ql, objects=None, objectTypeInfo: ObjectTypeInformation = None):
+        super().__init__(ql)
+        self.size = self.ULONG_SIZE + (self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE))
+        # FIXME: understand if is correct to set them as big
+        self.number = [objects, self.ULONG_SIZE, "big", int]
+        self.typeInfo = [objectTypeInfo, self.ULONG_SIZE * 2 + (self.USHORT_SIZE * 2 + self.POINTER_SIZE), "little",
+                         ObjectTypeInformation]

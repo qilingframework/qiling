@@ -1,0 +1,302 @@
+{
+    "VerFindFileA": [
+        {
+            "name": "uFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "szFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szWinDir",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szAppDir",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szCurDir",
+            "type": "LPSTR"
+        },
+        {
+            "name": "puCurDirLen",
+            "type": "PUINT"
+        },
+        {
+            "name": "szDestDir",
+            "type": "LPSTR"
+        },
+        {
+            "name": "puDestDirLen",
+            "type": "PUINT"
+        }
+    ],
+    "VerFindFileW": [
+        {
+            "name": "uFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "szFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szWinDir",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szAppDir",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szCurDir",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "puCurDirLen",
+            "type": "PUINT"
+        },
+        {
+            "name": "szDestDir",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "puDestDirLen",
+            "type": "PUINT"
+        }
+    ],
+    "VerInstallFileA": [
+        {
+            "name": "uFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "szSrcFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szDestFileName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szSrcDir",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szDestDir",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szCurDir",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "szTmpFile",
+            "type": "LPSTR"
+        },
+        {
+            "name": "puTmpFileLen",
+            "type": "PUINT"
+        }
+    ],
+    "VerInstallFileW": [
+        {
+            "name": "uFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "szSrcFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szDestFileName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szSrcDir",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szDestDir",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szCurDir",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "szTmpFile",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "puTmpFileLen",
+            "type": "PUINT"
+        }
+    ],
+    "GetFileVersionInfoSizeA": [
+        {
+            "name": "lptstrFilename",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpdwHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetFileVersionInfoSizeW": [
+        {
+            "name": "lptstrFilename",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpdwHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetFileVersionInfoA": [
+        {
+            "name": "lptstrFilename",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPVOID"
+        }
+    ],
+    "GetFileVersionInfoW": [
+        {
+            "name": "lptstrFilename",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPVOID"
+        }
+    ],
+    "GetFileVersionInfoSizeExA": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpwstrFilename",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lpdwHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetFileVersionInfoSizeExW": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpwstrFilename",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lpdwHandle",
+            "type": "LPDWORD"
+        }
+    ],
+    "GetFileVersionInfoExA": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpwstrFilename",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "dwHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPVOID"
+        }
+    ],
+    "GetFileVersionInfoExW": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpwstrFilename",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwHandle",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwLen",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpData",
+            "type": "LPVOID"
+        }
+    ],
+    "VerQueryValueA": [
+        {
+            "name": "pBlock",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "lpSubBlock",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "lplpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "puLen",
+            "type": "PUINT"
+        }
+    ],
+    "VerQueryValueW": [
+        {
+            "name": "pBlock",
+            "type": "LPCVOID"
+        },
+        {
+            "name": "lpSubBlock",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "lplpBuffer",
+            "type": "LPVOID"
+        },
+        {
+            "name": "puLen",
+            "type": "PUINT"
+        }
+    ]
+}

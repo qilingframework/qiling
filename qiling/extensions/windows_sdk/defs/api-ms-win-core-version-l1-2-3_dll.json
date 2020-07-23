@@ -1,0 +1,26 @@
+{
+    "GetSystemTimeAdjustmentPrecise": [
+        {
+            "name": "lpTimeAdjustment",
+            "type": "PDWORD64"
+        },
+        {
+            "name": "lpTimeIncrement",
+            "type": "PDWORD64"
+        },
+        {
+            "name": "lpTimeAdjustmentDisabled",
+            "type": "PBOOL"
+        }
+    ],
+    "SetSystemTimeAdjustmentPrecise": [
+        {
+            "name": "dwTimeAdjustment",
+            "type": "DWORD64"
+        },
+        {
+            "name": "bTimeAdjustmentDisabled",
+            "type": "BOOL"
+        }
+    ]
+}

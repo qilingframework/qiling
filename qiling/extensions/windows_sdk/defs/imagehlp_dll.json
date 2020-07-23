@@ -1,0 +1,414 @@
+{
+    "BindImage": [
+        {
+            "name": "ImageName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DllPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SymbolPath",
+            "type": "PCSTR"
+        }
+    ],
+    "BindImageEx": [
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ImageName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DllPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SymbolPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "StatusRoutine",
+            "type": "PIMAGEHLP_STATUS_ROUTINE"
+        }
+    ],
+    "ReBaseImage": [
+        {
+            "name": "CurrentImageName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SymbolPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "fReBase",
+            "type": "BOOL"
+        },
+        {
+            "name": "fRebaseSysfileOk",
+            "type": "BOOL"
+        },
+        {
+            "name": "fGoingDown",
+            "type": "BOOL"
+        },
+        {
+            "name": "CheckImageSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "OldImageSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "OldImageBase",
+            "type": "ULONG_PTR"
+        },
+        {
+            "name": "NewImageSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "NewImageBase",
+            "type": "ULONG_PTR"
+        },
+        {
+            "name": "TimeStamp",
+            "type": "ULONG"
+        }
+    ],
+    "ReBaseImage64": [
+        {
+            "name": "CurrentImageName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SymbolPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "fReBase",
+            "type": "BOOL"
+        },
+        {
+            "name": "fRebaseSysfileOk",
+            "type": "BOOL"
+        },
+        {
+            "name": "fGoingDown",
+            "type": "BOOL"
+        },
+        {
+            "name": "CheckImageSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "OldImageSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "OldImageBase",
+            "type": "ULONG64"
+        },
+        {
+            "name": "NewImageSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "NewImageBase",
+            "type": "ULONG64"
+        },
+        {
+            "name": "TimeStamp",
+            "type": "ULONG"
+        }
+    ],
+    "CheckSumMappedFile": [
+        {
+            "name": "BaseAddress",
+            "type": "PVOID"
+        },
+        {
+            "name": "FileLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "HeaderSum",
+            "type": "PDWORD"
+        },
+        {
+            "name": "CheckSum",
+            "type": "PDWORD"
+        }
+    ],
+    "MapFileAndCheckSumA": [
+        {
+            "name": "Filename",
+            "type": "PCSTR"
+        },
+        {
+            "name": "HeaderSum",
+            "type": "PDWORD"
+        },
+        {
+            "name": "CheckSum",
+            "type": "PDWORD"
+        }
+    ],
+    "MapFileAndCheckSumW": [
+        {
+            "name": "Filename",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "HeaderSum",
+            "type": "PDWORD"
+        },
+        {
+            "name": "CheckSum",
+            "type": "PDWORD"
+        }
+    ],
+    "GetImageConfigInformation": [
+        {
+            "name": "LoadedImage",
+            "type": "PLOADED_IMAGE"
+        },
+        {
+            "name": "ImageConfigInformation",
+            "type": "PIMAGE_LOAD_CONFIG_DIRECTORY"
+        }
+    ],
+    "GetImageUnusedHeaderBytes": [
+        {
+            "name": "LoadedImage",
+            "type": "PLOADED_IMAGE"
+        },
+        {
+            "name": "SizeUnusedHeaderBytes",
+            "type": "PDWORD"
+        }
+    ],
+    "SetImageConfigInformation": [
+        {
+            "name": "LoadedImage",
+            "type": "PLOADED_IMAGE"
+        },
+        {
+            "name": "ImageConfigInformation",
+            "type": "PIMAGE_LOAD_CONFIG_DIRECTORY"
+        }
+    ],
+    "ImageGetDigestStream": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "DigestLevel",
+            "type": "DWORD"
+        },
+        {
+            "name": "DigestFunction",
+            "type": "DIGEST_FUNCTION"
+        },
+        {
+            "name": "DigestHandle",
+            "type": "DIGEST_HANDLE"
+        }
+    ],
+    "ImageAddCertificate": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Certificate",
+            "type": "LPWIN_CERTIFICATE"
+        },
+        {
+            "name": "Index",
+            "type": "PDWORD"
+        }
+    ],
+    "ImageRemoveCertificate": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Index",
+            "type": "DWORD"
+        }
+    ],
+    "ImageEnumerateCertificates": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "TypeFilter",
+            "type": "WORD"
+        },
+        {
+            "name": "CertificateCount",
+            "type": "PDWORD"
+        },
+        {
+            "name": "Indices",
+            "type": "PDWORD"
+        },
+        {
+            "name": "IndexCount",
+            "type": "DWORD"
+        }
+    ],
+    "ImageGetCertificateData": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CertificateIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "Certificate",
+            "type": "LPWIN_CERTIFICATE"
+        },
+        {
+            "name": "RequiredLength",
+            "type": "PDWORD"
+        }
+    ],
+    "ImageGetCertificateHeader": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CertificateIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "Certificateheader",
+            "type": "LPWIN_CERTIFICATE"
+        }
+    ],
+    "ImageLoad": [
+        {
+            "name": "DllName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DllPath",
+            "type": "PCSTR"
+        }
+    ],
+    "ImageUnload": [
+        {
+            "name": "LoadedImage",
+            "type": "PLOADED_IMAGE"
+        }
+    ],
+    "MapAndLoad": [
+        {
+            "name": "ImageName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DllPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "LoadedImage",
+            "type": "PLOADED_IMAGE"
+        },
+        {
+            "name": "DotDll",
+            "type": "BOOL"
+        },
+        {
+            "name": "ReadOnly",
+            "type": "BOOL"
+        }
+    ],
+    "UnMapAndLoad": [
+        {
+            "name": "LoadedImage",
+            "type": "PLOADED_IMAGE"
+        }
+    ],
+    "TouchFileTimes": [
+        {
+            "name": "FileHandle",
+            "type": "HANDLE"
+        },
+        {
+            "name": "pSystemTime",
+            "type": "PSYSTEMTIME"
+        }
+    ],
+    "SplitSymbols": [
+        {
+            "name": "ImageName",
+            "type": "PSTR"
+        },
+        {
+            "name": "SymbolsPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SymbolFilePath",
+            "type": "PSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        }
+    ],
+    "UpdateDebugInfoFile": [
+        {
+            "name": "ImageFileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SymbolPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DebugFilePath",
+            "type": "PSTR"
+        },
+        {
+            "name": "NtHeaders",
+            "type": "PIMAGE_NT_HEADERS32"
+        }
+    ],
+    "UpdateDebugInfoFileEx": [
+        {
+            "name": "ImageFileName",
+            "type": "PCSTR"
+        },
+        {
+            "name": "SymbolPath",
+            "type": "PCSTR"
+        },
+        {
+            "name": "DebugFilePath",
+            "type": "PSTR"
+        },
+        {
+            "name": "NtHeaders",
+            "type": "PIMAGE_NT_HEADERS32"
+        },
+        {
+            "name": "OldCheckSum",
+            "type": "DWORD"
+        }
+    ]
+}
