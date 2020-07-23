@@ -130,6 +130,9 @@ class QlMemoryManager:
         self.ql.nprint("[+] Start      End        Perm.  Path")
         for  start, end, perm, info in self.map_info:
             _perm = _perms_mapping(perm)
+            image = self.ql.os.find_containing_image(start)
+            if image:
+                info += f" ({image.path})"
             self.ql.nprint("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
 
 

@@ -1,5 +1,21 @@
 This file details the changelog of Qiling Framework.
 
+
+[Version 1.1]: July 24th, 2020
+
+- More refactors and bug fixes
+- Adding DLL images for PE coverage tracing
+
+
+------------------------------------
+[Version 1.1-rc1]: July 17th, 2020
+
+- More refactors and bug fixes
+- More detailed debug output
+- Fix MIPS_EB overflow issue
+- Introduce heap sanitizer
+
+
 ------------------------------------
 [Version 1.1-alpha2]: June 26th, 2020
 
