@@ -227,7 +227,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     if mmap2_addr == 0:
         mmap_base = ql.loader.mmap_address
         ql.loader.mmap_address = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
-    elif ql.mem.is_mapped(mmap2_addr, mmap2_length):
+    elif mmap2_addr !=0 and ql.mem.is_mapped(mmap2_addr, mmap2_length):
         need_mmap = False
 
     ql.dprint(D_INFO, "[+] log mmap2 - mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
