@@ -172,22 +172,23 @@ class GDBSERVERsession(object):
                 elif self.ql.archtype == QL_ARCH.ARM:
                     mode = self.ql.arch.check_thumb()
                     
-                    for reg in self.tables[QL_ARCH.ARM]:
+                    for reg in self.tables[QL_ARCH.ARM][:16]:
                         r = self.ql.reg.read(reg)
                         if mode == UC_MODE_THUMB and reg == "pc":
                             r += 1
-
+                        elif mode != UC_MODE_THUMB and reg == "pc":
+                            r += 4
                         tmp = self.ql.arch.addr_to_str(r)
                         s += tmp
 
-                elif self.ql.archtype== QL_ARCH.ARM64:
-                    for reg in self.tables[QL_ARCH.ARM64]:
+                elif self.ql.archtype == QL_ARCH.ARM64:
+                    for reg in self.tables[QL_ARCH.ARM64][:33]:
                         r = self.ql.reg.read(reg)
                         tmp = self.ql.arch.addr_to_str(r)
                         s += tmp
 
-                elif self.ql.archtype== QL_ARCH.MIPS:
-                    for reg in self.tables[QL_ARCH.MIPS]:
+                elif self.ql.archtype == QL_ARCH.MIPS:
+                    for reg in self.tables[QL_ARCH.MIPS][:38]:
                         r = self.ql.reg.read(reg)
                         if self.ql.archendian == QL_ENDIAN.EB:
                             tmp = self.ql.arch.addr_to_str(r, endian ="little")
@@ -200,14 +201,14 @@ class GDBSERVERsession(object):
 
             def handle_G(subcmd):
                 count = 0
-                if self.ql.archtype== QL_ARCH.X86:
+                if self.ql.archtype == QL_ARCH.X86:
                     for i in range(0, len(subcmd), 8):
                         reg_data = subcmd[i:i+7]
                         reg_data = int(reg_data, 16)
                         self.ql.reg.write(self.tables[QL_ARCH.X86][count], reg_data)
                         count += 1
 
-                elif self.ql.archtype== QL_ARCH.X8664:
+                elif self.ql.archtype == QL_ARCH.X8664:
                     for i in range(0, 17*16, 16):
                         reg_data = subcmd[i:i+15]
                         reg_data = int(reg_data, 16)
@@ -219,21 +220,21 @@ class GDBSERVERsession(object):
                         self.ql.reg.write(self.tables[QL_ARCH.X8664][count], reg_data)
                         count += 1
                 
-                elif self.ql.archtype== QL_ARCH.ARM:
+                elif self.ql.archtype == QL_ARCH.ARM:
                     for i in range(0, len(subcmd), 8):
                         reg_data = subcmd[i:i + 7]
                         reg_data = int(reg_data, 16)
                         self.ql.reg.write(self.tables[QL_ARCH.ARM][count], reg_data)
                         count += 1
 
-                elif self.ql.archtype== QL_ARCH.ARM64:
+                elif self.ql.archtype == QL_ARCH.ARM64:
                     for i in range(0, len(subcmd), 16):
                         reg_data = subcmd[i:i+15]
                         reg_data = int(reg_data, 16)
                         self.ql.reg.write(self.tables[QL_ARCH.ARM64][count], reg_data)
                         count += 1
 
-                elif self.ql.archtype== QL_ARCH.MIPS:
+                elif self.ql.archtype == QL_ARCH.MIPS:
                     for i in range(0, len(subcmd), 8):
                         reg_data = subcmd[i:i+7]
                         reg_data = int(reg_data, 16)
@@ -664,7 +665,7 @@ class GDBSERVERsession(object):
                         subcmd = subcmd[1].split(':')
                         if subcmd[0] in ('c', 'C05'):
                             handle_c(subcmd)
-                        elif subcmd[0] in ('S', 's'):
+                        elif subcmd[0] in ('S', 's', 'S05'):
                             handle_s(subcmd)
                 else:
                     self.send("")
