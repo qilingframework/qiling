@@ -54,6 +54,13 @@ Android
 3. ChangeLog    
 4. commit and push
 5. Merge dev into master
+6. checkout master
+7. git pull
 6. git tag 1.1-rc1
-7. git push origin --tags
-8. check for new Pypi package
+8. git push origin --tags
+9. check for new Pypi package
+10. checkout dev
+11. setup.py
+    - 'Development Status :: 3 - Alpha'
+12. core.py
+    - __version__ = "1.1" + "-dev"    
