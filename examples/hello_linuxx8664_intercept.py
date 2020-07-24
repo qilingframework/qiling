@@ -5,7 +5,7 @@
 import sys
 sys.path.append("..")
 from qiling import *
-from qiling.const import
+from qiling.const import *
 
 def write_onenter(ql, arg1, arg2, arg3, *args):
     print("enter write syscall!")
