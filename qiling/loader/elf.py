@@ -371,7 +371,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         self.argv = self.ql.argv
         self.ql.mem.map(stack_address, stack_size, info="[stack]") 
         self.load_with_ld(stack_address + stack_size, argv = self.argv, env = self.env)
-        self.stack_address  = int(self.new_stack)
+        self.stack_address  = self.new_stack
         self.ql.reg.arch_sp = self.stack_address
 
         if self.ql.ostype == QL_OS.FREEBSD:
@@ -466,6 +466,7 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         loaded_mem_end = load_address + mem_end
         if loaded_mem_end > _mem_e:
+            
             self.ql.mem.map(_mem_e, loaded_mem_end-_mem_e, info=self.path)
             self.ql.dprint(D_INFO, "[+] load 0x%x - 0x%x" % (_mem_e, loaded_mem_end)) # make sure we map all PT_LOAD tagged area
 
@@ -560,7 +561,7 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         # Set AUX
 
-        # self.ql.mem.write(int(new_stack) - 4, self.ql.pack32(0x11111111))
+        # self.ql.mem.write(new_stack - 4, self.ql.pack32(0x11111111))
         # new_stack = new_stack - 4
         # rand_addr = new_stack - 4
 
@@ -599,7 +600,7 @@ class QlLoaderELF(QlLoader, ELFParse):
         elf_table += self.NEW_AUX_ENT(AT_NULL, 0)
         elf_table += b'\x00' * (0x10 - (new_stack - len(elf_table)) & 0xf)
 
-        self.ql.mem.write(int(new_stack - len(elf_table)), elf_table)
+        self.ql.mem.write(new_stack - len(elf_table), elf_table)
         new_stack = new_stack - len(elf_table)
 
         # self.ql.reg.write(UC_X86_REG_RDI, new_stack + 8)

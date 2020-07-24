@@ -21,6 +21,21 @@ from qiling.exception import *
 
 
 def ql_syscall_munmap(ql, munmap_addr , munmap_len, *args, **kw):
+
+    # get all mapped fd with flag MAP_SHARED and we definitely dont want to wipe out share library
+    mapped_fd = [fd for fd in ql.os.file_des if fd != 0 and isinstance(fd, ql_file) and fd._is_map_shared and not fd.name.endswith(".so")]
+    if len(mapped_fd):
+        all_mem_info = [_mem_info for _, _, _,  _mem_info in ql.mem.map_info if _mem_info not in ("[mapped]", "[stack]", "[hook_mem]")]
+
+        for _fd in mapped_fd:
+            if _fd.name in all_mem_info:
+                # flushes changes to disk file
+                _buff = ql.mem.read(munmap_addr, munmap_len)
+                # FIXME: need a better solution for this part
+                # overwrite file content from the beginning for now
+                _fd.lseek(0)
+                _fd.write(_buff)
+
     munmap_len = ((munmap_len + 0x1000 - 1) // 0x1000) * 0x1000
     ql.mem.unmap(munmap_addr, munmap_len)
     regreturn = 0
@@ -91,7 +106,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
     if need_mmap:
         ql.dprint(D_INFO, "[+] log old_mmap - mapping needed")
         try:
-            ql.mem.map(mmap_base, ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000)
+            ql.mem.map(mmap_base, ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000, info="[syscall_old_mmap]")
         except:
             ql.mem.show_mapinfo()
             raise
@@ -102,10 +117,11 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
         ql.os.file_des[mmap_fd].lseek(mmap_offset)
         data = ql.os.file_des[mmap_fd].read(mmap_length)
         mem_info = str(ql.os.file_des[mmap_fd].name)
+        ql.os.file_des[mmap_fd]._is_map_shared = True
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
         ql.dprint(D_INFO, "[+] log mem mmap  : " + mem_info)
-        ql.mem.add_mapinfo(mmap_base, mmap_base + (len(data)), mem_p = UC_PROT_ALL, mem_info = mem_info)
+        ql.mem.add_mapinfo(mmap_base,  mmap_base + (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000), mem_p = UC_PROT_ALL, mem_info = "[old_mmap] " + mem_info)
         ql.mem.write(mmap_base, data)
         
 
@@ -156,7 +172,7 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
     if need_mmap:
         ql.dprint(D_INFO, "[+] log mmap - mapping needed")
         try:
-            ql.mem.map(mmap_base, ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000)
+            ql.mem.map(mmap_base, ((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000, info="[syscall_mmap]")
         except:
             raise QlMemoryMappedError("[!] mapping needed but fail")
  
@@ -172,10 +188,11 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
         ql.os.file_des[mmap_fd].lseek(mmap_pgoffset)
         data = ql.os.file_des[mmap_fd].read(mmap_length)
         mem_info = str(ql.os.file_des[mmap_fd].name)
+        ql.os.file_des[mmap_fd]._is_map_shared = True
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
         ql.dprint(D_INFO, "[+] log mem mmap  : " + mem_info)
-        ql.mem.add_mapinfo(mmap_base, mmap_base + (len(data)), mem_p = UC_PROT_ALL, mem_info = mem_info)
+        ql.mem.add_mapinfo(mmap_base, mmap_base + (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000), mem_p = UC_PROT_ALL, mem_info = "[mmap] " + mem_info)
         ql.mem.write(mmap_base, data)
         
 
@@ -210,7 +227,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     if mmap2_addr == 0:
         mmap_base = ql.loader.mmap_address
         ql.loader.mmap_address = mmap_base + ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000
-    elif ql.mem.is_mapped(mmap2_addr, mmap2_length):
+    elif mmap2_addr !=0 and ql.mem.is_mapped(mmap2_addr, mmap2_length):
         need_mmap = False
 
     ql.dprint(D_INFO, "[+] log mmap2 - mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d)" % (
@@ -224,7 +241,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
     if need_mmap:
         ql.dprint(D_INFO, "[+] log mmap2 - mapping needed")
         try:
-            ql.mem.map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000)
+            ql.mem.map(mmap_base, ((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000, info="[syscall_mmap2]")
         except:
             ql.mem.show_mapinfo()
             raise
@@ -235,10 +252,11 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         ql.os.file_des[mmap2_fd].lseek(mmap2_pgoffset)
         data = ql.os.file_des[mmap2_fd].read(mmap2_length)
         mem_info = str(ql.os.file_des[mmap2_fd].name)
+        ql.os.file_des[mmap2_fd]._is_map_shared = True
 
-        ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
+        ql.dprint(D_INFO, "[+] log mem write : " + hex(len(data)))
         ql.dprint(D_INFO, "[+] log mem mmap2  : " + mem_info)
-        ql.mem.add_mapinfo(mmap_base, mmap_base + (len(data)), mem_p = UC_PROT_ALL, mem_info = mem_info)
+        ql.mem.add_mapinfo(mmap_base,  mmap_base + (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000), mem_p = UC_PROT_ALL, mem_info = "[mmap2] " + mem_info)
         ql.mem.write(mmap_base, data)
 
     ql.nprint("mmap2(0x%x, 0x%x, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))

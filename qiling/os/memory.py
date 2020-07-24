@@ -166,12 +166,14 @@ class QlMemoryManager:
             perm = value[2]
             info = value[3]
             mem_read = bytes(value[4])
-            
-            if self.is_mapped(start, start-end) == False:
+
+            self.ql.dprint(4,"restore key: %i 0x%x 0x%x %s" % (key, start, end, info))
+            if self.is_mapped(start, end-start) == False:
+                self.ql.dprint(4,"mapping 0x%x 0x%x mapsize 0x%x" % (start, end, end-start))
                 self.map(start, end-start, perms=perm, info=info)
 
+            self.ql.dprint(4,"writing 0x%x size 0x%x write_size 0x%x " % (start, end-start, len(mem_read)))
             self.write(start, mem_read)
- 
 
     def read(self, addr: int, size: int) -> bytearray:
         return self.ql.uc.mem_read(addr, size)
@@ -380,8 +382,8 @@ class QlMemoryManager:
         '''
         if ptr == None:
             if self.is_mapped(addr, size) == False:
-               self.ql.uc.mem_map(addr, size, perms)
-               self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
+                self.ql.uc.mem_map(addr, size, perms)
+                self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
             else:
                 raise QlMemoryMappedError("[!] Memory Mapped")    
         else:

@@ -6,6 +6,7 @@
 from .utils import *
 
 def hook_EndOfExecution(ql):
+    ql.loader.restore_runtime_services()
     if check_and_notify_protocols(ql):
         return
     if len(ql.loader.modules) < 1:
