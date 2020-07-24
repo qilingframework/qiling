@@ -327,6 +327,9 @@ class QLCoreHooks(object):
 
     def hook_mem_valid(self, callback, user_data=None, begin=1, end=0):
         return self.ql_hook(UC_HOOK_MEM_VALID, callback, user_data, begin, end)
+    
+    def hook_mem_invalid(self, callback, user_data=None, begin=1, end=0):
+        return self.ql_hook(UC_HOOK_MEM_INVALID, callback, user_data, begin, end)
 
 
     # a convenient API to set callback for a single address
