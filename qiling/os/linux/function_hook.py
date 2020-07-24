@@ -734,7 +734,7 @@ class FunctionHook:
         if self.ql.archtype == QL_ARCH.MIPS and self.plt_got != None and self.mips_gotsym != None and self.mips_local_gotno != None and self.mips_symtabno != None:
             self.show_dynsym_name(self.mips_gotsym, self.mips_symtabno)
 
-        self.ql.mem.map(hook_mem, 0x2000, perms=7, info="hook mem")
+        self.ql.mem.map(hook_mem, 0x2000, perms=7, info="[hook_mem]")
         self.ql.mem.write(hook_mem, ins * (0x1000 // len(ins)))
 
         self.free_list = [_ for _ in range(0, 0x1000, 0x10)]

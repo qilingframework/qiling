@@ -386,6 +386,8 @@ class ELFTest(unittest.TestCase):
         def my_puts(ql):
             addr = ql.os.function_arg[0]
             print("puts(%s)" % ql.mem.string(addr))
+            all_mem = ql.mem.save()
+            ql.mem.restore(all_mem)
             
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql')
         ql.log_split=True
