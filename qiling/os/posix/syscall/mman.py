@@ -121,7 +121,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
         ql.dprint(D_INFO, "[+] log mem mmap  : " + mem_info)
-        ql.mem.add_mapinfo(mmap_base, mmap_base + (len(data)), mem_p = UC_PROT_ALL, mem_info = "[old_mmap] " + mem_info)
+        ql.mem.add_mapinfo(mmap_base,  mmap_base + (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000), mem_p = UC_PROT_ALL, mem_info = "[old_mmap] " + mem_info)
         ql.mem.write(mmap_base, data)
         
 
@@ -192,7 +192,7 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
         ql.dprint(D_INFO, "[+] log mem mmap  : " + mem_info)
-        ql.mem.add_mapinfo(mmap_base, mmap_base + (len(data)), mem_p = UC_PROT_ALL, mem_info = "[mmap] " + mem_info)
+        ql.mem.add_mapinfo(mmap_base, mmap_base + (((mmap_length + 0x1000 - 1) // 0x1000) * 0x1000), mem_p = UC_PROT_ALL, mem_info = "[mmap] " + mem_info)
         ql.mem.write(mmap_base, data)
         
 
