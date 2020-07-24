@@ -466,6 +466,7 @@ class QlLoaderELF(QlLoader, ELFParse):
 
         loaded_mem_end = load_address + mem_end
         if loaded_mem_end > _mem_e:
+            
             self.ql.mem.map(_mem_e, loaded_mem_end-_mem_e, info=self.path)
             self.ql.dprint(D_INFO, "[+] load 0x%x - 0x%x" % (_mem_e, loaded_mem_end)) # make sure we map all PT_LOAD tagged area
 

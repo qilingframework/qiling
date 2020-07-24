@@ -153,9 +153,7 @@ class QlMemoryManager:
         mem_dict = {}
         seq = 1
         for start, end, perm, info in self.map_info:
-            mem_read = self.read(start, end-start)
-            start=self.align(start)
-            end=self.align(end)        
+            mem_read = self.read(start, end-start)          
             mem_dict[seq] = start, end, perm, info, mem_read
             seq += 1
         return mem_dict
@@ -169,11 +167,12 @@ class QlMemoryManager:
             info = value[3]
             mem_read = bytes(value[4])
 
-            self.ql.dprint(4,"restore key: %i" % key)
-
+            self.ql.dprint(4,"restore key: %i 0x%x 0x%x %s" % (key, start, end, info))
             if self.is_mapped(start, end-start) == False:
+                self.ql.dprint(4,"mapping 0x%x 0x%x mapsize 0x%x" % (start, end, end-start))
                 self.map(start, end-start, perms=perm, info=info)
-            
+
+            self.ql.dprint(4,"writing 0x%x size 0x%x write_size 0x%x " % (start, end-start, len(mem_read)))
             self.write(start, mem_read)
 
     def read(self, addr: int, size: int) -> bytearray:
