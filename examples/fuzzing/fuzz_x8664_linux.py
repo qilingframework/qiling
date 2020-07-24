@@ -19,7 +19,7 @@ unicornafl.monkeypatch()
 import sys, os
 from binascii import hexlify
 
-from capstone import *
+from capstone.x86_const import *
 
 sys.path.append("../..")
 from qiling import *
