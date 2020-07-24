@@ -153,7 +153,9 @@ class QlMemoryManager:
         mem_dict = {}
         seq = 1
         for start, end, perm, info in self.map_info:
-            mem_read = self.read(start, end-start)          
+            mem_read = self.read(start, end-start)
+            start=self.align(start)
+            end=self.align(end)        
             mem_dict[seq] = start, end, perm, info, mem_read
             seq += 1
         return mem_dict
