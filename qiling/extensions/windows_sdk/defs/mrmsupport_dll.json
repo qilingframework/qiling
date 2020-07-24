@@ -1,0 +1,58 @@
+{
+    "CreateResourceIndexer": [
+        {
+            "name": "projectRoot",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "extensionDllPath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppResourceIndexer",
+            "type": "PVOID"
+        }
+    ],
+    "DestroyResourceIndexer": [
+        {
+            "name": "resourceIndexer",
+            "type": "PVOID"
+        }
+    ],
+    "IndexFilePath": [
+        {
+            "name": "resourceIndexer",
+            "type": "PVOID"
+        },
+        {
+            "name": "filePath",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "ppResourceUri",
+            "type": "PWSTR"
+        },
+        {
+            "name": "pQualifierCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppQualifiers",
+            "type": "IndexedResourceQualifier"
+        }
+    ],
+    "DestroyIndexedResults": [
+        {
+            "name": "resourceUri",
+            "type": "PWSTR"
+        },
+        {
+            "name": "qualifierCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "qualifiers",
+            "type": "IndexedResourceQualifier"
+        }
+    ]
+}

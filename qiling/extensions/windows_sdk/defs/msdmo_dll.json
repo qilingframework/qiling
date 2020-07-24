@@ -1,0 +1,116 @@
+{
+    "DMORegister": [
+        {
+            "name": "szName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "clsidDMO",
+            "type": "IID"
+        },
+        {
+            "name": "guidCategory",
+            "type": "GUID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "cInTypes",
+            "type": "DWORD"
+        },
+        {
+            "name": "pInTypes",
+            "type": "DMO_PARTIAL_MEDIATYPE"
+        },
+        {
+            "name": "cOutTypes",
+            "type": "DWORD"
+        },
+        {
+            "name": "pOutTypes",
+            "type": "DMO_PARTIAL_MEDIATYPE"
+        }
+    ],
+    "DMOUnregister": [
+        {
+            "name": "clsidDMO",
+            "type": "IID"
+        },
+        {
+            "name": "guidCategory",
+            "type": "GUID"
+        }
+    ],
+    "DMOEnum": [
+        {
+            "name": "guidCategory",
+            "type": "GUID"
+        },
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "cInTypes",
+            "type": "DWORD"
+        },
+        {
+            "name": "pInTypes",
+            "type": "DMO_PARTIAL_MEDIATYPE"
+        },
+        {
+            "name": "cOutTypes",
+            "type": "DWORD"
+        },
+        {
+            "name": "pOutTypes",
+            "type": "DMO_PARTIAL_MEDIATYPE"
+        },
+        {
+            "name": "ppEnum",
+            "type": "IEnumDMO"
+        }
+    ],
+    "DMOGetTypes": [
+        {
+            "name": "clsidDMO",
+            "type": "IID"
+        },
+        {
+            "name": "ulInputTypesRequested",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pulInputTypesSupplied",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pInputTypes",
+            "type": "DMO_PARTIAL_MEDIATYPE"
+        },
+        {
+            "name": "ulOutputTypesRequested",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pulOutputTypesSupplied",
+            "type": "unsigned long"
+        },
+        {
+            "name": "pOutputTypes",
+            "type": "DMO_PARTIAL_MEDIATYPE"
+        }
+    ],
+    "DMOGetName": [
+        {
+            "name": "clsidDMO",
+            "type": "IID"
+        },
+        {
+            "name": "szName",
+            "type": "WCHAR"
+        }
+    ]
+}

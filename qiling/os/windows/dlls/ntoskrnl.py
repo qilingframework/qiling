@@ -13,13 +13,12 @@ from qiling.os.windows.handle import *
 from qiling.exception import *
 from qiling.os.windows.structs import *
 
+dllname = 'ntoskrnl_dll'
 
 # NTSYSAPI NTSTATUS RtlGetVersion(
 #   PRTL_OSVERSIONINFOW lpVersionInformation
 # );
-@winapi(cc=CDECL, params={
-    "lpVersionInformation": POINTER
-})
+@winsdkapi(cc=CDECL, dllname=dllname, replace_params={"lpVersionInformation": POINTER})
 def hook_RtlGetVersion(ql, address, params):
     pointer = params["lpVersionInformation"]
     os = OsVersionInfoW(ql)
@@ -37,13 +36,8 @@ def hook_RtlGetVersion(ql, address, params):
 #   PVOID           ThreadInformation,
 #   ULONG           ThreadInformationLength
 # );
-@winapi(cc=STDCALL, params={
-    "ThreadHandle": HANDLE,
-    "ThreadInformationClass": INT,
-    "ThreadInformation": POINTER,
-    "ThreadInformationLength": UINT,
-
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"ThreadHandle": HANDLE,
+    "ThreadInformationClass": INT, "ThreadInformation": POINTER, "ThreadInformationLength": UINT})
 def hook_ZwSetInformationThread(ql, address, params):
     thread = params["ThreadHandle"]
     information = params["ThreadInformationClass"]
@@ -68,10 +62,7 @@ def hook_ZwSetInformationThread(ql, address, params):
 # NTSYSAPI NTSTATUS ZwClose(
 #   HANDLE Handle
 # );
-@winapi(cc=STDCALL, params={
-    "Handle": HANDLE
-
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={"Handle": HANDLE})
 def hook_ZwClose(ql, address, params):
     value = params["Handle"]
     handle = ql.os.handle_manager.get(value)

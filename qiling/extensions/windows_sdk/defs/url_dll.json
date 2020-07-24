@@ -1,0 +1,140 @@
+{
+    "TranslateURLA": [
+        {
+            "name": "pcszURL",
+            "type": "PCSTR"
+        },
+        {
+            "name": "dwInFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppszTranslatedURL",
+            "type": "PSTR"
+        }
+    ],
+    "TranslateURLW": [
+        {
+            "name": "pcszURL",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "dwInFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppszTranslatedURL",
+            "type": "PWSTR"
+        }
+    ],
+    "URLAssociationDialogA": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "dwInFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcszFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pcszURL",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszAppBuf",
+            "type": "PSTR"
+        },
+        {
+            "name": "ucAppBufLen",
+            "type": "UINT"
+        }
+    ],
+    "URLAssociationDialogW": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "dwInFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcszFile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pcszURL",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszAppBuf",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ucAppBufLen",
+            "type": "UINT"
+        }
+    ],
+    "MIMEAssociationDialogA": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "dwInFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcszFile",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pcszMIMEContentType",
+            "type": "PCSTR"
+        },
+        {
+            "name": "pszAppBuf",
+            "type": "PSTR"
+        },
+        {
+            "name": "ucAppBufLen",
+            "type": "UINT"
+        }
+    ],
+    "MIMEAssociationDialogW": [
+        {
+            "name": "hwndParent",
+            "type": "HWND"
+        },
+        {
+            "name": "dwInFlags",
+            "type": "DWORD"
+        },
+        {
+            "name": "pcszFile",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pcszMIMEContentType",
+            "type": "PCWSTR"
+        },
+        {
+            "name": "pszAppBuf",
+            "type": "PWSTR"
+        },
+        {
+            "name": "ucAppBufLen",
+            "type": "UINT"
+        }
+    ],
+    "InetIsOffline": [
+        {
+            "name": "dwFlags",
+            "type": "DWORD"
+        }
+    ]
+}

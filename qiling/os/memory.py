@@ -130,6 +130,9 @@ class QlMemoryManager:
         self.ql.nprint("[+] Start      End        Perm.  Path")
         for  start, end, perm, info in self.map_info:
             _perm = _perms_mapping(perm)
+            image = self.ql.os.find_containing_image(start)
+            if image:
+                info += f" ({image.path})"
             self.ql.nprint("[+] %08x - %08x - %s    %s" % (start, end, _perm, info))
 
 
@@ -163,12 +166,14 @@ class QlMemoryManager:
             perm = value[2]
             info = value[3]
             mem_read = bytes(value[4])
-            
-            if self.is_mapped(start, start-end) == False:
+
+            self.ql.dprint(4,"restore key: %i 0x%x 0x%x %s" % (key, start, end, info))
+            if self.is_mapped(start, end-start) == False:
+                self.ql.dprint(4,"mapping 0x%x 0x%x mapsize 0x%x" % (start, end, end-start))
                 self.map(start, end-start, perms=perm, info=info)
 
+            self.ql.dprint(4,"writing 0x%x size 0x%x write_size 0x%x " % (start, end-start, len(mem_read)))
             self.write(start, mem_read)
- 
 
     def read(self, addr: int, size: int) -> bytearray:
         return self.ql.uc.mem_read(addr, size)
@@ -183,19 +188,25 @@ class QlMemoryManager:
         Search for a sequence of bytes in memory. Returns all sequences
         that match
         """
-        addrs = []
-        for region in list(self.ql.uc.mem_regions()):
-            if (begin and end) and end > begin:
-                haystack = self.read(begin, end)
-            else:  
-                haystack = self.read(region[0], region[1] - region[0])
-            
-            addrs += [
-                x.start(0) + region[0]
-                for x in re.finditer(needle, haystack)
-            ]
-        return addrs
 
+        addrs = []
+        if (begin and end) and end > begin:
+            haystack = self.read(begin, end - begin)
+            addrs = [x.start(0) + begin for x in re.finditer(needle, haystack)]
+
+        if not begin:
+            begin = self.map_info[0][0] # search from the first mapped region 
+        if not end:
+            end = self.map_info[-1][1] # search till the last mapped region
+
+        mapped_range = [(_begin, _end) for _begin, _end, _ in self.ql.uc.mem_regions()
+                if _begin in range(begin, end) or _end in range(begin, end)]
+        
+        for _begin, _end in mapped_range:
+            haystack = self.read(_begin, _end - _begin)
+            addrs += [x.start(0) + _begin for x in re.finditer(needle, haystack)]
+
+        return addrs
 
     def unmap(self, addr, size) -> None:
         '''
@@ -371,8 +382,8 @@ class QlMemoryManager:
         '''
         if ptr == None:
             if self.is_mapped(addr, size) == False:
-               self.ql.uc.mem_map(addr, size, perms)
-               self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
+                self.ql.uc.mem_map(addr, size, perms)
+                self.add_mapinfo(addr, addr + size, perms, info if info else "[mapped]")
             else:
                 raise QlMemoryMappedError("[!] Memory Mapped")    
         else:
@@ -453,3 +464,9 @@ class QlMemoryHeap:
                 chunk.inuse = False
                 return True
         return False
+
+    def _find(self, addr):
+        for chunk in self.chunks:
+            if addr == chunk.address:
+                return chunk
+        return None

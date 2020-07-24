@@ -1,0 +1,384 @@
+{
+    "GetServiceRegistryStateKey": [
+        {
+            "name": "ServiceStatusHandle",
+            "type": "SERVICE_STATUS_HANDLE"
+        },
+        {
+            "name": "StateType",
+            "type": "SERVICE_REGISTRY_STATE_TYPE"
+        },
+        {
+            "name": "AccessMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "ServiceStateKey",
+            "type": "HKEY"
+        }
+    ],
+    "GetServiceDirectory": [
+        {
+            "name": "hServiceStatus",
+            "type": "SERVICE_STATUS_HANDLE"
+        },
+        {
+            "name": "eDirectoryType",
+            "type": "SERVICE_DIRECTORY_TYPE"
+        },
+        {
+            "name": "lpPathBuffer",
+            "type": "PWCHAR"
+        },
+        {
+            "name": "cchPathBufferLength",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpcchRequiredBufferLength",
+            "type": "DWORD"
+        }
+    ],
+    "StartTraceW": [
+        {
+            "name": "TraceHandle",
+            "type": "PTRACEHANDLE"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Properties",
+            "type": "PEVENT_TRACE_PROPERTIES"
+        }
+    ],
+    "StartTraceA": [
+        {
+            "name": "TraceHandle",
+            "type": "PTRACEHANDLE"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Properties",
+            "type": "PEVENT_TRACE_PROPERTIES"
+        }
+    ],
+    "StopTraceW": [
+        {
+            "name": "TraceHandle",
+            "type": "TRACEHANDLE"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Properties",
+            "type": "PEVENT_TRACE_PROPERTIES"
+        }
+    ],
+    "StopTraceA": [
+        {
+            "name": "TraceHandle",
+            "type": "TRACEHANDLE"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Properties",
+            "type": "PEVENT_TRACE_PROPERTIES"
+        }
+    ],
+    "ControlTraceW": [
+        {
+            "name": "TraceHandle",
+            "type": "TRACEHANDLE"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Properties",
+            "type": "PEVENT_TRACE_PROPERTIES"
+        },
+        {
+            "name": "ControlCode",
+            "type": "ULONG"
+        }
+    ],
+    "ControlTraceA": [
+        {
+            "name": "TraceHandle",
+            "type": "TRACEHANDLE"
+        },
+        {
+            "name": "InstanceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "Properties",
+            "type": "PEVENT_TRACE_PROPERTIES"
+        },
+        {
+            "name": "ControlCode",
+            "type": "ULONG"
+        }
+    ],
+    "QueryAllTracesW": [
+        {
+            "name": "PropertyArray",
+            "type": "PEVENT_TRACE_PROPERTIES"
+        },
+        {
+            "name": "PropertyArrayCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "LoggerCount",
+            "type": "PULONG"
+        }
+    ],
+    "QueryAllTracesA": [
+        {
+            "name": "PropertyArray",
+            "type": "PEVENT_TRACE_PROPERTIES"
+        },
+        {
+            "name": "PropertyArrayCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "LoggerCount",
+            "type": "PULONG"
+        }
+    ],
+    "EnableTraceEx2": [
+        {
+            "name": "TraceHandle",
+            "type": "TRACEHANDLE"
+        },
+        {
+            "name": "ProviderId",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "ControlCode",
+            "type": "ULONG"
+        },
+        {
+            "name": "Level",
+            "type": "UCHAR"
+        },
+        {
+            "name": "MatchAnyKeyword",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "MatchAllKeyword",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "Timeout",
+            "type": "ULONG"
+        },
+        {
+            "name": "EnableParameters",
+            "type": "PENABLE_TRACE_PARAMETERS"
+        }
+    ],
+    "TraceSetInformation": [
+        {
+            "name": "SessionHandle",
+            "type": "TRACEHANDLE"
+        },
+        {
+            "name": "InformationClass",
+            "type": "TRACE_INFO_CLASS"
+        },
+        {
+            "name": "TraceInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "InformationLength",
+            "type": "ULONG"
+        }
+    ],
+    "TraceQueryInformation": [
+        {
+            "name": "SessionHandle",
+            "type": "TRACEHANDLE"
+        },
+        {
+            "name": "InformationClass",
+            "type": "TRACE_INFO_CLASS"
+        },
+        {
+            "name": "TraceInformation",
+            "type": "PVOID"
+        },
+        {
+            "name": "InformationLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "ReturnLength",
+            "type": "PULONG"
+        }
+    ],
+    "RegisterTraceGuidsW": [
+        {
+            "name": "RequestAddress",
+            "type": "WMIDPREQUEST"
+        },
+        {
+            "name": "RequestContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "ControlGuid",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "GuidCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "TraceGuidReg",
+            "type": "PTRACE_GUID_REGISTRATION"
+        },
+        {
+            "name": "MofImagePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "MofResourceName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "RegistrationHandle",
+            "type": "PTRACEHANDLE"
+        }
+    ],
+    "RegisterTraceGuidsA": [
+        {
+            "name": "RequestAddress",
+            "type": "WMIDPREQUEST"
+        },
+        {
+            "name": "RequestContext",
+            "type": "PVOID"
+        },
+        {
+            "name": "ControlGuid",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "GuidCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "TraceGuidReg",
+            "type": "PTRACE_GUID_REGISTRATION"
+        },
+        {
+            "name": "MofImagePath",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "MofResourceName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "RegistrationHandle",
+            "type": "PTRACEHANDLE"
+        }
+    ],
+    "OpenTraceW": [
+        {
+            "name": "Logfile",
+            "type": "PEVENT_TRACE_LOGFILEW"
+        }
+    ],
+    "ProcessTrace": [
+        {
+            "name": "HandleArray",
+            "type": "PTRACEHANDLE"
+        },
+        {
+            "name": "HandleCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "StartTime",
+            "type": "LPFILETIME"
+        },
+        {
+            "name": "EndTime",
+            "type": "LPFILETIME"
+        }
+    ],
+    "CloseTrace": [
+        {
+            "name": "TraceHandle",
+            "type": "TRACEHANDLE"
+        }
+    ],
+    "OpenTraceA": [
+        {
+            "name": "Logfile",
+            "type": "PEVENT_TRACE_LOGFILEA"
+        }
+    ],
+    "SetTraceCallback": [
+        {
+            "name": "pGuid",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "EventCallback",
+            "type": "PEVENT_CALLBACK"
+        }
+    ],
+    "RemoveTraceCallback": [
+        {
+            "name": "pGuid",
+            "type": "LPCGUID"
+        }
+    ],
+    "EventAccessControl": [
+        {
+            "name": "Guid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "Operation",
+            "type": "ULONG"
+        },
+        {
+            "name": "Sid",
+            "type": "PSID"
+        },
+        {
+            "name": "Rights",
+            "type": "ULONG"
+        },
+        {
+            "name": "AllowOrDeny",
+            "type": "BOOLEAN"
+        }
+    ],
+    "EventAccessRemove": [
+        {
+            "name": "Guid",
+            "type": "LPGUID"
+        }
+    ]
+}

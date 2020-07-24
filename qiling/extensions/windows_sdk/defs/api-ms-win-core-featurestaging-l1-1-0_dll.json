@@ -1,0 +1,78 @@
+{
+    "GetFeatureEnabledState": [
+        {
+            "name": "featureId",
+            "type": "UINT32"
+        },
+        {
+            "name": "changeTime",
+            "type": "FEATURE_CHANGE_TIME"
+        }
+    ],
+    "RecordFeatureUsage": [
+        {
+            "name": "featureId",
+            "type": "UINT32"
+        },
+        {
+            "name": "kind",
+            "type": "UINT32"
+        },
+        {
+            "name": "addend",
+            "type": "UINT32"
+        },
+        {
+            "name": "originName",
+            "type": "PCSTR"
+        }
+    ],
+    "RecordFeatureError": [
+        {
+            "name": "featureId",
+            "type": "UINT32"
+        },
+        {
+            "name": "error",
+            "type": "FEATURE_ERROR"
+        }
+    ],
+    "SubscribeFeatureStateChangeNotification": [
+        {
+            "name": "subscription",
+            "type": "FEATURE_STATE_CHANGE_SUBSCRIPTION"
+        },
+        {
+            "name": "callback",
+            "type": "PFEATURE_STATE_CHANGE_CALLBACK"
+        },
+        {
+            "name": "context",
+            "type": "void"
+        }
+    ],
+    "UnsubscribeFeatureStateChangeNotification": [
+        {
+            "name": "subscription",
+            "type": "FEATURE_STATE_CHANGE_SUBSCRIPTION"
+        }
+    ],
+    "GetFeatureVariant": [
+        {
+            "name": "featureId",
+            "type": "UINT32"
+        },
+        {
+            "name": "changeTime",
+            "type": "FEATURE_CHANGE_TIME"
+        },
+        {
+            "name": "payloadId",
+            "type": "UINT32"
+        },
+        {
+            "name": "hasNotification",
+            "type": "BOOL"
+        }
+    ]
+}

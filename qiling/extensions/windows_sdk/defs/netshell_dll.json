@@ -1,0 +1,14 @@
+{
+    "NcFreeNetconProperties": [
+        {
+            "name": "pProps",
+            "type": "NETCON_PROPERTIES"
+        }
+    ],
+    "NcIsValidConnectionName": [
+        {
+            "name": "pszwName",
+            "type": "PCWSTR"
+        }
+    ]
+}

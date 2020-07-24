@@ -1,0 +1,8 @@
+{
+    "PerUserInit": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ]
+}

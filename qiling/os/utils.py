@@ -93,6 +93,7 @@ class QLOsUtils:
 
         from_path = None
         to_path = None
+        virtual_path = None
         for fm, to in self.ql.fs_mapper:
 
             if isinstance(fm, str):
@@ -106,8 +107,6 @@ class QLOsUtils:
                 virtual_path = fm
                 to_path = to
                 break
-        else:
-            virtual_path = None
 
         if not isinstance(virtual_path, str) and virtual_path != None:
             real_path = virtual_path
@@ -200,9 +199,8 @@ class QLOsUtils:
         # we want to rewrite the return address to the function
         self.ql.stack_write(0, start)
 
-    def disassembler(self, ql, address, size):
-        tmp = self.ql.mem.read(address, size)
 
+    def create_disassembler(self):
         if self.ql.archtype == QL_ARCH.ARM:  # QL_ARM
             reg_cpsr = self.ql.reg.cpsr
             mode = CS_MODE_ARM
@@ -238,6 +236,13 @@ class QLOsUtils:
 
         else:
             raise QlErrorArch("[!] Unknown arch defined in utils.py (debug output mode)")
+
+        return md
+
+    def disassembler(self, ql, address, size):
+        tmp = self.ql.mem.read(address, size)
+
+        md = self.create_disassembler()
 
         insn = md.disasm(tmp, address)
         opsize = int(size)

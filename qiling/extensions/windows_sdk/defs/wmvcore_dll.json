@@ -1,0 +1,154 @@
+{
+    "WMCheckURLExtension": [
+        {
+            "name": "pwszURL",
+            "type": "LPCWSTR"
+        }
+    ],
+    "WMCheckURLScheme": [
+        {
+            "name": "pwszURLScheme",
+            "type": "LPCWSTR"
+        }
+    ],
+    "WMValidateData": [
+        {
+            "name": "pbData",
+            "type": "BYTE"
+        },
+        {
+            "name": "pdwDataSize",
+            "type": "DWORD"
+        }
+    ],
+    "WMIsAvailableOffline": [
+        {
+            "name": "pwszURL",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pwszLanguage",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pfIsAvailableOffline",
+            "type": "BOOL"
+        }
+    ],
+    "WMIsContentProtected": [
+        {
+            "name": "pwszFileName",
+            "type": "WCHAR"
+        },
+        {
+            "name": "pfIsProtected",
+            "type": "BOOL"
+        }
+    ],
+    "WMCreateWriter": [
+        {
+            "name": "pUnkCert",
+            "type": "IUnknown"
+        },
+        {
+            "name": "ppWriter",
+            "type": "IWMWriter"
+        }
+    ],
+    "WMCreateReader": [
+        {
+            "name": "pUnkCert",
+            "type": "IUnknown"
+        },
+        {
+            "name": "dwRights",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppReader",
+            "type": "IWMReader"
+        }
+    ],
+    "WMCreateSyncReader": [
+        {
+            "name": "pUnkCert",
+            "type": "IUnknown"
+        },
+        {
+            "name": "dwRights",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppSyncReader",
+            "type": "IWMSyncReader"
+        }
+    ],
+    "WMCreateEditor": [
+        {
+            "name": "ppEditor",
+            "type": "IWMMetadataEditor"
+        }
+    ],
+    "WMCreateIndexer": [
+        {
+            "name": "ppIndexer",
+            "type": "IWMIndexer"
+        }
+    ],
+    "WMCreateBackupRestorer": [
+        {
+            "name": "pCallback",
+            "type": "IUnknown"
+        },
+        {
+            "name": "ppBackup",
+            "type": "IWMLicenseBackup"
+        }
+    ],
+    "WMCreateProfileManager": [
+        {
+            "name": "ppProfileManager",
+            "type": "IWMProfileManager"
+        }
+    ],
+    "WMCreateWriterFileSink": [
+        {
+            "name": "ppSink",
+            "type": "IWMWriterFileSink"
+        }
+    ],
+    "WMCreateWriterNetworkSink": [
+        {
+            "name": "ppSink",
+            "type": "IWMWriterNetworkSink"
+        }
+    ],
+    "WMCreateWriterPushSink": [
+        {
+            "name": "ppSink",
+            "type": "IWMWriterPushSink"
+        }
+    ],
+    "WMCreateDeviceRegistration": [
+        {
+            "name": "ppDevReg",
+            "type": "IWMDeviceRegistration"
+        }
+    ],
+    "WMCreateDRMTranscryptor": [
+        {
+            "name": "ppTranscryptor",
+            "type": "IWMDRMTranscryptor"
+        }
+    ],
+    "WMCreateLicenseRevocationAgent": [
+        {
+            "name": "pCallback",
+            "type": "IUnknown"
+        },
+        {
+            "name": "ppLicenseRevocationAgent",
+            "type": "IWMLicenseRevocationAgent"
+        }
+    ]
+}

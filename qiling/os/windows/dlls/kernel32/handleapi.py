@@ -13,6 +13,7 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
+dllname = 'kernel32_dll'
 
 # BOOL DuplicateHandle(
 #   HANDLE   hSourceProcessHandle,
@@ -23,15 +24,7 @@ from qiling.exception import *
 #   BOOL     bInheritHandle,
 #   DWORD    dwOptions
 # );
-@winapi(cc=STDCALL, params={
-    "hSourceProcessHandle": POINTER,
-    "hSourceHandle": POINTER,
-    "hTargetProcessHandle": POINTER,
-    "lpTargetHandle": POINTER,
-    "dwDesiredAccess": DWORD,
-    "bInheritHandle": BOOL,
-    "dwOptions": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
 def hook_DuplicateHandle(ql, address, params):
     # TODO for how we manage handle, i think this doesn't work
     content = params["hSourceHandle"]
@@ -43,9 +36,7 @@ def hook_DuplicateHandle(ql, address, params):
 # BOOL CloseHandle(
 #   HANDLE hObject
 # );
-@winapi(cc=STDCALL, params={
-    "hObject": HANDLE
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CloseHandle(ql, address, params):
     value = params["hObject"]
     handle = ql.os.handle_manager.get(value)
@@ -67,11 +58,7 @@ def hook_CloseHandle(ql, address, params):
 #   DWORD  dwMask,
 #   DWORD  dwFlags
 # );
-@winapi(cc=STDCALL, params={
-    "hObject": HANDLE,
-    "dwMask": DWORD,
-    "dwFlags": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
 def hook_SetHandleInformation(ql, address, params):
     val = params["hObject"]
     handle = ql.os.handle_manager.get(val)

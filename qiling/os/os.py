@@ -55,6 +55,11 @@ class QlOs(QLOsUtils):
         self.appeared_strings = {}
         self.setup_output()
 
+    def find_containing_image(self, pc):
+        for image in self.ql.loader.images:
+            if image.base <= pc <= image.end:
+                return image
+
     def emu_error(self):
         self.ql.nprint("[!] Emulation Error")
         
@@ -66,7 +71,13 @@ class QlOs(QLOsUtils):
                 self.ql.nprint("[-] %s\t:\t 0x%x" % (REG_NAME, REG_VAL))
         
         self.ql.nprint("\n")
-        self.ql.nprint("[+] PC = 0x%x" %(self.ql.reg.arch_pc))
+        self.ql.nprint("[+] PC = 0x%x" % (self.ql.reg.arch_pc), end="")
+        containing_image = self.find_containing_image(self.ql.reg.arch_pc)
+        if containing_image:
+            offset = self.ql.reg.arch_pc - containing_image.base
+            self.ql.nprint(" (%s+0x%x)" % (containing_image.path, offset))
+        else:
+            self.ql.nprint("\n")
         self.ql.mem.show_mapinfo()
         
         buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)

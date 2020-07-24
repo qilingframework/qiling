@@ -159,9 +159,11 @@ class ELFTest(unittest.TestCase):
         ql.set_syscall(1, write_onexit, QL_INTERCEPT.EXIT)
         ql.mem.map(0x1000, 0x1000)
         ql.mem.write(0x1000, b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD")
+        ql.mem.map(0x2000, 0x1000)
+        ql.mem.write(0x2000, b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD")
         ql.run()
 
-        self.assertEqual([0x1000], ql.mem.search(b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD"))
+        self.assertEqual([0x1000,0x2000], ql.mem.search(b"\xFF\xFE\xFD\xFC\xFB\xFA\xFB\xFC\xFC\xFE\xFD"))
         self.assertEqual(93824992233162, self.set_api)
         self.assertEqual(True, self.set_api_onexit)
         self.assertEqual(True, self.set_api_onenter)
@@ -384,6 +386,8 @@ class ELFTest(unittest.TestCase):
         def my_puts(ql):
             addr = ql.os.function_arg[0]
             print("puts(%s)" % ql.mem.string(addr))
+            all_mem = ql.mem.save()
+            ql.mem.restore(all_mem)
             
         ql = Qiling(["../examples/rootfs/arm_linux/bin/arm_hello"], "../examples/rootfs/arm_linux", output = "debug", profile='profiles/append_test.ql')
         ql.log_split=True
@@ -899,6 +903,25 @@ class ELFTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/posix_syscall_execve"],  "../examples/rootfs/x8664_linux", output="debug")
         ql.run()
         del ql
+
+
+    def test_elf_linux_x86(self):
+        class Fake_urandom:
+
+            def read(self, size):
+                return b"\x01"
+
+            def fstat(self):
+                return -1
+            
+            def close(self):
+                return 0
+
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_fetch_urandom"],  "../examples/rootfs/x86_linux", output="debug")
+        ql.add_fs_mapper("/dev/urandom", Fake_urandom())
+        ql.run()
+        del ql
+
 
 
 if __name__ == "__main__":

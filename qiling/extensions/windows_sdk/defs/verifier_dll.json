@@ -1,0 +1,30 @@
+{
+    "VerifierEnumerateResource": [
+        {
+            "name": "Process",
+            "type": "HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "ULONG"
+        },
+        {
+            "name": "ResourceType",
+            "type": "ULONG"
+        },
+        {
+            "name": "ResourceCallback",
+            "type": "AVRF_RESOURCE_ENUMERATE_CALLBACK"
+        },
+        {
+            "name": "EnumerationContext",
+            "type": "PVOID"
+        }
+    ],
+    "VerifierIsPerUserSettingsEnabled": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ]
+}

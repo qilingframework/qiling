@@ -1,0 +1,110 @@
+{
+    "WdsTransportClientInitialize": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ],
+    "WdsTransportClientInitializeSession": [
+        {
+            "name": "pSessionRequest",
+            "type": "PWDS_TRANSPORTCLIENT_REQUEST"
+        },
+        {
+            "name": "pCallerData",
+            "type": "PVOID"
+        },
+        {
+            "name": "hSessionKey",
+            "type": "PHANDLE"
+        }
+    ],
+    "WdsTransportClientRegisterCallback": [
+        {
+            "name": "hSessionKey",
+            "type": "HANDLE"
+        },
+        {
+            "name": "CallbackId",
+            "type": "TRANSPORTCLIENT_CALLBACK_ID"
+        },
+        {
+            "name": "pfnCallback",
+            "type": "PVOID"
+        }
+    ],
+    "WdsTransportClientStartSession": [
+        {
+            "name": "hSessionKey",
+            "type": "HANDLE"
+        }
+    ],
+    "WdsTransportClientCompleteReceive": [
+        {
+            "name": "hSessionKey",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ulSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "pullOffset",
+            "type": "PULARGE_INTEGER"
+        }
+    ],
+    "WdsTransportClientCancelSession": [
+        {
+            "name": "hSessionKey",
+            "type": "HANDLE"
+        }
+    ],
+    "WdsTransportClientWaitForCompletion": [
+        {
+            "name": "hSessionKey",
+            "type": "HANDLE"
+        },
+        {
+            "name": "uTimeout",
+            "type": "ULONG"
+        }
+    ],
+    "WdsTransportClientQueryStatus": [
+        {
+            "name": "hSessionKey",
+            "type": "HANDLE"
+        },
+        {
+            "name": "puStatus",
+            "type": "PULONG"
+        },
+        {
+            "name": "puErrorCode",
+            "type": "PULONG"
+        }
+    ],
+    "WdsTransportClientCloseSession": [
+        {
+            "name": "hSessionKey",
+            "type": "HANDLE"
+        }
+    ],
+    "WdsTransportClientAddRefBuffer": [
+        {
+            "name": "pvBuffer",
+            "type": "PVOID"
+        }
+    ],
+    "WdsTransportClientReleaseBuffer": [
+        {
+            "name": "pvBuffer",
+            "type": "PVOID"
+        }
+    ],
+    "WdsTransportClientShutdown": [
+        {
+            "name": "VOID",
+            "type": "void"
+        }
+    ]
+}

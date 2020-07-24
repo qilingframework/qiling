@@ -1,0 +1,276 @@
+{
+    "LresultFromObject": [
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "punk",
+            "type": "LPUNKNOWN"
+        }
+    ],
+    "ObjectFromLresult": [
+        {
+            "name": "lResult",
+            "type": "LRESULT"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "wParam",
+            "type": "WPARAM"
+        },
+        {
+            "name": "ppvObject",
+            "type": "void"
+        }
+    ],
+    "WindowFromAccessibleObject": [
+        {
+            "name": "VOID",
+            "type": "IAccessible"
+        },
+        {
+            "name": "phwnd",
+            "type": "HWND"
+        }
+    ],
+    "AccessibleObjectFromWindow": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwId",
+            "type": "DWORD"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvObject",
+            "type": "void"
+        }
+    ],
+    "AccessibleObjectFromEvent": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "dwId",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwChildId",
+            "type": "DWORD"
+        },
+        {
+            "name": "ppacc",
+            "type": "IAccessible"
+        },
+        {
+            "name": "pvarChild",
+            "type": "VARIANT"
+        }
+    ],
+    "AccessibleObjectFromPoint": [
+        {
+            "name": "ptScreen",
+            "type": "POINT"
+        },
+        {
+            "name": "ppacc",
+            "type": "IAccessible"
+        },
+        {
+            "name": "pvarChild",
+            "type": "VARIANT"
+        }
+    ],
+    "AccessibleChildren": [
+        {
+            "name": "paccContainer",
+            "type": "IAccessible"
+        },
+        {
+            "name": "iChildStart",
+            "type": "LONG"
+        },
+        {
+            "name": "cChildren",
+            "type": "LONG"
+        },
+        {
+            "name": "rgvarChildren",
+            "type": "VARIANT"
+        },
+        {
+            "name": "pcObtained",
+            "type": "LONG"
+        }
+    ],
+    "GetRoleTextA": [
+        {
+            "name": "lRole",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszRole",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchRoleMax",
+            "type": "UINT"
+        }
+    ],
+    "GetRoleTextW": [
+        {
+            "name": "lRole",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszRole",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchRoleMax",
+            "type": "UINT"
+        }
+    ],
+    "GetStateTextA": [
+        {
+            "name": "lStateBit",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszState",
+            "type": "LPSTR"
+        },
+        {
+            "name": "cchState",
+            "type": "UINT"
+        }
+    ],
+    "GetStateTextW": [
+        {
+            "name": "lStateBit",
+            "type": "DWORD"
+        },
+        {
+            "name": "lpszState",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "cchState",
+            "type": "UINT"
+        }
+    ],
+    "GetOleaccVersionInfo": [
+        {
+            "name": "pVer",
+            "type": "DWORD"
+        },
+        {
+            "name": "pBuild",
+            "type": "DWORD"
+        }
+    ],
+    "CreateStdAccessibleObject": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "idObject",
+            "type": "LONG"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvObject",
+            "type": "void"
+        }
+    ],
+    "CreateStdAccessibleProxyA": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pClassName",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "idObject",
+            "type": "LONG"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvObject",
+            "type": "void"
+        }
+    ],
+    "CreateStdAccessibleProxyW": [
+        {
+            "name": "hwnd",
+            "type": "HWND"
+        },
+        {
+            "name": "pClassName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "idObject",
+            "type": "LONG"
+        },
+        {
+            "name": "riid",
+            "type": "IID"
+        },
+        {
+            "name": "ppvObject",
+            "type": "void"
+        }
+    ],
+    "AccSetRunningUtilityState": [
+        {
+            "name": "hwndApp",
+            "type": "HWND"
+        },
+        {
+            "name": "dwUtilityStateMask",
+            "type": "DWORD"
+        },
+        {
+            "name": "dwUtilityState",
+            "type": "DWORD"
+        }
+    ],
+    "AccNotifyTouchInteraction": [
+        {
+            "name": "hwndApp",
+            "type": "HWND"
+        },
+        {
+            "name": "hwndTarget",
+            "type": "HWND"
+        },
+        {
+            "name": "ptTarget",
+            "type": "POINT"
+        }
+    ]
+}

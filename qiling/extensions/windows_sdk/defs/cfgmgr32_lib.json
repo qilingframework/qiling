@@ -1,0 +1,426 @@
+{
+    "CM_Get_Device_IDW": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "Buffer",
+            "type": "PWSTR"
+        },
+        {
+            "name": "BufferLen",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_DevNode_Registry_PropertyW": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulProperty",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulRegDataType",
+            "type": "PULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "pulLength",
+            "type": "PULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Device_Interface_PropertyW": [
+        {
+            "name": "pszDeviceInterface",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "PropertyKey",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyType",
+            "type": "DEVPROPTYPE"
+        },
+        {
+            "name": "PropertyBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "PropertyBufferSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Device_Interface_Property_KeysW": [
+        {
+            "name": "pszDeviceInterface",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "PropertyKeyArray",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyKeyCount",
+            "type": "PULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Open_Class_KeyW": [
+        {
+            "name": "ClassGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "pszClassName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "Disposition",
+            "type": "REGDISPOSITION"
+        },
+        {
+            "name": "phkClass",
+            "type": "PHKEY"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Open_Device_Interface_KeyA": [
+        {
+            "name": "pszDeviceInterface",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "Disposition",
+            "type": "REGDISPOSITION"
+        },
+        {
+            "name": "phkDeviceInterface",
+            "type": "PHKEY"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Open_Device_Interface_KeyW": [
+        {
+            "name": "pszDeviceInterface",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "Disposition",
+            "type": "REGDISPOSITION"
+        },
+        {
+            "name": "phkDeviceInterface",
+            "type": "PHKEY"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Open_Device_Interface_Key_ExA": [
+        {
+            "name": "pszDeviceInterface",
+            "type": "LPCSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "Disposition",
+            "type": "REGDISPOSITION"
+        },
+        {
+            "name": "phkDeviceInterface",
+            "type": "PHKEY"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Open_Device_Interface_Key_ExW": [
+        {
+            "name": "pszDeviceInterface",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "samDesired",
+            "type": "REGSAM"
+        },
+        {
+            "name": "Disposition",
+            "type": "REGDISPOSITION"
+        },
+        {
+            "name": "phkDeviceInterface",
+            "type": "PHKEY"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Delete_Device_Interface_KeyW": [
+        {
+            "name": "pszDeviceInterface",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Query_And_Remove_SubTreeW": [
+        {
+            "name": "dnAncestor",
+            "type": "DEVINST"
+        },
+        {
+            "name": "pVetoType",
+            "type": "PPNP_VETO_TYPE"
+        },
+        {
+            "name": "pszVetoName",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ulNameLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Set_DevNode_PropertyW": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "PropertyKey",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyType",
+            "type": "DEVPROPTYPE"
+        },
+        {
+            "name": "PropertyBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "PropertyBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Set_DevNode_Registry_PropertyW": [
+        {
+            "name": "dnDevInst",
+            "type": "DEVINST"
+        },
+        {
+            "name": "ulProperty",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PCVOID"
+        },
+        {
+            "name": "ulLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Set_Device_Interface_PropertyW": [
+        {
+            "name": "pszDeviceInterface",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "PropertyKey",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyType",
+            "type": "DEVPROPTYPE"
+        },
+        {
+            "name": "PropertyBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "PropertyBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Class_PropertyW": [
+        {
+            "name": "ClassGUID",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "PropertyKey",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyType",
+            "type": "DEVPROPTYPE"
+        },
+        {
+            "name": "PropertyBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "PropertyBufferSize",
+            "type": "PULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Set_Class_PropertyW": [
+        {
+            "name": "ClassGUID",
+            "type": "LPCGUID"
+        },
+        {
+            "name": "PropertyKey",
+            "type": "DEVPROPKEY"
+        },
+        {
+            "name": "PropertyType",
+            "type": "DEVPROPTYPE"
+        },
+        {
+            "name": "PropertyBuffer",
+            "type": "PBYTE"
+        },
+        {
+            "name": "PropertyBufferSize",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        }
+    ],
+    "CM_Get_Class_Registry_PropertyW": [
+        {
+            "name": "ClassGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "ulProperty",
+            "type": "ULONG"
+        },
+        {
+            "name": "pulRegDataType",
+            "type": "PULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "pulLength",
+            "type": "PULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ],
+    "CM_Set_Class_Registry_PropertyW": [
+        {
+            "name": "ClassGuid",
+            "type": "LPGUID"
+        },
+        {
+            "name": "ulProperty",
+            "type": "ULONG"
+        },
+        {
+            "name": "Buffer",
+            "type": "PCVOID"
+        },
+        {
+            "name": "ulLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "ulFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "hMachine",
+            "type": "HMACHINE"
+        }
+    ]
+}

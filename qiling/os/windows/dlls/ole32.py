@@ -13,13 +13,12 @@ from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
 from qiling.exception import *
 
+dllname = 'ole32_dll'
 
 # HRESULT OleInitialize(
 #   IN LPVOID pvReserved
 # );
-@winapi(cc=STDCALL, params={
-    "pvReserved": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_OleInitialize(ql, address, params):
     # I don't think we need to do anything, we hook every call for the COM library and manage them locally
     return S_OK
@@ -29,10 +28,7 @@ def hook_OleInitialize(ql, address, params):
 #   LPMESSAGEFILTER lpMessageFilter,
 #   LPMESSAGEFILTER *lplpMessageFilter
 # );
-@winapi(cc=STDCALL, params={
-    "lpMessageFilter": POINTER,
-    "lplpMessageFilter": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CoRegisterMessageFilter(ql, address, params):
     return S_OK
 
@@ -41,10 +37,7 @@ def hook_CoRegisterMessageFilter(ql, address, params):
 #   LPVOID pvReserved,
 #   DWORD  dwCoInit
 # );
-@winapi(cc=STDCALL, params={
-    "pvReserved": POINTER,
-    "dwCoInit": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CoInitializeEx(ql, address, params):
     return S_OK
 
@@ -59,17 +52,7 @@ def hook_CoInitializeEx(ql, address, params):
 #   DWORD                       dwCapabilities,
 #   void                        *pReserved3
 # );
-@winapi(cc=STDCALL, params={
-    "pSecDesc": POINTER,
-    "cAuthSvc": ULONGLONG,
-    "asAuthSvc": POINTER,
-    "pReserved1": POINTER,
-    "dwAuthnLevel": DWORD,
-    "dwImpLevel": DWORD,
-    "pAuthList": POINTER,
-    "dwCapabilities": DWORD,
-    "pReserved3": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CoInitializeSecurity(ql, address, params):
     return S_OK
 
@@ -81,13 +64,7 @@ def hook_CoInitializeSecurity(ql, address, params):
 #   REFIID    riid,
 #   LPVOID    *ppv
 # );
-@winapi(cc=STDCALL, params={
-    "rclsid": POINTER,
-    "pUnkOuter": POINTER,
-    "dwClsContext": DWORD,
-    "riid": POINTER,
-    "ppv": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CoCreateInstance(ql, address, params):
     # FIXME: probably this needs implementation
     return S_OK

@@ -1,0 +1,640 @@
+{
+    "EvtOpenSession": [
+        {
+            "name": "LoginClass",
+            "type": "EVT_LOGIN_CLASS"
+        },
+        {
+            "name": "Login",
+            "type": "PVOID"
+        },
+        {
+            "name": "Timeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtClose": [
+        {
+            "name": "Object",
+            "type": "EVT_HANDLE"
+        }
+    ],
+    "EvtCancel": [
+        {
+            "name": "Object",
+            "type": "EVT_HANDLE"
+        }
+    ],
+    "EvtGetExtendedStatus": [
+        {
+            "name": "BufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "Buffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "BufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EvtQuery": [
+        {
+            "name": "Session",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Path",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Query",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtNext": [
+        {
+            "name": "ResultSet",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "EventsSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "Events",
+            "type": "PEVT_HANDLE"
+        },
+        {
+            "name": "Timeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "Returned",
+            "type": "PDWORD"
+        }
+    ],
+    "EvtSeek": [
+        {
+            "name": "ResultSet",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Position",
+            "type": "LONGLONG"
+        },
+        {
+            "name": "Bookmark",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Timeout",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtSubscribe": [
+        {
+            "name": "Session",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "SignalEvent",
+            "type": "HANDLE"
+        },
+        {
+            "name": "ChannelPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Query",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Bookmark",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Context",
+            "type": "PVOID"
+        },
+        {
+            "name": "Callback",
+            "type": "EVT_SUBSCRIBE_CALLBACK"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtCreateRenderContext": [
+        {
+            "name": "ValuePathsCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "ValuePaths",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtRender": [
+        {
+            "name": "Context",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Fragment",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "BufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "Buffer",
+            "type": "PVOID"
+        },
+        {
+            "name": "BufferUsed",
+            "type": "PDWORD"
+        },
+        {
+            "name": "PropertyCount",
+            "type": "PDWORD"
+        }
+    ],
+    "EvtFormatMessage": [
+        {
+            "name": "PublisherMetadata",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Event",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "MessageId",
+            "type": "DWORD"
+        },
+        {
+            "name": "ValueCount",
+            "type": "DWORD"
+        },
+        {
+            "name": "Values",
+            "type": "PEVT_VARIANT"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "BufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "Buffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "BufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EvtOpenLog": [
+        {
+            "name": "Session",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Path",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtGetLogInfo": [
+        {
+            "name": "Log",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "EVT_LOG_PROPERTY_ID"
+        },
+        {
+            "name": "PropertyValueBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValueBuffer",
+            "type": "PEVT_VARIANT"
+        },
+        {
+            "name": "PropertyValueBufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EvtClearLog": [
+        {
+            "name": "Session",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "ChannelPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "TargetFilePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtExportLog": [
+        {
+            "name": "Session",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Path",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Query",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "TargetFilePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtArchiveExportedLog": [
+        {
+            "name": "Session",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "LogFilePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtOpenChannelEnum": [
+        {
+            "name": "Session",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtNextChannelPath": [
+        {
+            "name": "ChannelEnum",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "ChannelPathBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "ChannelPathBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "ChannelPathBufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EvtOpenChannelConfig": [
+        {
+            "name": "Session",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "ChannelPath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtSaveChannelConfig": [
+        {
+            "name": "ChannelConfig",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtSetChannelConfigProperty": [
+        {
+            "name": "ChannelConfig",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "EVT_CHANNEL_CONFIG_PROPERTY_ID"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValue",
+            "type": "PEVT_VARIANT"
+        }
+    ],
+    "EvtGetChannelConfigProperty": [
+        {
+            "name": "ChannelConfig",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "EVT_CHANNEL_CONFIG_PROPERTY_ID"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValueBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValueBuffer",
+            "type": "PEVT_VARIANT"
+        },
+        {
+            "name": "PropertyValueBufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EvtOpenPublisherEnum": [
+        {
+            "name": "Session",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtNextPublisherId": [
+        {
+            "name": "PublisherEnum",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "PublisherIdBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "PublisherIdBuffer",
+            "type": "LPWSTR"
+        },
+        {
+            "name": "PublisherIdBufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EvtOpenPublisherMetadata": [
+        {
+            "name": "Session",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "PublisherId",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "LogFilePath",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "Locale",
+            "type": "LCID"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtGetPublisherMetadataProperty": [
+        {
+            "name": "PublisherMetadata",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "EVT_PUBLISHER_METADATA_PROPERTY_ID"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "PublisherMetadataPropertyBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "PublisherMetadataPropertyBuffer",
+            "type": "PEVT_VARIANT"
+        },
+        {
+            "name": "PublisherMetadataPropertyBufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EvtOpenEventMetadataEnum": [
+        {
+            "name": "PublisherMetadata",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtNextEventMetadata": [
+        {
+            "name": "EventMetadataEnum",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        }
+    ],
+    "EvtGetEventMetadataProperty": [
+        {
+            "name": "EventMetadata",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "EVT_EVENT_METADATA_PROPERTY_ID"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "EventMetadataPropertyBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "EventMetadataPropertyBuffer",
+            "type": "PEVT_VARIANT"
+        },
+        {
+            "name": "EventMetadataPropertyBufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EvtGetObjectArraySize": [
+        {
+            "name": "ObjectArray",
+            "type": "EVT_OBJECT_ARRAY_PROPERTY_HANDLE"
+        },
+        {
+            "name": "ObjectArraySize",
+            "type": "PDWORD"
+        }
+    ],
+    "EvtGetObjectArrayProperty": [
+        {
+            "name": "ObjectArray",
+            "type": "EVT_OBJECT_ARRAY_PROPERTY_HANDLE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "DWORD"
+        },
+        {
+            "name": "ArrayIndex",
+            "type": "DWORD"
+        },
+        {
+            "name": "Flags",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValueBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValueBuffer",
+            "type": "PEVT_VARIANT"
+        },
+        {
+            "name": "PropertyValueBufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EvtGetQueryInfo": [
+        {
+            "name": "QueryOrSubscription",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "EVT_QUERY_PROPERTY_ID"
+        },
+        {
+            "name": "PropertyValueBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValueBuffer",
+            "type": "PEVT_VARIANT"
+        },
+        {
+            "name": "PropertyValueBufferUsed",
+            "type": "PDWORD"
+        }
+    ],
+    "EvtCreateBookmark": [
+        {
+            "name": "BookmarkXml",
+            "type": "LPCWSTR"
+        }
+    ],
+    "EvtUpdateBookmark": [
+        {
+            "name": "Bookmark",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "Event",
+            "type": "EVT_HANDLE"
+        }
+    ],
+    "EvtGetEventInfo": [
+        {
+            "name": "Event",
+            "type": "EVT_HANDLE"
+        },
+        {
+            "name": "PropertyId",
+            "type": "EVT_EVENT_PROPERTY_ID"
+        },
+        {
+            "name": "PropertyValueBufferSize",
+            "type": "DWORD"
+        },
+        {
+            "name": "PropertyValueBuffer",
+            "type": "PEVT_VARIANT"
+        },
+        {
+            "name": "PropertyValueBufferUsed",
+            "type": "PDWORD"
+        }
+    ]
+}

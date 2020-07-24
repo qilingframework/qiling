@@ -15,13 +15,12 @@ from qiling.exception import *
 from qiling.os.windows.structs import *
 from qiling.const import *
 
+dllname = 'kernel32_dll'
 
 # void Sleep(
 #  DWORD dwMilliseconds
 # );
-@winapi(cc=STDCALL, params={
-    "dwMilliseconds": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_Sleep(ql, address, params):
     # time.sleep(params["dwMilliseconds"] * 10**(-3))
     pass
@@ -30,9 +29,7 @@ def hook_Sleep(ql, address, params):
 # void EnterCriticalSection(
 #  LPCRITICAL_SECTION lpCriticalSection
 # );
-@winapi(cc=STDCALL, params={
-    "lpCriticalSection": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_EnterCriticalSection(ql, address, params):
     return 0
 
@@ -40,9 +37,7 @@ def hook_EnterCriticalSection(ql, address, params):
 # void LeaveCriticalSection(
 #  LPCRITICAL_SECTION lpCriticalSection
 # );
-@winapi(cc=STDCALL, params={
-    "lpCriticalSection": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LeaveCriticalSection(ql, address, params):
     return 0
 
@@ -50,9 +45,7 @@ def hook_LeaveCriticalSection(ql, address, params):
 # void DeleteCriticalSection(
 #   LPCRITICAL_SECTION lpCriticalSection
 # );
-@winapi(cc=STDCALL, params={
-    "lpCriticalSection": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_DeleteCriticalSection(ql, address, params):
     return 0
 
@@ -60,9 +53,7 @@ def hook_DeleteCriticalSection(ql, address, params):
 # void InitializeCriticalSection(
 #   LPCRITICAL_SECTION lpCriticalSection
 # );
-@winapi(cc=STDCALL, params={
-    "lpCriticalSection": POINTER,
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InitializeCriticalSection(ql, address, params):
     return 1
 
@@ -72,11 +63,7 @@ def hook_InitializeCriticalSection(ql, address, params):
 #   DWORD              dwSpinCount,
 #   DWORD              Flags
 # );
-@winapi(cc=STDCALL, params={
-    "lpCriticalSection": POINTER,
-    "dwSpinCount": DWORD,
-    "Flags": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InitializeCriticalSectionEx(ql, address, params):
     return 1
 
@@ -85,10 +72,7 @@ def hook_InitializeCriticalSectionEx(ql, address, params):
 #  LPCRITICAL_SECTION lpCriticalSection,
 #  DWORD              dwSpinCount
 # );
-@winapi(cc=STDCALL, params={
-    "lpCriticalSection": POINTER,
-    "dwSpinCount": UINT
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'DWORD': 'UINT'})
 def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
     return 1
 
@@ -97,10 +81,7 @@ def hook_InitializeCriticalSectionAndSpinCount(ql, address, params):
 #   HANDLE hHandle,
 #   DWORD  dwMilliseconds
 # );
-@winapi(cc=STDCALL, params={
-    "hHandle": HANDLE,
-    "dwMilliseconds": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_WaitForSingleObject(ql, address, params):
     ret = 0
     hHandle = params["hHandle"]
@@ -119,11 +100,7 @@ def hook_WaitForSingleObject(ql, address, params):
 #   DWORD  dwMilliseconds
 #   BOOL   bAlertable
 # );
-@winapi(cc=STDCALL, params={
-    "hHandle": HANDLE,
-    "dwMilliseconds": DWORD,
-    "bAlertable": BOOL
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_WaitForSingleObjectEx(ql, address, params):
     ret = 0
     hHandle = params["hHandle"]
@@ -142,12 +119,7 @@ def hook_WaitForSingleObjectEx(ql, address, params):
 #   BOOL         bWaitAll,
 #   DWORD        dwMilliseconds
 # );
-@winapi(cc=STDCALL, params={
-    "nCount": DWORD,
-    "lpHandles": POINTER,
-    "bWaitAll": BOOL,
-    "dwMilliseconds": DWORD
-})
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HANDLE': 'POINTER'})
 def hook_WaitForMultipleObjects(ql, address, params):
     ret = 0
     nCount = params["nCount"]
@@ -169,11 +141,7 @@ def hook_WaitForMultipleObjects(ql, address, params):
 #   BOOL    bInheritHandle,
 #   LPCWSTR lpName
 # );
-@winapi(cc=STDCALL, params={
-    "dwDesiredAccess": DWORD,
-    "bInheritHandle": BOOL,
-    "lpName": WSTRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_OpenMutexW(ql, address, params):
     # The name can have a "Global" or "Local" prefix to explicitly open an object in the global or session namespace.
     # It can also have no prefix
@@ -209,11 +177,7 @@ def hook_OpenMutexW(ql, address, params):
 #   BOOL    bInheritHandle,
 #   LPCSTR lpName
 # );
-@winapi(cc=STDCALL, params={
-    "dwDesiredAccess": DWORD,
-    "bInheritHandle": BOOL,
-    "lpName": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_OpenMutexA(ql, address, params):
     return hook_OpenMutexW.__wrapped__(ql, address, params)
 
@@ -223,11 +187,7 @@ def hook_OpenMutexA(ql, address, params):
 #   BOOL                  bInitialOwner,
 #   LPCWSTR               lpName
 # );
-@winapi(cc=STDCALL, params={
-    "lpMutexAttributes": POINTER,
-    "bInitialOwner": BOOL,
-    "lpName": WSTRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateMutexW(ql, address, params):
     try:
         _type, name = params["lpName"].split("\\")
@@ -255,14 +215,33 @@ def hook_CreateMutexW(ql, address, params):
 #   BOOL                  bInitialOwner,
 #   LPCSTR               lpName
 # );
-@winapi(cc=STDCALL, params={
-    "lpMutexAttributes": POINTER,
-    "bInitialOwner": BOOL,
-    "lpName": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateMutexA(ql, address, params):
     return hook_CreateMutexW.__wrapped__(ql, address, params)
 
+# BOOL ReleaseMutex(
+#   HANDLE hMutex
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_ReleaseMutex(ql, address, params):
+    hMutex = params["hMutex"]
+    handle = ql.os.handle_manager.get(hMutex)
+    if not handle:
+        ql.os.last_error = ERROR_INVALID_HANDLE
+        return 0
+
+    mutex = handle.obj
+
+    if not mutex or not isinstance(mutex, Mutex):
+        return 0
+
+    if mutex.isFree():
+        ql.os.last_error = ERROR_NOT_OWNER
+        return 0
+
+    # FIXME: Only the owner is allowed to do this!
+    mutex.unlock()
+    return 1
 
 # HANDLE CreateEventA(
 #  LPSECURITY_ATTRIBUTES lpEventAttributes,
@@ -270,14 +249,9 @@ def hook_CreateMutexA(ql, address, params):
 #  BOOL                  bInitialState,
 #  LPCSTR                lpName
 # );
-@winapi(cc=STDCALL, params={
-    "lpEventAttributes": POINTER,
-    "bManualReset": BOOL,
-    "bInitialState": BOOL,
-    "lpName": STRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateEventA(ql, address, params):
-    """ 
+    """
     Implementation seems similar enough to Mutex to just use it
     """
     try:
@@ -303,12 +277,7 @@ def hook_CreateEventA(ql, address, params):
 #  BOOL                  bInitialState,
 #  LPCWSTR               lpName
 # );
-@winapi(cc=STDCALL, params={
-    "lpEventAttributes": POINTER,
-    "bManualReset": BOOL,
-    "bInitialState": BOOL,
-    "lpName": WSTRING
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_CreateEventW(ql, address, params):
     return hook_CreateEventA.__wrapped__(ql, address, params)
 
@@ -316,9 +285,7 @@ def hook_CreateEventW(ql, address, params):
 # void InitializeSRWLock(
 #  PSRWLOCK SRWLock
 # );
-@winapi(cc=STDCALL, params={
-    "SRWLock": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_InitializeSRWLock(ql, address, params):
     return
 
@@ -326,9 +293,7 @@ def hook_InitializeSRWLock(ql, address, params):
 # void AcquireSRWLockExclusive(
 #   PSRWLOCK SRWLock
 # );
-@winapi(cc=STDCALL, params={
-    "SRWLock": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_AcquireSRWLockExclusive(ql, address, params):
     return
 
@@ -336,9 +301,7 @@ def hook_AcquireSRWLockExclusive(ql, address, params):
 # void AcquireSRWLockShared(
 #   PSRWLOCK SRWLock
 # );
-@winapi(cc=STDCALL, params={
-    "SRWLock": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_AcquireSRWLockShared(ql, address, params):
     return
 
@@ -346,9 +309,7 @@ def hook_AcquireSRWLockShared(ql, address, params):
 # void ReleaseSRWLockExclusive(
 #   PSRWLOCK SRWLock
 # );
-@winapi(cc=STDCALL, params={
-    "SRWLock": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_ReleaseSRWLockExclusive(ql, address, params):
     return
 
@@ -356,8 +317,6 @@ def hook_ReleaseSRWLockExclusive(ql, address, params):
 # void ReleaseSRWLockShared(
 #   PSRWLOCK SRWLock
 # );
-@winapi(cc=STDCALL, params={
-    "SRWLock": POINTER
-})
+@winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_ReleaseSRWLockShared(ql, address, params):
     return

@@ -9,6 +9,7 @@ from qiling.const import *
 
 from .utils import *
 from .type64 import *
+from .mm_system_table_type import *
 from .shutdown import *
 from .fncc import *
 from .const import *
@@ -474,10 +475,9 @@ def hook_UninstallMultipleProtocolInterfaces(ql, address, params):
         GUID = str(ql.os.read_guid(GUID_ptr))
         ql.nprint(f'\t {GUID}, {protocol_ptr:x}')
         dic = ql.loader.handle_dict[handle]
-        protocol = params["Protocol"]
-        if protocol not in dic:
+        if GUID not in dic:
             return EFI_INVALID_PARAMETER
-        del dic[protocol]
+        del dic[GUID]
         index +=2
     return EFI_SUCCESS
 
@@ -537,6 +537,8 @@ def hook_EFI_BOOT_SERVICES(ql, start_ptr):
     ql.os.monotonic_count = 0
 
     efi_boot_services = EFI_BOOT_SERVICES()
+    efi_mm_system_table = EFI_MM_SYSTEM_TABLE()
+
     ptr = start_ptr
     efi_boot_services.RaiseTPL = ptr
     ql.hook_address(hook_RaiseTPL, ptr)
@@ -545,18 +547,22 @@ def hook_EFI_BOOT_SERVICES(ql, start_ptr):
     ql.hook_address(hook_RestoreTPL, ptr)
     ptr += pointer_size
     efi_boot_services.AllocatePages = ptr
+    efi_mm_system_table.MmAllocatePages = ptr
     ql.hook_address(hook_AllocatePages, ptr)
     ptr += pointer_size
     efi_boot_services.FreePages = ptr
+    efi_mm_system_table.MmFreePages = ptr
     ql.hook_address(hook_FreePages, ptr)
     ptr += pointer_size
     efi_boot_services.GetMemoryMap = ptr
     ql.hook_address(hook_GetMemoryMap, ptr)
     ptr += pointer_size
     efi_boot_services.AllocatePool = ptr
+    efi_mm_system_table.MmAllocatePool = ptr
     ql.hook_address(hook_AllocatePool, ptr)
     ptr += pointer_size
     efi_boot_services.FreePool = ptr
+    efi_mm_system_table.MmFreePool = ptr
     ql.hook_address(hook_FreePool, ptr)
     ptr += pointer_size
     efi_boot_services.CreateEvent = ptr
@@ -578,27 +584,33 @@ def hook_EFI_BOOT_SERVICES(ql, start_ptr):
     ql.hook_address(hook_CheckEvent, ptr)
     ptr += pointer_size
     efi_boot_services.InstallProtocolInterface = ptr
+    efi_mm_system_table.MmInstallProtocolInterface = ptr
     ql.hook_address(hook_InstallProtocolInterface, ptr)
     ptr += pointer_size
     efi_boot_services.ReinstallProtocolInterface = ptr
     ql.hook_address(hook_ReinstallProtocolInterface, ptr)
     ptr += pointer_size
     efi_boot_services.UninstallProtocolInterface = ptr
+    efi_mm_system_table.MmUninstallProtocolInterface = ptr
     ql.hook_address(hook_UninstallProtocolInterface, ptr)
     ptr += pointer_size
     efi_boot_services.HandleProtocol = ptr
+    efi_mm_system_table.MmHandleProtocol = ptr
     ql.hook_address(hook_HandleProtocol, ptr)
     ptr += pointer_size
     efi_boot_services.RegisterProtocolNotify = ptr
+    efi_mm_system_table.MmRegisterProtocolNotify = ptr
     ql.hook_address(hook_RegisterProtocolNotify, ptr)
     ptr += pointer_size
     efi_boot_services.LocateHandle = ptr
+    efi_mm_system_table.MmLocateHandle = ptr
     ql.hook_address(hook_LocateHandle, ptr)
     ptr += pointer_size
     efi_boot_services.LocateDevicePath = ptr
     ql.hook_address(hook_LocateDevicePath, ptr)
     ptr += pointer_size
     efi_boot_services.InstallConfigurationTable = ptr
+    efi_mm_system_table.MmInstallConfigurationTable = ptr
     ql.hook_address(hook_InstallConfigurationTable, ptr)
     ptr += pointer_size
     efi_boot_services.LoadImage = ptr
@@ -647,6 +659,7 @@ def hook_EFI_BOOT_SERVICES(ql, start_ptr):
     ql.hook_address(hook_LocateHandleBuffer, ptr)
     ptr += pointer_size
     efi_boot_services.LocateProtocol = ptr
+    efi_mm_system_table.MmLocateProtocol = ptr
     ql.hook_address(hook_LocateProtocol, ptr)
     ptr += pointer_size
     efi_boot_services.InstallMultipleProtocolInterfaces = ptr
@@ -667,5 +680,5 @@ def hook_EFI_BOOT_SERVICES(ql, start_ptr):
     efi_boot_services.CreateEventEx = ptr
     ql.hook_address(hook_CreateEventEx, ptr)
     ptr += pointer_size
-    return (ptr, efi_boot_services)
+    return (ptr, efi_boot_services, efi_mm_system_table)
 

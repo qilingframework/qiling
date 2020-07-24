@@ -9,7 +9,6 @@
 ##############################################
 
 from unicorn import *
-from unicorn.x86_const import *
 from .utils import catch_KeyboardInterrupt
 from .const import *
 from .exception import QlErrorCoreHook

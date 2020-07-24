@@ -1,0 +1,12 @@
+{
+    "ILLoadFromStreamEx": [
+        {
+            "name": "pstm",
+            "type": "IStream"
+        },
+        {
+            "name": "pidl",
+            "type": "LPITEMIDLIST"
+        }
+    ]
+}

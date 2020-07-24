@@ -1,0 +1,1134 @@
+{
+    "BCryptOpenAlgorithmProvider": [
+        {
+            "name": "phAlgorithm",
+            "type": "BCRYPT_ALG_HANDLE"
+        },
+        {
+            "name": "pszAlgId",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszImplementation",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptEnumAlgorithms": [
+        {
+            "name": "dwAlgOperations",
+            "type": "ULONG"
+        },
+        {
+            "name": "pAlgCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppAlgList",
+            "type": "BCRYPT_ALGORITHM_IDENTIFIER"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptEnumProviders": [
+        {
+            "name": "pszAlgId",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pImplCount",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppImplList",
+            "type": "BCRYPT_PROVIDER_NAME"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptGetProperty": [
+        {
+            "name": "hObject",
+            "type": "BCRYPT_HANDLE"
+        },
+        {
+            "name": "pszProperty",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pbOutput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbOutput",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbResult",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptSetProperty": [
+        {
+            "name": "hObject",
+            "type": "BCRYPT_HANDLE"
+        },
+        {
+            "name": "pszProperty",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pbInput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbInput",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptCloseAlgorithmProvider": [
+        {
+            "name": "hAlgorithm",
+            "type": "BCRYPT_ALG_HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptFreeBuffer": [
+        {
+            "name": "pvBuffer",
+            "type": "PVOID"
+        }
+    ],
+    "BCryptGenerateSymmetricKey": [
+        {
+            "name": "hAlgorithm",
+            "type": "BCRYPT_ALG_HANDLE"
+        },
+        {
+            "name": "phKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pbKeyObject",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbKeyObject",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbSecret",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbSecret",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptGenerateKeyPair": [
+        {
+            "name": "hAlgorithm",
+            "type": "BCRYPT_ALG_HANDLE"
+        },
+        {
+            "name": "phKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "dwLength",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptEncrypt": [
+        {
+            "name": "hKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pbInput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbInput",
+            "type": "ULONG"
+        },
+        {
+            "name": "pPaddingInfo",
+            "type": "void"
+        },
+        {
+            "name": "pbIV",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbIV",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbOutput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbOutput",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbResult",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptDecrypt": [
+        {
+            "name": "hKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pbInput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbInput",
+            "type": "ULONG"
+        },
+        {
+            "name": "pPaddingInfo",
+            "type": "void"
+        },
+        {
+            "name": "pbIV",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbIV",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbOutput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbOutput",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbResult",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptExportKey": [
+        {
+            "name": "hKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "hExportKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pszBlobType",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pbOutput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbOutput",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbResult",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptImportKey": [
+        {
+            "name": "hAlgorithm",
+            "type": "BCRYPT_ALG_HANDLE"
+        },
+        {
+            "name": "hImportKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pszBlobType",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pbKeyObject",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbKeyObject",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbInput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbInput",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptImportKeyPair": [
+        {
+            "name": "hAlgorithm",
+            "type": "BCRYPT_ALG_HANDLE"
+        },
+        {
+            "name": "hImportKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pszBlobType",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "phKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pbInput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbInput",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptDuplicateKey": [
+        {
+            "name": "hKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "phNewKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pbKeyObject",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbKeyObject",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptFinalizeKeyPair": [
+        {
+            "name": "hKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptDestroyKey": [
+        {
+            "name": "hKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        }
+    ],
+    "BCryptDestroySecret": [
+        {
+            "name": "hSecret",
+            "type": "BCRYPT_SECRET_HANDLE"
+        }
+    ],
+    "BCryptSignHash": [
+        {
+            "name": "hKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pPaddingInfo",
+            "type": "void"
+        },
+        {
+            "name": "pbInput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbInput",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbOutput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbOutput",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbResult",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptVerifySignature": [
+        {
+            "name": "hKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pPaddingInfo",
+            "type": "void"
+        },
+        {
+            "name": "pbHash",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbHash",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbSignature",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbSignature",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptSecretAgreement": [
+        {
+            "name": "hPrivKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "hPubKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "phAgreedSecret",
+            "type": "BCRYPT_SECRET_HANDLE"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptDeriveKey": [
+        {
+            "name": "hSharedSecret",
+            "type": "BCRYPT_SECRET_HANDLE"
+        },
+        {
+            "name": "pwszKDF",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pParameterList",
+            "type": "BCryptBufferDesc"
+        },
+        {
+            "name": "pbDerivedKey",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbDerivedKey",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbResult",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptKeyDerivation": [
+        {
+            "name": "hKey",
+            "type": "BCRYPT_KEY_HANDLE"
+        },
+        {
+            "name": "pParameterList",
+            "type": "BCryptBufferDesc"
+        },
+        {
+            "name": "pbDerivedKey",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbDerivedKey",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbResult",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptCreateHash": [
+        {
+            "name": "hAlgorithm",
+            "type": "BCRYPT_ALG_HANDLE"
+        },
+        {
+            "name": "phHash",
+            "type": "BCRYPT_HASH_HANDLE"
+        },
+        {
+            "name": "pbHashObject",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbHashObject",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbSecret",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbSecret",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptHashData": [
+        {
+            "name": "hHash",
+            "type": "BCRYPT_HASH_HANDLE"
+        },
+        {
+            "name": "pbInput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbInput",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptFinishHash": [
+        {
+            "name": "hHash",
+            "type": "BCRYPT_HASH_HANDLE"
+        },
+        {
+            "name": "pbOutput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbOutput",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptCreateMultiHash": [
+        {
+            "name": "hAlgorithm",
+            "type": "BCRYPT_ALG_HANDLE"
+        },
+        {
+            "name": "phHash",
+            "type": "BCRYPT_HASH_HANDLE"
+        },
+        {
+            "name": "nHashes",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbHashObject",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbHashObject",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbSecret",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbSecret",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptProcessMultiOperations": [
+        {
+            "name": "hObject",
+            "type": "BCRYPT_HANDLE"
+        },
+        {
+            "name": "operationType",
+            "type": "BCRYPT_MULTI_OPERATION_TYPE"
+        },
+        {
+            "name": "pOperations",
+            "type": "PVOID"
+        },
+        {
+            "name": "cbOperations",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptDuplicateHash": [
+        {
+            "name": "hHash",
+            "type": "BCRYPT_HASH_HANDLE"
+        },
+        {
+            "name": "phNewHash",
+            "type": "BCRYPT_HASH_HANDLE"
+        },
+        {
+            "name": "pbHashObject",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbHashObject",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptDestroyHash": [
+        {
+            "name": "hHash",
+            "type": "BCRYPT_HASH_HANDLE"
+        }
+    ],
+    "BCryptHash": [
+        {
+            "name": "hAlgorithm",
+            "type": "BCRYPT_ALG_HANDLE"
+        },
+        {
+            "name": "pbSecret",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbSecret",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbInput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbInput",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbOutput",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbOutput",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptGenRandom": [
+        {
+            "name": "hAlgorithm",
+            "type": "BCRYPT_ALG_HANDLE"
+        },
+        {
+            "name": "pbBuffer",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptDeriveKeyCapi": [
+        {
+            "name": "hHash",
+            "type": "BCRYPT_HASH_HANDLE"
+        },
+        {
+            "name": "hTargetAlg",
+            "type": "BCRYPT_ALG_HANDLE"
+        },
+        {
+            "name": "pbDerivedKey",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbDerivedKey",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptDeriveKeyPBKDF2": [
+        {
+            "name": "hPrf",
+            "type": "BCRYPT_ALG_HANDLE"
+        },
+        {
+            "name": "pbPassword",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbPassword",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbSalt",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbSalt",
+            "type": "ULONG"
+        },
+        {
+            "name": "cIterations",
+            "type": "ULONGLONG"
+        },
+        {
+            "name": "pbDerivedKey",
+            "type": "PUCHAR"
+        },
+        {
+            "name": "cbDerivedKey",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptQueryProviderRegistration": [
+        {
+            "name": "pszProvider",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwMode",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwInterface",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "PCRYPT_PROVIDER_REG"
+        }
+    ],
+    "BCryptEnumRegisteredProviders": [
+        {
+            "name": "pcbBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "PCRYPT_PROVIDERS"
+        }
+    ],
+    "BCryptCreateContext": [
+        {
+            "name": "dwTable",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pConfig",
+            "type": "PCRYPT_CONTEXT_CONFIG"
+        }
+    ],
+    "BCryptDeleteContext": [
+        {
+            "name": "dwTable",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszContext",
+            "type": "LPCWSTR"
+        }
+    ],
+    "BCryptEnumContexts": [
+        {
+            "name": "dwTable",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "PCRYPT_CONTEXTS"
+        }
+    ],
+    "BCryptConfigureContext": [
+        {
+            "name": "dwTable",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pConfig",
+            "type": "PCRYPT_CONTEXT_CONFIG"
+        }
+    ],
+    "BCryptQueryContextConfiguration": [
+        {
+            "name": "dwTable",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pcbBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "PCRYPT_CONTEXT_CONFIG"
+        }
+    ],
+    "BCryptAddContextFunction": [
+        {
+            "name": "dwTable",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInterface",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszFunction",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwPosition",
+            "type": "ULONG"
+        }
+    ],
+    "BCryptRemoveContextFunction": [
+        {
+            "name": "dwTable",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInterface",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszFunction",
+            "type": "LPCWSTR"
+        }
+    ],
+    "BCryptEnumContextFunctions": [
+        {
+            "name": "dwTable",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInterface",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "PCRYPT_CONTEXT_FUNCTIONS"
+        }
+    ],
+    "BCryptConfigureContextFunction": [
+        {
+            "name": "dwTable",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInterface",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszFunction",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pConfig",
+            "type": "PCRYPT_CONTEXT_FUNCTION_CONFIG"
+        }
+    ],
+    "BCryptQueryContextFunctionConfiguration": [
+        {
+            "name": "dwTable",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInterface",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszFunction",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pcbBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "PCRYPT_CONTEXT_FUNCTION_CONFIG"
+        }
+    ],
+    "BCryptEnumContextFunctionProviders": [
+        {
+            "name": "dwTable",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInterface",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszFunction",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pcbBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "PCRYPT_CONTEXT_FUNCTION_PROVIDERS"
+        }
+    ],
+    "BCryptSetContextFunctionProperty": [
+        {
+            "name": "dwTable",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInterface",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszFunction",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszProperty",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "cbValue",
+            "type": "ULONG"
+        },
+        {
+            "name": "pbValue",
+            "type": "PUCHAR"
+        }
+    ],
+    "BCryptQueryContextFunctionProperty": [
+        {
+            "name": "dwTable",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInterface",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszFunction",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszProperty",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pcbValue",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppbValue",
+            "type": "PUCHAR"
+        }
+    ],
+    "BCryptRegisterConfigChangeNotify": [
+        {
+            "name": "phEvent",
+            "type": "HANDLE"
+        }
+    ],
+    "BCryptResolveProviders": [
+        {
+            "name": "pszContext",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwInterface",
+            "type": "ULONG"
+        },
+        {
+            "name": "pszFunction",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszProvider",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "dwMode",
+            "type": "ULONG"
+        },
+        {
+            "name": "dwFlags",
+            "type": "ULONG"
+        },
+        {
+            "name": "pcbBuffer",
+            "type": "ULONG"
+        },
+        {
+            "name": "ppBuffer",
+            "type": "PCRYPT_PROVIDER_REFS"
+        }
+    ],
+    "BCryptGetFipsAlgorithmMode": [
+        {
+            "name": "pfEnabled",
+            "type": "BOOLEAN"
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "WSDCreateOutboundAttachment": [
+        {
+            "name": "ppAttachment",
+            "type": "IWSDOutboundAttachment"
+        }
+    ],
+    "WSDXMLGetNameFromBuiltinNamespace": [
+        {
+            "name": "pszNamespace",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "pszName",
+            "type": "LPCWSTR"
+        },
+        {
+            "name": "ppName",
+            "type": "WSDXML_NAME"
+        }
+    ],
+    "WSDXMLCreateContext": [
+        {
+            "name": "ppContext",
+            "type": "IWSDXMLContext"
+        }
+    ]
+}
