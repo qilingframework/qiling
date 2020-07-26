@@ -5,6 +5,8 @@ This file details the changelog of Qiling Framework.
 
 - More refactors and bug fixes
 - Adding DLL images for PE coverage tracing
+- Add hook_mem_invalid
+- More UEFI API
 
 
 ------------------------------------

@@ -174,6 +174,33 @@ def hook__get_initial_narrow_environment(ql, address, params):
         count += 1
     return ret
 
+# int sprintf ( char * str, const char * format, ... );
+@winsdkapi(cc=CDECL, dllname=dllname, param_num=3)
+def hook_sprintf(ql, address, _):
+    ret = 0
+    str_ptr, format_ptr = ql.os.get_function_param(2)
+
+    if not format_ptr:
+        ql.nprint('printf(format = 0x0) = 0x%x' % ret)
+        return ret
+
+    sp = ql.reg.esp if ql.archtype == QL_ARCH.X86 else ql.reg.rsp
+    p_args = sp + ql.pointersize * 3
+
+    format_string = ql.os.read_cstring(format_ptr)
+    str_size, str_data = ql.os.printf(address, format_string, p_args, "sprintf")
+    ql.nprint()
+
+    count = format_string.count('%')
+    if ql.archtype == QL_ARCH.X8664:
+        if count + 1 > 4:
+            ql.reg.rsp = ql.reg.rsp + ((count - 4 + 1) * 8)
+
+    ql.mem.write(str_ptr, str_data.encode('utf-8') + b'\x00')
+    ret = str_size
+    
+    return ret
+
 
 # int printf(const char *format, ...)
 @winsdkapi(cc=CDECL, param_num=1)
