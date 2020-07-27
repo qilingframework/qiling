@@ -125,12 +125,34 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
-    def test_elf_partial_linux_x8664(self): 
+    def test_elf_partial_linux_x8664(self):
+        class save_state:
+            def __init__(self):
+                self.temp_mem = None
+                self.temp_con = None
+
+        ss = save_state()
+
+        def dump(ql, *args, **kw):
+            ss.temp_mem = ql.mem.save()
+            ss.temp_con = ql.arch.context_save()
+            ql.emu_stop()
+
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello"], "../examples/rootfs/x8664_linux", output= "default")
         X64BASE = int(ql.profile.get("OS64", "load_address"), 16)
+        ql.hook_address(dump, X64BASE + 0x1094)
+
+        ql.run()
+
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello"], "../examples/rootfs/x8664_linux", output= "debug", verbose=4)
+        X64BASE = int(ql.profile.get("OS64", "load_address"), 16)
+        ql.mem.restore(ss.temp_mem)
+        ql.arch.context_restore(ss.temp_con)
         begin_point = X64BASE + 0x109e
         end_point = X64BASE + 0x10bc
         ql.run(begin = begin_point, end = end_point)
+
+        del ql
 
 
     def test_elf_linux_x8664(self):

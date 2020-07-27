@@ -250,6 +250,7 @@ class QlMemoryManager:
         Returns true if it has already been allocated.
         If unassigned, returns False.
         '''   
+
         for region in list(self.ql.uc.mem_regions()):
             if address >= region[0] and (address + size -1) <= region[1]:
                 return True

@@ -88,7 +88,7 @@ class QLCoreUtils(object):
 
         if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             if int(self.verbose) >= D_DRPT:
-                args = (("0x%x:" % self.reg.arch_pc), args)
+                args = (("0x%x:" % self.reg.arch_pc), *args)
                 
             self.nprint(*args, **kw)
 
