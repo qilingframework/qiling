@@ -55,6 +55,7 @@ class QlOs(QLOsUtils):
         self.appeared_strings = {}
         self.setup_output()
 
+
     def find_containing_image(self, pc):
         for image in self.ql.loader.images:
             if image.base <= pc <= image.end:
