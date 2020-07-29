@@ -28,12 +28,10 @@ def ql_syscall_munmap(ql, munmap_addr , munmap_len, *args, **kw):
         all_mem_info = [_mem_info for _, _, _,  _mem_info in ql.mem.map_info if _mem_info not in ("[mapped]", "[stack]", "[hook_mem]")]
 
         for _fd in mapped_fd:
-            if _fd.name in all_mem_info:
+            if _fd.name in [each.split()[-1] for each in all_mem_info]:
                 # flushes changes to disk file
                 _buff = ql.mem.read(munmap_addr, munmap_len)
-                # FIXME: need a better solution for this part
-                # overwrite file content from the beginning for now
-                _fd.lseek(0)
+                _fd.lseek(_fd._mapped_offset)
                 _fd.write(_buff)
 
     munmap_len = ((munmap_len + 0x1000 - 1) // 0x1000) * 0x1000
@@ -118,6 +116,7 @@ def ql_syscall_old_mmap(ql, struct_mmap_args, *args, **kw):
         data = ql.os.file_des[mmap_fd].read(mmap_length)
         mem_info = str(ql.os.file_des[mmap_fd].name)
         ql.os.file_des[mmap_fd]._is_map_shared = True
+        ql.os.file_des[mmap_fd]._mapped_offset = mmap_offset
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
         ql.dprint(D_INFO, "[+] log mem mmap  : " + mem_info)
@@ -189,6 +188,7 @@ def ql_syscall_mmap(ql, mmap_addr, mmap_length, mmap_prot, mmap_flags, mmap_fd, 
         data = ql.os.file_des[mmap_fd].read(mmap_length)
         mem_info = str(ql.os.file_des[mmap_fd].name)
         ql.os.file_des[mmap_fd]._is_map_shared = True
+        ql.os.file_des[mmap_fd]._mapped_offset = mmap_pgoffset
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
         ql.dprint(D_INFO, "[+] log mem mmap  : " + mem_info)
@@ -253,6 +253,7 @@ def ql_syscall_mmap2(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap
         data = ql.os.file_des[mmap2_fd].read(mmap2_length)
         mem_info = str(ql.os.file_des[mmap2_fd].name)
         ql.os.file_des[mmap2_fd]._is_map_shared = True
+        ql.os.file_des[mmap_fd]._mapped_offset = mmap2_pgoffset
 
         ql.dprint(D_INFO, "[+] log mem write : " + hex(len(data)))
         ql.dprint(D_INFO, "[+] log mem mmap2  : " + mem_info)
