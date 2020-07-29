@@ -155,6 +155,26 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
     ql.os.definesyscall_return(regreturn)
 
 
+def ql_syscall_getsockname(ql, sockfd, addr, addrlenptr, *args, **kw):
+    if sockfd < 256 and ql.os.file_des[sockfd] != 0:
+        host, port = ql.os.file_des[sockfd].getsockname()
+        data = struct.pack("<h", int(ql.os.file_des[sockfd].family))
+        data += struct.pack(">H", port)
+        data += ipaddress.ip_address(host).packed
+        addrlen = ql.mem.read(addrlenptr, 4)
+        addrlen = ql.unpack32(addrlen)
+        data = data[:addrlen]
+        ql.mem.write(addr, data)
+        regreturn = 0
+    else:
+        regreturn = -1
+
+    ql.nprint("getsockname(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
+  
+    ql.os.definesyscall_return(regreturn)  
+
+
+
 def ql_syscall_listen(ql, listen_sockfd, listen_backlog, *args, **kw):
     if listen_sockfd < 256 and ql.os.file_des[listen_sockfd] != 0:
         try:
