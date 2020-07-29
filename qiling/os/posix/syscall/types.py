@@ -19,6 +19,6 @@ def ql_syscall_gettid(ql, *args, **kw):
       # thread_management is None only if it is a single-threaded process.
       # In single-threaded process, the thread ID is equal to the process ID
       # per Posix documentation.
-      regreturn = os.getpid()
+      regreturn = ql.os.pid
     ql.nprint("gettid() = %d" % regreturn)
     ql.os.definesyscall_return(regreturn)
