@@ -16,7 +16,9 @@ class ql_file:
     def __init__(self, path, fd):
         self.__path = path
         self.__fd = fd
+        # information for syscall mmap
         self._is_map_shared = False
+        self._mapped_offset = -1
 
     @classmethod
     def open(self, open_path, open_flags, open_mode):
