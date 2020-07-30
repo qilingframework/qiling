@@ -130,7 +130,7 @@ class ELFTest(unittest.TestCase):
 
         def dump(ql, *args, **kw):
             nonlocal ss
-            ss = ql.save(reg=False, mem=True, fds=False, cpu_ctx=True)
+            ss = ql.save(reg=False, mem=True, fd=False, cpu_context=True)
             ql.emu_stop()
 
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello"], "../examples/rootfs/x8664_linux", output= "default")

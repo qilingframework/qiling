@@ -258,7 +258,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
 
     # save all qiling instance states
-    def save(self, reg=True, mem=True, fds=True, cpu_ctx=False):
+    def save(self, reg=True, mem=True, fd=False, cpu_context=False):
         saved_states = {}
 
         if reg == True:
@@ -267,17 +267,19 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if mem == True:
             saved_states.update({"mem": self.mem.save()})
 
-        if fds == True: 
-            saved_states.update({"fds": self.os.fd.save()})
+        if fd == True: 
+            saved_states.update({"fd": self.os.fd.save()})
 
-        if cpu_ctx == True:
-            saved_states.update({"cpu_ctx": self.arch.context_save()})
+        if cpu_context == True:
+            saved_states.update({"cpu_context": self.arch.context_save()})
 
         return saved_states
 
 
     # restore states qiling instance from saved_states
     def restore(self, saved_states):
+        if "cpu_context" in saved_states:
+            self.arch.context_restore(saved_states["cpu_context"])
 
         if "reg" in saved_states:
             self.reg.restore(saved_states["reg"])
@@ -285,8 +287,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if "mem" in saved_states:
             self.mem.restore(saved_states["mem"])
         
-        if "fds" in saved_states:
-            self.os.fd.restore(saved_states["fds"])
+        if "fd" in saved_states:
+            self.os.fd.restore(saved_states["fd"])
 
-        if "cpu_ctx" in saved_states:
-            self.arch.context_restore(saved_states["cpu_ctx"])
+
