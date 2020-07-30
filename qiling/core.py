@@ -255,3 +255,30 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):
         self.uc.emu_start(begin, end, timeout, count)
+
+
+    def save(self, reg=True, mem=True, fds=True):
+        saved = {}
+
+        if reg == True:
+            saved.update({"reg": self.reg.save()})
+
+        if mem == True:
+            saved.update({"mem": self.mem.save()})
+
+        if fds == True: 
+            saved.update({"fds": self.os.fd.save()})
+
+        return saved
+
+
+    def restore(self, saved):
+
+        if "reg" in saved:
+            self.reg.restore(saved["reg"])
+
+        if "mem" in saved:
+            self.mem.restore(saved["mem"])
+        
+        if "fds" in saved:
+            self.os.fd.restore(saved["fds"])
