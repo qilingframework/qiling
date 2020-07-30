@@ -300,7 +300,7 @@ class ELFTest(unittest.TestCase):
     def test_elf_linux_x86_posix_syscall(self):
         def test_syscall_read(ql, read_fd, read_buf, read_count, *args):
             target = False
-            pathname = ql.os.file_des[read_fd].name.split('/')[-1]
+            pathname = ql.os.fd[read_fd].name.split('/')[-1]
         
             if pathname == "test_syscall_read.txt":
                 print("test => read(%d, %s, %d)" % (read_fd, pathname, read_count))
@@ -309,14 +309,14 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
 
             if target:
-                real_path = ql.os.file_des[read_fd].name
+                real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
                 os.remove(real_path)
 
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             target = False
-            pathname = ql.os.file_des[write_fd].name.split('/')[-1]
+            pathname = ql.os.fd[write_fd].name.split('/')[-1]
 
             if pathname == "test_syscall_write.txt":
                 print("test => write(%d, %s, %d)" % (write_fd, pathname, write_count))
@@ -325,7 +325,7 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
 
             if target:
-                real_path = ql.os.file_des[write_fd].name
+                real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
                 os.remove(real_path)
@@ -376,7 +376,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             target = False
-            pathname = ql.os.file_des[ftrunc_fd].name.split('/')[-1]
+            pathname = ql.os.fd[ftrunc_fd].name.split('/')[-1]
             
             reg = ql.reg.read("eax")
             print("reg : 0x%x" % reg)
@@ -430,7 +430,7 @@ class ELFTest(unittest.TestCase):
     # def test_elf_linux_arm_posix_syscall(self):
         # def test_syscall_read(ql, read_fd, read_buf, read_count, *args):
             # target = False
-            # pathname = ql.os.file_des[read_fd].name.split('/')[-1]
+            # pathname = ql.os.fd[read_fd].name.split('/')[-1]
         
             # if pathname == "test_syscall_read.txt":
                 # print("test => read(%d, %s, %d)" % (read_fd, pathname, read_count))
@@ -439,14 +439,14 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
 
             # if target:
-                # real_path = ql.os.file_des[read_fd].name
+                # real_path = ql.os.fd[read_fd].name
                 # with open(real_path) as fd:
                     # assert fd.read() == ql.mem.read(read_buf, read_count).decode()
                 # os.remove(real_path)
  
         # def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             # target = False
-            # pathname = ql.os.file_des[write_fd].name.split('/')[-1]
+            # pathname = ql.os.fd[write_fd].name.split('/')[-1]
 
             # if pathname == "test_syscall_write.txt":
                 # print("test => write(%d, %s, %d)" % (write_fd, pathname, write_count))
@@ -455,7 +455,7 @@ class ELFTest(unittest.TestCase):
             # syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
 
             # if target:
-                # real_path = ql.os.file_des[write_fd].name
+                # real_path = ql.os.fd[write_fd].name
                 # with open(real_path) as fd:
                     # assert fd.read() == 'Hello testing\x00'
                 # os.remove(real_path)
@@ -506,7 +506,7 @@ class ELFTest(unittest.TestCase):
 
         # def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             # target = False
-            # pathname = ql.os.file_des[ftrunc_fd].name.split('/')[-1]
+            # pathname = ql.os.fd[ftrunc_fd].name.split('/')[-1]
 
             # if pathname == "test_syscall_ftruncate.txt":
                 # print("test => ftruncate(%d, 0x%x)" % (ftrunc_fd, ftrunc_length))
@@ -577,7 +577,7 @@ class ELFTest(unittest.TestCase):
     def test_elf_linux_arm64_posix_syscall(self):
         def test_syscall_read(ql, read_fd, read_buf, read_count, *args):
             target = False
-            pathname = ql.os.file_des[read_fd].name.split('/')[-1]
+            pathname = ql.os.fd[read_fd].name.split('/')[-1]
             
             reg = ql.reg.read("x0")
             print("reg : 0x%x" % reg)
@@ -590,7 +590,7 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
 
             if target:
-                real_path = ql.os.file_des[read_fd].name
+                real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
                 os.remove(real_path)
@@ -598,7 +598,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             target = False
-            pathname = ql.os.file_des[write_fd].name.split('/')[-1]
+            pathname = ql.os.fd[write_fd].name.split('/')[-1]
 
             if pathname == "test_syscall_write.txt":
                 print("test => write(%d, %s, %d)" % (write_fd, pathname, write_count))
@@ -607,7 +607,7 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
 
             if target:
-                real_path = ql.os.file_des[write_fd].name
+                real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
                 os.remove(real_path)
@@ -662,7 +662,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             target = False
-            pathname = ql.os.file_des[ftrunc_fd].name.split('/')[-1]
+            pathname = ql.os.fd[ftrunc_fd].name.split('/')[-1]
 
             if pathname == "test_syscall_ftruncate.txt":
                 print("test => ftruncate(%d, 0x%x)" % (ftrunc_fd, ftrunc_length))
@@ -707,7 +707,7 @@ class ELFTest(unittest.TestCase):
     def test_elf_linux_mips32el_posix_syscall(self):
         def test_syscall_read(ql, read_fd, read_buf, read_count, *args):
             target = False
-            pathname = ql.os.file_des[read_fd].name.split('/')[-1]
+            pathname = ql.os.fd[read_fd].name.split('/')[-1]
             
             reg = ql.reg.read("v0")
             print("reg : 0x%x" % reg)
@@ -720,14 +720,14 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_read(ql, read_fd, read_buf, read_count, *args)
 
             if target:
-                real_path = ql.os.file_des[read_fd].name
+                real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
                 os.remove(real_path)
  
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             target = False
-            pathname = ql.os.file_des[write_fd].name.split('/')[-1]
+            pathname = ql.os.fd[write_fd].name.split('/')[-1]
 
             if pathname == "test_syscall_write.txt":
                 print("test => write(%d, %s, %d)" % (write_fd, pathname, write_count))
@@ -736,7 +736,7 @@ class ELFTest(unittest.TestCase):
             syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *args)
 
             if target:
-                real_path = ql.os.file_des[write_fd].name
+                real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
                 os.remove(real_path)
@@ -787,7 +787,7 @@ class ELFTest(unittest.TestCase):
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             target = False
-            pathname = ql.os.file_des[ftrunc_fd].name.split('/')[-1]
+            pathname = ql.os.fd[ftrunc_fd].name.split('/')[-1]
 
             if pathname == "test_syscall_ftruncate.txt":
                 print("test => ftruncate(%d, 0x%x)" % (ftrunc_fd, ftrunc_length))
@@ -825,7 +825,7 @@ class ELFTest(unittest.TestCase):
             try:
                 buf = ql.mem.read(write_buf, write_count)
                 ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
-                ql.os.file_des[write_fd].write(buf)
+                ql.os.fd[write_fd].write(buf)
                 regreturn = write_count
             except:
                 regreturn = -1

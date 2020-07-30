@@ -37,7 +37,7 @@ class QlOsPosix(QlOs):
             self.gid = self.profile.getint("KERNEL","gid")
 
         
-        self.file_des = QlFileDes([0] * 256)
+        self.fd = QlFileDes([0] * 256)
         self.dict_posix_syscall = dict()
         self.dict_posix_onEnter_syscall = dict()
         self.dict_posix_onExit_syscall = dict()
@@ -49,9 +49,9 @@ class QlOsPosix(QlOs):
         self.syscall_name = None
 
         if self.ql.ostype in QL_POSIX:
-            self.file_des[0] = self.stdin
-            self.file_des[1] = self.stdout
-            self.file_des[2] = self.stderr
+            self.fd[0] = self.stdin
+            self.fd[1] = self.stdout
+            self.fd[2] = self.stderr
 
         for _ in range(256):
             self.sigaction_act.append(0)
