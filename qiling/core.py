@@ -7,6 +7,7 @@ import platform
 import ntpath
 import os
 import logging
+import pickle
 
 from .const import QL_ENDINABLE, QL_ENDIAN, QL_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
@@ -258,7 +259,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
 
     # save all qiling instance states
-    def save(self, reg=True, mem=True, fd=False, cpu_context=False):
+    def save(self, reg=True, mem=True, fd=False, cpu_context=False, to_file=None):
         saved_states = {}
 
         if reg == True:
@@ -273,11 +274,21 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if cpu_context == True:
             saved_states.update({"cpu_context": self.arch.context_save()})
 
-        return saved_states
+        if to_file != None:
+            with open(to_file, "wb") as dump_fd:
+                pickle.dump(saved_states, dump_fd)
+        else:
+            return saved_states
 
 
     # restore states qiling instance from saved_states
-    def restore(self, saved_states):
+    def restore(self, saved_states=None, from_file=None):
+
+        # from_file will be ignored if saved_states is set
+        if saved_states == None and from_file != None:
+            with open(from_file, "rb") as load_fd:
+                saved_states = pickle.load(load_fd)
+
         if "cpu_context" in saved_states:
             self.arch.context_restore(saved_states["cpu_context"])
 
@@ -289,5 +300,3 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         
         if "fd" in saved_states:
             self.os.fd.restore(saved_states["fd"])
-
-
