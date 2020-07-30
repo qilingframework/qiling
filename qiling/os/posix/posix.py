@@ -10,6 +10,7 @@ from unicorn.mips_const import *
 from unicorn.x86_const import *
 
 from qiling.const import *
+from qiling.core_utils import QlFileDes
 from qiling.os.os import QlOs
 from qiling.utils import *
 from qiling.exception import *
@@ -34,8 +35,9 @@ class QlOsPosix(QlOs):
         else:    
             self.uid = self.profile.getint("KERNEL","uid")
             self.gid = self.profile.getint("KERNEL","gid")
+
         
-        self.file_des = []
+        self.file_des = QlFileDes([0] * 256)
         self.dict_posix_syscall = dict()
         self.dict_posix_onEnter_syscall = dict()
         self.dict_posix_onExit_syscall = dict()
@@ -47,7 +49,6 @@ class QlOsPosix(QlOs):
         self.syscall_name = None
 
         if self.ql.ostype in QL_POSIX:
-            self.file_des = [0] * 256
             self.file_des[0] = self.stdin
             self.file_des[1] = self.stdout
             self.file_des[2] = self.stderr
