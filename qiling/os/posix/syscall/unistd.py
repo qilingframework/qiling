@@ -104,6 +104,13 @@ def ql_syscall_setgid(ql, *args, **kw):
     ql.os.definesyscall_return(regreturn)
 
 
+def ql_syscall_setgid32(ql, *args, **kw):
+    GID = ql.os.gid
+    ql.nprint("setgid32(%i)" % GID)
+    regreturn = GID
+    ql.os.definesyscall_return(regreturn)    
+
+
 def ql_syscall_setuid(ql, *args, **kw):
     UID = ql.os.uid
     ql.nprint("setuid(%i)" % UID)
