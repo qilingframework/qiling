@@ -97,6 +97,7 @@ def ql_syscall_setsockopt(ql, *args, **kw):
 
 def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, *args, **kw):
     ql.nprint("shutdown(%d, %d)" % (shutdown_fd, shutdown_how))
+    
     if shutdown_fd >=0 and shutdown_fd < 256 and ql.os.fd[shutdown_fd] != 0:
         try:
             ql.os.fd[shutdown_fd].shutdown(shutdown_how)
@@ -227,6 +228,7 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
         try:
             ql.dprint(D_CTNT, "[+] debug send() start")
             tmp_buf = ql.mem.read(send_buf, send_len)
+            
             ql.dprint(D_CTNT, str(ql.os.fd[send_sockfd]))
             ql.dprint(D_CTNT, "[+] fd is " + str(send_sockfd))
             ql.dprint(D_CTNT, "[+] send() CONTENT:")
@@ -235,6 +237,7 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
             ql.dprint(D_CTNT, "[+] send() len is " + str(send_len))
             ql.os.fd[send_sockfd].send(bytes(tmp_buf), send_flags)
             ql.dprint(D_CTNT, str(ql.os.fd[send_sockfd]))
+
             regreturn = send_len
             ql.dprint(D_CTNT, "[+] debug send end")
         except:
