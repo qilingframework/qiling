@@ -245,3 +245,26 @@ class QLCoreUtils(object):
 
         archtype, archmode = ks_convert(archtype)
         return compile_instructions(runcode, archtype, archmode)        
+
+
+class QlFileDes:
+    def __init__(self, init):
+        self.__fds = init
+
+    def __getitem__(self, idx):
+        return self.__fds[idx]
+
+    def __setitem__(self, idx, val):
+        self.__fds[idx] = val
+
+    def __iter__(self):
+        return iter(self.__fds)
+
+    def __repr__(self):
+        return repr(self.__fds)
+    
+    def save(self):
+        return self.__fds
+
+    def restore(self, fds):
+        self.__fds = fds
