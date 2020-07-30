@@ -5,6 +5,7 @@ This file details the changelog of Qiling Framework.
 
 - Fix Windows "import resource" issue
 - Add ql.save and ql.restore aka Qiling's Snapshot
+- Add ql.os.fd.save() and ql.os.fd.restore() to save file descriptor
 
 
 ------------------------------------
