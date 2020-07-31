@@ -5,7 +5,7 @@
 
 import os, sys, types
 
-from .utils import QLOsUtils, std_has_fileno
+from .utils import QLOsUtils
 from .const import *
 from .filestruct import ql_file
 
