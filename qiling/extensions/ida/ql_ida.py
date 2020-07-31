@@ -15,7 +15,7 @@ class QLIDA:
         for reg, val in registers.items():
             self.ql.reg.__setattr__(reg, val)
 
-    def run(self, begin=1, end=0, registers={}, instruction_hook=None, call_hook=None, memaccess_hook=None, hook_data=None, skip_call=True, timeout=0, count=0):
+    def run(self, begin=1, end=0, registers={}, instruction_hook=None, call_hook=None, memaccess_hook=None, hook_data=None, timeout=0, count=0):
         self._override_registers(registers)
         if instruction_hook:
             self.ql.hook_code(instruction_hook, hook_data)
