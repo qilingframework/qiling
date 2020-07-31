@@ -58,6 +58,9 @@ class ql_socket:
     
     def listen(self, listen_num):
         return self.__socket.listen(listen_num)
+
+    def getsockname(self):
+        return self.__socket.getsockname()
     
     def accept(self):
         con, addr = self.__socket.accept()
