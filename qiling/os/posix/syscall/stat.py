@@ -76,12 +76,12 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
 
 def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
 
-    if ql.os.file_des[fstat64_fd].fstat() == -1:
+    if ql.os.fd[fstat64_fd].fstat() == -1:
         regreturn = 0
 
-    elif fstat64_fd < 256 and ql.os.file_des[fstat64_fd] != 0:
+    elif fstat64_fd < 256 and ql.os.fd[fstat64_fd] != 0:
         user_fileno = fstat64_fd
-        fstat64_info = ql.os.file_des[user_fileno].fstat()
+        fstat64_info = ql.os.fd[user_fileno].fstat()
 
         if ql.archtype== QL_ARCH.ARM64:
             # struct stat is : 80 addr is : 0x4000811bc8
@@ -186,9 +186,9 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
 
 def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
 
-    if fstat_fd < 256 and ql.os.file_des[fstat_fd] != 0:
+    if fstat_fd < 256 and ql.os.fd[fstat_fd] != 0:
         user_fileno = fstat_fd
-        fstat_info = ql.os.file_des[user_fileno].fstat()
+        fstat_info = ql.os.fd[user_fileno].fstat()
 
         if ql.archtype== QL_ARCH.MIPS:
             # pack fstatinfo

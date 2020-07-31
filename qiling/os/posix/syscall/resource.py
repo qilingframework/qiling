@@ -3,7 +3,16 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import resource
+try:
+    import resource
+except ImportError:
+    # The library 'resource' does not exist on windows, so provide a dummy shim
+    class DummyResource:
+        def getrlimit(self, resource):
+            return (-1, -1)
+        def setrlimit(self, resource, rlim):
+            pass
+    resource = DummyResource()
 
 from qiling.const import *
 from qiling.os.linux.thread import *

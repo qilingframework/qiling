@@ -255,3 +255,39 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):
         self.uc.emu_start(begin, end, timeout, count)
+
+
+    # save all qiling instance states
+    def save(self, reg=True, mem=True, fd=False, cpu_context=False):
+        saved_states = {}
+
+        if reg == True:
+            saved_states.update({"reg": self.reg.save()})
+
+        if mem == True:
+            saved_states.update({"mem": self.mem.save()})
+
+        if fd == True: 
+            saved_states.update({"fd": self.os.fd.save()})
+
+        if cpu_context == True:
+            saved_states.update({"cpu_context": self.arch.context_save()})
+
+        return saved_states
+
+
+    # restore states qiling instance from saved_states
+    def restore(self, saved_states):
+        if "cpu_context" in saved_states:
+            self.arch.context_restore(saved_states["cpu_context"])
+
+        if "reg" in saved_states:
+            self.reg.restore(saved_states["reg"])
+
+        if "mem" in saved_states:
+            self.mem.restore(saved_states["mem"])
+        
+        if "fd" in saved_states:
+            self.os.fd.restore(saved_states["fd"])
+
+
