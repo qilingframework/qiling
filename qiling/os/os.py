@@ -5,7 +5,7 @@
 
 import os, sys, types
 
-from .utils import QLOsUtils
+from .utils import QLOsUtils, std_has_fileno
 from .const import *
 from .filestruct import ql_file
 
@@ -16,15 +16,22 @@ class QlOs(QLOsUtils):
         super(QlOs, self).__init__(ql)
         self.ql = ql
         self.ql.uc = self.ql.arch.init_uc
-        self.stdin = ql_file('stdin', sys.stdin.fileno())
-        self.stdout = ql_file('stdout', sys.stdout.fileno())
-        self.stderr = ql_file('stderr', sys.stderr.fileno())
         self.child_processes = False
         self.thread_management = None
         self.current_path = '/'
         self.profile = self.ql.profile
         self.exit_code = 0
         self.pid = self.profile.getint("KERNEL","pid")
+
+        if not std_has_fileno(sys.stdin) or not std_has_fileno(sys.stdout) or not std_has_fileno(sys.stderr):
+            # IDAPython has some hack on standard streams and thus they don't have corresponding fds.
+            self.stdin = sys.stdin
+            self.stdout = sys.stdout
+            self.stderr = sys.stderr
+        else:
+            self.stdin = ql_file('stdin', sys.stdin.fileno())
+            self.stdout = ql_file('stdout', sys.stdout.fileno())
+            self.stderr = ql_file('stderr', sys.stderr.fileno())
 
         if self.ql.stdin != 0:
             self.stdin = self.ql.stdin
