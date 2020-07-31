@@ -259,7 +259,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
 
     # save all qiling instance states
-    def save(self, reg=True, mem=True, fd=False, cpu_context=False, to_file=None):
+    def save(self, reg=True, mem=True, fd=False, cpu_context=False, snapshot=None):
         saved_states = {}
 
         if reg == True:
@@ -274,19 +274,19 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         if cpu_context == True:
             saved_states.update({"cpu_context": self.arch.context_save()})
 
-        if to_file != None:
-            with open(to_file, "wb") as dump_fd:
+        if snapshot != None:
+            with open(snapshot, "wb") as dump_fd:
                 pickle.dump(saved_states, dump_fd)
         else:
             return saved_states
 
 
     # restore states qiling instance from saved_states
-    def restore(self, saved_states=None, from_file=None):
+    def restore(self, saved_states=None, snapshot=None):
 
-        # from_file will be ignored if saved_states is set
-        if saved_states == None and from_file != None:
-            with open(from_file, "rb") as load_fd:
+        # snapshot will be ignored if saved_states is set
+        if saved_states == None and snapshot != None:
+            with open(snapshot, "rb") as load_fd:
                 saved_states = pickle.load(load_fd)
 
         if "cpu_context" in saved_states:
