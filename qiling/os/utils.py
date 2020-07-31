@@ -8,7 +8,6 @@ This module is intended for general purpose functions that are only used in qili
 """
 
 import os, struct, uuid
-import sys
 from json import dumps
 
 from unicorn import *
@@ -380,7 +379,3 @@ class QLOsUtils:
         self.ql.nprint(output)
         self.ql.os.stdout.write(bytes(stdout, 'utf-8'))
         return len(stdout), stdout
-
-# std: stdin/stdout/stderr
-def std_has_fileno(std):
-    return "fileno" in dir(std)
