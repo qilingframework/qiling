@@ -500,7 +500,7 @@ class QlLoaderELF(QlLoader, ELFParse):
                 self.interp_address = int(self.ql.os.profile.get("OS32", "interp_address"), 16)
 
             self.ql.dprint(D_INFO, "[+] interp_address is : 0x%x" % (self.interp_address))
-            self.ql.mem.map(self.interp_address, int(interp_mem_size), info=os.path.abspath(interp_path))
+            self.ql.mem.map(self.interp_address, int(interp_mem_size), info=os.path.abspath(self.ql.rootfs+interp_path))
 
             for i in interp.parse_program_header():
                 if i['p_type'] == PT_LOAD:
