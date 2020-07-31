@@ -275,8 +275,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
             saved_states.update({"cpu_context": self.arch.context_save()})
 
         if snapshot != None:
-            with open(snapshot, "wb") as dump_fd:
-                pickle.dump(saved_states, dump_fd)
+            with open(snapshot, "wb") as save_state:
+                pickle.dump(saved_states, save_state)
         else:
             return saved_states
 
@@ -286,8 +286,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
 
         # snapshot will be ignored if saved_states is set
         if saved_states == None and snapshot != None:
-            with open(snapshot, "rb") as load_fd:
-                saved_states = pickle.load(load_fd)
+            with open(snapshot, "rb") as load_state:
+                saved_states = pickle.load(load_state)
 
         if "cpu_context" in saved_states:
             self.arch.context_restore(saved_states["cpu_context"])
