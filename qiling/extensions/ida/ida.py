@@ -45,10 +45,44 @@ class IDA:
     # corresponds to IDA graph view
     # a good example to iterate the graph
     # https://github.com/idapython/src/blob/bc9b51b1c70083815a574a57b7a783698de3698d/examples/core/dump_flowchart.py
-    # arg can be a function or a (start, end) tuple
+    # arg can be a function or a (start, end) tuple or an address in the function
     @staticmethod
     def get_flowchart(arg):
+        if type(arg) is int:
+            func = IDA.get_function(arg)
+            if func is None:
+                return None
+            return ida_gdl.FlowChart(func)
         return ida_gdl.FlowChart(arg)
+
+    @staticmethod
+    def block_is_terminating(bb):
+        # fcb_ret: has a retn instruction in the end
+        # fcb_noret: in most cases, exit() is called
+        # fcb_indjump: jmp $eax
+        if (bb.type == ida_gdl.fcb_ret or bb.type == ida_gdl.fcb_noret or
+                (bb.type == ida_gdl.fcb_indjump and len(list(bb.succs())) == 0)):
+            return True
+        for b in bb.succs():
+            if b.type == ida_gdl.fcb_extern:
+                return True
+        return False
+
+    @staticmethod
+    def get_starting_block(addr):
+        flowchart = IDA.get_flowchart(addr)
+        if flowchart is None:
+            return None
+        func = IDA.get_function(addr)
+        for bb in flowchart:
+            if bb.start_ea == func.start_ea:
+                return bb
+        return None
+    
+    @staticmethod
+    def get_terminating_blocks(addr):
+        flowchart = IDA.get_flowchart(addr)
+        return [bb for bb in flowchart if IDA.block_is_terminating(bb)]
 
     @staticmethod
     def get_segments():
