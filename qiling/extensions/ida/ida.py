@@ -56,6 +56,14 @@ class IDA:
         return ida_gdl.FlowChart(arg)
 
     @staticmethod
+    def get_block(addr):
+        flowchart = IDA.get_flowchart(addr)
+        for bb in flowchart:
+            if bb.start_ea <= addr and addr < bb.end_ea:
+                return bb
+        return None
+
+    @staticmethod
     def block_is_terminating(bb):
         # fcb_ret: has a retn instruction in the end
         # fcb_noret: in most cases, exit() is called
