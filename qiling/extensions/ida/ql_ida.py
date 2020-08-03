@@ -1,8 +1,10 @@
 from .ida import IDA
 from qiling import Qiling
-from qiling.const import arch_map
+from qiling.const import arch_map, QL_ARCH, QL_OS
 from unicorn import *
 from copy import deepcopy
+
+call_instructions = ["call", "bl", "blx", "blr", "blx", "blr", "blxeq", "bleq", "blreq", "j", "jr", "jalr", "jal"]
 
 class QLIDA:
     def __init__(self, ql):
@@ -11,6 +13,12 @@ class QLIDA:
     @property
     def ql(self):
         return self._ql
+
+    def _skip_instruction(self, ql):
+        pc = ql.reg.arch_pc
+        ql.reg.arch_pc += IDA.get_instruction_size(pc)
+        ql.reg.arch_sp += IDA.get_frame_sp_delta(pc + IDA.get_instruction_size(pc))
+
 
     def _override_registers(self, registers):
         for reg, val in registers.items():
@@ -32,8 +40,110 @@ class QLIDA:
         _, begin, end = IDA.get_last_selection()
         self.run(begin=begin, end=end, *args, **kwargs)
 
-    def _force_jump_cb(self, ql, addr, size, path):
+    def _retrieve_argv(self, ql):
+        # https://en.wikipedia.org/wiki/X86_calling_conventions
+        if ql.archtype == QL_ARCH.X86:
+            return [ql.arch.stack_read(4*i) for i in range(5)]
+        elif ql.archtype == QL_ARCH.X8664:
+            if ql.ostype in [QL_OS.LINUX, QL_OS.MACOS]:
+                return [
+                    ql.reg.rdi,
+                    ql.reg.rsi,
+                    ql.reg.rdx,
+                    ql.reg.rcx,
+                    ql.reg.r8,
+                    ql.reg.r9
+                ]
+            elif ql.ostype == QL_OS.WINDOWS:
+                return [
+                    ql.reg.rcx,
+                    ql.reg.rdx,
+                    ql.reg.r8,
+                    ql.reg.r9
+                ]
+        elif ql.archtype == QL_ARCH.ARM:
+            return [
+                ql.reg.r0,
+                ql.reg.r1,
+                ql.reg.r2,
+                ql.reg.r3
+            ]
+        elif ql.archtype == QL_ARCH.ARM64:
+            return [
+                ql.reg.x0,
+                ql.reg.x1,
+                ql.reg.x2,
+                ql.reg.x3,
+                ql.reg.x4,
+                ql.reg.x5,
+                ql.reg.x6,
+                ql.reg.x7
+            ]
+        elif ql.archtype == QL_ARCH.MIPS:
+            return [
+                ql.reg.a0,
+                ql.reg.a1,
+                ql.reg.a2,
+                ql.reg.a3
+            ]
+        return None
+
+    def _force_jump_cb(self, ql, addr, size, cbs):
         self._ida_dprint(f"Executing: {hex(addr)}")
+        path = self.current_path
+        path_idx = self.path_idx
+        bbstart = path[path_idx].start_ea
+        bbend = path[path_idx].end_ea
+        targethitted  = cbs[0]
+        callhitted = cbs[1]
+
+        # Where is our pc?
+        if addr == bbstart and self.entered is True:
+            if path_idx < len(path) - 1:
+                ql.reg.arch_pc = path[path_idx+1].start_ea
+                self.path_idx += 1
+                self.entered = False
+                self._ida_dprint(f"Going to jump out of loop: {hex(addr)}.")
+                return
+            else:
+                self._ida_dprint(f"Target missed in the last loop block: {hex(addr)}.")
+                ql.emu_stop()
+                return
+        elif addr < bbstart or addr > bbend:
+            self._ida_dprint(f"We lost our pc, let's force it to go to the next block")
+            if path_idx >= len(path) - 1:
+                self._ida_dprint(f"Target missed out of block: {hex(addr)}.")
+                ql.emu_stop()
+                return
+            ql.reg.arch_pc = path[path_idx+1].start_ea
+            self.path_idx +=1
+            self.entered = False
+            return
+        
+        # Okay we should in the middle of the block!
+        # Test if we are the first time to enter this block.        
+        if addr == bbstart:
+            self.entered = True
+
+        # We reach our target. Tell the user to handle it and stop emulation.
+        # TODO: Remove visited targets every time.
+        if addr in self.target_xrefs:
+            self._ida_dprint(f"Target reached: {hex(addr)}")
+            argv = self._retrieve_argv(ql)
+            self._ida_dprint(f"argv: {' '.join(map(hex, argv))}")
+            if targethitted:
+                targethitted(self, addr, size, cbs)
+            ql.emu_stop()
+            return
+        
+        # Skip calls.
+        if IDA.get_instruction(addr).lower() in call_instructions:
+            self._ida_dprint(f"Call reached: {hex(addr)}")
+            if callhitted:
+                callhitted(self, addr, size, cbs)
+            self._skip_instruction(ql)
+            return
+
 
     def _search_paths(self, xref):
         def _dfs_impl(cur, path, depth=0):
@@ -68,7 +178,7 @@ class QLIDA:
         return paths_bbs
 
     def _ida_dprint(self, s):
-        self.ql.dprint(1, f"[ida] s\n")
+        self.ql.nprint(f"[ida] {s}\n")
 
     def _debug_print_path(self, path):
         if len(path) == 0:
@@ -79,16 +189,22 @@ class QLIDA:
                 s += f" => {hex(bb.start_ea)}"
         self._ida_dprint(s)
 
-    def run_from_xrefs_functions(self, addr, *args, **kwargs):
-        call_instructions = ["call", "jmp", "bl", "blx", "b", "blr", "j", "jr", "jalr", "jal", "bgtz", "beq", "bne", "blez"]
+    def run_from_xrefs_functions(self, addr, targethitted=None, callhitted=None, *args, **kwargs): 
         xrefsto = IDA.get_xrefsto(addr)
         target_xrefs = [xref for xref in xrefsto if IDA.get_function(xref) is not None and IDA.get_instruction(xref).lower() in call_instructions]
+        self.target_xrefs = target_xrefs
         for xref in target_xrefs:
             paths = self._search_paths(xref)
             for path in paths:
                 self._debug_print_path(path)
-                self.ql.hook_code(self._force_jump_cb, path)
-                self.run(*args, **kwargs)
+                self._ida_dprint(f"Our targets: {' '.join(map(hex, self.target_xrefs))}")
+                if len(path) == 0:
+                    continue
+                self.path_idx = 0
+                self.entered = False
+                self.current_path = path
+                self.ql.hook_code(self._force_jump_cb, [targethitted, callhitted])
+                self.run(begin=path[0].start_ea, *args, **kwargs)
 
 
 
