@@ -129,8 +129,6 @@ class QLIDA:
         # TODO: Remove visited targets every time.
         if addr in self.target_xrefs:
             self._ida_dprint(f"Target reached: {hex(addr)}")
-            argv = self._retrieve_argv(ql)
-            self._ida_dprint(f"argv: {' '.join(map(hex, argv))}")
             if targethitted:
                 targethitted(self, addr, size, cbs)
             ql.emu_stop()
@@ -139,6 +137,8 @@ class QLIDA:
         # Skip calls.
         if IDA.get_instruction(addr).lower() in call_instructions:
             self._ida_dprint(f"Call reached: {hex(addr)}")
+            argv = self._retrieve_argv(ql)
+            self._ida_dprint(f"argv: {' '.join(map(hex, argv))}")
             if callhitted:
                 callhitted(self, addr, size, cbs)
             self._skip_instruction(ql)
@@ -205,8 +205,27 @@ class QLIDA:
                 self.current_path = path
                 self.ql.hook_code(self._force_jump_cb, [targethitted, callhitted])
                 self.run(begin=path[0].start_ea, *args, **kwargs)
+                self.ql.clear_hooks()
+                self.ql.emu_stop()
 
-
+    def run_through_function(self, addr, targethitted=None, callhitted = None, *args, **kwargs):
+        target_addrs = [ IDA.get_prev_head(bb.end_ea) for bb in IDA.get_terminating_blocks(addr)]
+        self._ida_dprint(f"Function target ends: {' '.join(map(hex, target_addrs))}")
+        for addr in target_addrs:
+            self.target_xrefs = [addr]
+            paths = self._search_paths(addr)
+            for path in paths:
+                self._debug_print_path(path)
+                self._ida_dprint(f"Our target: {hex(addr)}")
+                if len(path) == 0:
+                    continue
+                self.path_idx = 0
+                self.entered = False
+                self.current_path = path
+                self.ql.hook_code(self._force_jump_cb, [targethitted, callhitted])
+                self.run(begin=path[0].start_ea, *args, **kwargs)
+                self.ql.clear_hooks()
+                self.ql.emu_stop()
 
     @staticmethod
     def create_qida(fname=[IDA.get_input_file_path()], *args, **kwargs):
