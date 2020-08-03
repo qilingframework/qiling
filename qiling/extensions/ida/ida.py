@@ -165,6 +165,10 @@ class IDA:
         return (idc.get_operand_type(addr, n), idc.get_operand_value(addr, n))
 
     @staticmethod
+    def get_instruction_size(addr):
+        return ida_bytes.get_item_size(addr)
+
+    @staticmethod
     def get_name(addr):
         return ida_name.get_name(addr)
     
