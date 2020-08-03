@@ -16,6 +16,22 @@ class ql_socket:
     def __init__(self, socket):
         self.__fd = socket.fileno()
         self.__socket = socket
+
+    def __getstate__(self, *args, **kwargs):
+
+        _state = self.__dict__.copy()
+
+        _state["_ql_socket__socket"] = {
+                "family": self.__dict__["_ql_socket__socket"].family,
+                "type": self.__dict__["_ql_socket__socket"].type,
+                "proto": self.__dict__["_ql_socket__socket"].proto,
+                "laddr": self.__dict__["_ql_socket__socket"].getsockname(),
+                }
+
+        return _state
+
+    def __setstate__(self, state):
+        self.__dict__ = state
     
     @classmethod
     def open(self, socket_domain, socket_type, socket_protocol, opts=None):

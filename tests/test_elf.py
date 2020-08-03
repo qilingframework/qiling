@@ -129,19 +129,17 @@ class ELFTest(unittest.TestCase):
         ss = None
 
         def dump(ql, *args, **kw):
-            nonlocal ss
-            ss = ql.save(reg=False, mem=True, fd=False, cpu_context=True)
+            ql.save(reg=False, cpu_context=True, snapshot="/tmp/snapshot.bin")
             ql.emu_stop()
 
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello"], "../examples/rootfs/x8664_linux", output= "default")
         X64BASE = int(ql.profile.get("OS64", "load_address"), 16)
         ql.hook_address(dump, X64BASE + 0x1094)
-
         ql.run()
 
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/sleep_hello"], "../examples/rootfs/x8664_linux", output= "debug", verbose=4)
         X64BASE = int(ql.profile.get("OS64", "load_address"), 16)
-        ql.restore(ss)
+        ql.restore(snapshot="/tmp/snapshot.bin")
         begin_point = X64BASE + 0x109e
         end_point = X64BASE + 0x10bc
         ql.run(begin = begin_point, end = end_point)
