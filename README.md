@@ -205,6 +205,7 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 
 #### Key Contributors (in no particular order)
 
+- lazymio
 - kabeor
 - 0ssigeno
 - liba2k
