@@ -10,6 +10,8 @@ if RELEASE:
     # PyQt
     from PyQt5 import QtCore, QtWidgets
     from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
+    # Qiling
+    from qiling import *
 else:
     import sys
     sys.path.append("./idapython3")
@@ -37,19 +39,34 @@ class QLEmuMisc:
 class QLEmuQiling:
     path = get_input_file_path()
     rootfs = None  # FIXME
+    ql = None
 
     def init(self):
         self.path = path
         self.rootfs = rootfs
+        self.ql = ql
 
     def start(self):
-        ql = Qiling(path=[self.path], rootfs=self.rootfs)
+        self.ql = Qiling(path=[self.path], rootfs=self.rootfs)
 
     def run(self, begin=None, end=None):
-        ql.run(begin, end)
+        self.ql.run(begin, end)
+
+    def save(self):
+        self.ql.save(reg=True, mem=True, cpu_context=True, snapshot='./qlEmu_save.bin')
+    
+    def load(self):
+        self.ql.restore(snapshot='./qlEmu_save.bin')
+
+    def get_ql(self):
+        return self.ql
+
+    def remove_ql(self):
+        del self.ql
 
 
 class QLEmuPlugin(plugin_t, UI_Hooks):
+    ### ida plugin data
     popup_menu_hook = None
 
     flags = PLUGIN_KEEP # PLUGIN_HIDE
@@ -59,10 +76,10 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     wanted_name = "qlEmu"
     wanted_hotkey = ""
 
-
     def __init__(self):
         super(QLEmuPlugin, self).__init__()
         self.plugin_name = "qlEmu"
+        self.qlemu = None
 
     ### Main Framework
 
@@ -80,8 +97,10 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         print('run')
         self.register_menu_actions()
         self.attach_main_menu_actions()
+        self.qlemu = QLEmuQiling()
 
     def term(self):
+        self.qlemu.remove_ql()
         self.unhook_ui_actions()
         self.detach_main_menu_actions()
         self.unregister_menu_actions()
@@ -89,12 +108,22 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     ### Actions
 
+    def qlstart(self):
+        self.qlemu.start()
+
+    def qlrun(self):
+        self.qlemu.run()
+
+    def qlsave(self):
+        self.qlemu.save()
+    
+    def qlload(self):
+        self.qlemu.load()
+
     def unload_plugin(self):
         self.detach_main_menu_actions()
         self.unregister_menu_actions()
-        print('unload success')
-
-    
+        print('unload success')    
 
     ### Menu
     menuitems = []
@@ -113,6 +142,10 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         [x.handler() for x in self.menuitems if x.action == action]
 
     def register_menu_actions(self):
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Start Qiling",               "Start Qiling",              None,                   False   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":run",               self.qlrun,                   "Run Qiling",                 "Run Qiling",                None,                   False   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":save",              self.qlsave,                  "Save Status",                "Save Status",               None,                   False   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":load",              self.qlload,                  "Load Status",                "Load Status",               None,                   False   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":unload",            self.unload_plugin,         "Unload Plugin",              "Unload Plugin",             None,                   False   ))
 
         for item in self.menuitems:
