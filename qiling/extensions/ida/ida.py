@@ -93,6 +93,10 @@ class IDA:
         return [bb for bb in flowchart if IDA.block_is_terminating(bb)]
 
     @staticmethod
+    def get_prev_head(addr, minea=0):
+        return ida_bytes.prev_head(addr, minea)
+
+    @staticmethod
     def get_segments():
         r = []
         seg = ida_segment.get_first_seg()
