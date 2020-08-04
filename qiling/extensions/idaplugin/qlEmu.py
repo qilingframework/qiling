@@ -1,5 +1,16 @@
 import collections
 
+# Qiling
+from qiling import *
+from qiling.const import *
+from qiling.arch.x86_const import reg_map_32 as x86_reg_map_32
+from qiling.arch.x86_const import reg_map_64 as x86_reg_map_64
+from qiling.arch.x86_const import reg_map_misc as x86_reg_map_misc
+from qiling.arch.x86_const import reg_map_st as x86_reg_map_st
+from qiling.arch.arm_const import reg_map as arm_reg_map
+from qiling.arch.arm64_const import reg_map as arm64_reg_map
+from qiling.arch.mips_const import reg_map as mips_reg_map
+
 UseAsScript = True
 RELEASE = True
 if RELEASE:
@@ -10,14 +21,11 @@ if RELEASE:
     # PyQt
     from PyQt5 import QtCore, QtWidgets
     from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
-    # Qiling
-    from qiling import *
+
 else:
     import sys
     sys.path.append("./idapython3")
     from idapython3 import *
-
-    from qiling import *
 
 
 ### View Class
@@ -64,6 +72,36 @@ class QLEmuRegView(simplecustviewer_t):
         arch = ql.arch
         if arch == "":
             return
+        
+        #clear
+        self.ClearLines()
+
+        view_title = COLSTR("Reg value at { ", SCOLOR_AUTOCMT)
+        view_title += COLSTR("0x%X: " % addr, SCOLOR_DREF)
+        # TODO: Add disass should be better
+        view_title += COLSTR(" }", SCOLOR_AUTOCMT)
+        self.AddLine(view_title)
+        self.AddLine("")
+
+        reglist = QLEmuMisc.get_reg_map(ql, arch)
+        lines = len(reglist)
+        line = ""
+        for reg in reglist:
+            cols = 3
+            while cols:
+                line += COLSTR(" %4s: " % str(reg), SCOLOR_REG)
+                regvalue = ql.reg.read(reg)
+                if arch in [QL_ARCH.X8664, QL_ARCH.ARM64]:
+                    value_format = "0x%.16X"
+                else:
+                    value_format = "0x%.8X"
+                line += COLSTR(str(value_format % regvalue), SCOLOR_NUMBER)
+                # TODO: ljust will looks better
+                cols -= 1
+            self.AddLine(line)
+            line = ''
+        self.AddLine(line)
+        self.Refresh()
 
 
     def OnPopupMenu(self, menu_id):
@@ -93,19 +131,38 @@ class QLEmuMisc:
         def update(self, ctx):
             return AST_ENABLE_ALWAYS
 
+    @staticmethod
+    def get_reg_map(ql:Qiling, arch):
+        tables = {
+            QL_ARCH.X86     : list({**x86_reg_map_32, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
+            QL_ARCH.X8664   : list({**x86_reg_map_64, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
+            QL_ARCH.ARM     : list({**arm_reg_map}.keys()),
+            QL_ARCH.ARM64   : list({**arm64_reg_map}.keys()),
+            QL_ARCH.MIPS    : list({**mips_reg_map}.keys()),
+        }
+
+        if ql.archtype == QL_ARCH.X86:
+            return tables[QL_ARCH.X86]
+        elif ql.archtype == QL_ARCH.X8664:
+            return tables[QL_ARCH.X8664]
+        elif ql.archtype == QL_ARCH.ARM:
+            return tables[QL_ARCH.ARM]
+        elif ql.archtype == QL_ARCH.ARM64:
+            return tables[QL_ARCH.ARM64]
+        elif ql.archtype == QL_ARCH.MIPS:
+            return tables[QL_ARCH.MIPS]
+        else:
+            return []
 
 class QLEmuQiling:
-    path = get_input_file_path()
-    rootfs = None  # FIXME
-    ql = None
-
-    def init(self):
-        self.path = path
-        self.rootfs = rootfs
-        self.ql = ql
+    def __init__(self):
+        self.path = get_input_file_path()
+        self.rootfs = "C:\\Users\\abeok\\Desktop\\Qiling\\qiling\\examples\\rootfs\\arm_linux"  # FIXME
+        self.ql = None
 
     def start(self):
-        self.ql = Qiling(path=[self.path], rootfs=self.rootfs)
+        print('start ql')
+        self.ql = Qiling(filename=[self.path], rootfs=self.rootfs)
 
     def run(self, begin=None, end=None):
         self.ql.run(begin, end)
@@ -120,7 +177,9 @@ class QLEmuQiling:
         return self.ql
 
     def remove_ql(self):
-        del self.ql
+        if self.ql is not None:
+            del self.ql
+            self.ql = None
 
 
 class QLEmuPlugin(plugin_t, UI_Hooks):
@@ -134,10 +193,15 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     wanted_name = "qlEmu"
     wanted_hotkey = ""
 
+    ### view data
+    qlemuregview = None
+
     def __init__(self):
         super(QLEmuPlugin, self).__init__()
         self.plugin_name = "qlEmu"
         self.qlemu = None
+        self.ql = None
+        # self.init()
 
     ### Main Framework
 
@@ -153,9 +217,10 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def run(self, arg = 0):
         print('run')
+        self.qlemu = QLEmuQiling()
+        self.ql = None
         self.register_menu_actions()
         self.attach_main_menu_actions()
-        self.qlemu = QLEmuQiling()
 
     def term(self):
         self.qlemu.remove_ql()
@@ -168,6 +233,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def qlstart(self):
         self.qlemu.start()
+        self.ql = self.qlemu.get_ql()
 
     def qlrun(self):
         self.qlemu.run()
@@ -183,13 +249,17 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         pass
 
     def qlshowregview(self):
-        self.regview = QLEmuRegView(self)
-        self.regview.Create()
-
-        self.regview.Show()
-        self.regview.Refresh()
+        if self.qlemuregview is None:
+            self.regview = QLEmuRegView(self)
+            self.regview.Create()
+            self.regview.SetReg(self.ql.reg.arch_pc, self.ql)
+            self.regview.Show()
+            self.regview.Refresh()
 
     def unload_plugin(self):
+        if self.ql is not None:
+            self.ql = None
+            self.qlemu.remove_ql()
         self.detach_main_menu_actions()
         self.unregister_menu_actions()
         print('unload success')    
@@ -211,13 +281,13 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         [x.handler() for x in self.menuitems if x.action == action]
 
     def register_menu_actions(self):
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Start Qiling",               "Start Qiling",              None,                   False   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":run",               self.qlrun,                   "Run Qiling",                 "Run Qiling",                None,                   False   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Start Qiling",               "Start Qiling",              None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":run",               self.qlrun,                   "Run Qiling",                 "Run Qiling",                None,                   True   ))
         
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reg view",          self.qlshowregview,           "Reg View",                   "Reg View",                  None,                   False   ))     
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reg view",          self.qlshowregview,           "Reg View",                   "Reg View",                  None,                   True   ))     
         
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":save",              self.qlsave,                  "Save Status",                "Save Status",               None,                   False   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":load",              self.qlload,                  "Load Status",                "Load Status",               None,                   False   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":save",              self.qlsave,                  "Save Status",                "Save Status",               None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":load",              self.qlload,                  "Load Status",                "Load Status",               None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":unload",            self.unload_plugin,           "Unload Plugin",              "Unload Plugin",             None,                   False   ))
 
         for item in self.menuitems:
@@ -235,7 +305,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         for item in self.menuitems:
             detach_action_from_menu("Edit/Plugins/" + self.plugin_name + "/" + item.title, item.action)
 
-    # --- POPUP MENU
+    ### POPUP MENU
 
     def hook_ui_actions(self):
         self.popup_menu_hook = self
@@ -250,7 +320,18 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def finish_populating_widget_popup(self, widget, popup_handle):
         if get_widget_type(widget) == BWN_DISASM:
             for item in self.menuitems:
+                if item.popup:
                     attach_action_to_popup(widget, popup_handle, item.action, self.plugin_name + "/")
+
+    ### close view
+    def close_reg_view(self):
+        self.qlemuregview = None
+    
+    def update_views(self, addr, ql):
+        if self.qlemuregview is not None:
+            self.qlemuregview.SetReg(addr, ql)
+
+        
 
 
 def PLUGIN_ENTRY():
