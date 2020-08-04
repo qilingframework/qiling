@@ -356,9 +356,6 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.hook_ui_actions()
         return PLUGIN_KEEP
 
-    def run(self, arg):
-        print('run with arg: '+ arg)
-
     def run(self, arg = 0):
         print('run')
         self.qlemu = QLEmuQiling()
@@ -381,6 +378,11 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def qlrun(self):
         self.qlemu.run()
+
+    def qlruntohere(self):
+        curr_addr = get_screen_ea()
+        self.qlemu.run(end=curr_addr)
+        SetColor(curr_addr, CIC_ITEM, 0x00B3CBFF)
 
     def qlsave(self):
         self.qlemu.save()
@@ -427,7 +429,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                         self.ql.mem.write(self.ql.mem.align(mem_addr), b"\x00"*mem_size)
                     elif ok == 1:
                         # TODO: map_binary
-                        pass
+                        return
                     else:
                         return
                 self.qlemumemview[mem_addr] = QLEmuMemView(self, mem_addr, mem_size)
@@ -466,10 +468,11 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def register_menu_actions(self):
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Start Qiling",               "Start Qiling",              None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":run",               self.qlrun,                   "Run Qiling",                 "Run Qiling",                None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.qlruntohere,             "Run To Here",                "Run To This Address",       None,                   True   ))
         
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reg view",          self.qlshowregview,           "Reg View",                   "Reg View",                  None,                   True   ))     
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":stack view",        self.qlshowstackview,         "Stack View",                 "Stack View",                None,                   True   ))  
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":memory view",       self.qlshowmemview,         "Mem View",                   "Mem View",                  None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":memory view",       self.qlshowmemview,           "Mem View",                   "Mem View",                  None,                   True   ))
 
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":save",              self.qlsave,                  "Save Status",                "Save Status",               None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":load",              self.qlload,                  "Load Status",                "Load Status",               None,                   True   ))
