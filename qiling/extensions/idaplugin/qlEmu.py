@@ -69,7 +69,7 @@ class QLEmuRegView(simplecustviewer_t):
         return True
 
     def SetReg(self, addr, ql:Qiling):
-        arch = ql.arch
+        arch = ql.archtype
         if arch == "":
             return
         
@@ -83,7 +83,7 @@ class QLEmuRegView(simplecustviewer_t):
         self.AddLine(view_title)
         self.AddLine("")
 
-        reglist = QLEmuMisc.get_reg_map(ql, arch)
+        reglist = QLEmuMisc.get_reg_map(ql)
         lines = len(reglist)
         line = ""
         for reg in reglist:
@@ -113,6 +113,146 @@ class QLEmuRegView(simplecustviewer_t):
             self.hooks.unhook()
             self.hooks = None
 
+class QLEmuStackView(simplecustviewer_t):
+    def __init__(self, owner):
+        super(QLEmuStackView, self).__init__()
+        self.owner = owner
+
+    def Create(self):
+        title = "QL Stack View"
+        if not simplecustviewer_t.Create(self, title):
+            return False
+        return True
+
+    def SetStack(self, ql:Qiling):
+        self.ClearLines()
+        if ql is None:
+            return
+        
+        sp = ql.reg.arch_sp
+        self.AddLine('')
+        self.AddLine(COLSTR('  Stack at 0x%X' % sp, SCOLOR_AUTOCMT))
+        self.AddLine('')
+
+        arch = ql.archtype
+        if arch == "":
+            return
+
+        reg_bit_size = ql.ql_get_arch_bits(arch)
+        reg_byte_size = reg_bit_size // 8
+        value_format = '% .16X' if reg_bit_size == 64 else '% .8X'
+
+        for i in range(-30, 30):
+            clr = SCOLOR_DREF if i < 0 else SCOLOR_INSN
+            cur_addr = (sp + i * reg_byte_size)
+            line = ('  ' + value_format + ': ') % cur_addr
+            try:
+                value = ql.mem.read(cur_addr, reg_byte_size)
+                value, = struct.unpack('Q' if reg_bit_size == 64 else 'I', value)
+                line += value_format % value
+            except Exception:
+                line += '?' * reg_byte_size * 2
+
+            self.AddLine(COLSTR(line, clr))  
+
+    def OnClose(self):
+        self.owner.close_stack_view()
+
+class QLEmuMemView(simplecustviewer_t):
+    def __init__(self, owner, addr, size):
+        super(QLEmuMemView, self).__init__()
+        self.owner = owner
+        self.viewid = addr
+        self.addr = addr
+        self.size = size
+        self.lastContent = []
+
+    def Create(self, title):
+        if not simplecustviewer_t.Create(self, title):
+            return False
+        return True
+
+    def SetMem(self, ql:Qiling):
+        self.ClearLines()
+
+        if ql is None:
+            return
+
+        try:
+            memory = ql.mem.read(self.addr, self.size)
+        except:
+            return
+
+        size = len(memory)
+
+        view_title = COLSTR("  Memory at [ ", SCOLOR_AUTOCMT)
+        view_title += COLSTR("0x%X: %d byte(s)" % (self.addr, size), SCOLOR_DREF)
+        view_title += COLSTR(" ]", SCOLOR_AUTOCMT)
+        self.AddLine(str(view_title))
+        self.AddLine("")
+        self.AddLine(COLSTR("                0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F", SCOLOR_AUTOCMT))
+
+        startAddress = self.addr
+        line = ""
+        chars = ""
+        get_char = lambda byte: chr(byte) if 0x20 <= byte <= 0x7E else '.'
+
+        if size != 0:
+            for x in range(size):
+                if x%16==0:
+                    line += COLSTR(" %.12X: " % startAddress, SCOLOR_AUTOCMT)
+                if len(self.lastContent) == len(memory):
+                    if memory[x] != self.lastContent[x]:
+                        line += COLSTR(str("%.2X " % memory[x]), SCOLOR_VOIDOP)
+                        chars += COLSTR(get_char(memory[x]), SCOLOR_VOIDOP)
+                    else:
+                        line += COLSTR(str("%.2X " % memory[x]), SCOLOR_NUMBER)
+                        chars += COLSTR(get_char(memory[x]), SCOLOR_NUMBER)
+                else:
+                    line += COLSTR(str("%.2X " % memory[x]), SCOLOR_NUMBER)
+                    chars += COLSTR(get_char(memory[x]), SCOLOR_NUMBER)
+
+                if (x+1)%16==0:
+                    line += "  " + chars
+                    self.AddLine(line)
+                    startAddress += 16
+                    line = ""
+                    chars = ""
+
+            # add padding
+            tail = 16 - size%16
+            if tail != 0:
+                for x in range(tail): line += "   "
+                line += "  " + chars
+                self.AddLine(line)
+
+        self.Refresh()
+        self.lastContent = memory
+
+    def OnClose(self):
+        self.owner.close_mem_view(self.viewid)
+
+
+### Dialog Class
+class QLEmuMemDialog(Form):
+    def __init__(self):
+        Form.__init__(self, r"""STARTITEM {id:mem_addr}
+BUTTON YES* Add
+BUTTON CANCEL Cancel
+Show Memory Range
+Specify start address and size of new memory range.
+<##Address\::{mem_addr}> <##Size\::{mem_size}>
+<##Comment\::{mem_cmnt}>
+""", {
+        'mem_addr': Form.NumericInput(swidth=20, tp=Form.FT_HEX),
+        'mem_size': Form.NumericInput(swidth=10, tp=Form.FT_DEC),
+        'mem_cmnt': Form.StringInput(swidth=41)
+        })
+
+
+
+
+### Misc
 
 class QLEmuMisc:
     MenuItem = collections.namedtuple("MenuItem", ["action", "handler", "title", "tooltip", "shortcut", "popup"])
@@ -132,7 +272,7 @@ class QLEmuMisc:
             return AST_ENABLE_ALWAYS
 
     @staticmethod
-    def get_reg_map(ql:Qiling, arch):
+    def get_reg_map(ql:Qiling):
         tables = {
             QL_ARCH.X86     : list({**x86_reg_map_32, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
             QL_ARCH.X8664   : list({**x86_reg_map_64, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
@@ -154,6 +294,8 @@ class QLEmuMisc:
         else:
             return []
 
+### Qiling
+
 class QLEmuQiling:
     def __init__(self):
         self.path = get_input_file_path()
@@ -162,7 +304,7 @@ class QLEmuQiling:
 
     def start(self):
         print('start ql')
-        self.ql = Qiling(filename=[self.path], rootfs=self.rootfs)
+        self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug")
 
     def run(self, begin=None, end=None):
         self.ql.run(begin, end)
@@ -181,6 +323,7 @@ class QLEmuQiling:
             del self.ql
             self.ql = None
 
+### Plugin
 
 class QLEmuPlugin(plugin_t, UI_Hooks):
     ### ida plugin data
@@ -195,13 +338,14 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     ### view data
     qlemuregview = None
+    qlemustackview = None
+    qlemumemview = {}
 
     def __init__(self):
         super(QLEmuPlugin, self).__init__()
         self.plugin_name = "qlEmu"
         self.qlemu = None
         self.ql = None
-        # self.init()
 
     ### Main Framework
 
@@ -256,6 +400,45 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             self.regview.Show()
             self.regview.Refresh()
 
+    def qlshowstackview(self):
+        if self.qlemustackview is None:
+            self.stackview = QLEmuStackView(self)
+            self.stackview.Create()
+            self.stackview.SetStack(self.ql)
+            self.stackview.Show()
+            self.stackview.Refresh()
+
+    def qlshowmemview(self, addr=0x0, size=0x100):
+        memdialog = QLEmuMemDialog()
+        memdialog.Compile()
+        memdialog.mem_addr.value = addr
+        memdialog.mem_size.value = size
+        ok = memdialog.Execute()
+        if ok == 1:
+            mem_addr = memdialog.mem_addr.value
+            mem_size = memdialog.mem_size.value
+            mem_cmnt = memdialog.mem_cmnt.value
+
+            if mem_addr not in self.qlemumemview:
+                if not self.ql.mem.is_mapped(mem_addr, mem_size):
+                    ok = ask_yn(1, "Memory [%X:%X] is not mapped!\nDo you want to map it?\n   YES - Load Binary\n   NO - Fill page with zeroes\n   Cancel - Close dialog" % (mem_addr, mem_addr + mem_size))
+                    if ok == 0:
+                        self.ql.mem.map(mem_addr, mem_size)
+                        self.ql.mem.write(self.ql.mem.align(mem_addr), b"\x00"*mem_size)
+                    elif ok == 1:
+                        # TODO: map_binary
+                        pass
+                    else:
+                        return
+                self.qlemumemview[mem_addr] = QLEmuMemView(self, mem_addr, mem_size)
+                if mem_cmnt == []:
+                    self.qlemumemview[mem_addr].Create("QL Memory")
+                else:
+                    self.qlemumemview[mem_addr].Create("QL Memory [ " + mem_cmnt + " ]")
+                self.qlemumemview[mem_addr].SetMem(self.ql)
+            self.qlemumemview[mem_addr].Show()
+            self.qlemumemview[mem_addr].Refresh()
+
     def unload_plugin(self):
         if self.ql is not None:
             self.ql = None
@@ -285,7 +468,9 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":run",               self.qlrun,                   "Run Qiling",                 "Run Qiling",                None,                   True   ))
         
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reg view",          self.qlshowregview,           "Reg View",                   "Reg View",                  None,                   True   ))     
-        
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":stack view",        self.qlshowstackview,         "Stack View",                 "Stack View",                None,                   True   ))  
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":memory view",       self.qlshowmemview,         "Mem View",                   "Mem View",                  None,                   True   ))
+
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":save",              self.qlsave,                  "Save Status",                "Save Status",               None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":load",              self.qlload,                  "Load Status",                "Load Status",               None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":unload",            self.unload_plugin,           "Unload Plugin",              "Unload Plugin",             None,                   False   ))
@@ -326,10 +511,23 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     ### close view
     def close_reg_view(self):
         self.qlemuregview = None
+
+    def close_stack_view(self):
+        self.qlemustackview = None
     
+    def close_mem_view(self, viewid):
+        del self.qlemumemview[viewid]
+
+
     def update_views(self, addr, ql):
         if self.qlemuregview is not None:
             self.qlemuregview.SetReg(addr, ql)
+
+        if self.qlemustackview is not None:
+            self.qlemustackview.SetReg(self.ql)
+
+        for id in self.qlemumemview:
+            self.qlemumemview[id].SetMem(self.ql)
 
         
 
