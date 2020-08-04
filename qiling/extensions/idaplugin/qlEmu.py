@@ -19,6 +19,63 @@ else:
 
     from qiling import *
 
+
+### View Class
+class QLEmuRegView(simplecustviewer_t):
+    def __init__(self, owner):
+        super(QLEmuRegView, self).__init__()
+        self.hooks = None
+
+    def Create(self):
+        title = "QL Reg View"
+        if not simplecustviewer_t.Create(self, title):
+            return False
+
+        self.menu_update = 1
+
+        class Hooks(UI_Hooks):
+            class PopupActionHandler(action_handler_t):
+                def __init__(self, owner, menu_id):
+                    action_handler_t.__init__(self)
+                    self.owner = owner
+                    self.menu_id = menu_id
+
+                def activate(self, ctx):
+                    self.owner.OnPopupMenu(self.menu_id)
+
+                def update(self, ctx):
+                    return AST_ENABLE_ALWAYS
+
+            def __init__(self, form):
+                UI_Hooks.__init__(self)
+                self.form = form
+
+            def finish_populating_widget_popup(self, widget, popup):
+                if self.form.title == get_widget_title(widget):
+                    attach_dynamic_action_to_popup(widget, popup, action_desc_t(None, "Change Reg", self.PopupActionHandler(self.form, self.form.menu_update),  None, None, -1))     
+        
+        if self.hooks is None:
+            self.hooks = Hooks(self)
+            self.hooks.hook()
+
+        return True
+
+    def SetReg(self, addr, ql:Qiling):
+        arch = ql.arch
+        if arch == "":
+            return
+
+
+    def OnPopupMenu(self, menu_id):
+        if menu_id == self.menu_update:
+            self.owner.qlchangreg()
+
+    def OnClose(self):
+        if self.hooks:
+            self.hooks.unhook()
+            self.hooks = None
+
+
 class QLEmuMisc:
     MenuItem = collections.namedtuple("MenuItem", ["action", "handler", "title", "tooltip", "shortcut", "popup"])
     class menu_action_handler(action_handler_t):
@@ -35,6 +92,7 @@ class QLEmuMisc:
         # This action is always available.
         def update(self, ctx):
             return AST_ENABLE_ALWAYS
+
 
 class QLEmuQiling:
     path = get_input_file_path()
@@ -120,6 +178,17 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def qlload(self):
         self.qlemu.load()
 
+    def qlchangreg(self):
+        # TODO
+        pass
+
+    def qlshowregview(self):
+        self.regview = QLEmuRegView(self)
+        self.regview.Create()
+
+        self.regview.Show()
+        self.regview.Refresh()
+
     def unload_plugin(self):
         self.detach_main_menu_actions()
         self.unregister_menu_actions()
@@ -144,9 +213,12 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def register_menu_actions(self):
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Start Qiling",               "Start Qiling",              None,                   False   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":run",               self.qlrun,                   "Run Qiling",                 "Run Qiling",                None,                   False   ))
+        
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reg view",          self.qlshowregview,           "Reg View",                   "Reg View",                  None,                   False   ))     
+        
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":save",              self.qlsave,                  "Save Status",                "Save Status",               None,                   False   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":load",              self.qlload,                  "Load Status",                "Load Status",               None,                   False   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":unload",            self.unload_plugin,         "Unload Plugin",              "Unload Plugin",             None,                   False   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":unload",            self.unload_plugin,           "Unload Plugin",              "Unload Plugin",             None,                   False   ))
 
         for item in self.menuitems:
             self.register_new_action(item.action, item.title, QLEmuMisc.menu_action_handler(self, item.action), item.shortcut, item.tooltip,  -1)
