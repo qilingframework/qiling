@@ -77,6 +77,9 @@ class ql_socket:
 
     def getsockname(self):
         return self.__socket.getsockname()
+        
+    def getpeername(self):
+        return self.__socket.getpeername()
     
     def accept(self):
         con, addr = self.__socket.accept()
