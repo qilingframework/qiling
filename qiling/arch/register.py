@@ -13,6 +13,7 @@ class QlRegisterManager():
     """
     def __init__(self, ql):
         self.register_mapping = {}
+        self.reverse_mapping = {}
         self.ql = ql
         self.uc_pc = 0
         self.uc_sp = 0
@@ -116,9 +117,8 @@ class QlRegisterManager():
 
 
     def get_reg_name(self, uc_reg_name):
-        return self.register_mapping.get(uc_reg_name, None)
+        return self.reverse_mapping.get(uc_reg_name, None)
 
 
     def create_reverse_mapping(self):
-        reversed_mapping = {v:k for k, v in self.register_mapping.items()}
-        self.expand_mapping(reversed_mapping)
+        self.reverse_mapping = {v:k for k, v in self.register_mapping.items()}
