@@ -53,7 +53,7 @@ class QlArchX86(QlArch):
     # get register big, mostly use for x86    
     def get_reg_bit(self, register):
         if type(register) == str:
-            register = self.ql.reg.get_reg_name(register)
+            register = self.ql.reg.get_uc_reg(register)
         if register in ({v for k, v in reg_map_32.items()}):
             return 32 
 
@@ -111,7 +111,8 @@ class QlArchX8664(QlArch):
     # get register big, mostly use for x86  
     def get_reg_bit(self, register):
         if type(register) == str:
-            register = self.ql.reg.get_reg_name(register)
+            register = self.ql.reg.get_uc_reg(register)
+
         if register in ({v for k, v in reg_map_64.items()}):
             return 64
         else:

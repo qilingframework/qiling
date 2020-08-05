@@ -116,8 +116,8 @@ class QlRegisterManager():
         return self.ql.uc.reg_write(self.uc_sp, value)
 
 
-    def get_reg_name(self, uc_reg_name):
-        return self.reverse_mapping.get(uc_reg_name, None)
+    def get_uc_reg(self, uc_reg_name):
+        return self.register_mapping.get(uc_reg_name, None)
 
 
     def create_reverse_mapping(self):
