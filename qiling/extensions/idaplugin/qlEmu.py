@@ -10,6 +10,7 @@ from qiling.arch.x86_const import reg_map_st as x86_reg_map_st
 from qiling.arch.arm_const import reg_map as arm_reg_map
 from qiling.arch.arm64_const import reg_map as arm64_reg_map
 from qiling.arch.mips_const import reg_map as mips_reg_map
+from qiling.utils import ql_get_arch_bits
 
 UseAsScript = True
 RELEASE = True
@@ -138,7 +139,7 @@ class QLEmuStackView(simplecustviewer_t):
         if arch == "":
             return
 
-        reg_bit_size = ql.ql_get_arch_bits(arch)
+        reg_bit_size = ql_get_arch_bits(arch)
         reg_byte_size = reg_bit_size // 8
         value_format = '% .16X' if reg_bit_size == 64 else '% .8X'
 
@@ -247,10 +248,42 @@ Specify start address and size of new memory range.
         'mem_addr': Form.NumericInput(swidth=20, tp=Form.FT_HEX),
         'mem_size': Form.NumericInput(swidth=10, tp=Form.FT_DEC),
         'mem_cmnt': Form.StringInput(swidth=41)
-        })
+    })
 
+class QLEmuRootfsDialog(Form):
+    def __init__(self):
+        Form.__init__(self, r"""STARTITEM {id:path_name}
+BUTTON YES* Select
+BUTTON CANCEL Cancel
+Rootfs Path
+<#Select Rootfs to open#Path\::{path_name}>
+""", {
+        'path_name': Form.DirInput(swidth=50)
+    })
 
+class QLEmuSaveDialog(Form):
+    def __init__(self):
+        Form.__init__(self, r"""STARTITEM {id:path_name}
+BUTTON YES* Save
+BUTTON CANCEL Cancel
+Save Path
+<#Save to#Path\::{path_name}>
+<#Save Name#Name\::{file_name}>
+""", {
+        'path_name': Form.DirInput(swidth=50),
+        'file_name': Form.StringInput(swidth=50)
+    })    
 
+class QLEmuLoadDialog(Form):
+    def __init__(self):
+        Form.__init__(self, r"""STARTITEM {id:file_name}
+BUTTON YES* Load
+BUTTON CANCEL Cancel
+Load File
+<#Load From#File\::{file_name}>
+""", {
+        'file_name': Form.FileInput(swidth=50, open=True)
+    })   
 
 ### Misc
 
@@ -299,7 +332,7 @@ class QLEmuMisc:
 class QLEmuQiling:
     def __init__(self):
         self.path = get_input_file_path()
-        self.rootfs = "C:\\Users\\abeok\\Desktop\\Qiling\\qiling\\examples\\rootfs\\arm_linux"  # FIXME
+        self.rootfs = None
         self.ql = None
 
     def start(self):
@@ -310,10 +343,31 @@ class QLEmuQiling:
         self.ql.run(begin, end)
 
     def save(self):
-        self.ql.save(reg=True, mem=True, cpu_context=True, snapshot='./qlEmu_save.bin')
+        savedlg = QLEmuSaveDialog()
+        savedlg.Compile()
+
+        if savedlg.Execute() != 1:
+            return False
+
+        savepath = savedlg.path_name.value
+        savename = savedlg.file_name.value
+
+        self.ql.save(reg=True, mem=True, cpu_context=True, snapshot=savepath+'/'+savename)
+        print('Save to '+savepath+'/'+savename)
+        return True
     
     def load(self):
-        self.ql.restore(snapshot='./qlEmu_save.bin')
+        loaddlg = QLEmuLoadDialog()
+        loaddlg.Compile()
+
+        if loaddlg.Execute() != 1:
+            return False
+
+        loadname = loaddlg.file_name.value
+
+        self.ql.restore(snapshot=loadname)
+        print('Restore from '+loadname)
+        return True
 
     def get_ql(self):
         return self.ql
@@ -352,7 +406,6 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def init(self):
         # init data
         print('init qlEmu plugin')
-        self.register_menu_actions()
         self.hook_ui_actions()
         return PLUGIN_KEEP
 
@@ -373,8 +426,14 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     ### Actions
 
     def qlstart(self):
-        self.qlemu.start()
-        self.ql = self.qlemu.get_ql()
+        self.qlsetrootfs()
+        show_wait_box("QL Processing")
+        try:
+            self.qlemu.start()
+            self.ql = self.qlemu.get_ql()
+        finally:
+            hide_wait_box()
+            print("QL Init Finish")
 
     def qlrun(self):
         self.qlemu.run()
@@ -382,13 +441,15 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def qlruntohere(self):
         curr_addr = get_screen_ea()
         self.qlemu.run(end=curr_addr)
-        SetColor(curr_addr, CIC_ITEM, 0x00B3CBFF)
+        set_color(curr_addr, CIC_ITEM, 0x00B3CBFF)
 
     def qlsave(self):
-        self.qlemu.save()
-    
+        if self.qlemu.save() != True:
+            print('Save Fail')
+
     def qlload(self):
-        self.qlemu.load()
+        if self.qlemu.load() != True:
+            print('Load Fail')
 
     def qlchangreg(self):
         # TODO
@@ -410,7 +471,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             self.stackview.Show()
             self.stackview.Refresh()
 
-    def qlshowmemview(self, addr=0x0, size=0x100):
+    def qlshowmemview(self, addr=0x0, size=0x10):
         memdialog = QLEmuMemDialog()
         memdialog.Compile()
         memdialog.mem_addr.value = addr
@@ -439,7 +500,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                     self.qlemumemview[mem_addr].Create("QL Memory [ " + mem_cmnt + " ]")
                 self.qlemumemview[mem_addr].SetMem(self.ql)
             self.qlemumemview[mem_addr].Show()
-            self.qlemumemview[mem_addr].Refresh()
+            self.qlemumemview[mem_addr].Refresh() 
 
     def unload_plugin(self):
         if self.ql is not None:
@@ -448,6 +509,23 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.detach_main_menu_actions()
         self.unregister_menu_actions()
         print('unload success')    
+
+    ### Dialog
+
+    def qlsetrootfs(self):
+        rootfsdlg = QLEmuRootfsDialog()
+        rootfsdlg.Compile()
+
+        if rootfsdlg.Execute() != 1:
+            return False
+
+        rootfspath = rootfsdlg.path_name.value
+        if self.qlemu is not None:
+            self.qlemu.rootfs = rootfspath
+            return True
+        return False    
+
+
 
     ### Menu
     menuitems = []
