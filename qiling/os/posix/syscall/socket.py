@@ -273,10 +273,8 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
             ql.dprint(D_CTNT, "%s" % str(tmp_buf))
             ql.dprint(D_CTNT, "[+] send() flag is " + str(send_flags))
             ql.dprint(D_CTNT, "[+] send() len is " + str(send_len))
-            ql.os.fd[send_sockfd].send(bytes(tmp_buf), send_flags)
+            regreturn = ql.os.fd[send_sockfd].send(bytes(tmp_buf), send_flags)
             ql.dprint(D_CTNT, str(ql.os.fd[send_sockfd]))
-
-            regreturn = send_len
             ql.dprint(D_CTNT, "[+] debug send end")
         except:
             ql.nprint(sys.exc_info()[0])
