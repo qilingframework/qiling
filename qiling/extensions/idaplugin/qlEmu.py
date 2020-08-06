@@ -103,8 +103,6 @@ class QLEmuRegView(simplecustviewer_t):
             line = ''
         self.AddLine(line)
         self.Refresh()
-        print('setreg')
-
 
     def OnPopupMenu(self, menu_id):
         if menu_id == self.menu_update:
@@ -403,6 +401,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.ql = None
         self.stepflag = True
         self.stephook = None
+        self.qlinit = False
 
     ### Main Framework
 
@@ -428,112 +427,162 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     ### Actions
 
     def qlstart(self):
-        self.qlsetrootfs()
-        show_wait_box("QL Processing")
-        try:
-            self.qlemu.start()
-        finally:
-            hide_wait_box()
-            print("QL Init Finish")
-            print(self.qlemu, self.qlemu.ql)
+        if self.qlemu is None:
+            self.qlemu = QLEmuQiling()
+        if self.qlsetrootfs():
+            print('set rootfs success')
+            show_wait_box("QL Processing")
+            try:
+                self.qlemu.start()
+                self.qlinit = True
+            finally:
+                hide_wait_box()
+                print("QL Init Finish")
 
-    def qlrun(self):
-        self.qlemu.run()
+    def qlcontinue(self):
+        if self.qlinit:
+            if self.qlemu.status is not None:
+                self.qlemu.ql.restore(self.qlemu.status)
+            pathhook = self.qlemu.ql.hook_code(self.qlpathhook)
+            self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
+            self.qlemu.ql.hook_del(pathhook)
+        else:
+            print('Please Start Qiling First')
 
     def qlruntohere(self):
-        curr_addr = get_screen_ea()
-        self.qlemu.run(end=curr_addr)
-        set_color(curr_addr, CIC_ITEM, 0x00B3CBFF)
-        self.qlemu.status = self.qlemu.ql.save()
+        if self.qlinit:
+            curr_addr = get_screen_ea()
+            self.qlemu.run(end=curr_addr)
+            set_color(curr_addr, CIC_ITEM, 0x00B3CBFF)
+            self.qlemu.status = self.qlemu.ql.save()
+        else:
+            print('Please Start Qiling First')
 
     def qlstep(self):
-        self.stepflag = True
-        self.qlemu.ql.restore(saved_states=self.qlemu.status)
-        self.stephook = self.qlemu.ql.hook_code(callback=self.qlstephook)
-        self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
+        if self.qlinit:
+            self.stepflag = True
+            self.qlemu.ql.restore(saved_states=self.qlemu.status)
+            self.stephook = self.qlemu.ql.hook_code(callback=self.qlstephook)
+            self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
+        else:
+            print('Please Start Qiling First')       
 
     def qlsave(self):
-        if self.qlemu.save() != True:
-            print('Save Fail')
+        if self.qlinit:
+            if self.qlemu.save() != True:
+                print('Save Fail')
+        else:
+            print('Please Start Qiling First')   
 
     def qlload(self):
-        if self.qlemu.load() != True:
-            print('Load Fail')
+        if self.qlinit:
+            if self.qlemu.load() != True:
+                print('Load Fail')
+        else:
+            print('Please Start Qiling First')   
 
     def qlchangreg(self):
         # TODO
         pass
 
+    def qlreset(self):
+        if self.qlinit:
+            self.qlclose()
+            self.qlemu = QLEmuQiling()
+            self.qlstart()
+        else:
+            print('Please Start Qiling First')
+
+    def qlclose(self):
+        if self.qlinit:
+            self.qlemu.remove_ql()
+            del self.qlemu
+            self.qlemu = None
+            self.qlinit = False
+            print('Qiling Closed')
+        else:
+            print('Qiling Is Not Starting Now')
+
     def qlshowregview(self):
-        if self.qlemuregview is None:
-            self.qlemuregview = QLEmuRegView(self)
-            self.qlemuregview.Create()
-            self.qlemuregview.SetReg(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
-            self.qlemuregview.Show()
-            self.qlemuregview.Refresh()
+        if self.qlinit:
+            if self.qlemuregview is None:
+                self.qlemuregview = QLEmuRegView(self)
+                self.qlemuregview.Create()
+                self.qlemuregview.SetReg(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+                self.qlemuregview.Show()
+                self.qlemuregview.Refresh()
+        else:
+            print('Please Start Qiling First')   
 
     def qlshowstackview(self):
-        if self.qlemustackview is None:
-            self.qlemustackview = QLEmuStackView(self)
-            self.qlemustackview.Create()
-            self.qlemustackview.SetStack(self.qlemu.ql)
-            self.qlemustackview.Show()
-            self.qlemustackview.Refresh()
+        if self.qlinit:
+            if self.qlemustackview is None:
+                self.qlemustackview = QLEmuStackView(self)
+                self.qlemustackview.Create()
+                self.qlemustackview.SetStack(self.qlemu.ql)
+                self.qlemustackview.Show()
+                self.qlemustackview.Refresh()
+        else:
+            print('Please Start Qiling First')  
 
     def qlshowmemview(self, addr=get_screen_ea, size=0x10):
-        memdialog = QLEmuMemDialog()
-        memdialog.Compile()
-        memdialog.mem_addr.value = addr
-        memdialog.mem_size.value = size
-        ok = memdialog.Execute()
-        if ok == 1:
-            mem_addr = memdialog.mem_addr.value
-            mem_size = memdialog.mem_size.value
-            mem_cmnt = memdialog.mem_cmnt.value
+        if self.qlinit:
+            memdialog = QLEmuMemDialog()
+            memdialog.Compile()
+            memdialog.mem_addr.value = addr
+            memdialog.mem_size.value = size
+            ok = memdialog.Execute()
+            if ok == 1:
+                mem_addr = memdialog.mem_addr.value
+                mem_size = memdialog.mem_size.value
+                mem_cmnt = memdialog.mem_cmnt.value
 
-            if mem_addr not in self.qlemumemview:
-                if not self.qlemu.ql.mem.is_mapped(mem_addr, mem_size):
-                    ok = ask_yn(1, "Memory [%X:%X] is not mapped!\nDo you want to map it?\n   YES - Load Binary\n   NO - Fill page with zeroes\n   Cancel - Close dialog" % (mem_addr, mem_addr + mem_size))
-                    if ok == 0:
-                        self.qlemu.ql.mem.map(mem_addr, mem_size)
-                        self.qlemu.ql.mem.write(self.qlemu.ql.mem.align(mem_addr), b"\x00"*mem_size)
-                    elif ok == 1:
-                        # TODO: map_binary
-                        return
+                if mem_addr not in self.qlemumemview:
+                    if not self.qlemu.ql.mem.is_mapped(mem_addr, mem_size):
+                        ok = ask_yn(1, "Memory [%X:%X] is not mapped!\nDo you want to map it?\n   YES - Load Binary\n   NO - Fill page with zeroes\n   Cancel - Close dialog" % (mem_addr, mem_addr + mem_size))
+                        if ok == 0:
+                            self.qlemu.ql.mem.map(mem_addr, mem_size)
+                            self.qlemu.ql.mem.write(self.qlemu.ql.mem.align(mem_addr), b"\x00"*mem_size)
+                        elif ok == 1:
+                            # TODO: map_binary
+                            return
+                        else:
+                            return
+                    self.qlemumemview[mem_addr] = QLEmuMemView(self, mem_addr, mem_size)
+                    if mem_cmnt == []:
+                        self.qlemumemview[mem_addr].Create("QL Memory")
                     else:
-                        return
-                self.qlemumemview[mem_addr] = QLEmuMemView(self, mem_addr, mem_size)
-                if mem_cmnt == []:
-                    self.qlemumemview[mem_addr].Create("QL Memory")
-                else:
-                    self.qlemumemview[mem_addr].Create("QL Memory [ " + mem_cmnt + " ]")
-                self.qlemumemview[mem_addr].SetMem(self.qlemu.ql)
-            self.qlemumemview[mem_addr].Show()
-            self.qlemumemview[mem_addr].Refresh() 
+                        self.qlemumemview[mem_addr].Create("QL Memory [ " + mem_cmnt + " ]")
+                    self.qlemumemview[mem_addr].SetMem(self.qlemu.ql)
+                self.qlemumemview[mem_addr].Show()
+                self.qlemumemview[mem_addr].Refresh() 
+        else:
+            print('Please Start Qiling First')  
 
     def unload_plugin(self):
         heads = Heads(get_segm_start(get_screen_ea()), get_segm_end(get_screen_ea()))
         for i in heads:
             set_color(i, CIC_ITEM, 0xFFFFFF)
-        if self.ql is not None:
-            self.ql = None
-            self.qlemu.remove_ql()
+        self.qlclose()
         self.detach_main_menu_actions()
         self.unregister_menu_actions()
         print('unload success')    
 
+
     ### Hook
     def qlstephook(self, ql, addr, size):
         self.stepflag = not self.stepflag
-        print(self.stepflag, addr) 
+        print(hex(addr)) 
         if self.stepflag:
-            set_color(ql.reg.arch_pc, CIC_ITEM, 0x00B3CBFF)
+            set_color(ql.reg.arch_pc, CIC_ITEM, 0x00FFD700)
             self.update_views(ql.reg.arch_pc, ql)
             ql.os.stop()
             self.qlemu.status = ql.save()
             self.qlemu.ql.hook_del(self.stephook)
             jumpto(ql.reg.arch_pc)
 
+    def qlpathhook(self, ql, addr, size):
+        set_color(ql.reg.arch_pc, CIC_ITEM, 0x007FFFAA)
 
     ### Dialog
 
@@ -549,7 +598,6 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.rootfs = rootfspath
             return True
         return False    
-
 
 
     ### Menu
@@ -570,9 +618,12 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def register_menu_actions(self):
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Start Qiling",               "Start Qiling",              None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":run",               self.qlrun,                   "Run Qiling",                 "Run Qiling",                None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runfromhere",       self.qlcontinue,              "Run From PC",                "Run From PC",               None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.qlruntohere,             "Run To Here",                "Run To This Address",       None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":step",              self.qlstep,                  "Step",                       "Step",                      None,                   True   ))
+        
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reset",              self.qlreset,                "Restart Qiling",             "Restart Qiling",            None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":close",              self.qlclose,                "Close Qiling",               "Close Qiling",              None,                   True   ))
 
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reg view",          self.qlshowregview,           "Reg View",                   "Reg View",                  None,                   True   ))     
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":stack view",        self.qlshowstackview,         "Stack View",                 "Stack View",                None,                   True   ))  
@@ -580,7 +631,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":save",              self.qlsave,                  "Save Status",                "Save Status",               None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":load",              self.qlload,                  "Load Status",                "Load Status",               None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":unload",            self.unload_plugin,           "Unload Plugin",              "Unload Plugin",             None,                   False   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":unload",            self.unload_plugin,           "Unload Plugin",              "Unload Plugin",             None,                   False  ))
 
         for item in self.menuitems:
             self.register_new_action(item.action, item.title, QLEmuMisc.menu_action_handler(self, item.action), item.shortcut, item.tooltip,  -1)
@@ -615,7 +666,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                 if item.popup:
                     attach_action_to_popup(widget, popup_handle, item.action, self.plugin_name + "/")
 
-    ### close view
+    ### Close view
     def close_reg_view(self):
         self.qlemuregview = None
 
@@ -625,9 +676,17 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def close_mem_view(self, viewid):
         del self.qlemumemview[viewid]
 
+    def close_all_views(self):
+        if self.qlemuregview is not None:
+            self.qlemuregview.Close()
+        if self.qlemustackview is not None:
+            self.qlemustackview.Close()
+        
+        for viewid in self.qlemumemview:
+            self.qlemumemview[viewid].Close()
+            self.qlemumemview = None
 
     def update_views(self, addr, ql):
-        print(self.qlemuregview)
         if self.qlemuregview is not None:
             self.qlemuregview.SetReg(addr, ql)
 
@@ -636,8 +695,6 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
         for id in self.qlemumemview:
             self.qlemumemview[id].SetMem(self.qlemu.ql)
-
-        
 
 
 def PLUGIN_ENTRY():
