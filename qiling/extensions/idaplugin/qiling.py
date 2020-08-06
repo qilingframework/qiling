@@ -1,3 +1,11 @@
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework Plugin For IDA
+# Built on top of Unicorn emulator (www.unicorn-engine.org)
+
+# Plugin Author: kabeor
+
+UseAsScript = True
+RELEASE = True
+
 import collections
 
 # Qiling
@@ -11,9 +19,8 @@ from qiling.arch.arm_const import reg_map as arm_reg_map
 from qiling.arch.arm64_const import reg_map as arm64_reg_map
 from qiling.arch.mips_const import reg_map as mips_reg_map
 from qiling.utils import ql_get_arch_bits
+from qiling import __version__ as QLVERSION
 
-UseAsScript = True
-RELEASE = True
 if RELEASE:
     # IDA Python SDK
     from idaapi import *
@@ -28,6 +35,9 @@ else:
     sys.path.append("./idapython3")
     from idapython3 import *
 
+QilingHomePage = 'https://www.qiling.io'
+QilingGithubVersion = 'https://raw.githubusercontent.com/qilingframework/qiling/extensions/idaplugin/VERSION_STABLE' # FIXME
+VERSION = '1.0'
 
 ### View Class
 class QLEmuRegView(simplecustviewer_t):
@@ -252,7 +262,7 @@ Specify start address and size of new memory range.
 class QLEmuRootfsDialog(Form):
     def __init__(self):
         Form.__init__(self, r"""STARTITEM {id:path_name}
-BUTTON YES* Select
+BUTTON YES* Start
 BUTTON CANCEL Cancel
 Rootfs Path
 <#Select Rootfs to open#Path\::{path_name}>
@@ -283,6 +293,55 @@ Load File
 """, {
         'file_name': Form.FileInput(swidth=50, open=True)
     })   
+
+class QLEmuAboutDialog(Form):
+    def __init__(self, version):
+        super(QLEmuAboutDialog, self).__init__(
+            r"""STARTITEM 0
+BUTTON YES* Open Qiling Website
+Qiling:: About
+            {FormChangeCb}
+            Qiling IDA plugin v%s, using Qiling Engine v%s.
+            (c) Qiling Team, 2020.
+            Qiling is released under the GPL v2.
+            Find more info at https://www.qiling.io
+            """ %(version, QLVERSION), {
+            'FormChangeCb': self.FormChangeCb(self.OnFormChange),
+            })
+
+        self.Compile()
+
+    # callback to be executed when any form control changed
+    def OnFormChange(self, fid):
+        if fid == -2:   # Goto homepage
+            import webbrowser
+            # open Keypatch homepage in a new tab, if possible
+            webbrowser.open(QilingHomePage, new = 2)
+
+        return 1
+
+class QLEmuUpdateDialog(Form):
+    def __init__(self, version, message):
+        super(QLEmuUpdateDialog, self).__init__(
+            r"""STARTITEM 0
+BUTTON YES* Open Qiling Website
+Qiling:: Check for update
+            {FormChangeCb}
+            Your Qiling is v%s
+            %s
+            """ %(version, message), {
+            'FormChangeCb': self.FormChangeCb(self.OnFormChange),
+            })
+        self.Compile()
+
+    # callback to be executed when any form control changed
+    def OnFormChange(self, fid):
+        if fid == -2:   # Goto homepage
+            import webbrowser
+            # open Keypatch homepage in a new tab, if possible
+            webbrowser.open(QilingHomePage, new = 2)
+
+        return 1
 
 ### Misc
 
@@ -326,6 +385,38 @@ class QLEmuMisc:
         else:
             return []
 
+    @staticmethod
+    def url_download(url):
+        try:
+            from urllib2 import Request, urlopen, URLError, HTTPError
+        except:
+            from urllib.request import Request, urlopen
+            from urllib.error import URLError, HTTPError
+
+        # create the url and the request
+        req = Request(url)
+
+        # Open the url
+        try:
+            # download this URL
+            f = urlopen(req)
+            content = f.read()
+            return (0, content)
+
+        # handle errors
+        except HTTPError as e:
+            # print "HTTP Error:", e.code , url
+            # fail to download this file
+            return (1, None)
+        except URLError as e:
+            # print "URL Error:", e.reason , url
+            # fail to download this file
+            return (1, None)
+        except Exception as e:
+            # fail to save the downloaded file
+            # print("Error:", e)
+            return (2, None)
+
 ### Qiling
 
 class QLEmuQiling:
@@ -337,7 +428,6 @@ class QLEmuQiling:
         self.exit_addr = None
 
     def start(self):
-        print('start ql')
         self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug")
         self.exit_addr = self.ql.os.exit_point
 
@@ -385,8 +475,8 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     flags = PLUGIN_KEEP # PLUGIN_HIDE
     comment = ""
 
-    help = "Qiling emulator"
-    wanted_name = "qlEmu"
+    help = "Qiling Emulator"
+    wanted_name = "Qiling Emulator"
     wanted_hotkey = ""
 
     ### view data
@@ -396,7 +486,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def __init__(self):
         super(QLEmuPlugin, self).__init__()
-        self.plugin_name = "qlEmu"
+        self.plugin_name = "Qiling Emulator"
         self.qlemu = None
         self.ql = None
         self.stepflag = True
@@ -407,13 +497,16 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def init(self):
         # init data
-        print('init qlEmu plugin')
+        print('---------------------------------------------------------------------------------------')
+        print('Qiling Emulator v{0} (c) Plugin For IDA by Qiling Team 2020'.format(VERSION))
+        print('Base on Qiling v{0}'.format(QLVERSION))
+        print('Find more information about Qiling at https://qiling.io')
+        print('---------------------------------------------------------------------------------------')
         self.qlemu = QLEmuQiling()
         self.hook_ui_actions()
         return PLUGIN_KEEP
 
     def run(self, arg = 0):
-        print('run')
         self.register_menu_actions()
         self.attach_main_menu_actions()
 
@@ -422,7 +515,6 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.unhook_ui_actions()
         self.detach_main_menu_actions()
         self.unregister_menu_actions()
-        print('term')
 
     ### Actions
 
@@ -441,13 +533,17 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def qlcontinue(self):
         if self.qlinit:
+            pathhook = None
             if self.qlemu.status is not None:
                 self.qlemu.ql.restore(self.qlemu.status)
-            pathhook = self.qlemu.ql.hook_code(self.qlpathhook)
-            self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
+                pathhook = self.qlemu.ql.hook_code(self.qlpathhook)
+                self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
+            else:
+                pathhook = self.qlemu.ql.hook_code(self.qlpathhook)
+                self.qlemu.run()
             self.qlemu.ql.hook_del(pathhook)
         else:
-            print('Please Start Qiling First')
+            print('Please Setup Qiling First')
 
     def qlruntohere(self):
         if self.qlinit:
@@ -456,7 +552,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             set_color(curr_addr, CIC_ITEM, 0x00B3CBFF)
             self.qlemu.status = self.qlemu.ql.save()
         else:
-            print('Please Start Qiling First')
+            print('Please Setup Qiling First')
 
     def qlstep(self):
         if self.qlinit:
@@ -465,21 +561,21 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             self.stephook = self.qlemu.ql.hook_code(callback=self.qlstephook)
             self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
         else:
-            print('Please Start Qiling First')       
+            print('Please Setup Qiling First')       
 
     def qlsave(self):
         if self.qlinit:
             if self.qlemu.save() != True:
                 print('Save Fail')
         else:
-            print('Please Start Qiling First')   
+            print('Please Setup Qiling First')   
 
     def qlload(self):
         if self.qlinit:
             if self.qlemu.load() != True:
                 print('Load Fail')
         else:
-            print('Please Start Qiling First')   
+            print('Please Setup Qiling First')   
 
     def qlchangreg(self):
         # TODO
@@ -491,10 +587,13 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu = QLEmuQiling()
             self.qlstart()
         else:
-            print('Please Start Qiling First')
+            print('Please Setup Qiling First')
 
     def qlclose(self):
         if self.qlinit:
+            heads = Heads(get_segm_start(get_screen_ea()), get_segm_end(get_screen_ea()))
+            for i in heads:
+                set_color(i, CIC_ITEM, 0xFFFFFF)
             self.qlemu.remove_ql()
             del self.qlemu
             self.qlemu = None
@@ -568,6 +667,37 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.unregister_menu_actions()
         print('unload success')    
 
+    def qlmenunull(self):
+        pass
+
+    def qlabout(self):
+        self.aboutdlg = QLEmuAboutDialog(VERSION)
+        self.aboutdlg.Execute()
+        self.aboutdlg.Free()
+
+    def qlcheckupdate(self):
+        (r, content) = QLEmuMisc.url_download(QilingGithubVersion)
+        content = to_string(content)
+        if r == 0:
+            # find stable version
+            sig = 'VERSION_STABLE = "'
+            tmp = content[content.find(sig)+len(sig):]
+            version_stable = tmp[:tmp.find('"')]
+
+            # compare with the current version
+            if version_stable == VERSION:
+                self.updatedlg = QLEmuUpdateDialog(VERSION, "Good, you are already on the latest stable version!")
+                self.updatedlg.Execute()
+                self.updatedlg.Free()
+            else:
+                self.updatedlg = QLEmuUpdateDialog(VERSION, "Download latest stable version {0} from https://github.com/qilingframework/qiling/blob/master/qiling/extensions/idaplugin".format(version_stable))
+                self.updatedlg.Execute()
+                self.updatedlg.Free()
+        else:
+            # fail to download
+            warning("ERROR: Qiling failed to connect to internet (Github). Try again later.")
+            print("Qiling: FAILED to connect to Github to check for latest update. Try again later.")
+ 
 
     ### Hook
     def qlstephook(self, ql, addr, size):
@@ -617,21 +747,26 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         [x.handler() for x in self.menuitems if x.action == action]
 
     def register_menu_actions(self):
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Start Qiling",               "Start Qiling",              None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runfromhere",       self.qlcontinue,              "Run From PC",                "Run From PC",               None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.qlruntohere,             "Run To Here",                "Run To This Address",       None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":step",              self.qlstep,                  "Step",                       "Step",                      None,                   True   ))
-        
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reset",              self.qlreset,                "Restart Qiling",             "Restart Qiling",            None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":close",              self.qlclose,                "Close Qiling",               "Close Qiling",              None,                   True   ))
-
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reg view",          self.qlshowregview,           "Reg View",                   "Reg View",                  None,                   True   ))     
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":stack view",        self.qlshowstackview,         "Stack View",                 "Stack View",                None,                   True   ))  
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":memory view",       self.qlshowmemview,           "Mem View",                   "Mem View",                  None,                   True   ))
-
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":save",              self.qlsave,                  "Save Status",                "Save Status",               None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":load",              self.qlload,                  "Load Status",                "Load Status",               None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":unload",            self.unload_plugin,           "Unload Plugin",              "Unload Plugin",             None,                   False  ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Setup",                      "Setup",                     None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runfromhere",       self.qlcontinue,              "Continue",                   "Continue",                  None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.qlruntohere,             "Break",                      "Break",                     None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":step",              self.qlstep,                  "Step",                       "Step (CTRL+SHIFT+F9)",      "CTRL+SHIFT+F9",             True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reset",             self.qlreset,                 "Restart",                    "Restart Qiling",            None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":close",             self.qlclose,                 "Close",                      "Close Qiling",              None,                   False  ))
+        self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reg view",          self.qlshowregview,           "View Register",              "View Register",             None,                   True   ))     
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":stack view",        self.qlshowstackview,         "View Stack",                 "View Stack",                None,                   True   ))  
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":memory view",       self.qlshowmemview,           "View Memory",                "View Memory",               None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":save",              self.qlsave,                  "Save snapshot",              "Save Snapshot",             None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":load",              self.qlload,                  "Load snapshot",              "Load Snapshot",             None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))
+        if not RELEASE:
+            self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":unload",            self.unload_plugin,           "Unload Plugin",              "Unload Plugin",             None,                   False  ))
+            self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   False  ))  
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":about",             self.qlabout,                 "About",                      "About",                     None,                   False  ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":checkupdate",       self.qlcheckupdate,           "Check Update",               "Check Update",              None,                   False  ))
 
         for item in self.menuitems:
             self.register_new_action(item.action, item.title, QLEmuMisc.menu_action_handler(self, item.action), item.shortcut, item.tooltip,  -1)
@@ -653,7 +788,6 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def hook_ui_actions(self):
         self.popup_menu_hook = self
         self.popup_menu_hook.hook()
-        print('hook')
 
     def unhook_ui_actions(self):
         if self.popup_menu_hook != None:
@@ -698,7 +832,8 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
 
 def PLUGIN_ENTRY():
-    return QLEmuPlugin()
+    qlEmu = QLEmuPlugin()
+    return qlEmu
 
 if UseAsScript:
     if __name__ == "__main__":
