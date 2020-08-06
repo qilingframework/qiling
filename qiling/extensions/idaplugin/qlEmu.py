@@ -103,6 +103,7 @@ class QLEmuRegView(simplecustviewer_t):
             line = ''
         self.AddLine(line)
         self.Refresh()
+        print('setreg')
 
 
     def OnPopupMenu(self, menu_id):
@@ -334,10 +335,13 @@ class QLEmuQiling:
         self.path = get_input_file_path()
         self.rootfs = None
         self.ql = None
+        self.status = None
+        self.exit_addr = None
 
     def start(self):
         print('start ql')
         self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug")
+        self.exit_addr = self.ql.os.exit_point
 
     def run(self, begin=None, end=None):
         self.ql.run(begin, end)
@@ -369,9 +373,6 @@ class QLEmuQiling:
         print('Restore from '+loadname)
         return True
 
-    def get_ql(self):
-        return self.ql
-
     def remove_ql(self):
         if self.ql is not None:
             del self.ql
@@ -400,19 +401,20 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.plugin_name = "qlEmu"
         self.qlemu = None
         self.ql = None
+        self.stepflag = True
+        self.stephook = None
 
     ### Main Framework
 
     def init(self):
         # init data
         print('init qlEmu plugin')
+        self.qlemu = QLEmuQiling()
         self.hook_ui_actions()
         return PLUGIN_KEEP
 
     def run(self, arg = 0):
         print('run')
-        self.qlemu = QLEmuQiling()
-        self.ql = None
         self.register_menu_actions()
         self.attach_main_menu_actions()
 
@@ -430,10 +432,10 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         show_wait_box("QL Processing")
         try:
             self.qlemu.start()
-            self.ql = self.qlemu.get_ql()
         finally:
             hide_wait_box()
             print("QL Init Finish")
+            print(self.qlemu, self.qlemu.ql)
 
     def qlrun(self):
         self.qlemu.run()
@@ -442,6 +444,13 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         curr_addr = get_screen_ea()
         self.qlemu.run(end=curr_addr)
         set_color(curr_addr, CIC_ITEM, 0x00B3CBFF)
+        self.qlemu.status = self.qlemu.ql.save()
+
+    def qlstep(self):
+        self.stepflag = True
+        self.qlemu.ql.restore(saved_states=self.qlemu.status)
+        self.stephook = self.qlemu.ql.hook_code(callback=self.qlstephook)
+        self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
 
     def qlsave(self):
         if self.qlemu.save() != True:
@@ -457,21 +466,21 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def qlshowregview(self):
         if self.qlemuregview is None:
-            self.regview = QLEmuRegView(self)
-            self.regview.Create()
-            self.regview.SetReg(self.ql.reg.arch_pc, self.ql)
-            self.regview.Show()
-            self.regview.Refresh()
+            self.qlemuregview = QLEmuRegView(self)
+            self.qlemuregview.Create()
+            self.qlemuregview.SetReg(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+            self.qlemuregview.Show()
+            self.qlemuregview.Refresh()
 
     def qlshowstackview(self):
         if self.qlemustackview is None:
-            self.stackview = QLEmuStackView(self)
-            self.stackview.Create()
-            self.stackview.SetStack(self.ql)
-            self.stackview.Show()
-            self.stackview.Refresh()
+            self.qlemustackview = QLEmuStackView(self)
+            self.qlemustackview.Create()
+            self.qlemustackview.SetStack(self.qlemu.ql)
+            self.qlemustackview.Show()
+            self.qlemustackview.Refresh()
 
-    def qlshowmemview(self, addr=0x0, size=0x10):
+    def qlshowmemview(self, addr=get_screen_ea, size=0x10):
         memdialog = QLEmuMemDialog()
         memdialog.Compile()
         memdialog.mem_addr.value = addr
@@ -483,11 +492,11 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             mem_cmnt = memdialog.mem_cmnt.value
 
             if mem_addr not in self.qlemumemview:
-                if not self.ql.mem.is_mapped(mem_addr, mem_size):
+                if not self.qlemu.ql.mem.is_mapped(mem_addr, mem_size):
                     ok = ask_yn(1, "Memory [%X:%X] is not mapped!\nDo you want to map it?\n   YES - Load Binary\n   NO - Fill page with zeroes\n   Cancel - Close dialog" % (mem_addr, mem_addr + mem_size))
                     if ok == 0:
-                        self.ql.mem.map(mem_addr, mem_size)
-                        self.ql.mem.write(self.ql.mem.align(mem_addr), b"\x00"*mem_size)
+                        self.qlemu.ql.mem.map(mem_addr, mem_size)
+                        self.qlemu.ql.mem.write(self.qlemu.ql.mem.align(mem_addr), b"\x00"*mem_size)
                     elif ok == 1:
                         # TODO: map_binary
                         return
@@ -498,17 +507,33 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                     self.qlemumemview[mem_addr].Create("QL Memory")
                 else:
                     self.qlemumemview[mem_addr].Create("QL Memory [ " + mem_cmnt + " ]")
-                self.qlemumemview[mem_addr].SetMem(self.ql)
+                self.qlemumemview[mem_addr].SetMem(self.qlemu.ql)
             self.qlemumemview[mem_addr].Show()
             self.qlemumemview[mem_addr].Refresh() 
 
     def unload_plugin(self):
+        heads = Heads(get_segm_start(get_screen_ea()), get_segm_end(get_screen_ea()))
+        for i in heads:
+            set_color(i, CIC_ITEM, 0xFFFFFF)
         if self.ql is not None:
             self.ql = None
             self.qlemu.remove_ql()
         self.detach_main_menu_actions()
         self.unregister_menu_actions()
         print('unload success')    
+
+    ### Hook
+    def qlstephook(self, ql, addr, size):
+        self.stepflag = not self.stepflag
+        print(self.stepflag, addr) 
+        if self.stepflag:
+            set_color(ql.reg.arch_pc, CIC_ITEM, 0x00B3CBFF)
+            self.update_views(ql.reg.arch_pc, ql)
+            ql.os.stop()
+            self.qlemu.status = ql.save()
+            self.qlemu.ql.hook_del(self.stephook)
+            jumpto(ql.reg.arch_pc)
+
 
     ### Dialog
 
@@ -547,7 +572,8 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Start Qiling",               "Start Qiling",              None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":run",               self.qlrun,                   "Run Qiling",                 "Run Qiling",                None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.qlruntohere,             "Run To Here",                "Run To This Address",       None,                   True   ))
-        
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":step",              self.qlstep,                  "Step",                       "Step",                      None,                   True   ))
+
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reg view",          self.qlshowregview,           "Reg View",                   "Reg View",                  None,                   True   ))     
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":stack view",        self.qlshowstackview,         "Stack View",                 "Stack View",                None,                   True   ))  
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":memory view",       self.qlshowmemview,           "Mem View",                   "Mem View",                  None,                   True   ))
@@ -601,14 +627,15 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
 
     def update_views(self, addr, ql):
+        print(self.qlemuregview)
         if self.qlemuregview is not None:
             self.qlemuregview.SetReg(addr, ql)
 
         if self.qlemustackview is not None:
-            self.qlemustackview.SetReg(self.ql)
+            self.qlemustackview.SetStack(self.qlemu.ql)
 
         for id in self.qlemumemview:
-            self.qlemumemview[id].SetMem(self.ql)
+            self.qlemumemview[id].SetMem(self.qlemu.ql)
 
         
 
