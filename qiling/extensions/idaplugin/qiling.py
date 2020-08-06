@@ -277,10 +277,8 @@ BUTTON YES* Save
 BUTTON CANCEL Cancel
 Save Path
 <#Save to#Path\::{path_name}>
-<#Save Name#Name\::{file_name}>
 """, {
-        'path_name': Form.DirInput(swidth=50),
-        'file_name': Form.StringInput(swidth=50)
+        'path_name': Form.FileInput(swidth=50, save=True),
     })    
 
 class QLEmuLoadDialog(Form):
@@ -442,10 +440,9 @@ class QLEmuQiling:
             return False
 
         savepath = savedlg.path_name.value
-        savename = savedlg.file_name.value
 
-        self.ql.save(reg=True, mem=True, cpu_context=True, snapshot=savepath+'/'+savename)
-        print('Save to '+savepath+'/'+savename)
+        self.ql.save(reg=True, mem=True, cpu_context=True, snapshot=savepath)
+        print('Save to '+savepath)
         return True
     
     def load(self):
@@ -759,8 +756,8 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":stack view",        self.qlshowstackview,         "View Stack",                 "View Stack",                None,                   True   ))  
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":memory view",       self.qlshowmemview,           "View Memory",                "View Memory",               None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":save",              self.qlsave,                  "Save snapshot",              "Save Snapshot",             None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":load",              self.qlload,                  "Load snapshot",              "Load Snapshot",             None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":save",              self.qlsave,                  "Save Snapshot",              "Save Snapshot",             None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":load",              self.qlload,                  "Load Snapshot",              "Load Snapshot",             None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))
         if not RELEASE:
             self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":unload",            self.unload_plugin,           "Unload Plugin",              "Unload Plugin",             None,                   False  ))
