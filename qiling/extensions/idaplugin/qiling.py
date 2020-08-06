@@ -624,7 +624,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         else:
             print('Please Start Qiling First')  
 
-    def qlshowmemview(self, addr=get_screen_ea, size=0x10):
+    def qlshowmemview(self, addr=get_screen_ea(), size=0x10):
         if self.qlinit:
             memdialog = QLEmuMemDialog()
             memdialog.Compile()
