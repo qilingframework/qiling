@@ -157,9 +157,9 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
 
 
 def ql_syscall_getsockname(ql, sockfd, addr, addrlenptr, *args, **kw):
-    if sockfd < 256 and ql.os.file_des[sockfd] != 0:
-        host, port = ql.os.file_des[sockfd].getsockname()
-        data = struct.pack("<h", int(ql.os.file_des[sockfd].family))
+    if sockfd < 256 and ql.os.fd[sockfd] != 0:
+        host, port = ql.os.fd[sockfd].getsockname()
+        data = struct.pack("<h", int(ql.os.fd[sockfd].family))
         data += struct.pack(">H", port)
         data += ipaddress.ip_address(host).packed
         addrlen = ql.mem.read(addrlenptr, 4)
@@ -174,6 +174,24 @@ def ql_syscall_getsockname(ql, sockfd, addr, addrlenptr, *args, **kw):
   
     ql.os.definesyscall_return(regreturn)  
 
+
+def ql_syscall_getpeername(ql, sockfd, addr, addrlenptr, *args, **kw):
+    if sockfd < 256 and ql.os.fd[sockfd] != 0:
+        host, port = ql.os.fd[sockfd].getpeername()
+        data = struct.pack("<h", int(ql.os.fd[sockfd].family))
+        data += struct.pack(">H", port)
+        data += ipaddress.ip_address(host).packed
+        addrlen = ql.mem.read(addrlenptr, 4)
+        addrlen = ql.unpack32(addrlen)
+        data = data[:addrlen]
+        ql.mem.write(addr, data)
+        regreturn = 0
+    else:
+        regreturn = -1
+
+    ql.nprint("getpeername(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
+  
+    ql.os.definesyscall_return(regreturn)  
 
 
 def ql_syscall_listen(ql, listen_sockfd, listen_backlog, *args, **kw):
@@ -255,10 +273,8 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
             ql.dprint(D_CTNT, "%s" % str(tmp_buf))
             ql.dprint(D_CTNT, "[+] send() flag is " + str(send_flags))
             ql.dprint(D_CTNT, "[+] send() len is " + str(send_len))
-            ql.os.fd[send_sockfd].send(bytes(tmp_buf), send_flags)
+            regreturn = ql.os.fd[send_sockfd].send(bytes(tmp_buf), send_flags)
             ql.dprint(D_CTNT, str(ql.os.fd[send_sockfd]))
-
-            regreturn = send_len
             ql.dprint(D_CTNT, "[+] debug send end")
         except:
             ql.nprint(sys.exc_info()[0])

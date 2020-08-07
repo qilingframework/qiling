@@ -14,7 +14,8 @@ from qiling.utils import *
 
 def ql_syscall_wait4(ql, wait4_pid, wait4_wstatus, wait4_options, wait4_rusage, *args, **kw):
     spid, status, rusage = os.wait4(wait4_pid, wait4_options)
-    ql.mem.write(wait4_wstatus, ql.pack32(status))
+    if wait4_wstatus != 0:
+        ql.mem.write(wait4_wstatus, ql.pack32(status))
     regreturn = spid
     ql.nprint("wait4(%d, %d) = %d"% (wait4_pid, wait4_options, regreturn))
     ql.os.definesyscall_return(regreturn)

@@ -442,7 +442,7 @@ class QLEmuQiling:
         savepath = savedlg.path_name.value
 
         self.ql.save(reg=True, mem=True, cpu_context=True, snapshot=savepath)
-        print('Save to '+savepath)
+        print('Save to ' + savepath)
         return True
     
     def load(self):
@@ -455,7 +455,7 @@ class QLEmuQiling:
         loadname = loaddlg.file_name.value
 
         self.ql.restore(snapshot=loadname)
-        print('Restore from '+loadname)
+        print('Restore from ' + loadname)
         return True
 
     def remove_ql(self):
@@ -495,8 +495,8 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def init(self):
         # init data
         print('---------------------------------------------------------------------------------------')
-        print('Qiling Emulator v{0} (c) Plugin For IDA by Qiling Team 2020'.format(VERSION))
-        print('Base on Qiling v{0}'.format(QLVERSION))
+        print('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2020'.format(VERSION))
+        print('Based on Qiling v{0}'.format(QLVERSION))
         print('Find more information about Qiling at https://qiling.io')
         print('---------------------------------------------------------------------------------------')
         self.qlemu = QLEmuQiling()
@@ -519,14 +519,14 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         if self.qlemu is None:
             self.qlemu = QLEmuQiling()
         if self.qlsetrootfs():
-            print('set rootfs success')
-            show_wait_box("QL Processing")
+            print('Set rootfs success')
+            show_wait_box("Qiling is processing ...")
             try:
                 self.qlemu.start()
                 self.qlinit = True
             finally:
                 hide_wait_box()
-                print("QL Init Finish")
+                print("Qiling initialized done")
 
     def qlcontinue(self):
         if self.qlinit:
@@ -540,7 +540,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemu.run()
             self.qlemu.ql.hook_del(pathhook)
         else:
-            print('Please Setup Qiling First')
+            print('Please setup Qiling first')
 
     def qlruntohere(self):
         if self.qlinit:
@@ -549,7 +549,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             set_color(curr_addr, CIC_ITEM, 0x00B3CBFF)
             self.qlemu.status = self.qlemu.ql.save()
         else:
-            print('Please Setup Qiling First')
+            print('Please setup Qiling first')
 
     def qlstep(self):
         if self.qlinit:
@@ -558,21 +558,21 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             self.stephook = self.qlemu.ql.hook_code(callback=self.qlstephook)
             self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
         else:
-            print('Please Setup Qiling First')       
+            print('Please setup Qiling first')
 
     def qlsave(self):
         if self.qlinit:
             if self.qlemu.save() != True:
-                print('Save Fail')
+                print('ERROR: Save failed')
         else:
-            print('Please Setup Qiling First')   
+            print('Please setup Qiling first')
 
     def qlload(self):
         if self.qlinit:
             if self.qlemu.load() != True:
-                print('Load Fail')
+                print('ERROR: Load failed')
         else:
-            print('Please Setup Qiling First')   
+            print('Please setup Qiling first')
 
     def qlchangreg(self):
         # TODO
@@ -584,7 +584,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu = QLEmuQiling()
             self.qlstart()
         else:
-            print('Please Setup Qiling First')
+            print('Please setup Qiling first')
 
     def qlclose(self):
         if self.qlinit:
@@ -595,9 +595,9 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             del self.qlemu
             self.qlemu = None
             self.qlinit = False
-            print('Qiling Closed')
+            print('Qiling closed')
         else:
-            print('Qiling Is Not Starting Now')
+            print('Qiling is not started')
 
     def qlshowregview(self):
         if self.qlinit:
@@ -608,7 +608,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemuregview.Show()
                 self.qlemuregview.Refresh()
         else:
-            print('Please Start Qiling First')   
+            print('Please start Qiling first')
 
     def qlshowstackview(self):
         if self.qlinit:
@@ -619,7 +619,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemustackview.Show()
                 self.qlemustackview.Refresh()
         else:
-            print('Please Start Qiling First')  
+            print('Please Start Qiling First')
 
     def qlshowmemview(self, addr=get_screen_ea(), size=0x10):
         if self.qlinit:
@@ -653,7 +653,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemumemview[mem_addr].Show()
                 self.qlemumemview[mem_addr].Refresh() 
         else:
-            print('Please Start Qiling First')  
+            print('Please start Qiling first')
 
     def unload_plugin(self):
         heads = Heads(get_segm_start(get_screen_ea()), get_segm_end(get_screen_ea()))
@@ -662,7 +662,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.qlclose()
         self.detach_main_menu_actions()
         self.unregister_menu_actions()
-        print('unload success')    
+        print('Unload successed')
 
     def qlmenunull(self):
         pass
@@ -745,7 +745,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def register_menu_actions(self):
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Setup",                      "Setup",                     None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))        
+        self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.qlruntohere,             "Break",                      "Break",                     None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runfromhere",       self.qlcontinue,              "Continue",                   "Continue",                  None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":step",              self.qlstep,                  "Step",                       "Step (CTRL+SHIFT+F9)",      "CTRL+SHIFT+F9",        True   ))
