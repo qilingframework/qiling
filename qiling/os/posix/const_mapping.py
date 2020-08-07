@@ -37,7 +37,7 @@ def ql_open_flag_mapping(ql, flags):
     def flag_mapping(flags, mapping_name, mapping_from, mapping_to):
         ret = 0
         for n in mapping_name:
-            if mapping_from[n] & (flags & mapping_from[n]) == mapping_from[n]:
+            if  (flags & mapping_from[n]) == mapping_from[n]:
                 ret = ret | mapping_to[n]
         return ret
 
