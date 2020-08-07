@@ -121,7 +121,7 @@ The below Youtube video shows how the above example works.
 
 #### Fuzzing with Qiling Unicornalf
 
-- More information on fuzzing with Qiling Unicornalf can be found [here](https://github.com/qilingframework/qiling/tree/dev/examples/fuzzing/README.md).
+- More information on fuzzing with Qiling Unicornalf can be found [here](https://github.com/qilingframework/qiling/blob/dev/examples/fuzz_example_x64/README.md).
 
 [![qiling DEMO 2: Fuzzing with Qiling Unicornalf](https://raw.githubusercontent.com/qilingframework/qilingframework.github.io/master/images/qilingfzz-s.png)](https://raw.githubusercontent.com/qilingframework/qiling/dev/examples/fuzzing/qilingfzz.png "Demo #2 Fuzzing with Qiling Unicornalf")
 
@@ -205,6 +205,7 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 
 #### Key Contributors (in no particular order)
 
+- lazymio
 - kabeor
 - 0ssigeno
 - liba2k
