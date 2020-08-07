@@ -9,7 +9,7 @@ This module is intended for general purpose functions that are only used in qili
 
 import os, struct, uuid
 from json import dumps
-
+from pathlib import Path
 from unicorn import *
 from unicorn.arm_const import *
 from unicorn.x86_const import *
@@ -79,6 +79,8 @@ class QLOsUtils:
     def transform_to_real_path(self, path):
         from types import FunctionType
 
+        # FIXME: Need a FULL refactor!!!
+
         if self.ql.multithread:
             cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
@@ -87,9 +89,10 @@ class QLOsUtils:
         rootfs = self.ql.rootfs
 
         if path[0] == '/':
-            relative_path = os.path.abspath(path)
+            full_relative_path = path
         else:
-            relative_path = os.path.abspath(cur_path + '/' + path)
+            full_relative_path = cur_path + "/" + path
+        relative_path = str((Path(rootfs) / path[1:]).relative_to(Path(rootfs)))
 
         from_path = None
         to_path = None
@@ -117,7 +120,7 @@ class QLOsUtils:
         else:
             if rootfs is None:
                 rootfs = ""
-            real_path = os.path.abspath(rootfs + '/' + relative_path)
+            real_path = os.path.abspath(Path(rootfs) /  relative_path)
 
             if os.path.islink(real_path):
                 link_path = os.readlink(real_path)
