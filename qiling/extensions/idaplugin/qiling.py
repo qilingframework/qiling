@@ -1,9 +1,9 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework Plugin For IDA
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
-
+# Learn how to use? Please visit https://docs.qiling.io/en/latest/ida/
 # Plugin Author: kabeor
 
-UseAsScript = True
+UseAsScript = False
 RELEASE = True
 
 import collections
@@ -36,7 +36,7 @@ else:
     from idapython3 import *
 
 QilingHomePage = 'https://www.qiling.io'
-QilingGithubVersion = 'https://raw.githubusercontent.com/qilingframework/qiling/extensions/idaplugin/VERSION_STABLE' # FIXME
+QilingGithubVersion = 'https://raw.githubusercontent.com/qilingframework/qiling/dev/qiling/extensions/idaplugin/VERSION_STABLE'
 VERSION = '1.0'
 
 ### View Class
@@ -746,9 +746,9 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def register_menu_actions(self):
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Setup",                      "Setup",                     None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runfromhere",       self.qlcontinue,              "Continue",                   "Continue",                  None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.qlruntohere,             "Break",                      "Break",                     None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":step",              self.qlstep,                  "Step",                       "Step (CTRL+SHIFT+F9)",      "CTRL+SHIFT+F9",             True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runfromhere",       self.qlcontinue,              "Continue",                   "Continue",                  None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":step",              self.qlstep,                  "Step",                       "Step (CTRL+SHIFT+F9)",      "CTRL+SHIFT+F9",        True   ))
         self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reset",             self.qlreset,                 "Restart",                    "Restart Qiling",            None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":close",             self.qlclose,                 "Close",                      "Close Qiling",              None,                   False  ))
