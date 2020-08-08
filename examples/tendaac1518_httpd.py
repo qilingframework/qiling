@@ -51,10 +51,17 @@ def nvram_listener():
         finally:  
                 connection.close() 
 
+
+def myvfork(ql):
+    regreturn = 0
+    ql.nprint("vfork() = %d" % regreturn)
+    ql.os.definesyscall_return(regreturn)
+
+
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, output = "debug")
     ql.add_fs_mapper("/dev/urandom","/dev/urandom")
-    ql.hook_address(patcher ,ql.loader.elf_entry)
+    ql.hook_address(patcher, ql.loader.elf_entry)
     
     # $ gdb-multiarch -q rootfs/bin/httpd 
     # gdb> set remotetimeout 100
