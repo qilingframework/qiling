@@ -14,13 +14,13 @@ def examine_mem(ql, xaddr, count):
 
     for line in range(lines):
         offset = line * 0x10
-        ql.nprint("0x%08x:\t" % (xaddr+offset), end="")
+        print("0x%08x:\t" % (xaddr+offset), end="")
 
         idx = line * 4
         for each in mem_read[idx:idx+4]:
-            ql.nprint("0x%08x\t" % (ql.unpack(each)), end="")
+            print("0x%08x\t" % (ql.unpack(each)), end="")
 
-        ql.nprint()
+        print()
 
 # get terminal window height and width
 def get_terminal_size():
@@ -40,9 +40,9 @@ def _try_read(ql, address, size):
 @contextmanager
 def context_printer(ql, field_name, ruler="="):
     _height, _width = get_terminal_size()
-    ql.nprint(field_name, ruler * (_width - len(field_name) - 1))
+    print(field_name, ruler * (_width - len(field_name) - 1))
     yield
-    ql.nprint(ruler * _width)
+    print(ruler * _width)
 
 
 def context_reg(ql, *args, **kwargs):
@@ -60,9 +60,9 @@ def print_asm(ql, instructions):
     for ins in instructions:
         fmt = (ins.address, ins.mnemonic.ljust(6), ins.op_str)
         if ql.reg.arch_pc == ins.address:
-            ql.nprint("PC ==>  0x%x\t%s %s" % fmt)
+            print("PC ==>  0x%x\t%s %s" % fmt)
         else:
-            ql.nprint("\t0x%x\t%s %s" % fmt)
+            print("\t0x%x\t%s %s" % fmt)
 
 
 def context_asm(ql, address, size, *args, **kwargs):

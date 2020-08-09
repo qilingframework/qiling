@@ -74,7 +74,7 @@ class Qldbg(cmd.Cmd):
         self.breakpoints.update({address: {"hook": _hook, "hitted": False, "temp": _is_temp}})
 
         if _is_temp == False:
-            self._ql.nprint("Breakpoint at 0x%08x" % address)
+            print("Breakpoint at 0x%08x" % address)
 
     def _breakpoint_handler(self, ql, _is_temp=False):
         """
@@ -88,7 +88,7 @@ class Qldbg(cmd.Cmd):
             if self.breakpoints.get(_cur_addr)["hitted"]:
                 return
 
-            self._ql.nprint("hit breakpoint at 0x%08x" % _cur_addr)
+            print("hit breakpoint at 0x%08x" % _cur_addr)
             self.breakpoints.get(_cur_addr)["hitted"] = True
 
         self.do_context()
@@ -173,7 +173,7 @@ class Qldbg(cmd.Cmd):
         """
         if self._ql is not None:
             _cur_addr = self._ql.reg.arch_pc
-            self._ql.nprint("continued from 0x%08x" % _cur_addr)
+            print("continued from 0x%08x" % _cur_addr)
             self.run(_cur_addr)
 
     def do_examine(self, args):
@@ -193,7 +193,7 @@ class Qldbg(cmd.Cmd):
             _count = parse_int(_count)
 
         else:
-            self._ql.nprint("wrong format\nUsage: x ADDRESS [SIZE]")
+            print("wrong format\nUsage: x ADDRESS [SIZE]")
             return
 
         examine_mem(self._ql, _xaddr, _count)
