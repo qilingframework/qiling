@@ -35,7 +35,7 @@ def debug_print_stack(ql, num, message=None):
     if message:
         ql.dprint(D_INFO, "========== %s ==========" % message)
         sp = ql.reg.arch_sp
-        ql.dprint(D_INFO, hex(sp + ql.pointersize * i) + ": " + hex(ql.stack_read(i * ql.pointersize)))
+        ql.dprint(D_INFO, hex(sp + ql.pointersize * num) + ": " + hex(ql.stack_read(num * ql.pointersize)))
 
 
 def is_file_library(string):

@@ -189,7 +189,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.count = count
         
         # init debugger
-        if self.debugger is not None:
+        if self.debugger == True:
             ql_debugger_init(self)
 
         # patch binary
@@ -199,7 +199,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.os.run()
 
         # resume with debugger
-        if self.debugger is not None:
+        if self.debugger == True:
             self.remote_debug.run()
 
 
