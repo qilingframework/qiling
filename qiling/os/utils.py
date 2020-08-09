@@ -92,7 +92,11 @@ class QLOsUtils:
             full_relative_path = path
         else:
             full_relative_path = cur_path + "/" + path
-        relative_path = str((Path(rootfs) / full_relative_path[1:]).relative_to(Path(rootfs)))
+        
+        if full_relative_path.startswith("//"):
+            relative_path = str((Path(rootfs) / full_relative_path[2:]).relative_to(Path(rootfs)))
+        else:    
+            relative_path = str((Path(rootfs) / full_relative_path[1:]).relative_to(Path(rootfs)))
 
         from_path = None
         to_path = None
