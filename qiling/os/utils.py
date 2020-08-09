@@ -93,8 +93,11 @@ class QLOsUtils:
         else:
             full_relative_path = cur_path + "/" + path
         
-        if full_relative_path.startswith("//"):
+        # Temporary work around till we got a new path transformer
+        if full_relative_path.startswith("//") and not full_relative_path.count("PHYSICALDRIVE"):
             relative_path = str((Path(rootfs) / full_relative_path[2:]).relative_to(Path(rootfs)))
+        elif full_relative_path.count("PHYSICALDRIVE") and self.ql.ostype == QL_OS.WINDOWS:
+            relative_path = str((Path(rootfs) / full_relative_path[7:]).relative_to(Path(rootfs)))
         else:    
             relative_path = str((Path(rootfs) / full_relative_path[1:]).relative_to(Path(rootfs)))
 
