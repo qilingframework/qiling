@@ -1,9 +1,26 @@
-import os
+import os, math
 from contextlib import contextmanager
 
 from .utils import dump_stack, dump_regs
 
 
+
+# read data from memory of qiling instance
+def examine_mem(ql, xaddr, count):
+
+    lines = 1 if count <= 4 else math.ceil(count / 4)
+
+    mem_read = [ql.mem.read(xaddr+(offset*4), 4) for offset in range(count)]
+
+    for line in range(lines):
+        offset = line * 0x10
+        ql.nprint("0x%08x:\t" % (xaddr+offset), end="")
+
+        idx = line * 4
+        for each in mem_read[idx:idx+4]:
+            ql.nprint("0x%08x\t" % (ql.unpack(each)), end="")
+
+        ql.nprint()
 
 # get terminal window height and width
 def get_terminal_size():

@@ -3,7 +3,7 @@ import cmd
 from qiling import *
 from qiling.const import *
 from functools import partial
-from .frontend import context_printer, context_reg, context_asm
+from .frontend import context_printer, context_reg, context_asm, examine_mem
 from .utils import parse_int, handle_bnj, color
 
 
@@ -176,15 +176,27 @@ class Qldbg(cmd.Cmd):
             self._ql.nprint("continued from 0x%08x" % _cur_addr)
             self.run(_cur_addr)
 
-    def do_examine(self, xaddr=None, size=4):
+    def do_examine(self, args):
         """
-        examine data of address in qiling memory
+        read data from memory of qiling instance
         """
-        if xaddr:
-            _xaddr = parse_int(xaddr)
-            self._ql.nprint("0x%08x:\t0x%08x" % (_xaddr, self._ql.unpack(self._ql.mem.read(_xaddr, size))))
+
+        _args = args.split()
+
+        if len(_args) == 1:
+            _xaddr = parse_int(_args[0])
+            _count = 1
+
+        elif len(_args) == 2:
+            _xaddr, _count = _args
+            _xaddr = parse_int(_xaddr)
+            _count = parse_int(_count)
+
         else:
-            self._ql.nprint("need address to examine")
+            self._ql.nprint("wrong format\nUsage: x ADDRESS [SIZE]")
+            return
+
+        examine_mem(self._ql, _xaddr, _count)
 
     def do_disassemble(self, address):
         """
