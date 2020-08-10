@@ -4,7 +4,6 @@ from functools import partial
 
 
 
-
 # class for color decoration
 class color:
    CYAN =      '\033[96m'
@@ -105,23 +104,27 @@ def handle_bnj_mips(ql, cur_addr):
                 ]
 
         to_jump = {
-                "j"     : (lambda _: True),             # uncontitional jump
-                "jr"    : (lambda _: True),             # uncontitional jump
-                "jal"   : (lambda _: True),             # uncontitional jump
-                "jalr"  : (lambda _: True),             # uncontitional jump
-                "b"     : (lambda _: True),             # unconditional branch
-                "bl"    : (lambda _: True),             # unconditional branch
-                "bal"   : (lambda _: True),             # unconditional branch
-                "beq"   : (lambda r0, r1, _: r0 == r1), # branch on equal
-                "bne"   : (lambda r0, r1, _: r0 != r1), # branch on not equal
-                "beqz"  : (lambda r, _: r == 0),        # branch on equal to zero
-                "bnez"  : (lambda r, _: r != 0),        # branch on not equal to zero
-                "bgtz"  : (lambda r, _: r > 0),         # branch on greater than zero
-                "bltz"  : (lambda r, _: r < 0),         # branch on less than zero
-                "bltzal": (lambda r, _: r < 0),         # branch on less than zero and link
-                "blez"  : (lambda r, _: r <= 0),        # branch on less than or equal to zero
-                "bgez"  : (lambda r, _: r >= 0),        # branch on greater than or equal to zero
-                "bgezal"  : (lambda r, _: r >= 0),      # branch on greater than or equal to zero and link
+                "j"       : (lambda _: True),             # uncontitional jump
+                "jr"      : (lambda _: True),             # uncontitional jump
+                "jal"     : (lambda _: True),             # uncontitional jump
+                "jalr"    : (lambda _: True),             # uncontitional jump
+                "b"       : (lambda _: True),             # unconditional branch
+                "bl"      : (lambda _: True),             # unconditional branch
+                "bal"     : (lambda _: True),             # unconditional branch
+                "beq"     : (lambda r0, r1, _: r0 == r1), # branch on equal
+                "bne"     : (lambda r0, r1, _: r0 != r1), # branch on not equal
+                "blt"     : (lambda r0, r1, _: r0 < r1),  # branch on r0 less than r1
+                "bgt"     : (lambda r0, r1, _: r0 > r1),  # branch on r0 greater than r1
+                "ble"     : (lambda r0, r1, _: r0 <= r1), # brach on r0 less than or equal to r1
+                "bge"     : (lambda r0, r1, _: r0 >= r1), # branch on r0 greater than or equal to r1
+                "beqz"    : (lambda r, _: r == 0),        # branch on equal to zero
+                "bnez"    : (lambda r, _: r != 0),        # branch on not equal to zero
+                "bgtz"    : (lambda r, _: r > 0),         # branch on greater than zero
+                "bltz"    : (lambda r, _: r < 0),         # branch on less than zero
+                "bltzal"  : (lambda r, _: r < 0),         # branch on less than zero and link
+                "blez"    : (lambda r, _: r <= 0),        # branch on less than or equal to zero
+                "bgez"    : (lambda r, _: r >= 0),        # branch on greater than or equal to zero
+                "bgezal"  : (lambda r, _: r >= 0),        # branch on greater than or equal to zero and link
                 }.get(line.mnemonic, None)(*targets)
 
         if to_jump:
