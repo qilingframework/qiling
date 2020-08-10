@@ -117,7 +117,7 @@ def ql_open_flag_mapping(ql, flags):
         'O_APPEND': 8,
         'O_ASYNC': 2, # Windows doesn't have a corresponding one, assume RW
         'O_SYNC': 2, # Windows doesn't have a corresponding one, assume RW
-        'O_NOFOLLOW': 8, # Windows doesn't have a corresponding one, assume RW
+        'O_NOFOLLOW': 2, # Windows doesn't have a corresponding one, assume RW
         'O_CREAT': 256,
         'O_TRUNC': 512,
         'O_EXCL': 1024,
