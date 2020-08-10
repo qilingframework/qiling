@@ -489,6 +489,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.stepflag = True
         self.stephook = None
         self.qlinit = False
+        self.lastaddr = None
 
     ### Main Framework
 
@@ -699,7 +700,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     ### Hook
     def qlstephook(self, ql, addr, size):
         self.stepflag = not self.stepflag
-        print(hex(addr)) 
+        # print(hex(addr)) 
         if self.stepflag:
             set_color(ql.reg.arch_pc, CIC_ITEM, 0x00FFD700)
             self.update_views(ql.reg.arch_pc, ql)
@@ -710,6 +711,16 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def qlpathhook(self, ql, addr, size):
         set_color(ql.reg.arch_pc, CIC_ITEM, 0x007FFFAA)
+        bp_count = get_bpt_qty()
+        bp_list = []
+        if bp_count > 0:
+            for num in range(0, bp_count):
+                bp_list.append(get_bpt_ea(num))
+            if addr in bp_list and addr != self.lastaddr:
+                ql.os.stop()
+                self.qlemu.status = ql.save()
+                self.lastaddr = addr
+                jumpto(ql.reg.arch_pc)
 
     ### Dialog
 
@@ -746,7 +757,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def register_menu_actions(self):
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Setup",                      "Setup",                     None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))        
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.qlruntohere,             "Break",                      "Break",                     None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.qlruntohere,             "Execute Till",               "Execute Till",              None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runfromhere",       self.qlcontinue,              "Continue",                   "Continue",                  None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":step",              self.qlstep,                  "Step",                       "Step (CTRL+SHIFT+F9)",      "CTRL+SHIFT+F9",        True   ))
         self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))
