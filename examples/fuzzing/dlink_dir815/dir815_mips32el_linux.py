@@ -13,7 +13,7 @@ import unicornafl
 # Make sure Qiling uses our patched unicorn instead of it's own, second so without instrumentation!
 unicornafl.monkeypatch()
 
-sys.path.append("../..")
+sys.path.append("../../..")
 from qiling import *
 
 
