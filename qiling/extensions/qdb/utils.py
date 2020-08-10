@@ -93,95 +93,40 @@ def handle_bnj_mips(ql, cur_addr):
     # default breakpoint address if no jumps and branches here
     ret_addr = cur_addr + MIPS_INST_SIZE
 
-    if line.mnemonic.startswith('j'):
-        op_str = line.op_str
-        ret_addr = read_reg_val(op_str) if '$' in op_str else parse_int(op_str)
-
-    elif line.mnemonic.startswith('b'):
+    if line.mnemonic.startswith('j') or line.mnemonic.startswith('b'):
         # make sure at least delay slot executed
         ret_addr += MIPS_INST_SIZE
 
         # get registers or memory address from op_str
-        targets = line.op_str.split(", ")
+        targets = [
+                _read_reg(ql.reg, each)
+                if '$' in each else parse_int(each)
+                for each in line.op_str.split(", ")
+                ]
 
-        # bracn on equal to zero
-        if line.mnemonic == "beqz":
-            _reg, _addr = targets
+        to_jump = {
+                "j"     : (lambda _: True),             # uncontitional jump
+                "jr"    : (lambda _: True),             # uncontitional jump
+                "jal"   : (lambda _: True),             # uncontitional jump
+                "jalr"  : (lambda _: True),             # uncontitional jump
+                "b"     : (lambda _: True),             # unconditional branch
+                "bl"    : (lambda _: True),             # unconditional branch
+                "bal"   : (lambda _: True),             # unconditional branch
+                "beq"   : (lambda r0, r1, _: r0 == r1), # branch on equal
+                "bne"   : (lambda r0, r1, _: r0 != r1), # branch on not equal
+                "beqz"  : (lambda r, _: r == 0),        # branch on equal to zero
+                "bnez"  : (lambda r, _: r != 0),        # branch on not equal to zero
+                "bgtz"  : (lambda r, _: r > 0),         # branch on greater than zero
+                "bltz"  : (lambda r, _: r < 0),         # branch on less than zero
+                "bltzal": (lambda r, _: r < 0),         # branch on less than zero and link
+                "blez"  : (lambda r, _: r <= 0),        # branch on less than or equal to zero
+                "bgez"  : (lambda r, _: r >= 0),        # branch on greater than or equal to zero
+                "bgezal"  : (lambda r, _: r >= 0),      # branch on greater than or equal to zero and link
+                }.get(line.mnemonic, None)(*targets)
 
-            if read_reg_val(_reg) == 0:
-                ret_addr = parse_int(_addr) 
-
-        # branch on not equal to zero
-        elif line.mnemonic == "bnez":
-            _reg, _addr =  targets
-
-            if read_reg_val(_reg) != 0:
-                ret_addr = parse_int(_addr) 
-
-        # branch on not equal
-        elif line.mnemonic == "bne":
-            _reg0, _reg1, _addr = targets
-
-            v0 = read_reg_val(_reg0)
-            v1 = read_reg_val(_reg1)
-
-            if v1 != v0:
-                ret_addr = parse_int(_addr)
-
-        # branch on equal
-        elif line.mnemonic == "beq":
-            _reg0, _reg1, _addr = targets
-
-            v0 = read_reg_val(_reg0)
-            v1 = read_reg_val(_reg1)
-
-            if v1 == v0:
-                ret_addr = parse_int(_addr)
-
-        # branch on greater than zero
-        elif line.mnemonic == "bgtz":
-            _reg, _addr = targets
-
-            if signed_val(read_reg_val(_reg)) > 0:
-                ret_addr = parse_int(_addr)
-
-        # branch on less than zero
-        elif line.mnemonic == "bltz":
-            _reg, _addr = targets
-
-            if signed_val(read_reg_val(_reg)) < 0:
-                ret_addr = parse_int(_addr)
-
-        # branch on less than zero and link
-        elif line.mnemonic == "bltzal":
-            _reg, _addr = targets
-
-            if signed_val(read_reg_val(_reg)) < 0:
-                ret_addr = parse_int(_addr)
-
-        # branch on less than or equal to zero
-        elif line.mnemonic == "blez":
-            _reg, _addr = targets
-
-            if signed_val(read_reg_val(_reg)) <= 0:
-                ret_addr = parse_int(_addr)
-
-        # branch on greater than or equal to zero
-        elif line.mnemonic == "bgez":
-            _reg, _addr = targets
-
-            if signed_val(read_reg_val(_reg)) >= 0:
-                ret_addr = parse_int(_addr)
-
-        # branch on greater than or equal to zero and link
-        elif line.mnemonic == "bgezal":
-            _reg, _addr = targets
-
-            if signed_val(read_reg_val(_reg)) >= 0:
-                ret_addr = parse_int(_addr)
-
-        else: # unconditional jump
-            ret_addr = parse_int(line.op_str)
+        if to_jump:
+            # target address is always the rightmost one
+            ret_addr = targets[-1]
 
     return ret_addr
 
