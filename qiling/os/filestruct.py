@@ -50,7 +50,7 @@ class ql_file:
         return os.close(self.__fd)
     
     def fstat(self):
-        return os.fstat(self.__fd)
+        return Fstat(self.__fd)
     
     def ioctl(self, ioctl_cmd, ioctl_arg):
         try:
