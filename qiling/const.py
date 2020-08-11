@@ -11,21 +11,20 @@ class QL_ENDIAN(IntEnum):
 
 
 class QL_ARCH(IntEnum):
-    X86 = 1
-    X8664 = 2
-    ARM = 3
-    ARM_THUMB = 4
-    ARM64 = 5
-    MIPS = 6
+    X86 = 101
+    X8664 = 102
+    ARM = 103
+    ARM_THUMB = 104
+    ARM64 = 105
+    MIPS = 106
 
 
 class QL_OS(IntEnum):
-    LINUX = 1
-    FREEBSD = 2
-    MACOS = 3
-    WINDOWS = 4
-    POSIX = 5
-    UEFI = 6
+    LINUX = 201
+    FREEBSD = 202
+    MACOS = 203
+    WINDOWS = 204
+    UEFI = 205
 
 
 class QL_OUTPUT(IntEnum):
@@ -56,7 +55,7 @@ D_DRPT = 5 # Detailed Report, with address
 QL_DEBUGGER_ALL = [QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB]
 QL_ARCH_ALL = [QL_ARCH.X86, QL_ARCH.X8664, QL_ARCH.ARM, QL_ARCH.ARM64, QL_ARCH.MIPS]
 QL_ENDINABLE = [QL_ARCH.MIPS, QL_ARCH.ARM]
-QL_OS_ALL = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.WINDOWS, QL_OS.POSIX, QL_OS.UEFI]
+QL_OS_ALL = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.WINDOWS, QL_OS.UEFI]
 QL_POSIX = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS]
 
 QL_HOOK_BLOCK = 0b1
@@ -81,108 +80,4 @@ os_map = {
         "freebsd": QL_OS.FREEBSD,
         "windows": QL_OS.WINDOWS,
         "uefi": QL_OS.UEFI,
-}
-
-reptypedict = {
-            "BSTR": "POINTER",
-            "DLGPROC": "POINTER",
-            "DWORDLONG": "ULONGLONG",
-            "DWORD_PTR": "POINTER",
-            "GROUP": "INT",
-            "HDC": "POINTER",
-            "HEAP_INFORMATION_CLASS": "UINT",
-            "HGLOBAL": "POINTER",
-            "HHOOK": "POINTER",
-            "HINSTANCE": "HANDLE",
-            "HINTERNET": "POINTER",
-            "HKEY": "HANDLE",
-            "HLOCAL": "POINTER",
-            "HMODULE": "HANDLE",
-            "HOOKPROC": "POINTER",
-            "HRSRC": "POINTER",
-            "HWND": "HANDLE",
-            "INSTALLSTATE": "POINTER",
-            "INTERNET_PORT": "DWORD",
-            "INT_PTR": "POINTER",
-            "LARGE_INTEGER": "POINTER",
-            "LCID": "POINTER",
-            "LONG": "ULONGLONG",
-            "LPARAM": "POINTER",
-            "LPBOOL": "POINTER",
-            "LPBYTE": "POINTER",
-            "LPCCH": "POINTER",
-            "LPCONTEXT": "POINTER",
-            "LPCPINFO": "POINTER",
-            "LPCRITICAL_SECTION": "POINTER",
-            "LPCSTR": "STRING",
-            "LPCVOID": "POINTER",
-            "LPCWCH": "POINTER",
-            "LPCWSTR": "WSTRING",
-            "LPDWORD": "POINTER",
-            "LPFILETIME": "POINTER",
-            "LPINTERNET_BUFFERSA": "POINT",
-            "LPMESSAGEFILTER": "POINTER",
-            "LPMODULEINFO": "POINTER",
-            "LPNLSVERSIONINFO": "POINTER",
-            "LPOSVERSIONINFOA": "STRING",
-            "LPOSVERSIONINFOEXW": "POINTER",
-            "LPOSVERSIONINFOW": "WSTRING",
-            "LPOVERLAPPED": "POINTER",
-            "LPPOINT": "POINTER",
-            "LPPROCESSENTRY32W": "POINTER",
-            "LPSECURITY_ATTRIBUTES": "POINTER",
-            "LPSTARTUPINFOA": "POINTER",
-            "LPSTARTUPINFOW": "POINTER",
-            "LPSTR": "POINTER",
-            "LPSYSTEMTIME": "POINTER",
-            "LPSYSTEM_INFO": "POINTER",
-            "LPTHREAD_START_ROUTINE": "POINTER",
-            "LPTOP_LEVEL_EXCEPTION_FILTER": "DWORD",
-            "LPUNKNOWN": "POINTER",
-            "LPVOID": "POINTER",
-            "LPWCH": "POINTER",
-            "LPWIN32_FIND_DATAA": "POINTER",
-            "LPWORD": "POINTER",
-            "LPWSADATA": "STRING",
-            "LPWSAPROTOCOL_INFOA": "POINTER",
-            "LPWSTR": "POINTER",
-            "MSIHANDLE": "POINTER",
-            "OBJECT_INFORMATION_CLASS": "INT",
-            "OLECHAR": "WSTRING",
-            "PBOOL": "POINTER",
-            "PCACTCTXW": "POINTER",
-            "PCNZCH": "STRING",
-            "PDWORD": "POINTER",
-            "PFLS_CALLBACK_FUNCTION": "POINTER",
-            "PHKEY": "POINTER",
-            "PMEMORY_BASIC_INFORMATION": "POINTER",
-            "PROCESSINFOCLASS": "INT",
-            "PSECURITY_DESCRIPTOR": "POINTER",
-            "PSID": "HANDLE",
-            "PSID_IDENTIFIER_AUTHORITY": "POINTER",
-            "PSLIST_HEADER": "POINTER",
-            "PSRWLOCK": "POINTER",
-            "PULONG": "POINTER",
-            "PVECTORED_EXCEPTION_HANDLER": "HANDLE",
-            "PVOID": "POINTER",
-            "REFCLSID": "POINTER",
-            "REFIID": "POINTER",
-            "REGSAM": "POINTER",
-            "SHELLEXECUTEINFOA": "POINTER",
-            "SHELLEXECUTEINFOW": "POINTER",
-            "SHFILEINFOW": "POINTER",
-            "SOCKET": "INT",
-            "SOLE_AUTHENTICATION_SERVICE": "POINTER",
-            "TOKEN_INFORMATION_CLASS": "DWORD",
-            "UINT_PTR": "POINTER",
-            "ULONG": "UINT",
-            "ULONG_PTR": "POINTER",
-            "WORD": "DWORD",
-            "WPARAM": "UINT",
-            "_EXCEPTION_POINTERS": "POINTER",
-            "int": "INT",
-            "size_t": "UINT",
-            "sockaddr": "POINTER",
-            "unsigned int": "UINT",
-            "void": "POINTER"
 }
