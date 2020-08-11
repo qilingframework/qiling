@@ -13,14 +13,9 @@
 # notes: we are using rootfs in this example, so rootfs = squashfs-root
 # 
 
-import os, socket, sys, threading
+import ctypes, os, pickle, socket, sys, threading
 sys.path.append("..")
 from qiling import *
-
-def patcher(ql):
-    br0_addr = ql.mem.search("br0".encode() + b'\x00')
-    for addr in br0_addr:
-        ql.mem.write(addr, b'lo\x00')
 
 def nvram_listener():
     server_address = 'rootfs/var/cfm_socket'
@@ -52,25 +47,29 @@ def nvram_listener():
                 connection.close() 
 
 
-def myvfork(ql):
-    regreturn = 0
-    ql.nprint("vfork() = %d" % regreturn)
-    ql.os.definesyscall_return(regreturn)
+def save_context(ql, *args, **kw):
+    ql.save(cpu_context=False, snapshot="snapshot.bin")
+
+def patcher(ql):
+    br0_addr = ql.mem.search("br0".encode() + b'\x00')
+    for addr in br0_addr:
+        ql.mem.write(addr, b'lo\x00')
+
+
+def check_pc(ql):
+    print("=" * 50)
+    print("[!] Hit fuzz point, stop at PC = 0x%x" % ql.reg.arch_pc)
+    print("=" * 50)
+    ql.emu_stop()
 
 
 def my_sandbox(path, rootfs):
-    ql = Qiling(path, rootfs, output = "debug")
+    ql = Qiling(path, rootfs, output="debug", verbose=5)
     ql.add_fs_mapper("/dev/urandom","/dev/urandom")
+    ql.hook_address(save_context ,0x10930)
     ql.hook_address(patcher, ql.loader.elf_entry)
-    
-    # $ gdb-multiarch -q rootfs/bin/httpd 
-    # gdb> set remotetimeout 100
-    # gdb> target remote localhost:9999
-    ql.debugger = False
-    if ql.debugger == True:
-        ql.set_syscall("vfork", myvfork)
+    ql.hook_address(check_pc,0x7a0cc)
     ql.run()
-
 
 if __name__ == "__main__":
     nvram_listener_therad =  threading.Thread(target=nvram_listener, daemon=True)
