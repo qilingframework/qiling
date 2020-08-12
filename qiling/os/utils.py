@@ -129,6 +129,7 @@ class PathUtils:
             relative_path = cwd / path.relative_to(path.anchor)
             return rootfs / relative_path, relative_path
         else:
+            relative_path = cwd / path
             return rootfs / relative_path, relative_path
 
 def write_to_log(s):
@@ -204,10 +205,11 @@ class QLOsUtils:
         rootfs = self.ql.rootfs
         real_path, relative_path = self.convert_path(rootfs, cur_path, path)
 
+        # TODO: A better design for fs mapping.
         for fm, to in self.ql.fs_mapper:
             if to == path and not isinstance(fm, str):
                 real_path = fm
-                break
+                return real_path
             elif isinstance(fm, str):
                 try:
                     remains = relative_path.relative_to(Path(fm))
@@ -215,7 +217,7 @@ class QLOsUtils:
                 except ValueError:
                     continue
         
-        if isinstance(real_path, os.PathLike) and os.path.islink(real_path):
+        if os.path.islink(real_path):
             link_path = os.readlink(real_path)
             if link_path.is_absolute():
                 real_path = Path(link_path)
