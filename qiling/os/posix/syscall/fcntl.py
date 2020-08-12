@@ -34,7 +34,6 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
             if ql.archtype== QL_ARCH.ARM:
                 mode = 0
 
-
             flags = ql_open_flag_mapping(ql, flags)
             ql.os.fd[idx] = ql_file.open(real_path, flags, mode)
             regreturn = idx
@@ -45,9 +44,9 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
     ql.dprint(D_INFO, "[+] open(%s, %s, 0o%o) = %d" % (relative_path, open_flags_mapping(flags, ql.archtype), mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
-        ql.dprint(D_INFO, "[+] File Found: %s" % relative_path)
+        ql.dprint(D_INFO, "[+] File Found: %s" % real_path)
     else:
-        ql.dprint(D_INFO, "[!] File Not Found %s" % relative_path)
+        ql.dprint(D_INFO, "[!] File Not Found %s" % real_path)
     ql.os.definesyscall_return(regreturn)
 
 
@@ -86,9 +85,9 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
     openat_fd, relative_path, open_flags_mapping(openat_flags, ql.archtype), openat_mode, regreturn))
 
     if regreturn >= 0 and regreturn != 2:
-        ql.dprint(D_INFO, "[+] File Found: %s" % relative_path)
+        ql.dprint(D_INFO, "[+] File Found: %s" % real_path)
     else:
-        ql.dprint(D_INFO, "[!] File Not Found %s" % relative_path)
+        ql.dprint(D_INFO, "[!] File Not Found %s" % real_path)
     ql.os.definesyscall_return(regreturn)
 
 
