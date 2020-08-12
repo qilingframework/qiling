@@ -124,7 +124,6 @@ class QlOsLinux(QlOsPosix):
 
         except:
             self.emu_error()
-            raise
 
         if self.ql.internal_exception != None:
             raise self.ql.internal_exception
