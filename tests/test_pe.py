@@ -35,8 +35,24 @@ class PETest(unittest.TestCase):
     def test_pe_win_x86_uselessdisk(self):
         if 'QL_FAST_TEST' in os.environ:
             return
+        class Fake_Drive:
+
+            def read(self, size):
+                return random.randint(0, 256)
+            
+            def write(self, bs):
+                print(bs)
+                return
+
+            def fstat(self):
+                return -1
+            
+            def close(self):
+                return 0
+
         ql = Qiling(["../examples/rootfs/x86_windows/bin/UselessDisk.bin"], "../examples/rootfs/x86_windows",
                     output="debug")
+        ql.add_fs_mapper(r"\\.\PHYSICALDRIVE0", Fake_Drive())
         ql.run()
         del ql
 
