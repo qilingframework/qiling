@@ -34,36 +34,30 @@ def ql_debugger_init(ql):
         ql.nprint("debugger> Listening on %s:%u" % (ip, port))
         sock.listen(1)
         conn, addr = sock.accept()
+        remotedebugsrv = debugger_convert_str(remotedebugsrv)
+        remotedebugsrv = str(remotedebugsrv) + "server" 
+        DEBUGSESSION = str.upper(remotedebugsrv) + "session"
+        DEBUGSESSION = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, DEBUGSESSION)
+        ql.remote_debug = DEBUGSESSION(ql, conn, exit_point, mappings)
 
-        try:
+    default_remotedebugsrv = "gdb"
 
-            remotedebugsrv = debugger_convert_str(remotedebugsrv)
-            remotedebugsrv = str(remotedebugsrv) + "server" 
-            DEBUGSESSION = str.upper(remotedebugsrv) + "session"
-            DEBUGSESSION = ql_get_module_function("qiling.extensions.debugger." + remotedebugsrv + "." + remotedebugsrv, DEBUGSESSION)
-            ql.remote_debug = DEBUGSESSION(ql, conn, exit_point, mappings)
-        except:
-            ql.nprint("debugger> Error: Not able to initialize Debugging Server")
-            raise
+    if ql.debugger != True:            
+        debug_len = ql.debugger.split(':')
+        if len(debug_len) == 3:
+            remotedebugsrv, ip, port = debug_len
+        else:
+            ip, port = ql.debugger.split(':')
+            remotedebugsrv = default_remotedebugsrv
+            
+    else:
+        remotedebugsrv = default_remotedebugsrv
 
-    try:
-        remotedebugsrv, ip, port = '', '', ''
-        remotedebugsrv, ip, port = ql.debugger.split(':')
-    except:
-        ip, port = '', ''
-
-    remotedebugsrv = "gdb"
-    
-    try:
-        ip, port = ql.debugger.split(':')
-        # If only ip:port is defined, remotedebugsrv is always gdb
-    except:
-        if ip is None:
-            ip = "127.0.0.0"
-        if port is None:
-            port = "9999" 
-
-    remotedebugsrv = debugger_convert(remotedebugsrv)
+    if ql.debugger != "qdb":
+        remotedebugsrv = debugger_convert(remotedebugsrv)
+    else:
+        # For ql.qdb to come in
+        pass    
 
     if remotedebugsrv not in (QL_DEBUGGER):
         raise QlErrorOutput("[!] Error: Debugger not supported")       

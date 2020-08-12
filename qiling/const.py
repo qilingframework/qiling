@@ -38,6 +38,7 @@ class QL_OUTPUT(IntEnum):
 class QL_DEBUGGER(IntEnum):
     GDB = 1
     IDAPRO = 2
+    QDB = 3
 
 
 class QL_INTERCEPT(IntEnum):
@@ -52,7 +53,7 @@ D_CTNT = 3 # Print out content. File content or content of a tcp stream
 D_RPRT = 4 # Reporting output, main summarizing purposes
 D_DRPT = 5 # Detailed Report, with address
 
-QL_DEBUGGER_ALL = [QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB]
+QL_DEBUGGER_ALL = [QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB, QL_DEBUGGER.QDB]
 QL_ARCH_ALL = [QL_ARCH.X86, QL_ARCH.X8664, QL_ARCH.ARM, QL_ARCH.ARM64, QL_ARCH.MIPS]
 QL_ENDINABLE = [QL_ARCH.MIPS, QL_ARCH.ARM]
 QL_OS_ALL = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.WINDOWS, QL_OS.UEFI]
@@ -64,6 +65,7 @@ QL_CALL_BLOCK = 0b10
 debugger_map = {
         "gdb": QL_DEBUGGER.GDB,
         "ida": QL_DEBUGGER.IDAPRO,
+        "qdb": QL_DEBUGGER.QDB,
     }
 
 arch_map = {
