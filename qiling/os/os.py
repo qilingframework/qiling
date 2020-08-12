@@ -95,7 +95,7 @@ class QlOs(QLOsUtils):
             self.ql.nprint("\n")
             self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
         except:
-            self.ql.nprint("[!] Error: PC: 0x%x Unreachable" % self.ql.reg.arch_pc)
+            self.ql.nprint("[!] Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
 
 
     def _x86_get_params_by_index(self, index):
