@@ -136,3 +136,5 @@ class ql_pipe:
         new_fd = os.dup(self.__fd)
         new_ql_pipe = ql_pipe(new_fd)
         return new_ql_pipe
+
+

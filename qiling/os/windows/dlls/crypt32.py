@@ -57,3 +57,9 @@ def hook_CryptStringToBinaryA(ql, address, params):
         # Write result
         ql.mem.write(string_dst, bytes(output, encoding="utf-16le"))
     return 1
+
+
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'BYTE': 'POINTER'},
+           replace_params={"pcbBinary": POINTER, "pdwSkip": POINTER, "pdwFlags": POINTER})
+def hook_CryptStringToBinaryW(ql, address, params):
+    return hook_CryptStringToBinaryA.__wrapped__(ql, address, params)
