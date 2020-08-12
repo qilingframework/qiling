@@ -8,6 +8,7 @@ import os
 from qiling.exception import QlErrorOutput
 from qiling.const import QL_DEBUGGER
 from qiling.utils import debugger_convert, debugger_convert_str, ql_get_module_function
+from qiling.debugger.qdb import Qdb
 
 def ql_debugger_init(ql):
 
@@ -42,6 +43,10 @@ def ql_debugger_init(ql):
 
     default_remotedebugsrv = "gdb"
 
+    if ql.debugger == "qdb":
+        ql.hook_address(Qdb.attach, ql.os.entry_point)
+        return
+
     if ql.debugger != True:            
         debug_len = ql.debugger.split(':')
         if len(debug_len) == 3:
@@ -49,15 +54,11 @@ def ql_debugger_init(ql):
         else:
             ip, port = ql.debugger.split(':')
             remotedebugsrv = default_remotedebugsrv
-            
+
     else:
         remotedebugsrv = default_remotedebugsrv
 
-    if ql.debugger != "qdb":
-        remotedebugsrv = debugger_convert(remotedebugsrv)
-    else:
-        # For ql.qdb to come in
-        pass    
+    remotedebugsrv = debugger_convert(remotedebugsrv)
 
     if remotedebugsrv not in (QL_DEBUGGER):
         raise QlErrorOutput("[!] Error: Debugger not supported")       
