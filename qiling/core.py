@@ -17,7 +17,7 @@ from .utils import ql_setup_logging_env, ql_setup_logging_stream
 from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 from .core_utils import QLCoreUtils
-from .extensions.debugger import ql_debugger_init
+from .debugger import ql_debugger_init
 
 __version__ = "1.2" + "-dev"
 
