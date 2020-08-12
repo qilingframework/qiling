@@ -175,7 +175,7 @@ class QlOsPosix(QlOs):
                 raise
             except Exception as e:
                 self.ql.nprint("[!] Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
-                raise
+                raise e
         else:
             self.ql.nprint(
                 "[!] 0x%x: syscall %s number = 0x%x(%d) not implemented" % (self.ql.reg.arch_pc, syscall_name_str, self.syscall, self.syscall))
