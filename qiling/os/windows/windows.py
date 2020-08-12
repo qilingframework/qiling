@@ -141,6 +141,7 @@ class QlOsWindows(QlOs):
                 self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:
             self.emu_error()
+            raise
 
         self.registry_manager.save()
         self.post_report()
