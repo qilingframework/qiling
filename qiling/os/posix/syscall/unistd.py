@@ -12,6 +12,7 @@ from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
+from qiling.os.stat import *
 
 def ql_syscall_exit(ql, exit_code, *args, **kw):
     ql.os.exit_code = exit_code
@@ -127,7 +128,7 @@ def ql_syscall_faccessat(ql, faccessat_dfd, faccessat_filename, faccessat_mode, 
     regreturn = -1
     if os.path.exists(real_path) == False:
         regreturn = -1
-    elif stat.S_ISFIFO(os.stat(real_path).st_mode):
+    elif stat.S_ISFIFO(Stat(real_path).st_mode):
         regreturn = 0
     else:
         regreturn = -1
@@ -544,7 +545,7 @@ def ql_syscall_nice(ql, nice_inc, *args, **kw):
 def ql_syscall_truncate(ql, path, length, *args, **kw):
     path = ql.mem.string(path)
     real_path = ql.os.transform_to_real_path(path)
-    st_size = os.stat(real_path).st_size
+    st_size = Stat(real_path).st_size
 
     try:
         if st_size >= length:
@@ -565,7 +566,7 @@ def ql_syscall_truncate(ql, path, length, *args, **kw):
 
 def ql_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args, **kw):
     real_path = ql.os.fd[ftrunc_fd].name
-    st_size = os.stat(real_path).st_size
+    st_size = Stat(real_path).st_size
 
     try:
         if st_size >= ftrunc_length:
