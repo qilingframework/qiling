@@ -33,28 +33,6 @@ class PathUtils:
     def __init__(self, cwd):
         self._cwd = cwd
 
-    @staticmethod
-    def isdirsep(ch):
-        return (ch == '/' or ch == '\\')
-
-    @staticmethod
-    def isdrive(path):
-        return (path[0].isalpha() and path[1] == ':')
-
-    @staticmethod
-    def isabspath(path):
-        return (PathUtils.isdirsep(path[0])) or (len(path)>=2 and PathUtils.isdrive(path) and (len(path) == 2 or PathUtils.isdirsep(path[2]))) 
-
-    @staticmethod
-    def isrelativepath(path):
-        return not PathUtils.isabspath(path)
-
-    @staticmethod
-    def slashify(path, trailing_slash_p=False):
-        result = path.replace("\\", "/")
-        if trailing_slash_p and len(result) > 0 and not PathUtils.isdirsep(result[-1]):
-            result += '/'
-        return result
 
     # Basic guide:
     #     We should only handle "normal" paths like "C:\Windows\System32" and "bin/a.exe" for users.
@@ -68,22 +46,12 @@ class PathUtils:
         cwd = PurePosixPath(cwd[1:])
 
         # First, convert all slashes to backslashes
-        path = PathUtils.slashify(path)
         result = None
         # Things are complicated here.
         # See https://docs.microsoft.com/zh-cn/windows/win32/fileio/naming-a-file?redirectedfrom=MSDN
         if PureWindowsPath(path).is_absolute():
-            if path[0] == '\\' and path[1] == '\\':
-                if path[2] == '.': # \\.\PhysicalDrive0
-                    # It should be handled in fs mapping. If not, append it to rootfs directly.
-                    relative_path = cwd / path
-                    result = rootfs / relative_path
-                else: # \\Server\Share\Directory
-                    pw = PureWindowsPath(path)
-                    relative_path = cwd / pw.relative_to(pw.anchor)
-                    result = rootfs / relative_path
-            elif PathUtils.isdrive(path): # C:\Windows
-                # Simply skip the drive and concat the whole path.
+            if len(path) >= 2 and path[0] == '\\' and path[1] == '\\': # \\.\PhysicalDrive0 or \\Server\Share\Directory or X:\
+                # UNC path should be handled in fs mapping. If not, append it to rootfs directly.
                 pw = PureWindowsPath(path)
                 relative_path = cwd / pw.relative_to(pw.anchor)
                 result = rootfs / relative_path
@@ -92,12 +60,10 @@ class PathUtils:
                 relative_path = cwd / path
                 result = rootfs / relative_path
         else:
-            if path[:3] == r'\\?' or path[:3] == r'\??': # \??\ or \\?\
+            if len(path) >= 3 and path[:3] == r'\\?' or path[:3] == r'\??': # \??\ or \\?\ or \Device\..
                 # Similair to \\.\, it should be handled in fs mapping.
-                relative_path = cwd / path
-                result = rootfs / relative_path
-            elif path[0] == '\\': # \Device\..
-                relative_path = cwd / path
+                pw = PureWindowsPath(path)
+                relative_path = cwd / pw.relative_to(pw.anchor)
                 result = rootfs / relative_path
             else:
                 # a normal relative path
@@ -202,8 +168,10 @@ class QLOsUtils:
         if cur_path[0] != '/':
             self.ql.nprint(f"[!] Warning: cur_path doesn't start with a /")
         
+        
         rootfs = self.ql.rootfs
         real_path, relative_path = self.convert_path(rootfs, cur_path, path)
+        write_to_log(f"rootfs: {rootfs}, cur_path: {cur_path}, path:{path}, real_path:{real_path}, relative_path:{relative_path}\n")
 
         # TODO: A better design for fs mapping.
         for fm, to in self.ql.fs_mapper:
