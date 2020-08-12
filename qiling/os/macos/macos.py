@@ -61,7 +61,6 @@ class QlOsMacos(QlOsPosix):
                 self.ql.emu_start(self.ql.loader.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
         except UcError:
             self.emu_error()
-            raise
 
 
         if self.ql.internal_exception != None:
