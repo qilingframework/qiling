@@ -98,10 +98,6 @@ class PathUtils:
             relative_path = cwd / path
             return rootfs / relative_path, relative_path
 
-def write_to_log(s):
-    with open(r"/tmp/pathlog2.txt", "a+") as f:
-        f.write(s)
-
 class QLOsUtils:
     def __init__(self, ql):
         self.ql = ql
@@ -153,7 +149,6 @@ class QLOsUtils:
                     real_path = Path(to) / remains
                 except ValueError:
                     continue
-        write_to_log(f"Link path:\t{path}\t->\t{str(real_path.absolute())}\n")
         return str(real_path.absolute())
 
     def transform_to_real_path(self, path):
@@ -168,10 +163,8 @@ class QLOsUtils:
         if cur_path[0] != '/':
             self.ql.nprint(f"[!] Warning: cur_path doesn't start with a /")
         
-        
         rootfs = self.ql.rootfs
         real_path, relative_path = self.convert_path(rootfs, cur_path, path)
-        write_to_log(f"rootfs: {rootfs}, cur_path: {cur_path}, path:{path}, real_path:{real_path}, relative_path:{relative_path}\n")
 
         # TODO: A better design for fs mapping.
         for fm, to in self.ql.fs_mapper:
@@ -192,7 +185,7 @@ class QLOsUtils:
             else:
                 real_path = Path(os.path.join(os.path.dirname(path), link_path))
             
-        write_to_log(f"Real path:\t{path}\t->\t{str(real_path.absolute())}\n")
+
         return str(real_path.absolute())
 
     def transform_to_relative_path(self, path):
@@ -201,7 +194,7 @@ class QLOsUtils:
         else:
             cur_path = self.ql.os.current_path
 
-        write_to_log(f"Relative path:\t{path}\t->\t{str(Path(cur_path[1:]) / path)}\n")
+
         return str(Path(cur_path[1:]) / path)
 
     def post_report(self):
