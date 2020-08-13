@@ -256,6 +256,9 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):
         self.uc.emu_start(begin, end, timeout, count)
+        
+        if self.internal_exception != None:
+            raise self.internal_exception
 
 
     # save all qiling instance states
