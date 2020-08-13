@@ -3,7 +3,7 @@
 # Learn how to use? Please visit https://docs.qiling.io/en/latest/ida/
 # Plugin Author: kabeor
 
-UseAsScript = False
+UseAsScript = True
 RELEASE = True
 
 import collections
@@ -20,6 +20,7 @@ from qiling.arch.arm64_const import reg_map as arm64_reg_map
 from qiling.arch.mips_const import reg_map as mips_reg_map
 from qiling.utils import ql_get_arch_bits
 from qiling import __version__ as QLVERSION
+from qiling.os.filestruct import ql_file
 
 if RELEASE:
     # IDA Python SDK
@@ -267,8 +268,7 @@ Rootfs Path
 <#Select Rootfs to open#Path\::{path_name}>
 """, {
         'path_name': Form.DirInput(swidth=50)
-    })
-
+    })    
 class QLEmuSaveDialog(Form):
     def __init__(self):
         Form.__init__(self, r"""STARTITEM {id:path_name}
@@ -414,6 +414,22 @@ class QLEmuMisc:
             # print("Error:", e)
             return (2, None)
 
+    class QLStd(ql_file):
+        def __init__(self, path, fd):
+            super().__init__(path, fd)
+            self.__fd = fd
+
+        def write(self, write_buf):
+            super().write(write_buf) 
+            msg(write_buf.decode('utf-8'))
+
+        def flush(self):
+            pass
+
+        def isatty(self):
+            return False   
+
+
 ### Qiling
 
 class QLEmuQiling:
@@ -423,10 +439,21 @@ class QLEmuQiling:
         self.ql = None
         self.status = None
         self.exit_addr = None
+        self.baseaddr = None
 
     def start(self):
-        self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug")
+        qlstdin = QLEmuMisc.QLStd('stdin', sys.__stdin__.fileno())
+        qlstdout = QLEmuMisc.QLStd('stdout', sys.__stdout__.fileno())
+        qlstderr = QLEmuMisc.QLStd('stderr', sys.__stderr__.fileno())
+        # qlstdin = ql_file('stdin', sys.__stdin__.fileno())
+        # qlstdout = ql_file('stdout', sys.__stdout__.fileno())
+        # qlstderr = ql_file('stderr', sys.__stderr__.fileno())
+        self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", stdin=qlstdin, stdout=qlstdout, stderr=qlstderr)
         self.exit_addr = self.ql.os.exit_point
+        if self.ql.archbit == 32:
+            self.baseaddr = int(self.ql.profile.get("OS32", "load_address"), 16)
+        elif self.ql.archbit == 64:
+            self.baseaddr = int(self.ql.profile.get("OS64", "load_address"), 16)
 
     def run(self, begin=None, end=None):
         self.ql.run(begin, end)
@@ -534,10 +561,18 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             if self.qlemu.status is not None:
                 self.qlemu.ql.restore(self.qlemu.status)
                 pathhook = self.qlemu.ql.hook_code(self.qlpathhook)
-                self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
+                show_wait_box("Qiling is processing ...")
+                try:
+                    self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
+                finally:
+                    hide_wait_box()
             else:
                 pathhook = self.qlemu.ql.hook_code(self.qlpathhook)
-                self.qlemu.run()
+                show_wait_box("Qiling is processing ...")
+                try:
+                    self.qlemu.run()
+                finally:
+                    hide_wait_box()
             self.qlemu.ql.hook_del(pathhook)
         else:
             print('Please setup Qiling first')
@@ -545,7 +580,11 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def qlruntohere(self):
         if self.qlinit:
             curr_addr = get_screen_ea()
-            self.qlemu.run(end=curr_addr)
+            show_wait_box("Qiling is processing ...")
+            try:
+                self.qlemu.run(end=curr_addr + self.qlemu.baseaddr)
+            finally:
+                hide_wait_box()
             set_color(curr_addr, CIC_ITEM, 0x00B3CBFF)
             self.qlemu.status = self.qlemu.ql.save()
         else:
@@ -604,7 +643,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             if self.qlemuregview is None:
                 self.qlemuregview = QLEmuRegView(self)
                 self.qlemuregview.Create()
-                self.qlemuregview.SetReg(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+                self.qlemuregview.SetReg(self.qlemu.ql.reg.arch_pc - self.qlemu.baseaddr, self.qlemu.ql)
                 self.qlemuregview.Show()
                 self.qlemuregview.Refresh()
         else:
@@ -629,7 +668,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             memdialog.mem_size.value = size
             ok = memdialog.Execute()
             if ok == 1:
-                mem_addr = memdialog.mem_addr.value
+                mem_addr = memdialog.mem_addr.value - self.qlemu.baseaddr
                 mem_size = memdialog.mem_size.value
                 mem_cmnt = memdialog.mem_cmnt.value
 
@@ -699,27 +738,28 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     ### Hook
     def qlstephook(self, ql, addr, size):
         self.stepflag = not self.stepflag
-        # print(hex(addr)) 
+        addr = addr - self.qlemu.baseaddr
         if self.stepflag:
-            set_color(ql.reg.arch_pc, CIC_ITEM, 0x00FFD700)
-            self.update_views(ql.reg.arch_pc, ql)
-            ql.os.stop()
+            set_color(addr, CIC_ITEM, 0x00FFD700)
+            self.update_views(addr, ql)
             self.qlemu.status = ql.save()
+            ql.os.stop()
             self.qlemu.ql.hook_del(self.stephook)
-            jumpto(ql.reg.arch_pc)
+            jumpto(addr)
 
     def qlpathhook(self, ql, addr, size):
-        set_color(ql.reg.arch_pc, CIC_ITEM, 0x007FFFAA)
+        addr = addr - self.qlemu.baseaddr
+        set_color(addr, CIC_ITEM, 0x007FFFAA)
         bp_count = get_bpt_qty()
         bp_list = []
         if bp_count > 0:
             for num in range(0, bp_count):
                 bp_list.append(get_bpt_ea(num))
             if addr in bp_list and addr != self.lastaddr:
-                ql.os.stop()
                 self.qlemu.status = ql.save()
+                ql.os.stop()
                 self.lastaddr = addr
-                jumpto(ql.reg.arch_pc)
+                jumpto(addr)
 
     ### Dialog
 
