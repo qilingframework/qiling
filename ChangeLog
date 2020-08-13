@@ -7,6 +7,8 @@ This file details the changelog of Qiling Framework.
 - Add ql.save and ql.restore aka Qiling's Snapshot
 - Add ql.os.fd.save() and ql.os.fd.restore() to save file descriptor
 - IDA Plugin
+- Test, patch and make sure arm_thumb can work on its own
+- Added Qiling Debugger - Currently only works with MIPS
 
 ------------------------------------
 [Version 1.1]: July 24th, 2020
