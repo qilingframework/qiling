@@ -254,6 +254,9 @@ class QLOsUtils:
             else:
                 md = Cs(CS_ARCH_ARM, mode)
 
+        elif self.ql.archtype == QL_ARCH.ARM_THUMB:
+            md = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
+
         elif self.ql.archtype == QL_ARCH.X86:  # QL_X86
             md = Cs(CS_ARCH_X86, CS_MODE_32)
 

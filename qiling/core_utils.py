@@ -123,10 +123,15 @@ class QLCoreUtils(object):
         if not ql_is_valid_arch(self.archtype):
             raise QlErrorArch("[!] Invalid Arch")
         
-        archmanager = arch_convert_str(self.archtype).upper()
+        if self.archtype == QL_ARCH.ARM_THUMB:
+            archtype =  QL_ARCH.ARM
+        else:
+            archtype = self.archtype
+
+        archmanager = arch_convert_str(archtype).upper()
         archmanager = ("QlArch" + archmanager)
 
-        module_name = ql_build_module_import_name("arch", None, self.archtype)
+        module_name = ql_build_module_import_name("arch", None, archtype)
         return ql_get_module_function(module_name, archmanager)(self)
 
 
