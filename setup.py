@@ -15,9 +15,7 @@ with open('requirements.txt') as f:
 with open("README.md", "r", encoding="utf-8") as ld:
     long_description = ld.read()
 
-if "linux" in sys.platform: 
-    required += ["python-magic>=0.4.16"]
-else:
+if "linux" not in sys.platform: 
     required += ["python-magic-bin>=0.4.14"]
 
 setup(
