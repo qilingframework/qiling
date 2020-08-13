@@ -17,6 +17,7 @@ class QL_ARCH(IntEnum):
     ARM_THUMB = 104
     ARM64 = 105
     MIPS = 106
+    A8086 = 7
 
 
 class QL_OS(IntEnum):
@@ -25,6 +26,7 @@ class QL_OS(IntEnum):
     MACOS = 203
     WINDOWS = 204
     UEFI = 205
+    DOS = 206
 
 
 class QL_OUTPUT(IntEnum):
@@ -54,11 +56,12 @@ D_RPRT = 4 # Reporting output, main summarizing purposes
 D_DRPT = 5 # Detailed Report, with address
 
 QL_DEBUGGER_ALL = [QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB, QL_DEBUGGER.QDB]
-QL_ARCH_ALL = [QL_ARCH.X86, QL_ARCH.X8664, QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.ARM64, QL_ARCH.MIPS]
+QL_ARCH_ALL = [QL_ARCH.X86, QL_ARCH.X8664, QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.ARM64, QL_ARCH.MIPS, QL_ARCH.A8086]
+QL_ARCH_16BIT = [QL_ARCH.A8086]
 QL_ARCH_32BIT = [QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.MIPS, QL_ARCH.X86]
 QL_ARCH_64BIT = [QL_ARCH.ARM64, QL_ARCH.X8664] 
 QL_ENDINABLE = [QL_ARCH.MIPS, QL_ARCH.ARM]
-QL_OS_ALL = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.WINDOWS, QL_OS.UEFI]
+QL_OS_ALL = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.WINDOWS, QL_OS.UEFI, QL_OS.DOS]
 QL_POSIX = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS]
 
 QL_HOOK_BLOCK = 0b1
@@ -77,6 +80,7 @@ arch_map = {
         "arm": QL_ARCH.ARM,
         "arm_thumb": QL_ARCH.ARM_THUMB,
         "arm64": QL_ARCH.ARM64,
+        "a8086": QL_ARCH.A8086,
     }
 
 os_map = {
@@ -85,4 +89,5 @@ os_map = {
         "freebsd": QL_OS.FREEBSD,
         "windows": QL_OS.WINDOWS,
         "uefi": QL_OS.UEFI,
+        "dos": QL_OS.DOS,
 }

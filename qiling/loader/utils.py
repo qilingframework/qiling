@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import pefile
+import magic
 from qiling.const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN
 from qiling.exception import QlErrorArch, QlErrorOsType
 
@@ -111,6 +112,14 @@ def ql_macho_check_archtype(path):
     return arch, ostype, archendian
 
 def ql_pe_check_archtype(path):
+
+    ftype = magic.from_file(path)
+    if "COM" and "DOS" in ftype:
+        return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
+    elif "MS-DOS" in ftype:
+        # TODO: implement 16bit dos exe support
+        pass
+
     pe = pefile.PE(path, fast_load=True)
     ostype = None
     arch = None

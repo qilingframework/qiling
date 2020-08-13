@@ -9,7 +9,7 @@ thoughout the qiling framework
 """
 import importlib, logging, os
 from .exception import *
-from .const import QL_ARCH, QL_ARCH_ALL, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT
+from .const import QL_ARCH, QL_ARCH_ALL, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
 from .const import debugger_map, arch_map, os_map
 
 def catch_KeyboardInterrupt(ql):
@@ -25,6 +25,8 @@ def catch_KeyboardInterrupt(ql):
     return decorator
 
 def ql_get_arch_bits(arch):
+    if arch in QL_ARCH_16BIT:
+        return 16
     if arch in QL_ARCH_32BIT:
         return 32
     if arch in QL_ARCH_64BIT:
@@ -48,6 +50,7 @@ def loadertype_convert_str(ostype):
         QL_OS.FREEBSD: "ELF",
         QL_OS.WINDOWS: "PE",
         QL_OS.UEFI: "PE_UEFI",
+        QL_OS.DOS: "DOS",
     }
     return adapter.get(ostype)
 
