@@ -30,10 +30,6 @@ from .const import *
 # Some codes from cygwin.
 class PathUtils:
 
-    def __init__(self, cwd):
-        self._cwd = cwd
-
-
     # Basic guide:
     #     We should only handle "normal" paths like "C:\Windows\System32" and "bin/a.exe" for users.
     #     For UNC paths like '\\.\PHYSICALDRIVE0" and "\\Server\Share", they should be implemented 
