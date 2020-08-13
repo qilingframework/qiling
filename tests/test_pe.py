@@ -19,7 +19,7 @@ from unicorn.x86_const import *
 class PETest(unittest.TestCase):
 
     def test_pe_dos_8086_hello(self):
-        ql = Qiling(["rootfs/8086_dos/HI.COM"], "rootfs/8086_dos")
+        ql = Qiling(["../examples/rootfs/8086_dos/HI.COM"], "../examples/rootfs/8086_dos")
         ql.run()
         del ql
 
