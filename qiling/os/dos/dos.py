@@ -27,7 +27,7 @@ class QlOsDos(QlOs):
                             break
                         s += ch
                         str_address += 1
-                    print(s)
+                    ql.nprint(s)
         self.ql.hook_intr(cb)
 
     def run(self):
