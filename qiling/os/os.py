@@ -88,11 +88,14 @@ class QlOs(QLOsUtils):
             self.ql.nprint("\n")
         self.ql.mem.show_mapinfo()
         
-        buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
-        self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
-        
-        self.ql.nprint("\n")
-        self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
+        try:
+            buf = self.ql.mem.read(self.ql.reg.arch_pc, 8)
+            self.ql.nprint("[+] %r" % ([hex(_) for _ in buf]))
+            
+            self.ql.nprint("\n")
+            self.disassembler(self.ql, self.ql.reg.arch_pc, 64)
+        except:
+            self.ql.nprint("[!] Error: PC(0x%x) Unreachable" % self.ql.reg.arch_pc)
 
 
     def _x86_get_params_by_index(self, index):

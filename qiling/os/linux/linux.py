@@ -108,8 +108,10 @@ class QlOsLinux(QlOsPosix):
 
                         thread_management.clean_world()
                         thread_management.set_main_thread(main_thread)
+    
+                    if self.ql.internal_exception == None:
+                        thread_management.run()
 
-                    thread_management.run()
                 else:
                     
                     if  self.ql.entry_point is not None:
@@ -119,8 +121,9 @@ class QlOsLinux(QlOsPosix):
                         self.ql.emu_start(self.ql.loader.entry_point, self.ql.loader.elf_entry, self.ql.timeout)
                         self.ql.enable_lib_patch()
                         self.run_function_after_load()
-                    
-                    self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
+
+                    if self.ql.internal_exception == None:
+                        self.ql.emu_start(self.ql.loader.elf_entry, self.exit_point, self.ql.timeout, self.ql.count)
 
         except:
             self.emu_error()

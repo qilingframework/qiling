@@ -10,6 +10,7 @@ from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
+from qiling.os.stat import *
 
 def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     regreturn = 0
@@ -26,7 +27,7 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
 
     regreturn = -1
     if os.path.exists(real_path) == True:
-        fstat64_info = os.stat(real_path)
+        fstat64_info = Stat(real_path)
 
         # struct stat is : 80 addr is : 0x4000811bc8
         # buf.st_dev offest 0 8 0
@@ -302,7 +303,7 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
-        stat64_info = os.stat(real_path)
+        stat64_info = Stat(real_path)
 
         if ql.archtype== QL_ARCH.MIPS:
             # packfstatinfo
@@ -376,7 +377,7 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
-        stat_info = os.stat(real_path)
+        stat_info = Stat(real_path)
 
         if ql.archtype== QL_ARCH.MIPS:
             # pack fstatinfo
@@ -436,7 +437,7 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
-        lstat_info = os.lstat(real_path)
+        lstat_info = Lstat(real_path)
 
         if ql.archtype== QL_ARCH.MIPS:
             # pack fstatinfo
