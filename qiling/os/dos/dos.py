@@ -28,6 +28,10 @@ class QlOsDos(QlOs):
                         s += ch
                         str_address += 1
                     ql.nprint(s)
+                else:
+                    raise NotImplementedError()
+            else:
+                raise NotImplementedError()
         self.ql.hook_intr(cb)
 
     def run(self):
