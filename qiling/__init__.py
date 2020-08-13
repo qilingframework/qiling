@@ -1,2 +1,2 @@
 from .core import Qiling
-from .core import __version__
+from .__version__ import __version__

@@ -18,8 +18,7 @@ from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 from .core_utils import QLCoreUtils
 from .debugger import ql_debugger_init
-
-__version__ = "1.2" + "-dev"
+from .__version__ import __version__
 
 class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):    
     def __init__(

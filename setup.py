@@ -2,12 +2,15 @@
 #
 # Python setup for Qiling framework
 
-import sys
+import sys, os
 from setuptools import setup, find_packages
 
-from qiling import __version__ as ql_version
+here = os.path.abspath(os.path.dirname(__file__))
+gb = {}
+with open(os.path.join(here, "qiling", "__version__.py"), "r+") as f:
+    exec(f.read(), gb)
 
-VERSION = ql_version
+VERSION = gb['__version__']
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
@@ -15,8 +18,11 @@ with open('requirements.txt') as f:
 with open("README.md", "r", encoding="utf-8") as ld:
     long_description = ld.read()
 
-if "linux" not in sys.platform: 
+if "linux"  in sys.platform:
+    required += ["python-magic>=0.4.16"]
+else:
     required += ["python-magic-bin>=0.4.14"]
+
 
 setup(
     name='qiling',
