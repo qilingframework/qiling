@@ -11,6 +11,7 @@ RUN apk add --no-cache \
     libtool \
     automake \
     autoconf \
+    libmagic \
     g++ \
     linux-headers \
     git \
