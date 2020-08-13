@@ -445,9 +445,6 @@ class QLEmuQiling:
         qlstdin = QLEmuMisc.QLStd('stdin', sys.__stdin__.fileno())
         qlstdout = QLEmuMisc.QLStd('stdout', sys.__stdout__.fileno())
         qlstderr = QLEmuMisc.QLStd('stderr', sys.__stderr__.fileno())
-        # qlstdin = ql_file('stdin', sys.__stdin__.fileno())
-        # qlstdout = ql_file('stdout', sys.__stdout__.fileno())
-        # qlstderr = ql_file('stderr', sys.__stderr__.fileno())
         self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", stdin=qlstdin, stdout=qlstdout, stderr=qlstderr)
         self.exit_addr = self.ql.os.exit_point
         if self.ql.archbit == 32:
@@ -557,17 +554,15 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def qlcontinue(self):
         if self.qlinit:
-            pathhook = None
+            pathhook = self.qlemu.ql.hook_code(self.qlpathhook)
             if self.qlemu.status is not None:
                 self.qlemu.ql.restore(self.qlemu.status)
-                pathhook = self.qlemu.ql.hook_code(self.qlpathhook)
                 show_wait_box("Qiling is processing ...")
                 try:
                     self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
                 finally:
                     hide_wait_box()
             else:
-                pathhook = self.qlemu.ql.hook_code(self.qlpathhook)
                 show_wait_box("Qiling is processing ...")
                 try:
                     self.qlemu.run()
@@ -580,12 +575,22 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def qlruntohere(self):
         if self.qlinit:
             curr_addr = get_screen_ea()
-            show_wait_box("Qiling is processing ...")
-            try:
-                self.qlemu.run(end=curr_addr + self.qlemu.baseaddr)
-            finally:
-                hide_wait_box()
-            set_color(curr_addr, CIC_ITEM, 0x00B3CBFF)
+            untillhook = self.qlemu.ql.hook_code(self.qluntillhook)
+            if self.qlemu.status is not None:
+                self.qlemu.ql.restore(self.qlemu.status)
+                show_wait_box("Qiling is processing ...")
+                try:
+                    self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc ,end=curr_addr + self.qlemu.baseaddr)
+                finally:
+                    hide_wait_box()
+            else:
+                show_wait_box("Qiling is processing ...")
+                try:
+                    self.qlemu.run(end=curr_addr + self.qlemu.baseaddr)
+                finally:
+                    hide_wait_box()
+                
+            self.qlemu.ql.hook_del(untillhook)
             self.qlemu.status = self.qlemu.ql.save()
         else:
             print('Please setup Qiling first')
@@ -760,6 +765,10 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                 ql.os.stop()
                 self.lastaddr = addr
                 jumpto(addr)
+
+    def qluntillhook(self, ql, addr, size):
+        addr = addr - self.qlemu.baseaddr
+        set_color(addr, CIC_ITEM, 0x00B3CBFF)
 
     ### Dialog
 
