@@ -115,7 +115,7 @@ matrix:
         - unzip -Pinfected al-khaser.bin.zip
         - cd $TRAVIS_BUILD_DIR/tests
       script:
-        - cmd.exe //C '.\test_pe.bat' 
+        - travis_wait 20 cmd.exe //C '.\test_pe.bat' 
 
     - name: "Python 3.6 on Docker"
       services:
