@@ -114,7 +114,7 @@ def ql_macho_check_archtype(path):
 def ql_pe_check_archtype(path):
 
     ftype = magic.from_file(path)
-    if "COM" and "DOS" in ftype:
+    if "COM" in ftype and "DOS" in ftype:
         return QL_ARCH.A8086, QL_OS.DOS, QL_ENDIAN.EL
     elif "MS-DOS" in ftype:
         # TODO: implement 16bit dos exe support
