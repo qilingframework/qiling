@@ -414,7 +414,7 @@ class QLEmuMisc:
             # print("Error:", e)
             return (2, None)
 
-    class QLStd(ql_file):
+    class QLStdIO(ql_file):
         def __init__(self, path, fd):
             super().__init__(path, fd)
             self.__fd = fd
@@ -442,9 +442,9 @@ class QLEmuQiling:
         self.baseaddr = None
 
     def start(self):
-        qlstdin = QLEmuMisc.QLStd('stdin', sys.__stdin__.fileno())
-        qlstdout = QLEmuMisc.QLStd('stdout', sys.__stdout__.fileno())
-        qlstderr = QLEmuMisc.QLStd('stderr', sys.__stderr__.fileno())
+        qlstdin = QLEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
+        qlstdout = QLEmuMisc.QLStdIO('stdout', sys.__stdout__.fileno())
+        qlstderr = QLEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
         self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", stdin=qlstdin, stdout=qlstdout, stderr=qlstderr)
         self.exit_addr = self.ql.os.exit_point
         if self.ql.archbit == 32:
