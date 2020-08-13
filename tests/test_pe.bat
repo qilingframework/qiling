@@ -1,4 +1,4 @@
-@echo off
+@echo on
 REM 
 REM Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 REM Built on top of Unicorn emulator (www.unicorn-engine.org) 
