@@ -50,13 +50,16 @@ class MyPipe():
 def instruction_count(ql, address, size, user_data):
     user_data[0] += 1
 
+def my__llseek(ql, *args, **kw):
+    pass
 
 def run_one_round(payload):
     stdin = MyPipe()
-    ql = Qiling(["rootfs/x86_linux/bin/crackme_linux"], "rootfs/x86_linux", console=False, stdin=stdin,
+    ql = Qiling(["rootfs/x86_linux/bin/crackme_linux"], "rootfs/x86_linux", console=True, stdin=stdin,
                 stdout=sys.stdout, stderr=sys.stderr)
     ins_count = [0]
     ql.hook_code(instruction_count, ins_count)
+    ql.set_syscall("_llseek", my__llseek)
     stdin.write(payload)
     ql.run()
     del stdin
