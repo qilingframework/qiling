@@ -12,16 +12,21 @@ with open(os.path.join(here, "qiling", "__version__.py"), "r+") as f:
 
 VERSION = gb['__version__']
 
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
+requirements = [
+    "capstone>=4.0.1",
+    "unicorn>=1.0.2rc4",
+    "pefile>=2019.4.18",
+    "python-registry>=1.3.1",
+    "keystone-engine>=0.9.2"
+]
 
 with open("README.md", "r", encoding="utf-8") as ld:
     long_description = ld.read()
 
 if "linux"  in sys.platform:
-    required += ["python-magic>=0.4.16"]
+    requirements += ["python-magic>=0.4.16"]
 else:
-    required += ["python-magic-bin>=0.4.14"]
+    requirements += ["python-magic-bin>=0.4.14"]
 
 
 setup(
@@ -61,5 +66,5 @@ setup(
 
     packages=find_packages(),
     include_package_data=True,
-    install_requires=required,
+    install_requires=requirements,
 )
