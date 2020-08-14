@@ -16,7 +16,7 @@ jobs:
         pip install setuptools wheel
     - name: Build distribution 📦
       run: |
-        pip install -r requirements.txt
+        pip install .
         python setup.py sdist bdist_wheel
     - uses: actions/upload-artifact@v2
       with:
