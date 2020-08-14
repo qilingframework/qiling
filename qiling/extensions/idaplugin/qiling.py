@@ -340,6 +340,30 @@ Qiling:: Check for update
 
         return 1
 
+class QLEmuRegDialog(Choose):
+    def __init__(self, reglist, flags=0, width=None, height=None, embedded=False):
+        Choose.__init__(
+            self, "QL Reg Edit", 
+            [ ["Register", 10 | Choose.CHCOL_PLAIN], 
+              ["Value", 30] ])
+        self.items = reglist
+
+    def show(self):
+        return self.Show(True) >= 0
+
+    def OnGetLine(self, n):
+        if self.items[n][2] == 32:
+            return [ self.items[n][0], "0x%08X" % self.items[n][1] ]
+        if self.items[n][2] == 64:
+            return [ self.items[n][0], "0x%16X" % self.items[n][1] ]        
+
+    def OnGetSize(self):
+        return len(self.items)
+
+    def OnClose(self):
+        pass
+
+
 ### Misc
 
 class QLEmuMisc:
@@ -454,6 +478,17 @@ class QLEmuQiling:
 
     def run(self, begin=None, end=None):
         self.ql.run(begin, end)
+
+    def set_reg(self):
+        reglist = QLEmuMisc.get_reg_map(self.ql)
+        regs = [ [ row, int(self.ql.reg.read(row)), ql_get_arch_bits(self.ql.archtype), False ] for row in reglist ]
+        lines = len(regs)        
+        RegDig = QLEmuRegDialog(regs)
+        if RegDig.show():
+            return True
+        else:
+            return False
+
 
     def save(self):
         savedlg = QLEmuSaveDialog()
@@ -619,8 +654,11 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             print('Please setup Qiling first')
 
     def qlchangreg(self):
-        # TODO
-        pass
+        if self.qlinit:
+            self.qlemu.set_reg()
+        else:
+            print('Please setup Qiling first')       
+
 
     def qlreset(self):
         if self.qlinit:
@@ -808,6 +846,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.qlruntohere,             "Execute Till",               "Execute Till",              None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runfromhere",       self.qlcontinue,              "Continue",                   "Continue",                  None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":step",              self.qlstep,                  "Step",                       "Step (CTRL+SHIFT+F9)",      "CTRL+SHIFT+F9",        True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":changreg",          self.qlchangreg,              "Edit Register",              "Edit Register",             None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reset",             self.qlreset,                 "Restart",                    "Restart Qiling",            None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":close",             self.qlclose,                 "Close",                      "Close Qiling",              None,                   False  ))
@@ -819,7 +858,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":save",              self.qlsave,                  "Save Snapshot",              "Save Snapshot",             None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":load",              self.qlload,                  "Load Snapshot",              "Load Snapshot",             None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))
-        if not RELEASE:
+        if UseAsScript:
             self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":unload",            self.unload_plugin,           "Unload Plugin",              "Unload Plugin",             None,                   False  ))
             self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   False  ))  
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":about",             self.qlabout,                 "About",                      "About",                     None,                   False  ))
