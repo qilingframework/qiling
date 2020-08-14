@@ -8,6 +8,7 @@ import os
 from qiling.exception import QlErrorOutput
 from qiling.const import QL_DEBUGGER
 from qiling.utils import debugger_convert, debugger_convert_str, ql_get_module_function
+from qiling.debugger.qdb import Qdb
 
 def ql_debugger_init(ql):
 
@@ -40,22 +41,22 @@ def ql_debugger_init(ql):
         DEBUGSESSION = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, DEBUGSESSION)
         ql.remote_debug = DEBUGSESSION(ql, conn, exit_point, mappings)
 
-    try:
-        remotedebugsrv, ip, port = '', '', ''
-        remotedebugsrv, ip, port = ql.debugger.split(':')
-    except:
-        ip, port = '', ''
+    default_remotedebugsrv = "gdb"
 
-    remotedebugsrv = "gdb"
-    
-    try:
-        ip, port = ql.debugger.split(':')
-        # If only ip:port is defined, remotedebugsrv is always gdb
-    except:
-        if ip is None:
-            ip = "127.0.0.0"
-        if port is None:
-            port = "9999" 
+    if ql.debugger == "qdb":
+        ql.hook_address(Qdb.attach, ql.os.entry_point)
+        return
+
+    if ql.debugger != True:            
+        debug_len = ql.debugger.split(':')
+        if len(debug_len) == 3:
+            remotedebugsrv, ip, port = debug_len
+        else:
+            ip, port = ql.debugger.split(':')
+            remotedebugsrv = default_remotedebugsrv
+
+    else:
+        remotedebugsrv = default_remotedebugsrv
 
     remotedebugsrv = debugger_convert(remotedebugsrv)
 

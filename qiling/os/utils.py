@@ -9,7 +9,7 @@ This module is intended for general purpose functions that are only used in qili
 
 import os, struct, uuid
 from json import dumps
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from unicorn import *
 from unicorn.arm_const import *
 from unicorn.x86_const import *
@@ -26,6 +26,77 @@ from qiling.const import *
 from qiling.exception import *
 from .const import *
 
+# OH-MY-WIN32 !!!
+# Some codes from cygwin.
+class PathUtils:
+
+    def __init__(self, cwd):
+        self._cwd = cwd
+
+
+    # Basic guide:
+    #     We should only handle "normal" paths like "C:\Windows\System32" and "bin/a.exe" for users.
+    #     For UNC paths like '\\.\PHYSICALDRIVE0" and "\\Server\Share", they should be implemented 
+    #     by users via fs mapping interface.
+    @staticmethod
+    def convert_win32_to_posix(rootfs, cwd, path):
+        # rootfs is a concrete path.
+        rootfs = Path(rootfs)
+        # cwd and path are pure paths
+        cwd = PurePosixPath(cwd[1:])
+
+        # First, convert all slashes to backslashes
+        result = None
+        # Things are complicated here.
+        # See https://docs.microsoft.com/zh-cn/windows/win32/fileio/naming-a-file?redirectedfrom=MSDN
+        if PureWindowsPath(path).is_absolute():
+            if len(path) >= 2 and path[0] == '\\' and path[1] == '\\': # \\.\PhysicalDrive0 or \\Server\Share\Directory or X:\
+                # UNC path should be handled in fs mapping. If not, append it to rootfs directly.
+                pw = PureWindowsPath(path)
+                relative_path = cwd / pw.relative_to(pw.anchor)
+                result = rootfs / relative_path
+            else:
+                # code should never reach here.
+                relative_path = cwd / path
+                result = rootfs / relative_path
+        else:
+            if len(path) >= 3 and path[:3] == r'\\?' or path[:3] == r'\??': # \??\ or \\?\ or \Device\..
+                # Similair to \\.\, it should be handled in fs mapping.
+                pw = PureWindowsPath(path)
+                relative_path = cwd / pw.relative_to(pw.anchor)
+                result = rootfs / relative_path
+            else:
+                # a normal relative path
+                relative_path = cwd / PureWindowsPath(path)
+                result = rootfs / relative_path
+        return result, relative_path
+
+
+    @staticmethod
+    def convert_posix_to_win32(rootfs, cwd, path):
+        # rootfs is a concrete path.
+        rootfs = Path(rootfs)
+        # cwd and path are pure paths
+        cwd = PurePosixPath(cwd[1:])
+        path = PurePosixPath(path)
+        if path.is_absolute():
+            relative_path = cwd / path.relative_to(path.anchor)
+            return rootfs / relative_path, relative_path
+        else:
+            relative_path = cwd / path
+            return rootfs / relative_path, relative_path
+    
+    @staticmethod
+    def convert_for_native_os(rootfs, cwd, path):
+        rootfs = Path(rootfs)
+        cwd = PurePosixPath(cwd[1:])
+        path = Path(path)
+        if path.is_absolute():
+            relative_path = cwd / path.relative_to(path.anchor)
+            return rootfs / relative_path, relative_path
+        else:
+            relative_path = cwd / path
+            return rootfs / relative_path, relative_path
 
 class QLOsUtils:
     def __init__(self, ql):
@@ -47,117 +118,75 @@ class QLOsUtils:
 
         return ebsc
 
+    def convert_path(self, rootfs, cwd, path):
+        if  (self.ql.ostype == self.ql.platform ) \
+            or (self.ql.ostype in [QL_OS.LINUX, QL_OS.MACOS] and self.ql.platform in [QL_OS.LINUX, QL_OS.MACOS]):
+            return PathUtils.convert_for_native_os(rootfs, cwd, path)
+        elif self.ql.ostype in [QL_OS.LINUX, QL_OS.MACOS] and self.ql.platform == QL_OS.WINDOWS:
+            return PathUtils.convert_posix_to_win32(rootfs, cwd, path)
+        elif self.ql.ostype == QL_OS.WINDOWS and self.ql.platform in [QL_OS.LINUX, QL_OS.MACOS]:
+            return PathUtils.convert_win32_to_posix(rootfs, cwd, path)
+        else:
+            return None, None
+    
     def transform_to_link_path(self, path):
         if self.ql.multithread:
             cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
             cur_path = self.ql.os.current_path
 
+        # Sanity check.
+        if cur_path[0] != '/':
+            self.ql.nprint(f"[!] Warning: cur_path doesn't start with a /")
+        
         rootfs = self.ql.rootfs
+        real_path, relative_path = self.convert_path(rootfs, cur_path, path)
 
-        if path[0] == '/':
-            relative_path = os.path.abspath(path)
-        else:
-            relative_path = os.path.abspath(cur_path + '/' + path)
-
-        from_path = None
-        to_path = None
         for fm, to in self.ql.fs_mapper:
-            fm_l = len(fm)
-            if len(relative_path) >= fm_l and relative_path[: fm_l] == fm:
-                from_path = fm
-                to_path = to
-                break
-
-        if from_path is not None:
-            real_path = os.path.abspath(to_path + relative_path[fm_l:])
-        else:
-            real_path = os.path.abspath(rootfs + '/' + relative_path)
-
-        return real_path
+            if isinstance(fm, str):
+                try:
+                    remains = relative_path.relative_to(Path(fm))
+                    real_path = Path(to) / remains
+                except ValueError:
+                    continue
+        return str(real_path.absolute())
 
     def transform_to_real_path(self, path):
         from types import FunctionType
-
-        # FIXME: Need a FULL refactor!!!
 
         if self.ql.multithread:
             cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
             cur_path = self.ql.os.current_path
 
-        rootfs = self.ql.rootfs
-
-        if path[0] == '/':
-            full_relative_path = path
-        else:
-            full_relative_path = cur_path + "/" + path
+        # Sanity check.
+        if cur_path[0] != '/':
+            self.ql.nprint(f"[!] Warning: cur_path doesn't start with a /")
         
-        # Temporary work around till we got a new path transformer
-        if full_relative_path.startswith("//") and not full_relative_path.count("PHYSICALDRIVE"):
-            relative_path = str((Path(rootfs) / full_relative_path[2:]).relative_to(Path(rootfs)))
-        elif full_relative_path.count("PHYSICALDRIVE") and self.ql.ostype == QL_OS.WINDOWS:
-            relative_path = str((Path(rootfs) / full_relative_path[7:]).relative_to(Path(rootfs)))
-        else:    
-            relative_path = str((Path(rootfs) / full_relative_path[1:]).relative_to(Path(rootfs)))
+        rootfs = self.ql.rootfs
+        real_path, relative_path = self.convert_path(rootfs, cur_path, path)
 
-        from_path = None
-        to_path = None
-        virtual_path = None
+        # TODO: A better design for fs mapping.
         for fm, to in self.ql.fs_mapper:
+            if to == path and not isinstance(fm, str):
+                real_path = fm
+                return real_path
+            elif isinstance(fm, str):
+                try:
+                    remains = relative_path.relative_to(Path(fm))
+                    real_path = Path(to) / remains
+                except ValueError:
+                    continue
+        
+        if os.path.islink(real_path):
+            link_path = os.readlink(real_path)
+            if link_path.is_absolute():
+                real_path = Path(link_path)
+            else:
+                real_path = Path(os.path.join(os.path.dirname(path), link_path))
+            
 
-            if isinstance(fm, str):
-                fm_l = len(fm)
-                if len(relative_path) >= fm_l and relative_path[: fm_l] == fm:
-                    from_path = fm
-                    to_path = to
-                    break
-
-            elif to == path and not isinstance(fm, str):
-                virtual_path = fm
-                to_path = to
-                break
-
-        if not isinstance(virtual_path, str) and virtual_path != None:
-            real_path = virtual_path
-
-        elif from_path is not None:
-            real_path = os.path.abspath(to_path + relative_path[fm_l:])
-
-        else:
-            if rootfs is None:
-                rootfs = ""
-            real_path = os.path.abspath(Path(rootfs) /  relative_path)
-
-            if os.path.islink(real_path):
-                link_path = os.readlink(real_path)
-                if link_path[0] == '/':
-                    real_path = self.ql.os.transform_to_real_path(link_path)
-                else:
-                    real_path = self.ql.os.transform_to_real_path(os.path.dirname(relative_path) + '/' + link_path)
-
-                # FIXME: Quick and dirty fix. Need to check more
-                if not os.path.exists(real_path):
-                    real_path = os.path.abspath(rootfs + '/' + relative_path)
-
-                    if os.path.islink(real_path):
-                        link_path = os.readlink(real_path)
-                    else:
-                        link_path = relative_path
-
-                    path_dirs = link_path.split(os.path.sep)
-                    if link_path[0] == '/':
-                        path_dirs = path_dirs[1:]
-
-                    for i in range(0, len(path_dirs) - 1):
-                        path_prefix = os.path.sep.join(path_dirs[:i + 1])
-                        real_path_prefix = self.ql.os.transform_to_real_path(path_prefix)
-                        path_remain = os.path.sep.join(path_dirs[i + 1:])
-                        real_path = os.path.join(real_path_prefix, path_remain)
-                        if os.path.exists(real_path):
-                            break
-
-        return real_path
+        return str(real_path.absolute())
 
     def transform_to_relative_path(self, path):
         if self.ql.multithread:
@@ -165,12 +194,8 @@ class QLOsUtils:
         else:
             cur_path = self.ql.os.current_path
 
-        if path[0] == '/':
-            relative_path = os.path.abspath(path)
-        else:
-            relative_path = os.path.abspath(cur_path + '/' + path)
 
-        return relative_path
+        return str(Path(cur_path[1:]) / path)
 
     def post_report(self):
         self.ql.dprint(D_RPRT, "[+] Syscalls called")
@@ -228,6 +253,9 @@ class QLOsUtils:
                 # md = Cs(CS_ARCH_ARM, mode + CS_MODE_BIG_ENDIAN)
             else:
                 md = Cs(CS_ARCH_ARM, mode)
+
+        elif self.ql.archtype == QL_ARCH.ARM_THUMB:
+            md = Cs(CS_ARCH_ARM, CS_MODE_THUMB)
 
         elif self.ql.archtype == QL_ARCH.X86:  # QL_X86
             md = Cs(CS_ARCH_X86, CS_MODE_32)

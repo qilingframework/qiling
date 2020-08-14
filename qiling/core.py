@@ -189,7 +189,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.count = count
         
         # init debugger
-        if self.debugger == True:
+        if self.debugger != False and self.debugger != None:
             ql_debugger_init(self)
 
         # patch binary
@@ -199,7 +199,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.os.run()
 
         # resume with debugger
-        if self.debugger == True:
+        if self.debugger != False and self.debugger != None:
             self.remote_debug.run()
 
 
@@ -256,6 +256,9 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):
         self.uc.emu_start(begin, end, timeout, count)
+        
+        if self.internal_exception != None:
+            raise self.internal_exception
 
 
     # save all qiling instance states

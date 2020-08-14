@@ -3,8 +3,8 @@ import cmd
 from qiling import *
 from qiling.const import *
 from functools import partial
-from .frontend import context_printer, context_reg, context_asm, examine_mem
-from .utils import parse_int, handle_bnj, color
+from .frontend import context_printer, context_reg, context_asm, examine_mem, color
+from .utils import parse_int, handle_bnj
 
 
 
@@ -23,6 +23,7 @@ class Qldbg(cmd.Cmd):
         self._ql = ql
         self.prompt = "(Qdb) "
         self.breakpoints = {}
+        self._saved_states = None
 
         super().__init__()
 
@@ -34,7 +35,10 @@ class Qldbg(cmd.Cmd):
         for i in ql._addr_hook_fuc.keys():
             ql.uc.hook_del(ql._addr_hook_fuc[i])
 
-        cls(None, None, ql=ql).cmdloop()
+        cls(None, None, ql=ql).interactive()
+
+    def interactive(self):
+        self.cmdloop()
 
     def emptyline(self, *args):
         """
@@ -107,7 +111,7 @@ class Qldbg(cmd.Cmd):
         """
         show context information for current location
         """
-        context_reg(self._ql)
+        context_reg(self._ql, self._saved_states)
         context_asm(self._ql, self._ql.reg.arch_pc, 4)
 
     def do_run(self, *args):
@@ -136,6 +140,7 @@ class Qldbg(cmd.Cmd):
             print("The program is not being run.")
 
         else:
+            self._saved_states = dict(filter(lambda d: isinstance(d[0], str), self._ql.reg.save().items()))
             _cur_addr = self._ql.reg.arch_pc
             next_stop = handle_bnj(self._ql, _cur_addr)
 

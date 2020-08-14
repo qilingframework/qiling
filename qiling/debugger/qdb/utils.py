@@ -24,14 +24,18 @@ def dump_regs(ql, *args, **kwargs):
     
     if ql.archtype == QL_ARCH.MIPS:
 
-        print(color.DARKCYAN, "gp: 0x%08x \t at: 0x%08x \t v0: 0x%08x \t v1: 0x%08x" % (ql.reg.gp, ql.reg.at, ql.reg.v0, ql.reg.v1), color.END, sep="")
-        print(color.BLUE,     "a0: 0x%08x \t a1: 0x%08x \t a2: 0x%08x \t a3: 0x%08x" % (ql.reg.a0, ql.reg.a1, ql.reg.a2, ql.reg.a3), color.END, sep="")
-        print(color.RED,      "t0: 0x%08x \t t1: 0x%08x \t t2: 0x%08x \t t3: 0x%08x" % (ql.reg.t0, ql.reg.t1, ql.reg.t2, ql.reg.t3), color.END, sep="")
-        print(color.YELLOW,   "t4: 0x%08x \t t5: 0x%08x \t t6: 0x%08x \t t7: 0x%08x" % (ql.reg.t4, ql.reg.t5, ql.reg.t6, ql.reg.t7), color.END, sep="")
-        print(color.GREEN,    "t8: 0x%08x \t t9: 0x%08x \t sp: 0x%08x \t fp: 0x%08x" % (ql.reg.t8, ql.reg.t9, ql.reg.sp, ql.reg.s8), color.END, sep="")
-        print(color.PURPLE,   "s0: 0x%08x \t s1: 0x%08x \t s2: 0x%08x \t s3: 0x%08x" % (ql.reg.s0, ql.reg.s1, ql.reg.s2, ql.reg.s3), color.END, sep="")
-        print(color.CYAN,     "s4: 0x%08x \t s5: 0x%08x \t s6: 0x%08x \t s7: 0x%08x" % (ql.reg.s4, ql.reg.s5, ql.reg.s6, ql.reg.s7), color.END, sep="")
-        print(color.DARKGRAY, "ra: 0x%08x \t k0: 0x%08x \t k1: 0x%08x \t pc: 0x%08x" % (ql.reg.ra, ql.reg.k0, ql.reg.k1, ql.reg.pc), color.END, sep="")
+        _reg_order = (
+                "gp", "at", "v0", "v1",
+                "a0", "a1", "a2", "a3",
+                "t0", "t1", "t2", "t3",
+                "t4", "t5", "t6", "t7",
+                "t8", "t9", "sp", "s8",
+                "s0", "s1", "s2", "s3",
+                "s4", "s5", "s6", "s7",
+                "ra", "k0", "k1", "pc",
+                )
+
+        return { reg_name: getattr(ql.reg, reg_name) for reg_name in _reg_order}
 
 
 def dump_stack(ql, *args, **kwargs):
