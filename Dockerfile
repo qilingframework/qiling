@@ -20,7 +20,6 @@ RUN apk add --no-cache \
 
 RUN git clone -b dev https://github.com/qilingframework/qiling.git \
     && cd qiling \
-    && pip3 install -r requirements.txt \
     && python3 setup.py install \ 
     && rm -rf /tmp/*
 
