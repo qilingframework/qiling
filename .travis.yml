@@ -52,7 +52,7 @@ matrix:
 #              sudo pip3 install $HOME/dist/*.whl;
 #          fi
         - cd $TRAVIS_BUILD_DIR 
-        - pip3 install . # Workaround since building from capstone sources doesn't work on Macos.
+        - pip3 install . # Workaround since building from keystone sources doesn't work on Macos. Not sure why and I guess it's due to Travis. :/
       before_script:
         - ./examples/scripts/collectdylib.sh
         - cd tests
