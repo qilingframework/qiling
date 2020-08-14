@@ -44,6 +44,7 @@ class QLEmuRegView(simplecustviewer_t):
     def __init__(self, owner):
         super(QLEmuRegView, self).__init__()
         self.hooks = None
+        self.owner = owner
 
     def Create(self):
         title = "QL Reg View"
@@ -71,7 +72,7 @@ class QLEmuRegView(simplecustviewer_t):
 
             def finish_populating_widget_popup(self, widget, popup):
                 if self.form.title == get_widget_title(widget):
-                    attach_dynamic_action_to_popup(widget, popup, action_desc_t(None, "Change Reg", self.PopupActionHandler(self.form, self.form.menu_update),  None, None, -1))     
+                    attach_dynamic_action_to_popup(widget, popup, action_desc_t(None, "Edit Register", self.PopupActionHandler(self.form, self.form.menu_update),  None, None, -1))     
         
         if self.hooks is None:
             self.hooks = Hooks(self)
@@ -88,18 +89,18 @@ class QLEmuRegView(simplecustviewer_t):
         self.ClearLines()
 
         view_title = COLSTR("Reg value at { ", SCOLOR_AUTOCMT)
-        view_title += COLSTR("0x%X: " % addr, SCOLOR_DREF)
+        view_title += COLSTR("IDA Address:0x%X | QL Address:0x%X" % (addr, addr + self.owner.qlemu.baseaddr), SCOLOR_DREF)
         # TODO: Add disass should be better
         view_title += COLSTR(" }", SCOLOR_AUTOCMT)
         self.AddLine(view_title)
         self.AddLine("")
 
         reglist = QLEmuMisc.get_reg_map(ql)
-        lines = len(reglist)
         line = ""
-        for reg in reglist:
-            cols = 3
-            while cols:
+        cols = 3
+        reglist = [reglist[i:i+cols] for i in range(0,len(reglist),cols)]
+        for regs in reglist:
+            for reg in regs:
                 line += COLSTR(" %4s: " % str(reg), SCOLOR_REG)
                 regvalue = ql.reg.read(reg)
                 if arch in [QL_ARCH.X8664, QL_ARCH.ARM64]:
@@ -108,7 +109,6 @@ class QLEmuRegView(simplecustviewer_t):
                     value_format = "0x%.8X"
                 line += COLSTR(str(value_format % regvalue), SCOLOR_NUMBER)
                 # TODO: ljust will looks better
-                cols -= 1
             self.AddLine(line)
             line = ''
         self.AddLine(line)
@@ -122,6 +122,7 @@ class QLEmuRegView(simplecustviewer_t):
         if self.hooks:
             self.hooks.unhook()
             self.hooks = None
+        self.owner.close_reg_view()
 
 class QLEmuStackView(simplecustviewer_t):
     def __init__(self, owner):
@@ -340,16 +341,40 @@ Qiling:: Check for update
 
         return 1
 
+class QLEmuRegEditDialog(Form):
+    def __init__(self, regName):
+        Form.__init__(self, r"""STARTITEM {id:reg_val}
+BUTTON YES* Save
+BUTTON CANCEL Cancel
+Register Value
+{reg_label}
+<##:{reg_val}>
+""", {
+        'reg_label': Form.StringLabel("Edit [ " + regName + " ] value"),
+        'reg_val': Form.NumericInput(tp=Form.FT_HEX, swidth=20)
+        })
+
 class QLEmuRegDialog(Choose):
     def __init__(self, reglist, flags=0, width=None, height=None, embedded=False):
         Choose.__init__(
             self, "QL Reg Edit", 
             [ ["Register", 10 | Choose.CHCOL_PLAIN], 
               ["Value", 30] ])
+        self.popup_names = ["", "", "Edit Value", ""]
         self.items = reglist
 
     def show(self):
         return self.Show(True) >= 0
+
+    def OnEditLine(self, n):
+        edit_dlg = QLEmuRegEditDialog(self.items[n][0])
+        edit_dlg.Compile()
+        edit_dlg.reg_val.value = self.items[n][1]
+        ok = edit_dlg.Execute()
+        if ok == 1:
+            newvalue = edit_dlg.reg_val.value
+            self.items[n][1] = int("%X" % newvalue, 16)
+        self.Refresh()
 
     def OnGetLine(self, n):
         if self.items[n][2] == 32:
@@ -481,14 +506,15 @@ class QLEmuQiling:
 
     def set_reg(self):
         reglist = QLEmuMisc.get_reg_map(self.ql)
-        regs = [ [ row, int(self.ql.reg.read(row)), ql_get_arch_bits(self.ql.archtype), False ] for row in reglist ]
-        lines = len(regs)        
+        regs = [ [ row, int(self.ql.reg.read(row)), ql_get_arch_bits(self.ql.archtype) ] for row in reglist ]
+        regs_len = len(regs)
         RegDig = QLEmuRegDialog(regs)
         if RegDig.show():
+            for idx, val in enumerate(RegDig.items[0:regs_len-1]):
+                self.ql.reg.write(reglist[idx], val[1])
             return True
         else:
             return False
-
 
     def save(self):
         savedlg = QLEmuSaveDialog()
@@ -604,6 +630,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                 finally:
                     hide_wait_box()
             self.qlemu.ql.hook_del(pathhook)
+            self.update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
             print('Please setup Qiling first')
 
@@ -627,6 +654,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                 
             self.qlemu.ql.hook_del(untillhook)
             self.qlemu.status = self.qlemu.ql.save()
+            self.update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
             print('Please setup Qiling first')
 
@@ -636,6 +664,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.ql.restore(saved_states=self.qlemu.status)
             self.stephook = self.qlemu.ql.hook_code(callback=self.qlstephook)
             self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
+            self.update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
             print('Please setup Qiling first')
 
@@ -656,6 +685,8 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     def qlchangreg(self):
         if self.qlinit:
             self.qlemu.set_reg()
+            self.update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
+            self.qlemu.status = self.qlemu.ql.save()
         else:
             print('Please setup Qiling first')       
 
@@ -686,7 +717,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             if self.qlemuregview is None:
                 self.qlemuregview = QLEmuRegView(self)
                 self.qlemuregview.Create()
-                self.qlemuregview.SetReg(self.qlemu.ql.reg.arch_pc - self.qlemu.baseaddr, self.qlemu.ql)
+                self.qlemuregview.SetReg(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
                 self.qlemuregview.Show()
                 self.qlemuregview.Refresh()
         else:
@@ -784,7 +815,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         addr = addr - self.qlemu.baseaddr
         if self.stepflag:
             set_color(addr, CIC_ITEM, 0x00FFD700)
-            self.update_views(addr, ql)
+            self.update_views(self.qlemu.ql.reg.arch_pc, ql)
             self.qlemu.status = ql.save()
             ql.os.stop()
             self.qlemu.ql.hook_del(self.stephook)
@@ -918,7 +949,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def update_views(self, addr, ql):
         if self.qlemuregview is not None:
-            self.qlemuregview.SetReg(addr, ql)
+            self.qlemuregview.SetReg(addr - self.qlemu.baseaddr, ql)
 
         if self.qlemustackview is not None:
             self.qlemustackview.SetStack(self.qlemu.ql)
