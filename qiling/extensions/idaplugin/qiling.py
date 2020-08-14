@@ -41,13 +41,13 @@ QilingGithubVersion = 'https://raw.githubusercontent.com/qilingframework/qiling/
 
 ### View Class
 class QLEmuRegView(simplecustviewer_t):
-    def __init__(self, owner):
+    def __init__(self, ida_subview):
         super(QLEmuRegView, self).__init__()
         self.hooks = None
-        self.owner = owner
+        self.ida_subview = ida_subview
 
     def Create(self):
-        title = "QL Reg View"
+        title = "QL Register View"
         if not simplecustviewer_t.Create(self, title):
             return False
 
@@ -55,13 +55,13 @@ class QLEmuRegView(simplecustviewer_t):
 
         class Hooks(UI_Hooks):
             class PopupActionHandler(action_handler_t):
-                def __init__(self, owner, menu_id):
+                def __init__(self, ida_subview, menu_id):
                     action_handler_t.__init__(self)
-                    self.owner = owner
+                    self.ida_subview = ida_subview
                     self.menu_id = menu_id
 
                 def activate(self, ctx):
-                    self.owner.OnPopupMenu(self.menu_id)
+                    self.ida_subview.OnPopupMenu(self.menu_id)
 
                 def update(self, ctx):
                     return AST_ENABLE_ALWAYS
@@ -89,7 +89,7 @@ class QLEmuRegView(simplecustviewer_t):
         self.ClearLines()
 
         view_title = COLSTR("Reg value at { ", SCOLOR_AUTOCMT)
-        view_title += COLSTR("IDA Address:0x%X | QL Address:0x%X" % (addr, addr + self.owner.qlemu.baseaddr), SCOLOR_DREF)
+        view_title += COLSTR("IDA Address:0x%X | QL Address:0x%X" % (addr, addr + self.ida_subview.qlemu.baseaddr), SCOLOR_DREF)
         # TODO: Add disass should be better
         view_title += COLSTR(" }", SCOLOR_AUTOCMT)
         self.AddLine(view_title)
@@ -116,18 +116,18 @@ class QLEmuRegView(simplecustviewer_t):
 
     def OnPopupMenu(self, menu_id):
         if menu_id == self.menu_update:
-            self.owner.qlchangreg()
+            self.ida_subview.qlchangreg()
 
     def OnClose(self):
         if self.hooks:
             self.hooks.unhook()
             self.hooks = None
-        self.owner.close_reg_view()
+        self.ida_subview.close_reg_view()
 
 class QLEmuStackView(simplecustviewer_t):
-    def __init__(self, owner):
+    def __init__(self, ida_subview):
         super(QLEmuStackView, self).__init__()
-        self.owner = owner
+        self.ida_subview = ida_subview
 
     def Create(self):
         title = "QL Stack View"
@@ -167,12 +167,12 @@ class QLEmuStackView(simplecustviewer_t):
             self.AddLine(COLSTR(line, clr))  
 
     def OnClose(self):
-        self.owner.close_stack_view()
+        self.ida_subview.close_stack_view()
 
 class QLEmuMemView(simplecustviewer_t):
-    def __init__(self, owner, addr, size):
+    def __init__(self, ida_subview, addr, size):
         super(QLEmuMemView, self).__init__()
-        self.owner = owner
+        self.ida_subview = ida_subview
         self.viewid = addr
         self.addr = addr
         self.size = size
@@ -241,7 +241,7 @@ class QLEmuMemView(simplecustviewer_t):
         self.lastContent = memory
 
     def OnClose(self):
-        self.owner.close_mem_view(self.viewid)
+        self.ida_subview.close_mem_view(self.viewid)
 
 
 ### Dialog Class
@@ -357,7 +357,7 @@ Register Value
 class QLEmuRegDialog(Choose):
     def __init__(self, reglist, flags=0, width=None, height=None, embedded=False):
         Choose.__init__(
-            self, "QL Reg Edit", 
+            self, "QL Register Edit", 
             [ ["Register", 10 | Choose.CHCOL_PLAIN], 
               ["Value", 30] ])
         self.popup_names = ["", "", "Edit Value", ""]
@@ -716,6 +716,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         if self.qlinit:
             if self.qlemuregview is None:
                 self.qlemuregview = QLEmuRegView(self)
+                QLEmuRegView(self)
                 self.qlemuregview.Create()
                 self.qlemuregview.SetReg(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
                 self.qlemuregview.Show()
