@@ -14,6 +14,10 @@ class QlLoaderDOS(QlLoader):
             # pure com
             self.cs = int(self.ql.profile.get("COM", "start_cs"), 16)
             self.ip = int(self.ql.profile.get("COM", "start_ip"), 16)
+            self.ql.reg.ds = self.cs
+            self.ql.reg.es = self.cs
+            self.ql.reg.ss = self.cs
+            self.ql.reg.ip = self.ip
             self.start_address = self.cs*16 + self.ip
             self.base_address = int(self.ql.profile.get("COM", "base_address"), 16)
             self.ql.mem.map(self.base_address, 64*1024)

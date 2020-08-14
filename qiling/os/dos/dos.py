@@ -139,10 +139,6 @@ class QlOsDos(QlOs):
             self.ql.entry_point = self.ql.loader.start_address
         if not self.ql.shellcoder:
             try:
-                self.ql.reg.write("ds", self.ql.loader.cs)
-                self.ql.reg.write("es", self.ql.loader.cs)
-                self.ql.reg.write("ss", self.ql.loader.cs)
-                self.ql.reg.write("ip", self.ql.loader.ip)
                 self.ql.emu_start(self.ql.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
             except UcError:
                 self.emu_error()
