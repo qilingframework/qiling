@@ -17,6 +17,7 @@ from qiling.os.windows.utils import *
 from unicorn.x86_const import *
 
 class PETest(unittest.TestCase):
+
     def test_pe_win_x8664_hello(self):
         ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows",
                     output="default")
