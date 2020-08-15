@@ -976,6 +976,10 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    def test_x8664_symlink(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux_symlink/bin/x8664_hello"],  "../examples/rootfs/x8664_linux_symlink", output="debug")
+        ql.run()
+        del ql   
 
 if __name__ == "__main__":
     unittest.main()
