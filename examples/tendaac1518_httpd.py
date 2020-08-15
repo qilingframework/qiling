@@ -60,7 +60,7 @@ def myvfork(ql):
 
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, output = "debug")
-    ql.add_fs_mapper("/dev/urandom","/dev/urandom")
+    #ql.add_fs_mapper("/dev/urandom","/dev/urandom")
     ql.hook_address(patcher, ql.loader.elf_entry)
     
     # $ gdb-multiarch -q rootfs/bin/httpd 
