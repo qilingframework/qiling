@@ -262,6 +262,9 @@ class QLOsUtils:
         elif self.ql.archtype == QL_ARCH.ARM64:  # QL_ARM64
             md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 
+        elif self.ql.archtype == QL_ARCH.A8086:  # QL_ARM64
+            md = Cs(CS_ARCH_X86, CS_MODE_16)
+
         elif self.ql.archtype == QL_ARCH.MIPS:  # QL_MIPS32
             if self.ql.archendian == QL_ENDIAN.EB:
                 md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_BIG_ENDIAN)
