@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-import os, struct, uuid
+import inspect, os, struct, uuid
 from json import dumps
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from unicorn import *
@@ -138,11 +138,11 @@ class QLOsUtils:
         rootfs = self.ql.rootfs
         real_path, relative_path = self.convert_path(rootfs, cur_path, path)
 
-        for fm, to in self.ql.fs_mapper:
-            if isinstance(fm, str):
+        for ql_path, real_dest in self.ql.fs_mapper:
+            if isinstance(real_dest, str):
                 try:
-                    remains = relative_path.relative_to(Path(fm))
-                    real_path = Path(to) / remains
+                    remains = relative_path.relative_to(Path(real_dest))
+                    real_path = Path(ql_path) / remains
                 except ValueError:
                     continue
         return str(real_path.absolute())
@@ -157,22 +157,15 @@ class QLOsUtils:
 
         # Sanity check.
         if cur_path[0] != '/':
-            self.ql.nprint(f"[!] Warning: cur_path doesn't start with a /")
+            self.ql.nprint(f"[!] Warning: cur_path must start with /")
 
         rootfs = self.ql.rootfs
         real_path, relative_path = self.convert_path(rootfs, cur_path, path)
 
         # TODO: A better design for fs mapping.
-        for fm, to in self.ql.fs_mapper:
-            if to == path and not isinstance(fm, str):
-                real_path = fm
-                return real_path
-            elif isinstance(fm, str):
-                try:
-                    remains = relative_path.relative_to(Path(fm))
-                    real_path = Path(to) / remains
-                except ValueError:
-                    continue
+        for ql_path, real_dest in self.ql.fs_mapper:
+            if ql_path == path:
+                return real_dest
         
         if os.path.islink(real_path):
             link_path = Path(os.readlink(real_path))
