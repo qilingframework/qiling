@@ -177,8 +177,7 @@ class QLOsUtils:
         if os.path.islink(real_path):
             link_path = Path(os.readlink(real_path))
             if not link_path.is_absolute():
-                # avoid prefix slash in dirname and prepend rootfs path 
-                real_path = Path(os.path.join(rootfs, os.path.dirname(path)[1:], link_path))
+                real_path = Path(os.path.join(os.path.dirname(real_path), link_path))
             
         return str(real_path.absolute())
 
