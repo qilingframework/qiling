@@ -158,7 +158,7 @@ class QLOsUtils:
         # Sanity check.
         if cur_path[0] != '/':
             self.ql.nprint(f"[!] Warning: cur_path doesn't start with a /")
-        
+
         rootfs = self.ql.rootfs
         real_path, relative_path = self.convert_path(rootfs, cur_path, path)
 
@@ -175,13 +175,10 @@ class QLOsUtils:
                     continue
         
         if os.path.islink(real_path):
-            link_path = os.readlink(real_path)
-            if link_path.is_absolute():
-                real_path = Path(link_path)
-            else:
-                real_path = Path(os.path.join(os.path.dirname(path), link_path))
+            link_path = Path(os.readlink(real_path))
+            if not link_path.is_absolute():
+                real_path = Path(os.path.join(os.path.dirname(real_path), link_path))
             
-
         return str(real_path.absolute())
 
     def transform_to_relative_path(self, path):
