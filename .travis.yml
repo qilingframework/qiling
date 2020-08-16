@@ -101,7 +101,7 @@ matrix:
 #              cp $HOME/dist/keystone.dll /c/Python36/Lib/site-packages/keystone/;
 #          fi
         - cd $TRAVIS_BUILD_DIR
-        - python setup.py install
+        - pip3 install .
 #        - cp /c/Program\ Files\ \(x86\)/keystone/lib/keystone.dll /c/Python36/Lib/site-packages/keystone/
       before_script:
         - cmd.exe //C 'examples\scripts\dllscollector.bat'
@@ -132,7 +132,7 @@ matrix:
 #        - docker exec qiling pip3 install -r requirements.txt
 #        - docker exec qiling python3 setup.py install
       script:
-        - docker run -it --rm -v ${TRAVIS_BUILD_DIR}:/qiling qilingframework/qiling:dev bash -c "python3 setup.py install && cd tests && ./test_elf.sh"
+        - docker run -it --rm -v ${TRAVIS_BUILD_DIR}:/qiling qilingframework/qiling:dev bash -c "pip3 install . && cd tests && ./test_elf.sh"
 #        - docker exec qiling bash -c "cd tests && ./test_elf.sh"
 
 #    - name: "Python 3.6 on WSL1 Ubuntu"
