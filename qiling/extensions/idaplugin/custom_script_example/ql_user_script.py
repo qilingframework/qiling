@@ -1,6 +1,6 @@
 from qiling import *
 
-class QL_USER_SCRIPT():
+class QL_CUSTOM_SCRIPT():
     def __init__(self):
         pass
 

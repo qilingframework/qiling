@@ -260,16 +260,19 @@ Specify start address and size of new memory range.
         'mem_cmnt': Form.StringInput(swidth=41)
     })
 
-class QLEmuRootfsDialog(Form):
+class QLEmuSetUpDialog(Form):
     def __init__(self):
         Form.__init__(self, r"""STARTITEM {id:path_name}
 BUTTON YES* Start
 BUTTON CANCEL Cancel
-Rootfs Path
-<#Select Rootfs to open#Path\::{path_name}>
+Setup Qiling
+<#Select Rootfs to open#Rootfs path\:        :{path_name}>
+<#Custom script path   #Custom script path\: :{script_name}>
 """, {
-        'path_name': Form.DirInput(swidth=50)
-    })    
+        'path_name': Form.DirInput(swidth=50),
+        'script_name': Form.DirInput(swidth=50),
+    })
+ 
 class QLEmuSaveDialog(Form):
     def __init__(self):
         Form.__init__(self, r"""STARTITEM {id:path_name}
@@ -577,6 +580,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.qlinit = False
         self.lastaddr = None
         self.userobj = None
+        self.customscriptpath = None
 
     ### Main Framework
 
@@ -615,6 +619,10 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             finally:
                 hide_wait_box()
                 print("Qiling initialized done")
+        if self.qlinit:
+            self.qlgetuserscripts()
+        else:
+            print('Please setup Qiling first')
 
     def qlloaduserscript(self):
         if self.qlinit:
@@ -868,20 +876,24 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     ### User Scripts
 
     def qlgetuserscripts(self, is_reload=False):
-        import importlib
-
-        def get_user_scripts_obj(name:str, is_reload:bool):
+        def get_user_scripts_obj(scriptpath:str, classname:str, is_reload:bool):
             try:
-                str_module,_,str_class = name.partition('|')
-                module = importlib.import_module(str_module)
+                import sys
+                import importlib
+
+                modulepath,filename = os.path.split(scriptpath)
+                scriptname,_ = os.path.splitext(filename)
+                module = importlib.import_module(scriptname)
+
+                sys.path.append(modulepath)
                 if is_reload:
                     importlib.reload(module)
-                cls = getattr(module, str_class)
+                cls = getattr(module, classname)
                 return cls()
             except:
                 return None
 
-        self.userobj = get_user_scripts_obj('ql_user_scripts|QL_USER_SCRIPT', is_reload)
+        self.userobj = get_user_scripts_obj(self.customscriptpath, 'QL_CUSTOM_SCRIPT', is_reload)
         if self.userobj is not None:
             if is_reload:
                 print('User Script Reload')
@@ -893,13 +905,18 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
     ### Dialog
 
     def qlsetrootfs(self):
-        rootfsdlg = QLEmuRootfsDialog()
-        rootfsdlg.Compile()
+        setupdlg = QLEmuSetUpDialog()
+        setupdlg.Compile()
 
-        if rootfsdlg.Execute() != 1:
+        if setupdlg.Execute() != 1:
             return False
 
-        rootfspath = rootfsdlg.path_name.value
+        rootfspath = setupdlg.path_name.value
+        customscript = setupdlg.script_name.value
+
+        if customscript is not None:
+            self.customscriptpath = customscript
+
         if self.qlemu is not None:
             self.qlemu.rootfs = rootfspath
             return True
