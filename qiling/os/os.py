@@ -5,14 +5,14 @@
 
 import os, sys, types
 
-from .utils import QLOsUtils
+from .utils import QlOsUtils
 from .const import *
 from .filestruct import ql_file
 from .mapper import QlFsMapper
 
 from qiling.const import *
 
-class QlOs(QLOsUtils):
+class QlOs(QlOsUtils):
     def __init__(self, ql):
         super(QlOs, self).__init__(ql)
         self.ql = ql

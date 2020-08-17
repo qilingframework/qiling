@@ -5,6 +5,7 @@
 
 from qiling import *
 from qiling.os.mapper import QlFsMappedObject
+
 class Fake_urandom(QlFsMappedObject):
 
     def read(self, size):

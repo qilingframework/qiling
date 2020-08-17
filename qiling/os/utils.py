@@ -93,7 +93,7 @@ class PathUtils:
             relative_path = cwd / path
             return rootfs / relative_path, relative_path
 
-class QLOsUtils:
+class QlOsUtils:
     def __init__(self, ql):
         self.ql = ql
         self.archtype = None

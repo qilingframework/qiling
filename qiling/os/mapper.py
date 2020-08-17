@@ -1,5 +1,5 @@
 from .filestruct import ql_file
-from .utils import QLOsUtils
+from .utils import QlOsUtils
 
 # All mapped objects should inherit this class.
 # Note this object is compatible with ql_file.
