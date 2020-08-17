@@ -48,7 +48,7 @@ class QlFsMappedObject:
     def name(self):
         raise NotImplementedError("QlFsMappedObject property not implemented: name")
 
-class FsMapper:
+class QlFsMapper:
     
     def __init__(self, ql):
         self._mapping = {}

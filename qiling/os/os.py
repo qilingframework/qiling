@@ -8,7 +8,7 @@ import os, sys, types
 from .utils import QLOsUtils
 from .const import *
 from .filestruct import ql_file
-from .mapper import FsMapper
+from .mapper import QlFsMapper
 
 from qiling.const import *
 
@@ -17,7 +17,7 @@ class QlOs(QLOsUtils):
         super(QlOs, self).__init__(ql)
         self.ql = ql
         self.ql.uc = self.ql.arch.init_uc
-        self.fs_mapper = FsMapper(ql)
+        self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
         self.current_path = '/'
