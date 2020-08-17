@@ -25,15 +25,11 @@ class ql_file:
     def open(self, open_path, open_flags, open_mode):
         open_mode &= 0x7fffffff
 
-        if isinstance(open_path, str):
-            try:
-                fd = os.open(open_path, open_flags, open_mode)
-            except OSError as e:
-                raise QlSyscallError(e.errno, e.args[1] + ' : ' + e.filename)
-            return self(open_path, fd)
-
-        elif not isinstance(open_path, str):
-            return open_path
+        try:
+            fd = os.open(open_path, open_flags, open_mode)
+        except OSError as e:
+            raise QlSyscallError(e.errno, e.args[1] + ' : ' + e.filename)
+        return self(open_path, fd)
 
     def read(self, read_len):
         return os.read(self.__fd, read_len)

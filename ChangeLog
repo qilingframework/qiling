@@ -12,6 +12,7 @@ This file details the changelog of Qiling Framework.
 - Add experimental 8086 and DOS support.
 - Fix path transformation on Windows when running Linux.
 - Idaplugin able to instrument code now
+- Refactor ql.fs_mapper (now ql.os.fs_mapper).
 
 
 ------------------------------------
