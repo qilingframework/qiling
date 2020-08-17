@@ -41,7 +41,6 @@ class PathUtils:
         # cwd and path are pure paths
         cwd = PurePosixPath(cwd[1:])
 
-        # First, convert all slashes to backslashes
         result = None
         # Things are complicated here.
         # See https://docs.microsoft.com/zh-cn/windows/win32/fileio/naming-a-file?redirectedfrom=MSDN
