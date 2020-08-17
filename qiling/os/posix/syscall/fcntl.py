@@ -75,7 +75,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
                 mode = 0
 
             openat_flags = ql_open_flag_mapping(ql, openat_flags)
-            ql.os.fd[idx] = ql.fs_mapper.open_ql_file(path, openat_flags, openat_mode)
+            ql.os.fd[idx] = ql.fs_mapper.open_ql_file(openat_path, openat_flags, openat_mode)
             regreturn = idx
         except:
             regreturn = -1
