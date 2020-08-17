@@ -17,4 +17,3 @@ class QL_CUSTOM_SCRIPT():
         print('user step hook')
         hook = ql.hook_code(step_hook)
         return hook
-
