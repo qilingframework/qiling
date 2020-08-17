@@ -81,7 +81,7 @@ class FsMapper:
 
     def open_ql_file(self, path, openflags, openmode):
         if self.has_mapping(path):
-            self.ql.nrpint(f"mapping {path}")
+            self.ql.nprint(f"mapping {path}")
             return self._open_mapping_ql_file(path, openflags, openmode)
         else:
             real_path = self.ql.os.transform_to_real_path(path)
