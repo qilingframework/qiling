@@ -619,10 +619,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             finally:
                 hide_wait_box()
                 print("Qiling initialized done")
-        if self.qlinit:
-            self.qlgetuserscripts()
-        else:
-            print('Please setup Qiling first')
+        self.qlloaduserscript()
 
     def qlloaduserscript(self):
         if self.qlinit:
@@ -877,21 +874,22 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def qlgetuserscripts(self, is_reload=False):
         def get_user_scripts_obj(scriptpath:str, classname:str, is_reload:bool):
-            try:
-                import sys
-                import importlib
+            # try:
+            import sys
+            import importlib
 
-                modulepath,filename = os.path.split(scriptpath)
-                scriptname,_ = os.path.splitext(filename)
-                module = importlib.import_module(scriptname)
+            modulepath,filename = os.path.split(scriptpath)
+            scriptname,_ = os.path.splitext(filename)
 
-                sys.path.append(modulepath)
-                if is_reload:
-                    importlib.reload(module)
-                cls = getattr(module, classname)
-                return cls()
-            except:
-                return None
+            sys.path.append(modulepath)
+            module = importlib.import_module(scriptname)
+
+            if is_reload:
+                importlib.reload(module)
+            cls = getattr(module, classname)
+            return cls()
+            # except:
+            #     return None
 
         self.userobj = get_user_scripts_obj(self.customscriptpath, 'QL_CUSTOM_SCRIPT', is_reload)
         if self.userobj is not None:
@@ -941,7 +939,6 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def register_menu_actions(self):
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Setup",                      "Setup",                     None,                   True   ))
-        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":loaduserscripts",   self.qlloaduserscript,        "Load User Scripts",          "Load User Scripts",         None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reloaduserscripts", self.qlreloaduserscript,      "Reload User Scripts",        "Reload User Scripts",       None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))        
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.qlruntohere,             "Execute Till",               "Execute Till",              None,                   True   ))
