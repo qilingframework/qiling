@@ -1,12 +1,12 @@
 from .filestruct import ql_file
 from .utils import QLOsUtils
 
-# All mapped object should inherit this class.
-# Note this object is compatible with ql_file
+# All mapped objects should inherit this class.
+# Note this object is compatible with ql_file.
 # Q: Why not derive from ql_file directly?
-# A: ql_file assumes that it holds a path with corresponding fd, but
-#    a FsMappedObejct doesn't have to be associated with a path or fd
-#    and thus the default implementation may cause unexpected behavior.
+# A: ql_file assumes that it holds a path with a corresponding fd, but
+#    a QlFsMappedObject doesn't have to be associated with a path or fd
+#    and thus the default implementation may cause unexpected behaviors.
 #    Simply let it crash if the method is not implemented.
 #
 #    A quick way to create a QlFsMappedObject is `ql_file.open` or `open`.
