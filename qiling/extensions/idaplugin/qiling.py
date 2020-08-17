@@ -550,17 +550,19 @@ class QLEmuQiling:
 ### Plugin
 
 class QLEmuPlugin(plugin_t, UI_Hooks):
-    ### ida plugin data
+    ### Ida Plugin Data
+
     popup_menu_hook = None
 
-    flags = PLUGIN_KEEP # PLUGIN_HIDE
+    flags = PLUGIN_KEEP
     comment = ""
 
     help = "Qiling Emulator"
     wanted_name = "Qiling Emulator"
     wanted_hotkey = ""
 
-    ### view data
+    ### View Data
+
     qlemuregview = None
     qlemustackview = None
     qlemumemview = {}
@@ -574,6 +576,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         self.stephook = None
         self.qlinit = False
         self.lastaddr = None
+        self.userobj = None
 
     ### Main Framework
 
@@ -613,9 +616,23 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                 hide_wait_box()
                 print("Qiling initialized done")
 
+    def qlloaduserscript(self):
+        if self.qlinit:
+            self.qlgetuserscripts()
+        else:
+            print('Please setup Qiling first')
+
+    def qlreloaduserscript(self):
+        if self.qlinit:
+            self.qlgetuserscripts(True)
+        else:
+            print('Please setup Qiling first')
+
     def qlcontinue(self):
         if self.qlinit:
             pathhook = self.qlemu.ql.hook_code(self.qlpathhook)
+            if self.userobj is not None:
+                userhook = self.userobj.ql_continue_hook_add(self.qlemu.ql)
             if self.qlemu.status is not None:
                 self.qlemu.ql.restore(self.qlemu.status)
                 show_wait_box("Qiling is processing ...")
@@ -630,6 +647,8 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                 finally:
                     hide_wait_box()
             self.qlemu.ql.hook_del(pathhook)
+            if userhook is not None:
+                self.qlemu.ql.hook_del(userhook)
             self.update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
             print('Please setup Qiling first')
@@ -642,7 +661,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemu.ql.restore(self.qlemu.status)
                 show_wait_box("Qiling is processing ...")
                 try:
-                    self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc ,end=curr_addr + self.qlemu.baseaddr)
+                    self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=curr_addr + self.qlemu.baseaddr)
                 finally:
                     hide_wait_box()
             else:
@@ -663,7 +682,11 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             self.stepflag = True
             self.qlemu.ql.restore(saved_states=self.qlemu.status)
             self.stephook = self.qlemu.ql.hook_code(callback=self.qlstephook)
+            if self.userobj is not None:
+                userhook = self.userobj.ql_step_hook_add(self.qlemu.ql)            
             self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
+            if userhook is not None:
+                self.qlemu.ql.hook_del(userhook)
             self.update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
             print('Please setup Qiling first')
@@ -689,7 +712,6 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.status = self.qlemu.ql.save()
         else:
             print('Please setup Qiling first')       
-
 
     def qlreset(self):
         if self.qlinit:
@@ -809,8 +831,8 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             warning("ERROR: Qiling failed to connect to internet (Github). Try again later.")
             print("Qiling: FAILED to connect to Github to check for latest update. Try again later.")
  
-
     ### Hook
+
     def qlstephook(self, ql, addr, size):
         self.stepflag = not self.stepflag
         addr = addr - self.qlemu.baseaddr
@@ -840,6 +862,31 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
         addr = addr - self.qlemu.baseaddr
         set_color(addr, CIC_ITEM, 0x00B3CBFF)
 
+    ### User Scripts
+
+    def qlgetuserscripts(self, is_reload=False):
+        import importlib
+
+        def get_user_scripts_obj(name:str, is_reload:bool):
+            try:
+                str_module,_,str_class = name.partition('|')
+                module = importlib.import_module(str_module)
+                if is_reload:
+                    importlib.reload(module)
+                cls = getattr(module, str_class)
+                return cls()
+            except:
+                return None
+
+        self.userobj = get_user_scripts_obj('ql_user_scripts|QL_USER_SCRIPT', is_reload)
+        if self.userobj is not None:
+            if is_reload:
+                print('User Script Reload')
+            else:
+                print('User Script Load')
+        else:
+            print('There Is No User Scripts')
+
     ### Dialog
 
     def qlsetrootfs(self):
@@ -855,8 +902,8 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             return True
         return False    
 
-
     ### Menu
+
     menuitems = []
 
     def register_new_action(self, act_name, act_text, act_handler, shortcut, tooltip, icon):
@@ -874,6 +921,8 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def register_menu_actions(self):
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":start",             self.qlstart,                 "Setup",                      "Setup",                     None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":loaduserscripts",   self.qlloaduserscript,        "Load User Scripts",          "Load User Scripts",         None,                   True   ))
+        self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":reloaduserscripts", self.qlreloaduserscript,      "Reload User Scripts",        "Reload User Scripts",       None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem("-",                                     self.qlmenunull,              "",                           None,                        None,                   True   ))        
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runtohere",         self.qlruntohere,             "Execute Till",               "Execute Till",              None,                   True   ))
         self.menuitems.append(QLEmuMisc.MenuItem(self.plugin_name + ":runfromhere",       self.qlcontinue,              "Continue",                   "Continue",                  None,                   True   ))
@@ -922,13 +971,15 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
             self.popup_menu_hook.unhook()
 
     # IDA 7.x
+
     def finish_populating_widget_popup(self, widget, popup_handle):
         if get_widget_type(widget) == BWN_DISASM:
             for item in self.menuitems:
                 if item.popup:
                     attach_action_to_popup(widget, popup_handle, item.action, self.plugin_name + "/")
 
-    ### Close view
+    ### Close View
+
     def close_reg_view(self):
         self.qlemuregview = None
 
