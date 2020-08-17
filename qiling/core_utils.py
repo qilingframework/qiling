@@ -94,7 +94,7 @@ class QLCoreUtils(object):
 
 
     def add_fs_mapper(self, ql_path, real_dest):
-        self.fs_mapper.add_fs_mapping(ql_path, real_dest)
+        self.os.fs_mapper.add_fs_mapping(ql_path, real_dest)
 
 
     # push to stack bottom, and update stack register

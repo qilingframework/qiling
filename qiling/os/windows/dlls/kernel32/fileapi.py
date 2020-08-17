@@ -151,7 +151,7 @@ def _CreateFile(ql, address, params, name):
 
     # create thread handle
     try:
-        f = ql.fs_mapper.open(s_lpFileName, mode)
+        f = ql.os.fs_mapper.open(s_lpFileName, mode)
     except FileNotFoundError:
         ql.os.last_error = ERROR_FILE_NOT_FOUND
         return INVALID_HANDLE_VALUE

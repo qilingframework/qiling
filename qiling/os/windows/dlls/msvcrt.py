@@ -421,7 +421,7 @@ def hook__wfopen_s(ql, address, params):
     dst = params["pFile"]
     filename = params["filename"]
     mode = params["mode"]
-    f = ql.fs_mapper.open(filename, mode)
+    f = ql.os.fs_mapper.open(filename, mode)
     new_handle = Handle(obj=f)
     ql.os.handle_manager.append(new_handle)
     ql.mem.write(dst, ql.pack(new_handle.id))
