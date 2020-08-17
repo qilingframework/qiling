@@ -630,6 +630,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def qlcontinue(self):
         if self.qlinit:
+            userhook = None
             pathhook = self.qlemu.ql.hook_code(self.qlpathhook)
             if self.userobj is not None:
                 userhook = self.userobj.ql_continue_hook_add(self.qlemu.ql)
@@ -670,7 +671,8 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
                     self.qlemu.run(end=curr_addr + self.qlemu.baseaddr)
                 finally:
                     hide_wait_box()
-                
+            
+            set_color(curr_addr, CIC_ITEM, 0x00B3CBFF)
             self.qlemu.ql.hook_del(untillhook)
             self.qlemu.status = self.qlemu.ql.save()
             self.update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
@@ -679,6 +681,7 @@ class QLEmuPlugin(plugin_t, UI_Hooks):
 
     def qlstep(self):
         if self.qlinit:
+            userhook = None
             self.stepflag = True
             self.qlemu.ql.restore(saved_states=self.qlemu.status)
             self.stephook = self.qlemu.ql.hook_code(callback=self.qlstephook)
