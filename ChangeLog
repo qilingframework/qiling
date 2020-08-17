@@ -11,6 +11,7 @@ This file details the changelog of Qiling Framework.
 - Added Qiling Debugger - Currently only works with MIPS
 - Add experimental 8086 and DOS support.
 - Fix path transformation on Windows when running Linux.
+- Refactor ql.fs_mapper (now ql.os.fs_mapper).
 
 
 ------------------------------------
