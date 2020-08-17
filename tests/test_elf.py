@@ -9,7 +9,7 @@ from qiling import *
 from qiling.const import *
 from qiling.exception import *
 from qiling.os.posix import syscall
-from qiling.os.mapper import FsMappedObject
+from qiling.os.mapper import QlFsMappedObject
 
 class ELFTest(unittest.TestCase):
 
@@ -921,7 +921,7 @@ class ELFTest(unittest.TestCase):
 
 
     def test_x86_fake_urandom(self):
-        class Fake_urandom(FsMappedObject):
+        class Fake_urandom(QlFsMappedObject):
 
             def read(self, size):
                 return b"\x01"

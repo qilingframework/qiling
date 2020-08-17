@@ -14,7 +14,7 @@ from qiling.const import *
 from qiling.exception import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
-from qiling.os.mapper import FsMappedObject
+from qiling.os.mapper import QlFsMappedObject
 from unicorn.x86_const import *
 
 class PETest(unittest.TestCase):
@@ -37,7 +37,7 @@ class PETest(unittest.TestCase):
     def test_pe_win_x86_uselessdisk(self):
         if 'QL_FAST_TEST' in os.environ:
             return
-        class Fake_Drive(FsMappedObject):
+        class Fake_Drive(QlFsMappedObject):
 
             def read(self, size):
                 return random.randint(0, 256)

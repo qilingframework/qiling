@@ -9,44 +9,44 @@ from .utils import QLOsUtils
 #    and thus the default implementation may cause unexpected behavior.
 #    Simply let it crash if the method is not implemented.
 #
-#    A quick way to create a FsMappedObject is `ql_file.open` or `open`.
-class FsMappedObject:
+#    A quick way to create a QlFsMappedObject is `ql_file.open` or `open`.
+class QlFsMappedObject:
     def __init__(self):
         pass
     
     def read(self, expected_len):
-        raise NotImplementedError("FsMappedObject method not implemented: read")
+        raise NotImplementedError("QlFsMappedObject method not implemented: read")
     
     def write(self, buffer):
-        raise NotImplementedError("FsMappedObject method not implemented: write")
+        raise NotImplementedError("QlFsMappedObject method not implemented: write")
     
     def fileno(self):
-        raise NotImplementedError("FsMappedObject method not implemented: fileno")
+        raise NotImplementedError("QlFsMappedObject method not implemented: fileno")
     
     def lseek(self, lseek_offset, lseek_origin):
-        raise NotImplementedError("FsMappedObject method not implemented: lseek")
+        raise NotImplementedError("QlFsMappedObject method not implemented: lseek")
     
     def close(self):
-        raise NotImplementedError("FsMappedObject method not implemented: close")
+        raise NotImplementedError("QlFsMappedObject method not implemented: close")
     
     def fstat(self):
-        raise NotImplementedError("FsMappedObject method not implemented: fstat")
+        raise NotImplementedError("QlFsMappedObject method not implemented: fstat")
     
     def ioctl(self, ioctl_cmd, ioctl_arg):
-        raise NotImplementedError("FsMappedObject method not implemented: ioctl")
+        raise NotImplementedError("QlFsMappedObject method not implemented: ioctl")
 
     def tell(self):
-        raise NotImplementedError("FsMappedObject method not implemented: tell")
+        raise NotImplementedError("QlFsMappedObject method not implemented: tell")
     
     def dup(self):
-        raise NotImplementedError("FsMappedObject method not implemented: dup")
+        raise NotImplementedError("QlFsMappedObject method not implemented: dup")
     
     def readline(self, end = b'\n'):
-        raise NotImplementedError("FsMappedObject method not implemented: readline")
+        raise NotImplementedError("QlFsMappedObject method not implemented: readline")
 
     @property
     def name(self):
-        raise NotImplementedError("FsMappedObject property not implemented: name")
+        raise NotImplementedError("QlFsMappedObject property not implemented: name")
 
 class FsMapper:
     
