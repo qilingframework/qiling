@@ -136,15 +136,8 @@ class QLOsUtils:
             self.ql.nprint(f"[!] Warning: cur_path doesn't start with a /")
         
         rootfs = self.ql.rootfs
-        real_path, relative_path = self.convert_path(rootfs, cur_path, path)
+        real_path, _ = self.convert_path(rootfs, cur_path, path)
 
-        for ql_path, real_dest in self.ql.fs_mapper:
-            if isinstance(real_dest, str):
-                try:
-                    remains = relative_path.relative_to(Path(real_dest))
-                    real_path = Path(ql_path) / remains
-                except ValueError:
-                    continue
         return str(real_path.absolute())
 
     def transform_to_real_path(self, path):
@@ -160,12 +153,7 @@ class QLOsUtils:
             self.ql.nprint(f"[!] Warning: cur_path must start with /")
 
         rootfs = self.ql.rootfs
-        real_path, relative_path = self.convert_path(rootfs, cur_path, path)
-
-        # TODO: A better design for fs mapping.
-        for ql_path, real_dest in self.ql.fs_mapper:
-            if ql_path == path:
-                return real_dest
+        real_path, _ = self.convert_path(rootfs, cur_path, path)
         
         if os.path.islink(real_path):
             link_path = Path(os.readlink(real_path))
@@ -179,7 +167,6 @@ class QLOsUtils:
             cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
             cur_path = self.ql.os.current_path
-
 
         return str(Path(cur_path[1:]) / path)
 

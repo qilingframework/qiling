@@ -18,6 +18,7 @@ from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 from .core_utils import QLCoreUtils
 from .debugger import ql_debugger_init
+from .os.mapper import FsMapper
 from .__version__ import __version__
 
 class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):    
@@ -73,7 +74,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.patch_lib = []
         self.patched_lib = []
         self.log_file_fd = None
-        self.fs_mapper = []
+        self.fs_mapper = FsMapper(self)
         self.debug_stop = False
         self.internal_exception = None
         self.platform = platform.system()

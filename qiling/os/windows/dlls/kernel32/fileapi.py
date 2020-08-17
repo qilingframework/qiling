@@ -150,15 +150,8 @@ def _CreateFile(ql, address, params, name):
         mode += "r"
 
     # create thread handle
-    s_lpFileName = ql.os.transform_to_real_path(s_lpFileName)
     try:
-        # For compatibility with fs mapper.
-        # TODO: A better design for fs mapper.
-        # A real mapping layer with transparency and max compatibility.
-        if isinstance(s_lpFileName, str):
-            f = open(s_lpFileName.replace("\\", os.sep), mode)
-        else:
-            f = s_lpFileName
+        f = ql.fs_mapper.open(s_lpFileName, mode)
     except FileNotFoundError:
         ql.os.last_error = ERROR_FILE_NOT_FOUND
         return INVALID_HANDLE_VALUE
