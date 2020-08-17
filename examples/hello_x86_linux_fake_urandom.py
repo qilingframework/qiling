@@ -4,8 +4,8 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 from qiling import *
-
-class Fake_urandom:
+from qiling.os.mapper import FsMappedObject
+class Fake_urandom(FsMappedObject):
 
     def read(self, size):
         return b"\x01" # fixed value for reading /dev/urandom
