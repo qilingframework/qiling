@@ -7,7 +7,7 @@
 import argparse, os, string, sys, ast
 from binascii import unhexlify
 from qiling import *
-from qiling import __version__ as ql_version
+from qiling.__version__ import __version__ as ql_version
 from qiling.extensions.coverage import utils as cov_utils
 
 

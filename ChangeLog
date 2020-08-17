@@ -9,6 +9,9 @@ This file details the changelog of Qiling Framework.
 - IDA Plugin
 - Test, patch and make sure arm_thumb can work on its own
 - Added Qiling Debugger - Currently only works with MIPS
+- Add experimental 8086 and DOS support.
+- Fix path transformation on Windows when running Linux.
+
 
 ------------------------------------
 [Version 1.1]: July 24th, 2020

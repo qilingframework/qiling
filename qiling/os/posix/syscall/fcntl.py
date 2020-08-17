@@ -53,7 +53,7 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
 def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args, **kw):
     openat_fd = ql.unpacks(ql.pack(openat_fd))
     openat_path = ql.mem.string(openat_path)
-
+    
     real_path = ql.os.transform_to_real_path(openat_path)
     relative_path = ql.os.transform_to_relative_path(openat_path)
 
