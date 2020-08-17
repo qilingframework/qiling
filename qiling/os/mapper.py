@@ -58,22 +58,22 @@ class QlFsMapper:
     def ql(self):
         return self._ql
 
-    def _open_mapping_ql_file(self, fm, openflags, openmode):
-        to = self._mapping[fm]
-        if not isinstance(to, str): # We have opened this mapping or it is implemented by user.
-            return to
+    def _open_mapping_ql_file(self, ql_path, openflags, openmode):
+        real_dest = self._mapping[ql_path]
+        if not isinstance(real_dest, str): # We have opened this mapping or it is implemented by user.
+            return real_dest
         else:
-            qlfile = ql_file.open(to, openflags, openmode) # open the path and replace the destination now.
-            self._mapping[fm] = qlfile
+            qlfile = ql_file.open(real_dest, openflags, openmode) # open the path and replace the destination now.
+            self._mapping[ql_path] = qlfile
             return qlfile
     
-    def _open_mapping(self, fm, openmode):
-        to = self._mapping[fm]
-        if not isinstance(to, str):
-            return to
+    def _open_mapping(self, ql_path, openmode):
+        real_dest = self._mapping[ql_path]
+        if not isinstance(real_dest, str):
+            return real_dest
         else:
-            f = open(to, openmode)
-            self._mapping[fm] = f
+            f = open(real_dest, openmode)
+            self._mapping[ql_path] = f
             return f
 
     def has_mapping(self, fm):
@@ -95,13 +95,13 @@ class QlFsMapper:
             real_path = self.ql.os.transform_to_real_path(path)
             return open(real_path, openmode)
 
-    def add_fs_mapping(self, fm, to):
+    def add_fs_mapping(self, ql_path, real_dest):
         # For os.PathLike
         # fm should be always objects which can be converted to a string.
-        fm = str(fm)
-        if '__fspath__' in dir(to): # to is a os.PathLike object.
-            to = to.__fspath__()
-            if isinstance(to, bytes): # os.PathLike.__fspath__ may return bytes.
-                to = to.decode("utf-8")
-        self._mapping[fm] = to
+        ql_path = str(ql_path)
+        if '__fspath__' in dir(real_dest): # real_dest is a os.PathLike object.
+            real_dest = real_dest.__fspath__()
+            if isinstance(real_dest, bytes): # os.PathLike.__fspath__ may return bytes.
+                real_dest = real_dest.decode("utf-8")
+        self._mapping[ql_path] = real_dest
         
