@@ -260,7 +260,7 @@ Specify start address and size of new memory range.
         'mem_cmnt': Form.StringInput(swidth=41)
     })
 
-class QlEmuSetUpDialog(Form):
+class QlEmuSetupDialog(Form):
     def __init__(self):
         Form.__init__(self, r"""STARTITEM {id:path_name}
 BUTTON YES* Start
@@ -902,7 +902,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     ### Dialog
 
     def ql_set_rootfs(self):
-        setupdlg = QlEmuSetUpDialog()
+        setupdlg = QlEmuSetupDialog()
         setupdlg.Compile()
 
         if setupdlg.Execute() != 1:
