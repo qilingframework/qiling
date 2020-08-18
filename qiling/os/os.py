@@ -51,7 +51,7 @@ class QlOs(QlOsUtils):
             EMU_END = 0xffffffffffffffff
         elif self.ql.archbit == 16:
             # 20bit address lane
-            EMU_END = 0x1ffff   
+            EMU_END = 0xfffff   
         
         # defult exit point
         self.exit_point = EMU_END
