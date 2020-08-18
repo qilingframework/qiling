@@ -24,6 +24,7 @@ class QlOs(QlOsUtils):
         self.profile = self.ql.profile
         self.exit_code = 0
         self.pid = self.profile.getint("KERNEL","pid")
+        self.elf_mem_start = 0x0
 
         if "fileno" not in dir(sys.stdin) or "fileno" not in dir(sys.stdout) or "fileno" not in dir(sys.stderr):
             # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.

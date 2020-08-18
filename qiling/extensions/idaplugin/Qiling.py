@@ -3,7 +3,7 @@
 # Learn how to use? Please visit https://docs.qiling.io/en/latest/ida/
 # Plugin Author: kabeor <kabeor@qiling.com>
 
-UseAsScript = False
+UseAsScript = True
 RELEASE = True
 
 import collections
@@ -499,10 +499,14 @@ class QlEmuQiling:
         qlstderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
         self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", stdin=qlstdin, stdout=qlstdout, stderr=qlstderr)
         self.exit_addr = self.ql.os.exit_point
-        if self.ql.archbit == 32:
-            self.baseaddr = int(self.ql.profile.get("OS32", "load_address"), 16)
-        elif self.ql.archbit == 64:
-            self.baseaddr = int(self.ql.profile.get("OS64", "load_address"), 16)
+        if self.ql.ostype == QL_OS.LINUX:
+            self.baseaddr = self.ql.os.elf_mem_start
+            # if self.ql.archbit == 32:
+            #     self.baseaddr = int(self.ql.profile.get("OS32", "load_address"), 16)
+            # elif self.ql.archbit == 64:
+            #     self.baseaddr = int(self.ql.profile.get("OS64", "load_address"), 16)
+        else:
+            self.baseaddr = 0x0
 
     def run(self, begin=None, end=None):
         self.ql.run(begin, end)
@@ -619,16 +623,18 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             finally:
                 hide_wait_box()
                 print("Qiling initialized done")
-        self.ql_load_user_script()
+        if self.customscriptpath is not None:
+            self.ql_load_user_script()
 
     def ql_load_user_script(self):
-        if self.qlinit:
+        if self.qlinit :
             self.ql_get_user_script(is_reload=True, is_start=True)
         else:
             print('Please setup Qiling first')
+
     def ql_reload_user_script(self):
         if self.qlinit:
-            self.ql_get_user_script(True)
+            self.ql_get_user_script(is_reload=True)
         else:
             print('Please setup Qiling first')
 
@@ -637,7 +643,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             userhook = None
             pathhook = self.qlemu.ql.hook_code(self.ql_path_hook)
             if self.userobj is not None:
-                userhook = self.userobj.ql_custom_continue(self.qlemu.ql)
+                userhook = self.userobj.custom_continue(self.qlemu.ql)
             if self.qlemu.status is not None:
                 self.qlemu.ql.restore(self.qlemu.status)
                 show_wait_box("Qiling is processing ...")
@@ -667,13 +673,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemu.ql.restore(self.qlemu.status)
                 show_wait_box("Qiling is processing ...")
                 try:
-                    self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=curr_addr + self.qlemu.baseaddr)
+                    self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=curr_addr+self.qlemu.baseaddr-get_imagebase())
                 finally:
                     hide_wait_box()
             else:
                 show_wait_box("Qiling is processing ...")
                 try:
-                    self.qlemu.run(end=curr_addr + self.qlemu.baseaddr)
+                    self.qlemu.run(end=curr_addr+self.qlemu.baseaddr-get_imagebase())
                 finally:
                     hide_wait_box()
             
@@ -691,7 +697,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.ql.restore(saved_states=self.qlemu.status)
             self.stephook = self.qlemu.ql.hook_code(callback=self.ql_step_hook)
             if self.userobj is not None:
-                userhook = self.userobj.ql_custom_step(self.qlemu.ql)
+                userhook = self.userobj.custom_step(self.qlemu.ql, self.stepflag)
             self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
             if userhook and userhook is not None:
                 for hook in userhook:
@@ -774,7 +780,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             memdialog.mem_size.value = size
             ok = memdialog.Execute()
             if ok == 1:
-                mem_addr = memdialog.mem_addr.value - self.qlemu.baseaddr
+                mem_addr = memdialog.mem_addr.value - self.qlemu.baseaddr + get_imagebase()
                 mem_size = memdialog.mem_size.value
                 mem_cmnt = memdialog.mem_cmnt.value
 
@@ -844,7 +850,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_step_hook(self, ql, addr, size):
         self.stepflag = not self.stepflag
-        addr = addr - self.qlemu.baseaddr
+        addr = addr - self.qlemu.baseaddr + get_imagebase()
         if self.stepflag:
             set_color(addr, CIC_ITEM, 0x00FFD700)
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, ql)
@@ -854,7 +860,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             jumpto(addr)
 
     def ql_path_hook(self, ql, addr, size):
-        addr = addr - self.qlemu.baseaddr
+        addr = addr - self.qlemu.baseaddr + get_imagebase()
         set_color(addr, CIC_ITEM, 0x007FFFAA)
         bp_count = get_bpt_qty()
         bp_list = []
@@ -868,7 +874,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 jumpto(addr)
 
     def ql_untill_hook(self, ql, addr, size):
-        addr = addr - self.qlemu.baseaddr
+        addr = addr - self.qlemu.baseaddr + get_imagebase()
         set_color(addr, CIC_ITEM, 0x00B3CBFF)
 
     ### User Scripts
@@ -892,7 +898,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             except:
                 return None
 
-        self.userobj = get_user_scripts_obj(self.customscriptpath, 'QL_CUSTOM_SCRIPT', is_reload)
+        self.userobj = get_user_scripts_obj(self.customscriptpath, 'QILING_IDA', is_reload)
         if self.userobj is not None:
             if is_reload and not is_start:
                 print('User Script Reload')
@@ -913,7 +919,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         rootfspath = setupdlg.path_name.value
         customscript = setupdlg.script_name.value
 
-        if customscript is not None:
+        if customscript != '':
             self.customscriptpath = customscript
 
         if self.qlemu is not None:
@@ -1019,7 +1025,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_update_views(self, addr, ql):
         if self.qlemuregview is not None:
-            self.qlemuregview.SetReg(addr - self.qlemu.baseaddr, ql)
+            self.qlemuregview.SetReg(addr - self.qlemu.baseaddr + get_imagebase(), ql)
 
         if self.qlemustackview is not None:
             self.qlemustackview.SetStack(self.qlemu.ql)
