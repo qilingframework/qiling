@@ -1,6 +1,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework Plugin For IDA
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 # Learn how to use? Please visit https://docs.qiling.io/en/latest/ida/
+
 # Plugin Author: kabeor <kabeor@qiling.io>
 
 UseAsScript = True
