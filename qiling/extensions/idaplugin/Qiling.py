@@ -501,10 +501,6 @@ class QlEmuQiling:
         self.exit_addr = self.ql.os.exit_point
         if self.ql.ostype == QL_OS.LINUX:
             self.baseaddr = self.ql.os.elf_mem_start
-            # if self.ql.archbit == 32:
-            #     self.baseaddr = int(self.ql.profile.get("OS32", "load_address"), 16)
-            # elif self.ql.archbit == 64:
-            #     self.baseaddr = int(self.ql.profile.get("OS64", "load_address"), 16)
         else:
             self.baseaddr = 0x0
 

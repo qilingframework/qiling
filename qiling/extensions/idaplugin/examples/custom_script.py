@@ -1,10 +1,5 @@
 from qiling import *
 
-def get_ql_base_address(ql:Qiling):
-    if ql.archbit == 32:
-        return int(ql.profile.get("OS32", "load_address"), 16)
-    elif ql.archbit == 64:
-        return int(ql.profile.get("OS64", "load_address"), 16)
 
 class QILING_IDA():
     def __init__(self):
@@ -26,10 +21,10 @@ class QILING_IDA():
                 print(hex(addr))
 
         def step_hook2(ql):
-            print('arrive to 0x52A')
+            print('arrive to 0x0804845B')
 
         print('user step hook')
         hook = []
         hook.append(ql.hook_code(step_hook1, user_data=stepflag))
-        hook.append(ql.hook_address(step_hook2, 0x52A+get_ql_base_address(ql)))
+        hook.append(ql.hook_address(step_hook2, 0x0804845B))
         return hook
