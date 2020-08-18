@@ -1,7 +1,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework Plugin For IDA
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 # Learn how to use? Please visit https://docs.qiling.io/en/latest/ida/
-# Plugin Author: kabeor
+# Plugin Author: kabeor <kabeor@qiling.com>
 
 UseAsScript = False
 RELEASE = True
@@ -623,7 +623,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_load_user_script(self):
         if self.qlinit:
-            self.ql_get_user_script(True)
+            self.ql_get_user_script(is_reload=True, is_start=True)
         else:
             print('Please setup Qiling first')
     def ql_reload_user_script(self):
@@ -873,7 +873,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     ### User Scripts
 
-    def ql_get_user_script(self, is_reload=False):
+    def ql_get_user_script(self, is_reload=False, is_start=False):
         def get_user_scripts_obj(scriptpath:str, classname:str, is_reload:bool):
             try:
                 import sys
@@ -894,7 +894,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
         self.userobj = get_user_scripts_obj(self.customscriptpath, 'QL_CUSTOM_SCRIPT', is_reload)
         if self.userobj is not None:
-            if is_reload:
+            if is_reload and not is_start:
                 print('User Script Reload')
             else:
                 print('User Script Load')
