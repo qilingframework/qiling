@@ -623,7 +623,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_load_user_script(self):
         if self.qlinit:
-            self.ql_get_user_script()
+            self.ql_get_user_script(True)
         else:
             print('Please setup Qiling first')
     def ql_reload_user_script(self):
@@ -637,7 +637,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             userhook = None
             pathhook = self.qlemu.ql.hook_code(self.ql_path_hook)
             if self.userobj is not None:
-                userhook = self.userobj.ql_continue_hook_add(self.qlemu.ql)
+                userhook = self.userobj.ql_custom_continue(self.qlemu.ql)
             if self.qlemu.status is not None:
                 self.qlemu.ql.restore(self.qlemu.status)
                 show_wait_box("Qiling is processing ...")
@@ -652,8 +652,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 finally:
                     hide_wait_box()
             self.qlemu.ql.hook_del(pathhook)
-            if userhook is not None:
-                self.qlemu.ql.hook_del(userhook)
+            if userhook and userhook is not None:
+                for hook in userhook:
+                    self.qlemu.ql.hook_del(hook)
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
             print('Please setup Qiling first')
@@ -690,10 +691,11 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.ql.restore(saved_states=self.qlemu.status)
             self.stephook = self.qlemu.ql.hook_code(callback=self.ql_step_hook)
             if self.userobj is not None:
-                userhook = self.userobj.ql_step_hook_add(self.qlemu.ql)            
+                userhook = self.userobj.ql_custom_step(self.qlemu.ql)
             self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
-            if userhook is not None:
-                self.qlemu.ql.hook_del(userhook)
+            if userhook and userhook is not None:
+                for hook in userhook:
+                    self.qlemu.ql.hook_del(hook)
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
             print('Please setup Qiling first')
