@@ -537,7 +537,7 @@ def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
 
             ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(path, flags, mode)
             regreturn = idx
-        except:
+        except QlSyscallError:
             regreturn = -1
 
     ql.nprint("open(%s, 0x%s, 0x%x) = %d" % (relative_path, flags, mode, regreturn))

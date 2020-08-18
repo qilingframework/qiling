@@ -77,7 +77,7 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
             openat_flags = ql_open_flag_mapping(ql, openat_flags)
             ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(openat_path, openat_flags, openat_mode)
             regreturn = idx
-        except:
+        except QlSyscallError:
             regreturn = -1
 
     ql.nprint("openat(%d, %s, 0x%x, 0o%o) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))

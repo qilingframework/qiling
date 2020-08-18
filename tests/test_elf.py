@@ -919,6 +919,52 @@ class ELFTest(unittest.TestCase):
         ql.run()
         del ql
 
+    def test_x86_fake_urandom_multiple_times(self):
+        fake_id = 0
+        ids = []
+        class Fake_urandom(QlFsMappedObject):
+
+            def __init__(self):
+                nonlocal fake_id
+                self.id = fake_id
+                fake_id += 1
+                ids.append(self.id)
+                ql.nprint(f"Creating Fake_urandom with id {self.id}")
+
+            def read(self, size):
+                return b'\x01'
+            
+            def fstat(self):
+                return -1
+            
+            def close(self):
+                return 0
+
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_fetch_urandom_multiple_times"],  "../examples/rootfs/x86_linux", output="debug")
+        # Note we pass in a class here.
+        ql.add_fs_mapper("/dev/urandom", Fake_urandom)
+
+        ql.exit_code = 0
+        ql.exit_group_code = 0
+
+        def check_exit_group_code(ql, exit_code, *args, **kw):
+            ql.exit_group_code = exit_code
+
+        def check_exit_code(ql, exit_code, *args, **kw):
+            ql.exit_code = exit_code            
+
+        ql.set_syscall("exit_group", check_exit_group_code, QL_INTERCEPT.ENTER)
+        ql.set_syscall("exit", check_exit_code, QL_INTERCEPT.ENTER)
+
+        ql.run()
+        self.assertEqual(0, ql.exit_code)
+        self.assertEqual(0, ql.exit_group_code)
+        last = -1
+        for i in ids:
+            self.assertEqual(last + 1, i)
+            last = i
+        del ql
+        
 
     def test_x86_fake_urandom(self):
         class Fake_urandom(QlFsMappedObject):
