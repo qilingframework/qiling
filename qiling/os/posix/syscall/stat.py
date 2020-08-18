@@ -151,12 +151,14 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack64(0)
             fstat64_buf += ql.pack32(fstat64_info.st_blksize)
             fstat64_buf += ql.pack32(0)
-            fstat64_buf += ql.pack64(fstat64_info.st_blocks)
+            fstat64_buf += ql.pack64(fstat64_info.st_blocks)        
 
         else:
-
             # pack fstatinfo
-            fstat64_buf = ql.pack64(fstat64_info.st_dev)
+            if ql.platform == QL_OS.MACOS:
+                fstat64_buf = ql.pack64s(fstat64_info.st_dev)
+            else:
+                fstat64_buf = ql.pack64(fstat64_info.st_dev)
             fstat64_buf += ql.pack64(0x0000000300c30000)
             fstat64_buf += ql.pack32(fstat64_info.st_mode)
             fstat64_buf += ql.pack32(fstat64_info.st_nlink)
