@@ -10,7 +10,7 @@ class QlLoaderDOS(QlLoader):
         path = self.ql.path
         ftype = magic.from_file(path)
 
-        if "COM" and "DOS" in ftype:
+        if "COM" in ftype and "DOS" in ftype:
             # pure com
             self.cs = int(self.ql.profile.get("COM", "start_cs"), 16)
             self.ip = int(self.ql.profile.get("COM", "start_ip"), 16)
@@ -24,5 +24,14 @@ class QlLoaderDOS(QlLoader):
             with open(path, "rb+") as f:
                 bs = f.read()
             self.ql.mem.write(self.start_address, bs)
+        elif "MBR" in ftype:
+            # MBR
+            self.start_address = 0x7C00
+            with open(path, "rb+") as f:
+                bs = f.read()
+            self.ql.mem.map(0x0, 64*1024)
+            self.ql.mem.write(self.start_address, bs)
+            self.cs = 0
+            self.ip = self.start_address
         elif "MS-DOS" in ftype:
             raise NotImplementedError()
