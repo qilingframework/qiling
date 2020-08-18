@@ -29,7 +29,7 @@ class QlLoaderDOS(QlLoader):
             self.start_address = 0x7C00
             with open(path, "rb+") as f:
                 bs = f.read()
-            self.ql.mem.map(0x0, 64*1024)
+            self.ql.mem.map(0x0, 0x100000)
             self.ql.mem.write(self.start_address, bs)
             self.cs = 0
             self.ip = self.start_address
