@@ -1,10 +1,13 @@
+#!/usr/bin/env python3
+
 import cmd
+from functools import partial
 
 from qiling import *
 from qiling.const import *
-from functools import partial
+
 from .frontend import context_printer, context_reg, context_asm, examine_mem, color
-from .utils import parse_int, handle_bnj
+from .utils import parse_int, handle_bnj, is_thumb, PROGRAM_EXITED
 
 
 
@@ -98,15 +101,6 @@ class Qldbg(cmd.Cmd):
         self.do_context()
         self._ql.emu_stop()
 
-    def run(self, address=None):
-        """
-        handle qiling instance launching
-        """
-        if not address:
-            address = self._ql.loader.entry_point
-
-        self._ql.emu_start(address, 0)
-
     def do_context(self, *args):
         """
         show context information for current location
@@ -118,18 +112,24 @@ class Qldbg(cmd.Cmd):
         """
         launch qiling instance
         """
+
         if self._ql is None:
             self._get_new_ql()
 
-        self.run()
+        entry = self._ql.loader.entry_point
 
-    def do_show(self, *args):
+        self.run(entry)
+
+    def run(self, address=None):
         """
-        show some runtime informations
+        handle qiling instance launching
         """
-        self._ql.mem.show_mapinfo()
-        print("Qdb:", [(hex(idx), val) for idx, val in self.breakpoints.items()])
-        print("internal:", [(hex(idx), val) for idx, val in self._ql._addr_hook.items()])
+
+        # for arm thumb mode
+        if self._ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB) and is_thumb(self._ql.reg.cpsr):
+            address |= 1
+
+        self._ql.emu_start(address, 0)
 
     def do_step(self, *args):
         """
@@ -142,7 +142,11 @@ class Qldbg(cmd.Cmd):
         else:
             self._saved_states = dict(filter(lambda d: isinstance(d[0], str), self._ql.reg.save().items()))
             _cur_addr = self._ql.reg.arch_pc
+
             next_stop = handle_bnj(self._ql, _cur_addr)
+
+            if next_stop == PROGRAM_EXITED:
+                return True
 
             # whether bp placed already
             if self.breakpoints.get(next_stop, None):
@@ -152,17 +156,20 @@ class Qldbg(cmd.Cmd):
                 self.set_breakpoint(next_stop, _is_temp=True)
 
             self.run(_cur_addr)
-            
 
     def do_start(self, *args):
         """
         pause at entry point by setting a temporary breakpoint on it
         """
         self._get_new_ql()
-        # _elf_entry = self._ql.loader.entry_point # ld.so
-        _elf_entry = self._ql.loader.elf_entry   # .text of binary
-        self.set_breakpoint(_elf_entry, _is_temp=True)
-        self.run()
+        entry = self._ql.loader.entry_point  # ld.so
+        # entry = self._ql.loader.elf_entry # .text of binary
+
+        if self._ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB) and entry & 1:
+            entry -= 1
+
+        self.set_breakpoint(entry, _is_temp=True)
+        self.do_run()
 
     def do_breakpoint(self, address):
         """
@@ -179,6 +186,7 @@ class Qldbg(cmd.Cmd):
         if self._ql is not None:
             _cur_addr = self._ql.reg.arch_pc
             print("continued from 0x%08x" % _cur_addr)
+
             self.run(_cur_addr)
 
     def do_examine(self, args):
@@ -203,6 +211,21 @@ class Qldbg(cmd.Cmd):
 
         examine_mem(self._ql, _xaddr, _count)
 
+    def do_context(self, *args):
+        """
+        show context information for current location
+        """
+        context_reg(self._ql, self._saved_states)
+        context_asm(self._ql, self._ql.reg.arch_pc, 4)
+
+    def do_show(self, *args):
+        """
+        show some runtime informations
+        """
+        self._ql.mem.show_mapinfo()
+        print("Qdb:", [(hex(idx), val) for idx, val in self.breakpoints.items()])
+        print("internal:", [(hex(idx), val) for idx, val in self._ql._addr_hook.items()])
+
     def do_disassemble(self, address):
         """
         disassemble instructions from address specified
@@ -212,7 +235,6 @@ class Qldbg(cmd.Cmd):
     def do_shell(self, *command):
         """
         run python code,also a space between exclamation mark and command was necessary
-        example: ! 1+1
         """
         print(eval(*command))
 
@@ -221,6 +243,7 @@ class Qldbg(cmd.Cmd):
         exit Qdb
         """
         return True
+
 
     do_r = do_run
     do_s = do_step
