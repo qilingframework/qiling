@@ -1,4 +1,4 @@
-import types, os
+import types, os, struct
 
 from unicorn import *
 from qiling.os.os import QlOs
@@ -17,7 +17,7 @@ class QlOsDos(QlOs):
         self.ql.reg.ef = self.ql.reg.ef | fl
     
     def clear_flag(self, fl):
-        self.ql.reg.ef = self.ql.reg.ed & (~fl)
+        self.ql.reg.ef = self.ql.reg.ef & (~fl)
     
     def test_flags(self, fl):
         return self.ql.reg.ef & fl == fl
@@ -45,86 +45,115 @@ class QlOsDos(QlOs):
     def read_dos_string_from_ds_dx(self):
         return self.read_dos_string(self.calculate_address(self.ql.reg.ds, self.ql.reg.dx))
 
+    def _parse_dap(self, dapbs):
+        return struct.unpack("<BBHHHQ", dapbs)
+
+    def int13(self):
+        ah = self.ql.reg.ah
+        ds = self.ql.reg.ds
+        si = self.ql.reg.si
+        # https://en.wikipedia.org/wiki/INT_13H
+        if ah == 0x0:
+            self.ql.reg.ah = 0
+            self.clear_cf()
+        elif ah == 0x42:
+            idx = self.ql.reg.dl
+            disk = self.ql.os.fs_mapper.open(idx, None)
+            dapbs = self.ql.mem.read(self.calculate_address(ds, si), 0x10)
+            _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
+            self.ql.dprint(0, f"Reading from disk {disk.drive_path} with LBA {lba}")
+            content = disk.read_sectors(lba, cnt)
+            self.ql.mem.write(self.calculate_address(segment, offset), content)
+            self.clear_cf()
+            self.ql.reg.ah = 0
+        else:
+            raise NotImplementedError()
+
+    def int21(self):
+        ah = self.ql.reg.ah
+        if ah == 0x4C:
+            self.ql.uc.emu_stop()
+        elif ah == 0x2 or ah == 0x6:
+            ch = chr(self.ql.reg.dl)
+            self.ql.reg.al = self.ql.reg.dl
+            self.ql.nprint(ch)
+        elif ah == 0x9:
+            s = self.read_dos_string_from_ds_dx()
+            self.ql.nprint(s)
+        elif ah == 0x3C:
+            # fileattr ignored
+            fname = self.read_dos_string_from_ds_dx()
+            f = open(PathUtils.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname), "wb")
+            self.dos_handles[self.handle_next] = f
+            self.ql.reg.ax = self.handle_next
+            self.handle_next += 1
+            self.clear_cf()
+        elif ah == 0x3d:
+            fname = self.read_dos_string_from_ds_dx()
+            f = open(PathUtils.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname), "rb")
+            self.dos_handles[self.handle_next] = f
+            self.ql.reg.ax = self.handle_next
+            self.handle_next += 1
+            self.clear_cf()
+        elif ah == 0x3e:
+            hd = self.ql.reg.bx
+            if hd not in self.dos_handles:
+                self.ql.reg.ax = 0x6
+                self.set_cf()
+            else:
+                f = self.dos_handles[hd]
+                f.close()
+                del self.dos_handles[hd]
+                self.clear_cf()
+        elif ah == 0x3f:
+            hd = self.ql.reg.bx
+            if hd not in self.dos_handles:
+                self.ql.reg.ax = 0x6
+                self.set_cf()
+            else:
+                f = self.dos_handles[hd]
+                buffer = self.calculate_address(self.ql.reg.ds, self.ql.reg.dx)
+                sz = self.ql.reg.cx
+                rd = f.read(sz)
+                self.ql.mem.write(buffer, rd)
+                self.clear_cf()
+                self.ql.reg.ax = len(rd)
+        elif ah == 0x40:
+            hd = self.ql.reg.bx
+            if hd not in self.dos_handles:
+                self.ql.reg.ax = 0x6
+                self.set_cf()
+            else:
+                f = self.dos_handles[hd]
+                buffer = self.calculate_address(self.ql.reg.ds, self.ql.reg.dx)
+                sz = self.ql.reg.cx
+                rd = self.ql.mem.read(buffer, sz)
+                f.write(bytes(rd))
+                self.clear_cf()
+                self.ql.reg.ax = len(rd)
+        elif ah == 0x41:
+            fname = self.read_dos_string_from_ds_dx()
+            real_path = PathUtils.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname)
+            try:
+                os.remove(real_path)
+                self.clear_cf()
+            except OSError:
+                self.ql.reg.ax = 0x5
+                self.set_cf()
+        elif ah == 0x43:
+            self.ql.reg.cx = 0xFFFF
+            self.clear_cf()
+        else:
+            raise NotImplementedError()
+
     def hook_syscall(self):
         def cb(ql, intno, user_data=None):
-            ah = self.ql.reg.ah
             # http://spike.scu.edu.au/~barry/interrupts.html
             # http://www2.ift.ulaval.ca/~marchand/ift17583/dosints.pdf
             if intno == 0x21:
-                if ah == 0x4C:
-                    self.ql.uc.emu_stop()
-                elif ah == 0x2 or ah == 0x6:
-                    ch = chr(self.ql.reg.dl)
-                    self.ql.reg.al = self.ql.reg.dl
-                    ql.nprint(ch)
-                elif ah == 0x9:
-                    s = self.read_dos_string_from_ds_dx()
-                    ql.nprint(s)
-                elif ah == 0x3C:
-                    # fileattr ignored
-                    fname = self.read_dos_string_from_ds_dx()
-                    f = open(PathUtils.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname), "wb")
-                    self.dos_handles[self.handle_next] = f
-                    self.ql.reg.ax = self.handle_next
-                    self.handle_next += 1
-                    self.clear_cf()
-                elif ah == 0x3d:
-                    fname = self.read_dos_string_from_ds_dx()
-                    f = open(PathUtils.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname), "rb")
-                    self.dos_handles[self.handle_next] = f
-                    self.ql.reg.ax = self.handle_next
-                    self.handle_next += 1
-                    self.clear_cf()
-                elif ah == 0x3e:
-                    hd = self.ql.reg.bx
-                    if hd not in self.dos_handles:
-                        self.ql.reg.ax = 0x6
-                        self.set_cf()
-                    else:
-                        f = self.dos_handles[hd]
-                        f.close()
-                        del self.dos_handles[hd]
-                        self.clear_cf()
-                elif ah == 0x3f:
-                    hd = self.ql.reg.bx
-                    if hd not in self.dos_handles:
-                        self.ql.reg.ax = 0x6
-                        self.set_cf()
-                    else:
-                        f = self.dos_handles[hd]
-                        buffer = self.calculate_address(self.ql.reg.ds, self.ql.reg.dx)
-                        sz = self.ql.reg.cx
-                        rd = f.read(sz)
-                        ql.mem.write(buffer, rd)
-                        self.clear_cf()
-                        self.ql.reg.ax = len(rd)
-                elif ah == 0x40:
-                    hd = self.ql.reg.bx
-                    if hd not in self.dos_handles:
-                        self.ql.reg.ax = 0x6
-                        self.set_cf()
-                    else:
-                        f = self.dos_handles[hd]
-                        buffer = self.calculate_address(self.ql.reg.ds, self.ql.reg.dx)
-                        sz = self.ql.reg.cx
-                        rd = self.ql.mem.read(buffer, sz)
-                        f.write(bytes(rd))
-                        self.clear_cf()
-                        self.ql.reg.ax = len(rd)
-                elif ah == 0x41:
-                    fname = self.read_dos_string_from_ds_dx()
-                    real_path = PathUtils.convert_for_native_os(self.ql.rootfs, self.ql.cur_path, fname)
-                    try:
-                        os.remove(real_path)
-                        self.clear_cf()
-                    except OSError:
-                        self.ql.reg.ax = 0x5
-                        self.set_cf()
-                elif ah == 0x43:
-                    self.ql.reg.cx = 0xFFFF
-                    self.clear_cf()
-                else:
-                    raise NotImplementedError()
+                self.int21()
+            elif intno == 0x13:
+                self.int13()
             else:
                 raise NotImplementedError()
         self.ql.hook_intr(cb)
