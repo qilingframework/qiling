@@ -4,7 +4,7 @@ from functools import partial
 
 from qiling.const import *
 
-PROGRAM_EXITED = "DONE"
+EXITED = True 
 
 
 
@@ -138,7 +138,7 @@ def handle_bnj_arm(ql, cur_addr):
     ret_addr = cur_addr + line.size
 
     if line.mnemonic == "udf": # indicates program exited
-        return PROGRAM_EXTIED
+        return EXTIED
 
     jump_table = {
             # unconditional branch
@@ -348,7 +348,7 @@ def handle_bnj_mips(ql, cur_addr):
 
     if line.mnemonic.startswith('j') or line.mnemonic.startswith('b'):
         if line.mnemonic == "break": # indicates program extied
-            return PROGRAM_EXITED
+            return EXITED
 
         # make sure at least delay slot executed
         ret_addr += MIPS_INST_SIZE
