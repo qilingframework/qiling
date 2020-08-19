@@ -5,21 +5,29 @@ from .mapper import QlFsMappedObject
 #     drive_path: The drive path on the emulated system. e.g. /dev/sda \\.\PHYSICALDRIVE0 0x80
 # 
 # Note: CHS and LBA support is very limited since a raw file doesn't contain enough information.
+#       We simply assume that it is a disk with 1 head, 1 cylinder and (filesize/512) sectors.
 # See: https://en.wikipedia.org/wiki/Cylinder-head-sector
 #      https://en.wikipedia.org/wiki/Logical_block_addressing
 class QlDisk(QlFsMappedObject):
 
-    def __init__(self, host_path, drive_path, n_heads=1, n_sectors=1, sector_size=512):
+    def __init__(self, host_path, drive_path, n_heads=1, n_cylinders=1, sector_size=512):
         self._host_path = host_path
         self._drive_path = drive_path
         self._f = open(host_path, "rb+")
         self._n_heads = n_heads
-        self._n_sectors = n_sectors
+        self._n_cylinders = n_cylinders
         self._sector_size = sector_size
+        self.lseek(0, 2)
+        self._filesize = self.tell()
+        self._n_sectors = (self._filesize - 1)// self.sector_size + 1
 
     def __del__(self):
         if not self.f.closed:
             self.f.close()
+
+    @property
+    def filesize(self):
+        return self._filesize
 
     @property
     def n_heads(self):
@@ -55,6 +63,9 @@ class QlDisk(QlFsMappedObject):
     def lseek(self, offset, origin):
         return self.f.seek(offset, origin)
     
+    def tell(self):
+        return self.f.tell()
+
     def close(self):
         return self.f.close()
     
