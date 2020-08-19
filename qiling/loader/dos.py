@@ -29,9 +29,16 @@ class QlLoaderDOS(QlLoader):
             self.start_address = 0x7C00
             with open(path, "rb+") as f:
                 bs = f.read()
+            # Map all available address.
             self.ql.mem.map(0x0, 0x100000)
             self.ql.mem.write(self.start_address, bs)
             self.cs = 0
+            self.ql.reg.ds = self.cs
+            self.ql.reg.es = self.cs
+            self.ql.reg.ss = self.cs
+            # 0x80 -> first drive.
+            # https://en.wikipedia.org/wiki/Master_boot_record#BIOS_to_MBR_interface
+            self.ql.reg.dx = 0x80
             self.ip = self.start_address
         elif "MS-DOS" in ftype:
             raise NotImplementedError()
