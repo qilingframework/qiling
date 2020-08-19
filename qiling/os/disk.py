@@ -38,6 +38,10 @@ class QlDisk(QlFsMappedObject):
         return self._n_sectors
 
     @property
+    def n_cylinders(self):
+        return self._n_cylinders
+
+    @property
     def sector_size(self):
         return self._sector_size
 
