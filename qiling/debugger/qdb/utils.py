@@ -4,7 +4,7 @@ from functools import partial
 
 from qiling.const import *
 
-EXITED = True 
+CODE_END = True 
 
 
 
@@ -348,7 +348,7 @@ def handle_bnj_mips(ql, cur_addr):
 
     if line.mnemonic.startswith('j') or line.mnemonic.startswith('b'):
         if line.mnemonic == "break": # indicates program extied
-            return EXITED
+            return CODE_END
 
         # make sure at least delay slot executed
         ret_addr += MIPS_INST_SIZE
