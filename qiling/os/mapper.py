@@ -84,6 +84,9 @@ class QlFsMapper:
     def has_mapping(self, fm):
         return fm in self._mapping
 
+    def mapping_count(self):
+        return len(self._mapping)
+
     def open_ql_file(self, path, openflags, openmode):
         if self.has_mapping(path):
             self.ql.nprint(f"mapping {path}")
