@@ -18,7 +18,7 @@ class QlDisk(QlFsMappedObject):
         self._sector_size = sector_size
 
     def __del__(self):
-        if not self.f.closed():
+        if not self.f.closed:
             self.f.close()
 
     @property
