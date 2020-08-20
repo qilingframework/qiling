@@ -239,6 +239,12 @@ class QlOsDos(QlOs):
                 curses.resizeterm(200, 640)
             else:
                 raise NotImplementedError()
+            # Quoted from https://linux.die.net/man/3/resizeterm
+            #
+            # If ncurses is configured to supply its own SIGWINCH handler, 
+            # the resizeterm function ungetch's a KEY_RESIZE which will be 
+            # read on the next call to getch.
+            ch = self.stdscr.getch()
             self.stdscr.scrollok(True)
                 
             if al in [1, 3, 5] and not curses.has_colors():
@@ -273,9 +279,10 @@ class QlOsDos(QlOs):
                 self.stdscr.clear()
         elif ah == 8:
             # page number ignored
-            ch = self.stdscr.getch()
-            self.ql.reg.ah = 0
-            self.ql.reg.al = ch
+            #ch = self.stdscr.getch()
+            #self.ql.reg.ah = 0
+            #self.ql.reg.al = ch
+            pass
         elif ah == 0xE:
             self.ql.nprint(f"Echo: {hex(al)} -> {curses.ascii.unctrl(al)}")
             if al == 0xa:
