@@ -281,7 +281,7 @@ class QlOsDos(QlOs):
                 # \n will erase current line with echochar, so we have to handle it carefully.
                 y, x = self.stdscr.getmaxyx()
                 cy, cx = self.stdscr.getyx()
-                self.ql.nprint(f"{y} {x} {cy} {cx}")
+                self.ql.nprint(f"Resolution: {x}x{y}, Cursor position: {cx},{cy}, Goint to get a new line.")
                 if y-1 == cy:
                     self.stdscr.scroll(1)
                 self.stdscr.move(cy+1, 0)
