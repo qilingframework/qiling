@@ -15,6 +15,7 @@ automatize_input = False
 
 [KERNEL]
 pid = 1
+ticks_per_second = 18.206
 
 [COM]
 start_cs = 0x75A

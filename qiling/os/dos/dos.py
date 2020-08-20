@@ -5,6 +5,7 @@ from qiling.os.os import QlOs
 from qiling.os.utils import PathUtils
 from qiling.exception import QlErrorSyscallError
 from enum import Enum
+from datetime import datetime
 import curses
 import curses.ascii
 
@@ -377,9 +378,11 @@ class QlOsDos(QlOs):
     def int1a(self):
         ah = self.ql.reg.ah
         if ah == 0:
+            now = datetime.now()
+            tick = int((now - self.start_time).total_seconds() * self.ticks_per_second)
             self.ql.reg.al=0
-            self.ql.reg.cx=0
-            self.ql.reg.dx=0
+            self.ql.reg.cx= (tick & 0xFFFF0000) >> 16
+            self.ql.reg.dx= tick & 0xFFFF
 
     def int21(self):
         ah = self.ql.reg.ah
@@ -486,6 +489,8 @@ class QlOsDos(QlOs):
         else:
             self.ql.entry_point = self.ql.loader.start_address
         if not self.ql.shellcoder:
+            self.start_time = datetime.now()
+            self.ticks_per_second = self.ql.loader.ticks_per_second
             try:
                 self.ql.emu_start(self.ql.entry_point, self.exit_point, self.ql.timeout, self.ql.count)
             except UcError:

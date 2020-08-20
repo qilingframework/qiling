@@ -21,6 +21,7 @@ class QlLoaderDOS(QlLoader):
         path = self.ql.path
         ftype = magic.from_file(path)
 
+        self.ticks_per_second = float(self.ql.profile.get("KERNEL", "ticks_per_second"))
         if "COM" in ftype and "DOS" in ftype:
             # pure com
             self.cs = int(self.ql.profile.get("COM", "start_cs"), 16)
