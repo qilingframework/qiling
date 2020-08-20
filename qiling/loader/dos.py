@@ -8,7 +8,6 @@ class QlLoaderDOS(QlLoader):
         super(QlLoaderDOS, self).__init__(ql)
         self.ql = ql
         self.old_excepthook = sys.excepthook
-        sys.excepthook = self.excepthook
 
     # Hack to print all exceptions if curses has been setup.
     def excepthook(self, tp, value, tb):
@@ -54,3 +53,5 @@ class QlLoaderDOS(QlLoader):
             self.ip = self.start_address
         elif "MS-DOS" in ftype:
             raise NotImplementedError()
+            
+        sys.excepthook = self.excepthook
