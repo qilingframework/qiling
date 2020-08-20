@@ -6,6 +6,7 @@ from qiling.os.utils import PathUtils
 from qiling.exception import QlErrorSyscallError
 from enum import Enum
 import curses
+import curses.ascii
 
 # Modified from https://programtalk.com/vs2/python/8562/pyvbox/virtualbox/library_ext/keyboard.py/
 SCANCODES = {
@@ -276,7 +277,7 @@ class QlOsDos(QlOs):
             self.ql.reg.ah = 0
             self.ql.reg.al = ch
         elif ah == 0xE:
-            self.ql.nprint(f"Echo: {hex(al)} -> {chr(al)}")
+            self.ql.nprint(f"Echo: {hex(al)} -> {curses.ascii.unctrl(al)}")
             if al == 0xa:
                 # \n will erase current line with echochar, so we have to handle it carefully.
                 y, x = self.stdscr.getmaxyx()
@@ -326,14 +327,13 @@ class QlOsDos(QlOs):
             cx = cx | (  ((n_cylinders & 0b1111111100) >> 2) << 8 )
             self.ql.reg.cx = cx
             self.ql.reg.ah = 0
-            self.ql.nprint(f"AX: {hex(self.ql.reg.ax)}, AL: {hex(self.ql.reg.al)}, AH:  {hex(self.ql.reg.ah)}")
             self.clear_cf()
             pass
         elif ah == 0x42:
             idx = self.ql.reg.dl
             dapbs = self.ql.mem.read(self.calculate_address(ds, si), 0x10)
             _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
-            self.ql.dprint(0, f"Reading from disk {hex(idx)} with LBA {lba}")
+            self.ql.nprint(f"Reading from disk {hex(idx)} with LBA {lba}")
             if not self.ql.os.fs_mapper.has_mapping(idx):
                 self.ql.nprint(f"[!] Warning: No such disk: {hex(idx)}")
                 self.ql.reg.ah = INT13DiskError.BadCommand.value
@@ -353,6 +353,7 @@ class QlOsDos(QlOs):
             # set non-blocking
             self.stdscr.timeout(0)
             key = self.stdscr.getch()
+            self.ql.dprint(0, f"Get key: {hex(key)} ({curses.ascii.unctrl(key)})")
             if key == -1:
                 self.set_flag(0x40)
                 self.ql.reg.ax = 0
@@ -361,7 +362,7 @@ class QlOsDos(QlOs):
                 if key in SCANCODES:
                     self.ql.reg.ah = SCANCODES[key]
                 else:
-                    self.ql.nprint(f"[!] Warning: scan code for {key} doesn't exist!")
+                    self.ql.nprint(f"[!] Warning: scan code for {hex(key)} doesn't exist!")
                     self.ql.reg.ah = 0
                 self.clear_flag(0x40)
             self.stdscr.timeout(-1)
