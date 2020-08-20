@@ -1,10 +1,21 @@
 from .loader import QlLoader
 import magic
+import sys
+import traceback
 
 class QlLoaderDOS(QlLoader):
     def __init__(self, ql):
         super(QlLoaderDOS, self).__init__(ql)
         self.ql = ql
+        self.old_excepthook = sys.excepthook
+        sys.excepthook = self.excepthook
+
+    # Hack to print all exceptions if curses has been setup.
+    def excepthook(self, tp, value, tb):
+        if self.ql.os.stdscr is not None:
+            tbmsg = "".join(traceback.format_exception(tp, value, tb))
+            self.ql.nprint(f"{tbmsg}")
+        self.old_excepthook(tp, value, tb)
 
     def run(self):
         path = self.ql.path
