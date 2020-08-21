@@ -189,6 +189,32 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    def test_elf__hijackapi_linux_x8664(self):
+        def my_puts_enter(ql):
+            addr = ql.os.function_arg[0]
+            ql.mem.string(addr,"----- my prog args -----")
+
+
+        def my_puts_exit(ql):
+            addr = ql.os.function_arg[0]
+            self.test_exit_str = ql.mem.string(addr)
+            print("=" * 20)
+            print("set exit function puts!", self.test_exit_str)
+            print("=" * 20)
+           
+
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_args","1234test", "12345678", "bin/x8664_hello"],  "../examples/rootfs/x8664_linux", output="debug")
+        ql.set_api('puts',my_puts_enter, QL_INTERCEPT.ENTER)
+        ql.set_api('puts',my_puts_exit, QL_INTERCEPT.EXIT)
+
+        ql.run()
+
+        self.assertEqual("----- my prog args -----",self.test_exit_str)
+
+        del self.test_exit_str
+        del ql     
+
+
     def test_tcp_elf_linux_x86(self):
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
