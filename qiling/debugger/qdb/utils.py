@@ -355,7 +355,7 @@ def handle_bnj_mips(ql, cur_addr):
 
         # get registers or memory address from op_str
         targets = [
-                _read_reg(ql.reg, each)
+                signed_val(_read_reg(ql.reg, each))
                 if '$' in each else parse_int(each)
                 for each in line.op_str.split(", ")
                 ]
