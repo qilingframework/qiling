@@ -7,7 +7,8 @@
 import argparse, os, string, sys, ast
 from binascii import unhexlify
 from qiling import *
-from qiling import __version__ as ql_version
+from qiling.const import QL_ARCH
+from qiling.__version__ import __version__ as ql_version
 from qiling.extensions.coverage import utils as cov_utils
 
 
@@ -156,7 +157,7 @@ if __name__ == '__main__':
                             help='verbose mode, must be int and use with --debug or --dump')
     comm_parser.add_argument('--env', required=False, default='', metavar="FILE", dest="env", help="Pickle file containing an environment dictionary")                            
     comm_parser.add_argument('-g', '--gdb', required=False, help='enable gdb server')
-    comm_parser.add_argument('--qdb', action='store_true', required=False, help='attach Qdb at entry point, it\'s MIPS supported on for now')
+    comm_parser.add_argument('--qdb', action='store_true', required=False, help='attach Qdb at entry point, it\'s MIPS, ARM(THUMB) supported on for now')
     comm_parser.add_argument('--profile', required=False, dest='profile', help="Define customized profile")
     comm_parser.add_argument('--strace', action='store_true', default=False, dest='strace', help='Run in strace mode')
     comm_parser.add_argument('--dump', action='store_true', default=False, dest='dump', help='Enable Debug + Diassembler mode')
@@ -234,7 +235,10 @@ if __name__ == '__main__':
         # attach Qdb at entry point
         if options.qdb == True:
             from qiling.debugger.qdb import Qdb
-            ql.hook_address(Qdb.attach, ql.loader.entry_point)
+            entry_point = ql.loader.entry_point
+            if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB) and entry_point & 1:
+                entry_point -= 1
+            ql.hook_address(Qdb.attach, entry_point)
 
     # ql shellcode setup
     elif (options.subparser_name == 'shellcode'):

@@ -9,9 +9,9 @@
 
 Qiling is an advanced binary emulation framework, with the following features:
 
-- Cross platform: Windows, MacOS, Linux, BSD, UEFI
-- Cross architecture: X86, X86_64, Arm, Arm64, MIPS
-- Multiple file formats: PE, MachO, ELF
+- Cross platform: Windows, MacOS, Linux, BSD, UEFI, DOS
+- Cross architecture: X86, X86_64, Arm, Arm64, MIPS, 8086
+- Multiple file formats: PE, MachO, ELF, COM
 - Emulate & sandbox machine code in a isolated environment
 - Supports cross architecture and platform debugging capabilities
 - Provide high level API to setup & configure the sandbox
@@ -49,7 +49,7 @@ Qemu usermode does similar thing to our emulator, that is to emulate whole execu
 - Qiling is a true analysis framework, that allows you to build your own dynamic analysis tools on top (in friendly Python language). Meanwhile, Qemu is just a tool, not a framework.
 - Qiling can perform dynamic instrumentation, and can even hotpatch code at runtime. Qemu does not do either.
 - Not only working cross-architecture, Qiling is also cross-platform, so for example you can run Linux ELF file on top of Windows. In contrast, Qemu usermode only run binary of the same OS, such as Linux ELF on Linux, due to the way it forwards syscall from emulated code to native OS.
-- Qiling supports more platforms, including Windows, MacOS, Linux & BSD. Qemu usermode can only handles Linux & BSD.
+- Qiling supports more platforms, including Windows, MacOS, Linux & BSD. Qemu usermode can only handle Linux & BSD.
 
 ---
 

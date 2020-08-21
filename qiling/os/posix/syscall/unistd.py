@@ -25,7 +25,7 @@ def ql_syscall_exit(ql, exit_code, *args, **kw):
     ql.os.stop(stop_event = THREAD_EVENT_EXIT_EVENT)
 
 
-def ql_syscall_exit_group(ql, exit_code, null1, null2, null3, null4, null5):
+def ql_syscall_exit_group(ql, exit_code, *args, **kw):
     ql.os.exit_code = exit_code
 
     ql.nprint("exit_group(%u)" % ql.os.exit_code)

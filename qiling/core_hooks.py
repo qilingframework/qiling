@@ -73,7 +73,7 @@ class HookRet:
         self._ql.hook_del(self._t, self._h)
 
 
-class QLCoreHooks(object):
+class QlCoreHooks(object):
     def __init__(self):
         super().__init__()
         self.uc = None

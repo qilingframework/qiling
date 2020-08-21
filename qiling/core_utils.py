@@ -17,7 +17,7 @@ from .const import D_INFO, D_DRPT
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 from .loader.utils import ql_checkostype
 
-class QLCoreUtils(object):
+class QlCoreUtils(object):
     def __init__(self):
         super().__init__()
         self.archtype = None
@@ -94,7 +94,7 @@ class QLCoreUtils(object):
 
 
     def add_fs_mapper(self, ql_path, real_dest):
-        self.fs_mapper.append([real_dest, ql_path])
+        self.os.fs_mapper.add_fs_mapping(ql_path, real_dest)
 
 
     # push to stack bottom, and update stack register

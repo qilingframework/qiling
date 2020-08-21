@@ -9,6 +9,7 @@ from qiling import *
 from qiling.const import *
 from qiling.exception import *
 from qiling.os.posix import syscall
+from qiling.os.mapper import QlFsMappedObject
 
 class ELFTest(unittest.TestCase):
 
@@ -918,9 +919,55 @@ class ELFTest(unittest.TestCase):
         ql.run()
         del ql
 
+    def test_x86_fake_urandom_multiple_times(self):
+        fake_id = 0
+        ids = []
+        class Fake_urandom(QlFsMappedObject):
 
-    def test_elf_linux_x86(self):
-        class Fake_urandom:
+            def __init__(self):
+                nonlocal fake_id
+                self.id = fake_id
+                fake_id += 1
+                ids.append(self.id)
+                ql.nprint(f"Creating Fake_urandom with id {self.id}")
+
+            def read(self, size):
+                return b'\x01'
+            
+            def fstat(self):
+                return -1
+            
+            def close(self):
+                return 0
+
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_fetch_urandom_multiple_times"],  "../examples/rootfs/x86_linux", output="debug")
+        # Note we pass in a class here.
+        ql.add_fs_mapper("/dev/urandom", Fake_urandom)
+
+        ql.exit_code = 0
+        ql.exit_group_code = 0
+
+        def check_exit_group_code(ql, exit_code, *args, **kw):
+            ql.exit_group_code = exit_code
+
+        def check_exit_code(ql, exit_code, *args, **kw):
+            ql.exit_code = exit_code            
+
+        ql.set_syscall("exit_group", check_exit_group_code, QL_INTERCEPT.ENTER)
+        ql.set_syscall("exit", check_exit_code, QL_INTERCEPT.ENTER)
+
+        ql.run()
+        self.assertEqual(0, ql.exit_code)
+        self.assertEqual(0, ql.exit_group_code)
+        last = -1
+        for i in ids:
+            self.assertEqual(last + 1, i)
+            last = i
+        del ql
+        
+
+    def test_x86_fake_urandom(self):
+        class Fake_urandom(QlFsMappedObject):
 
             def read(self, size):
                 return b"\x01"
@@ -933,10 +980,53 @@ class ELFTest(unittest.TestCase):
 
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_fetch_urandom"],  "../examples/rootfs/x86_linux", output="debug")
         ql.add_fs_mapper("/dev/urandom", Fake_urandom())
+
+        ql.exit_code = 0
+        ql.exit_group_code = 0
+
+        def check_exit_group_code(ql, exit_code, *args, **kw):
+            ql.exit_group_code = exit_code
+
+        def check_exit_code(ql, exit_code, *args, **kw):
+            ql.exit_code = exit_code            
+
+        ql.set_syscall("exit_group", check_exit_group_code, QL_INTERCEPT.ENTER)
+        ql.set_syscall("exit", check_exit_code, QL_INTERCEPT.ENTER)
+
         ql.run()
+        self.assertEqual(0, ql.exit_code)
+        self.assertEqual(0, ql.exit_group_code)        
         del ql
 
 
+    def test_x8664_map_urandom(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_fetch_urandom"],  "../examples/rootfs/x8664_linux", output="debug")
+        ql.add_fs_mapper("/dev/urandom","/dev/urandom")
+        
+        ql.exit_code = 0
+        ql.exit_group_code = 0
+
+        def check_exit_group_code(ql, exit_code, *args, **kw):
+            ql.exit_group_code = exit_code
+
+        def check_exit_code(ql, exit_code, *args, **kw):
+            ql.exit_code = exit_code            
+
+        ql.set_syscall("exit_group", check_exit_group_code, QL_INTERCEPT.ENTER)
+        ql.set_syscall("exit", check_exit_code, QL_INTERCEPT.ENTER)
+
+        ql.run()
+
+        self.assertEqual(0, ql.exit_code)
+        self.assertEqual(0, ql.exit_group_code)
+
+        del ql
+
+
+    def test_x8664_symlink(self):
+        ql = Qiling(["../examples/rootfs/x8664_linux_symlink/bin/x8664_hello"],  "../examples/rootfs/x8664_linux_symlink", output="debug")
+        ql.run()
+        del ql   
 
 if __name__ == "__main__":
     unittest.main()
