@@ -280,7 +280,7 @@ class HookFunc:
             else:
                 ret = onenter_cb(self.ql, onenter_userdata)
 
-        if isinstance(ret, int) == False or ret & QL_CALL_BLOCK == QL_CALL_BLOCK:
+        if isinstance(ret, int) == False or ret & QL_CALL_BLOCK == 0:
             if cb != None:
                 if userdata == None:
                     cb(self.ql)
