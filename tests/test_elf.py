@@ -191,12 +191,12 @@ class ELFTest(unittest.TestCase):
 
     def test_elf__hijackapi_linux_x8664(self):
         def my_puts_enter(ql):
-            addr = ql.os.function_arg[0]
-            ql.mem.string(addr,"----- my prog args -----")
+            self.target_addr = ql.os.function_arg[0]
+            ql.mem.string(self.target_addr, "----- my prog args -----")
 
 
         def my_puts_exit(ql):
-            addr = ql.os.function_arg[0]
+            addr = self.target_addr
             self.test_exit_str = ql.mem.string(addr)
             print("=" * 20)
             print("set exit function puts!", self.test_exit_str)
@@ -210,7 +210,8 @@ class ELFTest(unittest.TestCase):
         ql.run()
 
         self.assertEqual("----- my prog args -----",self.test_exit_str)
-
+        
+        del self.target_addr
         del self.test_exit_str
         del ql     
 
