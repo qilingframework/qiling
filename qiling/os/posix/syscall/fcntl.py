@@ -35,7 +35,7 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
                 mode = 0
 
             flags = ql_open_flag_mapping(ql, flags)
-            ql.os.fd[idx] = ql_file.open(real_path, flags, mode)
+            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(path, flags, mode)
             regreturn = idx
         except QlSyscallError as e:
             regreturn = - e.errno
@@ -53,7 +53,7 @@ def ql_syscall_open(ql, filename, flags, mode, *args, **kw):
 def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args, **kw):
     openat_fd = ql.unpacks(ql.pack(openat_fd))
     openat_path = ql.mem.string(openat_path)
-
+    
     real_path = ql.os.transform_to_real_path(openat_path)
     relative_path = ql.os.transform_to_relative_path(openat_path)
 
@@ -75,9 +75,9 @@ def ql_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *ar
                 mode = 0
 
             openat_flags = ql_open_flag_mapping(ql, openat_flags)
-            ql.os.fd[idx] = ql_file.open(real_path, openat_flags, openat_mode)
+            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(openat_path, openat_flags, openat_mode)
             regreturn = idx
-        except:
+        except QlSyscallError:
             regreturn = -1
 
     ql.nprint("openat(%d, %s, 0x%x, 0o%o) = %d" % (openat_fd, relative_path, openat_flags, openat_mode, regreturn))

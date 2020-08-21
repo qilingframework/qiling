@@ -5,23 +5,26 @@
 
 import os, sys, types
 
-from .utils import QLOsUtils
+from .utils import QlOsUtils
 from .const import *
 from .filestruct import ql_file
+from .mapper import QlFsMapper
 
 from qiling.const import *
 
-class QlOs(QLOsUtils):
+class QlOs(QlOsUtils):
     def __init__(self, ql):
         super(QlOs, self).__init__(ql)
         self.ql = ql
         self.ql.uc = self.ql.arch.init_uc
+        self.fs_mapper = QlFsMapper(ql)
         self.child_processes = False
         self.thread_management = None
         self.current_path = '/'
         self.profile = self.ql.profile
         self.exit_code = 0
         self.pid = self.profile.getint("KERNEL","pid")
+        self.elf_mem_start = 0x0
 
         if "fileno" not in dir(sys.stdin) or "fileno" not in dir(sys.stdout) or "fileno" not in dir(sys.stderr):
             # IDAPython has some hack on standard io streams and thus they don't have corresponding fds.
@@ -45,7 +48,10 @@ class QlOs(QLOsUtils):
         if self.ql.archbit == 32:
             EMU_END = 0x8fffffff
         elif self.ql.archbit == 64:
-            EMU_END = 0xffffffffffffffff        
+            EMU_END = 0xffffffffffffffff
+        elif self.ql.archbit == 16:
+            # 20bit address lane
+            EMU_END = 0x1ffff   
         
         # defult exit point
         self.exit_point = EMU_END

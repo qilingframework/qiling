@@ -9,12 +9,9 @@ from qiling import *
 
 def run_sandbox(path, rootfs, output):
     ql = Qiling(path, rootfs, output = output)
-    ql.debug = True
-    ql.debug_stop = True
+    ql.debugger = "qdb"
     ql.run()
 
 
 if __name__ == "__main__":
-    #run_sandbox(["rootfs/arm_linux/bin/arm_hello_static"], "rootfs/arm_linux", None)
-    #run_sandbox(["rootfs/arm_linux/bin/arm_hello_static"], "rootfs/arm_linux", "disasm")
-    run_sandbox(["rootfs/arm_linux/bin/arm_hello_static"], "rootfs/arm_linux", "debug")
+    run_sandbox(["rootfs/arm_linux/bin/arm_hello"], "rootfs/arm_linux", "debug")

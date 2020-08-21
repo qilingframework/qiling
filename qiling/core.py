@@ -14,14 +14,13 @@ from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorO
 from .utils import arch_convert, ostype_convert, output_convert
 from .utils import ql_is_valid_arch, ql_get_arch_bits
 from .utils import ql_setup_logging_env, ql_setup_logging_stream
-from .core_struct import QLCoreStructs
-from .core_hooks import QLCoreHooks
-from .core_utils import QLCoreUtils
+from .core_struct import QlCoreStructs
+from .core_hooks import QlCoreHooks
+from .core_utils import QlCoreUtils
 from .debugger import ql_debugger_init
+from .__version__ import __version__
 
-__version__ = "1.2" + "-dev"
-
-class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):    
+class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):    
     def __init__(
             self,
             filename=None,
@@ -74,7 +73,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.patch_lib = []
         self.patched_lib = []
         self.log_file_fd = None
-        self.fs_mapper = []
         self.debug_stop = False
         self.internal_exception = None
         self.platform = platform.system()
@@ -256,6 +254,9 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):
         self.uc.emu_start(begin, end, timeout, count)
+        
+        if self.internal_exception != None:
+            raise self.internal_exception
 
 
     # save all qiling instance states

@@ -471,7 +471,7 @@ class QlLoaderELF(QlLoader, ELFParse):
             self.ql.dprint(D_INFO, "[+] load 0x%x - 0x%x" % (_mem_e, loaded_mem_end)) # make sure we map all PT_LOAD tagged area
 
         entry_point = elfhead['e_entry'] + load_address
-
+        self.ql.os.elf_mem_start = mem_start
         self.ql.dprint(D_INFO, "[+] mem_start: 0x%x mem_end: 0x%x" % (mem_start, mem_end))
 
         self.brk_address = mem_end + load_address + 0x2000

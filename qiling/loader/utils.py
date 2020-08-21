@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import pefile
+import magic
 from qiling.const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN
 from qiling.exception import QlErrorArch, QlErrorOsType
 
@@ -12,16 +13,34 @@ def ql_checkostype(path):
     ostype = None
     archendian = None
 
-    arch, ostype, archendian = ql_elf_check_archtype(path)
+    ftype = magic.from_file(path)
 
-    if ostype not in (QL_OS.LINUX, QL_OS.FREEBSD):
+    if "ELF" in ftype:
+        arch, ostype, archendian = ql_elf_check_archtype(path)
+    elif "Mach-O" in ftype:
         arch, ostype, archendian = ql_macho_check_archtype(path)
-
-    if ostype not in (QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS):
+    elif "PE32" in ftype:
         arch, ostype, archendian = ql_pe_check_archtype(path)
+    elif "COM" in ftype and "DOS" in ftype:
+        arch = QL_ARCH.A8086
+        ostype = QL_OS.DOS
+        archendian = QL_ENDIAN.EL
+    elif "MS-DOS" in ftype:
+        # Here we have to distinguish between real 16bit DOS executables and EFI excutables.
+        # I could confirm from specs that all UEFI executables should be PE/PE32+.
+        # But 16bit DOS executables don't have a valid NT header.
+        # I'm not sure why libmagic(file) classify EFI executables as "MS-DOS executable"
+        try:
+            pefile.PE(path)
+        except pefile.PEFormatError:
+            arch = QL_ARCH.A8086
+            ostype = QL_OS.DOS
+            archendian = QL_ENDIAN.EL
+        else:
+            arch, ostype, archendian = ql_pe_check_archtype(path)
 
     if ostype not in (QL_OS_ALL):
-        raise QlErrorOsType("[!] File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios'")
+        raise QlErrorOsType("[!] File does not belong to either 'linux', 'windows', 'freebsd', 'macos', 'ios', 'dos'")
 
     return arch, ostype, archendian
 
@@ -111,6 +130,7 @@ def ql_macho_check_archtype(path):
     return arch, ostype, archendian
 
 def ql_pe_check_archtype(path):
+
     pe = pefile.PE(path, fast_load=True)
     ostype = None
     arch = None

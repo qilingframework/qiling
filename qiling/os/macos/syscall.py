@@ -518,7 +518,6 @@ def ql_syscall_thread_selfid(ql, *args, **kw):
 # 0x18e
 def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
     path = ql.mem.string(filename)
-    real_path = ql.os.transform_to_real_path(path)
     relative_path = ql.os.transform_to_relative_path(path)
 
     flags = flags & 0xffffffff
@@ -536,10 +535,9 @@ def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
             if ql.archtype== QL_ARCH.ARM:
                 mode = 0
 
-            flags = open_flags_mapping(flags, ql.archtype)
-            ql.os.fd[idx] = ql_file.open(real_path, flags, mode)
+            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(path, flags, mode)
             regreturn = idx
-        except:
+        except QlSyscallError:
             regreturn = -1
 
     ql.nprint("open(%s, 0x%s, 0x%x) = %d" % (relative_path, flags, mode, regreturn))

@@ -7,7 +7,7 @@
 This module is intended for general purpose functions that are only used in qiling.os
 """
 
-import os, struct, uuid
+import inspect, os, struct, uuid
 from json import dumps
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from unicorn import *
@@ -30,10 +30,6 @@ from .const import *
 # Some codes from cygwin.
 class PathUtils:
 
-    def __init__(self, cwd):
-        self._cwd = cwd
-
-
     # Basic guide:
     #     We should only handle "normal" paths like "C:\Windows\System32" and "bin/a.exe" for users.
     #     For UNC paths like '\\.\PHYSICALDRIVE0" and "\\Server\Share", they should be implemented 
@@ -45,7 +41,6 @@ class PathUtils:
         # cwd and path are pure paths
         cwd = PurePosixPath(cwd[1:])
 
-        # First, convert all slashes to backslashes
         result = None
         # Things are complicated here.
         # See https://docs.microsoft.com/zh-cn/windows/win32/fileio/naming-a-file?redirectedfrom=MSDN
@@ -98,7 +93,7 @@ class PathUtils:
             relative_path = cwd / path
             return rootfs / relative_path, relative_path
 
-class QLOsUtils:
+class QlOsUtils:
     def __init__(self, ql):
         self.ql = ql
         self.archtype = None
@@ -140,15 +135,8 @@ class QLOsUtils:
             self.ql.nprint(f"[!] Warning: cur_path doesn't start with a /")
         
         rootfs = self.ql.rootfs
-        real_path, relative_path = self.convert_path(rootfs, cur_path, path)
+        real_path, _ = self.convert_path(rootfs, cur_path, path)
 
-        for fm, to in self.ql.fs_mapper:
-            if isinstance(fm, str):
-                try:
-                    remains = relative_path.relative_to(Path(fm))
-                    real_path = Path(to) / remains
-                except ValueError:
-                    continue
         return str(real_path.absolute())
 
     def transform_to_real_path(self, path):
@@ -161,31 +149,16 @@ class QLOsUtils:
 
         # Sanity check.
         if cur_path[0] != '/':
-            self.ql.nprint(f"[!] Warning: cur_path doesn't start with a /")
-        
-        rootfs = self.ql.rootfs
-        real_path, relative_path = self.convert_path(rootfs, cur_path, path)
+            self.ql.nprint(f"[!] Warning: cur_path must start with /")
 
-        # TODO: A better design for fs mapping.
-        for fm, to in self.ql.fs_mapper:
-            if to == path and not isinstance(fm, str):
-                real_path = fm
-                return real_path
-            elif isinstance(fm, str):
-                try:
-                    remains = relative_path.relative_to(Path(fm))
-                    real_path = Path(to) / remains
-                except ValueError:
-                    continue
+        rootfs = self.ql.rootfs
+        real_path, _ = self.convert_path(rootfs, cur_path, path)
         
         if os.path.islink(real_path):
-            link_path = os.readlink(real_path)
-            if link_path.is_absolute():
-                real_path = Path(link_path)
-            else:
-                real_path = Path(os.path.join(os.path.dirname(path), link_path))
+            link_path = Path(os.readlink(real_path))
+            if not link_path.is_absolute():
+                real_path = Path(os.path.join(os.path.dirname(real_path), link_path))
             
-
         return str(real_path.absolute())
 
     def transform_to_relative_path(self, path):
@@ -193,7 +166,6 @@ class QLOsUtils:
             cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
             cur_path = self.ql.os.current_path
-
 
         return str(Path(cur_path[1:]) / path)
 
@@ -265,6 +237,9 @@ class QLOsUtils:
 
         elif self.ql.archtype == QL_ARCH.ARM64:  # QL_ARM64
             md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
+
+        elif self.ql.archtype == QL_ARCH.A8086:  # QL_A8086
+            md = Cs(CS_ARCH_X86, CS_MODE_16)
 
         elif self.ql.archtype == QL_ARCH.MIPS:  # QL_MIPS32
             if self.ql.archendian == QL_ENDIAN.EB:

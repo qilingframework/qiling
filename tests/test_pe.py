@@ -14,9 +14,11 @@ from qiling.const import *
 from qiling.exception import *
 from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
+from qiling.os.mapper import QlFsMappedObject
 from unicorn.x86_const import *
 
 class PETest(unittest.TestCase):
+
     def test_pe_win_x8664_hello(self):
         ql = Qiling(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows",
                     output="default")
@@ -35,7 +37,7 @@ class PETest(unittest.TestCase):
     def test_pe_win_x86_uselessdisk(self):
         if 'QL_FAST_TEST' in os.environ:
             return
-        class Fake_Drive:
+        class Fake_Drive(QlFsMappedObject):
 
             def read(self, size):
                 return random.randint(0, 256)
