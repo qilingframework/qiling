@@ -280,19 +280,18 @@ class HookFunc:
             else:
                 ret = onenter_cb(self.ql, onenter_userdata)
 
-        if isinstance(ret, int) == False or ret & QL_CALL_BLOCK == 0:
+        if isinstance(ret, int) == False or ret & QL_CALL_BLOCK == QL_CALL_BLOCK:
             if cb != None:
                 if userdata == None:
-                    ret = cb(self.ql)
+                    cb(self.ql)
                 else:
-                    ret = cb(self.ql, userdata)
+                    cb(self.ql, userdata)
             else:
-                ret = 0
+                self.set_ret(self.exit_addr)
+                self.ql.reg.arch_pc = next_pc
 
-            self.context_fixup()
         else:
-            self.set_ret(self.exit_addr)
-            self.ql.reg.arch_pc = next_pc
+            self.context_fixup()
     
     def ret(self):
         # ARM
