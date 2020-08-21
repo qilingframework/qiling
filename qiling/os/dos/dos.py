@@ -119,6 +119,26 @@ SCANCODES = {
     #'PAUSE':  [[0xE1, 0x1D, 0x45, 0xE1, 0x9D, 0xC5], []],
 }
 
+COLORS_MAPPING = {
+    0: curses.COLOR_BLACK,
+    1: curses.COLOR_BLUE,
+    2: curses.COLOR_GREEN,
+    3: curses.COLOR_CYAN,
+    4: curses.COLOR_RED,
+    5: curses.COLOR_MAGENTA,
+    6: 9,
+    7: 7,
+    8: 8,
+    9: 6,
+    10: 10,
+    11: 14,
+    12: 9,
+    13: 13,
+    14: curses.COLOR_YELLOW,
+    15: curses.COLOR_WHITE
+}
+
+REVERSE_COLORS_MAPPING = {v : k for k, v in COLORS_MAPPING.items()}
 
 class INT13DiskError(Enum):
     NoError = 0
@@ -155,6 +175,8 @@ class QlOsDos(QlOs):
         self.hook_syscall()
         self.handle_next = 0
         self.dos_handles = {}
+        self.color_pairs = {}
+        self.revese_color_pairs = {}
         self.stdscr = None
     
     def __del__(self):
@@ -250,6 +272,19 @@ class QlOsDos(QlOs):
                 
             if al in [1, 3, 5] and not curses.has_colors():
                 self.ql.nprint(f"[!] Warning: your terminal doesn't support colors, content might not be displayed correctly.")
+            
+            # https://en.wikipedia.org/wiki/BIOS_color_attributes
+            # blink support?
+            if curses.has_colors():
+                for fg in range(16):
+                    for bg in range(16):
+                        color_pair_index = 16*fg + bg + 1
+                        if fg not in self.color_pairs:
+                            self.color_pairs[fg] = {}
+                        curses.init_pair(color_pair_index, COLORS_MAPPING[fg], COLORS_MAPPING[bg])
+                        color_pair = curses.color_pair(color_pair_index)
+                        self.color_pairs[fg][bg] = color_pair
+                        self.revese_color_pairs[color_pair] = (fg, bg)
         elif ah == 1:
             # limited support
             ch = self.ql.reg.ch
@@ -270,14 +305,33 @@ class QlOsDos(QlOs):
             cl = self.ql.reg.cl # column of upper-left corner
             dh = self.ql.reg.dh # row of lower right corner
             dl = self.ql.reg.dl # column of lower righ corner
+            bh = self.ql.reg.bh
+            fg = bh & 0xF
+            bg = (bh & 0xF0) >> 4
             y, x = self.stdscr.getmaxyx()
+            cy, cx = self.stdscr.getyx()
             if ch != 0 or cl != 0 or dh != y - 1 or dl != x - 1:
                 self.ql.nprint(f"[!] Warning: Partial scroll is unsupported. Will scroll the whole page.")
                 self.ql.nprint(f"[!] Resolution: {y}x{x} but asked to scroll [({ch},{cl}),({dh}, {dl})]")
             if al != 0:
                 self.stdscr.scroll(al)
+                ny = 0
+                if cy - al < 0:
+                    ny = 0
+                else:
+                    ny = cy - al + 1
+                if al > y:
+                    al = y
+                for ln in range(al):
+                    self.stdscr.addstr(ny + ln, 0, " "*x, self.color_pairs[fg][bg])
+                self.stdscr.move(cy, cx)
             else:
                 self.stdscr.clear()
+                # Alternate way?
+                #for ln in range(y):
+                #    self.stdscr.addstr(ln, 0, " "*x, self.color_pairs[fg][bg])
+                self.stdscr.bkgd(" ", self.color_pairs[fg][bg])
+                self.stdscr.move(0, 0)
         elif ah == 8:
             # page number ignored
             #ch = self.stdscr.getch()
@@ -286,16 +340,32 @@ class QlOsDos(QlOs):
             pass
         elif ah == 0xE:
             self.ql.nprint(f"Echo: {hex(al)} -> {curses.ascii.unctrl(al)}")
+            y, x = self.stdscr.getmaxyx()
+            cy, cx = self.stdscr.getyx()
+            fg = self.ql.reg.bl
+            # https://stackoverflow.com/questions/27674158/how-to-get-color-information-with-mvinch
+            # https://linux.die.net/man/3/inch
+            # https://github.com/mirror/ncurses/blob/master/include/curses.h.in#L1197
+            # wtf curses...
+            cht = self.stdscr.inch(cy, cx)
+            color_attr = cht & curses.A_COLOR
+            self.ql.nprint(f"Color attr: {color_attr:x}")
+            if color_attr not in self.revese_color_pairs:
+                bg = 0
+            else:
+                _, bg = self.revese_color_pairs[color_attr]
+            attr = self.color_pairs[fg][bg] # Need blink here
             if al == 0xa:
                 # \n will erase current line with echochar, so we have to handle it carefully.
-                y, x = self.stdscr.getmaxyx()
-                cy, cx = self.stdscr.getyx()
                 self.ql.nprint(f"Resolution: {x}x{y}, Cursor position: {cx},{cy}, Going to get a new line.")
                 if y-1 == cy:
+                    # scroll doesn't affect our cursor
                     self.stdscr.scroll(1)
-                self.stdscr.move(cy+1, 0)
+                    self.stdscr.move(cy, 0)
+                else:
+                    self.stdscr.move(cy+1, 0)
             else:
-                self.stdscr.echochar(al)
+                self.stdscr.echochar(al, attr)
         else:
             raise NotImplementedError()
         self.stdscr.refresh()
