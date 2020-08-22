@@ -133,7 +133,10 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
             # buf.st_atime offest 40 4 1586616689
             # buf.st_mtime offest 48 4 1586616689
             # buf.st_ctime offest 50 4 1586616689
-            fstat64_buf = ql.pack32(fstat64_info.st_dev)
+            if ql.platform == QL_OS.MACOS:
+                fstat64_buf = ql.pack32s(fstat64_info.st_dev)
+            else:
+                fstat64_buf = ql.pack32(fstat64_info.st_dev)
             fstat64_buf += b'\x00' * 12
             fstat64_buf += ql.pack64(fstat64_info.st_ino)
             fstat64_buf += ql.pack32(fstat64_info.st_mode)
@@ -216,7 +219,10 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
             fstat_buf += ql.pack32(fstat_info.st_blocks)
             fstat_buf = fstat_buf.ljust(0x90, b'\x00')
         elif ql.archtype== QL_ARCH.X8664:
-            fstat_buf = ql.pack64(fstat_info.st_dev)
+            if ql.platform == QL_OS.MACOS:
+                fstat_buf = ql.pack64s(fstat_info.st_dev)
+            else:
+                fstat_buf = ql.pack64(fstat_info.st_dev)
             fstat_buf += ql.pack(fstat_info.st_ino)
             fstat_buf += ql.pack64(fstat_info.st_nlink)
             fstat_buf += ql.pack32(fstat_info.st_mode)
@@ -249,7 +255,10 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
             # buf.st_mtime offest 58 8 274877909472
             # buf.st_ctime offest 68 8 274886368336
             # buf.__glibc_reserved offest 78 8
-            fstat_buf = ql.pack64(fstat_info.st_dev)
+            if ql.platform == QL_OS.MACOS:
+                fstat_buf = ql.pack64s(fstat_info.st_dev)
+            else:
+                fstat_buf = ql.pack64(fstat_info.st_dev)
             fstat_buf += ql.pack64(fstat_info.st_ino)
             fstat_buf += ql.pack32(fstat_info.st_mode)
             fstat_buf += ql.pack32(fstat_info.st_nlink)
