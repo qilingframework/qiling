@@ -5,6 +5,7 @@
 import sys
 import os
 import string
+from elftools.elf.elffile import ELFFile
 
 from qiling.const import *
 from qiling.exception import *
@@ -15,9 +16,9 @@ PT_LOAD = 1
 PT_DYNAMIC = 2
 PT_INTERP = 3
 
-ET_REL = 1
-ET_EXEC = 2
-ET_DYN = 3
+# ET_REL = 1
+# ET_EXEC = 2
+# ET_DYN = 3
 
 AT_NULL = 0
 AT_IGNORE = 1
@@ -53,6 +54,7 @@ class ELFParse():
 
         with open(path, "rb") as f:
             elfdata = f.read()
+            self.elffile = ELFFile(f)
 
         self.elfdata = elfdata.ljust(52, b'\x00')        
 
@@ -161,10 +163,11 @@ class ELFParse():
         return head
     
     def parse_header(self):
-        if self.ql.archbit == 64:
-            return self.parse_header64()
-        elif self.ql.archbit == 32:
-            return self.parse_header32()
+        return dict(self.elffile.header)
+        # if self.ql.archbit == 64:
+        #     return self.parse_header64()
+        # elif self.ql.archbit == 32:
+        #     return self.parse_header32()
 
     def parse_section_header32(self):
         # typedef struct elf32_shdr {
@@ -447,9 +450,9 @@ class QlLoaderELF(QlLoader, ELFParse):
         mem_start = int(mem_start // 0x1000) * 0x1000
         mem_end = int(mem_end // 0x1000 + 1) * 0x1000
 
-        if elfhead['e_type'] == ET_EXEC:
+        if elfhead['e_type'] == 'ET_EXEC':
             load_address = 0
-        elif elfhead['e_type'] != ET_DYN:
+        elif elfhead['e_type'] != 'ET_DYN':
             self.ql.nprint("[+] Some error in head e_type: %u!" %elfhead['e_type'])
             return -1
 
