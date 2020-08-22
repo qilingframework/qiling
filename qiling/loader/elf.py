@@ -339,11 +339,11 @@ class ELFParse():
         return
 
     def parse_segments(self):
-        # return self.elffile.iter_segments()
-        if self.ql.archbit == 64:
-            return self.parse_program_header64()
-        elif self.ql.archbit == 32:
-            return self.parse_program_header32()
+        return self.elffile.iter_segments()
+        # if self.ql.archbit == 64:
+        #     return self.parse_program_header64()
+        # elif self.ql.archbit == 32:
+        #     return self.parse_program_header32()
 
     def __del__(self):
         self.f.close()
@@ -446,13 +446,13 @@ class QlLoaderELF(QlLoader, ELFParse):
         mem_end = -1
         interp_path = ''
         for i in super().parse_segments():
-            # i = dict(i.header)
-            if i['p_type'] == PT_LOAD:
+            i = dict(i.header)
+            if i['p_type'] == 'PT_LOAD':
                 if mem_start > i['p_vaddr'] or mem_start == -1:
                     mem_start = i['p_vaddr']
                 if mem_end < i['p_vaddr'] + i['p_memsz'] or mem_end == -1:
                     mem_end = i['p_vaddr'] + i['p_memsz']
-            if i['p_type'] == PT_INTERP:
+            if i['p_type'] == 'PT_INTERP':
                 interp_path = self.NullStr(super().getelfdata(i['p_offset'], i['p_filesz']))
 
         mem_start = int(mem_start // 0x1000) * 0x1000
@@ -465,8 +465,8 @@ class QlLoaderELF(QlLoader, ELFParse):
             return -1
 
         for i in super().parse_segments():
-            # i = dict(i.header)
-            if i['p_type'] == PT_LOAD:
+            i = dict(i.header)
+            if i['p_type'] == 'PT_LOAD':
                 _mem_s = ((load_address + i["p_vaddr"]) // 0x1000 ) * 0x1000
                 _mem_e = ((load_address + i["p_vaddr"] + i["p_filesz"]) // 0x1000 + 1) * 0x1000
                 _perms = int(bin(i["p_flags"])[:1:-1], 2) # reverse bits for perms mapping
@@ -499,8 +499,8 @@ class QlLoaderELF(QlLoader, ELFParse):
 
             interp_mem_size = -1
             for i in interp.parse_segments():
-                # i =dict(i.header)
-                if i['p_type'] == PT_LOAD:
+                i =dict(i.header)
+                if i['p_type'] == 'PT_LOAD':
                     if interp_mem_size < i['p_vaddr'] + i['p_memsz'] or interp_mem_size == -1:
                         interp_mem_size = i['p_vaddr'] + i['p_memsz']
 
@@ -517,7 +517,7 @@ class QlLoaderELF(QlLoader, ELFParse):
 
             for i in interp.parse_segments():
                 # i =dict(i.header)
-                if i['p_type'] == PT_LOAD:
+                if i['p_type'] == 'PT_LOAD':
                     self.ql.mem.write(self.interp_address + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
             entry_point = interphead['e_entry'] + self.interp_address
 
