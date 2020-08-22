@@ -17,7 +17,8 @@ requirements = [
     "unicorn>=1.0.2rc4",
     "pefile>=2019.4.18",
     "python-registry>=1.3.1",
-    "keystone-engine>=0.9.2"
+    "keystone-engine>=0.9.2",
+    "pyelftools>=0.26"
 ]
 
 with open("README.md", "r", encoding="utf-8") as ld:

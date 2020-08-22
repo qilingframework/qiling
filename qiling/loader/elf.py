@@ -5,6 +5,7 @@
 import sys
 import os
 import string
+from elftools.elf.elffile import ELFFile
 
 from qiling.const import *
 from qiling.exception import *
@@ -15,9 +16,9 @@ PT_LOAD = 1
 PT_DYNAMIC = 2
 PT_INTERP = 3
 
-ET_REL = 1
-ET_EXEC = 2
-ET_DYN = 3
+# ET_REL = 1
+# ET_EXEC = 2
+# ET_DYN = 3
 
 AT_NULL = 0
 AT_IGNORE = 1
@@ -51,20 +52,23 @@ class ELFParse():
         self.path = os.path.abspath(path)
         self.ql = ql
 
-        with open(path, "rb") as f:
-            elfdata = f.read()
+        # with open(path, "rb") as f:
+        self.f = open(path, "rb")
+        elfdata = self.f.read()
+        self.elffile = ELFFile(self.f)
 
         self.elfdata = elfdata.ljust(52, b'\x00')        
 
-        self.ident = self.getident()
+        # self.ident = self.getident()
 
-        if self.ident[ : 4] != b'\x7fELF':
+        # if self.ident[ : 4] != b'\x7fELF':
+        if self.elffile.e_ident_raw[ : 4] != b'\x7fELF':
             raise QlErrorELFFormat("[!] ERROR: NOT a ELF")
 
         self.elfhead = self.parse_header()
 
-    def getident(self):
-        return self.elfdata[0 : 19]
+    # def getident(self):
+    #     return self.elfdata[0 : 19]
 
     def getelfdata(self, offest, size):
         return self.elfdata[offest : offest + size]
@@ -161,10 +165,11 @@ class ELFParse():
         return head
     
     def parse_header(self):
-        if self.ql.archbit == 64:
-            return self.parse_header64()
-        elif self.ql.archbit == 32:
-            return self.parse_header32()
+        return dict(self.elffile.header)
+        # if self.ql.archbit == 64:
+        #     return self.parse_header64()
+        # elif self.ql.archbit == 32:
+        #     return self.parse_header32()
 
     def parse_section_header32(self):
         # typedef struct elf32_shdr {
@@ -251,11 +256,12 @@ class ELFParse():
             yield S
         return
 
-    def parse_section_header(self):
-        if self.ql.archbit == 64:
-            return self.parse_section_header64()
-        elif self.ql.archbit == 32:
-            return self.parse_section_header32()
+    def parse_sections(self):
+        return self.elffile.iter_sections()
+        # if self.ql.archbit == 64:
+        #     return self.parse_section_header64()
+        # elif self.ql.archbit == 32:
+        #     return self.parse_section_header32()
 
     def parse_program_header32(self):
         # typedef struct elf32_phdr{
@@ -332,11 +338,13 @@ class ELFParse():
             yield P
         return
 
-    def parse_program_header(self):
-        if self.ql.archbit == 64:
-            return self.parse_program_header64()
-        elif self.ql.archbit == 32:
-            return self.parse_program_header32()
+    def parse_segments(self):
+        return self.elffile.iter_segments()
+        # if self.ql.archbit == 64:
+        #     return self.parse_program_header64()
+        # elif self.ql.archbit == 32:
+        #     return self.parse_program_header32()
+
 
 class QlLoaderELF(QlLoader, ELFParse):
     def __init__(self, ql):
@@ -435,26 +443,28 @@ class QlLoaderELF(QlLoader, ELFParse):
         mem_start = -1
         mem_end = -1
         interp_path = ''
-        for i in super().parse_program_header():
-            if i['p_type'] == PT_LOAD:
+        for i in super().parse_segments():
+            i = dict(i.header)
+            if i['p_type'] == 'PT_LOAD':
                 if mem_start > i['p_vaddr'] or mem_start == -1:
                     mem_start = i['p_vaddr']
                 if mem_end < i['p_vaddr'] + i['p_memsz'] or mem_end == -1:
                     mem_end = i['p_vaddr'] + i['p_memsz']
-            if i['p_type'] == PT_INTERP:
+            if i['p_type'] == 'PT_INTERP':
                 interp_path = self.NullStr(super().getelfdata(i['p_offset'], i['p_filesz']))
 
         mem_start = int(mem_start // 0x1000) * 0x1000
         mem_end = int(mem_end // 0x1000 + 1) * 0x1000
 
-        if elfhead['e_type'] == ET_EXEC:
+        if elfhead['e_type'] == 'ET_EXEC':
             load_address = 0
-        elif elfhead['e_type'] != ET_DYN:
+        elif elfhead['e_type'] != 'ET_DYN':
             self.ql.nprint("[+] Some error in head e_type: %u!" %elfhead['e_type'])
             return -1
 
-        for i in super().parse_program_header():
-            if i['p_type'] == PT_LOAD:
+        for i in super().parse_segments():
+            i = dict(i.header)
+            if i['p_type'] == 'PT_LOAD':
                 _mem_s = ((load_address + i["p_vaddr"]) // 0x1000 ) * 0x1000
                 _mem_e = ((load_address + i["p_vaddr"] + i["p_filesz"]) // 0x1000 + 1) * 0x1000
                 _perms = int(bin(i["p_flags"])[:1:-1], 2) # reverse bits for perms mapping
@@ -486,8 +496,9 @@ class QlLoaderELF(QlLoader, ELFParse):
             self.ql.dprint(D_INFO, "[+] interp is : %s" % (self.ql.rootfs + interp_path))
 
             interp_mem_size = -1
-            for i in interp.parse_program_header():
-                if i['p_type'] == PT_LOAD:
+            for i in interp.parse_segments():
+                i =dict(i.header)
+                if i['p_type'] == 'PT_LOAD':
                     if interp_mem_size < i['p_vaddr'] + i['p_memsz'] or interp_mem_size == -1:
                         interp_mem_size = i['p_vaddr'] + i['p_memsz']
 
@@ -502,8 +513,9 @@ class QlLoaderELF(QlLoader, ELFParse):
             self.ql.dprint(D_INFO, "[+] interp_address is : 0x%x" % (self.interp_address))
             self.ql.mem.map(self.interp_address, int(interp_mem_size), info=os.path.abspath(self.ql.rootfs+interp_path))
 
-            for i in interp.parse_program_header():
-                if i['p_type'] == PT_LOAD:
+            for i in interp.parse_segments():
+                # i =dict(i.header)
+                if i['p_type'] == 'PT_LOAD':
                     self.ql.mem.write(self.interp_address + i['p_vaddr'], interp.getelfdata(i['p_offset'], i['p_filesz']))
             entry_point = interphead['e_entry'] + self.interp_address
 
