@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
-import os, math, copy
+import math, copy, os
 from contextlib import contextmanager
 
-from .utils import dump_regs
+from qiling.const import QL_ARCH
+
+from .utils import dump_regs, get_arm_flags
 
 
 
@@ -41,7 +43,6 @@ def examine_mem(ql, xaddr, count):
 
         print()
 
-
 # get terminal window height and width
 def get_terminal_size():
     return map(int, os.popen('stty size', 'r').read().split())
@@ -66,36 +67,71 @@ def context_printer(ql, field_name, ruler="="):
     print(ruler * _width)
 
 
-def context_reg(ql, saved_states, *args, **kwargs):
+def context_reg(ql, saved_states=None, *args, **kwargs):
 
     # context render for registers
     with context_printer(ql, "[Registers]"):
 
         _cur_regs = dump_regs(ql)
-        _cur_regs.update({"fp": _cur_regs.pop("s8")})
+
         _colors = (color.DARKCYAN, color.BLUE, color.RED, color.YELLOW, color.GREEN, color.PURPLE, color.CYAN, color.WHITE)
 
-        if saved_states is not None:
-            _saved_states = copy.deepcopy(saved_states)
-            _saved_states.update({"fp": _saved_states.pop("s8")})
-            _diff = [k for k in _cur_regs if _cur_regs[k] != _saved_states[k]]
+        if ql.archtype == QL_ARCH.MIPS:
 
-        else:
-            _diff = None
+            _cur_regs.update({"fp": _cur_regs.pop("s8")})
 
-        lines = ""
-        for idx, r in enumerate(_cur_regs, 1):
-            line = "{}{}: 0x{{:08x}} {}\t".format(_colors[(idx-1) // 4], r, color.END)
+            if saved_states is not None:
+                _saved_states = copy.deepcopy(saved_states)
+                _saved_states.update({"fp": _saved_states.pop("s8")})
+                _diff = [k for k in _cur_regs if _cur_regs[k] != _saved_states[k]]
 
-            if _diff and r in _diff:
-                line = "{}{}".format(color.UNDERLINE, color.BOLD) + line
+            else:
+                _diff = None
 
-            if idx % 4 == 0 and idx != 32:
-                line += "\n"
+            lines = ""
+            for idx, r in enumerate(_cur_regs, 1):
+                line = "{}{}: 0x{{:08x}} {}\t".format(_colors[(idx-1) // 4], r, color.END)
 
-            lines += line
+                if _diff and r in _diff:
+                    line = "{}{}".format(color.UNDERLINE, color.BOLD) + line
 
-        print(lines.format(*_cur_regs.values()))
+                if idx % 4 == 0 and idx != 32:
+                    line += "\n"
+
+                lines += line
+
+            print(lines.format(*_cur_regs.values()))
+
+        elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
+
+            _cur_regs.update({"sl": _cur_regs.pop("r10")})
+            _cur_regs.update({"fp": _cur_regs.pop("r11")})
+            _cur_regs.update({"ip": _cur_regs.pop("r12")})
+
+            if saved_states is not None:
+                _saved_states = copy.deepcopy(saved_states)
+                _saved_states.update({"sl": _saved_states.pop("r10")})
+                _saved_states.update({"fp": _saved_states.pop("r11")})
+                _saved_states.update({"ip": _saved_states.pop("r12")})
+                _diff = [k for k in _cur_regs if _cur_regs[k] != _saved_states[k]]
+
+            else:
+                _diff = None
+
+            lines = ""
+            for idx, r in enumerate(_cur_regs, 1):
+                line = "{}{:}: 0x{{:08x}} {}\t".format(_colors[(idx-1) // 4], r, color.END)
+
+                if _diff and r in _diff:
+                    line = "{}{}".format(color.UNDERLINE, color.BOLD) + line
+
+                if idx % 4 == 0:
+                    line += "\n"
+
+                lines += line
+
+            print(lines.format(*_cur_regs.values()))
+            print(color.GREEN, "[{cpsr[mode]} mode], Thumb: {cpsr[thumb]}, FIQ: {cpsr[fiq]}, IRQ: {cpsr[irq]}, NEG: {cpsr[neg]}, ZERO: {cpsr[zero]}, Carry: {cpsr[carry]}, Overflow: {cpsr[overflow]}".format(cpsr=get_arm_flags(ql.reg.cpsr)), color.END, sep="")
 
     # context render for Stack
     with context_printer(ql, "[Stack]", ruler="-"):

@@ -1,5 +1,6 @@
 from .filestruct import ql_file
 from .utils import QlOsUtils
+import inspect
 
 # All mapped objects should inherit this class.
 # Note this object is compatible with ql_file.
@@ -60,21 +61,25 @@ class QlFsMapper:
 
     def _open_mapping_ql_file(self, ql_path, openflags, openmode):
         real_dest = self._mapping[ql_path]
-        if not isinstance(real_dest, str): # We have opened this mapping or it is implemented by user.
-            return real_dest
-        else:
-            qlfile = ql_file.open(real_dest, openflags, openmode) # open the path and replace the destination now.
-            self._mapping[ql_path] = qlfile
+        if isinstance(real_dest, str):
+            qlfile = ql_file.open(real_dest, openflags, openmode)
             return qlfile
+        elif inspect.isclass(real_dest):
+            new_instance = real_dest()
+            return new_instance
+        else:
+            return real_dest
     
     def _open_mapping(self, ql_path, openmode):
         real_dest = self._mapping[ql_path]
-        if not isinstance(real_dest, str):
-            return real_dest
-        else:
+        if isinstance(real_dest, str):
             f = open(real_dest, openmode)
-            self._mapping[ql_path] = f
             return f
+        elif inspect.isclass(real_dest):
+            new_instance = real_dest()
+            return new_instance
+        else:
+            return real_dest
 
     def has_mapping(self, fm):
         return fm in self._mapping
@@ -95,9 +100,13 @@ class QlFsMapper:
             real_path = self.ql.os.transform_to_real_path(path)
             return open(real_path, openmode)
 
+    # ql_path:   Emulated path which should be always convertable to a string. e.g. pathlib.Path
+    # real_dest: Mapped object, can be a string, an object or a class.
+    #            string: mapped path in the host machine, e.g. `/dev/urandom` -> `/dev/urandom`.
+    #            object: mapped object, will be returned each time the emulated path has been opened.
+    #            class:  mapped class, will be used to create a new instance each time the emulated path has been opened.
     def add_fs_mapping(self, ql_path, real_dest):
         # For os.PathLike
-        # fm should be always objects which can be converted to a string.
         ql_path = str(ql_path)
         if '__fspath__' in dir(real_dest): # real_dest is a os.PathLike object.
             real_dest = real_dest.__fspath__()
