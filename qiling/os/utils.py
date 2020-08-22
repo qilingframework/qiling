@@ -357,6 +357,7 @@ class QlOsUtils:
             self.ql.dprint(D_INFO, log)
 
     def printf(self, address, fmt, params_addr, name, wstring=False):
+        print(hex(address))
         count = fmt.count("%")
         params = []
         if count > 0:
@@ -371,9 +372,9 @@ class QlOsUtils:
             for f in formats:
                 if f.startswith("s"):
                     if wstring:
-                        params[index] = self.ql.os.read_wstring(params[index])
+                        params[index] = self.read_wstring(params[index])
                     else:
-                        params[index] = self.ql.os.read_cstring(params[index])
+                        params[index] = self.read_cstring(params[index])
                 index += 1
 
             output = '%s(format = %s' % (name, repr(fmt))

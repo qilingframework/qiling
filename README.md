@@ -212,3 +212,12 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 - assafcarlsbad
 - ucgJhe
 - jhumble
+
+
+#### Donations:
+
+- XMR: 46T1c5taWuP6G4XvAG5shC6a7eai4Qe4HPFj5qEGyJzzMVRa9M9MR4DbNbbSDKtbgNR6bvWyj32Wb3HySYZuDqUp2GCr52o
+- DASH: XhTsLXTQEhN5F7hKtq8HV867um3HZuXvF9
+- ADA: DdzFFzCqrht8MbmRQL8v86XG5vQHYNC6NQwFkhCW4rsNHMLfzWyxVTce5yFayg6QqJBdL7AapwvFL3fBAoBmPLR9gDbkzLGfVVEGHnNC
+- ETH: 0xec095228411d4a232f4d221ad7defcde36eb981f
+- BTC: 1NmxDWWak8qtpmYGnXBK1osRNNYH2zxpZs
