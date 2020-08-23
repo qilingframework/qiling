@@ -6,7 +6,7 @@ This file details the changelog of Qiling Framework.
 
 
 ------------------------------------
-[Version 1.1]: August 23th, 2020
+[Version 1.1.1]: August 23th, 2020
 
 - Fix Windows "import resource" issue
 - Add ql.save and ql.restore aka Qiling's Snapshot
