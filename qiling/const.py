@@ -11,21 +11,22 @@ class QL_ENDIAN(IntEnum):
 
 
 class QL_ARCH(IntEnum):
-    X86 = 1
-    X8664 = 2
-    ARM = 3
-    ARM_THUMB = 4
-    ARM64 = 5
-    MIPS = 6
+    X86 = 101
+    X8664 = 102
+    ARM = 103
+    ARM_THUMB = 104
+    ARM64 = 105
+    MIPS = 106
+    A8086 = 7
 
 
 class QL_OS(IntEnum):
-    LINUX = 1
-    FREEBSD = 2
-    MACOS = 3
-    WINDOWS = 4
-    POSIX = 5
-    UEFI = 6
+    LINUX = 201
+    FREEBSD = 202
+    MACOS = 203
+    WINDOWS = 204
+    UEFI = 205
+    DOS = 206
 
 
 class QL_OUTPUT(IntEnum):
@@ -39,6 +40,7 @@ class QL_OUTPUT(IntEnum):
 class QL_DEBUGGER(IntEnum):
     GDB = 1
     IDAPRO = 2
+    QDB = 3
 
 
 class QL_INTERCEPT(IntEnum):
@@ -53,10 +55,13 @@ D_CTNT = 3 # Print out content. File content or content of a tcp stream
 D_RPRT = 4 # Reporting output, main summarizing purposes
 D_DRPT = 5 # Detailed Report, with address
 
-QL_DEBUGGER_ALL = [QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB]
-QL_ARCH_ALL = [QL_ARCH.X86, QL_ARCH.X8664, QL_ARCH.ARM, QL_ARCH.ARM64, QL_ARCH.MIPS]
+QL_DEBUGGER_ALL = [QL_DEBUGGER.IDAPRO, QL_DEBUGGER.GDB, QL_DEBUGGER.QDB]
+QL_ARCH_ALL = [QL_ARCH.X86, QL_ARCH.X8664, QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.ARM64, QL_ARCH.MIPS, QL_ARCH.A8086]
+QL_ARCH_16BIT = [QL_ARCH.A8086]
+QL_ARCH_32BIT = [QL_ARCH.ARM, QL_ARCH.ARM_THUMB, QL_ARCH.MIPS, QL_ARCH.X86]
+QL_ARCH_64BIT = [QL_ARCH.ARM64, QL_ARCH.X8664] 
 QL_ENDINABLE = [QL_ARCH.MIPS, QL_ARCH.ARM]
-QL_OS_ALL = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.WINDOWS, QL_OS.POSIX, QL_OS.UEFI]
+QL_OS_ALL = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS, QL_OS.WINDOWS, QL_OS.UEFI, QL_OS.DOS]
 QL_POSIX = [QL_OS.LINUX, QL_OS.FREEBSD, QL_OS.MACOS]
 
 QL_HOOK_BLOCK = 0b1
@@ -65,6 +70,7 @@ QL_CALL_BLOCK = 0b10
 debugger_map = {
         "gdb": QL_DEBUGGER.GDB,
         "ida": QL_DEBUGGER.IDAPRO,
+        "qdb": QL_DEBUGGER.QDB,
     }
 
 arch_map = {
@@ -72,7 +78,9 @@ arch_map = {
         "x8664": QL_ARCH.X8664,
         "mips": QL_ARCH.MIPS,
         "arm": QL_ARCH.ARM,
+        "arm_thumb": QL_ARCH.ARM_THUMB,
         "arm64": QL_ARCH.ARM64,
+        "a8086": QL_ARCH.A8086,
     }
 
 os_map = {
@@ -81,108 +89,5 @@ os_map = {
         "freebsd": QL_OS.FREEBSD,
         "windows": QL_OS.WINDOWS,
         "uefi": QL_OS.UEFI,
-}
-
-reptypedict = {
-            "BSTR": "POINTER",
-            "DLGPROC": "POINTER",
-            "DWORDLONG": "ULONGLONG",
-            "DWORD_PTR": "POINTER",
-            "GROUP": "INT",
-            "HDC": "POINTER",
-            "HEAP_INFORMATION_CLASS": "UINT",
-            "HGLOBAL": "POINTER",
-            "HHOOK": "POINTER",
-            "HINSTANCE": "HANDLE",
-            "HINTERNET": "POINTER",
-            "HKEY": "HANDLE",
-            "HLOCAL": "POINTER",
-            "HMODULE": "HANDLE",
-            "HOOKPROC": "POINTER",
-            "HRSRC": "POINTER",
-            "HWND": "HANDLE",
-            "INSTALLSTATE": "POINTER",
-            "INTERNET_PORT": "DWORD",
-            "INT_PTR": "POINTER",
-            "LARGE_INTEGER": "POINTER",
-            "LCID": "POINTER",
-            "LONG": "ULONGLONG",
-            "LPARAM": "POINTER",
-            "LPBOOL": "POINTER",
-            "LPBYTE": "POINTER",
-            "LPCCH": "POINTER",
-            "LPCONTEXT": "POINTER",
-            "LPCPINFO": "POINTER",
-            "LPCRITICAL_SECTION": "POINTER",
-            "LPCSTR": "STRING",
-            "LPCVOID": "POINTER",
-            "LPCWCH": "POINTER",
-            "LPCWSTR": "WSTRING",
-            "LPDWORD": "POINTER",
-            "LPFILETIME": "POINTER",
-            "LPINTERNET_BUFFERSA": "POINT",
-            "LPMESSAGEFILTER": "POINTER",
-            "LPMODULEINFO": "POINTER",
-            "LPNLSVERSIONINFO": "POINTER",
-            "LPOSVERSIONINFOA": "STRING",
-            "LPOSVERSIONINFOEXW": "POINTER",
-            "LPOSVERSIONINFOW": "WSTRING",
-            "LPOVERLAPPED": "POINTER",
-            "LPPOINT": "POINTER",
-            "LPPROCESSENTRY32W": "POINTER",
-            "LPSECURITY_ATTRIBUTES": "POINTER",
-            "LPSTARTUPINFOA": "POINTER",
-            "LPSTARTUPINFOW": "POINTER",
-            "LPSTR": "POINTER",
-            "LPSYSTEMTIME": "POINTER",
-            "LPSYSTEM_INFO": "POINTER",
-            "LPTHREAD_START_ROUTINE": "POINTER",
-            "LPTOP_LEVEL_EXCEPTION_FILTER": "DWORD",
-            "LPUNKNOWN": "POINTER",
-            "LPVOID": "POINTER",
-            "LPWCH": "POINTER",
-            "LPWIN32_FIND_DATAA": "POINTER",
-            "LPWORD": "POINTER",
-            "LPWSADATA": "STRING",
-            "LPWSAPROTOCOL_INFOA": "POINTER",
-            "LPWSTR": "POINTER",
-            "MSIHANDLE": "POINTER",
-            "OBJECT_INFORMATION_CLASS": "INT",
-            "OLECHAR": "WSTRING",
-            "PBOOL": "POINTER",
-            "PCACTCTXW": "POINTER",
-            "PCNZCH": "STRING",
-            "PDWORD": "POINTER",
-            "PFLS_CALLBACK_FUNCTION": "POINTER",
-            "PHKEY": "POINTER",
-            "PMEMORY_BASIC_INFORMATION": "POINTER",
-            "PROCESSINFOCLASS": "INT",
-            "PSECURITY_DESCRIPTOR": "POINTER",
-            "PSID": "HANDLE",
-            "PSID_IDENTIFIER_AUTHORITY": "POINTER",
-            "PSLIST_HEADER": "POINTER",
-            "PSRWLOCK": "POINTER",
-            "PULONG": "POINTER",
-            "PVECTORED_EXCEPTION_HANDLER": "HANDLE",
-            "PVOID": "POINTER",
-            "REFCLSID": "POINTER",
-            "REFIID": "POINTER",
-            "REGSAM": "POINTER",
-            "SHELLEXECUTEINFOA": "POINTER",
-            "SHELLEXECUTEINFOW": "POINTER",
-            "SHFILEINFOW": "POINTER",
-            "SOCKET": "INT",
-            "SOLE_AUTHENTICATION_SERVICE": "POINTER",
-            "TOKEN_INFORMATION_CLASS": "DWORD",
-            "UINT_PTR": "POINTER",
-            "ULONG": "UINT",
-            "ULONG_PTR": "POINTER",
-            "WORD": "DWORD",
-            "WPARAM": "UINT",
-            "_EXCEPTION_POINTERS": "POINTER",
-            "int": "INT",
-            "size_t": "UINT",
-            "sockaddr": "POINTER",
-            "unsigned int": "UINT",
-            "void": "POINTER"
+        "dos": QL_OS.DOS,
 }

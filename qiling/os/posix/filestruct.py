@@ -16,6 +16,22 @@ class ql_socket:
     def __init__(self, socket):
         self.__fd = socket.fileno()
         self.__socket = socket
+
+    def __getstate__(self, *args, **kwargs):
+
+        _state = self.__dict__.copy()
+
+        _state["_ql_socket__socket"] = {
+                "family": self.__dict__["_ql_socket__socket"].family,
+                "type": self.__dict__["_ql_socket__socket"].type,
+                "proto": self.__dict__["_ql_socket__socket"].proto,
+                "laddr": self.__dict__["_ql_socket__socket"].getsockname(),
+                }
+
+        return _state
+
+    def __setstate__(self, state):
+        self.__dict__ = state
     
     @classmethod
     def open(self, socket_domain, socket_type, socket_protocol, opts=None):
@@ -58,6 +74,12 @@ class ql_socket:
     
     def listen(self, listen_num):
         return self.__socket.listen(listen_num)
+
+    def getsockname(self):
+        return self.__socket.getsockname()
+        
+    def getpeername(self):
+        return self.__socket.getpeername()
     
     def accept(self):
         con, addr = self.__socket.accept()
@@ -114,3 +136,5 @@ class ql_pipe:
         new_fd = os.dup(self.__fd)
         new_ql_pipe = ql_pipe(new_fd)
         return new_ql_pipe
+
+

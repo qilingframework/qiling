@@ -7,13 +7,13 @@ import sys
 sys.path.append("..")
 
 from qiling import *
-from qiling.os.windows.fncc import *
-from qiling.os.windows.utils import *
 from qiling.const import *
+from qiling.os.windows.fncc import *
+from qiling.os.const import *
+from qiling.os.windows.const import *
 
-@winapi(cc=CDECL, params={
-    "str": STRING
-})
+
+@winsdkapi(cc=CDECL, replace_params={"str": STRING}) 
 def my_puts(ql, address, params):
     ret = 0
     ql.nprint("\n+++++++++\nmy random Windows API\n+++++++++\n")

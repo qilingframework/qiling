@@ -49,11 +49,13 @@ class QlArchARM(QlArch):
     # get initialized unicorn engine
     def get_init_uc(self):
         if self.ql.archendian == QL_ENDIAN.EB:
+            uc = Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_BIG_ENDIAN)
+        elif self.ql.archtype == QL_ARCH.ARM_THUMB:
+            uc = Uc(UC_ARCH_ARM, UC_MODE_THUMB)
+        elif self.ql.archtype == QL_ARCH.ARM:
             uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)
-            # FIXME: unicorn engine not able to choose ARM or Thumb automatically
-            #uc = Uc(UC_ARCH_ARM, UC_MODE_ARM + UC_MODE_BIG_ENDIAN)
         else:
-            uc = Uc(UC_ARCH_ARM, UC_MODE_ARM)    
+            uc = None
         return uc
 
 

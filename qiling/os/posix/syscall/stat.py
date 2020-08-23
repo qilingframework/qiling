@@ -10,6 +10,7 @@ from qiling.os.posix.filestruct import *
 from qiling.os.filestruct import *
 from qiling.os.posix.const_mapping import *
 from qiling.exception import *
+from qiling.os.stat import *
 
 def ql_syscall_chmod(ql, filename, mode, null1, null2, null3, null4):
     regreturn = 0
@@ -26,7 +27,7 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
 
     regreturn = -1
     if os.path.exists(real_path) == True:
-        fstat64_info = os.stat(real_path)
+        fstat64_info = Stat(real_path)
 
         # struct stat is : 80 addr is : 0x4000811bc8
         # buf.st_dev offest 0 8 0
@@ -76,12 +77,12 @@ def ql_syscall_fstatat64(ql, fstatat64_fd, fstatat64_fname, fstatat64_buf, fstat
 
 def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
 
-    if ql.os.file_des[fstat64_fd].fstat() == -1:
+    if ql.os.fd[fstat64_fd].fstat() == -1:
         regreturn = 0
 
-    elif fstat64_fd < 256 and ql.os.file_des[fstat64_fd] != 0:
+    elif fstat64_fd < 256 and ql.os.fd[fstat64_fd] != 0:
         user_fileno = fstat64_fd
-        fstat64_info = ql.os.file_des[user_fileno].fstat()
+        fstat64_info = ql.os.fd[user_fileno].fstat()
 
         if ql.archtype== QL_ARCH.ARM64:
             # struct stat is : 80 addr is : 0x4000811bc8
@@ -132,7 +133,10 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
             # buf.st_atime offest 40 4 1586616689
             # buf.st_mtime offest 48 4 1586616689
             # buf.st_ctime offest 50 4 1586616689
-            fstat64_buf = ql.pack32(fstat64_info.st_dev)
+            if ql.platform == QL_OS.MACOS:
+                fstat64_buf = ql.pack32s(fstat64_info.st_dev)
+            else:
+                fstat64_buf = ql.pack32(fstat64_info.st_dev)
             fstat64_buf += b'\x00' * 12
             fstat64_buf += ql.pack64(fstat64_info.st_ino)
             fstat64_buf += ql.pack32(fstat64_info.st_mode)
@@ -150,12 +154,14 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack64(0)
             fstat64_buf += ql.pack32(fstat64_info.st_blksize)
             fstat64_buf += ql.pack32(0)
-            fstat64_buf += ql.pack64(fstat64_info.st_blocks)
+            fstat64_buf += ql.pack64(fstat64_info.st_blocks)        
 
         else:
-
             # pack fstatinfo
-            fstat64_buf = ql.pack64(fstat64_info.st_dev)
+            if ql.platform == QL_OS.MACOS:
+                fstat64_buf = ql.pack64s(fstat64_info.st_dev)
+            else:
+                fstat64_buf = ql.pack64(fstat64_info.st_dev)
             fstat64_buf += ql.pack64(0x0000000300c30000)
             fstat64_buf += ql.pack32(fstat64_info.st_mode)
             fstat64_buf += ql.pack32(fstat64_info.st_nlink)
@@ -186,9 +192,9 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
 
 def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
 
-    if fstat_fd < 256 and ql.os.file_des[fstat_fd] != 0:
+    if fstat_fd < 256 and ql.os.fd[fstat_fd] != 0:
         user_fileno = fstat_fd
-        fstat_info = ql.os.file_des[user_fileno].fstat()
+        fstat_info = ql.os.fd[user_fileno].fstat()
 
         if ql.archtype== QL_ARCH.MIPS:
             # pack fstatinfo
@@ -213,7 +219,10 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
             fstat_buf += ql.pack32(fstat_info.st_blocks)
             fstat_buf = fstat_buf.ljust(0x90, b'\x00')
         elif ql.archtype== QL_ARCH.X8664:
-            fstat_buf = ql.pack64(fstat_info.st_dev)
+            if ql.platform == QL_OS.MACOS:
+                fstat_buf = ql.pack64s(fstat_info.st_dev)
+            else:
+                fstat_buf = ql.pack64(fstat_info.st_dev)
             fstat_buf += ql.pack(fstat_info.st_ino)
             fstat_buf += ql.pack64(fstat_info.st_nlink)
             fstat_buf += ql.pack32(fstat_info.st_mode)
@@ -246,7 +255,10 @@ def ql_syscall_fstat(ql, fstat_fd, fstat_add, *args, **kw):
             # buf.st_mtime offest 58 8 274877909472
             # buf.st_ctime offest 68 8 274886368336
             # buf.__glibc_reserved offest 78 8
-            fstat_buf = ql.pack64(fstat_info.st_dev)
+            if ql.platform == QL_OS.MACOS:
+                fstat_buf = ql.pack64s(fstat_info.st_dev)
+            else:
+                fstat_buf = ql.pack64(fstat_info.st_dev)
             fstat_buf += ql.pack64(fstat_info.st_ino)
             fstat_buf += ql.pack32(fstat_info.st_mode)
             fstat_buf += ql.pack32(fstat_info.st_nlink)
@@ -302,7 +314,7 @@ def ql_syscall_stat64(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
-        stat64_info = os.stat(real_path)
+        stat64_info = Stat(real_path)
 
         if ql.archtype== QL_ARCH.MIPS:
             # packfstatinfo
@@ -376,7 +388,7 @@ def ql_syscall_stat(ql, stat_path, stat_buf_ptr, *args, **kw):
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
-        stat_info = os.stat(real_path)
+        stat_info = Stat(real_path)
 
         if ql.archtype== QL_ARCH.MIPS:
             # pack fstatinfo
@@ -436,7 +448,7 @@ def ql_syscall_lstat(ql, lstat_path, lstat_buf_ptr, *args, **kw):
     if os.path.exists(real_path) == False:
         regreturn = -1
     else:
-        lstat_info = os.lstat(real_path)
+        lstat_info = Lstat(real_path)
 
         if ql.archtype== QL_ARCH.MIPS:
             # pack fstatinfo

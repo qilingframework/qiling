@@ -26,7 +26,7 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
 
     idx = -1
     for i in range(256):
-        if ql.os.file_des[i] == 0:
+        if ql.os.fd[i] == 0:
             idx = i
             break
     try:
@@ -34,9 +34,9 @@ def ql_syscall_socket(ql, socket_domain, socket_type, socket_protocol, *args, **
             regreturn = -1
         else:
             if ql.output == QL_OUTPUT.DEBUG: # set REUSEADDR options under debug mode
-                ql.os.file_des[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol, (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1))
+                ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol, (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1))
             else:
-                ql.os.file_des[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
+                ql.os.fd[idx] = ql_socket.open(socket_domain, socket_type, socket_protocol)
 
             regreturn = (idx)
     except:
@@ -57,7 +57,7 @@ def ql_syscall_connect(ql, connect_sockfd, connect_addr, connect_addrlen, *args,
     AF_INET = 2
     sock_addr = ql.mem.read(connect_addr, connect_addrlen)
     family = ql.unpack16(sock_addr[ : 2])
-    s = ql.os.file_des[connect_sockfd]
+    s = ql.os.fd[connect_sockfd]
     ip = b''
     sun_path = b''
     port = 0
@@ -97,9 +97,10 @@ def ql_syscall_setsockopt(ql, *args, **kw):
 
 def ql_syscall_shutdown(ql, shutdown_fd, shutdown_how, *args, **kw):
     ql.nprint("shutdown(%d, %d)" % (shutdown_fd, shutdown_how))
-    if shutdown_fd >=0 and shutdown_fd < 256 and ql.os.file_des[shutdown_fd] != 0:
+    
+    if shutdown_fd >=0 and shutdown_fd < 256 and ql.os.fd[shutdown_fd] != 0:
         try:
-            ql.os.file_des[shutdown_fd].shutdown(shutdown_how)
+            ql.os.fd[shutdown_fd].shutdown(shutdown_how)
             regreturn = 0
         except:
             regreturn = -1
@@ -125,20 +126,20 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
         path = data[2 : ].split(b'\x00')[0]
         path = ql.os.transform_to_real_path(path.decode())
         ql.nprint(path)
-        ql.os.file_des[bind_fd].bind(path)
+        ql.os.fd[bind_fd].bind(path)
 
     # need a proper fix, for now ipv4 comes first
     elif sin_family == 2 and ql.bindtolocalhost == True:
-        ql.os.file_des[bind_fd].bind(('127.0.0.1', port))
+        ql.os.fd[bind_fd].bind(('127.0.0.1', port))
         host = "127.0.0.1"
 
     # IPv4 should comes first
     elif ql.ipv6 == True and sin_family == 10 and ql.bindtolocalhost == True:
-        ql.os.file_des[bind_fd].bind(('::1', port))
+        ql.os.fd[bind_fd].bind(('::1', port))
         host = "::1"
 
     elif ql.bindtolocalhost == False:
-        ql.os.file_des[bind_fd].bind((host, port))
+        ql.os.fd[bind_fd].bind((host, port))
 
     else:
         regreturn = -1
@@ -155,10 +156,48 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
     ql.os.definesyscall_return(regreturn)
 
 
+def ql_syscall_getsockname(ql, sockfd, addr, addrlenptr, *args, **kw):
+    if sockfd < 256 and ql.os.fd[sockfd] != 0:
+        host, port = ql.os.fd[sockfd].getsockname()
+        data = struct.pack("<h", int(ql.os.fd[sockfd].family))
+        data += struct.pack(">H", port)
+        data += ipaddress.ip_address(host).packed
+        addrlen = ql.mem.read(addrlenptr, 4)
+        addrlen = ql.unpack32(addrlen)
+        data = data[:addrlen]
+        ql.mem.write(addr, data)
+        regreturn = 0
+    else:
+        regreturn = -1
+
+    ql.nprint("getsockname(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
+  
+    ql.os.definesyscall_return(regreturn)  
+
+
+def ql_syscall_getpeername(ql, sockfd, addr, addrlenptr, *args, **kw):
+    if sockfd < 256 and ql.os.fd[sockfd] != 0:
+        host, port = ql.os.fd[sockfd].getpeername()
+        data = struct.pack("<h", int(ql.os.fd[sockfd].family))
+        data += struct.pack(">H", port)
+        data += ipaddress.ip_address(host).packed
+        addrlen = ql.mem.read(addrlenptr, 4)
+        addrlen = ql.unpack32(addrlen)
+        data = data[:addrlen]
+        ql.mem.write(addr, data)
+        regreturn = 0
+    else:
+        regreturn = -1
+
+    ql.nprint("getpeername(%d, 0x%x, 0x%x) = %d" % (sockfd, addr, addrlenptr, regreturn))
+  
+    ql.os.definesyscall_return(regreturn)  
+
+
 def ql_syscall_listen(ql, listen_sockfd, listen_backlog, *args, **kw):
-    if listen_sockfd < 256 and ql.os.file_des[listen_sockfd] != 0:
+    if listen_sockfd < 256 and ql.os.fd[listen_sockfd] != 0:
         try:
-            ql.os.file_des[listen_sockfd].listen(listen_backlog)
+            ql.os.fd[listen_sockfd].listen(listen_backlog)
             regreturn = 0
         except:
             if ql.output == QL_OUTPUT.DEBUG:
@@ -180,16 +219,16 @@ def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, *args, **k
             ret += bytes([int(i)])
         return ret
     try:
-        conn, address = ql.os.file_des[accept_sockfd].accept()
+        conn, address = ql.os.fd[accept_sockfd].accept()
         idx = -1
         for i in range(256):
-            if ql.os.file_des[i] == 0:
+            if ql.os.fd[i] == 0:
                 idx = i
                 break
         if idx == -1:
             regreturn = -1
         else:
-            ql.os.file_des[idx] = conn
+            ql.os.fd[idx] = conn
             regreturn = idx
 
         if ql.shellcoder == None and accept_addr !=0 and accept_addrlen != 0:
@@ -208,8 +247,8 @@ def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, *args, **k
 
 
 def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, *args, **kw):
-    if recv_sockfd < 256 and ql.os.file_des[recv_sockfd] != 0:
-        tmp_buf = ql.os.file_des[recv_sockfd].recv(recv_len, recv_flags)
+    if recv_sockfd < 256 and ql.os.fd[recv_sockfd] != 0:
+        tmp_buf = ql.os.fd[recv_sockfd].recv(recv_len, recv_flags)
         if tmp_buf:
             ql.dprint(D_CTNT, "[+] recv() CONTENT:")
             ql.dprint(D_CTNT, "%s" % tmp_buf)
@@ -223,19 +262,19 @@ def ql_syscall_recv(ql, recv_sockfd, recv_buf, recv_len, recv_flags, *args, **kw
 
 def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw):
     regreturn = 0
-    if send_sockfd < 256 and ql.os.file_des[send_sockfd] != 0:
+    if send_sockfd < 256 and ql.os.fd[send_sockfd] != 0:
         try:
             ql.dprint(D_CTNT, "[+] debug send() start")
             tmp_buf = ql.mem.read(send_buf, send_len)
-            ql.dprint(D_CTNT, str(ql.os.file_des[send_sockfd]))
+            
+            ql.dprint(D_CTNT, str(ql.os.fd[send_sockfd]))
             ql.dprint(D_CTNT, "[+] fd is " + str(send_sockfd))
             ql.dprint(D_CTNT, "[+] send() CONTENT:")
             ql.dprint(D_CTNT, "%s" % str(tmp_buf))
             ql.dprint(D_CTNT, "[+] send() flag is " + str(send_flags))
             ql.dprint(D_CTNT, "[+] send() len is " + str(send_len))
-            ql.os.file_des[send_sockfd].send(bytes(tmp_buf), send_flags)
-            ql.dprint(D_CTNT, str(ql.os.file_des[send_sockfd]))
-            regreturn = send_len
+            regreturn = ql.os.fd[send_sockfd].send(bytes(tmp_buf), send_flags)
+            ql.dprint(D_CTNT, str(ql.os.fd[send_sockfd]))
             ql.dprint(D_CTNT, "[+] debug send end")
         except:
             ql.nprint(sys.exc_info()[0])

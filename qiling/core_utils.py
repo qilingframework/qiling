@@ -17,7 +17,7 @@ from .const import D_INFO, D_DRPT
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 from .loader.utils import ql_checkostype
 
-class QLCoreUtils(object):
+class QlCoreUtils(object):
     def __init__(self):
         super().__init__()
         self.archtype = None
@@ -88,13 +88,13 @@ class QLCoreUtils(object):
 
         if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             if int(self.verbose) >= D_DRPT:
-                args = (("0x%x:" % self.reg.arch_pc), args)
+                args = (("0x%x:" % self.reg.arch_pc), *args)
                 
             self.nprint(*args, **kw)
 
 
     def add_fs_mapper(self, ql_path, real_dest):
-        self.fs_mapper.append([real_dest, ql_path])
+        self.os.fs_mapper.add_fs_mapping(ql_path, real_dest)
 
 
     # push to stack bottom, and update stack register
@@ -123,10 +123,15 @@ class QLCoreUtils(object):
         if not ql_is_valid_arch(self.archtype):
             raise QlErrorArch("[!] Invalid Arch")
         
-        archmanager = arch_convert_str(self.archtype).upper()
+        if self.archtype == QL_ARCH.ARM_THUMB:
+            archtype =  QL_ARCH.ARM
+        else:
+            archtype = self.archtype
+
+        archmanager = arch_convert_str(archtype).upper()
         archmanager = ("QlArch" + archmanager)
 
-        module_name = ql_build_module_import_name("arch", None, self.archtype)
+        module_name = ql_build_module_import_name("arch", None, archtype)
         return ql_get_module_function(module_name, archmanager)(self)
 
 
@@ -245,3 +250,26 @@ class QLCoreUtils(object):
 
         archtype, archmode = ks_convert(archtype)
         return compile_instructions(runcode, archtype, archmode)        
+
+
+class QlFileDes:
+    def __init__(self, init):
+        self.__fds = init
+
+    def __getitem__(self, idx):
+        return self.__fds[idx]
+
+    def __setitem__(self, idx, val):
+        self.__fds[idx] = val
+
+    def __iter__(self):
+        return iter(self.__fds)
+
+    def __repr__(self):
+        return repr(self.__fds)
+    
+    def save(self):
+        return self.__fds
+
+    def restore(self, fds):
+        self.__fds = fds

@@ -212,8 +212,8 @@ def ql_syscall_pread(ql, fd, buf, nbyte, offset, *args, **kw):
         fd, buf, nbyte, offset
     ))
     if fd >= 0 and fd <= MAX_FD_SIZE:
-        ql.os.file_des[fd].lseek(offset)
-        data = ql.os.file_des[fd].read(nbyte)
+        ql.os.fd[fd].lseek(offset)
+        data = ql.os.fd[fd].read(nbyte)
         ql.mem.write(buf, data)
     set_eflags_cf(ql, 0x0)
     ql.os.definesyscall_return(nbyte)
@@ -328,15 +328,15 @@ def ql_syscall_mmap2_macos(ql, mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags
 
     ql.mem.write(mmap_base, b'\x00' * (((mmap2_length + 0x1000 - 1) // 0x1000) * 0x1000))
     
-    if ((mmap2_flags & MAP_ANONYMOUS) == 0) and mmap2_fd < 256 and ql.os.file_des[mmap2_fd] != 0:
-        ql.os.file_des[mmap2_fd].lseek(mmap2_pgoffset)
-        data = ql.os.file_des[mmap2_fd].read(mmap2_length)
+    if ((mmap2_flags & MAP_ANONYMOUS) == 0) and mmap2_fd < 256 and ql.os.fd[mmap2_fd] != 0:
+        ql.os.fd[mmap2_fd].lseek(mmap2_pgoffset)
+        data = ql.os.fd[mmap2_fd].read(mmap2_length)
 
         ql.dprint(D_INFO, "[+] log mem wirte : " + hex(len(data)))
-        ql.dprint(D_INFO, "[+] log mem mmap  : " + str(ql.os.file_des[mmap2_fd].name))
+        ql.dprint(D_INFO, "[+] log mem mmap  : " + str(ql.os.fd[mmap2_fd].name))
         ql.mem.write(mmap_base, data)
         
-        mem_info = ql.os.file_des[mmap2_fd].name
+        mem_info = ql.os.fd[mmap2_fd].name
 
     if ql.output == QL_OUTPUT.DEFAULT:
         ql.nprint("mmap2(0x%x, %d, 0x%x, 0x%x, %d, %d) = 0x%x" % (mmap2_addr, mmap2_length, mmap2_prot, mmap2_flags, mmap2_fd, mmap2_pgoffset, mmap_base))
@@ -442,9 +442,9 @@ def ql_syscall_stat64_macos(ql, stat64_pathname, stat64_buf_ptr, *args, **kw):
 # 0x153
 def ql_syscall_fstat64_macos(ql, fstat64_fd, fstat64_add, *args, **kw):
     fstat64_buf = b''
-    if fstat64_fd < 256 and ql.os.file_des[fstat64_fd] != 0:
+    if fstat64_fd < 256 and ql.os.fd[fstat64_fd] != 0:
         user_fileno = fstat64_fd
-        fstat64_info = ql.os.file_des[user_fileno].fstat()
+        fstat64_info = ql.os.fd[user_fileno].fstat()
         
         if ql.archtype== QL_ARCH.ARM64:
             fstat64_buf = ql.pack64(fstat64_info.st_dev)
@@ -518,14 +518,13 @@ def ql_syscall_thread_selfid(ql, *args, **kw):
 # 0x18e
 def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
     path = ql.mem.string(filename)
-    real_path = ql.os.transform_to_real_path(path)
     relative_path = ql.os.transform_to_relative_path(path)
 
     flags = flags & 0xffffffff
     mode = mode & 0xffffffff
 
     for i in range(256):
-        if ql.os.file_des[i] == 0:
+        if ql.os.fd[i] == 0:
             idx = i
             break
 
@@ -536,10 +535,9 @@ def ql_syscall_open_nocancel(ql, filename, flags, mode, *args, **kw):
             if ql.archtype== QL_ARCH.ARM:
                 mode = 0
 
-            flags = open_flags_mapping(flags, ql.archtype)
-            ql.os.file_des[idx] = ql_file.open(real_path, flags, mode)
+            ql.os.fd[idx] = ql.os.fs_mapper.open_ql_file(path, flags, mode)
             regreturn = idx
-        except:
+        except QlSyscallError:
             regreturn = -1
 
     ql.nprint("open(%s, 0x%s, 0x%x) = %d" % (relative_path, flags, mode, regreturn))
@@ -561,8 +559,8 @@ def ql_syscall_shared_region_map_and_slide_np(ql, fd, count, mappings_addr, slid
     for i in range(count):
         mapping = SharedFileMappingNp(ql)
         mapping.read_mapping(mappings_addr)
-        ql.os.file_des[fd].lseek(mapping.sfm_file_offset)
-        content = ql.os.file_des[fd].read(mapping.sfm_size)
+        ql.os.fd[fd].lseek(mapping.sfm_file_offset)
+        content = ql.os.fd[fd].read(mapping.sfm_size)
         ql.mem.write(mapping.sfm_address, content)
         mappings_addr += mapping.size
         mapping_list.append(mapping)

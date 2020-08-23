@@ -7,20 +7,20 @@ import platform
 import ntpath
 import os
 import logging
+import pickle
 
 from .const import QL_ENDINABLE, QL_ENDIAN, QL_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import arch_convert, ostype_convert, output_convert
 from .utils import ql_is_valid_arch, ql_get_arch_bits
 from .utils import ql_setup_logging_env, ql_setup_logging_stream
-from .core_struct import QLCoreStructs
-from .core_hooks import QLCoreHooks
-from .core_utils import QLCoreUtils
-from .extensions.debugger import ql_debugger_init
+from .core_struct import QlCoreStructs
+from .core_hooks import QlCoreHooks
+from .core_utils import QlCoreUtils
+from .debugger import ql_debugger_init
+from .__version__ import __version__
 
-__version__ = "1.1-post1"
-
-class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):    
+class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):    
     def __init__(
             self,
             filename=None,
@@ -73,7 +73,6 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.patch_lib = []
         self.patched_lib = []
         self.log_file_fd = None
-        self.fs_mapper = []
         self.debug_stop = False
         self.internal_exception = None
         self.platform = platform.system()
@@ -188,7 +187,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.count = count
         
         # init debugger
-        if self.debugger is not None:
+        if self.debugger != False and self.debugger != None:
             ql_debugger_init(self)
 
         # patch binary
@@ -198,7 +197,7 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         self.os.run()
 
         # resume with debugger
-        if self.debugger is not None:
+        if self.debugger != False and self.debugger != None:
             self.remote_debug.run()
 
 
@@ -255,3 +254,50 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
     # start emulation
     def emu_start(self, begin, end, timeout=0, count=0):
         self.uc.emu_start(begin, end, timeout, count)
+        
+        if self.internal_exception != None:
+            raise self.internal_exception
+
+
+    # save all qiling instance states
+    def save(self, reg=True, mem=True, fd=False, cpu_context=False, snapshot=None):
+        saved_states = {}
+
+        if reg == True:
+            saved_states.update({"reg": self.reg.save()})
+
+        if mem == True:
+            saved_states.update({"mem": self.mem.save()})
+
+        if fd == True: 
+            saved_states.update({"fd": self.os.fd.save()})
+
+        if cpu_context == True:
+            saved_states.update({"cpu_context": self.arch.context_save()})
+
+        if snapshot != None:
+            with open(snapshot, "wb") as save_state:
+                pickle.dump(saved_states, save_state)
+        else:
+            return saved_states
+
+
+    # restore states qiling instance from saved_states
+    def restore(self, saved_states=None, snapshot=None):
+
+        # snapshot will be ignored if saved_states is set
+        if saved_states == None and snapshot != None:
+            with open(snapshot, "rb") as load_state:
+                saved_states = pickle.load(load_state)
+
+        if "cpu_context" in saved_states:
+            self.arch.context_restore(saved_states["cpu_context"])
+
+        if "reg" in saved_states:
+            self.reg.restore(saved_states["reg"])
+
+        if "mem" in saved_states:
+            self.mem.restore(saved_states["mem"])
+        
+        if "fd" in saved_states:
+            self.os.fd.restore(saved_states["fd"])

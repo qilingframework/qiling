@@ -73,7 +73,7 @@ class HookRet:
         self._ql.hook_del(self._t, self._h)
 
 
-class QLCoreHooks(object):
+class QlCoreHooks(object):
     def __init__(self):
         super().__init__()
         self.uc = None
@@ -182,6 +182,7 @@ class QLCoreHooks(object):
         if hook_type in (UC_HOOK_MEM_READ_UNMAPPED, UC_HOOK_MEM_WRITE_UNMAPPED, UC_HOOK_MEM_FETCH_UNMAPPED, UC_HOOK_MEM_READ_PROT, UC_HOOK_MEM_WRITE_PROT, UC_HOOK_MEM_FETCH_PROT):
             if handled == False:
                 raise QlErrorCoreHook("_hook_mem_cb : handled == False")
+        return True
 
 
     def _callback_x86_syscall(self, uc, pack_data):

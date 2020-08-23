@@ -10,6 +10,7 @@ from unicorn.mips_const import *
 from unicorn.x86_const import *
 
 from qiling.const import *
+from qiling.core_utils import QlFileDes
 from qiling.os.os import QlOs
 from qiling.utils import *
 from qiling.exception import *
@@ -34,8 +35,9 @@ class QlOsPosix(QlOs):
         else:    
             self.uid = self.profile.getint("KERNEL","uid")
             self.gid = self.profile.getint("KERNEL","gid")
+
         
-        self.file_des = []
+        self.fd = QlFileDes([0] * 256)
         self.dict_posix_syscall = dict()
         self.dict_posix_onEnter_syscall = dict()
         self.dict_posix_onExit_syscall = dict()
@@ -47,10 +49,9 @@ class QlOsPosix(QlOs):
         self.syscall_name = None
 
         if self.ql.ostype in QL_POSIX:
-            self.file_des = [0] * 256
-            self.file_des[0] = self.stdin
-            self.file_des[1] = self.stdout
-            self.file_des[2] = self.stderr
+            self.fd[0] = self.stdin
+            self.fd[1] = self.stdout
+            self.fd[2] = self.stderr
 
         for _ in range(256):
             self.sigaction_act.append(0)
@@ -89,7 +90,8 @@ class QlOsPosix(QlOs):
     def load_syscall(self, intno=None):
         # import syscall mapping function
         map_syscall = self.ql.os_setup(function_name="map_syscall")
-        
+        self.syscall_name = map_syscall(self.ql, self.syscall)
+
         if self.dict_posix_onEnter_syscall.get(self.syscall_name) != None:
             self.syscall_onEnter = self.dict_posix_onEnter_syscall.get(self.syscall_name)
         elif self.dict_posix_onEnter_syscall_by_num.get(self.syscall) != None:
@@ -173,7 +175,7 @@ class QlOsPosix(QlOs):
                 raise
             except Exception as e:
                 self.ql.nprint("[!] Syscall ERROR: %s DEBUG: %s" % (self.syscall_name, e))
-                raise
+                raise e
         else:
             self.ql.nprint(
                 "[!] 0x%x: syscall %s number = 0x%x(%d) not implemented" % (self.ql.reg.arch_pc, syscall_name_str, self.syscall, self.syscall))
