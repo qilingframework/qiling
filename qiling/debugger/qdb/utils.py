@@ -139,7 +139,7 @@ def handle_bnj_arm(ql, cur_addr):
     def _read_reg_val(regs, _reg):
         return getattr(ql.reg, _reg.replace("ip", "r12"))
 
-    def rd_is_pc(op_str):
+    def regdst_eq_pc(op_str):
         return op_str.partition(", ")[0] == "pc"
 
 
@@ -239,7 +239,7 @@ def handle_bnj_arm(ql, cur_addr):
         else:
             ret_addr = read_reg_val(line.op_str)
 
-            if rd_is_pc(line.op_str):
+            if regdst_eq_pc(line.op_str):
                 next_addr = cur_addr + line.size
                 n2_addr = next_addr + len(read_inst(next_addr))
                 ret_addr += len(read_inst(n2_addr)) + len(read_inst(next_addr))
@@ -278,7 +278,7 @@ def handle_bnj_arm(ql, cur_addr):
         return ret_addr
 
     elif line.mnemonic in ("ldr",):
-        if rd_is_pc(line.op_str):
+        if regdst_eq_pc(line.op_str):
             _pc, _, rn_offset = line.op_str.partition(", ")
 
             if "]" in rn_offset.split(", ")[1]: # pre-indexed immediate
@@ -290,7 +290,7 @@ def handle_bnj_arm(ql, cur_addr):
                 _, r, imm = line.op_str.replace("[", "").replace("]", "").replace("!", "").replace("#", "").split(", ")
                 ret_addr = ql.unpack32(ql.mem.read(read_reg_val(r), 4))
 
-    elif line.mnemonic in ("addls", "addne", "add") and rd_is_pc(line.op_str):
+    elif line.mnemonic in ("addls", "addne", "add") and regdst_eq_pc(line.op_str):
         V, C, Z, N = get_cpsr(ql.reg.cpsr)
 
         if line.mnemonic == "addls" and (C == 0 or Z == 1):
@@ -336,11 +336,11 @@ def handle_bnj_arm(ql, cur_addr):
 
             ret_addr = cur_addr + ARM_INST_SIZE
 
-    elif line.mnemonic == "sub" and rd_is_pc(line.op_str):
+    elif line.mnemonic == "sub" and regdst_eq_pc(line.op_str):
         _, r, imm = line.op_str.split(", ")
         ret_addr = read_reg_val(r) - parse_int(imm.strip("#"))
 
-    elif line.mnemonic == "mov" and rd_is_pc(line.op_str):
+    elif line.mnemonic == "mov" and regdst_eq_pc(line.op_str):
         _, r = line.op_str.split(", ")
         ret_addr = read_reg_val(r)
 
