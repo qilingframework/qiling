@@ -14,9 +14,9 @@ build
 dist
 
 # examples 
-examples/**/registry/
-examples/**/dlls/
-examples/**/Windows/
+# examples/**/registry/
+# examples/**/dlls/
+# examples/**/Windows/
 
 # test and logs
 jexamples/
