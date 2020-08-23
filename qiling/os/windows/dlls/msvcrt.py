@@ -141,16 +141,15 @@ def hook__initterm_e(ql, address, params):
 # char***    __cdecl __p___argv (void);
 @winsdkapi(cc=CDECL)
 def hook___p___argv(ql, address, params):
-    ret = ql.os.heap.alloc(ql.pointersize * len(ql.os.argv))
+    ret = ql.os.heap.alloc(ql.pointersize)
+    argv_addr = ql.os.heap.alloc(ql.pointersize * len(ql.os.argv))
     count = 0
-    ql.dprint(D_INFO, "_p___argv")
     for each in ql.os.argv:
-        arg_pointer = ql.os.heap.alloc(ql.pointersize)
-        arg = ql.os.heap.alloc(len(each) + 1)
-        ql.mem.write(arg, bytes(each, 'ascii') + b'\x00')
-        ql.mem.write(arg_pointer, ql.pack(arg))
-        ql.mem.write(ret + count * ql.pointersize, ql.pack(arg_pointer))
+        argv = ql.os.heap.alloc(len(each) + 1)
+        ql.mem.write(argv, bytes(each, 'ascii') + b'\x00')
+        ql.mem.write(argv_addr + count * ql.pointersize, ql.pack(argv))
         count += 1
+    ql.mem.write(ret, ql.pack(argv_addr))
     return ret
 
 
