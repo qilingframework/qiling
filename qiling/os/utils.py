@@ -357,7 +357,6 @@ class QlOsUtils:
             self.ql.dprint(D_INFO, log)
 
     def printf(self, address, fmt, params_addr, name, wstring=False):
-        print(hex(address))
         count = fmt.count("%")
         params = []
         if count > 0:
