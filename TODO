@@ -61,7 +61,7 @@ Release
 9. check for new Pypi package @ https://pypi.org/project/qiling
 
 Pre-release/dev
-1. core.py
+1. __version__.py
     - __version__ = "1.[x].[x]" + "-rc[x]"
 2. Make sure development status classifer in setup.py is correct.
     - 'Development Status :: 3 - Alpha'
