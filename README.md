@@ -216,8 +216,8 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 
 #### Donations:
 
-- Opensource project is never an easy task. We valued any help from the community
-- Please drop me an email kj@qiling.io after the donation, i will mail you some swag as a token of appreciation
+- Opensource project is never an easy task. We value any help from the community
+- Please drop me an email kj@qiling.io after making the donation, i will mail you some swag as a token of appreciation
 
 ##### XMR: 
 - 46T1c5taWuP6G4XvAG5shC6a7eai4Qe4HPFj5qEGyJzzMVRa9M9MR4DbNbbSDKtbgNR6bvWyj32Wb3HySYZuDqUp2GCr52o
