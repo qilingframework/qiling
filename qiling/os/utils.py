@@ -371,9 +371,9 @@ class QlOsUtils:
             for f in formats:
                 if f.startswith("s"):
                     if wstring:
-                        params[index] = self.ql.os.read_wstring(params[index])
+                        params[index] = self.read_wstring(params[index])
                     else:
-                        params[index] = self.ql.os.read_cstring(params[index])
+                        params[index] = self.read_cstring(params[index])
                 index += 1
 
             output = '%s(format = %s' % (name, repr(fmt))

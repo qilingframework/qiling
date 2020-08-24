@@ -53,8 +53,8 @@ def hook___p__commode(ql, address, params):
 # int * __p__acmdln(
 #    );
 @winsdkapi(cc=CDECL)
-def hook___p__acmdln(self, address, params):
-    addr = self.ql.loader.import_address_table['msvcrt.dll'][b'_acmdln']
+def hook___p__acmdln(ql, address, params):
+    addr = ql.loader.import_address_table['msvcrt.dll'][b'_acmdln']
     return addr
 
 
@@ -141,21 +141,22 @@ def hook__initterm_e(ql, address, params):
 # char***    __cdecl __p___argv (void);
 @winsdkapi(cc=CDECL)
 def hook___p___argv(ql, address, params):
-    ret = ql.os.heap.alloc(ql.pointersize * len(ql.argv))
+    ret = ql.os.heap.alloc(ql.pointersize)
+    argv_addr = ql.os.heap.alloc(ql.pointersize * len(ql.os.argv))
     count = 0
-    for each in ql.argv:
-        arg_pointer = ql.os.heap.alloc(ql.pointersize)
-        arg = ql.os.heap.alloc(len(each) + 1)
-        ql.mem.write(arg, bytes(each, 'ascii') + b'\x00')
-        ql.mem.write(arg_pointer, ql.pack(arg))
-        ql.mem.write(ret + count * ql.pointersize, ql.pack(arg_pointer))
+    for each in ql.os.argv:
+        argv = ql.os.heap.alloc(len(each) + 1)
+        ql.mem.write(argv, bytes(each, 'ascii') + b'\x00')
+        ql.mem.write(argv_addr + count * ql.pointersize, ql.pack(argv))
         count += 1
+    ql.mem.write(ret, ql.pack(argv_addr))
     return ret
 
 
 # int* __p___argc(void)
 @winsdkapi(cc=CDECL)
 def hook___p___argc(ql, address, params):
+    ql.dprint(D_INFO, "_p___argc")
     ret = ql.os.heap.alloc(ql.pointersize)
     ql.mem.write(ret, ql.pack(len(ql.argv)))
     return ret
