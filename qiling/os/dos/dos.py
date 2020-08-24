@@ -433,10 +433,24 @@ class QlOsDos(QlOs):
             self.ql.reg.ah = 0
         else:
             raise NotImplementedError()
+    
+    def _get_scan_code(self, ch):
+        if ch in SCANCODES:
+            return SCANCODES[ch]
+        else:
+            self.ql.nprint(f"[!] Warning: scan code for {hex(ch)} doesn't exist!")
+            return 0
 
     def int16(self):
         ah = self.ql.reg.ah
-        if ah == 0x1:
+        if ah == 0x0:
+            key = self.stdscr.getch()
+            if curses.ascii.isascii(key):
+                self.ql.reg.al = key
+            else:
+                self.ql.reg.al = 0
+            self.ql.reg.ah = self._get_scan_code(key)
+        elif ah == 0x1:
             # set non-blocking
             self.stdscr.timeout(0)
             key = self.stdscr.getch()
@@ -446,12 +460,10 @@ class QlOsDos(QlOs):
                 self.ql.reg.ax = 0
             else:
                 self.ql.reg.al = key
-                if key in SCANCODES:
-                    self.ql.reg.ah = SCANCODES[key]
-                else:
-                    self.ql.nprint(f"[!] Warning: scan code for {hex(key)} doesn't exist!")
-                    self.ql.reg.ah = 0
+                self.ql.reg.ah = self._get_scan_code(key)
                 self.clear_flag(0x40)
+                # Buffer shouldn't be removed in this interrupt.
+                curses.ungetch(key)
             self.stdscr.timeout(-1)
 
     def int1a(self):
