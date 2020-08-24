@@ -355,7 +355,7 @@ class QlOsDos(QlOs):
             #self.ql.reg.al = ch
             pass
         elif ah == 0xE:
-            self.ql.nprint(f"Echo: {hex(al)} -> {curses.ascii.unctrl(al)}")
+            self.ql.dprint(0, f"Echo: {hex(al)} -> {curses.ascii.unctrl(al)}")
             y, x = self.stdscr.getmaxyx()
             cy, cx = self.stdscr.getyx()
             fg = self.ql.reg.bl
@@ -564,7 +564,6 @@ class QlOsDos(QlOs):
         def cb(ql, intno, user_data=None):
             # http://spike.scu.edu.au/~barry/interrupts.html
             # http://www2.ift.ulaval.ca/~marchand/ift17583/dosints.pdf
-            ql.nprint(f"[!] INT={intno:x}, AH={ql.reg.ah:x}")
             if intno == 0x21:
                 self.int21()
             elif intno == 0x10:
