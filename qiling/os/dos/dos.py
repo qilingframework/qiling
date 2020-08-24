@@ -434,6 +434,14 @@ class QlOsDos(QlOs):
         else:
             raise NotImplementedError()
     
+    def _parse_key(self, ky):
+        # https://stackoverflow.com/questions/27200597/c-ncurses-key-backspace-not-working
+        # https://stackoverflow.com/questions/44943249/detecting-key-backspace-in-ncurses
+        # oh my curses...
+        if ky == curses.KEY_BACKSPACE or ky == 127:
+            ky = ord(b'\b')
+        return ky
+
     def _get_scan_code(self, ch):
         if ch in SCANCODES:
             return SCANCODES[ch]
@@ -444,7 +452,7 @@ class QlOsDos(QlOs):
     def int16(self):
         ah = self.ql.reg.ah
         if ah == 0x0:
-            key = self.stdscr.getch()
+            key = self._parse_key(self.stdscr.getch())
             if curses.ascii.isascii(key):
                 self.ql.reg.al = key
             else:
@@ -453,7 +461,7 @@ class QlOsDos(QlOs):
         elif ah == 0x1:
             # set non-blocking
             self.stdscr.timeout(0)
-            key = self.stdscr.getch()
+            key = self._parse_key(self.stdscr.getch())
             self.ql.dprint(0, f"Get key: {hex(key)} ({curses.ascii.unctrl(key)})")
             if key == -1:
                 self.set_flag(0x40)
