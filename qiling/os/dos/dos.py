@@ -462,11 +462,11 @@ class QlOsDos(QlOs):
             # set non-blocking
             self.stdscr.timeout(0)
             key = self._parse_key(self.stdscr.getch())
-            self.ql.dprint(0, f"Get key: {hex(key)} ({curses.ascii.unctrl(key)})")
             if key == -1:
                 self.set_flag(0x40)
                 self.ql.reg.ax = 0
             else:
+                self.ql.dprint(0, f"Has key: {hex(key)} ({curses.ascii.unctrl(key)})")
                 self.ql.reg.al = key
                 self.ql.reg.ah = self._get_scan_code(key)
                 self.clear_flag(0x40)
