@@ -7,6 +7,7 @@
 UseAsScript = True
 RELEASE = True
 
+import sys
 import collections
 
 # Qiling
@@ -33,7 +34,6 @@ if RELEASE:
     from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
 
 else:
-    import sys
     sys.path.append("./idapython3")
     from idapython3 import *
 
@@ -622,6 +622,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 print("Qiling initialized done")
         if self.customscriptpath is not None:
             self.ql_load_user_script()
+            self.userobj.custom_setup(self.qlemu.ql)
 
     def ql_load_user_script(self):
         if self.qlinit :
