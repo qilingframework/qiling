@@ -499,10 +499,13 @@ class QlEmuQiling:
             qlstdin = QlEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
             qlstdout = QlEmuMisc.QLStdIO('stdout', sys.__stdout__.fileno())
             qlstderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
+            
         if sys.platform != 'win32':
             self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", stdin=qlstdin, stdout=qlstdout, stderr=qlstderr)
         else:
-            self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug")        self.exit_addr = self.ql.os.exit_point
+            self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug")
+        
+        self.exit_addr = self.ql.os.exit_point
         if self.ql.ostype == QL_OS.LINUX:
             self.baseaddr = self.ql.os.elf_mem_start
         else:
