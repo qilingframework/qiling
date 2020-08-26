@@ -55,6 +55,7 @@ def ql_syscall_clone(ql, clone_flags, clone_child_stack, clone_parent_tidptr, cl
     # Shared virtual memory
     if clone_flags & CLONE_VM != CLONE_VM:
         pid = os.fork()
+        
         if pid != 0:
             regreturn = pid
             ql.nprint("clone(new_stack = %x, flags = %x, tls = %x, ptidptr = %x, ctidptr = %x) = %d" % (clone_child_stack, clone_flags, clone_newtls, clone_parent_tidptr, clone_child_tidptr, regreturn))
