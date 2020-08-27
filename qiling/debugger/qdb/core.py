@@ -7,13 +7,13 @@ from qiling import *
 from qiling.const import *
 
 from .frontend import context_printer, context_reg, context_asm, examine_mem, color
-from .utils import parse_int, handle_bnj, is_thumb, CODE_END
+from .utils import parse_int, handle_bnj, is_thumb, diff_snapshot_save, diff_snapshot_restore, CODE_END
 
 
 
 class Qldbg(cmd.Cmd):
 
-    def __init__(self, filename=None, rootfs=None, console=True, log_dir=None, ql=None):
+    def __init__(self, filename=None, rootfs=None, console=True, log_dir=None, ql=None, rr=False):
 
         self.ql_config = None if filename == rootfs == None else {
                     "filename": filename,
@@ -27,18 +27,23 @@ class Qldbg(cmd.Cmd):
         self.prompt = "(Qdb) "
         self.breakpoints = {}
         self._saved_states = None
+        if rr:
+            self._states_list = [None]
 
         super().__init__()
 
     @classmethod
-    def attach(cls, ql):
+    def attach(self, rr=False):
         print(color.RED, "[+] Qdb attached", color.END, sep="")
         print(color.RED, "[!] All hooks of qiling instance will be disabled in Qdb", color.END, sep="")
 
-        for i in ql._addr_hook_fuc.keys():
-            ql.uc.hook_del(ql._addr_hook_fuc[i])
+        def _take_ql(ql):
+            for i in ql._addr_hook_fuc.keys():
+                ql.uc.hook_del(ql._addr_hook_fuc[i])
 
-        cls(None, None, ql=ql).interactive()
+            return self(None, None, ql=ql, rr=rr).interactive()
+
+        return _take_ql
 
     def interactive(self):
         self.cmdloop()
@@ -131,6 +136,16 @@ class Qldbg(cmd.Cmd):
 
         self._ql.emu_start(address, 0)
 
+    def do_backward(self, *args):
+
+        if getattr(self, "_states_list", None) is None or self._states_list[-1] is None:
+            print("there is no way back !!!")
+        else:
+            print("step backward ~")
+            current_state_dicts = self._ql.save(cpu_context=True, mem=True, reg=False, fd=False)
+            self._ql.restore(diff_snapshot_restore(current_state_dicts, self._states_list.pop()))
+            self.do_context()
+
     def do_step(self, *args):
         """
         execute one instruction at a time
@@ -141,6 +156,11 @@ class Qldbg(cmd.Cmd):
 
         else:
             self._saved_states = dict(filter(lambda d: isinstance(d[0], str), self._ql.reg.save().items()))
+
+            if getattr(self, "_states_list", None) is not None:
+                current_state_dicts = self._ql.save(cpu_context=True, mem=True, reg=False, fd=False)
+                self._states_list.append(diff_snapshot_save(current_state_dicts, self._states_list[-1]))
+
             _cur_addr = self._ql.reg.arch_pc
 
             next_stop = handle_bnj(self._ql, _cur_addr)
@@ -236,7 +256,10 @@ class Qldbg(cmd.Cmd):
         """
         run python code,also a space between exclamation mark and command was necessary
         """
-        print(eval(*command))
+        try:
+            print(eval(*command))
+        except:
+            print("something went wrong")
 
     def do_quit(self, *args):
         """
@@ -244,13 +267,13 @@ class Qldbg(cmd.Cmd):
         """
         return True
 
-
     do_r = do_run
     do_s = do_step
     do_q = do_quit
     do_x = do_examine
     do_c = do_continue
     do_b = do_breakpoint
+    do_p = do_backward
     do_dis = do_disassemble
     
 

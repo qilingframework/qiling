@@ -238,7 +238,7 @@ if __name__ == '__main__':
             entry_point = ql.loader.entry_point
             if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB) and entry_point & 1:
                 entry_point -= 1
-            ql.hook_address(Qdb.attach, entry_point)
+            ql.hook_address(Qdb.attach(rr=True), entry_point)
 
     # ql shellcode setup
     elif (options.subparser_name == 'shellcode'):
