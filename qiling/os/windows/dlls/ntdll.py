@@ -241,7 +241,7 @@ def _SetInformationProcess(ql, address, params):
     dst = params["ProcessInformation"]
     pt_res = params["ReturnLength"]
     
-    if flag = ProcessDebugFlags:
+    if flag == ProcessDebugFlags:
         value = b"\x01" * 0x4
     elif flag == ProcessDebugPort:
         value = b"\x00" * 0x4
@@ -252,7 +252,7 @@ def _SetInformationProcess(ql, address, params):
     elif flag  == ProcessExecuteFlags:
         ql.dprint(D_RPRT, "[=] The target may be attempting to modify DEP for the process")
         if dst != 0:
-            ql.mem.write(,dst, 0x0.to_bytes(1, byteorder="little"))
+            ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
 
     elif flag == ProcessBasicInformation:
         pbi = qiling.os.windows.structs.ProcessBasicInformation(
