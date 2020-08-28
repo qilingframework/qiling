@@ -43,8 +43,9 @@ def ql_debugger_init(ql):
 
     default_remotedebugsrv = "gdb"
 
-    if ql.debugger == "qdb":
-        ql.hook_address(Qdb.attach, ql.os.entry_point)
+    if ql.debugger.startswith("qdb"):
+        rr = "rr" in ql.debugger.split(".")
+        ql.hook_address(Qdb.attach(rr=rr), ql.os.entry_point)
         return
 
     if ql.debugger != True:            
