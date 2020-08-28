@@ -8,6 +8,7 @@ from .mapper import QlFsMappedObject
 #       We simply assume that it is a disk with 1 head, 1 cylinder and (filesize/512) sectors.
 # See: https://en.wikipedia.org/wiki/Cylinder-head-sector
 #      https://en.wikipedia.org/wiki/Logical_block_addressing
+#      http://www.uruk.org/orig-grub/PC_partitioning.txt
 class QlDisk(QlFsMappedObject):
 
     def __init__(self, host_path, drive_path, n_heads=1, n_cylinders=1, sector_size=512):
