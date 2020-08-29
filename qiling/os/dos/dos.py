@@ -474,6 +474,22 @@ class QlOsDos(QlOs):
                 curses.ungetch(key)
             self.stdscr.timeout(-1)
 
+    def int19(self):
+        # Note: Memory is not cleaned.
+        dl = self.ql.reg.dl
+        if self.ql.os.fs_mapper.has_mapping(dl):
+            disk = self.ql.os.fs_mapper.open(dl, None)
+            disk.lseek(0, 0)
+            mbr = disk.read(512)
+        else:
+            path = self.ql.path
+            with open(path, "rb") as f:
+                mbr = f.read()
+        self.ql.mem.write(0x7C00, mbr)
+        self.ql.reg.cs = 0
+        self.ql.reg.ip = 0x7C00
+
+
     def int1a(self):
         ah = self.ql.reg.ah
         if ah == 0:
@@ -574,6 +590,8 @@ class QlOsDos(QlOs):
                 self.int13()
             elif intno == 0x1a:
                 self.int1a()
+            elif intno == 0x19:
+                self.int19()
             else:
                 raise NotImplementedError()
         self.ql.hook_intr(cb)
