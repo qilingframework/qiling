@@ -10,13 +10,13 @@ This file details the changelog of Qiling Framework.
 
 - Fixed Windows "import resource" issue
 - Added ql.save and ql.restore aka Qiling's Snapshot
-- Add ql.os.fd.save() and ql.os.fd.restore() to save file descriptor
-- Add IDA Plugin
+- Added ql.os.fd.save() and ql.os.fd.restore() to save file descriptor
+- Added IDA Plugin
 - Test, patch and make sure arm_thumb can work on its own
 - Added Qiling Debugger - Currently only works with MIPS
 - Added experimental 8086 and DOS support.
 - Fixed path transformation on Windows when running Linux.
-- Ida Plugin able to instrument code now
+- IDA Plugin able to instrument code now
 - Refactor ql.fs_mapper (now ql.os.fs_mapper).
 
 

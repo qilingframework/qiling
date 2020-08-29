@@ -589,6 +589,7 @@ PF_XSAVE_ENABLED = 0x17
 # https://docs.microsoft.com/en-us/windows/win32/procthread/zwqueryinformationprocess
 ProcessBasicInformation = 0
 ProcessDebugPort = 7
+ProcessExecuteFlags = 0x22
 ProcessWow64Information = 26
 ProcessImageFileName = 27
 ProcessBreakOnTermination = 29
