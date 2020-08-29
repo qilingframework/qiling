@@ -20,14 +20,13 @@ Windows
 - API for fake installed application
 - API for process listing
 
-Linux / *nix
-============
-- ql.dev to emulate devices
-- ql.proc to emulate /proc
-
 Debugging Server
 ================
 - Add GDB stub commands
+
+USB
+===
+- Emulate USB
 
 -------------------- FUTURE --------------------
 
