@@ -9,13 +9,16 @@
 
 Qiling is an advanced binary emulation framework, with the following features:
 
-- Cross platform: Windows, MacOS, Linux, BSD, UEFI, DOS
+- Cross platform: Windows, MacOS, Linux, BSD, UEFI, DOS, MBR
 - Cross architecture: X86, X86_64, Arm, Arm64, MIPS, 8086
-- Multiple file formats: PE, MachO, ELF, COM
+- Multiple file formats: PE, MachO, ELF, COM, MBR
 - Emulate & sandbox machine code in a isolated environment
-- Supports cross architecture and platform debugging capabilities
-- Provide high level API to setup & configure the sandbox
+- Provide a fully configurable sandbox
+- Provide in-dept memory, register, OS level and filesystem level API
 - Fine-grain instrumentation: allow hooks at various levels (instruction/basic-block/memory-access/exception/syscall/IO/etc)
+- Provide virtual machine level API such as save and restore current execution state.
+- Supports cross architecture and platform debugging capabilities
+- Build in debugger with reverse debugging capability
 - Allow dynamic hotpatch on-the-fly running code, including the loaded library
 - True framework in Python, making it easy to build customized security analysis tools on top
 
@@ -112,6 +115,12 @@ if __name__ == "__main__":
 ```
 
 The below Youtube video shows how the above example works.
+
+#### Qiling's IDAPro Plugin: Instrument and Decrypt Mirai's Secret
+
+- This video demonstrate how Qiling's IDAPro plugin able to make IDApro run with Qiling instrumentation engine.
+
+[![](http://img.youtube.com/vi/ZWMWTq2WTXk/0.jpg)](http://www.youtube.com/watch?v=ZWMWTq2WTXk "iling's IDAPro Plugin: Instrument and Decrypt Mirai's Secret")
 
 #### GDBserver with IDAPro demo
 
