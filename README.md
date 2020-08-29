@@ -24,7 +24,20 @@ Qiling is backed by [Unicorn engine](http://www.unicorn-engine.org).
 Visit our website https://www.qiling.io for more information.
 
 ---
-
+#### Appearance
+- 2020:
+    - Blackhast, USA
+    - Blackhat, Asia
+    - Hack In The Box, Lockdown 001
+    - Hack In The Box, Lockdown 002
+    - Nullcon
+    
+- 2019:
+    - Defcon, USA
+    - Hitcon
+    - Zeronights
+    
+---
 #### License
 
 This project is released and distributed under [free software license GPLv2](https://github.com/qilingframework/qiling/blob/master/COPYING).
