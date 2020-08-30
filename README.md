@@ -1,3 +1,4 @@
+![Pypi](https://img.shields.io/pypi/dm/qiling?label=pypi)
 [![Gitter](https://badges.gitter.im/qilingframework/community.svg)](https://gitter.im/qilingframework/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build Status](https://travis-ci.com/qilingframework/qiling.svg?branch=dev)](https://travis-ci.com/qilingframework/qiling)
 ![Docker Image CI](https://github.com/qilingframework/qiling/workflows/Docker%20Image%20CI/badge.svg?branch=dev)
@@ -27,7 +28,20 @@ Qiling is backed by [Unicorn engine](http://www.unicorn-engine.org).
 Visit our website https://www.qiling.io for more information.
 
 ---
-
+#### Appearance
+- 2020:
+    - Blackhast, USA
+    - Blackhat, Asia
+    - Hack In The Box, Lockdown 001
+    - Hack In The Box, Lockdown 002
+    - Nullcon
+    
+- 2019:
+    - Defcon, USA
+    - Hitcon
+    - Zeronights
+    
+---
 #### License
 
 This project is released and distributed under [free software license GPLv2](https://github.com/qilingframework/qiling/blob/master/COPYING).
