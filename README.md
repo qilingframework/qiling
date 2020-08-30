@@ -240,6 +240,7 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 - jhumble
 
 
+<<<<<<< HEAD
 #### Donations:
 
 - To makes things easier, we structure the "price" this way :-
@@ -277,3 +278,7 @@ BTC
  
 ```
 
+=======
+#### This is an awesome project! How can I donate?
+Yes, details please refer to: - https://www.qiling.io/donation/
+>>>>>>> 86a6ec81... Update README.md
