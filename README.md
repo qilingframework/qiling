@@ -230,16 +230,37 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 
 #### Donations:
 
-- Opensource project is never an easy task. We value any help from the community
-- Please drop me an email kj@qiling.io after making the donation, i will mail you some swag as a token of appreciation
+- To makes things easier, we structure the "price" this way :-
 
-##### XMR: 
-- 46T1c5taWuP6G4XvAG5shC6a7eai4Qe4HPFj5qEGyJzzMVRa9M9MR4DbNbbSDKtbgNR6bvWyj32Wb3HySYZuDqUp2GCr52o
-##### DASH: 
-- XhTsLXTQEhN5F7hKtq8HV867um3HZuXvF9
-##### ADA: 
-- DdzFFzCqrht8MbmRQL8v86XG5vQHYNC6NQwFkhCW4rsNHMLfzWyxVTce5yFayg6QqJBdL7AapwvFL3fBAoBmPLR9gDbkzLGfVVEGHnNC
-##### ETH: 
-- 0xec095228411d4a232f4d221ad7defcde36eb981f
-##### BTC: 
-- 1NmxDWWak8qtpmYGnXBK1osRNNYH2zxpZs
+```
+  - Below 20 USD - Name on donation page
+  - 20 USD - Stickers
+  - 60 USD- Stickers + USB Drive
+  - 120 USD and above - Stickers + USB Dirve + T-Shirt
+```  
+
+- "USD" denotes the US dolar equivalent amount of coin value during the time of donation  
+- Please notify us via email to kj@qiling.io after making the donation.
+- These are not ready made. So, you might need to wait abit for the goods to be delivered.
+- Paypal accepted at our web store
+
+<img src="https://raw.githubusercontent.com/qilingframework/qilingframework.github.io/master/images/swag.jpg">
+
+- Paypal: https://www.hardwareninja.store/c/QilingFramework
+- Crypto Currencies:
+
+```  
+
+XMR
+  - 46T1c5taWuP6G4XvAG5shC6a7eai4Qe4HPFj5qEGyJzzMVRa9M9MR4DbNbbSDKtbgNR6bvWyj32Wb3HySYZuDqUp2GCr52o
+DASH
+  - XhTsLXTQEhN5F7hKtq8HV867um3HZuXvF9
+ADA
+  - DdzFFzCqrht8MbmRQL8v86XG5vQHYNC6NQwFkhCW4rsNHMLfzWyxVTce5yFayg6QqJBdL7AapwvFL3fBAoBmPLR9gDbkzLGfVVEGHnNC
+ETH
+  - 0xec095228411d4a232f4d221ad7defcde36eb981f
+BTC
+  - 1NmxDWWak8qtpmYGnXBK1osRNNYH2zxpZs
+ 
+```
+
