@@ -23,7 +23,7 @@ Qiling is an advanced binary emulation framework, with the following features:
 - Allows dynamic hotpatch on-the-fly running code, including the loaded library
 - True framework in Python, making it easy to build customized security analysis tools on top
 
-Qiling also made its way to internal conference
+Qiling also made its way to various international conferences
 
 2020:
 
