@@ -142,12 +142,6 @@ The below Youtube video shows how the above example works.
 
 [![Solving a simple CTF challenge with Qiling Framework and IDAPro](https://i.ytimg.com/vi/SPjVAt2FkKA/0.jpg)](https://www.youtube.com/watch?v=SPjVAt2FkKA "Video DEMO 2")
 
-#### Fuzzing with Qiling Unicornalf
-
-- More information on fuzzing with Qiling Unicornalf can be found [here](https://github.com/qilingframework/qiling/blob/dev/examples/fuzz_example_x64/README.md).
-
-[![qiling DEMO 2: Fuzzing with Qiling Unicornalf](https://raw.githubusercontent.com/qilingframework/qilingframework.github.io/master/images/qilingfzz-s.png)](https://raw.githubusercontent.com/qilingframework/qiling/dev/examples/fuzzing/qilingfzz.png "Demo #2 Fuzzing with Qiling Unicornalf")
-
 #### Emulating ARM router firmware on Ubuntu X64 machine
 
 - Qiling Framework hot-patch and emulates ARM router's /usr/bin/httpd on a X86_64Bit Ubuntu
