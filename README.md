@@ -190,14 +190,6 @@ $ ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs 
 ```
 ---
 
-#### Remote Debugger
-
-Qiling supports **remote debugging** now.
-
-See  https://docs.qiling.io/  for more details
-
----
-
 #### Contact
 
 Get the latest info from our website https://www.qiling.io
