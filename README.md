@@ -12,14 +12,6 @@ Qiling is an advanced binary emulation framework, with the following features:
 
 - Cross platform: Windows, MacOS, Linux, BSD, UEFI, DOS
 - Cross architecture: X86, X86_64, Arm, Arm64, MIPS, 8086
-<<<<<<< HEAD
-- Multiple file formats: PE, MachO, ELF, COM
-- Emulate & sandbox machine code in a isolated environment
-- Supports cross architecture and platform debugging capabilities
-- Provide high level API to setup & configure the sandbox
-- Fine-grain instrumentation: allow hooks at various levels (instruction/basic-block/memory-access/exception/syscall/IO/etc)
-- Allow dynamic hotpatch on-the-fly running code, including the loaded library
-=======
 - Multiple file formats: PE, MachO, ELF, COM, MBR
 - Emulates & sandbox machine code in an isolated environment
 - Provides a fully configurable sandbox
@@ -29,7 +21,6 @@ Qiling is an advanced binary emulation framework, with the following features:
 - Supports cross architecture and platform debugging capabilities
 - Built-in debugger with reverse debugging capability
 - Allows dynamic hotpatch on-the-fly running code, including the loaded library
->>>>>>> a54d6bd0... Fixing README typo
 - True framework in Python, making it easy to build customized security analysis tools on top
 
 Qiling is backed by [Unicorn engine](http://www.unicorn-engine.org).
@@ -243,6 +234,7 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #### Donations:
 
 - To makes things easier, we structure the "price" this way :-
@@ -280,6 +272,10 @@ BTC
  
 ```
 
+=======
+#### This is an awesome project! How can I donate?
+Yes, details please refer to: - https://www.qiling.io/donation/
+>>>>>>> 86a6ec81... Update README.md
 =======
 #### This is an awesome project! How can I donate?
 Yes, details please refer to: - https://www.qiling.io/donation/
