@@ -239,18 +239,6 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 
 #### Donations:
 - Opensource project is never an easy task. Hence, we value any help from the community. We would like to thank individual/organization that generously donated to Qiling Framework project.
-- Please notify us via email to kj@qiling.io after making the donation.
-- We will mail you some swag as a token of appreciation. However, due to international postage cost, we will be giving out swag following structure below:-
-
-  - Below 20 USD - Name on donation page<br>
-  - 20 USD - Stickers<br>
-  - 60 USD- Stickers + USB Drive<br>
-  - 120 USD and above - Stickers + USB Dirve + T-Shirt
-
-- "USD" denotes the US dolar equivalent amount of coin value during the time of donation.
-
-<img src="https://raw.githubusercontent.com/qilingframework/qilingframework.github.io/master/images/swag.jpg">
-
 - To makes things easier, we structure the "price" this way :-
 
 ```
