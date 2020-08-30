@@ -13,14 +13,14 @@ Qiling is an advanced binary emulation framework, with the following features:
 - Cross platform: Windows, MacOS, Linux, BSD, UEFI, DOS, MBR
 - Cross architecture: X86, X86_64, Arm, Arm64, MIPS, 8086
 - Multiple file formats: PE, MachO, ELF, COM, MBR
-- Emulate & sandbox machine code in a isolated environment
-- Provide a fully configurable sandbox
-- Provide in-dept memory, register, OS level and filesystem level API
-- Fine-grain instrumentation: allow hooks at various levels (instruction/basic-block/memory-access/exception/syscall/IO/etc)
-- Provide virtual machine level API such as save and restore current execution state.
+- Emulates & sandbox machine code in an isolated environment
+- Provides a fully configurable sandbox
+- Provides in-dept memory, register, OS level and filesystem level API
+- Fine-grain instrumentation: allows hooks at various levels (instruction/basic-block/memory-access/exception/syscall/IO/etc)
+- Provides virtual machine level API such as save and restore current execution state.
 - Supports cross architecture and platform debugging capabilities
-- Build in debugger with reverse debugging capability
-- Allow dynamic hotpatch on-the-fly running code, including the loaded library
+- Built-in debugger with reverse debugging capability
+- Allows dynamic hotpatch on-the-fly running code, including the loaded library
 - True framework in Python, making it easy to build customized security analysis tools on top
 
 Qiling is backed by [Unicorn engine](http://www.unicorn-engine.org).
@@ -235,13 +235,13 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 ```  
 
 - "USD" denotes the US dolar equivalent amount of coin value during the time of donation  
-- Please notify us via email to kj@qiling.io after making the donation.
-- These are not ready made. So, you might need to wait abit for the goods to be delivered.
-- Paypal accepted at our web store
+- Please notify us via email to [kj@qiling.io](mailto:kj@qiling.io) after making the donation.
+- These are not ready made. So, you might need to wait a while for the goods to be delivered.
+- Paypal is accepted at our web store
 
 <img src="https://raw.githubusercontent.com/qilingframework/qilingframework.github.io/master/images/swag.jpg">
 
-- Paypal: https://www.hardwareninja.store/c/QilingFramework
+- Paypal: [https://www.hardwareninja.store/c/QilingFramework](https://www.hardwareninja.store/c/QilingFramework)
 - Crypto Currencies:
 
 ```  
