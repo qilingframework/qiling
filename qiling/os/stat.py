@@ -75,7 +75,7 @@ class Lstat(object):
         self.st_uid = 0
 
 
-        lstat_buf = os.lstat(self.fd)
+        lstat_buf = os.lstat(self.path)
         for name in dir(lstat_buf):
             if 'st_' in name:
                 setattr(self, name, getattr(lstat_buf, name))
