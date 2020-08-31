@@ -2,6 +2,7 @@ from .loader import QlLoader
 import magic
 import sys
 import traceback
+import math
 
 class QlLoaderDOS(QlLoader):
     def __init__(self, ql):
@@ -16,6 +17,15 @@ class QlLoaderDOS(QlLoader):
             self.ql.nprint(f"{tbmsg}")
         self.old_excepthook(tp, value, tb)
 
+    def _round_to_4k(self, addr):
+        return round(addr / 4096) * 4096
+
+    def _floor_to_4k(self, addr):
+        return math.floor(addr / 4096) * 4096
+    
+    def _ceil_to_4k(self, addr):
+        return math.ceil(addr / 4096) * 4096
+
     def run(self):
         path = self.ql.path
         ftype = magic.from_file(path)
@@ -25,13 +35,19 @@ class QlLoaderDOS(QlLoader):
             # pure com
             self.cs = int(self.ql.profile.get("COM", "start_cs"), 16)
             self.ip = int(self.ql.profile.get("COM", "start_ip"), 16)
+            self.sp = int(self.ql.profile.get("COM", "start_sp"), 16)
+            self.stack_size = int(self.ql.profile.get("COM", "stack_size"), 16)
+            self.ql.reg.cs = self.cs
             self.ql.reg.ds = self.cs
             self.ql.reg.es = self.cs
             self.ql.reg.ss = self.cs
             self.ql.reg.ip = self.ip
+            self.ql.reg.sp = self.sp
             self.start_address = self.cs*16 + self.ip
             self.base_address = int(self.ql.profile.get("COM", "base_address"), 16)
-            self.ql.mem.map(self.base_address, 64*1024)
+            self.stack_address = int(self.ql.reg.ss*16 + self.ql.reg.sp)
+            self.ql.mem.map(self._floor_to_4k(self.base_address), 32*1024, info="[code]")
+            self.ql.mem.map(self._ceil_to_4k(self.stack_address - self.stack_size), self.stack_size, info="[stack]")
             with open(path, "rb+") as f:
                 bs = f.read()
             self.ql.mem.write(self.start_address, bs)
