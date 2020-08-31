@@ -19,6 +19,8 @@ class QlArchA8086(QlArch):
             self.ql.reg.expand_mapping(reg_maper)
 
         self.ql.reg.create_reverse_mapping()
+        self.ql.reg.register_pc(UC_X86_REG_IP)
+        self.ql.reg.register_sp(UC_X86_REG_SP)
 
     def stack_push(self, value):
         self.ql.reg.sp -= 4
