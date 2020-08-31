@@ -13,20 +13,20 @@ from qiling.debugger.qdb import Qdb
 def ql_debugger_init(ql):
 
     def ql_debugger(ql, remotedebugsrv, ip=None, port=None):
-        path = ql.path
         if ip is None:
             ip = '127.0.0.1'
+        
         if port is None:
             port = 9999
-
-        port = int(port)
+        else:
+            port = int(port)
         
         if ql.shellcoder:
             load_address = ql.os.entry_point
             exit_point = load_address + len(ql.shellcoder)
         else:
             load_address = ql.loader.load_address
-            exit_point = load_address + os.path.getsize(path)
+            exit_point = load_address + os.path.getsize(ql.path)
             
         mappings = [(hex(load_address))]
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -35,36 +35,36 @@ def ql_debugger_init(ql):
         ql.nprint("debugger> Listening on %s:%u" % (ip, port))
         sock.listen(1)
         conn, addr = sock.accept()
-        remotedebugsrv = debugger_convert_str(remotedebugsrv)
         remotedebugsrv = str(remotedebugsrv) + "server" 
-        DEBUGSESSION = str.upper(remotedebugsrv) + "session"
-        DEBUGSESSION = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, DEBUGSESSION)
-        ql.remote_debug = DEBUGSESSION(ql, conn, exit_point, mappings)
-
-    default_remotedebugsrv = "gdb"
+        debugsession = str.upper(remotedebugsrv) + "session"
+        debugsession = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, debugsession)
+        ql.remote_debug = debugsession(ql, conn, exit_point, mappings)
 
 
-    if ql.debugger != True:            
+    if ql.debugger == True:
+        remotedebugsrv = "gdb"
+    else:
         debug_opts = ql.debugger.split(':')
 
         if debug_opts[0] == "qdb":
-            rr = "rr" in debug_opts
+            try:
+                qdb_debug_opts = str(debug_opts[1]).split(',')
+            except:
+                qdb_debug_opts = ""    
+            rr = "rr" in qdb_debug_opts
             ql.hook_address(Qdb.attach(rr=rr), ql.os.entry_point)
             return
 
         elif len(debug_opts) == 3:
             remotedebugsrv, ip, port = debug_opts
 
-        else:
+        elif len(debug_opts) == 2:
             ip, port = ql.debugger.split(':')
-            remotedebugsrv = default_remotedebugsrv
+        else:
+            raise QlErrorOutput("[!] Error: Debugger not supported")      
 
-    else:
-        remotedebugsrv = default_remotedebugsrv
 
-    remotedebugsrv = debugger_convert(remotedebugsrv)
-
-    if remotedebugsrv not in (QL_DEBUGGER):
+    if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
         raise QlErrorOutput("[!] Error: Debugger not supported")       
     else:
         try:

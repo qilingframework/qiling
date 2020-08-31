@@ -2,8 +2,10 @@ This file details the changelog of Qiling Framework.
 
 
 [Version 1.1.2]: September [someDAY], 2020
+
 - Qiling Debugger now comes with reverse debugging
 - Added qltool into pypi packages
+- Added more Windows API
 
 ------------------------------------
 [Version 1.1.1]: August 23th, 2020
