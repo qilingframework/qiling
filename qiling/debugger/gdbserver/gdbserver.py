@@ -14,6 +14,7 @@ from binascii import unhexlify
 from qiling.debugger.gdbserver import qldbg
 from qiling.const import *
 from qiling.utils import *
+from qiling.debugger import QlDebugger
 from qiling.arch.x86_const import reg_map_32 as x86_reg_map_32
 from qiling.arch.x86_const import reg_map_64 as x86_reg_map_64
 from qiling.arch.x86_const import reg_map_misc as x86_reg_map_misc
@@ -38,11 +39,10 @@ def checksum(data):
             checksum += c
     return checksum & 0xff
 
-
-class GDBSERVERsession(object):
+class GDBSERVERsession(QlDebugger, object):
     """docstring for Debugsession"""
     def __init__(self, ql, ip, port):
-        super(GDBSERVERsession, self).__init__()
+        super(GDBSERVERsession, self).__init__(ql)
         self.ql             = ql
         self.last_pkt       = None
         self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))

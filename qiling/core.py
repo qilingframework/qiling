@@ -17,7 +17,6 @@ from .utils import ql_setup_logging_env, ql_setup_logging_stream
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
 from .core_utils import QlCoreUtils
-from .debugger import ql_debugger_init
 from .__version__ import __version__
 
 class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):    
@@ -188,7 +187,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         
         # init debugger
         if self.debugger != False and self.debugger != None:
-            ql_debugger_init(self)
+            self.debugger = self.debugger_setup()
 
         # patch binary
         self.__enable_bin_patch()
@@ -197,7 +196,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.os.run()
 
         # run debugger
-        if self.debugger != False and self.debugger != None:
+        if self.debugger != None:
             self.debugger.run()
 
 

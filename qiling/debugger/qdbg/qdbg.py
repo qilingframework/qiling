@@ -5,16 +5,15 @@ from functools import partial
 
 from qiling import *
 from qiling.const import *
+from qiling.debugger import QlDebugger
 
 from .frontend import context_printer, context_reg, context_asm, examine_mem, color
 from .utils import parse_int, handle_bnj, is_thumb, diff_snapshot_save, diff_snapshot_restore, CODE_END
 
 
-
-class Qldbg(cmd.Cmd):
-
-    def __init__(self, filename=None, rootfs=None, console=True, log_dir=None, ql=None, rr=False):
-
+class QlDbg(QlDebugger, cmd.Cmd):
+    def __init__(self, ql, filename=None, rootfs=None, console=True, log_dir=None, rr=False):
+        super(QlDbg, self).__init__(ql)
         self.ql_config = None if filename == rootfs == None else {
                     "filename": filename,
                     "rootfs": rootfs,
