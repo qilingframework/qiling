@@ -331,7 +331,7 @@ def ql_syscall_chdir(ql, path_name, *args, **kw):
         if ql.os.thread_management != None:
             pass
         else:
-            ql.os.current_path = relative_path + '/'
+            ql.os.current_path = relative_path
         ql.nprint("chdir(%s) = %d"% (relative_path, regreturn))
     else:
         regreturn = -1
