@@ -269,10 +269,20 @@ class QlOsDos(QlOs):
                 curses.resizeterm(25, 40)
             elif al == 2 or al == 3:
                 curses.resizeterm(25, 80)
-            elif al == 4 or al == 5:
+            elif al == 4 or al == 5 or al == 9 or al == 0xD or al == 0x13:
                 curses.resizeterm(200, 320)
             elif al == 6:
                 curses.resizeterm(200, 640)
+            elif al == 8:
+                curses.resizeterm(200, 160)
+            elif al == 0xA or al == 0xE:
+                curses.resizeterm(200, 640)
+            elif al == 0xF:
+                curses.resizeterm(350, 640)
+            elif al == 0x10:
+                curses.resizeterm(350, 640)
+            elif al == 0x11 or al == 0x12:
+                curses.resizeterm(480, 640)
             else:
                 raise NotImplementedError()
             # Quoted from https://linux.die.net/man/3/resizeterm
@@ -285,7 +295,7 @@ class QlOsDos(QlOs):
                 self.ql.nprint(f"[!] You term has been resized!")
             self.stdscr.scrollok(True)
                 
-            if al in [1, 3, 5] and not curses.has_colors():
+            if not curses.has_colors():
                 self.ql.nprint(f"[!] Warning: your terminal doesn't support colors, content might not be displayed correctly.")
             
             # https://en.wikipedia.org/wiki/BIOS_color_attributes
