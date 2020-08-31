@@ -87,7 +87,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.root = False
         # generic filter to filter print (WIP)
         self.filter = None
-        self.remote_debug = None
+
 
         """
         Qiling Framework Core Engine
@@ -196,9 +196,9 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         # emulate the binary
         self.os.run()
 
-        # resume with debugger
+        # run debugger
         if self.debugger != False and self.debugger != None:
-            self.remote_debug.run()
+            self.debugger.run()
 
 
     # patch @code to memory address @addr

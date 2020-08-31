@@ -41,24 +41,40 @@ def checksum(data):
 
 class GDBSERVERsession(object):
     """docstring for Debugsession"""
-    def __init__(self, ql, clientsocket, exit_point, mappings):
+    def __init__(self, ql, ip, port):
         super(GDBSERVERsession, self).__init__()
         self.ql             = ql
+        self.last_pkt       = None
+        self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
+        self.rootfs_abspath = (os.path.abspath(self.ql.rootfs)) 
+        self.gdb            = qldbg.Qldbg()
+
+        if ql.shellcoder:
+            load_address = ql.os.entry_point
+            exit_point = load_address + len(ql.shellcoder)
+        else:
+            load_address = ql.loader.load_address
+            exit_point = load_address + os.path.getsize(ql.path)
+
+        self.gdb.initialize(self.ql, exit_point=exit_point, mappings=[(hex(load_address))])
+        
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind((ip, port))
+        sock.listen(1)
+        clientsocket, addr = sock.accept()
+
         self.clientsocket   = clientsocket
         self.netin          = clientsocket.makefile('r')
         self.netout         = clientsocket.makefile('w')
-        self.last_pkt       = None
-        self.gdb            = qldbg.Qldbg()
-        self.gdb.initialize(self.ql, exit_point=exit_point, mappings=mappings)
-        self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
-        self.rootfs_abspath = (os.path.abspath(self.ql.rootfs)) 
-        
+       
         if self.ql.ostype in (QL_OS.LINUX, QL_OS.FREEBSD) and not self.ql.shellcoder:
             self.entry_point = self.ql.os.elf_entry
         else:
             self.entry_point = self.ql.os.entry_point
             
         self.gdb.bp_insert(self.entry_point)
+
+        ql.nprint("gdb> Listening on %s:%u" % (ip, port))
 
         #Setup register tables, order of tables is important
         self.tables = {

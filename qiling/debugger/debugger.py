@@ -12,7 +12,7 @@ from qiling.debugger.qdb import Qdb
 
 def ql_debugger_init(ql):
 
-    def ql_debugger(ql, remotedebugsrv, ip=None, port=None):
+    def _debugger(ql, remotedebugsrv, ip=None, port=None):
         if ip is None:
             ip = '127.0.0.1'
         
@@ -20,26 +20,11 @@ def ql_debugger_init(ql):
             port = 9999
         else:
             port = int(port)
-        
-        if ql.shellcoder:
-            load_address = ql.os.entry_point
-            exit_point = load_address + len(ql.shellcoder)
-        else:
-            load_address = ql.loader.load_address
-            exit_point = load_address + os.path.getsize(ql.path)
-            
-        mappings = [(hex(load_address))]
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((ip, port))
-        ql.nprint("debugger> Initializing load_address 0x%x" % (load_address))
-        ql.nprint("debugger> Listening on %s:%u" % (ip, port))
-        sock.listen(1)
-        conn, addr = sock.accept()
+
         remotedebugsrv = str(remotedebugsrv) + "server" 
         debugsession = str.upper(remotedebugsrv) + "session"
         debugsession = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, debugsession)
-        ql.remote_debug = debugsession(ql, conn, exit_point, mappings)
-
+        ql.debugger = debugsession(ql, ip, port)
 
     remotedebugsrv = "gdb"
 
@@ -69,9 +54,9 @@ def ql_debugger_init(ql):
     else:
         try:
             if ql.debugger is True:
-                ql_debugger(ql, remotedebugsrv)
+                _debugger(ql, remotedebugsrv)
             else:
-                ql_debugger(ql, remotedebugsrv, ip, port)
+                _debugger(ql, remotedebugsrv, ip, port)
         
         except KeyboardInterrupt:
             if ql.remote_debug():
