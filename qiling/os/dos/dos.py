@@ -293,6 +293,8 @@ class QlOsDos(QlOs):
             ch = self._get_ch_non_blocking()
             if ch == curses.KEY_RESIZE:
                 self.ql.nprint(f"[!] You term has been resized!")
+            elif ch != -1:
+                curses.ungetch(ch)
             self.stdscr.scrollok(True)
                 
             if not curses.has_colors():
@@ -359,11 +361,21 @@ class QlOsDos(QlOs):
                 self.stdscr.bkgd(" ", attr)
                 self.stdscr.move(0, 0)
         elif ah == 8:
-            # page number ignored
-            #ch = self.stdscr.getch()
-            #self.ql.reg.ah = 0
-            #self.ql.reg.al = ch
-            pass
+            if self.stdscr is None:
+                self.ql.reg.ax = 0x0720
+            else:
+                cy, cx = self.stdscr.getyx()
+                inch = self.stdscr.inch(cy, cx)
+                attr = inch & curses.A_COLOR
+                ch = inch & 0xFF
+                self.ql.reg.al = ch
+                pair_number = curses.pair_number(attr)
+                fg, bg = curses.pair_content(pair_number)
+                orig_fg = REVERSE_COLORS_MAPPING[fg]
+                orig_bg = REVERSE_COLORS_MAPPING[bg]
+                if attr & curses.A_BLINK != 0:
+                    orig_bg |= 0b1000
+                self.ql.reg.ah = ((orig_bg << 4) & orig_fg)
         elif ah == 0xE:
             self.ql.dprint(0, f"Echo: {hex(al)} -> {curses.ascii.unctrl(al)}")
             y, x = self.stdscr.getmaxyx()
@@ -387,7 +399,8 @@ class QlOsDos(QlOs):
                 self.stdscr.echochar(al, attr)
         else:
             raise NotImplementedError()
-        self.stdscr.refresh()
+        if self.stdscr is not None:
+            self.stdscr.refresh()
 
     def int13(self):
         ah = self.ql.reg.ah
