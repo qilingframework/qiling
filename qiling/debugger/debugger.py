@@ -41,9 +41,9 @@ def ql_debugger_init(ql):
         ql.remote_debug = debugsession(ql, conn, exit_point, mappings)
 
 
-    if ql.debugger == True:
-        remotedebugsrv = "gdb"
-    else:
+    remotedebugsrv = "gdb"
+
+    if ql.debugger != True:
         debug_opts = ql.debugger.split(':')
 
         if debug_opts[0] == "qdb":
