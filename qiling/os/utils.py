@@ -45,26 +45,23 @@ class PathUtils:
         # Things are complicated here.
         # See https://docs.microsoft.com/zh-cn/windows/win32/fileio/naming-a-file?redirectedfrom=MSDN
         if PureWindowsPath(path).is_absolute():
-            if len(path) >= 2 and path[0] == '\\' and path[1] == '\\': # \\.\PhysicalDrive0 or \\Server\Share\Directory or X:\
+            if (len(path) >= 2 and path[0] == '\\' and path[1] == '\\') or \
+                (len(path) >= 3 and path[0].isalpha() and path[2] == '\\'): # \\.\PhysicalDrive0 or \\Server\Share\Directory or X:\
                 # UNC path should be handled in fs mapping. If not, append it to rootfs directly.
                 pw = PureWindowsPath(path)
-                relative_path = cwd / pw.relative_to(pw.anchor)
-                result = rootfs / relative_path
+                result = rootfs / pw.relative_to(pw.anchor)
             else:
                 # code should never reach here.
-                relative_path = cwd / path
-                result = rootfs / relative_path
+                result = rootfs / path
         else:
             if len(path) >= 3 and path[:3] == r'\\?' or path[:3] == r'\??': # \??\ or \\?\ or \Device\..
                 # Similair to \\.\, it should be handled in fs mapping.
                 pw = PureWindowsPath(path)
-                relative_path = cwd / pw.relative_to(pw.anchor)
-                result = rootfs / relative_path
+                result = rootfs / cwd / pw.relative_to(pw.anchor)
             else:
                 # a normal relative path
-                relative_path = cwd / PureWindowsPath(path)
-                result = rootfs / relative_path
-        return result, relative_path
+                result = rootfs / cwd / PureWindowsPath(path)
+        return result
 
 
     @staticmethod
@@ -75,11 +72,9 @@ class PathUtils:
         cwd = PurePosixPath(cwd[1:])
         path = PurePosixPath(path)
         if path.is_absolute():
-            relative_path = cwd / path.relative_to(path.anchor)
-            return rootfs / relative_path, relative_path
+            return rootfs / path.relative_to(path.anchor)
         else:
-            relative_path = cwd / path
-            return rootfs / relative_path, relative_path
+            return rootfs / cwd / path
     
     @staticmethod
     def convert_for_native_os(rootfs, cwd, path):
@@ -87,11 +82,9 @@ class PathUtils:
         cwd = PurePosixPath(cwd[1:])
         path = Path(path)
         if path.is_absolute():
-            relative_path = cwd / path.relative_to(path.anchor)
-            return rootfs / relative_path, relative_path
+            return rootfs / path.relative_to(path.anchor)
         else:
-            relative_path = cwd / path
-            return rootfs / relative_path, relative_path
+            return rootfs / cwd / path
 
 class QlOsUtils:
     def __init__(self, ql):
@@ -122,7 +115,7 @@ class QlOsUtils:
         elif self.ql.ostype == QL_OS.WINDOWS and self.ql.platform in [QL_OS.LINUX, QL_OS.MACOS]:
             return PathUtils.convert_win32_to_posix(rootfs, cwd, path)
         else:
-            return None, None
+            return None
     
     def transform_to_link_path(self, path):
         if self.ql.multithread:
@@ -135,7 +128,7 @@ class QlOsUtils:
             self.ql.nprint(f"[!] Warning: cur_path doesn't start with a /")
         
         rootfs = self.ql.rootfs
-        real_path, _ = self.convert_path(rootfs, cur_path, path)
+        real_path  = self.convert_path(rootfs, cur_path, path)
 
         return str(real_path.absolute())
 
@@ -152,7 +145,7 @@ class QlOsUtils:
             self.ql.nprint(f"[!] Warning: cur_path must start with /")
 
         rootfs = self.ql.rootfs
-        real_path, _ = self.convert_path(rootfs, cur_path, path)
+        real_path = self.convert_path(rootfs, cur_path, path)
         
         if os.path.islink(real_path):
             link_path = Path(os.readlink(real_path))
@@ -161,13 +154,14 @@ class QlOsUtils:
             
         return str(real_path.absolute())
 
+    # The `relative path` here refers to the path which is relative to the rootfs.
     def transform_to_relative_path(self, path):
         if self.ql.multithread:
             cur_path = self.ql.os.thread_management.cur_thread.get_current_path()
         else:
             cur_path = self.ql.os.current_path
 
-        return str(Path(cur_path[1:]) / path)
+        return str(Path(cur_path) / path)
 
     def post_report(self):
         self.ql.dprint(D_RPRT, "[+] Syscalls called")

@@ -1094,6 +1094,81 @@ class ELFTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/x8664_linux_symlink/bin/x8664_hello"],  "../examples/rootfs/x8664_linux_symlink", output="debug")
         ql.run()
         del ql   
+    
+    def test_x8664_absolute_path(self):
+        class MyPipe():
+            def __init__(self):
+                self.buf = b''
+
+            def write(self, s):
+                self.buf += s
+
+            def read(self, l):
+                pass
+
+            def fileno(self):
+                return 0
+
+            def fstat(self):
+                return os.fstat(sys.stdin.fileno())
+ 
+            def show(self):
+                pass
+
+            def clear(self):
+                pass
+
+            def flush(self):
+                pass
+
+            def close(self):
+                pass
+        
+        pipe = MyPipe()
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/absolutepath"],  "../examples/rootfs/x8664_linux", output="debug", stdout=pipe)
+
+        ql.run()
+        
+        self.assertEqual(pipe.buf, b'yay!\nyay!\n')
+
+        del ql
+
+    def test_x8664_getcwd(self):
+        class MyPipe():
+            def __init__(self):
+                self.buf = b''
+
+            def write(self, s):
+                self.buf += s
+
+            def read(self, l):
+                pass
+
+            def fileno(self):
+                return 0
+
+            def fstat(self):
+                return os.fstat(sys.stdin.fileno())
+ 
+            def show(self):
+                pass
+
+            def clear(self):
+                pass
+
+            def flush(self):
+                pass
+
+            def close(self):
+                pass
+        
+        pipe = MyPipe()
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/testcwd"],  "../examples/rootfs/x8664_linux", output="debug", stdout=pipe)
+
+        ql.run()
+        self.assertEqual(pipe.buf, b'/\n/lib\n/bin\n/\n')
+
+        del ql
 
 if __name__ == "__main__":
     unittest.main()
