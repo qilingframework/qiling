@@ -16,7 +16,7 @@ from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT, QL_DEBUGGER
 from .const import D_INFO, D_DRPT
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 from .loader.utils import ql_checkostype
-from .debugger.qdbg import QlDbg
+
 
 class QlCoreUtils(object):
     def __init__(self):
@@ -134,7 +134,7 @@ class QlCoreUtils(object):
                 except:
                     qdb_debug_opts = ""    
                 rr = "rr" in qdb_debug_opts
-                self.hook_address(QlDbg.attach(rr=rr), self.os.entry_point)
+                self.hook_address(QlQdbg.attach(rr=rr), self.os.entry_point)
                 return
 
             elif len(debug_opts) == 3:
@@ -154,9 +154,7 @@ class QlCoreUtils(object):
         else:
             dbgsrv_port = int(dbgsrv_port)
 
-        remotedebugsrv = str(remotedebugsrv) + "server" 
-        debugsession = str.upper(remotedebugsrv) + "session"
-        debugsession = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, debugsession)
+        debugsession = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, "Ql" + str.capitalize(remotedebugsrv))
         
         return debugsession(self, dbgsrv_ip, dbgsrv_port)  
 

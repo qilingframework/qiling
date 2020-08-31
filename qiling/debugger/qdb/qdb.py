@@ -11,9 +11,9 @@ from .frontend import context_printer, context_reg, context_asm, examine_mem, co
 from .utils import parse_int, handle_bnj, is_thumb, diff_snapshot_save, diff_snapshot_restore, CODE_END
 
 
-class QlDbg(QlDebugger, cmd.Cmd):
+class QlQdb(QlDebugger, cmd.Cmd):
     def __init__(self, ql, filename=None, rootfs=None, console=True, log_dir=None, rr=False):
-        super(QlDbg, self).__init__(ql)
+        super(QlQdbg, self).__init__(ql)
         self.ql_config = None if filename == rootfs == None else {
                     "filename": filename,
                     "rootfs": rootfs,
@@ -28,8 +28,6 @@ class QlDbg(QlDebugger, cmd.Cmd):
         self._saved_states = None
         if rr:
             self._states_list = [None]
-
-        super().__init__()
 
     @classmethod
     def attach(self, rr=False):
