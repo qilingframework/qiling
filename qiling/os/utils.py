@@ -160,7 +160,7 @@ class QlOsUtils:
         else:
             cur_path = self.ql.os.current_path
 
-        return str(Path(cur_path[1:]) / path)
+        return str(Path(cur_path) / path)
 
     def post_report(self):
         self.ql.dprint(D_RPRT, "[+] Syscalls called")
