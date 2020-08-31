@@ -1133,7 +1133,7 @@ class ELFTest(unittest.TestCase):
 
         del ql
 
-    def test_x8664_absolute_path(self):
+    def test_x8664_getcwd(self):
         class MyPipe():
             def __init__(self):
                 self.buf = b''
