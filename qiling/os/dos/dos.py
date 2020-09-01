@@ -548,6 +548,9 @@ class QlOsDos(QlOs):
         elif ah == 0x9:
             s = self.read_dos_string_from_ds_dx()
             self.ql.nprint(s)
+        elif ah == 0xC:
+            # Clear input buffer
+            pass
         elif ah == 0x3C:
             # fileattr ignored
             fname = self.read_dos_string_from_ds_dx()
