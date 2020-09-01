@@ -17,7 +17,6 @@ from .utils import ql_setup_logging_env, ql_setup_logging_stream
 from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
 from .core_utils import QlCoreUtils
-from .debugger import ql_debugger_init
 from .__version__ import __version__
 
 class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):    
@@ -87,7 +86,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.root = False
         # generic filter to filter print (WIP)
         self.filter = None
-        self.remote_debug = None
+
 
         """
         Qiling Framework Core Engine
@@ -177,6 +176,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.loader.run()
 
 
+
     # Emulate the binary from begin until @end, with timeout in @timeout and
     # number of emulated instructions in @count
     def run(self, begin=None, end=None, timeout=0, count=0):
@@ -188,7 +188,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         
         # init debugger
         if self.debugger != False and self.debugger != None:
-            ql_debugger_init(self)
+            self.debugger = self.debugger_setup()
 
         # patch binary
         self.__enable_bin_patch()
@@ -196,12 +196,12 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         # emulate the binary
         self.os.run()
 
-        # resume with debugger
+        # run debugger
         if self.debugger != False and self.debugger != None:
-            self.remote_debug.run()
+            self.debugger.run()
 
 
-    # patch @code to memory address @addr
+    # patch code to memory address
     def patch(self, addr, code, file_name=b''):
         if file_name == b'':
             self.patch_bin.append((addr, code))

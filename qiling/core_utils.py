@@ -11,11 +11,12 @@ from binascii import unhexlify
 from .utils import ql_build_module_import_name, ql_get_module_function
 from .utils import ql_is_valid_arch, ql_is_valid_ostype
 from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
-from .utils import ql_setup_filter
-from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
+from .utils import ql_setup_filter, debugger_convert
+from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT, QL_DEBUGGER
 from .const import D_INFO, D_DRPT
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 from .loader.utils import ql_checkostype
+
 
 class QlCoreUtils(object):
     def __init__(self):
@@ -118,6 +119,27 @@ class QlCoreUtils(object):
     def stack_write(self, offset, data):
         self.arch.stack_write(offset, data)
 
+
+    def debugger_setup(self):
+        # default remote server
+        remotedebugsrv = "gdb"
+        debug_opts = [None, None]
+
+        if self.debugger != True and type(self.debugger) == str:      
+            debug_opts = self.debugger.split(":")
+    
+            if len(debug_opts) == 2 and debug_opts[0] != "qdb":
+                pass
+            else:  
+                remotedebugsrv, *debug_opts = debug_opts
+                
+            
+            if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
+                raise QlErrorOutput("[!] Error: Debugger not supported")
+            
+        debugsession = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, "Ql" + str.capitalize(remotedebugsrv))
+
+        return debugsession(self, *debug_opts)
 
     def arch_setup(self):
         if not ql_is_valid_arch(self.archtype):

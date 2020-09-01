@@ -7,6 +7,7 @@
 UseAsScript = True
 RELEASE = True
 
+import sys
 import collections
 
 # Qiling
@@ -33,7 +34,6 @@ if RELEASE:
     from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
 
 else:
-    import sys
     sys.path.append("./idapython3")
     from idapython3 import *
 
@@ -495,10 +495,16 @@ class QlEmuQiling:
         self.baseaddr = None
 
     def start(self):
-        qlstdin = QlEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
-        qlstdout = QlEmuMisc.QLStdIO('stdout', sys.__stdout__.fileno())
-        qlstderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
-        self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", stdin=qlstdin, stdout=qlstdout, stderr=qlstderr)
+        if sys.platform != 'win32':
+            qlstdin = QlEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
+            qlstdout = QlEmuMisc.QLStdIO('stdout', sys.__stdout__.fileno())
+            qlstderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
+            
+        if sys.platform != 'win32':
+            self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", stdin=qlstdin, stdout=qlstdout, stderr=qlstderr)
+        else:
+            self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug")
+        
         self.exit_addr = self.ql.os.exit_point
         if self.ql.ostype == QL_OS.LINUX:
             self.baseaddr = self.ql.os.elf_mem_start
@@ -622,6 +628,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 print("Qiling initialized done")
         if self.customscriptpath is not None:
             self.ql_load_user_script()
+            self.userobj.custom_setup(self.qlemu.ql)
 
     def ql_load_user_script(self):
         if self.qlinit :

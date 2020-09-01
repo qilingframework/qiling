@@ -5,6 +5,9 @@ class QILING_IDA():
     def __init__(self):
         pass
 
+    def custom_prepare(self, ql):
+        print('set something before ql.run')
+
     def custom_continue(self, ql:Qiling):
         def continue_hook(ql, addr, size):
             print(hex(addr))

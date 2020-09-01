@@ -189,6 +189,28 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    def test_elf_hijackapi_linux_x8664(self):
+        def my_puts_enter(ql):
+            addr = ql.os.function_arg[0]
+            self.test_enter_str = ql.mem.string(addr)
+
+        def my_puts_exit(ql):
+            self.test_exit_rdi = ql.reg.rdi
+
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_puts"],  "../examples/rootfs/x8664_linux", output="debug")
+        ql.set_api('puts', my_puts_enter, QL_INTERCEPT.ENTER)
+        ql.set_api('puts', my_puts_exit, QL_INTERCEPT.EXIT)
+
+        ql.run()
+
+        self.assertEqual(0x1, self.test_exit_rdi)
+        self.assertEqual("CCCC", self.test_enter_str)
+        
+        del self.test_exit_rdi
+        del self.test_enter_str
+        del ql         
+
+
     def test_tcp_elf_linux_x86(self):
         def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
             try:
@@ -305,7 +327,10 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             target = False
@@ -321,7 +346,10 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
             target = False
@@ -336,7 +364,10 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
@@ -365,7 +396,10 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             target = False
@@ -384,7 +418,10 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
         ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_posix_syscall"], "../examples/rootfs/x86_linux", output="debug")
         ql.set_syscall(0x3, test_syscall_read)
@@ -586,7 +623,10 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
 
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
@@ -603,7 +643,10 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
 
         def test_syscall_openat(ql, openat_fd, openat_path, openat_flags, openat_mode, *args):
@@ -619,7 +662,10 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
@@ -650,7 +696,10 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
@@ -666,7 +715,10 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
         ql = Qiling(["../examples/rootfs/arm64_linux/bin/arm64_posix_syscall"], "../examples/rootfs/arm64_linux", output="debug")
         ql.set_syscall(0x3f, test_syscall_read)
@@ -716,7 +768,10 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.fd[read_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == ql.mem.read(read_buf, read_count).decode()
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
  
         def test_syscall_write(ql, write_fd, write_buf, write_count, *args):
             target = False
@@ -732,7 +787,10 @@ class ELFTest(unittest.TestCase):
                 real_path = ql.os.fd[write_fd].name
                 with open(real_path) as fd:
                     assert fd.read() == 'Hello testing\x00'
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
         def test_syscall_open(ql, open_pathname, open_flags, open_mode, *args):
             target = False
@@ -747,7 +805,10 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.path.isfile(real_path) == True
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
         def test_syscall_unlink(ql, unlink_pathname, *args):
             target = False
@@ -776,7 +837,10 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
         def test_syscall_ftruncate(ql, ftrunc_fd, ftrunc_length, *args):
             target = False
@@ -791,7 +855,10 @@ class ELFTest(unittest.TestCase):
             if target:
                 real_path = ql.os.transform_to_real_path(pathname)
                 assert os.stat(real_path).st_size == 0x10
-                os.remove(real_path)
+                if ql.platform == QL_OS.WINDOWS:
+                    return
+                else:    
+                    os.remove(real_path)
 
         ql = Qiling(["../examples/rootfs/mips32el_linux/bin/mips32el_posix_syscall"], "../examples/rootfs/mips32el_linux", output="debug")
         ql.set_syscall(4003, test_syscall_read)
@@ -1027,6 +1094,81 @@ class ELFTest(unittest.TestCase):
         ql = Qiling(["../examples/rootfs/x8664_linux_symlink/bin/x8664_hello"],  "../examples/rootfs/x8664_linux_symlink", output="debug")
         ql.run()
         del ql   
+    
+    def test_x8664_absolute_path(self):
+        class MyPipe():
+            def __init__(self):
+                self.buf = b''
+
+            def write(self, s):
+                self.buf += s
+
+            def read(self, l):
+                pass
+
+            def fileno(self):
+                return 0
+
+            def fstat(self):
+                return os.fstat(sys.stdin.fileno())
+ 
+            def show(self):
+                pass
+
+            def clear(self):
+                pass
+
+            def flush(self):
+                pass
+
+            def close(self):
+                pass
+        
+        pipe = MyPipe()
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/absolutepath"],  "../examples/rootfs/x8664_linux", output="debug", stdout=pipe)
+
+        ql.run()
+        
+        self.assertEqual(pipe.buf, b'yay!\nyay!\n')
+
+        del ql
+
+    def test_x8664_getcwd(self):
+        class MyPipe():
+            def __init__(self):
+                self.buf = b''
+
+            def write(self, s):
+                self.buf += s
+
+            def read(self, l):
+                pass
+
+            def fileno(self):
+                return 0
+
+            def fstat(self):
+                return os.fstat(sys.stdin.fileno())
+ 
+            def show(self):
+                pass
+
+            def clear(self):
+                pass
+
+            def flush(self):
+                pass
+
+            def close(self):
+                pass
+        
+        pipe = MyPipe()
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/testcwd"],  "../examples/rootfs/x8664_linux", output="debug", stdout=pipe)
+
+        ql.run()
+        self.assertEqual(pipe.buf, b'/\n/lib\n/bin\n/\n')
+
+        del ql
 
 if __name__ == "__main__":
     unittest.main()

@@ -61,7 +61,6 @@ def _QueryInformationProcess(ql, address, params):
 
     return STATUS_SUCCESS
 
-
 # NTSTATUS WINAPI ZwQueryInformationProcess(
 #   _In_      HANDLE           ProcessHandle,
 #   _In_      PROCESSINFOCLASS ProcessInformationClass,
@@ -220,6 +219,58 @@ def hook_ZwQueryObject(ql, address, params):
 
     return STATUS_SUCCESS
 
+
+# NTSYSAPI NTSTATUS NTAPI NtSetInformatonProcess(
+#   _In_      HANDLE           ProcessHandle,
+#   _In_      PROCESSINFOCLASS ProcessInformationClass,
+#   _In_      PVOID            ProcessInformation
+#   _In_      ULONG            ProcessInformationLength
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname,
+            replace_params={"ProcessHandle": HANDLE, "ProcessInformationClass": INT, "ProcessInformation": POINTER,
+                        "ProcessInformationLength": UINT})
+def hook_ZwSetInformationProcess(ql, address, params):
+    _SetInformationProcess(ql, address, params)
+
+def hook_NtSetInformationProcess(ql, address, params):
+    _SetInformationProcess(ql, address, params)
+
+def _SetInformationProcess(ql, address, params):
+    process = params["ProcessHandle"]
+    flag = params["ProcessInformationClass"]
+    dst = params["ProcessInformation"]
+    pt_res = params["ReturnLength"]
+    
+    if flag == ProcessDebugFlags:
+        value = b"\x01" * 0x4
+    elif flag == ProcessDebugPort:
+        value = b"\x00" * 0x4
+    elif flag == ProcessDebugObjectHandle:
+        return STATUS_PORT_NOT_SET
+    elif flag == ProcessBreakOnTermination:
+            ql.dprint(D_RPRT, "[=] The target may be attempting modify a the 'critical' flag of the process")  
+    elif flag  == ProcessExecuteFlags:
+        ql.dprint(D_RPRT, "[=] The target may be attempting to modify DEP for the process")
+        if dst != 0:
+            ql.mem.write(dst, 0x0.to_bytes(1, byteorder="little"))
+
+    elif flag == ProcessBasicInformation:
+        pbi = qiling.os.windows.structs.ProcessBasicInformation(
+            ql, exitStatus=0,
+            pebBaseAddress=ql.os.heap_base_address, affinityMask=0,
+            basePriority=0,
+            uniqueId=ql.os.profile.getint("KERNEL", "pid"),
+            parentPid=ql.os.profile.geting("KERNEL", "parent_pid")
+        )
+        ql.dprint(D_RPRT, "[=] The target may be attempting to modify the PEB debug flag")
+        addr = ql.os.heap.alloc(pbi.size)
+        pbi.write(addr)
+        value = addr.to_bytes(ql.pointersize, "little")
+    else:
+        ql.dprint(D_INFO, str(flag))
+        raise QlErrorNotImplemented("[!] API not implemented")
+
+    return STATUS_SUCCESS
 
 # NTSYSAPI
 # NTSTATUS

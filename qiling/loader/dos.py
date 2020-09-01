@@ -50,6 +50,8 @@ class QlLoaderDOS(QlLoader):
             with open(path, "rb+") as f:
                 bs = f.read()
             self.ql.mem.write(self.start_address, bs)
+            self.load_address = self.base_address
+            self.ql.os.entry_point = self.start_address
         elif "MBR" in ftype:
             # MBR
             self.start_address = 0x7C00
@@ -66,6 +68,8 @@ class QlLoaderDOS(QlLoader):
             # https://en.wikipedia.org/wiki/Master_boot_record#BIOS_to_MBR_interface
             self.ql.reg.dx = 0x80
             self.ip = self.start_address
+            self.load_address = self.start_address
+            self.ql.os.entry_point = self.start_address
         elif "MS-DOS" in ftype:
             raise NotImplementedError()
             

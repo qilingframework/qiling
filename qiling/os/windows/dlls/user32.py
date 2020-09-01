@@ -10,8 +10,45 @@ from qiling.os.windows.utils import *
 from qiling.os.windows.const import *
 from qiling.const import *
 from qiling.os.windows.structs import *
+from .const import *
 
 dllname = 'user32_dll'
+
+#ATOM RegisterClassExA(
+#  const WNDCLASSEXA *Arg1
+#);
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={'lpWndClass': 'POINTER'})
+def hook_RegisterClassExA(ql, address, params):
+    ret = 0
+    return ret
+
+
+#BOOL UpdateWindow(
+#  HWND hWnd
+#);
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_UpdateWindow(ql, address, params):
+    ret = 0
+    return ret
+
+# HWND CreateWindowExA(
+#  DWORD     dwExStyle,
+#  LPCSTR    lpClassName,
+#  LPCSTR    lpWindowName,
+#  DWORD     dwStyle,
+#  int       X,
+#  int       Y,
+#  int       nWidth,
+#  int       nHeight,
+#  HWND      hWndParent,
+#  HMENU     hMenu,
+#  HINSTANCE hInstance,
+#  LPVOID    lpParam
+#);
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params={'hMenu': 'POINTER'})
+def hook_CreateWindowExA(ql, address, params):
+    ret = 0
+    return ret
 
 # INT_PTR DialogBoxParamA(
 #   HINSTANCE hInstance,
@@ -375,7 +412,7 @@ def hook_ShowWindow(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HINSTANCE': 'POINTER', 'LPCSTR': 'UINT'})
 def hook_LoadIconA(ql, address, params):
-    return hook_LoadIconW(ql, address, params)
+    return hook_LoadIconW.__wrapped__(ql, address, params)
 
 
 # HICON LoadIconW(
@@ -384,9 +421,12 @@ def hook_LoadIconA(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'HINSTANCE': 'POINTER', 'LPCWSTR': 'UINT'})
 def hook_LoadIconW(ql, address, params):
-    handle = Handle()
-    ql.os.handle_manager.append(handle)
-    return handle.id
+    inst, name = params
+
+    if name not in (IDI_APPLICATION, IDI_ASTERISK, IDI_ERROR, IDI_EXCLAMATION, IDI_HAND,
+                        IDI_INFORMATION, IDI_QUESTION, IDI_SHIELD, IDI_WARNING, IDI_WINLOGO):
+        return 0
+    return 1
 
 
 # BOOL IsWindow(
