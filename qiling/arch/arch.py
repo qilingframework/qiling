@@ -68,8 +68,8 @@ class QlArch(ABC):
             addr = (hex(int.from_bytes(self.ql.pack32(addr), byteorder=endian)))
             addr = ('{:0>8}'.format(addr[2:]))
         elif self.ql.archbit == 16 or short == True:
-            addr = (hex(int.from_bytes(self.ql.pack16(addr), byteorder=endian)))
-            addr = ('{:0>4}'.format(addr[2:]))            
+            addr = (hex(int.from_bytes(self.ql.pack32(addr), byteorder=endian)))
+            addr = ('{:0>8}'.format(addr[2:]))            
         addr = str(addr)    
         return addr
 
