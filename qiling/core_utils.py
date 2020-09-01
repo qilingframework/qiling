@@ -123,8 +123,7 @@ class QlCoreUtils(object):
     def debugger_setup(self):
         # default remote server
         remotedebugsrv = "gdb"
-        dbgsrv_ip = None
-        dbgsrv_port = None
+        debug_opts = [None, None]
 
         if self.debugger != True and type(self.debugger) == str:
 
