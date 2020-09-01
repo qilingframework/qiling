@@ -121,33 +121,19 @@ class QlCoreUtils(object):
 
 
     def debugger_setup(self):
-        remotedebugsrv = "gdb"
-        dbgsrv_ip = None
-        dbgsrv_port = None
 
         if self.debugger != True and type(self.debugger) == str:
-            debug_opts = self.debugger.split(':')
 
-            if debug_opts[0] == "qdb":
-                remotedebugsrv = "qdb"
+            remotedebugsrv, *debug_opts = self.debugger.split(":")
+            dbgsrv_ip = None
+            dbgsrv_port = None
 
-            elif len(debug_opts) == 3:
-                remotedebugsrv, dbgsrv_ip, dbgsrv_port = debug_opts
+            if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
+                raise QlErrorOutput("[!] Error: Debugger not supported")
 
-            elif len(debug_opts) == 2:
-                dbgsrv_ip, dbgsrv_port = self.debugger.split(':')
-                                            
-        if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
-            raise QlErrorOutput("[!] Error: Debugger not supported")    
-        else:
-            debugsession = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, "Ql" + str.capitalize(remotedebugsrv))
+        debugsession = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, "Ql" + str.capitalize(remotedebugsrv))
 
-        if remotedebugsrv == "qdb":
-            rr = "rr" in debug_opts
-            self.hook_address(debugsession.attach(rr=rr), self.os.entry_point)    
-            return debugsession
-        
-        return debugsession(self, dbgsrv_ip, dbgsrv_port)  
+        return debugsession(self, *debug_opts)
 
     def arch_setup(self):
         if not ql_is_valid_arch(self.archtype):

@@ -14,7 +14,6 @@ from .utils import parse_int, handle_bnj, is_thumb, diff_snapshot_save, diff_sna
 class QlQdb(cmd.Cmd, QlDebugger):
     def __init__(self, ql, rr=False):
 
-        super().__init__()
         self._ql = ql
         self.prompt = "(Qdb) "
         self.breakpoints = {}
@@ -22,20 +21,22 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if rr:
             self._states_list = [None]
 
-    @classmethod
-    def attach(self, rr=False):
+        super().__init__()
+
+        # setup a breakpoint at entry point
+        self._ql.hook_address(self._attach, self._ql.loader.entry_point)
+
+    def _attach(self, ql, *args, **kwargs):
         print(color.RED, "[+] Qdb attached", color.END, sep="")
         print(color.RED, "[!] All hooks of qiling instance will be disabled in Qdb", color.END, sep="")
 
-        def _take_ql(ql):
-            for i in ql._addr_hook_fuc.keys():
-                ql.uc.hook_del(ql._addr_hook_fuc[i])
+        # clear all hooks
+        for i in ql._addr_hook_fuc.keys():
+            ql.uc.hook_del(ql._addr_hook_fuc[i])
 
-            return self(ql, rr=rr).interactive()
+        self.interactive()
 
-        return _take_ql
-
-    def interactive(self):
+    def interactive(self, *args):
         self.cmdloop()
 
     def emptyline(self, *args):
@@ -88,7 +89,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
         show context information for current location
         """
-
         context_reg(self._ql, self._saved_states)
         context_asm(self._ql, self._ql.reg.arch_pc, 4)
 
@@ -101,10 +101,13 @@ class QlQdb(cmd.Cmd, QlDebugger):
 
         self.run(entry)
 
-    def run(self, address):
+    def run(self, address=None):
         """
         handle qiling instance launching
         """
+
+        if address is None:
+            return
 
         # for arm thumb mode
         if self._ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB) and is_thumb(self._ql.reg.cpsr):

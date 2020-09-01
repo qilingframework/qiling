@@ -238,11 +238,8 @@ if __name__ == '__main__':
         # attach Qdb at entry point
         if options.qdb == True:
             from qiling.debugger.qdb import QlQdb as Qdb
-            entry_point = ql.loader.entry_point
-            if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB) and entry_point & 1:
-                entry_point -= 1
 
-            ql.hook_address(Qdb.attach(rr=options.rr), entry_point)
+            Qdb(ql, rr=options.rr)
 
     # ql shellcode setup
     elif (options.subparser_name == 'shellcode'):
