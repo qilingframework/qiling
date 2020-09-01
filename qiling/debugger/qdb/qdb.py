@@ -12,15 +12,7 @@ from .utils import parse_int, handle_bnj, is_thumb, diff_snapshot_save, diff_sna
 
 
 class QlQdb(cmd.Cmd, QlDebugger):
-    def __init__(self, ql, filename=None, rootfs=None, console=True, log_dir=None, rr=False):
-        super(QlQdb, self).__init__(ql)
-        self.ql_config = None if filename == rootfs == None else {
-                    "filename": filename,
-                    "rootfs": rootfs,
-                    "console": console,
-                    "log_dir": log_dir,
-                    "output": "default",
-                    }
+    def __init__(self, ql, rr=False):
 
         self._ql = ql
         self.prompt = "(Qdb) "
@@ -29,20 +21,22 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if rr:
             self._states_list = [None]
 
-    @classmethod
-    def attach(self, rr=False):
+        super().__init__()
+
+        # setup a breakpoint at entry point
+        self._ql.hook_address(self._attach, self._ql.loader.entry_point)
+
+    def _attach(self, ql, *args, **kwargs):
         print(color.RED, "[+] Qdb attached", color.END, sep="")
         print(color.RED, "[!] All hooks of qiling instance will be disabled in Qdb", color.END, sep="")
 
-        def _take_ql(ql):
-            for i in ql._addr_hook_fuc.keys():
-                ql.uc.hook_del(ql._addr_hook_fuc[i])
+        # clear all hooks
+        for i in ql._addr_hook_fuc.keys():
+            ql.uc.hook_del(ql._addr_hook_fuc[i])
 
-            return self(None, None, rr=rr).interactive()
+        self.interactive()
 
-        return _take_ql
-
-    def interactive(self):
+    def interactive(self, *args):
         self.cmdloop()
 
     def emptyline(self, *args):
@@ -52,15 +46,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         _lastcmd = getattr(self, "do_" + self.lastcmd, None)
         if _lastcmd:
             return _lastcmd()
-
-    def _get_new_ql(self):
-        """
-        build a new qiling instance for self._ql
-        """
-        if self._ql is not None:
-            del self._ql
-
-        self._ql = Qiling(**self.ql_config)
 
     def del_breakpoint(self, address):
         """
@@ -75,9 +60,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         handle internal breakpoint adding operation
         """
         _bp_func = partial(self._breakpoint_handler, _is_temp=_is_temp)
-
-        if self._ql is None:
-            self._get_new_ql()
 
         _hook = self._ql.hook_address(_bp_func, address)
         self.breakpoints.update({address: {"hook": _hook, "hitted": False, "temp": _is_temp}})
@@ -115,9 +97,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         launch qiling instance
         """
 
-        if self._ql is None:
-            self._get_new_ql()
-
         entry = self._ql.loader.entry_point
 
         self.run(entry)
@@ -126,6 +105,9 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
         handle qiling instance launching
         """
+
+        if address is None:
+            return
 
         # for arm thumb mode
         if self._ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB) and is_thumb(self._ql.reg.cpsr):
@@ -178,7 +160,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
         pause at entry point by setting a temporary breakpoint on it
         """
-        self._get_new_ql()
         entry = self._ql.loader.entry_point  # ld.so
         # entry = self._ql.loader.elf_entry # .text of binary
 
