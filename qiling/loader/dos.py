@@ -24,5 +24,7 @@ class QlLoaderDOS(QlLoader):
             with open(path, "rb+") as f:
                 bs = f.read()
             self.ql.mem.write(self.start_address, bs)
+            self.load_address = self.base_address
+            self.ql.os.entry_point = self.start_address
         elif "MS-DOS" in ftype:
             raise NotImplementedError()

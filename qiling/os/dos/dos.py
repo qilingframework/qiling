@@ -12,7 +12,7 @@ class QlOsDos(QlOs):
         self.hook_syscall()
         self.handle_next = 0
         self.dos_handles = {}
-
+ 
     def set_flag(self, fl):
         self.ql.reg.ef = self.ql.reg.ef | fl
     
