@@ -89,7 +89,7 @@ class QlGdb(QlDebugger, object):
 
         #Setup register tables, order of tables is important
         self.tables = {
-            QL_ARCH.A8086     : list({**x86_reg_map_16, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
+            QL_ARCH.A8086   : list({**x86_reg_map_16, **x86_reg_map_misc}.keys()),
             QL_ARCH.X86     : list({**x86_reg_map_32, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
             QL_ARCH.X8664   : list({**x86_reg_map_64, **x86_reg_map_misc, **x86_reg_map_st}.keys()),
             QL_ARCH.ARM     : list({**arm_reg_map}.keys()),
@@ -185,7 +185,7 @@ class QlGdb(QlDebugger, object):
                 s = ''
 
                 if self.ql.archtype== QL_ARCH.A8086:
-                    for reg in self.tables[QL_ARCH.A8086][:8]:
+                    for reg in self.tables[QL_ARCH.A8086][:16]:
                         r = self.ql.reg.read(reg)
                         tmp = self.ql.arch.addr_to_str(r)
                         s += tmp
