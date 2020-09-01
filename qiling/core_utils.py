@@ -125,10 +125,15 @@ class QlCoreUtils(object):
         remotedebugsrv = "gdb"
         debug_opts = [None, None]
 
-        if self.debugger != True and type(self.debugger) == str:
-
-            remotedebugsrv, *debug_opts = self.debugger.split(":")
-
+        if self.debugger != True and type(self.debugger) == str:      
+            debug_opts = self.debugger.split(":")
+    
+            if len(debug_opts) == 2 and debug_opts[0] != "qdb":
+                pass
+            else:  
+                remotedebugsrv, *debug_opts = debug_opts
+                
+            
             if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
                 raise QlErrorOutput("[!] Error: Debugger not supported")
             

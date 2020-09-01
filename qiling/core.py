@@ -188,7 +188,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         
         # init debugger
         if self.debugger != False and self.debugger != None:
-            self.debugger = self.debugger_setup()
+            self.dbg = self.debugger_setup()
 
         # patch binary
         self.__enable_bin_patch()
@@ -197,11 +197,11 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.os.run()
 
         # run debugger
-        if self.debugger != None:
-            self.debugger.run()
+        if self.debugger != False and self.debugger != None:
+            self.dbg.run()
 
 
-    # patch @code to memory address @addr
+    # patch code to memory address
     def patch(self, addr, code, file_name=b''):
         if file_name == b'':
             self.patch_bin.append((addr, code))
