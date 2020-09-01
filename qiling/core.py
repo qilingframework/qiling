@@ -188,7 +188,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         
         # init debugger
         if self.debugger != False and self.debugger != None:
-            self.dbg = self.debugger_setup()
+            self.debugger = self.debugger_setup()
 
         # patch binary
         self.__enable_bin_patch()
@@ -198,7 +198,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
 
         # run debugger
         if self.debugger != False and self.debugger != None:
-            self.dbg.run()
+            self.debugger.run()
 
 
     # patch code to memory address
