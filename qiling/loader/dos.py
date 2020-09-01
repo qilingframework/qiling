@@ -46,8 +46,7 @@ class QlLoaderDOS(QlLoader):
             self.start_address = self.cs*16 + self.ip
             self.base_address = int(self.ql.profile.get("COM", "base_address"), 16)
             self.stack_address = int(self.ql.reg.ss*16 + self.ql.reg.sp)
-            self.ql.mem.map(self._floor_to_4k(self.base_address), 32*1024, info="[code]")
-            self.ql.mem.map(self._ceil_to_4k(self.stack_address - self.stack_size), self.stack_size, info="[stack]")
+            self.ql.mem.map(0, 0x100000, info="[FULL]")
             with open(path, "rb+") as f:
                 bs = f.read()
             self.ql.mem.write(self.start_address, bs)
