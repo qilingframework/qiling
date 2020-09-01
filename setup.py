@@ -28,6 +28,8 @@ if "linux"  in sys.platform:
 else:
     requirements += ["python-magic-bin>=0.4.14"]
 
+if "win" in sys.platform:
+    requirements += ["windows-curses>=2.1.0"]
 
 setup(
     name='qiling',
