@@ -121,16 +121,18 @@ class QlCoreUtils(object):
 
 
     def debugger_setup(self):
+        # default remote server
+        remotedebugsrv = "gdb"
+        dbgsrv_ip = None
+        dbgsrv_port = None
 
         if self.debugger != True and type(self.debugger) == str:
 
             remotedebugsrv, *debug_opts = self.debugger.split(":")
-            dbgsrv_ip = None
-            dbgsrv_port = None
 
             if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
                 raise QlErrorOutput("[!] Error: Debugger not supported")
-
+            
         debugsession = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, "Ql" + str.capitalize(remotedebugsrv))
 
         return debugsession(self, *debug_opts)
