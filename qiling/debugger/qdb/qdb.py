@@ -12,16 +12,9 @@ from .utils import parse_int, handle_bnj, is_thumb, diff_snapshot_save, diff_sna
 
 
 class QlQdb(cmd.Cmd, QlDebugger):
-    def __init__(self, ql, filename=None, rootfs=None, console=True, log_dir=None, rr=False):
-        super(QlQdb, self).__init__(ql)
-        self.ql_config = None if filename == rootfs == None else {
-                    "filename": filename,
-                    "rootfs": rootfs,
-                    "console": console,
-                    "log_dir": log_dir,
-                    "output": "default",
-                    }
+    def __init__(self, ql, rr=False):
 
+        super().__init__()
         self._ql = ql
         self.prompt = "(Qdb) "
         self.breakpoints = {}
@@ -38,7 +31,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
             for i in ql._addr_hook_fuc.keys():
                 ql.uc.hook_del(ql._addr_hook_fuc[i])
 
-            return self(None, None, rr=rr).interactive()
+            return self(ql, rr=rr).interactive()
 
         return _take_ql
 
@@ -53,15 +46,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         if _lastcmd:
             return _lastcmd()
 
-    def _get_new_ql(self):
-        """
-        build a new qiling instance for self._ql
-        """
-        if self._ql is not None:
-            del self._ql
-
-        self._ql = Qiling(**self.ql_config)
-
     def del_breakpoint(self, address):
         """
         handle internal breakpoint removing operation
@@ -75,9 +59,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         handle internal breakpoint adding operation
         """
         _bp_func = partial(self._breakpoint_handler, _is_temp=_is_temp)
-
-        if self._ql is None:
-            self._get_new_ql()
 
         _hook = self._ql.hook_address(_bp_func, address)
         self.breakpoints.update({address: {"hook": _hook, "hitted": False, "temp": _is_temp}})
@@ -107,6 +88,7 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
         show context information for current location
         """
+
         context_reg(self._ql, self._saved_states)
         context_asm(self._ql, self._ql.reg.arch_pc, 4)
 
@@ -115,14 +97,11 @@ class QlQdb(cmd.Cmd, QlDebugger):
         launch qiling instance
         """
 
-        if self._ql is None:
-            self._get_new_ql()
-
         entry = self._ql.loader.entry_point
 
         self.run(entry)
 
-    def run(self, address=None):
+    def run(self, address):
         """
         handle qiling instance launching
         """
@@ -178,7 +157,6 @@ class QlQdb(cmd.Cmd, QlDebugger):
         """
         pause at entry point by setting a temporary breakpoint on it
         """
-        self._get_new_ql()
         entry = self._ql.loader.entry_point  # ld.so
         # entry = self._ql.loader.elf_entry # .text of binary
 

@@ -125,10 +125,13 @@ class QlCoreUtils(object):
         dbgsrv_ip = None
         dbgsrv_port = None
 
-        if self.debugger != True:
+        if self.debugger != True and type(self.debugger) == str:
             debug_opts = self.debugger.split(':')
 
-            if len(debug_opts) == 3:
+            if debug_opts[0] == "qdb":
+                remotedebugsrv = "qdb"
+
+            elif len(debug_opts) == 3:
                 remotedebugsrv, dbgsrv_ip, dbgsrv_port = debug_opts
 
             elif len(debug_opts) == 2:
@@ -140,11 +143,7 @@ class QlCoreUtils(object):
             debugsession = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, "Ql" + str.capitalize(remotedebugsrv))
 
         if remotedebugsrv == "qdb":
-            try:
-                qdb_debug_opts = str(debug_opts[1]).split(',')
-            except:
-                qdb_debug_opts = ""    
-            rr = "rr" in qdb_debug_opts
+            rr = "rr" in debug_opts
             self.hook_address(debugsession.attach(rr=rr), self.os.entry_point)    
             return debugsession
         
