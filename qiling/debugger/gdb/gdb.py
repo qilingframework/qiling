@@ -11,7 +11,7 @@ from unicorn import *
 import struct, os, re, socket
 from binascii import unhexlify
 
-from qiling.debugger.gdb import qldbg
+from .utils import QlGdbUtils
 from qiling.const import *
 from qiling.utils import *
 from qiling.debugger import QlDebugger
@@ -47,7 +47,15 @@ class QlGdb(QlDebugger, object):
         self.last_pkt       = None
         self.exe_abspath    = (os.path.abspath(self.ql.filename[0]))
         self.rootfs_abspath = (os.path.abspath(self.ql.rootfs)) 
-        self.gdb            = qldbg.Qldbg()
+        self.gdb            = QlGdbUtils()
+
+        if ip == None:
+            ip = '127.0.0.1'
+        
+        if port == None:
+           port = 9999
+        else:
+            port = int(port)
 
         if ql.shellcoder:
             load_address = ql.os.entry_point

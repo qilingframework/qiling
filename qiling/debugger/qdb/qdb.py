@@ -11,9 +11,9 @@ from .frontend import context_printer, context_reg, context_asm, examine_mem, co
 from .utils import parse_int, handle_bnj, is_thumb, diff_snapshot_save, diff_snapshot_restore, CODE_END
 
 
-class QlQdb(QlDebugger, cmd.Cmd):
+class QlQdb(cmd.Cmd, QlDebugger):
     def __init__(self, ql, filename=None, rootfs=None, console=True, log_dir=None, rr=False):
-        super(QlQdbg, self).__init__(ql)
+        super(QlQdb, self).__init__(ql)
         self.ql_config = None if filename == rootfs == None else {
                     "filename": filename,
                     "rootfs": rootfs,
@@ -38,7 +38,7 @@ class QlQdb(QlDebugger, cmd.Cmd):
             for i in ql._addr_hook_fuc.keys():
                 ql.uc.hook_del(ql._addr_hook_fuc[i])
 
-            return self(None, None, ql=ql, rr=rr).interactive()
+            return self(None, None, rr=rr).interactive()
 
         return _take_ql
 
