@@ -24,7 +24,7 @@ requirements = [
 with open("README.md", "r", encoding="utf-8") as ld:
     long_description = ld.read()
 
-if "linux"  in sys.platform:
+if sys.platform in ('linux', 'cygwin'):
     requirements += ["python-magic>=0.4.16"]
 else:
     requirements += ["python-magic-bin>=0.4.14"]
