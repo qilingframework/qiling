@@ -42,12 +42,15 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
     tmp_e_fd, tmp_e_map = parse_fd_set(ql, _newselect_nfds, _newselect_exceptfds)
 
     if _newselect_timeout != 0:
-        timeout = ql.unpack32(ql.mem.read(_newselect_timeout, 4))
+        timeout_p = ql.unpack(ql.mem.read(_newselect_timeout, 4))
+        sec = ql.unpack(ql.mem.read(timeout_p, 4))
+        usec = ql.unpack(ql.mem.read(timeout_p+4, 4))
+        timeout_total = sec + float(usec)/1000000
     else:
-        timeout = None
+        timeout_total = None
 
     try:
-        ans = select.select(tmp_r_fd, tmp_w_fd, tmp_e_fd, timeout)
+        ans = select.select(tmp_r_fd, tmp_w_fd, tmp_e_fd, timeout_total)
         regreturn = len(ans[0]) + len(ans[1]) + len(ans[2])
 
         if _newselect_readfds != 0:
