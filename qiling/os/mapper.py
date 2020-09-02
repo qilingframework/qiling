@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# 
+# Cross Platform and Multi Architecture Advanced Binary Emulation Framework
+# Built on top of Unicorn emulator (www.unicorn-engine.org) 
+
 from .filestruct import ql_file
 from .utils import QlOsUtils
 import inspect
@@ -84,6 +89,9 @@ class QlFsMapper:
     def has_mapping(self, fm):
         return fm in self._mapping
 
+    def mapping_count(self):
+        return len(self._mapping)
+
     def open_ql_file(self, path, openflags, openmode):
         if self.has_mapping(path):
             self.ql.nprint(f"mapping {path}")
@@ -100,17 +108,20 @@ class QlFsMapper:
             real_path = self.ql.os.transform_to_real_path(path)
             return open(real_path, openmode)
 
-    # ql_path:   Emulated path which should be always convertable to a string. e.g. pathlib.Path
+    def _parse_path(self, p):
+        if "__fspath__" in dir(p): # p is a os.PathLike object.
+            p = p.__fspath__()
+            if isinstance(p, bytes): # os.PathLike.__fspath__ may return bytes.
+                p = p.decode("utf-8")
+        return p
+
+    # ql_path:   Emulated path which should be convertable to a string or a hashable object. e.g. pathlib.Path
     # real_dest: Mapped object, can be a string, an object or a class.
     #            string: mapped path in the host machine, e.g. `/dev/urandom` -> `/dev/urandom`.
     #            object: mapped object, will be returned each time the emulated path has been opened.
     #            class:  mapped class, will be used to create a new instance each time the emulated path has been opened.
     def add_fs_mapping(self, ql_path, real_dest):
-        # For os.PathLike
-        ql_path = str(ql_path)
-        if '__fspath__' in dir(real_dest): # real_dest is a os.PathLike object.
-            real_dest = real_dest.__fspath__()
-            if isinstance(real_dest, bytes): # os.PathLike.__fspath__ may return bytes.
-                real_dest = real_dest.decode("utf-8")
+        ql_path = self._parse_path(ql_path)
+        real_dest = self._parse_path(real_dest)
         self._mapping[ql_path] = real_dest
         

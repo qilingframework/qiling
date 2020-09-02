@@ -6,6 +6,8 @@ This file details the changelog of Qiling Framework.
 - Qiling Debugger now comes with reverse debugging
 - Added qltool into pypi packages
 - Added more Windows API
+- Add mapper support for standalone disks.
+- More BIOS/DOS interrupts support shipped with fully emulated Petya as a mbr analysis example.
 
 ------------------------------------
 [Version 1.1.1]: August 23th, 2020

@@ -25,6 +25,10 @@ def ql_checkostype(path):
         arch = QL_ARCH.A8086
         ostype = QL_OS.DOS
         archendian = QL_ENDIAN.EL
+    elif "MBR" in ftype and "DOS" in ftype: # Yes, we put MBR into dos.py.
+        arch = QL_ARCH.A8086
+        ostype = QL_OS.DOS
+        archendian = QL_ENDIAN.EL
     elif "MS-DOS" in ftype:
         # Here we have to distinguish between real 16bit DOS executables and EFI excutables.
         # I could confirm from specs that all UEFI executables should be PE/PE32+.
