@@ -19,7 +19,7 @@ class QlDisk(QlFsMappedObject):
     def __init__(self, host_path, drive_path, n_heads=1, n_cylinders=1, sector_size=512):
         self._host_path = host_path
         self._drive_path = drive_path
-        self._f = open(host_path, "rb+")
+        self._fp = open(host_path, "rb+")
         self._n_heads = n_heads
         self._n_cylinders = n_cylinders
         self._sector_size = sector_size
@@ -28,8 +28,8 @@ class QlDisk(QlFsMappedObject):
         self._n_sectors = (self._filesize - 1)// self.sector_size + 1
 
     def __del__(self):
-        if not self.f.closed:
-            self.f.close()
+        if not self.fp.closed:
+            self.fp.close()
 
     @property
     def filesize(self):
@@ -60,24 +60,24 @@ class QlDisk(QlFsMappedObject):
         return self._drive_path
     
     @property
-    def f(self):
-        return self._f
+    def fp(self):
+        return self._fp
 
     # Methods from FsMappedObject
     def read(self, l):
-        return self.f.read(l)
+        return self.fp.read(l)
     
     def write(self, bs):
-        return self.f.write(bs)
+        return self.fp.write(bs)
 
     def lseek(self, offset, origin):
-        return self.f.seek(offset, origin)
+        return self.fp.seek(offset, origin)
     
     def tell(self):
-        return self.f.tell()
+        return self.fp.tell()
 
     def close(self):
-        return self.f.close()
+        return self.fp.close()
     
     # Methods for QlDisk
     def lba(self, cylinder, head, sector):
