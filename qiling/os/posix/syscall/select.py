@@ -41,10 +41,12 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
     tmp_w_fd, tmp_w_map = parse_fd_set(ql, _newselect_nfds, _newselect_writefds)
     tmp_e_fd, tmp_e_map = parse_fd_set(ql, _newselect_nfds, _newselect_exceptfds)
 
+    n = ql.archbit // 8 # 4 for 32-bit , 8 for 64-bit
+
     if _newselect_timeout != 0:
-        timeout_p = ql.unpack(ql.mem.read(_newselect_timeout, 4))
-        sec = ql.unpack(ql.mem.read(timeout_p, 4))
-        usec = ql.unpack(ql.mem.read(timeout_p+4, 4))
+        timeout_p = ql.unpack(ql.mem.read(_newselect_timeout, n))
+        sec = ql.unpack(ql.mem.read(timeout_p, n))
+        usec = ql.unpack(ql.mem.read(timeout_p + n, n))
         timeout_total = sec + float(usec)/1000000
     else:
         timeout_total = None
