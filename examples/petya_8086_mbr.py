@@ -9,8 +9,8 @@ from qiling import *
 from qiling.os.disk import QlDisk
 
 if __name__ == "__main__":
-    ql = Qiling(["rootfs/8086_dos/petya/mbr.bin"], 
-                 "rootfs/8086_dos",
+    ql = Qiling(["rootfs/8086/petya/mbr.bin"], 
+                 "rootfs/8086",
                  console=False, 
                  output="debug", 
                  log_dir=".")
@@ -18,5 +18,6 @@ if __name__ == "__main__":
     # This image is only intended for PoC since the core petya code resides in the
     # sepecific sectors of a harddisk. It doesn't contain any data, either encryted
     # or unencrypted.
-    ql.add_fs_mapper(0x80, QlDisk("rootfs/8086_dos/petya/out_1M.raw", 0x80))
+    ql.debugger = True
+    ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/petya/out_1M.raw", 0x80))
     ql.run()

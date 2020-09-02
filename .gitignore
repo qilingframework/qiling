@@ -5,6 +5,7 @@
 *.pyc
 *.cache
 .*.swp
+*.raw
 
 # cache and misc
 qiling.egg-info/
