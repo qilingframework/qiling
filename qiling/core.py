@@ -17,6 +17,7 @@ from .core_struct import QLCoreStructs
 from .core_hooks import QLCoreHooks
 from .core_utils import QLCoreUtils
 from .extensions.debugger import ql_debugger_init
+from .extensions.report import make_report
 
 __version__ = "1.1-post1"
 
@@ -89,6 +90,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # generic filter to filter print (WIP)
         self.filter = None
         self.remote_debug = None
+        # emulation's result
+        self.json_report = None
 
         """
         Qiling Framework Core Engine
@@ -200,6 +203,8 @@ class Qiling(QLCoreStructs, QLCoreHooks, QLCoreUtils):
         # resume with debugger
         if self.debugger is not None:
             self.remote_debug.run()
+        self.json_report = make_report(self)
+
 
 
     # patch @code to memory address @addr
