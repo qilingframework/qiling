@@ -183,6 +183,7 @@ class QlOsDos(QlOs):
         self.color_pairs = {}
         self.revese_color_pairs = {}
         self.stdscr = None
+        self.dos_ver = int(self.ql.profile.get("KERNEL", "version"), 16)
     
     def __del__(self):
         # resume terminal
@@ -545,6 +546,15 @@ class QlOsDos(QlOs):
             self.ql.reg.cx= (tick & 0xFFFF0000) >> 16
             self.ql.reg.dx= tick & 0xFFFF
 
+    def int20(self):
+        ah = self.ql.reg.ah
+        if ah == 0x13:
+            pass
+
+        else:
+            self.ql.nprint("Exception: int 20h syscall Not Found, ah: %s" % hex(ah))
+            raise NotImplementedError()            
+
     def int21(self):
         ah = self.ql.reg.ah
         
@@ -576,7 +586,7 @@ class QlOsDos(QlOs):
 
         elif ah == 0x30:
             # Get DOS version, return DOS version 7.0
-            self.ql.reg.ax = 0x07            
+            self.ql.reg.ax = self.dos_ver            
 
         elif ah == 0x33:
             # Get or set Ctrl-Break
@@ -669,6 +679,8 @@ class QlOsDos(QlOs):
                 self.int1a()
             elif intno == 0x19:
                 self.int19()
+            elif intno == 0x20:
+                self.int20()                
             else:
                 raise NotImplementedError()
         self.ql.hook_intr(cb)

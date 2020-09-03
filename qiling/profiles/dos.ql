@@ -14,6 +14,7 @@ append =
 automatize_input = False
 
 [KERNEL]
+version = 7
 pid = 1
 ticks_per_second = 18.206
 
