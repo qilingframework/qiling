@@ -18,6 +18,6 @@ if __name__ == "__main__":
     # This image is only intended for PoC since the core petya code resides in the
     # specific sectors of a harddisk. It doesn't contain any data, either encryted
     # or unencrypted.
-    ql.debugger = True
+    #ql.debugger = True
     ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/petya/out_1M.raw", 0x80))
     ql.run()
