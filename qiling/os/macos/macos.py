@@ -22,6 +22,7 @@ class QlOsMacos(QlOsPosix):
         super(QlOsMacos, self).__init__(ql)
         self.ql = ql
         self.ql.counter = 0
+        self.pid = self.profile.getint("KERNEL","pid")
         self.load()
 
     def load(self):
