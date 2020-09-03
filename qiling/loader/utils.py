@@ -21,7 +21,7 @@ def ql_checkostype(path):
         arch, ostype, archendian = ql_macho_check_archtype(path)
     elif "PE32" in ftype:
         arch, ostype, archendian = ql_pe_check_archtype(path)
-    elif "COM" in ftype and "DOS" in ftype:
+    elif ("COM" in ftype and "DOS" in ftype) or "COM" in path:
         arch = QL_ARCH.A8086
         ostype = QL_OS.DOS
         archendian = QL_ENDIAN.EL

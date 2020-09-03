@@ -289,6 +289,7 @@ class QlOsDos(QlOs):
             elif al == 0x11 or al == 0x12:
                 curses.resizeterm(480, 640)
             else:
+                self.ql.nprint("Exception: int 10h syscall Not Found, al: %s" % hex(al))
                 raise NotImplementedError()
             # Quoted from https://linux.die.net/man/3/resizeterm
             #
@@ -403,6 +404,7 @@ class QlOsDos(QlOs):
             else:
                 self.stdscr.echochar(al, attr)
         else:
+            self.ql.nprint("Exception: int 10h syscall Not Found, ah: %s" % hex(ah))
             raise NotImplementedError()
         if self.stdscr is not None:
             self.stdscr.refresh()
@@ -475,6 +477,7 @@ class QlOsDos(QlOs):
             self.clear_cf()
             self.ql.reg.ah = 0
         else:
+            self.ql.nprint("Exception: int 13h syscall Not Found, ah: %s" % hex(ah))
             raise NotImplementedError()
     
     def _parse_key(self, ky):
@@ -544,18 +547,23 @@ class QlOsDos(QlOs):
 
     def int21(self):
         ah = self.ql.reg.ah
+        
+        # exit
         if ah == 0x4C:
             self.ql.uc.emu_stop()
+        # character output
         elif ah == 0x2 or ah == 0x6:
             ch = chr(self.ql.reg.dl)
             self.ql.reg.al = self.ql.reg.dl
             self.ql.nprint(ch)
+        # write to screen
         elif ah == 0x9:
             s = self.read_dos_string_from_ds_dx()
             self.ql.nprint(s)
         elif ah == 0xC:
             # Clear input buffer
             pass
+        # create a new file (or truncate existing file)
         elif ah == 0x3C:
             # fileattr ignored
             fname = self.read_dos_string_from_ds_dx()
@@ -620,6 +628,7 @@ class QlOsDos(QlOs):
             self.ql.reg.cx = 0xFFFF
             self.clear_cf()
         else:
+            self.ql.nprint("Exception: int 21h syscall Not Found, ah: %s" % hex(ah))
             raise NotImplementedError()
 
     def hook_syscall(self):
