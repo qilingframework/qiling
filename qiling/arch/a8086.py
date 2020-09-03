@@ -28,7 +28,7 @@ class QlArchA8086(QlArch):
         return self.ql.reg.sp
 
     def stack_pop(self):
-        data = self.ql.unpack16(self.ql.mem.read(self.ql.reg.sp, 4))
+        data = self.ql.unpack16(self.ql.mem.read(self.ql.reg.sp, 2))
         self.ql.reg.sp += 2
         return data
 
