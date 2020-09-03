@@ -25,7 +25,7 @@ class QlArchA8086(QlArch):
     def stack_push(self, value):
         self.ql.reg.sp -= 2
         self.ql.mem.write(self.ql.reg.sp , self.ql.pack16(value))
-        return self.ql.reg.esp
+        return self.ql.reg.sp
 
     def stack_pop(self):
         data = self.ql.unpack16(self.ql.mem.read(self.ql.reg.sp, 4))
