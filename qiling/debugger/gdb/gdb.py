@@ -65,7 +65,7 @@ class QlGdb(QlDebugger, object):
             load_address = ql.loader.load_address
             exit_point = load_address + os.path.getsize(ql.path)
 
-        ql.nprint("gdb> Listening on %s:%u" % (ip, port)) 
+        self.ql.nprint("gdb> Listening on %s:%u" % (ip, port)) 
         self.gdb.initialize(self.ql, exit_point=exit_point, mappings=[(hex(load_address))])
         
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
