@@ -60,20 +60,6 @@ class QlArch(ABC):
         return self.ql.reg.arch_sp 
 
 
-    def addr_to_str(self, addr, short=False, endian="big"):
-        if self.ql.archbit == 64 and short == False:
-            addr = (hex(int.from_bytes(self.ql.pack64(addr), byteorder=endian)))
-            addr = '{:0>16}'.format(addr[2:])
-        elif self.ql.archbit == 32 or short == True:
-            addr = (hex(int.from_bytes(self.ql.pack32(addr), byteorder=endian)))
-            addr = ('{:0>8}'.format(addr[2:]))
-        elif self.ql.archbit == 16 or short == True:
-            addr = (hex(int.from_bytes(self.ql.pack32(addr), byteorder=endian)))
-            addr = ('{:0>8}'.format(addr[2:]))            
-        addr = str(addr)    
-        return addr
-
-
     # Unicorn's CPU state save
     def context_save(self):
         return self.ql.uc.context_save()
