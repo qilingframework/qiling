@@ -15,13 +15,6 @@ verfication_start_ip = 0x850B
 petya_2nd_stage_start = 0x8000
 accepted_chars = "ABCDEFG123456789abcdefghijkmnopqrstuvwx"
 
-def get_nonce(disk: QlDisk):
-    data = disk.read_sectors(0x36, 1)
-    return data[0x21:0x21 + 8]
-
-def get_verification_data(disk: QlDisk):
-    return disk.read_sectors(0x37, 1)
-
 def generate_key(key: bytes):
     return b"".join([struct.pack("BB", (k + 0x7A)%256, k*2%256) for k in key])
 
@@ -65,7 +58,7 @@ def third_stage(key):
 def second_stage(ql: Qiling):
     disk = QlDisk("rootfs/8086/petya/out_1M.raw", 0x80)
     #nonce = get_nonce(disk)
-    verfication_data = get_verification_data(disk)
+    verfication_data = disk.read_sectors(0x37, 1)
     nonce_data = disk.read_sectors(0x36, 1)
     ql.reg.sp -= 0x200
     verification_data_address = ql.reg.sp
