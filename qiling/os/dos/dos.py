@@ -550,6 +550,7 @@ class QlOsDos(QlOs):
         
         # exit
         if ah == 0x4C:
+            self.ql.nprint("[+] Emulation Stop")
             self.ql.uc.emu_stop()
         # character output
         elif ah == 0x2 or ah == 0x6:
@@ -564,6 +565,27 @@ class QlOsDos(QlOs):
             # Clear input buffer
             pass
         # create a new file (or truncate existing file)
+
+        elif ah == 0x25:
+            # Set interrupt vector
+            pass
+
+        elif ah == 0x26:
+            # Create PSP
+            pass
+
+        elif ah == 0x30:
+            # Get DOS version, return DOS version 7.0
+            self.ql.reg.ax = 0x07            
+
+        elif ah == 0x33:
+            # Get or set Ctrl-Break
+            pass
+
+        elif ah == 0x35:
+            # Get interrupt vector
+            pass
+
         elif ah == 0x3C:
             # fileattr ignored
             fname = self.read_dos_string_from_ds_dx()
@@ -626,7 +648,7 @@ class QlOsDos(QlOs):
                 self.set_cf()
         elif ah == 0x43:
             self.ql.reg.cx = 0xFFFF
-            self.clear_cf()
+            self.clear_cf()         
         else:
             self.ql.nprint("Exception: int 21h syscall Not Found, ah: %s" % hex(ah))
             raise NotImplementedError()
