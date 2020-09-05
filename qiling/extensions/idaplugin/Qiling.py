@@ -90,7 +90,7 @@ class QlEmuRegView(simplecustviewer_t):
         self.ClearLines()
 
         view_title = COLSTR("Reg value at { ", SCOLOR_AUTOCMT)
-        view_title += COLSTR("IDA Address:0x%X | QL Address:0x%X" % (addr, addr + self.ql_emu_plugin.qlemu.baseaddr), SCOLOR_DREF)
+        view_title += COLSTR("IDA Address:0x%X | QL Address:0x%X" % (addr, addr - self.ql_emu_plugin.qlemu.baseaddr + get_imagebase()), SCOLOR_DREF)
         # TODO: Add disass should be better
         view_title += COLSTR(" }", SCOLOR_AUTOCMT)
         self.AddLine(view_title)
@@ -535,7 +535,7 @@ class QlEmuQiling:
 
         savepath = savedlg.path_name.value
 
-        self.ql.save(reg=True, mem=True, cpu_context=True, snapshot=savepath)
+        self.ql.save(reg=True, mem=True,fd=True, cpu_context=True, snapshot=savepath)
         print('Save to ' + savepath)
         return True
     
@@ -623,12 +623,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             try:
                 self.qlemu.start()
                 self.qlinit = True
+                self.lastaddr = None
             finally:
                 hide_wait_box()
                 print("Qiling initialized done")
         if self.customscriptpath is not None:
             self.ql_load_user_script()
-            self.userobj.custom_setup(self.qlemu.ql)
+            self.userobj.custom_prepare(self.qlemu.ql)
 
     def ql_load_user_script(self):
         if self.qlinit :
@@ -1029,7 +1030,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_update_views(self, addr, ql):
         if self.qlemuregview is not None:
-            self.qlemuregview.SetReg(addr - self.qlemu.baseaddr + get_imagebase(), ql)
+            self.qlemuregview.SetReg(addr, ql)
 
         if self.qlemustackview is not None:
             self.qlemustackview.SetStack(self.qlemu.ql)
