@@ -48,7 +48,7 @@ class QlOsPosix(QlOs):
         self.syscall_map = None
         self.syscall_name = None
 
-        if self.ql.ostype in QL_POSIX:
+        if self.ql.ostype in QL_OS_POSIX:
             self.fd[0] = self.stdin
             self.fd[1] = self.stdout
             self.fd[2] = self.stderr
@@ -64,7 +64,7 @@ class QlOsPosix(QlOs):
     # ql.func_arg - get syscall for all posix series
     @property
     def function_arg(self):
-        if self.ql.ostype in (QL_POSIX):
+        if self.ql.ostype in (QL_OS_POSIX):
             # ARM
             if self.ql.archtype== QL_ARCH.ARM:
                 return ARMFunctionArg(self.ql)

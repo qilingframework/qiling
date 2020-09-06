@@ -32,7 +32,7 @@ class QlMemoryManager:
             max_addr = 0xFFFFFFFF
         elif self.ql.archbit == 16:
             # 20bit address line
-            max_addr = 0x1FFFF
+            max_addr = 0xFFFFF
 
         self.max_addr = max_addr
         self.max_mem_addr = max_addr            

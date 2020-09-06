@@ -6,7 +6,7 @@
 from unicorn import *
 from qiling.const import *
 
-class Qldbg(object):
+class QlGdbUtils(object):
     def __init__(self):
         self.current_address = 0x0
         self.current_address_size = 0x0

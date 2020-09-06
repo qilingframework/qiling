@@ -7,6 +7,7 @@
 UseAsScript = True
 RELEASE = True
 
+import sys
 import collections
 
 # Qiling
@@ -33,7 +34,6 @@ if RELEASE:
     from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
 
 else:
-    import sys
     sys.path.append("./idapython3")
     from idapython3 import *
 
@@ -90,7 +90,7 @@ class QlEmuRegView(simplecustviewer_t):
         self.ClearLines()
 
         view_title = COLSTR("Reg value at { ", SCOLOR_AUTOCMT)
-        view_title += COLSTR("IDA Address:0x%X | QL Address:0x%X" % (addr, addr + self.ql_emu_plugin.qlemu.baseaddr), SCOLOR_DREF)
+        view_title += COLSTR("IDA Address:0x%X | QL Address:0x%X" % (addr, addr - self.ql_emu_plugin.qlemu.baseaddr + get_imagebase()), SCOLOR_DREF)
         # TODO: Add disass should be better
         view_title += COLSTR(" }", SCOLOR_AUTOCMT)
         self.AddLine(view_title)
@@ -495,10 +495,16 @@ class QlEmuQiling:
         self.baseaddr = None
 
     def start(self):
-        qlstdin = QlEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
-        qlstdout = QlEmuMisc.QLStdIO('stdout', sys.__stdout__.fileno())
-        qlstderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
-        self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", stdin=qlstdin, stdout=qlstdout, stderr=qlstderr)
+        if sys.platform != 'win32':
+            qlstdin = QlEmuMisc.QLStdIO('stdin', sys.__stdin__.fileno())
+            qlstdout = QlEmuMisc.QLStdIO('stdout', sys.__stdout__.fileno())
+            qlstderr = QlEmuMisc.QLStdIO('stderr', sys.__stderr__.fileno())
+            
+        if sys.platform != 'win32':
+            self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug", stdin=qlstdin, stdout=qlstdout, stderr=qlstderr)
+        else:
+            self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug")
+        
         self.exit_addr = self.ql.os.exit_point
         if self.ql.ostype == QL_OS.LINUX:
             self.baseaddr = self.ql.os.elf_mem_start
@@ -529,7 +535,7 @@ class QlEmuQiling:
 
         savepath = savedlg.path_name.value
 
-        self.ql.save(reg=True, mem=True, cpu_context=True, snapshot=savepath)
+        self.ql.save(reg=True, mem=True,fd=True, cpu_context=True, snapshot=savepath)
         print('Save to ' + savepath)
         return True
     
@@ -617,11 +623,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             try:
                 self.qlemu.start()
                 self.qlinit = True
+                self.lastaddr = None
             finally:
                 hide_wait_box()
                 print("Qiling initialized done")
         if self.customscriptpath is not None:
             self.ql_load_user_script()
+            self.userobj.custom_prepare(self.qlemu.ql)
 
     def ql_load_user_script(self):
         if self.qlinit :
@@ -1022,7 +1030,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_update_views(self, addr, ql):
         if self.qlemuregview is not None:
-            self.qlemuregview.SetReg(addr - self.qlemu.baseaddr + get_imagebase(), ql)
+            self.qlemuregview.SetReg(addr, ql)
 
         if self.qlemustackview is not None:
             self.qlemustackview.SetStack(self.qlemu.ql)

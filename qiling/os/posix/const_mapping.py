@@ -132,24 +132,30 @@ def ql_open_flag_mapping(ql, flags):
     if ql.archtype != QL_ARCH.MIPS:
         if ql.platform == None or ql.platform == ql.ostype:
             return flags
+    
         if ql.ostype == QL_OS.LINUX:
             f = linux_open_flags
         elif ql.ostype == QL_OS.MACOS:
             f = mac_open_flags
         elif ql.ostype == QL_OS.WINDOWS:
             f = windows_open_flags
+        
         if ql.platform == QL_OS.WINDOWS:
             t = windows_open_flags
         elif ql.platform == QL_OS.MACOS:
             t = mac_open_flags
         elif ql.platform == QL_OS.LINUX:
             t = linux_open_flags
+    
     elif ql.archtype == QL_ARCH.MIPS and ql.platform == QL_OS.LINUX:
         f = mips_open_flags
         t = linux_open_flags
     elif ql.archtype == QL_ARCH.MIPS and ql.platform == QL_OS.MACOS:
         f = mips_open_flags
         t = mac_open_flags
+    elif ql.archtype == QL_ARCH.MIPS and ql.platform == QL_OS.WINDOWS:
+        f = mips_open_flags
+        t = windows_open_flags        
 
     return flag_mapping(flags, open_flags_name, f, t)
 

@@ -61,7 +61,7 @@ def ql_syscall_times(ql, times_tbuf, *args, **kw):
         tmp_buf += ql.pack32(int(tmp_times.user * 1000))
         tmp_buf += ql.pack32(int(tmp_times.system * 1000))
         tmp_buf += ql.pack32(int(tmp_times.children_user * 1000))
-        tmp_buf += ql.pack32(int(tmp_times.children_sytem * 1000))
+        tmp_buf += ql.pack32(int(tmp_times.children_system * 1000))
         ql.mem.write(times_tbuf, tmp_buf)
     regreturn = int(tmp_times.elapsed * 100)
     ql.nprint('times(%x) = %d' % (times_tbuf, regreturn))

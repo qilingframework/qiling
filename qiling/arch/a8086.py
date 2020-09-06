@@ -19,25 +19,24 @@ class QlArchA8086(QlArch):
             self.ql.reg.expand_mapping(reg_maper)
 
         self.ql.reg.create_reverse_mapping()
+        self.ql.reg.register_pc(UC_X86_REG_IP)
+        self.ql.reg.register_sp(UC_X86_REG_SP)
 
     def stack_push(self, value):
-        self.ql.reg.sp -= 4
-        self.ql.mem.write(self.ql.reg.sp , self.ql.pack32(value))
-        return self.ql.reg.esp
-
+        self.ql.reg.sp -= 2
+        self.ql.mem.write(self.ql.reg.sp , self.ql.pack16(value))
+        return self.ql.reg.sp
 
     def stack_pop(self):
-        data = self.ql.unpack32(self.ql.mem.read(self.ql.reg.sp, 4))
-        self.ql.reg.sp += 4
+        data = self.ql.unpack16(self.ql.mem.read(self.ql.reg.sp, 2))
+        self.ql.reg.sp += 2
         return data
 
-
     def stack_read(self, offset):
-        return self.ql.unpack32(self.ql.mem.read(self.ql.reg.sp+offset, 4))
-
+        return self.ql.unpack32(self.ql.mem.read(self.ql.reg.sp+offset, 2))
 
     def stack_write(self, offset, data):
-        return self.ql.mem.write(self.ql.reg.sp + offset, self.ql.pack32(data))
+        return self.ql.mem.write(self.ql.reg.sp + offset, self.ql.pack16(data))
 
     def get_init_uc(self):
         uc = Uc(UC_ARCH_X86, UC_MODE_16)  

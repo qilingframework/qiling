@@ -23,7 +23,6 @@ class QlOs(QlOsUtils):
         self.current_path = '/'
         self.profile = self.ql.profile
         self.exit_code = 0
-        self.pid = self.profile.getint("KERNEL","pid")
         self.elf_mem_start = 0x0
 
         if "fileno" not in dir(sys.stdin) or "fileno" not in dir(sys.stdout) or "fileno" not in dir(sys.stderr):
@@ -51,7 +50,7 @@ class QlOs(QlOsUtils):
             EMU_END = 0xffffffffffffffff
         elif self.ql.archbit == 16:
             # 20bit address lane
-            EMU_END = 0x1ffff   
+            EMU_END = 0xfffff   
         
         # defult exit point
         self.exit_point = EMU_END

@@ -4,13 +4,13 @@
 
 iOS
 ===
-- Partial complete. Did not test againts any actual iOS binary yet
+- Partially completed. Did not test against any actual iOS binary yet
 
 FreeBSD
 =======
 Current Status: only work with assembler compiled binary
 - gcc compiled static binary
-- Dynamically compile binary
+- Dynamically compiled binary
 
 Windows
 =======
@@ -20,14 +20,13 @@ Windows
 - API for fake installed application
 - API for process listing
 
-Linux / *nix
-============
-- ql.dev to emulate devices
-- ql.proc to emulate /proc
-
 Debugging Server
 ================
 - Add GDB stub commands
+
+USB
+===
+- Emulate USB
 
 -------------------- FUTURE --------------------
 
@@ -41,8 +40,8 @@ Blockchain
 
 Android
 ======
-- Its linux, but a bit more specific support ?
-- maybe a OS by itself
+- It's Linux, but a bit more specific support ?
+- maybe an OS by itself
 
 
 -------------------- CHECKLIST before TAG --------------------

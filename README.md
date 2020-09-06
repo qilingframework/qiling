@@ -10,7 +10,7 @@
 
 Qiling is an advanced binary emulation framework, with the following features:
 
-- Cross platform: Windows, MacOS, Linux, BSD, UEFI, DOS
+- Cross platform: Windows, MacOS, Linux, BSD, UEFI, DOS, MBR
 - Cross architecture: X86, X86_64, Arm, Arm64, MIPS, 8086
 - Multiple file formats: PE, MachO, ELF, COM, MBR
 - Emulates & sandbox machine code in an isolated environment
@@ -23,24 +23,27 @@ Qiling is an advanced binary emulation framework, with the following features:
 - Allows dynamic hotpatch on-the-fly running code, including the loaded library
 - True framework in Python, making it easy to build customized security analysis tools on top
 
+Qiling also made its way to various international conferences
+
+2020:
+
+- [Black Hat, USA](https://www.blackhat.com/us-20/arsenal/schedule/index.html#qiling-framework-from-dark-to-dawn-----enlightening-the-analysis-of-the-most-mysterious-iot-firmware--21062)
+- [Black Hat, Asia](https://www.blackhat.com/asia-20/arsenal/schedule/index.html#qiling-lightweight-advanced-binary-analyzer-19245)
+- [Hack In The Box, Lockdown 001](https://conference.hitb.org/lockdown-livestream/)
+- [Hack In The Box, Lockdown 002](https://conference.hitb.org/hitb-lockdown002/virtual-labs/virtual-lab-qiling-framework-learn-how-to-build-a-fuzzer-based-on-a-1day-bug/)
+- [Nullcon](https://nullcon.net/website/goa-2020/speakers/kaijern-lau.php)
+    
+2019:
+
+- [Defcon, USA](https://www.defcon.org/html/defcon-27/dc-27-demolabs.html#QiLing)
+- [Hitcon](https://hitcon.org/2019/CMT/agenda)
+- [Zeronights](https://zeronights.ru/report-en/qiling-io-advanced-binary-emulation-framework/)
+
+
 Qiling is backed by [Unicorn engine](http://www.unicorn-engine.org).
 
 Visit our website https://www.qiling.io for more information.
 
----
-#### Appearance
-- 2020:
-    - Black Hat, USA
-    - Black Hat, Asia
-    - Hack In The Box, Lockdown 001
-    - Hack In The Box, Lockdown 002
-    - Nullcon
-    
-- 2019:
-    - Defcon, USA
-    - Hitcon
-    - Zeronights
-    
 ---
 #### License
 
@@ -130,17 +133,17 @@ if __name__ == "__main__":
 
 The below Youtube video shows how the above example works.
 
+#### Qiling's IDAPro Plugin: Instrument and Decrypt Mirai's Secret
+
+- This video demonstrate how Qiling's IDAPro plugin able to make IDApro run with Qiling instrumentation engine.
+
+[![](http://img.youtube.com/vi/ZWMWTq2WTXk/0.jpg)](http://www.youtube.com/watch?v=ZWMWTq2WTXk "iling's IDAPro Plugin: Instrument and Decrypt Mirai's Secret")
+
 #### GDBserver with IDAPro demo
 
 - Solving a simple CTF challenge with Qiling Framework and IDAPro
 
 [![Solving a simple CTF challenge with Qiling Framework and IDAPro](https://i.ytimg.com/vi/SPjVAt2FkKA/0.jpg)](https://www.youtube.com/watch?v=SPjVAt2FkKA "Video DEMO 2")
-
-#### Fuzzing with Qiling Unicornalf
-
-- More information on fuzzing with Qiling Unicornalf can be found [here](https://github.com/qilingframework/qiling/blob/dev/examples/fuzz_example_x64/README.md).
-
-[![qiling DEMO 2: Fuzzing with Qiling Unicornalf](https://raw.githubusercontent.com/qilingframework/qilingframework.github.io/master/images/qilingfzz-s.png)](https://raw.githubusercontent.com/qilingframework/qiling/dev/examples/fuzzing/qilingfzz.png "Demo #2 Fuzzing with Qiling Unicornalf")
 
 #### Emulating ARM router firmware on Ubuntu X64 machine
 
@@ -190,14 +193,6 @@ $ ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs 
 ```
 ---
 
-#### Remote Debugger
-
-Qiling supports **remote debugging** now.
-
-See  https://docs.qiling.io/  for more details
-
----
-
 #### Contact
 
 Get the latest info from our website https://www.qiling.io
@@ -218,7 +213,7 @@ Contact us at email info@qiling.io, or via Twitter [@qiling_io](https://twitter.
 
 #### Travis-CI, Docker, Website and Documentation
 
-- FOO Kevin (chfl4gs) <chbsd64@qiling.io>
+- FOO Kevin (chfl4gs) <chfl4gs@qiling.io>
 
 #### Key Contributors (in no particular order)
 

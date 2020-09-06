@@ -1,1 +1,1 @@
-from .debugger import ql_debugger_init
+from .debugger import QlDebugger

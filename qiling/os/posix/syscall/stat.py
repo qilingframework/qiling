@@ -155,6 +155,27 @@ def ql_syscall_fstat64(ql, fstat64_fd, fstat64_add, *args, **kw):
             fstat64_buf += ql.pack32(fstat64_info.st_blksize)
             fstat64_buf += ql.pack32(0)
             fstat64_buf += ql.pack64(fstat64_info.st_blocks)        
+        elif ql.archtype == QL_ARCH.ARM:
+            # pack fstatinfo
+            if ql.platform == QL_OS.MACOS:
+                fstat64_buf = ql.pack64s(fstat64_info.st_dev)
+            else:
+                fstat64_buf = ql.pack64(fstat64_info.st_dev)
+            fstat64_buf += ql.pack32(0)
+            fstat64_buf += ql.pack32(fstat64_info.st_ino)
+            fstat64_buf += ql.pack32(fstat64_info.st_mode)
+            fstat64_buf += ql.pack32(fstat64_info.st_nlink)
+            fstat64_buf += ql.pack32(fstat64_info.st_uid)
+            fstat64_buf += ql.pack32(fstat64_info.st_gid)
+            fstat64_buf += ql.pack64(fstat64_info.st_rdev) #?? fstat_info.st_rdev
+            fstat64_buf += ql.pack64(0) 
+            fstat64_buf += ql.pack64(fstat64_info.st_size)
+            fstat64_buf += ql.pack64(fstat64_info.st_blksize) #?? fstat_info.st_blksize
+            fstat64_buf += ql.pack64(fstat64_info.st_blocks) #?? fstat_info.st_blocks
+            fstat64_buf += ql.pack64(int(fstat64_info.st_atime))
+            fstat64_buf += ql.pack64(int(fstat64_info.st_mtime))
+            fstat64_buf += ql.pack64(int(fstat64_info.st_ctime))
+            fstat64_buf += ql.pack64(fstat64_info.st_ino)
 
         else:
             # pack fstatinfo

@@ -18,7 +18,7 @@ from qiling.os.posix import syscall
 
 
 def my_syscall_write(ql, write_fd, write_buf, write_count, *rest):
-    if write_fd == 2 and ql.os.file_des[2].__class__.__name__ == 'ql_pipe':
+    if write_fd == 2 and ql.os.fd[2].__class__.__name__ == 'ql_pipe':
         ql.os.definesyscall_return(-1)
     else:
         syscall.ql_syscall_write(ql, write_fd, write_buf, write_count, *rest)

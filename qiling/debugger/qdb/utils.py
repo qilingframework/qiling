@@ -8,7 +8,7 @@ CODE_END = True
 
 
 
-def dump_regs(ql, *args, **kwargs):
+def dump_regs(ql):
 
     if ql.archtype == QL_ARCH.MIPS:
 
@@ -23,8 +23,6 @@ def dump_regs(ql, *args, **kwargs):
                 "ra", "k0", "k1", "pc",
                 )
 
-        return { reg_name: getattr(ql.reg, reg_name) for reg_name in _reg_order}
-
     elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
 
         _reg_order = (
@@ -34,7 +32,7 @@ def dump_regs(ql, *args, **kwargs):
                 "r12", "sp", "lr", "pc",
                 )
 
-        return { reg_name: getattr(ql.reg, reg_name) for reg_name in _reg_order}
+    return {reg_name: getattr(ql.reg, reg_name) for reg_name in _reg_order}
 
 
 def get_arm_flags(bits):
@@ -86,9 +84,9 @@ def signed_val(i):
 # handle braches and jumps so we can set berakpoint properly
 def handle_bnj(ql, cur_addr):
     return {
-            QL_ARCH.MIPS: handle_bnj_mips,
-            QL_ARCH.ARM:  handle_bnj_arm,
-            QL_ARCH.ARM_THUMB:  handle_bnj_arm,
+            QL_ARCH.MIPS     : handle_bnj_mips,
+            QL_ARCH.ARM      : handle_bnj_arm,
+            QL_ARCH.ARM_THUMB: handle_bnj_arm,
             }.get(ql.archtype)(ql, cur_addr)
 
 
@@ -108,6 +106,7 @@ def is_thumb(bits):
 def disasm(ql, address):
     md = ql.os.create_disassembler()
     return next(md.disasm(_read_inst(ql, address), address))
+
 
 def _read_inst(ql, addr):
 
@@ -129,9 +128,8 @@ def _read_inst(ql, addr):
 
     elif ql.archtype == QL_ARCH.MIPS:
         result = ql.mem.read(addr, 4)
-        
-    return result
 
+    return result
 
 
 def handle_bnj_arm(ql, cur_addr):
@@ -407,6 +405,59 @@ def handle_bnj_mips(ql, cur_addr):
 
     return ret_addr
 
+
+def diff_snapshot_save(current_state_dicts, prev_states):
+
+    result = {}
+    cur_cpu_ctx_set = {(idx, val) for idx, val in enumerate(current_state_dicts["cpu_context"])}
+
+    cur_mem_set = set()
+    for region_idx, mem_region_info in current_state_dicts["mem"].items():
+        raw_bytes = bytes(mem_region_info[-1])
+        cur_mem_set.update({(region_idx, *(mem_region_info[:-1]), raw_bytes)})
+
+    if prev_states is not None:
+        cur_cpu_ctx_set -= prev_states["cpu_context"]
+        result.update({"cpu_context": cur_cpu_ctx_set})
+
+        if "mem" in prev_states and cur_mem_set != prev_states["mem"]:
+            # save changes if its different
+            cur_mem_set -= prev_states["mem"]
+            result.update({"mem": cur_mem_set})
+
+    else:
+        # store everything since its the first snapshot
+        result.update({"cpu_context": cur_cpu_ctx_set, "mem": cur_mem_set})
+
+    return result
+
+
+def diff_snapshot_restore(current_state_dicts, prev_states):
+
+    result = {}
+    _cur_cpu_ctx_dict = {idx: val for idx, val in enumerate(current_state_dicts["cpu_context"])}
+    _cur_mem_dict = current_state_dicts["mem"]
+
+    last_cpu_ctx_set = prev_states["cpu_context"]
+    last_mem_set = prev_states.pop("mem", None)
+
+    # restore diff snapshot from last cpu_context
+    _cur_cpu_ctx_dict.update({addr: raw_byte for addr, raw_byte in last_cpu_ctx_set})
+    result.update({"cpu_context": bytes(_cur_cpu_ctx_dict.values())})
+
+    # restore diff snapshot from last memory dump
+    if last_mem_set is not None and len(last_mem_set) > 0:
+        last_mem_dict = {}
+        for region_idx, *region_info, raw_bytes in last_mem_set:
+            _region = _cur_mem_dict.get(region_idx, None)
+            if _region:
+                last_mem_dict.update({region_idx: (*_region[:-1], raw_bytes)})
+            else:
+                last_mem_dict.update({region_idx: (*region_info, raw_bytes)})
+
+        result.update({"mem": last_mem_dict})
+
+    return result
 
 
 if __name__ == "__main__":

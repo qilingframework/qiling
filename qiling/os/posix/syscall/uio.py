@@ -21,5 +21,6 @@ def ql_syscall_writev(ql, writev_fd, writev_vec, writev_vien, *args, **kw):
         for i in range(writev_vien):
             addr = ql.unpack(iov[i * size_t_len * 2 : i * size_t_len * 2 + size_t_len])
             l = ql.unpack(iov[i * size_t_len * 2 + size_t_len : i * size_t_len * 2 + size_t_len * 2])
+            regreturn += l
             ql.dprint(D_INFO, "%s" % str(ql.mem.read(addr, l)))
     ql.os.definesyscall_return(regreturn)
