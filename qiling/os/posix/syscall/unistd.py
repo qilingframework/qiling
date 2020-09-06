@@ -628,7 +628,7 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
     # but works for the example code from linux manual.
     def _type_mapping(ent):
         methods_constants_d = {'is_fifo': 0x1, 'is_char_device': 0x2, 'is_dir': 0x4, 'is_block_device': 0x6,
-                                'is_symlink': 0x8, 'is_symlink': 0xa, 'is_socket': 0xc}
+                                'is_file': 0x8, 'is_symlink': 0xa, 'is_socket': 0xc}
         ent_p = pathlib.Path(ent.path) if isinstance(ent, os.DirEntry) else ent
 
         for method, constant in methods_constants_d.items():
