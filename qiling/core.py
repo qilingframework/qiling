@@ -9,7 +9,7 @@ import os
 import logging
 import pickle
 
-from .const import QL_ENDINABLE, QL_ENDIAN, QL_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
+from .const import QL_ENDINABLE, QL_ENDIAN, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
 from .utils import arch_convert, ostype_convert, output_convert
 from .utils import ql_is_valid_arch, ql_get_arch_bits

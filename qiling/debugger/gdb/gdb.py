@@ -475,8 +475,11 @@ class QlGdb(QlDebugger, object):
 
 
                 elif subcmd.startswith('Xfer:threads:read::0,'):
-                    file_contents = ("<threads>\r\n<thread id=\""+ str(self.ql.os.pid) + "\" core=\"1\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
-                    self.send("l" + file_contents)
+                    if self.ql.ostype in QL_OS_NONPID:
+                        self.send("l")
+                    else:    
+                        file_contents = ("<threads>\r\n<thread id=\""+ str(self.ql.os.pid) + "\" core=\"1\" name=\"" + self.ql.targetname + "\"/>\r\n</threads>")
+                        self.send("l" + file_contents)
 
                 elif subcmd.startswith('Xfer:auxv:read::'):
                     if self.ql.shellcoder:
