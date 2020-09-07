@@ -538,6 +538,7 @@ class QlOsDos(QlOs):
         ah = self.ql.reg.ah
         if ah == 0x0:
             key = self._parse_key(self.stdscr.getch())
+            self.ql.dprint(0, f"Get key: {hex(key)}")
             if curses.ascii.isascii(key):
                 self.ql.reg.al = key
             else:
@@ -735,6 +736,7 @@ class QlOsDos(QlOs):
 
     def hook_syscall(self):
         def cb(ql, intno, user_data=None):
+            self.ql.dprint(0, f"INT {intno:x} with ah={hex(self.ql.reg.ah)}")
             before = self.before_interrupt.get(intno, None)
             after = self.after_interrupt.get(intno, None)
 
