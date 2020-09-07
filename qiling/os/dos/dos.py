@@ -6,6 +6,7 @@
 import types, os, struct, time
 
 from unicorn import *
+from qiling.const import QL_INTERCEPT
 from qiling.os.os import QlOs
 from qiling.os.utils import PathUtils
 from qiling.exception import QlErrorSyscallError
@@ -184,7 +185,11 @@ class QlOsDos(QlOs):
         self.revese_color_pairs = {}
         self.stdscr = None
         self.dos_ver = int(self.ql.profile.get("KERNEL", "version"), 16)
-    
+
+        # Interrupts hooks
+        self.before_interrupt = {}
+        self.after_interrupt = {}
+
     def __del__(self):
         # resume terminal
         if self.stdscr is not None:
@@ -192,6 +197,12 @@ class QlOsDos(QlOs):
             curses.echo()
             curses.nocbreak()
             curses.endwin()
+
+    def add_function_hook(self, intno, intercept_function, intercept=None):
+        if intercept == QL_INTERCEPT.EXIT:
+            self.after_interrupt[intno] = intercept_function
+        else:
+            self.before_interrupt[intno] = intercept_function
 
     # https://en.wikipedia.org/wiki/FLAGS_register
     # 0  CF 0x0001
@@ -685,6 +696,11 @@ class QlOsDos(QlOs):
 
     def hook_syscall(self):
         def cb(ql, intno, user_data=None):
+            before = self.before_interrupt.get(intno, None)
+            after = self.after_interrupt.get(intno, None)
+
+            if before is not None:
+                before(self.ql)
             # http://spike.scu.edu.au/~barry/interrupts.html
             # http://www2.ift.ulaval.ca/~marchand/ift17583/dosints.pdf
             if intno == 0x21:
@@ -705,6 +721,8 @@ class QlOsDos(QlOs):
                 self.int20()                
             else:
                 raise NotImplementedError()
+            if after is not None:
+                after(self.ql)
         self.ql.hook_intr(cb)
 
     def run(self):
