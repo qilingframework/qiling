@@ -491,6 +491,7 @@ class QlOsDos(QlOs):
             dx = self.ql.reg.dx
             cx = self.ql.reg.cx
             full_secs = ((cx << 16) + dx) / 1000000
+            self.ql.nprint(f"Goint to sleep {full_secs} seconds")
             time.sleep(full_secs)
 
             # Note: Since we are in a single thread environment, we assume
@@ -690,6 +691,8 @@ class QlOsDos(QlOs):
                 self.int21()
             elif intno == 0x10:
                 self.int10()
+            elif intno == 0x15:
+                self.int15()
             elif intno == 0x16:
                 self.int16()
             elif intno == 0x13:
