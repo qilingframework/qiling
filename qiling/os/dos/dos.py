@@ -594,8 +594,9 @@ class QlOsDos(QlOs):
             self.clear_cf()
         elif ah in [4, 5]:
             now = datetime.now()
-            self.ql.reg.ch = BIN2BCD((now.year - 1)//100 + 1)
-            self.ql.reg.cl = BIN2BCD(now.year)
+            # See https://sites.google.com/site/liangweiqiang/Home/e5006/e5006classnote/jumptiming/int1ahclockservice
+            self.ql.reg.ch = BIN2BCD((now.year - 1)//100)
+            self.ql.reg.cl = BIN2BCD(now.year%100)
             self.ql.reg.dh = BIN2BCD(now.month)
             self.ql.reg.dl = BIN2BCD(now.day)
             self.clear_cf()
