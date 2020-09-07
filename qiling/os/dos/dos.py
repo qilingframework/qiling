@@ -205,11 +205,11 @@ class QlOsDos(QlOs):
             curses.nocbreak()
             curses.endwin()
 
-    def add_function_hook(self, intno, intercept_function, intercept=None):
+    def add_function_hook(self, interrupt_tuple, intercept_function, intercept=None):
         if intercept == QL_INTERCEPT.EXIT:
-            self.after_interrupt[intno] = intercept_function
+            self.after_interrupt[interrupt_tuple] = intercept_function
         else:
-            self.before_interrupt[intno] = intercept_function
+            self.before_interrupt[interrupt_tuple] = intercept_function
 
     # https://en.wikipedia.org/wiki/FLAGS_register
     # 0  CF 0x0001
@@ -738,11 +738,12 @@ class QlOsDos(QlOs):
         def cb(ql, intno, user_data=None):
             ah = self.ql.reg.ah
             self.ql.dprint(0, f"INT {intno:x} with ah={hex(ah)}")
-            before = self.before_interrupt.get(intno, None)
-            after = self.after_interrupt.get(intno, None)
+            interrupt_tuple = (intno, ah)
+            before = self.before_interrupt.get(interrupt_tuple, None)
+            after = self.after_interrupt.get(interrupt_tuple, None)
 
             if before is not None:
-                before(self.ql, intno, ah)
+                before(self.ql)
             # http://spike.scu.edu.au/~barry/interrupts.html
             # http://www2.ift.ulaval.ca/~marchand/ift17583/dosints.pdf
             if intno == 0x21:
@@ -764,7 +765,7 @@ class QlOsDos(QlOs):
             else:
                 raise NotImplementedError()
             if after is not None:
-                after(self.ql, intno, ah)
+                after(self.ql)
         self.ql.hook_intr(cb)
 
     def run(self):
