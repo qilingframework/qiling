@@ -3,7 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
-import types, os, struct
+import types, os, struct, time
 
 from unicorn import *
 from qiling.os.os import QlOs
@@ -481,6 +481,25 @@ class QlOsDos(QlOs):
             self.ql.nprint("Exception: int 13h syscall Not Found, ah: %s" % hex(ah))
             raise NotImplementedError()
     
+    def int15(self):
+        ah = self.ql.reg.ah
+        if ah == 0:
+            pass
+        elif ah == 1:
+            pass
+        elif ah == 0x86:
+            dx = self.ql.reg.dx
+            cx = self.ql.reg.cx
+            full_secs = ((cx << 16) + dx) / 1000000
+            time.sleep(full_secs)
+
+            # Note: Since we are in a single thread environment, we assume
+            # that no one will wait at the same time.
+            self.ql.reg.cf = 0
+            self.ql.reg.ah = 0x80
+        else:
+            raise NotImplementedError()
+
     def _parse_key(self, ky):
         # https://stackoverflow.com/questions/27200597/c-ncurses-key-backspace-not-working
         # https://stackoverflow.com/questions/44943249/detecting-key-backspace-in-ncurses
