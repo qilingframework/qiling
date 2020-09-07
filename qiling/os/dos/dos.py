@@ -736,12 +736,13 @@ class QlOsDos(QlOs):
 
     def hook_syscall(self):
         def cb(ql, intno, user_data=None):
-            self.ql.dprint(0, f"INT {intno:x} with ah={hex(self.ql.reg.ah)}")
+            ah = self.ql.reg.ah
+            self.ql.dprint(0, f"INT {intno:x} with ah={hex(ah)}")
             before = self.before_interrupt.get(intno, None)
             after = self.after_interrupt.get(intno, None)
 
             if before is not None:
-                before(self.ql)
+                before(self.ql, intno, ah)
             # http://spike.scu.edu.au/~barry/interrupts.html
             # http://www2.ift.ulaval.ca/~marchand/ift17583/dosints.pdf
             if intno == 0x21:
@@ -763,7 +764,7 @@ class QlOsDos(QlOs):
             else:
                 raise NotImplementedError()
             if after is not None:
-                after(self.ql)
+                after(self.ql, intno, ah)
         self.ql.hook_intr(cb)
 
     def run(self):
