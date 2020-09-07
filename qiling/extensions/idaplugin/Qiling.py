@@ -873,7 +873,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if bp_count > 0:
             for num in range(0, bp_count):
                 bp_list.append(get_bpt_ea(num))
-            print(hex(addr))
+
             if addr in bp_list and (addr != self.lastaddr or self.is_change_addr>1):
                 self.qlemu.status = ql.save()
                 ql.os.stop()
