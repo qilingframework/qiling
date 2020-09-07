@@ -586,6 +586,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.stephook = None
         self.qlinit = False
         self.lastaddr = None
+        self.is_change_addr = -1
         self.userobj = None
         self.customscriptpath = None
 
@@ -872,11 +873,15 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if bp_count > 0:
             for num in range(0, bp_count):
                 bp_list.append(get_bpt_ea(num))
-            if addr in bp_list and addr != self.lastaddr:
+
+            if addr in bp_list and (addr != self.lastaddr or self.is_change_addr>1):
                 self.qlemu.status = ql.save()
                 ql.os.stop()
                 self.lastaddr = addr
                 jumpto(addr)
+
+            self.is_change_addr += 1
+            
 
     def ql_untill_hook(self, ql, addr, size):
         addr = addr - self.qlemu.baseaddr + get_imagebase()
