@@ -146,6 +146,13 @@ COLORS_MAPPING = {
 
 REVERSE_COLORS_MAPPING = {v : k for k, v in COLORS_MAPPING.items()}
 
+
+def BIN2BCD(val: int):
+    return val % 10 + (((val//10)%10) << 4) + (((val/100)%10)<<8) + (((val/1000)%10)<<12)
+
+def BCD2BIN(val: int):
+    return (val&0xF) + ((val>>4)&0xF) * 10 + ((val>>8)&0xF) * 100 + ((val>>12)&0xF) * 1000
+
 class INT13DiskError(Enum):
     NoError = 0
     BadCommand = 1
@@ -570,12 +577,44 @@ class QlOsDos(QlOs):
 
     def int1a(self):
         ah = self.ql.reg.ah
-        if ah == 0:
+        if ah in [0, 1]:
             now = datetime.now()
             tick = int((now - self.start_time).total_seconds() * self.ticks_per_second)
-            self.ql.reg.al=0
             self.ql.reg.cx= (tick & 0xFFFF0000) >> 16
             self.ql.reg.dx= tick & 0xFFFF
+            if ah == 0:
+                self.ql.reg.al = 0
+        elif ah in [2 ,3]:
+            now = datetime.now()
+            self.ql.reg.ch = BIN2BCD(now.hour)
+            self.ql.reg.cl = BIN2BCD(now.minute)
+            self.ql.reg.dh = BIN2BCD(now.second)
+            self.ql.reg.dl = 0
+            self.clear_cf()
+        elif ah in [4, 5]:
+            now = datetime.now()
+            self.ql.reg.ch = BIN2BCD((now.year - 1)//100 + 1)
+            self.ql.reg.cl = BIN2BCD(now.year)
+            self.ql.reg.dh = BIN2BCD(now.month)
+            self.ql.reg.dl = BIN2BCD(now.day)
+            self.clear_cf()
+        elif ah in [6, 7, 9]:
+            # alarm support
+            # TODO: Implement clock interrupt.
+            self.set_cf()
+        elif ah == 8:
+            # Set RTC
+            pass
+        elif ah == 0xA:
+            now = datetime.now()
+            self.ql.reg.cx = (now - datetime(1980, 1, 1)).days
+        elif ah == 0xB:
+            pass
+        else:
+            raise NotImplementedError()
+            
+        
+
 
     def int20(self):
         ah = self.ql.reg.ah
