@@ -451,7 +451,7 @@ class QlOsDos(QlOs):
             idx = self.ql.reg.dl
             dapbs = self.ql.mem.read(self.calculate_address(ds, si), 0x10)
             _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
-            self.ql.nprint(f"Reading from disk {hex(idx)} with LBA {lba}")
+            self.ql.nprint(f"Reading {cnt} sectors from disk {hex(idx)} with LBA {lba}")
             if not self.ql.os.fs_mapper.has_mapping(idx):
                 self.ql.nprint(f"[!] Warning: No such disk: {hex(idx)}")
                 self.ql.reg.ah = INT13DiskError.BadCommand.value
@@ -466,7 +466,7 @@ class QlOsDos(QlOs):
             idx = self.ql.reg.dl
             dapbs = self.ql.mem.read(self.calculate_address(ds, si), 0x10)
             _, _, cnt, offset, segment, lba = self._parse_dap(dapbs)
-            self.ql.nprint(f"Write to disk {hex(idx)} with LBA {lba}")
+            self.ql.nprint(f"Write {cnt} sectors to disk {hex(idx)} with LBA {lba}")
             if not self.ql.os.fs_mapper.has_mapping(idx):
                 self.ql.nprint(f"[!] Warning: No such disk: {hex(idx)}")
                 self.ql.reg.ah = INT13DiskError.BadCommand.value
