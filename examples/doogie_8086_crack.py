@@ -8,7 +8,7 @@ sys.path.append("..")
 from qiling import *
 from qiling.const import *
 from qiling.os.disk import QlDisk
-from qiling.os.dos.dos import BIN2BCD
+from qiling.os.dos.utils import BIN2BCD
 from struct import pack
 
 
