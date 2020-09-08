@@ -110,6 +110,8 @@ def search_possible_key(seqs: dict, seqs_keys: dict, max_occur=3):
     return keys
 
 def echo_key(ql: Qiling, key):
+    # Note: In most cases, users are not supposed to use `ql.os.stdscr`
+    # directly. The hack here is to show the corresponding key.
     stdscr = ql.os.stdscr
     y, _ = stdscr.getmaxyx()
     stdscr.move(y-1, 0)
