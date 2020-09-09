@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 from .loader import QlLoader
+from qiling.os.disk import QlDisk
 import magic
 import sys
 import traceback
@@ -62,6 +63,8 @@ class QlLoaderDOS(QlLoader):
             self.start_address = 0x7C00
             with open(path, "rb+") as f:
                 bs = f.read()
+            if not self.ql.os.fs_mapper.has_mapping(0x80):
+                self.ql.os.fs_mapper.add_fs_mapping(0x80, QlDisk(path, 0x80))
             # Map all available address.
             self.ql.mem.map(0x0, 0x100000)
             self.ql.mem.write(self.start_address, bs)

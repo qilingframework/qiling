@@ -114,8 +114,7 @@ def echo_key(ql: Qiling, key):
     # directly. The hack here is to show the corresponding key.
     stdscr = ql.os.stdscr
     y, _ = stdscr.getmaxyx()
-    stdscr.move(y-1, 0)
-    stdscr.addstr(f"Current key: {key}")
+    stdscr.addstr(y-2, 0, f"Current key: {key}")
     stdscr.refresh()
 
 def show_once(ql: Qiling, key):
@@ -125,7 +124,7 @@ def show_once(ql: Qiling, key):
     # Partial exectution to skip input reading
     ql.run(begin=0x801B, end=0x803d)
     echo_key(ql, key)
-    time.sleep(3)
+    time.sleep(1)
 
 # In this stage, we show every key.
 def third_stage(keys):
@@ -135,7 +134,6 @@ def third_stage(keys):
                  console=False,
                  log_dir=".")
     ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/doogie/doogie.bin", 0x80))
-    ql.set_api((0x16, 0), replace_newline, QL_INTERCEPT.EXIT)
     ql.set_api((0x1a, 4), set_required_datetime, QL_INTERCEPT.EXIT)
     hk = ql.hook_code(stop, begin=0x8018, end=0x8018)
     ql.run()
@@ -148,7 +146,8 @@ def third_stage(keys):
 
 
 # In this stage, we crack the encrypted buffer.
-def second_stage(data: bytes):
+def second_stage(ql: Qiling):
+    data = bytes(read_until_zero(ql, 0x8809))
     key_size = guess_key_size(data) # Should be 17
     seqs = []
     for i in range(key_size):
@@ -172,12 +171,6 @@ def read_until_zero(ql: Qiling, addr):
         addr += 1
     return buf
 
-# Qiling callbacks
-def replace_newline(ql: Qiling):
-    ql.nprint("Replacing \\n with \\r")
-    if ql.reg.al == ord('\n'):
-        ql.reg.al = ord("\r")
-
 def set_required_datetime(ql: Qiling):
     ql.nprint("Setting Feburary 06, 1990")
     ql.reg.ch = BIN2BCD(19)
@@ -195,21 +188,19 @@ def first_stage():
                  console=False,
                  log_dir=".")
     ql.add_fs_mapper(0x80, QlDisk("rootfs/8086/doogie/doogie.bin", 0x80))
-    # Doogie use '\r' as default newline while curses use '\n', we fix that by hooking.
-    ql.set_api((0x16, 0), replace_newline, QL_INTERCEPT.EXIT)
     # Doogie suggests that the datetime should be 1990-02-06.
     ql.set_api((0x1a, 4), set_required_datetime, QL_INTERCEPT.EXIT)
     # A workaround to stop the program.
     hk = ql.hook_code(stop, begin=0x8018, end=0x8018)
     ql.run()
     ql.hook_del(hk)
-    return read_until_zero(ql, 0x8809)
+    return ql
 
 if __name__ == "__main__":
-    data = bytes(first_stage())
+    ql = first_stage()
     # resume terminal
     curses.endwin()
-    keys = second_stage(data)
+    keys = second_stage(ql)
     for key in keys:
         print(f"Possible key: {key}")
     # The key of this challenge is not unique. The real
