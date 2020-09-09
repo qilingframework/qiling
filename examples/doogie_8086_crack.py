@@ -147,7 +147,8 @@ def third_stage(keys):
 
 
 # In this stage, we crack the encrypted buffer.
-def second_stage(data: bytes):
+def second_stage(ql: Qiling):
+    data = bytes(read_until_zero(ql, 0x8809))
     key_size = guess_key_size(data) # Should be 17
     seqs = []
     for i in range(key_size):
@@ -194,13 +195,13 @@ def first_stage():
     hk = ql.hook_code(stop, begin=0x8018, end=0x8018)
     ql.run()
     ql.hook_del(hk)
-    return read_until_zero(ql, 0x8809)
+    return ql
 
 if __name__ == "__main__":
-    data = bytes(first_stage())
+    ql = first_stage()
     # resume terminal
     curses.endwin()
-    keys = second_stage(data)
+    keys = second_stage(ql)
     for key in keys:
         print(f"Possible key: {key}")
     # The key of this challenge is not unique. The real
