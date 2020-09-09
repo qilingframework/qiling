@@ -537,6 +537,7 @@ class QlOsDos(QlOs):
     def int16(self):
         ah = self.ql.reg.ah
         if ah == 0x0:
+            curses.nonl()
             key = self._parse_key(self.stdscr.getch())
             self.ql.dprint(0, f"Get key: {hex(key)}")
             if curses.ascii.isascii(key):
@@ -544,7 +545,9 @@ class QlOsDos(QlOs):
             else:
                 self.ql.reg.al = 0
             self.ql.reg.ah = self._get_scan_code(key)
+            curses.nl()
         elif ah == 0x1:
+            curses.nonl()
             # set non-blocking
             self.stdscr.timeout(0)
             key = self._parse_key(self.stdscr.getch())
@@ -559,6 +562,7 @@ class QlOsDos(QlOs):
                 # Buffer shouldn't be removed in this interrupt.
                 curses.ungetch(key)
             self.stdscr.timeout(-1)
+            curses.nl()
 
     def int19(self):
         # Note: Memory is not cleaned.
