@@ -12,6 +12,7 @@ from .const import *
 class QlOsFreebsd(QlOsPosix):
     def __init__(self, ql):
         super(QlOsFreebsd, self).__init__(ql)
+        self.pid = self.profile.getint("KERNEL","pid")
         self.load()
         
     def load(self):   
@@ -44,6 +45,4 @@ class QlOsFreebsd(QlOsPosix):
         except UcError:
             self.emu_error()
             raise
-        
-        if self.ql.internal_exception != None:
-            raise self.ql.internal_exception
+    

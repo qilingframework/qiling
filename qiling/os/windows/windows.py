@@ -30,6 +30,7 @@ class QlOsWindows(QlOs):
         self.syscall_count = {}
         self.argv = self.ql.argv
         self.env = self.ql.env
+        self.pid = self.profile.getint("KERNEL","pid")
         self.ql.hook_mem_unmapped(ql_x86_windows_hook_mem_error)
         self.automatize_input = self.profile.getboolean("MISC","automatize_input")
         self.username = self.profile["USER"]["username"]
@@ -146,5 +147,3 @@ class QlOsWindows(QlOs):
         self.registry_manager.save()
         self.post_report()
 
-        if self.ql.internal_exception is not None:
-            raise self.ql.internal_exception

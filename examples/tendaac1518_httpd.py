@@ -10,7 +10,7 @@
 # 4. locate squashfs-root
 # 5. rm -rf webroot && mv webroot_ro webroot
 #
-# additipnal notes: we are using rootfs in this example, so rootfs = squashfs-root
+# notes: we are using rootfs in this example, so rootfs = squashfs-root
 # 
 
 import os, socket, sys, threading
@@ -45,28 +45,30 @@ def nvram_listener():
         
                 if "lan.webiplansslen" in data:  
                     connection.send('192.168.170.169'.encode())  
-                elif "wan_ifname" in data:
-                    connection.send('eth0'.encode())
-                elif "wan_ifnames" in data:
-                    connection.send('eth0'.encode())
-                elif "wan0_ifname" in data:
-                    connection.send('eth0'.encode())
-                elif "wan0_ifnames" in data:
-                    connection.send('eth0'.encode())
-                elif "sys.workmode" in data:
-                    connection.send('bridge'.encode())
-                elif "wan1.ip" in data:
-                    connection.send('1.1.1.1'.encode())
                 else: 
                     break  
                 data = ""
         finally:  
                 connection.close() 
 
+
+def myvfork(ql):
+    regreturn = 0
+    ql.nprint("vfork() = %d" % regreturn)
+    ql.os.definesyscall_return(regreturn)
+
+
 def my_sandbox(path, rootfs):
     ql = Qiling(path, rootfs, output = "debug")
-    ql.add_fs_mapper("/dev/urandom","/dev/urandom")
-    ql.hook_address(patcher ,ql.loader.elf_entry)
+    #ql.add_fs_mapper("/dev/urandom","/dev/urandom")
+    ql.hook_address(patcher, ql.loader.elf_entry)
+    
+    # $ gdb-multiarch -q rootfs/bin/httpd 
+    # gdb> set remotetimeout 100
+    # gdb> target remote localhost:9999
+    ql.debugger = False
+    if ql.debugger == True:
+        ql.set_syscall("vfork", myvfork)
     ql.run()
 
 

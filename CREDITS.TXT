@@ -10,7 +10,7 @@ NGUYEN Anh Quynh <aquynh@gmail.com>
 
 Travis, Website and Documentations
 ==================================
-FOO Kevin (chfl4gs)
+FOO Kevin (chfl4gs) <chfl4gs@qiling.io>
 
 Core Developers
 ===============
@@ -22,6 +22,7 @@ Earl MARCUS (klks84) klks84@gmail.com
 
 Key Contributors (in no particular order)
 =========================================
+lazymio
 kabeor
 0ssigeno
 liba2k

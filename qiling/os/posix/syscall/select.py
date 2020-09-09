@@ -27,8 +27,8 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
             if idx % 32 == 0:
                 tmp = ql.unpack32(ql.mem.read(struct_addr + idx, 4))
             if tmp & 0x1 != 0:
-                fd_list.append(ql.os.file_des[idx].fileno())
-                fd_map[ql.os.file_des[idx].fileno()] = idx
+                fd_list.append(ql.os.fd[idx].fileno())
+                fd_map[ql.os.fd[idx].fileno()] = idx
             tmp = tmp >> 1
             idx += 1
         return fd_list, fd_map
@@ -41,9 +41,18 @@ def ql_syscall__newselect(ql, _newselect_nfds, _newselect_readfds, _newselect_wr
     tmp_w_fd, tmp_w_map = parse_fd_set(ql, _newselect_nfds, _newselect_writefds)
     tmp_e_fd, tmp_e_map = parse_fd_set(ql, _newselect_nfds, _newselect_exceptfds)
 
-    timeout = ql.unpack32(ql.mem.read(_newselect_timeout, 4))
+    n = ql.archbit // 8 # 4 for 32-bit , 8 for 64-bit
+
+    if _newselect_timeout != 0:
+        timeout_ptr = ql.unpack(ql.mem.read(_newselect_timeout, n))
+        sec = ql.unpack(ql.mem.read(timeout_ptr, n))
+        usec = ql.unpack(ql.mem.read(timeout_ptr + n, n))
+        timeout_total = sec + float(usec)/1000000
+    else:
+        timeout_total = None
+
     try:
-        ans = select.select(tmp_r_fd, tmp_w_fd, tmp_e_fd, timeout)
+        ans = select.select(tmp_r_fd, tmp_w_fd, tmp_e_fd, timeout_total)
         regreturn = len(ans[0]) + len(ans[1]) + len(ans[2])
 
         if _newselect_readfds != 0:

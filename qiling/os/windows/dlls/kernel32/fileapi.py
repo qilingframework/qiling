@@ -150,9 +150,8 @@ def _CreateFile(ql, address, params, name):
         mode += "r"
 
     # create thread handle
-    s_lpFileName = ql.os.transform_to_real_path(s_lpFileName)
     try:
-        f = open(s_lpFileName.replace("\\", os.sep), mode)
+        f = ql.os.fs_mapper.open(s_lpFileName, mode)
     except FileNotFoundError:
         ql.os.last_error = ERROR_FILE_NOT_FOUND
         return INVALID_HANDLE_VALUE

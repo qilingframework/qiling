@@ -1,11 +1,39 @@
 This file details the changelog of Qiling Framework.
 
 
+[Version 1.2-alpha1]: September [SOMETHING], 2020
+- Add Doogie example and implement more interrupts.
+
+------------------------------------
+[Version 1.1.2]: September 6th, 2020
+
+- Qiling Debugger now comes with reverse debugging
+- Added qltool into pypi packages
+- Added more Windows API
+- Add mapper support for standalone disks.
+- More BIOS/DOS interrupts support shipped with fully emulated Petya as a mbr analysis example.
+
+------------------------------------
+[Version 1.1.1]: August 23th, 2020
+
+- Fixed Windows "import resource" issue
+- Added ql.save and ql.restore aka Qiling's Snapshot
+- Added ql.os.fd.save() and ql.os.fd.restore() to save file descriptor
+- Added IDA Plugin
+- Test, patch and make sure arm_thumb can work on its own
+- Added Qiling Debugger - Currently only works with MIPS
+- Added experimental 8086 and DOS support.
+- Fixed path transformation on Windows when running Linux.
+- IDA Plugin able to instrument code now
+- Refactor ql.fs_mapper (now ql.os.fs_mapper).
+
+
+------------------------------------
 [Version 1.1]: July 24th, 2020
 
 - More refactors and bug fixes
 - Adding DLL images for PE coverage tracing
-- Add hook_mem_invalid
+- Added hook_mem_invalid
 - More UEFI API
 
 

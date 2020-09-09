@@ -73,7 +73,7 @@ class HookRet:
         self._ql.hook_del(self._t, self._h)
 
 
-class QLCoreHooks(object):
+class QlCoreHooks(object):
     def __init__(self):
         super().__init__()
         self.uc = None
@@ -182,6 +182,7 @@ class QLCoreHooks(object):
         if hook_type in (UC_HOOK_MEM_READ_UNMAPPED, UC_HOOK_MEM_WRITE_UNMAPPED, UC_HOOK_MEM_FETCH_UNMAPPED, UC_HOOK_MEM_READ_PROT, UC_HOOK_MEM_WRITE_PROT, UC_HOOK_MEM_FETCH_PROT):
             if handled == False:
                 raise QlErrorCoreHook("_hook_mem_cb : handled == False")
+        return True
 
 
     def _callback_x86_syscall(self, uc, pack_data):
@@ -380,7 +381,7 @@ class QLCoreHooks(object):
                     self.os.dict_posix_onEnter_syscall[syscall_name] = intercept_function
 
         elif intercept == QL_INTERCEPT.EXIT:
-            if self.ostype in (QL_POSIX):
+            if self.ostype in (QL_OS_POSIX):
                 if isinstance(target_syscall, int):
                     self.os.dict_posix_onExit_syscall_by_num[target_syscall] = intercept_function
                 else:
@@ -388,7 +389,7 @@ class QLCoreHooks(object):
                     self.os.dict_posix_onExit_syscall[syscall_name] = intercept_function                    
 
         else:
-            if self.ostype in (QL_POSIX):
+            if self.ostype in (QL_OS_POSIX):
                 if isinstance(target_syscall, int):
                     self.os.dict_posix_syscall_by_num[target_syscall] = intercept_function
                 else:

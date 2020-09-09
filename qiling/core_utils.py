@@ -11,13 +11,14 @@ from binascii import unhexlify
 from .utils import ql_build_module_import_name, ql_get_module_function
 from .utils import ql_is_valid_arch, ql_is_valid_ostype
 from .utils import loadertype_convert_str, ostype_convert_str, arch_convert_str
-from .utils import ql_setup_filter
-from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT
+from .utils import ql_setup_filter, debugger_convert
+from .const import QL_OS, QL_OS_ALL, QL_ARCH, QL_ENDIAN, QL_OUTPUT, QL_DEBUGGER
 from .const import D_INFO, D_DRPT
 from .exception import QlErrorArch, QlErrorOsType, QlErrorOutput
 from .loader.utils import ql_checkostype
 
-class QLCoreUtils(object):
+
+class QlCoreUtils(object):
     def __init__(self):
         super().__init__()
         self.archtype = None
@@ -88,13 +89,13 @@ class QLCoreUtils(object):
 
         if int(self.verbose) >= level and self.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             if int(self.verbose) >= D_DRPT:
-                args = (("0x%x:" % self.reg.arch_pc), args)
+                args = (("0x%x:" % self.reg.arch_pc), *args)
                 
             self.nprint(*args, **kw)
 
 
     def add_fs_mapper(self, ql_path, real_dest):
-        self.fs_mapper.append([real_dest, ql_path])
+        self.os.fs_mapper.add_fs_mapping(ql_path, real_dest)
 
 
     # push to stack bottom, and update stack register
@@ -119,14 +120,40 @@ class QLCoreUtils(object):
         self.arch.stack_write(offset, data)
 
 
+    def debugger_setup(self):
+        # default remote server
+        remotedebugsrv = "gdb"
+        debug_opts = [None, None]
+
+        if self.debugger != True and type(self.debugger) == str:      
+            debug_opts = self.debugger.split(":")
+    
+            if len(debug_opts) == 2 and debug_opts[0] != "qdb":
+                pass
+            else:  
+                remotedebugsrv, *debug_opts = debug_opts
+                
+            
+            if debugger_convert(remotedebugsrv) not in (QL_DEBUGGER):
+                raise QlErrorOutput("[!] Error: Debugger not supported")
+            
+        debugsession = ql_get_module_function("qiling.debugger." + remotedebugsrv + "." + remotedebugsrv, "Ql" + str.capitalize(remotedebugsrv))
+
+        return debugsession(self, *debug_opts)
+
     def arch_setup(self):
         if not ql_is_valid_arch(self.archtype):
             raise QlErrorArch("[!] Invalid Arch")
         
-        archmanager = arch_convert_str(self.archtype).upper()
+        if self.archtype == QL_ARCH.ARM_THUMB:
+            archtype =  QL_ARCH.ARM
+        else:
+            archtype = self.archtype
+
+        archmanager = arch_convert_str(archtype).upper()
         archmanager = ("QlArch" + archmanager)
 
-        module_name = ql_build_module_import_name("arch", None, self.archtype)
+        module_name = ql_build_module_import_name("arch", None, archtype)
         return ql_get_module_function(module_name, archmanager)(self)
 
 
@@ -245,3 +272,26 @@ class QLCoreUtils(object):
 
         archtype, archmode = ks_convert(archtype)
         return compile_instructions(runcode, archtype, archmode)        
+
+
+class QlFileDes:
+    def __init__(self, init):
+        self.__fds = init
+
+    def __getitem__(self, idx):
+        return self.__fds[idx]
+
+    def __setitem__(self, idx, val):
+        self.__fds[idx] = val
+
+    def __iter__(self):
+        return iter(self.__fds)
+
+    def __repr__(self):
+        return repr(self.__fds)
+    
+    def save(self):
+        return self.__fds
+
+    def restore(self, fds):
+        self.__fds = fds

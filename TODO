@@ -4,13 +4,13 @@
 
 iOS
 ===
-- Partial complete. Did not test againts any actual iOS binary yet
+- Partially completed. Did not test against any actual iOS binary yet
 
 FreeBSD
 =======
 Current Status: only work with assembler compiled binary
 - gcc compiled static binary
-- Dynamically compile binary
+- Dynamically compiled binary
 
 Windows
 =======
@@ -20,14 +20,13 @@ Windows
 - API for fake installed application
 - API for process listing
 
-Linux / *nix
-============
-- ql.dev to emulate devices
-- ql.proc to emulate /proc
-
 Debugging Server
 ================
 - Add GDB stub commands
+
+USB
+===
+- Emulate USB
 
 -------------------- FUTURE --------------------
 
@@ -41,19 +40,34 @@ Blockchain
 
 Android
 ======
-- Its linux, but a bit more specific support ?
-- maybe a OS by itself
+- It's Linux, but a bit more specific support ?
+- maybe an OS by itself
 
 
 -------------------- CHECKLIST before TAG --------------------
-
+Release 
 1. core.py
-    - __version__ = "1.1" + "-rc1"
-2. setup.py
-    - 'Development Status :: 3 - Alpha'
-3. ChangeLog    
+    - __version__ = "1.[x].[x]"
+2. Make sure development status classifer in setup.py is correct.
+    - 'Development Status :: 5 - Production/Stable'
+3. Update ChangeLog    
 4. commit and push
 5. Merge dev into master
-6. git tag 1.1-rc1
-7. git push origin --tags
-8. check for new Pypi package
+6. checkout master
+7. git pull
+6. git tag 1.[x].[x]
+8. git push origin --tags
+9. check for new Pypi package @ https://pypi.org/project/qiling
+
+Pre-release/dev
+1. __version__.py
+    - __version__ = "1.[x].[x]" + "-rc[x]"
+2. Make sure development status classifer in setup.py is correct.
+    - 'Development Status :: 3 - Alpha'
+3. Update ChangeLog
+4. commit and push
+5. checkout dev
+6. git pull
+7. git tag 1.[x].[x]-rc[x]
+8. git push origin --tags
+9. check for new pre-release Pypi package @ https://pypi.org/project/qiling/#history

@@ -9,7 +9,7 @@ thoughout the qiling framework
 """
 import importlib, logging, os
 from .exception import *
-from .const import QL_ARCH, QL_ARCH_ALL, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER
+from .const import QL_ARCH, QL_ARCH_ALL, QL_OS, QL_OS_ALL, QL_OUTPUT, QL_DEBUGGER, QL_ARCH_32BIT, QL_ARCH_64BIT, QL_ARCH_16BIT
 from .const import debugger_map, arch_map, os_map
 
 def catch_KeyboardInterrupt(ql):
@@ -25,12 +25,11 @@ def catch_KeyboardInterrupt(ql):
     return decorator
 
 def ql_get_arch_bits(arch):
-    arch_32b = [QL_ARCH.ARM, QL_ARCH.MIPS, QL_ARCH.X86]
-    arch_64b = [QL_ARCH.ARM64, QL_ARCH.X8664]
-
-    if arch in arch_32b:
+    if arch in QL_ARCH_16BIT:
+        return 16
+    if arch in QL_ARCH_32BIT:
         return 32
-    if arch in arch_64b:
+    if arch in QL_ARCH_64BIT:
         return 64
     raise QlErrorArch("[!] Invalid Arch")
 
@@ -51,6 +50,7 @@ def loadertype_convert_str(ostype):
         QL_OS.FREEBSD: "ELF",
         QL_OS.WINDOWS: "PE",
         QL_OS.UEFI: "PE_UEFI",
+        QL_OS.DOS: "DOS",
     }
     return adapter.get(ostype)
 
@@ -115,13 +115,6 @@ def debugger_convert_str(debugger_id):
     # invalid
     return None, None
 
-def ql_get_arch_module_function(arch, function_name):
-    if not ql_is_valid_arch(arch):
-        raise QlErrorArch("[!] Invalid Arch")
-    function_name = function_name.upper()    
-    module_name = ql_build_module_import_name("arch", None, arch)
-    return ql_get_module_function(module_name, function_name)
-
 def ql_build_module_import_name(module, ostype, arch = None):
     ret_str = "qiling." + module
 
@@ -166,6 +159,7 @@ def ql_setup_logger(logger_name=None):
         logger_name = 'qiling_%s' % _counter
 
     logger = logging.getLogger(logger_name)
+    logger.propagate = False
     logger.setLevel(logging.DEBUG)
     return logger
 

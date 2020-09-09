@@ -30,6 +30,9 @@ class QlMemoryManager:
             max_addr = 0xFFFFFFFFFFFFFFFF
         elif self.ql.archbit == 32:
             max_addr = 0xFFFFFFFF
+        elif self.ql.archbit == 16:
+            # 20bit address line
+            max_addr = 0xFFFFF
 
         self.max_addr = max_addr
         self.max_mem_addr = max_addr            
@@ -250,6 +253,7 @@ class QlMemoryManager:
         Returns true if it has already been allocated.
         If unassigned, returns False.
         '''   
+
         for region in list(self.ql.uc.mem_regions()):
             if address >= region[0] and (address + size -1) <= region[1]:
                 return True

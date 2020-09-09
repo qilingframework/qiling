@@ -283,16 +283,15 @@ class HookFunc:
         if isinstance(ret, int) == False or ret & QL_CALL_BLOCK == 0:
             if cb != None:
                 if userdata == None:
-                    ret = cb(self.ql)
+                    cb(self.ql)
                 else:
-                    ret = cb(self.ql, userdata)
+                    cb(self.ql, userdata)
             else:
-                ret = 0
+                self.set_ret(self.exit_addr)
+                self.ql.reg.arch_pc = next_pc
 
-            self.context_fixup()
         else:
-            self.set_ret(self.exit_addr)
-            self.ql.reg.arch_pc = next_pc
+            self.context_fixup()
     
     def ret(self):
         # ARM
@@ -699,8 +698,8 @@ class FunctionHook:
         elif self.ql.archtype== QL_ARCH.ARM64:
             self.GLOB_DAT = 1025
             self.JMP_SLOT = 1026
-            #'!\x00\x01\xaa'
-            ins = b'orr x1,x1,x1'
+            # orr x1,x1,x1
+            ins = b'\x21\x00\x01\xaa'
             self.add_function_hook = self.add_function_hook_relocation
 
         # X86
