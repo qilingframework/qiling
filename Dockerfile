@@ -1,6 +1,6 @@
 FROM python:3.6-alpine
 
-MAINTAINER "Kevin Foo <chbsd64@gmail.com>"
+LABEL Author="Kevin Foo <chbsd64@gmail.com>"
 
 ENV PIP_NO_CACHE_DIR=1
 
