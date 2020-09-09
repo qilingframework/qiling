@@ -8,7 +8,7 @@ CODE_END = True
 
 
 
-def dump_regs(ql, *args, **kwargs):
+def dump_regs(ql):
 
     if ql.archtype == QL_ARCH.MIPS:
 
@@ -23,8 +23,6 @@ def dump_regs(ql, *args, **kwargs):
                 "ra", "k0", "k1", "pc",
                 )
 
-        return { reg_name: getattr(ql.reg, reg_name) for reg_name in _reg_order}
-
     elif ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
 
         _reg_order = (
@@ -34,7 +32,7 @@ def dump_regs(ql, *args, **kwargs):
                 "r12", "sp", "lr", "pc",
                 )
 
-        return { reg_name: getattr(ql.reg, reg_name) for reg_name in _reg_order}
+    return {reg_name: getattr(ql.reg, reg_name) for reg_name in _reg_order}
 
 
 def get_arm_flags(bits):
@@ -86,9 +84,9 @@ def signed_val(i):
 # handle braches and jumps so we can set berakpoint properly
 def handle_bnj(ql, cur_addr):
     return {
-            QL_ARCH.MIPS: handle_bnj_mips,
-            QL_ARCH.ARM:  handle_bnj_arm,
-            QL_ARCH.ARM_THUMB:  handle_bnj_arm,
+            QL_ARCH.MIPS     : handle_bnj_mips,
+            QL_ARCH.ARM      : handle_bnj_arm,
+            QL_ARCH.ARM_THUMB: handle_bnj_arm,
             }.get(ql.archtype)(ql, cur_addr)
 
 
@@ -105,31 +103,46 @@ def is_thumb(bits):
     return bits & 0x00000020 != 0
 
 
-def read_inst(ql, addr):
-    result = ql.mem.read(addr, 4) # default option for arm instruction
-    if is_thumb(ql.reg.cpsr):
+def disasm(ql, address):
+    md = ql.os.create_disassembler()
+    return next(md.disasm(_read_inst(ql, address), address))
 
-        first_two = ql.unpack16(ql.mem.read(addr, 2))
-        result = ql.pack16(first_two)
 
-        if any([
-            first_two & 0xf000 == 0xf000,
-            first_two & 0xf800 == 0xf800,
-            first_two & 0xe800 == 0xe800,
-            ]):
+def _read_inst(ql, addr):
 
-            latter_two = ql.unpack16(ql.mem.read(addr+2, 2))
-            result += ql.pack16(latter_two)
+    if ql.archtype in (QL_ARCH.ARM, QL_ARCH.ARM_THUMB):
+        result = ql.mem.read(addr, 4) # default option for arm instruction
+        if is_thumb(ql.reg.cpsr):
+
+            first_two = ql.unpack16(ql.mem.read(addr, 2))
+            result = ql.pack16(first_two)
+
+            if any([
+                first_two & 0xf000 == 0xf000,
+                first_two & 0xf800 == 0xf800,
+                first_two & 0xe800 == 0xe800,
+                ]):
+
+                latter_two = ql.unpack16(ql.mem.read(addr+2, 2))
+                result += ql.pack16(latter_two)
+
+    elif ql.archtype == QL_ARCH.MIPS:
+        result = ql.mem.read(addr, 4)
 
     return result
 
 
-def disasm(ql, address):
-    md = ql.os.create_disassembler()
-    return next(md.disasm(read_inst(ql, address), address))
-
-
 def handle_bnj_arm(ql, cur_addr):
+
+    def _read_reg_val(regs, _reg):
+        return getattr(ql.reg, _reg.replace("ip", "r12"))
+
+    def regdst_eq_pc(op_str):
+        return op_str.partition(", ")[0] == "pc"
+
+
+    read_inst = partial(_read_inst, ql)
+    read_reg_val = partial(_read_reg_val, ql.reg)
 
     ARM_INST_SIZE = 4
     ARM_THUMB_INST_SIZE = 2
@@ -138,7 +151,7 @@ def handle_bnj_arm(ql, cur_addr):
     ret_addr = cur_addr + line.size
 
     if line.mnemonic == "udf": # indicates program exited
-        return EXTIED
+        return CODE_END
 
     jump_table = {
             # unconditional branch
@@ -204,7 +217,10 @@ def handle_bnj_arm(ql, cur_addr):
             }
 
     cb_table = {
+            # branch on equal to zero
             "cbz" : (lambda r: r == 0),
+
+            # branch on not equal to zero
             "cbnz": (lambda r: r != 0),
             }
 
@@ -213,17 +229,18 @@ def handle_bnj_arm(ql, cur_addr):
         to_jump = jump_table.get(line.mnemonic)(*get_cpsr(ql.reg.cpsr))
 
     elif line.mnemonic in cb_table:
-        to_jump = cb_table.get(line.mnemonic)(getattr(ql.reg, line.op_str.split(", ")[0]))
+        to_jump = cb_table.get(line.mnemonic)(read_reg_val(line.op_str.split(", ")[0]))
 
     if to_jump:
         if '#' in line.op_str:
             ret_addr = parse_int(line.op_str.split('#')[-1])
         else:
-            ret_addr = getattr(ql.reg, line.op_str.replace("ip", "r12"))
-            if line.op_str == "pc":
+            ret_addr = read_reg_val(line.op_str)
+
+            if regdst_eq_pc(line.op_str):
                 next_addr = cur_addr + line.size
-                n2_addr = next_addr + len(read_inst(ql, next_addr))
-                ret_addr += len(read_inst(ql, n2_addr)) + len(read_inst(ql, next_addr))
+                n2_addr = next_addr + len(read_inst(next_addr))
+                ret_addr += len(read_inst(n2_addr)) + len(read_inst(next_addr))
 
     elif line.mnemonic.startswith("it"):
         # handle IT block here
@@ -239,13 +256,13 @@ def handle_bnj_arm(ql, cur_addr):
                 "ls": lambda V, C, Z, N: (C == 0 or Z == 1),
                 "le": lambda V, C, Z, N: (Z == 1 or N != V),
                 "hi": lambda V, C, Z, N: (Z == 0 and C == 1),
-                }.get(line.op_str, None)(*get_cpsr(ql.reg.cpsr))
+                }.get(line.op_str)(*get_cpsr(ql.reg.cpsr))
         
         it_block_range = [each_char for each_char in line.mnemonic[1:]]
 
-        next_addr = cur_addr + 2
+        next_addr = cur_addr + ARM_THUMB_INST_SIZE
         for each in it_block_range:
-            _inst = read_inst(ql, next_addr)
+            _inst = read_inst(next_addr)
             n2_addr = handle_bnj_arm(ql, next_addr)
 
             if (cond_met and each == "t") or (not cond_met and each == "e"):
@@ -259,52 +276,52 @@ def handle_bnj_arm(ql, cur_addr):
         return ret_addr
 
     elif line.mnemonic in ("ldr",):
-        if line.op_str.split(", ")[0] == "pc":
+        if regdst_eq_pc(line.op_str):
             _pc, _, rn_offset = line.op_str.partition(", ")
 
             if "]" in rn_offset.split(", ")[1]: # pre-indexed immediate
                 _, r, imm = line.op_str.replace("[", "").replace("]", "").replace("!", "").replace("#", "").split(", ")
-                r = r.replace("ip", "r12")
-                ret_addr = ql.unpack32(ql.mem.read(parse_int(imm) + getattr(ql.reg, r), 4))
+                ret_addr = ql.unpack32(ql.mem.read(parse_int(imm) + read_reg_val(r), 4))
 
             else: # post-indexed immediate
                 # FIXME: weired behavior, immediate here does not apply
                 _, r, imm = line.op_str.replace("[", "").replace("]", "").replace("!", "").replace("#", "").split(", ")
-                r = r.replace("ip", "r12")
-                ret_addr = ql.unpack32(ql.mem.read(getattr(ql.reg, r), 4))
+                ret_addr = ql.unpack32(ql.mem.read(read_reg_val(r), 4))
 
-    elif line.mnemonic in ("addls", "addne", "add") and "pc" == line.op_str.split(", ")[0]:
+    elif line.mnemonic in ("addls", "addne", "add") and regdst_eq_pc(line.op_str):
         V, C, Z, N = get_cpsr(ql.reg.cpsr)
 
         if line.mnemonic == "addls" and (C == 0 or Z == 1):
-            r0, r1, r2, i0 = line.op_str.split(", ")
-            # program counter is awalys 8 bytes ahead , when i comes with pc adds extra 8 bytes
-            ret_addr = 8 + getattr(ql.reg, r1) + (getattr(ql.reg, r2) * 4)
+            r0, r1, r2, imm = line.op_str.split(", ")
+            # program counter is awalys 8 bytes ahead , when it comes with pc need to add extra 8 bytes
+            ret_addr = 8 + read_reg_val(r1) + read_reg_val(r2) * 4
 
         elif line.mnemonic == "addne" and Z == 0:
-            r0, r1, r2, *rest = line.op_str.replace("ip", "r12").split(", ")
-            ret_addr = 8 + getattr(ql.reg, r1) + (getattr(ql.reg, r2) * 4 if rest else getattr(ql.reg, r2))
+            r0, r1, r2, *rest = line.op_str.split(", ")
+            ret_addr = 8 + read_reg_val(r1) + (read_reg_val(r2) * 4 if rest else read_reg_val(r2))
 
         elif line.mnemonic == "add":
-            r0, r1, r2 = line.op_str.replace("ip", "r12").split(", ")
-            ret_addr = 8 + getattr(ql.reg, r1) + getattr(ql.reg, r2)
+            r0, r1, r2 = line.op_str.split(", ")
+            ret_addr = 8 + sum(map(read_reg_val, [r1, r2]))
 
     elif line.mnemonic in ("tbh", "tbb"):
 
-        cur_addr += 4
+        cur_addr += ARM_INST_SIZE
+
         if line.mnemonic == "tbh":
             r0, r1, _ = line.op_str.strip("[").strip("]").split(", ")
-            r1 = getattr(ql.reg, r1) * 2
+            r1 = read_reg_val(r1) * 2
+
         elif line.mnemonic == "tbb":
             r0, r1 = line.op_str.strip("[").strip("]").split(", ")
-            r1 = getattr(ql.reg, r1)
+            r1 = read_reg_val(r1)
 
         to_add = int.from_bytes(ql.mem.read(cur_addr+r1, 2 if line.mnemonic == "tbh" else 1), byteorder="little") * 2
         ret_addr = cur_addr + to_add
 
     elif line.mnemonic.startswith("pop") and "pc" in line.op_str:
 
-        ret_addr = ql.unpack32(ql.mem.read(line.op_str.strip("{").strip("}").split(", ").index("pc") * 4 + getattr(ql.reg, "sp"), 4))
+        ret_addr = ql.stack_read(line.op_str.strip("{").strip("}").split(", ").index("pc") * 4)
         if not { # step to next instruction if cond does not meet
                 "pop"  : lambda *_: True,
                 "pop.w": lambda *_: True,
@@ -315,15 +332,15 @@ def handle_bnj_arm(ql, cur_addr):
                 "poplt": lambda V, C, Z, N: (N != V),
                 }.get(line.mnemonic)(*get_cpsr(ql.reg.cpsr)):
 
-            ret_addr = cur_addr + 4
+            ret_addr = cur_addr + ARM_INST_SIZE
 
-    elif line.mnemonic == "sub" and line.op_str.split(", ")[0] == "pc":
+    elif line.mnemonic == "sub" and regdst_eq_pc(line.op_str):
         _, r, imm = line.op_str.split(", ")
-        ret_addr = getattr(ql.reg, r) - parse_int(imm.strip("#"))
+        ret_addr = read_reg_val(r) - parse_int(imm.strip("#"))
 
-    elif line.mnemonic == "mov" and line.op_str.split(", ")[0] == "pc":
+    elif line.mnemonic == "mov" and regdst_eq_pc(line.op_str):
         _, r = line.op_str.split(", ")
-        ret_addr = getattr(ql.reg, r)
+        ret_addr = read_reg_val(r)
 
     if ret_addr & 1:
         ret_addr -= 1
@@ -335,13 +352,11 @@ def handle_bnj_mips(ql, cur_addr):
     MIPS_INST_SIZE = 4
 
     def _read_reg(regs, _reg):
-        return getattr(regs, _reg.strip('$').replace("fp", "s8"))
+        return signed_val(getattr(regs, _reg.strip('$').replace("fp", "s8")))
 
     read_reg_val = partial(_read_reg, ql.reg)
-    md = ql.os.create_disassembler()
-    _cur_ops = ql.mem.read(cur_addr, MIPS_INST_SIZE)
-    _tmp = md.disasm(_cur_ops, cur_addr)
-    line = next(_tmp)
+
+    line = disasm(ql, cur_addr)
 
     # default breakpoint address if no jumps and branches here
     ret_addr = cur_addr + MIPS_INST_SIZE
@@ -355,7 +370,7 @@ def handle_bnj_mips(ql, cur_addr):
 
         # get registers or memory address from op_str
         targets = [
-                signed_val(_read_reg(ql.reg, each))
+                read_reg_val(each)
                 if '$' in each else parse_int(each)
                 for each in line.op_str.split(", ")
                 ]
@@ -382,7 +397,7 @@ def handle_bnj_mips(ql, cur_addr):
                 "blez"    : (lambda r, _: r <= 0),        # branch on less than or equal to zero
                 "bgez"    : (lambda r, _: r >= 0),        # branch on greater than or equal to zero
                 "bgezal"  : (lambda r, _: r >= 0),        # branch on greater than or equal to zero and link
-                }.get(line.mnemonic, None)(*targets)
+                }.get(line.mnemonic)(*targets)
 
         if to_jump:
             # target address is always the rightmost one
@@ -390,6 +405,59 @@ def handle_bnj_mips(ql, cur_addr):
 
     return ret_addr
 
+
+def diff_snapshot_save(current_state_dicts, prev_states):
+
+    result = {}
+    cur_cpu_ctx_set = {(idx, val) for idx, val in enumerate(current_state_dicts["cpu_context"])}
+
+    cur_mem_set = set()
+    for region_idx, mem_region_info in current_state_dicts["mem"].items():
+        raw_bytes = bytes(mem_region_info[-1])
+        cur_mem_set.update({(region_idx, *(mem_region_info[:-1]), raw_bytes)})
+
+    if prev_states is not None:
+        cur_cpu_ctx_set -= prev_states["cpu_context"]
+        result.update({"cpu_context": cur_cpu_ctx_set})
+
+        if "mem" in prev_states and cur_mem_set != prev_states["mem"]:
+            # save changes if its different
+            cur_mem_set -= prev_states["mem"]
+            result.update({"mem": cur_mem_set})
+
+    else:
+        # store everything since its the first snapshot
+        result.update({"cpu_context": cur_cpu_ctx_set, "mem": cur_mem_set})
+
+    return result
+
+
+def diff_snapshot_restore(current_state_dicts, prev_states):
+
+    result = {}
+    _cur_cpu_ctx_dict = {idx: val for idx, val in enumerate(current_state_dicts["cpu_context"])}
+    _cur_mem_dict = current_state_dicts["mem"]
+
+    last_cpu_ctx_set = prev_states["cpu_context"]
+    last_mem_set = prev_states.pop("mem", None)
+
+    # restore diff snapshot from last cpu_context
+    _cur_cpu_ctx_dict.update({addr: raw_byte for addr, raw_byte in last_cpu_ctx_set})
+    result.update({"cpu_context": bytes(_cur_cpu_ctx_dict.values())})
+
+    # restore diff snapshot from last memory dump
+    if last_mem_set is not None and len(last_mem_set) > 0:
+        last_mem_dict = {}
+        for region_idx, *region_info, raw_bytes in last_mem_set:
+            _region = _cur_mem_dict.get(region_idx, None)
+            if _region:
+                last_mem_dict.update({region_idx: (*_region[:-1], raw_bytes)})
+            else:
+                last_mem_dict.update({region_idx: (*region_info, raw_bytes)})
+
+        result.update({"mem": last_mem_dict})
+
+    return result
 
 
 if __name__ == "__main__":

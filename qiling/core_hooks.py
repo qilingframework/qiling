@@ -381,7 +381,7 @@ class QlCoreHooks(object):
                     self.os.dict_posix_onEnter_syscall[syscall_name] = intercept_function
 
         elif intercept == QL_INTERCEPT.EXIT:
-            if self.ostype in (QL_POSIX):
+            if self.ostype in (QL_OS_POSIX):
                 if isinstance(target_syscall, int):
                     self.os.dict_posix_onExit_syscall_by_num[target_syscall] = intercept_function
                 else:
@@ -389,7 +389,7 @@ class QlCoreHooks(object):
                     self.os.dict_posix_onExit_syscall[syscall_name] = intercept_function                    
 
         else:
-            if self.ostype in (QL_POSIX):
+            if self.ostype in (QL_OS_POSIX):
                 if isinstance(target_syscall, int):
                     self.os.dict_posix_syscall_by_num[target_syscall] = intercept_function
                 else:

@@ -5,6 +5,7 @@
 *.pyc
 *.cache
 .*.swp
+*.raw
 
 # cache and misc
 qiling.egg-info/
@@ -13,10 +14,7 @@ __pycache__/
 build
 dist
 
-# examples 
-examples/**/registry/
-examples/**/dlls/
-examples/**/Windows/
+test_syscall_*.txt
 
 # test and logs
 jexamples/

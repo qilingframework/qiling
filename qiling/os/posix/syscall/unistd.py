@@ -158,7 +158,7 @@ def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, *args, *
     offset = offset_high << 32 | offset_low
     origin = whence
     regreturn = 0
-    ql.nprint("_llseek(%d, 0x%x, 0x%x, 0x%x = %d)" % (fd, offset_high, offset_low, origin, regreturn))
+    ql.nprint("_llseek(%d, 0x%x, 0x%x, 0x%x) = %d" % (fd, offset_high, offset_low, origin, regreturn))
     try:
         ret = ql.os.fd[fd].lseek(offset, origin)
     except OSError:
@@ -167,7 +167,7 @@ def ql_syscall__llseek(ql, fd, offset_high, offset_low, result, whence, *args, *
     if regreturn == 0:
         ql.mem.write(result, ql.pack64(ret))
 
-    ql.nprint("_llseek(%d, 0x%x, 0x%x, 0x%x = %d)" % (fd, offset_high, offset_low, origin, regreturn))
+    ql.nprint("_llseek(%d, 0x%x, 0x%x, 0x%x) = %d" % (fd, offset_high, offset_low, origin, regreturn))
     ql.os.definesyscall_return(regreturn)
 
 
@@ -331,7 +331,7 @@ def ql_syscall_chdir(ql, path_name, *args, **kw):
         if ql.os.thread_management != None:
             pass
         else:
-            ql.os.current_path = relative_path + '/'
+            ql.os.current_path = relative_path
         ql.nprint("chdir(%s) = %d"% (relative_path, regreturn))
     else:
         regreturn = -1
@@ -628,7 +628,7 @@ def ql_syscall_getdents(ql, fd, dirp, count, *args, **kw):
     # but works for the example code from linux manual.
     def _type_mapping(ent):
         methods_constants_d = {'is_fifo': 0x1, 'is_char_device': 0x2, 'is_dir': 0x4, 'is_block_device': 0x6,
-                                'is_symlink': 0x8, 'is_symlink': 0xa, 'is_socket': 0xc}
+                                'is_file': 0x8, 'is_symlink': 0xa, 'is_socket': 0xc}
         ent_p = pathlib.Path(ent.path) if isinstance(ent, os.DirEntry) else ent
 
         for method, constant in methods_constants_d.items():

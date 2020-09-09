@@ -47,9 +47,6 @@ guid = c2702b74-800c-4131-8746-8fb5b89ce4ac
 [EFI_SMM_SW_DISPATCH2_PROTOCOL]
 guid = 18a3c6dc-5eea-48c8-a1c1-b53389f98999
 
-[KERNEL]
-pid = 1996
-
 
 [LOG]
 # log directory output

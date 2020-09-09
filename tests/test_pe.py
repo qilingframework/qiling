@@ -274,6 +274,44 @@ class PETest(unittest.TestCase):
 
         my_sandbox(["../examples/rootfs/x8664_windows/bin/x8664_hello.exe"], "../examples/rootfs/x8664_windows")
 
+    def test_pe_win_x86_argv(self):
+        def check_print(ql, address, params):
+            if ql.pointersize == 8:
+                _, _, p_format, _, p_args = ql.os.get_function_param(5)
+            else:
+                _, _, _, p_format, _, p_args = ql.os.get_function_param(6)
+            fmt = ql.mem.string(p_format)
+            count = fmt.count("%")
+            params = []
+            params_addr = p_args
+
+            if count > 0:
+                for i in range(count):
+                        param = ql.mem.read(params_addr + i * ql.pointersize, ql.pointersize)
+                        params.append(
+                        ql.unpack(param)
+                        )        
+
+            self.target_txt = ""
+
+            try:
+                self.target_txt = ql.mem.string(params[1])       
+            except:
+                pass
+            
+            return  address, params
+
+        ql = Qiling(["../examples/rootfs/x86_windows/bin/argv.exe"], "../examples/rootfs/x86_windows")
+        ql.set_api('__stdio_common_vfprintf', check_print, QL_INTERCEPT.ENTER)
+        ql.run()
+        
+        if self.target_txt.find("argv.exe"):
+            self.target_txt = "argv.exe"
+        
+        self.assertEqual("argv.exe", self.target_txt)
+        
+        del self.target_txt
+        del ql
 
     def test_pe_win_x86_crackme(self):
         class StringBuffer:

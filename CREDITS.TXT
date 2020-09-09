@@ -10,7 +10,7 @@ NGUYEN Anh Quynh <aquynh@gmail.com>
 
 Travis, Website and Documentations
 ==================================
-FOO Kevin (chfl4gs)
+FOO Kevin (chfl4gs) <chfl4gs@qiling.io>
 
 Core Developers
 ===============

@@ -15,7 +15,7 @@ def my_syscall_write(ql, write_fd, write_buf, write_count, *args, **kw):
     try:
         buf = ql.mem.read(write_buf, write_count)
         ql.nprint("\n+++++++++\nmy write(%d,%x,%i) = %d\n+++++++++" % (write_fd, write_buf, write_count, regreturn))
-        ql.os.file_des[write_fd].write(buf)
+        ql.os.fd[write_fd].write(buf)
         regreturn = write_count
     except:
         regreturn = -1
