@@ -114,8 +114,7 @@ def echo_key(ql: Qiling, key):
     # directly. The hack here is to show the corresponding key.
     stdscr = ql.os.stdscr
     y, _ = stdscr.getmaxyx()
-    stdscr.move(y-1, 0)
-    stdscr.addstr(f"Current key: {key}")
+    stdscr.addstr(y-2, 0, f"Current key: {key}")
     stdscr.refresh()
 
 def show_once(ql: Qiling, key):
@@ -125,7 +124,7 @@ def show_once(ql: Qiling, key):
     # Partial exectution to skip input reading
     ql.run(begin=0x801B, end=0x803d)
     echo_key(ql, key)
-    time.sleep(3)
+    time.sleep(1)
 
 # In this stage, we show every key.
 def third_stage(keys):
