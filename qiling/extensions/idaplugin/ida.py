@@ -13,6 +13,8 @@ import ida_name
 import ida_gdl
 import ida_frame
 import ida_idp
+import ida_auto
+import ida_netnode
 
 class IDA:
     def __init__(self):
@@ -332,3 +334,19 @@ class IDA:
     @staticmethod
     def assemble(ea, cs, ip, use32, line):
         return ida_idp.assemble(ea, cs, ip, use32, line)
+
+    @staticmethod
+    def create_data(ea, dataflag, size, tid=ida_netnode.BADNODE):
+        return ida_bytes.create_data(ea, dataflag, size, tid)
+
+    @staticmethod
+    def create_bytes_array(start, end):
+        return IDA.create_data(start, ida_bytes.byte_flag(), end-start)
+
+    @staticmethod
+    def create_byte(ea, length, force=False):
+        return ida_bytes.create_byte(ea, length, force)
+
+    @staticmethod
+    def perform_analysis(start, end, final_pass=True):
+        return ida_auto.plan_and_wait(start, end)
