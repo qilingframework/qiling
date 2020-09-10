@@ -9,6 +9,7 @@ RELEASE = True
 
 import sys
 import collections
+import time
 
 # Qiling
 from qiling import *
@@ -600,6 +601,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.is_change_addr = -1
         self.userobj = None
         self.customscriptpath = None
+        self.bb_mapping = {}
 
     ### Main Framework
 
@@ -892,8 +894,148 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.retn_blocks.append(cur_block.id)
         IDA.color_block(cur_block, Colors.Pink.value)
 
+    def _guide_hook(self, ql, addr, data):
+        print(f"Executing: {hex(addr)}")
+        start_bb_id = self.hook_data['startbb']
+        cur_bb = IDA.get_block(addr)
+        if "force" in self.hook_data and addr in self.hook_data['force']:
+            if self.hook_data['force'][addr]:
+                reg1 = IDA.print_operand(addr, 0)
+                reg2 = IDA.print_operand(addr, 1)
+                reg2_val = ql.reg.__getattribute__(reg2)
+                ql.reg.__setattr__(reg1, reg2_val)
+            else:
+                pass
+            ins_size = IDA.get_instruction_size(addr)
+            ql.reg.arch_pc += ins_size
+        # TODO: Maybe we can detect whether the program will access unmapped
+        #       here so that we won't map the memory.
+        next_ins = IDA.get_instruction(addr)
+        if "call" in next_ins:
+            ql.reg.arch_pc += IDA.get_instruction_size(addr)
+            return
+        if start_bb_id == cur_bb.id:
+            return
+        if cur_bb.id in self.real_blocks or cur_bb.id in self.retn_blocks:
+            if cur_bb.id not in self.paths[start_bb_id]:
+                self.paths[start_bb_id].append(cur_bb.id)
+            ql.emu_stop()
+
+    def _skip_unmapped_rw(self, ql, type, addr, size, value):
+        map_addr = ql.mem.align(addr)
+        map_size = ql.mem.align(size)
+        if not ql.mem.is_mapped(map_addr, map_size):
+            print(f"Invalid memory R/W, trying to map {hex(map_size)} at {hex(map_addr)}")
+            ql.mem.map(map_addr, map_size)
+            ql.mem.write(map_addr, b'\x00'*map_size)
+        return True
+
+    def _find_branch_in_real_block(self, bb):
+        paddr = bb.start_ea
+        while paddr < bb.end_ea:
+            ins = IDA.get_instruction(paddr)
+            sz = IDA.get_instruction_size(paddr)
+            if ins.lower().startswith("cmov"):
+                return paddr
+            paddr += sz
+        return None
+
+    def _paths_str(self):
+        r = ""
+        for bbid, succs in self.paths.items():
+            if len(succs) == 1:
+                r += f"{self._block_str(bbid)} -> {self._block_str(succs[0])}\n"
+            elif len(succs) == 2:
+                r += f"{self._block_str(bbid)} --(force jump)--> {self._block_str(succs[0])}\n"
+                r += f"|----(skip jump)----> {self._block_str(succs[1])}\n"
+        return r
+
+    def _search_path(self):
+        self.paths = {bbid: [] for bbid in self.bb_mapping.keys()}
+        reals = [self.first_block, *self.real_blocks]
+        self.deflatqlemu = QlEmuQiling() 
+        self.deflatqlemu.rootfs = self.qlemu.rootfs
+        self.deflatqlemu.start()
+        ql = self.deflatqlemu.ql
+        self.hook_data = None
+        ql.hook_code(self._guide_hook)
+        ql.hook_mem_read_invalid(self._skip_unmapped_rw)
+        ql.hook_mem_write_invalid(self._skip_unmapped_rw)
+        ql.hook_mem_unmapped(self._skip_unmapped_rw)
+        for bbid in reals:
+            bb = self.bb_mapping[bbid]
+            braddr = self._find_branch_in_real_block(bb)
+            self.hook_data = {
+                "startbb": bbid
+            }
+            if braddr is None:
+                ql.run(begin=bb.start_ea)
+            else:
+                self.hook_data['force'] = {braddr: True}
+                ql.run(begin=bb.start_ea)
+                self.hook_data['force'] = {braddr: False}
+                ql.run(begin=bb.start_ea)
+        del self.deflatqlemu
+        self.deflatqlemu = None
+        print(self._paths_str())
+
+    def _patch_codes(self):
+        if len(self.paths[self.first_block]) != 1:
+            print(f"Error: found wrong ways in first block: {self._block_str(self.bb_mapping[self.first_block])}, should be 1 path but get {len(self.paths[self.first_block])}, exit.")
+            return
+        print("NOP dispatcher block")
+        dispatcher_bb = self.bb_mapping[self.dispatcher]
+        IDA.fill_block(dispatcher_bb, b'\x00')
+        first_jmp_addr = dispatcher_bb.start_ea
+        instr_to_assemble = f"jmp {self.bb_mapping[self.paths[self.first_block][0]].start_ea:x}h"
+        print(f"Assemble {instr_to_assemble} at {hex(first_jmp_addr)}")
+        IDA.assemble(first_jmp_addr, 0, first_jmp_addr, True, instr_to_assemble)
+        for bbid in self.real_blocks:
+            bb = self.bb_mapping[bbid]
+            braddr = self._find_branch_in_real_block(bb)
+            if braddr is None:
+                last_instr_address = IDA.get_prev_head(bb.end_ea)
+                print(f"Patch NOP from {hex(last_instr_address)} to {hex(bb.end_ea)}")
+                IDA.fill_bytes(last_instr_address, bb.end_ea, b'\x00')
+                if len(self.paths[bbid]) != 1:
+                    print(f"Warning: found wrong ways in block: {self._block_str(bb)}, should be 1 path but get {len(self.paths[bbid])}")
+                    continue
+                instr_to_assemble = f"jmp {self.bb_mapping[self.paths[bbid][0]].start_ea:x}h"
+                print(f"Assemble {instr_to_assemble} at {hex(last_instr_address)}")
+                IDA.assemble(last_instr_address, 0, last_instr_address, True, instr_to_assemble)
+                IDA.perform_analysis(bb.start_ea, bb.end_ea)
+            else:
+                if len(self.paths[bbid]) != 2:
+                    print(f"Warning: found wrong ways in block: {self._block_str(bb)}, should be 2 paths but get {len(self.paths[bbid])}")
+                    continue
+                cmov_instr = IDA.get_instruction(braddr).lower()
+                print(f"Patch NOP from {hex(braddr)} to {hex(bb.end_ea)}")
+                IDA.fill_bytes(braddr, bb.end_ea, b'\x00')
+                jmp_instr = f"j{cmov_instr[4:]}"
+                instr_to_assemble = f"{jmp_instr} {self.bb_mapping[self.paths[bbid][0]].start_ea:x}h"
+                print(f"Assemble {instr_to_assemble} at {hex(braddr)}")
+                IDA.assemble(braddr, 0, braddr, True, instr_to_assemble)
+                IDA.perform_analysis(bb.start_ea, bb.end_ea)
+                time.sleep(0.5)
+                next_instr_address = IDA.get_instruction_size(braddr) + braddr
+                instr_to_assemble = f"jmp {self.bb_mapping[self.paths[bbid][1]].start_ea:x}h"      
+                print(f"Assemble {instr_to_assemble} at {hex(next_instr_address)}")
+                IDA.assemble(next_instr_address, 0, next_instr_address, True, instr_to_assemble)
+                IDA.perform_analysis(bb.start_ea, bb.end_ea)
+        for bbid in self.fake_blocks:
+            bb = self.bb_mapping[bbid]
+            print(f"Patch NOP for block: {self._block_str(bb)}")
+            IDA.fill_block(bb, b'\x00')
+        print(f"Patch NOP for pre_dispatcher.")
+        bb = self.bb_mapping[self.pre_dispatcher]
+        IDA.fill_block(bb, b'\x00')
+    
     def ql_deflat(self):
-        pass
+        if len(self.bb_mapping) == 0:
+            self.ql_parse_blocks_for_deobf()
+        self._search_path()
+        self._patch_codes()
+        IDA.perform_analysis(self.deflat_func.start_ea, self.deflat_func.end_ea)
 
     def _block_str(self, bb):
         if type(bb) is int:
@@ -903,6 +1045,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def ql_parse_blocks_for_deobf(self):
         cur_addr = IDA.get_current_address()
         flowchart = IDA.get_flowchart(cur_addr)
+        self.deflat_func = IDA.get_function(cur_addr)
         self.bb_mapping = {bb.id:bb for bb in flowchart}
         if flowchart is None:
             return
@@ -933,7 +1076,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.real_blocks.append(bb.id)
             elif IDA.block_is_terminating(bb):
                 self.retn_blocks.append(bb.id)
-            elif bb.id != self.first_block:
+            elif bb.id != self.first_block and bb.id != self.pre_dispatcher and bb.id != self.dispatcher:
                 self.fake_blocks.append(bb.id)
         for bbid in self.real_blocks:
             IDA.color_block(self.bb_mapping[bbid], Colors.Green.value)
