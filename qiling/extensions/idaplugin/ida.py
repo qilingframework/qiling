@@ -319,17 +319,17 @@ class IDA:
         return ida_bytes.patch_bytes(addr, bs)
     
     @staticmethod
-    def patch_nop(start, end):
-        return ida_bytes.patch_bytes(start, b'\x90'*(end-start))
+    def fill_bytes(start, end, bs = b'\x90'):
+        return ida_bytes.patch_bytes(start, bs*(end-start))
     
     @staticmethod
     def nop_selection():
         _, start, end = IDA.get_last_selection()
-        return IDA.patch_nop(start, end)
+        return IDA.fill_bytes(start, end)
     
     @staticmethod
-    def nop_block(bb):
-        return IDA.patch_nop(bb.start_ea, bb.end_ea)
+    def fill_block(bb, bs=b'\x90'):
+        return IDA.fill_bytes(bb.start_ea, bb.end_ea, bs)
 
     @staticmethod
     def assemble(ea, cs, ip, use32, line):
