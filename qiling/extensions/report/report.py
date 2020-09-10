@@ -1,18 +1,22 @@
-from qiling.const import QL_OS
+from qiling.const import *
+import json
 
 
 class Report:
     def __init__(self, ql):
         self.filename = ql.filename
         self.rootfs = ql.rootfs
-        self.arch = ql.archtype
-        self.os = ql.ostype
+        self.arch = list(arch_map.keys())[list(arch_map.values()).index(ql.archtype)]
+        self.os = list(os_map.keys())[list(os_map.values()).index(ql.ostype)]
         self.env = ql.env
         self.strings = set()
         for string in ql.os.appeared_strings:
             strings = string.split(" ")
             self.strings |= set(strings)
-        self.profile = ql.profile
+        self.profile = {}
+        for section in ql.profile.sections():
+            self.profile.update(dict(ql.profile.items(section)))
+        self.strings = list(self.strings)
         self.patches = []
         self.patches.extend(ql.patch_bin)
         self.patches.extend(ql.patch_lib)
@@ -28,22 +32,33 @@ class WindowsReport(Report):
     def __init__(self, ql):
         super().__init__(ql)
         self.dlls = ql.loader.dlls
-        self.teb = ql.loader.TEB.base
-        self.peb = ql.loader.PEB.base
-        self.ldr = ql.loader.LDR.base
+        self.teb_address = ql.loader.TEB.base
+        self.peb_address = ql.loader.PEB.base
+        self.ldr_address = ql.loader.LDR.base
         self.api = ql.os.syscalls
         self.registries = {}
         for key, values in ql.os.registry_manager.accessed.items():
             self.registries[key] = values
         self.entry_point = ql.loader.entry_point
-        self.import_symbols = ql.loader.import_symbols
-        self.export_symbols = ql.loader.export_symbols
-        self.cmdline = ql.loader.cmdline
+        self.import_symbols = {}
+        for key, internal_dict in ql.loader.import_symbols.items():
+            internal_dict["name"] = internal_dict["name"].decode("utf-8") if type(internal_dict["name"]) == bytes else \
+                                    internal_dict["name"]
+            self.import_symbols[key] = internal_dict
+        self.export_symbols = {}
+        for key, internal_dict in ql.loader.export_symbols.items():
+            internal_dict["name"] = internal_dict["name"].decode("utf-8") if type(internal_dict["name"]) == bytes else \
+                                    internal_dict["name"]
+            self.export_symbols[key] = internal_dict
+        self.cmdline = ql.loader.cmdline.decode("utf-8")
 
 
-def make_report(ql) -> dict:
+def make_report(ql, pretty_print=False) -> dict:
     if ql.ostype == QL_OS.WINDOWS:
         report = WindowsReport(ql)
     else:
         report = Report(ql)
-    return report.to_dict()
+    res = report.to_dict()
+    if pretty_print:
+        res = json.dumps(res, indent=10, sort_keys=True)
+    return res
