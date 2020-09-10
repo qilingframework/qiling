@@ -18,8 +18,6 @@ from .core_struct import QlCoreStructs
 from .core_hooks import QlCoreHooks
 from .core_utils import QlCoreUtils
 from .__version__ import __version__
-from .extensions.report import make_report
-
 
 class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):    
     def __init__(
@@ -88,8 +86,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         self.root = False
         # generic filter to filter print (WIP)
         self.filter = None
-        # emulation's result
-        self.json_report = None
+
 
         """
         Qiling Framework Core Engine
@@ -202,8 +199,6 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
         # run debugger
         if self.debugger != False and self.debugger != None:
             self.debugger.run()
-        # create json
-        self.json_report = make_report(self)
 
 
     # patch code to memory address
