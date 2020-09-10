@@ -173,9 +173,15 @@ class IDA:
             return None
         return r
 
+    # immidiate value
     @staticmethod
     def get_operand(addr, n):
         return (idc.get_operand_type(addr, n), idc.get_operand_value(addr, n))
+
+    # eax, ecx, etc
+    @staticmethod
+    def print_operand(addr, n):
+        return idc.print_operand(addr, n)
 
     @staticmethod
     def get_instruction_size(addr):
