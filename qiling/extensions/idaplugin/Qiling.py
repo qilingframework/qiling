@@ -23,6 +23,8 @@ from qiling.arch.mips_const import reg_map as mips_reg_map
 from qiling.utils import ql_get_arch_bits
 from qiling import __version__ as QLVERSION
 from qiling.os.filestruct import ql_file
+from qiling.extensions.idaplugin.ida import IDA
+from enum import Enum
 
 if RELEASE:
     # IDA Python SDK
@@ -39,6 +41,15 @@ else:
 
 QilingHomePage = 'https://www.qiling.io'
 QilingGithubVersion = 'https://raw.githubusercontent.com/qilingframework/qiling/dev/qiling/core.py'
+
+class Colors(Enum):
+    Blue = 0xE8864A
+    Pink = 0xC0C0FB
+    White = 0xFFFFFF
+    Black = 0x000000
+    Green = 0xd3ead9
+    Gray = 0xd9d9d9
+    Beige = 0xCCF2FF
 
 ### View Class
 class QlEmuRegView(simplecustviewer_t):
@@ -851,7 +862,101 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             # fail to download
             warning("ERROR: Qiling failed to connect to internet (Github). Try again later.")
             print("Qiling: FAILED to connect to Github to check for latest update. Try again later.")
- 
+    
+    def _remove_from_bb_lists(self, bbid):
+        if bbid in self.real_blocks:
+            self.real_blocks.remove(bbid)
+        elif bbid in self.fake_blocks:
+            self.fake_blocks.remove(bbid)
+        elif bbid in self.retn_blocks:
+            self.retn_blocks.remove(bbid)
+
+    def ql_mark_real(self):
+        cur_addr = IDA.get_current_address()
+        cur_block = IDA.get_block(cur_addr)
+        self._remove_from_bb_lists(cur_block.id)
+        self.real_blocks.append(cur_block.id)
+        IDA.color_block(cur_block, Colors.Green.value)
+
+    def ql_mark_fake(self):
+        cur_addr = IDA.get_current_address()
+        cur_block = IDA.get_block(cur_addr)
+        self._remove_from_bb_lists(cur_block.id)
+        self.fake_blocks.append(cur_block.id)
+        IDA.color_block(cur_block, Colors.Gray.value)
+
+    def ql_mark_retn(self):
+        cur_addr = IDA.get_current_address()
+        cur_block = IDA.get_block(cur_addr)
+        self._remove_from_bb_lists(cur_block.id)
+        self.retn_blocks.append(cur_block.id)
+        IDA.color_block(cur_block, Colors.Pink.value)
+
+    def ql_deflat(self):
+        pass
+
+    def _block_str(self, bb):
+        if type(bb) is int:
+            bb = self.bb_mapping[bb]
+        return f"Block id: {bb.id}, start_address: {bb.start_ea:x}, end_address: {bb.end_ea:x}, type: {bb.type}"
+
+    def ql_parse_blocks_for_deobf(self):
+        cur_addr = IDA.get_current_address()
+        flowchart = IDA.get_flowchart(cur_addr)
+        self.bb_mapping = {bb.id:bb for bb in flowchart}
+        if flowchart is None:
+            return
+        bb_count = {}
+        for bb in flowchart:
+            for succ in bb.succs():
+                if succ.id not in bb_count:
+                    bb_count[succ.id] = 0
+                bb_count[succ.id] += 1
+        max_ref_bb_id = None
+        max_ref = 0
+        for bb_id, ref in bb_count.items():
+            if ref > max_ref:
+                max_ref = ref
+                max_ref_bb_id = bb_id
+        self.pre_dispatcher = max_ref_bb_id
+        try:
+            self.dispatcher = list(self.bb_mapping[self.pre_dispatcher].succs())[0].id
+            self.first_block = flowchart[0].id
+        except IndexError:
+            print("Fail to get dispatcher and first_block.")
+            return
+        self.real_blocks = []
+        self.fake_blocks = []
+        self.retn_blocks = []
+        for bb in flowchart:
+            if self.pre_dispatcher in [b.id for b in bb.succs()] and IDA.get_instructions_count(bb.start_ea, bb.end_ea) > 1:
+                self.real_blocks.append(bb.id)
+            elif IDA.block_is_terminating(bb):
+                self.retn_blocks.append(bb.id)
+            elif bb.id != self.first_block:
+                self.fake_blocks.append(bb.id)
+        for bbid in self.real_blocks:
+            IDA.color_block(self.bb_mapping[bbid], Colors.Green.value)
+        for bbid in self.fake_blocks:
+            IDA.color_block(self.bb_mapping[bbid], Colors.Gray.value)
+        for bbid in self.retn_blocks:
+            IDA.color_block(self.bb_mapping[bbid], Colors.Pink.value)
+        IDA.color_block(self.bb_mapping[self.dispatcher], Colors.Blue.value)
+        IDA.color_block(self.bb_mapping[self.pre_dispatcher], Colors.Blue.value)
+        IDA.color_block(self.bb_mapping[self.first_block], Colors.Beige.value)
+        print(f"First block: {self._block_str(self.first_block)}")
+        print(f"Dispatcher: {self._block_str(self.dispatcher)}")
+        print(f"Pre dispatcher: {self._block_str(self.pre_dispatcher)}")
+        tp = '\n'.join(map(self._block_str, self.real_blocks))
+        print(f"Real blocks:\n{tp}")
+        tp = '\n'.join(map(self._block_str, self.fake_blocks))
+        print(f"Fake blocks:\n{tp}")
+        tp = '\n'.join(map(self._block_str, self.retn_blocks))
+        print(f"Return blocks:\n{tp}")
+        print(f"Auto analysis finished, please check whether the result is correct.")
+        print(f"You may change the property of each block manually if necessary.")
+
+
     ### Hook
 
     def ql_step_hook(self, ql, addr, size):
@@ -979,6 +1084,12 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   False  ))  
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":about",             self.ql_about,                 "About",                      "About",                     None,                   False  ))
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":checkupdate",       self.ql_check_update,           "Check Update",               "Check Update",              None,                   False  ))
+        self.menuitems.append(QlEmuMisc.MenuItem("-",                                     self.ql_menu_null,              "",                           None,                        None,                   True   ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":parseblocks",       self.ql_parse_blocks_for_deobf,           "Auto Analysis For Deflat",               "Auto Analysis For Deflat",              None,                   True  ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markreal",       self.ql_mark_real,           "Mark as Real Block",               "Mark as Real Block",              None,                   True  ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markfake",       self.ql_mark_fake,           "Mark as Fake Block",               "Mark as Fake Block",              None,                   True  ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":markretn",       self.ql_mark_retn,           "Mark as Return Block",               "Mark as Return Block",              None,                   True  ))
+        self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":deflat",       self.ql_deflat,           "Deflat",               "Deflat",              None,                   True  ))
 
         for item in self.menuitems:
             self.ql_register_new_action(item.action, item.title, QlEmuMisc.menu_action_handler(self, item.action), item.shortcut, item.tooltip,  -1)
