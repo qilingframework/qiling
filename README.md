@@ -1,4 +1,4 @@
-[![Pypi](https://img.shields.io/pypi/dm/qiling?label=pypi)](https://pypi.org/project/qiling/)
+[![Downloads](https://pepy.tech/badge/qiling)](https://pepy.tech/project/qiling)
 [![Gitter](https://badges.gitter.im/qilingframework/community.svg)](https://gitter.im/qilingframework/community)
 [![Build Status](https://travis-ci.com/qilingframework/qiling.svg?branch=dev)](https://travis-ci.com/qilingframework/qiling)
 ![Docker Image CI](https://github.com/qilingframework/qiling/workflows/Docker%20Image%20CI/badge.svg?branch=dev)
