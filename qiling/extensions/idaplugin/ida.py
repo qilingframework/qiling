@@ -12,6 +12,7 @@ import ida_segment
 import ida_name
 import ida_gdl
 import ida_frame
+import ida_idp
 
 class IDA:
     def __init__(self):
@@ -327,3 +328,7 @@ class IDA:
     @staticmethod
     def nop_block(bb):
         return IDA.patch_nop(bb.start_ea, bb.end_ea)
+
+    @staticmethod
+    def assemble(ea, cs, ip, use32, line):
+        return ida_idp.assemble(ea, cs, ip, use32, line)
