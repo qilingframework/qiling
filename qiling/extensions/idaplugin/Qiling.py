@@ -602,6 +602,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.userobj = None
         self.customscriptpath = None
         self.bb_mapping = {}
+        self.registered = False
+        self.run()
 
     ### Main Framework
 
@@ -617,14 +619,17 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         return PLUGIN_KEEP
 
     def run(self, arg = 0):
-        self.ql_register_menu_actions()
-        self.ql_attach_main_menu_actions()
+        if not self.registered:
+            self.ql_register_menu_actions()
+            self.ql_attach_main_menu_actions()
+            self.registered = True
 
     def term(self):
-        self.qlemu.remove_ql()
-        self.ql_unhook_ui_actions()
-        self.ql_detach_main_menu_actions()
-        self.ql_unregister_menu_actions()
+        if self.registered:
+            self.qlemu.remove_ql()
+            self.ql_unhook_ui_actions()
+            self.ql_detach_main_menu_actions()
+            self.ql_unregister_menu_actions()
 
     ### Actions
 
