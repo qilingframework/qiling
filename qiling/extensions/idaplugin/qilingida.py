@@ -4,7 +4,7 @@
 
 # Plugin Author: kabeor <kabeor@qiling.io>
 
-UseAsScript = True
+UseAsScript = False
 RELEASE = True
 
 import sys
@@ -31,7 +31,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     popup_menu_hook = None
 
-    flags = PLUGIN_KEEP
+    flags = PLUGIN_HIDE
     comment = ""
 
     help = "Qiling Emulator"
@@ -57,8 +57,6 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.userobj = None
         self.customscriptpath = None
         self.bb_mapping = {}
-        self.registered = False
-        self.run()
 
     ### Main Framework
 
@@ -74,17 +72,19 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         return PLUGIN_KEEP
 
     def run(self, arg = 0):
-        if not self.registered:
-            self.ql_register_menu_actions()
-            self.ql_attach_main_menu_actions()
-            self.registered = True
+        print(f"Register actions.")
+        self.ql_register_menu_actions()
+        self.ql_attach_main_menu_actions()
+
+    def ready_to_run(self):
+        print(f"UI Ready, register our menu actions.")
+        self.run()
 
     def term(self):
-        if self.registered:
-            self.qlemu.remove_ql()
-            self.ql_unhook_ui_actions()
-            self.ql_detach_main_menu_actions()
-            self.ql_unregister_menu_actions()
+        self.qlemu.remove_ql()
+        self.ql_unhook_ui_actions()
+        self.ql_detach_main_menu_actions()
+        self.ql_unregister_menu_actions()
 
     ### Actions
 
@@ -696,6 +696,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.menuitems.append(QlEmuMisc.MenuItem(self.plugin_name + ":deflat",       self.ql_deflat,           "Deflat",               "Deflat",              None,                   True  ))
 
         for item in self.menuitems:
+            if item.action == "-":
+                continue
             self.ql_register_new_action(item.action, item.title, QlEmuMisc.menu_action_handler(self, item.action), item.shortcut, item.tooltip,  -1)
 
     def ql_unregister_menu_actions(self):
