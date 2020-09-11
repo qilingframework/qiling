@@ -2,7 +2,7 @@ from idaapi import *
 from idc import *
 from idautils import *
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
+from PyQt5.QtWidgets import *
 from qiling import Qiling
 from qiling.const import *
 from qiling.os.filestruct import ql_file
@@ -15,6 +15,9 @@ from qiling.arch.arm64_const import reg_map as arm64_reg_map
 from qiling.arch.mips_const import reg_map as mips_reg_map
 import collections
 from enum import Enum
+
+QilingHomePage = 'https://www.qiling.io'
+QilingGithubVersion = 'https://raw.githubusercontent.com/qilingframework/qiling/dev/qiling/core.py'
 
 class Colors(Enum):
     Blue = 0xE8864A

@@ -2,10 +2,11 @@ from idaapi import *
 from idc import *
 from idautils import *
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
+from PyQt5.QtWidgets import *
 from qiling.extensions.idaplugin.utils import QlEmuMisc
 from qiling import Qiling
 from qiling.const import *
+from qiling import __version__ as QLVERSION
 
 ### Dialog Class
 class QlEmuMemDialog(Form):

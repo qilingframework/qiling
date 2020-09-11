@@ -14,7 +14,7 @@ import time
 # Qiling
 from qiling import *
 from qiling.const import *
-from qiling import __version__ as QLVERSION
+
 from qiling.extensions.idaplugin.ida import IDA
 from qiling.extensions.idaplugin.dialogs import *
 from qiling.extensions.idaplugin.memview import *
@@ -22,26 +22,6 @@ from qiling.extensions.idaplugin.regview import *
 from qiling.extensions.idaplugin.stackview import *
 from qiling.extensions.idaplugin.utils import *
 from enum import Enum
-
-if RELEASE:
-    # IDA Python SDK
-    from idaapi import *
-    from idc import *
-    from idautils import *
-    # PyQt
-    from PyQt5 import QtCore, QtWidgets
-    from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
-
-else:
-    sys.path.append("./idapython3")
-    from idapython3 import *
-
-QilingHomePage = 'https://www.qiling.io'
-QilingGithubVersion = 'https://raw.githubusercontent.com/qilingframework/qiling/dev/qiling/core.py'
-
-
-
-
 
 ### Plugin
 
