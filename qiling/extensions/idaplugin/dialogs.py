@@ -66,8 +66,11 @@ class QlEmuAboutDialog(Form):
 BUTTON YES* Open Qiling Website
 Qiling:: About
             {FormChangeCb}
-            Qiling IDA plugin v%s, using Qiling Engine v%s.
-            (c) Qiling Team, 2020.
+            Qiling IDA plugin v%s with Qiling Framework v%s.
+            Author:
+            Ziqiao Kong,
+            Chenxu Wu,
+            Qiling Team.
             Qiling is released under the GPL v2.
             Find more info at https://www.qiling.io
             """ %(version, QLVERSION), {
