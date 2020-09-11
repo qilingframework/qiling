@@ -4,7 +4,7 @@
 
 # Plugin Author: kabeor <kabeor@qiling.io>
 
-UseAsScript = False
+UseAsScript = True
 RELEASE = True
 
 import sys
