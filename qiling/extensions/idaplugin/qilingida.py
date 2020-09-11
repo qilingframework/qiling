@@ -303,7 +303,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.aboutdlg.Free()
 
     def ql_check_update(self):
-        (r, content) = QlEmuMisc.url_download(QilingGithubVersion)
+        (r, content) = QlEmuMisc.url_download(QilingStableVersionURL)
         content = content.decode("utf-8")
         if r == 0:
             try:

@@ -17,7 +17,7 @@ import collections
 from enum import Enum
 
 QilingHomePage = 'https://www.qiling.io'
-QilingGithubVersion = 'https://raw.githubusercontent.com/qilingframework/qiling/master/qiling/__version__.py'
+QilingStableVersionURL = 'https://raw.githubusercontent.com/qilingframework/qiling/master/qiling/__version__.py'
 
 class Colors(Enum):
     Blue = 0xE8864A
