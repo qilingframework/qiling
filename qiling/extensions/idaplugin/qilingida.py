@@ -10,6 +10,7 @@ RELEASE = True
 import sys
 import collections
 import time
+import re
 
 # Qiling
 from qiling import *
@@ -303,12 +304,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def ql_check_update(self):
         (r, content) = QlEmuMisc.url_download(QilingGithubVersion)
-        content = to_string(content)
+        content = content.decode("utf-8")
         if r == 0:
-            # find stable version
-            sig = '__version__'
-            begin = content.find(sig.encode())+len(sig)
-            version_stable = content[begin+4:begin+20].decode().split('\n')[0].replace('\"', '').replace(' ', '').replace('+', '')
+            try:
+                version_stable = re.findall(r"\"([\d\.]+)\"", content)[0]
+            except (TypeError, IndexError):
+                warning("ERROR: Failed to find version string from response.")
+                print("ERROR: Failed to find version string from response.")
 
             # compare with the current version
             if version_stable == QLVERSION:
