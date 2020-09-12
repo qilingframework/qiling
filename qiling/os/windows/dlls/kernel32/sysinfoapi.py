@@ -118,6 +118,15 @@ def hook_GetNativeSystemInfo(ql, address, params):
     system_info.write(pointer)
     return 0
 
+# void GetSystemTime(
+#   LPSYSTEMTIME lpSystemTime);
+@winsdkapi(cc=STDCALL, dllname=dllname)
+def hook_GetSystemTIme(ql, address, params):
+    dt = datetime.now().microsecond.to_bytes(8, byteorder="little")
+    pointer = params["lpSystemTime"]
+    ql.mem.write(pointer, dt)
+    return 0
+
 
 # typedef struct _FILETIME {
 #   DWORD dwLowDateTime;
