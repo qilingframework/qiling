@@ -18,7 +18,7 @@ Qiling is an advanced binary emulation framework, with the following features:
 - Provides a fully configurable sandbox
 - Provides in-dept memory, register, OS level and filesystem level API
 - Fine-grain instrumentation: allows hooks at various levels (instruction/basic-block/memory-access/exception/syscall/IO/etc)
-- Provides virtual machine level API such as save and restore current execution state.
+- Provides virtual machine level API such as save and restore current execution state
 - Supports cross architecture and platform debugging capabilities
 - Built-in debugger with reverse debugging capability
 - Allows dynamic hotpatch on-the-fly running code, including the loaded library
