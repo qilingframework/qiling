@@ -1065,7 +1065,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.ql.restore(saved_states=self.qlemu.status)
             self.stephook = self.qlemu.ql.hook_code(callback=self.ql_step_hook)
             if self.userobj is not None:
-                userhook = self.userobj.custom_step(self.qlemu.ql, self.stepflag)
+                userhook = self.userobj.custom_step(self.qlemu.ql)
             self.qlemu.run(begin=self.qlemu.ql.reg.arch_pc, end=self.qlemu.exit_addr)
             if userhook and userhook is not None:
                 for hook in userhook:
