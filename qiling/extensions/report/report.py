@@ -47,7 +47,7 @@ class WindowsReport(Report):
         self.cmdline = ql.loader.cmdline.decode("utf-8")
 
 
-def make_report(ql, pretty_print=False) -> dict:
+def generate_report(ql, pretty_print=False) -> dict:
     if ql.ostype == QL_OS.WINDOWS:
         report = WindowsReport(ql)
     else:

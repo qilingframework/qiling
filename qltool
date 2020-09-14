@@ -11,7 +11,7 @@ from qiling import *
 from qiling.const import QL_ARCH
 from qiling.__version__ import __version__ as ql_version
 from qiling.extensions.coverage import utils as cov_utils
-from qiling.extensions.report import make_report
+from qiling.extensions.report import generate_report
 
 def parse_args(parser, commands):
     # Divide argv by commands
@@ -288,7 +288,7 @@ if __name__ == '__main__':
     with cov_utils.collect_coverage(ql, options.coverage_format, options.coverage_file):
         ql.run(timeout=timeout)
     if options.json:
-        print(make_report(ql, pretty_print=True))
+        print(generate_report(ql, pretty_print=True))
     exit(ql.os.exit_code)
 
 
