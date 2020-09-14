@@ -32,7 +32,7 @@ class Qltool_Test(unittest.TestCase):
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output)) 
 
     def test_qltool_json(self):
-        create = [sys.executable, '../qltool', 'run', '-f','../examples/rootfs/x86_windows/bin/x86_hello.exe','--rootfs', '../examples/rootfs/x86_windows','--output', 'False', '--json']
+        create = [sys.executable, '../qltool', 'run', '-f','../examples/rootfs/x86_linux/bin/x86_hello','--rootfs', '../examples/rootfs/x86_linux','--output', 'False', '--json']
         try:
             subprocess.check_output(create,stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
