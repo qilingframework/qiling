@@ -5,6 +5,7 @@ This file details the changelog of Qiling Framework.
 - Add Doogie example and implement more interrupts.
 - Add ollvm de-flattern support for IDA plugin.
 - Fix the popup menu doesn't show when the IDA plugin is put into plugins directory.
+- Add Json report extension
 
 ------------------------------------
 [Version 1.1.2]: September 6th, 2020

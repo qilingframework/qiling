@@ -194,6 +194,14 @@ $ ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs 
 ```
 ---
 
+With json output (Windows mainly):
+
+```
+$ ./qltool run -f examples/rootfs/x86_windows/bin/x86_hello.exe --rootfs  examples/rootfs/x86_windows/ --console False --json
+```
+---
+
+
 #### Contact
 
 Get the latest info from our website https://www.qiling.io

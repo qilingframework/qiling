@@ -11,7 +11,7 @@ from qiling import *
 from qiling.const import QL_ARCH
 from qiling.__version__ import __version__ as ql_version
 from qiling.extensions.coverage import utils as cov_utils
-
+from qiling.extensions.report import generate_report
 
 def parse_args(parser, commands):
     # Divide argv by commands
@@ -117,6 +117,10 @@ def usage():
     
     print("\n\nWith UEFI file:")
     print("\t ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel")
+
+    print("\n\nWith binary file and json output:")
+    print("\t ./qltool run -f examples/rootfs/x86_windows/bin/x86_hello.exe --rootfs  examples/rootfs/x86_windows/ --console False --json")
+
     exit(1)
 
 
@@ -179,6 +183,7 @@ if __name__ == '__main__':
     comm_parser.add_argument('-c', '--coverage-file', required=False, default=None, dest='coverage_file', help='Code coverage file name')
     comm_parser.add_argument('--coverage-format', required=False, default='drcov', dest='coverage_format',
                              choices=cov_utils.factory.formats, help='Code coverage file format')
+    comm_parser.add_argument('--json', action='store_true', default=False, dest='json', help='Print a json report of the emulation')
     options = parser.parse_args()
 
     # var check
@@ -272,7 +277,7 @@ if __name__ == '__main__':
         ql.verbose = 1
 
     if options.filter:
-       ql.filter = options.filter
+        ql.filter = options.filter
 
 
     timeout = 0
@@ -282,6 +287,8 @@ if __name__ == '__main__':
     # ql run
     with cov_utils.collect_coverage(ql, options.coverage_format, options.coverage_file):
         ql.run(timeout=timeout)
+    if options.json:
+        print(generate_report(ql, pretty_print=True))
     exit(ql.os.exit_code)
 
 
