@@ -3,7 +3,7 @@ This file details the changelog of Qiling Framework.
 
 [Version 1.2-alpha1]: September [SOMETHING], 2020
 - Add Doogie example and implement more interrupts.
-
+- Added Json report extension
 ------------------------------------
 [Version 1.1.2]: September 6th, 2020
 

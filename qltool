@@ -117,6 +117,10 @@ def usage():
     
     print("\n\nWith UEFI file:")
     print("\t ./qltool run -f examples/rootfs/x8664_efi/bin/TcgPlatformSetupPolicy --rootfs examples/rootfs/x8664_efi --env examples/rootfs/x8664_efi/rom2_nvar.pickel")
+
+    print("\n\nWith binary file and json output:")
+    print("\t ./qltool run -f examples/rootfs/x86_windows/bin/x86_hello.exe --rootfs  examples/rootfs/x86_windows/ --console False --json")
+
     exit(1)
 
 

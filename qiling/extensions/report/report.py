@@ -21,12 +21,6 @@ class Report:
         self.patches.extend(ql.patch_bin)
         self.patches.extend(ql.patch_lib)
 
-    def to_dict(self):
-        res = {}
-        for key in self.__dict__:
-            res[key] = self.__dict__[key]
-        return res
-
 
 class WindowsReport(Report):
     def __init__(self, ql):
@@ -58,7 +52,7 @@ def make_report(ql, pretty_print=False) -> dict:
         report = WindowsReport(ql)
     else:
         report = Report(ql)
-    res = report.to_dict()
+    res = report.__dict__
     if pretty_print:
         res = json.dumps(res, indent=10, sort_keys=True)
     return res
