@@ -4,6 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
 import os
+from datetime import datetime
 
 from qiling.exception import *
 from qiling.os.windows.const import *
@@ -13,6 +14,7 @@ from qiling.os.windows.fncc import *
 from qiling.os.windows.utils import *
 from qiling.os.windows.thread import *
 from qiling.os.windows.handle import *
+from qiling.os.windows.structs import *
 
 dllname = 'kernel32_dll'
 
@@ -40,8 +42,66 @@ def hook_GetFileType(ql, address, params):
 # );
 @winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCSTR': 'POINTER'})
 def hook_FindFirstFileA(ql, address, params):
-    pass
+    filename = params['lpFileName']
+    pointer = params['lpFindFileData']
 
+    if filename == None:
+        return INVALID_HANDLE_VALUE
+    elif len(filename) >= MAX_PATH:
+        return ERROR_INVALID_PARAMETER
+    
+    target_dir = os.path.join(ql.rootfs, filename.replace("\\", os.sep))
+    print('TARGET_DIR = %s' % target_dir)    
+    real_path = ql.os.transform_to_real_path(filename)
+    # Verify the directory is in ql.rootfs to ensure no path traversal has taken place
+    if not os.path.exists(real_path):
+        ql.os.last_error = ERROR_FILE_NOT_FOUND
+        return INVALID_HANDLE_VALUE
+
+    # Check if path exists
+    filesize = 0
+    try:
+        f = ql.os.fs_mapper.open(real_path, mode="r")
+        filesize = os.path.getsize(real_path).to_bytes(8, byteorder="little")
+    except FileNotFoundError:
+        ql.os.last_error = ERROR_FILE_NOT_FOUND
+        return INVALID_HANDLE_VALUE
+    
+    # Get size of the file
+    file_size_low = (int.from_bytes(filesize, "little")) & 0xffffff
+    file_size_high = (int.from_bytes(filesize, "little") >> 32)
+
+    # Create a handle for the path
+    new_handle = Handle(obj=f)
+    ql.os.handle_manager.append(new_handle)
+
+    # Spoof filetime values
+    filetime = datetime.now().microsecond.to_bytes(8, byteorder="little")
+
+    find_data = Win32FindData(
+                ql, 
+                FILE_ATTRIBUTE_NORMAL, 
+                filetime, filetime, filetime, 
+                file_size_high, file_size_low,
+                0, 0, 
+                filename,
+                0, 0, 0, 0,)
+                
+    find_data.write(pointer)
+
+    ret = new_handle.id
+    return ret
+
+# HANDLE FindFirstFileExA(
+#  LPCSTR             lpFileName,
+#  FINDEX_INFO_LEVELS fInfoLevelId,
+#  FINDEX_SEARCH_OPS  fSearchOp,
+#  LPVOID             lpSearchFilter,
+#  DWORD              dwAdditionalFlags
+# );
+@winsdkapi(cc=STDCALL, dllname=dllname, replace_params_type={'LPCSTR': 'POINTER'})
+def hook_FindFirstFileExA(ql, address, params):
+    pass
 
 # HANDLE FindNextFileA(
 #  LPCSTR             lpFileName,
