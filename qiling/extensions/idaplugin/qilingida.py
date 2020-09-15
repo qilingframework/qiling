@@ -983,7 +983,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if self.qlemu is None:
             self.qlemu = QlEmuQiling()
         if self.ql_set_rootfs():
-            logging.info('Rootfs set.')
+            logging.info(f'Rootfs: {self.qlemu.rootfs}')
+            logging.info(f"Custom user script: {self.customscriptpath}")
             show_wait_box("Qiling is processing ...")
             try:
                 self.qlemu.start()
