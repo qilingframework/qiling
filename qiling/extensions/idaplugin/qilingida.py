@@ -8,6 +8,7 @@ import sys
 import collections
 import time
 import struct
+import logging
 from enum import Enum
 
 # Qiling
@@ -51,6 +52,7 @@ from PyQt5.QtWidgets import (QPushButton, QHBoxLayout)
 
 QilingHomePage = 'https://www.qiling.io'
 QilingStableVersionURL = 'https://raw.githubusercontent.com/qilingframework/qiling/master/qiling/__version__.py'
+logging.basicConfig(level=logging.INFO, format='[%(levelname)s][%(module)s:%(lineno)d] %(message)s')
 
 class Colors(Enum):
     Blue = 0xE8864A
@@ -892,7 +894,7 @@ class QlEmuQiling:
         savepath = savedlg.path_name.value
 
         self.ql.save(reg=True, mem=True,fd=True, cpu_context=True, snapshot=savepath)
-        print('Save to ' + savepath)
+        logging.info('Save to ' + savepath)
         return True
     
     def load(self):
@@ -905,7 +907,7 @@ class QlEmuQiling:
         loadname = loaddlg.file_name.value
 
         self.ql.restore(snapshot=loadname)
-        print('Restore from ' + loadname)
+        logging.info('Restore from ' + loadname)
         return True
 
     def remove_ql(self):
@@ -951,22 +953,22 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
 
     def init(self):
         # init data
-        print('---------------------------------------------------------------------------------------')
-        print('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2020'.format(QLVERSION))
-        print('Based on Qiling v{0}'.format(QLVERSION))
-        print('Find more information about Qiling at https://qiling.io')
-        print('---------------------------------------------------------------------------------------')
+        logging.info('---------------------------------------------------------------------------------------')
+        logging.info('Qiling Emulator Plugin For IDA, by Qiling Team. Version {0}, 2020'.format(QLVERSION))
+        logging.info('Based on Qiling v{0}'.format(QLVERSION))
+        logging.info('Find more information about Qiling at https://qiling.io')
+        logging.info('---------------------------------------------------------------------------------------')
         self.qlemu = QlEmuQiling()
         self.ql_hook_ui_actions()
         return PLUGIN_KEEP
 
     def run(self, arg = 0):
-        print(f"Register actions.")
+        logging.info(f"Registering actions.")
         self.ql_register_menu_actions()
         self.ql_attach_main_menu_actions()
 
     def ready_to_run(self):
-        print(f"UI Ready, register our menu actions.")
+        logging.info(f"UI is ready, register our menu actions.")
         self.run()
 
     def term(self):
@@ -981,7 +983,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if self.qlemu is None:
             self.qlemu = QlEmuQiling()
         if self.ql_set_rootfs():
-            print('Set rootfs success')
+            logging.info(f'Rootfs: {self.qlemu.rootfs}')
+            logging.info(f"Custom user script: {self.customscriptpath}")
             show_wait_box("Qiling is processing ...")
             try:
                 self.qlemu.start()
@@ -989,7 +992,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.lastaddr = None
             finally:
                 hide_wait_box()
-                print("Qiling initialized done")
+                logging.info("Qiling is initialized successfully.")
         if self.customscriptpath is not None:
             self.ql_load_user_script()
             self.userobj.custom_prepare(self.qlemu.ql)
@@ -998,13 +1001,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         if self.qlinit :
             self.ql_get_user_script(is_reload=True, is_start=True)
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_reload_user_script(self):
         if self.qlinit:
             self.ql_get_user_script(is_reload=True)
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_continue(self):
         if self.qlinit:
@@ -1031,7 +1034,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                     self.qlemu.ql.hook_del(hook)
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_run_to_here(self):
         if self.qlinit:
@@ -1056,7 +1059,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu.status = self.qlemu.ql.save()
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_step(self):
         if self.qlinit:
@@ -1072,21 +1075,21 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                     self.qlemu.ql.hook_del(hook)
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_save(self):
         if self.qlinit:
             if self.qlemu.save() != True:
                 print('ERROR: Save failed')
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_load(self):
         if self.qlinit:
             if self.qlemu.load() != True:
-                print('ERROR: Load failed')
+                logging.error('Fail to load the snapshot.')
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_chang_reg(self):
         if self.qlinit:
@@ -1094,7 +1097,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.ql_update_views(self.qlemu.ql.reg.arch_pc, self.qlemu.ql)
             self.qlemu.status = self.qlemu.ql.save()
         else:
-            print('Please setup Qiling first')       
+            logging.error('Qiling should be setup firstly.')    
 
     def ql_reset(self):
         if self.qlinit:
@@ -1102,7 +1105,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.qlemu = QlEmuQiling()
             self.ql_start()
         else:
-            print('Please setup Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_close(self):
         if self.qlinit:
@@ -1113,9 +1116,9 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             del self.qlemu
             self.qlemu = None
             self.qlinit = False
-            print('Qiling closed')
+            logging.info('Qiling is deleted.')
         else:
-            print('Qiling is not started')
+            logging.error('Qiling is not started.')
 
     def ql_show_reg_view(self):
         if self.qlinit:
@@ -1127,7 +1130,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemuregview.Show()
                 self.qlemuregview.Refresh()
         else:
-            print('Please start Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_show_stack_view(self):
         if self.qlinit:
@@ -1138,7 +1141,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemustackview.Show()
                 self.qlemustackview.Refresh()
         else:
-            print('Please Start Qiling First')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_show_mem_view(self, addr=get_screen_ea(), size=0x10):
         if self.qlinit:
@@ -1172,7 +1175,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.qlemumemview[mem_addr].Show()
                 self.qlemumemview[mem_addr].Refresh() 
         else:
-            print('Please start Qiling first')
+            logging.error('Qiling should be setup firstly.')
 
     def ql_unload_plugin(self):
         heads = Heads(get_segm_start(get_screen_ea()), get_segm_end(get_screen_ea()))
@@ -1181,7 +1184,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.ql_close()
         self.ql_detach_main_menu_actions()
         self.ql_unregister_menu_actions()
-        print('Unload successed')
+        logging.info('Unload plugin successfully!')
 
     def ql_menu_null(self):
         pass
@@ -1198,8 +1201,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             try:
                 version_stable = re.findall(r"\"([\d\.]+)\"", content)[0]
             except (TypeError, IndexError):
-                warning("ERROR: Failed to find version string from response.")
-                print("ERROR: Failed to find version string from response.")
+                warning("ERROR: Failed to find the Qiling version string from response.")
+                logging.warning("Failed to find the Qiling version string from response.")
 
             # compare with the current version
             if version_stable == QLVERSION:
@@ -1212,8 +1215,8 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 self.updatedlg.Free()
         else:
             # fail to download
-            warning("ERROR: Qiling failed to connect to internet (Github). Try again later.")
-            print("Qiling: FAILED to connect to Github to check for latest update. Try again later.")
+            warning("ERROR: Failed to connect to Github. Try again later.")
+            logging.warning("Failed to connect to Github when checking for the latest update. Try again later.")
     
     def _remove_from_bb_lists(self, bbid):
         if bbid in self.real_blocks:
@@ -1245,7 +1248,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         IDA.color_block(cur_block, Colors.Pink.value)
 
     def _guide_hook(self, ql, addr, data):
-        print(f"Executing: {hex(addr)}")
+        logging.info(f"Executing: {hex(addr)}")
         start_bb_id = self.hook_data['startbb']
         cur_bb = IDA.get_block(addr)
         if "force" in self.hook_data and addr in self.hook_data['force']:
@@ -1275,7 +1278,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         map_addr = ql.mem.align(addr)
         map_size = ql.mem.align(size)
         if not ql.mem.is_mapped(map_addr, map_size):
-            print(f"Invalid memory R/W, trying to map {hex(map_size)} at {hex(map_addr)}")
+            logging.warning(f"Invalid memory R/W, trying to map {hex(map_size)} at {hex(map_addr)}")
             ql.mem.map(map_addr, map_size)
             ql.mem.write(map_addr, b'\x00'*map_size)
         return True
@@ -1290,15 +1293,13 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             paddr += sz
         return None
 
-    def _paths_str(self):
-        r = ""
+    def _log_paths_str(self):
         for bbid, succs in self.paths.items():
             if len(succs) == 1:
-                r += f"{self._block_str(bbid)} -> {self._block_str(succs[0])}\n"
+                logging.info(f"{self._block_str(bbid)} -> {self._block_str(succs[0])}")
             elif len(succs) == 2:
-                r += f"{self._block_str(bbid)} --(force jump)--> {self._block_str(succs[0])}\n"
-                r += f"|----(skip jump)----> {self._block_str(succs[1])}\n"
-        return r
+                logging.info(f"{self._block_str(bbid)} --(force jump)--> {self._block_str(succs[0])}")
+                logging.info(f"|----(skip jump)----> {self._block_str(succs[1])}")
 
     def _search_path(self):
         self.paths = {bbid: [] for bbid in self.bb_mapping.keys()}
@@ -1327,56 +1328,56 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
                 ql.run(begin=bb.start_ea)
         del self.deflatqlemu
         self.deflatqlemu = None
-        print(self._paths_str())
+        self._log_paths_str()
 
     def _patch_codes(self):
         if len(self.paths[self.first_block]) != 1:
-            print(f"Error: found wrong ways in first block: {self._block_str(self.bb_mapping[self.first_block])}, should be 1 path but get {len(self.paths[self.first_block])}, exit.")
+            logging.error(f"Found wrong ways in first block: {self._block_str(self.bb_mapping[self.first_block])}, should be 1 path but get {len(self.paths[self.first_block])}, exit.")
             return
-        print("NOP dispatcher block")
+        logging.info("NOP dispatcher block")
         dispatcher_bb = self.bb_mapping[self.dispatcher]
         IDA.fill_block(dispatcher_bb, b'\x00')
         first_jmp_addr = dispatcher_bb.start_ea
         instr_to_assemble = f"jmp {self.bb_mapping[self.paths[self.first_block][0]].start_ea:x}h"
-        print(f"Assemble {instr_to_assemble} at {hex(first_jmp_addr)}")
+        logging.info(f"Assemble {instr_to_assemble} at {hex(first_jmp_addr)}")
         IDA.assemble(first_jmp_addr, 0, first_jmp_addr, True, instr_to_assemble)
         for bbid in self.real_blocks:
             bb = self.bb_mapping[bbid]
             braddr = self._find_branch_in_real_block(bb)
             if braddr is None:
                 last_instr_address = IDA.get_prev_head(bb.end_ea)
-                print(f"Patch NOP from {hex(last_instr_address)} to {hex(bb.end_ea)}")
+                logging.info(f"Patch NOP from {hex(last_instr_address)} to {hex(bb.end_ea)}")
                 IDA.fill_bytes(last_instr_address, bb.end_ea, b'\x00')
                 if len(self.paths[bbid]) != 1:
-                    print(f"Warning: found wrong ways in block: {self._block_str(bb)}, should be 1 path but get {len(self.paths[bbid])}")
+                    logging.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 1 path but get {len(self.paths[bbid])}")
                     continue
                 instr_to_assemble = f"jmp {self.bb_mapping[self.paths[bbid][0]].start_ea:x}h"
-                print(f"Assemble {instr_to_assemble} at {hex(last_instr_address)}")
+                logging.info(f"Assemble {instr_to_assemble} at {hex(last_instr_address)}")
                 IDA.assemble(last_instr_address, 0, last_instr_address, True, instr_to_assemble)
                 IDA.perform_analysis(bb.start_ea, bb.end_ea)
             else:
                 if len(self.paths[bbid]) != 2:
-                    print(f"Warning: found wrong ways in block: {self._block_str(bb)}, should be 2 paths but get {len(self.paths[bbid])}")
+                    logging.warning(f"Found wrong ways in block: {self._block_str(bb)}, should be 2 paths but get {len(self.paths[bbid])}")
                     continue
                 cmov_instr = IDA.get_instruction(braddr).lower()
-                print(f"Patch NOP from {hex(braddr)} to {hex(bb.end_ea)}")
+                logging.info(f"Patch NOP from {hex(braddr)} to {hex(bb.end_ea)}")
                 IDA.fill_bytes(braddr, bb.end_ea, b'\x00')
                 jmp_instr = f"j{cmov_instr[4:]}"
                 instr_to_assemble = f"{jmp_instr} {self.bb_mapping[self.paths[bbid][0]].start_ea:x}h"
-                print(f"Assemble {instr_to_assemble} at {hex(braddr)}")
+                logging.info(f"Assemble {instr_to_assemble} at {hex(braddr)}")
                 IDA.assemble(braddr, 0, braddr, True, instr_to_assemble)
                 IDA.perform_analysis(bb.start_ea, bb.end_ea)
                 time.sleep(0.5)
                 next_instr_address = IDA.get_instruction_size(braddr) + braddr
                 instr_to_assemble = f"jmp {self.bb_mapping[self.paths[bbid][1]].start_ea:x}h"      
-                print(f"Assemble {instr_to_assemble} at {hex(next_instr_address)}")
+                logging.info(f"Assemble {instr_to_assemble} at {hex(next_instr_address)}")
                 IDA.assemble(next_instr_address, 0, next_instr_address, True, instr_to_assemble)
                 IDA.perform_analysis(bb.start_ea, bb.end_ea)
         for bbid in self.fake_blocks:
             bb = self.bb_mapping[bbid]
-            print(f"Patch NOP for block: {self._block_str(bb)}")
+            logging.info(f"Patch NOP for block: {self._block_str(bb)}")
             IDA.fill_block(bb, b'\x00')
-        print(f"Patch NOP for pre_dispatcher.")
+        logging.info(f"Patch NOP for pre_dispatcher.")
         bb = self.bb_mapping[self.pre_dispatcher]
         IDA.fill_block(bb, b'\x00')
     
@@ -1416,7 +1417,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
             self.dispatcher = list(self.bb_mapping[self.pre_dispatcher].succs())[0].id
             self.first_block = flowchart[0].id
         except IndexError:
-            print("Fail to get dispatcher and first_block.")
+            logging.error("Fail to get dispatcher and first_block.")
             return
         self.real_blocks = []
         self.fake_blocks = []
@@ -1437,17 +1438,17 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         IDA.color_block(self.bb_mapping[self.dispatcher], Colors.Blue.value)
         IDA.color_block(self.bb_mapping[self.pre_dispatcher], Colors.Blue.value)
         IDA.color_block(self.bb_mapping[self.first_block], Colors.Beige.value)
-        print(f"First block: {self._block_str(self.first_block)}")
-        print(f"Dispatcher: {self._block_str(self.dispatcher)}")
-        print(f"Pre dispatcher: {self._block_str(self.pre_dispatcher)}")
-        tp = '\n'.join(map(self._block_str, self.real_blocks))
-        print(f"Real blocks:\n{tp}")
-        tp = '\n'.join(map(self._block_str, self.fake_blocks))
-        print(f"Fake blocks:\n{tp}")
-        tp = '\n'.join(map(self._block_str, self.retn_blocks))
-        print(f"Return blocks:\n{tp}")
-        print(f"Auto analysis finished, please check whether the result is correct.")
-        print(f"You may change the property of each block manually if necessary.")
+        logging.info(f"First block: {self._block_str(self.first_block)}")
+        logging.info(f"Dispatcher: {self._block_str(self.dispatcher)}")
+        logging.info(f"Pre dispatcher: {self._block_str(self.pre_dispatcher)}")
+        logging.info(f"Real blocks:")
+        for s in map(self._block_str, self.real_blocks): logging.info(s)
+        logging.info(f"Fake blocks:")
+        for s in map(self._block_str, self.fake_blocks): logging.info(s)
+        logging.info(f"Return blocks:")
+        for s in map(self._block_str, self.retn_blocks): logging.info(s)
+        logging.info(f"Auto analysis finished, please check whether the result is correct.")
+        logging.info(f"You may change the property of each block manually if necessary.")
 
 
     ### Hook
@@ -1510,11 +1511,11 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
         self.userobj = get_user_scripts_obj(self.customscriptpath, 'QILING_IDA', is_reload)
         if self.userobj is not None:
             if is_reload and not is_start:
-                print('User Script Reload')
+                logging.info('Custom user script is reloaded.')
             else:
-                print('User Script Load')
+                logging.info('Custom user script is loaded successfully.')
         else:
-            print('There Is No User Scripts')
+            logging.info('Custom user script not found.')
 
     ### Dialog
 
