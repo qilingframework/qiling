@@ -1,31 +1,33 @@
 from qiling import *
-
+import logging
 
 class QILING_IDA():
     def __init__(self):
         pass
 
-    def custom_prepare(self, ql):
-        print('set something before ql.run')
+    def _show_context(self, ql:Qiling):
+        registers = [ k for k in ql.reg.register_mapping.keys() if type(k) is str ]
+        for idx in range(0, len(registers), 3):
+            regs = registers[idx:idx+3]
+            s = "\t".join(map(lambda v: f"{v:4}: {ql.reg.__getattribute__(v):016x}", regs))
+            logging.info(s)
+
+    def custom_prepare(self, ql:Qiling):
+        logging.info('Context before starting emulation:')
+        self._show_context(ql)
 
     def custom_continue(self, ql:Qiling):
-        def continue_hook(ql, addr, size):
-            print(hex(addr))
-
-        print('user continue hook')
+        logging.info('custom_continue hook.')
+        self._show_context(ql)
         hook = []
-        hook.append(ql.hook_code(continue_hook))
         return hook
 
     def custom_step(self, ql:Qiling):
-        def step_hook1(ql, addr, size):
-            print(hex(addr))
+        def step_hook(ql, addr, size):
+            logging.info(f"Executing: {hex(addr)}")
+            self._show_context(ql)
 
-        def step_hook2(ql):
-            print('arrive to 0x0804845B')
-
-        print('user step hook')
+        logging.info('custom_step hook')
         hook = []
-        hook.append(ql.hook_code(step_hook1))
-        hook.append(ql.hook_address(step_hook2, 0x0804845B))
+        hook.append(ql.hook_code(step_hook))
         return hook
