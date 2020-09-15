@@ -1080,7 +1080,7 @@ class QlEmuPlugin(plugin_t, UI_Hooks):
     def ql_save(self):
         if self.qlinit:
             if self.qlemu.save() != True:
-                print('ERROR: Save failed')
+                logging.error('Fail to save the snapshot.')
         else:
             logging.error('Qiling should be setup firstly.')
 
