@@ -74,7 +74,7 @@ def hook_GetModuleFileNameA(ql, address, params):
 
     # GetModuleHandle can return pe_image_address as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and pe_image_address value should do the same operations
-    if hModule == 0 or hModule == ql.loader.pe_image_address:
+    if not ql.shellcoder and (hModule == 0 or hModule == ql.loader.pe_image_address):
         filename = ql.loader.filepath
         filename_len = len(filename)
         if filename_len > nSize - 1:
@@ -102,7 +102,7 @@ def hook_GetModuleFileNameW(ql, address, params):
     nSize = params["nSize"]
     # GetModuleHandle can return pe_image_address as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and pe_image_address value should do the same operations
-    if hModule == 0 or hModule == ql.loader.pe_image_address:
+    if not ql.shellcoder and (hModule == 0 or hModule == ql.loader.pe_image_address):
         filename = ql.loader.filepath.decode('ascii').encode('utf-16le')
         filename_len = len(filename)
         if filename_len > nSize - 1:
