@@ -158,7 +158,7 @@ def hook_GetProcAddress(ql, address, params):
 @winsdkapi(cc=STDCALL, dllname=dllname)
 def hook_LoadLibraryA(ql, address, params):
     lpLibFileName = params["lpLibFileName"]
-    if lpLibFileName == ql.loader.filepath.decode():
+    if not ql.shellcoder and lpLibFileName == ql.loader.filepath.decode():
         # Loading self
         return ql.loader.pe_image_address
     dll_base = ql.loader.load_dll(lpLibFileName.encode())
