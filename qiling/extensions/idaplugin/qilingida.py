@@ -629,7 +629,7 @@ Setup Qiling
 <#Custom script path   #Custom script path\: :{script_name}>
 """, {
         'path_name': Form.DirInput(swidth=50),
-        'script_name': Form.DirInput(swidth=50),
+        'script_name': Form.FileInput(swidth=50, open=True),
     })
  
 class QlEmuSaveDialog(Form):
