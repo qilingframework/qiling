@@ -61,7 +61,7 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, *args, **kw):
         socketcall_buf = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize, ql.pointersize))
         socketcall_len = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 2, ql.pointersize))
         socketcall_flags = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 3, ql.pointersize))
-        socketcall_addr = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize*4, ql.pointersize))
+        socketcall_addr = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 4, ql.pointersize))
         socketcall_addrlen = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 5, ql.pointersize))
         ql_syscall_recvfrom(ql, socketcall_sockfd, socketcall_buf, socketcall_len, socketcall_flags, socketcall_addr, socketcall_addrlen)
 
@@ -70,7 +70,7 @@ def ql_syscall_socketcall(ql, socketcall_call, socketcall_args, *args, **kw):
         socketcall_buf = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize, ql.pointersize))
         socketcall_len = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 2, ql.pointersize))
         socketcall_flags = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 3, ql.pointersize))
-        socketcall_addr = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize*4, ql.pointersize))
+        socketcall_addr = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 4, ql.pointersize))
         socketcall_addrlen = ql.unpack(ql.mem.read(socketcall_args + ql.pointersize * 5, ql.pointersize))
         ql_syscall_sendto(ql, socketcall_sockfd, socketcall_buf, socketcall_len, socketcall_flags, socketcall_addr, socketcall_addrlen)
 
