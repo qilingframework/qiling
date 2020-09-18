@@ -68,6 +68,55 @@ class QLReadELF(object):
 
         return elf_header
 
+    def elf_program_headers(self):
+        program_headers = []
+        def add_info(dic):
+            program_headers.append(dic)
+
+        if self.elffile.num_segments() == 0:
+            return None
+
+        for segment in self.elffile.iter_segments():
+            program_hdr = {}
+            program_hdr['Type'] = describe_p_type(segment['p_type'])
+            program_hdr['Offset'] = self._format_hex(segment['p_offset'], fieldsize=6)
+            program_hdr['VirtAddr'] = self._format_hex(segment['p_vaddr'], fullhex=True)
+            program_hdr['PhysAddr'] = self._format_hex(segment['p_paddr'], fullhex=True)
+            program_hdr['FileSiz'] = self._format_hex(segment['p_filesz'], fieldsize=5)
+            program_hdr['MemSiz'] = self._format_hex(segment['p_memsz'], fieldsize=5)
+            program_hdr['Flg'] = describe_p_flags(segment['p_flags'])
+            program_hdr['Align'] = self._format_hex(segment['p_align'])
+
+            add_info(program_hdr)
+
+        return program_hdr
+
+    def elf_section_headers(self):
+        section_headers = []
+        def add_info(dic):
+            section_headers.append(dic)
+
+        if self.elffile.num_sections() == 0:
+            return None
+
+        for nsec, section in enumerate(self.elffile.iter_sections()):
+            section_hdr = {}
+            section_hdr['index'] = nsec
+            section_hdr['Name'] = section.name
+            section_hdr['Type'] = describe_sh_type(section['sh_type'])
+            section_hdr['Addr'] = self._format_hex(section['sh_addr'], fieldsize=8, lead0x=False)
+            section_hdr['Offset'] = self._format_hex(section['sh_offset'], fieldsize=6, lead0x=False)
+            section_hdr['Size'] = self._format_hex(section['sh_size'], fieldsize=6, lead0x=False)
+            section_hdr['ES'] = self._format_hex(section['sh_entsize'], fieldsize=2, lead0x=False)
+            section_hdr['Flag'] = describe_sh_flags(section['sh_flags'])
+            section_hdr['Lk'] = section['sh_link']
+            section_hdr['Inf'] = section['sh_info']
+            section_hdr['Al'] = section['sh_addralign']
+
+            add_info(section_hdr)
+
+        return section_headers
+
     def decode_flags(self, flags):
         description = ""
         if self.elffile['e_machine'] == "EM_ARM":
