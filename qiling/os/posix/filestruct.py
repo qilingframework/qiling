@@ -92,6 +92,12 @@ class ql_socket:
     def send(self, send_buf, send_flags):
         return self.__socket.send(send_buf, send_flags)
 
+    def recvfrom(self, recvfrom_len, recvfrom_flags):
+        return self.__socket.recvfrom(recvfrom_len, recvfrom_flags)
+
+    def sendto(self, sendto_buf, sendto_flags, sendto_addr):
+        return self.__socket.sendto(sendto_buf, sendto_flags, sendto_addr)
+
     @property
     def family(self):
         return self.__socket.family

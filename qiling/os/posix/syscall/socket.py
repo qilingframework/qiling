@@ -267,14 +267,12 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
             ql.dprint(D_CTNT, "[+] debug send() start")
             tmp_buf = ql.mem.read(send_buf, send_len)
             
-            ql.dprint(D_CTNT, str(ql.os.fd[send_sockfd]))
             ql.dprint(D_CTNT, "[+] fd is " + str(send_sockfd))
             ql.dprint(D_CTNT, "[+] send() CONTENT:")
             ql.dprint(D_CTNT, "%s" % str(tmp_buf))
             ql.dprint(D_CTNT, "[+] send() flag is " + str(send_flags))
             ql.dprint(D_CTNT, "[+] send() len is " + str(send_len))
             regreturn = ql.os.fd[send_sockfd].send(bytes(tmp_buf), send_flags)
-            ql.dprint(D_CTNT, str(ql.os.fd[send_sockfd]))
             ql.dprint(D_CTNT, "[+] debug send end")
         except:
             ql.nprint(sys.exc_info()[0])
@@ -283,4 +281,74 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
     else:
         regreturn = -1
     ql.nprint("send(%d, %x, %d, %x) = %d" % (send_sockfd, send_buf, send_len, send_flags, regreturn))
+    ql.os.definesyscall_return(regreturn)
+
+
+def ql_syscall_recvfrom(ql, recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfrom_flags, recvfrom_addr, recvfrom_addrlen, *args, **kw):
+    if recvfrom_sockfd < 256 and ql.os.fd[recvfrom_sockfd] != 0:
+        tmp_buf, tmp_addr = ql.os.fd[recvfrom_sockfd].recvfrom(recvfrom_len, recvfrom_flags)
+        if tmp_buf:
+            ql.dprint(D_CTNT, "[+] recvfrom() CONTENT:")
+            ql.dprint(D_CTNT, "%s" % tmp_buf)
+
+        sin_family = int(ql.os.fd[recvfrom_sockfd].family)
+        data = struct.pack("<h", sin_family)
+        if sin_family == 1:
+            ql.dprint(D_CTNT, "[+] recvfrom() path is " + tmp_addr)
+            data += tmp_addr.encode()
+        else:
+            ql.dprint(D_CTNT, "[+] recvfrom() addr is %s:%d" % (tmp_addr[0], tmp_addr[1]))
+            data += struct.pack(">H", tmp_addr[1])
+            data += ipaddress.ip_address(tmp_addr[0]).packed
+            addrlen = ql.unpack(ql.mem.read(recvfrom_addrlen, ql.pointersize))
+            data = data[:addrlen]
+        ql.mem.write(recvfrom_addr, data)
+
+        ql.mem.write(recvfrom_buf, tmp_buf)
+        regreturn = len(tmp_buf)
+    else:
+        regreturn = -1
+    ql.nprint("recvfrom(%d, %#x, %d, %#x, %#x, %#x) = %d" % (recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfrom_flags, recvfrom_addr, recvfrom_addrlen, regreturn))
+    ql.os.definesyscall_return(regreturn)
+
+
+def ql_syscall_sendto(ql, sendto_sockfd, sendto_buf, sendto_len, sendto_flags, sendto_addr, sendto_addrlen, *args, **kw):
+    regreturn = 0
+    if sendto_sockfd < 256 and ql.os.fd[sendto_sockfd] != 0:
+        try:
+            ql.dprint(D_CTNT, "[+] debug sendto() start")
+            tmp_buf = ql.mem.read(sendto_buf, sendto_len)
+
+            if ql.archtype== QL_ARCH.X8664:
+                data = ql.mem.read(sendto_addr, 8)
+            else:
+                data = ql.mem.read(sendto_addr, sendto_addrlen)
+
+            sin_family, = struct.unpack("<h", data[:2])
+            port, host = struct.unpack(">HI", data[2:8])
+            host = ql_bin_to_ip(host)
+
+            if sin_family == 1:
+                path = data[2 : ].split(b'\x00')[0]
+                path = ql.os.transform_to_real_path(path.decode())
+
+            ql.dprint(D_CTNT, "[+] fd is " + str(sendto_sockfd))
+            ql.dprint(D_CTNT, "[+] sendto() CONTENT:")
+            ql.dprint(D_CTNT, "%s" % tmp_buf)
+            ql.dprint(D_CTNT, "[+] sendto() flag is " + str(sendto_flags))
+            ql.dprint(D_CTNT, "[+] sendto() len is " + str(sendto_len))
+            if sin_family == 1:
+                ql.dprint(D_CTNT, "[+] sendto() path is " + str(path))
+                regreturn = ql.os.fd[sendto_sockfd].sendto(bytes(tmp_buf), sendto_flags, path)
+            else:
+                ql.dprint(D_CTNT, "[+] sendto() addr is %s:%d" % (host, port))
+                regreturn = ql.os.fd[sendto_sockfd].sendto(bytes(tmp_buf), sendto_flags, (host, port))
+            ql.dprint(D_CTNT, "[+] debug sendto end")
+        except:
+            ql.nprint(sys.exc_info()[0])
+            if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
+                raise
+    else:
+        regreturn = -1
+    ql.nprint("sendto(%d, %#x, %d, %#x, %#x, %#x) = %d" % (sendto_sockfd, sendto_buf, sendto_len, sendto_flags, sendto_addr, sendto_addrlen, regreturn))
     ql.os.definesyscall_return(regreturn)

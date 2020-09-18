@@ -294,6 +294,46 @@ class ELFTest(unittest.TestCase):
         del ql
 
 
+    def test_udp_elf_linux_x86(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                if buf.startswith("server sendto()"):
+                    ql.buf_out = buf
+            except:
+                pass
+
+        ql = Qiling(["../examples/rootfs/x86_linux/bin/x86_udp_test","20004"], "../examples/rootfs/x86_linux")
+        ql.multithread = True
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.run()
+
+        self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
+
+        del ql
+
+
+    def test_udp_elf_linux_x8664(self):
+        def check_write(ql, write_fd, write_buf, write_count, *args, **kw):
+            try:
+                buf = ql.mem.read(write_buf, write_count)
+                buf = buf.decode()
+                if buf.startswith("server sendto()"):
+                    ql.buf_out = buf
+            except:
+                pass
+
+        ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_udp_test","20004"], "../examples/rootfs/x8664_linux")
+        ql.multithread = True
+        ql.set_syscall("write", check_write, QL_INTERCEPT.ENTER)
+        ql.run()
+
+        self.assertEqual("server sendto() 14 return 14.\n", ql.buf_out)
+
+        del ql
+
+
     def test_elf_linux_x8664_static(self):
         ql = Qiling(["../examples/rootfs/x8664_linux/bin/x8664_hello_static"], "../examples/rootfs/x8664_linux", output="debug")
         ql.run()
