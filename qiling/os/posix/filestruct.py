@@ -101,6 +101,11 @@ class ql_socket:
     @property
     def family(self):
         return self.__socket.family
+
+    @property
+    def socktype(self):
+        return self.__socket.type
+
     @property
     def socket(self):
         return self.__socket
