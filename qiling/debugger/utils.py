@@ -31,10 +31,11 @@ from elftools.elf.constants import E_FLAGS
 from elftools.elf.constants import E_FLAGS_MASKS
 
 
-class QLReadELF(object):
+class QlReadELF(object):
     def __init__(self, ql:Qiling, elf_stream):
         self.ql = ql
         self.elffile = ELFFile(elf_stream)
+        self._versioninfo = None
 
     def elf_file_header(self):
         elf_header = {}
@@ -52,7 +53,7 @@ class QLReadELF(object):
         add_info('OS/ABI', describe_ei_osabi(e_ident['EI_OSABI']))
         add_info('ABI Version', e_ident['EI_ABIVERSION'])
         add_info('Type', describe_e_type(header['e_type']))
-        add_info('Machine', )
+        add_info('Machine', describe_e_machine(header['e_machine']))
         add_info('Version_e', describe_e_version_numeric(header['e_version']))
         add_info('Entry point address', self._format_hex(header['e_entry']))
         add_info('Start of program headers', header['e_phoff'])
@@ -89,7 +90,7 @@ class QLReadELF(object):
 
             add_info(program_hdr)
 
-        return program_hdr
+        return program_headers
 
     def elf_section_headers(self):
         section_headers = []
@@ -116,6 +117,58 @@ class QLReadELF(object):
             add_info(section_hdr)
 
         return section_headers
+
+    def elf_symbol_tables(self):
+        symbol_tables = []
+        def add_info(dic):
+            symbol_tables.append(dic)
+
+        self._init_versioninfo()
+
+        symbol_tables = [s for s in self.elffile.iter_sections()
+                    if isinstance(s, SymbolTableSection)]
+
+        if not symbol_tables and self.elffile.num_sections() == 0:
+            return None
+
+        for section in symbol_tables:
+            if not isinstance(section, SymbolTableSection):
+                continue
+
+            if section['sh_entsize'] == 0:
+                continue
+
+            for nsym, symbol in enumerate(section.iter_symbols()):
+                version_info = ''
+                if (section['sh_type'] == 'SHT_DYNSYM' and
+                        self._versioninfo['type'] == 'GNU'):
+                    version = self._symbol_version(nsym)
+                    if (version['name'] != symbol.name and
+                        version['index'] not in ('VER_NDX_LOCAL',
+                                                 'VER_NDX_GLOBAL')):
+                        if version['filename']:
+                            # external symbol
+                            version_info = '@%(name)s (%(index)i)' % version
+                        else:
+                            # internal symbol
+                            if version['hidden']:
+                                version_info = '@%(name)s' % version
+                            else:
+                                version_info = '@@%(name)s' % version
+
+                symbol_info = {}
+                symbol_info['index'] = nsym
+                symbol_info['Value'] = self._format_hex(
+                        symbol['st_value'], fullhex=True, lead0x=False)
+                symbol_info['Size'] = symbol['st_size']
+                symbol_info['Type'] = describe_symbol_type(symbol['st_info']['type'])
+                symbol_info['Bind'] = describe_symbol_bind(symbol['st_info']['bind'])
+                symbol_info['Vis'] = describe_symbol_visibility(symbol['st_other']['visibility'])
+                symbol_info['Ndx'] = describe_symbol_shndx(symbol['st_shndx'])
+                symbol_info['Name'] = symbol.name
+                symbol_info['version_info'] = version_info
+                add_info(symbol_info)
+        return symbol_tables
 
     def decode_flags(self, flags):
         description = ""
@@ -223,3 +276,68 @@ class QLReadELF(object):
         else:
             field = '%' + '0%sx' % fieldsize
         return s + field % addr
+
+    def _init_versioninfo(self):
+        """ Search and initialize informations about version related sections
+            and the kind of versioning used (GNU or Solaris).
+        """
+        if self._versioninfo is not None:
+            return
+
+        self._versioninfo = {'versym': None, 'verdef': None,
+                             'verneed': None, 'type': None}
+
+        for section in self.elffile.iter_sections():
+            if isinstance(section, GNUVerSymSection):
+                self._versioninfo['versym'] = section
+            elif isinstance(section, GNUVerDefSection):
+                self._versioninfo['verdef'] = section
+            elif isinstance(section, GNUVerNeedSection):
+                self._versioninfo['verneed'] = section
+            elif isinstance(section, DynamicSection):
+                for tag in section.iter_tags():
+                    if tag['d_tag'] == 'DT_VERSYM':
+                        self._versioninfo['type'] = 'GNU'
+                        break
+
+        if not self._versioninfo['type'] and (
+                self._versioninfo['verneed'] or self._versioninfo['verdef']):
+            self._versioninfo['type'] = 'Solaris'
+
+    def _symbol_version(self, nsym):
+        """ Return a dict containing information on the
+                   or None if no version information is available
+        """
+        self._init_versioninfo()
+
+        symbol_version = dict.fromkeys(('index', 'name', 'filename', 'hidden'))
+
+        if (not self._versioninfo['versym'] or
+                nsym >= self._versioninfo['versym'].num_symbols()):
+            return None
+
+        symbol = self._versioninfo['versym'].get_symbol(nsym)
+        index = symbol.entry['ndx']
+        if not index in ('VER_NDX_LOCAL', 'VER_NDX_GLOBAL'):
+            index = int(index)
+
+            if self._versioninfo['type'] == 'GNU':
+                # In GNU versioning mode, the highest bit is used to
+                # store wether the symbol is hidden or not
+                if index & 0x8000:
+                    index &= ~0x8000
+                    symbol_version['hidden'] = True
+
+            if (self._versioninfo['verdef'] and
+                    index <= self._versioninfo['verdef'].num_versions()):
+                _, verdaux_iter = \
+                        self._versioninfo['verdef'].get_version(index)
+                symbol_version['name'] = next(verdaux_iter).name
+            else:
+                verneed, vernaux = \
+                        self._versioninfo['verneed'].get_version(index)
+                symbol_version['name'] = vernaux.name
+                symbol_version['filename'] = verneed.name
+
+        symbol_version['index'] = index
+        return symbol_version
