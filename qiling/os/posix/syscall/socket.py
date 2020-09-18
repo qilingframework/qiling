@@ -285,7 +285,7 @@ def ql_syscall_send(ql, send_sockfd, send_buf, send_len, send_flags, *args, **kw
 
 
 def ql_syscall_recvfrom(ql, recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfrom_flags, recvfrom_addr, recvfrom_addrlen, *args, **kw):
-    # For x8664, recvfrom() is called finally when calling recv() in TCP sockets
+    # For x8664, recvfrom() is called finally when calling recv() in TCP communications
     if ql.os.fd[recvfrom_sockfd].socktype == 1:
         ql_syscall_recv(ql, recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfrom_flags, *args, **kw)
     else:
@@ -317,7 +317,7 @@ def ql_syscall_recvfrom(ql, recvfrom_sockfd, recvfrom_buf, recvfrom_len, recvfro
 
 
 def ql_syscall_sendto(ql, sendto_sockfd, sendto_buf, sendto_len, sendto_flags, sendto_addr, sendto_addrlen, *args, **kw):
-    # For x8664, sendto() is called finally when calling send() in in TCP sockets
+    # For x8664, sendto() is called finally when calling send() in TCP communications
     if ql.os.fd[sendto_sockfd].socktype == 1:
         ql_syscall_send(ql, sendto_sockfd, sendto_buf, sendto_len, sendto_flags, *args, **kw)
     else:
