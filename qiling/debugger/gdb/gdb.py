@@ -97,6 +97,19 @@ class QlGdb(QlDebugger, object):
             QL_ARCH.MIPS    : list({**mips_reg_map}.keys()),
         }
 
+    def addr_to_str(self, addr, short=False, endian="big"):
+        if self.ql.archbit == 64 and short == False:
+            addr = (hex(int.from_bytes(self.ql.pack64(addr), byteorder=endian)))
+            addr = '{:0>16}'.format(addr[2:])
+        elif self.ql.archbit == 32 or short == True:
+            addr = (hex(int.from_bytes(self.ql.pack32(addr), byteorder=endian)))
+            addr = ('{:0>8}'.format(addr[2:]))
+        elif self.ql.archbit == 16 or short == True:
+            addr = (hex(int.from_bytes(self.ql.pack32(addr), byteorder=endian)))
+            addr = ('{:0>8}'.format(addr[2:]))            
+        addr = str(addr)    
+        return addr
+
     def bin_to_escstr(self, rawbin):
         rawbin_escape = ""
 
