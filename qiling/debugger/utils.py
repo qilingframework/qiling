@@ -119,9 +119,9 @@ class QlReadELF(object):
         return section_headers
 
     def elf_symbol_tables(self):
-        symbol_tables = []
+        symbol_tables_list = []
         def add_info(dic):
-            symbol_tables.append(dic)
+            symbol_tables_list.append(dic)
 
         self._init_versioninfo()
 
@@ -168,7 +168,7 @@ class QlReadELF(object):
                 symbol_info['Name'] = symbol.name
                 symbol_info['version_info'] = version_info
                 add_info(symbol_info)
-        return symbol_tables
+        return symbol_tables_list
 
     def decode_flags(self, flags):
         description = ""
