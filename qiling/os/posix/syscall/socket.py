@@ -220,6 +220,10 @@ def ql_syscall_accept(ql, accept_sockfd, accept_addr, accept_addrlen, *args, **k
         return ret
     try:
         conn, address = ql.os.fd[accept_sockfd].accept()
+        if conn == None:
+            ql.os.definesyscall_return(-1)
+            return
+
         idx = -1
         for i in range(256):
             if ql.os.fd[i] == 0:
