@@ -118,8 +118,8 @@ static int process_server(const char *port)
             return 1;
         }
         for(;;) {
-            len = read(client, buf, sizeof(buf));
-            fprintf(stderr, "server read() return %d.\n", len);
+            len = recv(client, buf, sizeof(buf), 0);
+            fprintf(stderr, "server recv() return %d.\n", len);
             if (len <= 0) {
                 fprintf(stderr, "read %d error.\n", len);
                 close(sockfd);
@@ -127,8 +127,8 @@ static int process_server(const char *port)
                 return 1;
             } else {
                 /* echo */
-                ret = write(client, buf, len);
-                fprintf(stderr, "server write() %d return %d.\n", len, ret);
+                ret = send(client, buf, len, 0);
+                fprintf(stderr, "server send() %d return %d.\n", len, ret);
                 if (ret != len) {
                     close(sockfd);
                     close(client);
@@ -162,11 +162,8 @@ static int process_client(const char *port)
         }
         for(;;) {
             ret = write(sockfd, "hello, world.\n", 14);
-            fprintf(stderr, "--- client write() %d return %d, close %d.\n", 14, ret, sockfd);
-            close(sockfd);
-            return 1;
-            
             if (ret != 14) {
+                fprintf(stderr, "--- client write() %d return %d, close %d.\n", 14, ret, sockfd);
                 close(sockfd);
                 return 1;
             }
