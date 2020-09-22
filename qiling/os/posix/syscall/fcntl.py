@@ -117,6 +117,7 @@ def ql_syscall_fcntl64(ql, fcntl_fd, fcntl_cmd, fcntl_arg, null1, null2, null3):
     if fcntl_cmd == F_GETFL:
         regreturn = 2
     elif fcntl_cmd == F_SETFL:
+        ql.os.fd[fcntl_fd].fcntl(fcntl_cmd, fcntl_arg)
         regreturn = 0
     elif fcntl_cmd == F_GETFD:
         regreturn = 2
