@@ -269,11 +269,7 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             saved_states.update({"fd": self.os.fd.save()})
 
         if cpu_context == True:
-            cpu_context = self.arch.context_save()
-            if type(cpu_context) != bytes:
-                cpu_context = ctypes.string_at(ctypes.byref(cpu_context), ctypes.sizeof(cpu_context))
-
-            saved_states.update({"cpu_context": cpu_context})
+            saved_states.update({"cpu_context": self.arch.context_save()})
 
         if snapshot != None:
             with open(snapshot, "wb") as save_state:
