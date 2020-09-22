@@ -3,11 +3,7 @@
 # Cross Platform and Multi Architecture Advanced Binary Emulation Framework
 # Built on top of Unicorn emulator (www.unicorn-engine.org)
 
-import platform
-import ntpath
-import os
-import logging
-import pickle
+import ctypes, logging, ntpath, os, pickle, platform
 
 from .const import QL_ARCH_ENDIAN, QL_ENDIAN, QL_OS_POSIX, QL_OS_ALL, QL_OUTPUT, QL_OS
 from .exception import QlErrorFileNotFound, QlErrorArch, QlErrorOsType, QlErrorOutput
@@ -273,7 +269,11 @@ class Qiling(QlCoreStructs, QlCoreHooks, QlCoreUtils):
             saved_states.update({"fd": self.os.fd.save()})
 
         if cpu_context == True:
-            saved_states.update({"cpu_context": self.arch.context_save()})
+            cpu_context = self.arch.context_save()
+            if type(cpu_context) != bytes:
+                cpu_context = ctypes.string_at(ctypes.byref(cpu_context), ctypes.sizeof(cpu_context))
+
+            saved_states.update({"cpu_context": cpu_context})
 
         if snapshot != None:
             with open(snapshot, "wb") as save_state:
