@@ -865,7 +865,7 @@ class QlEmuQiling:
             self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug")
         
         self.exit_addr = self.ql.os.exit_point
-        if self.ql.ostype == QL_OS.LINUX and self.ql.archtype in [QL_ARCH.X86, QL_ARCH.X8664]:
+        if self.ql.ostype == QL_OS.LINUX:
             f = open(self.ql.path, 'rb')
             elffile = ELFFile(f)
             elf_header = elffile.header
