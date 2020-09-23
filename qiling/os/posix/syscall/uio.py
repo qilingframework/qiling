@@ -18,9 +18,10 @@ def ql_syscall_writev(ql, writev_fd, writev_vec, writev_vien, *args, **kw):
     ql.nprint("writev(0x%x, 0x%x, 0x%x)" % (writev_fd, writev_vec, writev_vien))
     if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
         ql.dprint(D_INFO, "[+] writev() CONTENT:")
-        for i in range(writev_vien):
-            addr = ql.unpack(iov[i * size_t_len * 2 : i * size_t_len * 2 + size_t_len])
-            l = ql.unpack(iov[i * size_t_len * 2 + size_t_len : i * size_t_len * 2 + size_t_len * 2])
-            regreturn += l
+    for i in range(writev_vien):
+        addr = ql.unpack(iov[i * size_t_len * 2 : i * size_t_len * 2 + size_t_len])
+        l = ql.unpack(iov[i * size_t_len * 2 + size_t_len : i * size_t_len * 2 + size_t_len * 2])
+        regreturn += l
+        if ql.output in (QL_OUTPUT.DEBUG, QL_OUTPUT.DUMP):
             ql.dprint(D_INFO, "%s" % str(ql.mem.read(addr, l)))
     ql.os.definesyscall_return(regreturn)
