@@ -115,7 +115,7 @@ def ql_syscall_bind(ql, bind_fd, bind_addr, bind_addrlen,  *args, **kw):
     else:
         data = ql.mem.read(bind_addr, bind_addrlen)
 
-    sin_family, = struct.unpack("<h", data[:2])
+    sin_family = struct.unpack("<h", data[:2])[0] or ql.os.fd[bind_fd].family
     port, host = struct.unpack(">HI", data[2:8])
     host = ql_bin_to_ip(host)
 
