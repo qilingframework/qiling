@@ -10,6 +10,7 @@ import time
 import struct
 import logging
 from enum import Enum
+from elftools.elf.elffile import ELFFile
 
 # Qiling
 from qiling import *
@@ -449,7 +450,7 @@ class QlEmuRegView(simplecustviewer_t):
         self.ClearLines()
 
         view_title = COLSTR("Reg value at { ", SCOLOR_AUTOCMT)
-        view_title += COLSTR("IDA Address:0x%X | QL Address:0x%X" % (addr, addr - self.ql_emu_plugin.qlemu.baseaddr + get_imagebase()), SCOLOR_DREF)
+        view_title += COLSTR("IDA Address:0x%X | QL Address:0x%X" % (addr - self.ql_emu_plugin.qlemu.baseaddr + get_imagebase(), addr), SCOLOR_DREF)
         # TODO: Add disass should be better
         view_title += COLSTR(" }", SCOLOR_AUTOCMT)
         self.AddLine(view_title)
@@ -864,8 +865,17 @@ class QlEmuQiling:
             self.ql = Qiling(filename=[self.path], rootfs=self.rootfs, output="debug")
         
         self.exit_addr = self.ql.os.exit_point
-        if self.ql.ostype == QL_OS.LINUX:
-            self.baseaddr = self.ql.os.elf_mem_start
+        if self.ql.ostype == QL_OS.LINUX and self.ql.archtype in [QL_ARCH.X86, QL_ARCH.X8664]:
+            f = open(self.ql.path, 'rb')
+            elffile = ELFFile(f)
+            elf_header = elffile.header
+            if elf_header['e_type'] == 'ET_EXEC':
+                self.baseaddr = self.ql.os.elf_mem_start
+            elif elf_header['e_type'] == 'ET_DYN':
+                if self.ql.archbit == 32:
+                    self.baseaddr = int(self.ql.os.profile.get("OS32", "load_address"), 16)
+                elif self.ql.archbit == 64:
+                    self.baseaddr = int(self.ql.os.profile.get("OS64", "load_address"), 16)
         else:
             self.baseaddr = 0x0
 
