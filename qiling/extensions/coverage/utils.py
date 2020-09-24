@@ -6,9 +6,19 @@
 from .formats import *
 from contextlib import contextmanager
 
+# Returns subclasses recursively.
+def get_all_subclasses(cls):
+    all_subclasses = []
+
+    for subclass in cls.__subclasses__():
+        all_subclasses.append(subclass)
+        all_subclasses.extend(get_all_subclasses(subclass))
+
+    return all_subclasses
+
 class CoverageFactory():
     def __init__(self):
-        self.coverage_collectors = {subcls.FORMAT_NAME:subcls for subcls in base.QlBaseCoverage.__subclasses__()}
+        self.coverage_collectors = {subcls.FORMAT_NAME:subcls for subcls in get_all_subclasses(base.QlBaseCoverage)}
 
     @property
     def formats(self):
