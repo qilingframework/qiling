@@ -85,9 +85,8 @@ def run_shellcode(options):
     return Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output, profile = options.profile)
 
 def version():
-    print("qltool for Qiling v%s" % ql_version)
-    print("Based on Unicorn %s" %  unicorn.__version__)
-    
+    print("qltool for Qiling v%s, using Unicorn %s" %(ql_version, unicorn.__version__))
+
 def usage():
     version()
     print("\nUsage: ./qltool [run|shellcode] OPTIONS")
@@ -289,6 +288,9 @@ if __name__ == '__main__':
     # ql run
     with cov_utils.collect_coverage(ql, options.coverage_format, options.coverage_file):
         ql.run(timeout=timeout)
+
     if options.json:
         print(generate_report(ql, pretty_print=True))
+
     exit(ql.os.exit_code)
+
