@@ -8,6 +8,7 @@ This file details the changelog of Qiling Framework.
 ------------------------------------
 [Version 1.1.3]: September 30, 2020
 
+- qltool prints out Unicorn version
 - Added Doogie example and implement more interrupts
 - Added ollvm de-flattern support for IDA plugin
 - Fixed the popup menu doesn't show when the IDA plugin is put into plugins directory
