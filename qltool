@@ -85,7 +85,7 @@ def run_shellcode(options):
     return Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output, profile = options.profile)
 
 def version():
-    print("qltool for Qiling v%s, using Unicorn %s" %(ql_version, unicorn.__version__))
+    print("qltool for Qiling %s, using Unicorn %s" %(ql_version, unicorn.__version__))
 
 def usage():
     version()
