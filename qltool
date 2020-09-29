@@ -4,7 +4,7 @@
 # Built on top of Unicorn emulator (www.unicorn-engine.org) 
 
 
-import argparse, os, string, sys, ast
+import argparse, os, string, sys, ast, unicorn
 from binascii import unhexlify
 
 from qiling import *
@@ -84,14 +84,15 @@ def run_shellcode(options):
 
     return Qiling(shellcoder = shellcoder, archtype = options.arch, bigendian = options.bigendian, ostype = options.os, rootfs = options.rootfs, output = options.output, profile = options.profile)
 
-
+def version():
+    print("qltool for Qiling v%s" % ql_version)
+    print("Based on Unicorn %s" %  unicorn.__version__)
+    
 def usage():
-    print("qltool for Qiling v%s" %ql_version)
-
+    version()
     print("\nUsage: ./qltool [run|shellcode] OPTIONS")
 
     print("\n\nWith shellcode:")
-
     print("\t ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex")
     print("\t ./qltool shellcode --os linux --arch x86 --asm -f examples/shellcodes/lin32_execve.asm")
     print("\t ./qltool shellcode --os linux --arch arm --hex -f examples/shellcodes/linarm32_tcp_reverse_shell.hex --strace")
@@ -120,9 +121,6 @@ def usage():
 
     print("\n\nWith binary file and json output:")
     print("\t ./qltool run -f examples/rootfs/x86_windows/bin/x86_hello.exe --rootfs  examples/rootfs/x86_windows/ --console False --json")
-
-    exit(1)
-
 
 if __name__ == '__main__':
 
@@ -154,8 +152,12 @@ if __name__ == '__main__':
         comm_parser = run_parser
     elif (sys.argv[1] == 'shellcode'):
         comm_parser = shellcode_parser
+    elif (sys.argv[1] == 'version') or (sys.argv[1] == '-v') or (sys.argv[1] == '--version'):
+        version()
+        exit(0)
     else:
-        usage()    
+        usage()
+        exit(1)
 
     comm_parser.add_argument('-o', '--output', required=False, default='default',
                             help='output mode, options are off, debug , disasm, dump')
@@ -290,5 +292,3 @@ if __name__ == '__main__':
     if options.json:
         print(generate_report(ql, pretty_print=True))
     exit(ql.os.exit_code)
-
-

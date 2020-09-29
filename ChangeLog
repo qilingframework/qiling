@@ -1,11 +1,18 @@
 This file details the changelog of Qiling Framework.
 
+------------------------------------
+[Version 1.2]: October [SOMETHING], 2020
+- Demigod finally arrived, more information about [Demigod](https://groundx.io/demigod/)
 
-[Version 1.2-alpha1]: September [SOMETHING], 2020
-- Add Doogie example and implement more interrupts.
-- Add ollvm de-flattern support for IDA plugin.
-- Fix the popup menu doesn't show when the IDA plugin is put into plugins directory.
-- Add Json report extension
+
+------------------------------------
+[Version 1.1.3]: September 30, 2020
+
+- Added Doogie example and implement more interrupts
+- Added ollvm de-flattern support for IDA plugin
+- Fixed the popup menu doesn't show when the IDA plugin is put into plugins directory
+- Added Json report extension
+
 
 ------------------------------------
 [Version 1.1.2]: September 6th, 2020
@@ -15,6 +22,7 @@ This file details the changelog of Qiling Framework.
 - Added more Windows API
 - Add mapper support for standalone disks.
 - More BIOS/DOS interrupts support shipped with fully emulated Petya as a mbr analysis example.
+
 
 ------------------------------------
 [Version 1.1.1]: August 23th, 2020
